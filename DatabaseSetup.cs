@@ -16,18 +16,26 @@ namespace VANTAGE
         {
             try
             {
-                // Create directory if it doesn't exist
-                string directory = Path.GetDirectoryName(DbPath);
-                if (!Directory.Exists(directory))
+                string? directory = Path.GetDirectoryName(DbPath);
+                if (!string.IsNullOrWhiteSpace(directory) && !Directory.Exists(directory))
                 {
                     Directory.CreateDirectory(directory);
                 }
 
-                // Create/open database
-                using var connection = new SqliteConnection($"Data Source={DbPath}");
+                using var connection = new SqliteConnection($"Data Source={DbPath};Cache=Shared");
                 connection.Open();
 
-                var command = connection.CreateCommand();
+                // Good SQLite defaults for desktop apps
+                using (var pragmas = connection.CreateCommand())
+                {
+                    pragmas.CommandText = @"
+                        PRAGMA foreign_keys = ON;
+                        PRAGMA journal_mode = WAL;
+                        PRAGMA synchronous = NORMAL;";
+                    pragmas.ExecuteNonQuery();
+                }
+
+                using var command = connection.CreateCommand();
                 command.CommandText = @"
                     -- Users table
                     CREATE TABLE IF NOT EXISTS Users (
@@ -57,31 +65,31 @@ namespace VANTAGE
                         UNIQUE(UserID, SettingName)
                     );
 
-                    -- Activities table (exact Azure schema match)
+                    -- Activities table (your schema)
                     CREATE TABLE IF NOT EXISTS Activities (
                         ActivityID INTEGER PRIMARY KEY AUTOINCREMENT,
                         HexNO INTEGER DEFAULT 0,
-                        
+
                         -- Categories
                         Catg_ComponentType TEXT,
                         Catg_PhaseCategory TEXT,
                         Catg_ROC_Step TEXT,
-                        
+
                         -- Drawings
                         Dwg_PrimeDrawingNO TEXT,
                         Dwg_RevisionNo TEXT,
                         Dwg_SecondaryDrawingNO TEXT,
                         Dwg_ShtNo TEXT,
-                        
+
                         -- Notes
                         Notes_Comments TEXT,
-                        
+
                         -- Schedule
                         Sch_Actno TEXT,
                         Sch_Start TEXT,
                         Sch_Finish TEXT,
                         Sch_Status TEXT,
-                        
+
                         -- Tags
                         Tag_Aux1 TEXT,
                         Tag_Aux2 TEXT,
@@ -109,10 +117,10 @@ namespace VANTAGE
                         Tag_Tracing TEXT,
                         Tag_WorkPackage TEXT,
                         Tag_XRAY REAL,
-                        
+
                         -- Trigger
                         Trg_DateTrigger INTEGER,
-                        
+
                         -- Custom Fields (UDF1-UDF20)
                         UDFOne TEXT,
                         UDFTwo TEXT,
@@ -134,7 +142,7 @@ namespace VANTAGE
                         UDFEighteen TEXT,
                         UDFNineteen TEXT UNIQUE NOT NULL,
                         UDFTwenty TEXT,
-                        
+
                         -- Values (user-editable)
                         Val_Base_Unit REAL DEFAULT 0,
                         Val_BudgetedHours_Ind REAL DEFAULT 0,
@@ -145,33 +153,33 @@ namespace VANTAGE
                         Val_Perc_Complete REAL DEFAULT 0,
                         Val_Quantity REAL DEFAULT 0,
                         Val_UOM TEXT,
-                        
+
                         -- Values (calculated)
                         Val_EarnedHours_Ind REAL DEFAULT 0,
                         Val_Earn_Qty REAL DEFAULT 0,
                         Val_Percent_Earned REAL DEFAULT 0,
-                        
+
                         -- Equipment Quantity
                         Val_EQ_QTY REAL DEFAULT 0,
                         Val_EQ_UOM TEXT,
-                        
+
                         -- ROC
                         Tag_ROC_ID INTEGER DEFAULT 0,
                         LookUP_ROC_ID TEXT,
                         Val_ROC_Perc REAL DEFAULT 0,
                         Val_ROC_BudgetQty REAL DEFAULT 0,
-                        
+
                         -- Pipe
                         Val_Pipe_Size1 REAL DEFAULT 0,
                         Val_Pipe_Size2 REAL DEFAULT 0,
-                        
+
                         -- Previous values
                         Val_Prev_Earned_Hours REAL DEFAULT 0,
                         Val_Prev_Earned_Qty REAL DEFAULT 0,
-                        
+
                         -- Timestamps
                         Val_TimeStamp TEXT,
-                        
+
                         -- Client values
                         VAL_Client_EQ_QTY_BDG REAL DEFAULT 0,
                         VAL_UDF_Two REAL DEFAULT 0,
@@ -186,21 +194,20 @@ namespace VANTAGE
                     CREATE INDEX IF NOT EXISTS idx_assigned_to ON Activities(UDFEleven);
                     CREATE INDEX IF NOT EXISTS idx_udf_nineteen ON Activities(UDFNineteen);
                 ";
-
                 command.ExecuteNonQuery();
 
                 System.Diagnostics.Debug.WriteLine($"Database initialized at: {DbPath}");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Database initialization error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Database initialization error: {ex}");
                 throw;
             }
         }
 
         public static SqliteConnection GetConnection()
         {
-            return new SqliteConnection($"Data Source={DbPath}");
+            return new SqliteConnection($"Data Source={DbPath};Cache=Shared");
         }
     }
 }
