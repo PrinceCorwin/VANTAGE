@@ -3,10 +3,230 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:VANTAGE"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
+        Title="VANTAGE" 
+        Height="700" 
+        Width="1200"
+        WindowState="Maximized"
+        Background="#FF1E1E1E">
 
+    <Grid>
+        <!-- Define rows: Toolbar, Content, StatusBar -->
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50"/>
+            <!-- Toolbar -->
+            <RowDefinition Height="*"/>
+            <!-- Content Area -->
+            <RowDefinition Height="30"/>
+            <!-- Status Bar -->
+        </Grid.RowDefinitions>
+
+        <!-- TOOLBAR (Top) -->
+        <Border Grid.Row="0" 
+                Background="#FF252525" 
+                BorderBrush="#FF3C3C3C" 
+                BorderThickness="0,0,0,1">
+            <StackPanel Orientation="Horizontal" Margin="10,0">
+                <!-- PROGRESS Button -->
+                <Button x:Name="btnProgress" 
+                        Content="PROGRESS" 
+                        Width="100" 
+                        Height="40"
+                        Margin="5,0"
+                        Background="#FF0078D7"
+                        Foreground="#FFFFFFFF"
+                        BorderThickness="0"
+                        FontSize="12"
+                        FontWeight="Bold"
+                        Click="BtnProgress_Click"/>
+
+                <!-- SCHEDULE Button -->
+                <Button x:Name="btnSchedule" 
+                        Content="SCHEDULE" 
+                        Width="100" 
+                        Height="40"
+                        Margin="5,0"
+                        Background="#FF2A2A2A"
+                        Foreground="#FFFFFFFF"
+                        BorderThickness="0"
+                        FontSize="12"
+                        FontWeight="Bold"
+                        Click="BtnSchedule_Click"/>
+
+                <!-- CREATE Button -->
+                <Button x:Name="btnCreate" 
+                        Content="CREATE" 
+                        Width="100" 
+                        Height="40"
+                        Margin="5,0"
+                        Background="#FF2A2A2A"
+                        Foreground="#FFFFFFFF"
+                        BorderThickness="0"
+                        FontSize="12"
+                        FontWeight="Bold"
+                        Click="BtnCreate_Click"/>
+
+                <!-- EXCEL IMPORT Button -->
+                <Button x:Name="btnExcelImport" 
+                        Content="EXCEL IMPORT" 
+                        Width="100" 
+                        Height="40"
+                        Margin="5,0"
+                        Background="#FF2A2A2A"
+                        Foreground="#FFFFFFFF"
+                        BorderThickness="0"
+                        FontSize="12"
+                        FontWeight="Bold"
+                        Click="BtnExcelImport_Click"/>
+
+                <!-- PRINT Button -->
+                <Button x:Name="btnPbook" 
+                        Content="PROG BOOK" 
+                        Width="100" 
+                        Height="40"
+                        Margin="5,0"
+                        Background="#FF2A2A2A"
+                        Foreground="#FFFFFFFF"
+                        BorderThickness="0"
+                        FontSize="12"
+                        FontWeight="Bold"
+                        Click="BtnPbook_Click"/>
+
+                <!-- WORK PACKAGE Button -->
+                <Button x:Name="btnWorkPackage" 
+                        Content="WP" 
+                        Width="120" 
+                        Height="40"
+                        Margin="5,0"
+                        Background="#FF2A2A2A"
+                        Foreground="#FFFFFFFF"
+                        BorderThickness="0"
+                        FontSize="12"
+                        FontWeight="Bold"
+                        Click="BtnWorkPackage_Click"/>
+
+                <!-- REPORTS Button -->
+                <Button x:Name="btnReports" 
+                        Content="REPORTS" 
+                        Width="100" 
+                        Height="40"
+                        Margin="5,0"
+                        Background="#FF2A2A2A"
+                        Foreground="#FFFFFFFF"
+                        BorderThickness="0"
+                        FontSize="12"
+                        FontWeight="Bold"
+                        Click="BtnReports_Click"/>
+
+                <!-- ANALYSIS Button -->
+                <Button x:Name="btnAnalysis" 
+                        Content="ANALYSIS" 
+                        Width="100" 
+                        Height="40"
+                        Margin="5,0"
+                        Background="#FF2A2A2A"
+                        Foreground="#FFFFFFFF"
+                        BorderThickness="0"
+                        FontSize="12"
+                        FontWeight="Bold"
+                        Click="BtnAnalysis_Click"/>
+
+                <!-- TOOLS Button -->
+                <Button x:Name="btnTools" 
+                        Content="TOOLS" 
+                        Width="100" 
+                        Height="40"
+                        Margin="5,0"
+                        Background="#FF2A2A2A"
+                        Foreground="#FFFFFFFF"
+                        BorderThickness="0"
+                        FontSize="12"
+                        FontWeight="Bold"
+                        Click="BtnTools_Click"/>
+
+                <!-- ADMIN Button -->
+                <Button x:Name="btnAdmin" 
+                        Content="ADMIN" 
+                        Width="100" 
+                        Height="40"
+                        Margin="5,0"
+                        Background="#FF2A2A2A"
+                        Foreground="#FFFFFFFF"
+                        BorderThickness="0"
+                        FontSize="12"
+                        FontWeight="Bold"
+                        Click="BtnAdmin_Click"/>
+
+            </StackPanel>
+        </Border>
+
+        <!-- CONTENT AREA (Middle) -->
+        <Border Grid.Row="1" 
+                Background="#FF1E1E1E">
+            <ContentControl x:Name="ContentArea" />
+        </Border>
+
+        <!-- STATUS BAR (Bottom) -->
+        <Border Grid.Row="2" 
+                Background="#FF1C1C1C" 
+                BorderBrush="#FF3C3C3C" 
+                BorderThickness="0,1,0,0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Current User -->
+                <TextBlock Grid.Column="0" 
+                           x:Name="txtCurrentUser"
+                           Text="User: Steve.Amalfitano" 
+                           Foreground="#FFB0B0B0"
+                           FontSize="11"
+                           VerticalAlignment="Center"
+                           Margin="10,0,20,0"/>
+
+                <!-- Current Project -->
+                <TextBlock Grid.Column="1" 
+                           Text="Project:" 
+                           Foreground="#FFB0B0B0"
+                           FontSize="11"
+                           VerticalAlignment="Center"
+                           Margin="0,0,5,0"/>
+                <ComboBox Grid.Column="2" 
+                          x:Name="cmbCurrentProject"
+                          Width="150"
+                          Height="20"
+                          Background="#FF2A2A2A"
+                          Foreground="#FFFFFFFF"
+                          BorderBrush="#FF3C3C3C"
+                          Margin="0,0,20,0"/>
+
+                <!-- Last Sync -->
+                <TextBlock Grid.Column="3" 
+                           x:Name="txtLastSync"
+                           Text="Last Sync: Never" 
+                           Foreground="#FFB0B0B0"
+                           FontSize="11"
+                           VerticalAlignment="Center"
+                           Margin="0,0,20,0"/>
+
+                <!-- Spacer -->
+                <TextBlock Grid.Column="4"/>
+
+                <!-- Record Count -->
+                <TextBlock Grid.Column="5" 
+                           x:Name="txtRecordCount"
+                           Text="0 activities loaded" 
+                           Foreground="#FFB0B0B0"
+                           FontSize="11"
+                           VerticalAlignment="Center"
+                           Margin="0,0,10,0"/>
+            </Grid>
+        </Border>
     </Grid>
 </Window>

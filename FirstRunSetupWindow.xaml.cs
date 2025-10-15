@@ -26,23 +26,20 @@ namespace VANTAGE
                 MessageBox.Show("Please enter your full name.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
-
             if (string.IsNullOrWhiteSpace(EmailTextBox.Text))
             {
                 MessageBox.Show("Please enter your email address.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
-
             try
             {
                 // Update user in database
                 _currentUser.FullName = FullNameTextBox.Text.Trim();
                 _currentUser.Email = EmailTextBox.Text.Trim();
                 _currentUser.PhoneNumber = PhoneTextBox.Text.Trim();
-
                 UpdateUserInDatabase(_currentUser);
 
-                MessageBox.Show("Profile updated successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                System.Diagnostics.Debug.WriteLine("✓ Profile saved successfully");
                 this.DialogResult = true;
                 this.Close();
             }

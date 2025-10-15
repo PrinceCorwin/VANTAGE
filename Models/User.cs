@@ -9,6 +9,8 @@ namespace VANTAGE.Models
         private string _fullName;
         private string _email;
         private string _phoneNumber;
+        private bool _isAdmin;
+        private string _adminToken;
 
         public int UserID
         {
@@ -38,6 +40,18 @@ namespace VANTAGE.Models
         {
             get => _phoneNumber;
             set { _phoneNumber = value; OnPropertyChanged(nameof(PhoneNumber)); }
+        }
+
+        public bool IsAdmin
+        {
+            get => _isAdmin;
+            set { _isAdmin = value; OnPropertyChanged(nameof(IsAdmin)); }
+        }
+
+        public string AdminToken
+        {
+            get => _adminToken;
+            set { _adminToken = value; OnPropertyChanged(nameof(AdminToken)); }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

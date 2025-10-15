@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using VANTAGE.Models;
 using VANTAGE.Utilities;
 
@@ -33,16 +34,65 @@ namespace VANTAGE
                 CurrentUserID = CurrentUser.UserID;
                 System.Diagnostics.Debug.WriteLine($"✓ Current user ID: {CurrentUserID}");
 
+                // Step 4a: Make Steve admin on first run (ONE-TIME SETUP)
+                if (CurrentUser.Username == "Steve.Amalfitano" && !CurrentUser.IsAdmin)
+                {
+                    AdminHelper.GrantAdmin(CurrentUserID, CurrentUser.Username);
+                    CurrentUser.IsAdmin = true;
+                    CurrentUser.AdminToken = AdminHelper.GenerateAdminToken(CurrentUserID, CurrentUser.Username);
+                    System.Diagnostics.Debug.WriteLine("✓ Steve granted admin privileges");
+                }
+
+                // Step 4b: Verify admin token if user claims to be admin
+                if (CurrentUser.IsAdmin)
+                {
+                    bool tokenValid = AdminHelper.VerifyAdminToken(
+                        CurrentUser.UserID,
+                        CurrentUser.Username,
+                        CurrentUser.AdminToken
+                    );
+
+                    if (!tokenValid)
+                    {
+                        System.Diagnostics.Debug.WriteLine("⚠ Admin token invalid - revoking admin privileges");
+                        AdminHelper.RevokeAdmin(CurrentUserID);
+                        CurrentUser.IsAdmin = false;
+                        CurrentUser.AdminToken = null;
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine("✓ Admin token verified");
+                    }
+                }
+
                 // Step 5: Check if user has completed profile
                 if (string.IsNullOrEmpty(CurrentUser.FullName) || string.IsNullOrEmpty(CurrentUser.Email))
                 {
                     // Show first-run setup
                     System.Diagnostics.Debug.WriteLine("→ Showing first-run setup");
                     FirstRunSetupWindow setupWindow = new FirstRunSetupWindow(CurrentUser);
-                    setupWindow.ShowDialog();
+                    bool? result = setupWindow.ShowDialog();
+
+                    if (result != true)
+                    {
+                        // User cancelled setup - exit app
+                        System.Diagnostics.Debug.WriteLine("✗ User cancelled profile setup");
+                        MessageBox.Show("Profile setup is required to use VANTAGE.", "Setup Required", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        this.Shutdown();
+                        return;
+                    }
 
                     // Refresh user data after setup
-                    CurrentUser = GetUserByID(CurrentUserID);
+                    var refreshedUser = GetUserByID(CurrentUserID);
+                    if (refreshedUser != null)
+                    {
+                        CurrentUser = refreshedUser;
+                        System.Diagnostics.Debug.WriteLine("✓ User profile refreshed");
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine("⚠ Failed to refresh user data, continuing with existing user");
+                    }
                 }
 
                 // Step 6: Initialize user settings
@@ -54,9 +104,26 @@ namespace VANTAGE
                 System.Diagnostics.Debug.WriteLine($"✓ Loading module: {lastModule}");
 
                 // Step 8: Open main window
-                MainWindow mainWindow = new MainWindow();
-                mainWindow.Show();
-                System.Diagnostics.Debug.WriteLine("✓ Main window opened");
+                try
+                {
+                    System.Diagnostics.Debug.WriteLine("→ Creating MainWindow...");
+                    MainWindow mainWindow = new MainWindow();
+                    System.Diagnostics.Debug.WriteLine("→ Showing MainWindow...");
+                    mainWindow.Show();
+                    System.Diagnostics.Debug.WriteLine("✓ Main window opened");
+
+                    // Force the window to stay visible
+                    mainWindow.Activate();
+                    mainWindow.Focus();
+                    System.Diagnostics.Debug.WriteLine("→ MainWindow activated and focused");
+                }
+                catch (Exception mainWindowEx)
+                {
+                    System.Diagnostics.Debug.WriteLine($"✗ MainWindow error: {mainWindowEx.Message}");
+                    System.Diagnostics.Debug.WriteLine($"Stack trace: {mainWindowEx.StackTrace}");
+                    MessageBox.Show($"Failed to open main window: {mainWindowEx.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    throw; // Re-throw so outer catch handles shutdown
+                }
             }
             catch (Exception ex)
             {
@@ -78,7 +145,7 @@ namespace VANTAGE
 
                 // Check if user exists
                 var command = connection.CreateCommand();
-                command.CommandText = "SELECT UserID, Username, FullName, Email, PhoneNumber FROM Users WHERE Username = @username";
+                command.CommandText = "SELECT UserID, Username, FullName, Email, PhoneNumber, IsAdmin, AdminToken FROM Users WHERE Username = @username";
                 command.Parameters.AddWithValue("@username", username);
 
                 using var reader = command.ExecuteReader();
@@ -90,7 +157,9 @@ namespace VANTAGE
                         Username = reader.GetString(1),
                         FullName = reader.IsDBNull(2) ? "" : reader.GetString(2),
                         Email = reader.IsDBNull(3) ? "" : reader.GetString(3),
-                        PhoneNumber = reader.IsDBNull(4) ? "" : reader.GetString(4)
+                        PhoneNumber = reader.IsDBNull(4) ? "" : reader.GetString(4),
+                        IsAdmin = reader.IsDBNull(5) ? false : reader.GetInt32(5) == 1,
+                        AdminToken = reader.IsDBNull(6) ? "" : reader.GetString(6)
                     };
                 }
 
@@ -128,7 +197,7 @@ namespace VANTAGE
                 connection.Open();
 
                 var command = connection.CreateCommand();
-                command.CommandText = "SELECT UserID, Username, FullName, Email, PhoneNumber FROM Users WHERE UserID = @id";
+                command.CommandText = "SELECT UserID, Username, FullName, Email, PhoneNumber, IsAdmin, AdminToken FROM Users WHERE UserID = @id";
                 command.Parameters.AddWithValue("@id", userID);
 
                 using var reader = command.ExecuteReader();
@@ -140,7 +209,9 @@ namespace VANTAGE
                         Username = reader.GetString(1),
                         FullName = reader.IsDBNull(2) ? "" : reader.GetString(2),
                         Email = reader.IsDBNull(3) ? "" : reader.GetString(3),
-                        PhoneNumber = reader.IsDBNull(4) ? "" : reader.GetString(4)
+                        PhoneNumber = reader.IsDBNull(4) ? "" : reader.GetString(4),
+                        IsAdmin = reader.IsDBNull(5) ? false : reader.GetInt32(5) == 1,
+                        AdminToken = reader.IsDBNull(6) ? "" : reader.GetString(6)
                     };
                 }
 

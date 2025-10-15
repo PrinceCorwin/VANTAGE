@@ -36,8 +36,10 @@ namespace VANTAGE
                         Username TEXT UNIQUE NOT NULL,
                         FullName TEXT,
                         Email TEXT,
-                        PhoneNumber TEXT
-                    );
+                        PhoneNumber TEXT,
+                        IsAdmin INTEGER DEFAULT 0,
+                        AdminToken TEXT
+);
 
                     -- AppSettings table
                     CREATE TABLE IF NOT EXISTS AppSettings (
