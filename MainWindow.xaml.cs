@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using VANTAGE.Utilities;
+using VANTAGE.Views;
 
 namespace VANTAGE
 {
@@ -118,16 +119,9 @@ namespace VANTAGE
 
         private void LoadProgressModule()
         {
-            // For now, show placeholder
-            var placeholder = new System.Windows.Controls.TextBlock
-            {
-                Text = "PROGRESS MODULE\n\nDataGrid will go here",
-                FontSize = 24,
-                Foreground = System.Windows.Media.Brushes.White,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                VerticalAlignment = VerticalAlignment.Center
-            };
-            ContentArea.Content = placeholder;
+            // Load the actual ProgressView
+            var progressView = new Views.ProgressView();
+            ContentArea.Content = progressView;
 
             // Save last module used
             SettingsManager.SetLastModuleUsed(App.CurrentUserID, "PROGRESS");

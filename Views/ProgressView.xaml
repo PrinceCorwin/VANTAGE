@@ -1,0 +1,454 @@
+﻿<UserControl x:Class="VANTAGE.Views.ProgressView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignHeight="600" d:DesignWidth="1200"
+             Background="#FF1E1E1E">
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <!-- Left sidebar for filters -->
+            <ColumnDefinition Width="200"/>
+            <!-- Main content area -->
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- LEFT SIDEBAR: Quick Filters & Controls -->
+        <Border Grid.Column="0" 
+                Background="#FF252525" 
+                BorderBrush="#FF3C3C3C" 
+                BorderThickness="0,0,1,0"
+                Padding="10">
+            <StackPanel>
+                <!-- Section: Quick Filters -->
+                <TextBlock Text="QUICK FILTERS" 
+                           FontSize="12" 
+                           FontWeight="Bold"
+                           Foreground="#FFB0B0B0"
+                           Margin="0,0,0,10"/>
+
+                <!-- Complete Filter -->
+                <Button x:Name="btnFilterComplete"
+                        Content="Complete"
+                        Height="35"
+                        Margin="0,0,0,5"
+                        Background="#FF2A2A2A"
+                        Foreground="#FFFFFFFF"
+                        BorderBrush="#FF3C3C3C"
+                        BorderThickness="1"
+                        HorizontalContentAlignment="Left"
+                        Padding="10,0"
+                        Click="BtnFilterComplete_Click"/>
+
+                <!-- Not Complete Filter -->
+                <Button x:Name="btnFilterNotComplete"
+                        Content="Not Complete"
+                        Height="35"
+                        Margin="0,0,0,5"
+                        Background="#FF2A2A2A"
+                        Foreground="#FFFFFFFF"
+                        BorderBrush="#FF3C3C3C"
+                        BorderThickness="1"
+                        HorizontalContentAlignment="Left"
+                        Padding="10,0"
+                        Click="BtnFilterNotComplete_Click"/>
+
+                <!-- Pipe Filter -->
+                <Button x:Name="btnFilterPipe"
+                        Content="Pipe"
+                        Height="35"
+                        Margin="0,0,0,5"
+                        Background="#FF2A2A2A"
+                        Foreground="#FFFFFFFF"
+                        BorderBrush="#FF3C3C3C"
+                        BorderThickness="1"
+                        HorizontalContentAlignment="Left"
+                        Padding="10,0"
+                        Click="BtnFilterPipe_Click"/>
+
+                <!-- Steel Filter -->
+                <Button x:Name="btnFilterSteel"
+                        Content="Steel"
+                        Height="35"
+                        Margin="0,0,0,5"
+                        Background="#FF2A2A2A"
+                        Foreground="#FFFFFFFF"
+                        BorderBrush="#FF3C3C3C"
+                        BorderThickness="1"
+                        HorizontalContentAlignment="Left"
+                        Padding="10,0"
+                        Click="BtnFilterSteel_Click"/>
+
+                <!-- Elec Filter -->
+                <Button x:Name="btnFilterElec"
+                        Content="Elec"
+                        Height="35"
+                        Margin="0,0,0,5"
+                        Background="#FF2A2A2A"
+                        Foreground="#FFFFFFFF"
+                        BorderBrush="#FF3C3C3C"
+                        BorderThickness="1"
+                        HorizontalContentAlignment="Left"
+                        Padding="10,0"
+                        Click="BtnFilterElec_Click"/>
+
+                <!-- My Records Filter -->
+                <Button x:Name="btnFilterMyRecords"
+                        Content="My Records"
+                        Height="35"
+                        Margin="0,0,0,5"
+                        Background="#FF2A2A2A"
+                        Foreground="#FFFFFFFF"
+                        BorderBrush="#FF3C3C3C"
+                        BorderThickness="1"
+                        HorizontalContentAlignment="Left"
+                        Padding="10,0"
+                        Click="BtnFilterMyRecords_Click"/>
+
+                <!-- Clear Filters -->
+                <Button x:Name="btnClearFilters"
+                        Content="Clear All Filters"
+                        Height="35"
+                        Margin="0,20,0,0"
+                        Background="#FF3C3C3C"
+                        Foreground="#FFFFFFFF"
+                        BorderBrush="#FF0078D7"
+                        BorderThickness="1"
+                        HorizontalContentAlignment="Center"
+                        Padding="10,0"
+                        Click="BtnClearFilters_Click"/>
+
+                <!-- Separator -->
+                <Border Height="1" 
+                        Background="#FF3C3C3C" 
+                        Margin="0,20,0,20"/>
+
+                <!-- Section: Column Visibility -->
+                <TextBlock Text="COLUMN VISIBILITY" 
+                           FontSize="12" 
+                           FontWeight="Bold"
+                           Foreground="#FFB0B0B0"
+                           Margin="0,0,0,10"/>
+
+                <!-- Column Visibility ComboBox (will populate in code-behind) -->
+                <ListBox x:Name="lstColumnVisibility"
+                         Height="200"
+                         Background="#FF2A2A2A"
+                         Foreground="#FFFFFFFF"
+                         BorderBrush="#FF3C3C3C"
+                         BorderThickness="1"
+                         SelectionMode="Multiple"
+                         SelectionChanged="LstColumnVisibility_SelectionChanged">
+                    <!-- Items will be added in code-behind -->
+                </ListBox>
+
+                <TextBlock Text="Select columns to show/hide" 
+                           FontSize="10" 
+                           Foreground="#FF808080"
+                           Margin="0,5,0,0"
+                           TextWrapping="Wrap"/>
+            </StackPanel>
+        </Border>
+
+        <!-- RIGHT SIDE: DataGrid -->
+        <!-- RIGHT SIDE: DataGrid -->
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="40"/>
+                <!-- Toolbar above grid -->
+                <RowDefinition Height="*"/>
+                <!-- DataGrid -->
+            </Grid.RowDefinitions>
+
+            <!-- Top toolbar (above DataGrid) -->
+            <Border Grid.Row="0" 
+                    Background="#FF252525" 
+                    BorderBrush="#FF3C3C3C" 
+                    BorderThickness="0,0,0,1"
+                    Padding="10,0">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <!-- Search Box -->
+                    <TextBlock Text="Search:" 
+                               Foreground="#FFB0B0B0" 
+                               VerticalAlignment="Center"
+                               Margin="0,0,10,0"/>
+                    <TextBox x:Name="txtSearch"
+                             Width="250"
+                             Height="25"
+                             Background="#FF2A2A2A"
+                             Foreground="#FFFFFFFF"
+                             BorderBrush="#FF3C3C3C"
+                             BorderThickness="1"
+                             Padding="5"
+                             VerticalContentAlignment="Center"
+                             TextChanged="TxtSearch_TextChanged"/>
+
+                    <!-- Refresh Button -->
+                    <Button x:Name="btnRefresh"
+                            Content="Refresh"
+                            Width="80"
+                            Height="28"
+                            Margin="20,0,0,0"
+                            Background="#FF2A2A2A"
+                            Foreground="#FFFFFFFF"
+                            BorderBrush="#FF3C3C3C"
+                            BorderThickness="1"
+                            Click="BtnRefresh_Click"/>
+
+                    <!-- Record Count Display -->
+                    <TextBlock x:Name="txtFilteredCount"
+                               Text="0 records"
+                               Foreground="#FFB0B0B0"
+                               VerticalAlignment="Center"
+                               Margin="20,0,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <!-- DataGrid with ScrollViewer -->
+            <Border Grid.Row="1" 
+                    BorderBrush="#FF3C3C3C" 
+                    BorderThickness="0">
+                <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                              VerticalScrollBarVisibility="Auto">
+                    <DataGrid x:Name="dgActivities"
+                              AutoGenerateColumns="False"
+                              CanUserAddRows="False"
+                              CanUserDeleteRows="False"
+                              CanUserReorderColumns="True"
+                              CanUserSortColumns="True"
+                              SelectionMode="Extended"
+                              SelectionUnit="FullRow"
+                              EnableRowVirtualization="False"
+                              EnableColumnVirtualization="False"
+                              Background="#FF1E1E1E"
+                              Foreground="#FFFFFFFF"
+                              BorderBrush="#FF3C3C3C"
+                              BorderThickness="0"
+                              GridLinesVisibility="All"
+                              HorizontalGridLinesBrush="#FF3C3C3C"
+                              VerticalGridLinesBrush="#FF3C3C3C"
+                              RowHeight="28"
+                              HeadersVisibility="Column"
+                              CellEditEnding="DgActivities_CellEditEnding"
+                              SelectionChanged="DgActivities_SelectionChanged">
+
+                        <!-- Column Header Style -->
+                        <DataGrid.ColumnHeaderStyle>
+                            <Style TargetType="DataGridColumnHeader">
+                                <Setter Property="Background" Value="#FF2A2A2A"/>
+                                <Setter Property="Foreground" Value="#FFFFFFFF"/>
+                                <Setter Property="FontWeight" Value="Bold"/>
+                                <Setter Property="FontSize" Value="12"/>
+                                <Setter Property="Padding" Value="8,5"/>
+                                <Setter Property="BorderBrush" Value="#FF3C3C3C"/>
+                                <Setter Property="BorderThickness" Value="0,0,1,1"/>
+                                <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                            </Style>
+                        </DataGrid.ColumnHeaderStyle>
+
+                        <!-- Row Style (for color coding) -->
+                        <DataGrid.RowStyle>
+                            <Style TargetType="DataGridRow">
+                                <Setter Property="Background" Value="#FF1E1E1E"/>
+                                <Setter Property="Foreground" Value="#FFFFFFFF"/>
+                                <Style.Triggers>
+                                    <!-- My Records = Green background -->
+                                    <DataTrigger Binding="{Binding IsMyRecord}" Value="True">
+                                        <Setter Property="Background" Value="#1A27AE60"/>
+                                    </DataTrigger>
+                                    <!-- Selected = Blue highlight -->
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter Property="Background" Value="#330078D7"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </DataGrid.RowStyle>
+
+                        <!-- Cell Style -->
+                        <DataGrid.CellStyle>
+                            <Style TargetType="DataGridCell">
+                                <Setter Property="BorderBrush" Value="#FF3C3C3C"/>
+                                <Setter Property="BorderThickness" Value="0,0,1,0"/>
+                                <Setter Property="Padding" Value="5,0"/>
+                                <Style.Triggers>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter Property="Background" Value="#330078D7"/>
+                                        <Setter Property="Foreground" Value="#FFFFFFFF"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </DataGrid.CellStyle>
+
+                        <!-- Context Menu for Right-Click -->
+                        <DataGrid.ContextMenu>
+                            <ContextMenu Background="#FF2A2A2A" 
+                                         Foreground="#FFFFFFFF"
+                                         BorderBrush="#FF3C3C3C">
+                                <MenuItem Header="Assign to Me" 
+                                          Click="MenuAssignToMe_Click"
+                                          Background="#FF2A2A2A"
+                                          Foreground="#FFFFFFFF"/>
+                                <MenuItem Header="Assign to User..." 
+                                          Click="MenuAssignToUser_Click"
+                                          Background="#FF2A2A2A"
+                                          Foreground="#FFFFFFFF"/>
+                                <Separator Background="#FF3C3C3C"/>
+                                <MenuItem Header="Mark Complete (100%)" 
+                                          Click="MenuMarkComplete_Click"
+                                          Background="#FF2A2A2A"
+                                          Foreground="#FFFFFFFF"/>
+                                <MenuItem Header="Mark Not Started (0%)" 
+                                          Click="MenuMarkNotStarted_Click"
+                                          Background="#FF2A2A2A"
+                                          Foreground="#FFFFFFFF"/>
+                                <MenuItem Header="Update Percent..." 
+                                          Click="MenuUpdatePercent_Click"
+                                          Background="#FF2A2A2A"
+                                          Foreground="#FFFFFFFF"/>
+                            </ContextMenu>
+                        </DataGrid.ContextMenu>
+
+                        <!-- Columns (Initially visible columns) -->
+                        <DataGrid.Columns>
+
+                            <!-- UDFNineteen (Unique Activity ID) - READ ONLY -->
+                            <DataGridTextColumn Header="Activity ID" 
+                                                Binding="{Binding UDFNineteen}" 
+                                                Width="120"
+                                                IsReadOnly="True">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Background" Value="#FF3C3C3C"/>
+                                        <Setter Property="Foreground" Value="#FF808080"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+
+                            <!-- Tag_Descriptions -->
+                            <DataGridTextColumn Header="Description" 
+                                                Binding="{Binding Tag_Descriptions}" 
+                                                Width="250"/>
+
+                            <!-- Catg_ComponentType -->
+                            <DataGridTextColumn Header="Component Type" 
+                                                Binding="{Binding Catg_ComponentType}" 
+                                                Width="120"/>
+
+                            <!-- Catg_PhaseCategory -->
+                            <DataGridTextColumn Header="Phase Category" 
+                                                Binding="{Binding Catg_PhaseCategory}" 
+                                                Width="120"/>
+
+                            <!-- Catg_ROC_Step -->
+                            <DataGridTextColumn Header="ROC Step" 
+                                                Binding="{Binding Catg_ROC_Step}" 
+                                                Width="100"/>
+
+                            <!-- Tag_ProjectID -->
+                            <DataGridTextColumn Header="Project ID" 
+                                                Binding="{Binding Tag_ProjectID}" 
+                                                Width="100"/>
+
+                            <!-- Tag_WorkPackage -->
+                            <DataGridTextColumn Header="Work Package" 
+                                                Binding="{Binding Tag_WorkPackage}" 
+                                                Width="120"/>
+
+                            <!-- Tag_Phase_Code -->
+                            <DataGridTextColumn Header="Phase Code" 
+                                                Binding="{Binding Tag_Phase_Code}" 
+                                                Width="100"/>
+
+                            <!-- Dwg_PrimeDrawingNO -->
+                            <DataGridTextColumn Header="Drawing No" 
+                                                Binding="{Binding Dwg_PrimeDrawingNO}" 
+                                                Width="120"/>
+
+                            <!-- Sch_Start -->
+                            <DataGridTextColumn Header="Sch Start" 
+                                                Binding="{Binding Sch_Start}" 
+                                                Width="100"/>
+
+                            <!-- Sch_Finish -->
+                            <DataGridTextColumn Header="Sch Finish" 
+                                                Binding="{Binding Sch_Finish}" 
+                                                Width="100"/>
+
+                            <!-- Sch_Status -->
+                            <DataGridTextColumn Header="Sch Status" 
+                                                Binding="{Binding Sch_Status}" 
+                                                Width="100"/>
+
+                            <!-- Tag_Sch_ActNo -->
+                            <DataGridTextColumn Header="Activity No" 
+                                                Binding="{Binding Tag_Sch_ActNo}" 
+                                                Width="100"/>
+
+                            <!-- Val_Quantity -->
+                            <DataGridTextColumn Header="Quantity" 
+                                                Binding="{Binding Val_Quantity, StringFormat=N2}" 
+                                                Width="100"/>
+
+                            <!-- Val_EarnedQty (EDITABLE) -->
+                            <DataGridTextColumn Header="Earned Qty" 
+                                                Binding="{Binding Val_EarnedQty, StringFormat=N2, UpdateSourceTrigger=LostFocus}" 
+                                                Width="100"/>
+
+                            <!-- Val_Perc_Complete (EDITABLE) -->
+                            <DataGridTextColumn Header="% Complete" 
+                                                Binding="{Binding Val_Perc_Complete, StringFormat=N2, UpdateSourceTrigger=LostFocus}" 
+                                                Width="100"/>
+
+                            <!-- Val_BudgetedHours_Ind -->
+                            <DataGridTextColumn Header="Budget Hrs" 
+                                                Binding="{Binding Val_BudgetedHours_Ind, StringFormat=N2}" 
+                                                Width="100"/>
+
+                            <!-- Val_EarnedHours_Ind (Calculated) -->
+                            <DataGridTextColumn Header="Earned Hrs" 
+                                                Binding="{Binding Val_EarnedHours_Ind, StringFormat=N3}" 
+                                                Width="100"
+                                                IsReadOnly="True">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Background" Value="#FF252525"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+
+                            <!-- Status (Derived) -->
+                            <DataGridTextColumn Header="Status" 
+                                                Binding="{Binding Status}" 
+                                                Width="100"
+                                                IsReadOnly="True">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Background" Value="#FF252525"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+
+                            <!-- UDFOne -->
+                            <DataGridTextColumn Header="UDF One" 
+                                                Binding="{Binding UDFOne}" 
+                                                Width="120"/>
+
+                            <!-- UDFTwo -->
+                            <DataGridTextColumn Header="UDF Two" 
+                                                Binding="{Binding UDFTwo}" 
+                                                Width="120"/>
+
+                            <!-- AssignedToUsername -->
+                            <DataGridTextColumn Header="Assigned To" 
+                                                Binding="{Binding AssignedToUsername}" 
+                                                Width="120"/>
+
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>
