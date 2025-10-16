@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using VANTAGE.ViewModels;
 
 namespace VANTAGE.Views
 {
@@ -10,10 +11,22 @@ namespace VANTAGE.Views
         // Track which columns are visible
         private Dictionary<string, DataGridColumn> _columnMap = new Dictionary<string, DataGridColumn>();
 
+        // ViewModel
+        private ProgressViewModel _viewModel;
+
         public ProgressView()
         {
             InitializeComponent();
+
+            // Create and set ViewModel
+            _viewModel = new ProgressViewModel();
+            this.DataContext = _viewModel;
+
+            // Bind DataGrid to ViewModel
+            dgActivities.ItemsSource = _viewModel.ActivitiesView;
+
             InitializeColumnVisibility();
+            UpdateRecordCount();
         }
 
         /// <summary>
@@ -72,7 +85,16 @@ namespace VANTAGE.Views
             }
         }
 
-        // Event handlers (we'll implement these later)
+        /// <summary>
+        /// Update the record count display
+        /// </summary>
+        private void UpdateRecordCount()
+        {
+            txtFilteredCount.Text = $"{_viewModel.FilteredCount} of {_viewModel.TotalCount} records";
+        }
+
+        // === EVENT HANDLERS ===
+
         private void BtnFilterComplete_Click(object sender, RoutedEventArgs e)
         {
             // TODO: Implement
@@ -115,12 +137,14 @@ namespace VANTAGE.Views
 
         private void TxtSearch_TextChanged(object sender, TextChangedEventArgs e)
         {
-            // TODO: Implement
+            _viewModel.SearchText = txtSearch.Text;
+            UpdateRecordCount();
         }
 
         private void BtnRefresh_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: Implement
+            _viewModel.LoadActivities();
+            UpdateRecordCount();
         }
 
         private void DgActivities_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)

@@ -203,36 +203,23 @@ namespace VANTAGE
 
         public static SqliteConnection GetConnection()
         {
+            System.Diagnostics.Debug.WriteLine($"🔍 GetConnection() called - DbPath: {DbPath}");
+            System.Diagnostics.Debug.WriteLine($"🔍 File exists: {File.Exists(DbPath)}");
             return new SqliteConnection($"Data Source={DbPath}");
         }
 
         private static string GetOrSetDatabasePath()
         {
-            // Check if path is already saved in settings
-            string savedPath = SettingsManager.GetAppSetting("DatabasePath", "");
-            if (!string.IsNullOrEmpty(savedPath) && Directory.Exists(Path.GetDirectoryName(savedPath)))
-            {
-                return savedPath;
-            }
-
-            // Try default AppData location
+            // ALWAYS use LocalApplicationData - ONE LOCATION ONLY
             string defaultPath = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "VANTAGE",
                 "VANTAGE_Local.db"
             );
 
-            string defaultDir = Path.GetDirectoryName(defaultPath);
-
-            // If AppData exists and is writable, use it
-            if (IsDirectoryWritable(defaultDir ?? Environment.CurrentDirectory))
-            {
-                SettingsManager.SetAppSetting("DatabasePath", defaultPath);
-                return defaultPath;
-            }
-
-            // AppData not available - prompt user
-            return PromptUserForDatabaseLocation();
+            System.Diagnostics.Debug.WriteLine($"📂 Database path: {defaultPath}");
+            DbPath = defaultPath;
+            return defaultPath;
         }
 
         private static bool IsDirectoryWritable(string dirPath)

@@ -11,8 +11,39 @@ namespace VANTAGE.Utilities
         /// <summary>
         /// Get an app-wide setting by name
         /// </summary>
+        /// 
+        private static void EnsureSettingsTables()
+        {
+            try
+            {
+                using var conn = DatabaseSetup.GetConnection();
+                conn.Open();
+                using var cmd = conn.CreateCommand();
+                cmd.CommandText = @"
+            CREATE TABLE IF NOT EXISTS AppSettings(
+                SettingID INTEGER PRIMARY KEY AUTOINCREMENT,
+                SettingName TEXT UNIQUE NOT NULL,
+                SettingValue TEXT,
+                DataType TEXT
+            );
+            CREATE TABLE IF NOT EXISTS UserSettings(
+                UserSettingID INTEGER PRIMARY KEY AUTOINCREMENT,
+                UserID INTEGER NOT NULL,
+                SettingName TEXT NOT NULL,
+                SettingValue TEXT,
+                DataType TEXT,
+                UNIQUE(UserID, SettingName)
+            );";
+                cmd.ExecuteNonQuery();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"EnsureSettingsTables error: {ex.Message}");
+            }
+        }
         public static string GetAppSetting(string settingName, string defaultValue = "")
         {
+            EnsureSettingsTables();
             try
             {
                 using var connection = DatabaseSetup.GetConnection();
@@ -37,6 +68,7 @@ namespace VANTAGE.Utilities
         /// </summary>
         public static void SetAppSetting(string settingName, string settingValue, string dataType = "string")
         {
+            EnsureSettingsTables();
             try
             {
                 using var connection = DatabaseSetup.GetConnection();
@@ -65,6 +97,7 @@ namespace VANTAGE.Utilities
         /// </summary>
         public static string GetUserSetting(int userId, string settingName, string defaultValue = "")
         {
+            EnsureSettingsTables();
             try
             {
                 using var connection = DatabaseSetup.GetConnection();
@@ -90,6 +123,7 @@ namespace VANTAGE.Utilities
         /// </summary>
         public static void SetUserSetting(int userId, string settingName, string settingValue, string dataType = "string")
         {
+            EnsureSettingsTables();
             try
             {
                 using var connection = DatabaseSetup.GetConnection();
