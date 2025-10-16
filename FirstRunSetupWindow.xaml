@@ -3,8 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Welcome to VANTAGE" Height="350" Width="400"
         WindowStartupLocation="CenterScreen"
-        Background="#FF1E1E1E"
-        Foreground="#FFFFFFFF"
+        Background="{StaticResource BackgroundColor}"
+        Foreground="{StaticResource ForegroundColor}"
         WindowStyle="SingleBorderWindow"
         ResizeMode="NoResize">
     <Grid>
@@ -13,40 +13,46 @@
             <TextBlock Text="Complete Your Profile" 
                        FontSize="18" 
                        FontWeight="Bold"
-                       Foreground="#FFFFFFFF"
+                       Foreground="{StaticResource ForegroundColor}"
                        Margin="0,0,0,20"
                        TextAlignment="Center"/>
 
             <!-- Full Name -->
-            <TextBlock Text="Full Name:" Foreground="#FFFFFFFF" Margin="0,0,0,5"/>
+            <TextBlock Text="Full Name:" 
+                       Foreground="{StaticResource ForegroundColor}" 
+                       Margin="0,0,0,5"/>
             <TextBox x:Name="FullNameTextBox" 
                      Height="35" 
                      Padding="10"
-                     Background="#FF2A2A2A"
-                     Foreground="#FFFFFFFF"
-                     BorderBrush="#FF3C3C3C"
+                     Background="{StaticResource ControlBackground}"
+                     Foreground="{StaticResource ControlForeground}"
+                     BorderBrush="{StaticResource ControlBorder}"
                      BorderThickness="1"
                      Margin="0,0,0,15"/>
 
             <!-- Email -->
-            <TextBlock Text="Email:" Foreground="#FFFFFFFF" Margin="0,0,0,5"/>
+            <TextBlock Text="Email:" 
+                       Foreground="{StaticResource ForegroundColor}" 
+                       Margin="0,0,0,5"/>
             <TextBox x:Name="EmailTextBox" 
                      Height="35" 
                      Padding="10"
-                     Background="#FF2A2A2A"
-                     Foreground="#FFFFFFFF"
-                     BorderBrush="#FF3C3C3C"
+                     Background="{StaticResource ControlBackground}"
+                     Foreground="{StaticResource ControlForeground}"
+                     BorderBrush="{StaticResource ControlBorder}"
                      BorderThickness="1"
                      Margin="0,0,0,15"/>
 
             <!-- Phone Number -->
-            <TextBlock Text="Phone Number:" Foreground="#FFFFFFFF" Margin="0,0,0,5"/>
+            <TextBlock Text="Phone Number:" 
+                       Foreground="{StaticResource ForegroundColor}" 
+                       Margin="0,0,0,5"/>
             <TextBox x:Name="PhoneTextBox" 
                      Height="35" 
                      Padding="10"
-                     Background="#FF2A2A2A"
-                     Foreground="#FFFFFFFF"
-                     BorderBrush="#FF3C3C3C"
+                     Background="{StaticResource ControlBackground}"
+                     Foreground="{StaticResource ControlForeground}"
+                     BorderBrush="{StaticResource ControlBorder}"
                      BorderThickness="1"
                      Margin="0,0,0,25"/>
 
@@ -57,9 +63,9 @@
                         Width="100" 
                         Height="35"
                         Margin="0,0,10,0"
-                        Background="#FF3C3C3C"
-                        Foreground="#FFFFFFFF"
-                        BorderBrush="#FF0078D7"
+                        Background="{StaticResource ControlBackground}"
+                        Foreground="{StaticResource ForegroundColor}"
+                        BorderBrush="{StaticResource AccentColor}"
                         BorderThickness="1"
                         Click="CancelButton_Click"/>
 
@@ -67,9 +73,9 @@
                         Content="Save" 
                         Width="100" 
                         Height="35"
-                        Background="#FF0078D7"
-                        Foreground="#FFFFFFFF"
-                        BorderBrush="#FF0078D7"
+                        Background="{StaticResource AccentColor}"
+                        Foreground="{StaticResource ForegroundColor}"
+                        BorderBrush="{StaticResource AccentColor}"
                         BorderThickness="1"
                         Click="SaveButton_Click"/>
             </StackPanel>

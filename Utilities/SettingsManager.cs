@@ -222,6 +222,7 @@ namespace VANTAGE.Utilities
                     SetLastModuleUsed(userId, "PROGRESS");
                     SetColumnOrder(userId, GetDefaultColumnOrder());
                     SetUserSetting(userId, "DefaultProject", "", "string");
+                    SetUserSetting(userId, "Theme", "Dark", "string");
                 }
             }
             catch (Exception ex)

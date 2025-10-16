@@ -5,7 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              d:DesignHeight="600" d:DesignWidth="1200"
-             Background="#FF1E1E1E">
+             Background="{StaticResource BackgroundColor}">
 
     <Grid>
         <Grid.ColumnDefinitions>
@@ -17,8 +17,8 @@
 
         <!-- LEFT SIDEBAR: Quick Filters & Controls -->
         <Border Grid.Column="0" 
-                Background="#FF252525" 
-                BorderBrush="#FF3C3C3C" 
+                Background="{StaticResource SidebarBackground}" 
+                BorderBrush="{StaticResource SidebarBorder}" 
                 BorderThickness="0,0,1,0"
                 Padding="10">
             <StackPanel>
@@ -26,7 +26,7 @@
                 <TextBlock Text="QUICK FILTERS" 
                            FontSize="12" 
                            FontWeight="Bold"
-                           Foreground="#FFB0B0B0"
+                           Foreground="{StaticResource TextColorSecondary}"
                            Margin="0,0,0,10"/>
 
                 <!-- Complete Filter -->
@@ -34,9 +34,9 @@
                         Content="Complete"
                         Height="35"
                         Margin="0,0,0,5"
-                        Background="#FF2A2A2A"
-                        Foreground="#FFFFFFFF"
-                        BorderBrush="#FF3C3C3C"
+                        Background="{StaticResource ControlBackground}"
+                        Foreground="{StaticResource ForegroundColor}"
+                        BorderBrush="{StaticResource BorderColor}"
                         BorderThickness="1"
                         HorizontalContentAlignment="Left"
                         Padding="10,0"
@@ -47,9 +47,9 @@
                         Content="Not Complete"
                         Height="35"
                         Margin="0,0,0,5"
-                        Background="#FF2A2A2A"
-                        Foreground="#FFFFFFFF"
-                        BorderBrush="#FF3C3C3C"
+                        Background="{StaticResource ControlBackground}"
+                        Foreground="{StaticResource ForegroundColor}"
+                        BorderBrush="{StaticResource BorderColor}"
                         BorderThickness="1"
                         HorizontalContentAlignment="Left"
                         Padding="10,0"
@@ -60,9 +60,9 @@
                         Content="Pipe"
                         Height="35"
                         Margin="0,0,0,5"
-                        Background="#FF2A2A2A"
-                        Foreground="#FFFFFFFF"
-                        BorderBrush="#FF3C3C3C"
+                        Background="{StaticResource ControlBackground}"
+                        Foreground="{StaticResource ForegroundColor}"
+                        BorderBrush="{StaticResource BorderColor}"
                         BorderThickness="1"
                         HorizontalContentAlignment="Left"
                         Padding="10,0"
@@ -73,9 +73,9 @@
                         Content="Steel"
                         Height="35"
                         Margin="0,0,0,5"
-                        Background="#FF2A2A2A"
-                        Foreground="#FFFFFFFF"
-                        BorderBrush="#FF3C3C3C"
+                        Background="{StaticResource ControlBackground}"
+                        Foreground="{StaticResource ForegroundColor}"
+                        BorderBrush="{StaticResource BorderColor}"
                         BorderThickness="1"
                         HorizontalContentAlignment="Left"
                         Padding="10,0"
@@ -86,9 +86,9 @@
                         Content="Elec"
                         Height="35"
                         Margin="0,0,0,5"
-                        Background="#FF2A2A2A"
-                        Foreground="#FFFFFFFF"
-                        BorderBrush="#FF3C3C3C"
+                        Background="{StaticResource ControlBackground}"
+                        Foreground="{StaticResource ForegroundColor}"
+                        BorderBrush="{StaticResource BorderColor}"
                         BorderThickness="1"
                         HorizontalContentAlignment="Left"
                         Padding="10,0"
@@ -99,9 +99,9 @@
                         Content="My Records"
                         Height="35"
                         Margin="0,0,0,5"
-                        Background="#FF2A2A2A"
-                        Foreground="#FFFFFFFF"
-                        BorderBrush="#FF3C3C3C"
+                        Background="{StaticResource ControlBackground}"
+                        Foreground="{StaticResource ForegroundColor}"
+                        BorderBrush="{StaticResource BorderColor}"
                         BorderThickness="1"
                         HorizontalContentAlignment="Left"
                         Padding="10,0"
@@ -112,9 +112,9 @@
                         Content="Clear All Filters"
                         Height="35"
                         Margin="0,20,0,0"
-                        Background="#FF3C3C3C"
-                        Foreground="#FFFFFFFF"
-                        BorderBrush="#FF0078D7"
+                        Background="{StaticResource ControlBackground}"
+                        Foreground="{StaticResource ForegroundColor}"
+                        BorderBrush="{StaticResource AccentColor}"
                         BorderThickness="1"
                         HorizontalContentAlignment="Center"
                         Padding="10,0"
@@ -122,22 +122,22 @@
 
                 <!-- Separator -->
                 <Border Height="1" 
-                        Background="#FF3C3C3C" 
+                        Background="{StaticResource BorderColor}" 
                         Margin="0,20,0,20"/>
 
                 <!-- Section: Column Visibility -->
                 <TextBlock Text="COLUMN VISIBILITY" 
                            FontSize="12" 
                            FontWeight="Bold"
-                           Foreground="#FFB0B0B0"
+                           Foreground="{StaticResource TextColorSecondary}"
                            Margin="0,0,0,10"/>
 
-                <!-- Column Visibility ComboBox (will populate in code-behind) -->
+                <!-- Column Visibility ListBox -->
                 <ListBox x:Name="lstColumnVisibility"
                          Height="200"
-                         Background="#FF2A2A2A"
-                         Foreground="#FFFFFFFF"
-                         BorderBrush="#FF3C3C3C"
+                         Background="{StaticResource ControlBackground}"
+                         Foreground="{StaticResource ForegroundColor}"
+                         BorderBrush="{StaticResource BorderColor}"
                          BorderThickness="1"
                          SelectionMode="Multiple"
                          SelectionChanged="LstColumnVisibility_SelectionChanged">
@@ -146,13 +146,12 @@
 
                 <TextBlock Text="Select columns to show/hide" 
                            FontSize="10" 
-                           Foreground="#FF808080"
+                           Foreground="{StaticResource DisabledColor}"
                            Margin="0,5,0,0"
                            TextWrapping="Wrap"/>
             </StackPanel>
         </Border>
 
-        <!-- RIGHT SIDE: DataGrid -->
         <!-- RIGHT SIDE: DataGrid -->
         <Grid Grid.Column="1">
             <Grid.RowDefinitions>
@@ -164,22 +163,22 @@
 
             <!-- Top toolbar (above DataGrid) -->
             <Border Grid.Row="0" 
-                    Background="#FF252525" 
-                    BorderBrush="#FF3C3C3C" 
+                    Background="{StaticResource ToolbarBackground}" 
+                    BorderBrush="{StaticResource BorderColor}" 
                     BorderThickness="0,0,0,1"
                     Padding="10,0">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <!-- Search Box -->
                     <TextBlock Text="Search:" 
-                               Foreground="#FFB0B0B0" 
+                               Foreground="{StaticResource TextColorSecondary}" 
                                VerticalAlignment="Center"
                                Margin="0,0,10,0"/>
                     <TextBox x:Name="txtSearch"
                              Width="250"
                              Height="25"
-                             Background="#FF2A2A2A"
-                             Foreground="#FFFFFFFF"
-                             BorderBrush="#FF3C3C3C"
+                             Background="{StaticResource ControlBackground}"
+                             Foreground="{StaticResource ForegroundColor}"
+                             BorderBrush="{StaticResource BorderColor}"
                              BorderThickness="1"
                              Padding="5"
                              VerticalContentAlignment="Center"
@@ -191,16 +190,16 @@
                             Width="80"
                             Height="28"
                             Margin="20,0,0,0"
-                            Background="#FF2A2A2A"
-                            Foreground="#FFFFFFFF"
-                            BorderBrush="#FF3C3C3C"
+                            Background="{StaticResource ControlBackground}"
+                            Foreground="{StaticResource ForegroundColor}"
+                            BorderBrush="{StaticResource BorderColor}"
                             BorderThickness="1"
                             Click="BtnRefresh_Click"/>
 
                     <!-- Record Count Display -->
                     <TextBlock x:Name="txtFilteredCount"
                                Text="0 records"
-                               Foreground="#FFB0B0B0"
+                               Foreground="{StaticResource TextColorSecondary}"
                                VerticalAlignment="Center"
                                Margin="20,0,0,0"/>
                 </StackPanel>
@@ -208,7 +207,7 @@
 
             <!-- DataGrid with ScrollViewer -->
             <Border Grid.Row="1" 
-                    BorderBrush="#FF3C3C3C" 
+                    BorderBrush="{StaticResource BorderColor}" 
                     BorderThickness="0">
                 <ScrollViewer HorizontalScrollBarVisibility="Auto"
                               VerticalScrollBarVisibility="Auto">
@@ -222,13 +221,13 @@
                               SelectionUnit="FullRow"
                               EnableRowVirtualization="False"
                               EnableColumnVirtualization="False"
-                              Background="#FF1E1E1E"
-                              Foreground="#FFFFFFFF"
-                              BorderBrush="#FF3C3C3C"
+                              Background="{StaticResource BackgroundColor}"
+                              Foreground="{StaticResource ForegroundColor}"
+                              BorderBrush="{StaticResource BorderColor}"
                               BorderThickness="0"
                               GridLinesVisibility="All"
-                              HorizontalGridLinesBrush="#FF3C3C3C"
-                              VerticalGridLinesBrush="#FF3C3C3C"
+                              HorizontalGridLinesBrush="{StaticResource BorderColor}"
+                              VerticalGridLinesBrush="{StaticResource BorderColor}"
                               RowHeight="28"
                               HeadersVisibility="Column"
                               CellEditEnding="DgActivities_CellEditEnding"
@@ -237,12 +236,12 @@
                         <!-- Column Header Style -->
                         <DataGrid.ColumnHeaderStyle>
                             <Style TargetType="DataGridColumnHeader">
-                                <Setter Property="Background" Value="#FF2A2A2A"/>
-                                <Setter Property="Foreground" Value="#FFFFFFFF"/>
+                                <Setter Property="Background" Value="{StaticResource GridHeaderBackground}"/>
+                                <Setter Property="Foreground" Value="{StaticResource GridHeaderForeground}"/>
                                 <Setter Property="FontWeight" Value="Bold"/>
                                 <Setter Property="FontSize" Value="12"/>
                                 <Setter Property="Padding" Value="8,5"/>
-                                <Setter Property="BorderBrush" Value="#FF3C3C3C"/>
+                                <Setter Property="BorderBrush" Value="{StaticResource BorderColor}"/>
                                 <Setter Property="BorderThickness" Value="0,0,1,1"/>
                                 <Setter Property="HorizontalContentAlignment" Value="Left"/>
                             </Style>
@@ -251,16 +250,16 @@
                         <!-- Row Style (for color coding) -->
                         <DataGrid.RowStyle>
                             <Style TargetType="DataGridRow">
-                                <Setter Property="Background" Value="#FF1E1E1E"/>
-                                <Setter Property="Foreground" Value="#FFFFFFFF"/>
+                                <Setter Property="Background" Value="{StaticResource BackgroundColor}"/>
+                                <Setter Property="Foreground" Value="{StaticResource ForegroundColor}"/>
                                 <Style.Triggers>
                                     <!-- My Records = Green background -->
                                     <DataTrigger Binding="{Binding IsMyRecord}" Value="True">
-                                        <Setter Property="Background" Value="#1A27AE60"/>
+                                        <Setter Property="Background" Value="{StaticResource MyRecordsBackground}"/>
                                     </DataTrigger>
                                     <!-- Selected = Blue highlight -->
                                     <Trigger Property="IsSelected" Value="True">
-                                        <Setter Property="Background" Value="#330078D7"/>
+                                        <Setter Property="Background" Value="{StaticResource GridSelectedRowBackground}"/>
                                     </Trigger>
                                 </Style.Triggers>
                             </Style>
@@ -269,13 +268,13 @@
                         <!-- Cell Style -->
                         <DataGrid.CellStyle>
                             <Style TargetType="DataGridCell">
-                                <Setter Property="BorderBrush" Value="#FF3C3C3C"/>
+                                <Setter Property="BorderBrush" Value="{StaticResource BorderColor}"/>
                                 <Setter Property="BorderThickness" Value="0,0,1,0"/>
                                 <Setter Property="Padding" Value="5,0"/>
                                 <Style.Triggers>
                                     <Trigger Property="IsSelected" Value="True">
-                                        <Setter Property="Background" Value="#330078D7"/>
-                                        <Setter Property="Foreground" Value="#FFFFFFFF"/>
+                                        <Setter Property="Background" Value="{StaticResource GridSelectedRowBackground}"/>
+                                        <Setter Property="Foreground" Value="{StaticResource ForegroundColor}"/>
                                     </Trigger>
                                 </Style.Triggers>
                             </Style>
@@ -283,34 +282,34 @@
 
                         <!-- Context Menu for Right-Click -->
                         <DataGrid.ContextMenu>
-                            <ContextMenu Background="#FF2A2A2A" 
-                                         Foreground="#FFFFFFFF"
-                                         BorderBrush="#FF3C3C3C">
+                            <ContextMenu Background="{StaticResource ControlBackground}" 
+                                         Foreground="{StaticResource ForegroundColor}"
+                                         BorderBrush="{StaticResource BorderColor}">
                                 <MenuItem Header="Assign to Me" 
                                           Click="MenuAssignToMe_Click"
-                                          Background="#FF2A2A2A"
-                                          Foreground="#FFFFFFFF"/>
+                                          Background="{StaticResource ControlBackground}"
+                                          Foreground="{StaticResource ForegroundColor}"/>
                                 <MenuItem Header="Assign to User..." 
                                           Click="MenuAssignToUser_Click"
-                                          Background="#FF2A2A2A"
-                                          Foreground="#FFFFFFFF"/>
-                                <Separator Background="#FF3C3C3C"/>
+                                          Background="{StaticResource ControlBackground}"
+                                          Foreground="{StaticResource ForegroundColor}"/>
+                                <Separator Background="{StaticResource BorderColor}"/>
                                 <MenuItem Header="Mark Complete (100%)" 
                                           Click="MenuMarkComplete_Click"
-                                          Background="#FF2A2A2A"
-                                          Foreground="#FFFFFFFF"/>
+                                          Background="{StaticResource ControlBackground}"
+                                          Foreground="{StaticResource ForegroundColor}"/>
                                 <MenuItem Header="Mark Not Started (0%)" 
                                           Click="MenuMarkNotStarted_Click"
-                                          Background="#FF2A2A2A"
-                                          Foreground="#FFFFFFFF"/>
+                                          Background="{StaticResource ControlBackground}"
+                                          Foreground="{StaticResource ForegroundColor}"/>
                                 <MenuItem Header="Update Percent..." 
                                           Click="MenuUpdatePercent_Click"
-                                          Background="#FF2A2A2A"
-                                          Foreground="#FFFFFFFF"/>
+                                          Background="{StaticResource ControlBackground}"
+                                          Foreground="{StaticResource ForegroundColor}"/>
                             </ContextMenu>
                         </DataGrid.ContextMenu>
 
-                        <!-- Columns (Initially visible columns) -->
+                        <!-- Columns (All Activity fields) -->
                         <DataGrid.Columns>
 
                             <!-- UDFNineteen (Unique Activity ID) - READ ONLY -->
@@ -320,8 +319,8 @@
                                                 IsReadOnly="True">
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
-                                        <Setter Property="Background" Value="#FF3C3C3C"/>
-                                        <Setter Property="Foreground" Value="#FF808080"/>
+                                        <Setter Property="Background" Value="{StaticResource ControlBackground}"/>
+                                        <Setter Property="Foreground" Value="{StaticResource DisabledColor}"/>
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
@@ -413,7 +412,7 @@
                                                 IsReadOnly="True">
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
-                                        <Setter Property="Background" Value="#FF252525"/>
+                                        <Setter Property="Background" Value="{StaticResource GridAlternatingRowBackground}"/>
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
@@ -425,7 +424,7 @@
                                                 IsReadOnly="True">
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
-                                        <Setter Property="Background" Value="#FF252525"/>
+                                        <Setter Property="Background" Value="{StaticResource GridAlternatingRowBackground}"/>
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
@@ -444,6 +443,381 @@
                             <DataGridTextColumn Header="Assigned To" 
                                                 Binding="{Binding AssignedToUsername}" 
                                                 Width="120"/>
+
+                            <!-- === ADDITIONAL COLUMNS (Hidden by default) === -->
+
+                            <!-- HexNO -->
+                            <DataGridTextColumn Header="Hex NO" 
+                                                Binding="{Binding HexNO}" 
+                                                Width="80"
+                                                Visibility="Collapsed"/>
+
+                            <!-- Drawings -->
+                            <DataGridTextColumn Header="Revision No" 
+                                                Binding="{Binding Dwg_RevisionNo}" 
+                                                Width="100"
+                                                Visibility="Collapsed"/>
+
+                            <DataGridTextColumn Header="Secondary Drawing" 
+                                                Binding="{Binding Dwg_SecondaryDrawingNO}" 
+                                                Width="120"
+                                                Visibility="Collapsed"/>
+
+                            <DataGridTextColumn Header="Sheet No" 
+                                                Binding="{Binding Dwg_ShtNo}" 
+                                                Width="80"
+                                                Visibility="Collapsed"/>
+
+                            <!-- Notes -->
+                            <DataGridTextColumn Header="Comments" 
+                                                Binding="{Binding Notes_Comments}" 
+                                                Width="200"
+                                                Visibility="Collapsed"/>
+
+                            <!-- Schedule Additional -->
+                            <DataGridTextColumn Header="Sch Act No (Field)" 
+                                                Binding="{Binding Sch_Actno}" 
+                                                Width="100"
+                                                Visibility="Collapsed"/>
+
+                            <!-- Tags - Auxiliary -->
+                            <DataGridTextColumn Header="Tag Aux1" 
+                                                Binding="{Binding Tag_Aux1}" 
+                                                Width="100"
+                                                Visibility="Collapsed"/>
+
+                            <DataGridTextColumn Header="Tag Aux2" 
+                                                Binding="{Binding Tag_Aux2}" 
+                                                Width="100"
+                                                Visibility="Collapsed"/>
+
+                            <DataGridTextColumn Header="Tag Aux3" 
+                                                Binding="{Binding Tag_Aux3}" 
+                                                Width="100"
+                                                Visibility="Collapsed"/>
+
+                            <DataGridTextColumn Header="Tag Area" 
+                                                Binding="{Binding Tag_Area}" 
+                                                Width="80"
+                                                Visibility="Collapsed"/>
+
+                            <DataGridTextColumn Header="CO No" 
+                                                Binding="{Binding Tag_CONo}" 
+                                                Width="80"
+                                                Visibility="Collapsed"/>
+
+                            <DataGridTextColumn Header="Equipment No" 
+                                                Binding="{Binding Tag_EqmtNo}" 
+                                                Width="120"
+                                                Visibility="Collapsed"/>
+
+                            <DataGridTextColumn Header="Estimator" 
+                                                Binding="{Binding Tag_Estimator}" 
+                                                Width="120"
+                                                Visibility="Collapsed"/>
+
+                            <DataGridTextColumn Header="Insulation Type" 
+                                                Binding="{Binding Tag_Insulation_Typ}" 
+                                                Width="120"
+                                                Visibility="Collapsed"/>
+
+                            <DataGridTextColumn Header="Line No" 
+                                                Binding="{Binding Tag_LineNo}" 
+                                                Width="100"
+                                                Visibility="Collapsed"/>
+
+                            <DataGridTextColumn Header="Material Spec" 
+                                                Binding="{Binding Tag_Matl_Spec}" 
+                                                Width="120"
+                                                Visibility="Collapsed"/>
+
+                            <DataGridTextColumn Header="Paint Code" 
+                                                Binding="{Binding Tag_Paint_Code}" 
+                                                Width="100"
+                                                Visibility="Collapsed"/>
+
+                            <DataGridTextColumn Header="Pipe Grade" 
+                                                Binding="{Binding Tag_Pipe_Grade}" 
+                                                Width="100"
+                                                Visibility="Collapsed"/>
+
+                            <DataGridTextColumn Header="RFI No" 
+                                                Binding="{Binding Tag_RFINo}" 
+                                                Width="80"
+                                                Visibility="Collapsed"/>
+
+                            <DataGridTextColumn Header="Service" 
+                                                Binding="{Binding Tag_Service}" 
+                                                Width="120"
+                                                Visibility="Collapsed"/>
+
+                            <DataGridTextColumn Header="Shop/Field" 
+                                                Binding="{Binding Tag_ShopField}" 
+                                                Width="100"
+                                                Visibility="Collapsed"/>
+
+                            <DataGridTextColumn Header="Sub Area" 
+                                                Binding="{Binding Tag_SubArea}" 
+                                                Width="80"
+                                                Visibility="Collapsed"/>
+
+                            <DataGridTextColumn Header="System" 
+                                                Binding="{Binding Tag_System}" 
+                                                Width="100"
+                                                Visibility="Collapsed"/>
+
+                            <DataGridTextColumn Header="System No" 
+                                                Binding="{Binding Tag_SystemNo}" 
+                                                Width="100"
+                                                Visibility="Collapsed"/>
+
+                            <DataGridTextColumn Header="Tag No" 
+                                                Binding="{Binding Tag_TagNo}" 
+                                                Width="120"
+                                                Visibility="Collapsed"/>
+
+                            <DataGridTextColumn Header="Tracing" 
+                                                Binding="{Binding Tag_Tracing}" 
+                                                Width="100"
+                                                Visibility="Collapsed"/>
+
+                            <DataGridTextColumn Header="XRAY" 
+                                                Binding="{Binding Tag_XRAY, StringFormat=N2}" 
+                                                Width="80"
+                                                Visibility="Collapsed"/>
+
+                            <!-- Trigger -->
+                            <DataGridTextColumn Header="Date Trigger" 
+                                                Binding="{Binding Trg_DateTrigger}" 
+                                                Width="100"
+                                                Visibility="Collapsed"/>
+
+                            <!-- UDF Fields (remaining) -->
+                            <DataGridTextColumn Header="UDF Three" 
+                                                Binding="{Binding UDFThree}" 
+                                                Width="120"
+                                                Visibility="Collapsed"/>
+
+                            <DataGridTextColumn Header="UDF Four" 
+                                                Binding="{Binding UDFFour}" 
+                                                Width="120"
+                                                Visibility="Collapsed"/>
+
+                            <DataGridTextColumn Header="UDF Five" 
+                                                Binding="{Binding UDFFive}" 
+                                                Width="120"
+                                                Visibility="Collapsed"/>
+
+                            <DataGridTextColumn Header="UDF Six" 
+                                                Binding="{Binding UDFSix}" 
+                                                Width="120"
+                                                Visibility="Collapsed"/>
+
+                            <DataGridTextColumn Header="UDF Seven" 
+                                                Binding="{Binding UDFSeven}" 
+                                                Width="80"
+                                                Visibility="Collapsed"/>
+
+                            <DataGridTextColumn Header="UDF Eight" 
+                                                Binding="{Binding UDFEight}" 
+                                                Width="120"
+                                                Visibility="Collapsed"/>
+
+                            <DataGridTextColumn Header="UDF Nine" 
+                                                Binding="{Binding UDFNine}" 
+                                                Width="120"
+                                                Visibility="Collapsed"/>
+
+                            <DataGridTextColumn Header="UDF Ten" 
+                                                Binding="{Binding UDFTen}" 
+                                                Width="120"
+                                                Visibility="Collapsed"/>
+
+                            <DataGridTextColumn Header="Last Modified By" 
+                                                Binding="{Binding LastModifiedBy}" 
+                                                Width="150"
+                                                Visibility="Collapsed"/>
+
+                            <DataGridTextColumn Header="Created By" 
+                                                Binding="{Binding CreatedBy}" 
+                                                Width="150"
+                                                Visibility="Collapsed"/>
+
+                            <DataGridTextColumn Header="UDF Fourteen" 
+                                                Binding="{Binding UDFFourteen}" 
+                                                Width="120"
+                                                Visibility="Collapsed"/>
+
+                            <DataGridTextColumn Header="UDF Fifteen" 
+                                                Binding="{Binding UDFFifteen}" 
+                                                Width="120"
+                                                Visibility="Collapsed"/>
+
+                            <DataGridTextColumn Header="UDF Sixteen" 
+                                                Binding="{Binding UDFSixteen}" 
+                                                Width="120"
+                                                Visibility="Collapsed"/>
+
+                            <DataGridTextColumn Header="UDF Seventeen" 
+                                                Binding="{Binding UDFSeventeen}" 
+                                                Width="120"
+                                                Visibility="Collapsed"/>
+
+                            <DataGridTextColumn Header="UDF Eighteen" 
+                                                Binding="{Binding UDFEighteen}" 
+                                                Width="120"
+                                                Visibility="Collapsed"/>
+
+                            <DataGridTextColumn Header="UDF Twenty" 
+                                                Binding="{Binding UDFTwenty}" 
+                                                Width="120"
+                                                Visibility="Collapsed"/>
+
+                            <!-- Values - Additional -->
+                            <DataGridTextColumn Header="Base Unit" 
+                                                Binding="{Binding Val_Base_Unit, StringFormat=N2}" 
+                                                Width="100"
+                                                Visibility="Collapsed"/>
+
+                            <DataGridTextColumn Header="Budget Hrs Group" 
+                                                Binding="{Binding Val_BudgetedHours_Group, StringFormat=N2}" 
+                                                Width="120"
+                                                Visibility="Collapsed"/>
+
+                            <DataGridTextColumn Header="Budget Hrs ROC" 
+                                                Binding="{Binding Val_BudgetedHours_ROC, StringFormat=N2}" 
+                                                Width="120"
+                                                Visibility="Collapsed"/>
+
+                            <DataGridTextColumn Header="Earned Hrs ROC" 
+                                                Binding="{Binding Val_EarnedHours_ROC}" 
+                                                Width="120"
+                                                Visibility="Collapsed"/>
+
+                            <DataGridTextColumn Header="UOM" 
+                                                Binding="{Binding Val_UOM}" 
+                                                Width="80"
+                                                Visibility="Collapsed"/>
+
+                            <!-- Calculated fields -->
+                            <DataGridTextColumn Header="Earn Qty (Calc)" 
+                                                Binding="{Binding Val_Earn_Qty, StringFormat=N4}" 
+                                                Width="100"
+                                                IsReadOnly="True"
+                                                Visibility="Collapsed">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Background" Value="{StaticResource GridAlternatingRowBackground}"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+
+                            <DataGridTextColumn Header="Percent Earned" 
+                                                Binding="{Binding Val_Percent_Earned, StringFormat=N4}" 
+                                                Width="120"
+                                                IsReadOnly="True"
+                                                Visibility="Collapsed">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Background" Value="{StaticResource GridAlternatingRowBackground}"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+
+                            <!-- Equipment Quantity -->
+                            <DataGridTextColumn Header="EQ QTY" 
+                                                Binding="{Binding Val_EQ_QTY, StringFormat=N2}" 
+                                                Width="100"
+                                                Visibility="Collapsed"/>
+
+                            <DataGridTextColumn Header="EQ UOM" 
+                                                Binding="{Binding Val_EQ_UOM}" 
+                                                Width="80"
+                                                Visibility="Collapsed"/>
+
+                            <!-- ROC -->
+                            <DataGridTextColumn Header="ROC ID" 
+                                                Binding="{Binding Tag_ROC_ID}" 
+                                                Width="80"
+                                                Visibility="Collapsed"/>
+
+                            <DataGridTextColumn Header="Lookup ROC ID" 
+                                                Binding="{Binding LookUP_ROC_ID}" 
+                                                Width="200"
+                                                IsReadOnly="True"
+                                                Visibility="Collapsed">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Background" Value="{StaticResource GridAlternatingRowBackground}"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+
+                            <DataGridTextColumn Header="ROC Perc" 
+                                                Binding="{Binding Val_ROC_Perc, StringFormat=N2}" 
+                                                Width="100"
+                                                Visibility="Collapsed"/>
+
+                            <DataGridTextColumn Header="ROC Budget Qty" 
+                                                Binding="{Binding Val_ROC_BudgetQty, StringFormat=N2}" 
+                                                Width="120"
+                                                Visibility="Collapsed"/>
+
+                            <!-- Pipe -->
+                            <DataGridTextColumn Header="Pipe Size 1" 
+                                                Binding="{Binding Val_Pipe_Size1, StringFormat=N2}" 
+                                                Width="100"
+                                                Visibility="Collapsed"/>
+
+                            <DataGridTextColumn Header="Pipe Size 2" 
+                                                Binding="{Binding Val_Pipe_Size2, StringFormat=N2}" 
+                                                Width="100"
+                                                Visibility="Collapsed"/>
+
+                            <!-- Previous Values -->
+                            <DataGridTextColumn Header="Prev Earned Hrs" 
+                                                Binding="{Binding Val_Prev_Earned_Hours, StringFormat=N2}" 
+                                                Width="120"
+                                                Visibility="Collapsed"/>
+
+                            <DataGridTextColumn Header="Prev Earned Qty" 
+                                                Binding="{Binding Val_Prev_Earned_Qty, StringFormat=N2}" 
+                                                Width="120"
+                                                Visibility="Collapsed"/>
+
+                            <!-- Timestamp -->
+                            <DataGridTextColumn Header="Timestamp" 
+                                                Binding="{Binding Val_TimeStamp}" 
+                                                Width="150"
+                                                Visibility="Collapsed"/>
+
+                            <!-- Client Values -->
+                            <DataGridTextColumn Header="Client EQ QTY Budget" 
+                                                Binding="{Binding Val_Client_EQ_QTY_BDG, StringFormat=N2}" 
+                                                Width="150"
+                                                Visibility="Collapsed"/>
+
+                            <DataGridTextColumn Header="UDF Two (Val)" 
+                                                Binding="{Binding Val_UDF_Two, StringFormat=N2}" 
+                                                Width="100"
+                                                Visibility="Collapsed"/>
+
+                            <DataGridTextColumn Header="UDF Three (Val)" 
+                                                Binding="{Binding Val_UDF_Three, StringFormat=N2}" 
+                                                Width="100"
+                                                Visibility="Collapsed"/>
+
+                            <DataGridTextColumn Header="Client Earned EQ QTY" 
+                                                Binding="{Binding VAL_Client_Earned_EQ_QTY, StringFormat=N3}" 
+                                                Width="150"
+                                                IsReadOnly="True"
+                                                Visibility="Collapsed">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Background" Value="{StaticResource GridAlternatingRowBackground}"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
 
                         </DataGrid.Columns>
                     </DataGrid>

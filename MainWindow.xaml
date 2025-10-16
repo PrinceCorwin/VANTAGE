@@ -8,7 +8,7 @@
         Height="700" 
         Width="1200"
         WindowState="Maximized"
-        Background="#FF1E1E1E">
+        Background="{StaticResource BackgroundColor}">
 
     <Grid>
         <!-- Define rows: Toolbar, Content, StatusBar -->
@@ -23,9 +23,9 @@
 
         <!-- TOOLBAR (Top) -->
         <Border Grid.Row="0" 
-                Background="#FF252525" 
-                BorderBrush="#FF3C3C3C" 
-                BorderThickness="0,0,0,1">
+        Background="{StaticResource ToolbarBackground}" 
+        BorderBrush="{StaticResource BorderColor}" 
+        BorderThickness="0,0,0,1">
             <StackPanel Orientation="Horizontal" Margin="10,0">
                 <!-- PROGRESS Button -->
                 <Button x:Name="btnProgress" 
@@ -33,8 +33,8 @@
                         Width="100" 
                         Height="40"
                         Margin="5,0"
-                        Background="#FF0078D7"
-                        Foreground="#FFFFFFFF"
+                        Background="{StaticResource ToolbarButtonActive}"
+                        Foreground="{StaticResource ForegroundColor}"
                         BorderThickness="0"
                         FontSize="12"
                         FontWeight="Bold"
@@ -46,8 +46,8 @@
                         Width="100" 
                         Height="40"
                         Margin="5,0"
-                        Background="#FF2A2A2A"
-                        Foreground="#FFFFFFFF"
+                        Background="{StaticResource ControlBackground}"
+                        Foreground="{StaticResource ForegroundColor}"
                         BorderThickness="0"
                         FontSize="12"
                         FontWeight="Bold"
@@ -59,8 +59,8 @@
                         Width="100" 
                         Height="40"
                         Margin="5,0"
-                        Background="#FF2A2A2A"
-                        Foreground="#FFFFFFFF"
+                        Background="{StaticResource ControlBackground}"
+                        Foreground="{StaticResource ForegroundColor}"
                         BorderThickness="0"
                         FontSize="12"
                         FontWeight="Bold"
@@ -72,8 +72,8 @@
                         Width="100" 
                         Height="40"
                         Margin="5,0"
-                        Background="#FF2A2A2A"
-                        Foreground="#FFFFFFFF"
+                        Background="{StaticResource ControlBackground}"
+                        Foreground="{StaticResource ForegroundColor}"
                         BorderThickness="0"
                         FontSize="12"
                         FontWeight="Bold"
@@ -85,8 +85,8 @@
                         Width="100" 
                         Height="40"
                         Margin="5,0"
-                        Background="#FF2A2A2A"
-                        Foreground="#FFFFFFFF"
+                        Background="{StaticResource ControlBackground}"
+                        Foreground="{StaticResource ForegroundColor}"
                         BorderThickness="0"
                         FontSize="12"
                         FontWeight="Bold"
@@ -98,8 +98,8 @@
                         Width="120" 
                         Height="40"
                         Margin="5,0"
-                        Background="#FF2A2A2A"
-                        Foreground="#FFFFFFFF"
+                        Background="{StaticResource ControlBackground}"
+                        Foreground="{StaticResource ForegroundColor}"
                         BorderThickness="0"
                         FontSize="12"
                         FontWeight="Bold"
@@ -111,8 +111,8 @@
                         Width="100" 
                         Height="40"
                         Margin="5,0"
-                        Background="#FF2A2A2A"
-                        Foreground="#FFFFFFFF"
+                        Background="{StaticResource ControlBackground}"
+                        Foreground="{StaticResource ForegroundColor}"
                         BorderThickness="0"
                         FontSize="12"
                         FontWeight="Bold"
@@ -124,8 +124,8 @@
                         Width="100" 
                         Height="40"
                         Margin="5,0"
-                        Background="#FF2A2A2A"
-                        Foreground="#FFFFFFFF"
+                        Background="{StaticResource ControlBackground}"
+                        Foreground="{StaticResource ForegroundColor}"
                         BorderThickness="0"
                         FontSize="12"
                         FontWeight="Bold"
@@ -137,8 +137,8 @@
                         Width="100" 
                         Height="40"
                         Margin="5,0"
-                        Background="#FF2A2A2A"
-                        Foreground="#FFFFFFFF"
+                        Background="{StaticResource ControlBackground}"
+                        Foreground="{StaticResource ForegroundColor}"
                         BorderThickness="0"
                         FontSize="12"
                         FontWeight="Bold"
@@ -150,8 +150,8 @@
                         Width="100" 
                         Height="40"
                         Margin="5,0"
-                        Background="#FF2A2A2A"
-                        Foreground="#FFFFFFFF"
+                        Background="{StaticResource ControlBackground}"
+                        Foreground="{StaticResource ForegroundColor}"
                         BorderThickness="0"
                         FontSize="12"
                         FontWeight="Bold"
@@ -162,14 +162,14 @@
 
         <!-- CONTENT AREA (Middle) -->
         <Border Grid.Row="1" 
-                Background="#FF1E1E1E">
+                Background="{StaticResource BackgroundColor}">
             <ContentControl x:Name="ContentArea" />
         </Border>
 
         <!-- STATUS BAR (Bottom) -->
         <Border Grid.Row="2" 
-                Background="#FF1C1C1C" 
-                BorderBrush="#FF3C3C3C" 
+                Background="{StaticResource StatusBarBackground}" 
+                BorderBrush="{StaticResource BorderColor}" 
                 BorderThickness="0,1,0,0">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -185,7 +185,7 @@
                 <TextBlock Grid.Column="0" 
                            x:Name="txtCurrentUser"
                            Text="User: Steve.Amalfitano" 
-                           Foreground="#FFB0B0B0"
+                           Foreground="{StaticResource StatusBarForeground}"
                            FontSize="11"
                            VerticalAlignment="Center"
                            Margin="10,0,20,0"/>
@@ -193,7 +193,7 @@
                 <!-- Current Project -->
                 <TextBlock Grid.Column="1" 
                            Text="Project:" 
-                           Foreground="#FFB0B0B0"
+                           Foreground="{StaticResource StatusBarForeground}"
                            FontSize="11"
                            VerticalAlignment="Center"
                            Margin="0,0,5,0"/>
@@ -201,16 +201,16 @@
                           x:Name="cmbCurrentProject"
                           Width="150"
                           Height="20"
-                          Background="#FF2A2A2A"
-                          Foreground="#FFFFFFFF"
-                          BorderBrush="#FF3C3C3C"
+                          Background="{StaticResource ControlBackground}"
+                          Foreground="{StaticResource ControlForeground}"
+                          BorderBrush="{StaticResource ControlBorder}"
                           Margin="0,0,20,0"/>
 
                 <!-- Last Sync -->
                 <TextBlock Grid.Column="3" 
                            x:Name="txtLastSync"
                            Text="Last Sync: Never" 
-                           Foreground="#FFB0B0B0"
+                           Foreground="{StaticResource StatusBarForeground}"
                            FontSize="11"
                            VerticalAlignment="Center"
                            Margin="0,0,20,0"/>
@@ -222,7 +222,7 @@
                 <TextBlock Grid.Column="5" 
                            x:Name="txtRecordCount"
                            Text="0 activities loaded" 
-                           Foreground="#FFB0B0B0"
+                           Foreground="{StaticResource StatusBarForeground}"
                            FontSize="11"
                            VerticalAlignment="Center"
                            Margin="0,0,10,0"/>

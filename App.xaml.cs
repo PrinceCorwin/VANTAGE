@@ -35,7 +35,8 @@ namespace VANTAGE
                 System.Diagnostics.Debug.WriteLine($"✓ Current user ID: {CurrentUserID}");
 
                 // Step 4a: Make Steve admin on first run (ONE-TIME SETUP)
-                if (CurrentUser.Username == "Steve.Amalfitano" && !CurrentUser.IsAdmin)
+                if ((CurrentUser.Username.Equals("Steve.Amalfitano", StringComparison.OrdinalIgnoreCase) ||
+                     CurrentUser.Username.Equals("Steve", StringComparison.OrdinalIgnoreCase)) && !CurrentUser.IsAdmin)
                 {
                     AdminHelper.GrantAdmin(CurrentUserID, CurrentUser.Username);
                     CurrentUser.IsAdmin = true;
@@ -98,6 +99,10 @@ namespace VANTAGE
                 // Step 6: Initialize user settings
                 SettingsManager.InitializeDefaultUserSettings(CurrentUserID);
                 System.Diagnostics.Debug.WriteLine("✓ User settings initialized");
+
+                // Step 6a: Load user's theme preference
+                ThemeManager.LoadThemeFromSettings(CurrentUserID);
+                System.Diagnostics.Debug.WriteLine("✓ Theme loaded");
 
                 // Step 7: Determine which module to load
                 string lastModule = SettingsManager.GetLastModuleUsed(CurrentUserID, "PROGRESS");
