@@ -21,7 +21,7 @@ namespace VANTAGE.Views
 
             dgActivities.ItemsSource = _viewModel.ActivitiesView;
 
-            InitializeColumnVisibility();
+            InitializeColumnVisibility();  // ← PUT THIS BACK
             UpdateRecordCount();
 
             // Load data AFTER the view is loaded
@@ -30,6 +30,8 @@ namespace VANTAGE.Views
 
         private async void OnViewLoaded(object sender, RoutedEventArgs e)
         {
+            // REMOVE InitializeColumnVisibility() from here
+
             await _viewModel.LoadInitialDataAsync();
             UpdateRecordCount();
             UpdatePagingControls();
@@ -37,20 +39,113 @@ namespace VANTAGE.Views
 
         private void InitializeColumnVisibility()
         {
+            // Build dictionary of existing columns first
             foreach (var column in dgActivities.Columns)
             {
                 string headerText = column.Header?.ToString() ?? "Unknown";
                 _columnMap[headerText] = column;
             }
 
-            foreach (var columnName in _columnMap.Keys)
-            {
-                var column = _columnMap[columnName];
+            // Hardcoded list of ALL columns (in order they should appear)
+            var allColumns = new List<string>
+    {
+        "Activity ID",
+        "Description",
+        "Component Type",
+        "Phase Category",
+        "ROC Step",
+        "Project ID",
+        "Work Package",
+        "Phase Code",
+        "Drawing No",
+        "Sch Start",
+        "Sch Finish",
+        "Sch Status",
+        "Activity No",
+        "Quantity",
+        "Earned Qty",
+        "% Complete",
+        "Budget Hrs",
+        "Earned Hrs",
+        "Status",
+        "UDF One",
+        "UDF Two",
+        "Assigned To",
+        "Hex NO",
+        "Revision No",
+        "Secondary Drawing",
+        "Sheet No",
+        "Comments",
+        "Sch Act No (Field)",
+        "Tag Aux1",
+        "Tag Aux2",
+        "Tag Aux3",
+        "Tag Area",
+        "CO No",
+        "Equipment No",
+        "Estimator",
+        "Insulation Type",
+        "Line No",
+        "Material Spec",
+        "Paint Code",
+        "Pipe Grade",
+        "RFI No",
+        "Service",
+        "Shop/Field",
+        "Sub Area",
+        "System",
+        "System No",
+        "Tag No",
+        "Tracing",
+        "XRAY",
+        "Date Trigger",
+        "UDF Three",
+        "UDF Four",
+        "UDF Five",
+        "UDF Six",
+        "UDF Seven",
+        "UDF Eight",
+        "UDF Nine",
+        "UDF Ten",
+        "Last Modified By",
+        "Created By",
+        "UDF Fourteen",
+        "UDF Fifteen",
+        "UDF Sixteen",
+        "UDF Seventeen",
+        "UDF Eighteen",
+        "UDF Twenty",
+        "Base Unit",
+        "Budget Hrs Group",
+        "Budget Hrs ROC",
+        "Earned Hrs ROC",
+        "UOM",
+        "Earn Qty (Calc)",
+        "Percent Earned",
+        "EQ QTY",
+        "EQ UOM",
+        "ROC ID",
+        "Lookup ROC ID",
+        "ROC Perc",
+        "ROC Budget Qty",
+        "Pipe Size 1",
+        "Pipe Size 2",
+        "Prev Earned Hrs",
+        "Prev Earned Qty",
+        "Timestamp",
+        "Client EQ QTY Budget",
+        "UDF Two (Val)",
+        "UDF Three (Val)",
+        "Client Earned EQ QTY"
+    };
 
+            // Add checkboxes for ALL columns
+            foreach (var columnName in allColumns)
+            {
                 var checkBox = new CheckBox
                 {
                     Content = columnName,
-                    IsChecked = column.Visibility == Visibility.Visible,
+                    IsChecked = _columnMap.ContainsKey(columnName) && _columnMap[columnName].Visibility == Visibility.Visible,
                     Margin = new Thickness(5, 2, 5, 2),
                     Foreground = System.Windows.Media.Brushes.White
                 };
@@ -60,6 +155,8 @@ namespace VANTAGE.Views
 
                 lstColumnVisibility.Items.Add(checkBox);
             }
+
+            System.Diagnostics.Debug.WriteLine($"→ Total checkboxes added: {lstColumnVisibility.Items.Count}");
         }
 
         private void ColumnCheckBox_Changed(object sender, RoutedEventArgs e)

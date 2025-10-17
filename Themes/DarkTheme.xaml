@@ -19,6 +19,11 @@
     <SolidColorBrush x:Key="HoverColor" Color="#220078D7"/>
     <SolidColorBrush x:Key="SelectedColor" Color="#330078D7"/>
 
+    <!-- === DISABLED BUTTON COLORS (UPDATED) === -->
+    <SolidColorBrush x:Key="DisabledButtonBackground" Color="#FF1A1A1A"/>
+    <SolidColorBrush x:Key="DisabledButtonForeground" Color="#FFAAAAAA"/>
+    <SolidColorBrush x:Key="DisabledButtonBorder" Color="#FF2A2A2A"/>
+
     <!-- === WINDOW ELEMENTS === -->
     <SolidColorBrush x:Key="WindowBackground" Color="#FF1C1C1C"/>
     <SolidColorBrush x:Key="ControlBackground" Color="#FF2A2A2A"/>
@@ -57,5 +62,47 @@
 
     <!-- === MY RECORDS HIGHLIGHT === -->
     <SolidColorBrush x:Key="MyRecordsBackground" Color="#1A27AE60"/>
+
+    <!-- ========================================= -->
+    <!-- === DEFAULT BUTTON STYLE === -->
+    <!-- ========================================= -->
+    <Style TargetType="Button">
+        <Setter Property="Background" Value="{StaticResource ControlBackground}"/>
+        <Setter Property="Foreground" Value="{StaticResource ForegroundColor}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BorderColor}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="10,5"/>
+        <Setter Property="FontSize" Value="{StaticResource FontSizeNormal}"/>
+        <Setter Property="FontFamily" Value="{StaticResource FontFamilyPrimary}"/>
+
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="border"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        SnapsToDevicePixels="True">
+                        <ContentPresenter x:Name="contentPresenter"
+                                    Margin="{TemplateBinding Padding}"
+                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                    Focusable="False"
+                                    RecognizesAccessKey="True"
+                                    SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource ControlHoverBackground}"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource ControlBackground}"/>
+                            <Setter Property="Foreground" Value="{StaticResource DisabledColor}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
 
 </ResourceDictionary>
