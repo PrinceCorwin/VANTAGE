@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using VANTAGE.ViewModels;
@@ -8,40 +9,40 @@ namespace VANTAGE.Views
 {
     public partial class ProgressView : UserControl
     {
-        // Track which columns are visible
         private Dictionary<string, DataGridColumn> _columnMap = new Dictionary<string, DataGridColumn>();
-
-        // ViewModel
         private ProgressViewModel _viewModel;
 
         public ProgressView()
         {
             InitializeComponent();
 
-            // Create and set ViewModel
             _viewModel = new ProgressViewModel();
             this.DataContext = _viewModel;
 
-            // Bind DataGrid to ViewModel
             dgActivities.ItemsSource = _viewModel.ActivitiesView;
 
             InitializeColumnVisibility();
             UpdateRecordCount();
+
+            // Load data AFTER the view is loaded
+            this.Loaded += OnViewLoaded;
         }
 
-        /// <summary>
-        /// Populate the Column Visibility ListBox with all available columns
-        /// </summary>
+        private async void OnViewLoaded(object sender, RoutedEventArgs e)
+        {
+            await _viewModel.LoadInitialDataAsync();
+            UpdateRecordCount();
+            UpdatePagingControls();
+        }
+
         private void InitializeColumnVisibility()
         {
-            // Build dictionary of all columns
             foreach (var column in dgActivities.Columns)
             {
                 string headerText = column.Header?.ToString() ?? "Unknown";
                 _columnMap[headerText] = column;
             }
 
-            // Populate ListBox with column names
             foreach (var columnName in _columnMap.Keys)
             {
                 var column = _columnMap[columnName];
@@ -49,7 +50,7 @@ namespace VANTAGE.Views
                 var checkBox = new CheckBox
                 {
                     Content = columnName,
-                    IsChecked = column.Visibility == Visibility.Visible, // Match actual visibility
+                    IsChecked = column.Visibility == Visibility.Visible,
                     Margin = new Thickness(5, 2, 5, 2),
                     Foreground = System.Windows.Media.Brushes.White
                 };
@@ -61,9 +62,6 @@ namespace VANTAGE.Views
             }
         }
 
-        /// <summary>
-        /// Handle column visibility changes
-        /// </summary>
         private void ColumnCheckBox_Changed(object sender, RoutedEventArgs e)
         {
             var checkBox = sender as CheckBox;
@@ -74,26 +72,54 @@ namespace VANTAGE.Views
                 return;
 
             var column = _columnMap[columnName];
-
-            if (checkBox.IsChecked == true)
-            {
-                column.Visibility = Visibility.Visible;
-            }
-            else
-            {
-                column.Visibility = Visibility.Collapsed;
-            }
+            column.Visibility = checkBox.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
         }
 
-        /// <summary>
-        /// Update the record count display
-        /// </summary>
         private void UpdateRecordCount()
         {
-            txtFilteredCount.Text = $"{_viewModel.FilteredCount} of {_viewModel.TotalCount} records";
+            txtFilteredCount.Text = $"{_viewModel.FilteredCount} of {_viewModel.PageSize} records (Total: {_viewModel.TotalRecordCount})";
         }
 
-        // === EVENT HANDLERS ===
+        private void UpdatePagingControls()
+        {
+            txtPageInfo.Text = _viewModel.CurrentPageDisplay;
+            btnFirstPage.IsEnabled = _viewModel.CanGoPrevious;
+            btnPreviousPage.IsEnabled = _viewModel.CanGoPrevious;
+            btnNextPage.IsEnabled = _viewModel.CanGoNext;
+            btnLastPage.IsEnabled = _viewModel.CanGoNext;
+        }
+
+        // === PAGING EVENT HANDLERS ===
+
+        private async void BtnFirstPage_Click(object sender, RoutedEventArgs e)
+        {
+            await _viewModel.FirstPageAsync();
+            UpdateRecordCount();
+            UpdatePagingControls();
+        }
+
+        private async void BtnPreviousPage_Click(object sender, RoutedEventArgs e)
+        {
+            await _viewModel.PreviousPageAsync();
+            UpdateRecordCount();
+            UpdatePagingControls();
+        }
+
+        private async void BtnNextPage_Click(object sender, RoutedEventArgs e)
+        {
+            await _viewModel.NextPageAsync();
+            UpdateRecordCount();
+            UpdatePagingControls();
+        }
+
+        private async void BtnLastPage_Click(object sender, RoutedEventArgs e)
+        {
+            await _viewModel.LastPageAsync();
+            UpdateRecordCount();
+            UpdatePagingControls();
+        }
+
+        // === FILTER EVENT HANDLERS ===
 
         private void BtnFilterComplete_Click(object sender, RoutedEventArgs e)
         {
@@ -141,10 +167,11 @@ namespace VANTAGE.Views
             UpdateRecordCount();
         }
 
-        private void BtnRefresh_Click(object sender, RoutedEventArgs e)
+        private async void BtnRefresh_Click(object sender, RoutedEventArgs e)
         {
-            _viewModel.LoadActivities();
+            await _viewModel.RefreshAsync();
             UpdateRecordCount();
+            UpdatePagingControls();
         }
 
         private void DgActivities_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
