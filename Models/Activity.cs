@@ -6,64 +6,34 @@ namespace VANTAGE.Models
     public class Activity : INotifyPropertyChanged
     {
         // ========================================
-        // PRIVATE BACKING FIELDS
+        // PRIVATE BACKING FIELDS (EDITABLE ONLY)
         // ========================================
 
-        private int _activityID;
-        private int _hexNO;
-
-        // Categories
+        // Categories (editable)
         private string _catg_ComponentType;
         private string _catg_PhaseCategory;
         private string _catg_ROC_Step;
 
-        // Drawings
-        private string _dwg_PrimeDrawingNO;
-        private string _dwg_RevisionNo;
-        private string _dwg_SecondaryDrawingNO;
-        private string _dwg_ShtNo;
-
-        // Notes
+        // Notes (editable)
         private string _notes_Comments;
 
-        // Schedule
-        private string _sch_Actno;
-        private string _sch_Start;
-        private string _sch_Finish;
-        private string _sch_Status;
-
-        // Tags
+        // Tags (editable subset)
         private string _tag_Aux1;
         private string _tag_Aux2;
         private string _tag_Aux3;
         private string _tag_Area;
-        private string _tag_CONo;
         private string _tag_Descriptions;
-        private string _tag_EqmtNo;
-        private string _tag_Estimator;
-        private string _tag_Insulation_Typ;
-        private string _tag_LineNo;
-        private string _tag_Matl_Spec;
         private string _tag_Phase_Code;
-        private string _tag_Paint_Code;
-        private string _tag_Pipe_Grade;
         private string _tag_ProjectID;
-        private string _tag_RFINo;
         private string _tag_Sch_ActNo;
         private string _tag_Service;
         private string _tag_ShopField;
         private string _tag_SubArea;
         private string _tag_System;
-        private string _tag_SystemNo;
         private string _tag_TagNo;
-        private string _tag_Tracing;
         private string _tag_WorkPackage;
-        private double _tag_XRAY;
 
-        // Trigger
-        private int _trg_DateTrigger;
-
-        // UDF Fields
+        // UDF Fields (editable subset)
         private string _udfOne;
         private string _udfTwo;
         private string _udfThree;
@@ -75,74 +45,89 @@ namespace VANTAGE.Models
         private string _udfNine;
         private string _udfTen;
         private string _udfEleven;      // AssignedToUsername
-        private string _udfTwelve;      // LastModifiedBy
-        private string _udfThirteen;    // CreatedBy
         private string _udfFourteen;
         private string _udfFifteen;
         private string _udfSixteen;
         private string _udfSeventeen;
         private string _udfEighteen;
-        private string _udfNineteen;    // Unique Activity ID (READ ONLY)
         private string _udfTwenty;
 
-        // Values (user-editable)
-        private double _val_Base_Unit;
+        // Values (editable)
         private double _val_BudgetedHours_Ind;
-        private double _val_BudgetedHours_Group;
-        private double _val_BudgetedHours_ROC;
-        private int _val_EarnedHours_ROC;
         private double _val_EarnedQty;
         private double _val_Perc_Complete;
         private double _val_Quantity;
         private string _val_UOM;
+        private double _val_Pipe_Size1;
+        private double _val_Pipe_Size2;
+        private double _val_UDF_Two;
+        private double _val_UDF_Three;
 
-        // Values (calculated - will be computed)
+        // Calculated (private setters only)
         private double _val_EarnedHours_Ind;
         private double _val_Earn_Qty;
         private double _val_Percent_Earned;
-
-        // Equipment Quantity
-        private double _val_EQ_QTY;
-        private string _val_EQ_UOM;
-
-        // ROC
-        private int _tag_ROC_ID;
         private string _lookUP_ROC_ID;
-        private double _val_ROC_Perc;
-        private double _val_ROC_BudgetQty;
-
-        // Pipe
-        private double _val_Pipe_Size1;
-        private double _val_Pipe_Size2;
-
-        // Previous values
-        private double _val_Prev_Earned_Hours;
-        private double _val_Prev_Earned_Qty;
-
-        // Timestamps
-        private string _val_TimeStamp;
-
-        // Client values
-        private double _val_Client_EQ_QTY_BDG;
-        private double _val_UDF_Two;
-        private double _val_UDF_Three;
         private double _val_Client_Earned_EQ_QTY;
 
         // ========================================
-        // PUBLIC PROPERTIES
+        // READ-ONLY PROPERTIES (Simple Auto-Properties)
         // ========================================
 
-        public int ActivityID
-        {
-            get => _activityID;
-            set { _activityID = value; OnPropertyChanged(nameof(ActivityID)); }
-        }
+        public int ActivityID { get; set; }
+        public int HexNO { get; set; }
 
-        public int HexNO
-        {
-            get => _hexNO;
-            set { _hexNO = value; OnPropertyChanged(nameof(HexNO)); }
-        }
+        // Drawings (read-only)
+        public string Dwg_PrimeDrawingNO { get; set; }
+        public string Dwg_RevisionNo { get; set; }
+        public string Dwg_SecondaryDrawingNO { get; set; }
+        public string Dwg_ShtNo { get; set; }
+
+        // Schedule (read-only)
+        public string Sch_Actno { get; set; }
+        public string Sch_Start { get; set; }
+        public string Sch_Finish { get; set; }
+        public string Sch_Status { get; set; }
+
+        // Tags (read-only subset)
+        public string Tag_CONo { get; set; }
+        public string Tag_EqmtNo { get; set; }
+        public string Tag_Estimator { get; set; }
+        public string Tag_Insulation_Typ { get; set; }
+        public string Tag_LineNo { get; set; }
+        public string Tag_Matl_Spec { get; set; }
+        public string Tag_Paint_Code { get; set; }
+        public string Tag_Pipe_Grade { get; set; }
+        public string Tag_RFINo { get; set; }
+        public string Tag_SystemNo { get; set; }
+        public string Tag_Tracing { get; set; }
+        public double Tag_XRAY { get; set; }
+
+        // Trigger
+        public int Trg_DateTrigger { get; set; }
+
+        // UDF (read-only subset)
+        public string UDFTwelve { get; set; }      // LastModifiedBy
+        public string UDFThirteen { get; set; }    // CreatedBy
+        public string UDFNineteen { get; set; }    // Unique Activity ID (READ ONLY)
+
+        // Values (read-only)
+        public double Val_Base_Unit { get; set; }
+        public double Val_BudgetedHours_Group { get; set; }
+        public double Val_BudgetedHours_ROC { get; set; }
+        public int Val_EarnedHours_ROC { get; set; }
+        public double Val_EQ_QTY { get; set; }
+        public string Val_EQ_UOM { get; set; }
+        public int Tag_ROC_ID { get; set; }
+        public double Val_ROC_Perc { get; set; }
+        public double Val_ROC_BudgetQty { get; set; }
+        public double Val_Prev_Earned_Hours { get; set; }
+        public double Val_Prev_Earned_Qty { get; set; }
+        public string Val_TimeStamp { get; set; }
+        public double Val_Client_EQ_QTY_BDG { get; set; }
+        // ========================================
+        // EDITABLE PROPERTIES (With INotifyPropertyChanged)
+        // ========================================
 
         // === CATEGORIES ===
 
@@ -179,32 +164,6 @@ namespace VANTAGE.Models
             }
         }
 
-        // === DRAWINGS ===
-
-        public string Dwg_PrimeDrawingNO
-        {
-            get => _dwg_PrimeDrawingNO;
-            set { _dwg_PrimeDrawingNO = value; OnPropertyChanged(nameof(Dwg_PrimeDrawingNO)); }
-        }
-
-        public string Dwg_RevisionNo
-        {
-            get => _dwg_RevisionNo;
-            set { _dwg_RevisionNo = value; OnPropertyChanged(nameof(Dwg_RevisionNo)); }
-        }
-
-        public string Dwg_SecondaryDrawingNO
-        {
-            get => _dwg_SecondaryDrawingNO;
-            set { _dwg_SecondaryDrawingNO = value; OnPropertyChanged(nameof(Dwg_SecondaryDrawingNO)); }
-        }
-
-        public string Dwg_ShtNo
-        {
-            get => _dwg_ShtNo;
-            set { _dwg_ShtNo = value; OnPropertyChanged(nameof(Dwg_ShtNo)); }
-        }
-
         // === NOTES ===
 
         public string Notes_Comments
@@ -213,33 +172,7 @@ namespace VANTAGE.Models
             set { _notes_Comments = value; OnPropertyChanged(nameof(Notes_Comments)); }
         }
 
-        // === SCHEDULE ===
-
-        public string Sch_Actno
-        {
-            get => _sch_Actno;
-            set { _sch_Actno = value; OnPropertyChanged(nameof(Sch_Actno)); }
-        }
-
-        public string Sch_Start
-        {
-            get => _sch_Start;
-            set { _sch_Start = value; OnPropertyChanged(nameof(Sch_Start)); }
-        }
-
-        public string Sch_Finish
-        {
-            get => _sch_Finish;
-            set { _sch_Finish = value; OnPropertyChanged(nameof(Sch_Finish)); }
-        }
-
-        public string Sch_Status
-        {
-            get => _sch_Status;
-            set { _sch_Status = value; OnPropertyChanged(nameof(Sch_Status)); }
-        }
-
-        // === TAGS ===
+        // === TAGS (Editable) ===
 
         public string Tag_Aux1
         {
@@ -265,64 +198,16 @@ namespace VANTAGE.Models
             set { _tag_Area = value; OnPropertyChanged(nameof(Tag_Area)); }
         }
 
-        public string Tag_CONo
-        {
-            get => _tag_CONo;
-            set { _tag_CONo = value; OnPropertyChanged(nameof(Tag_CONo)); }
-        }
-
         public string Tag_Descriptions
         {
             get => _tag_Descriptions;
             set { _tag_Descriptions = value; OnPropertyChanged(nameof(Tag_Descriptions)); }
         }
 
-        public string Tag_EqmtNo
-        {
-            get => _tag_EqmtNo;
-            set { _tag_EqmtNo = value; OnPropertyChanged(nameof(Tag_EqmtNo)); }
-        }
-
-        public string Tag_Estimator
-        {
-            get => _tag_Estimator;
-            set { _tag_Estimator = value; OnPropertyChanged(nameof(Tag_Estimator)); }
-        }
-
-        public string Tag_Insulation_Typ
-        {
-            get => _tag_Insulation_Typ;
-            set { _tag_Insulation_Typ = value; OnPropertyChanged(nameof(Tag_Insulation_Typ)); }
-        }
-
-        public string Tag_LineNo
-        {
-            get => _tag_LineNo;
-            set { _tag_LineNo = value; OnPropertyChanged(nameof(Tag_LineNo)); }
-        }
-
-        public string Tag_Matl_Spec
-        {
-            get => _tag_Matl_Spec;
-            set { _tag_Matl_Spec = value; OnPropertyChanged(nameof(Tag_Matl_Spec)); }
-        }
-
         public string Tag_Phase_Code
         {
             get => _tag_Phase_Code;
             set { _tag_Phase_Code = value; OnPropertyChanged(nameof(Tag_Phase_Code)); }
-        }
-
-        public string Tag_Paint_Code
-        {
-            get => _tag_Paint_Code;
-            set { _tag_Paint_Code = value; OnPropertyChanged(nameof(Tag_Paint_Code)); }
-        }
-
-        public string Tag_Pipe_Grade
-        {
-            get => _tag_Pipe_Grade;
-            set { _tag_Pipe_Grade = value; OnPropertyChanged(nameof(Tag_Pipe_Grade)); }
         }
 
         public string Tag_ProjectID
@@ -334,12 +219,6 @@ namespace VANTAGE.Models
                 OnPropertyChanged(nameof(Tag_ProjectID));
                 RecalculateLookupROCID();
             }
-        }
-
-        public string Tag_RFINo
-        {
-            get => _tag_RFINo;
-            set { _tag_RFINo = value; OnPropertyChanged(nameof(Tag_RFINo)); }
         }
 
         public string Tag_Sch_ActNo
@@ -372,22 +251,10 @@ namespace VANTAGE.Models
             set { _tag_System = value; OnPropertyChanged(nameof(Tag_System)); }
         }
 
-        public string Tag_SystemNo
-        {
-            get => _tag_SystemNo;
-            set { _tag_SystemNo = value; OnPropertyChanged(nameof(Tag_SystemNo)); }
-        }
-
         public string Tag_TagNo
         {
             get => _tag_TagNo;
             set { _tag_TagNo = value; OnPropertyChanged(nameof(Tag_TagNo)); }
-        }
-
-        public string Tag_Tracing
-        {
-            get => _tag_Tracing;
-            set { _tag_Tracing = value; OnPropertyChanged(nameof(Tag_Tracing)); }
         }
 
         public string Tag_WorkPackage
@@ -396,21 +263,7 @@ namespace VANTAGE.Models
             set { _tag_WorkPackage = value; OnPropertyChanged(nameof(Tag_WorkPackage)); }
         }
 
-        public double Tag_XRAY
-        {
-            get => _tag_XRAY;
-            set { _tag_XRAY = value; OnPropertyChanged(nameof(Tag_XRAY)); }
-        }
-
-        // === TRIGGER ===
-
-        public int Trg_DateTrigger
-        {
-            get => _trg_DateTrigger;
-            set { _trg_DateTrigger = value; OnPropertyChanged(nameof(Trg_DateTrigger)); }
-        }
-
-        // === UDF FIELDS ===
+        // === UDF FIELDS (Editable) ===
 
         public string UDFOne
         {
@@ -476,21 +329,13 @@ namespace VANTAGE.Models
         public string UDFEleven
         {
             get => _udfEleven;
-            set { _udfEleven = value; OnPropertyChanged(nameof(UDFEleven)); OnPropertyChanged(nameof(AssignedToUsername)); }
-        }
-
-        // REPURPOSED: LastModifiedBy
-        public string UDFTwelve
-        {
-            get => _udfTwelve;
-            set { _udfTwelve = value; OnPropertyChanged(nameof(UDFTwelve)); OnPropertyChanged(nameof(LastModifiedBy)); }
-        }
-
-        // REPURPOSED: CreatedBy
-        public string UDFThirteen
-        {
-            get => _udfThirteen;
-            set { _udfThirteen = value; OnPropertyChanged(nameof(UDFThirteen)); OnPropertyChanged(nameof(CreatedBy)); }
+            set
+            {
+                _udfEleven = value;
+                OnPropertyChanged(nameof(UDFEleven));
+                OnPropertyChanged(nameof(AssignedToUsername));
+                OnPropertyChanged(nameof(IsMyRecord));
+            }
         }
 
         public string UDFFourteen
@@ -523,48 +368,13 @@ namespace VANTAGE.Models
             set { _udfEighteen = value; OnPropertyChanged(nameof(UDFEighteen)); }
         }
 
-        // REPURPOSED: Unique Activity ID (READ ONLY)
-        public string UDFNineteen
-        {
-            get => _udfNineteen;
-            set { _udfNineteen = value; OnPropertyChanged(nameof(UDFNineteen)); }
-        }
-
         public string UDFTwenty
         {
             get => _udfTwenty;
             set { _udfTwenty = value; OnPropertyChanged(nameof(UDFTwenty)); }
         }
 
-        // === FRIENDLY ALIASES FOR REPURPOSED UDFs ===
-
-        public string AssignedToUsername
-        {
-            get => UDFEleven;
-            set => UDFEleven = value;
-        }
-
-        public string LastModifiedBy
-        {
-            get => UDFTwelve;
-            set => UDFTwelve = value;
-        }
-
-        public string CreatedBy
-        {
-            get => UDFThirteen;
-            set => UDFThirteen = value;
-        }
-
-        // ========================================
-        // USER-EDITABLE VALUES (with calculations)
-        // ========================================
-
-        public double Val_Base_Unit
-        {
-            get => _val_Base_Unit;
-            set { _val_Base_Unit = value; OnPropertyChanged(nameof(Val_Base_Unit)); }
-        }
+        // === VALUES (Editable) ===
 
         public double Val_BudgetedHours_Ind
         {
@@ -578,36 +388,16 @@ namespace VANTAGE.Models
             }
         }
 
-        public double Val_BudgetedHours_Group
-        {
-            get => _val_BudgetedHours_Group;
-            set { _val_BudgetedHours_Group = value; OnPropertyChanged(nameof(Val_BudgetedHours_Group)); }
-        }
-
-        public double Val_BudgetedHours_ROC
-        {
-            get => _val_BudgetedHours_ROC;
-            set { _val_BudgetedHours_ROC = value; OnPropertyChanged(nameof(Val_BudgetedHours_ROC)); }
-        }
-
-        public int Val_EarnedHours_ROC
-        {
-            get => _val_EarnedHours_ROC;
-            set { _val_EarnedHours_ROC = value; OnPropertyChanged(nameof(Val_EarnedHours_ROC)); }
-        }
-
         // PRIMARY EDITABLE: Val_EarnedQty
         public double Val_EarnedQty
         {
             get => _val_EarnedQty;
             set
             {
-                if (_val_EarnedQty != value)
+                if (Math.Abs(_val_EarnedQty - value) > 0.0001)
                 {
                     _val_EarnedQty = value;
                     OnPropertyChanged(nameof(Val_EarnedQty));
-
-                    // Bidirectional update: Update Val_Perc_Complete
                     UpdatePercCompleteFromEarnedQty();
                 }
             }
@@ -619,12 +409,10 @@ namespace VANTAGE.Models
             get => _val_Perc_Complete;
             set
             {
-                if (_val_Perc_Complete != value)
+                if (Math.Abs(_val_Perc_Complete - value) > 0.0001)
                 {
                     _val_Perc_Complete = value;
                     OnPropertyChanged(nameof(Val_Perc_Complete));
-
-                    // Bidirectional update: Update Val_EarnedQty
                     UpdateEarnedQtyFromPercComplete();
                 }
             }
@@ -647,8 +435,31 @@ namespace VANTAGE.Models
             set { _val_UOM = value; OnPropertyChanged(nameof(Val_UOM)); }
         }
 
+        public double Val_Pipe_Size1
+        {
+            get => _val_Pipe_Size1;
+            set { _val_Pipe_Size1 = value; OnPropertyChanged(nameof(Val_Pipe_Size1)); }
+        }
+
+        public double Val_Pipe_Size2
+        {
+            get => _val_Pipe_Size2;
+            set { _val_Pipe_Size2 = value; OnPropertyChanged(nameof(Val_Pipe_Size2)); }
+        }
+
+        public double Val_UDF_Two
+        {
+            get => _val_UDF_Two;
+            set { _val_UDF_Two = value; OnPropertyChanged(nameof(Val_UDF_Two)); }
+        }
+
+        public double Val_UDF_Three
+        {
+            get => _val_UDF_Three;
+            set { _val_UDF_Three = value; OnPropertyChanged(nameof(Val_UDF_Three)); }
+        }
         // ========================================
-        // CALCULATED VALUES (READ-ONLY)
+        // CALCULATED PROPERTIES (Read-Only)
         // ========================================
 
         public double Val_EarnedHours_Ind
@@ -678,30 +489,8 @@ namespace VANTAGE.Models
             {
                 _val_Percent_Earned = value;
                 OnPropertyChanged(nameof(Val_Percent_Earned));
-                OnPropertyChanged(nameof(Status)); // Status depends on this
+                OnPropertyChanged(nameof(Status));
             }
-        }
-
-        // === EQUIPMENT QUANTITY ===
-
-        public double Val_EQ_QTY
-        {
-            get => _val_EQ_QTY;
-            set { _val_EQ_QTY = value; OnPropertyChanged(nameof(Val_EQ_QTY)); }
-        }
-
-        public string Val_EQ_UOM
-        {
-            get => _val_EQ_UOM;
-            set { _val_EQ_UOM = value; OnPropertyChanged(nameof(Val_EQ_UOM)); }
-        }
-
-        // === ROC ===
-
-        public int Tag_ROC_ID
-        {
-            get => _tag_ROC_ID;
-            set { _tag_ROC_ID = value; OnPropertyChanged(nameof(Tag_ROC_ID)); }
         }
 
         public string LookUP_ROC_ID
@@ -712,79 +501,6 @@ namespace VANTAGE.Models
                 _lookUP_ROC_ID = value;
                 OnPropertyChanged(nameof(LookUP_ROC_ID));
             }
-        }
-
-        public double Val_ROC_Perc
-        {
-            get => _val_ROC_Perc;
-            set { _val_ROC_Perc = value; OnPropertyChanged(nameof(Val_ROC_Perc)); }
-        }
-
-        public double Val_ROC_BudgetQty
-        {
-            get => _val_ROC_BudgetQty;
-            set { _val_ROC_BudgetQty = value; OnPropertyChanged(nameof(Val_ROC_BudgetQty)); }
-        }
-
-        // === PIPE ===
-
-        public double Val_Pipe_Size1
-        {
-            get => _val_Pipe_Size1;
-            set { _val_Pipe_Size1 = value; OnPropertyChanged(nameof(Val_Pipe_Size1)); }
-        }
-
-        public double Val_Pipe_Size2
-        {
-            get => _val_Pipe_Size2;
-            set { _val_Pipe_Size2 = value; OnPropertyChanged(nameof(Val_Pipe_Size2)); }
-        }
-
-        // === PREVIOUS VALUES ===
-
-        public double Val_Prev_Earned_Hours
-        {
-            get => _val_Prev_Earned_Hours;
-            set { _val_Prev_Earned_Hours = value; OnPropertyChanged(nameof(Val_Prev_Earned_Hours)); }
-        }
-
-        public double Val_Prev_Earned_Qty
-        {
-            get => _val_Prev_Earned_Qty;
-            set { _val_Prev_Earned_Qty = value; OnPropertyChanged(nameof(Val_Prev_Earned_Qty)); }
-        }
-
-        // === TIMESTAMPS ===
-
-        public string Val_TimeStamp
-        {
-            get => _val_TimeStamp;
-            set { _val_TimeStamp = value; OnPropertyChanged(nameof(Val_TimeStamp)); }
-        }
-
-        // === CLIENT VALUES ===
-
-        public double Val_Client_EQ_QTY_BDG
-        {
-            get => _val_Client_EQ_QTY_BDG;
-            set
-            {
-                _val_Client_EQ_QTY_BDG = value;
-                OnPropertyChanged(nameof(Val_Client_EQ_QTY_BDG));
-                RecalculateClientEarnedQty();
-            }
-        }
-
-        public double Val_UDF_Two
-        {
-            get => _val_UDF_Two;
-            set { _val_UDF_Two = value; OnPropertyChanged(nameof(Val_UDF_Two)); }
-        }
-
-        public double Val_UDF_Three
-        {
-            get => _val_UDF_Three;
-            set { _val_UDF_Three = value; OnPropertyChanged(nameof(Val_UDF_Three)); }
         }
 
         public double VAL_Client_Earned_EQ_QTY
@@ -798,8 +514,35 @@ namespace VANTAGE.Models
         }
 
         // ========================================
-        // DERIVED/CALCULATED PROPERTIES
+        // DERIVED/COMPUTED PROPERTIES
         // ========================================
+
+        /// <summary>
+        /// User-friendly property for AssignedToUsername (maps to UDFEleven)
+        /// </summary>
+        public string AssignedToUsername
+        {
+            get => UDFEleven;
+            set => UDFEleven = value;
+        }
+
+        /// <summary>
+        /// User-friendly property for LastModifiedBy (maps to UDFTwelve)
+        /// </summary>
+        public string LastModifiedBy
+        {
+            get => UDFTwelve;
+            set => UDFTwelve = value;
+        }
+
+        /// <summary>
+        /// User-friendly property for CreatedBy (maps to UDFThirteen)
+        /// </summary>
+        public string CreatedBy
+        {
+            get => UDFThirteen;
+            set => UDFThirteen = value;
+        }
 
         /// <summary>
         /// Status derived from Val_Percent_Earned
@@ -817,6 +560,11 @@ namespace VANTAGE.Models
             }
         }
 
+        /// <summary>
+        /// Check if this record is assigned to the current user
+        /// </summary>
+        public bool IsMyRecord => UDFEleven == App.CurrentUser?.Username;
+
         // ========================================
         // CALCULATION METHODS
         // ========================================
@@ -831,7 +579,6 @@ namespace VANTAGE.Models
             {
                 double newPercComplete = (Val_EarnedQty / Val_Quantity) * 100;
 
-                // Only update if different to avoid infinite loop
                 if (Math.Abs(_val_Perc_Complete - newPercComplete) > 0.001)
                 {
                     _val_Perc_Complete = Math.Round(newPercComplete, 2);
@@ -852,7 +599,6 @@ namespace VANTAGE.Models
             {
                 double newEarnedQty = (Val_Perc_Complete / 100) * Val_Quantity;
 
-                // Only update if different to avoid infinite loop
                 if (Math.Abs(_val_EarnedQty - newEarnedQty) > 0.001)
                 {
                     _val_EarnedQty = Math.Round(newEarnedQty, 4);
@@ -873,9 +619,8 @@ namespace VANTAGE.Models
             double fromPerc = Val_Perc_Complete / 100;
 
             Val_Percent_Earned = Math.Max(fromQty, fromPerc);
-            Val_Earn_Qty = Val_Percent_Earned; // They're the same per your simplification
+            Val_Earn_Qty = Val_Percent_Earned;
 
-            // Trigger dependent calculations
             RecalculateEarnedHours();
             RecalculateClientEarnedQty();
         }
@@ -907,7 +652,7 @@ namespace VANTAGE.Models
 
         /// <summary>
         /// Calculate VAL_Client_Earned_EQ_QTY
-        /// Formula: IF(Val_EarnedHours_Ind > 0, ROUND((Val_EarnedHours_Ind / Val_BudgetedHours_Ind) * VAL_Client_EQ_QTY_BDG, 3), 0)
+        /// Formula: IF(Val_EarnedHours_Ind > 0, ROUND((Val_EarnedHours_Ind / Val_BudgetedHours_Ind) * Val_Client_EQ_QTY_BDG, 3), 0)
         /// </summary>
         private void RecalculateClientEarnedQty()
         {
