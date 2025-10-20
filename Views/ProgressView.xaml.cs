@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using VANTAGE.Data;
 using VANTAGE.Models;
 using VANTAGE.ViewModels;
@@ -29,6 +30,17 @@ namespace VANTAGE.Views
             // Load data AFTER the view is loaded
             this.Loaded += OnViewLoaded;
         }
+        private void FilterButton_Click(object sender, RoutedEventArgs e)
+        {
+            var button = sender as Button;
+            var columnName = button?.Tag as string;
+
+            System.Diagnostics.Debug.WriteLine($"Filter button clicked for column: {columnName}");
+
+            // TODO: Show filter popup
+            MessageBox.Show($"Filter popup for: {columnName}\n\n(We'll implement the popup next!)",
+                "Filter", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
         /// <summary>
         /// Auto-save when user finishes editing a cell
         /// </summary>
@@ -36,7 +48,7 @@ namespace VANTAGE.Views
         /// <summary>
         /// Auto-save when user finishes editing a cell
         /// </summary>
-        
+
         private async void OnViewLoaded(object sender, RoutedEventArgs e)
         {
             // REMOVE InitializeColumnVisibility() from here
@@ -167,7 +179,18 @@ namespace VANTAGE.Views
 
             System.Diagnostics.Debug.WriteLine($"→ Total checkboxes added: {lstColumnVisibility.Items.Count}");
         }
-
+        /// <summary>
+        /// Prevent editing of records not assigned to current user
+        /// </summary>
+        private void DgActivities_BeginningEdit(object sender, DataGridBeginningEditEventArgs e)
+        {
+            var activity = e.Row.Item as Activity;
+            if (activity != null && !activity.IsEditable)
+            {
+                // Cancel the edit
+                e.Cancel = true;
+            }
+        }
         private void ColumnCheckBox_Changed(object sender, RoutedEventArgs e)
         {
             var checkBox = sender as CheckBox;
@@ -190,38 +213,50 @@ namespace VANTAGE.Views
                 return;
             }
 
+            // Filter: Only allow unassigning records that user has permission to modify
+            var allowedActivities = selectedActivities.Where(a =>
+                App.CurrentUser.IsAdmin || // Admins can unassign any record
+                a.AssignedToUsername == App.CurrentUser.Username || // User's own records
+                a.AssignedToUsername == "Unassigned" // Already unassigned (no-op but allowed)
+            ).ToList();
+
+            if (!allowedActivities.Any())
+            {
+                MessageBox.Show("You can only unassign your own records or unassigned records.\n\nAdmins can unassign any record.",
+                    "Permission Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (allowedActivities.Count < selectedActivities.Count)
+            {
+                var result = MessageBox.Show(
+                    $"You can only unassign {allowedActivities.Count} of {selectedActivities.Count} selected records.\n\n" +
+                    $"Records assigned to other users cannot be unassigned.\n\nContinue with allowed records?",
+                    "Partial Unassignment",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+                if (result != MessageBoxResult.Yes)
+                    return;
+            }
+
             try
             {
-                // Unassign (set to "Unassigned") and save each one
                 int successCount = 0;
-                foreach (var activity in selectedActivities)
+                foreach (var activity in allowedActivities)
                 {
                     activity.AssignedToUsername = "Unassigned";
                     activity.LastModifiedBy = App.CurrentUser.Username;
 
-                    // Save to database
                     bool success = await ActivityRepository.UpdateActivityInDatabase(activity);
                     if (success)
                     {
                         successCount++;
                         System.Diagnostics.Debug.WriteLine($"✓ Activity {activity.ActivityID} unassigned");
                     }
-                    else
-                    {
-                        System.Diagnostics.Debug.WriteLine($"✗ Failed to save Activity {activity.ActivityID}");
-                    }
                 }
 
-                if (successCount == selectedActivities.Count)
-                {
-                    MessageBox.Show($"Unassigned {successCount} record(s).", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-                }
-                else
-                {
-                    MessageBox.Show($"Unassigned {successCount} of {selectedActivities.Count} record(s). Some failed to save.", "Partial Success", MessageBoxButton.OK, MessageBoxImage.Warning);
-                }
-
-                // Refresh the DataGrid to show color changes
+                MessageBox.Show($"Unassigned {successCount} record(s).", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
                 dgActivities.Items.Refresh();
             }
             catch (Exception ex)
@@ -539,38 +574,50 @@ namespace VANTAGE.Views
                 return;
             }
 
+            // Filter: Only allow assigning records that user has permission to modify
+            var allowedActivities = selectedActivities.Where(a =>
+                App.CurrentUser.IsAdmin || // Admins can assign any record
+                a.AssignedToUsername == App.CurrentUser.Username || // User's own records
+                a.AssignedToUsername == "Unassigned" // Unassigned records
+            ).ToList();
+
+            if (!allowedActivities.Any())
+            {
+                MessageBox.Show("You can only assign your own records or unassigned records.\n\nAdmins can assign any record.",
+                    "Permission Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (allowedActivities.Count < selectedActivities.Count)
+            {
+                var result = MessageBox.Show(
+                    $"You can only assign {allowedActivities.Count} of {selectedActivities.Count} selected records.\n\n" +
+                    $"Records assigned to other users cannot be reassigned.\n\nContinue with allowed records?",
+                    "Partial Assignment",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+                if (result != MessageBoxResult.Yes)
+                    return;
+            }
+
             try
             {
-                // Assign to current user and save each one
                 int successCount = 0;
-                foreach (var activity in selectedActivities)
+                foreach (var activity in allowedActivities)
                 {
                     activity.AssignedToUsername = App.CurrentUser.Username;
                     activity.LastModifiedBy = App.CurrentUser.Username;
 
-                    // Save to database
                     bool success = await ActivityRepository.UpdateActivityInDatabase(activity);
                     if (success)
                     {
                         successCount++;
                         System.Diagnostics.Debug.WriteLine($"✓ Activity {activity.ActivityID} assigned to {App.CurrentUser.Username}");
                     }
-                    else
-                    {
-                        System.Diagnostics.Debug.WriteLine($"✗ Failed to save Activity {activity.ActivityID}");
-                    }
                 }
 
-                if (successCount == selectedActivities.Count)
-                {
-                    MessageBox.Show($"Assigned {successCount} record(s) to you.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-                }
-                else
-                {
-                    MessageBox.Show($"Assigned {successCount} of {selectedActivities.Count} record(s). Some failed to save.", "Partial Success", MessageBoxButton.OK, MessageBoxImage.Warning);
-                }
-
-                // Refresh the DataGrid to show color changes
+                MessageBox.Show($"Assigned {successCount} record(s) to you.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
                 dgActivities.Items.Refresh();
             }
             catch (Exception ex)
@@ -580,47 +627,142 @@ namespace VANTAGE.Views
             }
         }
 
-        private void MenuAssignToUser_Click(object sender, RoutedEventArgs e)
+        private async void MenuAssignToUser_Click(object sender, RoutedEventArgs e)
         {
             // Get selected activities
             var selectedActivities = dgActivities.SelectedItems.Cast<Activity>().ToList();
-
             if (!selectedActivities.Any())
             {
                 MessageBox.Show("Please select one or more records to assign.", "No Selection", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
-            // Get list of all users from database
-            var users = GetAllUsers();
+            // Filter: Only allow assigning records that user has permission to modify
+            var allowedActivities = selectedActivities.Where(a =>
+                App.CurrentUser.IsAdmin || // Admins can assign any record
+                a.AssignedToUsername == App.CurrentUser.Username || // User's own records
+                a.AssignedToUsername == "Unassigned" // Unassigned records
+            ).ToList();
 
-            if (!users.Any())
+            if (!allowedActivities.Any())
+            {
+                MessageBox.Show("You can only assign your own records or unassigned records.\n\nAdmins can assign any record.",
+                    "Permission Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (allowedActivities.Count < selectedActivities.Count)
+            {
+                var result = MessageBox.Show(
+                    $"You can only assign {allowedActivities.Count} of {selectedActivities.Count} selected records.\n\n" +
+                    $"Records assigned to other users cannot be reassigned.\n\nContinue with allowed records?",
+                    "Partial Assignment",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+                if (result != MessageBoxResult.Yes)
+                    return;
+            }
+
+            // Get list of all users for dropdown
+            var allUsers = GetAllUsers().Select(u => u.Username).ToList();
+            if (!allUsers.Any())
             {
                 MessageBox.Show("No users found in the database.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
             // Show user selection dialog
-            var selectedUser = ShowUserSelectionDialog(users);
-
-            if (selectedUser == null)
+            var dialog = new Window
             {
-                return; // User cancelled
-            }
+                Title = "Assign to User",
+                Width = 300,
+                Height = 150,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                Owner = Window.GetWindow(this),
+                Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF1E1E1E"))
+            };
 
-            // Assign to selected user
-            foreach (var activity in selectedActivities)
+            var comboBox = new ComboBox
             {
-                activity.AssignedToUsername = selectedUser.Username;
-                activity.LastModifiedBy = App.CurrentUser.Username;
+                ItemsSource = allUsers,
+                SelectedIndex = 0,
+                Margin = new Thickness(10),
+                Height = 30
+            };
 
-                // TODO: Save to database (Phase 2 - Auto-save)
+            var okButton = new Button
+            {
+                Content = "OK",
+                Width = 80,
+                Height = 30,
+                Margin = new Thickness(5),
+                IsDefault = true
+            };
+
+            var cancelButton = new Button
+            {
+                Content = "Cancel",
+                Width = 80,
+                Height = 30,
+                Margin = new Thickness(5),
+                IsCancel = true
+            };
+
+            var buttonPanel = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                HorizontalAlignment = HorizontalAlignment.Center
+            };
+            buttonPanel.Children.Add(okButton);
+            buttonPanel.Children.Add(cancelButton);
+
+            var stackPanel = new StackPanel();
+            stackPanel.Children.Add(new TextBlock
+            {
+                Text = "Select user to assign records to:",
+                Margin = new Thickness(10),
+                Foreground = Brushes.White
+            });
+            stackPanel.Children.Add(comboBox);
+            stackPanel.Children.Add(buttonPanel);
+
+            dialog.Content = stackPanel;
+
+            bool? dialogResult = false;
+            okButton.Click += (s, args) => { dialogResult = true; dialog.Close(); };
+
+            if (dialog.ShowDialog() == true || dialogResult == true)
+            {
+                string selectedUser = comboBox.SelectedItem as string;
+                if (string.IsNullOrEmpty(selectedUser))
+                    return;
+
+                try
+                {
+                    int successCount = 0;
+                    foreach (var activity in allowedActivities)
+                    {
+                        activity.AssignedToUsername = selectedUser;
+                        activity.LastModifiedBy = App.CurrentUser.Username;
+
+                        bool success = await ActivityRepository.UpdateActivityInDatabase(activity);
+                        if (success)
+                        {
+                            successCount++;
+                            System.Diagnostics.Debug.WriteLine($"✓ Activity {activity.ActivityID} assigned to {selectedUser}");
+                        }
+                    }
+
+                    MessageBox.Show($"Assigned {successCount} record(s) to {selectedUser}.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                    dgActivities.Items.Refresh();
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"✗ Error assigning records: {ex.Message}");
+                    MessageBox.Show($"Error assigning records: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
-
-            MessageBox.Show($"Assigned {selectedActivities.Count} record(s) to {selectedUser.Username}.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-
-            // Refresh the DataGrid
-            dgActivities.Items.Refresh();
         }
 
         private async void MenuMarkComplete_Click(object sender, RoutedEventArgs e)
@@ -639,7 +781,7 @@ namespace VANTAGE.Views
                 foreach (var activity in selectedActivities)
                 {
                     // Set to 100% complete
-                    activity.Val_Perc_Complete = 100.0;
+                    activity.Val_Perc_Complete = 1.0;
 
                     // This will trigger calculated field updates automatically via INotifyPropertyChanged
                     // Val_EarnedQty, Val_Percent_Earned, Val_EarnedHours_Ind will all update

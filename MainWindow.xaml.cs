@@ -351,9 +351,20 @@ namespace VANTAGE
             }
         }
 
-        private void MenuAdmin1_Click(object sender, RoutedEventArgs e)
+        private void MenuToggleAdmin_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Admin 1 coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
+            if (App.CurrentUser == null) return;
+
+            // Toggle admin status (in memory only for this session)
+            App.CurrentUser.IsAdmin = !App.CurrentUser.IsAdmin;
+
+            string status = App.CurrentUser.IsAdmin ? "ADMIN" : "Regular User";
+            MessageBox.Show($"Admin status toggled!\n\nCurrent status: {status}\n\n(This is temporary - restarting the app will restore your real status)",
+                "Admin Toggle",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+
+            System.Diagnostics.Debug.WriteLine($"✓ Admin status toggled to: {App.CurrentUser.IsAdmin}");
         }
 
         private void MenuAdmin2_Click(object sender, RoutedEventArgs e)

@@ -591,6 +591,18 @@ namespace VANTAGE.Models
         /// </summary>
         public bool IsMyRecord => UDFEleven == App.CurrentUser?.Username;
 
+        /// <summary>
+        /// Can current user edit this record?
+        /// True if assigned to current user, false if assigned to others or unassigned
+        /// </summary>
+        public bool IsEditable
+        {
+            get
+            {
+                if (App.CurrentUser == null) return false;
+                return AssignedToUsername == App.CurrentUser.Username;
+            }
+        }
         // ========================================
         // CALCULATION METHODS
         // ========================================

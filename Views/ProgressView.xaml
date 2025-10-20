@@ -7,6 +7,45 @@
              d:DesignHeight="600" d:DesignWidth="1200"
              Background="{StaticResource BackgroundColor}">
 
+    <UserControl.Resources>
+        <!-- Column Header with Filter Button -->
+        <DataTemplate x:Key="FilterableColumnHeader">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0" 
+                       Text="{Binding}" 
+                       VerticalAlignment="Center"
+                       Foreground="{StaticResource ForegroundColor}"/>
+
+                <Button Grid.Column="1"
+                        Content="▼"
+                        Width="20"
+                        Height="20"
+                        Margin="5,0,0,0"
+                        Click="FilterButton_Click"
+                        Tag="{Binding}"
+                        ToolTip="Filter this column"
+                        Cursor="Hand">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <TextBlock Text="{TemplateBinding Content}"
+                                       Foreground="{StaticResource ForegroundColor}"
+                                       FontSize="14"
+                                       FontWeight="Bold"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       Background="Transparent"/>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+            </Grid>
+        </DataTemplate>
+    </UserControl.Resources>
+
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="200"/>
@@ -213,7 +252,8 @@
                           RowHeight="28"
                           HeadersVisibility="Column"
                           RowEditEnding="DgActivities_RowEditEnding"
-                          SelectionChanged="DgActivities_SelectionChanged">
+                          SelectionChanged="DgActivities_SelectionChanged"
+                          BeginningEdit="DgActivities_BeginningEdit">
 
                     <DataGrid.ColumnHeaderStyle>
                         <Style TargetType="DataGridColumnHeader">
@@ -233,9 +273,18 @@
                             <Setter Property="Background" Value="{StaticResource BackgroundColor}"/>
                             <Setter Property="Foreground" Value="{StaticResource ForegroundColor}"/>
                             <Style.Triggers>
+                                <!-- Green background for my records (editable) -->
                                 <DataTrigger Binding="{Binding IsMyRecord}" Value="True">
                                     <Setter Property="Background" Value="{StaticResource MyRecordsBackground}"/>
                                 </DataTrigger>
+
+                                <!-- Grey background/text for non-editable records -->
+                                <DataTrigger Binding="{Binding IsEditable}" Value="False">
+                                    <Setter Property="Background" Value="{StaticResource ReadOnlyBackground}"/>
+                                    <Setter Property="Foreground" Value="{StaticResource DisabledColor}"/>
+                                </DataTrigger>
+
+                                <!-- Selected row (overrides other backgrounds) -->
                                 <Trigger Property="IsSelected" Value="True">
                                     <Setter Property="Background" Value="{StaticResource GridSelectedRowBackground}"/>
                                 </Trigger>
@@ -249,6 +298,7 @@
                             <Setter Property="BorderThickness" Value="0,0,1,0"/>
                             <Setter Property="Padding" Value="5,0"/>
                             <Style.Triggers>
+                                <!-- Selected cell styling -->
                                 <Trigger Property="IsSelected" Value="True">
                                     <Setter Property="Background" Value="{StaticResource GridSelectedRowBackground}"/>
                                     <Setter Property="Foreground" Value="{StaticResource ForegroundColor}"/>
@@ -299,9 +349,13 @@
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="Description" 
-                                            Binding="{Binding Tag_Descriptions}" 
-                                            Width="250"/>
+                        <DataGridTextColumn Binding="{Binding Tag_Descriptions}"
+                                            Width="200">
+                                <DataGridTextColumn.Header>
+                                    <ContentControl Content="Descriptions" 
+                                                    ContentTemplate="{StaticResource FilterableColumnHeader}"/>
+                                </DataGridTextColumn.Header>
+                        </DataGridTextColumn>
 
                         <DataGridTextColumn Header="Component Type" 
                                             Binding="{Binding Catg_ComponentType}" 
