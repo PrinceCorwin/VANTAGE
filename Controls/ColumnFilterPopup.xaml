@@ -13,19 +13,26 @@
                    FontWeight="Bold"
                    Margin="0,5,0,5"/>
 
-        <ComboBox x:Name="cmbFilterType"
-                  Height="30"
-                  Margin="0,2"
-                  Background="{StaticResource ControlBackground}"
-                  Foreground="{StaticResource ForegroundColor}"
-                  BorderBrush="{StaticResource BorderColor}">
-            <ComboBoxItem Content="Equals" IsSelected="True"/>
-            <ComboBoxItem Content="Does Not Equal"/>
-            <ComboBoxItem Content="Contains"/>
-            <ComboBoxItem Content="Does Not Contain"/>
-            <ComboBoxItem Content="Begins With"/>
-            <ComboBoxItem Content="Ends With"/>
-        </ComboBox>
+        <!-- Filter Type Selector -->
+        <Border Background="{StaticResource ControlBackground}"
+        BorderBrush="{StaticResource BorderColor}"
+        BorderThickness="1"
+        Margin="0,2">
+            <ListBox x:Name="lstFilterType"
+             Height="120"
+             Background="{StaticResource ControlBackground}"
+             Foreground="{StaticResource ForegroundColor}"
+             BorderThickness="0"
+             SelectedIndex="0"
+             ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                <ListBoxItem Content="Equals" Foreground="{StaticResource ForegroundColor}"/>
+                <ListBoxItem Content="Does Not Equal" Foreground="{StaticResource ForegroundColor}"/>
+                <ListBoxItem Content="Contains" Foreground="{StaticResource ForegroundColor}"/>
+                <ListBoxItem Content="Does Not Contain" Foreground="{StaticResource ForegroundColor}"/>
+                <ListBoxItem Content="Begins With" Foreground="{StaticResource ForegroundColor}"/>
+                <ListBoxItem Content="Ends With" Foreground="{StaticResource ForegroundColor}"/>
+            </ListBox>
+        </Border>
 
         <TextBox x:Name="txtFilterValue"
                  Height="30"

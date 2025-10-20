@@ -7,6 +7,7 @@ using System.Windows.Media;
 using VANTAGE.Data;
 using VANTAGE.Models;
 using VANTAGE.ViewModels;
+using System.Windows.Controls.Primitives;
 
 namespace VANTAGE.Views
 {
@@ -30,6 +31,9 @@ namespace VANTAGE.Views
             // Load data AFTER the view is loaded
             this.Loaded += OnViewLoaded;
         }
+        private Popup _activeFilterPopup;
+        private string _activeFilterColumn;
+
         private void FilterButton_Click(object sender, RoutedEventArgs e)
         {
             var button = sender as Button;
@@ -37,14 +41,51 @@ namespace VANTAGE.Views
 
             System.Diagnostics.Debug.WriteLine($"Filter button clicked for column: {columnName}");
 
-            // TODO: Show filter popup
-            MessageBox.Show($"Filter popup for: {columnName}\n\n(We'll implement the popup next!)",
-                "Filter", MessageBoxButton.OK, MessageBoxImage.Information);
+            // Close any existing popup
+            if (_activeFilterPopup != null)
+            {
+                _activeFilterPopup.IsOpen = false;
+            }
+
+            // Create filter popup
+            var filterControl = new Controls.ColumnFilterPopup();
+            filterControl.FilterApplied += FilterControl_FilterApplied;
+            filterControl.FilterCleared += FilterControl_FilterCleared;
+
+            _activeFilterPopup = new Popup
+            {
+                Child = filterControl,
+                PlacementTarget = button,
+                Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom,
+                StaysOpen = false,
+                AllowsTransparency = true
+            };
+
+            _activeFilterColumn = columnName;
+            _activeFilterPopup.IsOpen = true;
         }
-        /// <summary>
-        /// Auto-save when user finishes editing a cell
-        /// </summary>
-        /// 
+
+        private void FilterControl_FilterApplied(object sender, Controls.FilterEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine($"Filter applied to {_activeFilterColumn}: {e.FilterType} = '{e.FilterValue}'");
+
+            // TODO: Apply actual filtering logic
+            MessageBox.Show($"Filter: {_activeFilterColumn}\nType: {e.FilterType}\nValue: {e.FilterValue}",
+                "Filter Applied", MessageBoxButton.OK, MessageBoxImage.Information);
+
+            _activeFilterPopup.IsOpen = false;
+        }
+
+        private void FilterControl_FilterCleared(object sender, EventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine($"Filter cleared for {_activeFilterColumn}");
+
+            // TODO: Clear filtering logic
+            MessageBox.Show($"Filter cleared for: {_activeFilterColumn}",
+                "Filter Cleared", MessageBoxButton.OK, MessageBoxImage.Information);
+
+            _activeFilterPopup.IsOpen = false;
+        }
         /// <summary>
         /// Auto-save when user finishes editing a cell
         /// </summary>

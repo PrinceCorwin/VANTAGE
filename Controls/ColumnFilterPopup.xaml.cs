@@ -16,7 +16,7 @@ namespace VANTAGE.Controls
 
         private void Apply_Click(object sender, RoutedEventArgs e)
         {
-            var filterType = (cmbFilterType.SelectedItem as ComboBoxItem)?.Content.ToString();
+            var filterType = (lstFilterType.SelectedItem as ListBoxItem)?.Content.ToString();
             var filterValue = txtFilterValue.Text;
 
             if (string.IsNullOrWhiteSpace(filterValue))
@@ -35,8 +35,13 @@ namespace VANTAGE.Controls
         private void Clear_Click(object sender, RoutedEventArgs e)
         {
             txtFilterValue.Clear();
-            cmbFilterType.SelectedIndex = 0;
+            lstFilterType.SelectedIndex = 0;
             FilterCleared?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void cmbFilterType_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
         }
     }
 
