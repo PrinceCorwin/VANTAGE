@@ -22,7 +22,7 @@ namespace VANTAGE
                 System.Diagnostics.Debug.WriteLine("✓ Database initialized");
 
                 // ADD THE NEW LINE HERE (commented out so it only ran once):
-                // DatabaseSetup.SeedTestUsers();
+                DatabaseSetup.SeedTestUsers();
 
                 // Step 2: Initialize default app settings
                 SettingsManager.InitializeDefaultAppSettings();

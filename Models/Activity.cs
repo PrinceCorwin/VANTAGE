@@ -65,8 +65,6 @@ namespace VANTAGE.Models
 
         // Calculated (private setters only)
         private double _val_EarnedHours_Ind;
-        private double _val_Earn_Qty;
-        private double _val_Percent_Earned;
         private string _lookUP_ROC_ID;
         private double _val_Client_Earned_EQ_QTY;
 
@@ -417,15 +415,31 @@ namespace VANTAGE.Models
                 }
             }
         }
+        /// <summary>
+        /// Display Val_Perc_Complete as percentage (0-100)
+        /// </summary>
+        public double Val_Perc_Complete_Display
+        {
+            get => Val_Perc_Complete * 100;
+            set
+            {
+                Val_Perc_Complete = value / 100.0; // Convert back to decimal for storage
+            }
+        }
 
         public double Val_Quantity
         {
             get => _val_Quantity;
             set
             {
-                _val_Quantity = value;
-                OnPropertyChanged(nameof(Val_Quantity));
-                RecalculatePercentEarned();
+                if (Math.Abs(_val_Quantity - value) > 0.0001)
+                {
+                    _val_Quantity = value;
+                    OnPropertyChanged(nameof(Val_Quantity));
+
+                    // Recalculate % Complete based on existing EarnedQty
+                    UpdatePercCompleteFromEarnedQty();
+                }
             }
         }
 
@@ -472,25 +486,37 @@ namespace VANTAGE.Models
             }
         }
 
+        /// <summary>
+        /// Calculated: Val_EarnedQty / Val_Quantity (decimal ratio)
+        /// Verification field - should match Val_Percent_Earned
+        /// </summary>
         public double Val_Earn_Qty
         {
-            get => _val_Earn_Qty;
-            private set
-            {
-                _val_Earn_Qty = value;
-                OnPropertyChanged(nameof(Val_Earn_Qty));
-            }
+            get => Val_Quantity > 0 ? Val_EarnedQty / Val_Quantity : 0;
         }
 
+        /// <summary>
+        /// Display Val_Earn_Qty as percentage (0-100)
+        /// </summary>
+        public double Val_Earn_Qty_Display
+        {
+            get => Val_Earn_Qty * 100;
+        }
+
+        /// <summary>
+        /// Calculated: Same as Val_Perc_Complete (for Azure compatibility)
+        /// </summary>
         public double Val_Percent_Earned
         {
-            get => _val_Percent_Earned;
-            private set
-            {
-                _val_Percent_Earned = value;
-                OnPropertyChanged(nameof(Val_Percent_Earned));
-                OnPropertyChanged(nameof(Status));
-            }
+            get => Val_Perc_Complete;
+        }
+
+        /// <summary>
+        /// Display Val_Percent_Earned as percentage (0-100)
+        /// </summary>
+        public double Val_Percent_Earned_Display
+        {
+            get => Val_Percent_Earned * 100;
         }
 
         public string LookUP_ROC_ID
@@ -577,35 +603,28 @@ namespace VANTAGE.Models
         {
             if (Val_Quantity > 0)
             {
-                double newPercComplete = (Val_EarnedQty / Val_Quantity) * 100;
-
+                double newPercComplete = Val_EarnedQty / Val_Quantity; // No × 100 - store as decimal
                 if (Math.Abs(_val_Perc_Complete - newPercComplete) > 0.001)
                 {
-                    _val_Perc_Complete = Math.Round(newPercComplete, 2);
+                    _val_Perc_Complete = Math.Round(newPercComplete, 4);
                     OnPropertyChanged(nameof(Val_Perc_Complete));
+                    OnPropertyChanged(nameof(Val_Perc_Complete_Display)); // Trigger display update
                 }
             }
-
             RecalculatePercentEarned();
         }
 
-        /// <summary>
-        /// Bidirectional: Update Val_EarnedQty when Val_Perc_Complete changes
-        /// Formula: Val_EarnedQty = (Val_Perc_Complete / 100) * Val_Quantity
-        /// </summary>
         private void UpdateEarnedQtyFromPercComplete()
         {
             if (Val_Quantity > 0)
             {
-                double newEarnedQty = (Val_Perc_Complete / 100) * Val_Quantity;
-
+                double newEarnedQty = Val_Perc_Complete * Val_Quantity; // No ÷ 100 - already decimal
                 if (Math.Abs(_val_EarnedQty - newEarnedQty) > 0.001)
                 {
                     _val_EarnedQty = Math.Round(newEarnedQty, 4);
                     OnPropertyChanged(nameof(Val_EarnedQty));
                 }
             }
-
             RecalculatePercentEarned();
         }
 
@@ -615,11 +634,12 @@ namespace VANTAGE.Models
         /// </summary>
         private void RecalculatePercentEarned()
         {
-            double fromQty = Val_Quantity > 0 ? Val_EarnedQty / Val_Quantity : 0;
-            double fromPerc = Val_Perc_Complete / 100;
-
-            Val_Percent_Earned = Math.Max(fromQty, fromPerc);
-            Val_Earn_Qty = Val_Percent_Earned;
+            // Val_Percent_Earned and Val_Earn_Qty calculate themselves automatically
+            // Just trigger notifications and dependent calculations
+            OnPropertyChanged(nameof(Val_Percent_Earned));
+            OnPropertyChanged(nameof(Val_Percent_Earned_Display));
+            OnPropertyChanged(nameof(Val_Earn_Qty));
+            OnPropertyChanged(nameof(Val_Earn_Qty_Display));
 
             RecalculateEarnedHours();
             RecalculateClientEarnedQty();

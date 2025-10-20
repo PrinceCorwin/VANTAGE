@@ -356,7 +356,7 @@
                                             Width="100"/>
 
                         <DataGridTextColumn Header="% Complete" 
-                                            Binding="{Binding Val_Perc_Complete, StringFormat=N2, UpdateSourceTrigger=LostFocus}" 
+                                            Binding="{Binding Val_Perc_Complete_Display, StringFormat=N2, UpdateSourceTrigger=LostFocus}" 
                                             Width="100"/>
 
                         <DataGridTextColumn Header="Budget Hrs" 
@@ -675,7 +675,7 @@
                         </DataGridTextColumn>
 
                         <DataGridTextColumn Header="Percent Earned" 
-                                                Binding="{Binding Val_Percent_Earned, StringFormat=N4}" 
+                                                Binding="{Binding Val_Percent_Earned_Display, StringFormat=N2}"
                                                 Width="120"
                                                 IsReadOnly="True"
                                                 Visibility="Collapsed">
