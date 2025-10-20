@@ -5,11 +5,169 @@ using VANTAGE.Models;
 
 namespace VANTAGE.Data
 {
+
     /// <summary>
     /// Repository for Activity data access with pagination support
     /// </summary>
     public static class ActivityRepository
     {
+        /// <summary>
+        /// Update an existing activity in the database
+        /// </summary>
+        public static async Task<bool> UpdateActivityInDatabase(Activity activity)
+        {
+            try
+            {
+                await Task.Run(() =>
+                {
+                    using var connection = DatabaseSetup.GetConnection();
+                    connection.Open();
+
+                    var command = connection.CreateCommand();
+                    command.CommandText = @"
+                UPDATE Activities SET
+                    HexNO = @HexNO,
+                    Catg_ComponentType = @Catg_ComponentType,
+                    Catg_PhaseCategory = @Catg_PhaseCategory,
+                    Catg_ROC_Step = @Catg_ROC_Step,
+                    Notes_Comments = @Notes_Comments,
+                    Tag_Area = @Tag_Area,
+                    Tag_Aux1 = @Tag_Aux1,
+                    Tag_Aux2 = @Tag_Aux2,
+                    Tag_Aux3 = @Tag_Aux3,
+                    Tag_Descriptions = @Tag_Descriptions,
+                    Tag_Phase_Code = @Tag_Phase_Code,
+                    Tag_ProjectID = @Tag_ProjectID,
+                    Tag_Sch_ActNo = @Tag_Sch_ActNo,
+                    Tag_Service = @Tag_Service,
+                    Tag_ShopField = @Tag_ShopField,
+                    Tag_SubArea = @Tag_SubArea,
+                    Tag_System = @Tag_System,
+                    Tag_TagNo = @Tag_TagNo,
+                    Tag_WorkPackage = @Tag_WorkPackage,
+                    UDFOne = @UDFOne,
+                    UDFTwo = @UDFTwo,
+                    UDFThree = @UDFThree,
+                    UDFFour = @UDFFour,
+                    UDFFive = @UDFFive,
+                    UDFSix = @UDFSix,
+                    UDFSeven = @UDFSeven,
+                    UDFEight = @UDFEight,
+                    UDFNine = @UDFNine,
+                    UDFTen = @UDFTen,
+                    UDFEleven = @UDFEleven,
+                    UDFTwelve = @UDFTwelve,
+                    UDFFourteen = @UDFFourteen,
+                    UDFFifteen = @UDFFifteen,
+                    UDFSixteen = @UDFSixteen,
+                    UDFSeventeen = @UDFSeventeen,
+                    UDFEighteen = @UDFEighteen,
+                    UDFTwenty = @UDFTwenty,
+                    Val_BudgetedHours_Ind = @Val_BudgetedHours_Ind,
+                    Val_EarnedQty = @Val_EarnedQty,
+                    Val_Perc_Complete = @Val_Perc_Complete,
+                    Val_Quantity = @Val_Quantity,
+                    Val_UOM = @Val_UOM,
+                    Val_Pipe_Size1 = @Val_Pipe_Size1,
+                    Val_Pipe_Size2 = @Val_Pipe_Size2,
+                    Val_UDF_Two = @Val_UDF_Two,
+                    Val_UDF_Three = @Val_UDF_Three,
+                    Val_TimeStamp = @Val_TimeStamp
+                WHERE ActivityID = @ActivityID";
+
+                    // Add parameters for all editable fields
+                    command.Parameters.AddWithValue("@ActivityID", activity.ActivityID);
+                    command.Parameters.AddWithValue("@HexNO", activity.HexNO);
+                    command.Parameters.AddWithValue("@Catg_ComponentType", activity.Catg_ComponentType ?? "");
+                    command.Parameters.AddWithValue("@Catg_PhaseCategory", activity.Catg_PhaseCategory ?? "");
+                    command.Parameters.AddWithValue("@Catg_ROC_Step", activity.Catg_ROC_Step ?? "");
+                    command.Parameters.AddWithValue("@Notes_Comments", activity.Notes_Comments ?? "");
+                    command.Parameters.AddWithValue("@Tag_Area", activity.Tag_Area ?? "");
+                    command.Parameters.AddWithValue("@Tag_Aux1", activity.Tag_Aux1 ?? "");
+                    command.Parameters.AddWithValue("@Tag_Aux2", activity.Tag_Aux2 ?? "");
+                    command.Parameters.AddWithValue("@Tag_Aux3", activity.Tag_Aux3 ?? "");
+                    command.Parameters.AddWithValue("@Tag_Descriptions", activity.Tag_Descriptions ?? "");
+                    command.Parameters.AddWithValue("@Tag_Phase_Code", activity.Tag_Phase_Code ?? "");
+                    command.Parameters.AddWithValue("@Tag_ProjectID", activity.Tag_ProjectID ?? "");
+                    command.Parameters.AddWithValue("@Tag_Sch_ActNo", activity.Tag_Sch_ActNo ?? "");
+                    command.Parameters.AddWithValue("@Tag_Service", activity.Tag_Service ?? "");
+                    command.Parameters.AddWithValue("@Tag_ShopField", activity.Tag_ShopField ?? "");
+                    command.Parameters.AddWithValue("@Tag_SubArea", activity.Tag_SubArea ?? "");
+                    command.Parameters.AddWithValue("@Tag_System", activity.Tag_System ?? "");
+                    command.Parameters.AddWithValue("@Tag_TagNo", activity.Tag_TagNo ?? "");
+                    command.Parameters.AddWithValue("@Tag_WorkPackage", activity.Tag_WorkPackage ?? "");
+                    command.Parameters.AddWithValue("@UDFOne", activity.UDFOne ?? "");
+                    command.Parameters.AddWithValue("@UDFTwo", activity.UDFTwo ?? "");
+                    command.Parameters.AddWithValue("@UDFThree", activity.UDFThree ?? "");
+                    command.Parameters.AddWithValue("@UDFFour", activity.UDFFour ?? "");
+                    command.Parameters.AddWithValue("@UDFFive", activity.UDFFive ?? "");
+                    command.Parameters.AddWithValue("@UDFSix", activity.UDFSix ?? "");
+                    command.Parameters.AddWithValue("@UDFSeven", activity.UDFSeven);
+                    command.Parameters.AddWithValue("@UDFEight", activity.UDFEight ?? "");
+                    command.Parameters.AddWithValue("@UDFNine", activity.UDFNine ?? "");
+                    command.Parameters.AddWithValue("@UDFTen", activity.UDFTen ?? "");
+                    command.Parameters.AddWithValue("@UDFEleven", activity.UDFEleven ?? "");
+                    command.Parameters.AddWithValue("@UDFTwelve", activity.UDFTwelve ?? "");
+                    command.Parameters.AddWithValue("@UDFFourteen", activity.UDFFourteen ?? "");
+                    command.Parameters.AddWithValue("@UDFFifteen", activity.UDFFifteen ?? "");
+                    command.Parameters.AddWithValue("@UDFSixteen", activity.UDFSixteen ?? "");
+                    command.Parameters.AddWithValue("@UDFSeventeen", activity.UDFSeventeen ?? "");
+                    command.Parameters.AddWithValue("@UDFEighteen", activity.UDFEighteen ?? "");
+                    command.Parameters.AddWithValue("@UDFTwenty", activity.UDFTwenty ?? "");
+                    command.Parameters.AddWithValue("@Val_BudgetedHours_Ind", activity.Val_BudgetedHours_Ind);
+                    command.Parameters.AddWithValue("@Val_EarnedQty", activity.Val_EarnedQty);
+                    command.Parameters.AddWithValue("@Val_Perc_Complete", activity.Val_Perc_Complete);
+                    command.Parameters.AddWithValue("@Val_Quantity", activity.Val_Quantity);
+                    command.Parameters.AddWithValue("@Val_UOM", activity.Val_UOM ?? "");
+                    command.Parameters.AddWithValue("@Val_Pipe_Size1", activity.Val_Pipe_Size1);
+                    command.Parameters.AddWithValue("@Val_Pipe_Size2", activity.Val_Pipe_Size2);
+                    command.Parameters.AddWithValue("@Val_UDF_Two", activity.Val_UDF_Two);
+                    command.Parameters.AddWithValue("@Val_UDF_Three", activity.Val_UDF_Three);
+                    command.Parameters.AddWithValue("@Val_TimeStamp", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+
+                    int rowsAffected = command.ExecuteNonQuery();
+                    System.Diagnostics.Debug.WriteLine($"✓ Activity {activity.ActivityID} updated in database");
+
+                    return rowsAffected > 0;
+                });
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"✗ Error updating activity: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+                return false;
+            }
+        }
+        /// <summary>
+        /// Get list of valid usernames from Users table
+        /// </summary>
+        private static HashSet<string> GetValidUsernames()
+        {
+            var validUsers = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            try
+            {
+                using var connection = DatabaseSetup.GetConnection();
+                connection.Open();
+
+                var command = connection.CreateCommand();
+                command.CommandText = "SELECT Username FROM Users";
+
+                using var reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    validUsers.Add(reader.GetString(0));
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"✗ Error loading valid usernames: {ex.Message}");
+            }
+
+            return validUsers;
+        }
         /// <summary>
         /// Get total count of activities in database
         /// </summary>
@@ -36,6 +194,9 @@ namespace VANTAGE.Data
         /// <returns>List of activities for the requested page</returns>
         public static async Task<List<Activity>> GetPageAsync(int pageNumber, int pageSize)
         {
+            // Get valid usernames for validation
+            var validUsernames = GetValidUsernames();
+
             return await Task.Run(() =>
             {
                 var activities = new List<Activity>();
@@ -148,7 +309,9 @@ namespace VANTAGE.Data
                         UDFEight = reader.IsDBNull(48) ? "" : reader.GetString(48),
                         UDFNine = reader.IsDBNull(49) ? "" : reader.GetString(49),
                         UDFTen = reader.IsDBNull(50) ? "" : reader.GetString(50),
-                        UDFEleven = reader.IsDBNull(51) ? "" : reader.GetString(51),
+                        UDFEleven = reader.IsDBNull(51) ? "Unassigned" :
+                                    (string.IsNullOrWhiteSpace(reader.GetString(51)) ? "Unassigned" :
+                                    (validUsernames.Contains(reader.GetString(51)) ? reader.GetString(51) : "Unassigned")),
                         UDFTwelve = reader.IsDBNull(52) ? "" : reader.GetString(52),
                         UDFThirteen = reader.IsDBNull(53) ? "" : reader.GetString(53),
                         UDFFourteen = reader.IsDBNull(54) ? "" : reader.GetString(54),

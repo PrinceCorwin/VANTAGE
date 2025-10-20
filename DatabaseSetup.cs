@@ -200,7 +200,43 @@ namespace VANTAGE
                 throw;
             }
         }
+        /// <summary>
+        /// Add test users to the database (for development/testing)
+        /// </summary>
+        public static void SeedTestUsers()
+        {
+            try
+            {
+                using var connection = GetConnection();
+                connection.Open();
 
+                var testUsers = new[]
+                {
+            new { Username = "John.Smith", FullName = "John Smith", Email = "john.smith@company.com" },
+            new { Username = "Jane.Doe", FullName = "Jane Doe", Email = "jane.doe@company.com" },
+            new { Username = "Mike.Johnson", FullName = "Mike Johnson", Email = "mike.johnson@company.com" },
+            new { Username = "Sarah.Williams", FullName = "Sarah Williams", Email = "sarah.williams@company.com" }
+        };
+
+                foreach (var user in testUsers)
+                {
+                    var command = connection.CreateCommand();
+                    command.CommandText = @"
+                INSERT OR IGNORE INTO Users (Username, FullName, Email, PhoneNumber) 
+                VALUES (@username, @fullName, @email, '')";
+                    command.Parameters.AddWithValue("@username", user.Username);
+                    command.Parameters.AddWithValue("@fullName", user.FullName);
+                    command.Parameters.AddWithValue("@email", user.Email);
+                    command.ExecuteNonQuery();
+                }
+
+                System.Diagnostics.Debug.WriteLine("✓ Test users seeded");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"✗ Error seeding test users: {ex.Message}");
+            }
+        }
         public static SqliteConnection GetConnection()
         {
             System.Diagnostics.Debug.WriteLine($"🔍 GetConnection() called - DbPath: {DbPath}");

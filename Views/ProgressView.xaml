@@ -212,7 +212,7 @@
                           VerticalGridLinesBrush="{StaticResource BorderColor}"
                           RowHeight="28"
                           HeadersVisibility="Column"
-                          CellEditEnding="DgActivities_CellEditEnding"
+                          RowEditEnding="DgActivities_RowEditEnding"
                           SelectionChanged="DgActivities_SelectionChanged">
 
                     <DataGrid.ColumnHeaderStyle>
@@ -269,6 +269,10 @@
                                       Click="MenuAssignToUser_Click"
                                       Background="{StaticResource ControlBackground}"
                                       Foreground="{StaticResource ForegroundColor}"/>
+                            <MenuItem Header="Unassign" 
+                                      Click="MenuUnassign_Click"
+                                      Background="{StaticResource ControlBackground}"
+                                      Foreground="{StaticResource ForegroundColor}"/>
                             <Separator Background="{StaticResource BorderColor}"/>
                             <MenuItem Header="Mark Complete (100%)" 
                                       Click="MenuMarkComplete_Click"
@@ -276,10 +280,6 @@
                                       Foreground="{StaticResource ForegroundColor}"/>
                             <MenuItem Header="Mark Not Started (0%)" 
                                       Click="MenuMarkNotStarted_Click"
-                                      Background="{StaticResource ControlBackground}"
-                                      Foreground="{StaticResource ForegroundColor}"/>
-                            <MenuItem Header="Update Percent..." 
-                                      Click="MenuUpdatePercent_Click"
                                       Background="{StaticResource ControlBackground}"
                                       Foreground="{StaticResource ForegroundColor}"/>
                         </ContextMenu>
@@ -293,7 +293,7 @@
                                             IsReadOnly="True">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
-                                    <Setter Property="Background" Value="{StaticResource ControlBackground}"/>
+                                    <Setter Property="Background" Value="{StaticResource ReadOnlyBackground}"/>
                                     <Setter Property="Foreground" Value="{StaticResource DisabledColor}"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
@@ -369,7 +369,8 @@
                                             IsReadOnly="True">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
-                                    <Setter Property="Background" Value="{StaticResource GridAlternatingRowBackground}"/>
+                                    <Setter Property="Background" Value="{StaticResource ReadOnlyBackground}"/>
+                                    <Setter Property="Foreground" Value="{StaticResource DisabledColor}"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
@@ -380,7 +381,8 @@
                                             IsReadOnly="True">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
-                                    <Setter Property="Background" Value="{StaticResource GridAlternatingRowBackground}"/>
+                                    <Setter Property="Background" Value="{StaticResource ReadOnlyBackground}"/>
+                                    <Setter Property="Foreground" Value="{StaticResource DisabledColor}"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
@@ -395,7 +397,15 @@
 
                         <DataGridTextColumn Header="Assigned To" 
                                             Binding="{Binding AssignedToUsername}" 
-                                            Width="120"/>
+                                            IsReadOnly="True"
+                                            Width="120">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Background" Value="{StaticResource ReadOnlyBackground}"/>
+                                    <Setter Property="Foreground" Value="{StaticResource DisabledColor}"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
 
                         <!-- ALL OTHER COLLAPSED COLUMNS (keeping exactly as you have them) -->
                         <DataGridTextColumn Header="Hex NO" 
@@ -658,7 +668,8 @@
                                                 Visibility="Collapsed">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
-                                    <Setter Property="Background" Value="{StaticResource GridAlternatingRowBackground}"/>
+                                    <Setter Property="Background" Value="{StaticResource ReadOnlyBackground}"/>
+                                    <Setter Property="Foreground" Value="{StaticResource DisabledColor}"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
@@ -670,7 +681,8 @@
                                                 Visibility="Collapsed">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
-                                    <Setter Property="Background" Value="{StaticResource GridAlternatingRowBackground}"/>
+                                    <Setter Property="Background" Value="{StaticResource ReadOnlyBackground}"/>
+                                    <Setter Property="Foreground" Value="{StaticResource DisabledColor}"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
@@ -699,7 +711,8 @@
                                                 Visibility="Collapsed">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
-                                    <Setter Property="Background" Value="{StaticResource GridAlternatingRowBackground}"/>
+                                    <Setter Property="Background" Value="{StaticResource ReadOnlyBackground}"/>
+                                    <Setter Property="Foreground" Value="{StaticResource DisabledColor}"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
@@ -762,7 +775,14 @@
                                                 Binding="{Binding VAL_Client_Earned_EQ_QTY, StringFormat=N3}" 
                                                 Width="150"
                                                 IsReadOnly="True"
-                                                Visibility="Collapsed"/>
+                                                Visibility="Collapsed">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Background" Value="{StaticResource ReadOnlyBackground}"/>
+                                    <Setter Property="Foreground" Value="{StaticResource DisabledColor}"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
 
                     </DataGrid.Columns>
                 </DataGrid>

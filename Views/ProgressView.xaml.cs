@@ -3,8 +3,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using VANTAGE.ViewModels;
+using VANTAGE.Data;
 using VANTAGE.Models;
+using VANTAGE.ViewModels;
 
 namespace VANTAGE.Views
 {
@@ -28,7 +29,14 @@ namespace VANTAGE.Views
             // Load data AFTER the view is loaded
             this.Loaded += OnViewLoaded;
         }
-
+        /// <summary>
+        /// Auto-save when user finishes editing a cell
+        /// </summary>
+        /// 
+        /// <summary>
+        /// Auto-save when user finishes editing a cell
+        /// </summary>
+        
         private async void OnViewLoaded(object sender, RoutedEventArgs e)
         {
             // REMOVE InitializeColumnVisibility() from here
@@ -172,7 +180,56 @@ namespace VANTAGE.Views
             var column = _columnMap[columnName];
             column.Visibility = checkBox.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
         }
+        private async void MenuUnassign_Click(object sender, RoutedEventArgs e)
+        {
+            // Get selected activities
+            var selectedActivities = dgActivities.SelectedItems.Cast<Activity>().ToList();
+            if (!selectedActivities.Any())
+            {
+                MessageBox.Show("Please select one or more records to unassign.", "No Selection", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
 
+            try
+            {
+                // Unassign (set to "Unassigned") and save each one
+                int successCount = 0;
+                foreach (var activity in selectedActivities)
+                {
+                    activity.AssignedToUsername = "Unassigned";
+                    activity.LastModifiedBy = App.CurrentUser.Username;
+
+                    // Save to database
+                    bool success = await ActivityRepository.UpdateActivityInDatabase(activity);
+                    if (success)
+                    {
+                        successCount++;
+                        System.Diagnostics.Debug.WriteLine($"✓ Activity {activity.ActivityID} unassigned");
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"✗ Failed to save Activity {activity.ActivityID}");
+                    }
+                }
+
+                if (successCount == selectedActivities.Count)
+                {
+                    MessageBox.Show($"Unassigned {successCount} record(s).", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                else
+                {
+                    MessageBox.Show($"Unassigned {successCount} of {selectedActivities.Count} record(s). Some failed to save.", "Partial Success", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+
+                // Refresh the DataGrid to show color changes
+                dgActivities.Items.Refresh();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"✗ Error unassigning records: {ex.Message}");
+                MessageBox.Show($"Error unassigning records: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
         private void UpdateRecordCount()
         {
             txtFilteredCount.Text = $"{_viewModel.FilteredCount} of {_viewModel.PageSize} records (Total: {_viewModel.TotalRecordCount})";
@@ -410,9 +467,61 @@ namespace VANTAGE.Views
             UpdatePagingControls();
         }
 
-        private void DgActivities_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
+        /// <summary>
+        /// Auto-save when user finishes editing a cell
+        /// </summary>
+        /// <summary>
+        /// Auto-save when user finishes editing a row
+        /// </summary>
+        private async void DgActivities_RowEditEnding(object sender, DataGridRowEditEndingEventArgs e)
         {
-            // TODO: Implement auto-save
+            // Only save if edit was committed (not cancelled)
+            if (e.EditAction != DataGridEditAction.Commit)
+                return;
+
+            try
+            {
+                // Get the edited activity
+                var editedActivity = e.Row.Item as Activity;
+                if (editedActivity == null)
+                    return;
+
+                // Update LastModifiedBy with current user
+                editedActivity.LastModifiedBy = App.CurrentUser?.Username ?? "Unknown";
+
+                // Wait for the edit to fully commit before saving
+                await Dispatcher.InvokeAsync(async () =>
+                {
+                    System.Diagnostics.Debug.WriteLine($"→ Saving changes for Activity {editedActivity.ActivityID}...");
+                    System.Diagnostics.Debug.WriteLine($"   Catg_ROC_Step = '{editedActivity.Catg_ROC_Step}'");
+
+                    // Save to database
+                    bool success = await ActivityRepository.UpdateActivityInDatabase(editedActivity);
+
+                    if (success)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"✓ Activity {editedActivity.ActivityID} saved successfully");
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"✗ Failed to save Activity {editedActivity.ActivityID}");
+                        MessageBox.Show(
+                            $"Failed to save changes for Activity {editedActivity.ActivityID}.\nPlease try again.",
+                            "Save Error",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error);
+                    }
+                }, System.Windows.Threading.DispatcherPriority.Background);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"✗ Error in RowEditEnding: {ex.Message}");
+                MessageBox.Show(
+                    $"Error saving changes: {ex.Message}",
+                    "Save Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
         }
 
         private void DgActivities_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -420,30 +529,55 @@ namespace VANTAGE.Views
             // TODO: Implement
         }
 
-        private void MenuAssignToMe_Click(object sender, RoutedEventArgs e)
+        private async void MenuAssignToMe_Click(object sender, RoutedEventArgs e)
         {
             // Get selected activities
             var selectedActivities = dgActivities.SelectedItems.Cast<Activity>().ToList();
-
             if (!selectedActivities.Any())
             {
                 MessageBox.Show("Please select one or more records to assign.", "No Selection", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
-            // Assign to current user
-            foreach (var activity in selectedActivities)
+            try
             {
-                activity.AssignedToUsername = App.CurrentUser.Username;
-                activity.LastModifiedBy = App.CurrentUser.Username;
+                // Assign to current user and save each one
+                int successCount = 0;
+                foreach (var activity in selectedActivities)
+                {
+                    activity.AssignedToUsername = App.CurrentUser.Username;
+                    activity.LastModifiedBy = App.CurrentUser.Username;
 
-                // TODO: Save to database (Phase 2 - Auto-save)
+                    // Save to database
+                    bool success = await ActivityRepository.UpdateActivityInDatabase(activity);
+                    if (success)
+                    {
+                        successCount++;
+                        System.Diagnostics.Debug.WriteLine($"✓ Activity {activity.ActivityID} assigned to {App.CurrentUser.Username}");
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"✗ Failed to save Activity {activity.ActivityID}");
+                    }
+                }
+
+                if (successCount == selectedActivities.Count)
+                {
+                    MessageBox.Show($"Assigned {successCount} record(s) to you.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                else
+                {
+                    MessageBox.Show($"Assigned {successCount} of {selectedActivities.Count} record(s). Some failed to save.", "Partial Success", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+
+                // Refresh the DataGrid to show color changes
+                dgActivities.Items.Refresh();
             }
-
-            MessageBox.Show($"Assigned {selectedActivities.Count} record(s) to you.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-
-            // Refresh the DataGrid to show color changes
-            dgActivities.Items.Refresh();
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"✗ Error assigning records: {ex.Message}");
+                MessageBox.Show($"Error assigning records: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void MenuAssignToUser_Click(object sender, RoutedEventArgs e)
@@ -489,19 +623,117 @@ namespace VANTAGE.Views
             dgActivities.Items.Refresh();
         }
 
-        private void MenuMarkComplete_Click(object sender, RoutedEventArgs e)
+        private async void MenuMarkComplete_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: Implement
+            // Get selected activities
+            var selectedActivities = dgActivities.SelectedItems.Cast<Activity>().ToList();
+            if (!selectedActivities.Any())
+            {
+                MessageBox.Show("Please select one or more records to mark complete.", "No Selection", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            try
+            {
+                int successCount = 0;
+                foreach (var activity in selectedActivities)
+                {
+                    // Set to 100% complete
+                    activity.Val_Perc_Complete = 100.0;
+
+                    // This will trigger calculated field updates automatically via INotifyPropertyChanged
+                    // Val_EarnedQty, Val_Percent_Earned, Val_EarnedHours_Ind will all update
+
+                    // Update LastModifiedBy
+                    activity.LastModifiedBy = App.CurrentUser.Username;
+
+                    // Save to database
+                    bool success = await ActivityRepository.UpdateActivityInDatabase(activity);
+                    if (success)
+                    {
+                        successCount++;
+                        System.Diagnostics.Debug.WriteLine($"✓ Activity {activity.ActivityID} marked complete");
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"✗ Failed to save Activity {activity.ActivityID}");
+                    }
+                }
+
+                if (successCount == selectedActivities.Count)
+                {
+                    MessageBox.Show($"Marked {successCount} record(s) as complete.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                else
+                {
+                    MessageBox.Show($"Marked {successCount} of {selectedActivities.Count} record(s) as complete. Some failed to save.", "Partial Success", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+
+                // Refresh the DataGrid to show changes
+                dgActivities.Items.Refresh();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"✗ Error marking records complete: {ex.Message}");
+                MessageBox.Show($"Error marking records complete: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
-        private void MenuMarkNotStarted_Click(object sender, RoutedEventArgs e)
+        private async void MenuMarkNotStarted_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: Implement
+            // Get selected activities
+            var selectedActivities = dgActivities.SelectedItems.Cast<Activity>().ToList();
+            if (!selectedActivities.Any())
+            {
+                MessageBox.Show("Please select one or more records to mark not started.", "No Selection", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            try
+            {
+                int successCount = 0;
+                foreach (var activity in selectedActivities)
+                {
+                    // Set to 0% complete
+                    activity.Val_Perc_Complete = 0.0;
+
+                    // This will trigger calculated field updates automatically via INotifyPropertyChanged
+                    // Val_EarnedQty, Val_Percent_Earned, Val_EarnedHours_Ind will all update to 0
+
+                    // Update LastModifiedBy
+                    activity.LastModifiedBy = App.CurrentUser.Username;
+
+                    // Save to database
+                    bool success = await ActivityRepository.UpdateActivityInDatabase(activity);
+                    if (success)
+                    {
+                        successCount++;
+                        System.Diagnostics.Debug.WriteLine($"✓ Activity {activity.ActivityID} marked not started");
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"✗ Failed to save Activity {activity.ActivityID}");
+                    }
+                }
+
+                if (successCount == selectedActivities.Count)
+                {
+                    MessageBox.Show($"Marked {successCount} record(s) as not started.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                else
+                {
+                    MessageBox.Show($"Marked {successCount} of {selectedActivities.Count} record(s) as not started. Some failed to save.", "Partial Success", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+
+                // Refresh the DataGrid to show changes
+                dgActivities.Items.Refresh();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"✗ Error marking records not started: {ex.Message}");
+                MessageBox.Show($"Error marking records not started: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
-        private void MenuUpdatePercent_Click(object sender, RoutedEventArgs e)
-        {
-            // TODO: Implement
-        }
     }
 }

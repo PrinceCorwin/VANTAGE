@@ -37,6 +37,7 @@
     <SolidColorBrush x:Key="GridHeaderForeground" Color="#FFFFFFFF"/>
     <SolidColorBrush x:Key="GridSelectedRowBackground" Color="#330078D7"/>
     <SolidColorBrush x:Key="GridGridLineColor" Color="#FF3C3C3C"/>
+    <SolidColorBrush x:Key="ReadOnlyBackground" Color="#FF2A2A2A"/>
 
     <!-- === STATUS COLORS === -->
     <SolidColorBrush x:Key="StatusGreen" Color="#FF27AE60"/>
