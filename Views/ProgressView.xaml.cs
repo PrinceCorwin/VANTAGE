@@ -69,9 +69,8 @@ namespace VANTAGE.Views
         {
             System.Diagnostics.Debug.WriteLine($"Filter applied to {_activeFilterColumn}: {e.FilterType} = '{e.FilterValue}'");
 
-            // TODO: Apply actual filtering logic
-            MessageBox.Show($"Filter: {_activeFilterColumn}\nType: {e.FilterType}\nValue: {e.FilterValue}",
-                "Filter Applied", MessageBoxButton.OK, MessageBoxImage.Information);
+            // Apply filter through ViewModel
+            _viewModel?.ApplyFilter(_activeFilterColumn, e.FilterType, e.FilterValue);
 
             _activeFilterPopup.IsOpen = false;
         }
@@ -80,9 +79,8 @@ namespace VANTAGE.Views
         {
             System.Diagnostics.Debug.WriteLine($"Filter cleared for {_activeFilterColumn}");
 
-            // TODO: Clear filtering logic
-            MessageBox.Show($"Filter cleared for: {_activeFilterColumn}",
-                "Filter Cleared", MessageBoxButton.OK, MessageBoxImage.Information);
+            // Clear filter through ViewModel
+            _viewModel?.ClearFilter(_activeFilterColumn);
 
             _activeFilterPopup.IsOpen = false;
         }

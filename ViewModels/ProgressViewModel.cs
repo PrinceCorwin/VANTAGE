@@ -7,8 +7,11 @@ using VANTAGE.Data;
 using VANTAGE.Models;
 using VANTAGE.Utilities;
 
+
+
 namespace VANTAGE.ViewModels
 {
+
     public class ProgressViewModel : INotifyPropertyChanged
     {
         private BulkObservableCollection<Activity> _activities;
@@ -19,8 +22,109 @@ namespace VANTAGE.ViewModels
         private int _currentPage;
         private int _pageSize;
         private int _totalPages;
-        private bool _isLoading;
+        private bool _isLoading; 
+        private Dictionary<string, ColumnFilter> _activeFilters = new Dictionary<string, ColumnFilter>();
+        /// <summary>
+        /// Apply a filter to a column
+        /// </summary>
+        public void ApplyFilter(string columnName, string filterType, string filterValue)
+        {
+            _activeFilters[columnName] = new ColumnFilter
+            {
+                ColumnName = columnName,
+                FilterType = filterType,
+                FilterValue = filterValue
+            };
 
+            ApplyAllFilters();
+        }
+        /// <summary>
+        /// Apply a single column filter to the data
+        /// </summary>
+        private IEnumerable<Activity> ApplyColumnFilter(IEnumerable<Activity> data, ColumnFilter filter)
+        {
+            return data.Where(activity =>
+            {
+                // Get the property value using reflection
+                var property = typeof(Activity).GetProperty(filter.ColumnName);
+                if (property == null) return true; // Property not found, don't filter
+
+                var value = property.GetValue(activity);
+                var stringValue = value?.ToString() ?? "";
+                var filterValue = filter.FilterValue ?? "";
+
+                // Apply filter based on type
+                switch (filter.FilterType)
+                {
+                    case "Equals":
+                        return stringValue.Equals(filterValue, StringComparison.OrdinalIgnoreCase);
+
+                    case "Does Not Equal":
+                        return !stringValue.Equals(filterValue, StringComparison.OrdinalIgnoreCase);
+
+                    case "Contains":
+                        return stringValue.IndexOf(filterValue, StringComparison.OrdinalIgnoreCase) >= 0;
+
+                    case "Does Not Contain":
+                        return stringValue.IndexOf(filterValue, StringComparison.OrdinalIgnoreCase) < 0;
+
+                    case "Begins With":
+                        return stringValue.StartsWith(filterValue, StringComparison.OrdinalIgnoreCase);
+
+                    case "Ends With":
+                        return stringValue.EndsWith(filterValue, StringComparison.OrdinalIgnoreCase);
+
+                    default:
+                        return true; // Unknown filter type, don't filter
+                }
+            });
+        }
+        /// <summary>
+        /// Clear filter from a column
+        /// </summary>
+        public void ClearFilter(string columnName)
+        {
+            _activeFilters.Remove(columnName);
+            ApplyAllFilters();
+        }
+
+        /// <summary>
+        /// Apply all active filters to the data
+        /// </summary>
+        private async void ApplyAllFilters()
+        {
+            try
+            {
+                IsLoading = true;
+
+                // Reload current page from database
+                var pageData = await ActivityRepository.GetPageAsync(CurrentPage, PageSize);
+
+                // Apply each active filter
+                var filteredData = pageData.AsEnumerable();
+
+                foreach (var filter in _activeFilters.Values)
+                {
+                    filteredData = ApplyColumnFilter(filteredData, filter);
+                }
+
+                // Update the collection
+                Activities.Clear();
+                Activities.AddRange(filteredData.ToList());
+
+                FilteredCount = Activities.Count;
+
+                System.Diagnostics.Debug.WriteLine($"✓ Filters applied: {_activeFilters.Count} active, {FilteredCount} records shown");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"✗ Error applying filters: {ex.Message}");
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
         public ProgressViewModel()
         {
             // Initialize collections
@@ -307,5 +411,12 @@ namespace VANTAGE.ViewModels
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+    }
+    // Add this helper class at the bottom of the file (outside ProgressViewModel class)
+    public class ColumnFilter
+    {
+        public string ColumnName { get; set; }
+        public string FilterType { get; set; }
+        public string FilterValue { get; set; }
     }
 }

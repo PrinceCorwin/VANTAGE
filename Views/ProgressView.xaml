@@ -350,11 +350,11 @@
                         </DataGridTextColumn>
 
                         <DataGridTextColumn Binding="{Binding Tag_Descriptions}"
-                                            Width="200">
-                                <DataGridTextColumn.Header>
-                                    <ContentControl Content="Descriptions" 
-                                                    ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                                </DataGridTextColumn.Header>
+                    Width="250">
+                            <DataGridTextColumn.Header>
+                                <ContentControl Content="Tag_Descriptions" 
+                        ContentTemplate="{StaticResource FilterableColumnHeader}"/>
+                            </DataGridTextColumn.Header>
                         </DataGridTextColumn>
 
                         <DataGridTextColumn Header="Component Type" 
