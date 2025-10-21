@@ -392,10 +392,10 @@ namespace VANTAGE.ViewModels
             {
                 string search = SearchText.ToLower();
 
-                if (activity.UDFNineteen?.ToLower().Contains(search) == true ||
-                    activity.Tag_Descriptions?.ToLower().Contains(search) == true ||
-                    activity.Tag_TagNo?.ToLower().Contains(search) == true ||
-                    activity.Tag_ProjectID?.ToLower().Contains(search) == true)
+                if (activity.UniqueID?.ToLower().Contains(search) == true ||
+                    activity.Description?.ToLower().Contains(search) == true ||
+                    activity.TagNO?.ToLower().Contains(search) == true ||
+                    activity.ProjectID?.ToLower().Contains(search) == true)
                 {
                     return true;
                 }

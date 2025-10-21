@@ -567,7 +567,7 @@ namespace VANTAGE.Views
                 await Dispatcher.InvokeAsync(async () =>
                 {
                     System.Diagnostics.Debug.WriteLine($"→ Saving changes for Activity {editedActivity.ActivityID}...");
-                    System.Diagnostics.Debug.WriteLine($"   Catg_ROC_Step = '{editedActivity.Catg_ROC_Step}'");
+                    System.Diagnostics.Debug.WriteLine($"   Catg_ROC_Step = '{editedActivity.ROCStep}'");
 
                     // Save to database
                     bool success = await ActivityRepository.UpdateActivityInDatabase(editedActivity);
@@ -820,7 +820,7 @@ namespace VANTAGE.Views
                 foreach (var activity in selectedActivities)
                 {
                     // Set to 100% complete
-                    activity.Val_Perc_Complete = 1.0;
+                    activity.PercentEntry = 1.0;
 
                     // This will trigger calculated field updates automatically via INotifyPropertyChanged
                     // Val_EarnedQty, Val_Percent_Earned, Val_EarnedHours_Ind will all update
@@ -876,7 +876,7 @@ namespace VANTAGE.Views
                 foreach (var activity in selectedActivities)
                 {
                     // Set to 0% complete
-                    activity.Val_Perc_Complete = 0.0;
+                    activity.PercentEntry = 0.0;
 
                     // This will trigger calculated field updates automatically via INotifyPropertyChanged
                     // Val_EarnedQty, Val_Percent_Earned, Val_EarnedHours_Ind will all update to 0

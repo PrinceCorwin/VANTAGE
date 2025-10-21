@@ -337,8 +337,8 @@
 
                     <!-- ALL YOUR EXISTING COLUMNS (keeping them exactly as they are) -->
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Activity ID" 
-                                            Binding="{Binding UDFNineteen}" 
+                        <DataGridTextColumn Header="UniqueID" 
+                                            Binding="{Binding UniqueID}" 
                                             Width="120"
                                             IsReadOnly="True">
                             <DataGridTextColumn.ElementStyle>
@@ -349,76 +349,76 @@
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
-                        <DataGridTextColumn Binding="{Binding Tag_Descriptions}"
+                        <DataGridTextColumn Binding="{Binding Description}"
                     Width="250">
                             <DataGridTextColumn.Header>
-                                <ContentControl Content="Tag_Descriptions" 
-                        ContentTemplate="{StaticResource FilterableColumnHeader}"/>
+                                <ContentControl Content="Description" 
+                                                ContentTemplate="{StaticResource FilterableColumnHeader}"/>
                             </DataGridTextColumn.Header>
                         </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="Component Type" 
-                                            Binding="{Binding Catg_ComponentType}" 
+                        <DataGridTextColumn Header="CompType" 
+                                            Binding="{Binding CompType}" 
                                             Width="120"/>
 
-                        <DataGridTextColumn Header="Phase Category" 
-                                            Binding="{Binding Catg_PhaseCategory}" 
+                        <DataGridTextColumn Header="PhaseCategory" 
+                                            Binding="{Binding PhaseCategory}" 
                                             Width="120"/>
 
-                        <DataGridTextColumn Header="ROC Step" 
-                                            Binding="{Binding Catg_ROC_Step}" 
+                        <DataGridTextColumn Header="ROCStep" 
+                                            Binding="{Binding ROCStep}"
                                             Width="100"/>
 
-                        <DataGridTextColumn Header="Project ID" 
-                                            Binding="{Binding Tag_ProjectID}" 
+                        <DataGridTextColumn Header="ProjectID" 
+                                            Binding="{Binding ProjectID}" 
                                             Width="100"/>
 
-                        <DataGridTextColumn Header="Work Package" 
-                                            Binding="{Binding Tag_WorkPackage}" 
+                        <DataGridTextColumn Header="WorkPackage" 
+                                            Binding="{Binding WorkPackage}" 
                                             Width="120"/>
 
-                        <DataGridTextColumn Header="Phase Code" 
-                                            Binding="{Binding Tag_Phase_Code}" 
+                        <DataGridTextColumn Header="PhaseCode" 
+                                            Binding="{Binding PhaseCode}" 
                                             Width="100"/>
 
                         <DataGridTextColumn Header="Drawing No" 
-                                            Binding="{Binding Dwg_PrimeDrawingNO}" 
+                                            Binding="{Binding DwgNO}" 
                                             Width="120"/>
 
-                        <DataGridTextColumn Header="Sch Start" 
-                                            Binding="{Binding Sch_Start}" 
+                        <DataGridTextColumn Header="Start" 
+                                            Binding="{Binding Start}" 
                                             Width="100"/>
 
-                        <DataGridTextColumn Header="Sch Finish" 
-                                            Binding="{Binding Sch_Finish}" 
+                        <DataGridTextColumn Header="Finish" 
+                                            Binding="{Binding Finish}" 
                                             Width="100"/>
 
-                        <DataGridTextColumn Header="Sch Status" 
-                                            Binding="{Binding Sch_Status}" 
+                        <DataGridTextColumn Header="Status" 
+                                            Binding="{Binding Status}" 
                                             Width="100"/>
 
-                        <DataGridTextColumn Header="Activity No" 
-                                            Binding="{Binding Tag_Sch_ActNo}" 
+                        <DataGridTextColumn Header="SchedActNO" 
+                                            Binding="{Binding SchedActNO}" 
                                             Width="100"/>
 
                         <DataGridTextColumn Header="Quantity" 
-                                            Binding="{Binding Val_Quantity, StringFormat=N2}" 
+                                            Binding="{Binding Quantity, StringFormat=N2}" 
                                             Width="100"/>
 
-                        <DataGridTextColumn Header="Earned Qty" 
-                                            Binding="{Binding Val_EarnedQty, StringFormat=N2, UpdateSourceTrigger=LostFocus}" 
+                        <DataGridTextColumn Header="EarnQtyEntry" 
+                                            Binding="{Binding EarnQtyEntry, StringFormat=N2, UpdateSourceTrigger=LostFocus}" 
                                             Width="100"/>
 
-                        <DataGridTextColumn Header="% Complete" 
-                                            Binding="{Binding Val_Perc_Complete_Display, StringFormat=N2, UpdateSourceTrigger=LostFocus}" 
+                        <DataGridTextColumn Header="% Entry" 
+                                            Binding="{Binding PercentEntry, StringFormat=N2, UpdateSourceTrigger=LostFocus}" 
                                             Width="100"/>
 
-                        <DataGridTextColumn Header="Budget Hrs" 
-                                            Binding="{Binding Val_BudgetedHours_Ind, StringFormat=N2}" 
+                        <DataGridTextColumn Header="BudgetMHs" 
+                                            Binding="{Binding BudgetMHs, StringFormat=N2}" 
                                             Width="100"/>
 
-                        <DataGridTextColumn Header="Earned Hrs" 
-                                            Binding="{Binding Val_EarnedHours_Ind, StringFormat=N3}" 
+                        <DataGridTextColumn Header="EarnMHsCalc" 
+                                            Binding="{Binding EarnMHsCalc, StringFormat=N3}" 
                                             Width="100"
                                             IsReadOnly="True">
                             <DataGridTextColumn.ElementStyle>
@@ -441,16 +441,16 @@
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="UDF One" 
+                        <DataGridTextColumn Header="UDFOne" 
                                             Binding="{Binding UDFOne}" 
                                             Width="120"/>
 
-                        <DataGridTextColumn Header="UDF Two" 
+                        <DataGridTextColumn Header="UDFTwo" 
                                             Binding="{Binding UDFTwo}" 
                                             Width="120"/>
 
-                        <DataGridTextColumn Header="Assigned To" 
-                                            Binding="{Binding AssignedToUsername}" 
+                        <DataGridTextColumn Header="AssignedTo" 
+                                            Binding="{Binding AssignedTo}" 
                                             IsReadOnly="True"
                                             Width="120">
                             <DataGridTextColumn.ElementStyle>
@@ -462,261 +462,261 @@
                         </DataGridTextColumn>
 
                         <!-- ALL OTHER COLLAPSED COLUMNS (keeping exactly as you have them) -->
-                        <DataGridTextColumn Header="Hex NO" 
+                        <DataGridTextColumn Header="HexNO" 
                                                 Binding="{Binding HexNO}" 
                                                 Width="80"
                                                 Visibility="Collapsed"/>
 
                         <!-- Drawings -->
-                        <DataGridTextColumn Header="Revision No" 
-                                                Binding="{Binding Dwg_RevisionNo}" 
+                        <DataGridTextColumn Header="RevNO" 
+                                                Binding="{Binding RevNO}" 
                                                 Width="100"
                                                 Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="Secondary Drawing" 
-                                                Binding="{Binding Dwg_SecondaryDrawingNO}" 
+                        <DataGridTextColumn Header="SecondDwgNO" 
+                                                Binding="{Binding SecondDwgNO}" 
                                                 Width="120"
                                                 Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="Sheet No" 
-                                                Binding="{Binding Dwg_ShtNo}" 
+                        <DataGridTextColumn Header="ShtNO" 
+                                                Binding="{Binding ShtNO}" 
                                                 Width="80"
                                                 Visibility="Collapsed"/>
 
                         <!-- Notes -->
-                        <DataGridTextColumn Header="Comments" 
-                                                Binding="{Binding Notes_Comments}" 
+                        <DataGridTextColumn Header="Notes" 
+                                                Binding="{Binding Notes}" 
                                                 Width="200"
                                                 Visibility="Collapsed"/>
 
                         <!-- Schedule Additional -->
-                        <DataGridTextColumn Header="Sch Act No (Field)" 
-                                                Binding="{Binding Sch_Actno}" 
+                        <DataGridTextColumn Header="OldActno" 
+                                                Binding="{Binding OldActno}" 
                                                 Width="100"
                                                 Visibility="Collapsed"/>
 
                         <!-- Tags - Auxiliary -->
-                        <DataGridTextColumn Header="Tag Aux1" 
-                                                Binding="{Binding Tag_Aux1}" 
+                        <DataGridTextColumn Header="Aux1" 
+                                                Binding="{Binding Aux1}" 
                                                 Width="100"
                                                 Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="Tag Aux2" 
-                                                Binding="{Binding Tag_Aux2}" 
+                        <DataGridTextColumn Header="Aux2" 
+                                                Binding="{Binding Aux2}" 
                                                 Width="100"
                                                 Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="Tag Aux3" 
-                                                Binding="{Binding Tag_Aux3}" 
+                        <DataGridTextColumn Header="Aux3" 
+                                                Binding="{Binding Aux3}" 
                                                 Width="100"
                                                 Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="Tag Area" 
-                                                Binding="{Binding Tag_Area}" 
+                        <DataGridTextColumn Header="Area" 
+                                                Binding="{Binding Area}"
                                                 Width="80"
                                                 Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="CO No" 
-                                                Binding="{Binding Tag_CONo}" 
+                        <DataGridTextColumn Header="ChgOrdNO" 
+                                                Binding="{Binding ChgOrdNO}" 
                                                 Width="80"
                                                 Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="Equipment No" 
-                                                Binding="{Binding Tag_EqmtNo}" 
+                        <DataGridTextColumn Header="EqmtNO" 
+                                                Binding="{Binding EqmtNO}" 
                                                 Width="120"
                                                 Visibility="Collapsed"/>
 
                         <DataGridTextColumn Header="Estimator" 
-                                                Binding="{Binding Tag_Estimator}" 
+                                                Binding="{Binding Estimator}" 
                                                 Width="120"
                                                 Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="Insulation Type" 
-                                                Binding="{Binding Tag_Insulation_Typ}" 
+                        <DataGridTextColumn Header="InsulType" 
+                                                Binding="{Binding InsulType}" 
                                                 Width="120"
                                                 Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="Line No" 
-                                                Binding="{Binding Tag_LineNo}" 
+                        <DataGridTextColumn Header="LineNO" 
+                                                Binding="{Binding LineNO}" 
                                                 Width="100"
                                                 Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="Material Spec" 
-                                                Binding="{Binding Tag_Matl_Spec}" 
+                        <DataGridTextColumn Header="MtrlSpec" 
+                                                Binding="{Binding MtrlSpec}" 
                                                 Width="120"
                                                 Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="Paint Code" 
-                                                Binding="{Binding Tag_Paint_Code}" 
+                        <DataGridTextColumn Header="PaintCode" 
+                                                Binding="{Binding PaintCode}" 
                                                 Width="100"
                                                 Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="Pipe Grade" 
-                                                Binding="{Binding Tag_Pipe_Grade}" 
+                        <DataGridTextColumn Header="PipeGrade" 
+                                                Binding="{Binding PipeGrade}" 
                                                 Width="100"
                                                 Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="RFI No" 
-                                                Binding="{Binding Tag_RFINo}" 
+                        <DataGridTextColumn Header="RFINO" 
+                                                Binding="{Binding RFINO}" 
                                                 Width="80"
                                                 Visibility="Collapsed"/>
 
                         <DataGridTextColumn Header="Service" 
-                                                Binding="{Binding Tag_Service}" 
+                                                Binding="{Binding Service}" 
                                                 Width="120"
                                                 Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="Shop/Field" 
-                                                Binding="{Binding Tag_ShopField}" 
+                        <DataGridTextColumn Header="ShopField" 
+                                                Binding="{Binding ShopField}" 
                                                 Width="100"
                                                 Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="Sub Area" 
-                                                Binding="{Binding Tag_SubArea}" 
+                        <DataGridTextColumn Header="SubArea" 
+                                                Binding="{Binding SubArea}" 
                                                 Width="80"
                                                 Visibility="Collapsed"/>
 
                         <DataGridTextColumn Header="System" 
-                                                Binding="{Binding Tag_System}" 
+                                                Binding="{Binding System}" 
                                                 Width="100"
                                                 Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="System No" 
-                                                Binding="{Binding Tag_SystemNo}" 
+                        <DataGridTextColumn Header="SystemNO" 
+                                                Binding="{Binding SystemNO}" 
                                                 Width="100"
                                                 Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="Tag No" 
-                                                Binding="{Binding Tag_TagNo}" 
+                        <DataGridTextColumn Header="TagNO" 
+                                                Binding="{Binding TagNO}" 
                                                 Width="120"
                                                 Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="Tracing" 
-                                                Binding="{Binding Tag_Tracing}" 
+                        <DataGridTextColumn Header="HtTrace" 
+                                                Binding="{Binding HtTrace}" 
                                                 Width="100"
                                                 Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="XRAY" 
-                                                Binding="{Binding Tag_XRAY, StringFormat=N2}" 
+                        <DataGridTextColumn Header="XRay" 
+                                                Binding="{Binding XRay, StringFormat=N2}" 
                                                 Width="80"
                                                 Visibility="Collapsed"/>
 
                         <!-- Trigger -->
-                        <DataGridTextColumn Header="Date Trigger" 
-                                                Binding="{Binding Trg_DateTrigger}" 
+                        <DataGridTextColumn Header="DateTrigger" 
+                                                Binding="{Binding DateTrigger}" 
                                                 Width="100"
                                                 Visibility="Collapsed"/>
 
                         <!-- UDF Fields (remaining) -->
-                        <DataGridTextColumn Header="UDF Three" 
+                        <DataGridTextColumn Header="UDF3" 
                                                 Binding="{Binding UDFThree}" 
                                                 Width="120"
                                                 Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="UDF Four" 
+                        <DataGridTextColumn Header="UDF4" 
                                                 Binding="{Binding UDFFour}" 
                                                 Width="120"
                                                 Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="UDF Five" 
+                        <DataGridTextColumn Header="UDF5" 
                                                 Binding="{Binding UDFFive}" 
                                                 Width="120"
                                                 Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="UDF Six" 
+                        <DataGridTextColumn Header="UDF6" 
                                                 Binding="{Binding UDFSix}" 
                                                 Width="120"
                                                 Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="UDF Seven" 
+                        <DataGridTextColumn Header="UDF7" 
                                                 Binding="{Binding UDFSeven}" 
                                                 Width="80"
                                                 Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="UDF Eight" 
+                        <DataGridTextColumn Header="UDF8" 
                                                 Binding="{Binding UDFEight}" 
                                                 Width="120"
                                                 Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="UDF Nine" 
+                        <DataGridTextColumn Header="UDF9" 
                                                 Binding="{Binding UDFNine}" 
                                                 Width="120"
                                                 Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="UDF Ten" 
+                        <DataGridTextColumn Header="UDF10" 
                                                 Binding="{Binding UDFTen}" 
                                                 Width="120"
                                                 Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="Last Modified By" 
+                        <DataGridTextColumn Header="LastModifiedBy" 
                                                 Binding="{Binding LastModifiedBy}" 
                                                 Width="150"
                                                 Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="Created By" 
+                        <DataGridTextColumn Header="CreatedBy" 
                                                 Binding="{Binding CreatedBy}" 
                                                 Width="150"
                                                 Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="UDF Fourteen" 
+                        <DataGridTextColumn Header="UDF14" 
                                                 Binding="{Binding UDFFourteen}" 
                                                 Width="120"
                                                 Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="UDF Fifteen" 
+                        <DataGridTextColumn Header="UDF15" 
                                                 Binding="{Binding UDFFifteen}" 
                                                 Width="120"
                                                 Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="UDF Sixteen" 
+                        <DataGridTextColumn Header="UDF16" 
                                                 Binding="{Binding UDFSixteen}" 
                                                 Width="120"
                                                 Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="UDF Seventeen" 
+                        <DataGridTextColumn Header="UDF17" 
                                                 Binding="{Binding UDFSeventeen}" 
                                                 Width="120"
                                                 Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="UDF Eighteen" 
+                        <DataGridTextColumn Header="UDF18" 
                                                 Binding="{Binding UDFEighteen}" 
                                                 Width="120"
                                                 Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="UDF Twenty" 
+                        <DataGridTextColumn Header="UDF20" 
                                                 Binding="{Binding UDFTwenty}" 
                                                 Width="120"
                                                 Visibility="Collapsed"/>
 
                         <!-- Values - Additional -->
-                        <DataGridTextColumn Header="Base Unit" 
-                                                Binding="{Binding Val_Base_Unit, StringFormat=N2}" 
+                        <DataGridTextColumn Header="BaseUnit" 
+                                                Binding="{Binding BaseUnit, StringFormat=N2}" 
                                                 Width="100"
                                                 Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="Budget Hrs Group" 
-                                                Binding="{Binding Val_BudgetedHours_Group, StringFormat=N2}" 
+                        <DataGridTextColumn Header="BudgetHoursGroup" 
+                                                Binding="{Binding BudgetHoursGroup, StringFormat=N2}" 
                                                 Width="120"
                                                 Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="Budget Hrs ROC" 
-                                                Binding="{Binding Val_BudgetedHours_ROC, StringFormat=N2}" 
+                        <DataGridTextColumn Header="BudgetHoursROC" 
+                                                Binding="{Binding BudgetHoursROC, StringFormat=N2}" 
                                                 Width="120"
                                                 Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="Earned Hrs ROC" 
-                                                Binding="{Binding Val_EarnedHours_ROC}" 
+                        <DataGridTextColumn Header="EarnedMHsRoc" 
+                                                Binding="{Binding EarnedMHsRoc}" 
                                                 Width="120"
                                                 Visibility="Collapsed"/>
 
                         <DataGridTextColumn Header="UOM" 
-                                                Binding="{Binding Val_UOM}" 
+                                                Binding="{Binding UOM}" 
                                                 Width="80"
                                                 Visibility="Collapsed"/>
 
                         <!-- Calculated fields -->
-                        <DataGridTextColumn Header="Earn Qty (Calc)" 
-                                                Binding="{Binding Val_Earn_Qty, StringFormat=N4}" 
+                        <DataGridTextColumn Header="EarnedQtyCalc" 
+                                                Binding="{Binding EarnedQtyCalc, StringFormat=N4}" 
                                                 Width="100"
                                                 IsReadOnly="True"
                                                 Visibility="Collapsed">
@@ -728,8 +728,8 @@
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="Percent Earned" 
-                                                Binding="{Binding Val_Percent_Earned_Display, StringFormat=N2}"
+                        <DataGridTextColumn Header="PercentCompleteCalc" 
+                                                Binding="{Binding PercentCompleteCalc, StringFormat=N2}"
                                                 Width="120"
                                                 IsReadOnly="True"
                                                 Visibility="Collapsed">
@@ -742,24 +742,24 @@
                         </DataGridTextColumn>
 
                         <!-- Equipment Quantity -->
-                        <DataGridTextColumn Header="EQ QTY" 
-                                                Binding="{Binding Val_EQ_QTY, StringFormat=N2}" 
+                        <DataGridTextColumn Header="EquivQTY" 
+                                                Binding="{Binding EquivQTY, StringFormat=N2}" 
                                                 Width="100"
                                                 Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="EQ UOM" 
-                                                Binding="{Binding Val_EQ_UOM}" 
+                        <DataGridTextColumn Header="EquivUOM" 
+                                                Binding="{Binding EquivUOM}" 
                                                 Width="80"
                                                 Visibility="Collapsed"/>
 
                         <!-- ROC -->
-                        <DataGridTextColumn Header="ROC ID" 
-                                                Binding="{Binding Tag_ROC_ID}" 
+                        <DataGridTextColumn Header="ROCID" 
+                                                Binding="{Binding ROCID}" 
                                                 Width="80"
                                                 Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="Lookup ROC ID" 
-                                                Binding="{Binding LookUP_ROC_ID}" 
+                        <DataGridTextColumn Header="ROCLookupID" 
+                                                Binding="{Binding ROCLookupID}" 
                                                 Width="200"
                                                 IsReadOnly="True"
                                                 Visibility="Collapsed">
@@ -771,62 +771,62 @@
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="ROC Perc" 
-                                                Binding="{Binding Val_ROC_Perc, StringFormat=N2}" 
+                        <DataGridTextColumn Header="ROCPercent" 
+                                                Binding="{Binding ROCPercent, StringFormat=N2}" 
                                                 Width="100"
                                                 Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="ROC Budget Qty" 
-                                                Binding="{Binding Val_ROC_BudgetQty, StringFormat=N2}" 
+                        <DataGridTextColumn Header="ROCBudgetQTY" 
+                                                Binding="{Binding ROCBudgetQTY, StringFormat=N2}" 
                                                 Width="120"
                                                 Visibility="Collapsed"/>
 
                         <!-- Pipe -->
-                        <DataGridTextColumn Header="Pipe Size 1" 
-                                                Binding="{Binding Val_Pipe_Size1, StringFormat=N2}" 
+                        <DataGridTextColumn Header="PipeSize1" 
+                                                Binding="{Binding PipeSize1, StringFormat=N2}" 
                                                 Width="100"
                                                 Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="Pipe Size 2" 
-                                                Binding="{Binding Val_Pipe_Size2, StringFormat=N2}" 
+                        <DataGridTextColumn Header="PipeSize2" 
+                                                Binding="{Binding PipeSize2, StringFormat=N2}" 
                                                 Width="100"
                                                 Visibility="Collapsed"/>
 
                         <!-- Previous Values -->
-                        <DataGridTextColumn Header="Prev Earned Hrs" 
-                                                Binding="{Binding Val_Prev_Earned_Hours, StringFormat=N2}" 
+                        <DataGridTextColumn Header="PrevEarnMHs" 
+                                                Binding="{Binding PrevEarnMHs, StringFormat=N2}" 
                                                 Width="120"
                                                 Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="Prev Earned Qty" 
-                                                Binding="{Binding Val_Prev_Earned_Qty, StringFormat=N2}" 
+                        <DataGridTextColumn Header="PrevEarnQTY" 
+                                                Binding="{Binding PrevEarnQTY, StringFormat=N2}" 
                                                 Width="120"
                                                 Visibility="Collapsed"/>
 
                         <!-- Timestamp -->
                         <DataGridTextColumn Header="Timestamp" 
-                                                Binding="{Binding Val_TimeStamp}" 
+                                                Binding="{Binding Timestamp}" 
                                                 Width="150"
                                                 Visibility="Collapsed"/>
 
                         <!-- Client Values -->
-                        <DataGridTextColumn Header="Client EQ QTY Budget" 
-                                                Binding="{Binding Val_Client_EQ_QTY_BDG, StringFormat=N2}" 
+                        <DataGridTextColumn Header="ClientEquivQty" 
+                                                Binding="{Binding ClientEquivQty, StringFormat=N2}" 
                                                 Width="150"
                                                 Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="UDF Two (Val)" 
-                                                Binding="{Binding Val_UDF_Two, StringFormat=N2}" 
+                        <DataGridTextColumn Header="ClientBudget" 
+                                                Binding="{Binding ClientBudget, StringFormat=N2}" 
                                                 Width="100"
                                                 Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="UDF Three (Val)" 
-                                                Binding="{Binding Val_UDF_Three, StringFormat=N2}" 
+                        <DataGridTextColumn Header="Val UDF3" 
+                                                Binding="{Binding ClientCustom3, StringFormat=N2}" 
                                                 Width="100"
                                                 Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="Client Earned EQ QTY" 
-                                                Binding="{Binding VAL_Client_Earned_EQ_QTY, StringFormat=N3}" 
+                        <DataGridTextColumn Header="ClientEquivEarnQTY" 
+                                                Binding="{Binding ClientEquivEarnQTY, StringFormat=N3}" 
                                                 Width="150"
                                                 IsReadOnly="True"
                                                 Visibility="Collapsed">

@@ -27,24 +27,24 @@ namespace VANTAGE.Data
                     command.CommandText = @"
                 UPDATE Activities SET
                     HexNO = @HexNO,
-                    Catg_ComponentType = @Catg_ComponentType,
-                    Catg_PhaseCategory = @Catg_PhaseCategory,
-                    Catg_ROC_Step = @Catg_ROC_Step,
-                    Notes_Comments = @Notes_Comments,
-                    Tag_Area = @Tag_Area,
-                    Tag_Aux1 = @Tag_Aux1,
-                    Tag_Aux2 = @Tag_Aux2,
-                    Tag_Aux3 = @Tag_Aux3,
-                    Tag_Descriptions = @Tag_Descriptions,
-                    Tag_Phase_Code = @Tag_Phase_Code,
-                    Tag_ProjectID = @Tag_ProjectID,
-                    Tag_Sch_ActNo = @Tag_Sch_ActNo,
-                    Tag_Service = @Tag_Service,
-                    Tag_ShopField = @Tag_ShopField,
-                    Tag_SubArea = @Tag_SubArea,
-                    Tag_System = @Tag_System,
-                    Tag_TagNo = @Tag_TagNo,
-                    Tag_WorkPackage = @Tag_WorkPackage,
+                    Catg_ComponentType = @CompType,
+                    Catg_PhaseCategory = @PhaseCategory,
+                    Catg_ROC_Step = @ROCStep,
+                    Notes_Comments = @Notes,
+                    Tag_Area = @Area,
+                    Tag_Aux1 = @Aux1,
+                    Tag_Aux2 = @Aux2,
+                    Tag_Aux3 = @Aux3,
+                    Tag_Descriptions = @Description,
+                    Tag_Phase_Code = @PhaseCode,
+                    Tag_ProjectID = @ProjectID,
+                    Tag_Sch_ActNo = @SchedActNO,
+                    Tag_Service = @Service,
+                    Tag_ShopField = @ShopField,
+                    Tag_SubArea = @SubArea,
+                    Tag_System = @System,
+                    Tag_TagNo = @TagNO,
+                    Tag_WorkPackage = @WorkPackage,
                     UDFOne = @UDFOne,
                     UDFTwo = @UDFTwo,
                     UDFThree = @UDFThree,
@@ -55,47 +55,47 @@ namespace VANTAGE.Data
                     UDFEight = @UDFEight,
                     UDFNine = @UDFNine,
                     UDFTen = @UDFTen,
-                    UDFEleven = @UDFEleven,
-                    UDFTwelve = @UDFTwelve,
+                    UDFEleven = @AssignedTo,
+                    UDFTwelve = @LastModifiedBy,
                     UDFFourteen = @UDFFourteen,
                     UDFFifteen = @UDFFifteen,
                     UDFSixteen = @UDFSixteen,
                     UDFSeventeen = @UDFSeventeen,
                     UDFEighteen = @UDFEighteen,
                     UDFTwenty = @UDFTwenty,
-                    Val_BudgetedHours_Ind = @Val_BudgetedHours_Ind,
-                    Val_EarnedQty = @Val_EarnedQty,
-                    Val_Perc_Complete = @Val_Perc_Complete,
-                    Val_Quantity = @Val_Quantity,
-                    Val_UOM = @Val_UOM,
-                    Val_Pipe_Size1 = @Val_Pipe_Size1,
-                    Val_Pipe_Size2 = @Val_Pipe_Size2,
-                    Val_UDF_Two = @Val_UDF_Two,
-                    Val_UDF_Three = @Val_UDF_Three,
-                    Val_TimeStamp = @Val_TimeStamp
+                    Val_BudgetedHours_Ind = @BudgetMHs,
+                    Val_EarnedQty = @EarnQtyEntry,
+                    Val_Perc_Complete = @PercentEntry,
+                    Val_Quantity = @Quantity,
+                    Val_UOM = @UOM,
+                    Val_Pipe_Size1 = @PipeSize1,
+                    Val_Pipe_Size2 = @PipeSize2,
+                    Val_UDF_Two = @ClientBudget,
+                    Val_UDF_Three = @ClientCustom3,
+                    Val_TimeStamp = @Timestamp
                 WHERE ActivityID = @ActivityID";
 
-                    // Add parameters for all editable fields
+                    // Add parameters with NEW property names
                     command.Parameters.AddWithValue("@ActivityID", activity.ActivityID);
                     command.Parameters.AddWithValue("@HexNO", activity.HexNO);
-                    command.Parameters.AddWithValue("@Catg_ComponentType", activity.Catg_ComponentType ?? "");
-                    command.Parameters.AddWithValue("@Catg_PhaseCategory", activity.Catg_PhaseCategory ?? "");
-                    command.Parameters.AddWithValue("@Catg_ROC_Step", activity.Catg_ROC_Step ?? "");
-                    command.Parameters.AddWithValue("@Notes_Comments", activity.Notes_Comments ?? "");
-                    command.Parameters.AddWithValue("@Tag_Area", activity.Tag_Area ?? "");
-                    command.Parameters.AddWithValue("@Tag_Aux1", activity.Tag_Aux1 ?? "");
-                    command.Parameters.AddWithValue("@Tag_Aux2", activity.Tag_Aux2 ?? "");
-                    command.Parameters.AddWithValue("@Tag_Aux3", activity.Tag_Aux3 ?? "");
-                    command.Parameters.AddWithValue("@Tag_Descriptions", activity.Tag_Descriptions ?? "");
-                    command.Parameters.AddWithValue("@Tag_Phase_Code", activity.Tag_Phase_Code ?? "");
-                    command.Parameters.AddWithValue("@Tag_ProjectID", activity.Tag_ProjectID ?? "");
-                    command.Parameters.AddWithValue("@Tag_Sch_ActNo", activity.Tag_Sch_ActNo ?? "");
-                    command.Parameters.AddWithValue("@Tag_Service", activity.Tag_Service ?? "");
-                    command.Parameters.AddWithValue("@Tag_ShopField", activity.Tag_ShopField ?? "");
-                    command.Parameters.AddWithValue("@Tag_SubArea", activity.Tag_SubArea ?? "");
-                    command.Parameters.AddWithValue("@Tag_System", activity.Tag_System ?? "");
-                    command.Parameters.AddWithValue("@Tag_TagNo", activity.Tag_TagNo ?? "");
-                    command.Parameters.AddWithValue("@Tag_WorkPackage", activity.Tag_WorkPackage ?? "");
+                    command.Parameters.AddWithValue("@CompType", activity.CompType ?? "");
+                    command.Parameters.AddWithValue("@PhaseCategory", activity.PhaseCategory ?? "");
+                    command.Parameters.AddWithValue("@ROCStep", activity.ROCStep ?? "");
+                    command.Parameters.AddWithValue("@Notes", activity.Notes ?? "");
+                    command.Parameters.AddWithValue("@Area", activity.Area ?? "");
+                    command.Parameters.AddWithValue("@Aux1", activity.Aux1 ?? "");
+                    command.Parameters.AddWithValue("@Aux2", activity.Aux2 ?? "");
+                    command.Parameters.AddWithValue("@Aux3", activity.Aux3 ?? "");
+                    command.Parameters.AddWithValue("@Description", activity.Description ?? "");
+                    command.Parameters.AddWithValue("@PhaseCode", activity.PhaseCode ?? "");
+                    command.Parameters.AddWithValue("@ProjectID", activity.ProjectID ?? "");
+                    command.Parameters.AddWithValue("@SchedActNO", activity.SchedActNO ?? "");
+                    command.Parameters.AddWithValue("@Service", activity.Service ?? "");
+                    command.Parameters.AddWithValue("@ShopField", activity.ShopField ?? "");
+                    command.Parameters.AddWithValue("@SubArea", activity.SubArea ?? "");
+                    command.Parameters.AddWithValue("@System", activity.System ?? "");
+                    command.Parameters.AddWithValue("@TagNO", activity.TagNO ?? "");
+                    command.Parameters.AddWithValue("@WorkPackage", activity.WorkPackage ?? "");
                     command.Parameters.AddWithValue("@UDFOne", activity.UDFOne ?? "");
                     command.Parameters.AddWithValue("@UDFTwo", activity.UDFTwo ?? "");
                     command.Parameters.AddWithValue("@UDFThree", activity.UDFThree ?? "");
@@ -106,24 +106,24 @@ namespace VANTAGE.Data
                     command.Parameters.AddWithValue("@UDFEight", activity.UDFEight ?? "");
                     command.Parameters.AddWithValue("@UDFNine", activity.UDFNine ?? "");
                     command.Parameters.AddWithValue("@UDFTen", activity.UDFTen ?? "");
-                    command.Parameters.AddWithValue("@UDFEleven", activity.UDFEleven ?? "");
-                    command.Parameters.AddWithValue("@UDFTwelve", activity.UDFTwelve ?? "");
+                    command.Parameters.AddWithValue("@AssignedTo", activity.AssignedTo ?? "");
+                    command.Parameters.AddWithValue("@LastModifiedBy", activity.LastModifiedBy ?? "");
                     command.Parameters.AddWithValue("@UDFFourteen", activity.UDFFourteen ?? "");
                     command.Parameters.AddWithValue("@UDFFifteen", activity.UDFFifteen ?? "");
                     command.Parameters.AddWithValue("@UDFSixteen", activity.UDFSixteen ?? "");
                     command.Parameters.AddWithValue("@UDFSeventeen", activity.UDFSeventeen ?? "");
                     command.Parameters.AddWithValue("@UDFEighteen", activity.UDFEighteen ?? "");
                     command.Parameters.AddWithValue("@UDFTwenty", activity.UDFTwenty ?? "");
-                    command.Parameters.AddWithValue("@Val_BudgetedHours_Ind", activity.Val_BudgetedHours_Ind);
-                    command.Parameters.AddWithValue("@Val_EarnedQty", activity.Val_EarnedQty);
-                    command.Parameters.AddWithValue("@Val_Perc_Complete", activity.Val_Perc_Complete);
-                    command.Parameters.AddWithValue("@Val_Quantity", activity.Val_Quantity);
-                    command.Parameters.AddWithValue("@Val_UOM", activity.Val_UOM ?? "");
-                    command.Parameters.AddWithValue("@Val_Pipe_Size1", activity.Val_Pipe_Size1);
-                    command.Parameters.AddWithValue("@Val_Pipe_Size2", activity.Val_Pipe_Size2);
-                    command.Parameters.AddWithValue("@Val_UDF_Two", activity.Val_UDF_Two);
-                    command.Parameters.AddWithValue("@Val_UDF_Three", activity.Val_UDF_Three);
-                    command.Parameters.AddWithValue("@Val_TimeStamp", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                    command.Parameters.AddWithValue("@BudgetMHs", activity.BudgetMHs);
+                    command.Parameters.AddWithValue("@EarnQtyEntry", activity.EarnQtyEntry);
+                    command.Parameters.AddWithValue("@PercentEntry", activity.PercentEntry);
+                    command.Parameters.AddWithValue("@Quantity", activity.Quantity);
+                    command.Parameters.AddWithValue("@UOM", activity.UOM ?? "");
+                    command.Parameters.AddWithValue("@PipeSize1", activity.PipeSize1);
+                    command.Parameters.AddWithValue("@PipeSize2", activity.PipeSize2);
+                    command.Parameters.AddWithValue("@ClientBudget", activity.ClientBudget);
+                    command.Parameters.AddWithValue("@ClientCustom3", activity.ClientCustom3);
+                    command.Parameters.AddWithValue("@Timestamp", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
 
                     int rowsAffected = command.ExecuteNonQuery();
                     System.Diagnostics.Debug.WriteLine($"✓ Activity {activity.ActivityID} updated in database");
@@ -248,55 +248,54 @@ namespace VANTAGE.Data
                         HexNO = reader.IsDBNull(1) ? 0 : reader.GetInt32(1),
 
                         // Categories
-                        Catg_ComponentType = reader.IsDBNull(2) ? "" : reader.GetString(2),
-                        Catg_PhaseCategory = reader.IsDBNull(3) ? "" : reader.GetString(3),
-                        Catg_ROC_Step = reader.IsDBNull(4) ? "" : reader.GetString(4),
+                        CompType = reader.IsDBNull(2) ? "" : reader.GetString(2),
+                        PhaseCategory = reader.IsDBNull(3) ? "" : reader.GetString(3),
+                        ROCStep = reader.IsDBNull(4) ? "" : reader.GetString(4),
 
                         // Drawings
-                        Dwg_PrimeDrawingNO = reader.IsDBNull(5) ? "" : reader.GetString(5),
-                        Dwg_RevisionNo = reader.IsDBNull(6) ? "" : reader.GetString(6),
-                        Dwg_SecondaryDrawingNO = reader.IsDBNull(7) ? "" : reader.GetString(7),
-                        Dwg_ShtNo = reader.IsDBNull(8) ? "" : reader.GetString(8),
+                        DwgNO = reader.IsDBNull(5) ? "" : reader.GetString(5),
+                        RevNO = reader.IsDBNull(6) ? "" : reader.GetString(6),
+                        SecondDwgNO = reader.IsDBNull(7) ? "" : reader.GetString(7),
+                        ShtNO = reader.IsDBNull(8) ? "" : reader.GetString(8),
 
                         // Notes
-                        Notes_Comments = reader.IsDBNull(9) ? "" : reader.GetString(9),
+                        Notes = reader.IsDBNull(9) ? "" : reader.GetString(9),
 
                         // Schedule
-                        Sch_Actno = reader.IsDBNull(10) ? "" : reader.GetString(10),
-                        Sch_Start = reader.IsDBNull(11) ? "" : reader.GetString(11),
-                        Sch_Finish = reader.IsDBNull(12) ? "" : reader.GetString(12),
-                        Sch_Status = reader.IsDBNull(13) ? "" : reader.GetString(13),
+                        OldActno = reader.IsDBNull(10) ? "" : reader.GetString(10),
+                        Start = reader.IsDBNull(11) ? "" : reader.GetString(11),
+                        Finish = reader.IsDBNull(12) ? "" : reader.GetString(12),
 
                         // Tags
-                        Tag_Aux1 = reader.IsDBNull(14) ? "" : reader.GetString(14),
-                        Tag_Aux2 = reader.IsDBNull(15) ? "" : reader.GetString(15),
-                        Tag_Aux3 = reader.IsDBNull(16) ? "" : reader.GetString(16),
-                        Tag_Area = reader.IsDBNull(17) ? "" : reader.GetString(17),
-                        Tag_CONo = reader.IsDBNull(18) ? "" : reader.GetString(18),
-                        Tag_Descriptions = reader.IsDBNull(19) ? "" : reader.GetString(19),
-                        Tag_EqmtNo = reader.IsDBNull(20) ? "" : reader.GetString(20),
-                        Tag_Estimator = reader.IsDBNull(21) ? "" : reader.GetString(21),
-                        Tag_Insulation_Typ = reader.IsDBNull(22) ? "" : reader.GetString(22),
-                        Tag_LineNo = reader.IsDBNull(23) ? "" : reader.GetString(23),
-                        Tag_Matl_Spec = reader.IsDBNull(24) ? "" : reader.GetString(24),
-                        Tag_Phase_Code = reader.IsDBNull(25) ? "" : reader.GetString(25),
-                        Tag_Paint_Code = reader.IsDBNull(26) ? "" : reader.GetString(26),
-                        Tag_Pipe_Grade = reader.IsDBNull(27) ? "" : reader.GetString(27),
-                        Tag_ProjectID = reader.IsDBNull(28) ? "" : reader.GetString(28),
-                        Tag_RFINo = reader.IsDBNull(29) ? "" : reader.GetString(29),
-                        Tag_Sch_ActNo = reader.IsDBNull(30) ? "" : reader.GetString(30),
-                        Tag_Service = reader.IsDBNull(31) ? "" : reader.GetString(31),
-                        Tag_ShopField = reader.IsDBNull(32) ? "" : reader.GetString(32),
-                        Tag_SubArea = reader.IsDBNull(33) ? "" : reader.GetString(33),
-                        Tag_System = reader.IsDBNull(34) ? "" : reader.GetString(34),
-                        Tag_SystemNo = reader.IsDBNull(35) ? "" : reader.GetString(35),
-                        Tag_TagNo = reader.IsDBNull(36) ? "" : reader.GetString(36),
-                        Tag_Tracing = reader.IsDBNull(37) ? "" : reader.GetString(37),
-                        Tag_WorkPackage = reader.IsDBNull(38) ? "" : reader.GetString(38),
-                        Tag_XRAY = reader.IsDBNull(39) ? 0 : reader.GetDouble(39),
+                        Aux1 = reader.IsDBNull(14) ? "" : reader.GetString(14),
+                        Aux2 = reader.IsDBNull(15) ? "" : reader.GetString(15),
+                        Aux3 = reader.IsDBNull(16) ? "" : reader.GetString(16),
+                        Area = reader.IsDBNull(17) ? "" : reader.GetString(17),
+                        ChgOrdNO = reader.IsDBNull(18) ? "" : reader.GetString(18),
+                        Description = reader.IsDBNull(19) ? "" : reader.GetString(19),
+                        EqmtNO = reader.IsDBNull(20) ? "" : reader.GetString(20),
+                        Estimator = reader.IsDBNull(21) ? "" : reader.GetString(21),
+                        InsulType = reader.IsDBNull(22) ? "" : reader.GetString(22),
+                        LineNO = reader.IsDBNull(23) ? "" : reader.GetString(23),
+                        MtrlSpec = reader.IsDBNull(24) ? "" : reader.GetString(24),
+                        PhaseCode = reader.IsDBNull(25) ? "" : reader.GetString(25),
+                        PaintCode = reader.IsDBNull(26) ? "" : reader.GetString(26),
+                        PipeGrade = reader.IsDBNull(27) ? "" : reader.GetString(27),
+                        ProjectID = reader.IsDBNull(28) ? "" : reader.GetString(28),
+                        RFINO = reader.IsDBNull(29) ? "" : reader.GetString(29),
+                        SchedActNO = reader.IsDBNull(30) ? "" : reader.GetString(30),
+                        Service = reader.IsDBNull(31) ? "" : reader.GetString(31),
+                        ShopField = reader.IsDBNull(32) ? "" : reader.GetString(32),
+                        SubArea = reader.IsDBNull(33) ? "" : reader.GetString(33),
+                        System = reader.IsDBNull(34) ? "" : reader.GetString(34),
+                        SystemNO = reader.IsDBNull(35) ? "" : reader.GetString(35),
+                        TagNO = reader.IsDBNull(36) ? "" : reader.GetString(36),
+                        HtTrace = reader.IsDBNull(37) ? "" : reader.GetString(37),
+                        WorkPackage = reader.IsDBNull(38) ? "" : reader.GetString(38),
+                        XRay = reader.IsDBNull(39) ? 0 : reader.GetDouble(39),
 
                         // Trigger
-                        Trg_DateTrigger = reader.IsDBNull(40) ? 0 : reader.GetInt32(40),
+                        DateTrigger = reader.IsDBNull(40) ? 0 : reader.GetInt32(40),
 
                         // UDFs
                         UDFOne = reader.IsDBNull(41) ? "" : reader.GetString(41),
@@ -309,52 +308,52 @@ namespace VANTAGE.Data
                         UDFEight = reader.IsDBNull(48) ? "" : reader.GetString(48),
                         UDFNine = reader.IsDBNull(49) ? "" : reader.GetString(49),
                         UDFTen = reader.IsDBNull(50) ? "" : reader.GetString(50),
-                        UDFEleven = reader.IsDBNull(51) ? "Unassigned" :
+                        AssignedTo = reader.IsDBNull(51) ? "Unassigned" :
                                     (string.IsNullOrWhiteSpace(reader.GetString(51)) ? "Unassigned" :
                                     (validUsernames.Contains(reader.GetString(51)) ? reader.GetString(51) : "Unassigned")),
-                        UDFTwelve = reader.IsDBNull(52) ? "" : reader.GetString(52),
-                        UDFThirteen = reader.IsDBNull(53) ? "" : reader.GetString(53),
+                        LastModifiedBy = reader.IsDBNull(52) ? "" : reader.GetString(52),
+                        CreatedBy = reader.IsDBNull(53) ? "" : reader.GetString(53),
                         UDFFourteen = reader.IsDBNull(54) ? "" : reader.GetString(54),
                         UDFFifteen = reader.IsDBNull(55) ? "" : reader.GetString(55),
                         UDFSixteen = reader.IsDBNull(56) ? "" : reader.GetString(56),
                         UDFSeventeen = reader.IsDBNull(57) ? "" : reader.GetString(57),
                         UDFEighteen = reader.IsDBNull(58) ? "" : reader.GetString(58),
-                        UDFNineteen = reader.IsDBNull(59) ? "" : reader.GetString(59),
+                        UniqueID = reader.IsDBNull(59) ? "" : reader.GetString(59),
                         UDFTwenty = reader.IsDBNull(60) ? "" : reader.GetString(60),
 
                         // Values
-                        Val_Base_Unit = reader.IsDBNull(61) ? 0 : reader.GetDouble(61),
-                        Val_BudgetedHours_Ind = reader.IsDBNull(62) ? 0 : reader.GetDouble(62),
-                        Val_BudgetedHours_Group = reader.IsDBNull(63) ? 0 : reader.GetDouble(63),
-                        Val_BudgetedHours_ROC = reader.IsDBNull(64) ? 0 : reader.GetDouble(64),
-                        Val_EarnedHours_ROC = reader.IsDBNull(65) ? 0 : reader.GetInt32(65),
-                        Val_EarnedQty = reader.IsDBNull(66) ? 0 : reader.GetDouble(66),
-                        Val_Perc_Complete = reader.IsDBNull(67) ? 0 : reader.GetDouble(67),
-                        Val_Quantity = reader.IsDBNull(68) ? 0 : reader.GetDouble(68),
-                        Val_UOM = reader.IsDBNull(69) ? "" : reader.GetString(69),
+                        BaseUnit = reader.IsDBNull(61) ? 0 : reader.GetDouble(61),
+                        BudgetMHs = reader.IsDBNull(62) ? 0 : reader.GetDouble(62),
+                        BudgetHoursGroup = reader.IsDBNull(63) ? 0 : reader.GetDouble(63),
+                        BudgetHoursROC = reader.IsDBNull(64) ? 0 : reader.GetDouble(64),
+                        EarnedMHsRoc = reader.IsDBNull(65) ? 0 : reader.GetInt32(65),
+                        EarnQtyEntry = reader.IsDBNull(66) ? 0 : reader.GetDouble(66),
+                        PercentEntry = reader.IsDBNull(67) ? 0 : reader.GetDouble(67),
+                        Quantity = reader.IsDBNull(68) ? 0 : reader.GetDouble(68),
+                        UOM = reader.IsDBNull(69) ? "" : reader.GetString(69),
 
-                        // Calculated
-                        Val_EQ_QTY = reader.IsDBNull(73) ? 0 : reader.GetDouble(73),
-                        Val_EQ_UOM = reader.IsDBNull(74) ? "" : reader.GetString(74),
+                        // Equipment
+                        EquivQTY = reader.IsDBNull(73) ? 0 : reader.GetDouble(73),
+                        EquivUOM = reader.IsDBNull(74) ? "" : reader.GetString(74),
 
                         // ROC
-                        Tag_ROC_ID = reader.IsDBNull(75) ? 0 : reader.GetInt32(75),
-                        Val_ROC_Perc = reader.IsDBNull(77) ? 0 : reader.GetDouble(77),
-                        Val_ROC_BudgetQty = reader.IsDBNull(78) ? 0 : reader.GetDouble(78),
+                        ROCID = reader.IsDBNull(75) ? 0 : reader.GetInt32(75),
+                        ROCPercent = reader.IsDBNull(77) ? 0 : reader.GetDouble(77),
+                        ROCBudgetQTY = reader.IsDBNull(78) ? 0 : reader.GetDouble(78),
 
                         // Pipe
-                        Val_Pipe_Size1 = reader.IsDBNull(79) ? 0 : reader.GetDouble(79),
-                        Val_Pipe_Size2 = reader.IsDBNull(80) ? 0 : reader.GetDouble(80),
+                        PipeSize1 = reader.IsDBNull(79) ? 0 : reader.GetDouble(79),
+                        PipeSize2 = reader.IsDBNull(80) ? 0 : reader.GetDouble(80),
 
                         // Previous
-                        Val_Prev_Earned_Hours = reader.IsDBNull(81) ? 0 : reader.GetDouble(81),
-                        Val_Prev_Earned_Qty = reader.IsDBNull(82) ? 0 : reader.GetDouble(82),
-                        Val_TimeStamp = reader.IsDBNull(83) ? "" : reader.GetString(83),
+                        PrevEarnMHs = reader.IsDBNull(81) ? 0 : reader.GetDouble(81),
+                        PrevEarnQTY = reader.IsDBNull(82) ? 0 : reader.GetDouble(82),
+                        Timestamp = reader.IsDBNull(83) ? "" : reader.GetString(83),
 
                         // Client
-                        Val_Client_EQ_QTY_BDG = reader.IsDBNull(84) ? 0 : reader.GetDouble(84),
-                        Val_UDF_Two = reader.IsDBNull(85) ? 0 : reader.GetDouble(85),
-                        Val_UDF_Three = reader.IsDBNull(86) ? 0 : reader.GetDouble(86)
+                        ClientEquivQty = reader.IsDBNull(84) ? 0 : reader.GetDouble(84),
+                        ClientBudget = reader.IsDBNull(85) ? 0 : reader.GetDouble(85),
+                        ClientCustom3 = reader.IsDBNull(86) ? 0 : reader.GetDouble(86)
                     };
 
                     activities.Add(activity);
