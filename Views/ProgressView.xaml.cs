@@ -90,7 +90,7 @@ namespace VANTAGE.Views
 
         private async void OnViewLoaded(object sender, RoutedEventArgs e)
         {
-            // REMOVE InitializeColumnVisibility() from here
+
 
             await _viewModel.LoadInitialDataAsync();
             UpdateRecordCount();
@@ -99,115 +99,26 @@ namespace VANTAGE.Views
 
         private void InitializeColumnVisibility()
         {
-            // Build dictionary of existing columns first
+            // Clear existing items
+            lstColumnVisibility.Items.Clear();
+            _columnMap.Clear();
+
+            // Auto-generate checkboxes from actual DataGrid columns
             foreach (var column in dgActivities.Columns)
             {
                 string headerText = column.Header?.ToString() ?? "Unknown";
+
+                // Store column reference
                 _columnMap[headerText] = column;
-            }
 
-            // Hardcoded list of ALL columns (in order they should appear)
-            var allColumns = new List<string>
-    {
-        "Activity ID",
-        "Description",
-        "Component Type",
-        "Phase Category",
-        "ROC Step",
-        "Project ID",
-        "Work Package",
-        "Phase Code",
-        "Drawing No",
-        "Sch Start",
-        "Sch Finish",
-        "Sch Status",
-        "Activity No",
-        "Quantity",
-        "Earned Qty",
-        "% Complete",
-        "Budget Hrs",
-        "Earned Hrs",
-        "Status",
-        "UDF One",
-        "UDF Two",
-        "Assigned To",
-        "Hex NO",
-        "Revision No",
-        "Secondary Drawing",
-        "Sheet No",
-        "Comments",
-        "Sch Act No (Field)",
-        "Tag Aux1",
-        "Tag Aux2",
-        "Tag Aux3",
-        "Tag Area",
-        "CO No",
-        "Equipment No",
-        "Estimator",
-        "Insulation Type",
-        "Line No",
-        "Material Spec",
-        "Paint Code",
-        "Pipe Grade",
-        "RFI No",
-        "Service",
-        "Shop/Field",
-        "Sub Area",
-        "System",
-        "System No",
-        "Tag No",
-        "Tracing",
-        "XRAY",
-        "Date Trigger",
-        "UDF Three",
-        "UDF Four",
-        "UDF Five",
-        "UDF Six",
-        "UDF Seven",
-        "UDF Eight",
-        "UDF Nine",
-        "UDF Ten",
-        "Last Modified By",
-        "Created By",
-        "UDF Fourteen",
-        "UDF Fifteen",
-        "UDF Sixteen",
-        "UDF Seventeen",
-        "UDF Eighteen",
-        "UDF Twenty",
-        "Base Unit",
-        "Budget Hrs Group",
-        "Budget Hrs ROC",
-        "Earned Hrs ROC",
-        "UOM",
-        "Earn Qty (Calc)",
-        "Percent Earned",
-        "EQ QTY",
-        "EQ UOM",
-        "ROC ID",
-        "Lookup ROC ID",
-        "ROC Perc",
-        "ROC Budget Qty",
-        "Pipe Size 1",
-        "Pipe Size 2",
-        "Prev Earned Hrs",
-        "Prev Earned Qty",
-        "Timestamp",
-        "Client EQ QTY Budget",
-        "UDF Two (Val)",
-        "UDF Three (Val)",
-        "Client Earned EQ QTY"
-    };
-
-            // Add checkboxes for ALL columns
-            foreach (var columnName in allColumns)
-            {
+                // Create checkbox
                 var checkBox = new CheckBox
                 {
-                    Content = columnName,
-                    IsChecked = _columnMap.ContainsKey(columnName) && _columnMap[columnName].Visibility == Visibility.Visible,
+                    Content = headerText,
+                    IsChecked = column.Visibility == Visibility.Visible,
                     Margin = new Thickness(5, 2, 5, 2),
-                    Foreground = System.Windows.Media.Brushes.White
+                    Foreground = System.Windows.Media.Brushes.White,
+                    Tag = column // Store column reference directly in Tag
                 };
 
                 checkBox.Checked += ColumnCheckBox_Changed;
@@ -216,7 +127,7 @@ namespace VANTAGE.Views
                 lstColumnVisibility.Items.Add(checkBox);
             }
 
-            System.Diagnostics.Debug.WriteLine($"→ Total checkboxes added: {lstColumnVisibility.Items.Count}");
+            System.Diagnostics.Debug.WriteLine($"✓ Column visibility initialized: {dgActivities.Columns.Count} columns");
         }
         /// <summary>
         /// Prevent editing of records not assigned to current user
@@ -284,7 +195,7 @@ namespace VANTAGE.Views
                 int successCount = 0;
                 foreach (var activity in allowedActivities)
                 {
-                    activity.AssignedToUsername = "Unassigned";
+                    activity.AssignedTo = "Unassigned";
                     activity.LastModifiedBy = App.CurrentUser.Username;
 
                     bool success = await ActivityRepository.UpdateActivityInDatabase(activity);
@@ -544,9 +455,6 @@ namespace VANTAGE.Views
         /// <summary>
         /// Auto-save when user finishes editing a cell
         /// </summary>
-        /// <summary>
-        /// Auto-save when user finishes editing a row
-        /// </summary>
         private async void DgActivities_RowEditEnding(object sender, DataGridRowEditEndingEventArgs e)
         {
             // Only save if edit was committed (not cancelled)
@@ -645,7 +553,7 @@ namespace VANTAGE.Views
                 int successCount = 0;
                 foreach (var activity in allowedActivities)
                 {
-                    activity.AssignedToUsername = App.CurrentUser.Username;
+                    activity.AssignedTo = App.CurrentUser.Username;
                     activity.LastModifiedBy = App.CurrentUser.Username;
 
                     bool success = await ActivityRepository.UpdateActivityInDatabase(activity);
@@ -782,7 +690,7 @@ namespace VANTAGE.Views
                     int successCount = 0;
                     foreach (var activity in allowedActivities)
                     {
-                        activity.AssignedToUsername = selectedUser;
+                        activity.AssignedTo = selectedUser;
                         activity.LastModifiedBy = App.CurrentUser.Username;
 
                         bool success = await ActivityRepository.UpdateActivityInDatabase(activity);
@@ -833,7 +741,6 @@ namespace VANTAGE.Views
                     if (success)
                     {
                         successCount++;
-                        System.Diagnostics.Debug.WriteLine($"✓ Activity {activity.ActivityID} marked complete");
                     }
                     else
                     {
@@ -855,7 +762,6 @@ namespace VANTAGE.Views
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"✗ Error marking records complete: {ex.Message}");
                 MessageBox.Show($"Error marking records complete: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -878,9 +784,6 @@ namespace VANTAGE.Views
                     // Set to 0% complete
                     activity.PercentEntry = 0.0;
 
-                    // This will trigger calculated field updates automatically via INotifyPropertyChanged
-                    // Val_EarnedQty, Val_Percent_Earned, Val_EarnedHours_Ind will all update to 0
-
                     // Update LastModifiedBy
                     activity.LastModifiedBy = App.CurrentUser.Username;
 
@@ -889,7 +792,6 @@ namespace VANTAGE.Views
                     if (success)
                     {
                         successCount++;
-                        System.Diagnostics.Debug.WriteLine($"✓ Activity {activity.ActivityID} marked not started");
                     }
                     else
                     {
@@ -911,7 +813,6 @@ namespace VANTAGE.Views
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"✗ Error marking records not started: {ex.Message}");
                 MessageBox.Show($"Error marking records not started: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }

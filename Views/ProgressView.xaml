@@ -409,8 +409,8 @@
                                             Binding="{Binding EarnQtyEntry, StringFormat=N2, UpdateSourceTrigger=LostFocus}" 
                                             Width="100"/>
 
-                        <DataGridTextColumn Header="% Entry" 
-                                            Binding="{Binding PercentEntry, StringFormat=N2, UpdateSourceTrigger=LostFocus}" 
+                        <DataGridTextColumn Header="% Complete" 
+                                            Binding="{Binding PercentEntry_Display, StringFormat=N2}"
                                             Width="100"/>
 
                         <DataGridTextColumn Header="BudgetMHs" 
@@ -715,11 +715,10 @@
                                                 Visibility="Collapsed"/>
 
                         <!-- Calculated fields -->
-                        <DataGridTextColumn Header="EarnedQtyCalc" 
-                                                Binding="{Binding EarnedQtyCalc, StringFormat=N4}" 
-                                                Width="100"
-                                                IsReadOnly="True"
-                                                Visibility="Collapsed">
+                        <DataGridTextColumn Header="Earn Qty (Calc)" 
+                                            Binding="{Binding EarnedQtyCalc_Display, StringFormat=N2}"
+                                            Width="100"
+                                            IsReadOnly="True">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="Background" Value="{StaticResource ReadOnlyBackground}"/>
@@ -728,17 +727,16 @@
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="PercentCompleteCalc" 
-                                                Binding="{Binding PercentCompleteCalc, StringFormat=N2}"
-                                                Width="120"
-                                                IsReadOnly="True"
-                                                Visibility="Collapsed">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Background" Value="{StaticResource ReadOnlyBackground}"/>
-                                    <Setter Property="Foreground" Value="{StaticResource DisabledColor}"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
+                        <DataGridTextColumn Header="Percent Complete Calc" 
+                                            Binding="{Binding PercentCompleteCalc_Display, StringFormat=N2}"
+                                            Width="100"
+                                            IsReadOnly="True">
+                                            <DataGridTextColumn.ElementStyle>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Background" Value="{StaticResource ReadOnlyBackground}"/>
+                                                    <Setter Property="Foreground" Value="{StaticResource DisabledColor}"/>
+                                                </Style>
+                                            </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
                         <!-- Equipment Quantity -->

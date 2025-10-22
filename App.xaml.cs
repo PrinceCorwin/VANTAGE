@@ -22,7 +22,7 @@ namespace VANTAGE
                 System.Diagnostics.Debug.WriteLine("✓ Database initialized");
 
                 // ADD THE NEW LINE HERE (commented out so it only ran once):
-                // DatabaseSetup.SeedTestUsers();
+                //DatabaseSetup.SeedTestUsers();
 
                 // Step 2: Initialize default app settings
                 SettingsManager.InitializeDefaultAppSettings();
@@ -39,12 +39,12 @@ namespace VANTAGE
 
                 // Step 4a: Make Steve admin on first run (ONE-TIME SETUP)
                 // if ((CurrentUser.Username.Equals("Steve.Amalfitano", StringComparison.OrdinalIgnoreCase) ||
-                     // CurrentUser.Username.Equals("Steve", StringComparison.OrdinalIgnoreCase)) && !CurrentUser.IsAdmin)
+                // CurrentUser.Username.Equals("Steve", StringComparison.OrdinalIgnoreCase)) && !CurrentUser.IsAdmin)
                 // {
-                    // AdminHelper.GrantAdmin(CurrentUserID, CurrentUser.Username);
-                    // CurrentUser.IsAdmin = true;
-                    // CurrentUser.AdminToken = AdminHelper.GenerateAdminToken(CurrentUserID, CurrentUser.Username);
-                    // System.Diagnostics.Debug.WriteLine("✓ Steve granted admin privileges");
+                // AdminHelper.GrantAdmin(CurrentUserID, CurrentUser.Username);
+                // CurrentUser.IsAdmin = true;
+                // CurrentUser.AdminToken = AdminHelper.GenerateAdminToken(CurrentUserID, CurrentUser.Username);
+                // System.Diagnostics.Debug.WriteLine("✓ Steve granted admin privileges");
                 // }
 
                 // Step 4b: Verify admin token if user claims to be admin
