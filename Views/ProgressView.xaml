@@ -48,7 +48,7 @@
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="200"/>
+            <ColumnDefinition Width="175"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
@@ -90,7 +90,7 @@
                         Click="BtnFilterNotComplete_Click"/>
 
                 <Button x:Name="btnFilterPipe"
-                        Content="Pipe"
+                        Content="USER 1"
                         Height="35"
                         Margin="0,0,0,5"
                         Background="{StaticResource ControlBackground}"
@@ -99,10 +99,10 @@
                         BorderThickness="1"
                         HorizontalContentAlignment="Left"
                         Padding="10,0"
-                        Click="BtnFilterPipe_Click"/>
+                        Click="BtnFilterUser1_Click"/>
 
                 <Button x:Name="btnFilterSteel"
-                        Content="Steel"
+                        Content="USER 2"
                         Height="35"
                         Margin="0,0,0,5"
                         Background="{StaticResource ControlBackground}"
@@ -111,10 +111,10 @@
                         BorderThickness="1"
                         HorizontalContentAlignment="Left"
                         Padding="10,0"
-                        Click="BtnFilterSteel_Click"/>
+                        Click="BtnFilterUser2_Click"/>
 
                 <Button x:Name="btnFilterElec"
-                        Content="Elec"
+                        Content="USER 3"
                         Height="35"
                         Margin="0,0,0,5"
                         Background="{StaticResource ControlBackground}"
@@ -123,7 +123,7 @@
                         BorderThickness="1"
                         HorizontalContentAlignment="Left"
                         Padding="10,0"
-                        Click="BtnFilterElec_Click"/>
+                        Click="BtnFilterUser3_Click"/>
 
                 <Button x:Name="btnFilterMyRecords"
                         Content="My Records"
@@ -138,7 +138,7 @@
                         Click="BtnFilterMyRecords_Click"/>
 
                 <Button x:Name="btnClearFilters"
-                        Content="Clear All Filters"
+                        Content="Clear Filters"
                         Height="35"
                         Margin="0,20,0,0"
                         Background="{StaticResource ControlBackground}"

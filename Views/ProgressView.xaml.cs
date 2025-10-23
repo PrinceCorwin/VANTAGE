@@ -305,17 +305,17 @@ namespace VANTAGE.Views
             // TODO: Implement
         }
 
-        private void BtnFilterPipe_Click(object sender, RoutedEventArgs e)
+        private void BtnFilterUser1_Click(object sender, RoutedEventArgs e)
         {
             // TODO: Implement
         }
 
-        private void BtnFilterSteel_Click(object sender, RoutedEventArgs e)
+        private void BtnFilterUser2_Click(object sender, RoutedEventArgs e)
         {
             // TODO: Implement
         }
 
-        private void BtnFilterElec_Click(object sender, RoutedEventArgs e)
+        private void BtnFilterUser3_Click(object sender, RoutedEventArgs e)
         {
             // TODO: Implement
         }
