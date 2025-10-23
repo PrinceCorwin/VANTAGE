@@ -182,7 +182,21 @@ namespace VANTAGE
                         VAL_Client_Earned_EQ_QTY REAL DEFAULT 0
                     );
 
+                    -- ProjectColumnMappings table (for per-project column customization)
+                    CREATE TABLE IF NOT EXISTS ProjectColumnMappings (
+                        MappingID INTEGER PRIMARY KEY AUTOINCREMENT,
+                        ProjectID TEXT NOT NULL,
+                        DbColumnName TEXT NOT NULL,
+                        DisplayName TEXT NOT NULL,
+                        PropertyName TEXT NOT NULL,
+                        IsVisible INTEGER DEFAULT 1,
+                        ColumnOrder INTEGER DEFAULT 0,
+                        Width INTEGER DEFAULT 100,
+                        UNIQUE(ProjectID, DbColumnName)
+                    );
+
                     -- Indexes for performance
+                    CREATE INDEX IF NOT EXISTS idx_project_mappings ON ProjectColumnMappings(ProjectID);
                     CREATE INDEX IF NOT EXISTS idx_tag_roc_id ON Activities(Tag_ROC_ID);
                     CREATE INDEX IF NOT EXISTS idx_tag_project ON Activities(Tag_ProjectID);
                     CREATE INDEX IF NOT EXISTS idx_tag_area ON Activities(Tag_Area);

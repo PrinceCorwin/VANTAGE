@@ -168,6 +168,13 @@ namespace VANTAGE.Utilities
                 // Normalize: replace spaces with underscores to match database schema
                 dbColumnName = dbColumnName.Replace(" ", "_");
 
+                // Validate against ColumnMapper (ensures column exists in our schema)
+                if (!ColumnMapper.IsValidDbColumn(dbColumnName))
+                {
+                    System.Diagnostics.Debug.WriteLine($"⚠ Unknown column in Excel: {excelColumnName} (mapped to {dbColumnName}) - skipping");
+                    continue;
+                }
+
                 // Skip calculated fields - app will recalculate
                 if (calculatedFields.Contains(dbColumnName))
                 {

@@ -150,7 +150,37 @@ namespace VANTAGE.Utilities
                 _propertyToDb[kvp.Value] = kvp.Key;
             }
         }
+        /// <summary>
+        /// Check if a database column name is valid
+        /// </summary>
+        public static bool IsValidDbColumn(string dbColumnName)
+        {
+            return _dbToProperty.ContainsKey(dbColumnName);
+        }
 
+        /// <summary>
+        /// Check if a property name is valid
+        /// </summary>
+        public static bool IsValidProperty(string propertyName)
+        {
+            return _propertyToDb.ContainsKey(propertyName);
+        }
+
+        /// <summary>
+        /// Get a mapping dictionary: Database Column Name → Property Name
+        /// </summary>
+        public static Dictionary<string, string> GetDbToPropertyMap()
+        {
+            return new Dictionary<string, string>(_dbToProperty);
+        }
+
+        /// <summary>
+        /// Get a mapping dictionary: Property Name → Database Column Name
+        /// </summary>
+        public static Dictionary<string, string> GetPropertyToDbMap()
+        {
+            return new Dictionary<string, string>(_propertyToDb);
+        }
         /// <summary>
         /// Get clean property name from database column name
         /// </summary>

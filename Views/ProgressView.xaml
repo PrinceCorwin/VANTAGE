@@ -350,7 +350,7 @@
                         </DataGridTextColumn>
 
                         <DataGridTextColumn Binding="{Binding Description}"
-                    Width="250">
+                                            Width="250">
                             <DataGridTextColumn.Header>
                                 <ContentControl Content="Description" 
                                                 ContentTemplate="{StaticResource FilterableColumnHeader}"/>

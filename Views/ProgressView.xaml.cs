@@ -96,29 +96,63 @@ namespace VANTAGE.Views
             UpdateRecordCount();
             UpdatePagingControls();
         }
+        /// <summary>
+        /// Extract property name from column (tries binding path first, then header text)
+        /// </summary>
+        private string GetColumnPropertyName(DataGridColumn column)
+        {
+            // Try to get property name from binding path (most reliable)
+            if (column is DataGridBoundColumn boundColumn)
+            {
+                if (boundColumn.Binding is System.Windows.Data.Binding binding)
+                {
+                    string propertyName = binding.Path.Path;
 
+                    // Strip _Display suffix if present (for display wrapper properties)
+                    if (propertyName.EndsWith("_Display"))
+                    {
+                        propertyName = propertyName.Replace("_Display", "");
+                    }
+
+                    return propertyName;
+                }
+            }
+
+            // Fallback: Extract from header (for template columns or complex headers)
+            if (column.Header == null)
+                return "Unknown";
+
+            if (column.Header is string headerString)
+                return headerString;
+
+            if (column.Header is System.Windows.Controls.ContentControl contentControl)
+            {
+                if (contentControl.Content is string content)
+                    return content;
+                return contentControl.Content?.ToString() ?? "Unknown";
+            }
+
+            return column.Header.ToString();
+        }
         private void InitializeColumnVisibility()
         {
-            // Clear existing items
             lstColumnVisibility.Items.Clear();
             _columnMap.Clear();
 
-            // Auto-generate checkboxes from actual DataGrid columns
             foreach (var column in dgActivities.Columns)
             {
-                string headerText = column.Header?.ToString() ?? "Unknown";
+                // Get property name from binding path
+                string columnName = GetColumnPropertyName(column);
 
-                // Store column reference
-                _columnMap[headerText] = column;
+                _columnMap[columnName] = column;
 
-                // Create checkbox
                 var checkBox = new CheckBox
                 {
-                    Content = headerText,
+                    Content = columnName,
                     IsChecked = column.Visibility == Visibility.Visible,
                     Margin = new Thickness(5, 2, 5, 2),
                     Foreground = System.Windows.Media.Brushes.White,
-                    Tag = column // Store column reference directly in Tag
+                    Tag = column
                 };
 
                 checkBox.Checked += ColumnCheckBox_Changed;

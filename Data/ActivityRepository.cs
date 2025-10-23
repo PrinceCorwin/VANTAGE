@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using VANTAGE.Models;
+using VANTAGE.Utilities;
 
 namespace VANTAGE.Data
 {
@@ -11,6 +12,29 @@ namespace VANTAGE.Data
     /// </summary>
     public static class ActivityRepository
     {
+        // Mapping service instance (initialized per-project when needed)
+        private static MappingService _mappingService;
+
+        /// <summary>
+        /// Initialize mapping service for a specific project
+        /// </summary>
+        public static void InitializeMappings(string projectID = null)
+        {
+            _mappingService = new MappingService(projectID);
+            System.Diagnostics.Debug.WriteLine($"✓ MappingService initialized for project: {projectID ?? "default"}");
+        }
+
+        /// <summary>
+        /// Get current mapping service (creates default if not initialized)
+        /// </summary>
+        private static MappingService GetMappingService()
+        {
+            if (_mappingService == null)
+            {
+                _mappingService = new MappingService(); // Use defaults
+            }
+            return _mappingService;
+        }
         /// <summary>
         /// Update an existing activity in the database
         /// </summary>
