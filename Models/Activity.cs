@@ -103,6 +103,8 @@ namespace VANTAGE.Models
         public string UDFSeventeen { get; set; }
         public string UDFEighteen { get; set; }
         public string UDFTwenty { get; set; }
+        public string AzureUploadDate { get; set; }
+        public string ProgDate { get; set; }
 
         // Special UDF Fields (with helper properties)
         private string _assignedTo;
@@ -322,6 +324,7 @@ namespace VANTAGE.Models
         /// Calculated: IF(EarnMHsCalc > 0, ROUND((EarnMHsCalc / BudgetMHs) * ClientEquivQty, 3), 0)
         /// </summary>
         public double ClientEquivEarnQTY { get; private set; }
+
         // ========================================
         // CALCULATION METHODS
         // ========================================

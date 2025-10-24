@@ -123,7 +123,7 @@ namespace VANTAGE.Utilities
                 var command = connection.CreateCommand();
                 command.CommandText = @"
                     SELECT DbColumnName, DisplayName, PropertyName, IsVisible, ColumnOrder, Width
-                    FROM ProjectColumnMappings
+                    FROM ProjectColumnOverrides
                     WHERE ProjectID = @projectID";
                 command.Parameters.AddWithValue("@projectID", _projectID);
 

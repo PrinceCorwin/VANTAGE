@@ -96,7 +96,9 @@ namespace VANTAGE.Data
                     Val_Pipe_Size2 = @PipeSize2,
                     Val_UDF_Two = @ClientBudget,
                     Val_UDF_Three = @ClientCustom3,
-                    Val_TimeStamp = @WeekEndDate
+                    Val_TimeStamp = @WeekEndDate,
+                    AzureUploadDate = @AzureUploadDate,
+                    Val_ProgDate = @ProgDate
                 WHERE ActivityID = @ActivityID";
 
                     // Add parameters with NEW property names
@@ -148,6 +150,8 @@ namespace VANTAGE.Data
                     command.Parameters.AddWithValue("@ClientBudget", activity.ClientBudget);
                     command.Parameters.AddWithValue("@ClientCustom3", activity.ClientCustom3);
                     command.Parameters.AddWithValue("@WeekEndDate", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                    command.Parameters.AddWithValue("@AzureUploadDate", activity.AzureUploadDate ?? "");
+                    command.Parameters.AddWithValue("@ProgDate", activity.ProgDate ?? "");
 
                     int rowsAffected = command.ExecuteNonQuery();
                     System.Diagnostics.Debug.WriteLine($"✓ Activity {activity.ActivityID} updated in database");
@@ -254,7 +258,8 @@ namespace VANTAGE.Data
                         Tag_ROC_ID, LookUP_ROC_ID, Val_ROC_Perc, Val_ROC_BudgetQty,
                         Val_Pipe_Size1, Val_Pipe_Size2,
                         Val_Prev_Earned_Hours, Val_Prev_Earned_Qty, Val_TimeStamp,
-                        Val_Client_EQ_QTY_BDG, Val_UDF_Two, Val_UDF_Three, VAL_Client_Earned_EQ_QTY
+                        Val_Client_EQ_QTY_BDG, Val_UDF_Two, Val_UDF_Three, VAL_Client_Earned_EQ_QTY,
+                        AzureUploadDate, Val_ProgDate
                     FROM Activities
                     ORDER BY UDFNineteen
                     LIMIT @pageSize OFFSET @offset";
@@ -377,9 +382,11 @@ namespace VANTAGE.Data
                         // Client
                         ClientEquivQty = reader.IsDBNull(84) ? 0 : reader.GetDouble(84),
                         ClientBudget = reader.IsDBNull(85) ? 0 : reader.GetDouble(85),
-                        ClientCustom3 = reader.IsDBNull(86) ? 0 : reader.GetDouble(86)
+                        ClientCustom3 = reader.IsDBNull(86) ? 0 : reader.GetDouble(86),
+                        AzureUploadDate = reader.IsDBNull(88) ? "" : reader.GetString(88),
+                        ProgDate = reader.IsDBNull(89) ? "" : reader.GetString(89)
                     };
-
+                    System.Diagnostics.Debug.WriteLine($"DEBUG: Activity {activity.ActivityID} - AzureUploadDate='{activity.AzureUploadDate}', ProgDate='{activity.ProgDate}'");
                     activities.Add(activity);
                 }
 

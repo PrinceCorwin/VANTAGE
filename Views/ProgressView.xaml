@@ -807,6 +807,32 @@
                                                 Width="150"
                                                 Visibility="Collapsed"/>
 
+                        <DataGridTextColumn Header="AzureUploadDate" 
+                                            Binding="{Binding AzureUploadDate}"
+                                            Width="150"
+                                            Visibility="Collapsed"
+                                            IsReadOnly="True">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Background" Value="{StaticResource ReadOnlyBackground}"/>
+                                    <Setter Property="Foreground" Value="{StaticResource DisabledColor}"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
+                        <DataGridTextColumn Header="ProgDate" 
+                                            Binding="{Binding ProgDate}"
+                                            Width="150"
+                                            Visibility="Collapsed"
+                                            IsReadOnly="True">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Background" Value="{StaticResource ReadOnlyBackground}"/>
+                                    <Setter Property="Foreground" Value="{StaticResource DisabledColor}"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
                         <!-- Client Values -->
                         <DataGridTextColumn Header="ClientEquivQty" 
                                                 Binding="{Binding ClientEquivQty, StringFormat=N2}" 

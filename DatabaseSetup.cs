@@ -179,7 +179,9 @@ namespace VANTAGE
                         VAL_Client_EQ_QTY_BDG REAL DEFAULT 0,
                         VAL_UDF_Two REAL DEFAULT 0,
                         VAL_UDF_Three REAL DEFAULT 0,
-                        VAL_Client_Earned_EQ_QTY REAL DEFAULT 0
+                        VAL_Client_Earned_EQ_QTY REAL DEFAULT 0,
+                        AzureUploadDate TEXT,
+                        Val_ProgDate TEXT     
                     );
                     -- ColumnMappings table (Master mappings for all external systems)
                     CREATE TABLE IF NOT EXISTS ColumnMappings (
@@ -189,6 +191,7 @@ namespace VANTAGE
                         DefaultDisplayName TEXT NOT NULL,
                         AzureName TEXT,
                         DataType TEXT,
+                        Notes TEXT,
                         IsEditable INTEGER DEFAULT 1,
                         IsCalculated INTEGER DEFAULT 0
                     );
@@ -207,12 +210,12 @@ namespace VANTAGE
                         UNIQUE(ProjectID, DbColumnName)
                     );
 
-                    CREATE INDEX IF NOT EXISTS idx_project_overrides ON ProjectColumnOverrides(ProjectID, DbColumnName);
+
 
 
 
                     -- Indexes for performance
-                    CREATE INDEX IF NOT EXISTS idx_project_mappings ON ProjectColumnMappings(ProjectID);
+                    CREATE INDEX IF NOT EXISTS idx_project_overrides ON ProjectColumnOverrides(ProjectID, DbColumnName);
                     CREATE INDEX IF NOT EXISTS idx_tag_roc_id ON Activities(Tag_ROC_ID);
                     CREATE INDEX IF NOT EXISTS idx_tag_project ON Activities(Tag_ProjectID);
                     CREATE INDEX IF NOT EXISTS idx_tag_area ON Activities(Tag_Area);
