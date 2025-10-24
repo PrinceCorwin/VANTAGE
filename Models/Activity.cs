@@ -308,7 +308,7 @@ namespace VANTAGE.Models
 
         public double PrevEarnMHs { get; set; }
         public double PrevEarnQTY { get; set; }
-        public string Timestamp { get; set; }
+        public string? WeekEndDate { get; set; }
 
         // ========================================
         // VALUES - CLIENT

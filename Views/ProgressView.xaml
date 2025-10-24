@@ -801,9 +801,9 @@
                                                 Width="120"
                                                 Visibility="Collapsed"/>
 
-                        <!-- Timestamp -->
-                        <DataGridTextColumn Header="Timestamp" 
-                                                Binding="{Binding Timestamp}" 
+                        <!-- WeekEndDate -->
+                        <DataGridTextColumn Header="WeekEndDate" 
+                                                Binding="{Binding WeekEndDate}" 
                                                 Width="150"
                                                 Visibility="Collapsed"/>
 

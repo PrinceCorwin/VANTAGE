@@ -129,7 +129,7 @@ namespace VANTAGE.Utilities
             // Values - Previous/History
             ["Val_Prev_Earned_Hours"] = "PrevEarnMHs",
             ["Val_Prev_Earned_Qty"] = "PrevEarnQTY",
-            ["Val_TimeStamp"] = "Timestamp",
+            ["Val_TimeStamp"] = "WeekEndDate",
 
             // Values - Client
             ["VAL_Client_EQ_QTY_BDG"] = "ClientEquivQty",

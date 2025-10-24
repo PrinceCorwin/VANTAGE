@@ -10,14 +10,36 @@ namespace VANTAGE.Utilities
 {
     public static class ExcelImporter
     {
-        // Legacy column name mapping (Excel hyphen names → SQLite underscore names)
+        // Legacy column name mapping (Excel hyphen or space names → SQLite underscore names)
         private static readonly Dictionary<string, string> LegacyColumnMap = new Dictionary<string, string>
         {
             { "Val_EQ-QTY", "Val_EQ_QTY" },
             { "VAL_Client_EQ-QTY_BDG", "Val_Client_EQ_QTY_BDG" },
-            { "VAL_Client_Earned_EQ-QTY", "VAL_Client_Earned_EQ_QTY" }
+            { "VAL_Client_Earned_EQ-QTY", "VAL_Client_Earned_EQ_QTY" },
+            // Space → Underscore (ADD THIS)
+            { "Tag_Phase Code", "Tag_Phase_Code" }
+        };
+        // Reverse mapping for export (Database → Excel with legacy names)
+        private static readonly Dictionary<string, string> ReverseLegacyColumnMap = new Dictionary<string, string>
+        {
+            // Underscore → Hyphen (for Excel export)
+            { "Val_EQ_QTY", "Val_EQ-QTY" },
+            { "Val_Client_EQ_QTY_BDG", "VAL_Client_EQ-QTY_BDG" },
+            { "VAL_Client_Earned_EQ_QTY", "VAL_Client_Earned_EQ-QTY" },
+    
+            // Underscore → Space (for Excel export)
+            { "Tag_Phase_Code", "Tag_Phase Code" }
         };
 
+        /// <summary>
+        /// Get Excel column name from database column name (for export)
+        /// </summary>
+        public static string GetExcelColumnName(string dbColumnName)
+        {
+            return ReverseLegacyColumnMap.ContainsKey(dbColumnName)
+                ? ReverseLegacyColumnMap[dbColumnName]
+                : dbColumnName;
+        }
         /// <summary>
         /// Import activities from Excel file
         /// </summary>
@@ -164,9 +186,6 @@ namespace VANTAGE.Utilities
                 string dbColumnName = LegacyColumnMap.ContainsKey(excelColumnName)
                     ? LegacyColumnMap[excelColumnName]
                     : excelColumnName;
-
-                // Normalize: replace spaces with underscores to match database schema
-                dbColumnName = dbColumnName.Replace(" ", "_");
 
                 // Validate against ColumnMapper (ensures column exists in our schema)
                 if (!ColumnMapper.IsValidDbColumn(dbColumnName))

@@ -181,19 +181,35 @@ namespace VANTAGE
                         VAL_UDF_Three REAL DEFAULT 0,
                         VAL_Client_Earned_EQ_QTY REAL DEFAULT 0
                     );
-
-                    -- ProjectColumnMappings table (for per-project column customization)
-                    CREATE TABLE IF NOT EXISTS ProjectColumnMappings (
+                    -- ColumnMappings table (Master mappings for all external systems)
+                    CREATE TABLE IF NOT EXISTS ColumnMappings (
                         MappingID INTEGER PRIMARY KEY AUTOINCREMENT,
+                        DbColumnName TEXT UNIQUE NOT NULL,
+                        OldVantageName TEXT,
+                        DefaultDisplayName TEXT NOT NULL,
+                        AzureName TEXT,
+                        DataType TEXT,
+                        IsEditable INTEGER DEFAULT 1,
+                        IsCalculated INTEGER DEFAULT 0
+                    );
+
+                    CREATE INDEX IF NOT EXISTS idx_db_column ON ColumnMappings(DbColumnName);
+
+                    -- ProjectColumnOverrides table (Per-project custom display names)
+                    CREATE TABLE IF NOT EXISTS ProjectColumnOverrides (
+                        OverrideID INTEGER PRIMARY KEY AUTOINCREMENT,
                         ProjectID TEXT NOT NULL,
                         DbColumnName TEXT NOT NULL,
-                        DisplayName TEXT NOT NULL,
-                        PropertyName TEXT NOT NULL,
+                        CustomDisplayName TEXT NOT NULL,
                         IsVisible INTEGER DEFAULT 1,
                         ColumnOrder INTEGER DEFAULT 0,
                         Width INTEGER DEFAULT 100,
                         UNIQUE(ProjectID, DbColumnName)
                     );
+
+                    CREATE INDEX IF NOT EXISTS idx_project_overrides ON ProjectColumnOverrides(ProjectID, DbColumnName);
+
+
 
                     -- Indexes for performance
                     CREATE INDEX IF NOT EXISTS idx_project_mappings ON ProjectColumnMappings(ProjectID);

@@ -96,7 +96,7 @@ namespace VANTAGE.Data
                     Val_Pipe_Size2 = @PipeSize2,
                     Val_UDF_Two = @ClientBudget,
                     Val_UDF_Three = @ClientCustom3,
-                    Val_TimeStamp = @Timestamp
+                    Val_TimeStamp = @WeekEndDate
                 WHERE ActivityID = @ActivityID";
 
                     // Add parameters with NEW property names
@@ -147,7 +147,7 @@ namespace VANTAGE.Data
                     command.Parameters.AddWithValue("@PipeSize2", activity.PipeSize2);
                     command.Parameters.AddWithValue("@ClientBudget", activity.ClientBudget);
                     command.Parameters.AddWithValue("@ClientCustom3", activity.ClientCustom3);
-                    command.Parameters.AddWithValue("@Timestamp", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                    command.Parameters.AddWithValue("@WeekEndDate", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
 
                     int rowsAffected = command.ExecuteNonQuery();
                     System.Diagnostics.Debug.WriteLine($"✓ Activity {activity.ActivityID} updated in database");
@@ -372,7 +372,7 @@ namespace VANTAGE.Data
                         // Previous
                         PrevEarnMHs = reader.IsDBNull(81) ? 0 : reader.GetDouble(81),
                         PrevEarnQTY = reader.IsDBNull(82) ? 0 : reader.GetDouble(82),
-                        Timestamp = reader.IsDBNull(83) ? "" : reader.GetString(83),
+                        WeekEndDate = reader.IsDBNull(83) ? "" : reader.GetString(83),
 
                         // Client
                         ClientEquivQty = reader.IsDBNull(84) ? 0 : reader.GetDouble(84),
