@@ -93,7 +93,7 @@ namespace VANTAGE.Utilities
                 // Schedule
                 new ColumnMappingDefinition("Sch_Actno", "Sch_Actno", "OldActno", "Sch_Actno", "string", true, false, null),
                 new ColumnMappingDefinition("Sch_Start", "Sch_Start", "Start", "Sch_Start", "datetime", true, false, null),
-                new ColumnMappingDefinition("Sch_Finish", "Sch_Finish", "Finish", "Sch_Finish", "datetime", true, false, null),
+                new ColumnMappingDefinition("Sch_Finish", "Sch_Finish", "Finish", null, "datetime", true, false, null),
                 new ColumnMappingDefinition("Sch_Status", "Sch_Status", "Status", "Sch_Status", "string", false, true, "Calculated from percent complete"),
                 // Tags - Core
                 new ColumnMappingDefinition("Tag_TagNo", "Tag_TagNo", "TagNO", "Tag_TagNo", "string", true, false, null),
@@ -101,10 +101,10 @@ namespace VANTAGE.Utilities
                 new ColumnMappingDefinition("Tag_Area", "Tag_Area", "Area", "Tag_Area", "string", true, false, null),
                 new ColumnMappingDefinition("Tag_SubArea", "Tag_SubArea", "SubArea", "Tag_SubArea", "string", true, false, null),
                 new ColumnMappingDefinition("Tag_System", "Tag_System", "System", "Tag_System", "string", true, false, null),
-                new ColumnMappingDefinition("Tag_SystemNo", "Tag_SystemNo", "SystemNO", "Tag_SystemNo", "string", true, false, null),
+                new ColumnMappingDefinition("Tag_SystemNo", "Tag_SystemNo", "SystemNO", null, "string", true, false, null),
                 new ColumnMappingDefinition("Tag_ProjectID", "Tag_ProjectID", "ProjectID", "Tag_ProjectID", "string", true, false, null),
                 new ColumnMappingDefinition("Tag_WorkPackage", "Tag_WorkPackage", "WorkPackage", "Tag_WorkPackage", "string", true, false, null),
-                new ColumnMappingDefinition("Tag_Phase_Code", "Tag_Phase Code", "PhaseCode", "Tag_Phase_Code", "string", true, false, null), // Space in OldVantage
+                new ColumnMappingDefinition("Tag_Phase_Code", "[Tag_Phase Code]", "PhaseCode", "Tag_PhaseCode", "string", true, false, null), // Space in OldVantage
                 new ColumnMappingDefinition("Tag_Service", "Tag_Service", "Service", "Tag_Service", "string", true, false, null),
                 new ColumnMappingDefinition("Tag_ShopField", "Tag_ShopField", "ShopField", "Tag_ShopField", "string", true, false, null),
                 
@@ -130,7 +130,7 @@ namespace VANTAGE.Utilities
                 new ColumnMappingDefinition("Tag_XRAY", "Tag_XRAY", "XRay", "Tag_XRAY", "double", true, false, null),
                 
                 // Trigger
-                new ColumnMappingDefinition("Trg_DateTrigger", "Trg_DateTrigger", "DateTrigger", "Trg_DateTrigger", "int", true, false, null),
+                new ColumnMappingDefinition("Trg_DateTrigger", "Trg_DateTrigger", "DateTrigger", null, "int", true, false, null),
                 // UDFs
                 new ColumnMappingDefinition("UDFOne", "UDFOne", "UDF1", "UDF1", "string", true, false, null),
                 new ColumnMappingDefinition("UDFTwo", "UDFTwo", "UDF2", "UDF2", "string", true, false, null),
@@ -166,18 +166,18 @@ namespace VANTAGE.Utilities
                 
                 // Values - Calculated
                 new ColumnMappingDefinition("Val_EarnedHours_Ind", "Val_EarnedHours_Ind", "EarnMHsCalc", "Val_EarnedHours_Ind", "double", false, true, "Calculated earned hours"),
-                new ColumnMappingDefinition("Val_EarnedHours_ROC", "Val_EarnedHours_ROC", "EarnedMHsRocCalc", "Val_EarnedHours_ROC", "int", false, true, "Calculated ROC earned hours"),
-                new ColumnMappingDefinition("Val_Earn_Qty", "Val_Earn_Qty", "EarnedQtyCalc", "Val_Earn_Qty", "double", false, true, "Calculated earned quantity"),
-                new ColumnMappingDefinition("Val_Percent_Earned", "Val_Percent_Earned", "PercentCompleteCalc", "Val_Percent_Earned", "double", false, true, "Calculated percent complete"),
+                new ColumnMappingDefinition("Val_EarnedHours_ROC", "Val_EarnedHours_ROC", "EarnedMHsRoc", null, "int", false, true, "Calculated ROC earned hours"),
+                new ColumnMappingDefinition("Val_Earn_Qty", "Val_Earn_Qty", "EarnedQtyCalc", null, "double", false, true, "Calculated earned quantity"),
+                new ColumnMappingDefinition("Val_Percent_Earned", "Val_Percent_Earned", "PercentCompleteCalc", null, "double", false, true, "Calculated percent complete"),
                 
                 // Values - Equipment
-                new ColumnMappingDefinition("Val_EQ_QTY", "Val_EQ-QTY", "EquivQTY", "[Val_EQ-QTY]", "double", true, false, null), // Hyphen in OldVantage/Azure
+                new ColumnMappingDefinition("Val_EQ_QTY", "[Val_EQ-QTY]", "EquivQTY", "[Val_EQ-QTY]", "double", true, false, null), // Hyphen in OldVantage/Azure
                 new ColumnMappingDefinition("Val_EQ_UOM", "Val_EQ_UOM", "EquivUOM", "Val_EQ_UOM", "string", true, false, null),
                 
                 // Values - ROC
-                new ColumnMappingDefinition("Tag_ROC_ID", "Tag_ROC_ID", "ROCID", "Tag_ROC_ID", "int", true, false, null),
-                new ColumnMappingDefinition("LookUP_ROC_ID", "LookUP_ROC_ID", "ROCLookupID", "LookUP_ROC_ID", "string", false, true, "Calculated lookup key"),
-                new ColumnMappingDefinition("Val_ROC_Perc", "Val_ROC_Perc", "ROCPercent", "Val_ROC_Perc", "double", true, false, null),
+                new ColumnMappingDefinition("Tag_ROC_ID", "Tag_ROC_ID", "ROCID", null, "int", true, false, null),
+                new ColumnMappingDefinition("LookUP_ROC_ID", "LookUP_ROC_ID", "ROCLookupID", null, "string", false, true, "Calculated lookup key"),
+                new ColumnMappingDefinition("Val_ROC_Perc", "Val_ROC_Perc", "ROCPercent", null, "double", true, false, null),
                 new ColumnMappingDefinition("Val_ROC_BudgetQty", "Val_ROC_BudgetQty", "ROCBudgetQTY", "Val_ROC_BudgetQty", "double", true, false, null),
                 
                 // Values - Pipe
@@ -185,15 +185,15 @@ namespace VANTAGE.Utilities
                 new ColumnMappingDefinition("Val_Pipe_Size2", "Val_Pipe_Size2", "PipeSize2", "Val_Pipe_Size2", "double", true, false, null),
                 
                 // Values - History
-                new ColumnMappingDefinition("Val_Prev_Earned_Hours", "Val_Prev_Earned_Hours", "PrevEarnMHs", "Val_Prev_Earned_Hours", "double", true, false, null),
-                new ColumnMappingDefinition("Val_Prev_Earned_Qty", "Val_Prev_Earned_Qty", "PrevEarnQTY", "Val_Prev_Earned_Qty", "double", true, false, null),
+                new ColumnMappingDefinition("Val_Prev_Earned_Hours", "Val_Prev_Earned_Hours", "PrevEarnMHs", null, "double", true, false, null),
+                new ColumnMappingDefinition("Val_Prev_Earned_Qty", "Val_Prev_Earned_Qty", "PrevEarnQTY", null, "double", true, false, null),
                 new ColumnMappingDefinition("Val_TimeStamp", "Val_TimeStamp", "WeekEndDate", "Val_TimeStamp", "datetime", false, false, "Timestamp when progress submitted"),
                 
                 // Values - Client
-                new ColumnMappingDefinition("Val_Client_EQ_QTY_BDG", "VAL_Client_EQ-QTY_BDG", "ClientEquivQty", "[VAL_Client_EQ-QTY_BDG]", "double", true, false, null), // Hyphen in OldVantage/Azure
+                new ColumnMappingDefinition("Val_Client_EQ_QTY_BDG", "[VAL_Client_EQ-QTY_BDG]", "ClientEquivQty", "Val_Client_Eq_Qty_Bdg", "double", true, false, null), // Hyphen in OldVantage/Azure
                 new ColumnMappingDefinition("Val_UDF_Two", "Val_UDF_Two", "ClientBudget", "Val_UDF_Two", "double", true, false, null),
                 new ColumnMappingDefinition("Val_UDF_Three", "Val_UDF_Three", "ClientCustom3", "Val_UDF_Three", "double", true, false, null),
-                new ColumnMappingDefinition("VAL_Client_Earned_EQ_QTY", "VAL_Client_Earned_EQ-QTY", "ClientEquivEarnQTY", "[VAL_Client_Earned_EQ-QTY]", "double", false, true, "Calculated client earned qty"), // Hyphen in OldVantage/Azure
+                new ColumnMappingDefinition("VAL_Client_Earned_EQ_QTY", "[VAL_Client_Earned_EQ-QTY]", "ClientEquivEarnQTY", "[VAL_Client_Earned_EQ-QTY]", "double", false, true, "Calculated client earned qty"), // Hyphen in OldVantage/Azure
                 
                 // New Columns (NewVantage only)
                 new ColumnMappingDefinition("AzureUploadDate", null, "AzureUploadDate", "[Timestamp]", "datetime", false, false, "When user submits to Azure - official date used in Power BI"),

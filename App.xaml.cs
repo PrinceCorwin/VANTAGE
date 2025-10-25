@@ -108,6 +108,10 @@ namespace VANTAGE
                 ActivityRepository.InitializeMappings(null); // null = use defaults
                 System.Diagnostics.Debug.WriteLine("✓ Column mappings initialized");
 
+                // Step 6b: Seed ColumnMappings table if empty
+                ColumnMappingsSeeder.SeedIfEmpty();
+                System.Diagnostics.Debug.WriteLine("✓ ColumnMappings table seeded");
+
                 // Step 7: Determine which module to load
                 string lastModule = SettingsManager.GetLastModuleUsed(CurrentUserID, "PROGRESS");
                 System.Diagnostics.Debug.WriteLine($"✓ Loading module: {lastModule}");

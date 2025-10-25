@@ -191,9 +191,9 @@ namespace VANTAGE
                         DefaultDisplayName TEXT NOT NULL,
                         AzureName TEXT,
                         DataType TEXT,
-                        Notes TEXT,
                         IsEditable INTEGER DEFAULT 1,
-                        IsCalculated INTEGER DEFAULT 0
+                        IsCalculated INTEGER DEFAULT 0,
+                        Notes TEXT
                     );
 
                     CREATE INDEX IF NOT EXISTS idx_db_column ON ColumnMappings(DbColumnName);
