@@ -351,20 +351,141 @@ namespace VANTAGE
             }
         }
 
-        private void MenuToggleAdmin_Click(object sender, RoutedEventArgs e)
+        private void ToggleUserAdmin_Click(object sender, RoutedEventArgs e)
         {
-            if (App.CurrentUser == null) return;
+            if (!App.CurrentUser.IsAdmin)
+            {
+                MessageBox.Show("You do not have admin privileges.", "Access Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
 
-            // Toggle admin status (in memory only for this session)
-            App.CurrentUser.IsAdmin = !App.CurrentUser.IsAdmin;
+            try
+            {
+                // Get list of all users
+                using var connection = DatabaseSetup.GetConnection();
+                connection.Open();
 
-            string status = App.CurrentUser.IsAdmin ? "ADMIN" : "Regular User";
-            MessageBox.Show($"Admin status toggled!\n\nCurrent status: {status}\n\n(This is temporary - restarting the app will restore your real status)",
-                "Admin Toggle",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
+                var command = connection.CreateCommand();
+                command.CommandText = "SELECT UserID, Username, FullName, IsAdmin FROM Users ORDER BY Username";
 
-            System.Diagnostics.Debug.WriteLine($"✓ Admin status toggled to: {App.CurrentUser.IsAdmin}");
+                var users = new List<(int UserID, string Username, string FullName, bool IsAdmin)>();
+                using var reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    users.Add((
+                        reader.GetInt32(0),
+                        reader.GetString(1),
+                        reader.IsDBNull(2) ? "" : reader.GetString(2),
+                        reader.GetInt32(3) == 1
+                    ));
+                }
+
+                if (users.Count == 0)
+                {
+                    MessageBox.Show("No users found in database.", "No Users", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                // Show user selection dialog
+                var userList = users.Select(u =>
+                    $"{u.Username} ({u.FullName}) - {(u.IsAdmin ? "ADMIN" : "User")}"
+                ).ToList();
+
+                var dialog = new System.Windows.Window
+                {
+                    Title = "Toggle Admin Status",
+                    Width = 400,
+                    Height = 300,
+                    WindowStartupLocation = WindowStartupLocation.CenterScreen,
+                    Background = new System.Windows.Media.SolidColorBrush(
+                        (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#FF1E1E1E"))
+                };
+
+                var stackPanel = new System.Windows.Controls.StackPanel { Margin = new Thickness(10) };
+
+                var label = new System.Windows.Controls.TextBlock
+                {
+                    Text = "Select user to toggle admin status:",
+                    Foreground = System.Windows.Media.Brushes.White,
+                    Margin = new Thickness(0, 0, 0, 10)
+                };
+
+                var listBox = new System.Windows.Controls.ListBox
+                {
+                    Height = 150,
+                    Background = new System.Windows.Media.SolidColorBrush(
+                        (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#FF2A2A2A")),
+                    Foreground = System.Windows.Media.Brushes.White
+                };
+
+                foreach (var userStr in userList)
+                {
+                    listBox.Items.Add(userStr);
+                }
+
+                var buttonPanel = new System.Windows.Controls.StackPanel
+                {
+                    Orientation = Orientation.Horizontal,
+                    HorizontalAlignment = HorizontalAlignment.Right,
+                    Margin = new Thickness(0, 10, 0, 0)
+                };
+
+                var okButton = new System.Windows.Controls.Button
+                {
+                    Content = "Toggle Admin",
+                    Width = 100,
+                    Height = 30,
+                    Margin = new Thickness(0, 0, 10, 0)
+                };
+
+                var cancelButton = new System.Windows.Controls.Button
+                {
+                    Content = "Cancel",
+                    Width = 100,
+                    Height = 30
+                };
+
+                okButton.Click += (s, args) =>
+                {
+                    if (listBox.SelectedIndex >= 0)
+                    {
+                        var selectedUser = users[listBox.SelectedIndex];
+
+                        if (selectedUser.IsAdmin)
+                        {
+                            AdminHelper.RevokeAdmin(selectedUser.UserID);
+                            MessageBox.Show($"Admin revoked from {selectedUser.Username}", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                        }
+                        else
+                        {
+                            AdminHelper.GrantAdmin(selectedUser.UserID, selectedUser.Username);
+                            MessageBox.Show($"Admin granted to {selectedUser.Username}", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                        }
+
+                        dialog.DialogResult = true;
+                        dialog.Close();
+                    }
+                };
+
+                cancelButton.Click += (s, args) =>
+                {
+                    dialog.Close();
+                };
+
+                buttonPanel.Children.Add(okButton);
+                buttonPanel.Children.Add(cancelButton);
+
+                stackPanel.Children.Add(label);
+                stackPanel.Children.Add(listBox);
+                stackPanel.Children.Add(buttonPanel);
+
+                dialog.Content = stackPanel;
+                dialog.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void MenuAdmin2_Click(object sender, RoutedEventArgs e)
@@ -411,7 +532,105 @@ namespace VANTAGE
         {
             MessageBox.Show("Admin 10 coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
         }
+        // TEST BUTTON HANDLER
+        private void BtnTest_Click(object sender, RoutedEventArgs e)
+        {
+            // Show context menu
+            btnTest.ContextMenu.PlacementTarget = btnTest;
+            btnTest.ContextMenu.IsOpen = true;
+        }
 
+        // TEST MENU HANDLERS
+        private void MenuToggleAdmin_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (App.CurrentUser == null)
+                {
+                    MessageBox.Show("No current user!", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                if (App.CurrentUser.IsAdmin)
+                {
+                    // Revoke admin
+                    AdminHelper.RevokeAdmin(App.CurrentUserID);
+                    App.CurrentUser.IsAdmin = false;
+                    App.CurrentUser.AdminToken = null;
+                    btnAdmin.IsEnabled = false;
+                    btnAdmin.Opacity = 0.5;
+                    MessageBox.Show($"Admin revoked from {App.CurrentUser.Username}", "Admin Toggled", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                else
+                {
+                    // Grant admin
+                    AdminHelper.GrantAdmin(App.CurrentUserID, App.CurrentUser.Username);
+                    App.CurrentUser.IsAdmin = true;
+                    App.CurrentUser.AdminToken = AdminHelper.GenerateAdminToken(App.CurrentUserID, App.CurrentUser.Username);
+                    btnAdmin.IsEnabled = true;
+                    btnAdmin.Opacity = 1.0;
+                    MessageBox.Show($"Admin granted to {App.CurrentUser.Username}", "Admin Toggled", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error toggling admin: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void MenuSeedUsers_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                DatabaseSetup.SeedTestUsers();
+                MessageBox.Show("Test users seeded successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error seeding users: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        // Placeholder test handlers
+        private void MenuTest1_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Test 1 - Not implemented", "Test", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private void MenuTest2_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Test 2 - Not implemented", "Test", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private void MenuTest3_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Test 3 - Not implemented", "Test", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private void MenuTest4_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Test 4 - Not implemented", "Test", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private void MenuTest5_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Test 5 - Not implemented", "Test", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private void MenuTest6_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Test 6 - Not implemented", "Test", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private void MenuTest7_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Test 7 - Not implemented", "Test", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private void MenuTest8_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Test 8 - Not implemented", "Test", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
         // === TOOLS DROPDOWN ===
 
         private void BtnTools_Click(object sender, RoutedEventArgs e)

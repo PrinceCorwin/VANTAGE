@@ -3,11 +3,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 using VANTAGE.Data;
 using VANTAGE.Models;
+using VANTAGE.Utilities;
 using VANTAGE.ViewModels;
-using System.Windows.Controls.Primitives;
 
 namespace VANTAGE.Views
 {
@@ -25,7 +26,8 @@ namespace VANTAGE.Views
 
             dgActivities.ItemsSource = _viewModel.ActivitiesView;
 
-            InitializeColumnVisibility();  // ← PUT THIS BACK
+            InitializeColumnVisibility();
+            InitializeColumnTooltips();
             UpdateRecordCount();
 
             // Load data AFTER the view is loaded
@@ -96,6 +98,74 @@ namespace VANTAGE.Views
             UpdateRecordCount();
             UpdatePagingControls();
         }
+        /// <summary>
+        /// Initialize tooltips for column headers showing OldVantage names
+        /// </summary>
+        private void InitializeColumnTooltips()
+        {
+            try
+            {
+                // Apply tooltips to columns
+                int tooltipsSet = 0;
+                foreach (var column in dgActivities.Columns)
+                {
+                    // Get the property name from the column
+                    string propertyName = GetColumnPropertyName(column);
+
+                    // Get the DbColumnName from property name
+                    string dbColumnName = ColumnMapper.GetDbColumnName(propertyName);
+
+                    // Query the ColumnMappings table for this specific column
+                    using var connection = DatabaseSetup.GetConnection();
+                    connection.Open();
+
+                    var command = connection.CreateCommand();
+                    command.CommandText = @"
+                SELECT OldVantageName 
+                FROM ColumnMappings 
+                WHERE DbColumnName = @dbColumn";
+                    command.Parameters.AddWithValue("@dbColumn", dbColumnName);
+
+                    var result = command.ExecuteScalar();
+                    string tooltip;
+
+                    if (result == null || result == DBNull.Value)
+                    {
+                        // Not in Excel
+                        tooltip = $"{propertyName} - Not in export";
+                    }
+                    else
+                    {
+                        // Show OldVantage name
+                        tooltip = $"Excel: {result}";
+                    }
+
+                    // Set tooltip on the column header
+                    if (column.Header is string headerString)
+                    {
+                        var textBlock = new System.Windows.Controls.TextBlock
+                        {
+                            Text = headerString,
+                            ToolTip = tooltip
+                        };
+                        column.Header = textBlock;
+                        tooltipsSet++;
+                    }
+                    else if (column.Header is System.Windows.Controls.ContentControl headerControl)
+                    {
+                        headerControl.ToolTip = tooltip;
+                        tooltipsSet++;
+                    }
+                }
+
+                System.Diagnostics.Debug.WriteLine($"✓ Column tooltips initialized: {tooltipsSet} tooltips set");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"✗ Error initializing tooltips: {ex.Message}");
+            }
+        }
+
         /// <summary>
         /// Extract property name from column (tries binding path first, then header text)
         /// </summary>

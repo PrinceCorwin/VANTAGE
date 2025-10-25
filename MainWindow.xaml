@@ -320,55 +320,114 @@
                         FontSize="12"
                         FontWeight="Bold"
                         Click="BtnAdmin_Click">
-                                    <Button.ContextMenu>
-                                        <ContextMenu x:Name="menuAdmin"
-                                             Background="{StaticResource ControlBackground}"
-                                             Foreground="{StaticResource ForegroundColor}"
-                                             BorderBrush="{StaticResource BorderColor}">
-                                            <MenuItem Header="Toggle Admin Status (Testing)" 
-                                                Click="MenuToggleAdmin_Click"
-                                                Background="{StaticResource ControlBackground}"
-                                                Foreground="{StaticResource ForegroundColor}"/>
-                                            <MenuItem Header="ADMIN 2" 
-                                                Click="MenuAdmin2_Click"
-                                                Background="{StaticResource ControlBackground}"
-                                                Foreground="{StaticResource ForegroundColor}"/>
-                                            <MenuItem Header="ADMIN 3" 
-                                                Click="MenuAdmin3_Click"
-                                                Background="{StaticResource ControlBackground}"
-                                                Foreground="{StaticResource ForegroundColor}"/>
-                                            <MenuItem Header="ADMIN 4" 
-                                                Click="MenuAdmin4_Click"
-                                                Background="{StaticResource ControlBackground}"
-                                                Foreground="{StaticResource ForegroundColor}"/>
-                                            <MenuItem Header="ADMIN 5" 
-                                                Click="MenuAdmin5_Click"
-                                                Background="{StaticResource ControlBackground}"
-                                                Foreground="{StaticResource ForegroundColor}"/>
-                                            <MenuItem Header="ADMIN 6" 
-                                                Click="MenuAdmin6_Click"
-                                                Background="{StaticResource ControlBackground}"
-                                                Foreground="{StaticResource ForegroundColor}"/>
-                                            <MenuItem Header="ADMIN 7" 
-                                                Click="MenuAdmin7_Click"
-                                                Background="{StaticResource ControlBackground}"
-                                                Foreground="{StaticResource ForegroundColor}"/>
-                                            <MenuItem Header="ADMIN 8" 
-                                                Click="MenuAdmin8_Click"
-                                                Background="{StaticResource ControlBackground}"
-                                                Foreground="{StaticResource ForegroundColor}"/>
-                                            <MenuItem Header="ADMIN 9" 
-                                                Click="MenuAdmin9_Click"
-                                                Background="{StaticResource ControlBackground}"
-                                                Foreground="{StaticResource ForegroundColor}"/>
-                                            <MenuItem Header="ADMIN 10" 
-                                                Click="MenuAdmin10_Click"
-                                                Background="{StaticResource ControlBackground}"
-                                                Foreground="{StaticResource ForegroundColor}"/>
-                                        </ContextMenu>
-                                    </Button.ContextMenu>
+                    <Button.ContextMenu>
+                        <ContextMenu x:Name="menuAdmin"
+                                        Background="{StaticResource ControlBackground}"
+                                        Foreground="{StaticResource ForegroundColor}"
+                                        BorderBrush="{StaticResource BorderColor}">
+                            <MenuItem Header="Toggle User Admin" 
+                                        Click="ToggleUserAdmin_Click"
+                                        Background="{StaticResource ControlBackground}"
+                                        Foreground="{StaticResource ForegroundColor}"/>
+                            <MenuItem Header="ADMIN 2" 
+                                        Click="MenuAdmin2_Click"
+                                        Background="{StaticResource ControlBackground}"
+                                        Foreground="{StaticResource ForegroundColor}"/>
+                            <MenuItem Header="ADMIN 3" 
+                                        Click="MenuAdmin3_Click"
+                                        Background="{StaticResource ControlBackground}"
+                                        Foreground="{StaticResource ForegroundColor}"/>
+                            <MenuItem Header="ADMIN 4" 
+                                        Click="MenuAdmin4_Click"
+                                        Background="{StaticResource ControlBackground}"
+                                        Foreground="{StaticResource ForegroundColor}"/>
+                            <MenuItem Header="ADMIN 5" 
+                                        Click="MenuAdmin5_Click"
+                                        Background="{StaticResource ControlBackground}"
+                                        Foreground="{StaticResource ForegroundColor}"/>
+                            <MenuItem Header="ADMIN 6" 
+                                        Click="MenuAdmin6_Click"
+                                        Background="{StaticResource ControlBackground}"
+                                        Foreground="{StaticResource ForegroundColor}"/>
+                            <MenuItem Header="ADMIN 7" 
+                                        Click="MenuAdmin7_Click"
+                                        Background="{StaticResource ControlBackground}"
+                                        Foreground="{StaticResource ForegroundColor}"/>
+                            <MenuItem Header="ADMIN 8" 
+                                        Click="MenuAdmin8_Click"
+                                        Background="{StaticResource ControlBackground}"
+                                        Foreground="{StaticResource ForegroundColor}"/>
+                            <MenuItem Header="ADMIN 9" 
+                                        Click="MenuAdmin9_Click"
+                                        Background="{StaticResource ControlBackground}"
+                                        Foreground="{StaticResource ForegroundColor}"/>
+                            <MenuItem Header="ADMIN 10" 
+                                        Click="MenuAdmin10_Click"
+                                        Background="{StaticResource ControlBackground}"
+                                        Foreground="{StaticResource ForegroundColor}"/>
+                        </ContextMenu>
+                    </Button.ContextMenu>
                 </Button>
-
+                <!-- TEST Button (Development Helpers) -->
+                <Button x:Name="btnTest" 
+                        Content="TEST ▼" 
+                        Width="100" 
+                        Height="40"
+                        Margin="5,0"
+                        Background="{StaticResource ControlBackground}"
+                        Foreground="{StaticResource ForegroundColor}"
+                        BorderThickness="0"
+                        FontSize="12"
+                        FontWeight="Bold"
+                        Click="BtnTest_Click">
+                    <Button.ContextMenu>
+                        <ContextMenu x:Name="menuTest"
+                     Background="{StaticResource ControlBackground}"
+                     Foreground="{StaticResource ForegroundColor}"
+                     BorderBrush="{StaticResource BorderColor}">
+                            <MenuItem Header="Toggle Admin Status" 
+                      Click="MenuToggleAdmin_Click"
+                      Background="{StaticResource ControlBackground}"
+                      Foreground="{StaticResource ForegroundColor}"/>
+                            <MenuItem Header="Seed Users" 
+                      Click="MenuSeedUsers_Click"
+                      Background="{StaticResource ControlBackground}"
+                      Foreground="{StaticResource ForegroundColor}"/>
+                            <MenuItem Header="Test 1" 
+                      Click="MenuTest1_Click"
+                      Background="{StaticResource ControlBackground}"
+                      Foreground="{StaticResource ForegroundColor}"/>
+                            <MenuItem Header="Test 2" 
+                      Click="MenuTest2_Click"
+                      Background="{StaticResource ControlBackground}"
+                      Foreground="{StaticResource ForegroundColor}"/>
+                            <MenuItem Header="Test 3" 
+                      Click="MenuTest3_Click"
+                      Background="{StaticResource ControlBackground}"
+                      Foreground="{StaticResource ForegroundColor}"/>
+                            <MenuItem Header="Test 4" 
+                      Click="MenuTest4_Click"
+                      Background="{StaticResource ControlBackground}"
+                      Foreground="{StaticResource ForegroundColor}"/>
+                            <MenuItem Header="Test 5" 
+                      Click="MenuTest5_Click"
+                      Background="{StaticResource ControlBackground}"
+                      Foreground="{StaticResource ForegroundColor}"/>
+                            <MenuItem Header="Test 6" 
+                      Click="MenuTest6_Click"
+                      Background="{StaticResource ControlBackground}"
+                      Foreground="{StaticResource ForegroundColor}"/>
+                            <MenuItem Header="Test 7" 
+                      Click="MenuTest7_Click"
+                      Background="{StaticResource ControlBackground}"
+                      Foreground="{StaticResource ForegroundColor}"/>
+                            <MenuItem Header="Test 8" 
+                      Click="MenuTest8_Click"
+                      Background="{StaticResource ControlBackground}"
+                      Foreground="{StaticResource ForegroundColor}"/>
+                        </ContextMenu>
+                    </Button.ContextMenu>
+                </Button>
             </StackPanel>
         </Border>
 

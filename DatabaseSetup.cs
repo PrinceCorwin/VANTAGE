@@ -186,9 +186,9 @@ namespace VANTAGE
                     -- ColumnMappings table (Master mappings for all external systems)
                     CREATE TABLE IF NOT EXISTS ColumnMappings (
                         MappingID INTEGER PRIMARY KEY AUTOINCREMENT,
-                        DbColumnName TEXT UNIQUE NOT NULL,
+                        DbColumnName TEXT,
                         OldVantageName TEXT,
-                        DefaultDisplayName TEXT NOT NULL,
+                        DefaultDisplayName TEXT,
                         AzureName TEXT,
                         DataType TEXT,
                         IsEditable INTEGER DEFAULT 1,

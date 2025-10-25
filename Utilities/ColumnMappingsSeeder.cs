@@ -39,18 +39,26 @@ namespace VANTAGE.Utilities
                 {
                     var insertCommand = connection.CreateCommand();
                     insertCommand.CommandText = @"
-                        INSERT INTO ColumnMappings 
-                        (DbColumnName, OldVantageName, DefaultDisplayName, AzureName, DataType, IsEditable, IsCalculated, Notes)
-                        VALUES (@db, @old, @display, @azure, @type, @editable, @calculated, @notes)";
+                    INSERT INTO ColumnMappings 
+                    (DbColumnName, OldVantageName, DefaultDisplayName, AzureName, DataType, IsEditable, IsCalculated, Notes)
+                    VALUES (@db, @old, @display, @azure, @type, @editable, @calculated, @notes)";
 
-                    insertCommand.Parameters.AddWithValue("@db", mapping.DbColumnName);
-                    insertCommand.Parameters.AddWithValue("@old", mapping.OldVantageName ?? mapping.DbColumnName);
-                    insertCommand.Parameters.AddWithValue("@display", mapping.DefaultDisplayName);
-                    insertCommand.Parameters.AddWithValue("@azure", mapping.AzureName ?? mapping.DbColumnName);
-                    insertCommand.Parameters.AddWithValue("@type", mapping.DataType ?? "string");
+                    // ALL columns can be NULL
+                    insertCommand.Parameters.AddWithValue("@db",
+                        string.IsNullOrEmpty(mapping.DbColumnName) ? DBNull.Value : (object)mapping.DbColumnName);
+                    insertCommand.Parameters.AddWithValue("@old",
+                        string.IsNullOrEmpty(mapping.OldVantageName) ? DBNull.Value : (object)mapping.OldVantageName);
+                    insertCommand.Parameters.AddWithValue("@display",
+                        string.IsNullOrEmpty(mapping.DefaultDisplayName) ? DBNull.Value : (object)mapping.DefaultDisplayName);
+                    insertCommand.Parameters.AddWithValue("@azure",
+                        string.IsNullOrEmpty(mapping.AzureName) ? DBNull.Value : (object)mapping.AzureName);
+                    insertCommand.Parameters.AddWithValue("@type",
+                        string.IsNullOrEmpty(mapping.DataType) ? DBNull.Value : (object)mapping.DataType);
+                    insertCommand.Parameters.AddWithValue("@notes",
+                        string.IsNullOrEmpty(mapping.Notes) ? DBNull.Value : (object)mapping.Notes);
+
                     insertCommand.Parameters.AddWithValue("@editable", mapping.IsEditable ? 1 : 0);
                     insertCommand.Parameters.AddWithValue("@calculated", mapping.IsCalculated ? 1 : 0);
-                    insertCommand.Parameters.AddWithValue("@notes", mapping.Notes ?? "");
 
                     insertCommand.ExecuteNonQuery();
                 }
@@ -197,7 +205,9 @@ namespace VANTAGE.Utilities
                 
                 // New Columns (NewVantage only)
                 new ColumnMappingDefinition("AzureUploadDate", null, "AzureUploadDate", "[Timestamp]", "datetime", false, false, "When user submits to Azure - official date used in Power BI"),
-                new ColumnMappingDefinition("Val_ProgDate", null, "ProgDate", "Val_ProgDate", "datetime", false, false, "Timestamp when user clicks to submit progress to local db")
+                new ColumnMappingDefinition("Val_ProgDate", null, "ProgDate", "Val_ProgDate", "datetime", false, false, "Timestamp when user clicks to submit progress to local db"),
+                new ColumnMappingDefinition(null, null, null, "UserID", "strign", false, true, "Populated when upload to Azure with getUserName")
+
             };
         }
 
