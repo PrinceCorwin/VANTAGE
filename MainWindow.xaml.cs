@@ -191,9 +191,73 @@ namespace VANTAGE
             }
         }
 
-        private void MenuExcelExport_Click(object sender, RoutedEventArgs e)
+        private void ExcelExportActivities_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Excel Export coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
+            //try
+            //{
+            //    // Get all activities from database (not just current page)
+            //    using var connection = DatabaseSetup.GetConnection();
+            //    connection.Open();
+
+            //    var command = connection.CreateCommand();
+            //    command.CommandText = "SELECT COUNT(*) FROM Activities";
+            //    var totalCount = (long)command.ExecuteScalar();
+
+            //    if (totalCount == 0)
+            //    {
+            //        MessageBox.Show("No activities to export.", "Export", MessageBoxButton.OK, MessageBoxImage.Information);
+            //        return;
+            //    }
+
+            //    // Show save dialog
+            //    var dialog = new Microsoft.Win32.SaveFileDialog
+            //    {
+            //        Title = "Export Database to Excel",
+            //        FileName = $"VANTAGE_Export_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
+            //        DefaultExt = ".xlsx",
+            //        Filter = "Excel files (*.xlsx)|*.xlsx"
+            //    };
+
+            //    if (dialog.ShowDialog() == true)
+            //    {
+            //        // Get all activities (we'll need to load them all for export)
+            //        var allActivities = Data.ActivityRepository.GetAllActivities();
+
+            //        ExcelExporter.ExportActivities(dialog.FileName, allActivities);
+
+            //        MessageBox.Show($"Exported {allActivities.Count} activities successfully!", "Export Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+            //    }
+            //}
+            //catch (Exception ex)
+            //{
+            //    MessageBox.Show($"Export error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            //}
+        }
+
+        private void ExcelExportTemplate_Click(object sender, RoutedEventArgs e)
+        {
+            //try
+            //{
+            //    // Show save dialog
+            //    var dialog = new Microsoft.Win32.SaveFileDialog
+            //    {
+            //        Title = "Export Template (Headers Only)",
+            //        FileName = $"VANTAGE_Template_{DateTime.Now:yyyyMMdd}.xlsx",
+            //        DefaultExt = ".xlsx",
+            //        Filter = "Excel files (*.xlsx)|*.xlsx"
+            //    };
+
+            //    if (dialog.ShowDialog() == true)
+            //    {
+            //        ExcelExporter.ExportTemplate(dialog.FileName);
+
+            //        MessageBox.Show("Template exported successfully!", "Export Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+            //    }
+            //}
+            //catch (Exception ex)
+            //{
+            //    MessageBox.Show($"Export error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            //}
         }
 
         private void BtnPbook_Click(object sender, RoutedEventArgs e)

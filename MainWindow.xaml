@@ -91,8 +91,12 @@
                                       Click="MenuExcelImportCombine_Click"
                                       Background="{StaticResource ControlBackground}"
                                       Foreground="{StaticResource ForegroundColor}"/>
-                            <MenuItem Header="Export" 
-                                      Click="MenuExcelExport_Click"
+                            <MenuItem Header="Export Activities" 
+                                      Click="ExcelExportActivities_Click"
+                                      Background="{StaticResource ControlBackground}"
+                                      Foreground="{StaticResource ForegroundColor}"/>
+                            <MenuItem Header="Export Template" 
+                                      Click="ExcelExportTemplate_Click"
                                       Background="{StaticResource ControlBackground}"
                                       Foreground="{StaticResource ForegroundColor}"/>
                         </ContextMenu>

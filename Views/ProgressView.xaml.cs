@@ -33,6 +33,12 @@ namespace VANTAGE.Views
             // Load data AFTER the view is loaded
             this.Loaded += OnViewLoaded;
         }
+        private void UpdateSummaryPanel()
+        {
+            txtBudgetedMHs.Text = _viewModel.BudgetedMHs.ToString("N2");
+            txtEarnedMHs.Text = _viewModel.EarnedMHs.ToString("N2");
+            txtPercentComplete.Text = $"{_viewModel.PercentComplete:N2}%";
+        }
         private Popup _activeFilterPopup;
         private string _activeFilterColumn;
 
@@ -322,6 +328,7 @@ namespace VANTAGE.Views
         private void UpdateRecordCount()
         {
             txtFilteredCount.Text = $"{_viewModel.FilteredCount} of {_viewModel.PageSize} records (Total: {_viewModel.TotalRecordCount})";
+            UpdateSummaryPanel();
         }
 
         private void UpdatePagingControls()
@@ -390,33 +397,28 @@ namespace VANTAGE.Views
             // TODO: Implement
         }
 
-        private void BtnFilterMyRecords_Click(object sender, RoutedEventArgs e)
+        private async void BtnFilterMyRecords_Click(object sender, RoutedEventArgs e)
         {
             // Toggle filter
-            if (_viewModel.ActivitiesView.Filter == null)
+            bool filterActive = btnFilterMyRecords.Content.ToString().Contains("✓");
+
+            if (!filterActive)
             {
                 // Apply "My Records" filter
-                _viewModel.ActivitiesView.Filter = obj =>
-                {
-                    if (obj is Activity activity)
-                    {
-                        return activity.IsMyRecord;
-                    }
-                    return false;
-                };
-
+                await _viewModel.ApplyMyRecordsFilter(true, App.CurrentUser.Username);
                 btnFilterMyRecords.Content = "My Records ✓";
                 btnFilterMyRecords.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0, 120, 215)); // Accent color
             }
             else
             {
                 // Clear filter
-                _viewModel.ActivitiesView.Filter = null;
+                await _viewModel.ApplyMyRecordsFilter(false, App.CurrentUser.Username);
                 btnFilterMyRecords.Content = "My Records";
                 btnFilterMyRecords.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(42, 42, 42)); // Default
             }
 
             UpdateRecordCount();
+            UpdatePagingControls();
         }
 
         // Helper method: Get all users from database

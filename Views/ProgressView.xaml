@@ -180,54 +180,108 @@
         <!-- RIGHT SIDE: DataGrid -->
         <Grid Grid.Column="1">
             <Grid.RowDefinitions>
-                <RowDefinition Height="40"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="40"/>
+                <RowDefinition Height="40"/> <!-- Row 0: Filters/toolbar -->
+                <RowDefinition Height="Auto"/> <!-- Row 1: ADD THIS - Summary panel -->
+                <RowDefinition Height="*"/> <!-- Row 2: DataGrid (was Row 1) -->
+                <RowDefinition Height="40"/> <!-- Row 3: Paging (was Row 2) -->
             </Grid.RowDefinitions>
 
-            <!-- Top toolbar -->
-            <Border Grid.Row="0" 
-                    Background="{StaticResource ToolbarBackground}" 
-                    BorderBrush="{StaticResource BorderColor}" 
-                    BorderThickness="0,0,0,1"
-                    Padding="10,0">
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="Search:" 
-                               Foreground="{StaticResource TextColorSecondary}" 
-                               VerticalAlignment="Center"
-                               Margin="0,0,10,0"/>
-                    <TextBox x:Name="txtSearch"
-                             Width="250"
-                             Height="25"
-                             Background="{StaticResource ControlBackground}"
-                             Foreground="{StaticResource ForegroundColor}"
-                             BorderBrush="{StaticResource BorderColor}"
-                             BorderThickness="1"
-                             Padding="5"
-                             VerticalContentAlignment="Center"
-                             TextChanged="TxtSearch_TextChanged"/>
+            <!-- Combined Toolbar + Summary Panel -->
+            <Border Grid.Row="0"
+        Background="{StaticResource ToolbarBackground}"
+        BorderBrush="{StaticResource BorderColor}"
+        BorderThickness="0,0,0,1"
+        Padding="10,0">
+                <DockPanel LastChildFill="True" VerticalAlignment="Center">
 
-                    <Button x:Name="btnRefresh"
-                            Content="Refresh"
-                            Width="80"
-                            Height="28"
-                            Margin="20,0,0,0"
-                            Background="{StaticResource ControlBackground}"
-                            Foreground="{StaticResource ForegroundColor}"
-                            BorderBrush="{StaticResource BorderColor}"
-                            BorderThickness="1"
-                            Click="BtnRefresh_Click"/>
+                    <!-- LEFT SIDE: Search controls -->
+                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" VerticalAlignment="Center">
+                        <TextBlock Text="Search:"
+                       Foreground="{StaticResource TextColorSecondary}"
+                       VerticalAlignment="Center"
+                       Margin="0,0,10,0"/>
+                        <TextBox x:Name="txtSearch"
+                     Width="250"
+                     Height="25"
+                     Background="{StaticResource ControlBackground}"
+                     Foreground="{StaticResource ForegroundColor}"
+                     BorderBrush="{StaticResource BorderColor}"
+                     BorderThickness="1"
+                     Padding="5"
+                     VerticalContentAlignment="Center"
+                     TextChanged="TxtSearch_TextChanged"/>
 
-                    <TextBlock x:Name="txtFilteredCount"
-                               Text="0 records"
-                               Foreground="{StaticResource TextColorSecondary}"
-                               VerticalAlignment="Center"
-                               Margin="20,0,0,0"/>
-                </StackPanel>
+                        <Button x:Name="btnRefresh"
+                    Content="Refresh"
+                    Width="80"
+                    Height="28"
+                    Margin="20,0,0,0"
+                    Background="{StaticResource ControlBackground}"
+                    Foreground="{StaticResource ForegroundColor}"
+                    BorderBrush="{StaticResource BorderColor}"
+                    BorderThickness="1"
+                    Click="BtnRefresh_Click"/>
+
+                        <TextBlock x:Name="txtFilteredCount"
+                       Text="0 records"
+                       Foreground="{StaticResource TextColorSecondary}"
+                       VerticalAlignment="Center"
+                       Margin="20,0,0,0"/>
+                    </StackPanel>
+
+                    <!-- RIGHT SIDE: Summary stats -->
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" DockPanel.Dock="Right">
+                        <!-- Budgeted MHs -->
+                        <StackPanel Orientation="Horizontal" Margin="0,0,30,0">
+                            <TextBlock Text="Budgeted MHs:"
+                           Foreground="{StaticResource TextColorSecondary}"
+                           FontSize="14"
+                           VerticalAlignment="Center"/>
+                            <TextBlock x:Name="txtBudgetedMHs"
+                           Text="0.00"
+                           Foreground="{StaticResource AccentColor}"
+                           FontSize="16"
+                           FontWeight="Bold"
+                           VerticalAlignment="Center"
+                           Margin="5,0,0,0"/>
+                        </StackPanel>
+
+                        <!-- Earned MHs -->
+                        <StackPanel Orientation="Horizontal" Margin="0,0,30,0">
+                            <TextBlock Text="Earned MHs:"
+                           Foreground="{StaticResource TextColorSecondary}"
+                           FontSize="14"
+                           VerticalAlignment="Center"/>
+                            <TextBlock x:Name="txtEarnedMHs"
+                           Text="0.00"
+                           Foreground="{StaticResource StatusGreen}"
+                           FontSize="16"
+                           FontWeight="Bold"
+                           VerticalAlignment="Center"
+                           Margin="5,0,0,0"/>
+                        </StackPanel>
+
+                        <!-- Percent Complete -->
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Percent Complete:"
+                           Foreground="{StaticResource TextColorSecondary}"
+                           FontSize="14"
+                           VerticalAlignment="Center"/>
+                            <TextBlock x:Name="txtPercentComplete"
+                           Text="0.00%"
+                           Foreground="{StaticResource StatusInProgress}"
+                           FontSize="16"
+                           FontWeight="Bold"
+                           VerticalAlignment="Center"
+                           Margin="5,0,0,0"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                </DockPanel>
             </Border>
 
             <!-- DataGrid with VIRTUALIZATION ENABLED -->
-            <Border Grid.Row="1" 
+            <Border Grid.Row="2" 
                     BorderBrush="{StaticResource BorderColor}" 
                     BorderThickness="0">
                 <DataGrid x:Name="dgActivities"
@@ -335,7 +389,7 @@
                         </ContextMenu>
                     </DataGrid.ContextMenu>
 
-                    <!-- ALL YOUR EXISTING COLUMNS (keeping them exactly as they are) -->
+
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="UniqueID" 
                                             Binding="{Binding UniqueID}" 
@@ -867,7 +921,7 @@
             </Border>
 
             <!-- PAGING CONTROLS (Bottom toolbar) -->
-            <Border Grid.Row="2" 
+            <Border Grid.Row="3" 
                     Background="{StaticResource ToolbarBackground}" 
                     BorderBrush="{StaticResource BorderColor}" 
                     BorderThickness="0,1,0,0"
@@ -892,7 +946,7 @@
                             Click="BtnPreviousPage_Click"/>
 
                     <TextBlock x:Name="txtPageInfo"
-                               Text="Page 1 of 1"
+                               Text="{Binding CurrentPageDisplay}"
                                Foreground="{StaticResource ForegroundColor}"
                                VerticalAlignment="Center"
                                Margin="20,0"

@@ -22,8 +22,18 @@ namespace VANTAGE.ViewModels
         private int _currentPage;
         private int _pageSize;
         private int _totalPages;
-        private bool _isLoading; 
+        private bool _isLoading;
         private Dictionary<string, ColumnFilter> _activeFilters = new Dictionary<string, ColumnFilter>();
+        private int _totalRecords;
+        public int TotalRecords
+        {
+            get => _totalRecords;
+            set
+            {
+                _totalRecords = value;
+                OnPropertyChanged(nameof(TotalRecords));
+            }
+        }
         /// <summary>
         /// Apply a filter to a column
         /// </summary>
@@ -97,24 +107,26 @@ namespace VANTAGE.ViewModels
             {
                 IsLoading = true;
 
-                // Reload current page from database
-                var pageData = await ActivityRepository.GetPageAsync(CurrentPage, PageSize);
+                // Build WHERE clause from active filters
+                var filterBuilder = new FilterBuilder();
 
-                // Apply each active filter
-                var filteredData = pageData.AsEnumerable();
-
+                // Add each active filter to WHERE clause
                 foreach (var filter in _activeFilters.Values)
                 {
-                    filteredData = ApplyColumnFilter(filteredData, filter);
+                    // TODO: Convert column filters to SQL WHERE conditions
+                    // For now, we'll refactor this when we rebuild column filtering
                 }
 
-                // Update the collection
+                // Reload current page from database with filter
+                var (pageData, totalCount) = await ActivityRepository.GetPageAsync(CurrentPage, PageSize, filterBuilder.BuildWhereClause());
+
+                // Update total records and recalculate pages
+                TotalRecords = totalCount;
+                TotalPages = (int)Math.Ceiling((double)TotalRecords / PageSize);
+
                 Activities.Clear();
-                Activities.AddRange(filteredData.ToList());
-
+                Activities.AddRange(pageData);
                 FilteredCount = Activities.Count;
-
-                System.Diagnostics.Debug.WriteLine($"✓ Filters applied: {_activeFilters.Count} active, {FilteredCount} records shown");
             }
             catch (Exception ex)
             {
@@ -141,7 +153,53 @@ namespace VANTAGE.ViewModels
         // ========================================
         // PROPERTIES
         // ========================================
+        private double _budgetedMHs;
+        public double BudgetedMHs
+        {
+            get => _budgetedMHs;
+            set
+            {
+                _budgetedMHs = value;
+                OnPropertyChanged(nameof(BudgetedMHs));
+                OnPropertyChanged(nameof(PercentComplete));
+            }
+        }
 
+        private double _earnedMHs;
+        public double EarnedMHs
+        {
+            get => _earnedMHs;
+            set
+            {
+                _earnedMHs = value;
+                OnPropertyChanged(nameof(EarnedMHs));
+                OnPropertyChanged(nameof(PercentComplete));
+            }
+        }
+
+        public double PercentComplete
+        {
+            get
+            {
+                if (BudgetedMHs == 0) return 0;
+                return (EarnedMHs / BudgetedMHs) * 100;
+            }
+        }
+        public async Task UpdateTotalsAsync()
+        {
+            try
+            {
+                var (budgeted, earned) = await ActivityRepository.GetTotalsAsync(_currentWhereClause);
+                BudgetedMHs = budgeted;
+                EarnedMHs = earned;
+
+                System.Diagnostics.Debug.WriteLine($"✓ Totals updated: Budgeted={budgeted:N2}, Earned={earned:N2}, %={(PercentComplete):N2}");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"✗ Error updating totals: {ex.Message}");
+            }
+        }
         public BulkObservableCollection<Activity> Activities
         {
             get => _activities;
@@ -215,14 +273,18 @@ namespace VANTAGE.ViewModels
         public int TotalPages
         {
             get => _totalPages;
-            private set
+            set
             {
                 _totalPages = value;
                 OnPropertyChanged(nameof(TotalPages));
+                OnPropertyChanged(nameof(CurrentPageDisplay));
             }
         }
 
-        public string CurrentPageDisplay => $"Page {CurrentPage + 1} of {TotalPages}";
+        public string CurrentPageDisplay
+        {
+            get => $"Page {CurrentPage + 1} of {TotalPages}";
+        }
 
         public bool CanGoPrevious => CurrentPage > 0 && !IsLoading;
         public bool CanGoNext => CurrentPage < TotalPages - 1 && !IsLoading;
@@ -242,7 +304,45 @@ namespace VANTAGE.ViewModels
         // ========================================
         // METHODS
         // ========================================
+        private string _currentWhereClause = null;
 
+        public async Task ApplyMyRecordsFilter(bool active, string currentUsername)
+        {
+            try
+            {
+                IsLoading = true;
+
+                if (active)
+                {
+                    // Build WHERE clause for My Records
+                    var filterBuilder = new FilterBuilder();
+                    filterBuilder.AddMyRecordsFilter(currentUsername);
+                    _currentWhereClause = filterBuilder.BuildWhereClause();
+
+                    System.Diagnostics.Debug.WriteLine($"→ Applying My Records filter: {_currentWhereClause}");
+                }
+                else
+                {
+                    // Clear filter
+                    _currentWhereClause = null;
+                    System.Diagnostics.Debug.WriteLine("→ Clearing My Records filter");
+                }
+
+                // Reset to first page when filter changes
+                CurrentPage = 0;
+
+                // Reload with filter
+                await LoadCurrentPageAsync();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"✗ Error applying My Records filter: {ex.Message}");
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
         /// <summary>
         /// Load initial data - gets total count and first page
         /// </summary>
@@ -281,14 +381,22 @@ namespace VANTAGE.ViewModels
                 IsLoading = true;
                 System.Diagnostics.Debug.WriteLine($"→ Loading page {CurrentPage + 1}...");
 
-                var pageData = await ActivityRepository.GetPageAsync(CurrentPage, PageSize);
+                // Get page data with current filter
+                var (pageData, totalCount) = await ActivityRepository.GetPageAsync(CurrentPage, PageSize, _currentWhereClause);
+
+                // Update total records and recalculate pages
+                TotalRecords = totalCount;
+                TotalRecordCount = (int)totalCount;
+                TotalPages = (int)Math.Ceiling((double)TotalRecords / PageSize);
 
                 Activities.Clear();
                 Activities.AddRange(pageData);
-
                 FilteredCount = Activities.Count;
 
-                System.Diagnostics.Debug.WriteLine($"✓ Loaded {pageData.Count} activities for page {CurrentPage + 1}");
+                // Update totals for all filtered records
+                await UpdateTotalsAsync();
+
+                System.Diagnostics.Debug.WriteLine($"✓ Loaded {pageData.Count} activities for page {CurrentPage + 1} (Total filtered: {TotalRecords})");
             }
             catch (Exception ex)
             {

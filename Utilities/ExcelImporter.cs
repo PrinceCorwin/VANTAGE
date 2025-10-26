@@ -291,7 +291,7 @@ namespace VANTAGE.Utilities
                     {
                         // Use safe column names (strip spaces and special chars for parameter names)
                         string safeParamName = kvp.Key.Replace(" ", "_").Replace("-", "_");
-                        columns.Add($"[{kvp.Key}]");  // Wrap column name in brackets
+                        columns.Add(SqlHelper.WrapColumnName(kvp.Key));  // Use SqlHelper to wrap if needed
                         parameters.Add($"@{safeParamName}");  // Use safe parameter name
                     }
 

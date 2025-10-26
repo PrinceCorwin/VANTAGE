@@ -112,7 +112,7 @@ namespace VANTAGE.Utilities
                 new ColumnMappingDefinition("Tag_SystemNo", "Tag_SystemNo", "SystemNO", null, "string", true, false, null),
                 new ColumnMappingDefinition("Tag_ProjectID", "Tag_ProjectID", "ProjectID", "Tag_ProjectID", "string", true, false, null),
                 new ColumnMappingDefinition("Tag_WorkPackage", "Tag_WorkPackage", "WorkPackage", "Tag_WorkPackage", "string", true, false, null),
-                new ColumnMappingDefinition("Tag_Phase_Code", "[Tag_Phase Code]", "PhaseCode", "Tag_PhaseCode", "string", true, false, null), // Space in OldVantage
+                new ColumnMappingDefinition("Tag_Phase_Code", "Tag_Phase Code", "PhaseCode", "Tag_PhaseCode", "string", true, false, null), // Space in OldVantage
                 new ColumnMappingDefinition("Tag_Service", "Tag_Service", "Service", "Tag_Service", "string", true, false, null),
                 new ColumnMappingDefinition("Tag_ShopField", "Tag_ShopField", "ShopField", "Tag_ShopField", "string", true, false, null),
                 
@@ -179,7 +179,7 @@ namespace VANTAGE.Utilities
                 new ColumnMappingDefinition("Val_Percent_Earned", "Val_Percent_Earned", "PercentCompleteCalc", null, "double", false, true, "Calculated percent complete"),
                 
                 // Values - Equipment
-                new ColumnMappingDefinition("Val_EQ_QTY", "[Val_EQ-QTY]", "EquivQTY", "[Val_EQ-QTY]", "double", true, false, null), // Hyphen in OldVantage/Azure
+                new ColumnMappingDefinition("Val_EQ_QTY", "Val_EQ-QTY", "EquivQTY", "Val_EQ-QTY", "double", true, false, null), // Hyphen in OldVantage/Azure
                 new ColumnMappingDefinition("Val_EQ_UOM", "Val_EQ_UOM", "EquivUOM", "Val_EQ_UOM", "string", true, false, null),
                 
                 // Values - ROC
@@ -198,13 +198,13 @@ namespace VANTAGE.Utilities
                 new ColumnMappingDefinition("Val_TimeStamp", "Val_TimeStamp", "WeekEndDate", "Val_TimeStamp", "datetime", false, false, "Timestamp when progress submitted"),
                 
                 // Values - Client
-                new ColumnMappingDefinition("Val_Client_EQ_QTY_BDG", "[VAL_Client_EQ-QTY_BDG]", "ClientEquivQty", "Val_Client_Eq_Qty_Bdg", "double", true, false, null), // Hyphen in OldVantage/Azure
+                new ColumnMappingDefinition("Val_Client_EQ_QTY_BDG", "VAL_Client_EQ-QTY_BDG", "ClientEquivQty", "Val_Client_Eq_Qty_Bdg", "double", true, false, null), // Hyphen in OldVantage/Azure
                 new ColumnMappingDefinition("Val_UDF_Two", "Val_UDF_Two", "ClientBudget", "Val_UDF_Two", "double", true, false, null),
                 new ColumnMappingDefinition("Val_UDF_Three", "Val_UDF_Three", "ClientCustom3", "Val_UDF_Three", "double", true, false, null),
-                new ColumnMappingDefinition("VAL_Client_Earned_EQ_QTY", "[VAL_Client_Earned_EQ-QTY]", "ClientEquivEarnQTY", "[VAL_Client_Earned_EQ-QTY]", "double", false, true, "Calculated client earned qty"), // Hyphen in OldVantage/Azure
+                new ColumnMappingDefinition("VAL_Client_Earned_EQ_QTY", "VAL_Client_Earned_EQ-QTY", "ClientEquivEarnQTY", "VAL_Client_Earned_EQ-QTY", "double", false, true, "Calculated client earned qty"), // Hyphen in OldVantage/Azure
                 
                 // New Columns (NewVantage only)
-                new ColumnMappingDefinition("AzureUploadDate", null, "AzureUploadDate", "[Timestamp]", "datetime", false, false, "When user submits to Azure - official date used in Power BI"),
+                new ColumnMappingDefinition("AzureUploadDate", null, "AzureUploadDate", "Timestamp", "datetime", false, false, "When user submits to Azure - official date used in Power BI"),
                 new ColumnMappingDefinition("Val_ProgDate", null, "ProgDate", "Val_ProgDate", "datetime", false, false, "Timestamp when user clicks to submit progress to local db"),
                 new ColumnMappingDefinition(null, null, null, "UserID", "strign", false, true, "Populated when upload to Azure with getUserName")
 
