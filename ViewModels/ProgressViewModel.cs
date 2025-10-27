@@ -37,7 +37,7 @@ namespace VANTAGE.ViewModels
         /// <summary>
         /// Apply a filter to a column
         /// </summary>
-        public void ApplyFilter(string columnName, string filterType, string filterValue)
+        public async Task ApplyFilter(string columnName, string filterType, string filterValue)
         {
             _activeFilters[columnName] = new ColumnFilter
             {
@@ -45,8 +45,7 @@ namespace VANTAGE.ViewModels
                 FilterType = filterType,
                 FilterValue = filterValue
             };
-
-            ApplyAllFilters();
+            await ApplyAllFiltersAsync();
         }
         /// <summary>
         /// Apply a single column filter to the data
@@ -92,16 +91,16 @@ namespace VANTAGE.ViewModels
         /// <summary>
         /// Clear filter from a column
         /// </summary>
-        public void ClearFilter(string columnName)
+        public async Task ClearFilter(string columnName)
         {
             _activeFilters.Remove(columnName);
-            ApplyAllFilters();
+            await ApplyAllFiltersAsync();
         }
 
         /// <summary>
         /// Apply all active filters to the data
         /// </summary>
-        private async void ApplyAllFilters()
+        private async Task ApplyAllFiltersAsync()
         {
             try
             {
@@ -113,20 +112,24 @@ namespace VANTAGE.ViewModels
                 // Add each active filter to WHERE clause
                 foreach (var filter in _activeFilters.Values)
                 {
-                    // TODO: Convert column filters to SQL WHERE conditions
-                    // For now, we'll refactor this when we rebuild column filtering
+                    string dbColumnName = ColumnMapper.GetDbColumnName(filter.ColumnName);
+
+                    // Build SQL condition based on filter type
+                    string condition = BuildFilterCondition(dbColumnName, filter.FilterType, filter.FilterValue);
+                    if (!string.IsNullOrEmpty(condition))
+                    {
+                        filterBuilder.AddCondition(condition);
+                    }
                 }
 
-                // Reload current page from database with filter
-                var (pageData, totalCount) = await ActivityRepository.GetPageAsync(CurrentPage, PageSize, filterBuilder.BuildWhereClause());
+                // Store the WHERE clause
+                _currentWhereClause = filterBuilder.BuildWhereClause();
 
-                // Update total records and recalculate pages
-                TotalRecords = totalCount;
-                TotalPages = (int)Math.Ceiling((double)TotalRecords / PageSize);
+                // Reset to first page
+                CurrentPage = 0;
 
-                Activities.Clear();
-                Activities.AddRange(pageData);
-                FilteredCount = Activities.Count;
+                // Reload with filter
+                await LoadCurrentPageAsync();
             }
             catch (Exception ex)
             {
@@ -135,6 +138,26 @@ namespace VANTAGE.ViewModels
             finally
             {
                 IsLoading = false;
+            }
+        }
+
+        private string BuildFilterCondition(string dbColumnName, string filterType, string filterValue)
+        {
+            // Escape single quotes for SQL
+            filterValue = filterValue.Replace("'", "''");
+
+            switch (filterType)
+            {
+                case "Contains":
+                    return $"{dbColumnName} LIKE '%{filterValue}%'";
+                case "Equals":
+                    return $"{dbColumnName} = '{filterValue}'";
+                case "Starts With":
+                    return $"{dbColumnName} LIKE '{filterValue}%'";
+                case "Ends With":
+                    return $"{dbColumnName} LIKE '%{filterValue}'";
+                default:
+                    return "";
             }
         }
         public ProgressViewModel()
@@ -221,7 +244,52 @@ namespace VANTAGE.ViewModels
             {
                 _searchText = value;
                 OnPropertyChanged(nameof(SearchText));
-                ApplyFilters();
+                _ = ApplySearchFilterAsync(); // Fire and forget async
+            }
+        }
+
+        private async Task ApplySearchFilterAsync()
+        {
+            try
+            {
+                IsLoading = true;
+
+                // Build WHERE clause
+                var filterBuilder = new FilterBuilder();
+
+                // Add search filter if text exists
+                if (!string.IsNullOrWhiteSpace(_searchText))
+                {
+                    filterBuilder.AddTextSearch(_searchText);
+                }
+
+                // Add any active column filters
+                foreach (var filter in _activeFilters.Values)
+                {
+                    string dbColumnName = ColumnMapper.GetDbColumnName(filter.ColumnName);
+                    string condition = BuildFilterCondition(dbColumnName, filter.FilterType, filter.FilterValue);
+                    if (!string.IsNullOrEmpty(condition))
+                    {
+                        filterBuilder.AddCondition(condition);
+                    }
+                }
+
+                // Store WHERE clause
+                _currentWhereClause = filterBuilder.BuildWhereClause();
+
+                // Reset to first page
+                CurrentPage = 0;
+
+                // Reload with filter
+                await LoadCurrentPageAsync();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"✗ Error applying search: {ex.Message}");
+            }
+            finally
+            {
+                IsLoading = false;
             }
         }
 
@@ -479,13 +547,13 @@ namespace VANTAGE.ViewModels
         /// <summary>
         /// Apply filters to the view
         /// </summary>
-        private void ApplyFilters()
-        {
-            if (_activitiesView == null) return;
+        //private void ApplyFilters()
+        //{
+        //    if (_activitiesView == null) return;
 
-            _activitiesView.Filter = FilterActivity;
-            FilteredCount = _activitiesView.Cast<Activity>().Count();
-        }
+        //    _activitiesView.Filter = FilterActivity;
+        //    FilteredCount = _activitiesView.Cast<Activity>().Count();
+        //}
 
         /// <summary>
         /// Filter predicate for activities

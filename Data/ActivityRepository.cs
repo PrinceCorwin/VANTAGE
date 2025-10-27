@@ -435,19 +435,15 @@ namespace VANTAGE.Data
 
                     var command = connection.CreateCommand();
                     command.CommandText = $@"
-                            SELECT 
-                            COALESCE(SUM(Val_BudgetedHours_Ind), 0) as TotalBudgeted,
-                            COALESCE(SUM(
-                                CASE
-                                    WHEN Val_Quantity > 0 THEN
-                                        CASE 
-                                            WHEN (Val_EarnedQty / Val_Quantity) >= 1.0 THEN Val_BudgetedHours_Ind
-                                            ELSE ROUND((Val_EarnedQty / Val_Quantity) * Val_BudgetedHours_Ind, 3)
-                                        END
-                                    ELSE 0
-                                END
-                            ), 0) AS TotalEarned
-                        FROM Activities
+                             SELECT 
+                                COALESCE(SUM(Val_BudgetedHours_Ind), 0) as TotalBudgeted,
+                                COALESCE(SUM(
+                                    CASE 
+                                        WHEN Val_Perc_Complete >= 1.0 THEN Val_BudgetedHours_Ind
+                                        ELSE ROUND(Val_Perc_Complete * Val_BudgetedHours_Ind, 3)
+                                    END
+                                ), 0) as TotalEarned
+                            FROM Activities
                 {whereSQL}";
 
                     using var reader = command.ExecuteReader();

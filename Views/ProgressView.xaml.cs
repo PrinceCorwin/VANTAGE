@@ -73,24 +73,34 @@ namespace VANTAGE.Views
             _activeFilterPopup.IsOpen = true;
         }
 
-        private void FilterControl_FilterApplied(object sender, Controls.FilterEventArgs e)
+        private async void FilterControl_FilterApplied(object sender, Controls.FilterEventArgs e)
         {
             System.Diagnostics.Debug.WriteLine($"Filter applied to {_activeFilterColumn}: {e.FilterType} = '{e.FilterValue}'");
 
-            // Apply filter through ViewModel
-            _viewModel?.ApplyFilter(_activeFilterColumn, e.FilterType, e.FilterValue);
+            // Apply filter through ViewModel and WAIT for it to complete
+            await _viewModel.ApplyFilter(_activeFilterColumn, e.FilterType, e.FilterValue);
 
             _activeFilterPopup.IsOpen = false;
+
+            System.Diagnostics.Debug.WriteLine("→ Calling UpdateRecordCount and UpdatePagingControls");
+            UpdateRecordCount();
+            UpdatePagingControls();
+            System.Diagnostics.Debug.WriteLine("✓ Updates complete");
         }
 
-        private void FilterControl_FilterCleared(object sender, EventArgs e)
+        private async void FilterControl_FilterCleared(object sender, EventArgs e)
         {
             System.Diagnostics.Debug.WriteLine($"Filter cleared for {_activeFilterColumn}");
 
-            // Clear filter through ViewModel
-            _viewModel?.ClearFilter(_activeFilterColumn);
+            // Clear filter through ViewModel and WAIT
+            await _viewModel.ClearFilter(_activeFilterColumn);
 
             _activeFilterPopup.IsOpen = false;
+
+            System.Diagnostics.Debug.WriteLine("→ Calling UpdateRecordCount and UpdatePagingControls");
+            UpdateRecordCount();
+            UpdatePagingControls();
+            System.Diagnostics.Debug.WriteLine("✓ Updates complete");
         }
         /// <summary>
         /// Auto-save when user finishes editing a cell
