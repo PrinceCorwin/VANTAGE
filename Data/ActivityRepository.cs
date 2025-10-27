@@ -241,7 +241,13 @@ namespace VANTAGE.Data
                     var validUsernames = GetValidUsernames();
 
                     // Calculate offset
-                    int offset = (pageNumber - 1) * pageSize;
+                    // int offset = (pageNumber - 1) * pageSize;   // ← wrong for 0-based pages
+                    int offset = pageNumber * pageSize;         // ← correct for 0-based pages
+
+                    System.Diagnostics.Debug.WriteLine(
+                        $"PAGING DEBUG -> pageNumber={pageNumber}, pageSize={pageSize}, offset={offset}"
+                    );
+
 
                     // Get paginated data with filter
                     var command = connection.CreateCommand();
@@ -279,6 +285,9 @@ namespace VANTAGE.Data
 
                     command.Parameters.AddWithValue("@pageSize", pageSize);
                     command.Parameters.AddWithValue("@offset", offset);
+                    System.Diagnostics.Debug.WriteLine(
+                            $"SQL PAGE SELECT -> LIMIT {pageSize} OFFSET {offset} | WHERE='{whereSQL.Replace("\n", " ").Replace("\r", " ")}'"
+                        );
 
                     var activities = new List<Activity>();
 
