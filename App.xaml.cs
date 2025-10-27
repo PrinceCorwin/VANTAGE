@@ -20,23 +20,19 @@ namespace VANTAGE
             {
                 // Step 1: Initialize database
                 DatabaseSetup.InitializeDatabase();
-                System.Diagnostics.Debug.WriteLine("✓ Database initialized");
 
                 // ADD THE NEW LINE HERE (commented out so it only ran once):
                  DatabaseSetup.SeedTestUsers();
 
                 // Step 2: Initialize default app settings
                 SettingsManager.InitializeDefaultAppSettings();
-                System.Diagnostics.Debug.WriteLine("✓ App settings initialized");
 
                 // Step 3: Get current Windows username
-                string windowsUsername = UserHelper.GetCurrentWindowsUsername();
-                System.Diagnostics.Debug.WriteLine($"✓ Windows user: {windowsUsername}");
+                string windowsUsername = UserHelper.GetCurrentWindowsUsername();;
 
                 // Step 4: Check if user exists in database
                 CurrentUser = GetOrCreateUser(windowsUsername);
                 CurrentUserID = CurrentUser.UserID;
-                System.Diagnostics.Debug.WriteLine($"✓ Current user ID: {CurrentUserID}");
 
                 // Step 4a: Make Steve admin on first run (ONE-TIME SETUP)
                 if ((CurrentUser.Username.Equals("Steve.Amalfitano", StringComparison.OrdinalIgnoreCase) ||
@@ -45,7 +41,6 @@ namespace VANTAGE
                     AdminHelper.GrantAdmin(CurrentUserID, CurrentUser.Username);
                     CurrentUser.IsAdmin = true;
                     CurrentUser.AdminToken = AdminHelper.GenerateAdminToken(CurrentUserID, CurrentUser.Username);
-                    System.Diagnostics.Debug.WriteLine("✓ Steve granted admin privileges");
                 }
 
                 // Step 4b: Verify admin token if user claims to be admin
@@ -59,14 +54,13 @@ namespace VANTAGE
 
                     if (!tokenValid)
                     {
-                        System.Diagnostics.Debug.WriteLine("⚠ Admin token invalid - revoking admin privileges");
                         AdminHelper.RevokeAdmin(CurrentUserID);
                         CurrentUser.IsAdmin = false;
                         CurrentUser.AdminToken = null;
                     }
                     else
                     {
-                        System.Diagnostics.Debug.WriteLine("✓ Admin token verified");
+                        // TODO: Add proper logging when logging system is implemented
                     }
                 }
 
@@ -74,14 +68,12 @@ namespace VANTAGE
                 if (string.IsNullOrEmpty(CurrentUser.FullName) || string.IsNullOrEmpty(CurrentUser.Email))
                 {
                     // Show first-run setup
-                    System.Diagnostics.Debug.WriteLine("→ Showing first-run setup");
                     FirstRunSetupWindow setupWindow = new FirstRunSetupWindow(CurrentUser);
                     bool? result = setupWindow.ShowDialog();
 
                     if (result != true)
                     {
                         // User cancelled setup - exit app
-                        System.Diagnostics.Debug.WriteLine("✗ User cancelled profile setup");
                         MessageBox.Show("Profile setup is required to use VANTAGE.", "Setup Required", MessageBoxButton.OK, MessageBoxImage.Warning);
                         this.Shutdown();
                         return;
@@ -92,55 +84,43 @@ namespace VANTAGE
                     if (refreshedUser != null)
                     {
                         CurrentUser = refreshedUser;
-                        System.Diagnostics.Debug.WriteLine("✓ User profile refreshed");
                     }
                     else
                     {
-                        System.Diagnostics.Debug.WriteLine("⚠ Failed to refresh user data, continuing with existing user");
+                        // TODO: Add proper logging when logging system is implemented
                     }
                 }
 
                 // Step 6: Initialize user settings
                 SettingsManager.InitializeDefaultUserSettings(CurrentUserID);
-                System.Diagnostics.Debug.WriteLine("✓ User settings initialized");
 
                 // Step 6a: Initialize column mappings (use default project for now)
                 ActivityRepository.InitializeMappings(null); // null = use defaults
-                System.Diagnostics.Debug.WriteLine("✓ Column mappings initialized");
 
                 // Step 6b: Seed ColumnMappings table if empty
                 ColumnMappingsSeeder.SeedIfEmpty();
-                System.Diagnostics.Debug.WriteLine("✓ ColumnMappings table seeded");
 
                 // Step 7: Determine which module to load
                 string lastModule = SettingsManager.GetLastModuleUsed(CurrentUserID, "PROGRESS");
-                System.Diagnostics.Debug.WriteLine($"✓ Loading module: {lastModule}");
 
                 // Step 8: Open main window
                 try
                 {
-                    System.Diagnostics.Debug.WriteLine("→ Creating MainWindow...");
                     MainWindow mainWindow = new MainWindow();
-                    System.Diagnostics.Debug.WriteLine("→ Showing MainWindow...");
                     mainWindow.Show();
-                    System.Diagnostics.Debug.WriteLine("✓ Main window opened");
 
                     // Force the window to stay visible
                     mainWindow.Activate();
                     mainWindow.Focus();
-                    System.Diagnostics.Debug.WriteLine("→ MainWindow activated and focused");
                 }
                 catch (Exception mainWindowEx)
                 {
-                    System.Diagnostics.Debug.WriteLine($"✗ MainWindow error: {mainWindowEx.Message}");
-                    System.Diagnostics.Debug.WriteLine($"Stack trace: {mainWindowEx.StackTrace}");
                     MessageBox.Show($"Failed to open main window: {mainWindowEx.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     throw; // Re-throw so outer catch handles shutdown
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"✗ Startup error: {ex.Message}");
                 MessageBox.Show($"Application startup error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 this.Shutdown();
             }
@@ -194,7 +174,7 @@ namespace VANTAGE
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error getting/creating user: {ex.Message}");
+                // TODO: Add proper logging when logging system is implemented
                 throw;
             }
         }
@@ -232,7 +212,7 @@ namespace VANTAGE
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error getting user by ID: {ex.Message}");
+                // TODO: Add proper logging when logging system is implemented
                 return null;
             }
         }

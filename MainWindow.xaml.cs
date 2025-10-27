@@ -22,7 +22,7 @@ namespace VANTAGE
 
         private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine("⚠ MainWindow is closing!");
+            // TODO: Add proper logging when logging system is implemented
         }
 
         private void LoadInitialModule()
@@ -101,8 +101,6 @@ namespace VANTAGE
 
                 if (openFileDialog.ShowDialog() == true)
                 {
-                    System.Diagnostics.Debug.WriteLine($"→ Selected file: {openFileDialog.FileName}");
-
                     // Confirm replace action
                     var result = MessageBox.Show(
                         "This will REPLACE all existing activities with data from the Excel file.\n\nAre you sure you want to continue?",
@@ -113,12 +111,8 @@ namespace VANTAGE
 
                     if (result == MessageBoxResult.Yes)
                     {
-                        System.Diagnostics.Debug.WriteLine("→ Starting import...");
-
                         // Import with replace mode
                         int imported = ExcelImporter.ImportActivities(openFileDialog.FileName, replaceMode: true);
-
-                        System.Diagnostics.Debug.WriteLine($"→ Import returned: {imported} records");
 
                         MessageBox.Show(
                             $"Successfully imported {imported} activities.\n\nAll previous data has been replaced.",
@@ -137,8 +131,7 @@ namespace VANTAGE
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"✗ IMPORT ERROR: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+                // TODO: Add proper logging when logging system is implemented
 
                 MessageBox.Show(
                     $"Error importing Excel file:\n\n{ex.Message}\n\nCheck Output window for details.",

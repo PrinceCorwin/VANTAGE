@@ -33,7 +33,7 @@ namespace VANTAGE.Utilities
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error loading theme: {ex.Message}");
+                // TODO: Add proper logging (e.g., to file or central log)
                 SwitchTheme("Dark", saveToSettings: false);
             }
         }
@@ -48,7 +48,6 @@ namespace VANTAGE.Utilities
                 // Validate theme exists
                 if (!Array.Exists(AvailableThemes, t => t.Equals(themeName, StringComparison.OrdinalIgnoreCase)))
                 {
-                    System.Diagnostics.Debug.WriteLine($"Theme '{themeName}' not found. Using Dark.");
                     themeName = "Dark";
                 }
 
@@ -66,18 +65,17 @@ namespace VANTAGE.Utilities
                 Application.Current.Resources.MergedDictionaries.Add(newTheme);
 
                 CurrentTheme = themeName;
-                System.Diagnostics.Debug.WriteLine($"✓ Theme switched to: {themeName}");
 
                 // Save to user settings if requested
                 if (saveToSettings && userId.HasValue)
                 {
                     SettingsManager.SetUserSetting(userId.Value, "Theme", themeName, "string");
-                    System.Diagnostics.Debug.WriteLine($"✓ Theme '{themeName}' saved to UserSettings");
                 }
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error switching theme: {ex.Message}");
+                // TODO: Add proper logging (e.g., to file or central log)
             }
         }
 

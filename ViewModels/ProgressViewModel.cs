@@ -133,7 +133,7 @@ namespace VANTAGE.ViewModels
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"✗ Error applying filters: {ex.Message}");
+                // TODO: Add proper logging when logging system is implemented
             }
             finally
             {
@@ -216,11 +216,10 @@ namespace VANTAGE.ViewModels
                 BudgetedMHs = budgeted;
                 EarnedMHs = earned;
 
-                System.Diagnostics.Debug.WriteLine($"✓ Totals updated: Budgeted={budgeted:N2}, Earned={earned:N2}, %={(PercentComplete):N2}");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"✗ Error updating totals: {ex.Message}");
+                // TODO: Add proper logging when logging system is implemented
             }
         }
         public BulkObservableCollection<Activity> Activities
@@ -285,7 +284,7 @@ namespace VANTAGE.ViewModels
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"✗ Error applying search: {ex.Message}");
+                // TODO: Add proper logging when logging system is implemented
             }
             finally
             {
@@ -346,6 +345,7 @@ namespace VANTAGE.ViewModels
                 _totalPages = value;
                 OnPropertyChanged(nameof(TotalPages));
                 OnPropertyChanged(nameof(CurrentPageDisplay));
+                OnPropertyChanged(nameof(CanGoNext));
             }
         }
 
@@ -387,13 +387,11 @@ namespace VANTAGE.ViewModels
                     filterBuilder.AddMyRecordsFilter(currentUsername);
                     _currentWhereClause = filterBuilder.BuildWhereClause();
 
-                    System.Diagnostics.Debug.WriteLine($"→ Applying My Records filter: {_currentWhereClause}");
                 }
                 else
                 {
                     // Clear filter
                     _currentWhereClause = null;
-                    System.Diagnostics.Debug.WriteLine("→ Clearing My Records filter");
                 }
 
                 // Reset to first page when filter changes
@@ -404,6 +402,7 @@ namespace VANTAGE.ViewModels
             }
             catch (Exception ex)
             {
+                // TODO: Add proper logging when logging system is implemented
                 System.Diagnostics.Debug.WriteLine($"✗ Error applying My Records filter: {ex.Message}");
             }
             finally
@@ -419,18 +418,16 @@ namespace VANTAGE.ViewModels
             try
             {
                 IsLoading = true;
-                System.Diagnostics.Debug.WriteLine("→ Loading initial data...");
 
                 // Get total count
                 TotalRecordCount = await ActivityRepository.GetTotalCountAsync();
-                System.Diagnostics.Debug.WriteLine($"✓ Total records in database: {TotalRecordCount}");
 
                 // Load first page
                 await LoadCurrentPageAsync();
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"✗ Error loading initial data: {ex.Message}");
+                // TODO: Add proper logging when logging system is implemented
                 throw;
             }
             finally
@@ -447,7 +444,6 @@ namespace VANTAGE.ViewModels
             try
             {
                 IsLoading = true;
-                System.Diagnostics.Debug.WriteLine($"→ Loading page {CurrentPage + 1}...");
 
                 // Get page data with current filter
                 var (pageData, totalCount) = await ActivityRepository.GetPageAsync(CurrentPage, PageSize, _currentWhereClause);
@@ -464,11 +460,10 @@ namespace VANTAGE.ViewModels
                 // Update totals for all filtered records
                 await UpdateTotalsAsync();
 
-                System.Diagnostics.Debug.WriteLine($"✓ Loaded {pageData.Count} activities for page {CurrentPage + 1} (Total filtered: {TotalRecords})");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"✗ Error loading page: {ex.Message}");
+                // TODO: Add proper logging when logging system is implemented
                 throw;
             }
             finally

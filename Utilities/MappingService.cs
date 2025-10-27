@@ -111,7 +111,6 @@ namespace VANTAGE.Utilities
             if (string.IsNullOrEmpty(_projectID))
             {
                 // No project specified, use defaults only
-                System.Diagnostics.Debug.WriteLine("→ Using default column mappings (no project specified)");
                 return;
             }
 
@@ -144,20 +143,10 @@ namespace VANTAGE.Utilities
                     };
                     count++;
                 }
-
-                if (count > 0)
-                {
-                    System.Diagnostics.Debug.WriteLine($"✓ Loaded {count} custom column mappings for project '{_projectID}'");
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine($"→ No custom mappings found for project '{_projectID}', using defaults");
-                }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"⚠ Error loading project mappings: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine("→ Falling back to default mappings");
+                // TODO: Add proper logging when logging system is implemented
             }
         }
 

@@ -21,7 +21,6 @@ namespace VANTAGE.Data
         public static void InitializeMappings(string projectID = null)
         {
             _mappingService = new MappingService(projectID);
-            System.Diagnostics.Debug.WriteLine($"✓ MappingService initialized for project: {projectID ?? "default"}");
         }
 
         /// <summary>
@@ -154,7 +153,6 @@ namespace VANTAGE.Data
                     command.Parameters.AddWithValue("@ProgDate", activity.ProgDate ?? "");
 
                     int rowsAffected = command.ExecuteNonQuery();
-                    System.Diagnostics.Debug.WriteLine($"✓ Activity {activity.ActivityID} updated in database");
 
                     return rowsAffected > 0;
                 });
@@ -163,8 +161,6 @@ namespace VANTAGE.Data
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"✗ Error updating activity: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
                 return false;
             }
         }
@@ -191,7 +187,7 @@ namespace VANTAGE.Data
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"✗ Error loading valid usernames: {ex.Message}");
+                // TODO: Add proper logging when logging system is implemented
             }
 
             return validUsers;
@@ -240,8 +236,6 @@ namespace VANTAGE.Data
                     var countCommand = connection.CreateCommand();
                     countCommand.CommandText = $"SELECT COUNT(*) FROM Activities {whereSQL}";
                     var totalCount = (long)countCommand.ExecuteScalar();
-
-                    System.Diagnostics.Debug.WriteLine($"✓ Total records in database: {totalCount}");
 
                     // Get valid usernames for validation
                     var validUsernames = GetValidUsernames();
@@ -406,8 +400,6 @@ namespace VANTAGE.Data
                             AzureUploadDate = reader.IsDBNull(88) ? "" : reader.GetString(88),
                             ProgDate = reader.IsDBNull(89) ? "" : reader.GetString(89)
                         };
-
-                        System.Diagnostics.Debug.WriteLine($"DEBUG: Activity {activity.ActivityID} - AzureUploadDate='{activity.AzureUploadDate}', ProgDate='{activity.ProgDate}'");
                         activities.Add(activity);
                     }
 
@@ -416,7 +408,6 @@ namespace VANTAGE.Data
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"✗ Error loading activities: {ex.Message}");
                     throw;
                 }
             });
@@ -458,7 +449,6 @@ namespace VANTAGE.Data
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"✗ Error getting totals: {ex.Message}");
                     return (0, 0);
                 }
             });

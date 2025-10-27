@@ -68,21 +68,17 @@ namespace VANTAGE.Utilities
                     {
                         throw new Exception("No worksheets found in Excel file");
                     }
-                    System.Diagnostics.Debug.WriteLine($"⚠ Could not find 'Sheet1', using '{worksheet.Name}' instead");
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine($"→ Using worksheet: {worksheet.Name}");
+                    // TODO: Add proper logging when logging system is implemented
                 }
 
                 // Get header row to map columns
                 var headerRow = worksheet.Row(1);
                 var columnMap = BuildColumnMap(headerRow);
 
-                System.Diagnostics.Debug.WriteLine($"→ Found {columnMap.Count} mapped columns in Excel");
-
                 // Read all data rows
-                // Read all data rows - use a more robust method
                 var activities = new List<Dictionary<string, object>>();
 
                 // Find the actual last row with data by checking a key column (UDFNineteen)
@@ -99,9 +95,6 @@ namespace VANTAGE.Utilities
                         break;
                     }
                 }
-
-                System.Diagnostics.Debug.WriteLine($"→ Excel has data from row 1 (header) to row {lastRow}");
-                System.Diagnostics.Debug.WriteLine($"→ Starting data read from row 2");
 
                 for (int rowNum = 2; rowNum <= lastRow; rowNum++) // Start after header row
                 {
@@ -121,7 +114,6 @@ namespace VANTAGE.Utilities
 
                     if (!hasAnyData)
                     {
-                        System.Diagnostics.Debug.WriteLine($"→ Skipping empty row {rowNum}");
                         continue;
                     }
 
@@ -139,20 +131,16 @@ namespace VANTAGE.Utilities
                     }
 
                     activities.Add(activityData);
-                    System.Diagnostics.Debug.WriteLine($"→ Read row {rowNum}");
-                }
 
-                System.Diagnostics.Debug.WriteLine($"→ Read {activities.Count} activities from Excel");
+                }
 
                 // Import to database
                 int imported = ImportToDatabase(activities, replaceMode);
 
-                System.Diagnostics.Debug.WriteLine($"✓ Imported {imported} activities successfully!");
                 return imported;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"✗ Excel import error: {ex.Message}");
                 throw;
             }
         }
@@ -190,14 +178,12 @@ namespace VANTAGE.Utilities
                 // Validate against ColumnMapper (ensures column exists in our schema)
                 if (!ColumnMapper.IsValidDbColumn(dbColumnName))
                 {
-                    System.Diagnostics.Debug.WriteLine($"⚠ Unknown column in Excel: {excelColumnName} (mapped to {dbColumnName}) - skipping");
                     continue;
                 }
 
                 // Skip calculated fields - app will recalculate
                 if (calculatedFields.Contains(dbColumnName))
                 {
-                    System.Diagnostics.Debug.WriteLine($"→ Skipping calculated field: {dbColumnName}");
                     continue;
                 }
 
@@ -250,7 +236,6 @@ namespace VANTAGE.Utilities
                     var deleteCommand = connection.CreateCommand();
                     deleteCommand.CommandText = "DELETE FROM Activities";
                     deleteCommand.ExecuteNonQuery();
-                    System.Diagnostics.Debug.WriteLine("→ Cleared existing activities (Replace mode)");
                 }
 
                 int imported = 0;
@@ -262,7 +247,6 @@ namespace VANTAGE.Utilities
                         activityData["UDFNineteen"] == DBNull.Value ||
                         string.IsNullOrWhiteSpace(activityData["UDFNineteen"]?.ToString()))
                     {
-                        System.Diagnostics.Debug.WriteLine("⚠ Skipping activity with no UDFNineteen");
                         continue;
                     }
 
@@ -278,7 +262,6 @@ namespace VANTAGE.Utilities
 
                         if (exists)
                         {
-                            System.Diagnostics.Debug.WriteLine($"→ Skipping duplicate: {activityID}");
                             continue;
                         }
                     }
@@ -317,7 +300,6 @@ namespace VANTAGE.Utilities
             catch (Exception ex)
             {
                 transaction.Rollback();
-                System.Diagnostics.Debug.WriteLine($"✗ Database import error: {ex.Message}");
                 throw;
             }
         }

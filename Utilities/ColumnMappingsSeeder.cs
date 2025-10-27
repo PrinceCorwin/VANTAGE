@@ -25,12 +25,9 @@ namespace VANTAGE.Utilities
 
                 if (count > 0)
                 {
-                    System.Diagnostics.Debug.WriteLine($"→ ColumnMappings already seeded ({count} rows)");
+
                     return;
                 }
-
-                System.Diagnostics.Debug.WriteLine("→ Seeding ColumnMappings table...");
-
                 var mappings = GetColumnMappings();
 
                 using var transaction = connection.BeginTransaction();
@@ -64,11 +61,9 @@ namespace VANTAGE.Utilities
                 }
 
                 transaction.Commit();
-                System.Diagnostics.Debug.WriteLine($"✓ Seeded {mappings.Count} column mappings");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"✗ Error seeding ColumnMappings: {ex.Message}");
                 throw;
             }
         }

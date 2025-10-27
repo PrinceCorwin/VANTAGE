@@ -39,7 +39,6 @@ namespace VANTAGE
                 _currentUser.PhoneNumber = PhoneTextBox.Text.Trim();
                 UpdateUserInDatabase(_currentUser);
 
-                System.Diagnostics.Debug.WriteLine("✓ Profile saved successfully");
                 this.DialogResult = true;
                 this.Close();
             }
@@ -73,11 +72,11 @@ namespace VANTAGE
                 command.Parameters.AddWithValue("@userId", user.UserID);
 
                 command.ExecuteNonQuery();
-                System.Diagnostics.Debug.WriteLine($"User {user.UserID} updated successfully");
+
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error updating user: {ex.Message}");
+                // TODO: Add proper logging when logging system is implemented
                 throw;
             }
         }

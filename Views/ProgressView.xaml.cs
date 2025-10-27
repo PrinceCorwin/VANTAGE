@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -20,18 +21,38 @@ namespace VANTAGE.Views
         public ProgressView()
         {
             InitializeComponent();
-
             _viewModel = new ProgressViewModel();
             this.DataContext = _viewModel;
-
             dgActivities.ItemsSource = _viewModel.ActivitiesView;
+
+            // Subscribe to ViewModel property changes - ADD THIS LINE
+            _viewModel.PropertyChanged += ViewModel_PropertyChanged;
 
             InitializeColumnVisibility();
             InitializeColumnTooltips();
             UpdateRecordCount();
-
             // Load data AFTER the view is loaded
             this.Loaded += OnViewLoaded;
+        }
+        private void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+
+            if (e.PropertyName == nameof(_viewModel.TotalRecordCount) ||
+                e.PropertyName == nameof(_viewModel.TotalPages) ||
+                e.PropertyName == nameof(_viewModel.CurrentPage) ||
+                e.PropertyName == nameof(_viewModel.CanGoPrevious) ||  // ADD THIS
+                e.PropertyName == nameof(_viewModel.CanGoNext))        // ADD THIS
+            {
+                UpdateRecordCount();
+                UpdatePagingControls();
+            }
+
+            if (e.PropertyName == nameof(_viewModel.BudgetedMHs) ||
+                e.PropertyName == nameof(_viewModel.EarnedMHs) ||
+                e.PropertyName == nameof(_viewModel.PercentComplete))
+            {
+                UpdateSummaryPanel();
+            }
         }
         private void UpdateSummaryPanel()
         {
@@ -46,8 +67,6 @@ namespace VANTAGE.Views
         {
             var button = sender as Button;
             var columnName = button?.Tag as string;
-
-            System.Diagnostics.Debug.WriteLine($"Filter button clicked for column: {columnName}");
 
             // Close any existing popup
             if (_activeFilterPopup != null)
@@ -75,32 +94,25 @@ namespace VANTAGE.Views
 
         private async void FilterControl_FilterApplied(object sender, Controls.FilterEventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine($"Filter applied to {_activeFilterColumn}: {e.FilterType} = '{e.FilterValue}'");
-
             // Apply filter through ViewModel and WAIT for it to complete
             await _viewModel.ApplyFilter(_activeFilterColumn, e.FilterType, e.FilterValue);
 
             _activeFilterPopup.IsOpen = false;
 
-            System.Diagnostics.Debug.WriteLine("→ Calling UpdateRecordCount and UpdatePagingControls");
-            UpdateRecordCount();
-            UpdatePagingControls();
-            System.Diagnostics.Debug.WriteLine("✓ Updates complete");
+            //UpdateRecordCount();
+            //UpdatePagingControls();
         }
 
         private async void FilterControl_FilterCleared(object sender, EventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine($"Filter cleared for {_activeFilterColumn}");
 
             // Clear filter through ViewModel and WAIT
             await _viewModel.ClearFilter(_activeFilterColumn);
 
             _activeFilterPopup.IsOpen = false;
 
-            System.Diagnostics.Debug.WriteLine("→ Calling UpdateRecordCount and UpdatePagingControls");
-            UpdateRecordCount();
-            UpdatePagingControls();
-            System.Diagnostics.Debug.WriteLine("✓ Updates complete");
+            //UpdateRecordCount();
+            //UpdatePagingControls();
         }
         /// <summary>
         /// Auto-save when user finishes editing a cell
@@ -174,11 +186,10 @@ namespace VANTAGE.Views
                     }
                 }
 
-                System.Diagnostics.Debug.WriteLine($"✓ Column tooltips initialized: {tooltipsSet} tooltips set");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"✗ Error initializing tooltips: {ex.Message}");
+                // TODO: Add proper logging when logging system is implemented
             }
         }
 
@@ -247,7 +258,6 @@ namespace VANTAGE.Views
                 lstColumnVisibility.Items.Add(checkBox);
             }
 
-            System.Diagnostics.Debug.WriteLine($"✓ Column visibility initialized: {dgActivities.Columns.Count} columns");
         }
         /// <summary>
         /// Prevent editing of records not assigned to current user
@@ -322,7 +332,7 @@ namespace VANTAGE.Views
                     if (success)
                     {
                         successCount++;
-                        System.Diagnostics.Debug.WriteLine($"✓ Activity {activity.ActivityID} unassigned");
+
                     }
                 }
 
@@ -331,14 +341,12 @@ namespace VANTAGE.Views
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"✗ Error unassigning records: {ex.Message}");
                 MessageBox.Show($"Error unassigning records: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
         private void UpdateRecordCount()
         {
-            txtFilteredCount.Text = $"{_viewModel.FilteredCount} of {_viewModel.PageSize} records (Total: {_viewModel.TotalRecordCount})";
-            UpdateSummaryPanel();
+            txtFilteredCount.Text = $"{_viewModel.FilteredCount} of {_viewModel.TotalRecords} records (Total: {_viewModel.TotalRecordCount})";
         }
 
         private void UpdatePagingControls()
@@ -427,8 +435,8 @@ namespace VANTAGE.Views
                 btnFilterMyRecords.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(42, 42, 42)); // Default
             }
 
-            UpdateRecordCount();
-            UpdatePagingControls();
+            //UpdateRecordCount();
+            //UpdatePagingControls();
         }
 
         // Helper method: Get all users from database
@@ -457,7 +465,7 @@ namespace VANTAGE.Views
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error loading users: {ex.Message}");
+                // TODO: Add proper logging when logging system is implemented
             }
 
             return users;
@@ -590,19 +598,16 @@ namespace VANTAGE.Views
                 // Wait for the edit to fully commit before saving
                 await Dispatcher.InvokeAsync(async () =>
                 {
-                    System.Diagnostics.Debug.WriteLine($"→ Saving changes for Activity {editedActivity.ActivityID}...");
-                    System.Diagnostics.Debug.WriteLine($"   Catg_ROC_Step = '{editedActivity.ROCStep}'");
 
                     // Save to database
                     bool success = await ActivityRepository.UpdateActivityInDatabase(editedActivity);
 
                     if (success)
                     {
-                        System.Diagnostics.Debug.WriteLine($"✓ Activity {editedActivity.ActivityID} saved successfully");
+                        // TODO: Add proper logging when logging system is implemented
                     }
                     else
                     {
-                        System.Diagnostics.Debug.WriteLine($"✗ Failed to save Activity {editedActivity.ActivityID}");
                         MessageBox.Show(
                             $"Failed to save changes for Activity {editedActivity.ActivityID}.\nPlease try again.",
                             "Save Error",
@@ -613,7 +618,6 @@ namespace VANTAGE.Views
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"✗ Error in RowEditEnding: {ex.Message}");
                 MessageBox.Show(
                     $"Error saving changes: {ex.Message}",
                     "Save Error",
@@ -676,7 +680,6 @@ namespace VANTAGE.Views
                     if (success)
                     {
                         successCount++;
-                        System.Diagnostics.Debug.WriteLine($"✓ Activity {activity.ActivityID} assigned to {App.CurrentUser.Username}");
                     }
                 }
 
@@ -685,7 +688,6 @@ namespace VANTAGE.Views
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"✗ Error assigning records: {ex.Message}");
                 MessageBox.Show($"Error assigning records: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -813,7 +815,6 @@ namespace VANTAGE.Views
                         if (success)
                         {
                             successCount++;
-                            System.Diagnostics.Debug.WriteLine($"✓ Activity {activity.ActivityID} assigned to {selectedUser}");
                         }
                     }
 
@@ -822,7 +823,6 @@ namespace VANTAGE.Views
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"✗ Error assigning records: {ex.Message}");
                     MessageBox.Show($"Error assigning records: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
@@ -860,7 +860,7 @@ namespace VANTAGE.Views
                     }
                     else
                     {
-                        System.Diagnostics.Debug.WriteLine($"✗ Failed to save Activity {activity.ActivityID}");
+                        // TODO: Add proper logging when logging system is implemented
                     }
                 }
 
@@ -911,7 +911,7 @@ namespace VANTAGE.Views
                     }
                     else
                     {
-                        System.Diagnostics.Debug.WriteLine($"✗ Failed to save Activity {activity.ActivityID}");
+                        // TODO: Add proper logging when logging system is implemented
                     }
                 }
 

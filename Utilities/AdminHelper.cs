@@ -52,11 +52,11 @@ namespace VANTAGE.Utilities
                 command.Parameters.AddWithValue("@userId", userId);
 
                 command.ExecuteNonQuery();
-                System.Diagnostics.Debug.WriteLine($"✓ Admin granted to user {userId}");
+                // TODO: log that user granted admin
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"✗ Error granting admin: {ex.Message}");
+                // TODO: Add proper logging (e.g., to file or central log)
                 throw;
             }
         }

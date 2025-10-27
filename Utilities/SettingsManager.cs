@@ -39,6 +39,7 @@ namespace VANTAGE.Utilities
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"EnsureSettingsTables error: {ex.Message}");
+                // TODO: Add proper logging (e.g., to file or central log)
             }
         }
         public static string GetAppSetting(string settingName, string defaultValue = "")
@@ -59,6 +60,7 @@ namespace VANTAGE.Utilities
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error getting app setting: {ex.Message}");
+                // TODO: Add proper logging (e.g., to file or central log)
                 return defaultValue;
             }
         }
@@ -89,6 +91,7 @@ namespace VANTAGE.Utilities
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error setting app setting: {ex.Message}");
+                // TODO: Add proper logging (e.g., to file or central log)
             }
         }
 
@@ -114,6 +117,7 @@ namespace VANTAGE.Utilities
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error getting user setting: {ex.Message}");
+                // TODO: Add proper logging (e.g., to file or central log)
                 return defaultValue;
             }
         }
@@ -145,6 +149,7 @@ namespace VANTAGE.Utilities
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error setting user setting: {ex.Message}");
+                // TODO: Add proper logging (e.g., to file or central log)
             }
         }
 
@@ -197,6 +202,7 @@ namespace VANTAGE.Utilities
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error setting column order: {ex.Message}");
+                // TODO: Add proper logging (e.g., to file or central log)
             }
         }
 
@@ -240,6 +246,7 @@ namespace VANTAGE.Utilities
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error initializing app settings: {ex.Message}");
+                // TODO: Add proper logging (e.g., to file or central log)
             }
         }
 
@@ -262,6 +269,7 @@ namespace VANTAGE.Utilities
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error initializing user settings: {ex.Message}");
+                // TODO: Add proper logging (e.g., to file or central log)
             }
         }
     }

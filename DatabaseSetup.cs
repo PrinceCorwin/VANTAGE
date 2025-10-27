@@ -224,12 +224,9 @@ namespace VANTAGE
                 ";
 
                 command.ExecuteNonQuery();
-
-                System.Diagnostics.Debug.WriteLine($"Database initialized at: {DbPath}");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Database initialization error: {ex.Message}");
                 throw;
             }
         }
@@ -263,17 +260,14 @@ namespace VANTAGE
                     command.ExecuteNonQuery();
                 }
 
-                System.Diagnostics.Debug.WriteLine("✓ Test users seeded");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"✗ Error seeding test users: {ex.Message}");
+                // TODO: Add proper logging when logging system is implemented
             }
         }
         public static SqliteConnection GetConnection()
         {
-            System.Diagnostics.Debug.WriteLine($"🔍 GetConnection() called - DbPath: {DbPath}");
-            System.Diagnostics.Debug.WriteLine($"🔍 File exists: {File.Exists(DbPath)}");
             return new SqliteConnection($"Data Source={DbPath}");
         }
 
@@ -286,7 +280,6 @@ namespace VANTAGE
                 "VANTAGE_Local.db"
             );
 
-            System.Diagnostics.Debug.WriteLine($"📂 Database path: {defaultPath}");
             DbPath = defaultPath;
             return defaultPath;
         }
