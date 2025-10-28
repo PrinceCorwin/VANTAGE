@@ -188,45 +188,45 @@
 
             <!-- Combined Toolbar + Summary Panel -->
             <Border Grid.Row="0"
-        Background="{StaticResource ToolbarBackground}"
-        BorderBrush="{StaticResource BorderColor}"
-        BorderThickness="0,0,0,1"
-        Padding="10,0">
+                    Background="{StaticResource ToolbarBackground}"
+                    BorderBrush="{StaticResource BorderColor}"
+                    BorderThickness="0,0,0,1"
+                    Padding="10,0">
                 <DockPanel LastChildFill="True" VerticalAlignment="Center">
 
                     <!-- LEFT SIDE: Search controls -->
                     <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" VerticalAlignment="Center">
                         <TextBlock Text="Search:"
-                       Foreground="{StaticResource TextColorSecondary}"
-                       VerticalAlignment="Center"
-                       Margin="0,0,10,0"/>
+                                   Foreground="{StaticResource TextColorSecondary}"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,10,0"/>
                         <TextBox x:Name="txtSearch"
-                     Width="250"
-                     Height="25"
-                     Background="{StaticResource ControlBackground}"
-                     Foreground="{StaticResource ForegroundColor}"
-                     BorderBrush="{StaticResource BorderColor}"
-                     BorderThickness="1"
-                     Padding="5"
-                     VerticalContentAlignment="Center"
-                     TextChanged="TxtSearch_TextChanged"/>
+                                 Width="250"
+                                 Height="25"
+                                 Background="{StaticResource ControlBackground}"
+                                 Foreground="{StaticResource ForegroundColor}"
+                                 BorderBrush="{StaticResource BorderColor}"
+                                 BorderThickness="1"
+                                 Padding="5"
+                                 VerticalContentAlignment="Center"
+                                 TextChanged="TxtSearch_TextChanged"/>
 
                         <Button x:Name="btnRefresh"
-                    Content="Refresh"
-                    Width="80"
-                    Height="28"
-                    Margin="20,0,0,0"
-                    Background="{StaticResource ControlBackground}"
-                    Foreground="{StaticResource ForegroundColor}"
-                    BorderBrush="{StaticResource BorderColor}"
-                    BorderThickness="1"
-                    Click="BtnRefresh_Click"/>
+                                Content="Refresh"
+                                Width="80"
+                                Height="28"
+                                Margin="20,0,0,0"
+                                Background="{StaticResource ControlBackground}"
+                                Foreground="{StaticResource ForegroundColor}"
+                                BorderBrush="{StaticResource BorderColor}"
+                                BorderThickness="1"
+                                Click="BtnRefresh_Click"/>
 
                         <TextBlock x:Name="txtFilteredCount"
-                       Text="0 records"
-                       Foreground="{StaticResource TextColorSecondary}"
-                       VerticalAlignment="Center"
-                       Margin="20,0,0,0"/>
+                                   Text="0 records"
+                                   Foreground="{StaticResource TextColorSecondary}"
+                                   VerticalAlignment="Center"
+                                   Margin="20,0,0,0"/>
                     </StackPanel>
 
                     <!-- RIGHT SIDE: Summary stats -->

@@ -202,53 +202,53 @@
                         FontSize="12"
                         FontWeight="Bold"
                         Click="BtnAnalysis_Click">
-                                    <Button.ContextMenu>
-                                        <ContextMenu x:Name="menuAnalysis"
-                                     Background="{StaticResource ControlBackground}"
-                                     Foreground="{StaticResource ForegroundColor}"
-                                     BorderBrush="{StaticResource BorderColor}">
-                                            <MenuItem Header="ANALYSIS 1" 
-                                      Click="MenuAnalysis1_Click"
-                                      Background="{StaticResource ControlBackground}"
-                                      Foreground="{StaticResource ForegroundColor}"/>
-                                            <MenuItem Header="ANALYSIS 2" 
-                                      Click="MenuAnalysis2_Click"
-                                      Background="{StaticResource ControlBackground}"
-                                      Foreground="{StaticResource ForegroundColor}"/>
-                                            <MenuItem Header="ANALYSIS 3" 
-                                      Click="MenuAnalysis3_Click"
-                                      Background="{StaticResource ControlBackground}"
-                                      Foreground="{StaticResource ForegroundColor}"/>
-                                            <MenuItem Header="ANALYSIS 4" 
-                                      Click="MenuAnalysis4_Click"
-                                      Background="{StaticResource ControlBackground}"
-                                      Foreground="{StaticResource ForegroundColor}"/>
-                                            <MenuItem Header="ANALYSIS 5" 
-                                      Click="MenuAnalysis5_Click"
-                                      Background="{StaticResource ControlBackground}"
-                                      Foreground="{StaticResource ForegroundColor}"/>
-                                            <MenuItem Header="ANALYSIS 6" 
-                                      Click="MenuAnalysis6_Click"
-                                      Background="{StaticResource ControlBackground}"
-                                      Foreground="{StaticResource ForegroundColor}"/>
-                                            <MenuItem Header="ANALYSIS 7" 
-                                      Click="MenuAnalysis7_Click"
-                                      Background="{StaticResource ControlBackground}"
-                                      Foreground="{StaticResource ForegroundColor}"/>
-                                            <MenuItem Header="ANALYSIS 8" 
-                                      Click="MenuAnalysis8_Click"
-                                      Background="{StaticResource ControlBackground}"
-                                      Foreground="{StaticResource ForegroundColor}"/>
-                                            <MenuItem Header="ANALYSIS 9" 
-                                      Click="MenuAnalysis9_Click"
-                                      Background="{StaticResource ControlBackground}"
-                                      Foreground="{StaticResource ForegroundColor}"/>
-                                            <MenuItem Header="ANALYSIS 10" 
-                                      Click="MenuAnalysis10_Click"
-                                      Background="{StaticResource ControlBackground}"
-                                      Foreground="{StaticResource ForegroundColor}"/>
-                                        </ContextMenu>
-                                    </Button.ContextMenu>
+                        <Button.ContextMenu>
+                            <ContextMenu x:Name="menuAnalysis"
+                            Background="{StaticResource ControlBackground}"
+                            Foreground="{StaticResource ForegroundColor}"
+                            BorderBrush="{StaticResource BorderColor}">
+                                <MenuItem Header="ANALYSIS 1" 
+                            Click="MenuAnalysis1_Click"
+                            Background="{StaticResource ControlBackground}"
+                            Foreground="{StaticResource ForegroundColor}"/>
+                                <MenuItem Header="ANALYSIS 2" 
+                            Click="MenuAnalysis2_Click"
+                            Background="{StaticResource ControlBackground}"
+                            Foreground="{StaticResource ForegroundColor}"/>
+                                <MenuItem Header="ANALYSIS 3" 
+                            Click="MenuAnalysis3_Click"
+                            Background="{StaticResource ControlBackground}"
+                            Foreground="{StaticResource ForegroundColor}"/>
+                                <MenuItem Header="ANALYSIS 4" 
+                            Click="MenuAnalysis4_Click"
+                            Background="{StaticResource ControlBackground}"
+                            Foreground="{StaticResource ForegroundColor}"/>
+                                <MenuItem Header="ANALYSIS 5" 
+                            Click="MenuAnalysis5_Click"
+                            Background="{StaticResource ControlBackground}"
+                            Foreground="{StaticResource ForegroundColor}"/>
+                                <MenuItem Header="ANALYSIS 6" 
+                            Click="MenuAnalysis6_Click"
+                            Background="{StaticResource ControlBackground}"
+                            Foreground="{StaticResource ForegroundColor}"/>
+                                <MenuItem Header="ANALYSIS 7" 
+                            Click="MenuAnalysis7_Click"
+                            Background="{StaticResource ControlBackground}"
+                            Foreground="{StaticResource ForegroundColor}"/>
+                                <MenuItem Header="ANALYSIS 8" 
+                            Click="MenuAnalysis8_Click"
+                            Background="{StaticResource ControlBackground}"
+                            Foreground="{StaticResource ForegroundColor}"/>
+                                <MenuItem Header="ANALYSIS 9" 
+                            Click="MenuAnalysis9_Click"
+                            Background="{StaticResource ControlBackground}"
+                            Foreground="{StaticResource ForegroundColor}"/>
+                                <MenuItem Header="ANALYSIS 10" 
+                            Click="MenuAnalysis10_Click"
+                            Background="{StaticResource ControlBackground}"
+                            Foreground="{StaticResource ForegroundColor}"/>
+                            </ContextMenu>
+                        </Button.ContextMenu>
                 </Button>
 
                 <!-- TOOLS Button (Dropdown) -->
@@ -263,53 +263,53 @@
                         FontSize="12"
                         FontWeight="Bold"
                         Click="BtnTools_Click">
-                                    <Button.ContextMenu>
-                                        <ContextMenu x:Name="menuTools"
-                                     Background="{StaticResource ControlBackground}"
-                                     Foreground="{StaticResource ForegroundColor}"
-                                     BorderBrush="{StaticResource BorderColor}">
-                                            <MenuItem Header="TOOL 1" 
-                                      Click="MenuTool1_Click"
-                                      Background="{StaticResource ControlBackground}"
-                                      Foreground="{StaticResource ForegroundColor}"/>
-                                            <MenuItem Header="TOOL 2" 
-                                      Click="MenuTool2_Click"
-                                      Background="{StaticResource ControlBackground}"
-                                      Foreground="{StaticResource ForegroundColor}"/>
-                                            <MenuItem Header="TOOL 3" 
-                                      Click="MenuTool3_Click"
-                                      Background="{StaticResource ControlBackground}"
-                                      Foreground="{StaticResource ForegroundColor}"/>
-                                            <MenuItem Header="TOOL 4" 
-                                      Click="MenuTool4_Click"
-                                      Background="{StaticResource ControlBackground}"
-                                      Foreground="{StaticResource ForegroundColor}"/>
-                                            <MenuItem Header="TOOL 5" 
-                                      Click="MenuTool5_Click"
-                                      Background="{StaticResource ControlBackground}"
-                                      Foreground="{StaticResource ForegroundColor}"/>
-                                            <MenuItem Header="TOOL 6" 
-                                      Click="MenuTool6_Click"
-                                      Background="{StaticResource ControlBackground}"
-                                      Foreground="{StaticResource ForegroundColor}"/>
-                                            <MenuItem Header="TOOL 7" 
-                                      Click="MenuTool7_Click"
-                                      Background="{StaticResource ControlBackground}"
-                                      Foreground="{StaticResource ForegroundColor}"/>
-                                            <MenuItem Header="TOOL 8" 
-                                      Click="MenuTool8_Click"
-                                      Background="{StaticResource ControlBackground}"
-                                      Foreground="{StaticResource ForegroundColor}"/>
-                                            <MenuItem Header="TOOL 9" 
-                                      Click="MenuTool9_Click"
-                                      Background="{StaticResource ControlBackground}"
-                                      Foreground="{StaticResource ForegroundColor}"/>
-                                            <MenuItem Header="TOOL 10" 
-                                      Click="MenuTool10_Click"
-                                      Background="{StaticResource ControlBackground}"
-                                      Foreground="{StaticResource ForegroundColor}"/>
-                                        </ContextMenu>
-                                    </Button.ContextMenu>
+                        <Button.ContextMenu>
+                            <ContextMenu x:Name="menuTools"
+                            Background="{StaticResource ControlBackground}"
+                            Foreground="{StaticResource ForegroundColor}"
+                            BorderBrush="{StaticResource BorderColor}">
+                                <MenuItem Header="TOOL 1" 
+                                Click="MenuTool1_Click"
+                                Background="{StaticResource ControlBackground}"
+                                Foreground="{StaticResource ForegroundColor}"/>
+                                <MenuItem Header="TOOL 2" 
+                                Click="MenuTool2_Click"
+                                Background="{StaticResource ControlBackground}"
+                                Foreground="{StaticResource ForegroundColor}"/>
+                                <MenuItem Header="TOOL 3" 
+                            Click="MenuTool3_Click"
+                            Background="{StaticResource ControlBackground}"
+                            Foreground="{StaticResource ForegroundColor}"/>
+                                <MenuItem Header="TOOL 4" 
+                            Click="MenuTool4_Click"
+                            Background="{StaticResource ControlBackground}"
+                            Foreground="{StaticResource ForegroundColor}"/>
+                                <MenuItem Header="TOOL 5" 
+                            Click="MenuTool5_Click"
+                            Background="{StaticResource ControlBackground}"
+                            Foreground="{StaticResource ForegroundColor}"/>
+                                <MenuItem Header="TOOL 6" 
+                            Click="MenuTool6_Click"
+                            Background="{StaticResource ControlBackground}"
+                            Foreground="{StaticResource ForegroundColor}"/>
+                                <MenuItem Header="TOOL 7" 
+                            Click="MenuTool7_Click"
+                            Background="{StaticResource ControlBackground}"
+                            Foreground="{StaticResource ForegroundColor}"/>
+                                <MenuItem Header="TOOL 8" 
+                            Click="MenuTool8_Click"
+                            Background="{StaticResource ControlBackground}"
+                            Foreground="{StaticResource ForegroundColor}"/>
+                                <MenuItem Header="TOOL 9" 
+                            Click="MenuTool9_Click"
+                            Background="{StaticResource ControlBackground}"
+                            Foreground="{StaticResource ForegroundColor}"/>
+                                <MenuItem Header="TOOL 10" 
+                            Click="MenuTool10_Click"
+                            Background="{StaticResource ControlBackground}"
+                            Foreground="{StaticResource ForegroundColor}"/>
+                            </ContextMenu>
+                        </Button.ContextMenu>
                 </Button>
 
                 <!-- ADMIN Button (Dropdown) -->
