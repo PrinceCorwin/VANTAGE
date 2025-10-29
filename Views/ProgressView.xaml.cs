@@ -557,20 +557,17 @@ namespace VANTAGE.Views
 
         private async void BtnClearFilters_Click(object sender, RoutedEventArgs e)
         {
-            // Reset search box visual
-            txtSearch.Text = string.Empty;
-
-            // Reset "My Records" button visual state
-            btnFilterMyRecords.Content = "My Records";
-            btnFilterMyRecords.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(42, 42, 42));
-
-            // Clear all server-side filters and reload page 0
             await _viewModel.ClearAllFiltersAsync();
 
-            // Refresh header counts & nav buttons (PropertyChanged should already do this, but safe)
+            // reset the “My Records” button visuals if it was active
+            btnFilterMyRecords.Content = "My Records";
+            btnFilterMyRecords.Background = (Brush)Application.Current.Resources["ControlBackground"];
+
+
             UpdateRecordCount();
             UpdatePagingControls();
         }
+
 
 
         private void LstColumnVisibility_SelectionChanged(object sender, SelectionChangedEventArgs e)

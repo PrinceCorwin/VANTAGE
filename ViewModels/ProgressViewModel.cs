@@ -25,6 +25,39 @@ namespace VANTAGE.ViewModels
         private bool _isLoading;
         private Dictionary<string, ColumnFilter> _activeFilters = new Dictionary<string, ColumnFilter>();
         private int _totalRecords;
+        private bool _myRecordsActive = false;
+        private string _myRecordsUser = null;
+        private string BuildUnifiedWhereClause()
+        {
+            var fb = new FilterBuilder();
+
+            // 1) search box
+            if (!string.IsNullOrWhiteSpace(_searchText))
+                fb.AddTextSearch(_searchText);
+
+            // 2) per-column filters
+            foreach (var filter in _activeFilters.Values)
+            {
+                var db = ColumnMapper.GetDbColumnName(filter.ColumnName);
+                var cond = BuildFilterCondition(db, filter.FilterType, filter.FilterValue);
+                if (!string.IsNullOrEmpty(cond))
+                    fb.AddCondition(cond);
+            }
+
+            // 3) My Records
+            if (_myRecordsActive && !string.IsNullOrWhiteSpace(_myRecordsUser))
+                fb.AddMyRecordsFilter(_myRecordsUser);
+
+            return fb.BuildWhereClause();
+        }
+
+        private async Task RebuildAndReloadAsync()
+        {
+            _currentWhereClause = BuildUnifiedWhereClause();
+            CurrentPage = 0;                 // reset to first page when filters change
+            await LoadCurrentPageAsync();
+        }
+
         public int TotalRecords
         {
             get => _totalRecords;
@@ -40,20 +73,13 @@ namespace VANTAGE.ViewModels
             {
                 IsLoading = true;
 
-                // Clear all filter state
-                _activeFilters.Clear();
-                _currentWhereClause = null;
-                _searchText = string.Empty;  // internal value
-                OnPropertyChanged(nameof(SearchText)); // keep bindings honest
+                _activeFilters.Clear();   // remove column filters
+                _myRecordsActive = false; // remove My Records
+                _myRecordsUser = null;
+                _searchText = "";         // clear search box (optional; keep if this is your desired UX)
+                OnPropertyChanged(nameof(SearchText));
 
-                // Reset paging
-                CurrentPage = 0;
-
-                // Reload unfiltered page 0
-                await LoadCurrentPageAsync();
-
-                // Ensure "Total: Z" shows the unfiltered database total
-                TotalRecordCount = await ActivityRepository.GetTotalCountAsync();
+                await RebuildAndReloadAsync();
             }
             catch
             {
@@ -76,7 +102,8 @@ namespace VANTAGE.ViewModels
                 FilterType = filterType,
                 FilterValue = filterValue
             };
-            await ApplyAllFiltersAsync();
+
+            await RebuildAndReloadAsync();
         }
         /// <summary>
         /// Apply a single column filter to the data
@@ -125,8 +152,9 @@ namespace VANTAGE.ViewModels
         public async Task ClearFilter(string columnName)
         {
             _activeFilters.Remove(columnName);
-            await ApplyAllFiltersAsync();
+            await RebuildAndReloadAsync();
         }
+
 
         /// <summary>
         /// Apply all active filters to the data
@@ -288,35 +316,7 @@ namespace VANTAGE.ViewModels
             try
             {
                 IsLoading = true;
-
-                // Build WHERE clause
-                var filterBuilder = new FilterBuilder();
-
-                // Add search filter if text exists
-                if (!string.IsNullOrWhiteSpace(_searchText))
-                {
-                    filterBuilder.AddTextSearch(_searchText);
-                }
-
-                // Add any active column filters
-                foreach (var filter in _activeFilters.Values)
-                {
-                    string dbColumnName = ColumnMapper.GetDbColumnName(filter.ColumnName);
-                    string condition = BuildFilterCondition(dbColumnName, filter.FilterType, filter.FilterValue);
-                    if (!string.IsNullOrEmpty(condition))
-                    {
-                        filterBuilder.AddCondition(condition);
-                    }
-                }
-
-                // Store WHERE clause
-                _currentWhereClause = filterBuilder.BuildWhereClause();
-
-                // Reset to first page
-                CurrentPage = 0;
-
-                // Reload with filter
-                await LoadCurrentPageAsync();
+                await RebuildAndReloadAsync();
             }
             catch (Exception ex)
             {
@@ -416,25 +416,10 @@ namespace VANTAGE.ViewModels
             {
                 IsLoading = true;
 
-                if (active)
-                {
-                    // Build WHERE clause for My Records
-                    var filterBuilder = new FilterBuilder();
-                    filterBuilder.AddMyRecordsFilter(currentUsername);
-                    _currentWhereClause = filterBuilder.BuildWhereClause();
+                _myRecordsActive = active;
+                _myRecordsUser = active ? currentUsername : null;
 
-                }
-                else
-                {
-                    // Clear filter
-                    _currentWhereClause = null;
-                }
-
-                // Reset to first page when filter changes
-                CurrentPage = 0;
-
-                // Reload with filter
-                await LoadCurrentPageAsync();
+                await RebuildAndReloadAsync();
             }
             catch (Exception ex)
             {
