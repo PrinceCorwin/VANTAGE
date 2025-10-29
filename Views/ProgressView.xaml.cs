@@ -40,8 +40,10 @@ namespace VANTAGE.Views
             if (e.PropertyName == nameof(_viewModel.TotalRecordCount) ||
                 e.PropertyName == nameof(_viewModel.TotalPages) ||
                 e.PropertyName == nameof(_viewModel.CurrentPage) ||
-                e.PropertyName == nameof(_viewModel.CanGoPrevious) ||  // ADD THIS
-                e.PropertyName == nameof(_viewModel.CanGoNext))        // ADD THIS
+                e.PropertyName == nameof(_viewModel.CanGoPrevious) ||
+                e.PropertyName == nameof(_viewModel.CanGoNext) ||
+                e.PropertyName == nameof(_viewModel.FilteredCount) ||
+                e.PropertyName == nameof(_viewModel.TotalRecords))
             {
                 UpdateRecordCount();
                 UpdatePagingControls();
@@ -553,10 +555,23 @@ namespace VANTAGE.Views
             return dialog.ShowDialog() == true ? (User)comboBox.SelectedItem : null;
         }
 
-        private void BtnClearFilters_Click(object sender, RoutedEventArgs e)
+        private async void BtnClearFilters_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: Implement
+            // Reset search box visual
+            txtSearch.Text = string.Empty;
+
+            // Reset "My Records" button visual state
+            btnFilterMyRecords.Content = "My Records";
+            btnFilterMyRecords.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(42, 42, 42));
+
+            // Clear all server-side filters and reload page 0
+            await _viewModel.ClearAllFiltersAsync();
+
+            // Refresh header counts & nav buttons (PropertyChanged should already do this, but safe)
+            UpdateRecordCount();
+            UpdatePagingControls();
         }
+
 
         private void LstColumnVisibility_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {

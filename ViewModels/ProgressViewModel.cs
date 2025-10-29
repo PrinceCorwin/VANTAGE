@@ -34,6 +34,37 @@ namespace VANTAGE.ViewModels
                 OnPropertyChanged(nameof(TotalRecords));
             }
         }
+        public async Task ClearAllFiltersAsync()
+        {
+            try
+            {
+                IsLoading = true;
+
+                // Clear all filter state
+                _activeFilters.Clear();
+                _currentWhereClause = null;
+                _searchText = string.Empty;  // internal value
+                OnPropertyChanged(nameof(SearchText)); // keep bindings honest
+
+                // Reset paging
+                CurrentPage = 0;
+
+                // Reload unfiltered page 0
+                await LoadCurrentPageAsync();
+
+                // Ensure "Total: Z" shows the unfiltered database total
+                TotalRecordCount = await ActivityRepository.GetTotalCountAsync();
+            }
+            catch
+            {
+                // (optional) log
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
+
         /// <summary>
         /// Apply a filter to a column
         /// </summary>
@@ -143,16 +174,20 @@ namespace VANTAGE.ViewModels
 
         private string BuildFilterCondition(string dbColumnName, string filterType, string filterValue)
         {
-            // Escape single quotes for SQL
-            filterValue = filterValue.Replace("'", "''");
+            filterValue = (filterValue ?? "").Replace("'", "''");
 
             switch (filterType)
             {
                 case "Contains":
                     return $"{dbColumnName} LIKE '%{filterValue}%'";
+                case "Does Not Contain":
+                    return $"{dbColumnName} NOT LIKE '%{filterValue}%'";
                 case "Equals":
                     return $"{dbColumnName} = '{filterValue}'";
-                case "Starts With":
+                case "Does Not Equal":
+                    return $"{dbColumnName} <> '{filterValue}'";
+                case "Begins With":      // matches your ListBox text
+                case "Starts With":      // allow both, just in case
                     return $"{dbColumnName} LIKE '{filterValue}%'";
                 case "Ends With":
                     return $"{dbColumnName} LIKE '%{filterValue}'";
@@ -160,6 +195,7 @@ namespace VANTAGE.ViewModels
                     return "";
             }
         }
+
         public ProgressViewModel()
         {
             // Initialize collections
@@ -450,7 +486,8 @@ namespace VANTAGE.ViewModels
 
                 // Update total records and recalculate pages
                 TotalRecords = totalCount;
-                TotalRecordCount = (int)totalCount;
+                TotalRecordCount = await ActivityRepository.GetTotalCountAsync(); // unfiltered DB total (Z)
+                // TotalRecordCount = (int)totalCount;
                 TotalPages = (int)Math.Ceiling((double)TotalRecords / PageSize);
 
                 Activities.Clear();
@@ -531,13 +568,14 @@ namespace VANTAGE.ViewModels
         {
             if (PageSize > 0)
             {
-                TotalPages = (int)Math.Ceiling((double)TotalRecordCount / PageSize);
+                TotalPages = (int)Math.Ceiling((double)TotalRecords / PageSize);
             }
             else
             {
                 TotalPages = 0;
             }
         }
+
 
         /// <summary>
         /// Apply filters to the view
