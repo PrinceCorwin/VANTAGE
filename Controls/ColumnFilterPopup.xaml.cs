@@ -24,6 +24,7 @@ namespace VANTAGE.Controls
         private string _columnName;
         private int _displayLimit = 1000; // default limit for unique options
         private List<string> _allValues = new List<string>();
+        private bool _useProvidedValues = false;
 
         // Snapshot of state when popup opens
         private string _snapshotSearch = string.Empty;
@@ -164,14 +165,31 @@ namespace VANTAGE.Controls
             }
         }
 
-        public void Initialize(string columnName, int displayLimit = 1000)
+        // Overload: Initialize with filtered values
+        /// <summary>
+        /// Initialize the filter popup for a column, optionally with a set of filtered values to display.
+        /// </summary>
+        public void Initialize(string columnName, int displayLimit, IEnumerable<string> filteredValues = null)
         {
             _columnName = columnName;
             _displayLimit = displayLimit;
-            // Keep XAML-defined content for clear button (do not override)
+            if (filteredValues != null)
+            {
+                _allValues = filteredValues.Distinct().Take(_displayLimit + 1).ToList();
+                _useProvidedValues = true;
+                _ = LoadDistinctValuesAsync();
+            }
+            else
+            {
+                _useProvidedValues = false;
+                _ = LoadDistinctValuesAsync();
+            }
+        }
 
-            // Load distinct values async
-            _ = LoadDistinctValuesAsync();
+        // Backward compatibility for old calls
+        public void Initialize(string columnName, int displayLimit = 1000)
+        {
+            Initialize(columnName, displayLimit, null);
         }
 
         private async Task LoadDistinctValuesAsync()
@@ -181,25 +199,36 @@ namespace VANTAGE.Controls
                 itemsValues.Items.Clear();
                 txtTooMany.Visibility = Visibility.Collapsed;
 
-                // Query repository for distinct values for this column (with server-side limit awareness)
-                var (values, totalCount) = await ActivityRepository.GetDistinctColumnValuesAsync(_columnName, _displayLimit + 1);
-
-                // Always put 'Unassigned' at the top for AssignedTo
-                if (!string.IsNullOrEmpty(_columnName) && _columnName.Equals("AssignedTo", StringComparison.OrdinalIgnoreCase))
+                if (!_useProvidedValues)
                 {
-                    var rest = values.Where(v => !string.IsNullOrWhiteSpace(v) && !v.Equals("Unassigned", StringComparison.OrdinalIgnoreCase)).ToList();
-                    _allValues = new List<string> { "Unassigned" };
-                    _allValues.AddRange(rest);
+                    // Query repository for distinct values for this column (with server-side limit awareness)
+                    var (values, totalCount) = await ActivityRepository.GetDistinctColumnValuesAsync(_columnName, _displayLimit + 1);
+
+                    // Always put 'Unassigned' at the top for AssignedTo
+                    if (!string.IsNullOrEmpty(_columnName) && _columnName.Equals("AssignedTo", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var rest = values.Where(v => !string.IsNullOrWhiteSpace(v) && !v.Equals("Unassigned", StringComparison.OrdinalIgnoreCase)).ToList();
+                        _allValues = new List<string> { "Unassigned" };
+                        _allValues.AddRange(rest);
+                    }
+                    else
+                    {
+                        _allValues = values;
+                    }
+
+                    bool tooMany = totalCount > _displayLimit;
+                    if (tooMany)
+                    {
+                        txtTooMany.Visibility = Visibility.Visible;
+                    }
                 }
                 else
                 {
-                    _allValues = values;
-                }
-
-                bool tooMany = totalCount > _displayLimit;
-                if (tooMany)
-                {
-                    txtTooMany.Visibility = Visibility.Visible;
+                    // If too many filtered values, show warning
+                    if (_allValues.Count > _displayLimit)
+                    {
+                        txtTooMany.Visibility = Visibility.Visible;
+                    }
                 }
 
                 foreach (var val in _allValues)

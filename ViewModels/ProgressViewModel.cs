@@ -614,6 +614,24 @@ namespace VANTAGE.ViewModels
             return true;
         }
 
+        // Returns unique values for a column from the currently filtered records (in-memory)
+        public IEnumerable<string> GetUniqueValuesForColumn(string columnName)
+        {
+            if (string.IsNullOrEmpty(columnName))
+                return Enumerable.Empty<string>();
+
+            // Use reflection to get property values for the column
+            return _activities
+                .Select(a => {
+                    var prop = typeof(Activity).GetProperty(columnName);
+                    if (prop == null) return null;
+                    var val = prop.GetValue(a);
+                    return val?.ToString() ?? string.Empty;
+                })
+                .Distinct()
+                .ToList();
+        }
+
         public event PropertyChangedEventHandler? PropertyChanged;
         protected void OnPropertyChanged(string propertyName)
         {

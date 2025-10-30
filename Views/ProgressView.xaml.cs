@@ -107,12 +107,15 @@ namespace VANTAGE.Views
                 _activeFilterPopup.IsOpen = false;
             }
 
+            // Get unique values from filtered records
+            var filteredValues = _viewModel.GetUniqueValuesForColumn(columnName);
+
             // Create filter popup
             var filterControl = new Controls.ColumnFilterPopup();
             filterControl.FilterApplied += FilterControl_FilterApplied;
             filterControl.FilterCleared += FilterControl_FilterCleared;
 
-            filterControl.Initialize(columnName, ColumnUniqueValueDisplayLimit);
+            filterControl.Initialize(columnName, ColumnUniqueValueDisplayLimit, filteredValues);
 
             _activeFilterPopup = new Popup
             {
