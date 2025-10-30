@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Threading.Tasks;
 using VANTAGE.Models;
 using VANTAGE.Utilities;
@@ -241,43 +242,16 @@ namespace VANTAGE.Data
                     var validUsernames = GetValidUsernames();
 
                     // Calculate offset
-                    // int offset = (pageNumber - 1) * pageSize;   // ← wrong for 0-based pages
-                    int offset = pageNumber * pageSize;         // ← correct for 0-based pages
+                    int offset = pageNumber * pageSize;         // correct for 0-based pages
 
                     System.Diagnostics.Debug.WriteLine(
                         $"PAGING DEBUG -> pageNumber={pageNumber}, pageSize={pageSize}, offset={offset}"
                     );
 
-
-                    // Get paginated data with filter
+                    // Get paginated data with filter - use SELECT * and read by column name to avoid index mismatches
                     var command = connection.CreateCommand();
                     command.CommandText = $@"
-                SELECT 
-                    ActivityID, HexNO,
-                    Catg_ComponentType, Catg_PhaseCategory, Catg_ROC_Step,
-                    Dwg_PrimeDrawingNO, Dwg_RevisionNo, Dwg_SecondaryDrawingNO, Dwg_ShtNo,
-                    Notes_Comments,
-                    Sch_Actno, Sch_Start, Sch_Finish, Sch_Status,
-                    Tag_Aux1, Tag_Aux2, Tag_Aux3, Tag_Area, Tag_CONo, Tag_Descriptions,
-                    Tag_EqmtNo, Tag_Estimator, Tag_Insulation_Typ, Tag_LineNo, Tag_Matl_Spec,
-                    Tag_Phase_Code, Tag_Paint_Code, Tag_Pipe_Grade, Tag_ProjectID, Tag_RFINo,
-                    Tag_Sch_ActNo, Tag_Service, Tag_ShopField, Tag_SubArea, Tag_System,
-                    Tag_SystemNo, Tag_TagNo, Tag_Tracing, Tag_WorkPackage, Tag_XRAY,
-                    Trg_DateTrigger,
-                    UDFOne, UDFTwo, UDFThree, UDFFour, UDFFive, UDFSix, UDFSeven,
-                    UDFEight, UDFNine, UDFTen, UDFEleven, UDFTwelve, UDFThirteen,
-                    UDFFourteen, UDFFifteen, UDFSixteen, UDFSeventeen, UDFEighteen,
-                    UDFNineteen, UDFTwenty,
-                    Val_Base_Unit, Val_BudgetedHours_Ind, Val_BudgetedHours_Group,
-                    Val_BudgetedHours_ROC, Val_EarnedHours_ROC, Val_EarnedQty,
-                    Val_Perc_Complete, Val_Quantity, Val_UOM,
-                    Val_EarnedHours_Ind, Val_Earn_Qty, Val_Percent_Earned,
-                    Val_EQ_QTY, Val_EQ_UOM,
-                    Tag_ROC_ID, LookUP_ROC_ID, Val_ROC_Perc, Val_ROC_BudgetQty,
-                    Val_Pipe_Size1, Val_Pipe_Size2,
-                    Val_Prev_Earned_Hours, Val_Prev_Earned_Qty, Val_TimeStamp,
-                    Val_Client_EQ_QTY_BDG, Val_UDF_Two, Val_UDF_Three, VAL_Client_Earned_EQ_QTY,
-                    AzureUploadDate, Val_ProgDate
+                SELECT *
                 FROM Activities
                 {whereSQL}
                 ORDER BY UDFNineteen
@@ -286,7 +260,7 @@ namespace VANTAGE.Data
                     command.Parameters.AddWithValue("@pageSize", pageSize);
                     command.Parameters.AddWithValue("@offset", offset);
                     System.Diagnostics.Debug.WriteLine(
-                            $"SQL PAGE SELECT -> LIMIT {pageSize} OFFSET {offset} | WHERE='{whereSQL.Replace("\n", " ").Replace("\r", " ")}'"
+                            $"SQL PAGE SELECT -> LIMIT {pageSize} OFFSET {offset} | WHERE='{whereSQL.Replace("\n", " ").Replace("\r", "")}'"
                         );
 
                     var activities = new List<Activity>();
@@ -294,125 +268,177 @@ namespace VANTAGE.Data
                     using var reader = command.ExecuteReader();
                     while (reader.Read())
                     {
+                        // Helper local functions to safely read by column name
+                        string GetStringSafe(string name)
+                        {
+                            try
+                            {
+                                int i = reader.GetOrdinal(name);
+                                return reader.IsDBNull(i) ? "" : reader.GetString(i);
+                            }
+                            catch
+                            {
+                                return "";
+                            }
+                        }
+
+                        int GetIntSafe(string name)
+                        {
+                            try
+                            {
+                                int i = reader.GetOrdinal(name);
+                                return reader.IsDBNull(i) ? 0 : reader.GetInt32(i);
+                            }
+                            catch
+                            {
+                                return 0;
+                            }
+                        }
+
+                        double GetDoubleSafe(string name)
+                        {
+                            try
+                            {
+                                int i = reader.GetOrdinal(name);
+                                return reader.IsDBNull(i) ? 0 : reader.GetDouble(i);
+                            }
+                            catch
+                            {
+                                return 0;
+                            }
+                        }
+
+                        int GetInt32FromObj(string name)
+                        {
+                            try
+                            {
+                                int i = reader.GetOrdinal(name);
+                                return reader.IsDBNull(i) ? 0 : Convert.ToInt32(reader.GetValue(i));
+                            }
+                            catch
+                            {
+                                return 0;
+                            }
+                        }
+
                         var activity = new Activity
                         {
-                            ActivityID = reader.GetInt32(0),
-                            HexNO = reader.IsDBNull(1) ? 0 : reader.GetInt32(1),
+                            ActivityID = GetIntSafe("ActivityID"),
+                            HexNO = GetIntSafe("HexNO"),
 
                             // Categories
-                            CompType = reader.IsDBNull(2) ? "" : reader.GetString(2),
-                            PhaseCategory = reader.IsDBNull(3) ? "" : reader.GetString(3),
-                            ROCStep = reader.IsDBNull(4) ? "" : reader.GetString(4),
+                            CompType = GetStringSafe("Catg_ComponentType"),
+                            PhaseCategory = GetStringSafe("Catg_PhaseCategory"),
+                            ROCStep = GetStringSafe("Catg_ROC_Step"),
 
                             // Drawings
-                            DwgNO = reader.IsDBNull(5) ? "" : reader.GetString(5),
-                            RevNO = reader.IsDBNull(6) ? "" : reader.GetString(6),
-                            SecondDwgNO = reader.IsDBNull(7) ? "" : reader.GetString(7),
-                            ShtNO = reader.IsDBNull(8) ? "" : reader.GetString(8),
+                            DwgNO = GetStringSafe("Dwg_PrimeDrawingNO"),
+                            RevNO = GetStringSafe("Dwg_RevisionNo"),
+                            SecondDwgNO = GetStringSafe("Dwg_SecondaryDrawingNO"),
+                            ShtNO = GetStringSafe("Dwg_ShtNo"),
 
                             // Notes
-                            Notes = reader.IsDBNull(9) ? "" : reader.GetString(9),
+                            Notes = GetStringSafe("Notes_Comments"),
 
                             // Schedule
-                            OldActno = reader.IsDBNull(10) ? "" : reader.GetString(10),
-                            Start = reader.IsDBNull(11) ? "" : reader.GetString(11),
-                            Finish = reader.IsDBNull(12) ? "" : reader.GetString(12),
+                            OldActno = GetStringSafe("Sch_Actno"),
+                            Start = GetStringSafe("Sch_Start"),
+                            Finish = GetStringSafe("Sch_Finish"),
 
-                            // Tags
-                            Aux1 = reader.IsDBNull(14) ? "" : reader.GetString(14),
-                            Aux2 = reader.IsDBNull(15) ? "" : reader.GetString(15),
-                            Aux3 = reader.IsDBNull(16) ? "" : reader.GetString(16),
-                            Area = reader.IsDBNull(17) ? "" : reader.GetString(17),
-                            ChgOrdNO = reader.IsDBNull(18) ? "" : reader.GetString(18),
-                            Description = reader.IsDBNull(19) ? "" : reader.GetString(19),
-                            EqmtNO = reader.IsDBNull(20) ? "" : reader.GetString(20),
-                            Estimator = reader.IsDBNull(21) ? "" : reader.GetString(21),
-                            InsulType = reader.IsDBNull(22) ? "" : reader.GetString(22),
-                            LineNO = reader.IsDBNull(23) ? "" : reader.GetString(23),
-                            MtrlSpec = reader.IsDBNull(24) ? "" : reader.GetString(24),
-                            PhaseCode = reader.IsDBNull(25) ? "" : reader.GetString(25),
-                            PaintCode = reader.IsDBNull(26) ? "" : reader.GetString(26),
-                            PipeGrade = reader.IsDBNull(27) ? "" : reader.GetString(27),
-                            ProjectID = reader.IsDBNull(28) ? "" : reader.GetString(28),
-                            RFINO = reader.IsDBNull(29) ? "" : reader.GetString(29),
-                            SchedActNO = reader.IsDBNull(30) ? "" : reader.GetString(30),
-                            Service = reader.IsDBNull(31) ? "" : reader.GetString(31),
-                            ShopField = reader.IsDBNull(32) ? "" : reader.GetString(32),
-                            SubArea = reader.IsDBNull(33) ? "" : reader.GetString(33),
-                            System = reader.IsDBNull(34) ? "" : reader.GetString(34),
-                            SystemNO = reader.IsDBNull(35) ? "" : reader.GetString(35),
-                            TagNO = reader.IsDBNull(36) ? "" : reader.GetString(36),
-                            HtTrace = reader.IsDBNull(37) ? "" : reader.GetString(37),
-                            WorkPackage = reader.IsDBNull(38) ? "" : reader.GetString(38),
-                            XRay = reader.IsDBNull(39) ? 0 : reader.GetDouble(39),
+                            // Tags / Aux
+                            Aux1 = GetStringSafe("Tag_Aux1"),
+                            Aux2 = GetStringSafe("Tag_Aux2"),
+                            Aux3 = GetStringSafe("Tag_Aux3"),
+                            Area = GetStringSafe("Tag_Area"),
+                            ChgOrdNO = GetStringSafe("Tag_CONo"),
+                            Description = GetStringSafe("Tag_Descriptions"),
+                            EqmtNO = GetStringSafe("Tag_EqmtNo"),
+                            Estimator = GetStringSafe("Tag_Estimator"),
+                            InsulType = GetStringSafe("Tag_Insulation_Typ"),
+                            LineNO = GetStringSafe("Tag_LineNo"),
+                            MtrlSpec = GetStringSafe("Tag_Matl_Spec"),
+                            PhaseCode = GetStringSafe("Tag_Phase_Code"),
+                            PaintCode = GetStringSafe("Tag_Paint_Code"),
+                            PipeGrade = GetStringSafe("Tag_Pipe_Grade"),
+                            ProjectID = GetStringSafe("Tag_ProjectID"),
+                            RFINO = GetStringSafe("Tag_RFINo"),
+                            SchedActNO = GetStringSafe("Tag_Sch_ActNo"),
+                            Service = GetStringSafe("Tag_Service"),
+                            ShopField = GetStringSafe("Tag_ShopField"),
+                            SubArea = GetStringSafe("Tag_SubArea"),
+                            System = GetStringSafe("Tag_System"),
+                            SystemNO = GetStringSafe("Tag_SystemNo"),
+                            TagNO = GetStringSafe("Tag_TagNo"),
+                            HtTrace = GetStringSafe("Tag_Tracing"),
+                            WorkPackage = GetStringSafe("Tag_WorkPackage"),
+
+                            XRay = GetDoubleSafe("Tag_XRAY"),
 
                             // Trigger
-                            DateTrigger = reader.IsDBNull(40) ? 0 : reader.GetInt32(40),
+                            DateTrigger = GetInt32FromObj("Trg_DateTrigger"),
 
                             // UDFs
-                            UDFOne = reader.IsDBNull(41) ? "" : reader.GetString(41),
-                            UDFTwo = reader.IsDBNull(42) ? "" : reader.GetString(42),
-                            UDFThree = reader.IsDBNull(43) ? "" : reader.GetString(43),
-                            UDFFour = reader.IsDBNull(44) ? "" : reader.GetString(44),
-                            UDFFive = reader.IsDBNull(45) ? "" : reader.GetString(45),
-                            UDFSix = reader.IsDBNull(46) ? "" : reader.GetString(46),
-                            UDFSeven = reader.IsDBNull(47) ? 0 : reader.GetInt32(47),
-                            UDFEight = reader.IsDBNull(48) ? "" : reader.GetString(48),
-                            UDFNine = reader.IsDBNull(49) ? "" : reader.GetString(49),
-                            UDFTen = reader.IsDBNull(50) ? "" : reader.GetString(50),
-                            AssignedTo = reader.IsDBNull(51) ? "Unassigned" :
-                                                           (string.IsNullOrWhiteSpace(reader.GetString(51)) ? "Unassigned" :
-                                                           (validUsernames.Contains(reader.GetString(51)) ? reader.GetString(51) : "Unassigned")),
-                            LastModifiedBy = reader.IsDBNull(52) ? "" : reader.GetString(52),
-                            CreatedBy = reader.IsDBNull(53) ? "" : reader.GetString(53),
-                            UDFFourteen = reader.IsDBNull(54) ? "" : reader.GetString(54),
-                            UDFFifteen = reader.IsDBNull(55) ? "" : reader.GetString(55),
-                            UDFSixteen = reader.IsDBNull(56) ? "" : reader.GetString(56),
-                            UDFSeventeen = reader.IsDBNull(57) ? "" : reader.GetString(57),
-                            UDFEighteen = reader.IsDBNull(58) ? "" : reader.GetString(58),
-                            UniqueID = reader.IsDBNull(59) ? "" : reader.GetString(59),
-                            UDFTwenty = reader.IsDBNull(60) ? "" : reader.GetString(60),
+                            UDFOne = GetStringSafe("UDFOne"),
+                            UDFTwo = GetStringSafe("UDFTwo"),
+                            UDFThree = GetStringSafe("UDFThree"),
+                            UDFFour = GetStringSafe("UDFFour"),
+                            UDFFive = GetStringSafe("UDFFive"),
+                            UDFSix = GetStringSafe("UDFSix"),
+                            UDFSeven = GetIntSafe("UDFSeven"),
+                            UDFEight = GetStringSafe("UDFEight"),
+                            UDFNine = GetStringSafe("UDFNine"),
+                            UDFTen = GetStringSafe("UDFTen"),
+                            AssignedTo = string.IsNullOrWhiteSpace(GetStringSafe("UDFEleven")) ? "Unassigned" : (validUsernames.Contains(GetStringSafe("UDFEleven")) ? GetStringSafe("UDFEleven") : "Unassigned"),
+                            LastModifiedBy = GetStringSafe("UDFTwelve"),
+                            CreatedBy = GetStringSafe("UDFThirteen"),
+                            UDFFourteen = GetStringSafe("UDFFourteen"),
+                            UDFFifteen = GetStringSafe("UDFFifteen"),
+                            UDFSixteen = GetStringSafe("UDFSixteen"),
+                            UDFSeventeen = GetStringSafe("UDFSeventeen"),
+                            UDFEighteen = GetStringSafe("UDFEighteen"),
+                            UniqueID = GetStringSafe("UDFNineteen"),
+                            UDFTwenty = GetStringSafe("UDFTwenty"),
 
                             // Values
-                            BaseUnit = reader.IsDBNull(61) ? 0 : reader.GetDouble(61),
-                            BudgetMHs = reader.IsDBNull(62) ? 0 : reader.GetDouble(62),
-                            BudgetHoursGroup = reader.IsDBNull(63) ? 0 : reader.GetDouble(63),
-                            BudgetHoursROC = reader.IsDBNull(64) ? 0 : reader.GetDouble(64),
-                            EarnedMHsRoc = reader.IsDBNull(65) ? 0 : reader.GetInt32(65),
-                            EarnQtyEntry = reader.IsDBNull(66) ? 0 : reader.GetDouble(66),
-                            PercentEntry = reader.IsDBNull(67) ? 0 : reader.GetDouble(67),
-                            Quantity = reader.IsDBNull(68) ? 0 : reader.GetDouble(68),
-                            UOM = reader.IsDBNull(69) ? "" : reader.GetString(69),
+                            BaseUnit = GetDoubleSafe("Val_Base_Unit"),
+                            BudgetMHs = GetDoubleSafe("Val_BudgetedHours_Ind"),
+                            BudgetHoursGroup = GetDoubleSafe("Val_BudgetedHours_Group"),
+                            BudgetHoursROC = GetDoubleSafe("Val_BudgetedHours_ROC"),
+                            EarnedMHsRoc = GetIntSafe("Val_EarnedHours_ROC"),
+                            EarnQtyEntry = GetDoubleSafe("Val_EarnedQty"),
+                            PercentEntry = GetDoubleSafe("Val_Perc_Complete"),
+                            Quantity = GetDoubleSafe("Val_Quantity"),
+                            UOM = GetStringSafe("Val_UOM"),
 
                             // Equipment
-                            EquivQTY = reader.IsDBNull(73) ? 0 : reader.GetDouble(73),
-                            EquivUOM = reader.IsDBNull(74) ? "" : reader.GetString(74),
+                            EquivQTY = GetDoubleSafe("Val_EQ_QTY"),
+                            EquivUOM = GetStringSafe("Val_EQ_UOM"),
 
                             // ROC
-                            ROCID = reader.IsDBNull(75) ? 0 : reader.GetInt32(75),
-                            ROCPercent = reader.IsDBNull(77) ? 0 : reader.GetDouble(77),
-                            ROCBudgetQTY = reader.IsDBNull(78) ? 0 : reader.GetDouble(78),
+                            ROCID = GetIntSafe("Tag_ROC_ID"),
+                            ROCPercent = GetDoubleSafe("Val_ROC_Perc"),
+                            ROCBudgetQTY = GetDoubleSafe("Val_ROC_BudgetQty"),
 
                             // Pipe
-                            PipeSize1 = reader.IsDBNull(79) ? 0 : reader.GetDouble(79),
-                            PipeSize2 = reader.IsDBNull(80) ? 0 : reader.GetDouble(80),
+                            PipeSize1 = GetDoubleSafe("Val_Pipe_Size1"),
+                            PipeSize2 = GetDoubleSafe("Val_Pipe_Size2"),
 
                             // Previous
-                            PrevEarnMHs = reader.IsDBNull(81) ? 0 : reader.GetDouble(81),
-                            PrevEarnQTY = reader.IsDBNull(82) ? 0 : reader.GetDouble(82),
-                            WeekEndDate = reader.IsDBNull(83) ? "" : reader.GetString(83),
+                            PrevEarnMHs = GetDoubleSafe("Val_Prev_Earned_Hours"),
+                            PrevEarnQTY = GetDoubleSafe("Val_Prev_Earned_Qty"),
+                            WeekEndDate = GetStringSafe("Val_TimeStamp"),
 
                             // Client
-                            ClientEquivQty = reader.IsDBNull(84) ? 0 : reader.GetDouble(84),
-                            ClientBudget = reader.IsDBNull(85) ? 0 : reader.GetDouble(85),
-                            ClientCustom3 = reader.IsDBNull(86) ? 0 : reader.GetDouble(86),
-                            AzureUploadDate = reader.IsDBNull(88) ? "" : reader.GetString(88),
-                            ProgDate = reader.IsDBNull(89) ? "" : reader.GetString(89)
+                            ClientEquivQty = GetDoubleSafe("Val_Client_EQ_QTY_BDG"),
+                            ClientBudget = GetDoubleSafe("Val_UDF_Two"),
+                            ClientCustom3 = GetDoubleSafe("Val_UDF_Three"),
+                            AzureUploadDate = GetStringSafe("AzureUploadDate"),
+                            ProgDate = GetStringSafe("Val_ProgDate")
                         };
                         activities.Add(activity);
                     }
 
-                    // FIX: Return tuple with both activities and totalCount
+                    // Return tuple with both activities and totalCount
                     return (activities, (int)totalCount);
                 }
                 catch (Exception ex)
@@ -459,6 +485,95 @@ namespace VANTAGE.Data
                 catch (Exception ex)
                 {
                     return (0, 0);
+                }
+            });
+        }
+
+        /// <summary>
+        /// Get distinct values for a specific column. Returns up to 'limit' values and the true total count (can be > limit).
+        /// </summary>
+        public static async Task<(List<string> values, int totalCount)> GetDistinctColumnValuesAsync(string columnName, int limit = 1000)
+        {
+            return await Task.Run(() =>
+            {
+                var vals = new List<string>();
+                try
+                {
+                    using var connection = DatabaseSetup.GetConnection();
+                    connection.Open();
+
+                    // Map of calculated/display-only properties to SQL expressions for display
+                    var calcMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        // Percent fields: display as 0-100
+                        ["PercentEntry"] = "ROUND(Val_Perc_Complete * 100.0, 2)",
+                        ["PercentEntry_Display"] = "ROUND(Val_Perc_Complete * 100.0, 2)",
+                        ["PercentCompleteCalc"] = "ROUND(Val_Perc_Complete * 100.0, 2)",
+                        ["PercentCompleteCalc_Display"] = "ROUND(Val_Perc_Complete * 100.0, 2)",
+                        // Earned qty ratio: display as 0-100
+                        ["EarnedQtyCalc"] = "ROUND(CASE WHEN Val_Quantity > 0 THEN (Val_EarnedQty / Val_Quantity) ELSE NULL END * 100.0, 2)",
+                        ["EarnedQtyCalc_Display"] = "ROUND(CASE WHEN Val_Quantity > 0 THEN (Val_EarnedQty / Val_Quantity) ELSE NULL END * 100.0, 2)",
+                        // Earned MHs calculated: raw hours
+                        ["EarnMHsCalc"] = "CASE WHEN Val_Perc_Complete >= 1.0 THEN Val_BudgetedHours_Ind ELSE ROUND(Val_Perc_Complete * Val_BudgetedHours_Ind, 3) END",
+                        // Status: match Activity.Status logic
+                        ["Status"] = "CASE WHEN Val_Perc_Complete IS NULL OR Val_Perc_Complete = 0 THEN 'Not Started' WHEN Val_Perc_Complete >= 1.0 THEN 'Complete' ELSE 'In Progress' END",
+                        // AssignedTo: show 'Unassigned' for null/empty
+                        ["AssignedTo"] = "CASE WHEN TRIM(COALESCE(NULLIF(UDFEleven, ''), '')) = '' OR UDFEleven = 'Unassigned' THEN 'Unassigned' ELSE UDFEleven END"
+                    };
+
+                    string dbExpression = null;
+                    if (!string.IsNullOrEmpty(columnName) && calcMap.TryGetValue(columnName, out var expr))
+                    {
+                        dbExpression = expr;
+                    }
+                    else
+                    {
+                        // Sanitize column name by mapping property to actual DB column if needed
+                        string dbColumn = ColumnMapper.GetDbColumnName(columnName);
+                        if (!string.IsNullOrEmpty(columnName) && columnName.EndsWith("_Display", StringComparison.OrdinalIgnoreCase))
+                        {
+                            var baseProp = columnName.Substring(0, columnName.Length - "_Display".Length);
+                            dbExpression = ColumnMapper.GetDbColumnName(baseProp);
+                        }
+                        else
+                        {
+                            dbExpression = ColumnMapper.GetDbColumnName(columnName);
+                        }
+                    }
+
+                    // Query distinct values limited
+                    var cmd = connection.CreateCommand();
+                    cmd.CommandText = $@"SELECT DISTINCT ({dbExpression}) FROM Activities ORDER BY 1 LIMIT @limit";
+                    cmd.Parameters.AddWithValue("@limit", limit);
+
+                    using var reader = cmd.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        if (reader.IsDBNull(0))
+                        {
+                            vals.Add("");
+                        }
+                        else
+                        {
+                            var raw = reader.GetValue(0);
+                            vals.Add(Convert.ToString(raw));
+                        }
+                    }
+
+                    // Always put 'Unassigned' at the top for AssignedTo
+                    if (!string.IsNullOrEmpty(columnName) && columnName.Equals("AssignedTo", StringComparison.OrdinalIgnoreCase))
+                    {
+                        vals = vals.Where(v => !string.IsNullOrWhiteSpace(v) && !v.Equals("Unassigned", StringComparison.OrdinalIgnoreCase)).ToList();
+                        vals.Insert(0, "Unassigned");
+                    }
+
+                    // Count distinct values (after deduplication)
+                    int total = vals.Count;
+                    return (vals, total);
+                }
+                catch (Exception ex)
+                {
+                    return (vals, vals.Count);
                 }
             });
         }

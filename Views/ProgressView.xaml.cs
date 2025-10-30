@@ -15,6 +15,7 @@ namespace VANTAGE.Views
 {
     public partial class ProgressView : UserControl
     {
+        private const int ColumnUniqueValueDisplayLimit = 1000; // configurable
         private Dictionary<string, DataGridColumn> _columnMap = new Dictionary<string, DataGridColumn>();
         private ProgressViewModel _viewModel;
 
@@ -55,6 +56,12 @@ namespace VANTAGE.Views
             {
                 UpdateSummaryPanel();
             }
+
+            // Update header visuals when active filters change
+            if (e.PropertyName == nameof(ProgressViewModel.ActiveFilterColumns))
+            {
+                UpdateHeaderFilterIndicators();
+            }
         }
         private void UpdateSummaryPanel()
         {
@@ -68,7 +75,31 @@ namespace VANTAGE.Views
         private void FilterButton_Click(object sender, RoutedEventArgs e)
         {
             var button = sender as Button;
-            var columnName = button?.Tag as string;
+            string columnName = null;
+
+            // Try to find enclosing DataGridColumnHeader to determine the bound property name.
+            try
+            {
+                DependencyObject current = button as DependencyObject;
+                while (current != null)
+                {
+                    if (current is System.Windows.Controls.Primitives.DataGridColumnHeader header && header.Column != null)
+                    {
+                        columnName = GetColumnPropertyName(header.Column);
+                        break;
+                    }
+
+                    // climb visual tree
+                    current = System.Windows.Media.VisualTreeHelper.GetParent(current);
+                }
+            }
+            catch { }
+
+            // Fallback to Tag (legacy behavior) if we couldn't find the header
+            if (string.IsNullOrEmpty(columnName) && button != null)
+            {
+                columnName = button.Tag as string;
+            }
 
             // Close any existing popup
             if (_activeFilterPopup != null)
@@ -80,6 +111,8 @@ namespace VANTAGE.Views
             var filterControl = new Controls.ColumnFilterPopup();
             filterControl.FilterApplied += FilterControl_FilterApplied;
             filterControl.FilterCleared += FilterControl_FilterCleared;
+
+            filterControl.Initialize(columnName, ColumnUniqueValueDisplayLimit);
 
             _activeFilterPopup = new Popup
             {
@@ -96,25 +129,97 @@ namespace VANTAGE.Views
 
         private async void FilterControl_FilterApplied(object sender, Controls.FilterEventArgs e)
         {
-            // Apply filter through ViewModel and WAIT for it to complete
-            await _viewModel.ApplyFilter(_activeFilterColumn, e.FilterType, e.FilterValue);
+            // Handle list filter type (pipe-delimited)
+            if (e.FilterType == "List")
+            {
+                var selected = (e.FilterValue ?? "").Split(new[] { "||" }, StringSplitOptions.RemoveEmptyEntries).ToList();
+
+                // Build SQL condition that supports blank/null sentinel '__BLANK__'
+                string dbCol = ColumnMapper.GetDbColumnName(_activeFilterColumn);
+                var nonBlankValues = selected.Where(s => s != "__BLANK__").ToList();
+                bool includeBlanks = selected.Any(s => s == "__BLANK__");
+                var parts = new List<string>();
+
+                // Special handling for Status (use CASE expression)
+                if (_activeFilterColumn == "Status")
+                {
+                    string statusCase = "CASE WHEN Val_Perc_Complete IS NULL OR Val_Perc_Complete = 0 THEN 'Not Started' WHEN Val_Perc_Complete >= 1.0 THEN 'Complete' ELSE 'In Progress' END";
+                    if (nonBlankValues.Any())
+                    {
+                        var escaped = nonBlankValues.Select(s => s.Replace("'", "''"));
+                        var inList = string.Join(",", escaped.Select(s => $"'{s}'"));
+                        parts.Add($"{statusCase} IN ({inList})");
+                    }
+                    if (includeBlanks)
+                    {
+                        parts.Add($"({statusCase} IS NULL OR {statusCase} = '')");
+                    }
+                }
+                // Special handling for percent/ratio columns: use numeric comparison (no quotes)
+                else if (_activeFilterColumn == "PercentEntry" || _activeFilterColumn == "PercentEntry_Display" || _activeFilterColumn == "PercentCompleteCalc" || _activeFilterColumn == "PercentCompleteCalc_Display" || _activeFilterColumn == "EarnedQtyCalc" || _activeFilterColumn == "EarnedQtyCalc_Display")
+                {
+                    if (nonBlankValues.Any())
+                    {
+                        var inList = string.Join(",", nonBlankValues.Select(s => double.TryParse(s, out var d) ? d.ToString(System.Globalization.CultureInfo.InvariantCulture) : "-99999"));
+                        parts.Add($"{dbCol} IN ({inList})");
+                    }
+                    if (includeBlanks)
+                    {
+                        parts.Add($"({dbCol} IS NULL OR {dbCol} = '')");
+                    }
+                }
+                // Special handling for AssignedTo: treat 'Unassigned' as blank string or 'Unassigned'
+                else if (_activeFilterColumn == "AssignedTo")
+                {
+                    var assignedParts = new List<string>();
+                    foreach (var val in nonBlankValues)
+                    {
+                        if (val.Equals("Unassigned", StringComparison.OrdinalIgnoreCase))
+                        {
+                            assignedParts.Add($"({dbCol} IS NULL OR {dbCol} = '' OR {dbCol} = 'Unassigned')");
+                        }
+                        else
+                        {
+                            assignedParts.Add($"{dbCol} = '{val.Replace("'", "''")}'");
+                        }
+                    }
+                    if (assignedParts.Any())
+                        parts.Add(string.Join(" OR ", assignedParts));
+                }
+                else
+                {
+                    if (nonBlankValues.Any())
+                    {
+                        var escaped = nonBlankValues.Select(s => s.Replace("'", "''"));
+                        var inList = string.Join(",", escaped.Select(s => $"'{s}'"));
+                        parts.Add($"{dbCol} IN ({inList})");
+                    }
+                    if (includeBlanks)
+                    {
+                        parts.Add($"({dbCol} IS NULL OR {dbCol} = '')");
+                    }
+                }
+
+                var cond = parts.Count == 1 ? parts[0] : "(" + string.Join(" OR ", parts) + ")";
+
+                // Apply to ViewModel by using ApplyFilter with a synthetic FilterType 'IN' and FilterValue cond
+                await _viewModel.ApplyFilter(_activeFilterColumn, "IN", cond);
+            }
+            else
+            {
+                // Use existing mechanism
+                await _viewModel.ApplyFilter(_activeFilterColumn, e.FilterType, e.FilterValue);
+            }
 
             _activeFilterPopup.IsOpen = false;
-
-            //UpdateRecordCount();
-            //UpdatePagingControls();
         }
 
         private async void FilterControl_FilterCleared(object sender, EventArgs e)
         {
-
             // Clear filter through ViewModel and WAIT
             await _viewModel.ClearFilter(_activeFilterColumn);
 
             _activeFilterPopup.IsOpen = false;
-
-            //UpdateRecordCount();
-            //UpdatePagingControls();
         }
         /// <summary>
         /// Auto-save when user finishes editing a cell
@@ -171,14 +276,40 @@ namespace VANTAGE.Views
                     }
 
                     // Set tooltip on the column header
+                    // Preserve existing header templates (keep filter button). If header is a simple string, wrap it in a ContentControl that uses the FilterableColumnHeader template defined in XAML.
                     if (column.Header is string headerString)
                     {
-                        var textBlock = new System.Windows.Controls.TextBlock
+                        try
                         {
-                            Text = headerString,
-                            ToolTip = tooltip
-                        };
-                        column.Header = textBlock;
+                            var dataTemplate = this.TryFindResource("FilterableColumnHeader") as DataTemplate;
+                            if (dataTemplate != null)
+                            {
+                                var contentControl = new System.Windows.Controls.ContentControl
+                                {
+                                    Content = headerString,
+                                    ContentTemplate = dataTemplate,
+                                    ToolTip = tooltip
+                                };
+                                column.Header = contentControl;
+                            }
+                            else
+                            {
+                                // Fallback to TextBlock if template not found
+                                var textBlock = new System.Windows.Controls.TextBlock
+                                {
+                                    Text = headerString,
+                                    ToolTip = tooltip,
+                                    Foreground = (System.Windows.Media.Brush)Application.Current.Resources["GridHeaderForeground"]
+                                };
+                                column.Header = textBlock;
+                            }
+                        }
+                        catch
+                        {
+                            // fallback to simple text
+                            column.Header = headerString;
+                        }
+
                         tooltipsSet++;
                     }
                     else if (column.Header is System.Windows.Controls.ContentControl headerControl)
@@ -188,10 +319,60 @@ namespace VANTAGE.Views
                     }
                 }
 
+                // Initial update of header indicators
+                UpdateHeaderFilterIndicators();
             }
             catch (Exception ex)
             {
                 // TODO: Add proper logging when logging system is implemented
+            }
+        }
+
+        private void UpdateHeaderFilterIndicators()
+        {
+            try
+            {
+                var activeCols = new HashSet<string>(_viewModel.ActiveFilterColumns ?? Enumerable.Empty<string>());
+
+                foreach (var header in FindVisualChildren<DataGridColumnHeader>(dgActivities))
+                {
+                    var col = header.Column;
+                    if (col == null) continue;
+
+                    var colName = GetColumnPropertyName(col);
+
+                    if (activeCols.Contains(colName))
+                    {
+                        // Use theme variable so themes can override color
+                        header.BorderBrush = (System.Windows.Media.Brush)Application.Current.Resources["ActiveFilter"];
+                        header.BorderThickness = new Thickness(0,0,1,1);
+                    }
+                    else
+                    {
+                        header.BorderBrush = (System.Windows.Media.Brush)Application.Current.Resources["BorderColor"];
+                        header.BorderThickness = new Thickness(0,0,1,1);
+                    }
+                }
+            }
+            catch { }
+        }
+
+        private static IEnumerable<T> FindVisualChildren<T>(DependencyObject depObj) where T : DependencyObject
+        {
+            if (depObj == null) yield break;
+
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(depObj); i++)
+            {
+                var child = VisualTreeHelper.GetChild(depObj, i);
+                if (child is T t)
+                {
+                    yield return t;
+                }
+
+                foreach (var childOfChild in FindVisualChildren<T>(child))
+                {
+                    yield return childOfChild;
+                }
             }
         }
 

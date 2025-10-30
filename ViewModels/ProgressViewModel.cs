@@ -24,6 +24,7 @@ namespace VANTAGE.ViewModels
         private int _totalPages;
         private bool _isLoading;
         private Dictionary<string, ColumnFilter> _activeFilters = new Dictionary<string, ColumnFilter>();
+        public IEnumerable<string> ActiveFilterColumns => _activeFilters.Keys;
         private int _totalRecords;
         private bool _myRecordsActive = false;
         private string _myRecordsUser = null;
@@ -39,6 +40,15 @@ namespace VANTAGE.ViewModels
             foreach (var filter in _activeFilters.Values)
             {
                 var db = ColumnMapper.GetDbColumnName(filter.ColumnName);
+
+                // Special handling for pre-built IN condition
+                if (filter.FilterType == "IN")
+                {
+                    // filter.FilterValue will already be a SQL fragment like "Column IN ('a','b')" or full condition
+                    fb.AddCondition(filter.FilterValue);
+                    continue;
+                }
+
                 var cond = BuildFilterCondition(db, filter.FilterType, filter.FilterValue);
                 if (!string.IsNullOrEmpty(cond))
                     fb.AddCondition(cond);
@@ -78,6 +88,7 @@ namespace VANTAGE.ViewModels
                 _myRecordsUser = null;
                 _searchText = "";         // clear search box (optional; keep if this is your desired UX)
                 OnPropertyChanged(nameof(SearchText));
+                OnPropertyChanged(nameof(ActiveFilterColumns));
 
                 await RebuildAndReloadAsync();
             }
@@ -102,6 +113,8 @@ namespace VANTAGE.ViewModels
                 FilterType = filterType,
                 FilterValue = filterValue
             };
+
+            OnPropertyChanged(nameof(ActiveFilterColumns));
 
             await RebuildAndReloadAsync();
         }
@@ -152,6 +165,7 @@ namespace VANTAGE.ViewModels
         public async Task ClearFilter(string columnName)
         {
             _activeFilters.Remove(columnName);
+            OnPropertyChanged(nameof(ActiveFilterColumns));
             await RebuildAndReloadAsync();
         }
 

@@ -17,7 +17,7 @@ namespace VANTAGE.Utilities
 
             // Categories
             ["Catg_ComponentType"] = "CompType",
-            ["Catg_PhaseCategory"] = "PhaseCatagory",
+            ["Catg_PhaseCategory"] = "PhaseCategory",
             ["Catg_ROC_Step"] = "ROCStep",
 
             // Drawings
