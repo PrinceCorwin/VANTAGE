@@ -97,10 +97,10 @@ namespace VANTAGE
       BudgetHoursGroup REAL DEFAULT 0,
        BudgetHoursROC REAL DEFAULT 0,
  BaseUnit REAL DEFAULT 0,
-         EarnedMHsRoc INTEGER DEFAULT 0,
+         EarnedMHsRoc REAL DEFAULT 0,
        
         -- ROC
-         ROCID INTEGER DEFAULT 0,
+         ROCID REAL DEFAULT 0,
        ROCPercent REAL DEFAULT 0,
            ROCBudgetQTY REAL DEFAULT 0,
  

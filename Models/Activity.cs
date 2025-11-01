@@ -272,7 +272,7 @@ namespace VANTAGE.Models
         /// </summary>
         public double EarnMHsCalc { get; private set; }
 
-        public int EarnedMHsRoc { get; set; }
+        public double EarnedMHsRoc { get; set; }
         // ========================================
         // VALUES - EQUIPMENT
         // ========================================
@@ -284,7 +284,7 @@ namespace VANTAGE.Models
         // VALUES - ROC (Rate of Completion)
         // ========================================
 
-        public int ROCID { get; set; }
+        public double ROCID { get; set; }
 
         /// <summary>
         /// Calculated: ProjectID & "|" & CompType & "|" & PhaseCategory & "|" & ROCStep
