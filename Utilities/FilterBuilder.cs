@@ -26,7 +26,7 @@ namespace VANTAGE.Utilities
         /// </summary>
         public void AddMyRecordsFilter(string currentUsername)
         {
-            AddCondition($"UDFEleven = '{currentUsername}'");
+            AddCondition($"AssignedTo = '{currentUsername}'");
         }
 
         /// <summary>
@@ -39,13 +39,13 @@ namespace VANTAGE.Utilities
                 // Escape single quotes
                 searchText = searchText.Replace("'", "''");
 
-                // Search across key columns
+                // Search across key columns using NewVantage names
                 AddCondition($@"(
-                    Tag_Descriptions LIKE '%{searchText}%' OR
-                    Tag_TagNo LIKE '%{searchText}%' OR
-                    Tag_Area LIKE '%{searchText}%' OR
-                    Catg_ComponentType LIKE '%{searchText}%' OR
-                    UDFNineteen LIKE '%{searchText}%'
+                    Description LIKE '%{searchText}%' OR
+                    TagNO LIKE '%{searchText}%' OR
+                    Area LIKE '%{searchText}%' OR
+                    CompType LIKE '%{searchText}%' OR
+                    UniqueID LIKE '%{searchText}%'
                 )");
             }
         }
@@ -57,11 +57,11 @@ namespace VANTAGE.Utilities
         {
             if (complete)
             {
-                AddCondition("Val_Percent_Earned >= 1.0");
+                AddCondition("PercentEntry >= 100");
             }
             else
             {
-                AddCondition("Val_Percent_Earned < 1.0");
+                AddCondition("PercentEntry < 100");
             }
         }
 

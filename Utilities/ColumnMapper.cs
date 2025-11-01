@@ -1,216 +1,159 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace VANTAGE.Utilities
 {
     /// <summary>
-    /// Maps database column names to clean C# property names
-    /// Single source of truth for all column name translations
+    /// Maps column names for Excel/Azure import/export ONLY
+    /// Database now uses NewVantage names directly - no translation needed!
     /// </summary>
     public static class ColumnMapper
     {
-        // Database Column Name → Clean Property Name
-        private static readonly Dictionary<string, string> _dbToProperty = new Dictionary<string, string>
-        {
-            // IDs
-            ["ActivityID"] = "ActivityID",
-            ["HexNO"] = "HexNO",
+        // Cache for mappings loaded from database
+        private static Dictionary<string, (string OldVantage, string Azure)> _mappings;
+     private static bool _isLoaded = false;
 
-            // Categories
-            ["Catg_ComponentType"] = "CompType",
-            ["Catg_PhaseCategory"] = "PhaseCategory",
-            ["Catg_ROC_Step"] = "ROCStep",
-
-            // Drawings
-            ["Dwg_PrimeDrawingNO"] = "DwgNO",
-            ["Dwg_RevisionNo"] = "RevNO",
-            ["Dwg_SecondaryDrawingNO"] = "SecondDwgNO",
-            ["Dwg_ShtNo"] = "ShtNO",
-
-            // Notes
-            ["Notes_Comments"] = "Notes",
-
-            // Schedule
-            ["Sch_Actno"] = "OldActno",
-            ["Sch_Start"] = "Start",
-            ["Sch_Finish"] = "Finish",
-            ["Sch_Status"] = "Status",
-
-            // Tags - Core Fields
-            ["Tag_TagNo"] = "TagNO",
-            ["Tag_Descriptions"] = "Description",
-            ["Tag_Area"] = "Area",
-            ["Tag_SubArea"] = "SubArea",
-            ["Tag_System"] = "System",
-            ["Tag_SystemNo"] = "SystemNO",
-            ["Tag_ProjectID"] = "ProjectID",
-            ["Tag_WorkPackage"] = "WorkPackage",
-            ["Tag_Phase_Code"] = "PhaseCode",
-            ["Tag_Service"] = "Service",
-            ["Tag_ShopField"] = "ShopField",
-
-            // Tags - Equipment/Line
-            ["Tag_EqmtNo"] = "EqmtNO",
-            ["Tag_LineNo"] = "LineNO",
-            ["Tag_CONo"] = "ChgOrdNO",
-
-            // Tags - Material Specs
-            ["Tag_Matl_Spec"] = "MtrlSpec",
-            ["Tag_Pipe_Grade"] = "PipeGrade",
-            ["Tag_Paint_Code"] = "PaintCode",
-            ["Tag_Insulation_Typ"] = "InsulType",
-            ["Tag_Tracing"] = "HtTrace",
-
-            // Tags - Auxiliary
-            ["Tag_Aux1"] = "Aux1",
-            ["Tag_Aux2"] = "Aux2",
-            ["Tag_Aux3"] = "Aux3",
-            ["Tag_Estimator"] = "Estimator",
-            ["Tag_RFINo"] = "RFINO",
-            ["Tag_Sch_ActNo"] = "SchedActNO",
-            ["Tag_XRAY"] = "XRay",
-
-            // Trigger
-            ["Trg_DateTrigger"] = "DateTrigger",
-
-            // User-Defined Fields
-            ["UDFOne"] = "UDFOne",
-            ["UDFTwo"] = "UDFTwo",
-            ["UDFThree"] = "UDFThree",
-            ["UDFFour"] = "UDFFour",
-            ["UDFFive"] = "UDFFive",
-            ["UDFSix"] = "UDFSix",
-            ["UDFSeven"] = "UDFSeven",
-            ["UDFEight"] = "UDFEight",
-            ["UDFNine"] = "UDFNine",
-            ["UDFTen"] = "UDFTen",
-            ["UDFEleven"] = "AssignedTo",           // Special: User assignment
-            ["UDFTwelve"] = "LastModifiedBy",       // Special: Last modifier
-            ["UDFThirteen"] = "CreatedBy",          // Special: Creator
-            ["UDFFourteen"] = "UDFFourteen",
-            ["UDFFifteen"] = "UDFFifteen",
-            ["UDFSixteen"] = "UDFSixteen",
-            ["UDFSeventeen"] = "UDFSeventeen",
-            ["UDFEighteen"] = "UDFEighteen",
-            ["UDFNineteen"] = "UniqueID",   // Special: Read-only ID
-            ["UDFTwenty"] = "UDFTwenty",
-
-            // Values - Budgeted
-            ["Val_Base_Unit"] = "BaseUnit",
-            ["Val_BudgetedHours_Ind"] = "BudgetMHs",
-            ["Val_BudgetedHours_Group"] = "BudgetHoursGroup",
-            ["Val_BudgetedHours_ROC"] = "BudgetHoursROC",
-
-            // Values - Earned/Progress
-            ["Val_EarnedQty"] = "EarnQtyEntry",
-            ["Val_Perc_Complete"] = "PercentEntry",
-            ["Val_Quantity"] = "Quantity",
-            ["Val_UOM"] = "UOM",
-
-            // Values - Calculated
-            ["Val_EarnedHours_Ind"] = "EarnMHsCalc",
-            ["Val_EarnedHours_ROC"] = "EarnedMHsRoc",
-            ["Val_Earn_Qty"] = "EarnedQtyCalc",
-            ["Val_Percent_Earned"] = "PercentCompleteCalc",
-
-            // Values - Equipment
-            ["Val_EQ_QTY"] = "EquivQTY",
-            ["Val_EQ_UOM"] = "EquivUOM",
-
-            // Values - ROC
-            ["Tag_ROC_ID"] = "ROCID",
-            ["LookUP_ROC_ID"] = "ROCLookupID",
-            ["Val_ROC_Perc"] = "ROCPercent",
-            ["Val_ROC_BudgetQty"] = "ROCBudgetQTY",
-
-            // Values - Pipe
-            ["Val_Pipe_Size1"] = "PipeSize1",
-            ["Val_Pipe_Size2"] = "PipeSize2",
-
-            // Values - Previous/History
-            ["Val_Prev_Earned_Hours"] = "PrevEarnMHs",
-            ["Val_Prev_Earned_Qty"] = "PrevEarnQTY",
-            ["Val_TimeStamp"] = "WeekEndDate",
-
-            // Values - Client
-            ["VAL_Client_EQ_QTY_BDG"] = "ClientEquivQty",
-            ["VAL_UDF_Two"] = "ClientBudget",
-            ["VAL_UDF_Three"] = "ClientCustom3",
-            ["VAL_Client_Earned_EQ_QTY"] = "ClientEquivEarnQTY"
-        };
-
-        // Reverse mapping: Clean Property Name → Database Column Name
-        private static Dictionary<string, string> _propertyToDb;
-
-        static ColumnMapper()
-        {
-            // Build reverse mapping
-            _propertyToDb = new Dictionary<string, string>();
-            foreach (var kvp in _dbToProperty)
-            {
-                _propertyToDb[kvp.Value] = kvp.Key;
-            }
-        }
         /// <summary>
-        /// Check if a database column name is valid
+        /// Load mappings from ColumnMappings table
         /// </summary>
-        public static bool IsValidDbColumn(string dbColumnName)
+        private static void LoadMappingsFromDatabase()
         {
-            return _dbToProperty.ContainsKey(dbColumnName);
+ if (_isLoaded) return;
+
+            _mappings = new Dictionary<string, (string, string)>(StringComparer.OrdinalIgnoreCase);
+
+            try
+    {
+         using var connection = DatabaseSetup.GetConnection();
+ connection.Open();
+
+         var cmd = connection.CreateCommand();
+       cmd.CommandText = "SELECT ColumnName, OldVantageName, AzureName FROM ColumnMappings";
+
+         using var reader = cmd.ExecuteReader();
+   while (reader.Read())
+       {
+             string colName = reader.GetString(0);
+  string oldName = reader.IsDBNull(1) ? null : reader.GetString(1);
+        string azureName = reader.IsDBNull(2) ? null : reader.GetString(2);
+
+            _mappings[colName] = (oldName, azureName);
+         }
+
+          _isLoaded = true;
+        }
+     catch (Exception ex)
+  {
+         System.Diagnostics.Debug.WriteLine($"✗ Error loading column mappings: {ex.Message}");
+        // Initialize empty to prevent repeated failures
+         _mappings = new Dictionary<string, (string, string)>();
+            _isLoaded = true;
+    }
+  }
+
+        /// <summary>
+        /// For Excel export: NewVantage name → OldVantage name
+        /// Example: "ProjectID" → "Tag_ProjectID"
+        /// </summary>
+        public static string GetOldVantageName(string newVantageName)
+        {
+            LoadMappingsFromDatabase();
+
+         if (_mappings.TryGetValue(newVantageName, out var tuple) && tuple.OldVantage != null)
+   {
+                return tuple.OldVantage;
+      }
+
+            return newVantageName; // Return as-is if no mapping
         }
 
         /// <summary>
-        /// Check if a property name is valid
+        /// For Azure upload: NewVantage name → Azure name
+        /// Example: "ProjectID" → "Tag_ProjectID"
         /// </summary>
-        public static bool IsValidProperty(string propertyName)
+        public static string GetAzureName(string newVantageName)
+      {
+   LoadMappingsFromDatabase();
+
+     if (_mappings.TryGetValue(newVantageName, out var tuple) && tuple.Azure != null)
+{
+return tuple.Azure;
+       }
+
+        return newVantageName; // Return as-is if no mapping
+  }
+
+        /// <summary>
+        /// For Excel import: OldVantage name → NewVantage name
+        /// Example: "Tag_ProjectID" → "ProjectID"
+        /// </summary>
+   public static string GetColumnNameFromOldVantage(string oldVantageName)
         {
-            return _propertyToDb.ContainsKey(propertyName);
+            LoadMappingsFromDatabase();
+
+            var entry = _mappings.FirstOrDefault(kvp =>
+            kvp.Value.OldVantage != null &&
+     kvp.Value.OldVantage.Equals(oldVantageName, StringComparison.OrdinalIgnoreCase));
+
+      return entry.Key ?? oldVantageName; // Return as-is if no mapping
         }
 
         /// <summary>
-        /// Get a mapping dictionary: Database Column Name → Property Name
-        /// </summary>
-        public static Dictionary<string, string> GetDbToPropertyMap()
-        {
-            return new Dictionary<string, string>(_dbToProperty);
+        /// For Azure sync: Azure name → NewVantage name
+        /// Example: "Tag_ProjectID" → "ProjectID"
+     /// </summary>
+ public static string GetColumnNameFromAzure(string azureName)
+      {
+            LoadMappingsFromDatabase();
+
+            var entry = _mappings.FirstOrDefault(kvp =>
+             kvp.Value.Azure != null &&
+       kvp.Value.Azure.Equals(azureName, StringComparison.OrdinalIgnoreCase));
+
+            return entry.Key ?? azureName; // Return as-is if no mapping
         }
 
         /// <summary>
-        /// Get a mapping dictionary: Property Name → Database Column Name
+   /// DEPRECATED: Database columns now match property names directly
+     /// This method is kept for backward compatibility but just returns the input
         /// </summary>
-        public static Dictionary<string, string> GetPropertyToDbMap()
-        {
-            return new Dictionary<string, string>(_propertyToDb);
-        }
-        /// <summary>
-        /// Get clean property name from database column name
-        /// </summary>
-        public static string GetPropertyName(string dbColumnName)
-        {
-            return _dbToProperty.TryGetValue(dbColumnName, out var propName) ? propName : dbColumnName;
-        }
-
-        /// <summary>
-        /// Get database column name from clean property name
-        /// </summary>
+        [Obsolete("Database now uses NewVantage column names directly. This method will be removed in Phase 7.")]
         public static string GetDbColumnName(string propertyName)
         {
-            return _propertyToDb.TryGetValue(propertyName, out var dbName) ? dbName : propertyName;
-        }
+      // Database columns now match property names - no translation needed!
+ return propertyName;
+}
 
         /// <summary>
-        /// Get all database column names
+/// DEPRECATED: Database columns now match property names directly
+        /// This method is kept for backward compatibility but just returns the input
         /// </summary>
+        [Obsolete("Database now uses NewVantage column names directly. This method will be removed in Phase 7.")]
+        public static string GetPropertyName(string dbColumnName)
+        {
+            // Database columns now match property names - no translation needed!
+   return dbColumnName;
+        }
+
+     /// <summary>
+  /// DEPRECATED: Use ColumnMappings table queries instead
+        /// </summary>
+        [Obsolete("Use ColumnMappings table queries instead. This method will be removed in Phase 7.")]
+        public static bool IsValidDbColumn(string dbColumnName)
+        {
+         LoadMappingsFromDatabase();
+return _mappings.ContainsKey(dbColumnName);
+        }
+
+   /// <summary>
+        /// DEPRECATED: Use ColumnMappings table queries instead
+    /// </summary>
+      [Obsolete("Use ColumnMappings table queries instead. This method will be removed in Phase 7.")]
         public static IEnumerable<string> GetAllDbColumnNames()
         {
-            return _dbToProperty.Keys;
-        }
-
-        /// <summary>
-        /// Get all clean property names
-        /// </summary>
-        public static IEnumerable<string> GetAllPropertyNames()
-        {
-            return _dbToProperty.Values;
-        }
+LoadMappingsFromDatabase();
+            return _mappings.Keys;
+    }
     }
 }

@@ -39,8 +39,8 @@ namespace VANTAGE.ViewModels
             // 2) per-column filters
             foreach (var filter in _activeFilters.Values)
             {
-                var db = ColumnMapper.GetDbColumnName(filter.ColumnName);
-
+                // Column names now match database - no translation needed!
+        
                 // Special handling for pre-built IN condition
                 if (filter.FilterType == "IN")
                 {
@@ -49,7 +49,7 @@ namespace VANTAGE.ViewModels
                     continue;
                 }
 
-                var cond = BuildFilterCondition(db, filter.FilterType, filter.FilterValue);
+                var cond = BuildFilterCondition(filter.ColumnName, filter.FilterType, filter.FilterValue);
                 if (!string.IsNullOrEmpty(cond))
                     fb.AddCondition(cond);
             }
@@ -185,10 +185,10 @@ namespace VANTAGE.ViewModels
                 // Add each active filter to WHERE clause
                 foreach (var filter in _activeFilters.Values)
                 {
-                    string dbColumnName = ColumnMapper.GetDbColumnName(filter.ColumnName);
+                    // Column names now match database - no translation needed!
 
                     // Build SQL condition based on filter type
-                    string condition = BuildFilterCondition(dbColumnName, filter.FilterType, filter.FilterValue);
+                    string condition = BuildFilterCondition(filter.ColumnName, filter.FilterType, filter.FilterValue);
                     if (!string.IsNullOrEmpty(condition))
                     {
                         filterBuilder.AddCondition(condition);
