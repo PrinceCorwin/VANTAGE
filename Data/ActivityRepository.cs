@@ -70,24 +70,24 @@ SubArea = @SubArea,
         System = @System,
         TagNO = @TagNO,
          WorkPackage = @WorkPackage,
-                UDF1 = @UDFOne,
-    UDF2 = @UDFTwo,
-        UDF3 = @UDFThree,
-        UDF4 = @UDFFour,
-        UDF5 = @UDFFive,
-       UDF6 = @UDFSix,
-   UDF7 = @UDFSeven,
-    UDF8 = @UDFEight,
- UDF9 = @UDFNine,
-            UDF10 = @UDFTen,
+                UDF1 = @UDF1,
+    UDF2 = @UDF2,
+        UDF3 = @UDF3,
+        UDF4 = @UDF4,
+        UDF5 = @UDF5,
+       UDF6 = @UDF6,
+   UDF7 = @UDF7,
+    UDF8 = @UDF8,
+ UDF9 = @UDF9,
+            UDF10 = @UDF10,
         AssignedTo = @AssignedTo,
             LastModifiedBy = @LastModifiedBy,
-       UDF14 = @UDFFourteen,
-       UDF15 = @UDFFifteen,
-UDF16 = @UDFSixteen,
-          UDF17 = @UDFSeventeen,
-             UDF18 = @UDFEighteen,
-     UDF20 = @UDFTwenty,
+       UDF14 = @UDF14,
+       UDF15 = @UDF15,
+UDF16 = @UDF16,
+          UDF17 = @UDF17,
+             UDF18 = @UDF18,
+     UDF20 = @UDF20,
    BudgetMHs = @BudgetMHs,
          EarnQtyEntry = @EarnQtyEntry,
       PercentEntry = @PercentEntry,
@@ -120,24 +120,24 @@ UDF16 = @UDFSixteen,
          command.Parameters.AddWithValue("@System", activity.System ?? "");
          command.Parameters.AddWithValue("@TagNO", activity.TagNO ?? "");
      command.Parameters.AddWithValue("@WorkPackage", activity.WorkPackage ?? "");
-  command.Parameters.AddWithValue("@UDFOne", activity.UDFOne ?? "");
-         command.Parameters.AddWithValue("@UDFTwo", activity.UDFTwo ?? "");
-        command.Parameters.AddWithValue("@UDFThree", activity.UDFThree ?? "");
-       command.Parameters.AddWithValue("@UDFFour", activity.UDFFour ?? "");
-        command.Parameters.AddWithValue("@UDFFive", activity.UDFFive ?? "");
-          command.Parameters.AddWithValue("@UDFSix", activity.UDFSix ?? "");
-       command.Parameters.AddWithValue("@UDFSeven", activity.UDFSeven);
-  command.Parameters.AddWithValue("@UDFEight", activity.UDFEight ?? "");
-         command.Parameters.AddWithValue("@UDFNine", activity.UDFNine ?? "");
-       command.Parameters.AddWithValue("@UDFTen", activity.UDFTen ?? "");
+  command.Parameters.AddWithValue("@UDF1", activity.UDF1 ?? "");
+         command.Parameters.AddWithValue("@UDF2", activity.UDF2 ?? "");
+        command.Parameters.AddWithValue("@UDF3", activity.UDF3 ?? "");
+       command.Parameters.AddWithValue("@UDF4", activity.UDF4 ?? "");
+        command.Parameters.AddWithValue("@UDF5", activity.UDF5 ?? "");
+          command.Parameters.AddWithValue("@UDF6", activity.UDF6 ?? "");
+       command.Parameters.AddWithValue("@UDF7", activity.UDF7);
+  command.Parameters.AddWithValue("@UDF8", activity.UDF8 ?? "");
+         command.Parameters.AddWithValue("@UDF9", activity.UDF9 ?? "");
+       command.Parameters.AddWithValue("@UDF10", activity.UDF10 ?? "");
          command.Parameters.AddWithValue("@AssignedTo", activity.AssignedTo ?? "Unassigned");
            command.Parameters.AddWithValue("@LastModifiedBy", activity.LastModifiedBy ?? "");
-         command.Parameters.AddWithValue("@UDFFourteen", activity.UDFFourteen ?? "");
-         command.Parameters.AddWithValue("@UDFFifteen", activity.UDFFifteen ?? "");
-      command.Parameters.AddWithValue("@UDFSixteen", activity.UDFSixteen ?? "");
-          command.Parameters.AddWithValue("@UDFSeventeen", activity.UDFSeventeen ?? "");
-             command.Parameters.AddWithValue("@UDFEighteen", activity.UDFEighteen ?? "");
-command.Parameters.AddWithValue("@UDFTwenty", activity.UDFTwenty ?? "");
+         command.Parameters.AddWithValue("@UDF14", activity.UDF14 ?? "");
+         command.Parameters.AddWithValue("@UDF15", activity.UDF15 ?? "");
+      command.Parameters.AddWithValue("@UDF16", activity.UDF16 ?? "");
+          command.Parameters.AddWithValue("@UDF17", activity.UDF17 ?? "");
+             command.Parameters.AddWithValue("@UDF18", activity.UDF18 ?? "");
+command.Parameters.AddWithValue("@UDF20", activity.UDF20 ?? "");
       command.Parameters.AddWithValue("@BudgetMHs", activity.BudgetMHs);
    command.Parameters.AddWithValue("@EarnQtyEntry", activity.EarnQtyEntry);
       command.Parameters.AddWithValue("@PercentEntry", activity.PercentEntry);
@@ -337,7 +337,7 @@ HexNO = GetIntSafe("HexNO"),
          Notes = GetStringSafe("Notes"),
 
                   // Schedule
-         OldActno = GetStringSafe("SecondActno"),
+  SecondActno = GetStringSafe("SecondActno"),
   Start = GetStringSafe("Start"),
   Finish = GetStringSafe("Finish"),
 
@@ -374,26 +374,26 @@ ChgOrdNO = GetStringSafe("ChgOrdNO"),
     DateTrigger = GetInt32FromObj("DateTrigger"),
 
   // UDFs
-     UDFOne = GetStringSafe("UDF1"),
-           UDFTwo = GetStringSafe("UDF2"),
-             UDFThree = GetStringSafe("UDF3"),
-  UDFFour = GetStringSafe("UDF4"),
-           UDFFive = GetStringSafe("UDF5"),
-     UDFSix = GetStringSafe("UDF6"),
-      UDFSeven = GetIntSafe("UDF7"),
-                 UDFEight = GetStringSafe("UDF8"),
-     UDFNine = GetStringSafe("UDF9"),
-       UDFTen = GetStringSafe("UDF10"),
-  AssignedTo = string.IsNullOrWhiteSpace(GetStringSafe("AssignedTo")) ? "Unassigned" : (validUsernames.Contains(GetStringSafe("AssignedTo")) ? GetStringSafe("AssignedTo") : "Unassigned"),
-  LastModifiedBy = GetStringSafe("LastModifiedBy"),
-      CreatedBy = GetStringSafe("CreatedBy"),
-       UDFFourteen = GetStringSafe("UDF14"),
-       UDFFifteen = GetStringSafe("UDF15"),
-              UDFSixteen = GetStringSafe("UDF16"),
- UDFSeventeen = GetStringSafe("UDF17"),
-   UDFEighteen = GetStringSafe("UDF18"),
-            UniqueID = GetStringSafe("UniqueID"),
-       UDFTwenty = GetStringSafe("UDF20"),
+     UDF1 = GetStringSafe("UDF1"),
+          UDF2 = GetStringSafe("UDF2"),
+          UDF3 = GetStringSafe("UDF3"),
+         UDF4 = GetStringSafe("UDF4"),
+          UDF5 = GetStringSafe("UDF5"),
+    UDF6 = GetStringSafe("UDF6"),
+     UDF7 = GetIntSafe("UDF7"),
+           UDF8 = GetStringSafe("UDF8"),
+    UDF9 = GetStringSafe("UDF9"),
+      UDF10 = GetStringSafe("UDF10"),
+ AssignedTo = string.IsNullOrWhiteSpace(GetStringSafe("AssignedTo")) ? "Unassigned" : (validUsernames.Contains(GetStringSafe("AssignedTo")) ? GetStringSafe("AssignedTo") : "Unassigned"),
+ LastModifiedBy = GetStringSafe("LastModifiedBy"),
+     CreatedBy = GetStringSafe("CreatedBy"),
+ UDF14 = GetStringSafe("UDF14"),
+      UDF15 = GetStringSafe("UDF15"),
+             UDF16 = GetStringSafe("UDF16"),
+UDF17 = GetStringSafe("UDF17"),
+  UDF18 = GetStringSafe("UDF18"),
+           UniqueID = GetStringSafe("UniqueID"),
+      UDF20 = GetStringSafe("UDF20"),
 
              // Values
   BaseUnit = GetDoubleSafe("BaseUnit"),

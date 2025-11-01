@@ -214,157 +214,164 @@ ClientCustom3 REAL DEFAULT 0,
 
                 command.ExecuteNonQuery();
 
-                // Seed ColumnMappings table if empty
-                SeedColumnMappings(connection);
-            }
-            catch (Exception ex)
-            {
-                throw;
-            }
+    // Seed ColumnMappings table if empty
+        SeedColumnMappings(connection);
+  }
+     catch (Exception ex)
+        {
+      throw;
+     }
         }
 
-        /// <summary>
-        /// Seed ColumnMappings table from CSV data
+     /// <summary>
+        /// Seed ColumnMappings table from CSV data (hardcoded from ColumnNameComparisonForAiModel.csv)
+        /// This data is embedded in code for deployment - no CSV file needed at runtime
         /// </summary>
         private static void SeedColumnMappings(SqliteConnection connection)
         {
-     // Check if already seeded
+            // Check if already seeded
             var checkCmd = connection.CreateCommand();
-    checkCmd.CommandText = "SELECT COUNT(*) FROM ColumnMappings";
+      checkCmd.CommandText = "SELECT COUNT(*) FROM ColumnMappings";
             var count = (long)checkCmd.ExecuteScalar();
 
-       if (count > 0) return; // Already seeded
+          if (count > 0)
+          {
+              System.Diagnostics.Debug.WriteLine($"ColumnMappings already seeded with {count} entries");
+    return; // Already seeded
+   }
 
     var insertCmd = connection.CreateCommand();
             insertCmd.CommandText = @"
-       INSERT INTO ColumnMappings (ColumnName, OldVantageName, AzureName, DataType, IsEditable, IsCalculated, CalcFormula, Notes)
-    VALUES (@col, @old, @azure, @type, @edit, @calc, @formula, @notes)";
+         INSERT INTO ColumnMappings (ColumnName, OldVantageName, AzureName, DataType, IsEditable, IsCalculated, CalcFormula, Notes)
+   VALUES (@col, @old, @azure, @type, @edit, @calc, @formula, @notes)";
 
- // Add parameters
+          // Add parameters
             insertCmd.Parameters.Add("@col", SqliteType.Text);
- insertCmd.Parameters.Add("@old", SqliteType.Text);
-            insertCmd.Parameters.Add("@azure", SqliteType.Text);
-  insertCmd.Parameters.Add("@type", SqliteType.Text);
-   insertCmd.Parameters.Add("@edit", SqliteType.Integer);
+            insertCmd.Parameters.Add("@old", SqliteType.Text);
+    insertCmd.Parameters.Add("@azure", SqliteType.Text);
+        insertCmd.Parameters.Add("@type", SqliteType.Text);
+  insertCmd.Parameters.Add("@edit", SqliteType.Integer);
             insertCmd.Parameters.Add("@calc", SqliteType.Integer);
-      insertCmd.Parameters.Add("@formula", SqliteType.Text);
-          insertCmd.Parameters.Add("@notes", SqliteType.Text);
+    insertCmd.Parameters.Add("@formula", SqliteType.Text);
+         insertCmd.Parameters.Add("@notes", SqliteType.Text);
 
-            // Seed all mappings from CSV
-     var mappings = new[]
+            // Data from ColumnNameComparisonForAiModel.csv
+          // Format: (NewVantage, OldVantage, Azure, DataType, IsEditable, IsCalculated, CalcFormula, Notes)
+   var mappings = new[]
             {
-       ("ActivityID", null, "ActivityID", "Integer", 0, 0, null, "Auto-increment primary key"),
-        ("Area", "Tag_Area", "Tag_Area", "Text", 1, 0, null, null),
-     ("AssignedTo", "UDFEleven", "UDF11", "Text", 1, 0, null, "Default: Unassigned"),
-     ("Aux1", "Tag_Aux1", "Tag_Aux1", "Text", 1, 0, null, null),
-    ("Aux2", "Tag_Aux2", "Tag_Aux2", "Text", 1, 0, null, null),
-      ("Aux3", "Tag_Aux3", "Tag_Aux3", "Text", 1, 0, null, null),
-         ("AzureUploadDate", null, "Timestamp", "DateTime", 0, 1, null, "When user submits to Azure"),
-    ("BaseUnit", "Val_Base_Unit", "Val_Base_Unit", "Number", 1, 0, null, null),
-    ("BudgetHoursGroup", "Val_BudgetedHours_Group", "Val_BudgetedHours_Group", "Number", 1, 0, null, null),
-("BudgetHoursROC", "Val_BudgetedHours_ROC", "Val_BudgetedHours_ROC", "Number", 1, 0, null, null),
-     ("BudgetMHs", "Val_BudgetedHours_Ind", "Val_BudgetedHours_Ind", "Number", 1, 0, null, null),
- ("ChgOrdNO", "Tag_CONo", "Tag_CONo", "Text", 1, 0, null, null),
-   ("ClientBudget", "VAL_UDF_Two", "VAL_UDF_Two", "Number", 1, 0, null, null),
+  ("Area", "Tag_Area", "Tag_Area", "Short Text", 1, 0, null, null),
+         ("AssignedTo", "UDFEleven", "UDF11", "Short Text", 1, 0, null, null),
+        ("Aux1", "Tag_Aux1", "Tag_Aux1", "Short Text", 1, 0, null, null),
+             ("Aux2", "Tag_Aux2", "Tag_Aux2", "Short Text", 1, 0, null, null),
+    ("Aux3", "Tag_Aux3", "Tag_Aux3", "Short Text", 1, 0, null, null),
+    ("AzureUploadDate", null, "Timestamp", "Date/Time", 0, 0, null, "When user submits to Azure - official date used in Power BI dashboard"),
+        ("BaseUnit", "Val_Base_Unit", "Val_Base_Unit", "Number", 1, 0, null, null),
+        ("BudgetHoursGroup", "Val_BudgetedHours_Group", "Val_BudgetedHours_Group", "Number", 1, 0, null, null),
+         ("BudgetHoursROC", "Val_BudgetedHours_ROC", "Val_BudgetedHours_ROC", "Number", 1, 0, null, null),
+          ("BudgetMHs", "Val_BudgetedHours_Ind", "Val_BudgetedHours_Ind", "Number", 1, 0, null, null),
+                ("ChgOrdNO", "Tag_CONo", "Tag_CONo", "Short Text", 1, 0, null, null),
+    ("ClientBudget", "VAL_UDF_Two", "VAL_UDF_Two", "Number", 1, 0, null, null),
           ("ClientCustom3", "VAL_UDF_Three", "VAL_UDF_Three", "Number", 1, 0, null, null),
-            ("ClientEquivEarnQTY", "VAL_Client_Earned_EQ-QTY", "VAL_Client_Earned_EQ-QTY", "Text", 1, 0, null, null),
-            ("ClientEquivQty", "VAL_Client_EQ-QTY_BDG", "Val_Client_Eq_Qty_Bdg", "Number", 1, 0, null, null),
- ("CompType", "Catg_ComponentType", "Catg_ComponentType", "Text", 1, 0, null, null),
-           ("CreatedBy", "UDFThirteen", "UDF13", "Text", 1, 0, null, null),
-      ("DateTrigger", "Trg_DateTrigger", null, "Number", 1, 0, null, "Not synced to Azure"),
-      ("Description", "Tag_Descriptions", "Tag_Descriptions", "Text", 1, 0, null, null),
-            ("DwgNO", "Dwg_PrimeDrawingNO", "Dwg_PrimeDrawingNO", "Text", 1, 0, null, null),
-      ("EarnedMHsRoc", "Val_EarnedHours_ROC", null, "Number", 1, 0, null, "Not synced"),
-         ("EarnedQtyCalc", "Val_Earn_Qty", null, "Number", 0, 1, "PercentEntry / 100 * Quantity", "Calculated"),
-      ("EarnMHsCalc", "Val_EarnedHours_Ind", "Val_EarnedHours_Ind", "Number", 0, 1, "PercentEntry / 100 * BudgetMHs", "Calculated"),
-      ("EarnQtyEntry", "Val_EarnedQty", "Val_EarnedQty", "Number", 1, 0, null, null),
-        ("EqmtNO", "Tag_EqmtNo", "Tag_EqmtNo", "Text", 1, 0, null, null),
-("EquivQTY", "Val_EQ-QTY", "Val_EQ-QTY", "Text", 1, 0, null, null),
-   ("EquivUOM", "Val_EQ_UOM", "Val_EQ_UOM", "Text", 1, 0, null, null),
-                ("Estimator", "Tag_Estimator", "Tag_Estimator", "Text", 1, 0, null, null),
-        ("Finish", "Sch_Finish", null, "DateTime", 1, 0, null, "Future: calculated"),
+    ("ClientEquivEarnQTY", "VAL_Client_Earned_EQ-QTY", "VAL_Client_Earned_EQ-QTY", "Short Text", 1, 0, null, null),
+              ("ClientEquivQty", "VAL_Client_EQ-QTY_BDG", "Val_Client_Eq_Qty_Bdg", "Number", 1, 0, null, null),
+                ("CompType", "Catg_ComponentType", "Catg_ComponentType", "Short Text", 1, 0, null, null),
+      ("CreatedBy", "UDFThirteen", "UDF13", "Short Text", 1, 0, null, null),
+                ("DateTrigger", "Trg_DateTrigger", null, "Number", 1, 0, null, null),
+       ("Description", "Tag_Descriptions", "Tag_Descriptions", "Short Text", 1, 0, null, null),
+          ("DwgNO", "Dwg_PrimeDrawingNO", "Dwg_PrimeDrawingNO", "Short Text", 1, 0, null, null),
+         ("EarnedMHsRoc", "Val_EarnedHours_ROC", null, "Number", 1, 0, null, null),
+         ("EarnedQtyCalc", "Val_Earn_Qty", null, "Number", 0, 1, "PercentEntry", null),
+  ("EarnMHsCalc", "Val_EarnedHours_Ind", "Val_EarnedHours_Ind", "Number", 0, 1, "PercentEntry*BudgetMHs", null),
+       ("EarnQtyEntry", "Val_EarnedQty", "Val_EarnedQty", "Number", 1, 0, null, null),
+("EqmtNO", "Tag_EqmtNo", "Tag_EqmtNo", "Short Text", 1, 0, null, null),
+       ("EquivQTY", "Val_EQ-QTY", "Val_EQ-QTY", "Short Text", 1, 0, null, null),
+    ("EquivUOM", "Val_EQ_UOM", "Val_EQ_UOM", "Short Text", 1, 0, null, null),
+     ("Estimator", "Tag_Estimator", "Tag_Estimator", "Short Text", 1, 0, null, null),
+   ("Finish", "Sch_Finish", null, "Date/Time", 1, 0, null, "will make calculated later when schedule module is developed"),
       ("HexNO", "HexNO", "HexNO", "Number", 1, 0, null, null),
-     ("HtTrace", "Tag_Tracing", "Tag_Tracing", "Text", 1, 0, null, null),
-         ("InsulType", "Tag_Insulation_Typ", "Tag_Insulation_Typ", "Text", 1, 0, null, null),
-      ("LastModifiedBy", "UDFTwelve", "UDF12", "Text", 1, 0, null, null),
-        ("LineNO", "Tag_LineNo", "Tag_LineNo", "Text", 1, 0, null, null),
-    ("MtrlSpec", "Tag_Matl_Spec", "Tag_Matl_Spec", "Text", 1, 0, null, null),
-         ("Notes", "Notes_Comments", "Notes_Comments", "LongText", 1, 0, null, null),
-    ("PaintCode", "Tag_Paint_Code", "Tag_Paint_Code", "Text", 1, 0, null, null),
-      ("PercentCompleteCalc", "Val_Percent_Earned", null, "Number", 0, 1, "PercentEntry", "Legacy alias"),
-              ("PercentEntry", "Val_Perc_Complete", "Val_Perc_Complete", "Number", 1, 0, null, "Stored as 0-100"),
-   ("PhaseCategory", "Catg_PhaseCategory", "Catg_PhaseCategory", "Text", 1, 0, null, null),
-   ("PhaseCode", "Tag_Phase Code", "Tag_PhaseCode", "Text", 1, 0, null, null),
-   ("PipeGrade", "Tag_Pipe_Grade", "Tag_Pipe_Grade", "Text", 1, 0, null, null),
-  ("PipeSize1", "Val_Pipe_Size1", "Val_Pipe_Size1", "Number", 1, 0, null, null),
-             ("PipeSize2", "Val_Pipe_Size2", "Val_Pipe_Size2", "Number", 1, 0, null, null),
-  ("PrevEarnMHs", "Val_Prev_Earned_Hours", null, "Number", 1, 0, null, "Not synced"),
-    ("PrevEarnQTY", "Val_Prev_Earned_Qty", null, "Number", 1, 0, null, "Not synced"),
-     ("ProgDate", null, "Val_ProgDate", "DateTime", 0, 1, null, "Timestamp when submitted"),
-             ("ProjectID", "Tag_ProjectID", "Tag_ProjectID", "Text", 1, 0, null, null),
-     ("Quantity", "Val_Quantity", "Val_Quantity", "Number", 1, 0, null, null),
-       ("RevNO", "Dwg_RevisionNo", "Dwg_RevisionNo", "Text", 1, 0, null, null),
-        ("RFINO", "Tag_RFINo", "Tag_RFINo", "Text", 1, 0, null, null),
-       ("ROCBudgetQTY", "Val_ROC_BudgetQty", "Val_ROC_BudgetQty", "Number", 1, 0, null, "Must equal Quantity on export"),
-    ("ROCID", "Tag_ROC_ID", null, "Number", 1, 0, null, "Not synced"),
-            ("ROCLookupID", "LookUP_ROC_ID", null, "Text", 0, 1, "ProjectID | CompType | PhaseCategory | ROCStep", "Concatenated"),
-     ("ROCPercent", "Val_ROC_Perc", null, "Number", 1, 0, null, "Not synced"),
-     ("ROCStep", "Catg_ROC_Step", "Catg_ROC_Step", "Text", 1, 0, null, null),
-        ("SchedActNO", "Tag_Sch_ActNo", "Tag_Sch_ActNo", "Text", 1, 0, null, null),
-       ("SecondActno", "Sch_Actno", "Sch_Actno", "Text", 1, 0, null, null),
-    ("SecondDwgNO", "Dwg_SecondaryDrawingNO", "Dwg_SecondaryDrawingNO", "Text", 1, 0, null, null),
-          ("Service", "Tag_Service", "Tag_Service", "Text", 1, 0, null, null),
-       ("ShopField", "Tag_ShopField", "Tag_ShopField", "Text", 1, 0, null, null),
-   ("ShtNO", "Dwg_ShtNo", "Dwg_ShtNo", "Text", 1, 0, null, null),
-       ("Start", "Sch_Start", "Sch_Start", "DateTime", 1, 0, null, "Future: calculated"),
-         ("Status", "Sch_Status", "Sch_Status", "Text", 0, 1, "PercentEntry == 0 ? 'Not Started' : PercentEntry >= 100 ? 'Complete' : 'In Progress'", "Calculated"),
-  ("SubArea", "Tag_SubArea", "Tag_SubArea", "Text", 1, 0, null, null),
-        ("System", "Tag_System", "Tag_System", "Text", 1, 0, null, null),
-                ("SystemNO", "Tag_SystemNo", null, "Text", 1, 0, null, "Not synced"),
-     ("TagNO", "Tag_TagNo", "Tag_TagNo", "Text", 1, 0, null, null),
-       ("UDF1", "UDFOne", "UDF1", "Text", 1, 0, null, null),
- ("UDF10", "UDFTen", "UDF10", "Text", 1, 0, null, null),
-           ("UDF14", "UDFFourteen", "UDF14", "Text", 1, 0, null, null),
-     ("UDF15", "UDFFifteen", "UDF15", "Text", 1, 0, null, null),
-   ("UDF16", "UDFSixteen", "UDF16", "Text", 1, 0, null, null),
-        ("UDF17", "UDFSeventeen", "UDF17", "Text", 1, 0, null, null),
-     ("UDF18", "UDFEighteen", "UDF18", "Text", 1, 0, null, null),
-           ("UDF2", "UDFTwo", "UDF2", "Text", 1, 0, null, null),
-    ("UDF20", "UDFTwenty", "UDF20", "Text", 1, 0, null, null),
-    ("UDF3", "UDFThree", "UDF3", "Text", 1, 0, null, null),
-   ("UDF4", "UDFFour", "UDF4", "Text", 1, 0, null, null),
-      ("UDF5", "UDFFive", "UDF5", "Text", 1, 0, null, null),
-           ("UDF6", "UDFSix", "UDF6", "Text", 1, 0, null, null),
-                ("UDF7", "UDFSeven", "UDF7", "Text", 1, 0, null, null),
-   ("UDF8", "UDFEight", "UDF8", "Text", 1, 0, null, null),
-            ("UDF9", "UDFNine", "UDF9", "Text", 1, 0, null, null),
-      ("UniqueID", "UDFNineteen", "UDF19", "Text", 0, 0, null, "Auto-generate if null on import"),
- ("UOM", "Val_UOM", "Val_UOM", "Text", 1, 0, null, null),
-     ("UserID", null, "UserID", "Text", 0, 1, null, "Created on Azure upload"),
- ("WeekEndDate", "Val_TimeStamp", "Val_TimeStamp", "DateTime", 0, 1, null, "Set when submitted"),
-       ("WorkPackage", "Tag_WorkPackage", "Tag_WorkPackage", "Text", 1, 0, null, null),
+ ("HtTrace", "Tag_Tracing", "Tag_Tracing", "Short Text", 1, 0, null, null),
+        ("InsulType", "Tag_Insulation_Typ", "Tag_Insulation_Typ", "Short Text", 1, 0, null, null),
+         ("LastModifiedBy", "UDFTwelve", "UDF12", "Short Text", 1, 0, null, null),
+                ("LineNO", "Tag_LineNo", "Tag_LineNo", "Short Text", 1, 0, null, null),
+           ("MtrlSpec", "Tag_Matl_Spec", "Tag_Matl_Spec", "Short Text", 1, 0, null, null),
+      ("Notes", "Notes_Comments", "Notes_Comments", "Long Text", 1, 0, null, null),
+         ("PaintCode", "Tag_Paint_Code", "Tag_Paint_Code", "Short Text", 1, 0, null, null),
+      ("PercentCompleteCalc", "Val_Percent_Earned", null, "Number", 0, 1, "PercentEntry", null),
+         ("PercentEntry", "Val_Perc_Complete", "Val_Perc_Complete", "Number", 1, 0, null, "format 0-1 in import, export. Format 0-100% in datagrid display"),
+           ("PhaseCategory", "Catg_PhaseCategory", "Catg_PhaseCategory", "Short Text", 1, 0, null, null),
+    ("PhaseCode", "Tag_Phase Code", "Tag_PhaseCode", "Short Text", 1, 0, null, null),
+           ("PipeGrade", "Tag_Pipe_Grade", "Tag_Pipe_Grade", "Short Text", 1, 0, null, null),
+                ("PipeSize1", "Val_Pipe_Size1", "Val_Pipe_Size1", "Number", 1, 0, null, null),
+  ("PipeSize2", "Val_Pipe_Size2", "Val_Pipe_Size2", "Number", 1, 0, null, null),
+     ("PrevEarnMHs", "Val_Prev_Earned_Hours", null, "Number", 1, 0, null, null),
+           ("PrevEarnQTY", "Val_Prev_Earned_Qty", null, "Number", 1, 0, null, null),
+("ProgDate", null, "Val_ProgDate", "Date/Time", 0, 1, null, "timestamp when user clicks to submit progress to local db"),
+             ("ProjectID", "Tag_ProjectID", "Tag_ProjectID", "Short Text", 1, 0, null, null),
+          ("Quantity", "Val_Quantity", "Val_Quantity", "Number", 1, 0, null, null),
+             ("RevNO", "Dwg_RevisionNo", "Dwg_RevisionNo", "Short Text", 1, 0, null, null),
+      ("RFINO", "Tag_RFINo", "Tag_RFINo", "Short Text", 1, 0, null, null),
+       ("ROCBudgetQTY", "Val_ROC_BudgetQty", "Val_ROC_BudgetQty", "Number", 1, 0, null, "needs to be same as Quantity on export"),
+     ("ROCID", "Tag_ROC_ID", null, "Number", 1, 0, null, null),
+      ("ROCLookupID", "LookUP_ROC_ID", null, "Short Text", 0, 1, "ProjectID & \"|\" & CompType & \"|\" & PhaseCatagory & \"|\" & ROCStep", null),
+    ("ROCPercent", "Val_ROC_Perc", null, "Number", 1, 0, null, null),
+        ("ROCStep", "Catg_ROC_Step", "Catg_ROC_Step", "Short Text", 1, 0, null, null),
+ ("SchedActNO", "Tag_Sch_ActNo", "Tag_Sch_ActNo", "Short Text", 1, 0, null, null),
+  ("SecondActno", "Sch_Actno", "Sch_Actno", "Short Text", 1, 0, null, null),
+ ("SecondDwgNO", "Dwg_SecondaryDrawingNO", "Dwg_SecondaryDrawingNO", "Short Text", 1, 0, null, null),
+  ("Service", "Tag_Service", "Tag_Service", "Short Text", 1, 0, null, null),
+            ("ShopField", "Tag_ShopField", "Tag_ShopField", "Short Text", 1, 0, null, null),
+                ("ShtNO", "Dwg_ShtNo", "Dwg_ShtNo", "Short Text", 1, 0, null, null),
+  ("Start", "Sch_Start", "Sch_Start", "Date/Time", 1, 0, null, "will make calculated later when schedule module is developed"),
+      ("Status", "Sch_Status", "Sch_Status", "Short Text", 0, 1, "PercentEntry = 0: \"Not Started\", PercentEntry >0, <100: \"In Progress\", PercentEntry = 100: \"Complete\"", "Not Started, In Progress, Complete base on PercentEntry"),
+    ("SubArea", "Tag_SubArea", "Tag_SubArea", "Short Text", 1, 0, null, null),
+     ("System", "Tag_System", "Tag_System", "Short Text", 1, 0, null, null),
+         ("SystemNO", "Tag_SystemNo", null, "Short Text", 1, 0, null, null),
+                ("TagNO", "Tag_TagNo", "Tag_TagNo", "Short Text", 1, 0, null, null),
+             ("UDF1", "UDFOne", "UDF1", "Short Text", 1, 0, null, null),
+("UDF10", "UDFTen", "UDF10", "Short Text", 1, 0, null, null),
+    ("UDF14", "UDFFourteen", "UDF14", "Short Text", 1, 0, null, null),
+        ("UDF15", "UDFFifteen", "UDF15", "Short Text", 1, 0, null, null),
+   ("UDF16", "UDFSixteen", "UDF16", "Short Text", 1, 0, null, null),
+    ("UDF17", "UDFSeventeen", "UDF17", "Short Text", 1, 0, null, null),
+   ("UDF18", "UDFEighteen", "UDF18", "Short Text", 1, 0, null, null),
+          ("UDF2", "UDFTwo", "UDF2", "Short Text", 1, 0, null, null),
+     ("UDF20", "UDFTwenty", "UDF20", "Short Text", 1, 0, null, null),
+  ("UDF3", "UDFThree", "UDF3", "Short Text", 1, 0, null, null),
+                ("UDF4", "UDFFour", "UDF4", "Short Text", 1, 0, null, null),
+  ("UDF5", "UDFFive", "UDF5", "Short Text", 1, 0, null, null),
+     ("UDF6", "UDFSix", "UDF6", "Short Text", 1, 0, null, null),
+                ("UDF7", "UDFSeven", "UDF7", "Short Text", 1, 0, null, null),
+    ("UDF8", "UDFEight", "UDF8", "Short Text", 1, 0, null, null),
+                ("UDF9", "UDFNine", "UDF9", "Short Text", 1, 0, null, null),
+      ("UniqueID", "UDFNineteen", "UDF19", "Short Text", 0, 0, null, "If null on import, calculated using \"i\" & base time at time of import (yymmddhhnnss) & iterated integer from 1 to n (number of records import without UDFNineteen value) & last three characters of current username. Example: i2510300738271ano, i2510300738272ano, etc"),
+                ("UOM", "Val_UOM", "Val_UOM", "Short Text", 1, 0, null, null),
+     ("UserID", null, "UserID", "Short Text", 0, 0, null, "created upon upload, sync to Azure (current username)"),
+                ("WeekEndDate", "Val_TimeStamp", "Val_TimeStamp", "Date/Time", 0, 1, null, "Week Ending Date set when user submits to Local or Azure"),
+   ("WorkPackage", "Tag_WorkPackage", "Tag_WorkPackage", "Short Text", 1, 0, null, null),
          ("XRay", "Tag_XRAY", "Tag_XRAY", "Number", 1, 0, null, null)
-            };
+     };
 
-            foreach (var mapping in mappings)
-  {
-        insertCmd.Parameters["@col"].Value = mapping.Item1;
-     insertCmd.Parameters["@old"].Value = (object)mapping.Item2 ?? DBNull.Value;
-           insertCmd.Parameters["@azure"].Value = (object)mapping.Item3 ?? DBNull.Value;
-       insertCmd.Parameters["@type"].Value = mapping.Item4;
+      foreach (var mapping in mappings)
+{
+   insertCmd.Parameters["@col"].Value = mapping.Item1;
+   insertCmd.Parameters["@old"].Value = (object)mapping.Item2 ?? DBNull.Value;
+        insertCmd.Parameters["@azure"].Value = (object)mapping.Item3 ?? DBNull.Value;
+      insertCmd.Parameters["@type"].Value = mapping.Item4;
      insertCmd.Parameters["@edit"].Value = mapping.Item5;
        insertCmd.Parameters["@calc"].Value = mapping.Item6;
-             insertCmd.Parameters["@formula"].Value = (object)mapping.Item7 ?? DBNull.Value;
-        insertCmd.Parameters["@notes"].Value = (object)mapping.Item8 ?? DBNull.Value;
-           
-   insertCmd.ExecuteNonQuery();
-      }
-        }
+       insertCmd.Parameters["@formula"].Value = (object)mapping.Item7 ?? DBNull.Value;
+      insertCmd.Parameters["@notes"].Value = (object)mapping.Item8 ?? DBNull.Value;
 
-        /// <summary>
-        /// Add test users to the database (for development/testing)
+   insertCmd.ExecuteNonQuery();
+            }
+
+  System.Diagnostics.Debug.WriteLine($"✓ Seeded {mappings.Length} column mappings");
+ }
+
+      /// <summary>
+   /// Add test users to the database (for development/testing)
         /// </summary>
-  public static void SeedTestUsers()
+        public static void SeedTestUsers()
      {
             try
  {

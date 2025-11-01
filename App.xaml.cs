@@ -97,9 +97,6 @@ namespace VANTAGE
                 // Step 6a: Initialize column mappings (use default project for now)
                 ActivityRepository.InitializeMappings(null); // null = use defaults
 
-                // Step 6b: Seed ColumnMappings table if empty
-                ColumnMappingsSeeder.SeedIfEmpty();
-
                 // Step 7: Determine which module to load
                 string lastModule = SettingsManager.GetLastModuleUsed(CurrentUserID, "PROGRESS");
 

@@ -435,7 +435,7 @@
                                             Binding="{Binding PhaseCode}" 
                                             Width="100"/>
 
-                        <DataGridTextColumn Header="Drawing No" 
+                        <DataGridTextColumn Header="DwgNO" 
                                             Binding="{Binding DwgNO}" 
                                             Width="120"/>
 
@@ -459,7 +459,7 @@
                                             Binding="{Binding EarnQtyEntry, StringFormat=N2, UpdateSourceTrigger=LostFocus}" 
                                             Width="100"/>
 
-                        <DataGridTextColumn Header="% Complete" 
+                        <DataGridTextColumn Header="PercentEntry" 
                                             Binding="{Binding PercentEntry_Display, StringFormat=N2}"
                                             Width="100"/>
 
@@ -491,12 +491,12 @@
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="UDFOne" 
-                                            Binding="{Binding UDFOne}" 
+                        <DataGridTextColumn Header="UDF1" 
+                                            Binding="{Binding UDF1}" 
                                             Width="120"/>
 
-                        <DataGridTextColumn Header="UDFTwo" 
-                                            Binding="{Binding UDFTwo}" 
+                        <DataGridTextColumn Header="UDF2" 
+                                            Binding="{Binding UDF2}" 
                                             Width="120"/>
 
                         <DataGridTextColumn Header="AssignedTo" 
@@ -511,261 +511,261 @@
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
-                        <!-- ALL OTHER COLLAPSED COLUMNS (keeping exactly as you have them) -->
+                        <!-- ALL OTHER COLLAPSED COLUMNS -->
                         <DataGridTextColumn Header="HexNO" 
-                                                Binding="{Binding HexNO}" 
-                                                Width="80"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding HexNO}" 
+                                            Width="80"
+                                            Visibility="Collapsed"/>
 
                         <!-- Drawings -->
                         <DataGridTextColumn Header="RevNO" 
-                                                Binding="{Binding RevNO}" 
-                                                Width="100"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding RevNO}" 
+                                            Width="100"
+                                            Visibility="Collapsed"/>
 
                         <DataGridTextColumn Header="SecondDwgNO" 
-                                                Binding="{Binding SecondDwgNO}" 
-                                                Width="120"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding SecondDwgNO}" 
+                                            Width="120"
+                                            Visibility="Collapsed"/>
 
                         <DataGridTextColumn Header="ShtNO" 
-                                                Binding="{Binding ShtNO}" 
-                                                Width="80"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding ShtNO}" 
+                                            Width="80"
+                                            Visibility="Collapsed"/>
 
                         <!-- Notes -->
                         <DataGridTextColumn Header="Notes" 
-                                                Binding="{Binding Notes}" 
-                                                Width="200"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding Notes}" 
+                                            Width="200"
+                                            Visibility="Collapsed"/>
 
                         <!-- Schedule Additional -->
-                        <DataGridTextColumn Header="OldActno" 
-                                                Binding="{Binding OldActno}" 
-                                                Width="100"
-                                                Visibility="Collapsed"/>
+                        <DataGridTextColumn Header="SecondActno" 
+                                            Binding="{Binding SecondActno}" 
+                                            Width="100"
+                                            Visibility="Collapsed"/>
 
                         <!-- Tags - Auxiliary -->
                         <DataGridTextColumn Header="Aux1" 
-                                                Binding="{Binding Aux1}" 
-                                                Width="100"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding Aux1}" 
+                                            Width="100"
+                                            Visibility="Collapsed"/>
 
                         <DataGridTextColumn Header="Aux2" 
-                                                Binding="{Binding Aux2}" 
-                                                Width="100"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding Aux2}" 
+                                            Width="100"
+                                            Visibility="Collapsed"/>
 
                         <DataGridTextColumn Header="Aux3" 
-                                                Binding="{Binding Aux3}" 
-                                                Width="100"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding Aux3}" 
+                                            Width="100"
+                                            Visibility="Collapsed"/>
 
                         <DataGridTextColumn Header="Area" 
-                                                Binding="{Binding Area}"
-                                                Width="80"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding Area}"
+                                            Width="80"
+                                            Visibility="Collapsed"/>
 
                         <DataGridTextColumn Header="ChgOrdNO" 
-                                                Binding="{Binding ChgOrdNO}" 
-                                                Width="80"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding ChgOrdNO}" 
+                                            Width="80"
+                                            Visibility="Collapsed"/>
 
                         <DataGridTextColumn Header="EqmtNO" 
-                                                Binding="{Binding EqmtNO}" 
-                                                Width="120"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding EqmtNO}" 
+                                            Width="120"
+                                            Visibility="Collapsed"/>
 
                         <DataGridTextColumn Header="Estimator" 
-                                                Binding="{Binding Estimator}" 
-                                                Width="120"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding Estimator}" 
+                                            Width="120"
+                                            Visibility="Collapsed"/>
 
                         <DataGridTextColumn Header="InsulType" 
-                                                Binding="{Binding InsulType}" 
-                                                Width="120"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding InsulType}" 
+                                            Width="120"
+                                            Visibility="Collapsed"/>
 
                         <DataGridTextColumn Header="LineNO" 
-                                                Binding="{Binding LineNO}" 
-                                                Width="100"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding LineNO}" 
+                                            Width="100"
+                                            Visibility="Collapsed"/>
 
                         <DataGridTextColumn Header="MtrlSpec" 
-                                                Binding="{Binding MtrlSpec}" 
-                                                Width="120"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding MtrlSpec}" 
+                                            Width="120"
+                                            Visibility="Collapsed"/>
 
                         <DataGridTextColumn Header="PaintCode" 
-                                                Binding="{Binding PaintCode}" 
-                                                Width="100"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding PaintCode}" 
+                                            Width="100"
+                                            Visibility="Collapsed"/>
 
                         <DataGridTextColumn Header="PipeGrade" 
-                                                Binding="{Binding PipeGrade}" 
-                                                Width="100"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding PipeGrade}" 
+                                            Width="100"
+                                            Visibility="Collapsed"/>
 
                         <DataGridTextColumn Header="RFINO" 
-                                                Binding="{Binding RFINO}" 
-                                                Width="80"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding RFINO}" 
+                                            Width="80"
+                                            Visibility="Collapsed"/>
 
                         <DataGridTextColumn Header="Service" 
-                                                Binding="{Binding Service}" 
-                                                Width="120"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding Service}" 
+                                            Width="120"
+                                            Visibility="Collapsed"/>
 
                         <DataGridTextColumn Header="ShopField" 
-                                                Binding="{Binding ShopField}" 
-                                                Width="100"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding ShopField}" 
+                                            Width="100"
+                                            Visibility="Collapsed"/>
 
                         <DataGridTextColumn Header="SubArea" 
-                                                Binding="{Binding SubArea}" 
-                                                Width="80"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding SubArea}" 
+                                            Width="80"
+                                            Visibility="Collapsed"/>
 
                         <DataGridTextColumn Header="System" 
-                                                Binding="{Binding System}" 
-                                                Width="100"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding System}" 
+                                            Width="100"
+                                            Visibility="Collapsed"/>
 
                         <DataGridTextColumn Header="SystemNO" 
-                                                Binding="{Binding SystemNO}" 
-                                                Width="100"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding SystemNO}" 
+                                            Width="100"
+                                            Visibility="Collapsed"/>
 
                         <DataGridTextColumn Header="TagNO" 
-                                                Binding="{Binding TagNO}" 
-                                                Width="120"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding TagNO}" 
+                                            Width="120"
+                                            Visibility="Collapsed"/>
 
                         <DataGridTextColumn Header="HtTrace" 
-                                                Binding="{Binding HtTrace}" 
-                                                Width="100"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding HtTrace}" 
+                                            Width="100"
+                                            Visibility="Collapsed"/>
 
                         <DataGridTextColumn Header="XRay" 
-                                                Binding="{Binding XRay, StringFormat=N2}" 
-                                                Width="80"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding XRay, StringFormat=N2}" 
+                                            Width="80"
+                                            Visibility="Collapsed"/>
 
                         <!-- Trigger -->
                         <DataGridTextColumn Header="DateTrigger" 
-                                                Binding="{Binding DateTrigger}" 
-                                                Width="100"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding DateTrigger}" 
+                                            Width="100"
+                                            Visibility="Collapsed"/>
 
                         <!-- UDF Fields (remaining) -->
                         <DataGridTextColumn Header="UDF3" 
-                                                Binding="{Binding UDFThree}" 
-                                                Width="120"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding UDF3}" 
+                                            Width="120"
+                                            Visibility="Collapsed"/>
 
                         <DataGridTextColumn Header="UDF4" 
-                                                Binding="{Binding UDFFour}" 
-                                                Width="120"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding UDF4}" 
+                                            Width="120"
+                                            Visibility="Collapsed"/>
 
                         <DataGridTextColumn Header="UDF5" 
-                                                Binding="{Binding UDFFive}" 
-                                                Width="120"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding UDF5}" 
+                                            Width="120"
+                                            Visibility="Collapsed"/>
 
                         <DataGridTextColumn Header="UDF6" 
-                                                Binding="{Binding UDFSix}" 
-                                                Width="120"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding UDF6}" 
+                                            Width="120"
+                                            Visibility="Collapsed"/>
 
                         <DataGridTextColumn Header="UDF7" 
-                                                Binding="{Binding UDFSeven}" 
-                                                Width="80"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding UDF7}" 
+                                            Width="80"
+                                            Visibility="Collapsed"/>
 
                         <DataGridTextColumn Header="UDF8" 
-                                                Binding="{Binding UDFEight}" 
-                                                Width="120"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding UDF8}" 
+                                            Width="120"
+                                            Visibility="Collapsed"/>
 
                         <DataGridTextColumn Header="UDF9" 
-                                                Binding="{Binding UDFNine}" 
-                                                Width="120"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding UDF9}" 
+                                            Width="120"
+                                            Visibility="Collapsed"/>
 
                         <DataGridTextColumn Header="UDF10" 
-                                                Binding="{Binding UDFTen}" 
-                                                Width="120"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding UDF10}" 
+                                            Width="120"
+                                            Visibility="Collapsed"/>
 
                         <DataGridTextColumn Header="LastModifiedBy" 
-                                                Binding="{Binding LastModifiedBy}" 
-                                                Width="150"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding LastModifiedBy}" 
+                                            Width="150"
+                                            Visibility="Collapsed"/>
 
                         <DataGridTextColumn Header="CreatedBy" 
-                                                Binding="{Binding CreatedBy}" 
-                                                Width="150"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding CreatedBy}" 
+                                            Width="150"
+                                            Visibility="Collapsed"/>
 
                         <DataGridTextColumn Header="UDF14" 
-                                                Binding="{Binding UDFFourteen}" 
-                                                Width="120"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding UDF14}" 
+                                            Width="120"
+                                            Visibility="Collapsed"/>
 
                         <DataGridTextColumn Header="UDF15" 
-                                                Binding="{Binding UDFFifteen}" 
-                                                Width="120"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding UDF15}" 
+                                            Width="120"
+                                            Visibility="Collapsed"/>
 
                         <DataGridTextColumn Header="UDF16" 
-                                                Binding="{Binding UDFSixteen}" 
-                                                Width="120"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding UDF16}" 
+                                            Width="120"
+                                            Visibility="Collapsed"/>
 
                         <DataGridTextColumn Header="UDF17" 
-                                                Binding="{Binding UDFSeventeen}" 
-                                                Width="120"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding UDF17}" 
+                                            Width="120"
+                                            Visibility="Collapsed"/>
 
                         <DataGridTextColumn Header="UDF18" 
-                                                Binding="{Binding UDFEighteen}" 
-                                                Width="120"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding UDF18}" 
+                                            Width="120"
+                                            Visibility="Collapsed"/>
 
                         <DataGridTextColumn Header="UDF20" 
-                                                Binding="{Binding UDFTwenty}" 
-                                                Width="120"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding UDF20}" 
+                                            Width="120"
+                                            Visibility="Collapsed"/>
 
                         <!-- Values - Additional -->
                         <DataGridTextColumn Header="BaseUnit" 
-                                                Binding="{Binding BaseUnit, StringFormat=N2}" 
-                                                Width="100"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding BaseUnit, StringFormat=N2}" 
+                                            Width="100"
+                                            Visibility="Collapsed"/>
 
                         <DataGridTextColumn Header="BudgetHoursGroup" 
-                                                Binding="{Binding BudgetHoursGroup, StringFormat=N2}" 
-                                                Width="120"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding BudgetHoursGroup, StringFormat=N2}" 
+                                            Width="120"
+                                            Visibility="Collapsed"/>
 
                         <DataGridTextColumn Header="BudgetHoursROC" 
-                                                Binding="{Binding BudgetHoursROC, StringFormat=N2}" 
-                                                Width="120"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding BudgetHoursROC, StringFormat=N2}" 
+                                            Width="120"
+                                            Visibility="Collapsed"/>
 
                         <DataGridTextColumn Header="EarnedMHsRoc" 
-                                                Binding="{Binding EarnedMHsRoc}" 
-                                                Width="120"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding EarnedMHsRoc}" 
+                                            Width="120"
+                                            Visibility="Collapsed"/>
 
                         <DataGridTextColumn Header="UOM" 
-                                                Binding="{Binding UOM}" 
-                                                Width="80"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding UOM}" 
+                                            Width="80"
+                                            Visibility="Collapsed"/>
 
                         <!-- Calculated fields -->
-                        <DataGridTextColumn Header="Earn Qty (Calc)" 
+                        <DataGridTextColumn Header="EarnedQtyCalc" 
                                             Binding="{Binding EarnedQtyCalc_Display, StringFormat=N2}"
                                             Width="100"
                                             IsReadOnly="True">
@@ -777,7 +777,7 @@
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="Percent Complete Calc" 
+                        <DataGridTextColumn Header="PercentCompleteCalc" 
                                             Binding="{Binding PercentCompleteCalc_Display, StringFormat=N2}"
                                             Width="100"
                                             IsReadOnly="True">
@@ -791,26 +791,26 @@
 
                         <!-- Equipment Quantity -->
                         <DataGridTextColumn Header="EquivQTY" 
-                                                Binding="{Binding EquivQTY, StringFormat=N2}" 
-                                                Width="100"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding EquivQTY, StringFormat=N2}" 
+                                            Width="100"
+                                            Visibility="Collapsed"/>
 
                         <DataGridTextColumn Header="EquivUOM" 
-                                                Binding="{Binding EquivUOM}" 
-                                                Width="80"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding EquivUOM}" 
+                                            Width="80"
+                                            Visibility="Collapsed"/>
 
                         <!-- ROC -->
                         <DataGridTextColumn Header="ROCID" 
-                                                Binding="{Binding ROCID}" 
-                                                Width="80"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding ROCID}" 
+                                            Width="80"
+                                            Visibility="Collapsed"/>
 
                         <DataGridTextColumn Header="ROCLookupID" 
-                                                Binding="{Binding ROCLookupID}" 
-                                                Width="200"
-                                                IsReadOnly="True"
-                                                Visibility="Collapsed">
+                                            Binding="{Binding ROCLookupID}" 
+                                            Width="200"
+                                            IsReadOnly="True"
+                                            Visibility="Collapsed">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="Background" Value="{StaticResource ReadOnlyBackground}"/>
@@ -820,42 +820,42 @@
                         </DataGridTextColumn>
 
                         <DataGridTextColumn Header="ROCPercent" 
-                                                Binding="{Binding ROCPercent, StringFormat=N2}" 
-                                                Width="100"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding ROCPercent, StringFormat=N2}" 
+                                            Width="100"
+                                            Visibility="Collapsed"/>
 
                         <DataGridTextColumn Header="ROCBudgetQTY" 
-                                                Binding="{Binding ROCBudgetQTY, StringFormat=N2}" 
-                                                Width="120"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding ROCBudgetQTY, StringFormat=N2}" 
+                                            Width="120"
+                                            Visibility="Collapsed"/>
 
                         <!-- Pipe -->
                         <DataGridTextColumn Header="PipeSize1" 
-                                                Binding="{Binding PipeSize1, StringFormat=N2}" 
-                                                Width="100"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding PipeSize1, StringFormat=N2}" 
+                                            Width="100"
+                                            Visibility="Collapsed"/>
 
                         <DataGridTextColumn Header="PipeSize2" 
-                                                Binding="{Binding PipeSize2, StringFormat=N2}" 
-                                                Width="100"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding PipeSize2, StringFormat=N2}" 
+                                            Width="100"
+                                            Visibility="Collapsed"/>
 
                         <!-- Previous Values -->
                         <DataGridTextColumn Header="PrevEarnMHs" 
-                                                Binding="{Binding PrevEarnMHs, StringFormat=N2}" 
-                                                Width="120"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding PrevEarnMHs, StringFormat=N2}" 
+                                            Width="120"
+                                            Visibility="Collapsed"/>
 
                         <DataGridTextColumn Header="PrevEarnQTY" 
-                                                Binding="{Binding PrevEarnQTY, StringFormat=N2}" 
-                                                Width="120"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding PrevEarnQTY, StringFormat=N2}" 
+                                            Width="120"
+                                            Visibility="Collapsed"/>
 
                         <!-- WeekEndDate -->
                         <DataGridTextColumn Header="WeekEndDate" 
-                                                Binding="{Binding WeekEndDate}" 
-                                                Width="150"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding WeekEndDate}" 
+                                            Width="150"
+                                            Visibility="Collapsed"/>
 
                         <DataGridTextColumn Header="AzureUploadDate" 
                                             Binding="{Binding AzureUploadDate}"
@@ -885,25 +885,25 @@
 
                         <!-- Client Values -->
                         <DataGridTextColumn Header="ClientEquivQty" 
-                                                Binding="{Binding ClientEquivQty, StringFormat=N2}" 
-                                                Width="150"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding ClientEquivQty, StringFormat=N2}" 
+                                            Width="150"
+                                            Visibility="Collapsed"/>
 
                         <DataGridTextColumn Header="ClientBudget" 
-                                                Binding="{Binding ClientBudget, StringFormat=N2}" 
-                                                Width="100"
-                                                Visibility="Collapsed"/>
+                                            Binding="{Binding ClientBudget, StringFormat=N2}" 
+                                            Width="100"
+                                            Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="Val UDF3" 
-                                                Binding="{Binding ClientCustom3, StringFormat=N2}" 
-                                                Width="100"
-                                                Visibility="Collapsed"/>
+                        <DataGridTextColumn Header="ClientCustom3" 
+                                            Binding="{Binding ClientCustom3, StringFormat=N2}" 
+                                            Width="100"
+                                            Visibility="Collapsed"/>
 
                         <DataGridTextColumn Header="ClientEquivEarnQTY" 
-                                                Binding="{Binding ClientEquivEarnQTY, StringFormat=N3}" 
-                                                Width="150"
-                                                IsReadOnly="True"
-                                                Visibility="Collapsed">
+                                            Binding="{Binding ClientEquivEarnQTY, StringFormat=N3}" 
+                                            Width="150"
+                                            IsReadOnly="True"
+                                            Visibility="Collapsed">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="Background" Value="{StaticResource ReadOnlyBackground}"/>

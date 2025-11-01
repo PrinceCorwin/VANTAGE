@@ -38,15 +38,19 @@ namespace VANTAGE.Models
         public string Notes { get; set; }
 
         // Schedule
-        public string OldActno { get; set; }
+        public string SecondActno { get; set; }
         public string Start { get; set; }
         public string Finish { get; set; }
+        
+        /// <summary>
+        /// Status based on PercentEntry (0-100)
+        /// </summary>
         public string Status
         {
             get
             {
                 if (PercentEntry == 0) return "Not Started";
-                if (PercentEntry >= 1.0) return "Complete";
+                if (PercentEntry >= 100) return "Complete";
                 return "In Progress";
             }
         }
@@ -87,22 +91,22 @@ namespace VANTAGE.Models
         // Trigger
         public int DateTrigger { get; set; }
         // User-Defined Fields
-        public string UDFOne { get; set; }
-        public string UDFTwo { get; set; }
-        public string UDFThree { get; set; }
-        public string UDFFour { get; set; }
-        public string UDFFive { get; set; }
-        public string UDFSix { get; set; }
-        public int UDFSeven { get; set; }
-        public string UDFEight { get; set; }
-        public string UDFNine { get; set; }
-        public string UDFTen { get; set; }
-        public string UDFFourteen { get; set; }
-        public string UDFFifteen { get; set; }
-        public string UDFSixteen { get; set; }
-        public string UDFSeventeen { get; set; }
-        public string UDFEighteen { get; set; }
-        public string UDFTwenty { get; set; }
+        public string UDF1 { get; set; }
+        public string UDF2 { get; set; }
+        public string UDF3 { get; set; }
+        public string UDF4 { get; set; }
+        public string UDF5 { get; set; }
+        public string UDF6 { get; set; }
+        public int UDF7 { get; set; }
+        public string UDF8 { get; set; }
+        public string UDF9 { get; set; }
+        public string UDF10 { get; set; }
+        public string UDF14 { get; set; }
+        public string UDF15 { get; set; }
+        public string UDF16 { get; set; }
+        public string UDF17 { get; set; }
+        public string UDF18 { get; set; }
+        public string UDF20 { get; set; }
         public string AzureUploadDate { get; set; }
         public string ProgDate { get; set; }
 
@@ -204,31 +208,51 @@ namespace VANTAGE.Models
             }
         }
 
+        /// <summary>
+        /// PercentEntry: STORED AS 0-100 (percentage)
+        /// Example: 75.5 means 75.5%
+        /// </summary>
         public double PercentEntry
         {
             get => _percentEntry;
             set
             {
-                if (Math.Abs(_percentEntry - value) > 0.0001)
+                // Clamp to 0-100 range
+                double clampedValue = Math.Max(0, Math.Min(100, value));
+
+                if (Math.Abs(_percentEntry - clampedValue) > 0.0001)
                 {
-                    _percentEntry = value;
+                    _percentEntry = clampedValue;
                     OnPropertyChanged();
                     OnPropertyChanged(nameof(PercentEntry_Display));
+                    OnPropertyChanged(nameof(Status));
                     UpdateEarnedQtyFromPercComplete();
                 }
             }
         }
 
         /// <summary>
-        /// Display PercentEntry as percentage (0-100)
+        /// Display PercentEntry with % symbol
+        /// Same as PercentEntry since we store as 0-100
         /// </summary>
-        public double PercentEntry_Display
+        public string PercentEntry_Display => $"{PercentEntry:F1}%";
+
+        /// <summary>
+        /// Helper method for Excel import: convert 0-1 decimal to 0-100 percentage
+        /// Example: 0.755 → 75.5
+        /// </summary>
+        public void SetPercentFromDecimal(double decimalValue)
         {
-            get => PercentEntry * 100;
-            set
-            {
-                PercentEntry = value / 100.0;
-            }
+            PercentEntry = decimalValue * 100;
+        }
+
+        /// <summary>
+        /// Helper method for Excel export: convert 0-100 percentage to 0-1 decimal
+        /// Example: 75.5 → 0.755
+        /// </summary>
+        public double GetPercentAsDecimal()
+        {
+            return PercentEntry / 100;
         }
 
         // ========================================
@@ -236,39 +260,31 @@ namespace VANTAGE.Models
         // ========================================
 
         /// <summary>
-        /// Calculated: PercentEntry (for Azure compatibility)
+        /// Calculated: PercentEntry (for backward compatibility)
+        /// Since PercentEntry is already 0-100, this just returns it
         /// </summary>
-        public double PercentCompleteCalc
-        {
-            get => PercentEntry;
-        }
+        public double PercentCompleteCalc => PercentEntry;
 
         /// <summary>
-        /// Display PercentCompleteCalc as percentage (0-100)
+        /// Display PercentCompleteCalc as percentage string
         /// </summary>
-        public double PercentCompleteCalc_Display
-        {
-            get => PercentCompleteCalc * 100;
-        }
+        public string PercentCompleteCalc_Display => $"{PercentCompleteCalc:F1}%";
 
         /// <summary>
-        /// Calculated: EarnQtyEntry / Quantity (decimal ratio)
+        /// Calculated: EarnQtyEntry / Quantity (as percentage 0-100)
         /// </summary>
         public double EarnedQtyCalc
         {
-            get => Quantity > 0 ? EarnQtyEntry / Quantity : 0;
+            get => Quantity > 0 ? (EarnQtyEntry / Quantity) * 100 : 0;
         }
 
         /// <summary>
-        /// Display EarnedQtyCalc as percentage (0-100)
+        /// Display EarnedQtyCalc as percentage string
         /// </summary>
-        public double EarnedQtyCalc_Display
-        {
-            get => EarnedQtyCalc * 100;
-        }
+        public string EarnedQtyCalc_Display => $"{EarnedQtyCalc:F1}%";
 
         /// <summary>
-        /// Calculated: PercentEntry * BudgetMHs
+        /// Calculated: PercentEntry / 100 * BudgetMHs
         /// </summary>
         public double EarnMHsCalc { get; private set; }
 
@@ -337,12 +353,14 @@ namespace VANTAGE.Models
         {
             if (Quantity > 0)
             {
-                double newPercComplete = EarnQtyEntry / Quantity;
+                // Calculate as percentage (0-100)
+                double newPercComplete = (EarnQtyEntry / Quantity) * 100;
                 if (Math.Abs(_percentEntry - newPercComplete) > 0.001)
                 {
                     _percentEntry = Math.Round(newPercComplete, 4);
                     OnPropertyChanged(nameof(PercentEntry));
                     OnPropertyChanged(nameof(PercentEntry_Display));
+                    OnPropertyChanged(nameof(Status));
                 }
             }
             RecalculatePercentEarned();
@@ -356,7 +374,8 @@ namespace VANTAGE.Models
         {
             if (Quantity > 0)
             {
-                double newEarnedQty = PercentEntry * Quantity;
+                // PercentEntry is 0-100, so divide by 100 for calculation
+                double newEarnedQty = (PercentEntry / 100) * Quantity;
                 if (Math.Abs(_earnQtyEntry - newEarnedQty) > 0.001)
                 {
                     _earnQtyEntry = Math.Round(newEarnedQty, 4);
@@ -383,17 +402,18 @@ namespace VANTAGE.Models
 
         /// <summary>
         /// Calculate EarnMHsCalc
-        /// Formula: IF(PercentCompleteCalc >= 1, BudgetMHs, ROUND(PercentCompleteCalc * BudgetMHs, 3))
+        /// Formula: PercentEntry / 100 * BudgetMHs
         /// </summary>
         private void RecalculateEarnedHours()
         {
-            if (PercentCompleteCalc >= 1.0)
+            // PercentEntry is 0-100, so divide by 100
+            if (PercentEntry >= 100)
             {
                 EarnMHsCalc = BudgetMHs;
             }
             else
             {
-                EarnMHsCalc = Math.Round(PercentCompleteCalc * BudgetMHs, 3);
+                EarnMHsCalc = Math.Round((PercentEntry / 100) * BudgetMHs, 3);
             }
             OnPropertyChanged(nameof(EarnMHsCalc));
         }

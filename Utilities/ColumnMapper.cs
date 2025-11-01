@@ -14,6 +14,9 @@ namespace VANTAGE.Utilities
         private static Dictionary<string, (string OldVantage, string Azure)> _mappings;
      private static bool _isLoaded = false;
 
+     // Add a second mapping for OldVantageName -> NewVantage/ColumnName
+     private static Dictionary<string, string> _oldToNewMapping;
+
         /// <summary>
         /// Load mappings from ColumnMappings table
         /// </summary>
@@ -22,6 +25,7 @@ namespace VANTAGE.Utilities
  if (_isLoaded) return;
 
             _mappings = new Dictionary<string, (string, string)>(StringComparer.OrdinalIgnoreCase);
+ _oldToNewMapping = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             try
     {
@@ -34,11 +38,14 @@ namespace VANTAGE.Utilities
          using var reader = cmd.ExecuteReader();
    while (reader.Read())
        {
-             string colName = reader.GetString(0);
+             string colName = reader.IsDBNull(0) ? null : reader.GetString(0);
   string oldName = reader.IsDBNull(1) ? null : reader.GetString(1);
         string azureName = reader.IsDBNull(2) ? null : reader.GetString(2);
 
-            _mappings[colName] = (oldName, azureName);
+            if (!string.IsNullOrEmpty(colName))
+ _mappings[colName] = (oldName, azureName);
+            if (!string.IsNullOrEmpty(oldName) && !string.IsNullOrEmpty(colName))
+ _oldToNewMapping[oldName] = colName;
          }
 
           _isLoaded = true;
@@ -48,6 +55,7 @@ namespace VANTAGE.Utilities
          System.Diagnostics.Debug.WriteLine($"✗ Error loading column mappings: {ex.Message}");
         // Initialize empty to prevent repeated failures
          _mappings = new Dictionary<string, (string, string)>();
+ _oldToNewMapping = new Dictionary<string, string>();
             _isLoaded = true;
     }
   }
@@ -91,12 +99,9 @@ return tuple.Azure;
    public static string GetColumnNameFromOldVantage(string oldVantageName)
         {
             LoadMappingsFromDatabase();
-
-            var entry = _mappings.FirstOrDefault(kvp =>
-            kvp.Value.OldVantage != null &&
-     kvp.Value.OldVantage.Equals(oldVantageName, StringComparison.OrdinalIgnoreCase));
-
-      return entry.Key ?? oldVantageName; // Return as-is if no mapping
+   if (_oldToNewMapping.TryGetValue(oldVantageName, out var newName))
+ return newName;
+            return oldVantageName; // Return as-is if no mapping
         }
 
         /// <summary>
