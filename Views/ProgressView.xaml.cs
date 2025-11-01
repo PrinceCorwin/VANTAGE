@@ -114,6 +114,7 @@ namespace VANTAGE.Views
             var filterControl = new Controls.ColumnFilterPopup();
             filterControl.FilterApplied += FilterControl_FilterApplied;
             filterControl.FilterCleared += FilterControl_FilterCleared;
+            filterControl.SortRequested += FilterControl_SortRequested;
 
             filterControl.Initialize(columnName, ColumnUniqueValueDisplayLimit, filteredValues);
 
@@ -128,6 +129,19 @@ namespace VANTAGE.Views
 
             _activeFilterColumn = columnName;
             _activeFilterPopup.IsOpen = true;
+        }
+
+        private void FilterControl_SortRequested(object sender, Controls.ColumnFilterPopup.SortEventArgs e)
+        {
+            // Remove any existing sort
+            var view = _viewModel.ActivitiesView;
+            if (view != null)
+            {
+                view.SortDescriptions.Clear();
+                view.SortDescriptions.Add(new System.ComponentModel.SortDescription(e.ColumnName, e.Direction));
+                view.Refresh();
+            }
+            _activeFilterPopup.IsOpen = false;
         }
 
         private async void FilterControl_FilterApplied(object sender, Controls.FilterEventArgs e)
