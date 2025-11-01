@@ -63,6 +63,15 @@ namespace VANTAGE
                     -- Activities table (NEW: NewVantage column names)
                     CREATE TABLE IF NOT EXISTS Activities (
                         ActivityID INTEGER PRIMARY KEY AUTOINCREMENT,
+                        ProjectID TEXT,
+                        PercentEntry REAL,
+                        SecondActno TEXT,
+                        AssignedTo TEXT,
+                        SchStart TEXT,
+                        SchFinish TEXT,
+                        ProgDate TEXT,
+                        WeekEndDate TEXT,
+                        AzureUploadDate TEXT,
   
               -- Core Fields
        HexNO INTEGER DEFAULT 0,
@@ -158,37 +167,16 @@ ClientCustom3 REAL DEFAULT 0,
          PrevEarnQTY REAL DEFAULT 0,
        
    -- Schedule
-             Start TEXT DEFAULT '',
-               Finish TEXT DEFAULT '',
+             "SchStart" TEXT DEFAULT '' -- ISO8601 date (yyyy-MM-dd),
+               "SchFinish" TEXT DEFAULT '' -- ISO8601 date (yyyy-MM-dd),
         
        -- Trigger
-    DateTrigger INTEGER DEFAULT 0,
-     
-      -- Notes
-  Notes TEXT DEFAULT '',
-           
-          -- User-Defined Fields (excluding special ones mapped above)
-          UDF1 TEXT DEFAULT '',
-      UDF2 TEXT DEFAULT '',
-       UDF3 TEXT DEFAULT '',
-         UDF4 TEXT DEFAULT '',
-            UDF5 TEXT DEFAULT '',
- UDF6 TEXT DEFAULT '',
-                UDF7 TEXT DEFAULT '',
-       UDF8 TEXT DEFAULT '',
-            UDF9 TEXT DEFAULT '',
-         UDF10 TEXT DEFAULT '',
-    -- UDF11 = AssignedTo
-         -- UDF12 = LastModifiedBy
-            -- UDF13 = CreatedBy
-         UDF14 TEXT DEFAULT '',
-     UDF15 TEXT DEFAULT '',
- UDF16 TEXT DEFAULT '',
-      UDF17 TEXT DEFAULT '',
-    UDF18 TEXT DEFAULT '',
- -- UDF19 = UniqueID
-     UDF20 TEXT DEFAULT ''
-);
+    DateTrigger INTEGER DEFAULT0,
+
+      -- Date/Time columns
+"ProgDate" TEXT DEFAULT '' -- ISO8601 date (yyyy-MM-dd),
+"WeekEndDate" TEXT DEFAULT '' -- ISO8601 date (yyyy-MM-dd),
+"AzureUploadDate" TEXT DEFAULT '' -- ISO8601 date (yyyy-MM-dd);
 
      -- ColumnMappings table (Master mappings for all external systems)
          CREATE TABLE IF NOT EXISTS ColumnMappings (
@@ -287,7 +275,7 @@ ClientCustom3 REAL DEFAULT 0,
        ("EquivQTY", "Val_EQ-QTY", "Val_EQ-QTY", "Short Text", 1, 0, null, null),
     ("EquivUOM", "Val_EQ_UOM", "Val_EQ_UOM", "Short Text", 1, 0, null, null),
      ("Estimator", "Tag_Estimator", "Tag_Estimator", "Short Text", 1, 0, null, null),
-   ("Finish", "Sch_Finish", null, "Date/Time", 1, 0, null, "will make calculated later when schedule module is developed"),
+   ("SchFinish", "Sch_Finish", null, "Date/Time", 1, 0, null, "will make calculated later when schedule module is developed"),
       ("HexNO", "HexNO", "HexNO", "Number", 1, 0, null, null),
  ("HtTrace", "Tag_Tracing", "Tag_Tracing", "Short Text", 1, 0, null, null),
         ("InsulType", "Tag_Insulation_Typ", "Tag_Insulation_Typ", "Short Text", 1, 0, null, null),
@@ -321,7 +309,7 @@ ClientCustom3 REAL DEFAULT 0,
   ("Service", "Tag_Service", "Tag_Service", "Short Text", 1, 0, null, null),
             ("ShopField", "Tag_ShopField", "Tag_ShopField", "Short Text", 1, 0, null, null),
                 ("ShtNO", "Dwg_ShtNo", "Dwg_ShtNo", "Short Text", 1, 0, null, null),
-  ("Start", "Sch_Start", "Sch_Start", "Date/Time", 1, 0, null, "will make calculated later when schedule module is developed"),
+  ("SchStart", "Sch_Start", "Sch_Start", "Date/Time", 1, 0, null, "will make calculated later when schedule module is developed"),
       ("Status", "Sch_Status", "Sch_Status", "Short Text", 0, 1, "PercentEntry = 0: \"Not Started\", PercentEntry >0, <100: \"In Progress\", PercentEntry = 100: \"Complete\"", "Not Started, In Progress, Complete base on PercentEntry"),
     ("SubArea", "Tag_SubArea", "Tag_SubArea", "Short Text", 1, 0, null, null),
      ("System", "Tag_System", "Tag_System", "Short Text", 1, 0, null, null),

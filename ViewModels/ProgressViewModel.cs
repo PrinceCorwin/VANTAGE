@@ -218,6 +218,90 @@ namespace VANTAGE.ViewModels
         {
             filterValue = (filterValue ?? "").Replace("'", "''");
 
+            // Special handling for Status (calculated property)
+            if (dbColumnName == "Status")
+            {
+                string statusCase = "CASE WHEN PercentEntry =0 THEN 'Not Started' WHEN PercentEntry >=100 THEN 'Complete' ELSE 'In Progress' END";
+                switch (filterType)
+                {
+                    case "Equals":
+                        return $"{statusCase} = '{filterValue}'";
+                    case "Does Not Equal":
+                        return $"{statusCase} <> '{filterValue}'";
+                    case "Contains":
+                        return $"{statusCase} LIKE '%{filterValue}%'";
+
+                    case "Does Not Contain":
+                        return $"{statusCase} NOT LIKE '%{filterValue}%'";
+
+                    case "Begins With":
+                    case "Starts With":
+                        return $"{statusCase} LIKE '{filterValue}%'";
+
+                    case "Ends With":
+                        return $"{statusCase} LIKE '%{filterValue}'";
+                    default:
+                        return "";
+                }
+            }
+
+            // Numeric columns
+            var numericColumns = new System.Collections.Generic.HashSet<string>(System.StringComparer.OrdinalIgnoreCase)
+            {
+                "Quantity", "EarnQtyEntry", "PercentEntry", "PercentEntry_Display", "BudgetMHs", "EarnMHsCalc", "ROCPercent", "ROCBudgetQTY", "PipeSize1", "PipeSize2", "PrevEarnMHs", "PrevEarnQTY", "ClientEquivQty", "ClientBudget", "ClientCustom3", "XRay", "BaseUnit", "BudgetHoursGroup", "BudgetHoursROC", "EarnedMHsRoc", "EquivQTY", "ROCID", "HexNO"
+            };
+            if (numericColumns.Contains(dbColumnName))
+            {
+                switch (filterType)
+                {
+                    case "Equals":
+                        return $"{dbColumnName} = {filterValue}";
+                    case "Does Not Equal":
+                        return $"{dbColumnName} <> {filterValue}";
+                    case "Greater Than":
+                        return $"{dbColumnName} > {filterValue}";
+                    case "Greater Than Or Equal":
+                        return $"{dbColumnName} >= {filterValue}";
+                    case "Less Than":
+                        return $"{dbColumnName} < {filterValue}";
+                    case "Less Than Or Equal":
+                        return $"{dbColumnName} <= {filterValue}";
+                    case "Between":
+                        var parts = filterValue.Split(',');
+                        if (parts.Length ==2)
+                            return $"{dbColumnName} BETWEEN {parts[0]} AND {parts[1]}";
+                        return "";
+                    default:
+                        return "";
+                }
+            }
+
+            // Date columns
+            var dateColumns = new System.Collections.Generic.HashSet<string>(System.StringComparer.OrdinalIgnoreCase)
+            {
+                "Start", "Finish", "ProgDate", "WeekEndDate", "AzureUploadDate"
+            };
+            if (dateColumns.Contains(dbColumnName))
+            {
+                switch (filterType)
+                {
+                    case "Equals":
+                        return $"{dbColumnName} = '{filterValue}'";
+                    case "Before":
+                        return $"{dbColumnName} < '{filterValue}'";
+                    case "After":
+                        return $"{dbColumnName} > '{filterValue}'";
+                    case "Between":
+                        var parts = filterValue.Split(',');
+                        if (parts.Length ==2)
+                            return $"{dbColumnName} BETWEEN '{parts[0]}' AND '{parts[1]}'";
+                        return "";
+                    default:
+                        return "";
+                }
+            }
+
+            // Default: text columns
             switch (filterType)
             {
                 case "Contains":
@@ -228,8 +312,8 @@ namespace VANTAGE.ViewModels
                     return $"{dbColumnName} = '{filterValue}'";
                 case "Does Not Equal":
                     return $"{dbColumnName} <> '{filterValue}'";
-                case "Begins With":      // matches your ListBox text
-                case "Starts With":      // allow both, just in case
+                case "Begins With":
+                case "Starts With":
                     return $"{dbColumnName} LIKE '{filterValue}%'";
                 case "Ends With":
                     return $"{dbColumnName} LIKE '%{filterValue}'";

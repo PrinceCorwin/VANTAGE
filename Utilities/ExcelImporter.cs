@@ -259,6 +259,18 @@ namespace VANTAGE.Utilities
                     return;
                 }
 
+                // NEW: Handle SchStart and SchFinish separately
+                if (propertyName == "SchStart" || propertyName == "SchFinish")
+                {
+                    if (cell.DataType == ClosedXML.Excel.XLDataType.DateTime)
+                        property.SetValue(activity, cell.GetDateTime());
+                    else if (DateTime.TryParse(cell.GetString(), out var dt))
+                        property.SetValue(activity, dt);
+                    else
+                        property.SetValue(activity, null);
+                    return;
+                }
+
                 // DEBUG: Log UDF assignments
                 if (propertyName.StartsWith("UDF", StringComparison.OrdinalIgnoreCase))
                 {
@@ -390,7 +402,7 @@ namespace VANTAGE.Utilities
     EquivQTY, EquivUOM,
        ClientEquivQty, ClientBudget, ClientCustom3,
        PrevEarnMHs, PrevEarnQTY,
-     Start, Finish, DateTrigger, Notes,
+     SchStart, SchFinish, DateTrigger, Notes,
     UDF1, UDF2, UDF3, UDF4, UDF5, UDF6, UDF7, UDF8, UDF9, UDF10,
     UDF14, UDF15, UDF16, UDF17, UDF18, UDF20,
           PipeSize1, PipeSize2
@@ -410,7 +422,7 @@ namespace VANTAGE.Utilities
     @EquivQTY, @EquivUOM,
      @ClientEquivQty, @ClientBudget, @ClientCustom3,
        @PrevEarnMHs, @PrevEarnQTY,
- @Start, @Finish, @DateTrigger, @Notes,
+ @SchStart, @SchFinish, @DateTrigger, @Notes,
          @UDF1, @UDF2, @UDF3, @UDF4, @UDF5, @UDF6, @UDF7, @UDF8, @UDF9, @UDF10,
          @UDF14, @UDF15, @UDF16, @UDF17, @UDF18, @UDF20,
      @PipeSize1, @PipeSize2
@@ -475,8 +487,8 @@ namespace VANTAGE.Utilities
             command.Parameters.AddWithValue("@ClientCustom3", activity.ClientCustom3);
             command.Parameters.AddWithValue("@PrevEarnMHs", activity.PrevEarnMHs);
             command.Parameters.AddWithValue("@PrevEarnQTY", activity.PrevEarnQTY);
-            command.Parameters.AddWithValue("@Start", activity.Start ?? "");
-            command.Parameters.AddWithValue("@Finish", activity.Finish ?? "");
+            command.Parameters.AddWithValue("@SchStart", activity.SchStart?.ToString("yyyy-MM-dd") ?? "");
+            command.Parameters.AddWithValue("@SchFinish", activity.SchFinish?.ToString("yyyy-MM-dd") ?? "");
             command.Parameters.AddWithValue("@DateTrigger", activity.DateTrigger);
             command.Parameters.AddWithValue("@Notes", activity.Notes ?? "");
             command.Parameters.AddWithValue("@UDF1", activity.UDF1 ?? "");

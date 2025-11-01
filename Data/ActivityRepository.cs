@@ -147,6 +147,11 @@ command.Parameters.AddWithValue("@UDF20", activity.UDF20 ?? "");
           command.Parameters.AddWithValue("@PipeSize2", activity.PipeSize2);
             command.Parameters.AddWithValue("@ClientBudget", activity.ClientBudget);
          command.Parameters.AddWithValue("@ClientCustom3", activity.ClientCustom3);
+command.Parameters.AddWithValue("@SchStart", activity.SchStart?.ToString("yyyy-MM-dd") ?? "");
+command.Parameters.AddWithValue("@SchFinish", activity.SchFinish?.ToString("yyyy-MM-dd") ?? "");
+command.Parameters.AddWithValue("@ProgDate", activity.ProgDate?.ToString("yyyy-MM-dd") ?? "");
+command.Parameters.AddWithValue("@WeekEndDate", activity.WeekEndDate?.ToString("yyyy-MM-dd") ?? "");
+command.Parameters.AddWithValue("@AzureUploadDate", activity.AzureUploadDate?.ToString("yyyy-MM-dd") ?? "");
 
    int rowsAffected = command.ExecuteNonQuery();
 
@@ -276,7 +281,21 @@ command.CommandText = "SELECT Username FROM Users";
   return "";
        }
           }
-
+DateTime? GetDateTimeSafe(string name)
+{
+ try
+ {
+ int i = reader.GetOrdinal(name);
+ if (reader.IsDBNull(i)) return null;
+ var s = reader.GetString(i);
+ if (DateTime.TryParse(s, out var dt)) return dt.Date;
+ return null;
+ }
+ catch
+ {
+ return null;
+ }
+}
      int GetIntSafe(string name)
      {
   try
@@ -338,8 +357,8 @@ HexNO = GetIntSafe("HexNO"),
 
                   // Schedule
   SecondActno = GetStringSafe("SecondActno"),
-  Start = GetStringSafe("Start"),
-  Finish = GetStringSafe("Finish"),
+  SchStart = GetDateTimeSafe("SchStart"),
+  SchFinish = GetDateTimeSafe("SchFinish"),
 
           // Tags / Aux
         Aux1 = GetStringSafe("Aux1"),
