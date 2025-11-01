@@ -8,18 +8,53 @@
              BorderThickness="1"
              Foreground="{StaticResource ForegroundColor}">
 	<StackPanel Margin="6,6,6,6">
-		<TextBlock Text="Text Filters" FontWeight="Bold"/>
+		<TextBlock x:Name="lblFilterTitle" Text="Text Filters" FontWeight="Bold"/>
 
-        <ListBox x:Name="lstFilterType" Margin="0,6,0,6" SelectedIndex="0" Foreground="{StaticResource ForegroundColor}" Background="{StaticResource ControlBackground}" BorderThickness="0">
-			<ListBoxItem Content="Equals"/>
-			<ListBoxItem Content="Does Not Equal"/>
-			<ListBoxItem Content="Contains"/>
-			<ListBoxItem Content="Does Not Contain"/>
-			<ListBoxItem Content="Begins With"/>
-			<ListBoxItem Content="Ends With"/>
-		</ListBox>
+		<!-- Text filter options -->
+		<StackPanel x:Name="panelTextFilters">
+			<ListBox x:Name="lstTextFilterType" Margin="0,6,0,6" SelectedIndex="0" Foreground="{StaticResource ForegroundColor}" Background="{StaticResource ControlBackground}" BorderThickness="0">
+				<ListBoxItem Content="Equals"/>
+				<ListBoxItem Content="Does Not Equal"/>
+				<ListBoxItem Content="Contains"/>
+				<ListBoxItem Content="Does Not Contain"/>
+				<ListBoxItem Content="Begins With"/>
+				<ListBoxItem Content="Ends With"/>
+			</ListBox>
+			<TextBox x:Name="txtTextFilterValue" Height="30" Padding="6" Foreground="{StaticResource ForegroundColor}" Background="{StaticResource ControlBackground}" BorderBrush="{StaticResource BorderColor}"/>
+		</StackPanel>
 
-		<TextBox x:Name="txtFilterValue" Height="30" Padding="6" Foreground="{StaticResource ForegroundColor}" Background="{StaticResource ControlBackground}" BorderBrush="{StaticResource BorderColor}"/>
+		<!-- Number filter options -->
+		<StackPanel x:Name="panelNumberFilters" Visibility="Collapsed">
+			<ListBox x:Name="lstNumberFilterType" Margin="0,6,0,6" SelectedIndex="0" Foreground="{StaticResource ForegroundColor}" Background="{StaticResource ControlBackground}" BorderThickness="0">
+				<ListBoxItem Content="Equals"/>
+				<ListBoxItem Content="Does Not Equal"/>
+				<ListBoxItem Content="Greater Than"/>
+				<ListBoxItem Content="Greater Than Or Equal"/>
+				<ListBoxItem Content="Less Than"/>
+				<ListBoxItem Content="Less Than Or Equal"/>
+				<ListBoxItem Content="Between"/>
+			</ListBox>
+			<StackPanel Orientation="Horizontal">
+				<TextBox x:Name="txtNumberValue1" Width="80" Height="30" Padding="6" Margin="0,0,6,0" Foreground="{StaticResource ForegroundColor}" Background="{StaticResource ControlBackground}" BorderBrush="{StaticResource BorderColor}"/>
+				<TextBlock Text="and" VerticalAlignment="Center" Margin="0,0,6,0" Visibility="Collapsed" x:Name="lblAndNumber"/>
+				<TextBox x:Name="txtNumberValue2" Width="80" Height="30" Padding="6" Visibility="Collapsed" Foreground="{StaticResource ForegroundColor}" Background="{StaticResource ControlBackground}" BorderBrush="{StaticResource BorderColor}"/>
+			</StackPanel>
+		</StackPanel>
+
+		<!-- Date filter options -->
+		<StackPanel x:Name="panelDateFilters" Visibility="Collapsed">
+			<ListBox x:Name="lstDateFilterType" Margin="0,6,0,6" SelectedIndex="0" Foreground="{StaticResource ForegroundColor}" Background="{StaticResource ControlBackground}" BorderThickness="0">
+				<ListBoxItem Content="Equals"/>
+				<ListBoxItem Content="Before"/>
+				<ListBoxItem Content="After"/>
+				<ListBoxItem Content="Between"/>
+			</ListBox>
+			<StackPanel Orientation="Horizontal">
+				<DatePicker x:Name="dateValue1" Width="120" Margin="0,0,6,0"/>
+				<TextBlock Text="and" VerticalAlignment="Center" Margin="0,0,6,0" Visibility="Collapsed" x:Name="lblAndDate"/>
+				<DatePicker x:Name="dateValue2" Width="120" Visibility="Collapsed"/>
+			</StackPanel>
+		</StackPanel>
 
 		<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0">
 			<Button Content="Cancel" Width="70" Height="30" Margin="0,0,8,0" Click="Cancel_Click"/>

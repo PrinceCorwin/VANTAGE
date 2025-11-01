@@ -39,9 +39,12 @@ namespace VANTAGE.Models
 
         // Schedule
         public string SecondActno { get; set; }
-        public string Start { get; set; }
-        public string Finish { get; set; }
-        
+        public DateTime? SchStart { get; set; }
+        public DateTime? SchFinish { get; set; }
+        public DateTime? ProgDate { get; set; }
+        public DateTime? WeekEndDate { get; set; }
+        public DateTime? AzureUploadDate { get; set; }
+
         /// <summary>
         /// Status based on PercentEntry (0-100)
         /// </summary>
@@ -107,8 +110,6 @@ namespace VANTAGE.Models
         public string UDF17 { get; set; }
         public string UDF18 { get; set; }
         public string UDF20 { get; set; }
-        public string AzureUploadDate { get; set; }
-        public string ProgDate { get; set; }
 
         // Special UDF Fields (with helper properties)
         private string _assignedTo;
@@ -326,7 +327,6 @@ namespace VANTAGE.Models
 
         public double PrevEarnMHs { get; set; }
         public double PrevEarnQTY { get; set; }
-        public string? WeekEndDate { get; set; }
 
         // ========================================
         // VALUES - CLIENT

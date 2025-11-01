@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -14,6 +15,7 @@ namespace VANTAGE.Controls
     {
         public event EventHandler<FilterEventArgs> FilterApplied;
         public event EventHandler FilterCleared;
+        public event EventHandler<SortEventArgs> SortRequested;
 
         // New: returns selected values when OK pressed
         public class ValueSelection
@@ -183,6 +185,48 @@ namespace VANTAGE.Controls
             {
                 _useProvidedValues = false;
                 _ = LoadDistinctValuesAsync();
+            }
+
+            // Show sort buttons based on column type
+            ShowSortButtonsForColumn(columnName);
+        }
+
+        private void ShowSortButtonsForColumn(string columnName)
+        {
+            // Hide all sort buttons by default
+            btnSortAsc.Visibility = Visibility.Collapsed;
+            btnSortDesc.Visibility = Visibility.Collapsed;
+            btnSortNumAsc.Visibility = Visibility.Collapsed;
+            btnSortNumDesc.Visibility = Visibility.Collapsed;
+            btnSortDateAsc.Visibility = Visibility.Collapsed;
+            btnSortDateDesc.Visibility = Visibility.Collapsed;
+
+            // List of known numeric columns
+            var numericColumns = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "Quantity", "EarnQtyEntry", "PercentEntry", "PercentEntry_Display", "BudgetMHs", "EarnMHsCalc", "ROCPercent", "ROCBudgetQTY", "PipeSize1", "PipeSize2", "PrevEarnMHs", "PrevEarnQTY", "ClientEquivQty", "ClientBudget", "ClientCustom3", "XRay", "BaseUnit", "BudgetHoursGroup", "BudgetHoursROC", "EarnedMHsRoc", "EquivQTY", "ROCID", "HexNO"
+            };
+            // List of known date columns
+            var dateColumns = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "Start", "Finish", "ProgDate", "WeekEndDate", "AzureUploadDate"
+            };
+
+            if (numericColumns.Contains(columnName))
+            {
+                btnSortNumAsc.Visibility = Visibility.Visible;
+                btnSortNumDesc.Visibility = Visibility.Visible;
+            }
+            else if (dateColumns.Contains(columnName))
+            {
+                btnSortDateAsc.Visibility = Visibility.Visible;
+                btnSortDateDesc.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                // Default to text sort
+                btnSortAsc.Visibility = Visibility.Visible;
+                btnSortDesc.Visibility = Visibility.Visible;
             }
         }
 
@@ -452,6 +496,49 @@ namespace VANTAGE.Controls
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
             w.ShowDialog();
+        }
+
+        private void BtnSortAsc_Click(object sender, RoutedEventArgs e)
+        {
+            SortRequested?.Invoke(this, new SortEventArgs { ColumnName = _columnName, Direction = ListSortDirection.Ascending, SortType = "text" });
+            CloseContainingPopup();
+        }
+
+        private void BtnSortDesc_Click(object sender, RoutedEventArgs e)
+        {
+            SortRequested?.Invoke(this, new SortEventArgs { ColumnName = _columnName, Direction = ListSortDirection.Descending, SortType = "text" });
+            CloseContainingPopup();
+        }
+
+        private void BtnSortNumAsc_Click(object sender, RoutedEventArgs e)
+        {
+            SortRequested?.Invoke(this, new SortEventArgs { ColumnName = _columnName, Direction = ListSortDirection.Ascending, SortType = "number" });
+            CloseContainingPopup();
+        }
+
+        private void BtnSortNumDesc_Click(object sender, RoutedEventArgs e)
+        {
+            SortRequested?.Invoke(this, new SortEventArgs { ColumnName = _columnName, Direction = ListSortDirection.Descending, SortType = "number" });
+            CloseContainingPopup();
+        }
+
+        private void BtnSortDateAsc_Click(object sender, RoutedEventArgs e)
+        {
+            SortRequested?.Invoke(this, new SortEventArgs { ColumnName = _columnName, Direction = ListSortDirection.Ascending, SortType = "date" });
+            CloseContainingPopup();
+        }
+
+        private void BtnSortDateDesc_Click(object sender, RoutedEventArgs e)
+        {
+            SortRequested?.Invoke(this, new SortEventArgs { ColumnName = _columnName, Direction = ListSortDirection.Descending, SortType = "date" });
+            CloseContainingPopup();
+        }
+
+        public class SortEventArgs : EventArgs
+        {
+            public string ColumnName { get; set; }
+            public ListSortDirection Direction { get; set; }
+            public string SortType { get; set; } // "text", "number", "date"
         }
     }
 
