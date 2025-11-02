@@ -37,7 +37,7 @@ namespace VANTAGE
                         FullName TEXT,
                         Email TEXT,
                         PhoneNumber TEXT,
-                        IsAdmin INTEGER DEFAULT 0,
+                        IsAdmin INTEGER DEFAULT0,
                         AdminToken TEXT
                     );
 
@@ -63,142 +63,113 @@ namespace VANTAGE
                     -- Activities table (NEW: NewVantage column names)
                     CREATE TABLE IF NOT EXISTS Activities (
                         ActivityID INTEGER PRIMARY KEY AUTOINCREMENT,
-                        ProjectID TEXT,
-                        PercentEntry REAL,
-                        SecondActno TEXT,
-                        AssignedTo TEXT,
-                        SchStart TEXT,
-                        SchFinish TEXT,
-                        ProgDate TEXT,
-                        WeekEndDate TEXT,
-                        AzureUploadDate TEXT,
-  
-              -- Core Fields
-       HexNO INTEGER DEFAULT 0,
-                  ProjectID TEXT DEFAULT '',
-   Description TEXT DEFAULT '',
-   UniqueID TEXT UNIQUE NOT NULL,
-        
-             -- Area/Location
-            Area TEXT DEFAULT '',
-      SubArea TEXT DEFAULT '',
-      System TEXT DEFAULT '',
-             SystemNO TEXT DEFAULT '',
-            
-           -- Categories
-        CompType TEXT DEFAULT '',
-                   PhaseCategory TEXT DEFAULT '',
-  ROCStep TEXT DEFAULT '',
-           
-      -- Assignments
-            AssignedTo TEXT DEFAULT 'Unassigned',
-             CreatedBy TEXT DEFAULT '',
- LastModifiedBy TEXT DEFAULT '',
-          
-      -- Progress (STORED AS 0-100 PERCENTAGE)
-   PercentEntry REAL DEFAULT 0,
-          Quantity REAL DEFAULT 0,
-   EarnQtyEntry REAL DEFAULT 0,
-       UOM TEXT DEFAULT '',
-   
-           -- Budgets & Hours
-          BudgetMHs REAL DEFAULT 0,
-      BudgetHoursGroup REAL DEFAULT 0,
-       BudgetHoursROC REAL DEFAULT 0,
- BaseUnit REAL DEFAULT 0,
-         EarnedMHsRoc REAL DEFAULT 0,
-       
-        -- ROC
-         ROCID REAL DEFAULT 0,
-       ROCPercent REAL DEFAULT 0,
-           ROCBudgetQTY REAL DEFAULT 0,
- 
-      -- Drawings
- DwgNO TEXT DEFAULT '',
-              RevNO TEXT DEFAULT '',
-     SecondDwgNO TEXT DEFAULT '',
-           ShtNO TEXT DEFAULT '',
-   
-     -- Tags/References
-    TagNO TEXT DEFAULT '',
-        WorkPackage TEXT DEFAULT '',
-           PhaseCode TEXT DEFAULT '',
-Service TEXT DEFAULT '',
-  ShopField TEXT DEFAULT '',
-         SchedActNO TEXT DEFAULT '',
-      SecondActno TEXT DEFAULT '',
-           
- -- Equipment/Line
-        EqmtNO TEXT DEFAULT '',
-     LineNO TEXT DEFAULT '',
-         ChgOrdNO TEXT DEFAULT '',
-     
-     -- Materials
-      MtrlSpec TEXT DEFAULT '',
- PipeGrade TEXT DEFAULT '',
-   PaintCode TEXT DEFAULT '',
-          InsulType TEXT DEFAULT '',
-      HtTrace TEXT DEFAULT '',
-              
-        -- Pipe
-     PipeSize1 REAL DEFAULT 0,
-      PipeSize2 REAL DEFAULT 0,
-        
-   -- Auxiliary
-              Aux1 TEXT DEFAULT '',
-Aux2 TEXT DEFAULT '',
-        Aux3 TEXT DEFAULT '',
-       Estimator TEXT DEFAULT '',
-    RFINO TEXT DEFAULT '',
-               XRay REAL DEFAULT 0,
-           
-       -- Equipment Quantities
-        EquivQTY TEXT DEFAULT '',
-       EquivUOM TEXT DEFAULT '',
-      
-       -- Client Fields
-           ClientEquivQty REAL DEFAULT 0,
-    ClientBudget REAL DEFAULT 0,
-ClientCustom3 REAL DEFAULT 0,
-            ClientEquivEarnQTY TEXT DEFAULT '',
-      
-    -- Previous/History
- PrevEarnMHs REAL DEFAULT 0,
-         PrevEarnQTY REAL DEFAULT 0,
-       
-   -- Schedule
-             "SchStart" TEXT DEFAULT '' -- ISO8601 date (yyyy-MM-dd),
-               "SchFinish" TEXT DEFAULT '' -- ISO8601 date (yyyy-MM-dd),
-        
-       -- Trigger
-    DateTrigger INTEGER DEFAULT0,
+                        Area TEXT DEFAULT '',
+                        AssignedTo TEXT DEFAULT 'Unassigned',
+                        Aux1 TEXT DEFAULT '',
+                        Aux2 TEXT DEFAULT '',
+                        Aux3 TEXT DEFAULT '',
+                        BaseUnit REAL DEFAULT0,
+                        BudgetMHs REAL DEFAULT0,
+                        BudgetHoursGroup REAL DEFAULT0,
+                        BudgetHoursROC REAL DEFAULT0,
+                        ChgOrdNO TEXT DEFAULT '',
+                        ClientBudget REAL DEFAULT0,
+                        ClientCustom3 REAL DEFAULT0,
+                        ClientEquivEarnQTY TEXT DEFAULT '',
+                        ClientEquivQty REAL DEFAULT0,
+                        CompType TEXT DEFAULT '',
+                        CreatedBy TEXT DEFAULT '',
+                        DateTrigger INTEGER DEFAULT0,
+                        Description TEXT DEFAULT '',
+                        DwgNO TEXT DEFAULT '',
+                        EarnedMHsRoc REAL DEFAULT0,
+                        EarnQtyEntry REAL DEFAULT0,
+                        EqmtNO TEXT DEFAULT '',
+                        EquivQTY TEXT DEFAULT '',
+                        EquivUOM TEXT DEFAULT '',
+                        Estimator TEXT DEFAULT '',
+                        Finish TEXT DEFAULT '',
+                        HexNO INTEGER DEFAULT0,
+                        HtTrace TEXT DEFAULT '',
+                        InsulType TEXT DEFAULT '',
+                        LastModifiedBy TEXT DEFAULT '',
+                        LineNO TEXT DEFAULT '',
+                        MtrlSpec TEXT DEFAULT '',
+                        Notes TEXT DEFAULT '',
+                        PaintCode TEXT DEFAULT '',
+                        PercentEntry REAL DEFAULT0,
+                        PhaseCategory TEXT DEFAULT '',
+                        PhaseCode TEXT DEFAULT '',
+                        PipeGrade TEXT DEFAULT '',
+                        PipeSize1 REAL DEFAULT0,
+                        PipeSize2 REAL DEFAULT0,
+                        PrevEarnMHs REAL DEFAULT0,
+                        PrevEarnQTY REAL DEFAULT0,
+                        ProjectID TEXT DEFAULT '',
+                        Quantity REAL DEFAULT0,
+                        RevNO TEXT DEFAULT '',
+                        RFINO TEXT DEFAULT '',
+                        ROCBudgetQTY REAL DEFAULT0,
+                        ROCID REAL DEFAULT0,
+                        ROCPercent REAL DEFAULT0,
+                        ROCStep TEXT DEFAULT '',
+                        SchedActNO TEXT DEFAULT '',
+                        SchFinish TEXT DEFAULT '',
+                        SchStart TEXT DEFAULT '',
+                        SecondActno TEXT DEFAULT '',
+                        SecondDwgNO TEXT DEFAULT '',
+                        Service TEXT DEFAULT '',
+                        ShopField TEXT DEFAULT '',
+                        ShtNO TEXT DEFAULT '',
+                        Start TEXT DEFAULT '',
+                        Status TEXT DEFAULT '',
+                        SubArea TEXT DEFAULT '',
+                        System TEXT DEFAULT '',
+                        SystemNO TEXT DEFAULT '',
+                        TagNO TEXT DEFAULT '',
+                        UDF1 TEXT DEFAULT '',
+                        UDF10 TEXT DEFAULT '',
+                        UDF14 TEXT DEFAULT '',
+                        UDF15 TEXT DEFAULT '',
+                        UDF16 TEXT DEFAULT '',
+                        UDF17 TEXT DEFAULT '',
+                        UDF18 TEXT DEFAULT '',
+                        UDF2 TEXT DEFAULT '',
+                        UDF20 TEXT DEFAULT '',
+                        UDF3 TEXT DEFAULT '',
+                        UDF4 TEXT DEFAULT '',
+                        UDF5 TEXT DEFAULT '',
+                        UDF6 TEXT DEFAULT '',
+                        UDF7 TEXT DEFAULT '',
+                        UDF8 TEXT DEFAULT '',
+                        UDF9 TEXT DEFAULT '',
+                        UniqueID TEXT UNIQUE NOT NULL,
+                        UOM TEXT DEFAULT '',
+                        WorkPackage TEXT DEFAULT '',
+                        XRay REAL DEFAULT0
+                    );
 
-      -- Date/Time columns
-"ProgDate" TEXT DEFAULT '' -- ISO8601 date (yyyy-MM-dd),
-"WeekEndDate" TEXT DEFAULT '' -- ISO8601 date (yyyy-MM-dd),
-"AzureUploadDate" TEXT DEFAULT '' -- ISO8601 date (yyyy-MM-dd);
+                    -- ColumnMappings table (Master mappings for all external systems)
+                    CREATE TABLE IF NOT EXISTS ColumnMappings (
+                        MappingID INTEGER PRIMARY KEY AUTOINCREMENT,
+                        ColumnName TEXT NOT NULL,
+                        OldVantageName TEXT,
+                        AzureName TEXT,
+                        DataType TEXT,
+                        IsEditable INTEGER DEFAULT1,
+                        IsCalculated INTEGER DEFAULT0,
+                        CalcFormula TEXT,
+                        Notes TEXT
+                    );
 
-     -- ColumnMappings table (Master mappings for all external systems)
-         CREATE TABLE IF NOT EXISTS ColumnMappings (
-                MappingID INTEGER PRIMARY KEY AUTOINCREMENT,
-      ColumnName TEXT NOT NULL,
-          OldVantageName TEXT,
- AzureName TEXT,
-        DataType TEXT,
-       IsEditable INTEGER DEFAULT 1,
-               IsCalculated INTEGER DEFAULT 0,
-  CalcFormula TEXT,
-                  Notes TEXT
-    );
-
-       -- Indexes for performance
-   CREATE INDEX IF NOT EXISTS idx_project ON Activities(ProjectID);
-         CREATE INDEX IF NOT EXISTS idx_area ON Activities(Area);
-  CREATE INDEX IF NOT EXISTS idx_assigned_to ON Activities(AssignedTo);
-              CREATE INDEX IF NOT EXISTS idx_unique_id ON Activities(UniqueID);
-            CREATE INDEX IF NOT EXISTS idx_roc_id ON Activities(ROCID);
-          CREATE INDEX IF NOT EXISTS idx_column_name ON ColumnMappings(ColumnName);
-        ";
+                    -- Indexes for performance
+                    CREATE INDEX IF NOT EXISTS idx_project ON Activities(ProjectID);
+                    CREATE INDEX IF NOT EXISTS idx_area ON Activities(Area);
+                    CREATE INDEX IF NOT EXISTS idx_assigned_to ON Activities(AssignedTo);
+                    CREATE INDEX IF NOT EXISTS idx_unique_id ON Activities(UniqueID);
+                    CREATE INDEX IF NOT EXISTS idx_roc_id ON Activities(ROCID);
+                    CREATE INDEX IF NOT EXISTS idx_column_name ON ColumnMappings(ColumnName);
+                ";
 
                 command.ExecuteNonQuery();
 

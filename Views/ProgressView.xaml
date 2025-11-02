@@ -458,16 +458,16 @@
                             </DataGridTextColumn.Header>
                         </DataGridTextColumn>
 
-                        <DataGridTextColumn Binding="{Binding Start}" Width="100">
+                        <DataGridTextColumn Binding="{Binding SchStart}" Width="100">
                             <DataGridTextColumn.Header>
-                                <ContentControl Content="Start" 
+                                <ContentControl Content="SchStart" 
                                                 ContentTemplate="{StaticResource FilterableColumnHeader}"/>
                             </DataGridTextColumn.Header>
                         </DataGridTextColumn>
 
-                        <DataGridTextColumn Binding="{Binding Finish}" Width="100">
+                        <DataGridTextColumn Binding="{Binding SchFinish}" Width="100">
                             <DataGridTextColumn.Header>
-                                <ContentControl Content="Finish" 
+                                <ContentControl Content="SchFinish" 
                                                 ContentTemplate="{StaticResource FilterableColumnHeader}"/>
                             </DataGridTextColumn.Header>
                         </DataGridTextColumn>
@@ -586,7 +586,7 @@
                         <DataGridTextColumn Header="Notes" 
                                             Binding="{Binding Notes}" 
                                             Width="200"
-                                            Visibility="Collapsed"/>
+                                            Visibility="Visible"/>
 
                         <!-- Schedule Additional -->
                         <DataGridTextColumn Header="SecondActno" 
