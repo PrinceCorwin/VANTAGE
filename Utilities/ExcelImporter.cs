@@ -150,7 +150,7 @@ namespace VANTAGE.Utilities
                 // Handle UniqueID auto-generation if missing
                 if (string.IsNullOrWhiteSpace(activity.UniqueID))
                 {
-                    activity.UniqueID = $"i{timestamp}{sequence:D3}{userSuffix}";
+                    activity.UniqueID = $"i{timestamp}{sequence}{userSuffix}";
                     sequence++;
                     System.Diagnostics.Debug.WriteLine($"  Generated UniqueID: {activity.UniqueID}");
                 }
