@@ -39,14 +39,15 @@ namespace VANTAGE.Controls
             {
                 "Quantity", "EarnQtyEntry", "PercentEntry", "PercentEntry_Display", "BudgetMHs", "EarnMHsCalc", "ROCPercent", "ROCBudgetQTY", "PipeSize1", "PipeSize2", "PrevEarnMHs", "PrevEarnQTY", "ClientEquivQty", "ClientBudget", "ClientCustom3", "XRay", "BaseUnit", "BudgetHoursGroup", "BudgetHoursROC", "EarnedMHsRoc", "EquivQTY", "ROCID", "HexNO"
             };
+            // Known date columns (must match DataGrid property names)
             var dateColumns = new System.Collections.Generic.HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
-                "Start", "Finish", "ProgDate", "WeekEndDate", "AzureUploadDate"
+                "SchStart", "SchFinish", "ProgDate", "WeekEndDate", "AzureUploadDate"
             };
-            if (numericColumns.Contains(columnName))
-                _columnType = "number";
-            else if (dateColumns.Contains(columnName))
+            if (dateColumns.Contains(columnName))
                 _columnType = "date";
+            else if (numericColumns.Contains(columnName))
+                _columnType = "number";
             else
                 _columnType = "text";
         }
@@ -87,20 +88,31 @@ namespace VANTAGE.Controls
             if (_columnType == "text")
             {
                 filterType = (lstTextFilterType.SelectedItem as ListBoxItem)?.Content?.ToString();
-                filterValue = txtTextFilterValue.Text;
-                if (string.IsNullOrWhiteSpace(filterValue))
+                if (filterType == "Is Blank" || filterType == "Is Not Blank")
                 {
-                    MessageBox.Show("Please enter a filter value.", "Filter Required", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    return;
+                    filterValue = null;
+                }
+                else
+                {
+                    filterValue = txtTextFilterValue.Text;
+                    if (string.IsNullOrWhiteSpace(filterValue))
+                    {
+                        MessageBox.Show("Please enter a filter value.", "Filter Required", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
+                    }
                 }
             }
             else if (_columnType == "number")
             {
                 filterType = (lstNumberFilterType.SelectedItem as ListBoxItem)?.Content?.ToString();
-                var val1 = txtNumberValue1.Text;
-                var val2 = txtNumberValue2.Text;
-                if (filterType == "Between")
+                if (filterType == "Is Blank" || filterType == "Is Not Blank")
                 {
+                    filterValue = null;
+                }
+                else if (filterType == "Between")
+                {
+                    var val1 = txtNumberValue1.Text;
+                    var val2 = txtNumberValue2.Text;
                     if (string.IsNullOrWhiteSpace(val1) || string.IsNullOrWhiteSpace(val2))
                     {
                         MessageBox.Show("Please enter both values for 'Between'.", "Filter Required", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -110,6 +122,7 @@ namespace VANTAGE.Controls
                 }
                 else
                 {
+                    var val1 = txtNumberValue1.Text;
                     if (string.IsNullOrWhiteSpace(val1))
                     {
                         MessageBox.Show("Please enter a value.", "Filter Required", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -121,10 +134,14 @@ namespace VANTAGE.Controls
             else if (_columnType == "date")
             {
                 filterType = (lstDateFilterType.SelectedItem as ListBoxItem)?.Content?.ToString();
-                var date1 = dateValue1.SelectedDate;
-                var date2 = dateValue2.SelectedDate;
-                if (filterType == "Between")
+                if (filterType == "Is Blank" || filterType == "Is Not Blank")
                 {
+                    filterValue = null;
+                }
+                else if (filterType == "Between")
+                {
+                    var date1 = dateValue1.SelectedDate;
+                    var date2 = dateValue2.SelectedDate;
                     if (!date1.HasValue || !date2.HasValue)
                     {
                         MessageBox.Show("Please select both dates for 'Between'.", "Filter Required", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -134,6 +151,7 @@ namespace VANTAGE.Controls
                 }
                 else
                 {
+                    var date1 = dateValue1.SelectedDate;
                     if (!date1.HasValue)
                     {
                         MessageBox.Show("Please select a date.", "Filter Required", MessageBoxButton.OK, MessageBoxImage.Warning);

@@ -19,6 +19,8 @@
 				<ListBoxItem Content="Does Not Contain"/>
 				<ListBoxItem Content="Begins With"/>
 				<ListBoxItem Content="Ends With"/>
+				<ListBoxItem Content="Is Blank"/>
+				<ListBoxItem Content="Is Not Blank"/>
 			</ListBox>
 			<TextBox x:Name="txtTextFilterValue" Height="30" Padding="6" Foreground="{StaticResource ForegroundColor}" Background="{StaticResource ControlBackground}" BorderBrush="{StaticResource BorderColor}"/>
 		</StackPanel>
@@ -33,6 +35,8 @@
 				<ListBoxItem Content="Less Than"/>
 				<ListBoxItem Content="Less Than Or Equal"/>
 				<ListBoxItem Content="Between"/>
+				<ListBoxItem Content="Is Blank"/>
+				<ListBoxItem Content="Is Not Blank"/>
 			</ListBox>
 			<StackPanel Orientation="Horizontal">
 				<TextBox x:Name="txtNumberValue1" Width="80" Height="30" Padding="6" Margin="0,0,6,0" Foreground="{StaticResource ForegroundColor}" Background="{StaticResource ControlBackground}" BorderBrush="{StaticResource BorderColor}"/>
@@ -48,6 +52,8 @@
 				<ListBoxItem Content="Before"/>
 				<ListBoxItem Content="After"/>
 				<ListBoxItem Content="Between"/>
+				<ListBoxItem Content="Is Blank"/>
+				<ListBoxItem Content="Is Not Blank"/>
 			</ListBox>
 			<StackPanel Orientation="Horizontal">
 				<DatePicker x:Name="dateValue1" Width="120" Margin="0,0,6,0"/>

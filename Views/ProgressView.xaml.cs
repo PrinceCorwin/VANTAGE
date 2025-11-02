@@ -482,6 +482,21 @@ namespace VANTAGE.Views
 
             var column = _columnMap[columnName];
             column.Visibility = checkBox.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
+
+            // Force header re-apply if becoming visible
+            if (column.Visibility == Visibility.Visible)
+            {
+                var dataTemplate = this.TryFindResource("FilterableColumnHeader") as DataTemplate;
+                if (dataTemplate != null)
+                {
+                    column.Header = new ContentControl
+                    {
+                        Content = columnName,
+                        ContentTemplate = dataTemplate
+                    };
+                }
+                dgActivities.UpdateLayout();
+            }
         }
         private async void MenuUnassign_Click(object sender, RoutedEventArgs e)
         {

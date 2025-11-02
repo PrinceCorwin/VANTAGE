@@ -458,19 +458,69 @@
                             </DataGridTextColumn.Header>
                         </DataGridTextColumn>
 
-                        <DataGridTextColumn Binding="{Binding SchStart}" Width="100">
-                            <DataGridTextColumn.Header>
-                                <ContentControl Content="SchStart" 
-                                                ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                            </DataGridTextColumn.Header>
-                        </DataGridTextColumn>
+                        <DataGridTemplateColumn Width="120">
+                            <DataGridTemplateColumn.Header>
+                                <ContentControl Content="SchStart" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
+                            </DataGridTemplateColumn.Header>
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding SchStart, StringFormat=yyyy-MM-dd}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                            <DataGridTemplateColumn.CellEditingTemplate>
+                                <DataTemplate>
+                                    <DatePicker SelectedDate="{Binding SchStart, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellEditingTemplate>
+                        </DataGridTemplateColumn>
 
-                        <DataGridTextColumn Binding="{Binding SchFinish}" Width="100">
-                            <DataGridTextColumn.Header>
-                                <ContentControl Content="SchFinish" 
-                                                ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                            </DataGridTextColumn.Header>
-                        </DataGridTextColumn>
+                        <DataGridTemplateColumn Width="120">
+                            <DataGridTemplateColumn.Header>
+                                <ContentControl Content="SchFinish" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
+                            </DataGridTemplateColumn.Header>
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding SchFinish, StringFormat=yyyy-MM-dd}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                            <DataGridTemplateColumn.CellEditingTemplate>
+                                <DataTemplate>
+                                    <DatePicker SelectedDate="{Binding SchFinish, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellEditingTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTemplateColumn Width="120" Visibility="Collapsed">
+                            <DataGridTemplateColumn.Header>
+                                <ContentControl Content="ProgDate" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
+                            </DataGridTemplateColumn.Header>
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding ProgDate, StringFormat=yyyy-MM-dd}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                            <DataGridTemplateColumn.CellEditingTemplate>
+                                <DataTemplate>
+                                    <DatePicker SelectedDate="{Binding ProgDate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellEditingTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTemplateColumn Width="120" Visibility="Collapsed">
+                            <DataGridTemplateColumn.Header>
+                                <ContentControl Content="WeekEndDate" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
+                            </DataGridTemplateColumn.Header>
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding WeekEndDate, StringFormat=yyyy-MM-dd}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                            <DataGridTemplateColumn.CellEditingTemplate>
+                                <DataTemplate>
+                                    <DatePicker SelectedDate="{Binding WeekEndDate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellEditingTemplate>
+                        </DataGridTemplateColumn>
 
                         <DataGridTextColumn Binding="{Binding SchedActNO}" Width="100">
                             <DataGridTextColumn.Header>
@@ -561,263 +611,225 @@
                         </DataGridTextColumn>
 
                         <!-- ALL OTHER COLLAPSED COLUMNS -->
-                        <DataGridTextColumn Header="HexNO" 
-                                            Binding="{Binding HexNO}" 
-                                            Width="80"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding HexNO}" Width="80" Visibility="Collapsed">
+                            <DataGridTextColumn.Header>
+                                <ContentControl Content="HexNO" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
+                            </DataGridTextColumn.Header>
+                        </DataGridTextColumn>
 
                         <!-- Drawings -->
-                        <DataGridTextColumn Header="RevNO" 
-                                            Binding="{Binding RevNO}" 
-                                            Width="100"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding RevNO}" Width="100" Visibility="Collapsed">
+                            <DataGridTextColumn.Header>
+                                <ContentControl Content="RevNO" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
+                            </DataGridTextColumn.Header>
+                        </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="SecondDwgNO" 
-                                            Binding="{Binding SecondDwgNO}" 
-                                            Width="120"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding SecondDwgNO}" Width="120" Visibility="Collapsed">
+                            <DataGridTextColumn.Header>
+                                <ContentControl Content="SecondDwgNO" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
+                            </DataGridTextColumn.Header>
+                        </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="ShtNO" 
-                                            Binding="{Binding ShtNO}" 
-                                            Width="80"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding ShtNO}" Width="80" Visibility="Collapsed">
+                            <DataGridTextColumn.Header>
+                                <ContentControl Content="ShtNO" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
+                            </DataGridTextColumn.Header>
+                        </DataGridTextColumn>
 
                         <!-- Notes -->
-                        <DataGridTextColumn Header="Notes" 
-                                            Binding="{Binding Notes}" 
-                                            Width="200"
-                                            Visibility="Visible"/>
+                        <DataGridTextColumn Binding="{Binding Notes}" Width="200" Visibility="Visible">
+                            <DataGridTextColumn.Header>
+                                <ContentControl Content="Notes" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
+                            </DataGridTextColumn.Header>
+                        </DataGridTextColumn>
 
                         <!-- Schedule Additional -->
-                        <DataGridTextColumn Header="SecondActno" 
-                                            Binding="{Binding SecondActno}" 
-                                            Width="100"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding SecondActno}" Width="100" Visibility="Collapsed">
+                            <DataGridTextColumn.Header>
+                                <ContentControl Content="SecondActno" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
+                            </DataGridTextColumn.Header>
+                        </DataGridTextColumn>
 
                         <!-- Tags - Auxiliary -->
-                        <DataGridTextColumn Header="Aux1" 
-                                            Binding="{Binding Aux1}" 
-                                            Width="100"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding Aux1}" Width="100" Visibility="Collapsed">
+                            <DataGridTextColumn.Header>
+                                <ContentControl Content="Aux1" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
+                            </DataGridTextColumn.Header>
+                        </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="Aux2" 
-                                            Binding="{Binding Aux2}" 
-                                            Width="100"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding Aux2}" Width="100" Visibility="Collapsed">
+                            <DataGridTextColumn.Header>
+                                <ContentControl Content="Aux2" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
+                            </DataGridTextColumn.Header>
+                        </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="Aux3" 
-                                            Binding="{Binding Aux3}" 
-                                            Width="100"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding Aux3}" Width="100" Visibility="Collapsed">
+                            <DataGridTextColumn.Header>
+                                <ContentControl Content="Aux3" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
+                            </DataGridTextColumn.Header>
+                        </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="Area" 
-                                            Binding="{Binding Area}"
-                                            Width="80"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding Area}" Width="80" Visibility="Collapsed">
+                            <DataGridTextColumn.Header>
+                                <ContentControl Content="Area" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
+                            </DataGridTextColumn.Header>
+                        </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="ChgOrdNO" 
-                                            Binding="{Binding ChgOrdNO}" 
-                                            Width="80"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding ChgOrdNO}" Width="80" Visibility="Collapsed">
+                            <DataGridTextColumn.Header>
+                                <ContentControl Content="ChgOrdNO" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
+                            </DataGridTextColumn.Header>
+                        </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="EqmtNO" 
-                                            Binding="{Binding EqmtNO}" 
-                                            Width="120"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding EqmtNO}" Width="120" Visibility="Collapsed">
+                            <DataGridTextColumn.Header>
+                                <ContentControl Content="EqmtNO" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
+                            </DataGridTextColumn.Header>
+                        </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="Estimator" 
-                                            Binding="{Binding Estimator}" 
-                                            Width="120"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding Estimator}" Width="120" Visibility="Collapsed">
+                            <DataGridTextColumn.Header>
+                                <ContentControl Content="Estimator" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
+                            </DataGridTextColumn.Header>
+                        </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="InsulType" 
-                                            Binding="{Binding InsulType}" 
-                                            Width="120"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding InsulType}" Width="120" Visibility="Collapsed">
+                            <DataGridTextColumn.Header>
+                                <ContentControl Content="InsulType" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
+                            </DataGridTextColumn.Header>
+                        </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="LineNO" 
-                                            Binding="{Binding LineNO}" 
-                                            Width="100"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding LineNO}" Width="100" Visibility="Collapsed">
+                            <DataGridTextColumn.Header>
+                                <ContentControl Content="LineNO" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
+                            </DataGridTextColumn.Header>
+                        </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="MtrlSpec" 
-                                            Binding="{Binding MtrlSpec}" 
-                                            Width="120"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding MtrlSpec}" Width="120" Visibility="Collapsed">
+                            <DataGridTextColumn.Header>
+                                <ContentControl Content="MtrlSpec" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
+                            </DataGridTextColumn.Header>
+                        </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="PaintCode" 
-                                            Binding="{Binding PaintCode}" 
-                                            Width="100"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding PaintCode}" Width="100" Visibility="Collapsed">
+                            <DataGridTextColumn.Header>
+                                <ContentControl Content="PaintCode" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
+                            </DataGridTextColumn.Header>
+                        </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="PipeGrade" 
-                                            Binding="{Binding PipeGrade}" 
-                                            Width="100"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding PipeGrade}" Width="100" Visibility="Collapsed">
+                            <DataGridTextColumn.Header>
+                                <ContentControl Content="PipeGrade" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
+                            </DataGridTextColumn.Header>
+                        </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="RFINO" 
-                                            Binding="{Binding RFINO}" 
-                                            Width="80"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding RFINO}" Width="80" Visibility="Collapsed">
+                            <DataGridTextColumn.Header>
+                                <ContentControl Content="RFINO" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
+                            </DataGridTextColumn.Header>
+                        </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="Service" 
-                                            Binding="{Binding Service}" 
-                                            Width="120"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding Service}" Width="120" Visibility="Collapsed">
+                            <DataGridTextColumn.Header>
+                                <ContentControl Content="Service" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
+                            </DataGridTextColumn.Header>
+                        </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="ShopField" 
-                                            Binding="{Binding ShopField}" 
-                                            Width="100"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding ShopField}" Width="100" Visibility="Collapsed">
+                            <DataGridTextColumn.Header>
+                                <ContentControl Content="ShopField" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
+                            </DataGridTextColumn.Header>
+                        </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="SubArea" 
-                                            Binding="{Binding SubArea}" 
-                                            Width="80"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding SubArea}" Width="80" Visibility="Collapsed">
+                            <DataGridTextColumn.Header>
+                                <ContentControl Content="SubArea" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
+                            </DataGridTextColumn.Header>
+                        </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="System" 
-                                            Binding="{Binding System}" 
-                                            Width="100"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding System}" Width="100" Visibility="Collapsed">
+                            <DataGridTextColumn.Header>
+                                <ContentControl Content="System" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
+                            </DataGridTextColumn.Header>
+                        </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="SystemNO" 
-                                            Binding="{Binding SystemNO}" 
-                                            Width="100"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding SystemNO}" Width="100" Visibility="Collapsed">
+                            <DataGridTextColumn.Header>
+                                <ContentControl Content="SystemNO" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
+                            </DataGridTextColumn.Header>
+                        </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="TagNO" 
-                                            Binding="{Binding TagNO}" 
-                                            Width="120"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding TagNO}" Width="120" Visibility="Collapsed">
+                            <DataGridTextColumn.Header>
+                                <ContentControl Content="TagNO" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
+                            </DataGridTextColumn.Header>
+                        </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="HtTrace" 
-                                            Binding="{Binding HtTrace}" 
-                                            Width="100"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding HtTrace}" Width="100" Visibility="Collapsed">
+                            <DataGridTextColumn.Header>
+                                <ContentControl Content="HtTrace" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
+                            </DataGridTextColumn.Header>
+                        </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="XRay" 
-                                            Binding="{Binding XRay, StringFormat=N2}" 
-                                            Width="80"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding XRay, StringFormat=N2}" Width="80" Visibility="Collapsed">
+                            <DataGridTextColumn.Header>
+                                <ContentControl Content="XRay" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
+                            </DataGridTextColumn.Header>
+                        </DataGridTextColumn>
 
                         <!-- Trigger -->
-                        <DataGridTextColumn Header="DateTrigger" 
-                                            Binding="{Binding DateTrigger}" 
-                                            Width="100"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding DateTrigger}" Width="100" Visibility="Collapsed"/>
 
                         <!-- UDF Fields (remaining) -->
-                        <DataGridTextColumn Header="UDF3" 
-                                            Binding="{Binding UDF3}" 
-                                            Width="120"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding UDF3}" Width="120" Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="UDF4" 
-                                            Binding="{Binding UDF4}" 
-                                            Width="120"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding UDF4}" Width="120" Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="UDF5" 
-                                            Binding="{Binding UDF5}" 
-                                            Width="120"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding UDF5}" Width="120" Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="UDF6" 
-                                            Binding="{Binding UDF6}" 
-                                            Width="120"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding UDF6}" Width="120" Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="UDF7" 
-                                            Binding="{Binding UDF7}" 
-                                            Width="80"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding UDF7}" Width="80" Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="UDF8" 
-                                            Binding="{Binding UDF8}" 
-                                            Width="120"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding UDF8}" Width="120" Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="UDF9" 
-                                            Binding="{Binding UDF9}" 
-                                            Width="120"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding UDF9}" Width="120" Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="UDF10" 
-                                            Binding="{Binding UDF10}" 
-                                            Width="120"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding UDF10}" Width="120" Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="LastModifiedBy" 
-                                            Binding="{Binding LastModifiedBy}" 
-                                            Width="150"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding LastModifiedBy}" Width="150" Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="CreatedBy" 
-                                            Binding="{Binding CreatedBy}" 
-                                            Width="150"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding CreatedBy}" Width="150" Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="UDF14" 
-                                            Binding="{Binding UDF14}" 
-                                            Width="120"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding UDF14}" Width="120" Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="UDF15" 
-                                            Binding="{Binding UDF15}" 
-                                            Width="120"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding UDF15}" Width="120" Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="UDF16" 
-                                            Binding="{Binding UDF16}" 
-                                            Width="120"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding UDF16}" Width="120" Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="UDF17" 
-                                            Binding="{Binding UDF17}" 
-                                            Width="120"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding UDF17}" Width="120" Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="UDF18" 
-                                            Binding="{Binding UDF18}" 
-                                            Width="120"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding UDF18}" Width="120" Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="UDF20" 
-                                            Binding="{Binding UDF20}" 
-                                            Width="120"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding UDF20}" Width="120" Visibility="Collapsed"/>
 
                         <!-- Values - Additional -->
-                        <DataGridTextColumn Header="BaseUnit" 
-                                            Binding="{Binding BaseUnit, StringFormat=N2}" 
-                                            Width="100"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding BaseUnit, StringFormat=N2}" Width="100" Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="BudgetHoursGroup" 
-                                            Binding="{Binding BudgetHoursGroup, StringFormat=N2}" 
-                                            Width="120"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding BudgetHoursGroup, StringFormat=N2}" Width="120" Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="BudgetHoursROC" 
-                                            Binding="{Binding BudgetHoursROC, StringFormat=N2}" 
-                                            Width="120"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding BudgetHoursROC, StringFormat=N2}" Width="120" Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="EarnedMHsRoc" 
-                                            Binding="{Binding EarnedMHsRoc}" 
-                                            Width="120"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding EarnedMHsRoc}" Width="120" Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="UOM" 
-                                            Binding="{Binding UOM}" 
-                                            Width="80"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding UOM}" Width="80" Visibility="Collapsed"/>
 
                         <!-- Calculated fields -->
-                        <DataGridTextColumn Header="EarnedQtyCalc" 
-                                            Binding="{Binding EarnedQtyCalc_Display, StringFormat=N2}"
-                                            Width="100"
-                                            IsReadOnly="True">
+                        <DataGridTextColumn Binding="{Binding EarnedQtyCalc_Display, StringFormat=N2}" Width="100" IsReadOnly="True" Visibility="Collapsed">
+                            <DataGridTextColumn.Header>
+                                <ContentControl Content="EarnedQtyCalc" 
+                                                ContentTemplate="{StaticResource FilterableColumnHeader}"/>
+                            </DataGridTextColumn.Header>
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="Background" Value="{StaticResource ReadOnlyBackground}"/>
@@ -826,40 +838,28 @@
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="PercentCompleteCalc" 
-                                            Binding="{Binding PercentCompleteCalc_Display, StringFormat=N2}"
-                                            Width="100"
-                                            IsReadOnly="True">
-                                            <DataGridTextColumn.ElementStyle>
-                                                <Style TargetType="TextBlock">
-                                                    <Setter Property="Background" Value="{StaticResource ReadOnlyBackground}"/>
-                                                    <Setter Property="Foreground" Value="{StaticResource DisabledColor}"/>
-                                                </Style>
-                                            </DataGridTextColumn.ElementStyle>
+                        <DataGridTextColumn Binding="{Binding PercentCompleteCalc_Display, StringFormat=N2}" Width="100" IsReadOnly="True" Visibility="Collapsed">
+                            <DataGridTextColumn.Header>
+                                <ContentControl Content="PercentCompleteCalc" 
+                                                ContentTemplate="{StaticResource FilterableColumnHeader}"/>
+                            </DataGridTextColumn.Header>
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Background" Value="{StaticResource ReadOnlyBackground}"/>
+                                    <Setter Property="Foreground" Value="{StaticResource DisabledColor}"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
                         <!-- Equipment Quantity -->
-                        <DataGridTextColumn Header="EquivQTY" 
-                                            Binding="{Binding EquivQTY, StringFormat=N2}" 
-                                            Width="100"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding EquivQTY, StringFormat=N2}" Width="100" Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="EquivUOM" 
-                                            Binding="{Binding EquivUOM}" 
-                                            Width="80"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding EquivUOM}" Width="80" Visibility="Collapsed"/>
 
                         <!-- ROC -->
-                        <DataGridTextColumn Header="ROCID" 
-                                            Binding="{Binding ROCID}" 
-                                            Width="80"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding ROCID}" Width="80" Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="ROCLookupID" 
-                                            Binding="{Binding ROCLookupID}" 
-                                            Width="200"
-                                            IsReadOnly="True"
-                                            Visibility="Collapsed">
+                        <DataGridTextColumn Binding="{Binding ROCLookupID}" Width="200" IsReadOnly="True" Visibility="Collapsed">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="Background" Value="{StaticResource ReadOnlyBackground}"/>
@@ -868,49 +868,24 @@
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="ROCPercent" 
-                                            Binding="{Binding ROCPercent, StringFormat=N2}" 
-                                            Width="100"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding ROCPercent, StringFormat=N2}" Width="100" Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="ROCBudgetQTY" 
-                                            Binding="{Binding ROCBudgetQTY, StringFormat=N2}" 
-                                            Width="120"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding ROCBudgetQTY, StringFormat=N2}" Width="120" Visibility="Collapsed"/>
 
                         <!-- Pipe -->
-                        <DataGridTextColumn Header="PipeSize1" 
-                                            Binding="{Binding PipeSize1, StringFormat=N2}" 
-                                            Width="100"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding PipeSize1, StringFormat=N2}" Width="100" Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="PipeSize2" 
-                                            Binding="{Binding PipeSize2, StringFormat=N2}" 
-                                            Width="100"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding PipeSize2, StringFormat=N2}" Width="100" Visibility="Collapsed"/>
 
                         <!-- Previous Values -->
-                        <DataGridTextColumn Header="PrevEarnMHs" 
-                                            Binding="{Binding PrevEarnMHs, StringFormat=N2}" 
-                                            Width="120"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding PrevEarnMHs, StringFormat=N2}" Width="120" Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="PrevEarnQTY" 
-                                            Binding="{Binding PrevEarnQTY, StringFormat=N2}" 
-                                            Width="120"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding PrevEarnQTY, StringFormat=N2}" Width="120" Visibility="Collapsed"/>
 
                         <!-- WeekEndDate -->
-                        <DataGridTextColumn Header="WeekEndDate" 
-                                            Binding="{Binding WeekEndDate}" 
-                                            Width="150"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding WeekEndDate}" Width="150" Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="AzureUploadDate" 
-                                            Binding="{Binding AzureUploadDate}"
-                                            Width="150"
-                                            Visibility="Collapsed"
-                                            IsReadOnly="True">
+                        <DataGridTextColumn Binding="{Binding AzureUploadDate}" Width="150" Visibility="Collapsed" IsReadOnly="True">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="Background" Value="{StaticResource ReadOnlyBackground}"/>
@@ -919,11 +894,7 @@
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="ProgDate" 
-                                            Binding="{Binding ProgDate}"
-                                            Width="150"
-                                            Visibility="Collapsed"
-                                            IsReadOnly="True">
+                        <DataGridTextColumn Binding="{Binding ProgDate}" Width="150" Visibility="Collapsed" IsReadOnly="True">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="Background" Value="{StaticResource ReadOnlyBackground}"/>
@@ -933,26 +904,13 @@
                         </DataGridTextColumn>
 
                         <!-- Client Values -->
-                        <DataGridTextColumn Header="ClientEquivQty" 
-                                            Binding="{Binding ClientEquivQty, StringFormat=N2}" 
-                                            Width="150"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding ClientEquivQty, StringFormat=N2}" Width="150" Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="ClientBudget" 
-                                            Binding="{Binding ClientBudget, StringFormat=N2}" 
-                                            Width="100"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding ClientBudget, StringFormat=N2}" Width="100" Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="ClientCustom3" 
-                                            Binding="{Binding ClientCustom3, StringFormat=N2}" 
-                                            Width="100"
-                                            Visibility="Collapsed"/>
+                        <DataGridTextColumn Binding="{Binding ClientCustom3, StringFormat=N2}" Width="100" Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="ClientEquivEarnQTY" 
-                                            Binding="{Binding ClientEquivEarnQTY, StringFormat=N3}" 
-                                            Width="150"
-                                            IsReadOnly="True"
-                                            Visibility="Collapsed">
+                        <DataGridTextColumn Binding="{Binding ClientEquivEarnQTY, StringFormat=N3}" Width="150" IsReadOnly="True" Visibility="Collapsed">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="Background" Value="{StaticResource ReadOnlyBackground}"/>

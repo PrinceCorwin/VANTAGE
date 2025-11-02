@@ -279,7 +279,7 @@ namespace VANTAGE.ViewModels
             // Date columns
             var dateColumns = new System.Collections.Generic.HashSet<string>(System.StringComparer.OrdinalIgnoreCase)
             {
-                "Start", "Finish", "ProgDate", "WeekEndDate", "AzureUploadDate"
+                "SchStart", "SchFinish", "ProgDate", "WeekEndDate", "AzureUploadDate"
             };
             if (dateColumns.Contains(dbColumnName))
             {
@@ -287,15 +287,21 @@ namespace VANTAGE.ViewModels
                 {
                     case "Equals":
                         return $"{dbColumnName} = '{filterValue}'";
+                    case "Not Equal":
+                        return $"{dbColumnName} <> '{filterValue}'";
                     case "Before":
                         return $"{dbColumnName} < '{filterValue}'";
                     case "After":
                         return $"{dbColumnName} > '{filterValue}'";
                     case "Between":
-                        var parts = filterValue.Split(',');
-                        if (parts.Length ==2)
+                        var parts = filterValue?.Split(',');
+                        if (parts != null && parts.Length ==2)
                             return $"{dbColumnName} BETWEEN '{parts[0]}' AND '{parts[1]}'";
                         return "";
+                    case "Is Blank":
+                        return $"({dbColumnName} IS NULL OR {dbColumnName} = '')";
+                    case "Is Not Blank":
+                        return $"({dbColumnName} IS NOT NULL AND {dbColumnName} <> '')";
                     default:
                         return "";
                 }
@@ -311,12 +317,17 @@ namespace VANTAGE.ViewModels
                 case "Equals":
                     return $"{dbColumnName} = '{filterValue}'";
                 case "Does Not Equal":
+                case "Not Equal":
                     return $"{dbColumnName} <> '{filterValue}'";
                 case "Begins With":
                 case "Starts With":
                     return $"{dbColumnName} LIKE '{filterValue}%'";
                 case "Ends With":
                     return $"{dbColumnName} LIKE '%{filterValue}'";
+                case "Is Blank":
+                    return $"({dbColumnName} IS NULL OR {dbColumnName} = '')";
+                case "Is Not Blank":
+                    return $"({dbColumnName} IS NOT NULL AND {dbColumnName} <> '')";
                 default:
                     return "";
             }
