@@ -285,79 +285,27 @@
             <Border Grid.Row="2" 
                     BorderBrush="{StaticResource BorderColor}" 
                     BorderThickness="0">
-                <syncfusion:SfDataGrid x:Name="dgActivities"
-                       AutoGenerateColumns="False"
-                       AllowEditing="True"
-                       EditTrigger="OnTap"
-                       AddNewRowPosition="None"
-                       AllowDraggingColumns="True"
-                       AllowSorting="True"
-                       AllowFiltering="True"
-                       SelectionMode="Extended"
-                       SelectionUnit="Row"
-                       ColumnSizer="Auto"
-                       Background="{StaticResource BackgroundColor}"
-                       Foreground="{StaticResource ForegroundColor}"
-                       BorderBrush="{StaticResource BorderColor}"
-                       BorderThickness="0"
-                       GridLinesVisibility="Both"
-                       RowHeight="28"
-                       HeaderRowHeight="32"
-                       CurrentCellEndEdit="DgActivities_CurrentCellEndEdit"
-                       SelectionChanged="DgActivities_SelectionChanged"
-                       CurrentCellBeginEdit="DgActivities_CurrentCellBeginEdit">
-
-                    <!--<DataGrid.ColumnHeaderStyle>
-                        <Style TargetType="DataGridColumnHeader">
-                            <Setter Property="Background" Value="{StaticResource GridHeaderBackground}"/>
-                            <Setter Property="Foreground" Value="{StaticResource GridHeaderForeground}"/>
-                            <Setter Property="FontWeight" Value="Bold"/>
-                            <Setter Property="FontSize" Value="12"/>
-                            <Setter Property="Padding" Value="8,5"/>
-                            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}"/>
-                            <Setter Property="BorderThickness" Value="0,0,1,1"/>
-                            <Setter Property="HorizontalContentAlignment" Value="Left"/>
-                        </Style>
-                    </DataGrid.ColumnHeaderStyle>-->
-
-                    <!--<DataGrid.RowStyle>
-                        <Style TargetType="DataGridRow">
-                            <Setter Property="Background" Value="{StaticResource BackgroundColor}"/>
-                            <Setter Property="Foreground" Value="{StaticResource ForegroundColor}"/>
-                            <Style.Triggers>
-                                --><!-- Green background for my records (editable) --><!--
-                                <DataTrigger Binding="{Binding IsMyRecord}" Value="True">
-                                    <Setter Property="Background" Value="{StaticResource MyRecordsBackground}"/>
-                                </DataTrigger>
-
-                                --><!-- Grey background/text for non-editable records --><!--
-                                <DataTrigger Binding="{Binding IsEditable}" Value="False">
-                                    <Setter Property="Background" Value="{StaticResource ReadOnlyBackground}"/>
-                                    <Setter Property="Foreground" Value="{StaticResource DisabledColor}"/>
-                                </DataTrigger>
-
-                                --><!-- Selected row (overrides other backgrounds) --><!--
-                                <Trigger Property="IsSelected" Value="True">
-                                    <Setter Property="Background" Value="{StaticResource GridSelectedRowBackground}"/>
-                                </Trigger>
-                            </Style.Triggers>
-                        </Style>
-                    </DataGrid.RowStyle>-->
-
-                    <!--<DataGrid.CellStyle>
-                        <Style TargetType="DataGridCell">
-                            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}"/>
-                            <Setter Property="BorderThickness" Value="0,0,1,0"/>
-                            <Setter Property="Padding" Value="5,0"/>
-                            <Style.Triggers>
-                                --><!-- Selected cell styling --><!--
-                                <Trigger Property="IsSelected" Value="True">
-                                    <Setter Property="Background" Value="{StaticResource GridSelectedRowBackground}"/>
-                                    <Setter Property="Foreground" Value="{StaticResource ForegroundColor}"/>
-                                </Trigger>
-                            </Style.Triggers>
-                        </Style>
-                    </DataGrid.CellStyle>-->
+                <syncfusion:SfDataGrid x:Name="sfActivities"
+                    AutoGenerateColumns="False"
+                    AllowEditing="True"
+                    EditTrigger="OnTap"
+                    AddNewRowPosition="None"
+                    AllowDraggingColumns="True"
+                    AllowSorting="True"
+                    AllowFiltering="True"
+                    SelectionMode="Extended"
+                    SelectionUnit="Row"
+                    ColumnSizer="Auto"
+                    Background="{StaticResource BackgroundColor}"
+                    Foreground="{StaticResource ForegroundColor}"
+                    BorderBrush="{StaticResource BorderColor}"
+                    BorderThickness="0"
+                    GridLinesVisibility="Both"
+                    RowHeight="28"
+                    HeaderRowHeight="32"
+                    CurrentCellEndEdit="sfActivities_CurrentCellEndEdit"
+                    SelectionChanged="sfActivities_SelectionChanged"
+                    CurrentCellBeginEdit="sfActivities_CurrentCellBeginEdit">
 
                     <!--<DataGrid.ContextMenu>
                         <ContextMenu Background="{StaticResource ControlBackground}" 

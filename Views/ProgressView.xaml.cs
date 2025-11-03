@@ -24,7 +24,7 @@ namespace VANTAGE.Views
             InitializeComponent();
             _viewModel = new ProgressViewModel();
             this.DataContext = _viewModel;
-            dgActivities.ItemsSource = _viewModel.ActivitiesView;
+            sfActivities.ItemsSource = _viewModel.ActivitiesView;
 
             // Subscribe to ViewModel property changes - ADD THIS LINE
             _viewModel.PropertyChanged += ViewModel_PropertyChanged;
@@ -240,7 +240,7 @@ namespace VANTAGE.Views
         //    {
         //        // Apply tooltips to columns
         //        int tooltipsSet = 0;
-        //        foreach (var column in dgActivities.Columns)
+        //        foreach (var column in sfActivities.Columns)
         //        {
         //            // Get the property name from the column
         //            string propertyName = GetColumnPropertyName(column);
@@ -332,7 +332,7 @@ namespace VANTAGE.Views
         //    {
         //        var activeCols = new HashSet<string>(_viewModel.ActiveFilterColumns ?? Enumerable.Empty<string>());
 
-        //        foreach (var header in FindVisualChildren<DataGridColumnHeader>(dgActivities))
+        //        foreach (var header in FindVisualChildren<DataGridColumnHeader>(sfActivities))
         //        {
         //            var col = header.Column;
         //            if (col == null) continue;
@@ -406,7 +406,7 @@ namespace VANTAGE.Views
             lstColumnVisibility.Items.Clear();
             _columnMap.Clear();
 
-            foreach (var column in dgActivities.Columns)
+            foreach (var column in sfActivities.Columns)
             {
                 // Get property name from binding path
                 string columnName = GetColumnPropertyName(column);
@@ -432,10 +432,10 @@ namespace VANTAGE.Views
         /// <summary>
         /// Prevent editing of records not assigned to current user
         /// </summary>
-        private void DgActivities_CurrentCellBeginEdit(object sender, Syncfusion.UI.Xaml.Grid.CurrentCellBeginEditEventArgs e)
+        private void sfActivities_CurrentCellBeginEdit(object sender, Syncfusion.UI.Xaml.Grid.CurrentCellBeginEditEventArgs e)
         {
             // Get the activity from the current row
-            var activity = dgActivities.SelectedItem as Activity;
+            var activity = sfActivities.SelectedItem as Activity;
             if (activity != null && !activity.IsEditable)
             {
                 // Cancel the edit
@@ -466,13 +466,13 @@ namespace VANTAGE.Views
                         ContentTemplate = dataTemplate
                     };
                 }
-                dgActivities.UpdateLayout();
+                sfActivities.UpdateLayout();
             }
         }
         private async void MenuUnassign_Click(object sender, RoutedEventArgs e)
         {
             // Get selected activities
-            var selectedActivities = dgActivities.SelectedItems.Cast<Activity>().ToList();
+            var selectedActivities = sfActivities.SelectedItems.Cast<Activity>().ToList();
             if (!selectedActivities.Any())
             {
                 MessageBox.Show("Please select one or more records to unassign.", "No Selection", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -523,7 +523,7 @@ namespace VANTAGE.Views
                 }
 
                 MessageBox.Show($"Unassigned {successCount} record(s).", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-                dgActivities.Items.Refresh();
+                sfActivities.Items.Refresh();
             }
             catch (Exception ex)
             {
@@ -775,12 +775,12 @@ namespace VANTAGE.Views
         /// <summary>
         /// Auto-save when user finishes editing a cell
         /// </summary>
-        private async void DgActivities_CurrentCellEndEdit(object sender, Syncfusion.UI.Xaml.Grid.CurrentCellEndEditEventArgs e)
+        private async void sfActivities_CurrentCellEndEdit(object sender, Syncfusion.UI.Xaml.Grid.CurrentCellEndEditEventArgs e)
         {
             try
             {
                 // Get the edited activity from the current row
-                var editedActivity = dgActivities.SelectedItem as Activity;
+                var editedActivity = sfActivities.SelectedItem as Activity;
                 if (editedActivity == null)
                     return;
 
@@ -813,7 +813,7 @@ namespace VANTAGE.Views
             }
         }
 
-        private void DgActivities_SelectionChanged(object sender, Syncfusion.UI.Xaml.Grid.GridSelectionChangedEventArgs e)
+        private void sfActivities_SelectionChanged(object sender, Syncfusion.UI.Xaml.Grid.GridSelectionChangedEventArgs e)
         {
             // TODO: Implement selection change logic if needed
         }
@@ -821,7 +821,7 @@ namespace VANTAGE.Views
         private async void MenuAssignToMe_Click(object sender, RoutedEventArgs e)
         {
             // Get selected activities
-            var selectedActivities = dgActivities.SelectedItems.Cast<Activity>().ToList();
+            var selectedActivities = sfActivities.SelectedItems.Cast<Activity>().ToList();
             if (!selectedActivities.Any())
             {
                 MessageBox.Show("Please select one or more records to assign.", "No Selection", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -871,7 +871,7 @@ namespace VANTAGE.Views
                 }
 
                 MessageBox.Show($"Assigned {successCount} record(s) to you.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-                dgActivities.Items.Refresh();
+                sfActivities.Items.Refresh();
             }
             catch (Exception ex)
             {
@@ -882,7 +882,7 @@ namespace VANTAGE.Views
         private async void MenuAssignToUser_Click(object sender, RoutedEventArgs e)
         {
             // Get selected activities
-            var selectedActivities = dgActivities.SelectedItems.Cast<Activity>().ToList();
+            var selectedActivities = sfActivities.SelectedItems.Cast<Activity>().ToList();
             if (!selectedActivities.Any())
             {
                 MessageBox.Show("Please select one or more records to assign.", "No Selection", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -1006,7 +1006,7 @@ namespace VANTAGE.Views
                     }
 
                     MessageBox.Show($"Assigned {successCount} record(s) to {selectedUser}.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-                    dgActivities.Items.Refresh();
+                    sfActivities.Items.Refresh();
                 }
                 catch (Exception ex)
                 {
@@ -1018,7 +1018,7 @@ namespace VANTAGE.Views
         private async void MenuMarkComplete_Click(object sender, RoutedEventArgs e)
         {
             // Get selected activities
-            var selectedActivities = dgActivities.SelectedItems.Cast<Activity>().ToList();
+            var selectedActivities = sfActivities.SelectedItems.Cast<Activity>().ToList();
             if (!selectedActivities.Any())
             {
                 MessageBox.Show("Please select one or more records to mark complete.", "No Selection", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -1061,7 +1061,7 @@ namespace VANTAGE.Views
                 }
 
                 // Refresh the DataGrid to show changes
-                dgActivities.Items.Refresh();
+                sfActivities.Items.Refresh();
             }
             catch (Exception ex)
             {
@@ -1072,7 +1072,7 @@ namespace VANTAGE.Views
         private async void MenuMarkNotStarted_Click(object sender, RoutedEventArgs e)
         {
             // Get selected activities
-            var selectedActivities = dgActivities.SelectedItems.Cast<Activity>().ToList();
+            var selectedActivities = sfActivities.SelectedItems.Cast<Activity>().ToList();
             if (!selectedActivities.Any())
             {
                 MessageBox.Show("Please select one or more records to mark not started.", "No Selection", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -1112,7 +1112,7 @@ namespace VANTAGE.Views
                 }
 
                 // Refresh the DataGrid to show changes
-                dgActivities.Items.Refresh();
+                sfActivities.Items.Refresh();
             }
             catch (Exception ex)
             {
