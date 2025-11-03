@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
              mc:Ignorable="d"
              d:DesignHeight="600" d:DesignWidth="1200"
              Background="{StaticResource BackgroundColor}">
@@ -284,32 +285,29 @@
             <Border Grid.Row="2" 
                     BorderBrush="{StaticResource BorderColor}" 
                     BorderThickness="0">
-                <DataGrid x:Name="dgActivities"
-                          AutoGenerateColumns="False"
-                          CanUserAddRows="False"
-                          CanUserDeleteRows="False"
-                          CanUserReorderColumns="True"
-                          CanUserSortColumns="False"
-                          SelectionMode="Extended"
-                          SelectionUnit="FullRow"
-                          EnableRowVirtualization="True"
-                          EnableColumnVirtualization="True"
-                          VirtualizingPanel.IsVirtualizing="True"
-                          VirtualizingPanel.VirtualizationMode="Recycling"
-                          Background="{StaticResource BackgroundColor}"
-                          Foreground="{StaticResource ForegroundColor}"
-                          BorderBrush="{StaticResource BorderColor}"
-                          BorderThickness="0"
-                          GridLinesVisibility="All"
-                          HorizontalGridLinesBrush="{StaticResource BorderColor}"
-                          VerticalGridLinesBrush="{StaticResource BorderColor}"
-                          RowHeight="28"
-                          HeadersVisibility="Column"
-                          RowEditEnding="DgActivities_RowEditEnding"
-                          SelectionChanged="DgActivities_SelectionChanged"
-                          BeginningEdit="DgActivities_BeginningEdit">
+                <syncfusion:SfDataGrid x:Name="dgActivities"
+                       AutoGenerateColumns="False"
+                       AllowEditing="True"
+                       EditTrigger="OnTap"
+                       AddNewRowPosition="None"
+                       AllowDraggingColumns="True"
+                       AllowSorting="True"
+                       AllowFiltering="True"
+                       SelectionMode="Extended"
+                       SelectionUnit="Row"
+                       ColumnSizer="Auto"
+                       Background="{StaticResource BackgroundColor}"
+                       Foreground="{StaticResource ForegroundColor}"
+                       BorderBrush="{StaticResource BorderColor}"
+                       BorderThickness="0"
+                       GridLinesVisibility="Both"
+                       RowHeight="28"
+                       HeaderRowHeight="32"
+                       CurrentCellEndEdit="DgActivities_CurrentCellEndEdit"
+                       SelectionChanged="DgActivities_SelectionChanged"
+                       CurrentCellBeginEdit="DgActivities_CurrentCellBeginEdit">
 
-                    <DataGrid.ColumnHeaderStyle>
+                    <!--<DataGrid.ColumnHeaderStyle>
                         <Style TargetType="DataGridColumnHeader">
                             <Setter Property="Background" Value="{StaticResource GridHeaderBackground}"/>
                             <Setter Property="Foreground" Value="{StaticResource GridHeaderForeground}"/>
@@ -320,48 +318,48 @@
                             <Setter Property="BorderThickness" Value="0,0,1,1"/>
                             <Setter Property="HorizontalContentAlignment" Value="Left"/>
                         </Style>
-                    </DataGrid.ColumnHeaderStyle>
+                    </DataGrid.ColumnHeaderStyle>-->
 
-                    <DataGrid.RowStyle>
+                    <!--<DataGrid.RowStyle>
                         <Style TargetType="DataGridRow">
                             <Setter Property="Background" Value="{StaticResource BackgroundColor}"/>
                             <Setter Property="Foreground" Value="{StaticResource ForegroundColor}"/>
                             <Style.Triggers>
-                                <!-- Green background for my records (editable) -->
+                                --><!-- Green background for my records (editable) --><!--
                                 <DataTrigger Binding="{Binding IsMyRecord}" Value="True">
                                     <Setter Property="Background" Value="{StaticResource MyRecordsBackground}"/>
                                 </DataTrigger>
 
-                                <!-- Grey background/text for non-editable records -->
+                                --><!-- Grey background/text for non-editable records --><!--
                                 <DataTrigger Binding="{Binding IsEditable}" Value="False">
                                     <Setter Property="Background" Value="{StaticResource ReadOnlyBackground}"/>
                                     <Setter Property="Foreground" Value="{StaticResource DisabledColor}"/>
                                 </DataTrigger>
 
-                                <!-- Selected row (overrides other backgrounds) -->
+                                --><!-- Selected row (overrides other backgrounds) --><!--
                                 <Trigger Property="IsSelected" Value="True">
                                     <Setter Property="Background" Value="{StaticResource GridSelectedRowBackground}"/>
                                 </Trigger>
                             </Style.Triggers>
                         </Style>
-                    </DataGrid.RowStyle>
+                    </DataGrid.RowStyle>-->
 
-                    <DataGrid.CellStyle>
+                    <!--<DataGrid.CellStyle>
                         <Style TargetType="DataGridCell">
                             <Setter Property="BorderBrush" Value="{StaticResource BorderColor}"/>
                             <Setter Property="BorderThickness" Value="0,0,1,0"/>
                             <Setter Property="Padding" Value="5,0"/>
                             <Style.Triggers>
-                                <!-- Selected cell styling -->
+                                --><!-- Selected cell styling --><!--
                                 <Trigger Property="IsSelected" Value="True">
                                     <Setter Property="Background" Value="{StaticResource GridSelectedRowBackground}"/>
                                     <Setter Property="Foreground" Value="{StaticResource ForegroundColor}"/>
                                 </Trigger>
                             </Style.Triggers>
                         </Style>
-                    </DataGrid.CellStyle>
+                    </DataGrid.CellStyle>-->
 
-                    <DataGrid.ContextMenu>
+                    <!--<DataGrid.ContextMenu>
                         <ContextMenu Background="{StaticResource ControlBackground}" 
                                      Foreground="{StaticResource ForegroundColor}"
                                      BorderBrush="{StaticResource BorderColor}">
@@ -387,540 +385,745 @@
                                       Background="{StaticResource ControlBackground}"
                                       Foreground="{StaticResource ForegroundColor}"/>
                         </ContextMenu>
-                    </DataGrid.ContextMenu>
-
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Binding="{Binding UniqueID}" Width="120" IsReadOnly="True">
-                            <DataGridTextColumn.Header>
-                                <ContentControl Content="UniqueID" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                            </DataGridTextColumn.Header>
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Background" Value="{StaticResource ReadOnlyBackground}"/>
-                                    <Setter Property="Foreground" Value="{StaticResource DisabledColor}"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
-
-                        <DataGridTextColumn Binding="{Binding Description}" Width="250">
-                            <DataGridTextColumn.Header>
-                                <ContentControl Content="Description" 
-                                                ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                            </DataGridTextColumn.Header>
-                        </DataGridTextColumn>
-
-                        <DataGridTextColumn Binding="{Binding CompType}" Width="120">
-                            <DataGridTextColumn.Header>
-                                <ContentControl Content="CompType" 
-                                                ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                            </DataGridTextColumn.Header>
-                        </DataGridTextColumn>
-
-                        <DataGridTextColumn Binding="{Binding PhaseCategory}" Width="120">
-                            <DataGridTextColumn.Header>
-                                <ContentControl Content="PhaseCategory" 
-                                                ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                            </DataGridTextColumn.Header>
-                        </DataGridTextColumn>
-
-                        <DataGridTextColumn Binding="{Binding ROCStep}" Width="100">
-                            <DataGridTextColumn.Header>
-                                <ContentControl Content="ROCStep" 
-                                                ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                            </DataGridTextColumn.Header>
-                        </DataGridTextColumn>
-
-                        <DataGridTextColumn Binding="{Binding ProjectID}" Width="100">
-                            <DataGridTextColumn.Header>
-                                <ContentControl Content="ProjectID" 
-                                                ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                            </DataGridTextColumn.Header>
-                        </DataGridTextColumn>
-
-                        <DataGridTextColumn Binding="{Binding WorkPackage}" Width="120">
-                            <DataGridTextColumn.Header>
-                                <ContentControl Content="WorkPackage" 
-                                                ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                            </DataGridTextColumn.Header>
-                        </DataGridTextColumn>
-
-                        <DataGridTextColumn Binding="{Binding PhaseCode}" Width="100">
-                            <DataGridTextColumn.Header>
-                                <ContentControl Content="PhaseCode" 
-                                                ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                            </DataGridTextColumn.Header>
-                        </DataGridTextColumn>
-
-                        <DataGridTextColumn Binding="{Binding DwgNO}" Width="120">
-                            <DataGridTextColumn.Header>
-                                <ContentControl Content="DwgNO" 
-                                                ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                            </DataGridTextColumn.Header>
-                        </DataGridTextColumn>
-
-                        <DataGridTemplateColumn Width="120">
-                            <DataGridTemplateColumn.Header>
-                                <ContentControl Content="SchStart" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                            </DataGridTemplateColumn.Header>
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding SchStart, StringFormat=yyyy-MM-dd}" />
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                            <DataGridTemplateColumn.CellEditingTemplate>
-                                <DataTemplate>
-                                    <DatePicker SelectedDate="{Binding SchStart, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellEditingTemplate>
-                        </DataGridTemplateColumn>
-
-                        <DataGridTemplateColumn Width="120">
-                            <DataGridTemplateColumn.Header>
-                                <ContentControl Content="SchFinish" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                            </DataGridTemplateColumn.Header>
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding SchFinish, StringFormat=yyyy-MM-dd}" />
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                            <DataGridTemplateColumn.CellEditingTemplate>
-                                <DataTemplate>
-                                    <DatePicker SelectedDate="{Binding SchFinish, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellEditingTemplate>
-                        </DataGridTemplateColumn>
-
-                        <DataGridTemplateColumn Width="120" Visibility="Collapsed">
-                            <DataGridTemplateColumn.Header>
-                                <ContentControl Content="ProgDate" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                            </DataGridTemplateColumn.Header>
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding ProgDate, StringFormat=yyyy-MM-dd}" />
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                            <DataGridTemplateColumn.CellEditingTemplate>
-                                <DataTemplate>
-                                    <DatePicker SelectedDate="{Binding ProgDate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellEditingTemplate>
-                        </DataGridTemplateColumn>
-
-                        <DataGridTemplateColumn Width="120" Visibility="Collapsed">
-                            <DataGridTemplateColumn.Header>
-                                <ContentControl Content="WeekEndDate" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                            </DataGridTemplateColumn.Header>
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding WeekEndDate, StringFormat=yyyy-MM-dd}" />
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                            <DataGridTemplateColumn.CellEditingTemplate>
-                                <DataTemplate>
-                                    <DatePicker SelectedDate="{Binding WeekEndDate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellEditingTemplate>
-                        </DataGridTemplateColumn>
-
-                        <DataGridTextColumn Binding="{Binding SchedActNO}" Width="100">
-                            <DataGridTextColumn.Header>
-                                <ContentControl Content="SchedActNO" 
-                                                ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                            </DataGridTextColumn.Header>
-                        </DataGridTextColumn>
-
-                        <DataGridTextColumn Binding="{Binding Quantity, StringFormat=N2}" Width="100">
-                            <DataGridTextColumn.Header>
-                                <ContentControl Content="Quantity" 
-                                                ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                            </DataGridTextColumn.Header>
-                        </DataGridTextColumn>
-
-                        <DataGridTextColumn Binding="{Binding EarnQtyEntry, StringFormat=N2, UpdateSourceTrigger=LostFocus}" Width="100">
-                            <DataGridTextColumn.Header>
-                                <ContentControl Content="EarnQtyEntry" 
-                                                ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                            </DataGridTextColumn.Header>
-                        </DataGridTextColumn>
-
-                        <DataGridTextColumn Binding="{Binding PercentEntry_Display, StringFormat=N2}" Width="100">
-                            <DataGridTextColumn.Header>
-                                <ContentControl Content="PercentEntry" 
-                                                ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                            </DataGridTextColumn.Header>
-                        </DataGridTextColumn>
-
-                        <DataGridTextColumn Binding="{Binding BudgetMHs, StringFormat=N2}" Width="100">
-                            <DataGridTextColumn.Header>
-                                <ContentControl Content="BudgetMHs" 
-                                                ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                            </DataGridTextColumn.Header>
-                        </DataGridTextColumn>
-
-                        <DataGridTextColumn Binding="{Binding EarnMHsCalc, StringFormat=N3}" Width="100" IsReadOnly="True">
-                            <DataGridTextColumn.Header>
-                                <ContentControl Content="EarnMHsCalc" 
-                                                ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                            </DataGridTextColumn.Header>
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Background" Value="{StaticResource ReadOnlyBackground}"/>
-                                    <Setter Property="Foreground" Value="{StaticResource DisabledColor}"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
-
-                        <DataGridTextColumn Binding="{Binding Status}" Width="100" IsReadOnly="True">
-                            <DataGridTextColumn.Header>
-                                <ContentControl Content="Status" 
-                                                ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                            </DataGridTextColumn.Header>
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Background" Value="{StaticResource ReadOnlyBackground}"/>
-                                    <Setter Property="Foreground" Value="{StaticResource DisabledColor}"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
-
-                        <DataGridTextColumn Binding="{Binding UDF1}" Width="120">
-                            <DataGridTextColumn.Header>
-                                <ContentControl Content="UDF1" 
-                                                ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                            </DataGridTextColumn.Header>
-                        </DataGridTextColumn>
-
-                        <DataGridTextColumn Binding="{Binding UDF2}" Width="120">
-                            <DataGridTextColumn.Header>
-                                <ContentControl Content="UDF2" 
-                                                ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                            </DataGridTextColumn.Header>
-                        </DataGridTextColumn>
-
-                        <DataGridTextColumn Binding="{Binding AssignedTo}" IsReadOnly="True" Width="120">
-                            <DataGridTextColumn.Header>
-                                <ContentControl Content="AssignedTo" 
-                                                ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                            </DataGridTextColumn.Header>
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Background" Value="{StaticResource ReadOnlyBackground}"/>
-                                    <Setter Property="Foreground" Value="{StaticResource DisabledColor}"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
-
-                        <!-- ALL OTHER COLLAPSED COLUMNS -->
-                        <DataGridTextColumn Binding="{Binding HexNO}" Width="80" Visibility="Collapsed">
-                            <DataGridTextColumn.Header>
-                                <ContentControl Content="HexNO" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                            </DataGridTextColumn.Header>
-                        </DataGridTextColumn>
-
-                        <!-- Drawings -->
-                        <DataGridTextColumn Binding="{Binding RevNO}" Width="100" Visibility="Collapsed">
-                            <DataGridTextColumn.Header>
-                                <ContentControl Content="RevNO" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                            </DataGridTextColumn.Header>
-                        </DataGridTextColumn>
-
-                        <DataGridTextColumn Binding="{Binding SecondDwgNO}" Width="120" Visibility="Collapsed">
-                            <DataGridTextColumn.Header>
-                                <ContentControl Content="SecondDwgNO" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                            </DataGridTextColumn.Header>
-                        </DataGridTextColumn>
-
-                        <DataGridTextColumn Binding="{Binding ShtNO}" Width="80" Visibility="Collapsed">
-                            <DataGridTextColumn.Header>
-                                <ContentControl Content="ShtNO" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                            </DataGridTextColumn.Header>
-                        </DataGridTextColumn>
-
-                        <!-- Notes -->
-                        <DataGridTextColumn Binding="{Binding Notes}" Width="200" Visibility="Visible">
-                            <DataGridTextColumn.Header>
-                                <ContentControl Content="Notes" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                            </DataGridTextColumn.Header>
-                        </DataGridTextColumn>
-
-                        <!-- Schedule Additional -->
-                        <DataGridTextColumn Binding="{Binding SecondActno}" Width="100" Visibility="Collapsed">
-                            <DataGridTextColumn.Header>
-                                <ContentControl Content="SecondActno" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                            </DataGridTextColumn.Header>
-                        </DataGridTextColumn>
-
-                        <!-- Tags - Auxiliary -->
-                        <DataGridTextColumn Binding="{Binding Aux1}" Width="100" Visibility="Collapsed">
-                            <DataGridTextColumn.Header>
-                                <ContentControl Content="Aux1" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                            </DataGridTextColumn.Header>
-                        </DataGridTextColumn>
-
-                        <DataGridTextColumn Binding="{Binding Aux2}" Width="100" Visibility="Collapsed">
-                            <DataGridTextColumn.Header>
-                                <ContentControl Content="Aux2" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                            </DataGridTextColumn.Header>
-                        </DataGridTextColumn>
-
-                        <DataGridTextColumn Binding="{Binding Aux3}" Width="100" Visibility="Collapsed">
-                            <DataGridTextColumn.Header>
-                                <ContentControl Content="Aux3" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                            </DataGridTextColumn.Header>
-                        </DataGridTextColumn>
-
-                        <DataGridTextColumn Binding="{Binding Area}" Width="80" Visibility="Collapsed">
-                            <DataGridTextColumn.Header>
-                                <ContentControl Content="Area" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                            </DataGridTextColumn.Header>
-                        </DataGridTextColumn>
-
-                        <DataGridTextColumn Binding="{Binding ChgOrdNO}" Width="80" Visibility="Collapsed">
-                            <DataGridTextColumn.Header>
-                                <ContentControl Content="ChgOrdNO" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                            </DataGridTextColumn.Header>
-                        </DataGridTextColumn>
-
-                        <DataGridTextColumn Binding="{Binding EqmtNO}" Width="120" Visibility="Collapsed">
-                            <DataGridTextColumn.Header>
-                                <ContentControl Content="EqmtNO" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                            </DataGridTextColumn.Header>
-                        </DataGridTextColumn>
-
-                        <DataGridTextColumn Binding="{Binding Estimator}" Width="120" Visibility="Collapsed">
-                            <DataGridTextColumn.Header>
-                                <ContentControl Content="Estimator" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                            </DataGridTextColumn.Header>
-                        </DataGridTextColumn>
-
-                        <DataGridTextColumn Binding="{Binding InsulType}" Width="120" Visibility="Collapsed">
-                            <DataGridTextColumn.Header>
-                                <ContentControl Content="InsulType" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                            </DataGridTextColumn.Header>
-                        </DataGridTextColumn>
-
-                        <DataGridTextColumn Binding="{Binding LineNO}" Width="100" Visibility="Collapsed">
-                            <DataGridTextColumn.Header>
-                                <ContentControl Content="LineNO" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                            </DataGridTextColumn.Header>
-                        </DataGridTextColumn>
-
-                        <DataGridTextColumn Binding="{Binding MtrlSpec}" Width="120" Visibility="Collapsed">
-                            <DataGridTextColumn.Header>
-                                <ContentControl Content="MtrlSpec" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                            </DataGridTextColumn.Header>
-                        </DataGridTextColumn>
-
-                        <DataGridTextColumn Binding="{Binding PaintCode}" Width="100" Visibility="Collapsed">
-                            <DataGridTextColumn.Header>
-                                <ContentControl Content="PaintCode" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                            </DataGridTextColumn.Header>
-                        </DataGridTextColumn>
-
-                        <DataGridTextColumn Binding="{Binding PipeGrade}" Width="100" Visibility="Collapsed">
-                            <DataGridTextColumn.Header>
-                                <ContentControl Content="PipeGrade" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                            </DataGridTextColumn.Header>
-                        </DataGridTextColumn>
-
-                        <DataGridTextColumn Binding="{Binding RFINO}" Width="80" Visibility="Collapsed">
-                            <DataGridTextColumn.Header>
-                                <ContentControl Content="RFINO" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                            </DataGridTextColumn.Header>
-                        </DataGridTextColumn>
-
-                        <DataGridTextColumn Binding="{Binding Service}" Width="120" Visibility="Collapsed">
-                            <DataGridTextColumn.Header>
-                                <ContentControl Content="Service" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                            </DataGridTextColumn.Header>
-                        </DataGridTextColumn>
-
-                        <DataGridTextColumn Binding="{Binding ShopField}" Width="100" Visibility="Collapsed">
-                            <DataGridTextColumn.Header>
-                                <ContentControl Content="ShopField" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                            </DataGridTextColumn.Header>
-                        </DataGridTextColumn>
-
-                        <DataGridTextColumn Binding="{Binding SubArea}" Width="80" Visibility="Collapsed">
-                            <DataGridTextColumn.Header>
-                                <ContentControl Content="SubArea" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                            </DataGridTextColumn.Header>
-                        </DataGridTextColumn>
-
-                        <DataGridTextColumn Binding="{Binding System}" Width="100" Visibility="Collapsed">
-                            <DataGridTextColumn.Header>
-                                <ContentControl Content="System" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                            </DataGridTextColumn.Header>
-                        </DataGridTextColumn>
-
-                        <DataGridTextColumn Binding="{Binding SystemNO}" Width="100" Visibility="Collapsed">
-                            <DataGridTextColumn.Header>
-                                <ContentControl Content="SystemNO" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                            </DataGridTextColumn.Header>
-                        </DataGridTextColumn>
-
-                        <DataGridTextColumn Binding="{Binding TagNO}" Width="120" Visibility="Collapsed">
-                            <DataGridTextColumn.Header>
-                                <ContentControl Content="TagNO" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                            </DataGridTextColumn.Header>
-                        </DataGridTextColumn>
-
-                        <DataGridTextColumn Binding="{Binding HtTrace}" Width="100" Visibility="Collapsed">
-                            <DataGridTextColumn.Header>
-                                <ContentControl Content="HtTrace" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                            </DataGridTextColumn.Header>
-                        </DataGridTextColumn>
-
-                        <DataGridTextColumn Binding="{Binding XRay, StringFormat=N2}" Width="80" Visibility="Collapsed">
-                            <DataGridTextColumn.Header>
-                                <ContentControl Content="XRay" ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                            </DataGridTextColumn.Header>
-                        </DataGridTextColumn>
-
-                        <!-- Trigger -->
-                        <DataGridTextColumn Binding="{Binding DateTrigger}" Width="100" Visibility="Collapsed"/>
-
-                        <!-- UDF Fields (remaining) -->
-                        <DataGridTextColumn Binding="{Binding UDF3}" Width="120" Visibility="Collapsed"/>
-
-                        <DataGridTextColumn Binding="{Binding UDF4}" Width="120" Visibility="Collapsed"/>
-
-                        <DataGridTextColumn Binding="{Binding UDF5}" Width="120" Visibility="Collapsed"/>
-
-                        <DataGridTextColumn Binding="{Binding UDF6}" Width="120" Visibility="Collapsed"/>
-
-                        <DataGridTextColumn Binding="{Binding UDF7}" Width="80" Visibility="Collapsed"/>
-
-                        <DataGridTextColumn Binding="{Binding UDF8}" Width="120" Visibility="Collapsed"/>
-
-                        <DataGridTextColumn Binding="{Binding UDF9}" Width="120" Visibility="Collapsed"/>
-
-                        <DataGridTextColumn Binding="{Binding UDF10}" Width="120" Visibility="Collapsed"/>
-
-                        <DataGridTextColumn Binding="{Binding LastModifiedBy}" Width="150" Visibility="Collapsed"/>
-
-                        <DataGridTextColumn Binding="{Binding CreatedBy}" Width="150" Visibility="Collapsed"/>
-
-                        <DataGridTextColumn Binding="{Binding UDF14}" Width="120" Visibility="Collapsed"/>
-
-                        <DataGridTextColumn Binding="{Binding UDF15}" Width="120" Visibility="Collapsed"/>
-
-                        <DataGridTextColumn Binding="{Binding UDF16}" Width="120" Visibility="Collapsed"/>
-
-                        <DataGridTextColumn Binding="{Binding UDF17}" Width="120" Visibility="Collapsed"/>
-
-                        <DataGridTextColumn Binding="{Binding UDF18}" Width="120" Visibility="Collapsed"/>
-
-                        <DataGridTextColumn Binding="{Binding UDF20}" Width="120" Visibility="Collapsed"/>
-
-                        <!-- Values - Additional -->
-                        <DataGridTextColumn Binding="{Binding BaseUnit, StringFormat=N2}" Width="100" Visibility="Collapsed"/>
-
-                        <DataGridTextColumn Binding="{Binding BudgetHoursGroup, StringFormat=N2}" Width="120" Visibility="Collapsed"/>
-
-                        <DataGridTextColumn Binding="{Binding BudgetHoursROC, StringFormat=N2}" Width="120" Visibility="Collapsed"/>
-
-                        <DataGridTextColumn Binding="{Binding EarnedMHsRoc}" Width="120" Visibility="Collapsed"/>
-
-                        <DataGridTextColumn Binding="{Binding UOM}" Width="80" Visibility="Collapsed"/>
-
-                        <!-- Calculated fields -->
-                        <DataGridTextColumn Binding="{Binding EarnedQtyCalc_Display, StringFormat=N2}" Width="100" IsReadOnly="True" Visibility="Collapsed">
-                            <DataGridTextColumn.Header>
-                                <ContentControl Content="EarnedQtyCalc" 
-                                                ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                            </DataGridTextColumn.Header>
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Background" Value="{StaticResource ReadOnlyBackground}"/>
-                                    <Setter Property="Foreground" Value="{StaticResource DisabledColor}"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
-
-                        <DataGridTextColumn Binding="{Binding PercentCompleteCalc_Display, StringFormat=N2}" Width="100" IsReadOnly="True" Visibility="Collapsed">
-                            <DataGridTextColumn.Header>
-                                <ContentControl Content="PercentCompleteCalc" 
-                                                ContentTemplate="{StaticResource FilterableColumnHeader}"/>
-                            </DataGridTextColumn.Header>
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Background" Value="{StaticResource ReadOnlyBackground}"/>
-                                    <Setter Property="Foreground" Value="{StaticResource DisabledColor}"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
-
-                        <!-- Equipment Quantity -->
-                        <DataGridTextColumn Binding="{Binding EquivQTY, StringFormat=N2}" Width="100" Visibility="Collapsed"/>
-
-                        <DataGridTextColumn Binding="{Binding EquivUOM}" Width="80" Visibility="Collapsed"/>
-
-                        <!-- ROC -->
-                        <DataGridTextColumn Binding="{Binding ROCID}" Width="80" Visibility="Collapsed"/>
-
-                        <DataGridTextColumn Binding="{Binding ROCLookupID}" Width="200" IsReadOnly="True" Visibility="Collapsed">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Background" Value="{StaticResource ReadOnlyBackground}"/>
-                                    <Setter Property="Foreground" Value="{StaticResource DisabledColor}"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
-
-                        <DataGridTextColumn Binding="{Binding ROCPercent, StringFormat=N2}" Width="100" Visibility="Collapsed"/>
-
-                        <DataGridTextColumn Binding="{Binding ROCBudgetQTY, StringFormat=N2}" Width="120" Visibility="Collapsed"/>
-
-                        <!-- Pipe -->
-                        <DataGridTextColumn Binding="{Binding PipeSize1, StringFormat=N2}" Width="100" Visibility="Collapsed"/>
-
-                        <DataGridTextColumn Binding="{Binding PipeSize2, StringFormat=N2}" Width="100" Visibility="Collapsed"/>
-
-                        <!-- Previous Values -->
-                        <DataGridTextColumn Binding="{Binding PrevEarnMHs, StringFormat=N2}" Width="120" Visibility="Collapsed"/>
-
-                        <DataGridTextColumn Binding="{Binding PrevEarnQTY, StringFormat=N2}" Width="120" Visibility="Collapsed"/>
-
-                        <!-- WeekEndDate -->
-                        <DataGridTextColumn Binding="{Binding WeekEndDate}" Width="150" Visibility="Collapsed"/>
-
-                        <DataGridTextColumn Binding="{Binding AzureUploadDate}" Width="150" Visibility="Collapsed" IsReadOnly="True">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Background" Value="{StaticResource ReadOnlyBackground}"/>
-                                    <Setter Property="Foreground" Value="{StaticResource DisabledColor}"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
-
-                        <DataGridTextColumn Binding="{Binding ProgDate}" Width="150" Visibility="Collapsed" IsReadOnly="True">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Background" Value="{StaticResource ReadOnlyBackground}"/>
-                                    <Setter Property="Foreground" Value="{StaticResource DisabledColor}"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
-
-                        <!-- Client Values -->
-                        <DataGridTextColumn Binding="{Binding ClientEquivQty, StringFormat=N2}" Width="150" Visibility="Collapsed"/>
-
-                        <DataGridTextColumn Binding="{Binding ClientBudget, StringFormat=N2}" Width="100" Visibility="Collapsed"/>
-
-                        <DataGridTextColumn Binding="{Binding ClientCustom3, StringFormat=N2}" Width="100" Visibility="Collapsed"/>
-
-                        <DataGridTextColumn Binding="{Binding ClientEquivEarnQTY, StringFormat=N3}" Width="150" IsReadOnly="True" Visibility="Collapsed">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Background" Value="{StaticResource ReadOnlyBackground}"/>
-                                    <Setter Property="Foreground" Value="{StaticResource DisabledColor}"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
-
-                    </DataGrid.Columns>
-                </DataGrid>
+                    </DataGrid.ContextMenu>-->
+
+                    <syncfusion:SfDataGrid.Columns>
+
+                        <!-- IDENTITY & KEY FIELDS -->
+                        <syncfusion:GridTextColumn MappingName="UniqueID" 
+                              HeaderText="UniqueID" 
+                              Width="120" 
+                              AllowEditing="False"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridTextColumn MappingName="Description" 
+                              HeaderText="Description" 
+                              Width="250"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridTextColumn MappingName="AssignedTo" 
+                              HeaderText="AssignedTo" 
+                              Width="120"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <!-- CATEGORY FIELDS -->
+                        <syncfusion:GridTextColumn MappingName="CompType" 
+                              HeaderText="CompType" 
+                              Width="120"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridTextColumn MappingName="PhaseCategory" 
+                              HeaderText="PhaseCategory" 
+                              Width="120"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridTextColumn MappingName="ROCStep" 
+                              HeaderText="ROCStep" 
+                              Width="100"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridTextColumn MappingName="ProjectID" 
+                              HeaderText="ProjectID" 
+                              Width="100"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridTextColumn MappingName="WorkPackage" 
+                              HeaderText="WorkPackage" 
+                              Width="120"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridTextColumn MappingName="PhaseCode" 
+                              HeaderText="PhaseCode" 
+                              Width="100"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <!-- DRAWING FIELDS -->
+                        <syncfusion:GridTextColumn MappingName="DwgNO" 
+                              HeaderText="DwgNO" 
+                              Width="120"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridTextColumn MappingName="RevNO" 
+                              HeaderText="RevNO" 
+                              Width="80"
+                              IsHidden="True"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridTextColumn MappingName="SecondDwgNO" 
+                              HeaderText="SecondDwgNO" 
+                              Width="120"
+                              IsHidden="True"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridTextColumn MappingName="ShtNO" 
+                              HeaderText="ShtNO" 
+                              Width="80"
+                              IsHidden="True"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <!-- NOTES -->
+                        <syncfusion:GridTextColumn MappingName="Notes" 
+                              HeaderText="Notes" 
+                              Width="200"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <!-- SCHEDULE FIELDS -->
+                        <syncfusion:GridTextColumn MappingName="SecondActno" 
+                              HeaderText="SecondActno" 
+                              Width="100"
+                              IsHidden="True"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridTextColumn MappingName="SchedActNO" 
+                              HeaderText="SchedActNO" 
+                              Width="100"
+                              IsHidden="True"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridDateTimeColumn MappingName="Start" 
+                                  HeaderText="Start" 
+                                  Width="100"
+                                  IsHidden="True"
+                                  AllowEditing="True"
+                                  AllowFiltering="True"
+                                  AllowSorting="True"
+                                  Pattern="ShortDate" />
+
+                        <syncfusion:GridDateTimeColumn MappingName="Finish" 
+                                  HeaderText="Finish" 
+                                  Width="100"
+                                  IsHidden="True"
+                                  AllowEditing="True"
+                                  AllowFiltering="True"
+                                  AllowSorting="True"
+                                  Pattern="ShortDate" />
+
+                        <!-- AUXILIARY TAG FIELDS -->
+                        <syncfusion:GridTextColumn MappingName="Aux1" 
+                              HeaderText="Aux1" 
+                              Width="100"
+                              IsHidden="True"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridTextColumn MappingName="Aux2" 
+                              HeaderText="Aux2" 
+                              Width="100"
+                              IsHidden="True"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridTextColumn MappingName="Aux3" 
+                              HeaderText="Aux3" 
+                              Width="100"
+                              IsHidden="True"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridTextColumn MappingName="Area" 
+                              HeaderText="Area" 
+                              Width="80"
+                              IsHidden="True"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridTextColumn MappingName="ChgOrdNO" 
+                              HeaderText="ChgOrdNO" 
+                              Width="80"
+                              IsHidden="True"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridTextColumn MappingName="EqmtNO" 
+                              HeaderText="EqmtNO" 
+                              Width="120"
+                              IsHidden="True"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridTextColumn MappingName="Estimator" 
+                              HeaderText="Estimator" 
+                              Width="120"
+                              IsHidden="True"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridTextColumn MappingName="InsulType" 
+                              HeaderText="InsulType" 
+                              Width="120"
+                              IsHidden="True"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridTextColumn MappingName="LineNO" 
+                              HeaderText="LineNO" 
+                              Width="100"
+                              IsHidden="True"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridTextColumn MappingName="MtrlSpec" 
+                              HeaderText="MtrlSpec" 
+                              Width="120"
+                              IsHidden="True"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridTextColumn MappingName="PaintCode" 
+                              HeaderText="PaintCode" 
+                              Width="100"
+                              IsHidden="True"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridTextColumn MappingName="PipeGrade" 
+                              HeaderText="PipeGrade" 
+                              Width="100"
+                              IsHidden="True"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridTextColumn MappingName="RFINO" 
+                              HeaderText="RFINO" 
+                              Width="80"
+                              IsHidden="True"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridTextColumn MappingName="Service" 
+                              HeaderText="Service" 
+                              Width="120"
+                              IsHidden="True"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridTextColumn MappingName="ShopField" 
+                              HeaderText="ShopField" 
+                              Width="100"
+                              IsHidden="True"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridTextColumn MappingName="SubArea" 
+                              HeaderText="SubArea" 
+                              Width="80"
+                              IsHidden="True"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridTextColumn MappingName="System" 
+                              HeaderText="System" 
+                              Width="100"
+                              IsHidden="True"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridTextColumn MappingName="SystemNO" 
+                              HeaderText="SystemNO" 
+                              Width="100"
+                              IsHidden="True"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridTextColumn MappingName="TagNO" 
+                              HeaderText="TagNO" 
+                              Width="120"
+                              IsHidden="True"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridTextColumn MappingName="HtTrace" 
+                              HeaderText="HtTrace" 
+                              Width="100"
+                              IsHidden="True"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <!-- NUMERIC TAG FIELDS -->
+                        <syncfusion:GridNumericColumn MappingName="HexNO" 
+                                 HeaderText="HexNO" 
+                                 Width="80"
+                                 IsHidden="True"
+                                 AllowEditing="True"
+                                 AllowFiltering="True"
+                                 AllowSorting="True"
+                                 NumberDecimalDigits="0" />
+
+                        <syncfusion:GridNumericColumn MappingName="ROCID" 
+                                 HeaderText="ROCID" 
+                                 Width="80"
+                                 IsHidden="True"
+                                 AllowEditing="True"
+                                 AllowFiltering="True"
+                                 AllowSorting="True"
+                                 NumberDecimalDigits="0" />
+
+                        <syncfusion:GridNumericColumn MappingName="XRay" 
+                                 HeaderText="XRay" 
+                                 Width="80"
+                                 IsHidden="True"
+                                 AllowEditing="True"
+                                 AllowFiltering="True"
+                                 AllowSorting="True"
+                                 NumberDecimalDigits="0" />
+
+                        <syncfusion:GridNumericColumn MappingName="DateTrigger" 
+                                 HeaderText="DateTrigger" 
+                                 Width="100"
+                                 IsHidden="True"
+                                 AllowEditing="True"
+                                 AllowFiltering="True"
+                                 AllowSorting="True"
+                                 NumberDecimalDigits="0" />
+
+                        <!-- UDF FIELDS (USER DEFINED FIELDS) -->
+                        <syncfusion:GridTextColumn MappingName="UDF1" 
+                              HeaderText="UDF1" 
+                              Width="100"
+                              IsHidden="True"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridTextColumn MappingName="UDF2" 
+                              HeaderText="UDF2" 
+                              Width="100"
+                              IsHidden="True"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridTextColumn MappingName="UDF3" 
+                              HeaderText="UDF3" 
+                              Width="100"
+                              IsHidden="True"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridTextColumn MappingName="UDF4" 
+                              HeaderText="UDF4" 
+                              Width="100"
+                              IsHidden="True"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridTextColumn MappingName="UDF5" 
+                              HeaderText="UDF5" 
+                              Width="100"
+                              IsHidden="True"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridTextColumn MappingName="UDF6" 
+                              HeaderText="UDF6" 
+                              Width="100"
+                              IsHidden="True"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridTextColumn MappingName="UDF7" 
+                              HeaderText="UDF7" 
+                              Width="100"
+                              IsHidden="True"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridTextColumn MappingName="UDF8" 
+                              HeaderText="UDF8" 
+                              Width="100"
+                              IsHidden="True"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridTextColumn MappingName="UDF9" 
+                              HeaderText="UDF9" 
+                              Width="100"
+                              IsHidden="True"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridTextColumn MappingName="UDF10" 
+                              HeaderText="UDF10" 
+                              Width="100"
+                              IsHidden="True"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridTextColumn MappingName="CreatedBy" 
+                              HeaderText="CreatedBy" 
+                              Width="120"
+                              IsHidden="True"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridTextColumn MappingName="LastModifiedBy" 
+                              HeaderText="LastModifiedBy" 
+                              Width="120"
+                              IsHidden="True"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridTextColumn MappingName="UDF14" 
+                              HeaderText="UDF14" 
+                              Width="100"
+                              IsHidden="True"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridTextColumn MappingName="UDF15" 
+                              HeaderText="UDF15" 
+                              Width="100"
+                              IsHidden="True"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridTextColumn MappingName="UDF16" 
+                              HeaderText="UDF16" 
+                              Width="100"
+                              IsHidden="True"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridTextColumn MappingName="UDF17" 
+                              HeaderText="UDF17" 
+                              Width="100"
+                              IsHidden="True"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridTextColumn MappingName="UDF18" 
+                              HeaderText="UDF18" 
+                              Width="100"
+                              IsHidden="True"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridTextColumn MappingName="UDF20" 
+                              HeaderText="UDF20" 
+                              Width="100"
+                              IsHidden="True"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <!-- VALUE FIELDS - QUANTITIES AND PROGRESS -->
+                        <syncfusion:GridNumericColumn MappingName="Quantity" 
+                                 HeaderText="Quantity" 
+                                 Width="100"
+                                 AllowEditing="True"
+                                 AllowFiltering="True"
+                                 AllowSorting="True"
+                                 NumberDecimalDigits="2" />
+
+                        <syncfusion:GridTextColumn MappingName="UOM" 
+                              HeaderText="UOM" 
+                              Width="80"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridNumericColumn MappingName="EarnQtyEntry" 
+                                 HeaderText="EarnQtyEntry" 
+                                 Width="100"
+                                 AllowEditing="True"
+                                 AllowFiltering="True"
+                                 AllowSorting="True"
+                                 NumberDecimalDigits="2" />
+
+                        <syncfusion:GridNumericColumn MappingName="PercentEntry" 
+                                 HeaderText="PercentEntry" 
+                                 Width="100"
+                                 AllowEditing="True"
+                                 AllowFiltering="True"
+                                 AllowSorting="True"
+                                 NumberDecimalDigits="2" />
+
+                        <syncfusion:GridNumericColumn MappingName="BudgetMHs" 
+                                 HeaderText="BudgetMHs" 
+                                 Width="100"
+                                 AllowEditing="True"
+                                 AllowFiltering="True"
+                                 AllowSorting="True"
+                                 NumberDecimalDigits="2" />
+
+                        <!-- CALCULATED FIELDS (READ-ONLY) -->
+                        <syncfusion:GridNumericColumn MappingName="EarnMHsCalc" 
+                                 HeaderText="EarnMHsCalc" 
+                                 Width="100"
+                                 AllowEditing="False"
+                                 AllowFiltering="True"
+                                 AllowSorting="True"
+                                 NumberDecimalDigits="3" />
+
+                        <syncfusion:GridTextColumn MappingName="Status" 
+                              HeaderText="Status" 
+                              Width="100"
+                              AllowEditing="False"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridNumericColumn MappingName="EarnedQtyCalc" 
+                                 HeaderText="EarnedQtyCalc" 
+                                 Width="100"
+                                 AllowEditing="False"
+                                 AllowFiltering="True"
+                                 AllowSorting="True"
+                                 NumberDecimalDigits="2" />
+
+                        <syncfusion:GridNumericColumn MappingName="PercentCompleteCalc" 
+                                 HeaderText="PercentCompleteCalc" 
+                                 Width="100"
+                                 AllowEditing="False"
+                                 AllowFiltering="True"
+                                 AllowSorting="True"
+                                 NumberDecimalDigits="2" />
+
+                        <syncfusion:GridTextColumn MappingName="ROCLookupID" 
+                              HeaderText="ROCLookupID" 
+                              Width="150"
+                              IsHidden="True"
+                              AllowEditing="False"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <!-- ADDITIONAL VALUE FIELDS -->
+                        <syncfusion:GridNumericColumn MappingName="BaseUnit" 
+                                 HeaderText="BaseUnit" 
+                                 Width="100"
+                                 IsHidden="True"
+                                 AllowEditing="True"
+                                 AllowFiltering="True"
+                                 AllowSorting="True"
+                                 NumberDecimalDigits="2" />
+
+                        <syncfusion:GridNumericColumn MappingName="BudgetHoursGroup" 
+                                 HeaderText="BudgetHoursGroup" 
+                                 Width="120"
+                                 IsHidden="True"
+                                 AllowEditing="True"
+                                 AllowFiltering="True"
+                                 AllowSorting="True"
+                                 NumberDecimalDigits="2" />
+
+                        <syncfusion:GridNumericColumn MappingName="BudgetHoursROC" 
+                                 HeaderText="BudgetHoursROC" 
+                                 Width="120"
+                                 IsHidden="True"
+                                 AllowEditing="True"
+                                 AllowFiltering="True"
+                                 AllowSorting="True"
+                                 NumberDecimalDigits="2" />
+
+                        <syncfusion:GridNumericColumn MappingName="EarnedMHsRoc" 
+                                 HeaderText="EarnedMHsRoc" 
+                                 Width="120"
+                                 IsHidden="True"
+                                 AllowEditing="True"
+                                 AllowFiltering="True"
+                                 AllowSorting="True"
+                                 NumberDecimalDigits="2" />
+
+                        <syncfusion:GridTextColumn MappingName="EquivUOM" 
+                              HeaderText="EquivUOM" 
+                              Width="100"
+                              IsHidden="True"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridTextColumn MappingName="EquivQTY" 
+                              HeaderText="EquivQTY" 
+                              Width="100"
+                              IsHidden="True"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridNumericColumn MappingName="PipeSize1" 
+                                 HeaderText="PipeSize1" 
+                                 Width="100"
+                                 IsHidden="True"
+                                 AllowEditing="True"
+                                 AllowFiltering="True"
+                                 AllowSorting="True"
+                                 NumberDecimalDigits="2" />
+
+                        <syncfusion:GridNumericColumn MappingName="PipeSize2" 
+                                 HeaderText="PipeSize2" 
+                                 Width="100"
+                                 IsHidden="True"
+                                 AllowEditing="True"
+                                 AllowFiltering="True"
+                                 AllowSorting="True"
+                                 NumberDecimalDigits="2" />
+
+                        <syncfusion:GridNumericColumn MappingName="PrevEarnMHs" 
+                                 HeaderText="PrevEarnMHs" 
+                                 Width="120"
+                                 IsHidden="True"
+                                 AllowEditing="True"
+                                 AllowFiltering="True"
+                                 AllowSorting="True"
+                                 NumberDecimalDigits="2" />
+
+                        <syncfusion:GridNumericColumn MappingName="PrevEarnQTY" 
+                                 HeaderText="PrevEarnQTY" 
+                                 Width="120"
+                                 IsHidden="True"
+                                 AllowEditing="True"
+                                 AllowFiltering="True"
+                                 AllowSorting="True"
+                                 NumberDecimalDigits="2" />
+
+                        <syncfusion:GridNumericColumn MappingName="ROCBudgetQTY" 
+                                 HeaderText="ROCBudgetQTY" 
+                                 Width="120"
+                                 IsHidden="True"
+                                 AllowEditing="True"
+                                 AllowFiltering="True"
+                                 AllowSorting="True"
+                                 NumberDecimalDigits="2" />
+
+                        <syncfusion:GridNumericColumn MappingName="ROCPercent" 
+                                 HeaderText="ROCPercent" 
+                                 Width="100"
+                                 IsHidden="True"
+                                 AllowEditing="True"
+                                 AllowFiltering="True"
+                                 AllowSorting="True"
+                                 NumberDecimalDigits="2" />
+
+                        <syncfusion:GridNumericColumn MappingName="ClientBudget" 
+                                 HeaderText="ClientBudget" 
+                                 Width="120"
+                                 IsHidden="True"
+                                 AllowEditing="True"
+                                 AllowFiltering="True"
+                                 AllowSorting="True"
+                                 NumberDecimalDigits="2" />
+
+                        <syncfusion:GridNumericColumn MappingName="ClientCustom3" 
+                                 HeaderText="ClientCustom3" 
+                                 Width="120"
+                                 IsHidden="True"
+                                 AllowEditing="True"
+                                 AllowFiltering="True"
+                                 AllowSorting="True"
+                                 NumberDecimalDigits="2" />
+
+                        <syncfusion:GridTextColumn MappingName="ClientEquivEarnQTY" 
+                              HeaderText="ClientEquivEarnQTY" 
+                              Width="150"
+                              IsHidden="True"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridNumericColumn MappingName="ClientEquivQty" 
+                                 HeaderText="ClientEquivQty" 
+                                 Width="120"
+                                 IsHidden="True"
+                                 AllowEditing="True"
+                                 AllowFiltering="True"
+                                 AllowSorting="True"
+                                 NumberDecimalDigits="2" />
+
+                        <!-- TIMESTAMP FIELDS -->
+                        <syncfusion:GridDateTimeColumn MappingName="WeekEndDate" 
+                                  HeaderText="WeekEndDate" 
+                                  Width="120"
+                                  IsHidden="True"
+                                  AllowEditing="False"
+                                  AllowFiltering="True"
+                                  AllowSorting="True"
+                                  Pattern="ShortDate" />
+
+                        <syncfusion:GridDateTimeColumn MappingName="ProgDate" 
+                                  HeaderText="ProgDate" 
+                                  Width="120"
+                                  IsHidden="True"
+                                  AllowEditing="False"
+                                  AllowFiltering="True"
+                                  AllowSorting="True"
+                                  Pattern="ShortDate" />
+
+                        <syncfusion:GridDateTimeColumn MappingName="AzureUploadDate" 
+                                  HeaderText="AzureUploadDate" 
+                                  Width="120"
+                                  IsHidden="True"
+                                  AllowEditing="False"
+                                  AllowFiltering="True"
+                                  AllowSorting="True"
+                                  Pattern="ShortDate" />
+
+                    </syncfusion:SfDataGrid.Columns>
+                </syncfusion:SfDataGrid>
             </Border>
 
             <!-- PAGING CONTROLS (Bottom toolbar) -->

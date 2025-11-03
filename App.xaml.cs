@@ -8,6 +8,7 @@ namespace VANTAGE
 {
     public partial class App : Application
     {
+
         // Current user info (global for app)
         public static User CurrentUser { get; set; }
         public static int CurrentUserID { get; set; }
@@ -16,8 +17,13 @@ namespace VANTAGE
         {
             base.OnStartup(e);
 
+            // Register Syncfusion license FIRST (before any UI components or database setup)
+            Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("Ngo9BigBOggjHTQxAR8/V1JFaF5cXGRCf1FpRmJGdld5fUVHYVZUTXxaS00DNHVRdkdmWH9dcXVVRGBYVUNxWUdWYEg=");
+
+
             try
             {
+
                 // Step 1: Initialize database
                 DatabaseSetup.InitializeDatabase();
 

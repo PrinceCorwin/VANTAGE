@@ -30,7 +30,7 @@ namespace VANTAGE.Views
             _viewModel.PropertyChanged += ViewModel_PropertyChanged;
 
             InitializeColumnVisibility();
-            InitializeColumnTooltips();
+            // InitializeColumnTooltips();
             UpdateRecordCount();
             // Load data AFTER the view is loaded
             this.Loaded += OnViewLoaded;
@@ -58,10 +58,10 @@ namespace VANTAGE.Views
             }
 
             // Update header visuals when active filters change
-            if (e.PropertyName == nameof(ProgressViewModel.ActiveFilterColumns))
-            {
-                UpdateHeaderFilterIndicators();
-            }
+            //if (e.PropertyName == nameof(ProgressViewModel.ActiveFilterColumns))
+            //{
+            //    UpdateHeaderFilterIndicators();
+            //}
         }
         private void UpdateSummaryPanel()
         {
@@ -77,26 +77,7 @@ namespace VANTAGE.Views
             var button = sender as Button;
             string columnName = null;
 
-            // Try to find enclosing DataGridColumnHeader to determine the bound property name.
-            try
-            {
-                DependencyObject current = button as DependencyObject;
-                while (current != null)
-                {
-                    if (current is System.Windows.Controls.Primitives.DataGridColumnHeader header && header.Column != null)
-                    {
-                        columnName = GetColumnPropertyName(header.Column);
-                        break;
-                    }
-
-                    // climb visual tree
-                    current = System.Windows.Media.VisualTreeHelper.GetParent(current);
-                }
-            }
-            catch { }
-
-            // Fallback to Tag (legacy behavior) if we couldn't find the header
-            if (string.IsNullOrEmpty(columnName) && button != null)
+            if (button != null)
             {
                 columnName = button.Tag as string;
             }
@@ -253,126 +234,126 @@ namespace VANTAGE.Views
         /// <summary>
         /// Initialize tooltips for column headers showing OldVantage names
         /// </summary>
-        private void InitializeColumnTooltips()
-        {
-            try
-            {
-                // Apply tooltips to columns
-                int tooltipsSet = 0;
-                foreach (var column in dgActivities.Columns)
-                {
-                    // Get the property name from the column
-                    string propertyName = GetColumnPropertyName(column);
+        //private void InitializeColumnTooltips()
+        //{
+        //    try
+        //    {
+        //        // Apply tooltips to columns
+        //        int tooltipsSet = 0;
+        //        foreach (var column in dgActivities.Columns)
+        //        {
+        //            // Get the property name from the column
+        //            string propertyName = GetColumnPropertyName(column);
 
-                    // Get the DbColumnName from property name
-                    string dbColumnName = ColumnMapper.GetDbColumnName(propertyName);
+        //            // Get the DbColumnName from property name
+        //            string dbColumnName = ColumnMapper.GetDbColumnName(propertyName);
 
-                    // Query the ColumnMappings table for this specific column
-                    using var connection = DatabaseSetup.GetConnection();
-                    connection.Open();
+        //            // Query the ColumnMappings table for this specific column
+        //            using var connection = DatabaseSetup.GetConnection();
+        //            connection.Open();
 
-                    var command = connection.CreateCommand();
-                    command.CommandText = @"
-                SELECT OldVantageName 
-                FROM ColumnMappings 
-                WHERE DbColumnName = @dbColumn";
-                    command.Parameters.AddWithValue("@dbColumn", dbColumnName);
+        //            var command = connection.CreateCommand();
+        //            command.CommandText = @"
+        //        SELECT OldVantageName 
+        //        FROM ColumnMappings 
+        //        WHERE DbColumnName = @dbColumn";
+        //            command.Parameters.AddWithValue("@dbColumn", dbColumnName);
 
-                    var result = command.ExecuteScalar();
-                    string tooltip;
+        //            var result = command.ExecuteScalar();
+        //            string tooltip;
 
-                    if (result == null || result == DBNull.Value)
-                    {
-                        // Not in Excel
-                        tooltip = $"{propertyName} - Not in export";
-                    }
-                    else
-                    {
-                        // Show OldVantage name
-                        tooltip = $"Excel: {result}";
-                    }
+        //            if (result == null || result == DBNull.Value)
+        //            {
+        //                // Not in Excel
+        //                tooltip = $"{propertyName} - Not in export";
+        //            }
+        //            else
+        //            {
+        //                // Show OldVantage name
+        //                tooltip = $"Excel: {result}";
+        //            }
 
-                    // Set tooltip on the column header
-                    // Preserve existing header templates (keep filter button). If header is a simple string, wrap it in a ContentControl that uses the FilterableColumnHeader template defined in XAML.
-                    if (column.Header is string headerString)
-                    {
-                        try
-                        {
-                            var dataTemplate = this.TryFindResource("FilterableColumnHeader") as DataTemplate;
-                            if (dataTemplate != null)
-                            {
-                                var contentControl = new System.Windows.Controls.ContentControl
-                                {
-                                    Content = headerString,
-                                    ContentTemplate = dataTemplate,
-                                    ToolTip = tooltip
-                                };
-                                column.Header = contentControl;
-                            }
-                            else
-                            {
-                                // Fallback to TextBlock if template not found
-                                var textBlock = new System.Windows.Controls.TextBlock
-                                {
-                                    Text = headerString,
-                                    ToolTip = tooltip,
-                                    Foreground = (System.Windows.Media.Brush)Application.Current.Resources["GridHeaderForeground"]
-                                };
-                                column.Header = textBlock;
-                            }
-                        }
-                        catch
-                        {
-                            // fallback to simple text
-                            column.Header = headerString;
-                        }
+        //            // Set tooltip on the column header
+        //            // Preserve existing header templates (keep filter button). If header is a simple string, wrap it in a ContentControl that uses the FilterableColumnHeader template defined in XAML.
+        //            if (column.Header is string headerString)
+        //            {
+        //                try
+        //                {
+        //                    var dataTemplate = this.TryFindResource("FilterableColumnHeader") as DataTemplate;
+        //                    if (dataTemplate != null)
+        //                    {
+        //                        var contentControl = new System.Windows.Controls.ContentControl
+        //                        {
+        //                            Content = headerString,
+        //                            ContentTemplate = dataTemplate,
+        //                            ToolTip = tooltip
+        //                        };
+        //                        column.Header = contentControl;
+        //                    }
+        //                    else
+        //                    {
+        //                        // Fallback to TextBlock if template not found
+        //                        var textBlock = new System.Windows.Controls.TextBlock
+        //                        {
+        //                            Text = headerString,
+        //                            ToolTip = tooltip,
+        //                            Foreground = (System.Windows.Media.Brush)Application.Current.Resources["GridHeaderForeground"]
+        //                        };
+        //                        column.Header = textBlock;
+        //                    }
+        //                }
+        //                catch
+        //                {
+        //                    // fallback to simple text
+        //                    column.Header = headerString;
+        //                }
 
-                        tooltipsSet++;
-                    }
-                    else if (column.Header is System.Windows.Controls.ContentControl headerControl)
-                    {
-                        headerControl.ToolTip = tooltip;
-                        tooltipsSet++;
-                    }
-                }
+        //                tooltipsSet++;
+        //            }
+        //            else if (column.Header is System.Windows.Controls.ContentControl headerControl)
+        //            {
+        //                headerControl.ToolTip = tooltip;
+        //                tooltipsSet++;
+        //            }
+        //        }
 
-                // Initial update of header indicators
-                UpdateHeaderFilterIndicators();
-            }
-            catch (Exception ex)
-            {
-                // TODO: Add proper logging when logging system is implemented
-            }
-        }
+        //        // Initial update of header indicators
+        //        UpdateHeaderFilterIndicators();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        // TODO: Add proper logging when logging system is implemented
+        //    }
+        //}
 
-        private void UpdateHeaderFilterIndicators()
-        {
-            try
-            {
-                var activeCols = new HashSet<string>(_viewModel.ActiveFilterColumns ?? Enumerable.Empty<string>());
+        //private void UpdateHeaderFilterIndicators()
+        //{
+        //    try
+        //    {
+        //        var activeCols = new HashSet<string>(_viewModel.ActiveFilterColumns ?? Enumerable.Empty<string>());
 
-                foreach (var header in FindVisualChildren<DataGridColumnHeader>(dgActivities))
-                {
-                    var col = header.Column;
-                    if (col == null) continue;
+        //        foreach (var header in FindVisualChildren<DataGridColumnHeader>(dgActivities))
+        //        {
+        //            var col = header.Column;
+        //            if (col == null) continue;
 
-                    var colName = GetColumnPropertyName(col);
+        //            var colName = GetColumnPropertyName(col);
 
-                    if (activeCols.Contains(colName))
-                    {
-                        // Use theme variable so themes can override color
-                        header.BorderBrush = (System.Windows.Media.Brush)Application.Current.Resources["ActiveFilter"];
-                        header.BorderThickness = new Thickness(0,0,1,1);
-                    }
-                    else
-                    {
-                        header.BorderBrush = (System.Windows.Media.Brush)Application.Current.Resources["BorderColor"];
-                        header.BorderThickness = new Thickness(0,0,1,1);
-                    }
-                }
-            }
-            catch { }
-        }
+        //            if (activeCols.Contains(colName))
+        //            {
+        //                // Use theme variable so themes can override color
+        //                header.BorderBrush = (System.Windows.Media.Brush)Application.Current.Resources["ActiveFilter"];
+        //                header.BorderThickness = new Thickness(0,0,1,1);
+        //            }
+        //            else
+        //            {
+        //                header.BorderBrush = (System.Windows.Media.Brush)Application.Current.Resources["BorderColor"];
+        //                header.BorderThickness = new Thickness(0,0,1,1);
+        //            }
+        //        }
+        //    }
+        //    catch { }
+        //}
 
         private static IEnumerable<T> FindVisualChildren<T>(DependencyObject depObj) where T : DependencyObject
         {
@@ -396,40 +377,29 @@ namespace VANTAGE.Views
         /// <summary>
         /// Extract property name from column (tries binding path first, then header text)
         /// </summary>
-        private string GetColumnPropertyName(DataGridColumn column)
+        private string GetColumnPropertyName(Syncfusion.UI.Xaml.Grid.GridColumn column)
         {
-            // Try to get property name from binding path (most reliable)
-            if (column is DataGridBoundColumn boundColumn)
+            // Syncfusion columns use MappingName for the property binding
+            if (!string.IsNullOrEmpty(column.MappingName))
             {
-                if (boundColumn.Binding is System.Windows.Data.Binding binding)
+                string propertyName = column.MappingName;
+
+                // Strip _Display suffix if present (for display wrapper properties)
+                if (propertyName.EndsWith("_Display"))
                 {
-                    string propertyName = binding.Path.Path;
-
-                    // Strip _Display suffix if present (for display wrapper properties)
-                    if (propertyName.EndsWith("_Display"))
-                    {
-                        propertyName = propertyName.Replace("_Display", "");
-                    }
-
-                    return propertyName;
+                    propertyName = propertyName.Replace("_Display", "");
                 }
+
+                return propertyName;
             }
 
-            // Fallback: Extract from header (for template columns or complex headers)
-            if (column.Header == null)
-                return "Unknown";
-
-            if (column.Header is string headerString)
-                return headerString;
-
-            if (column.Header is System.Windows.Controls.ContentControl contentControl)
+            // Fallback to HeaderText if MappingName is empty
+            if (!string.IsNullOrEmpty(column.HeaderText))
             {
-                if (contentControl.Content is string content)
-                    return content;
-                return contentControl.Content?.ToString() ?? "Unknown";
+                return column.HeaderText;
             }
 
-            return column.Header.ToString();
+            return "Unknown";
         }
         private void InitializeColumnVisibility()
         {
@@ -462,9 +432,10 @@ namespace VANTAGE.Views
         /// <summary>
         /// Prevent editing of records not assigned to current user
         /// </summary>
-        private void DgActivities_BeginningEdit(object sender, DataGridBeginningEditEventArgs e)
+        private void DgActivities_CurrentCellBeginEdit(object sender, Syncfusion.UI.Xaml.Grid.CurrentCellBeginEditEventArgs e)
         {
-            var activity = e.Row.Item as Activity;
+            // Get the activity from the current row
+            var activity = dgActivities.SelectedItem as Activity;
             if (activity != null && !activity.IsEditable)
             {
                 // Cancel the edit
@@ -804,42 +775,33 @@ namespace VANTAGE.Views
         /// <summary>
         /// Auto-save when user finishes editing a cell
         /// </summary>
-        private async void DgActivities_RowEditEnding(object sender, DataGridRowEditEndingEventArgs e)
+        private async void DgActivities_CurrentCellEndEdit(object sender, Syncfusion.UI.Xaml.Grid.CurrentCellEndEditEventArgs e)
         {
-            // Only save if edit was committed (not cancelled)
-            if (e.EditAction != DataGridEditAction.Commit)
-                return;
-
             try
             {
-                // Get the edited activity
-                var editedActivity = e.Row.Item as Activity;
+                // Get the edited activity from the current row
+                var editedActivity = dgActivities.SelectedItem as Activity;
                 if (editedActivity == null)
                     return;
 
                 // Update LastModifiedBy with current user
                 editedActivity.LastModifiedBy = App.CurrentUser?.Username ?? "Unknown";
 
-                // Wait for the edit to fully commit before saving
-                await Dispatcher.InvokeAsync(async () =>
+                // Save to database
+                bool success = await ActivityRepository.UpdateActivityInDatabase(editedActivity);
+
+                if (success)
                 {
-
-                    // Save to database
-                    bool success = await ActivityRepository.UpdateActivityInDatabase(editedActivity);
-
-                    if (success)
-                    {
-                        // TODO: Add proper logging when logging system is implemented
-                    }
-                    else
-                    {
-                        MessageBox.Show(
-                            $"Failed to save changes for Activity {editedActivity.ActivityID}.\nPlease try again.",
-                            "Save Error",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Error);
-                    }
-                }, System.Windows.Threading.DispatcherPriority.Background);
+                    // TODO: Add proper logging when logging system is implemented
+                }
+                else
+                {
+                    MessageBox.Show(
+                        $"Failed to save changes for Activity {editedActivity.ActivityID}.\nPlease try again.",
+                        "Save Error",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error);
+                }
             }
             catch (Exception ex)
             {
@@ -851,9 +813,9 @@ namespace VANTAGE.Views
             }
         }
 
-        private void DgActivities_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void DgActivities_SelectionChanged(object sender, Syncfusion.UI.Xaml.Grid.GridSelectionChangedEventArgs e)
         {
-            // TODO: Implement
+            // TODO: Implement selection change logic if needed
         }
 
         private async void MenuAssignToMe_Click(object sender, RoutedEventArgs e)
