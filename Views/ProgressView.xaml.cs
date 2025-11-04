@@ -16,7 +16,7 @@ namespace VANTAGE.Views
     public partial class ProgressView : UserControl
     {
         private const int ColumnUniqueValueDisplayLimit = 1000; // configurable
-        private Dictionary<string, DataGridColumn> _columnMap = new Dictionary<string, DataGridColumn>();
+        private Dictionary<string, Syncfusion.UI.Xaml.Grid.GridColumn> _columnMap = new Dictionary<string, Syncfusion.UI.Xaml.Grid.GridColumn>();
         private ProgressViewModel _viewModel;
 
         public ProgressView()
@@ -408,15 +408,14 @@ namespace VANTAGE.Views
 
             foreach (var column in sfActivities.Columns)
             {
-                // Get property name from binding path
+                // Get property name from mapping name
                 string columnName = GetColumnPropertyName(column);
-
                 _columnMap[columnName] = column;
 
                 var checkBox = new CheckBox
                 {
                     Content = columnName,
-                    IsChecked = column.Visibility == Visibility.Visible,
+                    IsChecked = !column.IsHidden, // Syncfusion uses IsHidden instead of Visibility
                     Margin = new Thickness(5, 2, 5, 2),
                     Foreground = System.Windows.Media.Brushes.White,
                     Tag = column
@@ -427,7 +426,6 @@ namespace VANTAGE.Views
 
                 lstColumnVisibility.Items.Add(checkBox);
             }
-
         }
         /// <summary>
         /// Prevent editing of records not assigned to current user
@@ -452,22 +450,12 @@ namespace VANTAGE.Views
                 return;
 
             var column = _columnMap[columnName];
-            column.Visibility = checkBox.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
 
-            // Force header re-apply if becoming visible
-            if (column.Visibility == Visibility.Visible)
-            {
-                var dataTemplate = this.TryFindResource("FilterableColumnHeader") as DataTemplate;
-                if (dataTemplate != null)
-                {
-                    column.Header = new ContentControl
-                    {
-                        Content = columnName,
-                        ContentTemplate = dataTemplate
-                    };
-                }
-                sfActivities.UpdateLayout();
-            }
+            // Syncfusion uses IsHidden (true = hidden, false = visible)
+            column.IsHidden = !(checkBox.IsChecked == true);
+
+            // Force layout update
+            sfActivities.UpdateLayout();
         }
         private async void MenuUnassign_Click(object sender, RoutedEventArgs e)
         {
@@ -523,7 +511,7 @@ namespace VANTAGE.Views
                 }
 
                 MessageBox.Show($"Unassigned {successCount} record(s).", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-                sfActivities.Items.Refresh();
+                sfActivities.View.Refresh();
             }
             catch (Exception ex)
             {
@@ -871,7 +859,7 @@ namespace VANTAGE.Views
                 }
 
                 MessageBox.Show($"Assigned {successCount} record(s) to you.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-                sfActivities.Items.Refresh();
+                sfActivities.View.Refresh();
             }
             catch (Exception ex)
             {
@@ -1006,7 +994,7 @@ namespace VANTAGE.Views
                     }
 
                     MessageBox.Show($"Assigned {successCount} record(s) to {selectedUser}.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-                    sfActivities.Items.Refresh();
+                    sfActivities.View.Refresh();
                 }
                 catch (Exception ex)
                 {
@@ -1061,7 +1049,7 @@ namespace VANTAGE.Views
                 }
 
                 // Refresh the DataGrid to show changes
-                sfActivities.Items.Refresh();
+                sfActivities.View.Refresh();
             }
             catch (Exception ex)
             {
@@ -1112,7 +1100,7 @@ namespace VANTAGE.Views
                 }
 
                 // Refresh the DataGrid to show changes
-                sfActivities.Items.Refresh();
+                sfActivities.View.Refresh();
             }
             catch (Exception ex)
             {
