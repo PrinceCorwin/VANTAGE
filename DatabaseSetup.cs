@@ -56,6 +56,7 @@ namespace VANTAGE
                         SettingName TEXT NOT NULL,
                         SettingValue TEXT,
                         DataType TEXT,
+                        LastModified DATETIME DEFAULT CURRENT_TIMESTAMP,
                         FOREIGN KEY (UserID) REFERENCES Users(UserID),
                         UNIQUE(UserID, SettingName)
                     );

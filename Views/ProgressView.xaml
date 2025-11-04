@@ -8,8 +8,8 @@
              d:DesignHeight="600" d:DesignWidth="1200"
              Background="{StaticResource BackgroundColor}">
 
-    <UserControl.Resources>
-        <!-- Column Header with Filter Button -->
+    <!--<UserControl.Resources>
+        --><!-- Column Header with Filter Button --><!--
         <DataTemplate x:Key="FilterableColumnHeader">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -22,7 +22,7 @@
                        VerticalAlignment="Center"
                        Foreground="{StaticResource ForegroundColor}"/>
 
-                <Button Grid.Column="1"
+                --><!--<Button Grid.Column="1"
                         Content="▼"
                         Width="20"
                         Height="20"
@@ -42,14 +42,14 @@
                                        Background="Transparent"/>
                         </ControlTemplate>
                     </Button.Template>
-                </Button>
+                </Button>--><!--
             </Grid>
         </DataTemplate>
-    </UserControl.Resources>
+    </UserControl.Resources>-->
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="175"/>
+            <ColumnDefinition Width="150"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
@@ -223,11 +223,53 @@
                                 BorderThickness="1"
                                 Click="BtnRefresh_Click"/>
 
-                        <TextBlock x:Name="txtFilteredCount"
-                                   Text="0 records"
-                                   Foreground="{StaticResource TextColorSecondary}"
-                                   VerticalAlignment="Center"
-                                   Margin="20,0,0,0"/>
+                        <!-- NEW: Bulk Action Buttons -->
+                        <Button x:Name="btnAssign"
+                            Content="Assign ▼"
+                            Width="90"
+                            Height="28"
+                            Margin="20,0,5,0"
+                            Background="{StaticResource ControlBackground}"
+                            Foreground="{StaticResource ForegroundColor}"
+                            BorderBrush="{StaticResource BorderColor}"
+                            BorderThickness="1"
+                            Click="BtnAssign_Click"
+                            ToolTip="Assign selected records">
+                            <Button.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="Assign to Me" Click="MenuAssignToMe_Click"/>
+                                    <MenuItem Header="Unassign" Click="MenuUnassign_Click"/>
+                                    <Separator/>
+                                    <MenuItem Header="Assign to User..." Click="MenuAssignToUser_Click"/>
+                                </ContextMenu>
+                            </Button.ContextMenu>
+                        </Button>
+
+                        <Button x:Name="btnSetPercent100"
+                            Content="100%"
+                            Width="60"
+                            Height="28"
+                            Margin="5,0"
+                            Background="{StaticResource ControlBackground}"
+                            Foreground="{StaticResource ForegroundColor}"
+                            BorderBrush="{StaticResource BorderColor}"
+                            BorderThickness="1"
+                            Click="BtnSetPercent100_Click"
+                            MouseRightButtonUp="BtnSetPercent100_RightClick"
+                            ToolTip="Left-click: Set selected to 100% | Right-click: Customize"/>
+
+                        <Button x:Name="btnSetPercent0"
+                            Content="0%"
+                            Width="60"
+                            Height="28"
+                            Margin="5,0"
+                            Background="{StaticResource ControlBackground}"
+                            Foreground="{StaticResource ForegroundColor}"
+                            BorderBrush="{StaticResource BorderColor}"
+                            BorderThickness="1"
+                            Click="BtnSetPercent0_Click"
+                            MouseRightButtonUp="BtnSetPercent0_RightClick"
+                            ToolTip="Left-click: Set selected to 0% | Right-click: Customize"/>
                     </StackPanel>
 
                     <!-- RIGHT SIDE: Summary stats -->
@@ -1080,50 +1122,63 @@
                     BorderBrush="{StaticResource BorderColor}" 
                     BorderThickness="0,1,0,0"
                     Padding="10,0">
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
-                    <Button x:Name="btnFirstPage"
-                            Content="⏮ First"
-                            Width="80"
-                            Height="28"
-                            Margin="5,0"
-                            BorderBrush="{StaticResource BorderColor}"
-                            BorderThickness="1"
-                            Click="BtnFirstPage_Click"/>
+                <DockPanel>
+                    <!-- LEFT: Record count -->
+                    <TextBlock x:Name="txtFilteredCount"
+               DockPanel.Dock="Left"
+               Text="0 records"
+               Foreground="{StaticResource TextColorSecondary}"
+               VerticalAlignment="Center"
+               Margin="10,0,0,0"/>
 
-                    <Button x:Name="btnPreviousPage"
-                            Content="◀ Previous"
-                            Width="90"
-                            Height="28"
-                            Margin="5,0"
-                            BorderBrush="{StaticResource BorderColor}"
-                            BorderThickness="1"
-                            Click="BtnPreviousPage_Click"/>
+                    <!-- CENTER: Paging controls -->
+                    <StackPanel Orientation="Horizontal" 
+                VerticalAlignment="Center" 
+                HorizontalAlignment="Center">
+                        <Button x:Name="btnFirstPage"
+                Content="⏮ First"
+                Width="80"
+                Height="28"
+                Margin="5,0"
+                BorderBrush="{StaticResource BorderColor}"
+                BorderThickness="1"
+                Click="BtnFirstPage_Click"/>
 
-                    <TextBlock x:Name="txtPageInfo"
-                               Text="{Binding CurrentPageDisplay}"
-                               Foreground="{StaticResource ForegroundColor}"
-                               VerticalAlignment="Center"
-                               Margin="20,0"
-                               FontWeight="Bold"/>
+                        <Button x:Name="btnPreviousPage"
+                Content="◀ Previous"
+                Width="90"
+                Height="28"
+                Margin="5,0"
+                BorderBrush="{StaticResource BorderColor}"
+                BorderThickness="1"
+                Click="BtnPreviousPage_Click"/>
 
-                    <Button x:Name="btnNextPage"
-                            Content="Next ▶"
-                            Width="90"
-                            Height="28"
-                            Margin="5,0"
-                            BorderBrush="{StaticResource BorderColor}"
-                            BorderThickness="1"
-                            Click="BtnNextPage_Click"/>
+                        <TextBlock x:Name="txtPageInfo"
+                   Text="{Binding CurrentPageDisplay}"
+                   Foreground="{StaticResource ForegroundColor}"
+                   VerticalAlignment="Center"
+                   Margin="20,0"
+                   FontWeight="Bold"/>
 
-                    <Button x:Name="btnLastPage"
-                            Content="Last ⏭"
-                            Width="80"
-                            Height="28"
-                            Margin="5,0"
-                            BorderBrush="{StaticResource BorderColor}"
-                            BorderThickness="1"
-                            Click="BtnLastPage_Click"/>
-                </StackPanel>
+                        <Button x:Name="btnNextPage"
+                Content="Next ▶"
+                Width="90"
+                Height="28"
+                Margin="5,0"
+                BorderBrush="{StaticResource BorderColor}"
+                BorderThickness="1"
+                Click="BtnNextPage_Click"/>
+
+                        <Button x:Name="btnLastPage"
+                Content="Last ⏭"
+                Width="80"
+                Height="28"
+                Margin="5,0"
+                BorderBrush="{StaticResource BorderColor}"
+                BorderThickness="1"
+                Click="BtnLastPage_Click"/>
+                    </StackPanel>
+                </DockPanel>
             </Border>
         </Grid>
     </Grid>

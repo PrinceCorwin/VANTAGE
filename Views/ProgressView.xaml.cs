@@ -35,6 +35,66 @@ namespace VANTAGE.Views
             // Load data AFTER the view is loaded
             this.Loaded += OnViewLoaded;
         }
+        private void BtnAssign_Click(object sender, RoutedEventArgs e)
+        {
+            var button = sender as Button;
+            if (button?.ContextMenu != null)
+            {
+                button.ContextMenu.PlacementTarget = button;
+                button.ContextMenu.IsOpen = true;
+            }
+        }
+        private async void BtnSetPercent100_Click(object sender, RoutedEventArgs e)
+        {
+            // Get the custom percentage from button content (e.g., "100%" or "75%")
+            var buttonContent = btnSetPercent100.Content.ToString();
+            int percent = int.Parse(buttonContent.TrimEnd('%'));
+
+            await SetSelectedRecordsPercent(percent);
+        }
+        private async void BtnSetPercent0_Click(object sender, RoutedEventArgs e)
+        {
+            // Get the custom percentage from button content (e.g., "0%" or "25%")
+            var buttonContent = btnSetPercent0.Content.ToString();
+            int percent = int.Parse(buttonContent.TrimEnd('%'));
+
+            await SetSelectedRecordsPercent(percent);
+        }
+        private async Task SetSelectedRecordsPercent(int percent)
+        {
+            var selectedActivities = sfActivities.SelectedItems.Cast<Activity>().ToList();
+
+            if (!selectedActivities.Any())
+            {
+                MessageBox.Show("Please select one or more records.",
+                    "No Selection", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            try
+            {
+                int successCount = 0;
+                foreach (var activity in selectedActivities)
+                {
+                    activity.PercentEntry = percent;
+                    activity.LastModifiedBy = App.CurrentUser?.Username ?? "Unknown";
+
+                    bool success = await ActivityRepository.UpdateActivityInDatabase(activity);
+                    if (success) successCount++;
+                }
+
+                MessageBox.Show($"Set {successCount} record(s) to {percent}%.",
+                    "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                sfActivities.View.Refresh();
+                await _viewModel.UpdateTotalsAsync();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error updating records: {ex.Message}",
+                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
         private void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
 
@@ -749,8 +809,8 @@ namespace VANTAGE.Views
 
         private void TxtSearch_TextChanged(object sender, TextChangedEventArgs e)
         {
-            _viewModel.SearchText = txtSearch.Text;
-            UpdateRecordCount();
+            //_viewModel.SearchText = txtSearch.Text;
+            //UpdateRecordCount();
         }
 
         private async void BtnRefresh_Click(object sender, RoutedEventArgs e)
