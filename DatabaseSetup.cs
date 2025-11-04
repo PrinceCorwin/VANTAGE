@@ -183,10 +183,10 @@ namespace VANTAGE
      }
         }
 
-     /// <summary>
+     
         /// Seed ColumnMappings table from CSV data (hardcoded from ColumnNameComparisonForAiModel.csv)
         /// This data is embedded in code for deployment - no CSV file needed at runtime
-        /// </summary>
+        
         private static void SeedColumnMappings(SqliteConnection connection)
         {
             // Check if already seeded
@@ -328,9 +328,9 @@ namespace VANTAGE
   System.Diagnostics.Debug.WriteLine($"✓ Seeded {mappings.Length} column mappings");
  }
 
-      /// <summary>
+      
    /// Add test users to the database (for development/testing)
-        /// </summary>
+        
         public static void SeedTestUsers()
      {
             try

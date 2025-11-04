@@ -4,9 +4,9 @@ using System.Linq;
 
 namespace VANTAGE.Utilities
 {
-    /// <summary>
+    
     /// Service that provides column mappings (default or project-specific)
-    /// </summary>
+    
     public class MappingService
     {
         private readonly string _projectID;
@@ -18,9 +18,9 @@ namespace VANTAGE.Utilities
             LoadMappings();
         }
 
-        /// <summary>
+        
         /// Get property name from database column name
-        /// </summary>
+        
         public string GetPropertyName(string dbColumnName)
         {
             if (_mappings.TryGetValue(dbColumnName, out var mapping))
@@ -32,9 +32,9 @@ namespace VANTAGE.Utilities
             return ColumnMapper.GetPropertyName(dbColumnName);
         }
 
-        /// <summary>
+        
         /// Get database column name from property name
-        /// </summary>
+        
         public string GetDbColumnName(string propertyName)
         {
             var mapping = _mappings.Values.FirstOrDefault(m => m.PropertyName == propertyName);
@@ -47,9 +47,9 @@ namespace VANTAGE.Utilities
             return ColumnMapper.GetDbColumnName(propertyName);
         }
 
-        /// <summary>
+        
         /// Get display name for a database column
-        /// </summary>
+        
         public string GetDisplayName(string dbColumnName)
         {
             if (_mappings.TryGetValue(dbColumnName, out var mapping))
@@ -61,9 +61,9 @@ namespace VANTAGE.Utilities
             return GetPropertyName(dbColumnName);
         }
 
-        /// <summary>
+        
         /// Check if column should be visible
-        /// </summary>
+        
         public bool IsVisible(string dbColumnName)
         {
             if (_mappings.TryGetValue(dbColumnName, out var mapping))
@@ -75,9 +75,9 @@ namespace VANTAGE.Utilities
             return true;
         }
 
-        /// <summary>
+        
         /// Get column order
-        /// </summary>
+        
         public int GetColumnOrder(string dbColumnName)
         {
             if (_mappings.TryGetValue(dbColumnName, out var mapping))
@@ -88,9 +88,9 @@ namespace VANTAGE.Utilities
             return 0;
         }
 
-        /// <summary>
+        
         /// Get column width
-        /// </summary>
+        
         public int GetColumnWidth(string dbColumnName)
         {
             if (_mappings.TryGetValue(dbColumnName, out var mapping))
@@ -101,9 +101,9 @@ namespace VANTAGE.Utilities
             return 100; // Default width
         }
 
-        /// <summary>
+        
         /// Load mappings from database or use defaults
-        /// </summary>
+        
         private void LoadMappings()
         {
             _mappings = new Dictionary<string, ColumnMappingInfo>();
@@ -150,9 +150,9 @@ namespace VANTAGE.Utilities
             }
         }
 
-        /// <summary>
+        
         /// Get all database column names in display order
-        /// </summary>
+        
         public IEnumerable<string> GetAllDbColumnNames()
         {
             if (_mappings.Any())
@@ -167,9 +167,9 @@ namespace VANTAGE.Utilities
         }
     }
 
-    /// <summary>
+    
     /// Column mapping information
-    /// </summary>
+    
     public class ColumnMappingInfo
     {
         public string DbColumnName { get; set; }

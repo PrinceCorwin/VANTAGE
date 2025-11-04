@@ -8,25 +8,25 @@ using VANTAGE.Utilities;
 namespace VANTAGE.Data
 {
 
-    /// <summary>
+    
     /// Repository for Activity data access with pagination support
-    /// </summary>
+    
     public static class ActivityRepository
     {
       // Mapping service instance (initialized per-project when needed)
         private static MappingService _mappingService;
 
-        /// <summary>
+        
         /// Initialize mapping service for a specific project
-        /// </summary>
+        
         public static void InitializeMappings(string projectID = null)
       {
             _mappingService = new MappingService(projectID);
         }
 
-        /// <summary>
+        
         /// Get current mapping service (creates default if not initialized)
-     /// </summary>
+     
   private static MappingService GetMappingService()
         {
           if (_mappingService == null)
@@ -35,9 +35,9 @@ namespace VANTAGE.Data
             }
           return _mappingService;
         }
-  /// <summary>
+  
    /// Update an existing activity in the database
-    /// </summary>
+    
       public static async Task<bool> UpdateActivityInDatabase(Activity activity)
         {
  try
@@ -165,9 +165,9 @@ command.Parameters.AddWithValue("@AzureUploadDate", activity.AzureUploadDate?.To
           return false;
             }
       }
-        /// <summary>
+        
         /// Get list of valid usernames from Users table
-        /// </summary>
+        
       private static HashSet<string> GetValidUsernames()
         {
             var validUsers = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -193,9 +193,9 @@ command.CommandText = "SELECT Username FROM Users";
 
  return validUsers;
  }
-        /// <summary>
+        
   /// Get total count of activities in database
-      /// </summary>
+      
         public static async Task<int> GetTotalCountAsync()
         {
             return await Task.Run(() =>
@@ -211,9 +211,9 @@ command.CommandText = "SELECT Username FROM Users";
         });
         }
         
-        /// <summary>
+        
         /// Get paginated activities with optional filtering
-        /// </summary>
+        
         /// <param name="pageNumber">Page number (0-based)</param>
         /// <param name="pageSize">Number of records per page</param>
      /// <param name="whereClause">Optional SQL WHERE clause for filtering</param>
@@ -502,9 +502,9 @@ using var reader = command.ExecuteReader();
      });
   }
 
-    /// <summary>
+    
         /// Get distinct values for a specific column. Returns up to 'limit' values and the true total count (can be > limit).
- /// </summary>
+ 
         public static async Task<(List<string> values, int totalCount)> GetDistinctColumnValuesAsync(string columnName, int limit = 1000)
   {
             return await Task.Run(() =>
@@ -574,9 +574,9 @@ cmd.CommandText = $@"SELECT DISTINCT ({dbExpression}) FROM Activities ORDER BY 1
             });
   }
         
-        /// <summary>
+        
         /// Get distinct values for a column, filtered by a WHERE clause. Returns up to 'limit' values and the true total count (can be > limit).
-        /// </summary>
+        
         public static async Task<(List<string> values, int totalCount)> GetDistinctColumnValuesForFilterAsync(string columnName, string whereClause, int limit = 1000)
      {
             return await Task.Run(() =>

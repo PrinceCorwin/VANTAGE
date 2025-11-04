@@ -8,9 +8,9 @@ namespace VANTAGE.Utilities
 {
     public static class SettingsManager
     {
-        /// <summary>
+        
         /// Get an app-wide setting by name
-        /// </summary>
+        
         /// 
         private static void EnsureSettingsTables()
         {
@@ -65,9 +65,9 @@ namespace VANTAGE.Utilities
             }
         }
 
-        /// <summary>
+        
         /// Set an app-wide setting
-        /// </summary>
+        
         public static void SetAppSetting(string settingName, string settingValue, string dataType = "string")
         {
             EnsureSettingsTables();
@@ -95,9 +95,9 @@ namespace VANTAGE.Utilities
             }
         }
 
-        /// <summary>
+        
         /// Get a user-specific setting by name
-        /// </summary>
+        
         public static string GetUserSetting(int userId, string settingName, string defaultValue = "")
         {
             EnsureSettingsTables();
@@ -122,9 +122,9 @@ namespace VANTAGE.Utilities
             }
         }
 
-        /// <summary>
+        
         /// Set a user-specific setting
-        /// </summary>
+        
         public static void SetUserSetting(int userId, string settingName, string settingValue, string dataType = "string")
         {
             EnsureSettingsTables();
@@ -153,25 +153,25 @@ namespace VANTAGE.Utilities
             }
         }
 
-        /// <summary>
+        
         /// Get last module used by user
-        /// </summary>
+        
         public static string GetLastModuleUsed(int userId, string defaultModule = "PROGRESS")
         {
             return GetUserSetting(userId, "LastModuleUsed", defaultModule);
         }
 
-        /// <summary>
+        
         /// Set last module used by user
-        /// </summary>
+        
         public static void SetLastModuleUsed(int userId, string moduleName)
         {
             SetUserSetting(userId, "LastModuleUsed", moduleName, "string");
         }
 
-        /// <summary>
+        
         /// Get column order for a user (as JSON array)
-        /// </summary>
+        
         public static List<string> GetColumnOrder(int userId)
         {
             try
@@ -189,9 +189,9 @@ namespace VANTAGE.Utilities
             }
         }
 
-        /// <summary>
+        
         /// Set column order for a user (saves as JSON array)
-        /// </summary>
+        
         public static void SetColumnOrder(int userId, List<string> columnNames)
         {
             try
@@ -206,9 +206,9 @@ namespace VANTAGE.Utilities
             }
         }
 
-        /// <summary>
+        
         /// Get default column order (if user hasn't customized)
-        /// </summary>
+        
         private static List<string> GetDefaultColumnOrder()
         {
             return new List<string>
@@ -227,9 +227,9 @@ namespace VANTAGE.Utilities
             };
         }
 
-        /// <summary>
+        
         /// Initialize default app settings on first run
-        /// </summary>
+        
         public static void InitializeDefaultAppSettings()
         {
             try
@@ -250,9 +250,9 @@ namespace VANTAGE.Utilities
             }
         }
 
-        /// <summary>
+        
         /// Initialize default user settings on first login
-        /// </summary>
+        
         public static void InitializeDefaultUserSettings(int userId)
         {
             try

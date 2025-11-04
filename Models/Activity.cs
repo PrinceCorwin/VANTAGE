@@ -45,9 +45,9 @@ namespace VANTAGE.Models
         public DateTime? WeekEndDate { get; set; }
         public DateTime? AzureUploadDate { get; set; }
 
-        /// <summary>
+        
         /// Status based on PercentEntry (0-100)
-        /// </summary>
+        
         public string Status
         {
             get
@@ -209,10 +209,10 @@ namespace VANTAGE.Models
             }
         }
 
-        /// <summary>
+        
         /// PercentEntry: STORED AS 0-100 (percentage)
         /// Example: 75.5 means 75.5%
-        /// </summary>
+        
         public double PercentEntry
         {
             get => _percentEntry;
@@ -232,25 +232,25 @@ namespace VANTAGE.Models
             }
         }
 
-        /// <summary>
+        
         /// Display PercentEntry with % symbol
         /// Same as PercentEntry since we store as 0-100
-        /// </summary>
+        
         public string PercentEntry_Display => $"{PercentEntry:F1}%";
 
-        /// <summary>
+        
         /// Helper method for Excel import: convert 0-1 decimal to 0-100 percentage
         /// Example: 0.755 → 75.5
-        /// </summary>
+        
         public void SetPercentFromDecimal(double decimalValue)
         {
             PercentEntry = decimalValue * 100;
         }
 
-        /// <summary>
+        
         /// Helper method for Excel export: convert 0-100 percentage to 0-1 decimal
         /// Example: 75.5 → 0.755
-        /// </summary>
+        
         public double GetPercentAsDecimal()
         {
             return PercentEntry / 100;
@@ -260,33 +260,33 @@ namespace VANTAGE.Models
         // VALUES - CALCULATED (Read-Only)
         // ========================================
 
-        /// <summary>
+        
         /// Calculated: PercentEntry (for backward compatibility)
         /// Since PercentEntry is already 0-100, this just returns it
-        /// </summary>
+        
         public double PercentCompleteCalc => PercentEntry;
 
-        /// <summary>
+        
         /// Display PercentCompleteCalc as percentage string
-        /// </summary>
+        
         public string PercentCompleteCalc_Display => $"{PercentCompleteCalc:F1}%";
 
-        /// <summary>
+        
         /// Calculated: EarnQtyEntry / Quantity (as percentage 0-100)
-        /// </summary>
+        
         public double EarnedQtyCalc
         {
             get => Quantity > 0 ? (EarnQtyEntry / Quantity) * 100 : 0;
         }
 
-        /// <summary>
+        
         /// Display EarnedQtyCalc as percentage string
-        /// </summary>
+        
         public string EarnedQtyCalc_Display => $"{EarnedQtyCalc:F1}%";
 
-        /// <summary>
+        
         /// Calculated: PercentEntry / 100 * BudgetMHs
-        /// </summary>
+        
         public double EarnMHsCalc { get; private set; }
 
         public double EarnedMHsRoc { get; set; }
@@ -303,9 +303,9 @@ namespace VANTAGE.Models
 
         public double ROCID { get; set; }
 
-        /// <summary>
+        
         /// Calculated: ProjectID & "|" & CompType & "|" & PhaseCategory & "|" & ROCStep
-        /// </summary>
+        
         public string ROCLookupID
         {
             get => $"{ProjectID}|{CompType}|{PhaseCategory}|{ROCStep}";
@@ -336,19 +336,19 @@ namespace VANTAGE.Models
         public double ClientBudget { get; set; }
         public double ClientCustom3 { get; set; }
 
-        /// <summary>
+        
         /// Calculated: IF(EarnMHsCalc > 0, ROUND((EarnMHsCalc / BudgetMHs) * ClientEquivQty, 3), 0)
-        /// </summary>
+        
         public double ClientEquivEarnQTY { get; private set; }
 
         // ========================================
         // CALCULATION METHODS
         // ========================================
 
-        /// <summary>
+        
         /// Update PercentEntry based on EarnQtyEntry
         /// Called when user edits EarnQtyEntry
-        /// </summary>
+        
         private void UpdatePercCompleteFromEarnedQty()
         {
             if (Quantity > 0)
@@ -366,10 +366,10 @@ namespace VANTAGE.Models
             RecalculatePercentEarned();
         }
 
-        /// <summary>
+        
         /// Update EarnQtyEntry based on PercentEntry
         /// Called when user edits PercentEntry
-        /// </summary>
+        
         private void UpdateEarnedQtyFromPercComplete()
         {
             if (Quantity > 0)
@@ -385,9 +385,9 @@ namespace VANTAGE.Models
             RecalculatePercentEarned();
         }
 
-        /// <summary>
+        
         /// Recalculate all dependent fields
-        /// </summary>
+        
         private void RecalculatePercentEarned()
         {
             OnPropertyChanged(nameof(PercentCompleteCalc));
@@ -400,10 +400,10 @@ namespace VANTAGE.Models
             RecalculateClientEarnedQty();
         }
 
-        /// <summary>
+        
         /// Calculate EarnMHsCalc
         /// Formula: PercentEntry / 100 * BudgetMHs
-        /// </summary>
+        
         private void RecalculateEarnedHours()
         {
             // PercentEntry is 0-100, so divide by 100
@@ -418,10 +418,10 @@ namespace VANTAGE.Models
             OnPropertyChanged(nameof(EarnMHsCalc));
         }
 
-        /// <summary>
+        
         /// Calculate ClientEquivEarnQTY
         /// Formula: IF(EarnMHsCalc > 0, ROUND((EarnMHsCalc / BudgetMHs) * ClientEquivQty, 3), 0)
-        /// </summary>
+        
         private void RecalculateClientEarnedQty()
         {
             if (EarnMHsCalc > 0 && BudgetMHs > 0)

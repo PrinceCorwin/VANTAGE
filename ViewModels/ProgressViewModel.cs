@@ -102,9 +102,9 @@ namespace VANTAGE.ViewModels
             }
         }
 
-        /// <summary>
+        
         /// Apply a filter to a column
-        /// </summary>
+        
         public async Task ApplyFilter(string columnName, string filterType, string filterValue)
         {
             _activeFilters[columnName] = new ColumnFilter
@@ -118,9 +118,9 @@ namespace VANTAGE.ViewModels
 
             await RebuildAndReloadAsync();
         }
-        /// <summary>
+        
         /// Apply a single column filter to the data
-        /// </summary>
+        
         private IEnumerable<Activity> ApplyColumnFilter(IEnumerable<Activity> data, ColumnFilter filter)
         {
             return data.Where(activity =>
@@ -159,9 +159,9 @@ namespace VANTAGE.ViewModels
                 }
             });
         }
-        /// <summary>
+        
         /// Clear filter from a column
-        /// </summary>
+        
         public async Task ClearFilter(string columnName)
         {
             _activeFilters.Remove(columnName);
@@ -170,9 +170,9 @@ namespace VANTAGE.ViewModels
         }
 
 
-        /// <summary>
+        
         /// Apply all active filters to the data
-        /// </summary>
+        
         private async Task ApplyAllFiltersAsync()
         {
             try
@@ -540,9 +540,9 @@ namespace VANTAGE.ViewModels
                 IsLoading = false;
             }
         }
-        /// <summary>
+        
         /// Load initial data - gets total count and first page
-        /// </summary>
+        
         public async Task LoadInitialDataAsync()
         {
             try
@@ -566,9 +566,9 @@ namespace VANTAGE.ViewModels
             }
         }
 
-        /// <summary>
+        
         /// Load the current page of data
-        /// </summary>
+        
         public async Task LoadCurrentPageAsync()
         {
             try
@@ -603,9 +603,9 @@ namespace VANTAGE.ViewModels
             }
         }
 
-        /// <summary>
+        
         /// Go to next page
-        /// </summary>
+        
         public async Task NextPageAsync()
         {
             if (!CanGoNext) return;
@@ -614,9 +614,9 @@ namespace VANTAGE.ViewModels
             await LoadCurrentPageAsync();
         }
 
-        /// <summary>
+        
         /// Go to previous page
-        /// </summary>
+        
         public async Task PreviousPageAsync()
         {
             if (!CanGoPrevious) return;
@@ -625,9 +625,9 @@ namespace VANTAGE.ViewModels
             await LoadCurrentPageAsync();
         }
 
-        /// <summary>
+        
         /// Go to first page
-        /// </summary>
+        
         public async Task FirstPageAsync()
         {
             if (CurrentPage == 0) return;
@@ -636,9 +636,9 @@ namespace VANTAGE.ViewModels
             await LoadCurrentPageAsync();
         }
 
-        /// <summary>
+        
         /// Go to last page
-        /// </summary>
+        
         public async Task LastPageAsync()
         {
             if (CurrentPage == TotalPages - 1) return;
@@ -647,17 +647,17 @@ namespace VANTAGE.ViewModels
             await LoadCurrentPageAsync();
         }
 
-        /// <summary>
+        
         /// Refresh current page
-        /// </summary>
+        
         public async Task RefreshAsync()
         {
             await LoadCurrentPageAsync();
         }
 
-        /// <summary>
+        
         /// Update total pages calculation
-        /// </summary>
+        
         private void UpdateTotalPages()
         {
             if (PageSize > 0)
@@ -671,9 +671,9 @@ namespace VANTAGE.ViewModels
         }
 
 
-        /// <summary>
+        
         /// Apply filters to the view
-        /// </summary>
+        
         //private void ApplyFilters()
         //{
         //    if (_activitiesView == null) return;
@@ -682,9 +682,9 @@ namespace VANTAGE.ViewModels
         //    FilteredCount = _activitiesView.Cast<Activity>().Count();
         //}
 
-        /// <summary>
+        
         /// Filter predicate for activities
-        /// </summary>
+        
         private bool FilterActivity(object obj)
         {
             if (obj is not Activity activity)

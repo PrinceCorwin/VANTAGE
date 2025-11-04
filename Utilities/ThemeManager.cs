@@ -11,9 +11,9 @@ namespace VANTAGE.Utilities
         // Current theme name
         public static string CurrentTheme { get; private set; } = "Dark";
 
-        /// <summary>
+        
         /// Load theme from UserSettings on app startup
-        /// </summary>
+        
         public static void LoadThemeFromSettings(int userId)
         {
             try
@@ -38,9 +38,9 @@ namespace VANTAGE.Utilities
             }
         }
 
-        /// <summary>
+        
         /// Switch to a different theme
-        /// </summary>
+        
         public static void SwitchTheme(string themeName, bool saveToSettings = true, int? userId = null)
         {
             try
@@ -79,9 +79,9 @@ namespace VANTAGE.Utilities
             }
         }
 
-        /// <summary>
+        
         /// Get current theme name
-        /// </summary>
+        
         public static string GetCurrentTheme()
         {
             return CurrentTheme;

@@ -5,14 +5,14 @@ using ClosedXML.Excel;
 
 namespace VANTAGE.Utilities
 {
-    /// <summary>
+    
     /// Export activities to Excel using OldVantage column names
-    /// </summary>
+    
     public static class ExcelExporter
     {
-        /// <summary>
+        
         /// Export all activities to Excel file
-        /// </summary>
+        
         public static void ExportActivities(string filePath, List<Models.Activity> activities)
         {
             try
@@ -84,9 +84,9 @@ namespace VANTAGE.Utilities
             }
         }
 
-        /// <summary>
+        
         /// Export empty template (headers only)
-        /// </summary>
+        
         public static void ExportTemplate(string filePath)
         {
             try
@@ -122,9 +122,9 @@ namespace VANTAGE.Utilities
             }
         }
 
-        /// <summary>
+        
         /// Get column mappings from database
-        /// </summary>
+        
         private static List<(string DbColumnName, string OldVantageName)> GetColumnMappings()
         {
             var mappings = new List<(string DbColumnName, string OldVantageName)>();
@@ -149,9 +149,9 @@ namespace VANTAGE.Utilities
             return mappings;
         }
 
-        /// <summary>
+        
         /// Get activity property value by database column name
-        /// </summary>
+        
         private static object GetActivityValue(Models.Activity activity, string dbColumnName)
         {
             // Get property name from DbColumnName

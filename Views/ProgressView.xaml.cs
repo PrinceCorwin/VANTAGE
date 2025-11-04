@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Input;
 using System.Windows.Media;
 using VANTAGE.Data;
 using VANTAGE.Models;
@@ -34,6 +35,7 @@ namespace VANTAGE.Views
             UpdateRecordCount();
             // Load data AFTER the view is loaded
             this.Loaded += OnViewLoaded;
+            LoadCustomPercentButtons(); // Load custom button values
         }
         private void BtnAssign_Click(object sender, RoutedEventArgs e)
         {
@@ -44,22 +46,130 @@ namespace VANTAGE.Views
                 button.ContextMenu.IsOpen = true;
             }
         }
-        private async void BtnSetPercent100_Click(object sender, RoutedEventArgs e)
+        // === PERCENT BUTTON HANDLERS ===
+
+        /// <summary>
+        /// Load custom percent values from user settings on form load
+        /// </summary>
+        private void LoadCustomPercentButtons()
         {
-            // Get the custom percentage from button content (e.g., "100%" or "75%")
-            var buttonContent = btnSetPercent100.Content.ToString();
-            int percent = int.Parse(buttonContent.TrimEnd('%'));
+            // Load button 1
+            string value1 = SettingsManager.GetUserSetting(App.CurrentUserID, "CustomPercentButton1");
+            if (!string.IsNullOrEmpty(value1) && int.TryParse(value1, out int percent1))
+            {
+                btnSetPercent100.Content = $"{percent1}%";
+            }
+
+            // Load button 2
+            string value2 = SettingsManager.GetUserSetting(App.CurrentUserID, "CustomPercentButton2");
+            if (!string.IsNullOrEmpty(value2) && int.TryParse(value2, out int percent2))
+            {
+                btnSetPercent0.Content = $"{percent2}%";
+            }
+        }
+
+        /// <summary>
+        /// Left-click: Set selected records to button's percent value
+        /// </summary>
+        private async void BtnSetPercent_Click(object sender, RoutedEventArgs e)
+        {
+            var button = sender as Button;
+            if (button == null) return;
+
+            // Parse percent from button content
+            var buttonContent = button.Content.ToString();
+            if (!int.TryParse(buttonContent.TrimEnd('%'), out int percent))
+            {
+                MessageBox.Show("Invalid percent value.", "Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
 
             await SetSelectedRecordsPercent(percent);
         }
-        private async void BtnSetPercent0_Click(object sender, RoutedEventArgs e)
-        {
-            // Get the custom percentage from button content (e.g., "0%" or "25%")
-            var buttonContent = btnSetPercent0.Content.ToString();
-            int percent = int.Parse(buttonContent.TrimEnd('%'));
 
-            await SetSelectedRecordsPercent(percent);
+        /// <summary>
+        /// Context menu: Reset button to default value
+        /// </summary>
+        private void MenuItem_ResetPercent_Click(object sender, RoutedEventArgs e)
+        {
+            var menuItem = sender as MenuItem;
+            if (menuItem?.Tag == null) return;
+
+            // Get default value from menu item tag
+            int defaultValue = int.Parse(menuItem.Tag.ToString());
+
+            // Find which button's context menu this came from
+            var contextMenu = ((MenuItem)sender).Parent as ContextMenu;
+            var button = contextMenu?.PlacementTarget as Button;
+
+            if (button == null) return;
+
+            // Parse button Tag: "ButtonName|SettingKey|DefaultValue"
+            var tagParts = button.Tag?.ToString().Split('|');
+            if (tagParts == null || tagParts.Length != 3) return;
+
+            string settingKey = tagParts[1];
+
+            // Update button
+            button.Content = $"{defaultValue}%";
+
+            // Save to user settings
+            SettingsManager.SetUserSetting(App.CurrentUserID, settingKey,
+                defaultValue.ToString(), "int");
+
+            MessageBox.Show($"Button reset to {defaultValue}%", "Success",
+                MessageBoxButton.OK, MessageBoxImage.Information);
         }
+
+        /// <summary>
+        /// Context menu: Set custom percent value
+        /// </summary>
+        private void MenuItem_CustomPercent_Click(object sender, RoutedEventArgs e)
+        {
+            // Find which button's context menu this came from
+            var contextMenu = ((MenuItem)sender).Parent as ContextMenu;
+            var button = contextMenu?.PlacementTarget as Button;
+
+            if (button == null) return;
+
+            // Parse button Tag: "ButtonName|SettingKey|DefaultValue"
+            var tagParts = button.Tag?.ToString().Split('|');
+            if (tagParts == null || tagParts.Length != 3)
+            {
+                MessageBox.Show("Button configuration error.", "Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            string buttonName = tagParts[0];
+            string settingKey = tagParts[1];
+
+            // Get current value
+            string currentValue = button.Content.ToString().TrimEnd('%');
+            int.TryParse(currentValue, out int currentPercent);
+
+            // Show custom dialog
+            var dialog = new CustomPercentDialog(currentPercent);
+            dialog.Owner = Window.GetWindow(this);
+
+            if (dialog.ShowDialog() == true)
+            {
+                int newPercent = dialog.PercentValue;
+
+                // Update button
+                button.Content = $"{newPercent}%";
+
+                // Save to user settings
+                SettingsManager.SetUserSetting(App.CurrentUserID, settingKey,
+                    newPercent.ToString(), "int");
+
+                MessageBox.Show($"{buttonName} updated to {newPercent}%", "Success",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
+
+        // Keep your existing SetSelectedRecordsPercent helper method
         private async Task SetSelectedRecordsPercent(int percent)
         {
             var selectedActivities = sfActivities.SelectedItems.Cast<Activity>().ToList();
@@ -116,12 +226,6 @@ namespace VANTAGE.Views
             {
                 UpdateSummaryPanel();
             }
-
-            // Update header visuals when active filters change
-            //if (e.PropertyName == nameof(ProgressViewModel.ActiveFilterColumns))
-            //{
-            //    UpdateHeaderFilterIndicators();
-            //}
         }
         private void UpdateSummaryPanel()
         {
@@ -279,9 +383,9 @@ namespace VANTAGE.Views
 
             _activeFilterPopup.IsOpen = false;
         }
-        /// <summary>
+        
         /// Auto-save when user finishes editing a cell
-        /// </summary>
+        
 
         private async void OnViewLoaded(object sender, RoutedEventArgs e)
         {
@@ -291,9 +395,9 @@ namespace VANTAGE.Views
             UpdateRecordCount();
             UpdatePagingControls();
         }
-        /// <summary>
+        
         /// Initialize tooltips for column headers showing OldVantage names
-        /// </summary>
+        
         //private void InitializeColumnTooltips()
         //{
         //    try
@@ -434,9 +538,9 @@ namespace VANTAGE.Views
             }
         }
 
-        /// <summary>
+        
         /// Extract property name from column (tries binding path first, then header text)
-        /// </summary>
+        
         private string GetColumnPropertyName(Syncfusion.UI.Xaml.Grid.GridColumn column)
         {
             // Syncfusion columns use MappingName for the property binding
@@ -487,9 +591,9 @@ namespace VANTAGE.Views
                 lstColumnVisibility.Items.Add(checkBox);
             }
         }
-        /// <summary>
+        
         /// Prevent editing of records not assigned to current user
-        /// </summary>
+        
         private void sfActivities_CurrentCellBeginEdit(object sender, Syncfusion.UI.Xaml.Grid.CurrentCellBeginEditEventArgs e)
         {
             // Get the activity from the current row
@@ -820,9 +924,9 @@ namespace VANTAGE.Views
             UpdatePagingControls();
         }
 
-        /// <summary>
+        
         /// Auto-save when user finishes editing a cell
-        /// </summary>
+        
         private async void sfActivities_CurrentCellEndEdit(object sender, Syncfusion.UI.Xaml.Grid.CurrentCellEndEditEventArgs e)
         {
             try
@@ -977,7 +1081,7 @@ namespace VANTAGE.Views
             {
                 Title = "Assign to User",
                 Width = 300,
-                Height = 150,
+                Height = 165,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 Owner = Window.GetWindow(this),
                 Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF1E1E1E"))

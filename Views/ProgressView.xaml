@@ -90,7 +90,7 @@
                         Padding="10,0"
                         Click="BtnFilterNotComplete_Click"/>
 
-                <Button x:Name="btnFilterPipe"
+                <Button x:Name="btnFilterUser1"
                         Content="USER 1"
                         Height="35"
                         Margin="0,0,0,5"
@@ -102,7 +102,7 @@
                         Padding="10,0"
                         Click="BtnFilterUser1_Click"/>
 
-                <Button x:Name="btnFilterSteel"
+                <Button x:Name="btnFilterUser2"
                         Content="USER 2"
                         Height="35"
                         Margin="0,0,0,5"
@@ -114,7 +114,7 @@
                         Padding="10,0"
                         Click="BtnFilterUser2_Click"/>
 
-                <Button x:Name="btnFilterElec"
+                <Button x:Name="btnFilterUser3"
                         Content="USER 3"
                         Height="35"
                         Margin="0,0,0,5"
@@ -155,36 +155,40 @@
                         Margin="0,20,0,20"/>
 
                 <TextBlock Text="COLUMN VISIBILITY" 
-                           FontSize="12" 
-                           FontWeight="Bold"
-                           Foreground="{StaticResource TextColorSecondary}"
-                           Margin="0,0,0,10"/>
+                        FontSize="12" 
+                        FontWeight="Bold"
+                        Foreground="{StaticResource TextColorSecondary}"
+                        Margin="0,0,0,10"/>
 
                 <ListBox x:Name="lstColumnVisibility"
-                         Height="200"
-                         Background="{StaticResource ControlBackground}"
-                         Foreground="{StaticResource ForegroundColor}"
-                         BorderBrush="{StaticResource BorderColor}"
-                         BorderThickness="1"
-                         SelectionMode="Multiple"
-                         SelectionChanged="LstColumnVisibility_SelectionChanged">
+                        Height="200"
+                        Background="{StaticResource ControlBackground}"
+                        Foreground="{StaticResource ForegroundColor}"
+                        BorderBrush="{StaticResource BorderColor}"
+                        BorderThickness="1"
+                        SelectionMode="Multiple"
+                        SelectionChanged="LstColumnVisibility_SelectionChanged">
                 </ListBox>
 
-                <TextBlock Text="Select columns to show/hide" 
-                           FontSize="10" 
-                           Foreground="{StaticResource DisabledColor}"
-                           Margin="0,5,0,0"
-                           TextWrapping="Wrap"/>
+                <!--<TextBlock Text="Select columns to show/hide" 
+                            FontSize="10" 
+                            Foreground="{StaticResource DisabledColor}"
+                            Margin="0,5,0,0"
+                            TextWrapping="Wrap"/>-->
             </StackPanel>
         </Border>
 
         <!-- RIGHT SIDE: DataGrid -->
         <Grid Grid.Column="1">
             <Grid.RowDefinitions>
-                <RowDefinition Height="40"/> <!-- Row 0: Filters/toolbar -->
-                <RowDefinition Height="Auto"/> <!-- Row 1: ADD THIS - Summary panel -->
-                <RowDefinition Height="*"/> <!-- Row 2: DataGrid (was Row 1) -->
-                <RowDefinition Height="40"/> <!-- Row 3: Paging (was Row 2) -->
+                <RowDefinition Height="40"/>
+                <!-- Row 0: Filters/toolbar -->
+                <RowDefinition Height="Auto"/>
+                <!-- Row 1:Summary panel -->
+                <RowDefinition Height="*"/>
+                <!-- Row 2: DataGrid (was Row 1) -->
+                <RowDefinition Height="40"/>
+                <!-- Row 3: Paging (was Row 2) -->
             </Grid.RowDefinitions>
 
             <!-- Combined Toolbar + Summary Panel -->
@@ -193,8 +197,7 @@
                     BorderBrush="{StaticResource BorderColor}"
                     BorderThickness="0,0,0,1"
                     Padding="10,0">
-                <DockPanel LastChildFill="True" VerticalAlignment="Center">
-
+                        <DockPanel LastChildFill="True" VerticalAlignment="Center">
                     <!-- LEFT SIDE: Search controls -->
                     <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" VerticalAlignment="Center">
                         <TextBlock Text="Search:"
@@ -225,16 +228,18 @@
 
                         <!-- NEW: Bulk Action Buttons -->
                         <Button x:Name="btnAssign"
-                            Content="Assign ▼"
-                            Width="90"
-                            Height="28"
-                            Margin="20,0,5,0"
-                            Background="{StaticResource ControlBackground}"
-                            Foreground="{StaticResource ForegroundColor}"
-                            BorderBrush="{StaticResource BorderColor}"
-                            BorderThickness="1"
-                            Click="BtnAssign_Click"
-                            ToolTip="Assign selected records">
+                                Content="Assign ▼"
+                                Width="90"
+                                Height="28"
+                                Margin="20,0,5,0"
+                                Background="{StaticResource ControlBackground}"
+                                Foreground="{StaticResource ForegroundColor}"
+                                BorderBrush="{StaticResource BorderColor}"
+                                BorderThickness="1"
+                                Padding="5,2,5,2"
+                                VerticalContentAlignment="Center"
+                                Click="BtnAssign_Click"
+                                ToolTip="Assign selected records">
                             <Button.ContextMenu>
                                 <ContextMenu>
                                     <MenuItem Header="Assign to Me" Click="MenuAssignToMe_Click"/>
@@ -246,30 +251,46 @@
                         </Button>
 
                         <Button x:Name="btnSetPercent100"
-                            Content="100%"
-                            Width="60"
-                            Height="28"
-                            Margin="5,0"
-                            Background="{StaticResource ControlBackground}"
-                            Foreground="{StaticResource ForegroundColor}"
-                            BorderBrush="{StaticResource BorderColor}"
-                            BorderThickness="1"
-                            Click="BtnSetPercent100_Click"
-                            MouseRightButtonUp="BtnSetPercent100_RightClick"
-                            ToolTip="Left-click: Set selected to 100% | Right-click: Customize"/>
+                                Content="100%"
+                                Tag="Button1|CustomPercentButton1|100"
+                                Width="60"
+                                Height="28"
+                                Margin="5,0"
+                                Background="{StaticResource ControlBackground}"
+                                Foreground="{StaticResource ForegroundColor}"
+                                BorderBrush="{StaticResource BorderColor}"
+                                BorderThickness="1"
+                                Click="BtnSetPercent_Click"
+                                ToolTip="Left-click: Apply | Right-click: Customize">
+                            <Button.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="Reset Button to 100%" Click="MenuItem_ResetPercent_Click" Tag="100"/>
+                                    <Separator/>
+                                    <MenuItem Header="Custom Percent..." Click="MenuItem_CustomPercent_Click"/>
+                                </ContextMenu>
+                            </Button.ContextMenu>
+                        </Button>
 
                         <Button x:Name="btnSetPercent0"
-                            Content="0%"
-                            Width="60"
-                            Height="28"
-                            Margin="5,0"
-                            Background="{StaticResource ControlBackground}"
-                            Foreground="{StaticResource ForegroundColor}"
-                            BorderBrush="{StaticResource BorderColor}"
-                            BorderThickness="1"
-                            Click="BtnSetPercent0_Click"
-                            MouseRightButtonUp="BtnSetPercent0_RightClick"
-                            ToolTip="Left-click: Set selected to 0% | Right-click: Customize"/>
+                                Content="0%"
+                                Tag="Button2|CustomPercentButton2|0"
+                                Width="60"
+                                Height="28"
+                                Margin="5,0"
+                                Background="{StaticResource ControlBackground}"
+                                Foreground="{StaticResource ForegroundColor}"
+                                BorderBrush="{StaticResource BorderColor}"
+                                BorderThickness="1"
+                                Click="BtnSetPercent_Click"
+                                ToolTip="Left-click: Apply | Right-click: Customize">
+                            <Button.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="Reset Button to 0%" Click="MenuItem_ResetPercent_Click" Tag="0"/>
+                                    <Separator/>
+                                    <MenuItem Header="Custom Percent..." Click="MenuItem_CustomPercent_Click"/>
+                                </ContextMenu>
+                            </Button.ContextMenu>
+                        </Button>
                     </StackPanel>
 
                     <!-- RIGHT SIDE: Summary stats -->

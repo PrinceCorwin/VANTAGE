@@ -129,9 +129,9 @@ namespace VANTAGE
             }
         }
 
-        /// <summary>
+        
         /// Get existing user or create new user if doesn't exist
-        /// </summary>
+        
         private static User GetOrCreateUser(string username)
         {
             try
@@ -182,9 +182,9 @@ namespace VANTAGE
             }
         }
 
-        /// <summary>
+        
         /// Get user by ID
-        /// </summary>
+        
         private static User GetUserByID(int userID)
         {
             try

@@ -3,16 +3,16 @@ using System.Linq;
 
 namespace VANTAGE.Utilities
 {
-    /// <summary>
+    
     /// Builds SQL WHERE clauses for filtering activities
-    /// </summary>
+    
     public class FilterBuilder
     {
         private List<string> _conditions = new List<string>();
 
-        /// <summary>
+        
         /// Add a condition to the filter
-        /// </summary>
+        
         public void AddCondition(string condition)
         {
             if (!string.IsNullOrWhiteSpace(condition))
@@ -21,17 +21,17 @@ namespace VANTAGE.Utilities
             }
         }
 
-        /// <summary>
+        
         /// Add "My Records" filter (assigned to current user)
-        /// </summary>
+        
         public void AddMyRecordsFilter(string currentUsername)
         {
             AddCondition($"AssignedTo = '{currentUsername}'");
         }
 
-        /// <summary>
+        
         /// Add text search filter (searches multiple columns)
-        /// </summary>
+        
         public void AddTextSearch(string searchText)
         {
             if (!string.IsNullOrWhiteSpace(searchText))
@@ -50,9 +50,9 @@ namespace VANTAGE.Utilities
             }
         }
 
-        /// <summary>
+        
         /// Add complete/not complete filter
-        /// </summary>
+        
         public void AddCompletionFilter(bool complete)
         {
             if (complete)
@@ -65,9 +65,9 @@ namespace VANTAGE.Utilities
             }
         }
 
-        /// <summary>
+        
         /// Build final WHERE clause
-        /// </summary>
+        
         public string BuildWhereClause()
         {
             if (_conditions.Count == 0)
@@ -76,17 +76,17 @@ namespace VANTAGE.Utilities
             return "WHERE " + string.Join(" AND ", _conditions);
         }
 
-        /// <summary>
+        
         /// Check if any filters are active
-        /// </summary>
+        
         public bool HasFilters()
         {
             return _conditions.Count > 0;
         }
 
-        /// <summary>
+        
         /// Clear all filters
-        /// </summary>
+        
         public void Clear()
         {
             _conditions.Clear();

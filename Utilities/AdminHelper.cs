@@ -8,9 +8,9 @@ namespace VANTAGE.Utilities
     {
         private const string SECRET_SALT = "V@nt@ge$ecr3t!2025#ProjectControls";
 
-        /// <summary>
+        
         /// Generate admin token hash for verification
-        /// </summary>
+        
         public static string GenerateAdminToken(int userId, string username)
         {
             string input = $"{userId}|{username}|{SECRET_SALT}";
@@ -19,9 +19,9 @@ namespace VANTAGE.Utilities
             return Convert.ToBase64String(bytes);
         }
 
-        /// <summary>
+        
         /// Verify if user's admin token is valid
-        /// </summary>
+        
         public static bool VerifyAdminToken(int userId, string username, string storedToken)
         {
             if (string.IsNullOrEmpty(storedToken))
@@ -31,9 +31,9 @@ namespace VANTAGE.Utilities
             return storedToken == expectedToken;
         }
 
-        /// <summary>
+        
         /// Grant admin privileges to a user (with token)
-        /// </summary>
+        
         public static void GrantAdmin(int userId, string username)
         {
             try
@@ -61,9 +61,9 @@ namespace VANTAGE.Utilities
             }
         }
 
-        /// <summary>
+        
         /// Revoke admin privileges from a user
-        /// </summary>
+        
         public static void RevokeAdmin(int userId)
         {
             try

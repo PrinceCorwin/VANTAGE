@@ -168,9 +168,9 @@ namespace VANTAGE.Controls
         }
 
         // Overload: Initialize with filtered values
-        /// <summary>
+        
         /// Initialize the filter popup for a column, optionally with a set of filtered values to display.
-        /// </summary>
+        
         public void Initialize(string columnName, int displayLimit, IEnumerable<string> filteredValues = null)
         {
             _columnName = columnName;

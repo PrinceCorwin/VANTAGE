@@ -4,10 +4,10 @@ using System.Linq;
 
 namespace VANTAGE.Utilities
 {
-    /// <summary>
+    
     /// Maps column names for Excel/Azure import/export ONLY
     /// Database now uses NewVantage names directly - no translation needed!
-    /// </summary>
+    
     public static class ColumnMapper
     {
         // Cache for mappings loaded from database
@@ -17,9 +17,9 @@ namespace VANTAGE.Utilities
      // Add a second mapping for OldVantageName -> NewVantage/ColumnName
      private static Dictionary<string, string> _oldToNewMapping;
 
-        /// <summary>
+        
         /// Load mappings from ColumnMappings table
-        /// </summary>
+        
         private static void LoadMappingsFromDatabase()
         {
  if (_isLoaded) return;
@@ -60,10 +60,10 @@ namespace VANTAGE.Utilities
     }
   }
 
-        /// <summary>
+        
         /// For Excel export: NewVantage name → OldVantage name
         /// Example: "ProjectID" → "Tag_ProjectID"
-        /// </summary>
+        
         public static string GetOldVantageName(string newVantageName)
         {
             LoadMappingsFromDatabase();
@@ -76,10 +76,10 @@ namespace VANTAGE.Utilities
             return newVantageName; // Return as-is if no mapping
         }
 
-        /// <summary>
+        
         /// For Azure upload: NewVantage name → Azure name
         /// Example: "ProjectID" → "Tag_ProjectID"
-        /// </summary>
+        
         public static string GetAzureName(string newVantageName)
       {
    LoadMappingsFromDatabase();
@@ -92,10 +92,10 @@ return tuple.Azure;
         return newVantageName; // Return as-is if no mapping
   }
 
-        /// <summary>
+        
         /// For Excel import: OldVantage name → NewVantage name
         /// Example: "Tag_ProjectID" → "ProjectID"
-        /// </summary>
+        
    public static string GetColumnNameFromOldVantage(string oldVantageName)
         {
             LoadMappingsFromDatabase();
@@ -104,10 +104,10 @@ return tuple.Azure;
             return oldVantageName; // Return as-is if no mapping
         }
 
-        /// <summary>
+        
         /// For Azure sync: Azure name → NewVantage name
         /// Example: "Tag_ProjectID" → "ProjectID"
-     /// </summary>
+     
  public static string GetColumnNameFromAzure(string azureName)
       {
             LoadMappingsFromDatabase();
@@ -119,10 +119,10 @@ return tuple.Azure;
             return entry.Key ?? azureName; // Return as-is if no mapping
         }
 
-        /// <summary>
+        
    /// DEPRECATED: Database columns now match property names directly
      /// This method is kept for backward compatibility but just returns the input
-        /// </summary>
+        
         [Obsolete("Database now uses NewVantage column names directly. This method will be removed in Phase 7.")]
         public static string GetDbColumnName(string propertyName)
         {
@@ -130,10 +130,10 @@ return tuple.Azure;
  return propertyName;
 }
 
-        /// <summary>
+        
 /// DEPRECATED: Database columns now match property names directly
         /// This method is kept for backward compatibility but just returns the input
-        /// </summary>
+        
         [Obsolete("Database now uses NewVantage column names directly. This method will be removed in Phase 7.")]
         public static string GetPropertyName(string dbColumnName)
         {
@@ -141,9 +141,9 @@ return tuple.Azure;
    return dbColumnName;
         }
 
-     /// <summary>
+     
   /// DEPRECATED: Use ColumnMappings table queries instead
-        /// </summary>
+        
         [Obsolete("Use ColumnMappings table queries instead. This method will be removed in Phase 7.")]
         public static bool IsValidDbColumn(string dbColumnName)
         {
@@ -151,9 +151,9 @@ return tuple.Azure;
 return _mappings.ContainsKey(dbColumnName);
         }
 
-   /// <summary>
+   
         /// DEPRECATED: Use ColumnMappings table queries instead
-    /// </summary>
+    
       [Obsolete("Use ColumnMappings table queries instead. This method will be removed in Phase 7.")]
         public static IEnumerable<string> GetAllDbColumnNames()
         {

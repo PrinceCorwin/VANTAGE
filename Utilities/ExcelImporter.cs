@@ -8,15 +8,15 @@ using VANTAGE.Models;
 
 namespace VANTAGE.Utilities
 {
-    /// <summary>
+    
     /// Import activities from Excel files with OldVantage column names
     /// Translates to NewVantage column names for database storage
-    /// </summary>
+    
     public static class ExcelImporter
     {
-        /// <summary>
+        
         /// Import activities from Excel file
-        /// </summary>
+        
         /// <param name="filePath">Path to Excel file with OldVantage column names</param>
         /// <param name="replaceMode">True = replace all existing, False = combine/add</param>
         /// <returns>Number of records imported</returns>
@@ -59,10 +59,10 @@ namespace VANTAGE.Utilities
             }
         }
 
-        /// <summary>
+        
         /// Build column mapping: Excel column number → NewVantage property name
         /// Translates OldVantage column headers to NewVantage property names
-        /// </summary>
+        
         private static Dictionary<int, string> BuildColumnMap(IXLRow headerRow)
         {
             var columnMap = new Dictionary<int, string>();
@@ -110,9 +110,9 @@ namespace VANTAGE.Utilities
             return columnMap;
         }
 
-        /// <summary>
+        
         /// Read activities from Excel worksheet
-        /// </summary>
+        
         private static List<Activity> ReadActivitiesFromExcel(IXLWorksheet worksheet, Dictionary<int, string> columnMap)
         {
             var activities = new List<Activity>();
@@ -175,9 +175,9 @@ namespace VANTAGE.Utilities
             return activities;
         }
 
-        /// <summary>
+        
         /// Find the last row with actual data
-        /// </summary>
+        
         private static int FindLastDataRow(IXLWorksheet worksheet)
         {
             int lastRow = 1;
@@ -196,9 +196,9 @@ namespace VANTAGE.Utilities
             return lastRow;
         }
 
-        /// <summary>
+        
         /// Check if row has any data in mapped columns
-        /// </summary>
+        
         private static bool RowHasData(IXLRow row, Dictionary<int, string> columnMap)
         {
             foreach (var mapping in columnMap)
@@ -210,9 +210,9 @@ namespace VANTAGE.Utilities
             return false;
         }
 
-        /// <summary>
+        
         /// Set Activity property value from Excel cell
-        /// </summary>
+        
         private static void SetPropertyValue(Activity activity, string propertyName, IXLCell cell)
         {
             var property = typeof(Activity).GetProperty(propertyName);
@@ -307,9 +307,9 @@ namespace VANTAGE.Utilities
             }
         }
 
-        /// <summary>
+        
         /// Import activities to database using NewVantage column names
-        /// </summary>
+        
         private static int ImportToDatabase(List<Activity> activities, bool replaceMode)
         {
             using var connection = DatabaseSetup.GetConnection();
@@ -374,9 +374,9 @@ namespace VANTAGE.Utilities
             }
         }
 
-        /// <summary>
+        
         /// Insert a single activity into the database
-        /// </summary>
+        
         private static void InsertActivity(SqliteConnection connection, Activity activity)
         {
             var command = connection.CreateCommand();
