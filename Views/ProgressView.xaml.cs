@@ -11,6 +11,9 @@ using VANTAGE.Data;
 using VANTAGE.Models;
 using VANTAGE.Utilities;
 using VANTAGE.ViewModels;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
 
 namespace VANTAGE.Views
 {
@@ -19,28 +22,68 @@ namespace VANTAGE.Views
         private const int ColumnUniqueValueDisplayLimit = 1000; // configurable
         private Dictionary<string, Syncfusion.UI.Xaml.Grid.GridColumn> _columnMap = new Dictionary<string, Syncfusion.UI.Xaml.Grid.GridColumn>();
         private ProgressViewModel _viewModel;
+        // one key per grid/view
+        private const string GridPrefsKey = "ProgressGrid.PreferencesJson";
+
+        public class GridPreferences
+        {
+            public int Version { get; set; } = 1;
+            public string SchemaHash { get; set; } = "";
+            public List<GridColumnPref> Columns { get; set; } = new();
+        }
+
+        public class GridColumnPref
+        {
+            public string Name { get; set; } = "";
+            public int OrderIndex { get; set; }
+            public double Width { get; set; }
+            public bool IsHidden { get; set; }
+        }
+
+        // ---- Helpers ----
+        private static string ComputeSchemaHash(Syncfusion.UI.Xaml.Grid.SfDataGrid grid)
+        {
+            using var sha = SHA256.Create();
+            var names = string.Join("|", grid.Columns.Select(c => c.MappingName));
+            return Convert.ToHexString(sha.ComputeHash(Encoding.UTF8.GetBytes(names)));
+        }
+
+
 
         public ProgressView()
         {
             InitializeComponent();
+
+            // VM
             _viewModel = new ProgressViewModel();
             this.DataContext = _viewModel;
             sfActivities.ItemsSource = _viewModel.ActivitiesView;
 
-            // Subscribe to ViewModel property changes - ADD THIS LINE
             _viewModel.PropertyChanged += ViewModel_PropertyChanged;
 
             InitializeColumnVisibility();
             // InitializeColumnTooltips();
             UpdateRecordCount();
-            // Load data AFTER the view is loaded
-            this.Loaded += OnViewLoaded;
-            LoadCustomPercentButtons(); // Load custom button values
-            LoadColumnState();
-            this.Unloaded += (s, e) => SaveColumnState();  // Save when view closes
-            // Save column state when user reorders columns
 
+            // Your data-population logic
+            this.Loaded += OnViewLoaded;
+
+            // Custom button values
+            LoadCustomPercentButtons();
+
+            // IMPORTANT: load layout AFTER the view is loaded and columns are realized
+            this.Loaded += (_, __) =>
+            {
+                // Let layout/render complete, then apply prefs
+                Dispatcher.BeginInvoke(new Action(LoadColumnState),
+                    System.Windows.Threading.DispatcherPriority.ContextIdle);
+            };
+
+            // Save when view closes
+            this.Unloaded += (_, __) => SaveColumnState();
         }
+
+
         private void BtnAssign_Click(object sender, RoutedEventArgs e)
         {
             var button = sender as Button;
@@ -75,31 +118,34 @@ namespace VANTAGE.Views
         {
             try
             {
-                var columnData = new List<string>();
-
-                foreach (var column in sfActivities.Columns)
+                if (sfActivities?.Columns == null || sfActivities.Columns.Count == 0)
                 {
-                    string mappingName = column.MappingName;
-                    double width = column.Width;
-                    bool isHidden = column.IsHidden;
-
-                    columnData.Add($"{mappingName}|{width}|{isHidden}");
+                    System.Diagnostics.Debug.WriteLine("SaveColumnState: no columns to save.");
+                    return;
                 }
 
-                string columnState = string.Join(";", columnData);
+                var prefs = new GridPreferences
+                {
+                    Version = 1,
+                    SchemaHash = ComputeSchemaHash(sfActivities),
+                    Columns = sfActivities.Columns
+                        .Select(c => new GridColumnPref
+                        {
+                            Name = c.MappingName,
+                            OrderIndex = sfActivities.Columns.IndexOf(c),
+                            Width = c.Width,
+                            IsHidden = c.IsHidden
+                        })
+                        .ToList()
+                };
 
-                SettingsManager.SetUserSetting(
-                    App.CurrentUserID,
-                    "GridColumnState",
-                    columnState,
-                    "string"
-                );
-
-                System.Diagnostics.Debug.WriteLine($"Column state saved: {columnData.Count} columns");
+                var json = JsonSerializer.Serialize(prefs);
+                SettingsManager.SetUserSetting(App.CurrentUserID, GridPrefsKey, json, "json");
+                System.Diagnostics.Debug.WriteLine($"SaveColumnState: saved {prefs.Columns.Count} cols, hash={prefs.SchemaHash}, key={GridPrefsKey}\n{json}");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error saving column state: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"SaveColumnState error: {ex}");
             }
         }
 
@@ -107,71 +153,80 @@ namespace VANTAGE.Views
         {
             try
             {
-                string savedState = SettingsManager.GetUserSetting(App.CurrentUserID, "GridColumnState");
-
-                if (string.IsNullOrEmpty(savedState))
+                if (sfActivities?.Columns == null || sfActivities.Columns.Count ==0)
                 {
-                    System.Diagnostics.Debug.WriteLine("No saved column state found");
+                    System.Diagnostics.Debug.WriteLine("LoadColumnState: grid has no columns yet.");
                     return;
                 }
 
-                var columnSettings = savedState.Split(';');
-                var savedOrder = new List<(string MappingName, double Width, bool IsHidden)>();
-
-                // Parse all saved column settings
-                foreach (var setting in columnSettings)
+                var raw = SettingsManager.GetUserSetting(App.CurrentUserID, GridPrefsKey);
+                System.Diagnostics.Debug.WriteLine($"LoadColumnState: raw json={raw}");
+                if (string.IsNullOrWhiteSpace(raw))
                 {
-                    if (string.IsNullOrEmpty(setting)) continue;
-
-                    var parts = setting.Split('|');
-                    if (parts.Length != 3) continue;
-
-                    string mappingName = parts[0];
-                    double width = double.Parse(parts[1]);
-                    bool isHidden = bool.Parse(parts[2]);
-
-                    savedOrder.Add((mappingName, width, isHidden));
+                    System.Diagnostics.Debug.WriteLine($"LoadColumnState: no prefs found for key={GridPrefsKey} (using XAML defaults).");
+                    return;
                 }
 
-                // Reorder columns by removing and re-inserting at correct position
-                for (int i = 0; i < savedOrder.Count; i++)
+                GridPreferences? prefs = null;
+                try { prefs = JsonSerializer.Deserialize<GridPreferences>(raw); }
+                catch { System.Diagnostics.Debug.WriteLine("LoadColumnState: invalid JSON (using XAML defaults)."); }
+
+                if (prefs == null)
                 {
-                    var savedColumn = savedOrder[i];
+                    System.Diagnostics.Debug.WriteLine("LoadColumnState: invalid JSON (using XAML defaults).");
+                    return;
+                }
 
-                    // Find the column in the current collection
-                    var column = sfActivities.Columns.FirstOrDefault(c => c.MappingName == savedColumn.MappingName);
+                var currentHash = ComputeSchemaHash(sfActivities);
+                if (!string.Equals(prefs.SchemaHash, currentHash, StringComparison.Ordinal))
+                {
+                    System.Diagnostics.Debug.WriteLine($"LoadColumnState: schema mismatch (saved {prefs.SchemaHash} vs current {currentHash}). Defaults kept.");
+                    return;
+                }
 
-                    if (column != null)
+                var byName = sfActivities.Columns.ToDictionary(c => c.MappingName, c => c);
+
+                //1) Visibility first
+                foreach (var p in prefs.Columns)
+                    if (byName.TryGetValue(p.Name, out var col))
+                        col.IsHidden = p.IsHidden;
+
+                //2) Order (move columns to target positions)
+                var orderedPrefs = prefs.Columns.OrderBy(x => x.OrderIndex).ToList();
+                for (int target =0; target < orderedPrefs.Count; target++)
+                {
+                    var p = orderedPrefs[target];
+                    if (!byName.TryGetValue(p.Name, out var col)) continue;
+                    int cur = sfActivities.Columns.IndexOf(col);
+                    if (cur != target && cur >=0)
                     {
-                        // Get current index
-                        int currentIndex = sfActivities.Columns.IndexOf(column);
-
-                        // If it's not in the right position, move it
-                        if (currentIndex != i)
-                        {
-                            // Remove from current position
-                            sfActivities.Columns.Remove(column);
-
-                            // Insert at target position
-                            sfActivities.Columns.Insert(i, column);
-                        }
-
-                        // Apply width and visibility
-                        column.Width = savedColumn.Width;
-                        column.IsHidden = savedColumn.IsHidden;
+                        sfActivities.Columns.RemoveAt(cur);
+                        sfActivities.Columns.Insert(target, col);
                     }
                 }
 
-                System.Diagnostics.Debug.WriteLine($"Column state loaded and reordered: {savedOrder.Count} columns");
+                //3) Width last (guard against tiny widths)
+                const double MinWidth =40.0;
+                foreach (var p in prefs.Columns)
+                    if (byName.TryGetValue(p.Name, out var col))
+                        col.Width = Math.Max(MinWidth, p.Width);
+
+                sfActivities.UpdateLayout(); // Force layout update
+                InitializeColumnVisibility(); // Sync sidebar checkboxes
+                System.Diagnostics.Debug.WriteLine($"LoadColumnState: applied {prefs.Columns.Count} cols, key={GridPrefsKey}");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error loading column state: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"LoadColumnState error: {ex}");
             }
         }
 
+
+
+
+
         /// Left-click: Set selected records to button's percent value
-        
+
         private async void BtnSetPercent_Click(object sender, RoutedEventArgs e)
         {
             var button = sender as Button;
