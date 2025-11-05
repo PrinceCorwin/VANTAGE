@@ -40,15 +40,6 @@ namespace VANTAGE
                 CurrentUser = GetOrCreateUser(windowsUsername);
                 CurrentUserID = CurrentUser.UserID;
 
-                // Step 4a: Make Steve admin on first run (ONE-TIME SETUP)
-                if ((CurrentUser.Username.Equals("Steve.Amalfitano", StringComparison.OrdinalIgnoreCase) ||
-                CurrentUser.Username.Equals("Steve", StringComparison.OrdinalIgnoreCase)) && !CurrentUser.IsAdmin)
-                {
-                    AdminHelper.GrantAdmin(CurrentUserID, CurrentUser.Username);
-                    CurrentUser.IsAdmin = true;
-                    CurrentUser.AdminToken = AdminHelper.GenerateAdminToken(CurrentUserID, CurrentUser.Username);
-                }
-
                 // Step 4b: Verify admin token if user claims to be admin
                 if (CurrentUser.IsAdmin)
                 {
@@ -129,9 +120,9 @@ namespace VANTAGE
             }
         }
 
-        
+
         /// Get existing user or create new user if doesn't exist
-        
+
         private static User GetOrCreateUser(string username)
         {
             try
@@ -139,52 +130,111 @@ namespace VANTAGE
                 using var connection = DatabaseSetup.GetConnection();
                 connection.Open();
 
-                // Check if user exists
-                var command = connection.CreateCommand();
-                command.CommandText = "SELECT UserID, Username, FullName, Email, PhoneNumber, IsAdmin, AdminToken FROM Users WHERE Username = @username";
-                command.Parameters.AddWithValue("@username", username);
-
-                using var reader = command.ExecuteReader();
-                if (reader.Read())
+                // 1) Check if user exists (keep your original semantics)
+                using (var command = connection.CreateCommand())
                 {
-                    return new User
+                    command.CommandText = @"
+                SELECT UserID, Username, FullName, Email, PhoneNumber, IsAdmin, AdminToken
+                FROM Users
+                WHERE Username = @username";
+                    command.Parameters.AddWithValue("@username", username);
+
+                    using var reader = command.ExecuteReader();
+                    if (reader.Read())
                     {
-                        UserID = reader.GetInt32(0),
-                        Username = reader.GetString(1),
-                        FullName = reader.IsDBNull(2) ? "" : reader.GetString(2),
-                        Email = reader.IsDBNull(3) ? "" : reader.GetString(3),
-                        PhoneNumber = reader.IsDBNull(4) ? "" : reader.GetString(4),
-                        IsAdmin = reader.IsDBNull(5) ? false : reader.GetInt32(5) == 1,
-                        AdminToken = reader.IsDBNull(6) ? "" : reader.GetString(6)
-                    };
+                        return new User
+                        {
+                            UserID = reader.GetInt32(0),
+                            Username = reader.GetString(1),
+                            FullName = reader.IsDBNull(2) ? "" : reader.GetString(2),
+                            Email = reader.IsDBNull(3) ? "" : reader.GetString(3),
+                            PhoneNumber = reader.IsDBNull(4) ? "" : reader.GetString(4),
+                            IsAdmin = !reader.IsDBNull(5) && reader.GetInt32(5) == 1,
+                            AdminToken = reader.IsDBNull(6) ? null : reader.GetString(6)
+                        };
+                    }
                 }
 
-                // User doesn't exist, create new one
-                var insertCommand = connection.CreateCommand();
-                insertCommand.CommandText = "INSERT INTO Users (Username) VALUES (@username); SELECT last_insert_rowid();";
-                insertCommand.Parameters.AddWithValue("@username", username);
+                // 2) New user: decide admin based on username
+                bool shouldBeAdmin =
+                    username.Equals("Steve", StringComparison.OrdinalIgnoreCase) ||
+                    username.Equals("Steve.Amalfitano", StringComparison.OrdinalIgnoreCase);
 
-                var newUserID = (long)insertCommand.ExecuteScalar();
+                int isAdminInt = shouldBeAdmin ? 1 : 0;
 
+                // Insert with explicit IsAdmin = 0/1 to avoid NULLs
+                using (var insertCommand = connection.CreateCommand())
+                {
+                    insertCommand.CommandText = @"
+                INSERT INTO Users (Username, FullName, Email, PhoneNumber, IsAdmin, AdminToken)
+                VALUES (@username, '', '', '', @isAdmin, NULL)";
+                    insertCommand.Parameters.AddWithValue("@username", username);
+                    insertCommand.Parameters.AddWithValue("@isAdmin", isAdminInt);
+                    insertCommand.ExecuteNonQuery();
+                }
+
+                // Get new ID
+                long newUserID;
+                using (var idCmd = connection.CreateCommand())
+                {
+                    idCmd.CommandText = "SELECT last_insert_rowid()";
+                    newUserID = (long)idCmd.ExecuteScalar();
+                }
+
+                // If Steve, grant admin via helper (centralizes token + flip logic)
+                if (shouldBeAdmin)
+                {
+                    AdminHelper.GrantAdmin((int)newUserID, username);
+                }
+
+                // Re-read the row so we return authoritative values (including token if granted)
+                using (var getCmd = connection.CreateCommand())
+                {
+                    getCmd.CommandText = @"
+                SELECT UserID, Username, FullName, Email, PhoneNumber, IsAdmin, AdminToken
+                FROM Users
+                WHERE UserID = @id";
+                    getCmd.Parameters.AddWithValue("@id", (int)newUserID);
+
+                    using var reader = getCmd.ExecuteReader();
+                    if (reader.Read())
+                    {
+                        return new User
+                        {
+                            UserID = reader.GetInt32(0),
+                            Username = reader.GetString(1),
+                            FullName = reader.IsDBNull(2) ? "" : reader.GetString(2),
+                            Email = reader.IsDBNull(3) ? "" : reader.GetString(3),
+                            PhoneNumber = reader.IsDBNull(4) ? "" : reader.GetString(4),
+                            IsAdmin = !reader.IsDBNull(5) && reader.GetInt32(5) == 1,
+                            AdminToken = reader.IsDBNull(6) ? null : reader.GetString(6)
+                        };
+                    }
+                }
+
+                // Fallback (shouldn't hit)
                 return new User
                 {
                     UserID = (int)newUserID,
                     Username = username,
                     FullName = "",
                     Email = "",
-                    PhoneNumber = ""
+                    PhoneNumber = "",
+                    IsAdmin = shouldBeAdmin,
+                    AdminToken = null
                 };
             }
-            catch (Exception ex)
+            catch
             {
                 // TODO: Add proper logging when logging system is implemented
                 throw;
             }
         }
 
-        
+
+
         /// Get user by ID
-        
+
         private static User GetUserByID(int userID)
         {
             try

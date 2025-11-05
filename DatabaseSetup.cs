@@ -2,6 +2,7 @@
 using Microsoft.Win32;
 using System;
 using System.IO;
+using System.Windows;
 using VANTAGE.Utilities;
 
 namespace VANTAGE
@@ -327,42 +328,40 @@ namespace VANTAGE
 
   System.Diagnostics.Debug.WriteLine($"✓ Seeded {mappings.Length} column mappings");
  }
-
-      
-   /// Add test users to the database (for development/testing)
-        
         public static void SeedTestUsers()
-     {
+        {
             try
- {
+            {
                 using var connection = GetConnection();
-connection.Open();
+                connection.Open();
 
-             var testUsers = new[]
-     {
-     new { Username = "John.Smith", FullName = "John Smith", Email = "john.smith@company.com" },
-     new { Username = "Jane.Doe", FullName = "Jane Doe", Email = "jane.doe@company.com" },
-     new { Username = "Mike.Johnson", FullName = "Mike Johnson", Email = "mike.johnson@company.com" },
-        new { Username = "Sarah.Williams", FullName = "Sarah Williams", Email = "sarah.williams@company.com" }
-    };
+                var testUsers = new[]
+                {
+                    new { Username = "John.Smith", FullName = "John Smith", Email = "john.smith@company.com" },
+                    new { Username = "Jane.Doe", FullName = "Jane Doe", Email = "jane.doe@company.com" },
+                    new { Username = "Mike.Johnson", FullName = "Mike Johnson", Email = "mike.johnson@company.com" },
+                    new { Username = "Sarah.Williams", FullName = "Sarah Williams", Email = "sarah.williams@company.com" }
+                };
 
-     foreach (var user in testUsers)
-     {
-     var command = connection.CreateCommand();
-           command.CommandText = @"
-       INSERT OR IGNORE INTO Users (Username, FullName, Email, PhoneNumber) 
-    VALUES (@username, @fullName, @email, '')";
-  command.Parameters.AddWithValue("@username", user.Username);
-           command.Parameters.AddWithValue("@fullName", user.FullName);
-            command.Parameters.AddWithValue("@email", user.Email);
-          command.ExecuteNonQuery();
- }
+                foreach (var user in testUsers)
+                {
+                    var command = connection.CreateCommand();
+                    command.CommandText = @"
+                    INSERT OR IGNORE INTO Users (Username, FullName, Email, PhoneNumber, IsAdmin)
+                    VALUES (@username, @fullName, @email, '', 0)";
+                    command.Parameters.AddWithValue("@username", user.Username);
+                    command.Parameters.AddWithValue("@fullName", user.FullName);
+                    command.Parameters.AddWithValue("@email", user.Email);
+                    command.ExecuteNonQuery();
+                }
+            }
+            catch (Exception ex)
+            {
+                // TODO: Add proper logging when logging system is implemented
+                MessageBox.Show($"Error seeding test users: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
-       catch (Exception ex)
-     {
-      // TODO: Add proper logging when logging system is implemented
-     }
-      }
+
 
         public static SqliteConnection GetConnection()
         {

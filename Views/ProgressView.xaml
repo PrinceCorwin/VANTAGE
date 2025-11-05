@@ -169,12 +169,6 @@
                         SelectionMode="Multiple"
                         SelectionChanged="LstColumnVisibility_SelectionChanged">
                 </ListBox>
-
-                <!--<TextBlock Text="Select columns to show/hide" 
-                            FontSize="10" 
-                            Foreground="{StaticResource DisabledColor}"
-                            Margin="0,5,0,0"
-                            TextWrapping="Wrap"/>-->
             </StackPanel>
         </Border>
 
@@ -354,6 +348,7 @@
                     EditTrigger="OnTap"
                     AddNewRowPosition="None"
                     AllowDraggingColumns="True"
+                    AllowResizingColumns="True"
                     AllowSorting="True"
                     AllowFiltering="True"
                     SelectionMode="Extended"
@@ -369,35 +364,7 @@
                     CurrentCellEndEdit="sfActivities_CurrentCellEndEdit"
                     SelectionChanged="sfActivities_SelectionChanged"
                     CurrentCellBeginEdit="sfActivities_CurrentCellBeginEdit">
-
-                    <!--<DataGrid.ContextMenu>
-                        <ContextMenu Background="{StaticResource ControlBackground}" 
-                                     Foreground="{StaticResource ForegroundColor}"
-                                     BorderBrush="{StaticResource BorderColor}">
-                            <MenuItem Header="Assign to Me" 
-                                      Click="MenuAssignToMe_Click"
-                                      Background="{StaticResource ControlBackground}"
-                                      Foreground="{StaticResource ForegroundColor}"/>
-                            <MenuItem Header="Assign to User..." 
-                                      Click="MenuAssignToUser_Click"
-                                      Background="{StaticResource ControlBackground}"
-                                      Foreground="{StaticResource ForegroundColor}"/>
-                            <MenuItem Header="Unassign" 
-                                      Click="MenuUnassign_Click"
-                                      Background="{StaticResource ControlBackground}"
-                                      Foreground="{StaticResource ForegroundColor}"/>
-                            <Separator Background="{StaticResource BorderColor}"/>
-                            <MenuItem Header="Mark Complete (100%)" 
-                                      Click="MenuMarkComplete_Click"
-                                      Background="{StaticResource ControlBackground}"
-                                      Foreground="{StaticResource ForegroundColor}"/>
-                            <MenuItem Header="Mark Not Started (0%)" 
-                                      Click="MenuMarkNotStarted_Click"
-                                      Background="{StaticResource ControlBackground}"
-                                      Foreground="{StaticResource ForegroundColor}"/>
-                        </ContextMenu>
-                    </DataGrid.ContextMenu>-->
-
+                    
                     <syncfusion:SfDataGrid.Columns>
 
                         <!-- IDENTITY & KEY FIELDS -->
@@ -418,7 +385,7 @@
                         <syncfusion:GridTextColumn MappingName="AssignedTo" 
                               HeaderText="AssignedTo" 
                               Width="120"
-                              AllowEditing="True"
+                              AllowEditing="False"
                               AllowFiltering="True"
                               AllowSorting="True" />
 

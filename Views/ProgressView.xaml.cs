@@ -36,6 +36,10 @@ namespace VANTAGE.Views
             // Load data AFTER the view is loaded
             this.Loaded += OnViewLoaded;
             LoadCustomPercentButtons(); // Load custom button values
+            LoadColumnState();
+            this.Unloaded += (s, e) => SaveColumnState();  // Save when view closes
+            // Save column state when user reorders columns
+
         }
         private void BtnAssign_Click(object sender, RoutedEventArgs e)
         {
@@ -46,11 +50,10 @@ namespace VANTAGE.Views
                 button.ContextMenu.IsOpen = true;
             }
         }
+
         // === PERCENT BUTTON HANDLERS ===
 
-        /// <summary>
         /// Load custom percent values from user settings on form load
-        /// </summary>
         private void LoadCustomPercentButtons()
         {
             // Load button 1
@@ -67,6 +70,106 @@ namespace VANTAGE.Views
                 btnSetPercent0.Content = $"{percent2}%";
             }
         }
+        /// Save current column configuration to user settings
+        private void SaveColumnState()
+        {
+            try
+            {
+                var columnData = new List<string>();
+
+                foreach (var column in sfActivities.Columns)
+                {
+                    string mappingName = column.MappingName;
+                    double width = column.Width;
+                    bool isHidden = column.IsHidden;
+
+                    columnData.Add($"{mappingName}|{width}|{isHidden}");
+                }
+
+                string columnState = string.Join(";", columnData);
+
+                SettingsManager.SetUserSetting(
+                    App.CurrentUserID,
+                    "GridColumnState",
+                    columnState,
+                    "string"
+                );
+
+                System.Diagnostics.Debug.WriteLine($"Column state saved: {columnData.Count} columns");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error saving column state: {ex.Message}");
+            }
+        }
+
+        private void LoadColumnState()
+        {
+            try
+            {
+                string savedState = SettingsManager.GetUserSetting(App.CurrentUserID, "GridColumnState");
+
+                if (string.IsNullOrEmpty(savedState))
+                {
+                    System.Diagnostics.Debug.WriteLine("No saved column state found");
+                    return;
+                }
+
+                var columnSettings = savedState.Split(';');
+                var savedOrder = new List<(string MappingName, double Width, bool IsHidden)>();
+
+                // Parse all saved column settings
+                foreach (var setting in columnSettings)
+                {
+                    if (string.IsNullOrEmpty(setting)) continue;
+
+                    var parts = setting.Split('|');
+                    if (parts.Length != 3) continue;
+
+                    string mappingName = parts[0];
+                    double width = double.Parse(parts[1]);
+                    bool isHidden = bool.Parse(parts[2]);
+
+                    savedOrder.Add((mappingName, width, isHidden));
+                }
+
+                // Reorder columns by removing and re-inserting at correct position
+                for (int i = 0; i < savedOrder.Count; i++)
+                {
+                    var savedColumn = savedOrder[i];
+
+                    // Find the column in the current collection
+                    var column = sfActivities.Columns.FirstOrDefault(c => c.MappingName == savedColumn.MappingName);
+
+                    if (column != null)
+                    {
+                        // Get current index
+                        int currentIndex = sfActivities.Columns.IndexOf(column);
+
+                        // If it's not in the right position, move it
+                        if (currentIndex != i)
+                        {
+                            // Remove from current position
+                            sfActivities.Columns.Remove(column);
+
+                            // Insert at target position
+                            sfActivities.Columns.Insert(i, column);
+                        }
+
+                        // Apply width and visibility
+                        column.Width = savedColumn.Width;
+                        column.IsHidden = savedColumn.IsHidden;
+                    }
+                }
+
+                System.Diagnostics.Debug.WriteLine($"Column state loaded and reordered: {savedOrder.Count} columns");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error loading column state: {ex.Message}");
+            }
+        }
+
 
         /// <summary>
         /// Left-click: Set selected records to button's percent value
@@ -620,6 +723,7 @@ namespace VANTAGE.Views
 
             // Force layout update
             sfActivities.UpdateLayout();
+            SaveColumnState();  // Save when visibility changes
         }
         private async void MenuUnassign_Click(object sender, RoutedEventArgs e)
         {
@@ -1164,111 +1268,6 @@ namespace VANTAGE.Views
                 {
                     MessageBox.Show($"Error assigning records: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
-            }
-        }
-
-        private async void MenuMarkComplete_Click(object sender, RoutedEventArgs e)
-        {
-            // Get selected activities
-            var selectedActivities = sfActivities.SelectedItems.Cast<Activity>().ToList();
-            if (!selectedActivities.Any())
-            {
-                MessageBox.Show("Please select one or more records to mark complete.", "No Selection", MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
-            }
-
-            try
-            {
-                int successCount = 0;
-                foreach (var activity in selectedActivities)
-                {
-                    // Set to 100% complete
-                    activity.PercentEntry = 1.0;
-
-                    // This will trigger calculated field updates automatically via INotifyPropertyChanged
-                    // Val_EarnedQty, Val_Percent_Earned, Val_EarnedHours_Ind will all update
-
-                    // Update LastModifiedBy
-                    activity.LastModifiedBy = App.CurrentUser.Username;
-
-                    // Save to database
-                    bool success = await ActivityRepository.UpdateActivityInDatabase(activity);
-                    if (success)
-                    {
-                        successCount++;
-                    }
-                    else
-                    {
-                        // TODO: Add proper logging when logging system is implemented
-                    }
-                }
-
-                if (successCount == selectedActivities.Count)
-                {
-                    MessageBox.Show($"Marked {successCount} record(s) as complete.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-                }
-                else
-                {
-                    MessageBox.Show($"Marked {successCount} of {selectedActivities.Count} record(s) as complete. Some failed to save.", "Partial Success", MessageBoxButton.OK, MessageBoxImage.Warning);
-                }
-
-                // Refresh the DataGrid to show changes
-                sfActivities.View.Refresh();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error marking records complete: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private async void MenuMarkNotStarted_Click(object sender, RoutedEventArgs e)
-        {
-            // Get selected activities
-            var selectedActivities = sfActivities.SelectedItems.Cast<Activity>().ToList();
-            if (!selectedActivities.Any())
-            {
-                MessageBox.Show("Please select one or more records to mark not started.", "No Selection", MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
-            }
-
-            try
-            {
-                int successCount = 0;
-                foreach (var activity in selectedActivities)
-                {
-                    // Set to 0% complete
-                    activity.PercentEntry = 0.0;
-
-                    // Update LastModifiedBy
-                    activity.LastModifiedBy = App.CurrentUser.Username;
-
-                    // Save to database
-                    bool success = await ActivityRepository.UpdateActivityInDatabase(activity);
-                    if (success)
-                    {
-                        successCount++;
-                    }
-                    else
-                    {
-                        // TODO: Add proper logging when logging system is implemented
-                    }
-                }
-
-                if (successCount == selectedActivities.Count)
-                {
-                    MessageBox.Show($"Marked {successCount} record(s) as not started.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-                }
-                else
-                {
-                    MessageBox.Show($"Marked {successCount} of {selectedActivities.Count} record(s) as not started. Some failed to save.", "Partial Success", MessageBoxButton.OK, MessageBoxImage.Warning);
-                }
-
-                // Refresh the DataGrid to show changes
-                sfActivities.View.Refresh();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error marking records not started: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
