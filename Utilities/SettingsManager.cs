@@ -237,7 +237,7 @@ namespace VANTAGE.Utilities
                 // Set default theme settings if not already set
                 if (string.IsNullOrEmpty(GetAppSetting("Theme")))
                 {
-                    SetAppSetting("Theme", "Dark", "string");
+                    SetAppSetting("Theme", "DarkTheme.xaml", "string");
                     SetAppSetting("ToolbarLocation", "Top", "string");
                     SetAppSetting("WindowWidth", "1200", "int");
                     SetAppSetting("WindowHeight", "700", "int");
@@ -263,7 +263,7 @@ namespace VANTAGE.Utilities
                     SetLastModuleUsed(userId, "PROGRESS");
                     SetColumnOrder(userId, GetDefaultColumnOrder());
                     SetUserSetting(userId, "DefaultProject", "", "string");
-                    SetUserSetting(userId, "Theme", "Dark", "string");
+                    SetUserSetting(userId, "Theme", "DarkTheme.xaml", "string");
                 }
             }
             catch (Exception ex)
