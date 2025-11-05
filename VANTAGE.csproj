@@ -28,7 +28,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.10" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="9.0.10" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-      <PackageReference Include="Syncfusion.SfGrid.WPF" Version="31.2.4"/>
+      <PackageReference Include="Syncfusion.SfGrid.WPF" Version="31.2.4" />
 </ItemGroup>
 
 </Project>
