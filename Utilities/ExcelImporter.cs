@@ -14,9 +14,9 @@ namespace VANTAGE.Utilities
     
     public static class ExcelImporter
     {
-        
+
         /// Import activities from Excel file
-        
+
         /// <param name="filePath">Path to Excel file with OldVantage column names</param>
         /// <param name="replaceMode">True = replace all existing, False = combine/add</param>
         /// <returns>Number of records imported</returns>
@@ -24,32 +24,28 @@ namespace VANTAGE.Utilities
         {
             try
             {
-                if (!File.Exists(filePath))
-                {
-                    throw new FileNotFoundException($"Excel file not found: {filePath}");
-                }
+                System.Diagnostics.Debug.WriteLine("Starting import...");
 
-                // Open Excel workbook
+                if (!File.Exists(filePath))
+                    throw new FileNotFoundException($"Excel file not found: {filePath}");
+
+                System.Diagnostics.Debug.WriteLine("Opening workbook...");
                 using var workbook = new XLWorkbook(filePath);
                 var worksheet = workbook.Worksheets.FirstOrDefault(ws => ws.Name == "Sheet1")
                     ?? workbook.Worksheets.FirstOrDefault();
 
-                if (worksheet == null)
-                {
-                    throw new Exception("No worksheets found in Excel file");
-                }
-
-                // Get header row to map columns (OldVantage names → NewVantage names)
+                System.Diagnostics.Debug.WriteLine("Building column map...");
                 var headerRow = worksheet.Row(1);
                 var columnMap = BuildColumnMap(headerRow);
 
-                // Read all Activity objects from Excel
+                System.Diagnostics.Debug.WriteLine("Reading activities from Excel...");  // ⬅️ ADD THIS
                 var activities = ReadActivitiesFromExcel(worksheet, columnMap);
+                System.Diagnostics.Debug.WriteLine($"Finished reading {activities.Count} activities");  // ⬅️ ADD THIS
 
-                // Import to database
+                System.Diagnostics.Debug.WriteLine("Importing to database...");  // ⬅️ ADD THIS
                 int imported = ImportToDatabase(activities, replaceMode);
+                System.Diagnostics.Debug.WriteLine($"Finished importing {imported} records");  // ⬅️ ADD THIS
 
-                System.Diagnostics.Debug.WriteLine($"✓ Imported {imported} activities from {filePath}");
                 return imported;
             }
             catch (Exception ex)
@@ -59,10 +55,10 @@ namespace VANTAGE.Utilities
             }
         }
 
-        
+
         /// Build column mapping: Excel column number → NewVantage property name
         /// Translates OldVantage column headers to NewVantage property names
-        
+
         private static Dictionary<int, string> BuildColumnMap(IXLRow headerRow)
         {
             var columnMap = new Dictionary<int, string>();
@@ -90,11 +86,6 @@ namespace VANTAGE.Utilities
 
                 string newVantageName = ColumnMapper.GetColumnNameFromOldVantage(oldVantageHeader);
 
-                // DEBUG: Log UDF mappings specifically
-                if (oldVantageHeader.StartsWith("UDF", StringComparison.OrdinalIgnoreCase))
-                {
-                    System.Diagnostics.Debug.WriteLine($"[GENERIC] Excel[{oldVantageHeader}] → Property[{newVantageName}]");
-                }
 
                 // Skip calculated fields
                 if (calculatedFields.Contains(newVantageName))
@@ -162,13 +153,6 @@ namespace VANTAGE.Utilities
                 }
 
                 activities.Add(activity);
-
-                // Limit to 1000 activities to avoid high memory usage
-                if (activities.Count >= 1000)
-                {
-                    System.Diagnostics.Debug.WriteLine($"  Read {activities.Count} activities, pausing for memory");
-                    System.Threading.Thread.Sleep(1000);
-                }
             }
 
             System.Diagnostics.Debug.WriteLine($"✓ Read {activities.Count} activities from Excel");
@@ -180,20 +164,7 @@ namespace VANTAGE.Utilities
         
         private static int FindLastDataRow(IXLWorksheet worksheet)
         {
-            int lastRow = 1;
-            for (int rowNum = 2; rowNum <= 100000; rowNum++)
-            {
-                var cell = worksheet.Cell(rowNum, 1);
-                if (!cell.IsEmpty())
-                {
-                    lastRow = rowNum;
-                }
-                else if (rowNum > lastRow + 100) // 100 empty rows = end of data
-                {
-                    break;
-                }
-            }
-            return lastRow;
+            return worksheet.LastRowUsed()?.RowNumber() ?? 1;
         }
 
         
@@ -271,12 +242,7 @@ namespace VANTAGE.Utilities
                     return;
                 }
 
-                // DEBUG: Log UDF assignments
-                if (propertyName.StartsWith("UDF", StringComparison.OrdinalIgnoreCase))
-                {
-                    string cellValue = cell.GetString();
-                    System.Diagnostics.Debug.WriteLine($"[GENERIC] SETTING {propertyName} = \"{cellValue}\"");
-                }
+
 
                 // Regular property setting based on type
                 if (property.PropertyType == typeof(string))
@@ -307,9 +273,11 @@ namespace VANTAGE.Utilities
             }
         }
 
-        
+
         /// Import activities to database using NewVantage column names
-        
+
+        // REPLACE the ImportToDatabase method (starting around line 272) with this:
+
         private static int ImportToDatabase(List<Activity> activities, bool replaceMode)
         {
             using var connection = DatabaseSetup.GetConnection();
@@ -325,12 +293,143 @@ namespace VANTAGE.Utilities
                     var deleteCommand = connection.CreateCommand();
                     deleteCommand.CommandText = "DELETE FROM Activities";
                     int deleted = deleteCommand.ExecuteNonQuery();
-                    System.Diagnostics.Debug.WriteLine($"✓ Deleted {deleted} existing activities (replace mode)");
+
                 }
 
                 int imported = 0;
                 int skipped = 0;
 
+                // ✅ CREATE COMMAND ONCE (OUTSIDE THE LOOP)
+                using var command = connection.CreateCommand();
+                command.CommandText = @"
+            INSERT INTO Activities (
+                HexNO, ProjectID, Description, UniqueID,
+                Area, SubArea, System, SystemNO,
+                CompType, PhaseCategory, ROCStep,
+                AssignedTo, CreatedBy, LastModifiedBy,
+                PercentEntry, Quantity, EarnQtyEntry, UOM,
+                BudgetMHs, BudgetHoursGroup, BudgetHoursROC, BaseUnit, EarnedMHsRoc,
+                ROCID, ROCPercent, ROCBudgetQTY,
+                DwgNO, RevNO, SecondDwgNO, ShtNO,
+                TagNO, WorkPackage, PhaseCode, Service, ShopField, SchedActNO, SecondActno,
+                EqmtNO, LineNO, ChgOrdNO,
+                MtrlSpec, PipeGrade, PaintCode, InsulType, HtTrace,
+                Aux1, Aux2, Aux3, Estimator, RFINO, XRay,
+                EquivQTY, EquivUOM,
+                ClientEquivQty, ClientBudget, ClientCustom3,
+                PrevEarnMHs, PrevEarnQTY,
+                SchStart, SchFinish, DateTrigger, Notes,
+                UDF1, UDF2, UDF3, UDF4, UDF5, UDF6, UDF7, UDF8, UDF9, UDF10,
+                UDF14, UDF15, UDF16, UDF17, UDF18, UDF20,
+                PipeSize1, PipeSize2
+            ) VALUES (
+                @HexNO, @ProjectID, @Description, @UniqueID,
+                @Area, @SubArea, @System, @SystemNO,
+                @CompType, @PhaseCategory, @ROCStep,
+                @AssignedTo, @CreatedBy, @LastModifiedBy,
+                @PercentEntry, @Quantity, @EarnQtyEntry, @UOM,
+                @BudgetMHs, @BudgetHoursGroup, @BudgetHoursROC, @BaseUnit, @EarnedMHsRoc,
+                @ROCID, @ROCPercent, @ROCBudgetQTY,
+                @DwgNO, @RevNO, @SecondDwgNO, @ShtNO,
+                @TagNO, @WorkPackage, @PhaseCode, @Service, @ShopField, @SchedActNO, @SecondActno,
+                @EqmtNO, @LineNO, @ChgOrdNO,
+                @MtrlSpec, @PipeGrade, @PaintCode, @InsulType, @HtTrace,
+                @Aux1, @Aux2, @Aux3, @Estimator, @RFINO, @XRay,
+                @EquivQTY, @EquivUOM,
+                @ClientEquivQty, @ClientBudget, @ClientCustom3,
+                @PrevEarnMHs, @PrevEarnQTY,
+                @SchStart, @SchFinish, @DateTrigger, @Notes,
+                @UDF1, @UDF2, @UDF3, @UDF4, @UDF5, @UDF6, @UDF7, @UDF8, @UDF9, @UDF10,
+                @UDF14, @UDF15, @UDF16, @UDF17, @UDF18, @UDF20,
+                @PipeSize1, @PipeSize2
+            )";
+
+                // ✅ ADD PARAMETERS ONCE
+                command.Parameters.Add("@HexNO", SqliteType.Integer);
+                command.Parameters.Add("@ProjectID", SqliteType.Text);
+                command.Parameters.Add("@Description", SqliteType.Text);
+                command.Parameters.Add("@UniqueID", SqliteType.Text);
+                command.Parameters.Add("@Area", SqliteType.Text);
+                command.Parameters.Add("@SubArea", SqliteType.Text);
+                command.Parameters.Add("@System", SqliteType.Text);
+                command.Parameters.Add("@SystemNO", SqliteType.Text);
+                command.Parameters.Add("@CompType", SqliteType.Text);
+                command.Parameters.Add("@PhaseCategory", SqliteType.Text);
+                command.Parameters.Add("@ROCStep", SqliteType.Text);
+                command.Parameters.Add("@AssignedTo", SqliteType.Text);
+                command.Parameters.Add("@CreatedBy", SqliteType.Text);
+                command.Parameters.Add("@LastModifiedBy", SqliteType.Text);
+                command.Parameters.Add("@PercentEntry", SqliteType.Real);
+                command.Parameters.Add("@Quantity", SqliteType.Real);
+                command.Parameters.Add("@EarnQtyEntry", SqliteType.Real);
+                command.Parameters.Add("@UOM", SqliteType.Text);
+                command.Parameters.Add("@BudgetMHs", SqliteType.Real);
+                command.Parameters.Add("@BudgetHoursGroup", SqliteType.Real);
+                command.Parameters.Add("@BudgetHoursROC", SqliteType.Real);
+                command.Parameters.Add("@BaseUnit", SqliteType.Real);
+                command.Parameters.Add("@EarnedMHsRoc", SqliteType.Real);
+                command.Parameters.Add("@ROCID", SqliteType.Integer);
+                command.Parameters.Add("@ROCPercent", SqliteType.Real);
+                command.Parameters.Add("@ROCBudgetQTY", SqliteType.Real);
+                command.Parameters.Add("@DwgNO", SqliteType.Text);
+                command.Parameters.Add("@RevNO", SqliteType.Text);
+                command.Parameters.Add("@SecondDwgNO", SqliteType.Text);
+                command.Parameters.Add("@ShtNO", SqliteType.Text);
+                command.Parameters.Add("@TagNO", SqliteType.Text);
+                command.Parameters.Add("@WorkPackage", SqliteType.Text);
+                command.Parameters.Add("@PhaseCode", SqliteType.Text);
+                command.Parameters.Add("@Service", SqliteType.Text);
+                command.Parameters.Add("@ShopField", SqliteType.Text);
+                command.Parameters.Add("@SchedActNO", SqliteType.Text);
+                command.Parameters.Add("@SecondActno", SqliteType.Text);
+                command.Parameters.Add("@EqmtNO", SqliteType.Text);
+                command.Parameters.Add("@LineNO", SqliteType.Text);
+                command.Parameters.Add("@ChgOrdNO", SqliteType.Text);
+                command.Parameters.Add("@MtrlSpec", SqliteType.Text);
+                command.Parameters.Add("@PipeGrade", SqliteType.Text);
+                command.Parameters.Add("@PaintCode", SqliteType.Text);
+                command.Parameters.Add("@InsulType", SqliteType.Text);
+                command.Parameters.Add("@HtTrace", SqliteType.Text);
+                command.Parameters.Add("@Aux1", SqliteType.Text);
+                command.Parameters.Add("@Aux2", SqliteType.Text);
+                command.Parameters.Add("@Aux3", SqliteType.Text);
+                command.Parameters.Add("@Estimator", SqliteType.Text);
+                command.Parameters.Add("@RFINO", SqliteType.Text);
+                command.Parameters.Add("@XRay", SqliteType.Integer);
+                command.Parameters.Add("@EquivQTY", SqliteType.Text);
+                command.Parameters.Add("@EquivUOM", SqliteType.Text);
+                command.Parameters.Add("@ClientEquivQty", SqliteType.Real);
+                command.Parameters.Add("@ClientBudget", SqliteType.Real);
+                command.Parameters.Add("@ClientCustom3", SqliteType.Real);
+                command.Parameters.Add("@PrevEarnMHs", SqliteType.Real);
+                command.Parameters.Add("@PrevEarnQTY", SqliteType.Real);
+                command.Parameters.Add("@SchStart", SqliteType.Text);
+                command.Parameters.Add("@SchFinish", SqliteType.Text);
+                command.Parameters.Add("@DateTrigger", SqliteType.Integer);
+                command.Parameters.Add("@Notes", SqliteType.Text);
+                command.Parameters.Add("@UDF1", SqliteType.Text);
+                command.Parameters.Add("@UDF2", SqliteType.Text);
+                command.Parameters.Add("@UDF3", SqliteType.Text);
+                command.Parameters.Add("@UDF4", SqliteType.Text);
+                command.Parameters.Add("@UDF5", SqliteType.Text);
+                command.Parameters.Add("@UDF6", SqliteType.Text);
+                command.Parameters.Add("@UDF7", SqliteType.Text);
+                command.Parameters.Add("@UDF8", SqliteType.Text);
+                command.Parameters.Add("@UDF9", SqliteType.Text);
+                command.Parameters.Add("@UDF10", SqliteType.Text);
+                command.Parameters.Add("@UDF14", SqliteType.Text);
+                command.Parameters.Add("@UDF15", SqliteType.Text);
+                command.Parameters.Add("@UDF16", SqliteType.Text);
+                command.Parameters.Add("@UDF17", SqliteType.Text);
+                command.Parameters.Add("@UDF18", SqliteType.Text);
+                command.Parameters.Add("@UDF20", SqliteType.Text);
+                command.Parameters.Add("@PipeSize1", SqliteType.Real);
+                command.Parameters.Add("@PipeSize2", SqliteType.Real);
+
+                // ✅ PREPARE STATEMENT (COMPILE SQL ONCE)
+                command.Prepare();
+
+                // ✅ NOW LOOP THROUGH ACTIVITIES
                 foreach (var activity in activities)
                 {
                     // Validate UniqueID
@@ -357,9 +456,97 @@ namespace VANTAGE.Utilities
                         }
                     }
 
-                    // Insert activity using NewVantage column names
-                    InsertActivity(connection, activity);
+                    // ✅ SET PARAMETER VALUES (REUSE SAME COMMAND)
+                    command.Parameters["@HexNO"].Value = activity.HexNO;
+                    command.Parameters["@ProjectID"].Value = activity.ProjectID ?? "";
+                    command.Parameters["@Description"].Value = activity.Description ?? "";
+                    command.Parameters["@UniqueID"].Value = activity.UniqueID;
+                    command.Parameters["@Area"].Value = activity.Area ?? "";
+                    command.Parameters["@SubArea"].Value = activity.SubArea ?? "";
+                    command.Parameters["@System"].Value = activity.System ?? "";
+                    command.Parameters["@SystemNO"].Value = activity.SystemNO ?? "";
+                    command.Parameters["@CompType"].Value = activity.CompType ?? "";
+                    command.Parameters["@PhaseCategory"].Value = activity.PhaseCategory ?? "";
+                    command.Parameters["@ROCStep"].Value = activity.ROCStep ?? "";
+                    command.Parameters["@AssignedTo"].Value = activity.AssignedTo ?? "Unassigned";
+                    command.Parameters["@CreatedBy"].Value = activity.CreatedBy ?? "";
+                    command.Parameters["@LastModifiedBy"].Value = activity.LastModifiedBy ?? "";
+                    command.Parameters["@PercentEntry"].Value = activity.PercentEntry;
+                    command.Parameters["@Quantity"].Value = activity.Quantity;
+                    command.Parameters["@EarnQtyEntry"].Value = activity.EarnQtyEntry;
+                    command.Parameters["@UOM"].Value = activity.UOM ?? "";
+                    command.Parameters["@BudgetMHs"].Value = activity.BudgetMHs;
+                    command.Parameters["@BudgetHoursGroup"].Value = activity.BudgetHoursGroup;
+                    command.Parameters["@BudgetHoursROC"].Value = activity.BudgetHoursROC;
+                    command.Parameters["@BaseUnit"].Value = activity.BaseUnit;
+                    command.Parameters["@EarnedMHsRoc"].Value = activity.EarnedMHsRoc;
+                    command.Parameters["@ROCID"].Value = activity.ROCID;
+                    command.Parameters["@ROCPercent"].Value = activity.ROCPercent;
+                    command.Parameters["@ROCBudgetQTY"].Value = activity.ROCBudgetQTY;
+                    command.Parameters["@DwgNO"].Value = activity.DwgNO ?? "";
+                    command.Parameters["@RevNO"].Value = activity.RevNO ?? "";
+                    command.Parameters["@SecondDwgNO"].Value = activity.SecondDwgNO ?? "";
+                    command.Parameters["@ShtNO"].Value = activity.ShtNO ?? "";
+                    command.Parameters["@TagNO"].Value = activity.TagNO ?? "";
+                    command.Parameters["@WorkPackage"].Value = activity.WorkPackage ?? "";
+                    command.Parameters["@PhaseCode"].Value = activity.PhaseCode ?? "";
+                    command.Parameters["@Service"].Value = activity.Service ?? "";
+                    command.Parameters["@ShopField"].Value = activity.ShopField ?? "";
+                    command.Parameters["@SchedActNO"].Value = activity.SchedActNO ?? "";
+                    command.Parameters["@SecondActno"].Value = activity.SecondActno ?? "";
+                    command.Parameters["@EqmtNO"].Value = activity.EqmtNO ?? "";
+                    command.Parameters["@LineNO"].Value = activity.LineNO ?? "";
+                    command.Parameters["@ChgOrdNO"].Value = activity.ChgOrdNO ?? "";
+                    command.Parameters["@MtrlSpec"].Value = activity.MtrlSpec ?? "";
+                    command.Parameters["@PipeGrade"].Value = activity.PipeGrade ?? "";
+                    command.Parameters["@PaintCode"].Value = activity.PaintCode ?? "";
+                    command.Parameters["@InsulType"].Value = activity.InsulType ?? "";
+                    command.Parameters["@HtTrace"].Value = activity.HtTrace ?? "";
+                    command.Parameters["@Aux1"].Value = activity.Aux1 ?? "";
+                    command.Parameters["@Aux2"].Value = activity.Aux2 ?? "";
+                    command.Parameters["@Aux3"].Value = activity.Aux3 ?? "";
+                    command.Parameters["@Estimator"].Value = activity.Estimator ?? "";
+                    command.Parameters["@RFINO"].Value = activity.RFINO ?? "";
+                    command.Parameters["@XRay"].Value = activity.XRay;
+                    command.Parameters["@EquivQTY"].Value = activity.EquivQTY;
+                    command.Parameters["@EquivUOM"].Value = activity.EquivUOM ?? "";
+                    command.Parameters["@ClientEquivQty"].Value = activity.ClientEquivQty;
+                    command.Parameters["@ClientBudget"].Value = activity.ClientBudget;
+                    command.Parameters["@ClientCustom3"].Value = activity.ClientCustom3;
+                    command.Parameters["@PrevEarnMHs"].Value = activity.PrevEarnMHs;
+                    command.Parameters["@PrevEarnQTY"].Value = activity.PrevEarnQTY;
+                    command.Parameters["@SchStart"].Value = activity.SchStart?.ToString("yyyy-MM-dd") ?? "";
+                    command.Parameters["@SchFinish"].Value = activity.SchFinish?.ToString("yyyy-MM-dd") ?? "";
+                    command.Parameters["@DateTrigger"].Value = activity.DateTrigger;
+                    command.Parameters["@Notes"].Value = activity.Notes ?? "";
+                    command.Parameters["@UDF1"].Value = activity.UDF1 ?? "";
+                    command.Parameters["@UDF2"].Value = activity.UDF2 ?? "";
+                    command.Parameters["@UDF3"].Value = activity.UDF3 ?? "";
+                    command.Parameters["@UDF4"].Value = activity.UDF4 ?? "";
+                    command.Parameters["@UDF5"].Value = activity.UDF5 ?? "";
+                    command.Parameters["@UDF6"].Value = activity.UDF6 ?? "";
+                    command.Parameters["@UDF7"].Value = activity.UDF7;
+                    command.Parameters["@UDF8"].Value = activity.UDF8 ?? "";
+                    command.Parameters["@UDF9"].Value = activity.UDF9 ?? "";
+                    command.Parameters["@UDF10"].Value = activity.UDF10 ?? "";
+                    command.Parameters["@UDF14"].Value = activity.UDF14 ?? "";
+                    command.Parameters["@UDF15"].Value = activity.UDF15 ?? "";
+                    command.Parameters["@UDF16"].Value = activity.UDF16 ?? "";
+                    command.Parameters["@UDF17"].Value = activity.UDF17 ?? "";
+                    command.Parameters["@UDF18"].Value = activity.UDF18 ?? "";
+                    command.Parameters["@UDF20"].Value = activity.UDF20 ?? "";
+                    command.Parameters["@PipeSize1"].Value = activity.PipeSize1;
+                    command.Parameters["@PipeSize2"].Value = activity.PipeSize2;
+
+                    // ✅ EXECUTE (USES PREPARED STATEMENT)
+                    command.ExecuteNonQuery();
                     imported++;
+
+                    // Progress indicator
+                    if (imported % 1000 == 0)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"  Inserted {imported} records...");
+                    }
                 }
 
                 transaction.Commit();
@@ -375,142 +562,5 @@ namespace VANTAGE.Utilities
         }
 
         
-        /// Insert a single activity into the database
-        
-        private static void InsertActivity(SqliteConnection connection, Activity activity)
-        {
-            var command = connection.CreateCommand();
-
-            // DEBUG: Log UDF values before INSERT
-            System.Diagnostics.Debug.WriteLine($"📝 INSERT Activity: UniqueID={activity.UniqueID}, UDF1=\"{activity.UDF1}\", UDF2=\"{activity.UDF2}\"");
-
-            // Build INSERT with NewVantage column names
-            command.CommandText = @"
-       INSERT INTO Activities (
-        HexNO, ProjectID, Description, UniqueID,
-      Area, SubArea, System, SystemNO,
-   CompType, PhaseCategory, ROCStep,
-         AssignedTo, CreatedBy, LastModifiedBy,
-              PercentEntry, Quantity, EarnQtyEntry, UOM,
-           BudgetMHs, BudgetHoursGroup, BudgetHoursROC, BaseUnit, EarnedMHsRoc,
-     ROCID, ROCPercent, ROCBudgetQTY,
-       DwgNO, RevNO, SecondDwgNO, ShtNO,
-              TagNO, WorkPackage, PhaseCode, Service, ShopField, SchedActNO, SecondActno,
-       EqmtNO, LineNO, ChgOrdNO,
- MtrlSpec, PipeGrade, PaintCode, InsulType, HtTrace,
-   Aux1, Aux2, Aux3, Estimator, RFINO, XRay,
-    EquivQTY, EquivUOM,
-       ClientEquivQty, ClientBudget, ClientCustom3,
-       PrevEarnMHs, PrevEarnQTY,
-     SchStart, SchFinish, DateTrigger, Notes,
-    UDF1, UDF2, UDF3, UDF4, UDF5, UDF6, UDF7, UDF8, UDF9, UDF10,
-    UDF14, UDF15, UDF16, UDF17, UDF18, UDF20,
-          PipeSize1, PipeSize2
-     ) VALUES (
-    @HexNO, @ProjectID, @Description, @UniqueID,
-    @Area, @SubArea, @System, @SystemNO,
-  @CompType, @PhaseCategory, @ROCStep,
-                    @AssignedTo, @CreatedBy, @LastModifiedBy,
-                    @PercentEntry, @Quantity, @EarnQtyEntry, @UOM,
-    @BudgetMHs, @BudgetHoursGroup, @BudgetHoursROC, @BaseUnit, @EarnedMHsRoc,
-        @ROCID, @ROCPercent, @ROCBudgetQTY,
-     @DwgNO, @RevNO, @SecondDwgNO, @ShtNO,
-         @TagNO, @WorkPackage, @PhaseCode, @Service, @ShopField, @SchedActNO, @SecondActno,
-         @EqmtNO, @LineNO, @ChgOrdNO,
- @MtrlSpec, @PipeGrade, @PaintCode, @InsulType, @HtTrace,
- @Aux1, @Aux2, @Aux3, @Estimator, @RFINO, @XRay,
-    @EquivQTY, @EquivUOM,
-     @ClientEquivQty, @ClientBudget, @ClientCustom3,
-       @PrevEarnMHs, @PrevEarnQTY,
- @SchStart, @SchFinish, @DateTrigger, @Notes,
-         @UDF1, @UDF2, @UDF3, @UDF4, @UDF5, @UDF6, @UDF7, @UDF8, @UDF9, @UDF10,
-         @UDF14, @UDF15, @UDF16, @UDF17, @UDF18, @UDF20,
-     @PipeSize1, @PipeSize2
-      )";
-
-            // Add all parameters
-            command.Parameters.AddWithValue("@HexNO", activity.HexNO);
-            command.Parameters.AddWithValue("@ProjectID", activity.ProjectID ?? "");
-            command.Parameters.AddWithValue("@Description", activity.Description ?? "");
-            command.Parameters.AddWithValue("@UniqueID", activity.UniqueID);
-            command.Parameters.AddWithValue("@Area", activity.Area ?? "");
-            command.Parameters.AddWithValue("@SubArea", activity.SubArea ?? "");
-            command.Parameters.AddWithValue("@System", activity.System ?? "");
-            command.Parameters.AddWithValue("@SystemNO", activity.SystemNO ?? "");
-            command.Parameters.AddWithValue("@CompType", activity.CompType ?? "");
-            command.Parameters.AddWithValue("@PhaseCategory", activity.PhaseCategory ?? "");
-            command.Parameters.AddWithValue("@ROCStep", activity.ROCStep ?? "");
-            command.Parameters.AddWithValue("@AssignedTo", activity.AssignedTo ?? "Unassigned");
-            command.Parameters.AddWithValue("@CreatedBy", activity.CreatedBy ?? "");
-            command.Parameters.AddWithValue("@LastModifiedBy", activity.LastModifiedBy ?? "");
-            command.Parameters.AddWithValue("@PercentEntry", activity.PercentEntry); // Already 0-100
-            command.Parameters.AddWithValue("@Quantity", activity.Quantity);
-            command.Parameters.AddWithValue("@EarnQtyEntry", activity.EarnQtyEntry);
-            command.Parameters.AddWithValue("@UOM", activity.UOM ?? "");
-            command.Parameters.AddWithValue("@BudgetMHs", activity.BudgetMHs);
-            command.Parameters.AddWithValue("@BudgetHoursGroup", activity.BudgetHoursGroup);
-            command.Parameters.AddWithValue("@BudgetHoursROC", activity.BudgetHoursROC);
-            command.Parameters.AddWithValue("@BaseUnit", activity.BaseUnit);
-            command.Parameters.AddWithValue("@EarnedMHsRoc", activity.EarnedMHsRoc);
-            command.Parameters.AddWithValue("@ROCID", activity.ROCID);
-            command.Parameters.AddWithValue("@ROCPercent", activity.ROCPercent);
-            command.Parameters.AddWithValue("@ROCBudgetQTY", activity.ROCBudgetQTY);
-            command.Parameters.AddWithValue("@DwgNO", activity.DwgNO ?? "");
-            command.Parameters.AddWithValue("@RevNO", activity.RevNO ?? "");
-            command.Parameters.AddWithValue("@SecondDwgNO", activity.SecondDwgNO ?? "");
-            command.Parameters.AddWithValue("@ShtNO", activity.ShtNO ?? "");
-            command.Parameters.AddWithValue("@TagNO", activity.TagNO ?? "");
-            command.Parameters.AddWithValue("@WorkPackage", activity.WorkPackage ?? "");
-            command.Parameters.AddWithValue("@PhaseCode", activity.PhaseCode ?? "");
-            command.Parameters.AddWithValue("@Service", activity.Service ?? "");
-            command.Parameters.AddWithValue("@ShopField", activity.ShopField ?? "");
-            command.Parameters.AddWithValue("@SchedActNO", activity.SchedActNO ?? "");
-            command.Parameters.AddWithValue("@SecondActno", activity.SecondActno ?? "");
-            command.Parameters.AddWithValue("@EqmtNO", activity.EqmtNO ?? "");
-            command.Parameters.AddWithValue("@LineNO", activity.LineNO ?? "");
-            command.Parameters.AddWithValue("@ChgOrdNO", activity.ChgOrdNO ?? "");
-            command.Parameters.AddWithValue("@MtrlSpec", activity.MtrlSpec ?? "");
-            command.Parameters.AddWithValue("@PipeGrade", activity.PipeGrade ?? "");
-            command.Parameters.AddWithValue("@PaintCode", activity.PaintCode ?? "");
-            command.Parameters.AddWithValue("@InsulType", activity.InsulType ?? "");
-            command.Parameters.AddWithValue("@HtTrace", activity.HtTrace ?? "");
-            command.Parameters.AddWithValue("@Aux1", activity.Aux1 ?? "");
-            command.Parameters.AddWithValue("@Aux2", activity.Aux2 ?? "");
-            command.Parameters.AddWithValue("@Aux3", activity.Aux3 ?? "");
-            command.Parameters.AddWithValue("@Estimator", activity.Estimator ?? "");
-            command.Parameters.AddWithValue("@RFINO", activity.RFINO ?? "");
-            command.Parameters.AddWithValue("@XRay", activity.XRay);
-            command.Parameters.AddWithValue("@EquivQTY", activity.EquivQTY);
-            command.Parameters.AddWithValue("@EquivUOM", activity.EquivUOM ?? "");
-            command.Parameters.AddWithValue("@ClientEquivQty", activity.ClientEquivQty);
-            command.Parameters.AddWithValue("@ClientBudget", activity.ClientBudget);
-            command.Parameters.AddWithValue("@ClientCustom3", activity.ClientCustom3);
-            command.Parameters.AddWithValue("@PrevEarnMHs", activity.PrevEarnMHs);
-            command.Parameters.AddWithValue("@PrevEarnQTY", activity.PrevEarnQTY);
-            command.Parameters.AddWithValue("@SchStart", activity.SchStart?.ToString("yyyy-MM-dd") ?? "");
-            command.Parameters.AddWithValue("@SchFinish", activity.SchFinish?.ToString("yyyy-MM-dd") ?? "");
-            command.Parameters.AddWithValue("@DateTrigger", activity.DateTrigger);
-            command.Parameters.AddWithValue("@Notes", activity.Notes ?? "");
-            command.Parameters.AddWithValue("@UDF1", activity.UDF1 ?? "");
-            command.Parameters.AddWithValue("@UDF2", activity.UDF2 ?? "");
-            command.Parameters.AddWithValue("@UDF3", activity.UDF3 ?? "");
-            command.Parameters.AddWithValue("@UDF4", activity.UDF4 ?? "");
-            command.Parameters.AddWithValue("@UDF5", activity.UDF5 ?? "");
-            command.Parameters.AddWithValue("@UDF6", activity.UDF6 ?? "");
-            command.Parameters.AddWithValue("@UDF7", activity.UDF7);
-            command.Parameters.AddWithValue("@UDF8", activity.UDF8 ?? "");
-            command.Parameters.AddWithValue("@UDF9", activity.UDF9 ?? "");
-            command.Parameters.AddWithValue("@UDF10", activity.UDF10 ?? "");
-            command.Parameters.AddWithValue("@UDF14", activity.UDF14 ?? "");
-            command.Parameters.AddWithValue("@UDF15", activity.UDF15 ?? "");
-            command.Parameters.AddWithValue("@UDF16", activity.UDF16 ?? "");
-            command.Parameters.AddWithValue("@UDF17", activity.UDF17 ?? "");
-            command.Parameters.AddWithValue("@UDF18", activity.UDF18 ?? "");
-            command.Parameters.AddWithValue("@UDF20", activity.UDF20 ?? "");
-            command.Parameters.AddWithValue("@PipeSize1", activity.PipeSize1);
-            command.Parameters.AddWithValue("@PipeSize2", activity.PipeSize2);
-
-            command.ExecuteNonQuery();
-        }
     }
 }

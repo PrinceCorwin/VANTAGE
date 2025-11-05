@@ -74,9 +74,14 @@ namespace VANTAGE.Views
             // IMPORTANT: load layout AFTER the view is loaded and columns are realized
             this.Loaded += (_, __) =>
             {
+                sfActivities.Opacity = 0; // Hide grid during loading to prevent flicker
                 // Let layout/render complete, then apply prefs
-                Dispatcher.BeginInvoke(new Action(LoadColumnState),
-                    System.Windows.Threading.DispatcherPriority.ContextIdle);
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    LoadColumnState();
+                    sfActivities.Opacity = 1; // Show grid after state is loaded
+                }),
+                System.Windows.Threading.DispatcherPriority.ContextIdle);
             };
 
             // Save when view closes
