@@ -170,10 +170,8 @@ namespace VANTAGE.Views
             }
         }
 
-
-        /// <summary>
         /// Left-click: Set selected records to button's percent value
-        /// </summary>
+        
         private async void BtnSetPercent_Click(object sender, RoutedEventArgs e)
         {
             var button = sender as Button;
@@ -191,9 +189,9 @@ namespace VANTAGE.Views
             await SetSelectedRecordsPercent(percent);
         }
 
-        /// <summary>
+        
         /// Context menu: Reset button to default value
-        /// </summary>
+        
         private void MenuItem_ResetPercent_Click(object sender, RoutedEventArgs e)
         {
             var menuItem = sender as MenuItem;
@@ -225,9 +223,9 @@ namespace VANTAGE.Views
                 MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
-        /// <summary>
+        
         /// Context menu: Set custom percent value
-        /// </summary>
+        
         private void MenuItem_CustomPercent_Click(object sender, RoutedEventArgs e)
         {
             // Find which button's context menu this came from
