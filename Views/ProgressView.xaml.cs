@@ -44,7 +44,7 @@ namespace VANTAGE.Views
         private static string ComputeSchemaHash(Syncfusion.UI.Xaml.Grid.SfDataGrid grid)
         {
             using var sha = SHA256.Create();
-            var names = string.Join("|", grid.Columns.Select(c => c.MappingName));
+            var names = string.Join("|", grid.Columns.Select(c => c.MappingName).OrderBy(n => n));
             return Convert.ToHexString(sha.ComputeHash(Encoding.UTF8.GetBytes(names)));
         }
 
@@ -158,17 +158,20 @@ namespace VANTAGE.Views
         {
             try
             {
-                if (sfActivities?.Columns == null || sfActivities.Columns.Count ==0)
+                System.Diagnostics.Debug.WriteLine("=== LoadColumnState START ===");
+
+                if (sfActivities?.Columns == null || App.CurrentUserID <= 0)
                 {
-                    System.Diagnostics.Debug.WriteLine("LoadColumnState: grid has no columns yet.");
+                    System.Diagnostics.Debug.WriteLine("LoadColumnState SKIPPED: Grid or UserID invalid");
                     return;
                 }
 
                 var raw = SettingsManager.GetUserSetting(App.CurrentUserID, GridPrefsKey);
-                System.Diagnostics.Debug.WriteLine($"LoadColumnState: raw json={raw}");
+                System.Diagnostics.Debug.WriteLine($"Raw JSON from DB: {(string.IsNullOrWhiteSpace(raw) ? "NULL/EMPTY" : "EXISTS")}");
+
                 if (string.IsNullOrWhiteSpace(raw))
                 {
-                    System.Diagnostics.Debug.WriteLine($"LoadColumnState: no prefs found for key={GridPrefsKey} (using XAML defaults).");
+                    System.Diagnostics.Debug.WriteLine("No grid prefs found; using XAML defaults.");
                     return;
                 }
 
