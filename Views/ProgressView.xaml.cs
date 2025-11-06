@@ -86,8 +86,49 @@ namespace VANTAGE.Views
 
             // Save when view closes
             this.Unloaded += (_, __) => SaveColumnState();
-        }
 
+            sfActivities.QueryColumnDragging += (s, e) =>
+            {
+                if (e.Reason == Syncfusion.UI.Xaml.Grid.QueryColumnDraggingReason.Dropped)
+                {
+                    // Column was just dropped - save immediately
+                    Dispatcher.BeginInvoke(new Action(() => SaveColumnState()),
+                        System.Windows.Threading.DispatcherPriority.Background);
+                }
+            };
+            SetupColumnResizeSave();
+        }
+        private System.Windows.Threading.DispatcherTimer _resizeSaveTimer;
+
+        private void SetupColumnResizeSave()
+        {
+            // Create timer that waits 500ms after last resize before saving
+            _resizeSaveTimer = new System.Windows.Threading.DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(500)
+            };
+
+            _resizeSaveTimer.Tick += (s, e) =>
+            {
+                _resizeSaveTimer.Stop();
+                SaveColumnState();
+            };
+
+            // Hook into column width changes
+            foreach (var column in sfActivities.Columns)
+            {
+                var descriptor = System.ComponentModel.DependencyPropertyDescriptor
+                    .FromProperty(Syncfusion.UI.Xaml.Grid.GridColumn.WidthProperty,
+                                 typeof(Syncfusion.UI.Xaml.Grid.GridColumn));
+
+                descriptor?.AddValueChanged(column, (sender, args) =>
+                {
+                    // Reset timer on each resize event
+                    _resizeSaveTimer.Stop();
+                    _resizeSaveTimer.Start();
+                });
+            }
+        }
 
         private void BtnAssign_Click(object sender, RoutedEventArgs e)
         {
