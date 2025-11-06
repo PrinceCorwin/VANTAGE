@@ -17,11 +17,12 @@ namespace VANTAGE.ViewModels
         private BulkObservableCollection<Activity> _activities;
         private ICollectionView _activitiesView;
         private string _searchText;
-      private int _totalRecordCount;
+        private int _totalRecordCount;
         private int _filteredCount;
+        private bool _isLoading;
         private Dictionary<string, ColumnFilter> _activeFilters = new Dictionary<string, ColumnFilter>();
- public IEnumerable<string> ActiveFilterColumns => _activeFilters.Keys;
-      private bool _myRecordsActive = false;
+        public IEnumerable<string> ActiveFilterColumns => _activeFilters.Keys;
+        private bool _myRecordsActive = false;
         private string _myRecordsUser = null;
         private string BuildUnifiedWhereClause()
         {
@@ -66,6 +67,8 @@ namespace VANTAGE.ViewModels
         {
             try
             {
+                IsLoading = true;
+
                 _activeFilters.Clear();   // remove column filters
                 _myRecordsActive = false; // remove My Records
                 _myRecordsUser = null;
@@ -78,6 +81,10 @@ namespace VANTAGE.ViewModels
             catch
             {
                 // (optional) log
+            }
+            finally
+            {
+                IsLoading = false;
             }
         }
 
@@ -275,6 +282,7 @@ namespace VANTAGE.ViewModels
             _activitiesView = CollectionViewSource.GetDefaultView(_activities);
             _searchText = "";
             _totalRecordCount = 0;
+            _isLoading = false;
 }
 
         // ========================================
@@ -355,11 +363,16 @@ namespace VANTAGE.ViewModels
         {
             try
             {
+                IsLoading = true;
                 await RebuildAndReloadAsync();
             }
             catch (Exception ex)
             {
                 // TODO: Add proper logging when logging system is implemented
+            }
+            finally
+            {
+                IsLoading = false;
             }
         }
 
@@ -379,19 +392,31 @@ namespace VANTAGE.ViewModels
             set
           {
    _filteredCount = value;
-     OnPropertyChanged(nameof(FilteredCount));
+        OnPropertyChanged(nameof(FilteredCount));
      }
-}
+        }
+
+        public bool IsLoading
+        {
+    get => _isLoading;
+   set
+       {
+      _isLoading = value;
+     OnPropertyChanged(nameof(IsLoading));
+      }
+  }
 
         // ========================================
-     // METHODS
+  // METHODS
         // ========================================
-        private string _currentWhereClause = null;
+     private string _currentWhereClause = null;
 
         public async Task ApplyMyRecordsFilter(bool active, string currentUsername)
         {
             try
             {
+                IsLoading = true;
+
                 _myRecordsActive = active;
                 _myRecordsUser = active ? currentUsername : null;
 
@@ -402,6 +427,10 @@ namespace VANTAGE.ViewModels
                 // TODO: Add proper logging when logging system is implemented
                 System.Diagnostics.Debug.WriteLine($"✗ Error applying My Records filter: {ex.Message}");
             }
+            finally
+            {
+                IsLoading = false;
+            }
         }
 
         /// Load initial data - gets total count and first page
@@ -410,6 +439,7 @@ namespace VANTAGE.ViewModels
         {
             try
             {
+                IsLoading = true;
                 TotalRecordCount = await ActivityRepository.GetTotalCountAsync();
                 await LoadAllActivitiesAsync();  // Changed from LoadCurrentPageAsync
             }
@@ -417,6 +447,10 @@ namespace VANTAGE.ViewModels
             {
                 // TODO: Add proper logging when logging system is implemented
                 throw;
+            }
+            finally
+            {
+                IsLoading = false;
             }
         }
 
@@ -434,56 +468,61 @@ namespace VANTAGE.ViewModels
             const int BATCH_SIZE = 5000;
 
     try
-      {
-        Activities.Clear();
+            {
+    IsLoading = true;
+            Activities.Clear();
 
-       // Get total count (for both unfiltered and filtered)
-    var unfilteredTotal = await ActivityRepository.GetTotalCountAsync();
-          TotalRecordCount = unfilteredTotal;
+    // Get total count (for both unfiltered and filtered)
+      var unfilteredTotal = await ActivityRepository.GetTotalCountAsync();
+     TotalRecordCount = unfilteredTotal;
 
-                // For filtered count, we need to get it from first query
-                var (firstBatch, filteredTotal) = await ActivityRepository.GetPageAsync(0, BATCH_SIZE, _currentWhereClause);
+ // For filtered count, we need to get it from first query
+            var (firstBatch, filteredTotal) = await ActivityRepository.GetPageAsync(0, BATCH_SIZE, _currentWhereClause);
 
         // Update filtered count immediately
-                FilteredCount = filteredTotal;
+       FilteredCount = filteredTotal;
 
-           System.Diagnostics.Debug.WriteLine($"NO PAGINATION -> Loading {filteredTotal:N0} filtered records in batches of {BATCH_SIZE:N0}");
+        System.Diagnostics.Debug.WriteLine($"NO PAGINATION -> Loading {filteredTotal:N0} filtered records in batches of {BATCH_SIZE:N0}");
 
-       // Add first batch
-       Activities.AddRange(firstBatch);
+    // Add first batch
+    Activities.AddRange(firstBatch);
    int loaded = firstBatch.Count;
-      int pageNumber = 1;
+    int pageNumber = 1;
 
-   System.Diagnostics.Debug.WriteLine($"  Batch 1: Loaded {loaded:N0} of {filteredTotal:N0} records");
+  System.Diagnostics.Debug.WriteLine($"  Batch 1: Loaded {loaded:N0} of {filteredTotal:N0} records");
 
-        // Load remaining batches
+      // Load remaining batches
        while (loaded < filteredTotal)
-       {
-   var (batch, _) = await ActivityRepository.GetPageAsync(pageNumber, BATCH_SIZE, _currentWhereClause);
+     {
+        var (batch, _) = await ActivityRepository.GetPageAsync(pageNumber, BATCH_SIZE, _currentWhereClause);
 
-             if (batch.Count == 0) break; // No more records
+ if (batch.Count == 0) break; // No more records
 
        Activities.AddRange(batch);
-  loaded += batch.Count;
-              pageNumber++;
+       loaded += batch.Count;
+   pageNumber++;
 
-         System.Diagnostics.Debug.WriteLine($"  Batch {pageNumber}: Loaded {loaded:N0} of {filteredTotal:N0} records");
+       System.Diagnostics.Debug.WriteLine($"  Batch {pageNumber}: Loaded {loaded:N0} of {filteredTotal:N0} records");
 
-       // Small delay to let UI update (prevents freezing)
-   await Task.Delay(10);
-        }
+    // Small delay to let UI update (prevents freezing)
+      await Task.Delay(10);
+     }
 
        // Update totals when complete
-              await UpdateTotalsAsync();
+    await UpdateTotalsAsync();
 
-     System.Diagnostics.Debug.WriteLine($"✓ Loaded {loaded:N0} activities (incremental batches)");
-          }
-            catch (Exception ex)
-     {
-       System.Diagnostics.Debug.WriteLine($"✗ Error loading activities: {ex.Message}");
-        throw;
-    }
-        }
+        System.Diagnostics.Debug.WriteLine($"✓ Loaded {loaded:N0} activities (incremental batches)");
+   }
+        catch (Exception ex)
+        {
+     System.Diagnostics.Debug.WriteLine($"✗ Error loading activities: {ex.Message}");
+    throw;
+   }
+    finally
+    {
+   IsLoading = false;
+   }
+  }
 
 
 

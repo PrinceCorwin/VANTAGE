@@ -493,5 +493,64 @@
                            Margin="0,0,20,0"/>
             </Grid>
         </Border>
+
+        <!-- Modern Loading Overlay for Excel Imports -->
+   <Grid x:Name="LoadingOverlay"
+         Grid.RowSpan="3"
+        Background="#DD000000"
+        Visibility="Collapsed"
+           Panel.ZIndex="1000">
+    <!-- No border/box - just centered content -->
+    <StackPanel HorizontalAlignment="Center"
+     VerticalAlignment="Center">
+      <!-- Spinner -->
+                <Viewbox Width="80" Height="80" HorizontalAlignment="Center">
+ <Canvas Width="100" Height="100">
+            <Ellipse x:Name="SpinnerEllipse"
+      Width="80"
+          Height="80"
+            Canvas.Left="10"
+       Canvas.Top="10"
+        Stroke="{StaticResource AccentColor}"
+          StrokeThickness="8"
+      StrokeDashArray="60 40"
+        Fill="Transparent"
+      RenderTransformOrigin="0.5,0.5">
+          <Ellipse.RenderTransform>
+          <RotateTransform x:Name="SpinnerRotation" Angle="0"/>
+        </Ellipse.RenderTransform>
+     </Ellipse>
+      </Canvas>
+         </Viewbox>
+
+    <!-- Loading Text -->
+      <TextBlock x:Name="txtLoadingMessage"
+         Text="Importing Excel File..."
+  FontSize="18"
+     FontWeight="SemiBold"
+          Foreground="White"
+                  HorizontalAlignment="Center"
+       Margin="0,30,0,10"/>
+
+     <!-- Progress Text -->
+       <TextBlock x:Name="txtLoadingProgress"
+          Text="0 of 0 records"
+          FontSize="14"
+   Foreground="#CCCCCC"
+      HorizontalAlignment="Center"
+        Margin="0,0,0,15"/>
+
+  <!-- Progress Bar -->
+       <ProgressBar x:Name="LoadingProgressBar"
+ Width="300"
+            Height="8"
+        Minimum="0"
+       Maximum="100"
+              Value="0"
+       Foreground="{StaticResource AccentColor}"
+    Background="#333333"
+      BorderThickness="0"/>
+            </StackPanel>
+     </Grid>
     </Grid>
 </Window>

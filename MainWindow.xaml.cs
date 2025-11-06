@@ -7,17 +7,63 @@ namespace VANTAGE
 {
     public partial class MainWindow : Window
     {
+        private System.Windows.Media.Animation.Storyboard _spinnerStoryboard;
+
         public MainWindow()
         {
         
             InitializeComponent();
-            
+
+            // Initialize spinner animation
+            InitializeSpinnerAnimation();
+       
             LoadInitialModule();
-            
+        
             UpdateStatusBar();
             
 
             this.Closing += MainWindow_Closing;
+        }
+
+        private void InitializeSpinnerAnimation()
+        {
+            // Create continuous rotation animation for spinner
+            var rotation = new System.Windows.Media.Animation.DoubleAnimation
+            {
+                From = 0,
+                To = 360,
+                Duration = TimeSpan.FromSeconds(1),
+                RepeatBehavior = System.Windows.Media.Animation.RepeatBehavior.Forever
+            };
+
+            _spinnerStoryboard = new System.Windows.Media.Animation.Storyboard();
+            _spinnerStoryboard.Children.Add(rotation);
+            System.Windows.Media.Animation.Storyboard.SetTarget(rotation, SpinnerRotation);
+            System.Windows.Media.Animation.Storyboard.SetTargetProperty(rotation, new PropertyPath("Angle"));
+        }
+
+        private void ShowLoadingOverlay(string message = "Processing...")
+        {
+            txtLoadingMessage.Text = message;
+            txtLoadingProgress.Text = "";
+            LoadingProgressBar.Value = 0;
+            LoadingOverlay.Visibility = Visibility.Visible;
+            _spinnerStoryboard.Begin();
+        }
+
+        private void HideLoadingOverlay()
+        {
+            _spinnerStoryboard.Stop();
+            LoadingOverlay.Visibility = Visibility.Collapsed;
+        }
+
+        private void UpdateLoadingProgress(int current, int total, string message = null)
+        {
+            if (message != null)
+                txtLoadingMessage.Text = message;
+            
+            txtLoadingProgress.Text = $"{current:N0} of {total:N0} records";
+            LoadingProgressBar.Value = total > 0 ? (current * 100.0 / total) : 0;
         }
 
         private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -87,7 +133,7 @@ namespace VANTAGE
             }
         }
 
-        private void MenuExcelImportReplace_Click(object sender, RoutedEventArgs e)
+        private async void MenuExcelImportReplace_Click(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -111,8 +157,31 @@ namespace VANTAGE
 
                     if (result == MessageBoxResult.Yes)
                     {
-                        // Import with replace mode
-                        int imported = ExcelImporter.ImportActivities(openFileDialog.FileName, replaceMode: true);
+                        // Show loading overlay
+                        ShowLoadingOverlay("Importing Excel File...");
+
+                        // Create progress reporter
+                        var progress = new Progress<(int current, int total, string message)>(report =>
+                        {
+                            // Update UI on UI thread
+                            Dispatcher.Invoke(() =>
+                                {
+                                    if (report.total > 0)
+                                    {
+                                        UpdateLoadingProgress(report.current, report.total, report.message);
+                                    }
+                                    else
+                                    {
+                                        txtLoadingMessage.Text = report.message;
+                                    }
+                                });
+                        });
+
+                        // Import with replace mode (async)
+                        int imported = await ExcelImporter.ImportActivitiesAsync(openFileDialog.FileName, replaceMode: true, progress);
+
+                        // Hide loading overlay
+                        HideLoadingOverlay();
 
                         MessageBox.Show(
                             $"Successfully imported {imported} activities.\n\nAll previous data has been replaced.",
@@ -131,7 +200,8 @@ namespace VANTAGE
             }
             catch (Exception ex)
             {
-                // TODO: Add proper logging when logging system is implemented
+                // Hide loading overlay on error
+                HideLoadingOverlay();
 
                 MessageBox.Show(
                     $"Error importing Excel file:\n\n{ex.Message}\n\nCheck Output window for details.",
@@ -142,7 +212,7 @@ namespace VANTAGE
             }
         }
 
-        private void MenuExcelImportCombine_Click(object sender, RoutedEventArgs e)
+        private async void MenuExcelImportCombine_Click(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -156,8 +226,31 @@ namespace VANTAGE
 
                 if (openFileDialog.ShowDialog() == true)
                 {
-                    // Import with combine mode
-                    int imported = ExcelImporter.ImportActivities(openFileDialog.FileName, replaceMode: false);
+                    // Show loading overlay
+                    ShowLoadingOverlay("Importing Excel File...");
+
+                    // Create progress reporter
+                    var progress = new Progress<(int current, int total, string message)>(report =>
+                    {
+                        // Update UI on UI thread
+                        Dispatcher.Invoke(() =>
+                            {
+                                if (report.total > 0)
+                                {
+                                    UpdateLoadingProgress(report.current, report.total, report.message);
+                                }
+                                else
+                                {
+                                    txtLoadingMessage.Text = report.message;
+                                }
+                            });
+                    });
+
+                    // Import with combine mode (async)
+                    int imported = await ExcelImporter.ImportActivitiesAsync(openFileDialog.FileName, replaceMode: false, progress);
+
+                    // Hide loading overlay
+                    HideLoadingOverlay();
 
                     MessageBox.Show(
                         $"Successfully imported {imported} new activities.\n\nExisting activities were preserved (duplicates skipped).",
@@ -175,6 +268,9 @@ namespace VANTAGE
             }
             catch (Exception ex)
             {
+                // Hide loading overlay on error
+                HideLoadingOverlay();
+
                 MessageBox.Show(
                     $"Error importing Excel file:\n\n{ex.Message}",
                     "Import Error",

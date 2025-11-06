@@ -1079,7 +1079,8 @@
                 </syncfusion:SfDataGrid>
             </Border>
 
-            <!-- PAGING CONTROLS (Bottom toolbar) -->
+            <!-- BOTTOM TOOLBAR -->
+            <!-- BOTTOM TOOLBAR -->
             <Border Grid.Row="3" 
                     Background="{StaticResource ToolbarBackground}" 
                     BorderBrush="{StaticResource BorderColor}" 
@@ -1088,11 +1089,40 @@
                 <DockPanel>
                     <!-- LEFT: Record count -->
                     <TextBlock x:Name="txtFilteredCount"
-                       DockPanel.Dock="Left"
-                       Text="0 records"
-                       Foreground="{StaticResource TextColorSecondary}"
-                       VerticalAlignment="Center"
-                       Margin="10,0,0,0"/>
+                           DockPanel.Dock="Left"
+                           Text="0 records"
+                           Foreground="{StaticResource TextColorSecondary}"
+                           VerticalAlignment="Center"
+                           Margin="10,0,0,0"/>
+
+                    <StackPanel DockPanel.Dock="Right"
+                        Orientation="Horizontal"
+                        VerticalAlignment="Center"
+                        Margin="0,0,10,0"
+                        Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}">
+
+                        <TextBlock Text="Loading..."
+                           Foreground="{StaticResource TextColorSecondary}"
+                           VerticalAlignment="Center"
+                           Margin="0,0,10,0"
+                           FontSize="12"/>
+
+                        <ProgressBar x:Name="loadingProgressBar"
+                             Width="200"
+                             Height="8"
+                             Minimum="0"
+                             Maximum="{Binding TotalRecordCount}"
+                             Foreground="{StaticResource AccentColor}"
+                             BorderBrush="{StaticResource BorderColor}"
+                             BorderThickness="1"/>
+
+                        <TextBlock Text="{Binding FilteredCount, StringFormat='{}{0:N0}'}"
+                               Foreground="{StaticResource TextColorSecondary}"
+                               VerticalAlignment="Center"
+                               Margin="8,0,0,0"
+                               FontSize="11"/>
+                    </StackPanel>
+                    <Border/>
                 </DockPanel>
             </Border>
         </Grid>

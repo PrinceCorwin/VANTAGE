@@ -14,50 +14,8 @@ namespace VANTAGE.Utilities
     
     public static class ExcelImporter
     {
-
-        /// Import activities from Excel file
-
-        /// <param name="filePath">Path to Excel file with OldVantage column names</param>
-        /// <param name="replaceMode">True = replace all existing, False = combine/add</param>
-        /// <returns>Number of records imported</returns>
-        public static int ImportActivities(string filePath, bool replaceMode)
-        {
-            try
-            {
-                System.Diagnostics.Debug.WriteLine("Starting import...");
-
-                if (!File.Exists(filePath))
-                    throw new FileNotFoundException($"Excel file not found: {filePath}");
-
-                System.Diagnostics.Debug.WriteLine("Opening workbook...");
-                using var workbook = new XLWorkbook(filePath);
-                var worksheet = workbook.Worksheets.FirstOrDefault(ws => ws.Name == "Sheet1")
-                    ?? workbook.Worksheets.FirstOrDefault();
-
-                System.Diagnostics.Debug.WriteLine("Building column map...");
-                var headerRow = worksheet.Row(1);
-                var columnMap = BuildColumnMap(headerRow);
-
-                System.Diagnostics.Debug.WriteLine("Reading activities from Excel...");  // ⬅️ ADD THIS
-                var activities = ReadActivitiesFromExcel(worksheet, columnMap);
-                System.Diagnostics.Debug.WriteLine($"Finished reading {activities.Count} activities");  // ⬅️ ADD THIS
-
-                System.Diagnostics.Debug.WriteLine("Importing to database...");  // ⬅️ ADD THIS
-                int imported = ImportToDatabase(activities, replaceMode);
-                System.Diagnostics.Debug.WriteLine($"Finished importing {imported} records");  // ⬅️ ADD THIS
-
-                return imported;
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"✗ Import error: {ex.Message}");
-                throw;
-            }
-        }
-
-
         /// Build column mapping: Excel column number → NewVantage property name
-        /// Translates OldVantage column headers to NewVantage property names
+      /// Translates OldVantage column headers to NewVantage property names
 
         private static Dictionary<int, string> BuildColumnMap(IXLRow headerRow)
         {
@@ -278,7 +236,7 @@ namespace VANTAGE.Utilities
 
         // REPLACE the ImportToDatabase method (starting around line 272) with this:
 
-        private static int ImportToDatabase(List<Activity> activities, bool replaceMode)
+        private static int ImportToDatabase(List<Activity> activities, bool replaceMode, IProgress<(int current, int total, string message)> progress = null)
         {
             using var connection = DatabaseSetup.GetConnection();
             connection.Open();
@@ -290,6 +248,7 @@ namespace VANTAGE.Utilities
                 // If replace mode, delete all existing activities
                 if (replaceMode)
                 {
+                    progress?.Report((0, activities.Count, "Clearing existing data..."));
                     var deleteCommand = connection.CreateCommand();
                     deleteCommand.CommandText = "DELETE FROM Activities";
                     int deleted = deleteCommand.ExecuteNonQuery();
@@ -546,6 +505,7 @@ namespace VANTAGE.Utilities
                     if (imported % 1000 == 0)
                     {
                         System.Diagnostics.Debug.WriteLine($"  Inserted {imported} records...");
+                        progress?.Report((imported, activities.Count, $"Importing records..."));
                     }
                 }
 
@@ -562,5 +522,60 @@ namespace VANTAGE.Utilities
         }
 
         
+        /// Import activities from Excel file with progress reporting
+
+        /// <param name="filePath">Path to Excel file with OldVantage column names</param>
+        /// <param name="replaceMode">True = replace all existing, False = combine/add</param>
+        /// <param name="progress">Optional progress callback (current, total, message)</param>
+ /// <returns>Number of records imported</returns>
+        public static async Task<int> ImportActivitiesAsync(string filePath, bool replaceMode, IProgress<(int current, int total, string message)> progress = null)
+        {
+            return await Task.Run(() =>
+       {
+     try
+     {
+         System.Diagnostics.Debug.WriteLine("Starting import...");
+   progress?.Report((0, 0, "Opening Excel file..."));
+
+      if (!File.Exists(filePath))
+        throw new FileNotFoundException($"Excel file not found: {filePath}");
+
+         System.Diagnostics.Debug.WriteLine("Opening workbook...");
+        using var workbook = new XLWorkbook(filePath);
+       var worksheet = workbook.Worksheets.FirstOrDefault(ws => ws.Name == "Sheet1")
+            ?? workbook.Worksheets.FirstOrDefault();
+
+         System.Diagnostics.Debug.WriteLine("Building column map...");
+ progress?.Report((0, 0, "Analyzing Excel structure..."));
+ var headerRow = worksheet.Row(1);
+            var columnMap = BuildColumnMap(headerRow);
+
+     System.Diagnostics.Debug.WriteLine("Reading activities from Excel...");
+           progress?.Report((0, 0, "Reading Excel data..."));
+ var activities = ReadActivitiesFromExcel(worksheet, columnMap);
+  System.Diagnostics.Debug.WriteLine($"Finished reading {activities.Count} activities");
+
+             System.Diagnostics.Debug.WriteLine("Importing to database...");
+             progress?.Report((0, activities.Count, "Importing to database..."));
+            int imported = ImportToDatabase(activities, replaceMode, progress);
+     System.Diagnostics.Debug.WriteLine($"Finished importing {imported} records");
+
+         progress?.Report((imported, imported, "Import complete!"));
+      return imported;
+    }
+                catch (Exception ex)
+                {
+             System.Diagnostics.Debug.WriteLine($"✗ Import error: {ex.Message}");
+      throw;
+    }
+    });
+     }
+
+        // Keep the synchronous version for backward compatibility
+    public static int ImportActivities(string filePath, bool replaceMode)
+        {
+        return ImportActivitiesAsync(filePath, replaceMode).GetAwaiter().GetResult();
+        }
+
     }
 }

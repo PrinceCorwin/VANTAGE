@@ -424,11 +424,27 @@ namespace VANTAGE.Views
         }
         private void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
+            // Reset progress bar when loading starts
+            if (e.PropertyName == nameof(_viewModel.IsLoading))
+            {
+                if (_viewModel.IsLoading)
+                {
+                    // Reset to 0 when loading starts
+                    loadingProgressBar.Value = 0;
+                }
+            }
+
             // Update record count when filtered or total counts change
             if (e.PropertyName == nameof(_viewModel.TotalRecordCount) ||
                 e.PropertyName == nameof(_viewModel.FilteredCount))
             {
                 UpdateRecordCount();
+
+                // Only animate if we're currently loading
+                if (_viewModel.IsLoading)
+                {
+                    AnimateProgressBar();
+                }
             }
 
             // Update summary totals when they change
@@ -438,6 +454,23 @@ namespace VANTAGE.Views
             {
                 // Summary panel bindings will update automatically
             }
+        }
+
+        private void AnimateProgressBar()
+        {
+            // Very slow animation - grows steadily but will disappear when IsLoading becomes false
+            var animation = new System.Windows.Media.Animation.DoubleAnimation
+            {
+                From = 0,
+                To = _viewModel.TotalRecordCount,
+                Duration = TimeSpan.FromSeconds(5), // Very slow - 15 seconds to complete
+                EasingFunction = new System.Windows.Media.Animation.QuadraticEase
+                {
+                    EasingMode = System.Windows.Media.Animation.EasingMode.EaseInOut
+                }
+            };
+
+            loadingProgressBar.BeginAnimation(System.Windows.Controls.Primitives.RangeBase.ValueProperty, animation);
         }
         private void UpdateSummaryPanel()
         {
