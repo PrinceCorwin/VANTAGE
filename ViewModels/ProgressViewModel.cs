@@ -19,13 +19,9 @@ namespace VANTAGE.ViewModels
         private string _searchText;
         private int _totalRecordCount;
         private int _filteredCount;
-        private int _currentPage;
-        private int _pageSize;
-        private int _totalPages;
         private bool _isLoading;
         private Dictionary<string, ColumnFilter> _activeFilters = new Dictionary<string, ColumnFilter>();
         public IEnumerable<string> ActiveFilterColumns => _activeFilters.Keys;
-        private int _totalRecords;
         private bool _myRecordsActive = false;
         private string _myRecordsUser = null;
         private string BuildUnifiedWhereClause()
@@ -64,8 +60,7 @@ namespace VANTAGE.ViewModels
         private async Task RebuildAndReloadAsync()
         {
             _currentWhereClause = BuildUnifiedWhereClause();
-            CurrentPage = 0;                 // reset to first page when filters change
-            await LoadCurrentPageAsync();
+            await LoadAllActivitiesAsync();  // Load all activities with new filter
         }
 
         public int TotalRecords
@@ -199,7 +194,7 @@ namespace VANTAGE.ViewModels
                 _currentWhereClause = filterBuilder.BuildWhereClause();
 
                 // Reset to first page
-                CurrentPage = 0;
+
 
                 // Reload with filter
                 await LoadCurrentPageAsync();
@@ -339,10 +334,7 @@ namespace VANTAGE.ViewModels
             _activities = new BulkObservableCollection<Activity>();
             _activitiesView = CollectionViewSource.GetDefaultView(_activities);
             _searchText = "";
-            _currentPage = 0;
-            _pageSize = 500; // Load 500 records at a time
             _totalRecordCount = 0;
-            _totalPages = 0;
             _isLoading = false;
         }
 
@@ -444,7 +436,6 @@ namespace VANTAGE.ViewModels
             {
                 _totalRecordCount = value;
                 OnPropertyChanged(nameof(TotalRecordCount));
-                UpdateTotalPages();
             }
         }
 
@@ -458,50 +449,6 @@ namespace VANTAGE.ViewModels
             }
         }
 
-        public int CurrentPage
-        {
-            get => _currentPage;
-            set
-            {
-                _currentPage = value;
-                OnPropertyChanged(nameof(CurrentPage));
-                OnPropertyChanged(nameof(CurrentPageDisplay));
-                OnPropertyChanged(nameof(CanGoPrevious));
-                OnPropertyChanged(nameof(CanGoNext));
-            }
-        }
-
-        public int PageSize
-        {
-            get => _pageSize;
-            set
-            {
-                _pageSize = value;
-                OnPropertyChanged(nameof(PageSize));
-                UpdateTotalPages();
-            }
-        }
-
-        public int TotalPages
-        {
-            get => _totalPages;
-            set
-            {
-                _totalPages = value;
-                OnPropertyChanged(nameof(TotalPages));
-                OnPropertyChanged(nameof(CurrentPageDisplay));
-                OnPropertyChanged(nameof(CanGoNext));
-            }
-        }
-
-        public string CurrentPageDisplay
-        {
-            get => $"Page {CurrentPage + 1} of {TotalPages}";
-        }
-
-        public bool CanGoPrevious => CurrentPage > 0 && !IsLoading;
-        public bool CanGoNext => CurrentPage < TotalPages - 1 && !IsLoading;
-
         public bool IsLoading
         {
             get => _isLoading;
@@ -509,8 +456,6 @@ namespace VANTAGE.ViewModels
             {
                 _isLoading = value;
                 OnPropertyChanged(nameof(IsLoading));
-                OnPropertyChanged(nameof(CanGoPrevious));
-                OnPropertyChanged(nameof(CanGoNext));
             }
         }
 
@@ -540,20 +485,16 @@ namespace VANTAGE.ViewModels
                 IsLoading = false;
             }
         }
-        
+
         /// Load initial data - gets total count and first page
-        
+
         public async Task LoadInitialDataAsync()
         {
             try
             {
                 IsLoading = true;
-
-                // Get total count
                 TotalRecordCount = await ActivityRepository.GetTotalCountAsync();
-
-                // Load first page
-                await LoadCurrentPageAsync();
+                await LoadAllActivitiesAsync();  // Changed from LoadCurrentPageAsync
             }
             catch (Exception ex)
             {
@@ -566,35 +507,37 @@ namespace VANTAGE.ViewModels
             }
         }
 
-        
+
         /// Load the current page of data
-        
-        public async Task LoadCurrentPageAsync()
+
+        /// <summary>
+        /// Load all activities with current filter (no pagination)
+        /// </summary>
+        public async Task LoadAllActivitiesAsync()
         {
             try
             {
                 IsLoading = true;
 
-                // Get page data with current filter
-                var (pageData, totalCount) = await ActivityRepository.GetPageAsync(CurrentPage, PageSize, _currentWhereClause);
+                // Get ALL activities with current filter
+                var (allActivities, totalCount) = await ActivityRepository.GetAllActivitiesAsync(_currentWhereClause);
 
-                // Update total records and recalculate pages
-                TotalRecords = totalCount;
-                TotalRecordCount = await ActivityRepository.GetTotalCountAsync(); // unfiltered DB total (Z)
-                // TotalRecordCount = (int)totalCount;
-                TotalPages = (int)Math.Ceiling((double)TotalRecords / PageSize);
+                // Update counts
+                TotalRecordCount = await ActivityRepository.GetTotalCountAsync(); // unfiltered DB total
+                FilteredCount = totalCount; // filtered count
 
+                // Clear and populate
                 Activities.Clear();
-                Activities.AddRange(pageData);
-                FilteredCount = Activities.Count;
+                Activities.AddRange(allActivities);
 
                 // Update totals for all filtered records
                 await UpdateTotalsAsync();
 
+                System.Diagnostics.Debug.WriteLine($"✓ Loaded {allActivities.Count} activities (no pagination)");
             }
             catch (Exception ex)
             {
-                // TODO: Add proper logging when logging system is implemented
+                System.Diagnostics.Debug.WriteLine($"✗ Error loading activities: {ex.Message}");
                 throw;
             }
             finally
@@ -603,85 +546,15 @@ namespace VANTAGE.ViewModels
             }
         }
 
-        
-        /// Go to next page
-        
-        public async Task NextPageAsync()
-        {
-            if (!CanGoNext) return;
 
-            CurrentPage++;
-            await LoadCurrentPageAsync();
-        }
 
-        
-        /// Go to previous page
-        
-        public async Task PreviousPageAsync()
-        {
-            if (!CanGoPrevious) return;
-
-            CurrentPage--;
-            await LoadCurrentPageAsync();
-        }
-
-        
-        /// Go to first page
-        
-        public async Task FirstPageAsync()
-        {
-            if (CurrentPage == 0) return;
-
-            CurrentPage = 0;
-            await LoadCurrentPageAsync();
-        }
-
-        
-        /// Go to last page
-        
-        public async Task LastPageAsync()
-        {
-            if (CurrentPage == TotalPages - 1) return;
-
-            CurrentPage = TotalPages - 1;
-            await LoadCurrentPageAsync();
-        }
-
-        
-        /// Refresh current page
-        
+        /// <summary>
+        /// Refresh all activities
+        /// </summary>
         public async Task RefreshAsync()
         {
-            await LoadCurrentPageAsync();
+            await LoadAllActivitiesAsync();
         }
-
-        
-        /// Update total pages calculation
-        
-        private void UpdateTotalPages()
-        {
-            if (PageSize > 0)
-            {
-                TotalPages = (int)Math.Ceiling((double)TotalRecords / PageSize);
-            }
-            else
-            {
-                TotalPages = 0;
-            }
-        }
-
-
-        
-        /// Apply filters to the view
-        
-        //private void ApplyFilters()
-        //{
-        //    if (_activitiesView == null) return;
-
-        //    _activitiesView.Filter = FilterActivity;
-        //    FilteredCount = _activitiesView.Cast<Activity>().Count();
-        //}
-
         
         /// Filter predicate for activities
         
