@@ -1127,59 +1127,11 @@
                 <DockPanel>
                     <!-- LEFT: Record count -->
                     <TextBlock x:Name="txtFilteredCount"
-               DockPanel.Dock="Left"
-               Text="0 records"
-               Foreground="{StaticResource TextColorSecondary}"
-               VerticalAlignment="Center"
-               Margin="10,0,0,0"/>
-
-                    <!-- CENTER: Paging controls -->
-                    <StackPanel Orientation="Horizontal" 
-                VerticalAlignment="Center" 
-                HorizontalAlignment="Center">
-                        <Button x:Name="btnFirstPage"
-                Content="⏮ First"
-                Width="80"
-                Height="28"
-                Margin="5,0"
-                BorderBrush="{StaticResource BorderColor}"
-                BorderThickness="1"
-                Click="BtnFirstPage_Click"/>
-
-                        <Button x:Name="btnPreviousPage"
-                Content="◀ Previous"
-                Width="90"
-                Height="28"
-                Margin="5,0"
-                BorderBrush="{StaticResource BorderColor}"
-                BorderThickness="1"
-                Click="BtnPreviousPage_Click"/>
-
-                        <TextBlock x:Name="txtPageInfo"
-                   Text="{Binding CurrentPageDisplay}"
-                   Foreground="{StaticResource ForegroundColor}"
-                   VerticalAlignment="Center"
-                   Margin="20,0"
-                   FontWeight="Bold"/>
-
-                        <Button x:Name="btnNextPage"
-                Content="Next ▶"
-                Width="90"
-                Height="28"
-                Margin="5,0"
-                BorderBrush="{StaticResource BorderColor}"
-                BorderThickness="1"
-                Click="BtnNextPage_Click"/>
-
-                        <Button x:Name="btnLastPage"
-                Content="Last ⏭"
-                Width="80"
-                Height="28"
-                Margin="5,0"
-                BorderBrush="{StaticResource BorderColor}"
-                BorderThickness="1"
-                Click="BtnLastPage_Click"/>
-                    </StackPanel>
+                       DockPanel.Dock="Left"
+                       Text="0 records"
+                       Foreground="{StaticResource TextColorSecondary}"
+                       VerticalAlignment="Center"
+                       Margin="10,0,0,0"/>
                 </DockPanel>
             </Border>
         </Grid>

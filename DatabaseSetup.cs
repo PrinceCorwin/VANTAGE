@@ -67,6 +67,7 @@ namespace VANTAGE
                         ActivityID INTEGER PRIMARY KEY AUTOINCREMENT,
                         Area TEXT DEFAULT '',
                         AssignedTo TEXT DEFAULT 'Unassigned',
+                        AzureUploadDate TEXT,
                         Aux1 TEXT DEFAULT '',
                         Aux2 TEXT DEFAULT '',
                         Aux3 TEXT DEFAULT '',
@@ -107,6 +108,7 @@ namespace VANTAGE
                         PipeSize2 REAL DEFAULT0,
                         PrevEarnMHs REAL DEFAULT0,
                         PrevEarnQTY REAL DEFAULT0,
+                        ProgDate TEXT,
                         ProjectID TEXT DEFAULT '',
                         Quantity REAL DEFAULT0,
                         RevNO TEXT DEFAULT '',
@@ -147,6 +149,7 @@ namespace VANTAGE
                         UDF9 TEXT DEFAULT '',
                         UniqueID TEXT UNIQUE NOT NULL,
                         UOM TEXT DEFAULT '',
+                        WeekEndDate TEXT,
                         WorkPackage TEXT DEFAULT '',
                         XRay REAL DEFAULT0
                     );

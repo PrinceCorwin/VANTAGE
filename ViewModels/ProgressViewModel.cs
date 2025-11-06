@@ -63,15 +63,6 @@ namespace VANTAGE.ViewModels
             await LoadAllActivitiesAsync();  // Load all activities with new filter
         }
 
-        public int TotalRecords
-        {
-            get => _totalRecords;
-            set
-            {
-                _totalRecords = value;
-                OnPropertyChanged(nameof(TotalRecords));
-            }
-        }
         public async Task ClearAllFiltersAsync()
         {
             try
@@ -163,51 +154,7 @@ namespace VANTAGE.ViewModels
             OnPropertyChanged(nameof(ActiveFilterColumns));
             await RebuildAndReloadAsync();
         }
-
-
-        
-        /// Apply all active filters to the data
-        
-        private async Task ApplyAllFiltersAsync()
-        {
-            try
-            {
-                IsLoading = true;
-
-                // Build WHERE clause from active filters
-                var filterBuilder = new FilterBuilder();
-
-                // Add each active filter to WHERE clause
-                foreach (var filter in _activeFilters.Values)
-                {
-                    // Column names now match database - no translation needed!
-
-                    // Build SQL condition based on filter type
-                    string condition = BuildFilterCondition(filter.ColumnName, filter.FilterType, filter.FilterValue);
-                    if (!string.IsNullOrEmpty(condition))
-                    {
-                        filterBuilder.AddCondition(condition);
-                    }
-                }
-
-                // Store the WHERE clause
-                _currentWhereClause = filterBuilder.BuildWhereClause();
-
-                // Reset to first page
-
-
-                // Reload with filter
-                await LoadCurrentPageAsync();
-            }
-            catch (Exception ex)
-            {
-                // TODO: Add proper logging when logging system is implemented
-            }
-            finally
-            {
-                IsLoading = false;
-            }
-        }
+    
 
         private string BuildFilterCondition(string dbColumnName, string filterType, string filterValue)
         {
@@ -446,6 +393,7 @@ namespace VANTAGE.ViewModels
             {
                 _filteredCount = value;
                 OnPropertyChanged(nameof(FilteredCount));
+                System.Diagnostics.Debug.WriteLine($">>> FilteredCount changed to: {value}");  // Add this debug line
             }
         }
 

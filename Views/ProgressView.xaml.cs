@@ -53,6 +53,8 @@ namespace VANTAGE.Views
         public ProgressView()
         {
             InitializeComponent();
+            // Hook into Syncfusion's filter changed event
+            sfActivities.FilterChanged += SfActivities_FilterChanged;
 
             // VM
             _viewModel = new ProgressViewModel();
@@ -97,6 +99,16 @@ namespace VANTAGE.Views
                 }
             };
             SetupColumnResizeSave();
+        }
+        private void SfActivities_FilterChanged(object sender, Syncfusion.UI.Xaml.Grid.GridFilterEventArgs e)
+        {
+            // Update FilteredCount based on Syncfusion's filtered records
+            if (sfActivities.View != null)
+            {
+                var filteredCount = sfActivities.View.Records.Count;
+                _viewModel.FilteredCount = filteredCount;
+                System.Diagnostics.Debug.WriteLine($">>> Syncfusion filter changed: {filteredCount} records");
+            }
         }
         private System.Windows.Threading.DispatcherTimer _resizeSaveTimer;
 
@@ -414,22 +426,17 @@ namespace VANTAGE.Views
         {
 
             if (e.PropertyName == nameof(_viewModel.TotalRecordCount) ||
-                e.PropertyName == nameof(_viewModel.TotalPages) ||
-                e.PropertyName == nameof(_viewModel.CurrentPage) ||
-                e.PropertyName == nameof(_viewModel.CanGoPrevious) ||
-                e.PropertyName == nameof(_viewModel.CanGoNext) ||
-                e.PropertyName == nameof(_viewModel.FilteredCount) ||
-                e.PropertyName == nameof(_viewModel.TotalRecords))
+        e.PropertyName == nameof(_viewModel.FilteredCount))
             {
                 UpdateRecordCount();
-                UpdatePagingControls();
             }
 
             if (e.PropertyName == nameof(_viewModel.BudgetedMHs) ||
-                e.PropertyName == nameof(_viewModel.EarnedMHs) ||
-                e.PropertyName == nameof(_viewModel.PercentComplete))
+            e.PropertyName == nameof(_viewModel.EarnedMHs) ||
+            e.PropertyName == nameof(_viewModel.PercentComplete))
             {
-                UpdateSummaryPanel();
+                // Summary panel bindings will update automatically (keeping until sure they are updating)
+                // UpdateSummaryPanel();
             }
         }
         private void UpdateSummaryPanel()
@@ -598,131 +605,8 @@ namespace VANTAGE.Views
 
             await _viewModel.LoadInitialDataAsync();
             UpdateRecordCount();
-            UpdatePagingControls();
+
         }
-        
-        /// Initialize tooltips for column headers showing OldVantage names
-        
-        //private void InitializeColumnTooltips()
-        //{
-        //    try
-        //    {
-        //        // Apply tooltips to columns
-        //        int tooltipsSet = 0;
-        //        foreach (var column in sfActivities.Columns)
-        //        {
-        //            // Get the property name from the column
-        //            string propertyName = GetColumnPropertyName(column);
-
-        //            // Get the DbColumnName from property name
-        //            string dbColumnName = ColumnMapper.GetDbColumnName(propertyName);
-
-        //            // Query the ColumnMappings table for this specific column
-        //            using var connection = DatabaseSetup.GetConnection();
-        //            connection.Open();
-
-        //            var command = connection.CreateCommand();
-        //            command.CommandText = @"
-        //        SELECT OldVantageName 
-        //        FROM ColumnMappings 
-        //        WHERE DbColumnName = @dbColumn";
-        //            command.Parameters.AddWithValue("@dbColumn", dbColumnName);
-
-        //            var result = command.ExecuteScalar();
-        //            string tooltip;
-
-        //            if (result == null || result == DBNull.Value)
-        //            {
-        //                // Not in Excel
-        //                tooltip = $"{propertyName} - Not in export";
-        //            }
-        //            else
-        //            {
-        //                // Show OldVantage name
-        //                tooltip = $"Excel: {result}";
-        //            }
-
-        //            // Set tooltip on the column header
-        //            // Preserve existing header templates (keep filter button). If header is a simple string, wrap it in a ContentControl that uses the FilterableColumnHeader template defined in XAML.
-        //            if (column.Header is string headerString)
-        //            {
-        //                try
-        //                {
-        //                    var dataTemplate = this.TryFindResource("FilterableColumnHeader") as DataTemplate;
-        //                    if (dataTemplate != null)
-        //                    {
-        //                        var contentControl = new System.Windows.Controls.ContentControl
-        //                        {
-        //                            Content = headerString,
-        //                            ContentTemplate = dataTemplate,
-        //                            ToolTip = tooltip
-        //                        };
-        //                        column.Header = contentControl;
-        //                    }
-        //                    else
-        //                    {
-        //                        // Fallback to TextBlock if template not found
-        //                        var textBlock = new System.Windows.Controls.TextBlock
-        //                        {
-        //                            Text = headerString,
-        //                            ToolTip = tooltip,
-        //                            Foreground = (System.Windows.Media.Brush)Application.Current.Resources["GridHeaderForeground"]
-        //                        };
-        //                        column.Header = textBlock;
-        //                    }
-        //                }
-        //                catch
-        //                {
-        //                    // fallback to simple text
-        //                    column.Header = headerString;
-        //                }
-
-        //                tooltipsSet++;
-        //            }
-        //            else if (column.Header is System.Windows.Controls.ContentControl headerControl)
-        //            {
-        //                headerControl.ToolTip = tooltip;
-        //                tooltipsSet++;
-        //            }
-        //        }
-
-        //        // Initial update of header indicators
-        //        UpdateHeaderFilterIndicators();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        // TODO: Add proper logging when logging system is implemented
-        //    }
-        //}
-
-        //private void UpdateHeaderFilterIndicators()
-        //{
-        //    try
-        //    {
-        //        var activeCols = new HashSet<string>(_viewModel.ActiveFilterColumns ?? Enumerable.Empty<string>());
-
-        //        foreach (var header in FindVisualChildren<DataGridColumnHeader>(sfActivities))
-        //        {
-        //            var col = header.Column;
-        //            if (col == null) continue;
-
-        //            var colName = GetColumnPropertyName(col);
-
-        //            if (activeCols.Contains(colName))
-        //            {
-        //                // Use theme variable so themes can override color
-        //                header.BorderBrush = (System.Windows.Media.Brush)Application.Current.Resources["ActiveFilter"];
-        //                header.BorderThickness = new Thickness(0,0,1,1);
-        //            }
-        //            else
-        //            {
-        //                header.BorderBrush = (System.Windows.Media.Brush)Application.Current.Resources["BorderColor"];
-        //                header.BorderThickness = new Thickness(0,0,1,1);
-        //            }
-        //        }
-        //    }
-        //    catch { }
-        //}
 
         private static IEnumerable<T> FindVisualChildren<T>(DependencyObject depObj) where T : DependencyObject
         {
@@ -890,47 +774,25 @@ namespace VANTAGE.Views
         }
         private void UpdateRecordCount()
         {
-            txtFilteredCount.Text = $"{_viewModel.FilteredCount} of {_viewModel.TotalRecords} records (Total: {_viewModel.TotalRecordCount})";
+            if (txtFilteredCount == null) return;
+
+            var filteredCount = _viewModel.FilteredCount;
+            var totalCount = _viewModel.TotalRecordCount;
+
+            // Show filtered count
+            if (filteredCount == totalCount)
+            {
+                txtFilteredCount.Text = $"{filteredCount:N0} records";
+            }
+            else
+            {
+                txtFilteredCount.Text = $"{filteredCount:N0} of {totalCount:N0} records";
+            }
         }
 
-        private void UpdatePagingControls()
-        {
-            txtPageInfo.Text = _viewModel.CurrentPageDisplay;
-            btnFirstPage.IsEnabled = _viewModel.CanGoPrevious;
-            btnPreviousPage.IsEnabled = _viewModel.CanGoPrevious;
-            btnNextPage.IsEnabled = _viewModel.CanGoNext;
-            btnLastPage.IsEnabled = _viewModel.CanGoNext;
-        }
 
-        // === PAGING EVENT HANDLERS ===
 
-        private async void BtnFirstPage_Click(object sender, RoutedEventArgs e)
-        {
-            await _viewModel.FirstPageAsync();
-            UpdateRecordCount();
-            UpdatePagingControls();
-        }
 
-        private async void BtnPreviousPage_Click(object sender, RoutedEventArgs e)
-        {
-            await _viewModel.PreviousPageAsync();
-            UpdateRecordCount();
-            UpdatePagingControls();
-        }
-
-        private async void BtnNextPage_Click(object sender, RoutedEventArgs e)
-        {
-            await _viewModel.NextPageAsync();
-            UpdateRecordCount();
-            UpdatePagingControls();
-        }
-
-        private async void BtnLastPage_Click(object sender, RoutedEventArgs e)
-        {
-            await _viewModel.LastPageAsync();
-            UpdateRecordCount();
-            UpdatePagingControls();
-        }
 
         // === FILTER EVENT HANDLERS ===
 
@@ -1107,7 +969,7 @@ namespace VANTAGE.Views
 
 
             UpdateRecordCount();
-            UpdatePagingControls();
+
         }
 
 
@@ -1127,7 +989,7 @@ namespace VANTAGE.Views
         {
             await _viewModel.RefreshAsync();
             UpdateRecordCount();
-            UpdatePagingControls();
+
         }
 
         
