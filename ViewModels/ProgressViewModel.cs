@@ -17,12 +17,11 @@ namespace VANTAGE.ViewModels
         private BulkObservableCollection<Activity> _activities;
         private ICollectionView _activitiesView;
         private string _searchText;
-        private int _totalRecordCount;
+      private int _totalRecordCount;
         private int _filteredCount;
-        private bool _isLoading;
         private Dictionary<string, ColumnFilter> _activeFilters = new Dictionary<string, ColumnFilter>();
-        public IEnumerable<string> ActiveFilterColumns => _activeFilters.Keys;
-        private bool _myRecordsActive = false;
+ public IEnumerable<string> ActiveFilterColumns => _activeFilters.Keys;
+      private bool _myRecordsActive = false;
         private string _myRecordsUser = null;
         private string BuildUnifiedWhereClause()
         {
@@ -67,8 +66,6 @@ namespace VANTAGE.ViewModels
         {
             try
             {
-                IsLoading = true;
-
                 _activeFilters.Clear();   // remove column filters
                 _myRecordsActive = false; // remove My Records
                 _myRecordsUser = null;
@@ -81,10 +78,6 @@ namespace VANTAGE.ViewModels
             catch
             {
                 // (optional) log
-            }
-            finally
-            {
-                IsLoading = false;
             }
         }
 
@@ -282,8 +275,7 @@ namespace VANTAGE.ViewModels
             _activitiesView = CollectionViewSource.GetDefaultView(_activities);
             _searchText = "";
             _totalRecordCount = 0;
-            _isLoading = false;
-        }
+}
 
         // ========================================
         // PROPERTIES
@@ -363,16 +355,11 @@ namespace VANTAGE.ViewModels
         {
             try
             {
-                IsLoading = true;
                 await RebuildAndReloadAsync();
             }
             catch (Exception ex)
             {
                 // TODO: Add proper logging when logging system is implemented
-            }
-            finally
-            {
-                IsLoading = false;
             }
         }
 
@@ -388,27 +375,16 @@ namespace VANTAGE.ViewModels
 
         public int FilteredCount
         {
-            get => _filteredCount;
+         get => _filteredCount;
             set
-            {
-                _filteredCount = value;
-                OnPropertyChanged(nameof(FilteredCount));
-                System.Diagnostics.Debug.WriteLine($">>> FilteredCount changed to: {value}");  // Add this debug line
-            }
-        }
-
-        public bool IsLoading
-        {
-            get => _isLoading;
-            set
-            {
-                _isLoading = value;
-                OnPropertyChanged(nameof(IsLoading));
-            }
-        }
+          {
+   _filteredCount = value;
+     OnPropertyChanged(nameof(FilteredCount));
+     }
+}
 
         // ========================================
-        // METHODS
+     // METHODS
         // ========================================
         private string _currentWhereClause = null;
 
@@ -416,8 +392,6 @@ namespace VANTAGE.ViewModels
         {
             try
             {
-                IsLoading = true;
-
                 _myRecordsActive = active;
                 _myRecordsUser = active ? currentUsername : null;
 
@@ -428,10 +402,6 @@ namespace VANTAGE.ViewModels
                 // TODO: Add proper logging when logging system is implemented
                 System.Diagnostics.Debug.WriteLine($"✗ Error applying My Records filter: {ex.Message}");
             }
-            finally
-            {
-                IsLoading = false;
-            }
         }
 
         /// Load initial data - gets total count and first page
@@ -440,7 +410,6 @@ namespace VANTAGE.ViewModels
         {
             try
             {
-                IsLoading = true;
                 TotalRecordCount = await ActivityRepository.GetTotalCountAsync();
                 await LoadAllActivitiesAsync();  // Changed from LoadCurrentPageAsync
             }
@@ -449,56 +418,77 @@ namespace VANTAGE.ViewModels
                 // TODO: Add proper logging when logging system is implemented
                 throw;
             }
-            finally
-            {
-                IsLoading = false;
-            }
         }
 
 
         /// Load the current page of data
 
+
+        /// Load all activities with current filter (incremental batch loading)
+
         /// <summary>
-        /// Load all activities with current filter (no pagination)
+        /// Load all activities with current filter (incremental batch loading)
         /// </summary>
         public async Task LoadAllActivitiesAsync()
         {
-            try
-            {
-                IsLoading = true;
+            const int BATCH_SIZE = 5000;
 
-                // Get ALL activities with current filter
-                var (allActivities, totalCount) = await ActivityRepository.GetAllActivitiesAsync(_currentWhereClause);
+    try
+      {
+        Activities.Clear();
 
-                // Update counts
-                TotalRecordCount = await ActivityRepository.GetTotalCountAsync(); // unfiltered DB total
-                FilteredCount = totalCount; // filtered count
+       // Get total count (for both unfiltered and filtered)
+    var unfilteredTotal = await ActivityRepository.GetTotalCountAsync();
+          TotalRecordCount = unfilteredTotal;
 
-                // Clear and populate
-                Activities.Clear();
-                Activities.AddRange(allActivities);
+                // For filtered count, we need to get it from first query
+                var (firstBatch, filteredTotal) = await ActivityRepository.GetPageAsync(0, BATCH_SIZE, _currentWhereClause);
 
-                // Update totals for all filtered records
-                await UpdateTotalsAsync();
+        // Update filtered count immediately
+                FilteredCount = filteredTotal;
 
-                System.Diagnostics.Debug.WriteLine($"✓ Loaded {allActivities.Count} activities (no pagination)");
-            }
+           System.Diagnostics.Debug.WriteLine($"NO PAGINATION -> Loading {filteredTotal:N0} filtered records in batches of {BATCH_SIZE:N0}");
+
+       // Add first batch
+       Activities.AddRange(firstBatch);
+   int loaded = firstBatch.Count;
+      int pageNumber = 1;
+
+   System.Diagnostics.Debug.WriteLine($"  Batch 1: Loaded {loaded:N0} of {filteredTotal:N0} records");
+
+        // Load remaining batches
+       while (loaded < filteredTotal)
+       {
+   var (batch, _) = await ActivityRepository.GetPageAsync(pageNumber, BATCH_SIZE, _currentWhereClause);
+
+             if (batch.Count == 0) break; // No more records
+
+       Activities.AddRange(batch);
+  loaded += batch.Count;
+              pageNumber++;
+
+         System.Diagnostics.Debug.WriteLine($"  Batch {pageNumber}: Loaded {loaded:N0} of {filteredTotal:N0} records");
+
+       // Small delay to let UI update (prevents freezing)
+   await Task.Delay(10);
+        }
+
+       // Update totals when complete
+              await UpdateTotalsAsync();
+
+     System.Diagnostics.Debug.WriteLine($"✓ Loaded {loaded:N0} activities (incremental batches)");
+          }
             catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"✗ Error loading activities: {ex.Message}");
-                throw;
-            }
-            finally
-            {
-                IsLoading = false;
-            }
+     {
+       System.Diagnostics.Debug.WriteLine($"✗ Error loading activities: {ex.Message}");
+        throw;
+    }
         }
 
 
 
-        /// <summary>
         /// Refresh all activities
-        /// </summary>
+
         public async Task RefreshAsync()
         {
             await LoadAllActivitiesAsync();
@@ -528,24 +518,6 @@ namespace VANTAGE.ViewModels
             }
 
             return true;
-        }
-
-        // Returns unique values for a column from the currently filtered records (in-memory)
-        public IEnumerable<string> GetUniqueValuesForColumn(string columnName)
-        {
-            if (string.IsNullOrEmpty(columnName))
-                return Enumerable.Empty<string>();
-
-            // Use reflection to get property values for the column
-            return _activities
-                .Select(a => {
-                    var prop = typeof(Activity).GetProperty(columnName);
-                    if (prop == null) return null;
-                    var val = prop.GetValue(a);
-                    return val?.ToString() ?? string.Empty;
-                })
-                .Distinct()
-                .ToList();
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;

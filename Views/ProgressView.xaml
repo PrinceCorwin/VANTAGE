@@ -9,45 +9,6 @@
              d:DesignHeight="600" d:DesignWidth="1200"
              Background="{StaticResource BackgroundColor}">
 
-    <!--<UserControl.Resources>
-        --><!-- Column Header with Filter Button --><!--
-        <DataTemplate x:Key="FilterableColumnHeader">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-
-                <TextBlock Grid.Column="0" 
-                       Text="{Binding}" 
-                       VerticalAlignment="Center"
-                       Foreground="{StaticResource ForegroundColor}"/>
-
-                --><!--<Button Grid.Column="1"
-                        Content="▼"
-                        Width="20"
-                        Height="20"
-                        Margin="5,0,0,0"
-                        Click="FilterButton_Click"
-                        Tag="{Binding}"
-                        ToolTip="Filter this column"
-                        Cursor="Hand">
-                    <Button.Template>
-                        <ControlTemplate TargetType="Button">
-                            <TextBlock Text="{TemplateBinding Content}"
-                                       Foreground="{StaticResource ForegroundColor}"
-                                       FontSize="14"
-                                       FontWeight="Bold"
-                                       HorizontalAlignment="Center"
-                                       VerticalAlignment="Center"
-                                       Background="Transparent"/>
-                        </ControlTemplate>
-                    </Button.Template>
-                </Button>--><!--
-            </Grid>
-        </DataTemplate>
-    </UserControl.Resources>-->
-
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="150"/>

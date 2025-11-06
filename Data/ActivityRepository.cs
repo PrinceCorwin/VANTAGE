@@ -450,10 +450,10 @@ namespace VANTAGE.Data
                    }
                });
         }
-        /// <summary>
+
         /// Get ALL activities with optional filtering (no pagination)
         /// Use this when pagination is disabled and Syncfusion handles virtualization
-        /// </summary>
+
         /// <param name="whereClause">Optional SQL WHERE clause for filtering</param>
         /// <returns>Tuple of (all activities list, total count)</returns>
         public static async Task<(List<Activity> activities, int totalCount)> GetAllActivitiesAsync(

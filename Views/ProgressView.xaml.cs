@@ -424,19 +424,19 @@ namespace VANTAGE.Views
         }
         private void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-
+            // Update record count when filtered or total counts change
             if (e.PropertyName == nameof(_viewModel.TotalRecordCount) ||
-        e.PropertyName == nameof(_viewModel.FilteredCount))
+                e.PropertyName == nameof(_viewModel.FilteredCount))
             {
                 UpdateRecordCount();
             }
 
+            // Update summary totals when they change
             if (e.PropertyName == nameof(_viewModel.BudgetedMHs) ||
-            e.PropertyName == nameof(_viewModel.EarnedMHs) ||
-            e.PropertyName == nameof(_viewModel.PercentComplete))
+                e.PropertyName == nameof(_viewModel.EarnedMHs) ||
+                e.PropertyName == nameof(_viewModel.PercentComplete))
             {
-                // Summary panel bindings will update automatically (keeping until sure they are updating)
-                // UpdateSummaryPanel();
+                // Summary panel bindings will update automatically
             }
         }
         private void UpdateSummaryPanel()
@@ -448,45 +448,7 @@ namespace VANTAGE.Views
         private Popup _activeFilterPopup;
         private string _activeFilterColumn;
 
-        private void FilterButton_Click(object sender, RoutedEventArgs e)
-        {
-            var button = sender as Button;
-            string columnName = null;
-
-            if (button != null)
-            {
-                columnName = button.Tag as string;
-            }
-
-            // Close any existing popup
-            if (_activeFilterPopup != null)
-            {
-                _activeFilterPopup.IsOpen = false;
-            }
-
-            // Get unique values from filtered records
-            var filteredValues = _viewModel.GetUniqueValuesForColumn(columnName);
-
-            // Create filter popup
-            var filterControl = new Controls.ColumnFilterPopup();
-            filterControl.FilterApplied += FilterControl_FilterApplied;
-            filterControl.FilterCleared += FilterControl_FilterCleared;
-            filterControl.SortRequested += FilterControl_SortRequested;
-
-            filterControl.Initialize(columnName, ColumnUniqueValueDisplayLimit, filteredValues);
-
-            _activeFilterPopup = new Popup
-            {
-                Child = filterControl,
-                PlacementTarget = button,
-                Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom,
-                StaysOpen = false,
-                AllowsTransparency = true
-            };
-
-            _activeFilterColumn = columnName;
-            _activeFilterPopup.IsOpen = true;
-        }
+        
 
         private void FilterControl_SortRequested(object sender, Controls.ColumnFilterPopup.SortEventArgs e)
         {

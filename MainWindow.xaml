@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="VANTAGE" 
+        Title="VANTAGE: MILESTONE" 
         Height="700" 
         Width="1200"
         WindowState="Maximized"
@@ -451,7 +451,6 @@
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
@@ -481,26 +480,17 @@
                           BorderBrush="{StaticResource ControlBorder}"
                           Margin="0,0,20,0"/>
 
-                <!-- Last Sync -->
-                <TextBlock Grid.Column="3" 
-                           x:Name="txtLastSync"
+                <!-- Spacer -->
+                <TextBlock Grid.Column="3"/>
+
+                <!-- Record Count -->
+                <TextBlock Grid.Column="4" 
+                           x:Name="txtLastSyncsd"
                            Text="Last Sync: Never" 
                            Foreground="{StaticResource StatusBarForeground}"
                            FontSize="11"
                            VerticalAlignment="Center"
                            Margin="0,0,20,0"/>
-
-                <!-- Spacer -->
-                <TextBlock Grid.Column="4"/>
-
-                <!-- Record Count -->
-                <TextBlock Grid.Column="5" 
-                           x:Name="txtRecordCount"
-                           Text="0 activities loaded" 
-                           Foreground="{StaticResource StatusBarForeground}"
-                           FontSize="11"
-                           VerticalAlignment="Center"
-                           Margin="0,0,10,0"/>
             </Grid>
         </Border>
     </Grid>
