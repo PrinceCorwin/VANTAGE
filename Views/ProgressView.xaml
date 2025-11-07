@@ -1080,7 +1080,6 @@
             </Border>
 
             <!-- BOTTOM TOOLBAR -->
-            <!-- BOTTOM TOOLBAR -->
             <Border Grid.Row="3" 
                     Background="{StaticResource ToolbarBackground}" 
                     BorderBrush="{StaticResource BorderColor}" 
