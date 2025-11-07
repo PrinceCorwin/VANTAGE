@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Data.Sqlite;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Threading.Tasks;
@@ -23,6 +24,77 @@ namespace VANTAGE.Data
         {
             _mappingService = new MappingService(projectID);
         }
+
+        // ActivityRepository.cs  (inside class)
+        // inside ActivityRepository
+        public static async Task<int> ArchiveAndDeleteActivitiesAsync(List<int> activityIds, string performedBy)
+        {
+            if (activityIds == null || activityIds.Count == 0) return 0;
+
+            using var connection = DatabaseSetup.GetConnection();
+            await connection.OpenAsync();
+            using var tx = connection.BeginTransaction();
+
+            var activityCols = await GetTableColumnsAsync(connection, "Activities", tx);
+            var deletedCols = await GetTableColumnsAsync(connection, "Deleted_Activities", tx);
+
+            bool hasDeletedAt = deletedCols.Contains("DeletedAtUtc", StringComparer.OrdinalIgnoreCase);
+            bool hasDeletedBy = deletedCols.Contains("DeletedBy", StringComparer.OrdinalIgnoreCase);
+
+            var common = activityCols.Where(c => deletedCols.Contains(c, StringComparer.OrdinalIgnoreCase)).ToList();
+            if (common.Count == 0) throw new InvalidOperationException("No overlapping columns between Activities and Deleted_Activities.");
+
+            static string Q(string n) => $"\"{n.Replace("\"", "\"\"")}\"";
+            string insertCols = string.Join(", ", common.Select(Q))
+                               + (hasDeletedAt ? ", \"DeletedAtUtc\"" : "")
+                               + (hasDeletedBy ? ", \"DeletedBy\"" : "");
+            string selectCols = string.Join(", ", common.Select(Q))
+                               + (hasDeletedAt ? ", @deletedAtUtc" : "")
+                               + (hasDeletedBy ? ", @deletedBy" : "");
+
+            string idList = string.Join(",", activityIds);
+
+            using (var insert = connection.CreateCommand())
+            {
+                insert.Transaction = tx;
+                insert.CommandText = $@"
+            INSERT INTO Deleted_Activities ({insertCols})
+            SELECT {selectCols}
+            FROM Activities
+            WHERE ActivityID IN ({idList});";
+                if (hasDeletedAt) insert.Parameters.AddWithValue("@deletedAtUtc", DateTime.UtcNow.ToString("o"));
+                if (hasDeletedBy) insert.Parameters.AddWithValue("@deletedBy", performedBy ?? "Unknown");
+                await insert.ExecuteNonQueryAsync();
+            }
+
+            using (var del = connection.CreateCommand())
+            {
+                del.Transaction = tx;
+                del.CommandText = $"DELETE FROM Activities WHERE ActivityID IN ({idList});";
+                await del.ExecuteNonQueryAsync();
+            }
+
+            await tx.CommitAsync();
+            VANTAGE.Utilities.AppLogger.Info($"Archived & deleted {activityIds.Count} activities.",
+                "ActivityRepository.ArchiveAndDeleteActivitiesAsync", performedBy);
+            return activityIds.Count;
+        }
+
+        private static async Task<HashSet<string>> GetTableColumnsAsync(SqliteConnection conn, string table, SqliteTransaction tx)
+        {
+            var cols = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            using var cmd = conn.CreateCommand();
+            cmd.Transaction = tx;
+            cmd.CommandText = $"PRAGMA table_info({table});";
+            using var rd = await cmd.ExecuteReaderAsync();
+            while (await rd.ReadAsync())
+            {
+                var name = rd["name"]?.ToString();
+                if (!string.IsNullOrWhiteSpace(name)) cols.Add(name);
+            }
+            return cols;
+        }
+
 
 
         /// Get current mapping service (creates default if not initialized)

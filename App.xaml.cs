@@ -20,15 +20,17 @@ namespace VANTAGE
             // Register Syncfusion license FIRST (before any UI components or database setup)
             Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("Ngo9BigBOggjHTQxAR8/V1JFaF5cXGRCf1FpRmJGdld5fUVHYVZUTXxaS00DNHVRdkdmWH9dcXVVRGBYVUNxWUdWYEg=");
 
-
             try
             {
 
                 // Step 1: Initialize database
                 DatabaseSetup.InitializeDatabase();
 
+                VANTAGE.Utilities.AppLogger.Initialize();
+                VANTAGE.Utilities.AppLogger.Info("Milestone starting up...", "App.OnStartup");
+
                 // ADD THE NEW LINE HERE (commented out so it only ran once):
-                 DatabaseSetup.SeedTestUsers();
+                DatabaseSetup.SeedTestUsers();
 
                 // Step 2: Initialize default app settings
                 SettingsManager.InitializeDefaultAppSettings();

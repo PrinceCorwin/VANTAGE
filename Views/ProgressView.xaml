@@ -337,6 +337,85 @@
                     SelectionChanged="sfActivities_SelectionChanged"
                     CurrentCellBeginEdit="sfActivities_CurrentCellBeginEdit">
                     
+                    <syncfusion:SfDataGrid.ContextMenu>
+                        <ContextMenu
+                             Background="{StaticResource ControlBackground}"
+                             Foreground="{StaticResource ForegroundColor}"
+                             BorderBrush="{StaticResource BorderColor}">
+
+                            <!-- Delete Row(s) -->
+                            <MenuItem Header="Delete Row(s)"
+                                      Click="DeleteSelectedActivities_Click"
+                                      Background="{StaticResource ControlBackground}"
+                                      Foreground="#FFE74C3C">
+                                <MenuItem.Icon>
+                                    <TextBlock Text="🗑️" FontSize="14"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+
+                            <Separator Background="{StaticResource BorderColor}"/>
+
+                            <!-- Placeholder 1 -->
+                            <MenuItem Header="Copy Row(s)"
+                                      Click="MenuCopyRows_Click"
+                                      Background="{StaticResource ControlBackground}"
+                                      Foreground="{StaticResource ForegroundColor}"
+                                      IsEnabled="False">
+                                <MenuItem.Icon>
+                                    <TextBlock Text="📋" FontSize="14"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+
+                            <!-- Placeholder 2 -->
+                            <MenuItem Header="Duplicate Row(s)"
+                                      Click="MenuDuplicateRows_Click"
+                                      Background="{StaticResource ControlBackground}"
+                                      Foreground="{StaticResource ForegroundColor}"
+                                      IsEnabled="False">
+                                <MenuItem.Icon>
+                                    <TextBlock Text="➕" FontSize="14"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+
+                            <Separator Background="{StaticResource BorderColor}"/>
+
+                            <!-- Placeholder 3 -->
+                            <MenuItem Header="Export Selected"
+                                      Click="MenuExportSelected_Click"
+                                      Background="{StaticResource ControlBackground}"
+                                      Foreground="{StaticResource ForegroundColor}"
+                                      IsEnabled="False">
+                                <MenuItem.Icon>
+                                    <TextBlock Text="📤" FontSize="14"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+
+                            <!-- Placeholder 4 -->
+                            <MenuItem Header="Placeholder 1"
+                                      Click="PlaceHolder1_Click"
+                                      Background="{StaticResource ControlBackground}"
+                                      Foreground="{StaticResource ForegroundColor}"
+                                      IsEnabled="False">
+                                <MenuItem.Icon>
+                                    <TextBlock Text="⭐" FontSize="14"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+
+                            <Separator Background="{StaticResource BorderColor}"/>
+
+                            <!-- Placeholder 5 -->
+                            <MenuItem Header="Placeholder 2"
+                                      Click="Placeholder2_Click"
+                                      Background="{StaticResource ControlBackground}"
+                                      Foreground="{StaticResource ForegroundColor}"
+                                      IsEnabled="False">
+                                <MenuItem.Icon>
+                                    <TextBlock Text="🕒" FontSize="14"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+
+                        </ContextMenu>
+                    </syncfusion:SfDataGrid.ContextMenu>
                     <syncfusion:SfDataGrid.Columns>
 
                         <!-- IDENTITY & KEY FIELDS -->

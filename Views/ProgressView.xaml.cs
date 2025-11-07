@@ -24,7 +24,97 @@ namespace VANTAGE.Views
         private ProgressViewModel _viewModel;
         // one key per grid/view
         private const string GridPrefsKey = "ProgressGrid.PreferencesJson";
+        private ProgressViewModel ViewModel => DataContext as ProgressViewModel;
+        // ProgressView.xaml.cs
+        private async void DeleteSelectedActivities_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var selected = sfActivities.SelectedItems?.Cast<Activity>().ToList();
+                if (selected == null || selected.Count == 0)
+                    return;
 
+                var currentUser = App.CurrentUser;
+                bool isAdmin = currentUser?.IsAdmin ?? false;
+
+                // Permissions: non-admin can delete only their own
+                if (!isAdmin && selected.Any(a =>
+                        !string.Equals(a.AssignedTo, currentUser?.Username, StringComparison.OrdinalIgnoreCase)))
+                {
+                    MessageBox.Show("You can only delete your own records.", "Access Denied",
+                                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                // Confirm
+                string preview = string.Join(", ", selected.Take(5).Select(a => a.ActivityID));
+                if (selected.Count > 5) preview += ", …";
+                var confirm = MessageBox.Show(
+                    $"Delete {selected.Count} record(s)?\n\nFirst few IDs: {preview}",
+                    "Confirm Deletion", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+                if (confirm != MessageBoxResult.Yes) return;
+
+                // Execute archive+delete
+                var ids = selected.Select(a => a.ActivityID).ToList();
+                int count = await ActivityRepository.ArchiveAndDeleteActivitiesAsync(ids, currentUser?.Username ?? "Unknown");
+
+                // Refresh grid and totals
+                // Refresh grid and totals
+                if (ViewModel != null)
+                {
+                    await ViewModel.RefreshAsync();       // <- reloads using current filters
+                    await ViewModel.UpdateTotalsAsync();  // <- recompute summary panel
+                }
+
+
+                VANTAGE.Utilities.AppLogger.Info(
+                    $"User deleted {count} activities.",
+                    "ProgressView.DeleteSelectedActivities_Click",
+                    currentUser?.Username);
+
+                MessageBox.Show($"{count} record(s) deleted and archived.",
+                                "Delete Successful", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                VANTAGE.Utilities.AppLogger.Error(ex, "ProgressView.DeleteSelectedActivities_Click");
+                MessageBox.Show($"Delete failed:\n{ex.Message}", "Error",
+                                MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+        // PLACEHOLDER HANDLERS (Not Yet Implemented)
+        // ========================================
+
+        private void MenuCopyRows_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Copy Row(s) feature coming soon!",
+                "Not Yet Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private void MenuDuplicateRows_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Duplicate Row(s) feature coming soon!",
+                "Not Yet Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private void MenuExportSelected_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Export Selected feature coming soon!",
+                "Not Yet Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private void PlaceHolder1_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("coming soon!",
+                "Not Yet Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private void Placeholder2_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("coming soon!",
+                "Not Yet Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
         public class GridPreferences
         {
             public int Version { get; set; } = 1;
