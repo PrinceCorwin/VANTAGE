@@ -36,7 +36,7 @@ namespace VANTAGE.ViewModels
             foreach (var filter in _activeFilters.Values)
             {
                 // Column names now match database - no translation needed!
-        
+
                 // Special handling for pre-built IN condition
                 if (filter.FilterType == "IN")
                 {
@@ -88,9 +88,9 @@ namespace VANTAGE.ViewModels
             }
         }
 
-        
+
         /// Apply a filter to a column
-        
+
         public async Task ApplyFilter(string columnName, string filterType, string filterValue)
         {
             _activeFilters[columnName] = new ColumnFilter
@@ -104,9 +104,9 @@ namespace VANTAGE.ViewModels
 
             await RebuildAndReloadAsync();
         }
-        
+
         /// Apply a single column filter to the data
-        
+
         private IEnumerable<Activity> ApplyColumnFilter(IEnumerable<Activity> data, ColumnFilter filter)
         {
             return data.Where(activity =>
@@ -145,16 +145,16 @@ namespace VANTAGE.ViewModels
                 }
             });
         }
-        
+
         /// Clear filter from a column
-        
+
         public async Task ClearFilter(string columnName)
         {
             _activeFilters.Remove(columnName);
             OnPropertyChanged(nameof(ActiveFilterColumns));
             await RebuildAndReloadAsync();
         }
-    
+
 
         private string BuildFilterCondition(string dbColumnName, string filterType, string filterValue)
         {
@@ -210,7 +210,7 @@ namespace VANTAGE.ViewModels
                         return $"{dbColumnName} <= {filterValue}";
                     case "Between":
                         var parts = filterValue.Split(',');
-                        if (parts.Length ==2)
+                        if (parts.Length == 2)
                             return $"{dbColumnName} BETWEEN {parts[0]} AND {parts[1]}";
                         return "";
                     default:
@@ -237,7 +237,7 @@ namespace VANTAGE.ViewModels
                         return $"{dbColumnName} > '{filterValue}'";
                     case "Between":
                         var parts = filterValue?.Split(',');
-                        if (parts != null && parts.Length ==2)
+                        if (parts != null && parts.Length == 2)
                             return $"{dbColumnName} BETWEEN '{parts[0]}' AND '{parts[1]}'";
                         return "";
                     case "Is Blank":
@@ -283,7 +283,7 @@ namespace VANTAGE.ViewModels
             _searchText = "";
             _totalRecordCount = 0;
             _isLoading = false;
-}
+        }
 
         // ========================================
         // PROPERTIES
@@ -322,17 +322,45 @@ namespace VANTAGE.ViewModels
         }
         public async Task UpdateTotalsAsync()
         {
-            try
-            {
-                var (budgeted, earned) = await ActivityRepository.GetTotalsAsync(_currentWhereClause);
-                BudgetedMHs = budgeted;
-                EarnedMHs = earned;
+            await UpdateTotalsAsync(_activities.ToList());
+        }
 
-            }
-            catch (Exception ex)
+        // Overload that accepts specific activities (for filtered calculations)
+        public async Task UpdateTotalsAsync(List<Activity> activitiesToCalculate)
+        {
+            await Task.Run(() =>
             {
-                // TODO: Add proper logging when logging system is implemented
-            }
+                try
+                {
+                    if (activitiesToCalculate == null || !activitiesToCalculate.Any())
+                    {
+                        // No records - set to zero
+                        System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            BudgetedMHs = 0;
+                            EarnedMHs = 0;
+                        });
+                        return;
+                    }
+
+                    // Calculate totals from provided collection
+                    // Use EarnMHsCalc which is already calculated on each Activity
+                    double budgeted = activitiesToCalculate.Sum(a => a.BudgetMHs);
+                    double earned = activitiesToCalculate.Sum(a => a.EarnMHsCalc);
+
+                    // Update properties on UI thread
+                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        BudgetedMHs = budgeted;
+                        EarnedMHs = earned;
+                    });
+                }
+                catch (Exception ex)
+                {
+                    // TODO: Add proper logging when logging system is implemented
+                    System.Diagnostics.Debug.WriteLine($"Error in UpdateTotalsAsync: {ex.Message}");
+                }
+            });
         }
         public BulkObservableCollection<Activity> Activities
         {
@@ -388,28 +416,28 @@ namespace VANTAGE.ViewModels
 
         public int FilteredCount
         {
-         get => _filteredCount;
+            get => _filteredCount;
             set
-          {
-   _filteredCount = value;
-        OnPropertyChanged(nameof(FilteredCount));
-     }
+            {
+                _filteredCount = value;
+                OnPropertyChanged(nameof(FilteredCount));
+            }
         }
 
         public bool IsLoading
         {
-    get => _isLoading;
-   set
-       {
-      _isLoading = value;
-     OnPropertyChanged(nameof(IsLoading));
-      }
-  }
+            get => _isLoading;
+            set
+            {
+                _isLoading = value;
+                OnPropertyChanged(nameof(IsLoading));
+            }
+        }
 
         // ========================================
-  // METHODS
+        // METHODS
         // ========================================
-     private string _currentWhereClause = null;
+        private string _currentWhereClause = null;
 
         public async Task ApplyMyRecordsFilter(bool active, string currentUsername)
         {
@@ -467,62 +495,62 @@ namespace VANTAGE.ViewModels
         {
             const int BATCH_SIZE = 5000;
 
-    try
+            try
             {
-    IsLoading = true;
-            Activities.Clear();
+                IsLoading = true;
+                Activities.Clear();
 
-    // Get total count (for both unfiltered and filtered)
-      var unfilteredTotal = await ActivityRepository.GetTotalCountAsync();
-     TotalRecordCount = unfilteredTotal;
+                // Get total count (for both unfiltered and filtered)
+                var unfilteredTotal = await ActivityRepository.GetTotalCountAsync();
+                TotalRecordCount = unfilteredTotal;
 
- // For filtered count, we need to get it from first query
-            var (firstBatch, filteredTotal) = await ActivityRepository.GetPageAsync(0, BATCH_SIZE, _currentWhereClause);
+                // For filtered count, we need to get it from first query
+                var (firstBatch, filteredTotal) = await ActivityRepository.GetPageAsync(0, BATCH_SIZE, _currentWhereClause);
 
-        // Update filtered count immediately
-       FilteredCount = filteredTotal;
+                // Update filtered count immediately
+                FilteredCount = filteredTotal;
 
-        System.Diagnostics.Debug.WriteLine($"NO PAGINATION -> Loading {filteredTotal:N0} filtered records in batches of {BATCH_SIZE:N0}");
+                System.Diagnostics.Debug.WriteLine($"NO PAGINATION -> Loading {filteredTotal:N0} filtered records in batches of {BATCH_SIZE:N0}");
 
-    // Add first batch
-    Activities.AddRange(firstBatch);
-   int loaded = firstBatch.Count;
-    int pageNumber = 1;
+                // Add first batch
+                Activities.AddRange(firstBatch);
+                int loaded = firstBatch.Count;
+                int pageNumber = 1;
 
-  System.Diagnostics.Debug.WriteLine($"  Batch 1: Loaded {loaded:N0} of {filteredTotal:N0} records");
+                System.Diagnostics.Debug.WriteLine($"  Batch 1: Loaded {loaded:N0} of {filteredTotal:N0} records");
 
-      // Load remaining batches
-       while (loaded < filteredTotal)
-     {
-        var (batch, _) = await ActivityRepository.GetPageAsync(pageNumber, BATCH_SIZE, _currentWhereClause);
+                // Load remaining batches
+                while (loaded < filteredTotal)
+                {
+                    var (batch, _) = await ActivityRepository.GetPageAsync(pageNumber, BATCH_SIZE, _currentWhereClause);
 
- if (batch.Count == 0) break; // No more records
+                    if (batch.Count == 0) break; // No more records
 
-       Activities.AddRange(batch);
-       loaded += batch.Count;
-   pageNumber++;
+                    Activities.AddRange(batch);
+                    loaded += batch.Count;
+                    pageNumber++;
 
-       System.Diagnostics.Debug.WriteLine($"  Batch {pageNumber}: Loaded {loaded:N0} of {filteredTotal:N0} records");
+                    System.Diagnostics.Debug.WriteLine($"  Batch {pageNumber}: Loaded {loaded:N0} of {filteredTotal:N0} records");
 
-    // Small delay to let UI update (prevents freezing)
-      await Task.Delay(10);
-     }
+                    // Small delay to let UI update (prevents freezing)
+                    await Task.Delay(10);
+                }
 
-       // Update totals when complete
-    await UpdateTotalsAsync();
+                // Update totals when complete
+                await UpdateTotalsAsync();
 
-        System.Diagnostics.Debug.WriteLine($"✓ Loaded {loaded:N0} activities (incremental batches)");
-   }
-        catch (Exception ex)
-        {
-     System.Diagnostics.Debug.WriteLine($"✗ Error loading activities: {ex.Message}");
-    throw;
-   }
-    finally
-    {
-   IsLoading = false;
-   }
-  }
+                System.Diagnostics.Debug.WriteLine($"✓ Loaded {loaded:N0} activities (incremental batches)");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"✗ Error loading activities: {ex.Message}");
+                throw;
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
 
 
 
@@ -532,9 +560,9 @@ namespace VANTAGE.ViewModels
         {
             await LoadAllActivitiesAsync();
         }
-        
+
         /// Filter predicate for activities
-        
+
         private bool FilterActivity(object obj)
         {
             if (obj is not Activity activity)

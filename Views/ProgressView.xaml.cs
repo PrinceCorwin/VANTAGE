@@ -256,12 +256,12 @@ namespace VANTAGE.Views
 
                 //2) Order (move columns to target positions)
                 var orderedPrefs = prefs.Columns.OrderBy(x => x.OrderIndex).ToList();
-                for (int target =0; target < orderedPrefs.Count; target++)
+                for (int target = 0; target < orderedPrefs.Count; target++)
                 {
                     var p = orderedPrefs[target];
                     if (!byName.TryGetValue(p.Name, out var col)) continue;
                     int cur = sfActivities.Columns.IndexOf(col);
-                    if (cur != target && cur >=0)
+                    if (cur != target && cur >= 0)
                     {
                         sfActivities.Columns.RemoveAt(cur);
                         sfActivities.Columns.Insert(target, col);
@@ -269,7 +269,7 @@ namespace VANTAGE.Views
                 }
 
                 //3) Width last (guard against tiny widths)
-                const double MinWidth =40.0;
+                const double MinWidth = 40.0;
                 foreach (var p in prefs.Columns)
                     if (byName.TryGetValue(p.Name, out var col))
                         col.Width = Math.Max(MinWidth, p.Width);
@@ -307,9 +307,9 @@ namespace VANTAGE.Views
             await SetSelectedRecordsPercent(percent);
         }
 
-        
+
         /// Context menu: Reset button to default value
-        
+
         private void MenuItem_ResetPercent_Click(object sender, RoutedEventArgs e)
         {
             var menuItem = sender as MenuItem;
@@ -341,9 +341,9 @@ namespace VANTAGE.Views
                 MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
-        
+
         /// Context menu: Set custom percent value
-        
+
         private void MenuItem_CustomPercent_Click(object sender, RoutedEventArgs e)
         {
             // Find which button's context menu this came from
@@ -416,7 +416,7 @@ namespace VANTAGE.Views
                     "Success", MessageBoxButton.OK, MessageBoxImage.Information);
 
                 sfActivities.View.Refresh();
-                await _viewModel.UpdateTotalsAsync();
+                UpdateSummaryPanel(); // Update summary panel to reflect percentage changes
             }
             catch (Exception ex)
             {
@@ -474,26 +474,26 @@ namespace VANTAGE.Views
 
             loadingProgressBar.BeginAnimation(System.Windows.Controls.Primitives.RangeBase.ValueProperty, animation);
         }
-        private void UpdateSummaryPanel()
+        // Update summary totals based on currently visible (filtered) records
+        private async void UpdateSummaryPanel()
         {
-            // Always use the Activities collection from ViewModel
-            // The View.Records collection contains Syncfusion wrapper objects, not Activity objects
+            // Get the records to calculate from based on current filter state
             List<Activity> recordsToSum;
-            
-            // First check if View has any filtering active by comparing counts
+
+            // Check if there's active filtering by comparing counts
             bool hasActiveFilter = false;
             if (sfActivities?.View?.Records != null && _viewModel?.Activities != null)
             {
                 hasActiveFilter = (sfActivities.View.Records.Count != _viewModel.Activities.Count);
             }
-            
+
             if (hasActiveFilter && sfActivities?.View?.Records != null)
             {
-                // Filter is active - match filtered IDs with Activities collection
+                // Filter is active - extract filtered activities
                 var filteredIds = new HashSet<int>();
                 foreach (var record in sfActivities.View.Records)
                 {
-                    // Try to get the underlying data using reflection
+                    // Extract the underlying Activity from Syncfusion's record wrapper
                     var dataProperty = record.GetType().GetProperty("Data");
                     if (dataProperty != null)
                     {
@@ -504,40 +504,30 @@ namespace VANTAGE.Views
                         }
                     }
                 }
- 
+
                 recordsToSum = _viewModel.Activities.Where(a => filteredIds.Contains(a.ActivityID)).ToList();
-                System.Diagnostics.Debug.WriteLine($"UpdateSummaryPanel: Using {recordsToSum.Count} filtered records");
+                System.Diagnostics.Debug.WriteLine($"UpdateSummaryPanel: Calculating from {recordsToSum.Count} filtered records");
             }
             else if (_viewModel?.Activities != null && _viewModel.Activities.Count > 0)
             {
                 // No filter or filter not yet applied - use all records
                 recordsToSum = _viewModel.Activities.ToList();
-                System.Diagnostics.Debug.WriteLine($"UpdateSummaryPanel: Using {recordsToSum.Count} total records (no filter)");
+                System.Diagnostics.Debug.WriteLine($"UpdateSummaryPanel: Calculating from {recordsToSum.Count} total records (no filter)");
             }
             else
             {
                 // No records at all
-                txtBudgetedMHs.Text = "0.00";
-                txtEarnedMHs.Text = "0.00";
-                txtPercentComplete.Text = "0.00%";
+                recordsToSum = new List<Activity>();
                 System.Diagnostics.Debug.WriteLine("UpdateSummaryPanel: No records available");
-                return;
             }
 
-            double budgetedMHs = recordsToSum.Sum(a => a.BudgetMHs);
-            double earnedMHs = recordsToSum.Sum(a => a.EarnMHsCalc);
-            double percentComplete = budgetedMHs == 0 ? 0.0 : (earnedMHs / budgetedMHs) * 100.0;
-
-            txtBudgetedMHs.Text = budgetedMHs.ToString("N2");
-            txtEarnedMHs.Text = earnedMHs.ToString("N2");
-            txtPercentComplete.Text = $"{percentComplete:N2}%";
-            
-            System.Diagnostics.Debug.WriteLine($"UpdateSummaryPanel: Budgeted={budgetedMHs:N2}, Earned={earnedMHs:N2}, Percent={percentComplete:N2}%");
+            // Call ViewModel method to update bound properties
+            await _viewModel.UpdateTotalsAsync(recordsToSum);
         }
         private Popup _activeFilterPopup;
         private string _activeFilterColumn;
 
-        
+
 
         private void FilterControl_SortRequested(object sender, Controls.ColumnFilterPopup.SortEventArgs e)
         {
@@ -646,9 +636,9 @@ namespace VANTAGE.Views
 
             _activeFilterPopup.IsOpen = false;
         }
-        
+
         /// Auto-save when user finishes editing a cell
-        
+
 
         private async void OnViewLoaded(object sender, RoutedEventArgs e)
         {
@@ -678,9 +668,9 @@ namespace VANTAGE.Views
             }
         }
 
-        
+
         /// Extract property name from column (tries binding path first, then header text)
-        
+
         private string GetColumnPropertyName(Syncfusion.UI.Xaml.Grid.GridColumn column)
         {
             // Syncfusion columns use MappingName for the property binding
@@ -731,9 +721,9 @@ namespace VANTAGE.Views
                 lstColumnVisibility.Items.Add(checkBox);
             }
         }
-        
+
         /// Prevent editing of records not assigned to current user
-        
+
         private void sfActivities_CurrentCellBeginEdit(object sender, Syncfusion.UI.Xaml.Grid.CurrentCellBeginEditEventArgs e)
         {
             // Get the activity from the current row
@@ -858,165 +848,165 @@ namespace VANTAGE.Views
         }
         // === FILTER EVENT HANDLERS ===
 
-private void BtnFilterComplete_Click(object sender, RoutedEventArgs e)
-{
-    // Toggle filter
-    bool filterActive = btnFilterComplete.Content.ToString().Contains("✓");
-
-    if (!filterActive)
-    {
-        // Apply "Complete" filter (PercentEntry =100)
-        sfActivities.Columns["PercentEntry"].FilterPredicates.Add(new Syncfusion.Data.FilterPredicate()
+        private void BtnFilterComplete_Click(object sender, RoutedEventArgs e)
         {
-            FilterType = Syncfusion.Data.FilterType.Equals,
-            FilterValue =100.0,
-            PredicateType = Syncfusion.Data.PredicateType.And
-        });
+            // Toggle filter
+            bool filterActive = btnFilterComplete.Content.ToString().Contains("✓");
 
-        // Update button visuals
-        btnFilterComplete.Content = "Complete ✓";
-        btnFilterComplete.Background = (Brush)Application.Current.Resources["AccentColor"];
-    }
-    else
-    {
-        // Clear this filter only
-        sfActivities.Columns["PercentEntry"].FilterPredicates.Clear();
-        btnFilterComplete.Content = "Complete";
-        btnFilterComplete.Background = (Brush)Application.Current.Resources["ControlBackground"];
-    }
+            if (!filterActive)
+            {
+                // Apply "Complete" filter (PercentEntry =100)
+                sfActivities.Columns["PercentEntry"].FilterPredicates.Add(new Syncfusion.Data.FilterPredicate()
+                {
+                    FilterType = Syncfusion.Data.FilterType.Equals,
+                    FilterValue = 100.0,
+                    PredicateType = Syncfusion.Data.PredicateType.And
+                });
 
-    sfActivities.View.RefreshFilter();
-    _viewModel.FilteredCount = sfActivities.View.Records.Count;
-    UpdateRecordCount();
-    UpdateSummaryPanel();
-}
+                // Update button visuals
+                btnFilterComplete.Content = "Complete ✓";
+                btnFilterComplete.Background = (Brush)Application.Current.Resources["AccentColor"];
+            }
+            else
+            {
+                // Clear this filter only
+                sfActivities.Columns["PercentEntry"].FilterPredicates.Clear();
+                btnFilterComplete.Content = "Complete";
+                btnFilterComplete.Background = (Brush)Application.Current.Resources["ControlBackground"];
+            }
 
-private void BtnFilterNotComplete_Click(object sender, RoutedEventArgs e)
-{
-    // Toggle filter
-    bool filterActive = btnFilterNotComplete.Content.ToString().Contains("✓");
+            sfActivities.View.RefreshFilter();
+            _viewModel.FilteredCount = sfActivities.View.Records.Count;
+            UpdateRecordCount();
+            UpdateSummaryPanel();
+        }
 
-    if (!filterActive)
-    {
-        // Apply "Not Complete" filter (PercentEntry <100)
-        sfActivities.Columns["PercentEntry"].FilterPredicates.Add(new Syncfusion.Data.FilterPredicate()
+        private void BtnFilterNotComplete_Click(object sender, RoutedEventArgs e)
         {
-            FilterType = Syncfusion.Data.FilterType.LessThan,
-            FilterValue =100.0,
-            PredicateType = Syncfusion.Data.PredicateType.And
-        });
+            // Toggle filter
+            bool filterActive = btnFilterNotComplete.Content.ToString().Contains("✓");
 
-        // Update button visuals
-        btnFilterNotComplete.Content = "Not Complete ✓";
-        btnFilterNotComplete.Background = (Brush)Application.Current.Resources["AccentColor"];
-    }
-    else
-    {
-        // Clear this filter only
-        sfActivities.Columns["PercentEntry"].FilterPredicates.Clear();
-        btnFilterNotComplete.Content = "Not Complete";
-        btnFilterNotComplete.Background = (Brush)Application.Current.Resources["ControlBackground"];
-    }
+            if (!filterActive)
+            {
+                // Apply "Not Complete" filter (PercentEntry <100)
+                sfActivities.Columns["PercentEntry"].FilterPredicates.Add(new Syncfusion.Data.FilterPredicate()
+                {
+                    FilterType = Syncfusion.Data.FilterType.LessThan,
+                    FilterValue = 100.0,
+                    PredicateType = Syncfusion.Data.PredicateType.And
+                });
 
-    sfActivities.View.RefreshFilter();
-    _viewModel.FilteredCount = sfActivities.View.Records.Count;
-    UpdateRecordCount();
-    UpdateSummaryPanel();
-}
+                // Update button visuals
+                btnFilterNotComplete.Content = "Not Complete ✓";
+                btnFilterNotComplete.Background = (Brush)Application.Current.Resources["AccentColor"];
+            }
+            else
+            {
+                // Clear this filter only
+                sfActivities.Columns["PercentEntry"].FilterPredicates.Clear();
+                btnFilterNotComplete.Content = "Not Complete";
+                btnFilterNotComplete.Background = (Brush)Application.Current.Resources["ControlBackground"];
+            }
 
-private void BtnFilterNotStarted_Click(object sender, RoutedEventArgs e)
-{
-    // Toggle filter
-    bool filterActive = btnFilterNotStarted.Content.ToString().Contains("✓");
+            sfActivities.View.RefreshFilter();
+            _viewModel.FilteredCount = sfActivities.View.Records.Count;
+            UpdateRecordCount();
+            UpdateSummaryPanel();
+        }
 
-    if (!filterActive)
-    {
-        // Apply "Not Started" filter (PercentEntry =0)
-        sfActivities.Columns["PercentEntry"].FilterPredicates.Add(new Syncfusion.Data.FilterPredicate()
+        private void BtnFilterNotStarted_Click(object sender, RoutedEventArgs e)
         {
-            FilterType = Syncfusion.Data.FilterType.Equals,
-            FilterValue =0.0,
-            PredicateType = Syncfusion.Data.PredicateType.And
-        });
+            // Toggle filter
+            bool filterActive = btnFilterNotStarted.Content.ToString().Contains("✓");
 
-        // Update button visuals
-        btnFilterNotStarted.Content = "Not Started ✓";
-        btnFilterNotStarted.Background = (Brush)Application.Current.Resources["AccentColor"];
-    }
-    else
-    {
-        // Clear this filter only
-        sfActivities.Columns["PercentEntry"].FilterPredicates.Clear();
-        btnFilterNotStarted.Content = "Not Started";
-        btnFilterNotStarted.Background = (Brush)Application.Current.Resources["ControlBackground"];
-    }
+            if (!filterActive)
+            {
+                // Apply "Not Started" filter (PercentEntry =0)
+                sfActivities.Columns["PercentEntry"].FilterPredicates.Add(new Syncfusion.Data.FilterPredicate()
+                {
+                    FilterType = Syncfusion.Data.FilterType.Equals,
+                    FilterValue = 0.0,
+                    PredicateType = Syncfusion.Data.PredicateType.And
+                });
 
-    sfActivities.View.RefreshFilter();
-    _viewModel.FilteredCount = sfActivities.View.Records.Count;
-    UpdateRecordCount();
-    UpdateSummaryPanel();
-}
+                // Update button visuals
+                btnFilterNotStarted.Content = "Not Started ✓";
+                btnFilterNotStarted.Background = (Brush)Application.Current.Resources["AccentColor"];
+            }
+            else
+            {
+                // Clear this filter only
+                sfActivities.Columns["PercentEntry"].FilterPredicates.Clear();
+                btnFilterNotStarted.Content = "Not Started";
+                btnFilterNotStarted.Background = (Brush)Application.Current.Resources["ControlBackground"];
+            }
 
-private void BtnFilterMyRecords_Click(object sender, RoutedEventArgs e)
-{
-    // Toggle filter
-    bool filterActive = btnFilterMyRecords.Content.ToString().Contains("✓");
+            sfActivities.View.RefreshFilter();
+            _viewModel.FilteredCount = sfActivities.View.Records.Count;
+            UpdateRecordCount();
+            UpdateSummaryPanel();
+        }
 
-    if (!filterActive)
-    {
-        // Apply "My Records" filter (AssignedTo = current username)
-        sfActivities.Columns["AssignedTo"].FilterPredicates.Add(new Syncfusion.Data.FilterPredicate()
+        private void BtnFilterMyRecords_Click(object sender, RoutedEventArgs e)
         {
-            FilterType = Syncfusion.Data.FilterType.Equals,
-            FilterValue = App.CurrentUser.Username,
-            PredicateType = Syncfusion.Data.PredicateType.And
-        });
+            // Toggle filter
+            bool filterActive = btnFilterMyRecords.Content.ToString().Contains("✓");
 
-        // Update button visuals
-        btnFilterMyRecords.Content = "My Records ✓";
-        btnFilterMyRecords.Background = (Brush)Application.Current.Resources["AccentColor"];
-    }
-    else
-    {
-        // Clear this filter only
-        sfActivities.Columns["AssignedTo"].FilterPredicates.Clear();
-        btnFilterMyRecords.Content = "My Records";
-        btnFilterMyRecords.Background = (Brush)Application.Current.Resources["ControlBackground"];
-    }
+            if (!filterActive)
+            {
+                // Apply "My Records" filter (AssignedTo = current username)
+                sfActivities.Columns["AssignedTo"].FilterPredicates.Add(new Syncfusion.Data.FilterPredicate()
+                {
+                    FilterType = Syncfusion.Data.FilterType.Equals,
+                    FilterValue = App.CurrentUser.Username,
+                    PredicateType = Syncfusion.Data.PredicateType.And
+                });
 
-    sfActivities.View.RefreshFilter();
-    _viewModel.FilteredCount = sfActivities.View.Records.Count;
-    UpdateRecordCount();
-    UpdateSummaryPanel();
-}
+                // Update button visuals
+                btnFilterMyRecords.Content = "My Records ✓";
+                btnFilterMyRecords.Background = (Brush)Application.Current.Resources["AccentColor"];
+            }
+            else
+            {
+                // Clear this filter only
+                sfActivities.Columns["AssignedTo"].FilterPredicates.Clear();
+                btnFilterMyRecords.Content = "My Records";
+                btnFilterMyRecords.Background = (Brush)Application.Current.Resources["ControlBackground"];
+            }
 
-private void BtnClearFilters_Click(object sender, RoutedEventArgs e)
-{
-    // Clear all column filters (including column header filters)
-    foreach (var column in sfActivities.Columns)
-    {
-        column.FilterPredicates.Clear();
-    }
+            sfActivities.View.RefreshFilter();
+            _viewModel.FilteredCount = sfActivities.View.Records.Count;
+            UpdateRecordCount();
+            UpdateSummaryPanel();
+        }
 
-    // Reset all filter button visuals
-    btnFilterComplete.Content = "Complete";
-    btnFilterComplete.Content = "Complete";
-    btnFilterComplete.Background = (Brush)Application.Current.Resources["ControlBackground"];
-    
-    btnFilterNotComplete.Content = "Not Complete";
-    btnFilterNotComplete.Background = (Brush)Application.Current.Resources["ControlBackground"];
-    
-    btnFilterNotStarted.Content = "Not Started";
-    btnFilterNotStarted.Background = (Brush)Application.Current.Resources["ControlBackground"];
-    
-    btnFilterMyRecords.Content = "My Records";
-    btnFilterMyRecords.Background = (Brush)Application.Current.Resources["ControlBackground"];
+        private void BtnClearFilters_Click(object sender, RoutedEventArgs e)
+        {
+            // Clear all column filters (including column header filters)
+            foreach (var column in sfActivities.Columns)
+            {
+                column.FilterPredicates.Clear();
+            }
 
-    sfActivities.View.RefreshFilter();
-    _viewModel.FilteredCount = sfActivities.View.Records.Count;
-    UpdateRecordCount();
-    UpdateSummaryPanel();
-}
+            // Reset all filter button visuals
+            btnFilterComplete.Content = "Complete";
+            btnFilterComplete.Content = "Complete";
+            btnFilterComplete.Background = (Brush)Application.Current.Resources["ControlBackground"];
+
+            btnFilterNotComplete.Content = "Not Complete";
+            btnFilterNotComplete.Background = (Brush)Application.Current.Resources["ControlBackground"];
+
+            btnFilterNotStarted.Content = "Not Started";
+            btnFilterNotStarted.Background = (Brush)Application.Current.Resources["ControlBackground"];
+
+            btnFilterMyRecords.Content = "My Records";
+            btnFilterMyRecords.Background = (Brush)Application.Current.Resources["ControlBackground"];
+
+            sfActivities.View.RefreshFilter();
+            _viewModel.FilteredCount = sfActivities.View.Records.Count;
+            UpdateRecordCount();
+            UpdateSummaryPanel();
+        }
         // Helper method: Get all users from database
         private List<User> GetAllUsers()
         {
@@ -1147,12 +1137,13 @@ private void BtnClearFilters_Click(object sender, RoutedEventArgs e)
         {
             await _viewModel.RefreshAsync();
             UpdateRecordCount();
+            UpdateSummaryPanel(); // Update summary panel after refresh
 
         }
 
-        
+
         /// Auto-save when user finishes editing a cell
-        
+
         private async void sfActivities_CurrentCellEndEdit(object sender, Syncfusion.UI.Xaml.Grid.CurrentCellEndEditEventArgs e)
         {
             try
@@ -1170,6 +1161,8 @@ private void BtnClearFilters_Click(object sender, RoutedEventArgs e)
 
                 if (success)
                 {
+                    // Update summary panel to reflect the cell edit
+                    UpdateSummaryPanel();
                     // TODO: Add proper logging when logging system is implemented
                 }
                 else
