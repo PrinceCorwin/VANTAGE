@@ -603,6 +603,7 @@ namespace VANTAGE
                     if (listBox.SelectedIndex >= 0)
                     {
                         var selectedUser = users[listBox.SelectedIndex];
+                        bool wasAdmin = selectedUser.IsAdmin;
 
                         if (selectedUser.IsAdmin)
                         {
@@ -613,6 +614,29 @@ namespace VANTAGE
                         {
                             AdminHelper.GrantAdmin(selectedUser.UserID, selectedUser.Username);
                             MessageBox.Show($"Admin granted to {selectedUser.Username}", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                        }
+
+                        // If the selected user is the current user, update UI
+                        if (selectedUser.UserID == App.CurrentUserID)
+                        {
+                            if (wasAdmin)
+                            {
+                                // Revoked admin from current user
+                                App.CurrentUser.IsAdmin = false;
+                                App.CurrentUser.AdminToken = null;
+                                btnAdmin.IsEnabled = false;
+                                btnAdmin.Opacity = 0.5;
+                                btnAdmin.ToolTip = "Admin privileges required";
+                            }
+                            else
+                            {
+                                // Granted admin to current user
+                                App.CurrentUser.IsAdmin = true;
+                                App.CurrentUser.AdminToken = AdminHelper.GenerateAdminToken(App.CurrentUserID, App.CurrentUser.Username);
+                                btnAdmin.IsEnabled = true;
+                                btnAdmin.Opacity = 1.0;
+                                btnAdmin.ToolTip = null;
+                            }
                         }
 
                         dialog.DialogResult = true;
@@ -641,9 +665,19 @@ namespace VANTAGE
             }
         }
 
-        private void MenuAdmin2_Click(object sender, RoutedEventArgs e)
+        private void DeletedRecordsUi_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Admin 2 coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
+            // Security check
+            if (!App.CurrentUser.IsAdmin)
+            {
+                MessageBox.Show("This feature is only available to administrators.",
+                    "Access Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var deletedRecordsWindow = new VANTAGE.Views.DeletedRecordsView();
+            deletedRecordsWindow.Owner = this;
+            deletedRecordsWindow.ShowDialog();
         }
 
         private void MenuAdmin3_Click(object sender, RoutedEventArgs e)

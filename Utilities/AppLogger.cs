@@ -18,10 +18,10 @@ namespace VANTAGE.Utilities
         // Toggle file logging (DB logging is always attempted)
         public static bool FileLoggingEnabled { get; set; } = true;
 
-        /// <summary>
+        
         /// Call once on startup (e.g., App.xaml.cs OnStartup):
         /// AppLogger.Initialize();
-        /// </summary>
+        
         public static void Initialize()
         {
             if (_initialized) return;

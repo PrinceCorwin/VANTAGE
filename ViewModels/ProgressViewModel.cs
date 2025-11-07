@@ -488,9 +488,9 @@ namespace VANTAGE.ViewModels
 
         /// Load all activities with current filter (incremental batch loading)
 
-        /// <summary>
+        
         /// Load all activities with current filter (incremental batch loading)
-        /// </summary>
+        
         public async Task LoadAllActivitiesAsync()
         {
             const int BATCH_SIZE = 5000;

@@ -29,9 +29,6 @@ namespace VANTAGE
                 VANTAGE.Utilities.AppLogger.Initialize();
                 VANTAGE.Utilities.AppLogger.Info("Milestone starting up...", "App.OnStartup");
 
-                // ADD THE NEW LINE HERE (commented out so it only ran once):
-                DatabaseSetup.SeedTestUsers();
-
                 // Step 2: Initialize default app settings
                 SettingsManager.InitializeDefaultAppSettings();
 

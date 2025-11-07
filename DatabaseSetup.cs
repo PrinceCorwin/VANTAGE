@@ -221,13 +221,13 @@ namespace VANTAGE
                 }
 
                 // 2) Ensure audit columns exist (idempotent)
-                EnsureColumn(connection, "Deleted_Activities", "DeletedAtUtc", "TEXT NOT NULL");
+                EnsureColumn(connection, "Deleted_Activities", "DeletedDate", "TEXT NOT NULL");
                 EnsureColumn(connection, "Deleted_Activities", "DeletedBy", "TEXT NULL");
 
                 // 3) Helpful indexes
                 using (var idx = connection.CreateCommand())
                 {
-                    idx.CommandText = "CREATE INDEX IF NOT EXISTS IX_Deleted_Activities_DeletedAtUtc ON Deleted_Activities(DeletedAtUtc);";
+                    idx.CommandText = "CREATE INDEX IF NOT EXISTS IX_Deleted_Activities_DeletedDate ON Deleted_Activities(DeletedDate);";
                     idx.ExecuteNonQuery();
                 }
                 using (var uidx = connection.CreateCommand())
@@ -263,10 +263,10 @@ namespace VANTAGE
 
 
 
-        /// <summary>
+        
         /// Seed ColumnMappings table from CSV data (hardcoded from ColumnNameComparisonForAiModel.csv)
         /// This data is embedded in code for deployment - no CSV file needed at runtime
-        /// </summary>
+        
         private static void SeedColumnMappings(SqliteConnection connection)
         {
             // Check if already seeded

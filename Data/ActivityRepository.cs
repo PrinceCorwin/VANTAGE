@@ -9,7 +9,6 @@ using VANTAGE.Utilities;
 namespace VANTAGE.Data
 {
 
-
     /// Repository for Activity data access with pagination support
 
     public static class ActivityRepository
@@ -25,8 +24,9 @@ namespace VANTAGE.Data
             _mappingService = new MappingService(projectID);
         }
 
-        // ActivityRepository.cs  (inside class)
-        // inside ActivityRepository
+
+        /// Archive activities to Deleted_Activities table and then delete from Activities
+
         public static async Task<int> ArchiveAndDeleteActivitiesAsync(List<int> activityIds, string performedBy)
         {
             if (activityIds == null || activityIds.Count == 0) return 0;
@@ -38,7 +38,7 @@ namespace VANTAGE.Data
             var activityCols = await GetTableColumnsAsync(connection, "Activities", tx);
             var deletedCols = await GetTableColumnsAsync(connection, "Deleted_Activities", tx);
 
-            bool hasDeletedAt = deletedCols.Contains("DeletedAtUtc", StringComparer.OrdinalIgnoreCase);
+            bool hasDeletedAt = deletedCols.Contains("DeletedDate", StringComparer.OrdinalIgnoreCase);
             bool hasDeletedBy = deletedCols.Contains("DeletedBy", StringComparer.OrdinalIgnoreCase);
 
             var common = activityCols.Where(c => deletedCols.Contains(c, StringComparer.OrdinalIgnoreCase)).ToList();
@@ -46,11 +46,11 @@ namespace VANTAGE.Data
 
             static string Q(string n) => $"\"{n.Replace("\"", "\"\"")}\"";
             string insertCols = string.Join(", ", common.Select(Q))
-                               + (hasDeletedAt ? ", \"DeletedAtUtc\"" : "")
-                               + (hasDeletedBy ? ", \"DeletedBy\"" : "");
+                 + (hasDeletedAt ? ", \"DeletedDate\"" : "")
+                 + (hasDeletedBy ? ", \"DeletedBy\"" : "");
             string selectCols = string.Join(", ", common.Select(Q))
-                               + (hasDeletedAt ? ", @deletedAtUtc" : "")
-                               + (hasDeletedBy ? ", @deletedBy" : "");
+     + (hasDeletedAt ? ", @DeletedDate" : "")
+  + (hasDeletedBy ? ", @deletedBy" : "");
 
             string idList = string.Join(",", activityIds);
 
@@ -58,11 +58,11 @@ namespace VANTAGE.Data
             {
                 insert.Transaction = tx;
                 insert.CommandText = $@"
-            INSERT INTO Deleted_Activities ({insertCols})
-            SELECT {selectCols}
-            FROM Activities
-            WHERE ActivityID IN ({idList});";
-                if (hasDeletedAt) insert.Parameters.AddWithValue("@deletedAtUtc", DateTime.UtcNow.ToString("o"));
+   INSERT INTO Deleted_Activities ({insertCols})
+       SELECT {selectCols}
+  FROM Activities
+     WHERE ActivityID IN ({idList});";
+                if (hasDeletedAt) insert.Parameters.AddWithValue("@DeletedDate", DateTime.UtcNow.ToString("o"));
                 if (hasDeletedBy) insert.Parameters.AddWithValue("@deletedBy", performedBy ?? "Unknown");
                 await insert.ExecuteNonQueryAsync();
             }
@@ -76,7 +76,7 @@ namespace VANTAGE.Data
 
             await tx.CommitAsync();
             VANTAGE.Utilities.AppLogger.Info($"Archived & deleted {activityIds.Count} activities.",
-                "ActivityRepository.ArchiveAndDeleteActivitiesAsync", performedBy);
+             "ActivityRepository.ArchiveAndDeleteActivitiesAsync", performedBy);
             return activityIds.Count;
         }
 
@@ -96,7 +96,6 @@ namespace VANTAGE.Data
         }
 
 
-
         /// Get current mapping service (creates default if not initialized)
 
         private static MappingService GetMappingService()
@@ -107,6 +106,7 @@ namespace VANTAGE.Data
             }
             return _mappingService;
         }
+
 
         /// Update an existing activity in the database
 
@@ -123,53 +123,53 @@ namespace VANTAGE.Data
         // NEW: Use NewVantage column names directly
         command.CommandText = @"
          UPDATE Activities SET
-            HexNO = @HexNO,
-                  CompType = @CompType,
-                     PhaseCategory = @PhaseCategory,
-            ROCStep = @ROCStep,
+          HexNO = @HexNO,
+        CompType = @CompType,
+                  PhaseCategory = @PhaseCategory,
+        ROCStep = @ROCStep,
            Notes = @Notes,
-                Area = @Area,
-                  Aux1 = @Aux1,
-                Aux2 = @Aux2,
-            Aux3 = @Aux3,
-        Description = @Description,
-                  PhaseCode = @PhaseCode,
-                     ProjectID = @ProjectID,
-                SchedActNO = @SchedActNO,
-           Service = @Service,
-                  ShopField = @ShopField,
-        SubArea = @SubArea,
-                System = @System,
-                TagNO = @TagNO,
-                 WorkPackage = @WorkPackage,
-                        UDF1 = @UDF1,
-            UDF2 = @UDF2,
-                UDF3 = @UDF3,
-                UDF4 = @UDF4,
-                UDF5 = @UDF5,
-               UDF6 = @UDF6,
-           UDF7 = @UDF7,
-            UDF8 = @UDF8,
+         Area = @Area,
+      Aux1 = @Aux1,
+   Aux2 = @Aux2,
+                Aux3 = @Aux3,
+           Description = @Description,
+               PhaseCode = @PhaseCode,
+           ProjectID = @ProjectID,
+      SchedActNO = @SchedActNO,
+      Service = @Service,
+          ShopField = @ShopField,
+      SubArea = @SubArea,
+       System = @System,
+           TagNO = @TagNO,
+    WorkPackage = @WorkPackage,
+      UDF1 = @UDF1,
+        UDF2 = @UDF2,
+ UDF3 = @UDF3,
+   UDF4 = @UDF4,
+        UDF5 = @UDF5,
+        UDF6 = @UDF6,
+UDF7 = @UDF7,
+      UDF8 = @UDF8,
          UDF9 = @UDF9,
-                    UDF10 = @UDF10,
-                AssignedTo = @AssignedTo,
-                    LastModifiedBy = @LastModifiedBy,
-               UDF14 = @UDF14,
-               UDF15 = @UDF15,
-        UDF16 = @UDF16,
-                  UDF17 = @UDF17,
-                     UDF18 = @UDF18,
-             UDF20 = @UDF20,
-           BudgetMHs = @BudgetMHs,
-                 EarnQtyEntry = @EarnQtyEntry,
-              PercentEntry = @PercentEntry,
-              Quantity = @Quantity,
-               UOM = @UOM,
-                  PipeSize1 = @PipeSize1,
-           PipeSize2 = @PipeSize2,
-                   ClientBudget = @ClientBudget,
-         ClientCustom3 = @ClientCustom3
-                  WHERE ActivityID = @ActivityID";
+       UDF10 = @UDF10,
+              AssignedTo = @AssignedTo,
+ LastModifiedBy = @LastModifiedBy,
+        UDF14 = @UDF14,
+  UDF15 = @UDF15,
+     UDF16 = @UDF16,
+         UDF17 = @UDF17,
+             UDF18 = @UDF18,
+      UDF20 = @UDF20,
+        BudgetMHs = @BudgetMHs,
+           EarnQtyEntry = @EarnQtyEntry,
+   PercentEntry = @PercentEntry,
+   Quantity = @Quantity,
+        UOM = @UOM,
+     PipeSize1 = @PipeSize1,
+ PipeSize2 = @PipeSize2,
+   ClientBudget = @ClientBudget,
+            ClientCustom3 = @ClientCustom3
+       WHERE ActivityID = @ActivityID";
 
         // Add parameters with NEW property names
         command.Parameters.AddWithValue("@ActivityID", activity.ActivityID);
@@ -238,6 +238,7 @@ namespace VANTAGE.Data
             }
         }
 
+
         /// Get list of valid usernames from Users table
 
         private static HashSet<string> GetValidUsernames()
@@ -266,21 +267,22 @@ namespace VANTAGE.Data
             return validUsers;
         }
 
+
         /// Get total count of activities in database
 
         public static async Task<int> GetTotalCountAsync()
         {
             return await Task.Run(() =>
-  {
-      using var connection = DatabaseSetup.GetConnection();
-      connection.Open();
+                {
+                    using var connection = DatabaseSetup.GetConnection();
+                    connection.Open();
 
-      var command = connection.CreateCommand();
-      command.CommandText = "SELECT COUNT(*) FROM Activities";
+                    var command = connection.CreateCommand();
+                    command.CommandText = "SELECT COUNT(*) FROM Activities";
 
-      var result = command.ExecuteScalar();
-      return Convert.ToInt32(result);
-  });
+                    var result = command.ExecuteScalar();
+                    return Convert.ToInt32(result);
+                });
         }
 
 
@@ -291,237 +293,239 @@ namespace VANTAGE.Data
         /// <param name="whereClause">Optional SQL WHERE clause for filtering</param>
         /// <returns>Tuple of (activities list, total filtered count)</returns>
         public static async Task<(List<Activity> activities, int totalCount)> GetPageAsync(
-          int pageNumber,
-       int pageSize,
+            int pageNumber,
+            int pageSize,
     string whereClause = null)
         {
             return await Task.Run(() =>
-               {
-                   try
-                   {
-                       using var connection = DatabaseSetup.GetConnection();
-                       connection.Open();
+                 {
+                     try
+                     {
+                         using var connection = DatabaseSetup.GetConnection();
+                         connection.Open();
 
-                       // Build WHERE clause
-                       string whereSQL = string.IsNullOrWhiteSpace(whereClause) ? "" : whereClause;
+                         // Build WHERE clause
+                         string whereSQL = string.IsNullOrWhiteSpace(whereClause) ? "" : whereClause;
 
-                       // Get total count with filter
-                       var countCommand = connection.CreateCommand();
-                       countCommand.CommandText = $"SELECT COUNT(*) FROM Activities {whereSQL}";
-                       var totalCount = (long)countCommand.ExecuteScalar();
+                         // Get total count with filter
+                         var countCommand = connection.CreateCommand();
+                         countCommand.CommandText = $"SELECT COUNT(*) FROM Activities {whereSQL}";
+                         var totalCount = (long)countCommand.ExecuteScalar();
 
-                       // Get valid usernames for validation
-                       var validUsernames = GetValidUsernames();
+                         // Get valid usernames for validation
+                         var validUsernames = GetValidUsernames();
 
-                       // Calculate offset
-                       int offset = pageNumber * pageSize;
+                         // Calculate offset
+                         int offset = pageNumber * pageSize;
 
-                       System.Diagnostics.Debug.WriteLine($"PAGING DEBUG -> pageNumber={pageNumber}, pageSize={pageSize}, offset={offset}");
+                         System.Diagnostics.Debug.WriteLine($"PAGING DEBUG -> pageNumber={pageNumber}, pageSize={pageSize}, offset={offset}");
 
-                       // NEW: Query using NewVantage column names
-                       var command = connection.CreateCommand();
-                       command.CommandText = $@"SELECT * FROM Activities {whereSQL} ORDER BY UniqueID LIMIT @pageSize OFFSET @offset";
-                       command.Parameters.AddWithValue("@pageSize", pageSize);
-                       command.Parameters.AddWithValue("@offset", offset);
-                       System.Diagnostics.Debug.WriteLine( $"SQL PAGE SELECT -> LIMIT {pageSize} OFFSET {offset} | WHERE='{whereSQL.Replace("\n", " ").Replace("\r", "")}'"
-                    );
+                         // NEW: Query using NewVantage column names
+                         var command = connection.CreateCommand();
+                         command.CommandText = $@"SELECT * FROM Activities {whereSQL} ORDER BY UniqueID LIMIT @pageSize OFFSET @offset";
+                         command.Parameters.AddWithValue("@pageSize", pageSize);
+                         command.Parameters.AddWithValue("@offset", offset);
+                         System.Diagnostics.Debug.WriteLine(
+                                $"SQL PAGE SELECT -> LIMIT {pageSize} OFFSET {offset} | WHERE='{whereSQL.Replace("\n", " ").Replace("\r", "")}'"
+                                 );
 
-                       var activities = new List<Activity>();
+                         var activities = new List<Activity>();
 
-                       using var reader = command.ExecuteReader();
-                       while (reader.Read())
-                       {
-                           // Helper local functions to safely read by column name
-                           string GetStringSafe(string name)
-                           {
-                               try
-                               {
-                                   int i = reader.GetOrdinal(name);
-                                   return reader.IsDBNull(i) ? "" : reader.GetString(i);
-                               }
-                               catch
-                               {
-                                   return "";
-                               }
-                           }
-                           DateTime? GetDateTimeSafe(string name)
-                           {
-                               try
-                               {
-                                   int i = reader.GetOrdinal(name);
-                                   if (reader.IsDBNull(i)) return null;
-                                   var s = reader.GetString(i);
-                                   if (DateTime.TryParse(s, out var dt)) return dt.Date;
-                                   return null;
-                               }
-                               catch
-                               {
-                                   return null;
-                               }
-                           }
-                           int GetIntSafe(string name)
-                           {
-                               try
-                               {
-                                   int i = reader.GetOrdinal(name);
-                                   return reader.IsDBNull(i) ? 0 : reader.GetInt32(i);
-                               }
-                               catch
-                               {
-                                   return 0;
-                               }
-                           }
+                         using var reader = command.ExecuteReader();
+                         while (reader.Read())
+                         {
+                             // Helper local functions to safely read by column name
+                             string GetStringSafe(string name)
+                             {
+                                 try
+                                 {
+                                     int i = reader.GetOrdinal(name);
+                                     return reader.IsDBNull(i) ? "" : reader.GetString(i);
+                                 }
+                                 catch
+                                 {
+                                     return "";
+                                 }
+                             }
+                             DateTime? GetDateTimeSafe(string name)
+                             {
+                                 try
+                                 {
+                                     int i = reader.GetOrdinal(name);
+                                     if (reader.IsDBNull(i)) return null;
+                                     var s = reader.GetString(i);
+                                     if (DateTime.TryParse(s, out var dt)) return dt.Date;
+                                     return null;
+                                 }
+                                 catch
+                                 {
+                                     return null;
+                                 }
+                             }
+                             int GetIntSafe(string name)
+                             {
+                                 try
+                                 {
+                                     int i = reader.GetOrdinal(name);
+                                     return reader.IsDBNull(i) ? 0 : reader.GetInt32(i);
+                                 }
+                                 catch
+                                 {
+                                     return 0;
+                                 }
+                             }
 
-                           double GetDoubleSafe(string name)
-                           {
-                               try
-                               {
-                                   int i = reader.GetOrdinal(name);
-                                   return reader.IsDBNull(i) ? 0 : reader.GetDouble(i);
-                               }
-                               catch
-                               {
-                                   return 0;
-                               }
-                           }
+                             double GetDoubleSafe(string name)
+                             {
+                                 try
+                                 {
+                                     int i = reader.GetOrdinal(name);
+                                     return reader.IsDBNull(i) ? 0 : reader.GetDouble(i);
+                                 }
+                                 catch
+                                 {
+                                     return 0;
+                                 }
+                             }
 
-                           int GetInt32FromObj(string name)
-                           {
-                               try
-                               {
-                                   int i = reader.GetOrdinal(name);
-                                   return reader.IsDBNull(i) ? 0 : Convert.ToInt32(reader.GetValue(i));
-                               }
-                               catch
-                               {
-                                   return 0;
-                               }
-                           }
+                             int GetInt32FromObj(string name)
+                             {
+                                 try
+                                 {
+                                     int i = reader.GetOrdinal(name);
+                                     return reader.IsDBNull(i) ? 0 : Convert.ToInt32(reader.GetValue(i));
+                                 }
+                                 catch
+                                 {
+                                     return 0;
+                                 }
+                             }
 
-                           // NEW: Read using NewVantage column names
-                           var activity = new Activity
-                           {
-                               ActivityID = GetIntSafe("ActivityID"),
-                               HexNO = GetIntSafe("HexNO"),
+                             // NEW: Read using NewVantage column names
+                             var activity = new Activity
+                             {
+                                 ActivityID = GetIntSafe("ActivityID"),
+                                 HexNO = GetIntSafe("HexNO"),
 
-                               // Categories
-                               CompType = GetStringSafe("CompType"),
-                               PhaseCategory = GetStringSafe("PhaseCategory"),
-                               ROCStep = GetStringSafe("ROCStep"),
+                                 // Categories
+                                 CompType = GetStringSafe("CompType"),
+                                 PhaseCategory = GetStringSafe("PhaseCategory"),
+                                 ROCStep = GetStringSafe("ROCStep"),
 
-                               // Drawings
-                               DwgNO = GetStringSafe("DwgNO"),
-                               RevNO = GetStringSafe("RevNO"),
-                               SecondDwgNO = GetStringSafe("SecondDwgNO"),
-                               ShtNO = GetStringSafe("ShtNO"),
+                                 // Drawings
+                                 DwgNO = GetStringSafe("DwgNO"),
+                                 RevNO = GetStringSafe("RevNO"),
+                                 SecondDwgNO = GetStringSafe("SecondDwgNO"),
+                                 ShtNO = GetStringSafe("ShtNO"),
 
-                               // Notes
-                               Notes = GetStringSafe("Notes"),
+                                 // Notes
+                                 Notes = GetStringSafe("Notes"),
 
-                               // Schedule
-                               SecondActno = GetStringSafe("SecondActno"),
-                               SchStart = GetDateTimeSafe("SchStart"),
-                               SchFinish = GetDateTimeSafe("SchFinish"),
+                                 // Schedule
+                                 SecondActno = GetStringSafe("SecondActno"),
+                                 SchStart = GetDateTimeSafe("SchStart"),
+                                 SchFinish = GetDateTimeSafe("SchFinish"),
 
-                               // Tags / Aux
-                               Aux1 = GetStringSafe("Aux1"),
-                               Aux2 = GetStringSafe("Aux2"),
-                               Aux3 = GetStringSafe("Aux3"),
-                               Area = GetStringSafe("Area"),
-                               ChgOrdNO = GetStringSafe("ChgOrdNO"),
-                               Description = GetStringSafe("Description"),
-                               EqmtNO = GetStringSafe("EqmtNO"),
-                               Estimator = GetStringSafe("Estimator"),
-                               InsulType = GetStringSafe("InsulType"),
-                               LineNO = GetStringSafe("LineNO"),
-                               MtrlSpec = GetStringSafe("MtrlSpec"),
-                               PhaseCode = GetStringSafe("PhaseCode"),
-                               PaintCode = GetStringSafe("PaintCode"),
-                               PipeGrade = GetStringSafe("PipeGrade"),
-                               ProjectID = GetStringSafe("ProjectID"),
-                               RFINO = GetStringSafe("RFINO"),
-                               SchedActNO = GetStringSafe("SchedActNO"),
-                               Service = GetStringSafe("Service"),
-                               ShopField = GetStringSafe("ShopField"),
-                               SubArea = GetStringSafe("SubArea"),
-                               System = GetStringSafe("System"),
-                               SystemNO = GetStringSafe("SystemNO"),
-                               TagNO = GetStringSafe("TagNO"),
-                               HtTrace = GetStringSafe("HtTrace"),
-                               WorkPackage = GetStringSafe("WorkPackage"),
+                                 // Tags / Aux
+                                 Aux1 = GetStringSafe("Aux1"),
+                                 Aux2 = GetStringSafe("Aux2"),
+                                 Aux3 = GetStringSafe("Aux3"),
+                                 Area = GetStringSafe("Area"),
+                                 ChgOrdNO = GetStringSafe("ChgOrdNO"),
+                                 Description = GetStringSafe("Description"),
+                                 EqmtNO = GetStringSafe("EqmtNO"),
+                                 Estimator = GetStringSafe("Estimator"),
+                                 InsulType = GetStringSafe("InsulType"),
+                                 LineNO = GetStringSafe("LineNO"),
+                                 MtrlSpec = GetStringSafe("MtrlSpec"),
+                                 PhaseCode = GetStringSafe("PhaseCode"),
+                                 PaintCode = GetStringSafe("PaintCode"),
+                                 PipeGrade = GetStringSafe("PipeGrade"),
+                                 ProjectID = GetStringSafe("ProjectID"),
+                                 RFINO = GetStringSafe("RFINO"),
+                                 SchedActNO = GetStringSafe("SchedActNO"),
+                                 Service = GetStringSafe("Service"),
+                                 ShopField = GetStringSafe("ShopField"),
+                                 SubArea = GetStringSafe("SubArea"),
+                                 System = GetStringSafe("System"),
+                                 SystemNO = GetStringSafe("SystemNO"),
+                                 TagNO = GetStringSafe("TagNO"),
+                                 HtTrace = GetStringSafe("HtTrace"),
+                                 WorkPackage = GetStringSafe("WorkPackage"),
 
-                               XRay = GetDoubleSafe("XRay"),
+                                 XRay = GetDoubleSafe("XRay"),
 
-                               // Trigger
-                               DateTrigger = GetInt32FromObj("DateTrigger"),
+                                 // Trigger
+                                 DateTrigger = GetInt32FromObj("DateTrigger"),
 
-                               // UDFs
-                               UDF1 = GetStringSafe("UDF1"),
-                               UDF2 = GetStringSafe("UDF2"),
-                               UDF3 = GetStringSafe("UDF3"),
-                               UDF4 = GetStringSafe("UDF4"),
-                               UDF5 = GetStringSafe("UDF5"),
-                               UDF6 = GetStringSafe("UDF6"),
-                               UDF7 = GetIntSafe("UDF7"),
-                               UDF8 = GetStringSafe("UDF8"),
-                               UDF9 = GetStringSafe("UDF9"),
-                               UDF10 = GetStringSafe("UDF10"),
-                               AssignedTo = string.IsNullOrWhiteSpace(GetStringSafe("AssignedTo")) ? "Unassigned" : (validUsernames.Contains(GetStringSafe("AssignedTo")) ? GetStringSafe("AssignedTo") : "Unassigned"),
-                               LastModifiedBy = GetStringSafe("LastModifiedBy"),
-                               CreatedBy = GetStringSafe("CreatedBy"),
-                               UDF14 = GetStringSafe("UDF14"),
-                               UDF15 = GetStringSafe("UDF15"),
-                               UDF16 = GetStringSafe("UDF16"),
-                               UDF17 = GetStringSafe("UDF17"),
-                               UDF18 = GetStringSafe("UDF18"),
-                               UniqueID = GetStringSafe("UniqueID"),
-                               UDF20 = GetStringSafe("UDF20"),
+                                 // UDFs
+                                 UDF1 = GetStringSafe("UDF1"),
+                                 UDF2 = GetStringSafe("UDF2"),
+                                 UDF3 = GetStringSafe("UDF3"),
+                                 UDF4 = GetStringSafe("UDF4"),
+                                 UDF5 = GetStringSafe("UDF5"),
+                                 UDF6 = GetStringSafe("UDF6"),
+                                 UDF7 = GetIntSafe("UDF7"),
+                                 UDF8 = GetStringSafe("UDF8"),
+                                 UDF9 = GetStringSafe("UDF9"),
+                                 UDF10 = GetStringSafe("UDF10"),
+                                 AssignedTo = string.IsNullOrWhiteSpace(GetStringSafe("AssignedTo")) ? "Unassigned" : (validUsernames.Contains(GetStringSafe("AssignedTo")) ? GetStringSafe("AssignedTo") : "Unassigned"),
+                                 LastModifiedBy = GetStringSafe("LastModifiedBy"),
+                                 CreatedBy = GetStringSafe("CreatedBy"),
+                                 UDF14 = GetStringSafe("UDF14"),
+                                 UDF15 = GetStringSafe("UDF15"),
+                                 UDF16 = GetStringSafe("UDF16"),
+                                 UDF17 = GetStringSafe("UDF17"),
+                                 UDF18 = GetStringSafe("UDF18"),
+                                 UniqueID = GetStringSafe("UniqueID"),
+                                 UDF20 = GetStringSafe("UDF20"),
 
-                               // Values
-                               BaseUnit = GetDoubleSafe("BaseUnit"),
-                               BudgetMHs = GetDoubleSafe("BudgetMHs"),
-                               BudgetHoursGroup = GetDoubleSafe("BudgetHoursGroup"),
-                               BudgetHoursROC = GetDoubleSafe("BudgetHoursROC"),
-                               EarnedMHsRoc = GetDoubleSafe("EarnedMHsRoc"),
-                               EarnQtyEntry = GetDoubleSafe("EarnQtyEntry"),
-                               PercentEntry = GetDoubleSafe("PercentEntry"),
-                               Quantity = GetDoubleSafe("Quantity"),
-                               UOM = GetStringSafe("UOM"),
+                                 // Values
+                                 BaseUnit = GetDoubleSafe("BaseUnit"),
+                                 BudgetMHs = GetDoubleSafe("BudgetMHs"),
+                                 BudgetHoursGroup = GetDoubleSafe("BudgetHoursGroup"),
+                                 BudgetHoursROC = GetDoubleSafe("BudgetHoursROC"),
+                                 EarnedMHsRoc = GetDoubleSafe("EarnedMHsRoc"),
+                                 EarnQtyEntry = GetDoubleSafe("EarnQtyEntry"),
+                                 PercentEntry = GetDoubleSafe("PercentEntry"),
+                                 Quantity = GetDoubleSafe("Quantity"),
+                                 UOM = GetStringSafe("UOM"),
 
-                               // Equipment
-                               EquivQTY = GetDoubleSafe("EquivQTY"),
-                               EquivUOM = GetStringSafe("EquivUOM"),
+                                 // Equipment
+                                 EquivQTY = GetDoubleSafe("EquivQTY"),
+                                 EquivUOM = GetStringSafe("EquivUOM"),
 
-                               // ROC
-                               ROCID = GetDoubleSafe("ROCID"),
-                               ROCPercent = GetDoubleSafe("ROCPercent"),
-                               ROCBudgetQTY = GetDoubleSafe("ROCBudgetQTY"),
+                                 // ROC
+                                 ROCID = GetDoubleSafe("ROCID"),
+                                 ROCPercent = GetDoubleSafe("ROCPercent"),
+                                 ROCBudgetQTY = GetDoubleSafe("ROCBudgetQTY"),
 
-                               // Pipe
-                               PipeSize1 = GetDoubleSafe("PipeSize1"),
-                               PipeSize2 = GetDoubleSafe("PipeSize2"),
+                                 // Pipe
+                                 PipeSize1 = GetDoubleSafe("PipeSize1"),
+                                 PipeSize2 = GetDoubleSafe("PipeSize2"),
 
-                               // Previous
-                               PrevEarnMHs = GetDoubleSafe("PrevEarnMHs"),
-                               PrevEarnQTY = GetDoubleSafe("PrevEarnQTY"),
+                                 // Previous
+                                 PrevEarnMHs = GetDoubleSafe("PrevEarnMHs"),
+                                 PrevEarnQTY = GetDoubleSafe("PrevEarnQTY"),
 
-                               // Client
-                               ClientEquivQty = GetDoubleSafe("ClientEquivQty"),
-                               ClientBudget = GetDoubleSafe("ClientBudget"),
-                               ClientCustom3 = GetDoubleSafe("ClientCustom3")
-                           };
-                           activities.Add(activity);
-                       }
+                                 // Client
+                                 ClientEquivQty = GetDoubleSafe("ClientEquivQty"),
+                                 ClientBudget = GetDoubleSafe("ClientBudget"),
+                                 ClientCustom3 = GetDoubleSafe("ClientCustom3")
+                             };
+                             activities.Add(activity);
+                         }
 
-                       // Return tuple with both activities and totalCount
-                       return (activities, (int)totalCount);
-                   }
-                   catch (Exception ex)
-                   {
-                       throw;
-                   }
-               });
+                         // Return tuple with both activities and totalCount
+                         return (activities, (int)totalCount);
+                     }
+                     catch (Exception ex)
+                     {
+                         throw;
+                     }
+                 });
         }
+
 
         /// Get ALL activities with optional filtering (no pagination)
         /// Use this when pagination is disabled and Syncfusion handles virtualization
@@ -529,280 +533,287 @@ namespace VANTAGE.Data
         /// <param name="whereClause">Optional SQL WHERE clause for filtering</param>
         /// <returns>Tuple of (all activities list, total count)</returns>
         public static async Task<(List<Activity> activities, int totalCount)> GetAllActivitiesAsync(
-            string whereClause = null)
+                   string whereClause = null)
         {
             return await Task.Run(() =>
-            {
-                try
-                {
-                    using var connection = DatabaseSetup.GetConnection();
-                    connection.Open();
+                 {
+                     try
+                     {
+                         using var connection = DatabaseSetup.GetConnection();
+                         connection.Open();
 
-                    // Build WHERE clause (same logic as GetPageAsync)
-                    string whereSQL = string.IsNullOrWhiteSpace(whereClause)
-                        ? ""
-                        : whereClause.Trim();
+                         // Build WHERE clause (same logic as GetPageAsync)
+                         string whereSQL = string.IsNullOrWhiteSpace(whereClause)
+                   ? ""
+                    : whereClause.Trim();
 
-                    if (!string.IsNullOrWhiteSpace(whereSQL) &&
-                        !whereSQL.TrimStart().StartsWith("WHERE", StringComparison.OrdinalIgnoreCase))
-                    {
-                        whereSQL = "WHERE " + whereSQL;
-                    }
+                         if (!string.IsNullOrWhiteSpace(whereSQL) &&
+                    !whereSQL.TrimStart().StartsWith("WHERE", StringComparison.OrdinalIgnoreCase))
+                         {
+                             whereSQL = "WHERE " + whereSQL;
+                         }
 
-                    // Get total count with filter
-                    var countCommand = connection.CreateCommand();
-                    countCommand.CommandText = $"SELECT COUNT(*) FROM Activities {whereSQL}";
-                    var totalCount = (long)countCommand.ExecuteScalar();
+                         // Get total count with filter
+                         var countCommand = connection.CreateCommand();
+                         countCommand.CommandText = $"SELECT COUNT(*) FROM Activities {whereSQL}";
+                         var totalCount = (long)countCommand.ExecuteScalar();
 
-                    System.Diagnostics.Debug.WriteLine(
-                        $"NO PAGINATION -> Loading ALL {totalCount} records | WHERE='{whereSQL.Replace("\n", " ").Replace("\r", "")}'"
-                    );
+                         System.Diagnostics.Debug.WriteLine(
+                       $"NO PAGINATION -> Loading ALL {totalCount} records | WHERE='{whereSQL.Replace("\n", " ").Replace("\r", "")}'"
+                          );
 
-                    // Get valid usernames for validation
-                    var validUsernames = GetValidUsernames();
+                         // Get valid usernames for validation
+                         var validUsernames = GetValidUsernames();
 
-                    // Query ALL activities (no LIMIT/OFFSET - this is the key difference!)
-                    var command = connection.CreateCommand();
-                    command.CommandText = $@"
-                SELECT *
-                FROM Activities
-                {whereSQL}
-                ORDER BY UniqueID";
+                         // Query ALL activities (no LIMIT/OFFSET - this is the key difference!)
+                         var command = connection.CreateCommand();
+                         command.CommandText = $@"
+                                    SELECT *
+                                        FROM Activities
+                                    {whereSQL}
+                                        ORDER BY UniqueID";
 
-                    var activities = new List<Activity>();
+                         var activities = new List<Activity>();
 
-                    using var reader = command.ExecuteReader();
-                    while (reader.Read())
-                    {
-                        // Use the EXACT same helper functions as GetPageAsync
-                        string GetStringSafe(string name)
-                        {
-                            try
-                            {
-                                int i = reader.GetOrdinal(name);
-                                return reader.IsDBNull(i) ? "" : reader.GetString(i);
-                            }
-                            catch
-                            {
-                                return "";
-                            }
-                        }
+                         using var reader = command.ExecuteReader();
+                         while (reader.Read())
+                         {
+                             // Use the EXACT same helper functions as GetPageAsync
+                             string GetStringSafe(string name)
+                             {
+                                 try
+                                 {
+                                     int i = reader.GetOrdinal(name);
+                                     return reader.IsDBNull(i) ? "" : reader.GetString(i);
+                                 }
+                                 catch
+                                 {
+                                     return "";
+                                 }
+                             }
 
-                        DateTime? GetDateTimeSafe(string name)
-                        {
-                            try
-                            {
-                                int i = reader.GetOrdinal(name);
-                                if (reader.IsDBNull(i)) return null;
-                                var s = reader.GetString(i);
-                                if (DateTime.TryParse(s, out var dt)) return dt.Date;
-                                return null;
-                            }
-                            catch
-                            {
-                                return null;
-                            }
-                        }
+                             DateTime? GetDateTimeSafe(string name)
+                             {
+                                 try
+                                 {
+                                     int i = reader.GetOrdinal(name);
+                                     if (reader.IsDBNull(i)) return null;
+                                     var s = reader.GetString(i);
+                                     if (DateTime.TryParse(s, out var dt)) return dt.Date;
+                                     return null;
+                                 }
+                                 catch
+                                 {
+                                     return null;
+                                 }
+                             }
 
-                        int GetIntSafe(string name)
-                        {
-                            try
-                            {
-                                int i = reader.GetOrdinal(name);
-                                return reader.IsDBNull(i) ? 0 : reader.GetInt32(i);
-                            }
-                            catch
-                            {
-                                return 0;
-                            }
-                        }
+                             int GetIntSafe(string name)
+                             {
+                                 try
+                                 {
+                                     int i = reader.GetOrdinal(name);
+                                     return reader.IsDBNull(i) ? 0 : reader.GetInt32(i);
+                                 }
+                                 catch
+                                 {
+                                     return 0;
+                                 }
+                             }
 
-                        double GetDoubleSafe(string name)
-                        {
-                            try
-                            {
-                                int i = reader.GetOrdinal(name);
-                                return reader.IsDBNull(i) ? 0 : reader.GetDouble(i);
-                            }
-                            catch
-                            {
-                                return 0;
-                            }
-                        }
+                             double GetDoubleSafe(string name)
+                             {
+                                 try
+                                 {
+                                     int i = reader.GetOrdinal(name);
+                                     return reader.IsDBNull(i) ? 0 : reader.GetDouble(i);
+                                 }
+                                 catch
+                                 {
+                                     return 0;
+                                 }
+                             }
 
-                        int GetInt32FromObj(string name)
-                        {
-                            try
-                            {
-                                int i = reader.GetOrdinal(name);
-                                return reader.IsDBNull(i) ? 0 : Convert.ToInt32(reader.GetValue(i));
-                            }
-                            catch
-                            {
-                                return 0;
-                            }
-                        }
+                             int GetInt32FromObj(string name)
+                             {
+                                 try
+                                 {
+                                     int i = reader.GetOrdinal(name);
+                                     return reader.IsDBNull(i) ? 0 : Convert.ToInt32(reader.GetValue(i));
+                                 }
+                                 catch
+                                 {
+                                     return 0;
+                                 }
+                             }
 
-                        // Build activity object (EXACT same structure as GetPageAsync)
-                        var activity = new Activity
-                        {
-                            ActivityID = GetIntSafe("ActivityID"),
-                            HexNO = GetIntSafe("HexNO"),
+                             // Build activity object (EXACT same structure as GetPageAsync)
+                             var activity = new Activity
+                             {
+                                 ActivityID = GetIntSafe("ActivityID"),
+                                 HexNO = GetIntSafe("HexNO"),
 
-                            // Schedule dates
-                            SchStart = GetDateTimeSafe("SchStart"),
-                            SchFinish = GetDateTimeSafe("SchFinish"),
-                            ProgDate = GetDateTimeSafe("ProgDate"),
-                            WeekEndDate = GetDateTimeSafe("WeekEndDate"),
-                            AzureUploadDate = GetDateTimeSafe("AzureUploadDate"),
+                                 // Schedule dates
+                                 SchStart = GetDateTimeSafe("SchStart"),
+                                 SchFinish = GetDateTimeSafe("SchFinish"),
+                                 ProgDate = GetDateTimeSafe("ProgDate"),
+                                 WeekEndDate = GetDateTimeSafe("WeekEndDate"),
+                                 AzureUploadDate = GetDateTimeSafe("AzureUploadDate"),
 
-                            // Text fields - Category
-                            Area = GetStringSafe("Area"),
-                            Aux1 = GetStringSafe("Aux1"),
-                            Aux2 = GetStringSafe("Aux2"),
-                            Aux3 = GetStringSafe("Aux3"),
-                            ChgOrdNO = GetStringSafe("ChgOrdNO"),
-                            CompType = GetStringSafe("CompType"),
-                            Description = GetStringSafe("Description"),
-                            DwgNO = GetStringSafe("DwgNO"),
-                            EqmtNO = GetStringSafe("EqmtNO"),
-                            Estimator = GetStringSafe("Estimator"),
-                            HtTrace = GetStringSafe("HtTrace"),
-                            InsulType = GetStringSafe("InsulType"),
-                            LineNO = GetStringSafe("LineNO"),
-                            MtrlSpec = GetStringSafe("MtrlSpec"),
-                            Notes = GetStringSafe("Notes"),
-                            PaintCode = GetStringSafe("PaintCode"),
-                            PhaseCategory = GetStringSafe("PhaseCategory"),
-                            PhaseCode = GetStringSafe("PhaseCode"),
-                            PipeGrade = GetStringSafe("PipeGrade"),
-                            ProjectID = GetStringSafe("ProjectID"),
-                            RevNO = GetStringSafe("RevNO"),
-                            RFINO = GetStringSafe("RFINO"),
-                            ROCStep = GetStringSafe("ROCStep"),
-                            SchedActNO = GetStringSafe("SchedActNO"),
-                            SecondActno = GetStringSafe("SecondActno"),
-                            SecondDwgNO = GetStringSafe("SecondDwgNO"),
-                            Service = GetStringSafe("Service"),
-                            ShopField = GetStringSafe("ShopField"),
-                            ShtNO = GetStringSafe("ShtNO"),
-                            SubArea = GetStringSafe("SubArea"),
-                            System = GetStringSafe("System"),
-                            SystemNO = GetStringSafe("SystemNO"),
-                            TagNO = GetStringSafe("TagNO"),
-                            WorkPackage = GetStringSafe("WorkPackage"),
-                            DateTrigger = GetIntSafe("DateTrigger"),
-                            XRay = GetIntSafe("XRay"),
+                                 // Text fields - Category
+                                 Area = GetStringSafe("Area"),
+                                 Aux1 = GetStringSafe("Aux1"),
+                                 Aux2 = GetStringSafe("Aux2"),
+                                 Aux3 = GetStringSafe("Aux3"),
+                                 ChgOrdNO = GetStringSafe("ChgOrdNO"),
+                                 CompType = GetStringSafe("CompType"),
+                                 Description = GetStringSafe("Description"),
+                                 DwgNO = GetStringSafe("DwgNO"),
+                                 EqmtNO = GetStringSafe("EqmtNO"),
+                                 Estimator = GetStringSafe("Estimator"),
+                                 HtTrace = GetStringSafe("HtTrace"),
+                                 InsulType = GetStringSafe("InsulType"),
+                                 LineNO = GetStringSafe("LineNO"),
+                                 MtrlSpec = GetStringSafe("MtrlSpec"),
+                                 Notes = GetStringSafe("Notes"),
+                                 PaintCode = GetStringSafe("PaintCode"),
+                                 PhaseCategory = GetStringSafe("PhaseCategory"),
+                                 PhaseCode = GetStringSafe("PhaseCode"),
+                                 PipeGrade = GetStringSafe("PipeGrade"),
+                                 ProjectID = GetStringSafe("ProjectID"),
+                                 RevNO = GetStringSafe("RevNO"),
+                                 RFINO = GetStringSafe("RFINO"),
+                                 ROCStep = GetStringSafe("ROCStep"),
+                                 SchedActNO = GetStringSafe("SchedActNO"),
+                                 SecondActno = GetStringSafe("SecondActno"),
+                                 SecondDwgNO = GetStringSafe("SecondDwgNO"),
+                                 Service = GetStringSafe("Service"),
+                                 ShopField = GetStringSafe("ShopField"),
+                                 ShtNO = GetStringSafe("ShtNO"),
+                                 SubArea = GetStringSafe("SubArea"),
+                                 System = GetStringSafe("System"),
+                                 SystemNO = GetStringSafe("SystemNO"),
+                                 TagNO = GetStringSafe("TagNO"),
+                                 WorkPackage = GetStringSafe("WorkPackage"),
+                                 DateTrigger = GetIntSafe("DateTrigger"),
+                                 XRay = GetIntSafe("XRay"),
 
-                            // UDFs
-                            UDF1 = GetStringSafe("UDF1"),
-                            UDF2 = GetStringSafe("UDF2"),
-                            UDF3 = GetStringSafe("UDF3"),
-                            UDF4 = GetStringSafe("UDF4"),
-                            UDF5 = GetStringSafe("UDF5"),
-                            UDF6 = GetStringSafe("UDF6"),
-                            UDF7 = GetIntSafe("UDF7"),
-                            UDF8 = GetStringSafe("UDF8"),
-                            UDF9 = GetStringSafe("UDF9"),
-                            UDF10 = GetStringSafe("UDF10"),
-                            AssignedTo = string.IsNullOrWhiteSpace(GetStringSafe("AssignedTo")) || GetStringSafe("AssignedTo") == "Unassigned"
-                                ? "Unassigned" : (validUsernames.Contains(GetStringSafe("AssignedTo")) ? GetStringSafe("AssignedTo") : "Unassigned"),
-                            LastModifiedBy = GetStringSafe("LastModifiedBy"),
-                            CreatedBy = GetStringSafe("CreatedBy"),
-                            UDF14 = GetStringSafe("UDF14"),
-                            UDF15 = GetStringSafe("UDF15"),
-                            UDF16 = GetStringSafe("UDF16"),
-                            UDF17 = GetStringSafe("UDF17"),
-                            UDF18 = GetStringSafe("UDF18"),
-                            UniqueID = GetStringSafe("UniqueID"),
-                            UDF20 = GetStringSafe("UDF20"),
+                                 // UDFs
+                                 UDF1 = GetStringSafe("UDF1"),
+                                 UDF2 = GetStringSafe("UDF2"),
+                                 UDF3 = GetStringSafe("UDF3"),
+                                 UDF4 = GetStringSafe("UDF4"),
+                                 UDF5 = GetStringSafe("UDF5"),
+                                 UDF6 = GetStringSafe("UDF6"),
+                                 UDF7 = GetIntSafe("UDF7"),
+                                 UDF8 = GetStringSafe("UDF8"),
+                                 UDF9 = GetStringSafe("UDF9"),
+                                 UDF10 = GetStringSafe("UDF10"),
+                                 AssignedTo = string.IsNullOrWhiteSpace(GetStringSafe("AssignedTo")) || GetStringSafe("AssignedTo") == "Unassigned"
+                           ? "Unassigned" : (validUsernames.Contains(GetStringSafe("AssignedTo")) ? GetStringSafe("AssignedTo") : "Unassigned"),
+                                 LastModifiedBy = GetStringSafe("LastModifiedBy"),
+                                 CreatedBy = GetStringSafe("CreatedBy"),
+                                 UDF14 = GetStringSafe("UDF14"),
+                                 UDF15 = GetStringSafe("UDF15"),
+                                 UDF16 = GetStringSafe("UDF16"),
+                                 UDF17 = GetStringSafe("UDF17"),
+                                 UDF18 = GetStringSafe("UDF18"),
+                                 UniqueID = GetStringSafe("UniqueID"),
+                                 UDF20 = GetStringSafe("UDF20"),
 
-                            // Values
-                            BaseUnit = GetDoubleSafe("BaseUnit"),
-                            BudgetMHs = GetDoubleSafe("BudgetMHs"),
-                            BudgetHoursGroup = GetDoubleSafe("BudgetHoursGroup"),
-                            BudgetHoursROC = GetDoubleSafe("BudgetHoursROC"),
-                            EarnedMHsRoc = GetDoubleSafe("EarnedMHsRoc"),
-                            EarnQtyEntry = GetDoubleSafe("EarnQtyEntry"),
-                            PercentEntry = GetDoubleSafe("PercentEntry"),
-                            Quantity = GetDoubleSafe("Quantity"),
-                            UOM = GetStringSafe("UOM"),
+                                 // Values
+                                 BaseUnit = GetDoubleSafe("BaseUnit"),
+                                 BudgetMHs = GetDoubleSafe("BudgetMHs"),
+                                 BudgetHoursGroup = GetDoubleSafe("BudgetHoursGroup"),
+                                 BudgetHoursROC = GetDoubleSafe("BudgetHoursROC"),
+                                 EarnedMHsRoc = GetDoubleSafe("EarnedMHsRoc"),
+                                 EarnQtyEntry = GetDoubleSafe("EarnQtyEntry"),
+                                 PercentEntry = GetDoubleSafe("PercentEntry"),
+                                 Quantity = GetDoubleSafe("Quantity"),
+                                 UOM = GetStringSafe("UOM"),
 
-                            // Equipment
-                            EquivQTY = GetDoubleSafe("EquivQTY"),
-                            EquivUOM = GetStringSafe("EquivUOM"),
+                                 // Equipment
+                                 EquivQTY = GetDoubleSafe("EquivQTY"),
+                                 EquivUOM = GetStringSafe("EquivUOM"),
 
-                            // ROC
-                            ROCID = GetDoubleSafe("ROCID"),
-                            ROCPercent = GetDoubleSafe("ROCPercent"),
-                            ROCBudgetQTY = GetDoubleSafe("ROCBudgetQTY"),
+                                 // ROC
+                                 ROCID = GetDoubleSafe("ROCID"),
+                                 ROCPercent = GetDoubleSafe("ROCPercent"),
+                                 ROCBudgetQTY = GetDoubleSafe("ROCBudgetQTY"),
 
-                            // Pipe
-                            PipeSize1 = GetDoubleSafe("PipeSize1"),
-                            PipeSize2 = GetDoubleSafe("PipeSize2"),
+                                 // Pipe
+                                 PipeSize1 = GetDoubleSafe("PipeSize1"),
+                                 PipeSize2 = GetDoubleSafe("PipeSize2"),
 
-                            // Previous
-                            PrevEarnMHs = GetDoubleSafe("PrevEarnMHs"),
-                            PrevEarnQTY = GetDoubleSafe("PrevEarnQTY"),
+                                 // Previous
+                                 PrevEarnMHs = GetDoubleSafe("PrevEarnMHs"),
+                                 PrevEarnQTY = GetDoubleSafe("PrevEarnQTY"),
 
-                            // Client
-                            ClientEquivQty = GetDoubleSafe("ClientEquivQty"),
-                            ClientBudget = GetDoubleSafe("ClientBudget"),
-                            ClientCustom3 = GetDoubleSafe("ClientCustom3")
-                        };
+                                 // Client
+                                 ClientEquivQty = GetDoubleSafe("ClientEquivQty"),
+                                 ClientBudget = GetDoubleSafe("ClientBudget"),
+                                 ClientCustom3 = GetDoubleSafe("ClientCustom3")
+                             };
 
-                        activities.Add(activity);
-                    }
+                             activities.Add(activity);
+                         }
 
-                    System.Diagnostics.Debug.WriteLine($"✓ Loaded {activities.Count} activities (no pagination)");
+                         System.Diagnostics.Debug.WriteLine($"✓ Loaded {activities.Count} activities (no pagination)");
 
-                    // Return tuple with both activities and totalCount
-                    return (activities, (int)totalCount);
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"✗ Error loading all activities: {ex.Message}");
-                    throw;
-                }
-            });
+                         // Return tuple with both activities and totalCount
+                         return (activities, (int)totalCount);
+                     }
+                     catch (Exception ex)
+                     {
+                         System.Diagnostics.Debug.WriteLine($"✗ Error loading all activities: {ex.Message}");
+                         throw;
+                     }
+                 });
         }
-        // Get totals for filtered records (all pages)
+
+
+        /// Get totals for filtered records (all pages)
+
         public static async Task<(double budgetedMHs, double earnedMHs)> GetTotalsAsync(string whereClause = null)
         {
             return await Task.Run(() =>
-   {
-       try
-       {
-           using var connection = DatabaseSetup.GetConnection();
-           connection.Open();
+         {
+             try
+             {
+                 using var connection = DatabaseSetup.GetConnection();
+                 connection.Open();
 
-           string whereSQL = string.IsNullOrWhiteSpace(whereClause) ? "" : whereClause;
+                 string whereSQL = string.IsNullOrWhiteSpace(whereClause) ? "" : whereClause;
 
-           // NEW: Use NewVantage column names
-           var command = connection.CreateCommand();
-           command.CommandText = $@" SELECT COALESCE(SUM(BudgetMHs), 0) as TotalBudgeted, 
-            COALESCE(SUM( CASE WHEN PercentEntry >= 100 THEN BudgetMHs
-            ELSE ROUND(PercentEntry / 100.0 * BudgetMHs, 3)
-            END
-            ), 0) as TotalEarned
-            FROM Activities
-          {whereSQL}";
+                 // NEW: Use NewVantage column names
+                 var command = connection.CreateCommand();
+                 command.CommandText = $@"
+                        SELECT 
+                          COALESCE(SUM(BudgetMHs), 0) as TotalBudgeted, 
+                       COALESCE(SUM(
+                          CASE 
+                            WHEN PercentEntry >= 100 THEN BudgetMHs
+                       ELSE ROUND(PercentEntry / 100.0 * BudgetMHs, 3)
+                       END
+                                 ), 0) as TotalEarned
+                    FROM Activities
+                    {whereSQL}";
 
-           using var reader = command.ExecuteReader();
-           if (reader.Read())
-           {
-               double budgeted = reader.GetDouble(0);
-               double earned = reader.GetDouble(1);
-               return (budgeted, earned);
-           }
+                 using var reader = command.ExecuteReader();
+                 if (reader.Read())
+                 {
+                     double budgeted = reader.GetDouble(0);
+                     double earned = reader.GetDouble(1);
+                     return (budgeted, earned);
+                 }
 
-           return (0, 0);
-       }
-       catch (Exception ex)
-       {
-           return (0, 0);
-       }
-   });
+                 return (0, 0);
+             }
+             catch (Exception ex)
+             {
+                 return (0, 0);
+             }
+         });
         }
 
 
@@ -811,143 +822,466 @@ namespace VANTAGE.Data
         public static async Task<(List<string> values, int totalCount)> GetDistinctColumnValuesAsync(string columnName, int limit = 1000)
         {
             return await Task.Run(() =>
-{
-    var vals = new List<string>();
-    try
-    {
-        using var connection = DatabaseSetup.GetConnection();
-        connection.Open();
+         {
+             var vals = new List<string>();
+             try
+             {
+                 using var connection = DatabaseSetup.GetConnection();
+                 connection.Open();
 
-        // Map of calculated/display-only properties to SQL expressions
-        var calcMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-        {
-            // Status calculation
-            ["Status"] = "CASE WHEN PercentEntry = 0 THEN 'Not Started' WHEN PercentEntry >= 100 THEN 'Complete' ELSE 'In Progress' END",
-            // Earned MHs calculated
-            ["EarnMHsCalc"] = "CASE WHEN PercentEntry >= 100 THEN BudgetMHs ELSE ROUND(PercentEntry / 100.0 * BudgetMHs, 3) END",
-            // AssignedTo: show 'Unassigned' for null/empty
-            ["AssignedTo"] = "CASE WHEN TRIM(COALESCE(NULLIF(AssignedTo, ''), '')) = '' OR AssignedTo = 'Unassigned' THEN 'Unassigned' ELSE AssignedTo END"
-        };
+                 // Map of calculated/display-only properties to SQL expressions
+                 var calcMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                 {
+                     // Status calculation
+                     ["Status"] = "CASE WHEN PercentEntry = 0 THEN 'Not Started' WHEN PercentEntry >= 100 THEN 'Complete' ELSE 'In Progress' END",
+                     // Earned MHs calculated
+                     ["EarnMHsCalc"] = "CASE WHEN PercentEntry >= 100 THEN BudgetMHs ELSE ROUND(PercentEntry / 100.0 * BudgetMHs, 3) END",
+                     // AssignedTo: show 'Unassigned' for null/empty
+                     ["AssignedTo"] = "CASE WHEN TRIM(COALESCE(NULLIF(AssignedTo, ''), '')) = '' OR AssignedTo = 'Unassigned' THEN 'Unassigned' ELSE AssignedTo END"
+                 };
 
-        string dbExpression = null;
-        if (!string.IsNullOrEmpty(columnName) && calcMap.TryGetValue(columnName, out var expr))
-        {
-            dbExpression = expr;
+                 string dbExpression = null;
+                 if (!string.IsNullOrEmpty(columnName) && calcMap.TryGetValue(columnName, out var expr))
+                 {
+                     dbExpression = expr;
+                 }
+                 else
+                 {
+                     // Use column name directly (no more ColumnMapper.GetDbColumnName!)
+                     dbExpression = columnName;
+                 }
+
+                 // Query distinct values limited
+                 var cmd = connection.CreateCommand();
+                 cmd.CommandText = $@"SELECT DISTINCT ({dbExpression}) FROM Activities ORDER BY 1 LIMIT @limit";
+                 cmd.Parameters.AddWithValue("@limit", limit);
+
+                 using var reader = cmd.ExecuteReader();
+                 while (reader.Read())
+                 {
+                     if (reader.IsDBNull(0))
+                     {
+                         vals.Add("");
+                     }
+                     else
+                     {
+                         var raw = reader.GetValue(0);
+                         vals.Add(Convert.ToString(raw));
+                     }
+                 }
+
+                 // Always put 'Unassigned' at the top for AssignedTo
+                 if (!string.IsNullOrEmpty(columnName) && columnName.Equals("AssignedTo", StringComparison.OrdinalIgnoreCase))
+                 {
+                     vals = vals.Where(v => !string.IsNullOrWhiteSpace(v) && !v.Equals("Unassigned", StringComparison.OrdinalIgnoreCase)).ToList();
+                     vals.Insert(0, "Unassigned");
+                 }
+
+                 // Count distinct values (after deduplication)
+                 int total = vals.Count;
+                 return (vals, total);
+             }
+             catch (Exception ex)
+             {
+                 return (vals, vals.Count);
+             }
+         });
         }
-        else
+        /// <summary>
+        /// Get all deleted activities
+        /// </summary>
+        public static async Task<List<Activity>> GetDeletedActivitiesAsync()
         {
-            // Use column name directly (no more ColumnMapper.GetDbColumnName!)
-            dbExpression = columnName;
-        }
-
-        // Query distinct values limited
-        var cmd = connection.CreateCommand();
-        cmd.CommandText = $@"SELECT DISTINCT ({dbExpression}) FROM Activities ORDER BY 1 LIMIT @limit";
-        cmd.Parameters.AddWithValue("@limit", limit);
-
-        using var reader = cmd.ExecuteReader();
-        while (reader.Read())
-        {
-            if (reader.IsDBNull(0))
+            return await Task.Run(() =>
             {
-                vals.Add("");
-            }
-            else
-            {
-                var raw = reader.GetValue(0);
-                vals.Add(Convert.ToString(raw));
-            }
-        }
+                var deletedActivities = new List<Activity>();
 
-        // Always put 'Unassigned' at the top for AssignedTo
-        if (!string.IsNullOrEmpty(columnName) && columnName.Equals("AssignedTo", StringComparison.OrdinalIgnoreCase))
+                try
+                {
+                    using var connection = DatabaseSetup.GetConnection();
+                    connection.Open();
+
+                    var command = connection.CreateCommand();
+                    command.CommandText = "SELECT * FROM Deleted_Activities ORDER BY DeletedDate DESC";
+
+                    using var reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        var activity = MapReaderToActivity(reader);
+                        // You can add DeletedDate and deletedBy to the Activity object if needed
+                        deletedActivities.Add(activity);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Error getting deleted activities: {ex.Message}");
+                }
+
+                return deletedActivities;
+            });
+        }
+        /// <summary>
+        /// Map database reader to Activity object
+        /// </summary>
+        /// <summary>
+        /// Map database reader to Activity object
+        /// </summary>
+        /// <summary>
+        /// Map database reader to Activity object
+        /// </summary>
+        private static Activity MapReaderToActivity(SqliteDataReader reader)
         {
-            vals = vals.Where(v => !string.IsNullOrWhiteSpace(v) && !v.Equals("Unassigned", StringComparison.OrdinalIgnoreCase)).ToList();
-            vals.Insert(0, "Unassigned");
+            return new Activity
+            {
+                ActivityID = reader.GetInt32(reader.GetOrdinal("ActivityID")),
+                Area = GetStringOrDefault(reader, "Area"),
+                AssignedTo = GetStringOrDefault(reader, "AssignedTo"),
+                AzureUploadDate = GetDateTimeOrNull(reader, "AzureUploadDate"),
+                Aux1 = GetStringOrDefault(reader, "Aux1"),
+                Aux2 = GetStringOrDefault(reader, "Aux2"),
+                Aux3 = GetStringOrDefault(reader, "Aux3"),
+                BaseUnit = GetDoubleOrDefault(reader, "BaseUnit"),
+                BudgetMHs = GetDoubleOrDefault(reader, "BudgetMHs"),
+                BudgetHoursGroup = GetDoubleOrDefault(reader, "BudgetHoursGroup"),
+                BudgetHoursROC = GetDoubleOrDefault(reader, "BudgetHoursROC"),
+                ChgOrdNO = GetStringOrDefault(reader, "ChgOrdNO"),
+                ClientBudget = GetDoubleOrDefault(reader, "ClientBudget"),
+                ClientCustom3 = GetDoubleOrDefault(reader, "ClientCustom3"),
+                ClientEquivQty = GetDoubleOrDefault(reader, "ClientEquivQty"),
+                CompType = GetStringOrDefault(reader, "CompType"),
+                CreatedBy = GetStringOrDefault(reader, "CreatedBy"),
+                DateTrigger = GetIntOrDefault(reader, "DateTrigger"),
+                Description = GetStringOrDefault(reader, "Description"),
+                DwgNO = GetStringOrDefault(reader, "DwgNO"),
+                EarnedMHsRoc = GetDoubleOrDefault(reader, "EarnedMHsRoc"),
+                EarnQtyEntry = GetDoubleOrDefault(reader, "EarnQtyEntry"),
+                EqmtNO = GetStringOrDefault(reader, "EqmtNO"),
+                EquivQTY = GetDoubleFromStringColumn(reader, "EquivQTY"),
+                EquivUOM = GetStringOrDefault(reader, "EquivUOM"),
+                Estimator = GetStringOrDefault(reader, "Estimator"),
+                // Finish = not in model (legacy column)
+                HexNO = GetIntOrDefault(reader, "HexNO"),
+                HtTrace = GetStringOrDefault(reader, "HtTrace"),
+                InsulType = GetStringOrDefault(reader, "InsulType"),
+                LastModifiedBy = GetStringOrDefault(reader, "LastModifiedBy"),
+                LineNO = GetStringOrDefault(reader, "LineNO"),
+                MtrlSpec = GetStringOrDefault(reader, "MtrlSpec"),
+                Notes = GetStringOrDefault(reader, "Notes"),
+                PaintCode = GetStringOrDefault(reader, "PaintCode"),
+                PercentEntry = GetDoubleOrDefault(reader, "PercentEntry"),
+                PhaseCategory = GetStringOrDefault(reader, "PhaseCategory"),
+                PhaseCode = GetStringOrDefault(reader, "PhaseCode"),
+                PipeGrade = GetStringOrDefault(reader, "PipeGrade"),
+                PipeSize1 = GetDoubleOrDefault(reader, "PipeSize1"),
+                PipeSize2 = GetDoubleOrDefault(reader, "PipeSize2"),
+                PrevEarnMHs = GetDoubleOrDefault(reader, "PrevEarnMHs"),
+                PrevEarnQTY = GetDoubleOrDefault(reader, "PrevEarnQTY"),
+                ProgDate = GetDateTimeOrNull(reader, "ProgDate"),
+                ProjectID = GetStringOrDefault(reader, "ProjectID"),
+                Quantity = GetDoubleOrDefault(reader, "Quantity"),
+                RevNO = GetStringOrDefault(reader, "RevNO"),
+                RFINO = GetStringOrDefault(reader, "RFINO"),
+                ROCBudgetQTY = GetDoubleOrDefault(reader, "ROCBudgetQTY"),
+                ROCID = GetDoubleOrDefault(reader, "ROCID"),
+                ROCPercent = GetDoubleOrDefault(reader, "ROCPercent"),
+                ROCStep = GetStringOrDefault(reader, "ROCStep"),
+                SchedActNO = GetStringOrDefault(reader, "SchedActNO"),
+                SchFinish = GetDateTimeOrNull(reader, "SchFinish"),
+                SchStart = GetDateTimeOrNull(reader, "SchStart"),
+                SecondActno = GetStringOrDefault(reader, "SecondActno"),
+                SecondDwgNO = GetStringOrDefault(reader, "SecondDwgNO"),
+                Service = GetStringOrDefault(reader, "Service"),
+                ShopField = GetStringOrDefault(reader, "ShopField"),
+                ShtNO = GetStringOrDefault(reader, "ShtNO"),
+                // Start = not in model (legacy column)
+                // Status = calculated property, don't set it
+                SubArea = GetStringOrDefault(reader, "SubArea"),
+                System = GetStringOrDefault(reader, "System"),
+                SystemNO = GetStringOrDefault(reader, "SystemNO"),
+                TagNO = GetStringOrDefault(reader, "TagNO"),
+                UDF1 = GetStringOrDefault(reader, "UDF1"),
+                UDF2 = GetStringOrDefault(reader, "UDF2"),
+                UDF3 = GetStringOrDefault(reader, "UDF3"),
+                UDF4 = GetStringOrDefault(reader, "UDF4"),
+                UDF5 = GetStringOrDefault(reader, "UDF5"),
+                UDF6 = GetStringOrDefault(reader, "UDF6"),
+                UDF7 = GetIntOrDefault(reader, "UDF7"),  // int, not string
+                UDF8 = GetStringOrDefault(reader, "UDF8"),
+                UDF9 = GetStringOrDefault(reader, "UDF9"),
+                UDF10 = GetStringOrDefault(reader, "UDF10"),
+                UDF14 = GetStringOrDefault(reader, "UDF14"),
+                UDF15 = GetStringOrDefault(reader, "UDF15"),
+                UDF16 = GetStringOrDefault(reader, "UDF16"),
+                UDF17 = GetStringOrDefault(reader, "UDF17"),
+                UDF18 = GetStringOrDefault(reader, "UDF18"),
+                UDF20 = GetStringOrDefault(reader, "UDF20"),
+                UniqueID = GetStringOrDefault(reader, "UniqueID"),
+                UOM = GetStringOrDefault(reader, "UOM"),
+                WeekEndDate = GetDateTimeOrNull(reader, "WeekEndDate"),
+                WorkPackage = GetStringOrDefault(reader, "WorkPackage"),
+                XRay = GetDoubleOrDefault(reader, "XRay")
+            };
         }
 
-        // Count distinct values (after deduplication)
-        int total = vals.Count;
-        return (vals, total);
-    }
-    catch (Exception ex)
-    {
-        return (vals, vals.Count);
-    }
-});
+        // Helper methods remain the same
+        private static double GetDoubleFromStringColumn(SqliteDataReader reader, string columnName)
+        {
+            int ordinal = reader.GetOrdinal(columnName);
+            if (reader.IsDBNull(ordinal)) return 0.0;
+
+            string value = reader.GetString(ordinal);
+            if (string.IsNullOrWhiteSpace(value)) return 0.0;
+
+            return double.TryParse(value, out double result) ? result : 0.0;
+        }
+        private static string GetStringOrDefault(SqliteDataReader reader, string columnName)
+        {
+            int ordinal = reader.GetOrdinal(columnName);
+            return reader.IsDBNull(ordinal) ? "" : reader.GetString(ordinal);
         }
 
+        private static double GetDoubleOrDefault(SqliteDataReader reader, string columnName)
+        {
+            int ordinal = reader.GetOrdinal(columnName);
+            return reader.IsDBNull(ordinal) ? 0.0 : reader.GetDouble(ordinal);
+        }
+
+        private static int GetIntOrDefault(SqliteDataReader reader, string columnName)
+        {
+            int ordinal = reader.GetOrdinal(columnName);
+            return reader.IsDBNull(ordinal) ? 0 : reader.GetInt32(ordinal);
+        }
+
+        private static DateTime? GetDateTimeOrNull(SqliteDataReader reader, string columnName)
+        {
+            int ordinal = reader.GetOrdinal(columnName);
+            if (reader.IsDBNull(ordinal)) return null;
+            string dateStr = reader.GetString(ordinal);
+            return DateTime.TryParse(dateStr, out DateTime result) ? result : (DateTime?)null;
+        }
+
+        /// <summary>
+        /// Restore activities from Deleted_Activities back to Activities
+        /// </summary>
+        public static async Task<int> RestoreActivitiesAsync(List<int> activityIds)
+        {
+            return await Task.Run(() =>
+            {
+                try
+                {
+                    using var connection = DatabaseSetup.GetConnection();
+                    connection.Open();
+
+                    int successCount = 0;
+                    using var transaction = connection.BeginTransaction();
+
+                    try
+                    {
+                        foreach (var activityId in activityIds)
+                        {
+                            // Copy back to Activities (excluding DeletedDate and deletedBy)
+                            var copyCommand = connection.CreateCommand();
+                            copyCommand.Transaction = transaction;
+
+                            // Get all column names from Activities table (excluding the deleted metadata)
+                            copyCommand.CommandText = @"
+                        INSERT INTO Activities 
+                        SELECT ActivityID, UniqueID, Description, TagNO, Area, Phase, 
+                               Discipline, SubDiscipline, Category, SubCategory, 
+                               AssignedTo, WBS, SchedActNO, ProjectID, 
+                               SchStart, SchFinish, Quantity, Unit, EarnQtyEntry, 
+                               PercentEntry, BudgetMHs, EarnedMHsRoc, 
+                               HexNO, BaseUnit, BudgetHoursGroup, BudgetHoursROC, 
+                               PipeClass, PipeSpec, PipeSize1, PipeSize2, 
+                               PrevEarnMHs, PrevEarnQTY, ROCBudgetQTY, ROCPercent, 
+                               ROCID, EquivQTY, ClientBudget, ClientCustom3, 
+                               ClientEquivQty, WeekEndDate, ProgDate, 
+                               AzureUploadDate, XRay, LastModifiedBy
+                        FROM Deleted_Activities 
+                        WHERE ActivityID = @ActivityID";
+
+                            copyCommand.Parameters.AddWithValue("@ActivityID", activityId);
+
+                            if (copyCommand.ExecuteNonQuery() > 0)
+                            {
+                                // Remove from Deleted_Activities
+                                var deleteCommand = connection.CreateCommand();
+                                deleteCommand.Transaction = transaction;
+                                deleteCommand.CommandText = "DELETE FROM Deleted_Activities WHERE ActivityID = @ActivityID";
+                                deleteCommand.Parameters.AddWithValue("@ActivityID", activityId);
+                                deleteCommand.ExecuteNonQuery();
+
+                                successCount++;
+                            }
+                        }
+
+                        transaction.Commit();
+                        return successCount;
+                    }
+                    catch
+                    {
+                        transaction.Rollback();
+                        throw;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Error restoring activities: {ex.Message}");
+                    return 0;
+                }
+            });
+        }
+
+        /// <summary>
+        /// Permanently purge activities from Deleted_Activities
+        /// </summary>
+        public static async Task<int> PurgeDeletedActivitiesAsync(List<int> activityIds)
+        {
+            return await Task.Run(() =>
+            {
+                try
+                {
+                    using var connection = DatabaseSetup.GetConnection();
+                    connection.Open();
+
+                    int successCount = 0;
+                    using var transaction = connection.BeginTransaction();
+
+                    try
+                    {
+                        foreach (var activityId in activityIds)
+                        {
+                            var command = connection.CreateCommand();
+                            command.Transaction = transaction;
+                            command.CommandText = "DELETE FROM Deleted_Activities WHERE ActivityID = @ActivityID";
+                            command.Parameters.AddWithValue("@ActivityID", activityId);
+
+                            if (command.ExecuteNonQuery() > 0)
+                                successCount++;
+                        }
+
+                        transaction.Commit();
+                        return successCount;
+                    }
+                    catch
+                    {
+                        transaction.Rollback();
+                        throw;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Error purging deleted activities: {ex.Message}");
+                    return 0;
+                }
+            });
+        }
+
+        /// <summary>
+        /// Auto-purge deleted records older than specified days
+        /// </summary>
+        public static async Task<int> AutoPurgeOldDeletedActivitiesAsync(int daysToKeep)
+        {
+            return await Task.Run(() =>
+            {
+                try
+                {
+                    using var connection = DatabaseSetup.GetConnection();
+                    connection.Open();
+
+                    var cutoffDate = DateTime.UtcNow.AddDays(-daysToKeep);
+
+                    var command = connection.CreateCommand();
+                    command.CommandText = "DELETE FROM Deleted_Activities WHERE DeletedDate < @CutoffDate";
+                    command.Parameters.AddWithValue("@CutoffDate", cutoffDate.ToString("o")); // ISO 8601 format
+
+                    int rowsAffected = command.ExecuteNonQuery();
+
+                    if (rowsAffected > 0)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Auto-purged {rowsAffected} old deleted records");
+                    }
+
+                    return rowsAffected;
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Error auto-purging: {ex.Message}");
+                    return 0;
+                }
+            });
+        }
 
         /// Get distinct values for a column, filtered by a WHERE clause. Returns up to 'limit' values and the true total count (can be > limit).
 
         public static async Task<(List<string> values, int totalCount)> GetDistinctColumnValuesForFilterAsync(string columnName, string whereClause, int limit = 1000)
         {
             return await Task.Run(() =>
-            {
-                var vals = new List<string>();
-                try
-                {
-                    using var connection = DatabaseSetup.GetConnection();
-                    connection.Open();
+              {
+                  var vals = new List<string>();
+                  try
+                  {
+                      using var connection = DatabaseSetup.GetConnection();
+                      connection.Open();
 
-                    // Map of calculated properties to SQL expressions
-                    var calcMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                    {
-                        ["Status"] = "CASE WHEN PercentEntry = 0 THEN 'Not Started' WHEN PercentEntry >= 100 THEN 'Complete' ELSE 'In Progress' END",
-                        ["EarnMHsCalc"] = "CASE WHEN PercentEntry >= 100 THEN BudgetMHs ELSE ROUND(PercentEntry / 100.0 * BudgetMHs, 3) END",
-                        ["AssignedTo"] = "CASE WHEN TRIM(COALESCE(NULLIF(AssignedTo, ''), '')) = '' OR AssignedTo = 'Unassigned' THEN 'Unassigned' ELSE AssignedTo END"
-                    };
+                      // Map of calculated properties to SQL expressions
+                      var calcMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                      {
+                          ["Status"] = "CASE WHEN PercentEntry = 0 THEN 'Not Started' WHEN PercentEntry >= 100 THEN 'Complete' ELSE 'In Progress' END",
+                          ["EarnMHsCalc"] = "CASE WHEN PercentEntry >= 100 THEN BudgetMHs ELSE ROUND(PercentEntry / 100.0 * BudgetMHs, 3) END",
+                          ["AssignedTo"] = "CASE WHEN TRIM(COALESCE(NULLIF(AssignedTo, ''), '')) = '' OR AssignedTo = 'Unassigned' THEN 'Unassigned' ELSE AssignedTo END"
+                      };
 
-                    string dbExpression = null;
-                    if (!string.IsNullOrEmpty(columnName) && calcMap.TryGetValue(columnName, out var expr))
-                    {
-                        dbExpression = expr;
-                    }
-                    else
-                    {
-                        // Use column name directly
-                        dbExpression = columnName;
-                    }
+                      string dbExpression = null;
+                      if (!string.IsNullOrEmpty(columnName) && calcMap.TryGetValue(columnName, out var expr))
+                      {
+                          dbExpression = expr;
+                      }
+                      else
+                      {
+                          // Use column name directly
+                          dbExpression = columnName;
+                      }
 
-                    string whereSQL = string.IsNullOrWhiteSpace(whereClause) ? "" : whereClause.Trim();
-                    if (!string.IsNullOrWhiteSpace(whereSQL) && !whereSQL.TrimStart().StartsWith("WHERE", StringComparison.OrdinalIgnoreCase))
-                    {
-                        whereSQL = "WHERE " + whereSQL;
-                    }
+                      string whereSQL = string.IsNullOrWhiteSpace(whereClause) ? "" : whereClause.Trim();
+                      if (!string.IsNullOrWhiteSpace(whereSQL) && !whereSQL.TrimStart().StartsWith("WHERE", StringComparison.OrdinalIgnoreCase))
+                      {
+                          whereSQL = "WHERE " + whereSQL;
+                      }
 
-                    var cmd = connection.CreateCommand();
-                    cmd.CommandText = $@"SELECT DISTINCT ({dbExpression}) FROM Activities {whereSQL} ORDER BY 1 LIMIT @limit";
-                    cmd.Parameters.AddWithValue("@limit", limit);
+                      var cmd = connection.CreateCommand();
+                      cmd.CommandText = $@"SELECT DISTINCT ({dbExpression}) FROM Activities {whereSQL} ORDER BY 1 LIMIT @limit";
+                      cmd.Parameters.AddWithValue("@limit", limit);
 
-                    using var reader = cmd.ExecuteReader();
-                    while (reader.Read())
-                    {
-                        if (reader.IsDBNull(0))
-                        {
-                            vals.Add("");
-                        }
-                        else
-                        {
-                            var raw = reader.GetValue(0);
-                            vals.Add(Convert.ToString(raw));
-                        }
-                    }
+                      using var reader = cmd.ExecuteReader();
+                      while (reader.Read())
+                      {
+                          if (reader.IsDBNull(0))
+                          {
+                              vals.Add("");
+                          }
+                          else
+                          {
+                              var raw = reader.GetValue(0);
+                              vals.Add(Convert.ToString(raw));
+                          }
+                      }
 
-                    // Always put 'Unassigned' at the top for AssignedTo
-                    if (!string.IsNullOrEmpty(columnName) && columnName.Equals("AssignedTo", StringComparison.OrdinalIgnoreCase))
-                    {
-                        vals = vals.Where(v => !string.IsNullOrWhiteSpace(v) && !v.Equals("Unassigned", StringComparison.OrdinalIgnoreCase)).ToList();
-                        vals.Insert(0, "Unassigned");
-                    }
+                      // Always put 'Unassigned' at the top for AssignedTo
+                      if (!string.IsNullOrEmpty(columnName) && columnName.Equals("AssignedTo", StringComparison.OrdinalIgnoreCase))
+                      {
+                          vals = vals.Where(v => !string.IsNullOrWhiteSpace(v) && !v.Equals("Unassigned", StringComparison.OrdinalIgnoreCase)).ToList();
+                          vals.Insert(0, "Unassigned");
+                      }
 
-                    int total = vals.Count;
-                    return (vals, total);
-                }
-                catch (Exception ex)
-                {
-                    return (vals, vals.Count);
-                }
-            });
+                      int total = vals.Count;
+                      return (vals, total);
+                  }
+                  catch (Exception ex)
+                  {
+                      return (vals, vals.Count);
+                  }
+              });
         }
     }
 }
