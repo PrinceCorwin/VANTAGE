@@ -172,21 +172,31 @@ namespace VANTAGE.Views
             }
         }
 
-        private void BtnExport_Click(object sender, RoutedEventArgs e)
+        private async void BtnExport_Click(object sender, RoutedEventArgs e)
         {
-            var selectedActivities = sfDeletedActivities.SelectedItems.Cast<Activity>().ToList();
-
-            if (!selectedActivities.Any())
+            try
             {
-                MessageBox.Show("Please select one or more records to export.",
-                    "No Selection", MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
-            }
+                // Get all deleted activities currently displayed
+                var deletedActivities = sfDeletedActivities.ItemsSource as List<Activity>;
 
-            // TODO: Implement Excel export for deleted records when ExcelExporter is complete
-            MessageBox.Show($"Export {selectedActivities.Count} deleted records feature coming soon!\n\n" +
-                "This will export selected deleted records to Excel.",
-                "Not Yet Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
+                if (deletedActivities == null || deletedActivities.Count == 0)
+                {
+                    MessageBox.Show(
+                        "No deleted records to export.",
+                        "Export Deleted Records",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                    return;
+                }
+
+                // Call export helper
+                await ExportHelper.ExportDeletedRecordsAsync(this, deletedActivities);
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "Export Deleted Records Click", App.CurrentUser?.Username ?? "Unknown");
+                MessageBox.Show($"Export failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void BtnRefresh_Click(object sender, RoutedEventArgs e)

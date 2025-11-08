@@ -384,7 +384,7 @@
                                       Click="MenuExportSelected_Click"
                                       Background="{StaticResource ControlBackground}"
                                       Foreground="{StaticResource ForegroundColor}"
-                                      IsEnabled="False">
+                                      IsEnabled="True">
                                 <MenuItem.Icon>
                                     <TextBlock Text="📤" FontSize="14"/>
                                 </MenuItem.Icon>

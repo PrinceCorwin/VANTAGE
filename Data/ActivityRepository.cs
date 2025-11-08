@@ -923,12 +923,6 @@ UDF7 = @UDF7,
         /// <summary>
         /// Map database reader to Activity object
         /// </summary>
-        /// <summary>
-        /// Map database reader to Activity object
-        /// </summary>
-        /// <summary>
-        /// Map database reader to Activity object
-        /// </summary>
         private static Activity MapReaderToActivity(SqliteDataReader reader)
         {
             return new Activity
@@ -959,7 +953,6 @@ UDF7 = @UDF7,
                 EquivQTY = GetDoubleFromStringColumn(reader, "EquivQTY"),
                 EquivUOM = GetStringOrDefault(reader, "EquivUOM"),
                 Estimator = GetStringOrDefault(reader, "Estimator"),
-                // Finish = not in model (legacy column)
                 HexNO = GetIntOrDefault(reader, "HexNO"),
                 HtTrace = GetStringOrDefault(reader, "HtTrace"),
                 InsulType = GetStringOrDefault(reader, "InsulType"),
@@ -993,8 +986,6 @@ UDF7 = @UDF7,
                 Service = GetStringOrDefault(reader, "Service"),
                 ShopField = GetStringOrDefault(reader, "ShopField"),
                 ShtNO = GetStringOrDefault(reader, "ShtNO"),
-                // Start = not in model (legacy column)
-                // Status = calculated property, don't set it
                 SubArea = GetStringOrDefault(reader, "SubArea"),
                 System = GetStringOrDefault(reader, "System"),
                 SystemNO = GetStringOrDefault(reader, "SystemNO"),
@@ -1019,7 +1010,11 @@ UDF7 = @UDF7,
                 UOM = GetStringOrDefault(reader, "UOM"),
                 WeekEndDate = GetDateTimeOrNull(reader, "WeekEndDate"),
                 WorkPackage = GetStringOrDefault(reader, "WorkPackage"),
-                XRay = GetDoubleOrDefault(reader, "XRay")
+                XRay = GetDoubleOrDefault(reader, "XRay"),
+
+                // Deleted record tracking (only present in Deleted_Activities table)
+                DeletedBy = GetStringOrDefault(reader, "DeletedBy"),
+              DeletedDate = GetDateTimeOrNull(reader, "DeletedDate")
             };
         }
 

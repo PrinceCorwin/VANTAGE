@@ -98,10 +98,33 @@ namespace VANTAGE.Views
                 "Not Yet Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
-        private void MenuExportSelected_Click(object sender, RoutedEventArgs e)
+        private async void MenuExportSelected_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Export Selected feature coming soon!",
-                "Not Yet Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
+            try
+            {
+                // Get selected activities from the grid
+                var selectedRecords = sfActivities.SelectedItems.Cast<Activity>().ToList();
+
+                if (selectedRecords.Count == 0)
+                {
+                    MessageBox.Show(
+                        "No records selected. Please select one or more rows to export.",
+                        "Export Selected",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                    return;
+                }
+
+                // Call export helper
+                await ExportHelper.ExportSelectedActivitiesAsync(
+                    Window.GetWindow(this),
+                    selectedRecords);
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "Export Selected Click", App.CurrentUser?.Username ?? "Unknown");
+                MessageBox.Show($"Export failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void PlaceHolder1_Click(object sender, RoutedEventArgs e)

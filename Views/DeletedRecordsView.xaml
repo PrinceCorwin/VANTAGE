@@ -20,7 +20,7 @@
 
         <!-- TOOLBAR -->
         <Border Grid.Row="0"
-                Background="{StaticResource ToolbarBackground}"
+                Background="{StaticResource BackgroundColor}"
                 BorderBrush="{StaticResource BorderColor}"
                 BorderThickness="0,0,0,1"
                 Padding="10">
@@ -123,10 +123,13 @@
                 BorderBrush="{StaticResource BorderColor}"
                 BorderThickness="0">
             <syncfusion:SfDataGrid x:Name="sfDeletedActivities"
+                                   Foreground="{StaticResource ForegroundColor}"
                                    AutoGenerateColumns="False"
                                    AllowEditing="False"
                                    AllowFiltering="True"
                                    AllowSorting="True"
+                                   AllowDraggingColumns="True"
+                                   AllowResizingColumns="True"
                                    SelectionMode="Extended"
                                    ShowRowHeader="True"
                                    RowHeight="30">
@@ -134,22 +137,38 @@
                 <syncfusion:SfDataGrid.Columns>
                     <syncfusion:GridTextColumn MappingName="ActivityID" 
                                               HeaderText="ID" 
-                                              Width="80"/>
+                                              Width="50"/>
                     <syncfusion:GridTextColumn MappingName="UniqueID" 
                                               HeaderText="Unique ID" 
                                               Width="150"/>
+                    <syncfusion:GridTextColumn MappingName="CompType" 
+                                              HeaderText="CompType" 
+                                              Width="80"/>
+                    <syncfusion:GridTextColumn MappingName="PhaseCategory" 
+                                              HeaderText="PhaseCategory" 
+                                              Width="80"/>
+                    <syncfusion:GridTextColumn MappingName="ROCStep" 
+                                              HeaderText="ROCStep" 
+                                              Width="80"/>
                     <syncfusion:GridTextColumn MappingName="Description" 
                                               HeaderText="Description" 
-                                              Width="300"/>
-                    <syncfusion:GridTextColumn MappingName="TagNO" 
-                                              HeaderText="Tag" 
-                                              Width="120"/>
-                    <syncfusion:GridTextColumn MappingName="Area" 
-                                              HeaderText="Area" 
-                                              Width="100"/>
-                    <syncfusion:GridTextColumn MappingName="AssignedToUsername" 
-                                              HeaderText="Was Assigned To" 
-                                              Width="120"/>
+                                              Width="400"/>
+                    <syncfusion:GridTextColumn MappingName="PhaseCode" 
+                                              HeaderText="PhaseCode" 
+                                              Width="80"/>
+                    <syncfusion:GridTextColumn MappingName="SchedActNO" 
+                                              HeaderText="SchedActNO" 
+                                              Width="80"/>
+                    <syncfusion:GridTextColumn MappingName="UDF1" 
+                                              HeaderText="UDF1" 
+                                              Width="80"/>
+                    <syncfusion:GridTextColumn MappingName="UDF2" 
+                                              HeaderText="UDF2" 
+                                              Width="80"/>
+                    <syncfusion:GridNumericColumn MappingName="Quantity" 
+                                                 HeaderText="Quantity" 
+                                                 Width="100"
+                                                 NumberDecimalDigits="2"/>
                     <syncfusion:GridNumericColumn MappingName="BudgetMHs" 
                                                  HeaderText="Budget MHs" 
                                                  Width="100"
@@ -158,7 +177,15 @@
                                                  HeaderText="% Complete" 
                                                  Width="100"
                                                  NumberDecimalDigits="0"/>
-                    <!-- Note: deletedBy and DeletedDate will need to be added to your Activity model or handled differently -->
+                    <syncfusion:GridTextColumn MappingName="AssignedToUsername" 
+                                              HeaderText="Was Assigned To" 
+                                              Width="120"/>
+                    <syncfusion:GridTextColumn MappingName="DeletedBy" 
+                                              HeaderText="Deleted By" 
+                                              Width="120"/>
+                    <syncfusion:GridTextColumn MappingName="DeletedDateDisplay" 
+                                                  HeaderText="Deleted Date (UTC)" 
+                                                  Width="200"/>
                 </syncfusion:SfDataGrid.Columns>
             </syncfusion:SfDataGrid>
         </Border>

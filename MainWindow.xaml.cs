@@ -1,5 +1,9 @@
-﻿using System.Windows;
+﻿using System;
+using System.Linq;
+using System.Reflection;
+using System.Windows;
 using System.Windows.Controls;
+using VANTAGE.Models;
 using VANTAGE.Utilities;
 using VANTAGE.Views;
 
@@ -280,73 +284,82 @@ namespace VANTAGE
             }
         }
 
-        private void ExcelExportActivities_Click(object sender, RoutedEventArgs e)
+        private async void ExcelExportActivities_Click(object sender, RoutedEventArgs e)
         {
-            //try
-            //{
-            //    // Get all activities from database (not just current page)
-            //    using var connection = DatabaseSetup.GetConnection();
-            //    connection.Open();
+            try
+            {
+                // Get current ProgressView instance
+                var progressView = ContentArea.Content as ProgressView;
+                if (progressView == null)
+                {
+                    MessageBox.Show("Progress module not loaded.", "Export", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
 
-            //    var command = connection.CreateCommand();
-            //    command.CommandText = "SELECT COUNT(*) FROM Activities";
-            //    var totalCount = (long)command.ExecuteScalar();
+                // Get the ViewModel
+                var viewModel = progressView.DataContext as ViewModels.ProgressViewModel;
+                if (viewModel == null)
+                {
+                    MessageBox.Show("Unable to access progress data.", "Export", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
 
-            //    if (totalCount == 0)
-            //    {
-            //        MessageBox.Show("No activities to export.", "Export", MessageBoxButton.OK, MessageBoxImage.Information);
-            //        return;
-            //    }
+                // Get all activities from ViewModel
+                var allActivities = viewModel.Activities?.ToList();
+                if (allActivities == null || allActivities.Count == 0)
+                {
+                    MessageBox.Show("No activities to export.", "Export", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
 
-            //    // Show save dialog
-            //    var dialog = new Microsoft.Win32.SaveFileDialog
-            //    {
-            //        Title = "Export Database to Excel",
-            //        FileName = $"VANTAGE_Export_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
-            //        DefaultExt = ".xlsx",
-            //        Filter = "Excel files (*.xlsx)|*.xlsx"
-            //    };
+                // Get filtered activities from the grid's view
+                // Use reflection to access the private sfActivities field
+                var gridField = progressView.GetType().GetField("sfActivities",
+                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
 
-            //    if (dialog.ShowDialog() == true)
-            //    {
-            //        // Get all activities (we'll need to load them all for export)
-            //        var allActivities = Data.ActivityRepository.GetAllActivities();
+                List<Activity> filteredActivities = null;
+                bool hasActiveFilters = false;
 
-            //        ExcelExporter.ExportActivities(dialog.FileName, allActivities);
+                if (gridField != null)
+                {
+                    var grid = gridField.GetValue(progressView) as Syncfusion.UI.Xaml.Grid.SfDataGrid;
+                    if (grid?.View != null)
+                    {
+                        // Get filtered records from the grid's view
+                        filteredActivities = grid.View.Records
+                            .Select(r => r.Data as Activity)
+                            .Where(a => a != null)
+                            .ToList();
 
-            //        MessageBox.Show($"Exported {allActivities.Count} activities successfully!", "Export Complete", MessageBoxButton.OK, MessageBoxImage.Information);
-            //    }
-            //}
-            //catch (Exception ex)
-            //{
-            //    MessageBox.Show($"Export error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            //}
+                        // Check if filters are active by comparing counts
+                        hasActiveFilters = filteredActivities.Count < allActivities.Count;
+                    }
+                }
+
+                // If we couldn't get filtered activities, use all activities
+                if (filteredActivities == null)
+                {
+                    filteredActivities = allActivities;
+                    hasActiveFilters = false;
+                }
+
+                // Call export helper with options
+                await ExportHelper.ExportActivitiesWithOptionsAsync(
+                    this,
+                    allActivities,
+                    filteredActivities,
+                    hasActiveFilters);
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "Export Activities Click", App.CurrentUser?.Username ?? "Unknown");
+                MessageBox.Show($"An error occurred: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
-        private void ExcelExportTemplate_Click(object sender, RoutedEventArgs e)
+        private async void ExcelExportTemplate_Click(object sender, RoutedEventArgs e)
         {
-            //try
-            //{
-            //    // Show save dialog
-            //    var dialog = new Microsoft.Win32.SaveFileDialog
-            //    {
-            //        Title = "Export Template (Headers Only)",
-            //        FileName = $"VANTAGE_Template_{DateTime.Now:yyyyMMdd}.xlsx",
-            //        DefaultExt = ".xlsx",
-            //        Filter = "Excel files (*.xlsx)|*.xlsx"
-            //    };
-
-            //    if (dialog.ShowDialog() == true)
-            //    {
-            //        ExcelExporter.ExportTemplate(dialog.FileName);
-
-            //        MessageBox.Show("Template exported successfully!", "Export Complete", MessageBoxButton.OK, MessageBoxImage.Information);
-            //    }
-            //}
-            //catch (Exception ex)
-            //{
-            //    MessageBox.Show($"Export error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            //}
+            await ExportHelper.ExportTemplateAsync(this);
         }
 
         private void BtnPbook_Click(object sender, RoutedEventArgs e)

@@ -5,14 +5,14 @@ using ClosedXML.Excel;
 
 namespace VANTAGE.Utilities
 {
-    
+
     /// Export activities to Excel using OldVantage column names
-    
+
     public static class ExcelExporter
     {
-        
+
         /// Export all activities to Excel file
-        
+
         public static void ExportActivities(string filePath, List<Models.Activity> activities)
         {
             try
@@ -84,9 +84,9 @@ namespace VANTAGE.Utilities
             }
         }
 
-        
+
         /// Export empty template (headers only)
-        
+
         public static void ExportTemplate(string filePath)
         {
             try
@@ -122,9 +122,9 @@ namespace VANTAGE.Utilities
             }
         }
 
-        
+
         /// Get column mappings from database
-        
+
         private static List<(string DbColumnName, string OldVantageName)> GetColumnMappings()
         {
             var mappings = new List<(string DbColumnName, string OldVantageName)>();
@@ -133,12 +133,17 @@ namespace VANTAGE.Utilities
             connection.Open();
 
             var command = connection.CreateCommand();
-            command.CommandText = "SELECT DbColumnName, OldVantageName FROM ColumnMappings ORDER BY MappingID";
+            command.CommandText = @"
+                SELECT ColumnName, OldVantageName 
+                FROM ColumnMappings 
+                WHERE OldVantageName IS NOT NULL 
+                  AND OldVantageName != 'VAL_Client_Earned_EQ-QTY'
+                ORDER BY MappingID";
 
             using var reader = command.ExecuteReader();
             while (reader.Read())
             {
-                if (!reader.IsDBNull(0)) // Skip rows with NULL DbColumnName
+                if (!reader.IsDBNull(0)) // Skip rows with NULL ColumnName
                 {
                     string dbColumnName = reader.GetString(0);
                     string oldVantageName = reader.IsDBNull(1) ? null : reader.GetString(1);
@@ -149,9 +154,9 @@ namespace VANTAGE.Utilities
             return mappings;
         }
 
-        
+
         /// Get activity property value by database column name
-        
+
         private static object GetActivityValue(Models.Activity activity, string dbColumnName)
         {
             // Get property name from DbColumnName
@@ -162,6 +167,17 @@ namespace VANTAGE.Utilities
             if (property != null)
             {
                 var value = property.GetValue(activity);
+
+                // Convert percentage fields from 0-100 to 0-1 decimal format for OldVantage
+                if (propertyName == "PercentEntry" ||
+                    propertyName == "PercentCompleteCalc" ||
+                    propertyName == "EarnedQtyCalc")
+                {
+                    if (value is double percentValue)
+                    {
+                        return percentValue / 100.0; // Convert 75.5 → 0.755
+                    }
+                }
 
                 // Handle _Display properties (convert back to 0-1)
                 if (propertyName.EndsWith("_Display"))
