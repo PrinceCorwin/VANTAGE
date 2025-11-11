@@ -104,6 +104,9 @@ namespace VANTAGE.Models
         public string UDF8 { get; set; }
         public string UDF9 { get; set; }
         public string UDF10 { get; set; }
+        public string UDF11 { get; set; }
+        public string UDF12 { get; set; }
+        public string UDF13 { get; set; }
         public string UDF14 { get; set; }
         public string UDF15 { get; set; }
         public string UDF16 { get; set; }
@@ -129,6 +132,8 @@ namespace VANTAGE.Models
         }
 
         public string UpdatedBy { get; set; }
+        public DateTime? UpdatedUtcDate { get; set; }
+        public int LocalDirty { get; set; }  // 0=synced, 1=needs sync
         public string CreatedBy { get; set; }
         public string UniqueID { get; set; }  // Read-only unique identifier
 

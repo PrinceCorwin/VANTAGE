@@ -279,8 +279,10 @@ namespace VANTAGE.Utilities
                 PrevEarnMHs, PrevEarnQTY,
                 SchStart, SchFinish, DateTrigger, Notes,
                 UDF1, UDF2, UDF3, UDF4, UDF5, UDF6, UDF7, UDF8, UDF9, UDF10,
+                UDF11, UDF12, UDF13,
                 UDF14, UDF15, UDF16, UDF17, UDF18, UDF20,
-                PipeSize1, PipeSize2
+                PipeSize1, PipeSize2,
+                UpdatedUtcDate, LocalDirty
             ) VALUES (
                 @HexNO, @ProjectID, @Description, @UniqueID,
                 @Area, @SubArea, @PjtSystem, @SystemNO,
@@ -299,8 +301,10 @@ namespace VANTAGE.Utilities
                 @PrevEarnMHs, @PrevEarnQTY,
                 @SchStart, @SchFinish, @DateTrigger, @Notes,
                 @UDF1, @UDF2, @UDF3, @UDF4, @UDF5, @UDF6, @UDF7, @UDF8, @UDF9, @UDF10,
+                @UDF11, @UDF12, @UDF13,
                 @UDF14, @UDF15, @UDF16, @UDF17, @UDF18, @UDF20,
-                @PipeSize1, @PipeSize2
+                @PipeSize1, @PipeSize2,
+                @UpdatedUtcDate, @LocalDirty
             )";
 
                 // ✅ ADD PARAMETERS ONCE
@@ -376,6 +380,9 @@ namespace VANTAGE.Utilities
                 command.Parameters.Add("@UDF8", SqliteType.Text);
                 command.Parameters.Add("@UDF9", SqliteType.Text);
                 command.Parameters.Add("@UDF10", SqliteType.Text);
+                command.Parameters.Add("@UDF11", SqliteType.Text);
+                command.Parameters.Add("@UDF12", SqliteType.Text);
+                command.Parameters.Add("@UDF13", SqliteType.Text);
                 command.Parameters.Add("@UDF14", SqliteType.Text);
                 command.Parameters.Add("@UDF15", SqliteType.Text);
                 command.Parameters.Add("@UDF16", SqliteType.Text);
@@ -384,6 +391,8 @@ namespace VANTAGE.Utilities
                 command.Parameters.Add("@UDF20", SqliteType.Text);
                 command.Parameters.Add("@PipeSize1", SqliteType.Real);
                 command.Parameters.Add("@PipeSize2", SqliteType.Real);
+                command.Parameters.Add("@UpdatedUtcDate", SqliteType.Text);
+                command.Parameters.Add("@LocalDirty", SqliteType.Integer);
 
                 // ✅ PREPARE STATEMENT (COMPILE SQL ONCE)
                 command.Prepare();
@@ -428,8 +437,9 @@ namespace VANTAGE.Utilities
                     command.Parameters["@PhaseCategory"].Value = activity.PhaseCategory ?? "";
                     command.Parameters["@ROCStep"].Value = activity.ROCStep ?? "";
                     command.Parameters["@AssignedTo"].Value = activity.AssignedTo ?? "Unassigned";
-                    command.Parameters["@CreatedBy"].Value = activity.CreatedBy ?? "";
-                    command.Parameters["@UpdatedBy"].Value = activity.UpdatedBy ?? "";
+                    string currentUser = App.CurrentUser?.Username ?? Environment.UserName;
+                    command.Parameters["@CreatedBy"].Value = currentUser;
+                    command.Parameters["@UpdatedBy"].Value = currentUser;
                     command.Parameters["@PercentEntry"].Value = activity.PercentEntry;
                     command.Parameters["@Quantity"].Value = activity.Quantity;
                     command.Parameters["@EarnQtyEntry"].Value = activity.EarnQtyEntry;
@@ -488,6 +498,9 @@ namespace VANTAGE.Utilities
                     command.Parameters["@UDF8"].Value = activity.UDF8 ?? "";
                     command.Parameters["@UDF9"].Value = activity.UDF9 ?? "";
                     command.Parameters["@UDF10"].Value = activity.UDF10 ?? "";
+                    command.Parameters["@UDF11"].Value = activity.UDF11 ?? "";
+                    command.Parameters["@UDF12"].Value = activity.UDF12 ?? "";
+                    command.Parameters["@UDF13"].Value = activity.UDF13 ?? "";
                     command.Parameters["@UDF14"].Value = activity.UDF14 ?? "";
                     command.Parameters["@UDF15"].Value = activity.UDF15 ?? "";
                     command.Parameters["@UDF16"].Value = activity.UDF16 ?? "";
@@ -496,8 +509,11 @@ namespace VANTAGE.Utilities
                     command.Parameters["@UDF20"].Value = activity.UDF20 ?? "";
                     command.Parameters["@PipeSize1"].Value = activity.PipeSize1;
                     command.Parameters["@PipeSize2"].Value = activity.PipeSize2;
+                    command.Parameters["@UpdatedUtcDate"].Value = DateTime.UtcNow.ToString("o");
+                    command.Parameters["@LocalDirty"].Value = 1;  // Mark as dirty - needs sync
 
                     // ✅ EXECUTE (USES PREPARED STATEMENT)
+                    System.Diagnostics.Debug.WriteLine($"LocalDirty value being inserted: {command.Parameters["@LocalDirty"].Value}");
                     command.ExecuteNonQuery();
                     imported++;
 

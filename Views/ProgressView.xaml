@@ -836,18 +836,25 @@
                               AllowEditing="True"
                               AllowFiltering="True"
                               AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="CreatedBy" 
-                              HeaderText="CreatedBy" 
-                              Width="120"
+                        <syncfusion:GridTextColumn MappingName="UDF11" 
+                              HeaderText="UDF11" 
+                              Width="100"
                               IsHidden="True"
                               AllowEditing="True"
                               AllowFiltering="True"
                               AllowSorting="True" />
 
-                        <syncfusion:GridTextColumn MappingName="UpdatedBy" 
-                              HeaderText="UpdatedBy" 
-                              Width="120"
+                        <syncfusion:GridTextColumn MappingName="UDF12" 
+                              HeaderText="UDF12" 
+                              Width="100"
+                              IsHidden="True"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridTextColumn MappingName="UDF13" 
+                              HeaderText="UDF13" 
+                              Width="100"
                               IsHidden="True"
                               AllowEditing="True"
                               AllowFiltering="True"
@@ -900,6 +907,37 @@
                               AllowEditing="True"
                               AllowFiltering="True"
                               AllowSorting="True" />
+                        <syncfusion:GridTextColumn MappingName="CreatedBy" 
+                              HeaderText="CreatedBy" 
+                              Width="120"
+                              IsHidden="True"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridTextColumn MappingName="UpdatedBy" 
+                              HeaderText="UpdatedBy" 
+                              Width="120"
+                              IsHidden="True"
+                              AllowEditing="True"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+                        <syncfusion:GridDateTimeColumn MappingName="UpdatedUtcDate" 
+                              HeaderText="UpdatedUtcDate" 
+                              Width="150"
+                              IsHidden="True"
+                              AllowEditing="False"
+                              AllowFiltering="True"
+                              AllowSorting="True" />
+
+                        <syncfusion:GridNumericColumn MappingName="LocalDirty" 
+                              HeaderText="LocalDirty" 
+                              Width="100"
+                              IsHidden="True"
+                              AllowEditing="False"
+                              AllowFiltering="True"
+                              AllowSorting="True"
+                              NumberDecimalDigits="0" />
 
                         <!-- VALUE FIELDS - QUANTITIES AND PROGRESS -->
                         <syncfusion:GridNumericColumn MappingName="Quantity" 

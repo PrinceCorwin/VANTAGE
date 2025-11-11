@@ -115,121 +115,131 @@ namespace VANTAGE.Data
             try
             {
                 await Task.Run(() =>
-    {
-        using var connection = DatabaseSetup.GetConnection();
-        connection.Open();
+                {
+                    using var connection = DatabaseSetup.GetConnection();
+                    connection.Open();
 
-        var command = connection.CreateCommand();
-        // NEW: Use NewVantage column names directly
-        command.CommandText = @"
-                UPDATE Activities SET
-                HexNO = @HexNO,
-                CompType = @CompType,
-                PhaseCategory = @PhaseCategory,
-                ROCStep = @ROCStep,
-                Notes = @Notes,
-                Area = @Area,
-                Aux1 = @Aux1,
-                Aux2 = @Aux2,
-                Aux3 = @Aux3,
-                Description = @Description,
-                PhaseCode = @PhaseCode,
-                ProjectID = @ProjectID,
-                SchedActNO = @SchedActNO,
-                Service = @Service,
-                ShopField = @ShopField,
-                SubArea = @SubArea,
-                PjtSystem = @PjtSystem,
-                TagNO = @TagNO,
-                WorkPackage = @WorkPackage,
-                UDF1 = @UDF1,
-                UDF2 = @UDF2,
-                UDF3 = @UDF3,
-                UDF4 = @UDF4,
-                UDF5 = @UDF5,
-                UDF6 = @UDF6,
-                UDF7 = @UDF7,
-                UDF8 = @UDF8,
-                UDF9 = @UDF9,
-                UDF10 = @UDF10,
-                AssignedTo = @AssignedTo,
-                UpdatedBy = @UpdatedBy,
-                UDF14 = @UDF14,
-                UDF15 = @UDF15,
-                UDF16 = @UDF16,
-                UDF17 = @UDF17,
-                UDF18 = @UDF18,
-                UDF20 = @UDF20,
-                BudgetMHs = @BudgetMHs,
-                EarnQtyEntry = @EarnQtyEntry,
-                PercentEntry = @PercentEntry,
-                Quantity = @Quantity,
-                UOM = @UOM,
-                PipeSize1 = @PipeSize1,
-                PipeSize2 = @PipeSize2,
-                ClientBudget = @ClientBudget,
-                ClientCustom3 = @ClientCustom3
-                WHERE ActivityID = @ActivityID";
+                    var command = connection.CreateCommand();
+                    // NEW: Use NewVantage column names directly
+                    command.CommandText = @"
+                            UPDATE Activities SET
+                                HexNO = @HexNO,
+                                CompType = @CompType,
+                                PhaseCategory = @PhaseCategory,
+                                ROCStep = @ROCStep,
+                                Notes = @Notes,
+                                Area = @Area,
+                                Aux1 = @Aux1,
+                                Aux2 = @Aux2,
+                                Aux3 = @Aux3,
+                                Description = @Description,
+                                PhaseCode = @PhaseCode,
+                                ProjectID = @ProjectID,
+                                SchedActNO = @SchedActNO,
+                                Service = @Service,
+                                ShopField = @ShopField,
+                                SubArea = @SubArea,
+                                PjtSystem = @PjtSystem,
+                                TagNO = @TagNO,
+                                WorkPackage = @WorkPackage,
+                                UDF1 = @UDF1,
+                                UDF2 = @UDF2,
+                                UDF3 = @UDF3,
+                                UDF4 = @UDF4,
+                                UDF5 = @UDF5,
+                                UDF6 = @UDF6,
+                                UDF7 = @UDF7,
+                                UDF8 = @UDF8,
+                                UDF9 = @UDF9,
+                                UDF10 = @UDF10,
+                                UDF11 = @UDF11,
+                                UDF12 = @UDF12,
+                                UDF13 = @UDF13,
+                                AssignedTo = @AssignedTo,
+                                UpdatedBy = @UpdatedBy,
+                                UpdatedUtcDate = @UpdatedUtcDate,
+                                LocalDirty = @LocalDirty,
+                                UDF14 = @UDF14,
+                                UDF15 = @UDF15,
+                                UDF16 = @UDF16,
+                                UDF17 = @UDF17,
+                                UDF18 = @UDF18,
+                                UDF20 = @UDF20,
+                                BudgetMHs = @BudgetMHs,
+                                EarnQtyEntry = @EarnQtyEntry,
+                                PercentEntry = @PercentEntry,
+                                Quantity = @Quantity,
+                                UOM = @UOM,
+                                PipeSize1 = @PipeSize1,
+                                PipeSize2 = @PipeSize2,
+                                ClientBudget = @ClientBudget,
+                                ClientCustom3 = @ClientCustom3
+                            WHERE ActivityID = @ActivityID";
 
 
-        // Add parameters with NEW property names
-        command.Parameters.AddWithValue("@ActivityID", activity.ActivityID);
-        command.Parameters.AddWithValue("@HexNO", activity.HexNO);
-        command.Parameters.AddWithValue("@CompType", activity.CompType ?? "");
-        command.Parameters.AddWithValue("@PhaseCategory", activity.PhaseCategory ?? "");
-        command.Parameters.AddWithValue("@ROCStep", activity.ROCStep ?? "");
-        command.Parameters.AddWithValue("@Notes", activity.Notes ?? "");
-        command.Parameters.AddWithValue("@Area", activity.Area ?? "");
-        command.Parameters.AddWithValue("@Aux1", activity.Aux1 ?? "");
-        command.Parameters.AddWithValue("@Aux2", activity.Aux2 ?? "");
-        command.Parameters.AddWithValue("@Aux3", activity.Aux3 ?? "");
-        command.Parameters.AddWithValue("@Description", activity.Description ?? "");
-        command.Parameters.AddWithValue("@PhaseCode", activity.PhaseCode ?? "");
-        command.Parameters.AddWithValue("@ProjectID", activity.ProjectID ?? "");
-        command.Parameters.AddWithValue("@SchedActNO", activity.SchedActNO ?? "");
-        command.Parameters.AddWithValue("@Service", activity.Service ?? "");
-        command.Parameters.AddWithValue("@ShopField", activity.ShopField ?? "");
-        command.Parameters.AddWithValue("@SubArea", activity.SubArea ?? "");
-        command.Parameters.AddWithValue("@PjtSystem", activity.PjtSystem ?? "");
-        command.Parameters.AddWithValue("@TagNO", activity.TagNO ?? "");
-        command.Parameters.AddWithValue("@WorkPackage", activity.WorkPackage ?? "");
-        command.Parameters.AddWithValue("@UDF1", activity.UDF1 ?? "");
-        command.Parameters.AddWithValue("@UDF2", activity.UDF2 ?? "");
-        command.Parameters.AddWithValue("@UDF3", activity.UDF3 ?? "");
-        command.Parameters.AddWithValue("@UDF4", activity.UDF4 ?? "");
-        command.Parameters.AddWithValue("@UDF5", activity.UDF5 ?? "");
-        command.Parameters.AddWithValue("@UDF6", activity.UDF6 ?? "");
-        command.Parameters.AddWithValue("@UDF7", activity.UDF7);
-        command.Parameters.AddWithValue("@UDF8", activity.UDF8 ?? "");
-        command.Parameters.AddWithValue("@UDF9", activity.UDF9 ?? "");
-        command.Parameters.AddWithValue("@UDF10", activity.UDF10 ?? "");
-        command.Parameters.AddWithValue("@AssignedTo", activity.AssignedTo ?? "Unassigned");
-        command.Parameters.AddWithValue("@UpdatedBy", activity.UpdatedBy ?? "");
-        command.Parameters.AddWithValue("@UDF14", activity.UDF14 ?? "");
-        command.Parameters.AddWithValue("@UDF15", activity.UDF15 ?? "");
-        command.Parameters.AddWithValue("@UDF16", activity.UDF16 ?? "");
-        command.Parameters.AddWithValue("@UDF17", activity.UDF17 ?? "");
-        command.Parameters.AddWithValue("@UDF18", activity.UDF18 ?? "");
-        command.Parameters.AddWithValue("@UDF20", activity.UDF20 ?? "");
-        command.Parameters.AddWithValue("@BudgetMHs", activity.BudgetMHs);
-        command.Parameters.AddWithValue("@EarnQtyEntry", activity.EarnQtyEntry);
-        command.Parameters.AddWithValue("@PercentEntry", activity.PercentEntry);
-        command.Parameters.AddWithValue("@Quantity", activity.Quantity);
-        command.Parameters.AddWithValue("@UOM", activity.UOM ?? "");
-        command.Parameters.AddWithValue("@PipeSize1", activity.PipeSize1);
-        command.Parameters.AddWithValue("@PipeSize2", activity.PipeSize2);
-        command.Parameters.AddWithValue("@ClientBudget", activity.ClientBudget);
-        command.Parameters.AddWithValue("@ClientCustom3", activity.ClientCustom3);
-        command.Parameters.AddWithValue("@SchStart", activity.SchStart?.ToString("yyyy-MM-dd") ?? "");
-        command.Parameters.AddWithValue("@SchFinish", activity.SchFinish?.ToString("yyyy-MM-dd") ?? "");
-        command.Parameters.AddWithValue("@ProgDate", activity.ProgDate?.ToString("yyyy-MM-dd") ?? "");
-        command.Parameters.AddWithValue("@WeekEndDate", activity.WeekEndDate?.ToString("yyyy-MM-dd") ?? "");
-        command.Parameters.AddWithValue("@AzureUploadUtcDate", activity.AzureUploadUtcDate?.ToString("yyyy-MM-dd") ?? "");
+                    // Add parameters with NEW property names
+                    command.Parameters.AddWithValue("@ActivityID", activity.ActivityID);
+                    command.Parameters.AddWithValue("@HexNO", activity.HexNO);
+                    command.Parameters.AddWithValue("@CompType", activity.CompType ?? "");
+                    command.Parameters.AddWithValue("@PhaseCategory", activity.PhaseCategory ?? "");
+                    command.Parameters.AddWithValue("@ROCStep", activity.ROCStep ?? "");
+                    command.Parameters.AddWithValue("@Notes", activity.Notes ?? "");
+                    command.Parameters.AddWithValue("@Area", activity.Area ?? "");
+                    command.Parameters.AddWithValue("@Aux1", activity.Aux1 ?? "");
+                    command.Parameters.AddWithValue("@Aux2", activity.Aux2 ?? "");
+                    command.Parameters.AddWithValue("@Aux3", activity.Aux3 ?? "");
+                    command.Parameters.AddWithValue("@Description", activity.Description ?? "");
+                    command.Parameters.AddWithValue("@PhaseCode", activity.PhaseCode ?? "");
+                    command.Parameters.AddWithValue("@ProjectID", activity.ProjectID ?? "");
+                    command.Parameters.AddWithValue("@SchedActNO", activity.SchedActNO ?? "");
+                    command.Parameters.AddWithValue("@Service", activity.Service ?? "");
+                    command.Parameters.AddWithValue("@ShopField", activity.ShopField ?? "");
+                    command.Parameters.AddWithValue("@SubArea", activity.SubArea ?? "");
+                    command.Parameters.AddWithValue("@PjtSystem", activity.PjtSystem ?? "");
+                    command.Parameters.AddWithValue("@TagNO", activity.TagNO ?? "");
+                    command.Parameters.AddWithValue("@WorkPackage", activity.WorkPackage ?? "");
+                    command.Parameters.AddWithValue("@UDF1", activity.UDF1 ?? "");
+                    command.Parameters.AddWithValue("@UDF2", activity.UDF2 ?? "");
+                    command.Parameters.AddWithValue("@UDF3", activity.UDF3 ?? "");
+                    command.Parameters.AddWithValue("@UDF4", activity.UDF4 ?? "");
+                    command.Parameters.AddWithValue("@UDF5", activity.UDF5 ?? "");
+                    command.Parameters.AddWithValue("@UDF6", activity.UDF6 ?? "");
+                    command.Parameters.AddWithValue("@UDF7", activity.UDF7);
+                    command.Parameters.AddWithValue("@UDF8", activity.UDF8 ?? "");
+                    command.Parameters.AddWithValue("@UDF9", activity.UDF9 ?? "");
+                    command.Parameters.AddWithValue("@UDF10", activity.UDF10 ?? "");
+                    command.Parameters.AddWithValue("@AssignedTo", activity.AssignedTo ?? "Unassigned");
+                    command.Parameters.AddWithValue("@UpdatedBy", App.CurrentUser?.Username ?? Environment.UserName);
+                    command.Parameters.AddWithValue("@UDF14", activity.UDF14 ?? "");
+                    command.Parameters.AddWithValue("@UDF15", activity.UDF15 ?? "");
+                    command.Parameters.AddWithValue("@UDF16", activity.UDF16 ?? "");
+                    command.Parameters.AddWithValue("@UDF17", activity.UDF17 ?? "");
+                    command.Parameters.AddWithValue("@UDF18", activity.UDF18 ?? "");
+                    command.Parameters.AddWithValue("@UDF20", activity.UDF20 ?? "");
+                    command.Parameters.AddWithValue("@BudgetMHs", activity.BudgetMHs);
+                    command.Parameters.AddWithValue("@EarnQtyEntry", activity.EarnQtyEntry);
+                    command.Parameters.AddWithValue("@PercentEntry", activity.PercentEntry);
+                    command.Parameters.AddWithValue("@Quantity", activity.Quantity);
+                    command.Parameters.AddWithValue("@UOM", activity.UOM ?? "");
+                    command.Parameters.AddWithValue("@PipeSize1", activity.PipeSize1);
+                    command.Parameters.AddWithValue("@PipeSize2", activity.PipeSize2);
+                    command.Parameters.AddWithValue("@ClientBudget", activity.ClientBudget);
+                    command.Parameters.AddWithValue("@ClientCustom3", activity.ClientCustom3);
+                    command.Parameters.AddWithValue("@SchStart", activity.SchStart?.ToString("yyyy-MM-dd") ?? "");
+                    command.Parameters.AddWithValue("@SchFinish", activity.SchFinish?.ToString("yyyy-MM-dd") ?? "");
+                    command.Parameters.AddWithValue("@ProgDate", activity.ProgDate?.ToString("yyyy-MM-dd") ?? "");
+                    command.Parameters.AddWithValue("@WeekEndDate", activity.WeekEndDate?.ToString("yyyy-MM-dd") ?? "");
+                    command.Parameters.AddWithValue("@AzureUploadUtcDate", activity.AzureUploadUtcDate?.ToString("yyyy-MM-dd") ?? "");
+                    command.Parameters.AddWithValue("@UDF11", activity.UDF11 ?? "");
+                    command.Parameters.AddWithValue("@UDF12", activity.UDF12 ?? "");
+                    command.Parameters.AddWithValue("@UDF13", activity.UDF13 ?? "");
+                    command.Parameters.AddWithValue("@UpdatedUtcDate", DateTime.UtcNow.ToString("o"));
+                    command.Parameters.AddWithValue("@LocalDirty", 1);  // Mark as dirty when edited
 
-        int rowsAffected = command.ExecuteNonQuery();
+                    int rowsAffected = command.ExecuteNonQuery();
 
-        return rowsAffected > 0;
-    });
+                    return rowsAffected > 0;
+                });
 
                 return true;
             }
@@ -296,7 +306,7 @@ namespace VANTAGE.Data
         public static async Task<(List<Activity> activities, int totalCount)> GetPageAsync(
             int pageNumber,
             int pageSize,
-    string whereClause = null)
+            string whereClause = null)
         {
             return await Task.Run(() =>
                  {
@@ -470,9 +480,7 @@ namespace VANTAGE.Data
                                  UDF8 = GetStringSafe("UDF8"),
                                  UDF9 = GetStringSafe("UDF9"),
                                  UDF10 = GetStringSafe("UDF10"),
-                                 AssignedTo = string.IsNullOrWhiteSpace(GetStringSafe("AssignedTo")) ? "Unassigned" : (validUsernames.Contains(GetStringSafe("AssignedTo")) ? GetStringSafe("AssignedTo") : "Unassigned"),
-                                 UpdatedBy = GetStringSafe("UpdatedBy"),
-                                 CreatedBy = GetStringSafe("CreatedBy"),
+
                                  UDF14 = GetStringSafe("UDF14"),
                                  UDF15 = GetStringSafe("UDF15"),
                                  UDF16 = GetStringSafe("UDF16"),
@@ -480,6 +488,10 @@ namespace VANTAGE.Data
                                  UDF18 = GetStringSafe("UDF18"),
                                  UniqueID = GetStringSafe("UniqueID"),
                                  UDF20 = GetStringSafe("UDF20"),
+                                 AssignedTo = string.IsNullOrWhiteSpace(GetStringSafe("AssignedTo")) ? "Unassigned" : (validUsernames.Contains(GetStringSafe("AssignedTo")) ? GetStringSafe("AssignedTo") : "Unassigned"),
+                                 UpdatedBy = GetStringSafe("UpdatedBy"),
+                                 CreatedBy = GetStringSafe("CreatedBy"),
+                                 LocalDirty = GetIntSafe("LocalDirty"),
 
                                  // Values
                                  BaseUnit = GetDoubleSafe("BaseUnit"),
@@ -710,10 +722,6 @@ namespace VANTAGE.Data
                                  UDF8 = GetStringSafe("UDF8"),
                                  UDF9 = GetStringSafe("UDF9"),
                                  UDF10 = GetStringSafe("UDF10"),
-                                 AssignedTo = string.IsNullOrWhiteSpace(GetStringSafe("AssignedTo")) || GetStringSafe("AssignedTo") == "Unassigned"
-                           ? "Unassigned" : (validUsernames.Contains(GetStringSafe("AssignedTo")) ? GetStringSafe("AssignedTo") : "Unassigned"),
-                                 UpdatedBy = GetStringSafe("UpdatedBy"),
-                                 CreatedBy = GetStringSafe("CreatedBy"),
                                  UDF14 = GetStringSafe("UDF14"),
                                  UDF15 = GetStringSafe("UDF15"),
                                  UDF16 = GetStringSafe("UDF16"),
@@ -721,6 +729,12 @@ namespace VANTAGE.Data
                                  UDF18 = GetStringSafe("UDF18"),
                                  UniqueID = GetStringSafe("UniqueID"),
                                  UDF20 = GetStringSafe("UDF20"),
+                                 AssignedTo = string.IsNullOrWhiteSpace(GetStringSafe("AssignedTo")) || GetStringSafe("AssignedTo") == "Unassigned"
+                           ? "Unassigned" : (validUsernames.Contains(GetStringSafe("AssignedTo")) ? GetStringSafe("AssignedTo") : "Unassigned"),
+                                 UpdatedBy = GetStringSafe("UpdatedBy"),
+                                 CreatedBy = GetStringSafe("CreatedBy"),
+                                 LocalDirty = GetIntSafe("LocalDirty"),
+
 
                                  // Values
                                  BaseUnit = GetDoubleSafe("BaseUnit"),

@@ -94,7 +94,7 @@ namespace VANTAGE
                         HtTrace TEXT DEFAULT '',
                         InsulType TEXT DEFAULT '',
                         LineNO TEXT DEFAULT '',
-                        LocalDirty INTEGER DEFAULT 0,
+                        LocalDirty INTEGER DEFAULT 1,
                         MtrlSpec TEXT DEFAULT '',
                         Notes TEXT DEFAULT '',
                         PaintCode TEXT DEFAULT '',
