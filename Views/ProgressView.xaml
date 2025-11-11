@@ -845,8 +845,8 @@
                               AllowFiltering="True"
                               AllowSorting="True" />
 
-                        <syncfusion:GridTextColumn MappingName="LastModifiedBy" 
-                              HeaderText="LastModifiedBy" 
+                        <syncfusion:GridTextColumn MappingName="UpdatedBy" 
+                              HeaderText="UpdatedBy" 
                               Width="120"
                               IsHidden="True"
                               AllowEditing="True"
@@ -1142,8 +1142,8 @@
                                   AllowSorting="True"
                                   Pattern="ShortDate" />
 
-                        <syncfusion:GridDateTimeColumn MappingName="AzureUploadDate" 
-                                  HeaderText="AzureUploadDate" 
+                        <syncfusion:GridDateTimeColumn MappingName="AzureUploadUtcDate" 
+                                  HeaderText="AzureUploadUtcDate" 
                                   Width="120"
                                   IsHidden="True"
                                   AllowEditing="False"

@@ -153,7 +153,7 @@ namespace VANTAGE.Data
                 UDF9 = @UDF9,
                 UDF10 = @UDF10,
                 AssignedTo = @AssignedTo,
-                LastModifiedBy = @LastModifiedBy,
+                UpdatedBy = @UpdatedBy,
                 UDF14 = @UDF14,
                 UDF15 = @UDF15,
                 UDF16 = @UDF16,
@@ -204,7 +204,7 @@ namespace VANTAGE.Data
         command.Parameters.AddWithValue("@UDF9", activity.UDF9 ?? "");
         command.Parameters.AddWithValue("@UDF10", activity.UDF10 ?? "");
         command.Parameters.AddWithValue("@AssignedTo", activity.AssignedTo ?? "Unassigned");
-        command.Parameters.AddWithValue("@LastModifiedBy", activity.LastModifiedBy ?? "");
+        command.Parameters.AddWithValue("@UpdatedBy", activity.UpdatedBy ?? "");
         command.Parameters.AddWithValue("@UDF14", activity.UDF14 ?? "");
         command.Parameters.AddWithValue("@UDF15", activity.UDF15 ?? "");
         command.Parameters.AddWithValue("@UDF16", activity.UDF16 ?? "");
@@ -224,7 +224,7 @@ namespace VANTAGE.Data
         command.Parameters.AddWithValue("@SchFinish", activity.SchFinish?.ToString("yyyy-MM-dd") ?? "");
         command.Parameters.AddWithValue("@ProgDate", activity.ProgDate?.ToString("yyyy-MM-dd") ?? "");
         command.Parameters.AddWithValue("@WeekEndDate", activity.WeekEndDate?.ToString("yyyy-MM-dd") ?? "");
-        command.Parameters.AddWithValue("@AzureUploadDate", activity.AzureUploadDate?.ToString("yyyy-MM-dd") ?? "");
+        command.Parameters.AddWithValue("@AzureUploadUtcDate", activity.AzureUploadUtcDate?.ToString("yyyy-MM-dd") ?? "");
 
         int rowsAffected = command.ExecuteNonQuery();
 
@@ -471,7 +471,7 @@ namespace VANTAGE.Data
                                  UDF9 = GetStringSafe("UDF9"),
                                  UDF10 = GetStringSafe("UDF10"),
                                  AssignedTo = string.IsNullOrWhiteSpace(GetStringSafe("AssignedTo")) ? "Unassigned" : (validUsernames.Contains(GetStringSafe("AssignedTo")) ? GetStringSafe("AssignedTo") : "Unassigned"),
-                                 LastModifiedBy = GetStringSafe("LastModifiedBy"),
+                                 UpdatedBy = GetStringSafe("UpdatedBy"),
                                  CreatedBy = GetStringSafe("CreatedBy"),
                                  UDF14 = GetStringSafe("UDF14"),
                                  UDF15 = GetStringSafe("UDF15"),
@@ -659,7 +659,7 @@ namespace VANTAGE.Data
                                  SchFinish = GetDateTimeSafe("SchFinish"),
                                  ProgDate = GetDateTimeSafe("ProgDate"),
                                  WeekEndDate = GetDateTimeSafe("WeekEndDate"),
-                                 AzureUploadDate = GetDateTimeSafe("AzureUploadDate"),
+                                 AzureUploadUtcDate = GetDateTimeSafe("AzureUploadUtcDate"),
 
                                  // Text fields - Category
                                  Area = GetStringSafe("Area"),
@@ -712,7 +712,7 @@ namespace VANTAGE.Data
                                  UDF10 = GetStringSafe("UDF10"),
                                  AssignedTo = string.IsNullOrWhiteSpace(GetStringSafe("AssignedTo")) || GetStringSafe("AssignedTo") == "Unassigned"
                            ? "Unassigned" : (validUsernames.Contains(GetStringSafe("AssignedTo")) ? GetStringSafe("AssignedTo") : "Unassigned"),
-                                 LastModifiedBy = GetStringSafe("LastModifiedBy"),
+                                 UpdatedBy = GetStringSafe("UpdatedBy"),
                                  CreatedBy = GetStringSafe("CreatedBy"),
                                  UDF14 = GetStringSafe("UDF14"),
                                  UDF15 = GetStringSafe("UDF15"),
@@ -931,7 +931,7 @@ namespace VANTAGE.Data
                 ActivityID = reader.GetInt32(reader.GetOrdinal("ActivityID")),
                 Area = GetStringOrDefault(reader, "Area"),
                 AssignedTo = GetStringOrDefault(reader, "AssignedTo"),
-                AzureUploadDate = GetDateTimeOrNull(reader, "AzureUploadDate"),
+                AzureUploadUtcDate = GetDateTimeOrNull(reader, "AzureUploadUtcDate"),
                 Aux1 = GetStringOrDefault(reader, "Aux1"),
                 Aux2 = GetStringOrDefault(reader, "Aux2"),
                 Aux3 = GetStringOrDefault(reader, "Aux3"),
@@ -957,7 +957,7 @@ namespace VANTAGE.Data
                 HexNO = GetIntOrDefault(reader, "HexNO"),
                 HtTrace = GetStringOrDefault(reader, "HtTrace"),
                 InsulType = GetStringOrDefault(reader, "InsulType"),
-                LastModifiedBy = GetStringOrDefault(reader, "LastModifiedBy"),
+                UpdatedBy = GetStringOrDefault(reader, "UpdatedBy"),
                 LineNO = GetStringOrDefault(reader, "LineNO"),
                 MtrlSpec = GetStringOrDefault(reader, "MtrlSpec"),
                 Notes = GetStringOrDefault(reader, "Notes"),
@@ -1092,7 +1092,7 @@ namespace VANTAGE.Data
                                PrevEarnMHs, PrevEarnQTY, ROCBudgetQTY, ROCPercent, 
                                ROCID, EquivQTY, ClientBudget, ClientCustom3, 
                                ClientEquivQty, WeekEndDate, ProgDate, 
-                               AzureUploadDate, XRay, LastModifiedBy
+                               AzureUploadUtcDate, XRay, UpdatedBy
                         FROM Deleted_Activities 
                         WHERE ActivityID = @ActivityID";
 

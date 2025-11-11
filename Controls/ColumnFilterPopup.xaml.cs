@@ -209,7 +209,7 @@ namespace VANTAGE.Controls
             // List of known date columns
             var dateColumns = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
-                "Start", "Finish", "ProgDate", "WeekEndDate", "AzureUploadDate"
+                "Start", "Finish", "ProgDate", "WeekEndDate", "AzureUploadUtcDate"
             };
 
             if (numericColumns.Contains(columnName))

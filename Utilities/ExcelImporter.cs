@@ -265,7 +265,7 @@ namespace VANTAGE.Utilities
                 HexNO, ProjectID, Description, UniqueID,
                 Area, SubArea, PjtSystem, SystemNO,
                 CompType, PhaseCategory, ROCStep,
-                AssignedTo, CreatedBy, LastModifiedBy,
+                AssignedTo, CreatedBy, UpdatedBy,
                 PercentEntry, Quantity, EarnQtyEntry, UOM,
                 BudgetMHs, BudgetHoursGroup, BudgetHoursROC, BaseUnit, EarnedMHsRoc,
                 ROCID, ROCPercent, ROCBudgetQTY,
@@ -285,7 +285,7 @@ namespace VANTAGE.Utilities
                 @HexNO, @ProjectID, @Description, @UniqueID,
                 @Area, @SubArea, @PjtSystem, @SystemNO,
                 @CompType, @PhaseCategory, @ROCStep,
-                @AssignedTo, @CreatedBy, @LastModifiedBy,
+                @AssignedTo, @CreatedBy, @UpdatedBy,
                 @PercentEntry, @Quantity, @EarnQtyEntry, @UOM,
                 @BudgetMHs, @BudgetHoursGroup, @BudgetHoursROC, @BaseUnit, @EarnedMHsRoc,
                 @ROCID, @ROCPercent, @ROCBudgetQTY,
@@ -317,7 +317,7 @@ namespace VANTAGE.Utilities
                 command.Parameters.Add("@ROCStep", SqliteType.Text);
                 command.Parameters.Add("@AssignedTo", SqliteType.Text);
                 command.Parameters.Add("@CreatedBy", SqliteType.Text);
-                command.Parameters.Add("@LastModifiedBy", SqliteType.Text);
+                command.Parameters.Add("@UpdatedBy", SqliteType.Text);
                 command.Parameters.Add("@PercentEntry", SqliteType.Real);
                 command.Parameters.Add("@Quantity", SqliteType.Real);
                 command.Parameters.Add("@EarnQtyEntry", SqliteType.Real);
@@ -429,7 +429,7 @@ namespace VANTAGE.Utilities
                     command.Parameters["@ROCStep"].Value = activity.ROCStep ?? "";
                     command.Parameters["@AssignedTo"].Value = activity.AssignedTo ?? "Unassigned";
                     command.Parameters["@CreatedBy"].Value = activity.CreatedBy ?? "";
-                    command.Parameters["@LastModifiedBy"].Value = activity.LastModifiedBy ?? "";
+                    command.Parameters["@UpdatedBy"].Value = activity.UpdatedBy ?? "";
                     command.Parameters["@PercentEntry"].Value = activity.PercentEntry;
                     command.Parameters["@Quantity"].Value = activity.Quantity;
                     command.Parameters["@EarnQtyEntry"].Value = activity.EarnQtyEntry;

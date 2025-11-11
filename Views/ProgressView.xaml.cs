@@ -519,7 +519,7 @@ namespace VANTAGE.Views
                 foreach (var activity in selectedActivities)
                 {
                     activity.PercentEntry = percent;
-                    activity.LastModifiedBy = App.CurrentUser?.Username ?? "Unknown";
+                    activity.UpdatedBy = App.CurrentUser?.Username ?? "Unknown";
 
                     bool success = await ActivityRepository.UpdateActivityInDatabase(activity);
                     if (success) successCount++;
@@ -908,7 +908,7 @@ namespace VANTAGE.Views
                 foreach (var activity in allowedActivities)
                 {
                     activity.AssignedTo = "Unassigned";
-                    activity.LastModifiedBy = App.CurrentUser.Username;
+                    activity.UpdatedBy = App.CurrentUser.Username;
 
                     bool success = await ActivityRepository.UpdateActivityInDatabase(activity);
                     if (success)
@@ -1266,8 +1266,8 @@ namespace VANTAGE.Views
                 if (editedActivity == null)
                     return;
 
-                // Update LastModifiedBy with current user
-                editedActivity.LastModifiedBy = App.CurrentUser?.Username ?? "Unknown";
+                // Update UpdatedBy with current user
+                editedActivity.UpdatedBy = App.CurrentUser?.Username ?? "Unknown";
 
                 // Save to database
                 bool success = await ActivityRepository.UpdateActivityInDatabase(editedActivity);
@@ -1345,7 +1345,7 @@ namespace VANTAGE.Views
                 foreach (var activity in allowedActivities)
                 {
                     activity.AssignedTo = App.CurrentUser.Username;
-                    activity.LastModifiedBy = App.CurrentUser.Username;
+                    activity.UpdatedBy = App.CurrentUser.Username;
 
                     bool success = await ActivityRepository.UpdateActivityInDatabase(activity);
                     if (success)
@@ -1480,7 +1480,7 @@ namespace VANTAGE.Views
                     foreach (var activity in allowedActivities)
                     {
                         activity.AssignedTo = selectedUser;
-                        activity.LastModifiedBy = App.CurrentUser.Username;
+                        activity.UpdatedBy = App.CurrentUser.Username;
 
                         bool success = await ActivityRepository.UpdateActivityInDatabase(activity);
                         if (success)

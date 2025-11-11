@@ -223,7 +223,7 @@ namespace VANTAGE.Utilities
                 "Val_Perc_Complete",
                 "Status",
                 "AssignedToUsername",
-                "LastModifiedBy"
+                "UpdatedBy"
             };
         }
 

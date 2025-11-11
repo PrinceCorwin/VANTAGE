@@ -42,7 +42,7 @@ namespace VANTAGE.Controls
             // Known date columns (must match DataGrid property names)
             var dateColumns = new System.Collections.Generic.HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
-                "SchStart", "SchFinish", "ProgDate", "WeekEndDate", "AzureUploadDate"
+                "SchStart", "SchFinish", "ProgDate", "WeekEndDate", "AzureUploadUtcDate"
             };
             if (dateColumns.Contains(columnName))
                 _columnType = "date";

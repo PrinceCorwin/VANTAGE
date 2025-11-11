@@ -43,7 +43,7 @@ namespace VANTAGE.Models
         public DateTime? SchFinish { get; set; }
         public DateTime? ProgDate { get; set; }
         public DateTime? WeekEndDate { get; set; }
-        public DateTime? AzureUploadDate { get; set; }
+        public DateTime? AzureUploadUtcDate { get; set; }
 
         
         /// Status based on PercentEntry (0-100)
@@ -128,7 +128,7 @@ namespace VANTAGE.Models
             }
         }
 
-        public string LastModifiedBy { get; set; }
+        public string UpdatedBy { get; set; }
         public string CreatedBy { get; set; }
         public string UniqueID { get; set; }  // Read-only unique identifier
 

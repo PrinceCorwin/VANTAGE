@@ -67,7 +67,7 @@ namespace VANTAGE
                         ActivityID INTEGER PRIMARY KEY AUTOINCREMENT,
                         Area TEXT DEFAULT '',
                         AssignedTo TEXT DEFAULT 'Unassigned',
-                        AzureUploadDate TEXT,
+                        AzureUploadUtcDate TEXT,
                         Aux1 TEXT DEFAULT '',
                         Aux2 TEXT DEFAULT '',
                         Aux3 TEXT DEFAULT '',
@@ -78,7 +78,6 @@ namespace VANTAGE
                         ChgOrdNO TEXT DEFAULT '',
                         ClientBudget REAL DEFAULT 0,
                         ClientCustom3 REAL DEFAULT 0,
-                        ClientEquivEarnQTY TEXT DEFAULT '',
                         ClientEquivQty REAL DEFAULT 0,
                         CompType TEXT DEFAULT '',
                         CreatedBy TEXT DEFAULT '',
@@ -91,12 +90,11 @@ namespace VANTAGE
                         EquivQTY TEXT DEFAULT '',
                         EquivUOM TEXT DEFAULT '',
                         Estimator TEXT DEFAULT '',
-                        Finish TEXT DEFAULT '',
                         HexNO INTEGER DEFAULT 0,
                         HtTrace TEXT DEFAULT '',
                         InsulType TEXT DEFAULT '',
-                        LastModifiedBy TEXT DEFAULT '',
                         LineNO TEXT DEFAULT '',
+                        LocalDirty INTEGER DEFAULT 0,
                         MtrlSpec TEXT DEFAULT '',
                         Notes TEXT DEFAULT '',
                         PaintCode TEXT DEFAULT '',
@@ -108,6 +106,7 @@ namespace VANTAGE
                         PipeSize2 REAL DEFAULT 0,
                         PrevEarnMHs REAL DEFAULT 0,
                         PrevEarnQTY REAL DEFAULT 0,
+                        PjtSystem TEXT DEFAULT '',
                         ProgDate TEXT,
                         ProjectID TEXT DEFAULT '',
                         Quantity REAL DEFAULT 0,
@@ -125,14 +124,14 @@ namespace VANTAGE
                         Service TEXT DEFAULT '',
                         ShopField TEXT DEFAULT '',
                         ShtNO TEXT DEFAULT '',
-                        Start TEXT DEFAULT '',
-                        Status TEXT DEFAULT '',
                         SubArea TEXT DEFAULT '',
-                        PjtSystem TEXT DEFAULT '',
                         SystemNO TEXT DEFAULT '',
                         TagNO TEXT DEFAULT '',
                         UDF1 TEXT DEFAULT '',
                         UDF10 TEXT DEFAULT '',
+                        UDF11 TEXT DEFAULT '',
+                        UDF12 TEXT DEFAULT '',
+                        UDF13 TEXT DEFAULT '',
                         UDF14 TEXT DEFAULT '',
                         UDF15 TEXT DEFAULT '',
                         UDF16 TEXT DEFAULT '',
@@ -149,6 +148,8 @@ namespace VANTAGE
                         UDF9 TEXT DEFAULT '',
                         UniqueID TEXT UNIQUE NOT NULL,
                         UOM TEXT DEFAULT '',
+                        UpdatedBy TEXT DEFAULT '',
+                        UpdatedUtcDate TEXT,
                         WeekEndDate TEXT,
                         WorkPackage TEXT DEFAULT '',
                         XRay REAL DEFAULT 0
@@ -263,10 +264,10 @@ namespace VANTAGE
 
 
 
-        
+
         /// Seed ColumnMappings table from CSV data (hardcoded from ColumnNameComparisonForAiModel.csv)
         /// This data is embedded in code for deployment - no CSV file needed at runtime
-        
+
         private static void SeedColumnMappings(SqliteConnection connection)
         {
             // Check if already seeded
@@ -297,14 +298,14 @@ namespace VANTAGE
 
             // Data from ColumnNameComparisonForAiModel.csv
             // Format: (NewVantage, OldVantage, Azure, DataType, IsEditable, IsCalculated, CalcFormula, Notes)
-            var mappings = new[]
+            (string, string, string, string, int, int, string, string)[] mappings = new (string, string, string, string, int, int, string, string)[]
             {
                 ("Area", "Tag_Area", "Tag_Area", "Short Text", 1, 0, null, null),
                 ("AssignedTo", "UDFEleven", "UDF11", "Short Text", 1, 0, null, null),
                 ("Aux1", "Tag_Aux1", "Tag_Aux1", "Short Text", 1, 0, null, null),
                 ("Aux2", "Tag_Aux2", "Tag_Aux2", "Short Text", 1, 0, null, null),
                 ("Aux3", "Tag_Aux3", "Tag_Aux3", "Short Text", 1, 0, null, null),
-                ("AzureUploadDate", null, "Timestamp", "Date/Time", 0, 0, null, "When user submits to Azure - official date used in Power BI dashboard"),
+                ("AzureUploadUtcDate", null, "Timestamp", "Date/Time", 0, 0, null, "When user submits to Azure - official date used in Power BI dashboard"),
                 ("BaseUnit", "Val_Base_Unit", "Val_Base_Unit", "Number", 1, 0, null, null),
                 ("BudgetHoursGroup", "Val_BudgetedHours_Group", "Val_BudgetedHours_Group", "Number", 1, 0, null, null),
                 ("BudgetHoursROC", "Val_BudgetedHours_ROC", "Val_BudgetedHours_ROC", "Number", 1, 0, null, null),
@@ -312,7 +313,6 @@ namespace VANTAGE
                 ("ChgOrdNO", "Tag_CONo", "Tag_CONo", "Short Text", 1, 0, null, null),
                 ("ClientBudget", "VAL_UDF_Two", "VAL_UDF_Two", "Number", 1, 0, null, null),
                 ("ClientCustom3", "VAL_UDF_Three", "VAL_UDF_Three", "Number", 1, 0, null, null),
-                ("ClientEquivEarnQTY", "VAL_Client_Earned_EQ-QTY", "VAL_Client_Earned_EQ-QTY", "Short Text", 1, 0, null, null),
                 ("ClientEquivQty", "VAL_Client_EQ-QTY_BDG", "Val_Client_Eq_Qty_Bdg", "Number", 1, 0, null, null),
                 ("CompType", "Catg_ComponentType", "Catg_ComponentType", "Short Text", 1, 0, null, null),
                 ("CreatedBy", "UDFThirteen", "UDF13", "Short Text", 1, 0, null, null),
@@ -320,8 +320,6 @@ namespace VANTAGE
                 ("Description", "Tag_Descriptions", "Tag_Descriptions", "Short Text", 1, 0, null, null),
                 ("DwgNO", "Dwg_PrimeDrawingNO", "Dwg_PrimeDrawingNO", "Short Text", 1, 0, null, null),
                 ("EarnedMHsRoc", "Val_EarnedHours_ROC", null, "Number", 1, 0, null, null),
-                ("EarnedQtyCalc", "Val_Earn_Qty", null, "Number", 0, 1, "PercentEntry", null),
-                ("EarnMHsCalc", "Val_EarnedHours_Ind", "Val_EarnedHours_Ind", "Number", 0, 1, "PercentEntry*BudgetMHs", null),
                 ("EarnQtyEntry", "Val_EarnedQty", "Val_EarnedQty", "Number", 1, 0, null, null),
                 ("EqmtNO", "Tag_EqmtNo", "Tag_EqmtNo", "Short Text", 1, 0, null, null),
                 ("EquivQTY", "Val_EQ-QTY", "Val_EQ-QTY", "Short Text", 1, 0, null, null),
@@ -331,12 +329,10 @@ namespace VANTAGE
                 ("HexNO", "HexNO", "HexNO", "Number", 1, 0, null, null),
                 ("HtTrace", "Tag_Tracing", "Tag_Tracing", "Short Text", 1, 0, null, null),
                 ("InsulType", "Tag_Insulation_Typ", "Tag_Insulation_Typ", "Short Text", 1, 0, null, null),
-                ("LastModifiedBy", "UDFTwelve", "UDF12", "Short Text", 1, 0, null, null),
                 ("LineNO", "Tag_LineNo", "Tag_LineNo", "Short Text", 1, 0, null, null),
                 ("MtrlSpec", "Tag_Matl_Spec", "Tag_Matl_Spec", "Short Text", 1, 0, null, null),
                 ("Notes", "Notes_Comments", "Notes_Comments", "Long Text", 1, 0, null, null),
                 ("PaintCode", "Tag_Paint_Code", "Tag_Paint_Code", "Short Text", 1, 0, null, null),
-                ("PercentCompleteCalc", "Val_Percent_Earned", null, "Number", 0, 1, "PercentEntry", null),
                 ("PercentEntry", "Val_Perc_Complete", "Val_Perc_Complete", "Number", 1, 0, null, "format 0-1 in import, export. Format 0-100% in datagrid display"),
                 ("PhaseCategory", "Catg_PhaseCategory", "Catg_PhaseCategory", "Short Text", 1, 0, null, null),
                 ("PhaseCode", "Tag_Phase Code", "Tag_PhaseCode", "Short Text", 1, 0, null, null),
@@ -345,14 +341,13 @@ namespace VANTAGE
                 ("PipeSize2", "Val_Pipe_Size2", "Val_Pipe_Size2", "Number", 1, 0, null, null),
                 ("PrevEarnMHs", "Val_Prev_Earned_Hours", null, "Number", 1, 0, null, null),
                 ("PrevEarnQTY", "Val_Prev_Earned_Qty", null, "Number", 1, 0, null, null),
-                ("ProgDate", null, "Val_ProgDate", "Date/Time", 0, 1, null, "timestamp when user clicks to submit progress to local db"),
+                ("ProgDate", null, "Val_ProgDate", "Date/Time", 0, 0, null, "timestamp when user clicks to submit progress to local db"),
                 ("ProjectID", "Tag_ProjectID", "Tag_ProjectID", "Short Text", 1, 0, null, null),
                 ("Quantity", "Val_Quantity", "Val_Quantity", "Number", 1, 0, null, null),
                 ("RevNO", "Dwg_RevisionNo", "Dwg_RevisionNo", "Short Text", 1, 0, null, null),
                 ("RFINO", "Tag_RFINo", "Tag_RFINo", "Short Text", 1, 0, null, null),
                 ("ROCBudgetQTY", "Val_ROC_BudgetQty", "Val_ROC_BudgetQty", "Number", 1, 0, null, "needs to be same as Quantity on export"),
                 ("ROCID", "Tag_ROC_ID", null, "Number", 1, 0, null, null),
-                ("ROCLookupID", "LookUP_ROC_ID", null, "Short Text", 0, 1, "ProjectID & \"|\" & CompType & \"|\" & PhaseCatagory & \"|\" & ROCStep", null),
                 ("ROCPercent", "Val_ROC_Perc", null, "Number", 1, 0, null, null),
                 ("ROCStep", "Catg_ROC_Step", "Catg_ROC_Step", "Short Text", 1, 0, null, null),
                 ("SchedActNO", "Tag_Sch_ActNo", "Tag_Sch_ActNo", "Short Text", 1, 0, null, null),
@@ -362,13 +357,15 @@ namespace VANTAGE
                 ("ShopField", "Tag_ShopField", "Tag_ShopField", "Short Text", 1, 0, null, null),
                 ("ShtNO", "Dwg_ShtNo", "Dwg_ShtNo", "Short Text", 1, 0, null, null),
                 ("SchStart", "Sch_Start", "Sch_Start", "Date/Time", 1, 0, null, "will make calculated later when schedule module is developed"),
-                ("Status", "Sch_Status", "Sch_Status", "Short Text", 0, 1, "PercentEntry = 0: \"Not Started\", PercentEntry >0, <100: \"In Progress\", PercentEntry = 100: \"Complete\"", "Not Started, In Progress, Complete base on PercentEntry"),
                 ("SubArea", "Tag_SubArea", "Tag_SubArea", "Short Text", 1, 0, null, null),
                 ("PjtSystem", "Tag_System", "Tag_System", "Short Text", 1, 0, null, null),
                 ("SystemNO", "Tag_SystemNo", null, "Short Text", 1, 0, null, null),
                 ("TagNO", "Tag_TagNo", "Tag_TagNo", "Short Text", 1, 0, null, null),
                 ("UDF1", "UDFOne", "UDF1", "Short Text", 1, 0, null, null),
                 ("UDF10", "UDFTen", "UDF10", "Short Text", 1, 0, null, null),
+                ("UDF11", "UDFEleven", "UDF11", "Short Text", 1, 0, null, "Separate field - was mapped to AssignedTo before refactor"),
+                ("UDF12", "UDFTwelve", "UDF12", "Short Text", 1, 0, null, "Separate field - was mapped to UpdatedBy before refactor"),
+                ("UDF13", "UDFThirteen", "UDF13", "Short Text", 1, 0, null, "Separate field - was mapped to CreatedBy before refactor"),
                 ("UDF14", "UDFFourteen", "UDF14", "Short Text", 1, 0, null, null),
                 ("UDF15", "UDFFifteen", "UDF15", "Short Text", 1, 0, null, null),
                 ("UDF16", "UDFSixteen", "UDF16", "Short Text", 1, 0, null, null),
@@ -385,8 +382,11 @@ namespace VANTAGE
                 ("UDF9", "UDFNine", "UDF9", "Short Text", 1, 0, null, null),
                 ("UniqueID", "UDFNineteen", "UDF19", "Short Text", 0, 0, null, "If null on import, calculated using \"i\" & base time at time of import (yymmddhhnnss) & iterated integer from 1 to n (number of records import without UDFNineteen value) & last three characters of current username. Example: i2510300738271ano, i2510300738272ano, etc"),
                 ("UOM", "Val_UOM", "Val_UOM", "Short Text", 1, 0, null, null),
+                ("UpdatedBy", null, "UpdatedBy", "Short Text", 0, 0, null, "Username who last modified this record"),
+                ("UpdatedUtcDate", null, "UpdatedUtcDate", "Date/Time", 0, 0, null, "UTC timestamp of last modification"),
+                ("LocalDirty", null, "LocalDirty", "Number", 0, 0, null, "Sync flag: 0=synced with central, 1=needs sync"),
                 ("UserID", null, "UserID", "Short Text", 0, 0, null, "created upon upload, sync to Azure (current username)"),
-                ("WeekEndDate", "Val_TimeStamp", "Val_TimeStamp", "Date/Time", 0, 1, null, "Week Ending Date set when user submits to Local or Azure"),
+                ("WeekEndDate", "Val_TimeStamp", "Val_TimeStamp", "Date/Time", 0, 0, null, "Week Ending Date set when user submits to Local or Azure"),
                 ("WorkPackage", "Tag_WorkPackage", "Tag_WorkPackage", "Short Text", 1, 0, null, null),
                 ("XRay", "Tag_XRAY", "Tag_XRAY", "Number", 1, 0, null, null)
             };
