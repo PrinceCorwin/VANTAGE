@@ -263,7 +263,7 @@ namespace VANTAGE.Utilities
                 command.CommandText = @"
             INSERT INTO Activities (
                 HexNO, ProjectID, Description, UniqueID,
-                Area, SubArea, System, SystemNO,
+                Area, SubArea, PjtSystem, SystemNO,
                 CompType, PhaseCategory, ROCStep,
                 AssignedTo, CreatedBy, LastModifiedBy,
                 PercentEntry, Quantity, EarnQtyEntry, UOM,
@@ -283,7 +283,7 @@ namespace VANTAGE.Utilities
                 PipeSize1, PipeSize2
             ) VALUES (
                 @HexNO, @ProjectID, @Description, @UniqueID,
-                @Area, @SubArea, @System, @SystemNO,
+                @Area, @SubArea, @PjtSystem, @SystemNO,
                 @CompType, @PhaseCategory, @ROCStep,
                 @AssignedTo, @CreatedBy, @LastModifiedBy,
                 @PercentEntry, @Quantity, @EarnQtyEntry, @UOM,
@@ -310,7 +310,7 @@ namespace VANTAGE.Utilities
                 command.Parameters.Add("@UniqueID", SqliteType.Text);
                 command.Parameters.Add("@Area", SqliteType.Text);
                 command.Parameters.Add("@SubArea", SqliteType.Text);
-                command.Parameters.Add("@System", SqliteType.Text);
+                command.Parameters.Add("@PjtSystem", SqliteType.Text);
                 command.Parameters.Add("@SystemNO", SqliteType.Text);
                 command.Parameters.Add("@CompType", SqliteType.Text);
                 command.Parameters.Add("@PhaseCategory", SqliteType.Text);
@@ -422,7 +422,7 @@ namespace VANTAGE.Utilities
                     command.Parameters["@UniqueID"].Value = activity.UniqueID;
                     command.Parameters["@Area"].Value = activity.Area ?? "";
                     command.Parameters["@SubArea"].Value = activity.SubArea ?? "";
-                    command.Parameters["@System"].Value = activity.System ?? "";
+                    command.Parameters["@PjtSystem"].Value = activity.PjtSystem ?? "";
                     command.Parameters["@SystemNO"].Value = activity.SystemNO ?? "";
                     command.Parameters["@CompType"].Value = activity.CompType ?? "";
                     command.Parameters["@PhaseCategory"].Value = activity.PhaseCategory ?? "";

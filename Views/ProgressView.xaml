@@ -687,8 +687,8 @@
                               AllowFiltering="True"
                               AllowSorting="True" />
 
-                        <syncfusion:GridTextColumn MappingName="System" 
-                              HeaderText="System" 
+                        <syncfusion:GridTextColumn MappingName="PjtSystem" 
+                              HeaderText="PjtSystem" 
                               Width="100"
                               IsHidden="True"
                               AllowEditing="True"
