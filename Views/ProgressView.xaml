@@ -197,7 +197,7 @@
 
                         <!-- NEW: Bulk Action Buttons -->
                         <Button x:Name="btnAssign"
-                                Content="Assign ▼"
+                                Content="Assign"
                                 Width="90"
                                 Height="28"
                                 Margin="20,0,5,0"
@@ -207,16 +207,8 @@
                                 BorderThickness="1"
                                 Padding="5,2,5,2"
                                 VerticalContentAlignment="Center"
-                                Click="BtnAssign_Click"
-                                ToolTip="Assign selected records">
-                            <Button.ContextMenu>
-                                <ContextMenu>
-                                    <MenuItem Header="Assign to Me" Click="MenuAssignToMe_Click"/>
-                                    <Separator/>
-                                    <MenuItem Header="Assign to User..." Click="MenuAssignToUser_Click"/>
-                                </ContextMenu>
-                            </Button.ContextMenu>
-                        </Button>
+                                Click="MenuAssignToUser_Click"
+                                ToolTip="Assign selected records to user"/>
 
                         <Button x:Name="btnSetPercent100"
                                 Content="100%"
@@ -910,7 +902,7 @@
                               HeaderText="CreatedBy" 
                               Width="120"
                               IsHidden="True"
-                              AllowEditing="True"
+                              AllowEditing="False"
                               AllowFiltering="True"
                               AllowSorting="True" />
 
@@ -918,25 +910,26 @@
                               HeaderText="UpdatedBy" 
                               Width="120"
                               IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-                        <syncfusion:GridDateTimeColumn MappingName="UpdatedUtcDate" 
-                              HeaderText="UpdatedUtcDate" 
-                              Width="150"
-                              IsHidden="True"
                               AllowEditing="False"
                               AllowFiltering="True"
                               AllowSorting="True" />
+   
+           <syncfusion:GridTextColumn MappingName="UpdatedUtcDateDisplay" 
+                             HeaderText="UpdatedUtcDate" 
+                             Width="160"
+                             IsHidden="True"
+                             AllowEditing="False"
+                             AllowFiltering="True"
+                             AllowSorting="True" />
 
-                        <syncfusion:GridNumericColumn MappingName="LocalDirty" 
-                              HeaderText="LocalDirty" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="False"
-                              AllowFiltering="True"
-                              AllowSorting="True"
-                              NumberDecimalDigits="0" />
+<syncfusion:GridNumericColumn MappingName="LocalDirty" 
+                             HeaderText="LocalDirty" 
+                             Width="100"
+                             IsHidden="True"
+                             AllowEditing="False"
+                             AllowFiltering="True"
+                             AllowSorting="True"
+                             NumberDecimalDigits="0" />
 
                         <!-- VALUE FIELDS - QUANTITIES AND PROGRESS -->
                         <syncfusion:GridNumericColumn MappingName="Quantity" 

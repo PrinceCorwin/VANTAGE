@@ -359,20 +359,36 @@ namespace VANTAGE.Data
                                  }
                              }
                              DateTime? GetDateTimeSafe(string name)
-                             {
-                                 try
-                                 {
-                                     int i = reader.GetOrdinal(name);
-                                     if (reader.IsDBNull(i)) return null;
-                                     var s = reader.GetString(i);
-                                     if (DateTime.TryParse(s, out var dt)) return dt.Date;
-                                     return null;
-                                 }
-                                 catch
-                                 {
-                                     return null;
-                                 }
-                             }
+                              {
+                                    try
+     {
+       int i = reader.GetOrdinal(name);
+           if (reader.IsDBNull(i)) return null;
+      var s = reader.GetString(i);
+   if (DateTime.TryParse(s, out var dt)) return dt.Date;
+         return null;
+     }
+           catch
+    {
+          return null;
+ }
+   }
+    
+           DateTime? GetDateTimeFullSafe(string name)
+         {
+               try
+     {
+    int i = reader.GetOrdinal(name);
+      if (reader.IsDBNull(i)) return null;
+         var s = reader.GetString(i);
+           if (DateTime.TryParse(s, out var dt)) return dt; // Keep full datetime with time
+                return null;
+           }
+  catch
+     {
+       return null;
+            }
+          }
                              int GetIntSafe(string name)
                              {
                                  try
@@ -491,6 +507,7 @@ namespace VANTAGE.Data
                                  AssignedTo = GetStringSafe("AssignedTo"),
                                  UpdatedBy = GetStringSafe("UpdatedBy"),
                                  CreatedBy = GetStringSafe("CreatedBy"),
+                                 UpdatedUtcDate = GetDateTimeFullSafe("UpdatedUtcDate"),
                                  LocalDirty = GetIntSafe("LocalDirty"),
 
                                  // Values
@@ -606,20 +623,36 @@ namespace VANTAGE.Data
                              }
 
                              DateTime? GetDateTimeSafe(string name)
-                             {
-                                 try
-                                 {
-                                     int i = reader.GetOrdinal(name);
-                                     if (reader.IsDBNull(i)) return null;
-                                     var s = reader.GetString(i);
-                                     if (DateTime.TryParse(s, out var dt)) return dt.Date;
-                                     return null;
-                                 }
-                                 catch
-                                 {
-                                     return null;
-                                 }
-                             }
+                              {
+                                    try
+     {
+       int i = reader.GetOrdinal(name);
+           if (reader.IsDBNull(i)) return null;
+      var s = reader.GetString(i);
+   if (DateTime.TryParse(s, out var dt)) return dt.Date;
+         return null;
+     }
+           catch
+    {
+          return null;
+ }
+   }
+    
+           DateTime? GetDateTimeFullSafe(string name)
+         {
+               try
+     {
+    int i = reader.GetOrdinal(name);
+      if (reader.IsDBNull(i)) return null;
+         var s = reader.GetString(i);
+           if (DateTime.TryParse(s, out var dt)) return dt; // Keep full datetime with time
+                return null;
+           }
+  catch
+     {
+       return null;
+            }
+          }
 
                              int GetIntSafe(string name)
                              {
@@ -732,6 +765,7 @@ namespace VANTAGE.Data
                                  AssignedTo = GetStringSafe("AssignedTo"),
                                  UpdatedBy = GetStringSafe("UpdatedBy"),
                                  CreatedBy = GetStringSafe("CreatedBy"),
+                                 UpdatedUtcDate = GetDateTimeFullSafe("UpdatedUtcDate"),
                                  LocalDirty = GetIntSafe("LocalDirty"),
 
 

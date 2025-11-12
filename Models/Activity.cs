@@ -131,9 +131,56 @@ namespace VANTAGE.Models
             }
         }
 
-        public string UpdatedBy { get; set; }
-        public DateTime? UpdatedUtcDate { get; set; }
-        public int LocalDirty { get; set; }  // 0=synced, 1=needs sync
+        // Tracking fields with PropertyChanged notifications
+        private string _updatedBy;
+        public string UpdatedBy
+        {
+            get => _updatedBy;
+            set
+            {
+                if (_updatedBy != value)
+                {
+                    _updatedBy = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        private DateTime? _updatedUtcDate;
+        public DateTime? UpdatedUtcDate
+        {
+            get => _updatedUtcDate;
+            set
+            {
+                if (_updatedUtcDate != value)
+                {
+                    _updatedUtcDate = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(UpdatedUtcDateDisplay));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Display-friendly version of UpdatedUtcDate
+        /// Returns empty string for null, formatted datetime otherwise
+        /// </summary>
+        public string UpdatedUtcDateDisplay => UpdatedUtcDate?.ToString("yyyy-MM-dd HH:mm") ?? "";
+
+        private int _localDirty;
+        public int LocalDirty
+        {
+            get => _localDirty;
+            set
+            {
+                if (_localDirty != value)
+                {
+                    _localDirty = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
         public string CreatedBy { get; set; }
         public string UniqueID { get; set; }  // Read-only unique identifier
 

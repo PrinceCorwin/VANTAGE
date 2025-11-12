@@ -257,16 +257,6 @@ namespace VANTAGE.Views
             }
         }
 
-        private void BtnAssign_Click(object sender, RoutedEventArgs e)
-        {
-            var button = sender as Button;
-            if (button?.ContextMenu != null)
-            {
-                button.ContextMenu.PlacementTarget = button;
-                button.ContextMenu.IsOpen = true;
-            }
-        }
-
         // === PERCENT BUTTON HANDLERS ===
 
         /// Load custom percent values from user settings on form load
@@ -1091,8 +1081,10 @@ namespace VANTAGE.Views
                 if (editedActivity == null)
                     return;
 
-                // Update UpdatedBy with current user
+                // Update tracking fields
                 editedActivity.UpdatedBy = App.CurrentUser?.Username ?? "Unknown";
+                editedActivity.UpdatedUtcDate = DateTime.UtcNow;
+                editedActivity.LocalDirty = 1;
 
                 // Save to database
                 bool success = await ActivityRepository.UpdateActivityInDatabase(editedActivity);
@@ -1101,7 +1093,7 @@ namespace VANTAGE.Views
                 {
                     // Update summary panel to reflect the cell edit
                     UpdateSummaryPanel();
-                    // TODO: Add proper logging when logging system is implemented
+                    System.Diagnostics.Debug.WriteLine($"✓ Auto-saved: ActivityID={editedActivity.ActivityID}, UpdatedBy={editedActivity.UpdatedBy}, UpdatedUtcDate={editedActivity.UpdatedUtcDate:o}");
                 }
                 else
                 {
@@ -1114,6 +1106,8 @@ namespace VANTAGE.Views
             }
             catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"✗ Error in auto-save: {ex.Message}");
+                AppLogger.Error(ex, "sfActivities_CurrentCellEndEdit", App.CurrentUser?.Username ?? "Unknown");
                 MessageBox.Show(
                     $"Error saving changes: {ex.Message}",
                     "Save Error",
@@ -1125,66 +1119,6 @@ namespace VANTAGE.Views
         private void sfActivities_SelectionChanged(object sender, Syncfusion.UI.Xaml.Grid.GridSelectionChangedEventArgs e)
         {
             // TODO: Implement selection change logic if needed
-        }
-
-        private async void MenuAssignToMe_Click(object sender, RoutedEventArgs e)
-        {
-            // Get selected activities
-            var selectedActivities = sfActivities.SelectedItems.Cast<Activity>().ToList();
-            if (!selectedActivities.Any())
-            {
-                MessageBox.Show("Please select one or more records to assign.", "No Selection", MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
-            }
-
-            // Filter: Only allow assigning records that user has permission to modify
-            var allowedActivities = selectedActivities.Where(a =>
-                App.CurrentUser.IsAdmin || // Admins can assign any record
-                a.AssignedToUsername == App.CurrentUser.Username // User's own records
-            ).ToList();
-
-            if (!allowedActivities.Any())
-            {
-                MessageBox.Show("You can only assign your own records.\n\nAdmins can assign any record.",
-                    "Permission Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            if (allowedActivities.Count < selectedActivities.Count)
-            {
-                var result = MessageBox.Show(
-                    $"You can only assign {allowedActivities.Count} of {selectedActivities.Count} selected records.\n\n" +
-                    $"Records assigned to other users cannot be reassigned.\n\nContinue with allowed records?",
-                    "Partial Assignment",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Question);
-
-                if (result != MessageBoxResult.Yes)
-                    return;
-            }
-
-            try
-            {
-                int successCount = 0;
-                foreach (var activity in allowedActivities)
-                {
-                    activity.AssignedTo = App.CurrentUser.Username;
-                    activity.UpdatedBy = App.CurrentUser.Username;
-
-                    bool success = await ActivityRepository.UpdateActivityInDatabase(activity);
-                    if (success)
-                    {
-                        successCount++;
-                    }
-                }
-
-                MessageBox.Show($"Assigned {successCount} record(s) to you.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-                sfActivities.View.Refresh();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error assigning records: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
         }
 
         private async void MenuAssignToUser_Click(object sender, RoutedEventArgs e)
