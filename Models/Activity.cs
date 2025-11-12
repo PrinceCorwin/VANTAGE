@@ -163,10 +163,9 @@ namespace VANTAGE.Models
 
         /// <summary>
         /// Display-friendly version of UpdatedUtcDate
-        /// Returns empty string for null, formatted datetime otherwise (LOCAL TIME)
+        /// Returns empty string for null, formatted datetime otherwise
         /// </summary>
-        public string UpdatedUtcDateDisplay =>
-         UpdatedUtcDate.HasValue ? UpdatedUtcDate.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm") : "";
+        public string UpdatedUtcDateDisplay => UpdatedUtcDate?.ToString("yyyy-MM-dd HH:mm") ?? "";
 
         private int _localDirty;
         public int LocalDirty
