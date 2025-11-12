@@ -120,64 +120,67 @@ namespace VANTAGE.Data
                     connection.Open();
 
                     var command = connection.CreateCommand();
-                    // NEW: Use NewVantage column names directly
                     command.CommandText = @"
-                            UPDATE Activities SET
-                                HexNO = @HexNO,
-                                CompType = @CompType,
-                                PhaseCategory = @PhaseCategory,
-                                ROCStep = @ROCStep,
-                                Notes = @Notes,
-                                Area = @Area,
-                                Aux1 = @Aux1,
-                                Aux2 = @Aux2,
-                                Aux3 = @Aux3,
-                                Description = @Description,
-                                PhaseCode = @PhaseCode,
-                                ProjectID = @ProjectID,
-                                SchedActNO = @SchedActNO,
-                                Service = @Service,
-                                ShopField = @ShopField,
-                                SubArea = @SubArea,
-                                PjtSystem = @PjtSystem,
-                                TagNO = @TagNO,
-                                WorkPackage = @WorkPackage,
-                                UDF1 = @UDF1,
-                                UDF2 = @UDF2,
-                                UDF3 = @UDF3,
-                                UDF4 = @UDF4,
-                                UDF5 = @UDF5,
-                                UDF6 = @UDF6,
-                                UDF7 = @UDF7,
-                                UDF8 = @UDF8,
-                                UDF9 = @UDF9,
-                                UDF10 = @UDF10,
-                                UDF11 = @UDF11,
-                                UDF12 = @UDF12,
-                                UDF13 = @UDF13,
-                                AssignedTo = @AssignedTo,
-                                UpdatedBy = @UpdatedBy,
-                                UpdatedUtcDate = @UpdatedUtcDate,
-                                LocalDirty = @LocalDirty,
-                                UDF14 = @UDF14,
-                                UDF15 = @UDF15,
-                                UDF16 = @UDF16,
-                                UDF17 = @UDF17,
-                                UDF18 = @UDF18,
-                                UDF20 = @UDF20,
-                                BudgetMHs = @BudgetMHs,
-                                EarnQtyEntry = @EarnQtyEntry,
-                                PercentEntry = @PercentEntry,
-                                Quantity = @Quantity,
-                                UOM = @UOM,
-                                PipeSize1 = @PipeSize1,
-                                PipeSize2 = @PipeSize2,
-                                ClientBudget = @ClientBudget,
-                                ClientCustom3 = @ClientCustom3
-                            WHERE ActivityID = @ActivityID";
+                UPDATE Activities SET
+                    HexNO = @HexNO,
+                    CompType = @CompType,
+                    PhaseCategory = @PhaseCategory,
+                    ROCStep = @ROCStep,
+                    Notes = @Notes,
+                    Area = @Area,
+                    Aux1 = @Aux1,
+                    Aux2 = @Aux2,
+                    Aux3 = @Aux3,
+                    Description = @Description,
+                    PhaseCode = @PhaseCode,
+                    ProjectID = @ProjectID,
+                    SchedActNO = @SchedActNO,
+                    Service = @Service,
+                    ShopField = @ShopField,
+                    SubArea = @SubArea,
+                    PjtSystem = @PjtSystem,
+                    TagNO = @TagNO,
+                    WorkPackage = @WorkPackage,
+                    UDF1 = @UDF1,
+                    UDF2 = @UDF2,
+                    UDF3 = @UDF3,
+                    UDF4 = @UDF4,
+                    UDF5 = @UDF5,
+                    UDF6 = @UDF6,
+                    UDF7 = @UDF7,
+                    UDF8 = @UDF8,
+                    UDF9 = @UDF9,
+                    UDF10 = @UDF10,
+                    UDF11 = @UDF11,
+                    UDF12 = @UDF12,
+                    UDF13 = @UDF13,
+                    UDF14 = @UDF14,
+                    UDF15 = @UDF15,
+                    UDF16 = @UDF16,
+                    UDF17 = @UDF17,
+                    UDF18 = @UDF18,
+                    UDF20 = @UDF20,
+                    AssignedTo = @AssignedTo,
+                    UpdatedBy = @UpdatedBy,
+                    UpdatedUtcDate = @UpdatedUtcDate,
+                    LocalDirty = @LocalDirty,
+                    SchStart = @SchStart,
+                    SchFinish = @SchFinish,
+                    ProgDate = @ProgDate,
+                    WeekEndDate = @WeekEndDate,
+                    AzureUploadUtcDate = @AzureUploadUtcDate,
+                    BudgetMHs = @BudgetMHs,
+                    EarnQtyEntry = @EarnQtyEntry,
+                    PercentEntry = @PercentEntry,
+                    Quantity = @Quantity,
+                    UOM = @UOM,
+                    PipeSize1 = @PipeSize1,
+                    PipeSize2 = @PipeSize2,
+                    ClientBudget = @ClientBudget,
+                    ClientCustom3 = @ClientCustom3
+                WHERE ActivityID = @ActivityID";
 
-
-                    // Add parameters with NEW property names
+                    // Parameters (these already exist - no changes needed here)
                     command.Parameters.AddWithValue("@ActivityID", activity.ActivityID);
                     command.Parameters.AddWithValue("@HexNO", activity.HexNO);
                     command.Parameters.AddWithValue("@CompType", activity.CompType ?? "");
@@ -208,14 +211,17 @@ namespace VANTAGE.Data
                     command.Parameters.AddWithValue("@UDF8", activity.UDF8 ?? "");
                     command.Parameters.AddWithValue("@UDF9", activity.UDF9 ?? "");
                     command.Parameters.AddWithValue("@UDF10", activity.UDF10 ?? "");
-                    command.Parameters.AddWithValue("@AssignedTo", activity.AssignedTo ?? "");
-                    command.Parameters.AddWithValue("@UpdatedBy", App.CurrentUser?.Username ?? Environment.UserName);
+                    command.Parameters.AddWithValue("@UDF11", activity.UDF11 ?? "");
+                    command.Parameters.AddWithValue("@UDF12", activity.UDF12 ?? "");
+                    command.Parameters.AddWithValue("@UDF13", activity.UDF13 ?? "");
                     command.Parameters.AddWithValue("@UDF14", activity.UDF14 ?? "");
                     command.Parameters.AddWithValue("@UDF15", activity.UDF15 ?? "");
                     command.Parameters.AddWithValue("@UDF16", activity.UDF16 ?? "");
                     command.Parameters.AddWithValue("@UDF17", activity.UDF17 ?? "");
                     command.Parameters.AddWithValue("@UDF18", activity.UDF18 ?? "");
                     command.Parameters.AddWithValue("@UDF20", activity.UDF20 ?? "");
+                    command.Parameters.AddWithValue("@AssignedTo", activity.AssignedTo ?? "");
+                    command.Parameters.AddWithValue("@UpdatedBy", App.CurrentUser?.Username ?? Environment.UserName);
                     command.Parameters.AddWithValue("@BudgetMHs", activity.BudgetMHs);
                     command.Parameters.AddWithValue("@EarnQtyEntry", activity.EarnQtyEntry);
                     command.Parameters.AddWithValue("@PercentEntry", activity.PercentEntry);
@@ -230,14 +236,10 @@ namespace VANTAGE.Data
                     command.Parameters.AddWithValue("@ProgDate", activity.ProgDate?.ToString("yyyy-MM-dd") ?? "");
                     command.Parameters.AddWithValue("@WeekEndDate", activity.WeekEndDate?.ToString("yyyy-MM-dd") ?? "");
                     command.Parameters.AddWithValue("@AzureUploadUtcDate", activity.AzureUploadUtcDate?.ToString("yyyy-MM-dd") ?? "");
-                    command.Parameters.AddWithValue("@UDF11", activity.UDF11 ?? "");
-                    command.Parameters.AddWithValue("@UDF12", activity.UDF12 ?? "");
-                    command.Parameters.AddWithValue("@UDF13", activity.UDF13 ?? "");
                     command.Parameters.AddWithValue("@UpdatedUtcDate", DateTime.UtcNow.ToString("o"));
-                    command.Parameters.AddWithValue("@LocalDirty", 1);  // Mark as dirty when edited
+                    command.Parameters.AddWithValue("@LocalDirty", 1);
 
                     int rowsAffected = command.ExecuteNonQuery();
-
                     return rowsAffected > 0;
                 });
 
@@ -997,6 +999,7 @@ namespace VANTAGE.Data
                 InsulType = GetStringOrDefault(reader, "InsulType"),
                 UpdatedBy = GetStringOrDefault(reader, "UpdatedBy"),
                 LineNO = GetStringOrDefault(reader, "LineNO"),
+                LocalDirty = GetIntOrDefault(reader, "LocalDirty"),
                 MtrlSpec = GetStringOrDefault(reader, "MtrlSpec"),
                 Notes = GetStringOrDefault(reader, "Notes"),
                 PaintCode = GetStringOrDefault(reader, "PaintCode"),
@@ -1039,6 +1042,9 @@ namespace VANTAGE.Data
                 UDF8 = GetStringOrDefault(reader, "UDF8"),
                 UDF9 = GetStringOrDefault(reader, "UDF9"),
                 UDF10 = GetStringOrDefault(reader, "UDF10"),
+                UDF11 = GetStringOrDefault(reader, "UDF11"),
+                UDF12 = GetStringOrDefault(reader, "UDF12"),
+                UDF13 = GetStringOrDefault(reader, "UDF13"),
                 UDF14 = GetStringOrDefault(reader, "UDF14"),
                 UDF15 = GetStringOrDefault(reader, "UDF15"),
                 UDF16 = GetStringOrDefault(reader, "UDF16"),
@@ -1047,6 +1053,7 @@ namespace VANTAGE.Data
                 UDF20 = GetStringOrDefault(reader, "UDF20"),
                 UniqueID = GetStringOrDefault(reader, "UniqueID"),
                 UOM = GetStringOrDefault(reader, "UOM"),
+                UpdatedUtcDate = GetDateTimeOrNull(reader, "UpdatedUtcDate"),
                 WeekEndDate = GetDateTimeOrNull(reader, "WeekEndDate"),
                 WorkPackage = GetStringOrDefault(reader, "WorkPackage"),
                 XRay = GetDoubleOrDefault(reader, "XRay"),
