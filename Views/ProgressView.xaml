@@ -531,8 +531,8 @@
                               AllowFiltering="True"
                               AllowSorting="True" />
 
-                        <syncfusion:GridDateTimeColumn MappingName="Start" 
-                                  HeaderText="Start" 
+                        <syncfusion:GridDateTimeColumn MappingName="SchStart" 
+                                  HeaderText="SchStart" 
                                   Width="100"
                                   IsHidden="True"
                                   AllowEditing="True"
@@ -540,8 +540,8 @@
                                   AllowSorting="True"
                                   Pattern="ShortDate" />
 
-                        <syncfusion:GridDateTimeColumn MappingName="Finish" 
-                                  HeaderText="Finish" 
+                        <syncfusion:GridDateTimeColumn MappingName="SchFinish" 
+                                  HeaderText="SchFinish" 
                                   Width="100"
                                   IsHidden="True"
                                   AllowEditing="True"
