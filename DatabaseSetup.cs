@@ -66,7 +66,7 @@ namespace VANTAGE
                     CREATE TABLE IF NOT EXISTS Activities (
                         ActivityID INTEGER PRIMARY KEY AUTOINCREMENT,
                         Area TEXT DEFAULT '',
-                        AssignedTo TEXT DEFAULT 'Unassigned',
+                        AssignedTo TEXT DEFAULT '',
                         AzureUploadUtcDate TEXT,
                         Aux1 TEXT DEFAULT '',
                         Aux2 TEXT DEFAULT '',

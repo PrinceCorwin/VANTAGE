@@ -637,122 +637,8 @@ namespace VANTAGE.Views
             // Call ViewModel method to update bound properties
             await _viewModel.UpdateTotalsAsync(recordsToSum);
         }
-        private Popup _activeFilterPopup;
-        private string _activeFilterColumn;
-
-
-
-        private void FilterControl_SortRequested(object sender, Controls.ColumnFilterPopup.SortEventArgs e)
-        {
-            // Remove any existing sort
-            var view = _viewModel.ActivitiesView;
-            if (view != null)
-            {
-                view.SortDescriptions.Clear();
-                view.SortDescriptions.Add(new System.ComponentModel.SortDescription(e.ColumnName, e.Direction));
-                view.Refresh();
-            }
-            _activeFilterPopup.IsOpen = false;
-        }
-
-        private async void FilterControl_FilterApplied(object sender, Controls.FilterEventArgs e)
-        {
-            // Handle list filter type (pipe-delimited)
-            if (e.FilterType == "List")
-            {
-                var selected = (e.FilterValue ?? "").Split(new[] { "||" }, StringSplitOptions.RemoveEmptyEntries).ToList();
-
-                // Build SQL condition that supports blank/null sentinel '__BLANK__'
-                string dbCol = ColumnMapper.GetDbColumnName(_activeFilterColumn);
-                var nonBlankValues = selected.Where(s => s != "__BLANK__").ToList();
-                bool includeBlanks = selected.Any(s => s == "__BLANK__");
-                var parts = new List<string>();
-
-                // Special handling for Status (use CASE expression)
-                if (_activeFilterColumn == "Status")
-                {
-                    string statusCase = "CASE WHEN Val_Perc_Complete IS NULL OR Val_Perc_Complete = 0 THEN 'Not Started' WHEN Val_Perc_Complete >= 1.0 THEN 'Complete' ELSE 'In Progress' END";
-                    if (nonBlankValues.Any())
-                    {
-                        var escaped = nonBlankValues.Select(s => s.Replace("'", "''"));
-                        var inList = string.Join(",", escaped.Select(s => $"'{s}'"));
-                        parts.Add($"{statusCase} IN ({inList})");
-                    }
-                    if (includeBlanks)
-                    {
-                        parts.Add($"({statusCase} IS NULL OR {statusCase} = '')");
-                    }
-                }
-                // Special handling for percent/ratio columns: use numeric comparison (no quotes)
-                else if (_activeFilterColumn == "PercentEntry" || _activeFilterColumn == "PercentEntry_Display" || _activeFilterColumn == "PercentCompleteCalc" || _activeFilterColumn == "PercentCompleteCalc_Display" || _activeFilterColumn == "EarnedQtyCalc" || _activeFilterColumn == "EarnedQtyCalc_Display")
-                {
-                    if (nonBlankValues.Any())
-                    {
-                        var inList = string.Join(",", nonBlankValues.Select(s => double.TryParse(s, out var d) ? d.ToString(System.Globalization.CultureInfo.InvariantCulture) : "-99999"));
-                        parts.Add($"{dbCol} IN ({inList})");
-                    }
-                    if (includeBlanks)
-                    {
-                        parts.Add($"({dbCol} IS NULL OR {dbCol} = '')");
-                    }
-                }
-                // Special handling for AssignedTo: treat 'Unassigned' as blank string or 'Unassigned'
-                else if (_activeFilterColumn == "AssignedTo")
-                {
-                    var assignedParts = new List<string>();
-                    foreach (var val in nonBlankValues)
-                    {
-                        if (val.Equals("Unassigned", StringComparison.OrdinalIgnoreCase))
-                        {
-                            assignedParts.Add($"({dbCol} IS NULL OR {dbCol} = '' OR {dbCol} = 'Unassigned')");
-                        }
-                        else
-                        {
-                            assignedParts.Add($"{dbCol} = '{val.Replace("'", "''")}'");
-                        }
-                    }
-                    if (assignedParts.Any())
-                        parts.Add(string.Join(" OR ", assignedParts));
-                }
-                else
-                {
-                    if (nonBlankValues.Any())
-                    {
-                        var escaped = nonBlankValues.Select(s => s.Replace("'", "''"));
-                        var inList = string.Join(",", escaped.Select(s => $"'{s}'"));
-                        parts.Add($"{dbCol} IN ({inList})");
-                    }
-                    if (includeBlanks)
-                    {
-                        parts.Add($"({dbCol} IS NULL OR {dbCol} = '')");
-                    }
-                }
-
-                var cond = parts.Count == 1 ? parts[0] : "(" + string.Join(" OR ", parts) + ")";
-
-                // Apply to ViewModel by using ApplyFilter with a synthetic FilterType 'IN' and FilterValue cond
-                await _viewModel.ApplyFilter(_activeFilterColumn, "IN", cond);
-            }
-            else
-            {
-                // Use existing mechanism
-                await _viewModel.ApplyFilter(_activeFilterColumn, e.FilterType, e.FilterValue);
-            }
-
-            _activeFilterPopup.IsOpen = false;
-        }
-
-        private async void FilterControl_FilterCleared(object sender, EventArgs e)
-        {
-            // Clear filter through ViewModel and WAIT
-            await _viewModel.ClearFilter(_activeFilterColumn);
-
-            _activeFilterPopup.IsOpen = false;
-        }
 
         /// Auto-save when user finishes editing a cell
-
-
         private async void OnViewLoaded(object sender, RoutedEventArgs e)
         {
 
@@ -864,67 +750,6 @@ namespace VANTAGE.Views
             // Force layout update
             sfActivities.UpdateLayout();
             SaveColumnState();  // Save when visibility changes
-        }
-        private async void MenuUnassign_Click(object sender, RoutedEventArgs e)
-        {
-            // Get selected activities
-            var selectedActivities = sfActivities.SelectedItems.Cast<Activity>().ToList();
-            if (!selectedActivities.Any())
-            {
-                MessageBox.Show("Please select one or more records to unassign.", "No Selection", MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
-            }
-
-            // Filter: Only allow unassigning records that user has permission to modify
-            var allowedActivities = selectedActivities.Where(a =>
-                App.CurrentUser.IsAdmin || // Admins can unassign any record
-                a.AssignedToUsername == App.CurrentUser.Username || // User's own records
-                a.AssignedToUsername == "Unassigned" // Already unassigned (no-op but allowed)
-            ).ToList();
-
-            if (!allowedActivities.Any())
-            {
-                MessageBox.Show("You can only unassign your own records or unassigned records.\n\nAdmins can unassign any record.",
-                    "Permission Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            if (allowedActivities.Count < selectedActivities.Count)
-            {
-                var result = MessageBox.Show(
-                    $"You can only unassign {allowedActivities.Count} of {selectedActivities.Count} selected records.\n\n" +
-                    $"Records assigned to other users cannot be unassigned.\n\nContinue with allowed records?",
-                    "Partial Unassignment",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Question);
-
-                if (result != MessageBoxResult.Yes)
-                    return;
-            }
-
-            try
-            {
-                int successCount = 0;
-                foreach (var activity in allowedActivities)
-                {
-                    activity.AssignedTo = "Unassigned";
-                    activity.UpdatedBy = App.CurrentUser.Username;
-
-                    bool success = await ActivityRepository.UpdateActivityInDatabase(activity);
-                    if (success)
-                    {
-                        successCount++;
-
-                    }
-                }
-
-                MessageBox.Show($"Unassigned {successCount} record(s).", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-                sfActivities.View.Refresh();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error unassigning records: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
         }
         private void UpdateRecordCount()
         {
@@ -1315,13 +1140,12 @@ namespace VANTAGE.Views
             // Filter: Only allow assigning records that user has permission to modify
             var allowedActivities = selectedActivities.Where(a =>
                 App.CurrentUser.IsAdmin || // Admins can assign any record
-                a.AssignedToUsername == App.CurrentUser.Username || // User's own records
-                a.AssignedToUsername == "Unassigned" // Unassigned records
+                a.AssignedToUsername == App.CurrentUser.Username // User's own records
             ).ToList();
 
             if (!allowedActivities.Any())
             {
-                MessageBox.Show("You can only assign your own records or unassigned records.\n\nAdmins can assign any record.",
+                MessageBox.Show("You can only assign your own records.\n\nAdmins can assign any record.",
                     "Permission Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
@@ -1376,13 +1200,12 @@ namespace VANTAGE.Views
             // Filter: Only allow assigning records that user has permission to modify
             var allowedActivities = selectedActivities.Where(a =>
                 App.CurrentUser.IsAdmin || // Admins can assign any record
-                a.AssignedToUsername == App.CurrentUser.Username || // User's own records
-                a.AssignedToUsername == "Unassigned" // Unassigned records
+                a.AssignedToUsername == App.CurrentUser.Username // User's own records
             ).ToList();
 
             if (!allowedActivities.Any())
             {
-                MessageBox.Show("You can only assign your own records or unassigned records.\n\nAdmins can assign any record.",
+                MessageBox.Show("You can only assign your own records.\n\nAdmins can assign any record.",
                     "Permission Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }

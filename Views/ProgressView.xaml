@@ -212,7 +212,6 @@
                             <Button.ContextMenu>
                                 <ContextMenu>
                                     <MenuItem Header="Assign to Me" Click="MenuAssignToMe_Click"/>
-                                    <MenuItem Header="Unassign" Click="MenuUnassign_Click"/>
                                     <Separator/>
                                     <MenuItem Header="Assign to User..." Click="MenuAssignToUser_Click"/>
                                 </ContextMenu>

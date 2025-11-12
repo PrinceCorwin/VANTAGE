@@ -40,4 +40,8 @@
     <Resource Include="Images\SummitS-Full Summit Peak Logo.jpg" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Controls\" />
+  </ItemGroup>
+
 </Project>

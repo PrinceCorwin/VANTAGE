@@ -208,7 +208,7 @@ namespace VANTAGE.Data
                     command.Parameters.AddWithValue("@UDF8", activity.UDF8 ?? "");
                     command.Parameters.AddWithValue("@UDF9", activity.UDF9 ?? "");
                     command.Parameters.AddWithValue("@UDF10", activity.UDF10 ?? "");
-                    command.Parameters.AddWithValue("@AssignedTo", activity.AssignedTo ?? "Unassigned");
+                    command.Parameters.AddWithValue("@AssignedTo", activity.AssignedTo ?? "");
                     command.Parameters.AddWithValue("@UpdatedBy", App.CurrentUser?.Username ?? Environment.UserName);
                     command.Parameters.AddWithValue("@UDF14", activity.UDF14 ?? "");
                     command.Parameters.AddWithValue("@UDF15", activity.UDF15 ?? "");
@@ -488,7 +488,7 @@ namespace VANTAGE.Data
                                  UDF18 = GetStringSafe("UDF18"),
                                  UniqueID = GetStringSafe("UniqueID"),
                                  UDF20 = GetStringSafe("UDF20"),
-                                 AssignedTo = string.IsNullOrWhiteSpace(GetStringSafe("AssignedTo")) ? "Unassigned" : (validUsernames.Contains(GetStringSafe("AssignedTo")) ? GetStringSafe("AssignedTo") : "Unassigned"),
+                                 AssignedTo = GetStringSafe("AssignedTo"),
                                  UpdatedBy = GetStringSafe("UpdatedBy"),
                                  CreatedBy = GetStringSafe("CreatedBy"),
                                  LocalDirty = GetIntSafe("LocalDirty"),
@@ -729,8 +729,7 @@ namespace VANTAGE.Data
                                  UDF18 = GetStringSafe("UDF18"),
                                  UniqueID = GetStringSafe("UniqueID"),
                                  UDF20 = GetStringSafe("UDF20"),
-                                 AssignedTo = string.IsNullOrWhiteSpace(GetStringSafe("AssignedTo")) || GetStringSafe("AssignedTo") == "Unassigned"
-                           ? "Unassigned" : (validUsernames.Contains(GetStringSafe("AssignedTo")) ? GetStringSafe("AssignedTo") : "Unassigned"),
+                                 AssignedTo = GetStringSafe("AssignedTo"),
                                  UpdatedBy = GetStringSafe("UpdatedBy"),
                                  CreatedBy = GetStringSafe("CreatedBy"),
                                  LocalDirty = GetIntSafe("LocalDirty"),
@@ -850,9 +849,7 @@ namespace VANTAGE.Data
                      // Status calculation
                      ["Status"] = "CASE WHEN PercentEntry = 0 THEN 'Not Started' WHEN PercentEntry >= 100 THEN 'Complete' ELSE 'In Progress' END",
                      // Earned MHs calculated
-                     ["EarnMHsCalc"] = "CASE WHEN PercentEntry >= 100 THEN BudgetMHs ELSE ROUND(PercentEntry / 100.0 * BudgetMHs, 3) END",
-                     // AssignedTo: show 'Unassigned' for null/empty
-                     ["AssignedTo"] = "CASE WHEN TRIM(COALESCE(NULLIF(AssignedTo, ''), '')) = '' OR AssignedTo = 'Unassigned' THEN 'Unassigned' ELSE AssignedTo END"
+                     ["EarnMHsCalc"] = "CASE WHEN PercentEntry >= 100 THEN BudgetMHs ELSE ROUND(PercentEntry / 100.0 * BudgetMHs, 3) END"
                  };
 
                  string dbExpression = null;
@@ -883,13 +880,6 @@ namespace VANTAGE.Data
                          var raw = reader.GetValue(0);
                          vals.Add(Convert.ToString(raw));
                      }
-                 }
-
-                 // Always put 'Unassigned' at the top for AssignedTo
-                 if (!string.IsNullOrEmpty(columnName) && columnName.Equals("AssignedTo", StringComparison.OrdinalIgnoreCase))
-                 {
-                     vals = vals.Where(v => !string.IsNullOrWhiteSpace(v) && !v.Equals("Unassigned", StringComparison.OrdinalIgnoreCase)).ToList();
-                     vals.Insert(0, "Unassigned");
                  }
 
                  // Count distinct values (after deduplication)
@@ -1238,8 +1228,7 @@ namespace VANTAGE.Data
                       var calcMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                       {
                           ["Status"] = "CASE WHEN PercentEntry = 0 THEN 'Not Started' WHEN PercentEntry >= 100 THEN 'Complete' ELSE 'In Progress' END",
-                          ["EarnMHsCalc"] = "CASE WHEN PercentEntry >= 100 THEN BudgetMHs ELSE ROUND(PercentEntry / 100.0 * BudgetMHs, 3) END",
-                          ["AssignedTo"] = "CASE WHEN TRIM(COALESCE(NULLIF(AssignedTo, ''), '')) = '' OR AssignedTo = 'Unassigned' THEN 'Unassigned' ELSE AssignedTo END"
+                          ["EarnMHsCalc"] = "CASE WHEN PercentEntry >= 100 THEN BudgetMHs ELSE ROUND(PercentEntry / 100.0 * BudgetMHs, 3) END"
                       };
 
                       string dbExpression = null;
@@ -1275,13 +1264,6 @@ namespace VANTAGE.Data
                               var raw = reader.GetValue(0);
                               vals.Add(Convert.ToString(raw));
                           }
-                      }
-
-                      // Always put 'Unassigned' at the top for AssignedTo
-                      if (!string.IsNullOrEmpty(columnName) && columnName.Equals("AssignedTo", StringComparison.OrdinalIgnoreCase))
-                      {
-                          vals = vals.Where(v => !string.IsNullOrWhiteSpace(v) && !v.Equals("Unassigned", StringComparison.OrdinalIgnoreCase)).ToList();
-                          vals.Insert(0, "Unassigned");
                       }
 
                       int total = vals.Count;

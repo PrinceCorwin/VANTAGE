@@ -104,12 +104,6 @@ namespace VANTAGE.Utilities
                     System.Diagnostics.Debug.WriteLine($"  Generated UniqueID: {activity.UniqueID}");
                 }
 
-                // Handle AssignedTo default
-                if (string.IsNullOrWhiteSpace(activity.AssignedTo))
-                {
-                    activity.AssignedTo = "Unassigned";
-                }
-
                 activities.Add(activity);
             }
 
@@ -436,7 +430,10 @@ namespace VANTAGE.Utilities
                     command.Parameters["@CompType"].Value = activity.CompType ?? "";
                     command.Parameters["@PhaseCategory"].Value = activity.PhaseCategory ?? "";
                     command.Parameters["@ROCStep"].Value = activity.ROCStep ?? "";
-                    command.Parameters["@AssignedTo"].Value = activity.AssignedTo ?? "Unassigned";
+                    string importingUser = App.CurrentUser?.Username ?? Environment.UserName;
+                    command.Parameters["@AssignedTo"].Value = string.IsNullOrWhiteSpace(activity.AssignedTo)
+                        ? importingUser
+                        : activity.AssignedTo;
                     string currentUser = App.CurrentUser?.Username ?? Environment.UserName;
                     command.Parameters["@CreatedBy"].Value = currentUser;
                     command.Parameters["@UpdatedBy"].Value = currentUser;
