@@ -3,6 +3,7 @@ using System.Linq;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
+using VANTAGE.Data;
 using VANTAGE.Models;
 using VANTAGE.Utilities;
 using VANTAGE.Views;
@@ -269,7 +270,7 @@ namespace VANTAGE
                         LoadProgressModule(); // Reload to show new data
                     }
                 }
-            }
+            }            
             catch (Exception ex)
             {
                 // Hide loading overlay on error
@@ -792,12 +793,91 @@ namespace VANTAGE
         }
 
         // Placeholder test handlers
-        private void MenuTest1_Click(object sender, RoutedEventArgs e)
+        private async void MenuResetLocalDirty_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Test 1 - Not implemented", "Test", MessageBoxButton.OK, MessageBoxImage.Information);
+            try
+        {
+          var result = MessageBox.Show(
+     "This will set LocalDirty = 0 for ALL records in the database.\n\n" +
+      "This is a TEST function to verify that cell edits properly set LocalDirty = 1.\n\n" +
+        "Continue?",
+    "Reset LocalDirty",
+      MessageBoxButton.YesNo,
+       MessageBoxImage.Question);
+
+      if (result != MessageBoxResult.Yes)
+     return;
+
+                int count = await ActivityRepository.ResetAllLocalDirtyAsync();
+
+        // Refresh the current view if it's ProgressView
+          if (ContentArea.Content is Views.ProgressView progressView)
+             {
+            // Reload the grid to reflect updated LocalDirty values
+   await progressView.RefreshData();
+     }
+
+    MessageBox.Show(
+  $"Successfully reset LocalDirty to 0 for {count:N0} records.\n\n" +
+        "Grid has been refreshed with updated values.\n\n" +
+      "Now edit a cell to verify LocalDirty gets set to 1.",
+        "Reset Complete",
+           MessageBoxButton.OK,
+         MessageBoxImage.Information);
+    }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+         $"Error resetting LocalDirty: {ex.Message}",
+    "Error",
+        MessageBoxButton.OK,
+          MessageBoxImage.Error);
+      }
         }
 
-        private void MenuTest2_Click(object sender, RoutedEventArgs e)
+        private async void ToggleUpdatedBy_Click(object sender, RoutedEventArgs e)
+        {
+            try
+       {
+   var result = MessageBox.Show(
+    "This will set UpdatedBy = 'Bob' for ALL records in the database.\n\n" +
+        "This is a TEST function to verify that cell edits properly update UpdatedBy.\n\n" +
+    "Continue?",
+          "Set UpdatedBy to Bob",
+              MessageBoxButton.YesNo,
+   MessageBoxImage.Question);
+
+       if (result != MessageBoxResult.Yes)
+      return;
+
+    int count = await ActivityRepository.SetAllUpdatedByAsync("Bob");
+
+        // Refresh the current view if it's ProgressView
+   if (ContentArea.Content is Views.ProgressView progressView)
+            {
+  // Reload the grid to reflect updated UpdatedBy values
+await progressView.RefreshData();
+      }
+
+    MessageBox.Show(
+          $"Successfully set UpdatedBy = 'Bob' for {count:N0} records.\n\n" +
+              "Grid has been refreshed with updated values.\n\n" +
+             "Now edit a cell to verify UpdatedBy gets set to your username.",
+    "Update Complete",
+          MessageBoxButton.OK,
+ MessageBoxImage.Information);
+            }
+      catch (Exception ex)
+ {
+            MessageBox.Show(
+            $"Error setting UpdatedBy: {ex.Message}",
+         "Error",
+        MessageBoxButton.OK,
+   MessageBoxImage.Error);
+    }
+        }
+
+     private void MenuTest2_Click(object sender, RoutedEventArgs e)
         {
             MessageBox.Show("Test 2 - Not implemented", "Test", MessageBoxButton.OK, MessageBoxImage.Information);
         }

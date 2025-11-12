@@ -397,12 +397,12 @@
                                       Click="MenuSeedUsers_Click"
                                       Background="{StaticResource ControlBackground}"
                                       Foreground="{StaticResource ForegroundColor}"/>
-                            <MenuItem Header="Test 1" 
-                                      Click="MenuTest1_Click"
+                            <MenuItem Header="Reset LocalDirty (All Records)" 
+                                      Click="MenuResetLocalDirty_Click"
                                       Background="{StaticResource ControlBackground}"
                                       Foreground="{StaticResource ForegroundColor}"/>
-                            <MenuItem Header="Test 2" 
-                                      Click="MenuTest2_Click"
+                            <MenuItem Header="Toggle UpdatedBy" 
+                                      Click="ToggleUpdatedBy_Click"
                                       Background="{StaticResource ControlBackground}"
                                       Foreground="{StaticResource ForegroundColor}"/>
                             <MenuItem Header="Test 3" 
