@@ -561,31 +561,6 @@ namespace VANTAGE.ViewModels
             await LoadAllActivitiesAsync();
         }
 
-        /// Filter predicate for activities
-
-        private bool FilterActivity(object obj)
-        {
-            if (obj is not Activity activity)
-                return false;
-
-            // Search filter
-            if (!string.IsNullOrWhiteSpace(SearchText))
-            {
-                string search = SearchText.ToLower();
-
-                if (activity.UniqueID?.ToLower().Contains(search) == true ||
-                    activity.Description?.ToLower().Contains(search) == true ||
-                    activity.TagNO?.ToLower().Contains(search) == true ||
-                    activity.ProjectID?.ToLower().Contains(search) == true)
-                {
-                    return true;
-                }
-
-                return false;
-            }
-
-            return true;
-        }
 
         public event PropertyChangedEventHandler? PropertyChanged;
         protected void OnPropertyChanged(string propertyName)

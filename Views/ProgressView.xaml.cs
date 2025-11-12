@@ -1,6 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -11,9 +15,6 @@ using VANTAGE.Data;
 using VANTAGE.Models;
 using VANTAGE.Utilities;
 using VANTAGE.ViewModels;
-using System.Security.Cryptography;
-using System.Text;
-using System.Text.Json;
 
 namespace VANTAGE.Views
 {
@@ -25,6 +26,8 @@ namespace VANTAGE.Views
         // one key per grid/view
         private const string GridPrefsKey = "ProgressGrid.PreferencesJson";
         private ProgressViewModel ViewModel => DataContext as ProgressViewModel;
+        private object _originalCellValue;
+        private Dictionary<string, PropertyInfo> _propertyCache = new Dictionary<string, PropertyInfo>();
         // ProgressView.xaml.cs
         private async void DeleteSelectedActivities_Click(object sender, RoutedEventArgs e)
         {
@@ -168,6 +171,7 @@ namespace VANTAGE.Views
             InitializeComponent();
             // Hook into Syncfusion's filter changed event
             sfActivities.FilterChanged += SfActivities_FilterChanged;
+            sfActivities.CurrentCellBeginEdit += SfActivities_CurrentCellBeginEdit;
 
             // VM
             _viewModel = new ProgressViewModel();
@@ -712,18 +716,6 @@ namespace VANTAGE.Views
             }
         }
 
-        /// Prevent editing of records not assigned to current user
-
-        private void sfActivities_CurrentCellBeginEdit(object sender, Syncfusion.UI.Xaml.Grid.CurrentCellBeginEditEventArgs e)
-        {
-            // Get the activity from the current row
-            var activity = sfActivities.SelectedItem as Activity;
-            if (activity != null && !activity.IsEditable)
-            {
-                // Cancel the edit
-                e.Cancel = true;
-            }
-        }
         private void ColumnCheckBox_Changed(object sender, RoutedEventArgs e)
         {
             var checkBox = sender as CheckBox;
@@ -1082,39 +1074,107 @@ namespace VANTAGE.Views
             UpdateSummaryPanel();
         }
 
+        // Capture original value when cell edit begins
+        // Helper method to get cached property
+        private PropertyInfo GetCachedProperty(string columnName)
+        {
+            if (!_propertyCache.ContainsKey(columnName))
+            {
+                _propertyCache[columnName] = typeof(Activity).GetProperty(columnName);
+            }
+            return _propertyCache[columnName];
+        }
+        /// Prevent editing of records not assigned to current user
 
+        private void SfActivities_CurrentCellBeginEdit(object sender, Syncfusion.UI.Xaml.Grid.CurrentCellBeginEditEventArgs e)
+        {
+            var activity = sfActivities.SelectedItem as Activity;
+            if (activity == null) return;
+
+            if (sfActivities.CurrentColumn == null) return;
+
+            var property = GetCachedProperty(sfActivities.CurrentColumn.MappingName);
+            if (property != null)
+            {
+                _originalCellValue = property.GetValue(activity);
+            }
+        }
         /// Auto-save when user finishes editing a cell
-
+        // Auto-save when user finishes editing a cell - ONLY if value changed
         private async void sfActivities_CurrentCellEndEdit(object sender, Syncfusion.UI.Xaml.Grid.CurrentCellEndEditEventArgs e)
         {
             try
             {
-                // Get the edited activity from the current row
                 var editedActivity = sfActivities.SelectedItem as Activity;
                 if (editedActivity == null)
                     return;
 
-                // Update tracking fields
+                // Get column from the grid's current column
+                if (sfActivities.CurrentColumn == null)
+                    return;
+
+                string columnName = sfActivities.CurrentColumn.MappingName;
+                var property = GetCachedProperty(columnName);
+                if (property == null)
+                    return;
+
+                object currentValue = property.GetValue(editedActivity);
+
+                // Compare with original value - only save if changed
+                bool valueChanged = false;
+
+                if (_originalCellValue == null && currentValue != null)
+                {
+                    valueChanged = true;
+                }
+                else if (_originalCellValue != null && currentValue == null)
+                {
+                    valueChanged = true;
+                }
+                else if (_originalCellValue != null && currentValue != null)
+                {
+                    if (_originalCellValue is string origStr && currentValue is string currStr)
+                    {
+                        valueChanged = origStr != currStr;
+                    }
+                    else if (_originalCellValue is double origDbl && currentValue is double currDbl)
+                    {
+                        valueChanged = Math.Abs(origDbl - currDbl) > 0.0001;
+                    }
+                    else if (_originalCellValue is DateTime origDt && currentValue is DateTime currDt)
+                    {
+                        valueChanged = origDt != currDt;
+                    }
+                    else
+                    {
+                        valueChanged = !_originalCellValue.Equals(currentValue);
+                    }
+                }
+
+                if (!valueChanged)
+                {
+                    System.Diagnostics.Debug.WriteLine($"⊘ No change detected for {columnName}, skipping save");
+                    return;
+                }
+
                 editedActivity.UpdatedBy = App.CurrentUser?.Username ?? "Unknown";
                 editedActivity.UpdatedUtcDate = DateTime.UtcNow;
                 editedActivity.LocalDirty = 1;
 
-                // Save to database
                 bool success = await ActivityRepository.UpdateActivityInDatabase(editedActivity);
 
                 if (success)
                 {
-                    // Update summary panel to reflect the cell edit
                     UpdateSummaryPanel();
-                    System.Diagnostics.Debug.WriteLine($"✓ Auto-saved: ActivityID={editedActivity.ActivityID}, UpdatedBy={editedActivity.UpdatedBy}, UpdatedUtcDate={editedActivity.UpdatedUtcDate:o}");
+                    System.Diagnostics.Debug.WriteLine($"✓ Auto-saved: ActivityID={editedActivity.ActivityID}, Column={columnName}, UpdatedBy={editedActivity.UpdatedBy}");
                 }
                 else
                 {
                     MessageBox.Show(
-   $"Failed to save changes for Activity {editedActivity.ActivityID}.\nPlease try again.",
-  "Save Error",
-            MessageBoxButton.OK,
-        MessageBoxImage.Error);
+                        $"Failed to save changes for Activity {editedActivity.ActivityID}.\nPlease try again.",
+                        "Save Error",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error);
                 }
             }
             catch (Exception ex)
@@ -1122,10 +1182,10 @@ namespace VANTAGE.Views
                 System.Diagnostics.Debug.WriteLine($"✗ Error in auto-save: {ex.Message}");
                 AppLogger.Error(ex, "sfActivities_CurrentCellEndEdit", App.CurrentUser?.Username ?? "Unknown");
                 MessageBox.Show(
-        $"Error saving changes: {ex.Message}",
-           "Save Error",
- MessageBoxButton.OK,
-      MessageBoxImage.Error);
+                    $"Error saving changes: {ex.Message}",
+                    "Save Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
             }
         }
 

@@ -326,7 +326,7 @@
                     HeaderRowHeight="32"
                     CurrentCellEndEdit="sfActivities_CurrentCellEndEdit"
                     SelectionChanged="sfActivities_SelectionChanged"
-                    CurrentCellBeginEdit="sfActivities_CurrentCellBeginEdit">
+                    CurrentCellBeginEdit="SfActivities_CurrentCellBeginEdit">
                     
                     <syncfusion:SfDataGrid.ContextMenu>
                         <ContextMenu
