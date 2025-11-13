@@ -3,6 +3,7 @@ using System.Windows;
 using VANTAGE.Data;
 using VANTAGE.Models;
 using VANTAGE.Utilities;
+using System.IO;
 
 namespace VANTAGE
 {
@@ -13,6 +14,9 @@ namespace VANTAGE
         public static User CurrentUser { get; set; }
         public static int CurrentUserID { get; set; }
 
+        // Add this field at the top of the App class
+        private string _tempCentralDbPath;
+
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
@@ -22,9 +26,73 @@ namespace VANTAGE
 
             try
             {
+                // NEW: Check if local database exists
+                string localDbPath = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    "VANTAGE",
+                    "VANTAGE_Local.db"
+                );
+
+                bool isFirstRun = !File.Exists(localDbPath);
+
+                if (isFirstRun)
+                {
+                    // Prompt user to browse to Central.db
+                    var openFileDialog = new Microsoft.Win32.OpenFileDialog
+                    {
+                        Title = "Locate Central Database",
+                        Filter = "Database files (*.db)|*.db|All files (*.*)|*.*",
+                        InitialDirectory = @"G:\"
+                    };
+
+                    if (openFileDialog.ShowDialog() != true)
+                    {
+                        MessageBox.Show("Central database location is required to initialize VANTAGE.",
+                            "Setup Required", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        this.Shutdown();
+                        return;
+                    }
+
+                    string selectedPath = openFileDialog.FileName;
+
+                    // Validate the selected database
+                    if (!DatabaseSetup.ValidateCentralDatabase(selectedPath, out string validationError))
+                    {
+                        MessageBox.Show($"Invalid Central database:\n\n{validationError}\n\nPlease select a valid Central database file.",
+                            "Invalid Database", MessageBoxButton.OK, MessageBoxImage.Error);
+                        this.Shutdown();
+                        return;
+                    }
+
+                    _tempCentralDbPath = selectedPath;
+                }
 
                 // Step 1: Initialize database
                 DatabaseSetup.InitializeDatabase();
+
+                // Save or read Central.db path
+                string centralDbPath = string.Empty;
+
+                if (isFirstRun && !string.IsNullOrEmpty(_tempCentralDbPath))
+                {
+                    SettingsManager.SetAppSetting("CentralDatabasePath", _tempCentralDbPath, "string");
+                    centralDbPath = _tempCentralDbPath;
+                    _tempCentralDbPath = null;
+                }
+                else if (!isFirstRun)
+                {
+                    centralDbPath = SettingsManager.GetAppSetting("CentralDatabasePath", "");
+                    if (string.IsNullOrEmpty(centralDbPath))
+                    {
+                        MessageBox.Show("Central database path not found.",
+                            "Configuration Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        this.Shutdown();
+                        return;
+                    }
+                }
+
+                // Mirror reference tables from Central to Local (happens every startup)
+                DatabaseSetup.MirrorTablesFromCentral(centralDbPath);
 
                 VANTAGE.Utilities.AppLogger.Initialize();
                 VANTAGE.Utilities.AppLogger.Info("Milestone starting up...", "App.OnStartup");
@@ -33,7 +101,7 @@ namespace VANTAGE
                 SettingsManager.InitializeDefaultAppSettings();
 
                 // Step 3: Get current Windows username
-                string windowsUsername = UserHelper.GetCurrentWindowsUsername();;
+                string windowsUsername = UserHelper.GetCurrentWindowsUsername();
 
                 // Step 4: Check if user exists in database
                 CurrentUser = GetOrCreateUser(windowsUsername);
@@ -54,44 +122,49 @@ namespace VANTAGE
                         CurrentUser.IsAdmin = false;
                         CurrentUser.AdminToken = null;
                     }
-                    else
-                    {
-                        // TODO: Add proper logging when logging system is implemented
-                    }
                 }
 
                 // Step 5: Check if user has completed profile
                 if (string.IsNullOrEmpty(CurrentUser.FullName) || string.IsNullOrEmpty(CurrentUser.Email))
                 {
-                    // Show first-run setup
                     FirstRunSetupWindow setupWindow = new FirstRunSetupWindow(CurrentUser);
                     bool? result = setupWindow.ShowDialog();
 
                     if (result != true)
                     {
-                        // User cancelled setup - exit app
                         MessageBox.Show("Profile setup is required to use VANTAGE.", "Setup Required", MessageBoxButton.OK, MessageBoxImage.Warning);
                         this.Shutdown();
                         return;
                     }
 
-                    // Refresh user data after setup
                     var refreshedUser = GetUserByID(CurrentUserID);
                     if (refreshedUser != null)
                     {
                         CurrentUser = refreshedUser;
-                    }
-                    else
-                    {
-                        // TODO: Add proper logging when logging system is implemented
+
+                        // Sync new/updated user to Central database
+                        string centralPath = SettingsManager.GetAppSetting("CentralDatabasePath", "");
+                        if (!string.IsNullOrEmpty(centralPath))
+                        {
+                            DatabaseSetup.AddUserToCentral(
+                                centralPath,
+                                CurrentUser.UserID,
+                                CurrentUser.Username,
+                                CurrentUser.FullName,
+                                CurrentUser.Email,
+                                CurrentUser.PhoneNumber,
+                                CurrentUser.IsAdmin,
+                                CurrentUser.AdminToken
+                            );
+                        }
                     }
                 }
 
                 // Step 6: Initialize user settings
                 SettingsManager.InitializeDefaultUserSettings(CurrentUserID);
 
-                // Step 6a: Initialize column mappings (use default project for now)
-                ActivityRepository.InitializeMappings(null); // null = use defaults
+                // Step 6a: Initialize column mappings
+                ActivityRepository.InitializeMappings(null);
 
                 // Step 7: Determine which module to load
                 string lastModule = SettingsManager.GetLastModuleUsed(CurrentUserID, "PROGRESS");
@@ -101,15 +174,13 @@ namespace VANTAGE
                 {
                     MainWindow mainWindow = new MainWindow();
                     mainWindow.Show();
-
-                    // Force the window to stay visible
                     mainWindow.Activate();
                     mainWindow.Focus();
                 }
                 catch (Exception mainWindowEx)
                 {
                     MessageBox.Show($"Failed to open main window: {mainWindowEx.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    throw; // Re-throw so outer catch handles shutdown
+                    throw;
                 }
             }
             catch (Exception ex)

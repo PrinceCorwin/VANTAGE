@@ -779,19 +779,6 @@ namespace VANTAGE
             }
         }
 
-        private void MenuSeedUsers_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                DatabaseSetup.SeedTestUsers();
-                MessageBox.Show("Test users seeded successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error seeding users: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
         // Placeholder test handlers
         private async void MenuResetLocalDirty_Click(object sender, RoutedEventArgs e)
         {

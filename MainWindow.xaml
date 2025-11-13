@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
         mc:Ignorable="d"
         Title="VANTAGE: MILESTONE" 
         Height="700" 
@@ -393,10 +394,6 @@
                                       Click="MenuToggleAdmin_Click"
                                       Background="{StaticResource ControlBackground}"
                                       Foreground="{StaticResource ForegroundColor}"/>
-                            <MenuItem Header="Seed Users" 
-                                      Click="MenuSeedUsers_Click"
-                                      Background="{StaticResource ControlBackground}"
-                                      Foreground="{StaticResource ForegroundColor}"/>
                             <MenuItem Header="Reset LocalDirty (All Records)" 
                                       Click="MenuResetLocalDirty_Click"
                                       Background="{StaticResource ControlBackground}"
@@ -465,20 +462,7 @@
                            Margin="10,0,20,0"/>
 
                 <!-- Current Project -->
-                <TextBlock Grid.Column="1" 
-                           Text="Project:" 
-                           Foreground="{StaticResource StatusBarForeground}"
-                           FontSize="11"
-                           VerticalAlignment="Center"
-                           Margin="0,0,5,0"/>
-                <ComboBox Grid.Column="2" 
-                          x:Name="cmbCurrentProject"
-                          Width="150"
-                          Height="20"
-                          Background="{StaticResource ControlBackground}"
-                          Foreground="{StaticResource ControlForeground}"
-                          BorderBrush="{StaticResource ControlBorder}"
-                          Margin="0,0,20,0"/>
+
 
                 <!-- Spacer -->
                 <TextBlock Grid.Column="3"/>
