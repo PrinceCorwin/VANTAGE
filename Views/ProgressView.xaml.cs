@@ -509,8 +509,21 @@ namespace VANTAGE.Views
 
             try
             {
+                // Filter to only records the current user can edit
+                // Admin can edit any record, non-admin can only edit their own records
+                var editableActivities = selectedActivities.Where(a =>
+                  App.CurrentUser?.IsAdmin == true ||
+   string.Equals(a.AssignedTo, App.CurrentUser?.Username, StringComparison.OrdinalIgnoreCase)
+       ).ToList();
+
+                if (!editableActivities.Any())
+                {
+                    // User selected only other users' records - silently do nothing
+ return;
+ }
+
                 int successCount = 0;
-                foreach (var activity in selectedActivities)
+                foreach (var activity in editableActivities)
                 {
                     activity.PercentEntry = percent;
 
@@ -527,8 +540,12 @@ namespace VANTAGE.Views
                 sfActivities.View.Refresh();
                 UpdateSummaryPanel();
 
-                MessageBox.Show($"Set {successCount} record(s) to {percent}%.",
-                    "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                // Only show message if records were actually updated
+   if (successCount > 0)
+        {
+    MessageBox.Show($"Set {successCount} record(s) to {percent}%.",
+   "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+     }
             }
             catch (Exception ex)
             {
@@ -1013,14 +1030,26 @@ namespace VANTAGE.Views
             var activity = sfActivities.SelectedItem as Activity;
             if (activity == null) return;
 
-            if (sfActivities.CurrentColumn == null) return;
+            // Check if user has permission to edit this record
+            // Admin can edit any record, non-admin can only edit their own records
+            bool canEdit = App.CurrentUser?.IsAdmin == true || 
+                          string.Equals(activity.AssignedTo, App.CurrentUser?.Username, StringComparison.OrdinalIgnoreCase);
 
-            var property = GetCachedProperty(sfActivities.CurrentColumn.MappingName);
-            if (property != null)
-            {
-                _originalCellValue = property.GetValue(activity);
+            if (!canEdit)
+     {
+    e.Cancel = true;
+      // Silently prevent editing without showing a message
+                return;
             }
-        }
+
+    if (sfActivities.CurrentColumn == null) return;
+
+   var property = GetCachedProperty(sfActivities.CurrentColumn.MappingName);
+       if (property != null)
+       {
+   _originalCellValue = property.GetValue(activity);
+   }
+  }
         /// Auto-save when user finishes editing a cell
         // Auto-save when user finishes editing a cell - ONLY if value changed
         private async void sfActivities_CurrentCellEndEdit(object sender, Syncfusion.UI.Xaml.Grid.CurrentCellEndEditEventArgs e)
