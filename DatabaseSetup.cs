@@ -62,20 +62,13 @@ namespace VANTAGE
                 // Tables to mirror schema + data (metadata)
                 string[] metadataTables = { "Users", "Projects", "ColumnMappings", "Managers" };
 
-                // Tables to mirror schema only (dynamic data stays local)
-                string[] schemaTables = { "Activities", "Deleted_Activities" };
+                // Activities and Deleted_Activities are created manually with local schema
 
                 // Mirror metadata tables (schema + data)
                 foreach (string tableName in metadataTables)
                 {
                     CopyTableSchema(centralConn, localConn, tableName);
                     CopyTableData(centralConn, localConn, tableName);
-                }
-
-                // Mirror schema-only tables (no data copy)
-                foreach (string tableName in schemaTables)
-                {
-                    CopyTableSchema(centralConn, localConn, tableName);
                 }
 
                 VANTAGE.Utilities.AppLogger.Info($"Mirrored tables from Central database", "DatabaseSetup.MirrorTablesFromCentral");
@@ -86,7 +79,73 @@ namespace VANTAGE
                 throw;
             }
         }
+        private static void EnsureDeletedActivitiesTable()
+        {
+            try
+            {
+                using var connection = GetConnection();
+                connection.Open();
 
+                // Check if Activities table exists first
+                using (var chkAct = connection.CreateCommand())
+                {
+                    chkAct.CommandText = "SELECT 1 FROM sqlite_master WHERE type='table' AND name='Activities';";
+                    var activitiesExists = chkAct.ExecuteScalar() != null;
+                    if (!activitiesExists)
+                    {
+                        VANTAGE.Utilities.AppLogger.Warning("Activities table not found; skipping Deleted_Activities creation.", "DB.EnsureDeletedActivitiesTable");
+                        return;
+                    }
+                }
+
+                VANTAGE.Utilities.AppLogger.Info("Ensuring Deleted_Activities…", "DB.EnsureDeletedActivitiesTable");
+
+                // Create the table if it doesn't exist (mirror columns only; no rows)
+                using (var create = connection.CreateCommand())
+                {
+                    create.CommandText = "CREATE TABLE IF NOT EXISTS Deleted_Activities AS SELECT * FROM Activities WHERE 0;";
+                    create.ExecuteNonQuery();
+                }
+
+                // Ensure audit columns exist (idempotent)
+                EnsureColumn(connection, "Deleted_Activities", "DeletedDate", "TEXT NOT NULL DEFAULT ''");
+                EnsureColumn(connection, "Deleted_Activities", "DeletedBy", "TEXT NULL");
+
+                // Helpful indexes
+                using (var idx = connection.CreateCommand())
+                {
+                    idx.CommandText = "CREATE INDEX IF NOT EXISTS IX_Deleted_Activities_DeletedDate ON Deleted_Activities(DeletedDate);";
+                    idx.ExecuteNonQuery();
+                }
+                using (var uidx = connection.CreateCommand())
+                {
+                    uidx.CommandText = "CREATE UNIQUE INDEX IF NOT EXISTS UX_Deleted_Activities_UniqueID ON Deleted_Activities(UniqueID);";
+                    uidx.ExecuteNonQuery();
+                }
+
+                VANTAGE.Utilities.AppLogger.Info("Deleted_Activities ensured.", "DB.EnsureDeletedActivitiesTable");
+            }
+            catch (Exception ex)
+            {
+                VANTAGE.Utilities.AppLogger.Error(ex, "DB.EnsureDeletedActivitiesTable");
+            }
+
+            static void EnsureColumn(Microsoft.Data.Sqlite.SqliteConnection conn, string table, string name, string def)
+            {
+                using var info = conn.CreateCommand();
+                info.CommandText = $"PRAGMA table_info('{table}');";
+                using var rd = info.ExecuteReader();
+                bool has = false;
+                while (rd.Read())
+                    if (string.Equals(rd["name"]?.ToString(), name, StringComparison.OrdinalIgnoreCase)) { has = true; break; }
+                if (!has)
+                {
+                    using var alter = conn.CreateCommand();
+                    alter.CommandText = $"ALTER TABLE {table} ADD COLUMN {name} {def};";
+                    alter.ExecuteNonQuery();
+                }
+            }
+        }
         // Copy table schema from Central to Local
         private static void CopyTableSchema(SqliteConnection centralConn, SqliteConnection localConn, string tableName)
         {
@@ -231,9 +290,106 @@ namespace VANTAGE
                 LastModified DATETIME DEFAULT CURRENT_TIMESTAMP,
                 UNIQUE(UserID, SettingName)
             );
+
+            -- Activities table (local schema with UniqueID as primary key)
+            CREATE TABLE IF NOT EXISTS Activities (
+                UniqueID              TEXT PRIMARY KEY NOT NULL,
+                ActivityID            INTEGER,
+                Area                  TEXT NOT NULL DEFAULT '',
+                AssignedTo            TEXT NOT NULL DEFAULT '',
+                AzureUploadUtcDate    TEXT,
+                Aux1                  TEXT NOT NULL DEFAULT '',
+                Aux2                  TEXT NOT NULL DEFAULT '',
+                Aux3                  TEXT NOT NULL DEFAULT '',
+                BaseUnit              REAL NOT NULL DEFAULT 0,
+                BudgetHoursGroup      REAL NOT NULL DEFAULT 0,
+                BudgetHoursROC        REAL NOT NULL DEFAULT 0,
+                BudgetMHs             REAL NOT NULL DEFAULT 0,
+                ChgOrdNO              TEXT NOT NULL DEFAULT '',
+                ClientBudget          REAL NOT NULL DEFAULT 0,
+                ClientCustom3         REAL NOT NULL DEFAULT 0,
+                ClientEquivQty        REAL NOT NULL DEFAULT 0,
+                CompType              TEXT NOT NULL DEFAULT '',
+                CreatedBy             TEXT NOT NULL DEFAULT '',
+                DateTrigger           INTEGER NOT NULL DEFAULT 0,
+                Description           TEXT NOT NULL DEFAULT '',
+                DwgNO                 TEXT NOT NULL DEFAULT '',
+                EarnQtyEntry          REAL NOT NULL DEFAULT 0,
+                EarnedMHsRoc          REAL NOT NULL DEFAULT 0,
+                EqmtNO                TEXT NOT NULL DEFAULT '',
+                EquivQTY              TEXT NOT NULL DEFAULT '',
+                EquivUOM              TEXT NOT NULL DEFAULT '',
+                Estimator             TEXT NOT NULL DEFAULT '',
+                HexNO                 INTEGER NOT NULL DEFAULT 0,
+                HtTrace               TEXT NOT NULL DEFAULT '',
+                InsulType             TEXT NOT NULL DEFAULT '',
+                LineNO                TEXT NOT NULL DEFAULT '',
+                LocalDirty            INTEGER NOT NULL DEFAULT 0,
+                MtrlSpec              TEXT NOT NULL DEFAULT '',
+                Notes                 TEXT NOT NULL DEFAULT '',
+                PaintCode             TEXT NOT NULL DEFAULT '',
+                PercentEntry          REAL NOT NULL DEFAULT 0,
+                PhaseCategory         TEXT NOT NULL DEFAULT '',
+                PhaseCode             TEXT NOT NULL DEFAULT '',
+                PipeGrade             TEXT NOT NULL DEFAULT '',
+                PipeSize1             REAL NOT NULL DEFAULT 0,
+                PipeSize2             REAL NOT NULL DEFAULT 0,
+                PrevEarnMHs           REAL NOT NULL DEFAULT 0,
+                PrevEarnQTY           REAL NOT NULL DEFAULT 0,
+                ProgDate              TEXT,
+                ProjectID             TEXT NOT NULL DEFAULT '',
+                Quantity              REAL NOT NULL DEFAULT 0,
+                RevNO                 TEXT NOT NULL DEFAULT '',
+                RFINO                 TEXT NOT NULL DEFAULT '',
+                ROCBudgetQTY          REAL NOT NULL DEFAULT 0,
+                ROCID                 REAL NOT NULL DEFAULT 0,
+                ROCPercent            REAL NOT NULL DEFAULT 0,
+                ROCStep               TEXT NOT NULL DEFAULT '',
+                SchedActNO            TEXT NOT NULL DEFAULT '',
+                SchFinish             TEXT,
+                SchStart              TEXT,
+                SecondActno           TEXT NOT NULL DEFAULT '',
+                SecondDwgNO           TEXT NOT NULL DEFAULT '',
+                Service               TEXT NOT NULL DEFAULT '',
+                ShopField             TEXT NOT NULL DEFAULT '',
+                ShtNO                 TEXT NOT NULL DEFAULT '',
+                SubArea               TEXT NOT NULL DEFAULT '',
+                PjtSystem             TEXT NOT NULL DEFAULT '',
+                SystemNO              TEXT NOT NULL DEFAULT '',
+                TagNO                 TEXT NOT NULL DEFAULT '',
+                UDF1                  TEXT NOT NULL DEFAULT '',
+                UDF10                 TEXT NOT NULL DEFAULT '',
+                UDF11                 TEXT NOT NULL DEFAULT '',
+                UDF12                 TEXT NOT NULL DEFAULT '',
+                UDF13                 TEXT NOT NULL DEFAULT '',
+                UDF14                 TEXT NOT NULL DEFAULT '',
+                UDF15                 TEXT NOT NULL DEFAULT '',
+                UDF16                 TEXT NOT NULL DEFAULT '',
+                UDF17                 TEXT NOT NULL DEFAULT '',
+                UDF18                 TEXT NOT NULL DEFAULT '',
+                UDF2                  TEXT NOT NULL DEFAULT '',
+                UDF20                 TEXT NOT NULL DEFAULT '',
+                UDF3                  TEXT NOT NULL DEFAULT '',
+                UDF4                  TEXT NOT NULL DEFAULT '',
+                UDF5                  TEXT NOT NULL DEFAULT '',
+                UDF6                  TEXT NOT NULL DEFAULT '',
+                UDF7                  TEXT NOT NULL DEFAULT '',
+                UDF8                  TEXT NOT NULL DEFAULT '',
+                UDF9                  TEXT NOT NULL DEFAULT '',
+                UpdatedBy             TEXT NOT NULL DEFAULT '',
+                UpdatedUtcDate        TEXT NOT NULL,
+                UOM                   TEXT NOT NULL DEFAULT '',
+                WeekEndDate           TEXT,
+                WorkPackage           TEXT NOT NULL DEFAULT '',
+                XRay                  REAL NOT NULL DEFAULT 0,
+                SyncVersion           INTEGER NOT NULL DEFAULT 0
+            );
         ";
 
                 command.ExecuteNonQuery();
+
+                // Create Deleted_Activities mirroring Activities structure
+                EnsureDeletedActivitiesTable();
             }
             catch (Exception ex)
             {

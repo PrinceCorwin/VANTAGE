@@ -823,7 +823,7 @@ namespace VANTAGE.Views
             UpdateRecordCount();
             UpdateSummaryPanel();
         }
-        // NEW - USE THIS
+        
         private void BtnSync_Click(object sender, RoutedEventArgs e)
         {
             try

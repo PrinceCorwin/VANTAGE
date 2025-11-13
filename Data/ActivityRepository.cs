@@ -16,15 +16,49 @@ namespace VANTAGE.Data
         // Mapping service instance (initialized per-project when needed)
         private static MappingService _mappingService;
 
-
         /// Initialize mapping service for a specific project
-
         public static void InitializeMappings(string projectID = null)
         {
             _mappingService = new MappingService(projectID);
         }
 
+        // Get all LocalDirty=1 records for specified projects
+public static async Task<List<Activity>> GetDirtyActivitiesAsync(List<string> projectIds)
+{
+    return await Task.Run(() =>
+    {
+        var dirtyActivities = new List<Activity>();
 
+        try
+        {
+            using var connection = DatabaseSetup.GetConnection();
+            connection.Open();
+
+            var cmd = connection.CreateCommand();
+            cmd.CommandText = @"
+                SELECT * FROM Activities 
+                WHERE LocalDirty = 1 
+                AND ProjectID IN (" + string.Join(",", projectIds.Select((p, i) => $"@proj{i}")) + ")";
+
+            for (int i = 0; i < projectIds.Count; i++)
+            {
+                cmd.Parameters.AddWithValue($"@proj{i}", projectIds[i]);
+            }
+
+            using var reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                dirtyActivities.Add(MapReaderToActivity(reader));
+            }
+        }
+        catch (Exception ex)
+        {
+            AppLogger.Error(ex, "ActivityRepository.GetDirtyActivitiesAsync");
+        }
+
+        return dirtyActivities;
+    });
+}
         /// Archive activities to Deleted_Activities table and then delete from Activities
 
         public static async Task<int> ArchiveAndDeleteActivitiesAsync(List<int> activityIds, string performedBy)
