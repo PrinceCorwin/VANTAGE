@@ -251,6 +251,16 @@
                                 </ContextMenu>
                             </Button.ContextMenu>
                         </Button>
+                        <Button x:Name="btnSync"
+                                Content="SYNC"
+                                Width="80"
+                                Height="28"
+                                Margin="20,0,0,0"
+                                Background="{StaticResource ControlBackground}"
+                                Foreground="{StaticResource ForegroundColor}"
+                                BorderBrush="{StaticResource BorderColor}"
+                                BorderThickness="1"
+                                Click="BtnSync_Click"/>
                     </StackPanel>
 
                     <!-- RIGHT SIDE: Summary stats -->

@@ -823,7 +823,26 @@ namespace VANTAGE.Views
             UpdateRecordCount();
             UpdateSummaryPanel();
         }
+        // NEW - USE THIS
+        private void BtnSync_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var syncDialog = new SyncDialog();
+                bool? result = syncDialog.ShowDialog();
 
+                if (result == true)
+                {
+                    // TODO: Refresh grid after sync
+                    MessageBox.Show("Sync completed successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Sync error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                AppLogger.Error(ex, "ProgressView.BtnSync_Click");
+            }
+        }
         private void BtnFilterNotComplete_Click(object sender, RoutedEventArgs e)
         {
             // Toggle filter
