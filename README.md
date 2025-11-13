@@ -123,4 +123,4 @@ VANTAGE is a comprehensive construction project management and progress tracking
 
 ## 📧 Contact
 
-*Contact information to be added*
+*Contact information to be added Soon*
