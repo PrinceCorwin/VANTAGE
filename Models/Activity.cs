@@ -184,16 +184,6 @@ namespace VANTAGE.Models
         public string CreatedBy { get; set; }
         public string UniqueID { get; set; }  // Read-only unique identifier
 
-        // Deleted record tracking (only populated for deleted activities)
-        public string DeletedBy { get; set; }
-        public DateTime? DeletedDate { get; set; }
-
-         /// <summary>
-        /// Display DeletedDate in UTC ISO 8601 format (same as stored in database)
-        /// Example: 2024-01-15T14:30:00.0000000Z
-        /// </summary>
-        public string DeletedDateDisplay => DeletedDate?.ToString("o") ?? "";
-
         // Helper properties for assignment
         public string AssignedToUsername => AssignedTo;
 

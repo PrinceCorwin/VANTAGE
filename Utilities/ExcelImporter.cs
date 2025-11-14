@@ -103,7 +103,7 @@ namespace VANTAGE.Utilities
                     sequence++;
                     System.Diagnostics.Debug.WriteLine($"  Generated UniqueID: {activity.UniqueID}");
                 }
-
+                activity.ActivityID = 0;
                 activities.Add(activity);
             }
 
@@ -534,58 +534,73 @@ namespace VANTAGE.Utilities
             }
         }
 
-        
+
         /// Import activities from Excel file with progress reporting
 
         /// <param name="filePath">Path to Excel file with OldVantage column names</param>
         /// <param name="replaceMode">True = replace all existing, False = combine/add</param>
         /// <param name="progress">Optional progress callback (current, total, message)</param>
- /// <returns>Number of records imported</returns>
+        /// <returns>Number of records imported</returns>
         public static async Task<int> ImportActivitiesAsync(string filePath, bool replaceMode, IProgress<(int current, int total, string message)> progress = null)
         {
             return await Task.Run(() =>
-       {
-     try
-     {
-         System.Diagnostics.Debug.WriteLine("Starting import...");
-   progress?.Report((0, 0, "Opening Excel file..."));
+            {
+                try
+                {
+                    System.Diagnostics.Debug.WriteLine("Starting import...");
+                    progress?.Report((0, 0, "Opening Excel file..."));
 
-      if (!File.Exists(filePath))
-        throw new FileNotFoundException($"Excel file not found: {filePath}");
+                    if (!File.Exists(filePath))
+                        throw new FileNotFoundException($"Excel file not found: {filePath}");
 
-         System.Diagnostics.Debug.WriteLine("Opening workbook...");
-        using var workbook = new XLWorkbook(filePath);
-       var worksheet = workbook.Worksheets.FirstOrDefault(ws => ws.Name == "Sheet1")
-            ?? workbook.Worksheets.FirstOrDefault();
+                    System.Diagnostics.Debug.WriteLine("Opening workbook...");
 
-         System.Diagnostics.Debug.WriteLine("Building column map...");
- progress?.Report((0, 0, "Analyzing Excel structure..."));
- var headerRow = worksheet.Row(1);
-            var columnMap = BuildColumnMap(headerRow);
+                    IXLWorkbook workbook;
+                    try
+                    {
+                        workbook = new XLWorkbook(filePath);
+                    }
+                    catch (IOException ex) when (ex.HResult == unchecked((int)0x80070020))
+                    {
+                        throw new InvalidOperationException(
+                            "The Excel file is currently open in another program.\n\n" +
+                            "Please close the file and try again.", ex);
+                    }
 
-     System.Diagnostics.Debug.WriteLine("Reading activities from Excel...");
-           progress?.Report((0, 0, "Reading Excel data..."));
- var activities = ReadActivitiesFromExcel(worksheet, columnMap);
-  System.Diagnostics.Debug.WriteLine($"Finished reading {activities.Count} activities");
+                    using (workbook)
+                    {
+                        var worksheet = workbook.Worksheets.FirstOrDefault(ws => ws.Name == "Sheet1")
+                            ?? workbook.Worksheets.FirstOrDefault();
 
-             System.Diagnostics.Debug.WriteLine("Importing to database...");
-             progress?.Report((0, activities.Count, "Importing to database..."));
-            int imported = ImportToDatabase(activities, replaceMode, progress);
-     System.Diagnostics.Debug.WriteLine($"Finished importing {imported} records");
+                        System.Diagnostics.Debug.WriteLine("Building column map...");
+                        progress?.Report((0, 0, "Analyzing Excel structure..."));
+                        var headerRow = worksheet.Row(1);
+                        var columnMap = BuildColumnMap(headerRow);
 
-         progress?.Report((imported, imported, "Import complete!"));
-      return imported;
-    }
+                        System.Diagnostics.Debug.WriteLine("Reading activities from Excel...");
+                        progress?.Report((0, 0, "Reading Excel data..."));
+                        var activities = ReadActivitiesFromExcel(worksheet, columnMap);
+                        System.Diagnostics.Debug.WriteLine($"Finished reading {activities.Count} activities");
+
+                        System.Diagnostics.Debug.WriteLine("Importing to database...");
+                        progress?.Report((0, activities.Count, "Importing to database..."));
+                        int imported = ImportToDatabase(activities, replaceMode, progress);
+                        System.Diagnostics.Debug.WriteLine($"Finished importing {imported} records");
+
+                        progress?.Report((imported, imported, "Import complete!"));
+                        return imported;
+                    }
+                }
                 catch (Exception ex)
                 {
-             System.Diagnostics.Debug.WriteLine($"✗ Import error: {ex.Message}");
-      throw;
-    }
-    });
-     }
+                    System.Diagnostics.Debug.WriteLine($"✗ Import error: {ex.Message}");
+                    throw;
+                }
+            });
+        }
 
         // Keep the synchronous version for backward compatibility
-    public static int ImportActivities(string filePath, bool replaceMode)
+        public static int ImportActivities(string filePath, bool replaceMode)
         {
         return ImportActivitiesAsync(filePath, replaceMode).GetAwaiter().GetResult();
         }

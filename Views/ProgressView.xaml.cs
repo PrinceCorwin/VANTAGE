@@ -823,8 +823,8 @@ namespace VANTAGE.Views
             UpdateRecordCount();
             UpdateSummaryPanel();
         }
-        
-        private void BtnSync_Click(object sender, RoutedEventArgs e)
+
+        private async void BtnSync_Click(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -833,8 +833,8 @@ namespace VANTAGE.Views
 
                 if (result == true)
                 {
-                    // TODO: Refresh grid after sync
-                    MessageBox.Show("Sync completed successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                    // Refresh grid to show updated LocalDirty and pulled records
+                    await RefreshData();
                 }
             }
             catch (Exception ex)

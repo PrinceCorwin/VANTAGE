@@ -294,7 +294,7 @@ namespace VANTAGE
             -- Activities table (local schema with UniqueID as primary key)
             CREATE TABLE IF NOT EXISTS Activities (
                 UniqueID              TEXT PRIMARY KEY NOT NULL,
-                ActivityID            INTEGER,
+                ActivityID            INTEGER NOT NULL DEFAULT 0,
                 Area                  TEXT NOT NULL DEFAULT '',
                 AssignedTo            TEXT NOT NULL DEFAULT '',
                 AzureUploadUtcDate    TEXT,

@@ -34,22 +34,30 @@ public static async Task<List<Activity>> GetDirtyActivitiesAsync(List<string> pr
             using var connection = DatabaseSetup.GetConnection();
             connection.Open();
 
+            // DEBUG: Log the query
             var cmd = connection.CreateCommand();
             cmd.CommandText = @"
-                SELECT * FROM Activities 
-                WHERE LocalDirty = 1 
-                AND ProjectID IN (" + string.Join(",", projectIds.Select((p, i) => $"@proj{i}")) + ")";
+    SELECT * FROM Activities 
+    WHERE LocalDirty = 1 
+    AND ProjectID IN (" + string.Join(",", projectIds.Select((p, i) => $"@proj{i}")) + ")";
 
             for (int i = 0; i < projectIds.Count; i++)
             {
                 cmd.Parameters.AddWithValue($"@proj{i}", projectIds[i]);
             }
 
+            // DEBUG OUTPUT
+            AppLogger.Info($"GetDirtyActivitiesAsync called with {projectIds.Count} projects: {string.Join(", ", projectIds)}", "ActivityRepository.GetDirtyActivitiesAsync");
+
             using var reader = cmd.ExecuteReader();
+            int count = 0;
             while (reader.Read())
             {
                 dirtyActivities.Add(MapReaderToActivity(reader));
+                count++;
             }
+
+            AppLogger.Info($"GetDirtyActivitiesAsync returning {count} records", "ActivityRepository.GetDirtyActivitiesAsync");
         }
         catch (Exception ex)
         {
@@ -1091,10 +1099,6 @@ public static async Task<List<Activity>> GetDirtyActivitiesAsync(List<string> pr
                 WeekEndDate = GetDateTimeOrNull(reader, "WeekEndDate"),
                 WorkPackage = GetStringOrDefault(reader, "WorkPackage"),
                 XRay = GetDoubleOrDefault(reader, "XRay"),
-
-                // Deleted record tracking (only present in Deleted_Activities table)
-                DeletedBy = GetStringOrDefault(reader, "DeletedBy"),
-                DeletedDate = GetDateTimeOrNull(reader, "DeletedDate")
             };
         }
 

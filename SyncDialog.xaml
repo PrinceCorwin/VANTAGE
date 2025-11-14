@@ -83,7 +83,7 @@
                     Foreground="{StaticResource ForegroundColor}"
                     BorderBrush="{StaticResource AccentColor}"
                     BorderThickness="1"
-                    Click="BtnSync_Click"/>
+                    Click="BtnConfirmSync_Click"/>
         </StackPanel>
     </Grid>
 </Window>

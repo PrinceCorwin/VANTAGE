@@ -53,6 +53,8 @@ namespace VANTAGE.Utilities
         }
         // Push LocalDirty records to Central and update their SyncVersion
         // Push LocalDirty records to Central and update their SyncVersion
+        // Push LocalDirty records to Central and update their SyncVersion (optimized with batch operations)
+        // Push LocalDirty records to Central and update their SyncVersion (optimized with batch operations)
         public static async Task<SyncResult> PushRecordsAsync(string centralDbPath, List<string> selectedProjects)
         {
             var result = new SyncResult();
@@ -74,75 +76,203 @@ namespace VANTAGE.Utilities
                 centralConn.Open();
                 localConn.Open();
 
-                // Get Activity properties to build UPDATE dynamically (exclude UniqueID and LocalDirty)
-                var properties = typeof(Activity).GetProperties()
-                    .Where(p => p.Name != "UniqueID" && p.Name != "LocalDirty" && p.Name != "ActivityID" && p.CanWrite)
-                    .ToList();
+                // Explicit list of columns that exist in Central Activities table (matches schema exactly)
+                var syncColumns = new List<string>
+        {
+            "Area", "AssignedTo", "AzureUploadUtcDate", "Aux1", "Aux2", "Aux3",
+            "BaseUnit", "BudgetHoursGroup", "BudgetHoursROC", "BudgetMHs",
+            "ChgOrdNO", "ClientBudget", "ClientCustom3", "ClientEquivQty",
+            "CompType", "CreatedBy", "DateTrigger", "Description", "DwgNO",
+            "EarnQtyEntry", "EarnedMHsRoc", "EqmtNO", "EquivQTY", "EquivUOM",
+            "Estimator", "HexNO", "HtTrace", "InsulType", "LineNO",
+            "MtrlSpec", "Notes", "PaintCode", "PercentEntry", "PhaseCategory",
+            "PhaseCode", "PipeGrade", "PipeSize1", "PipeSize2",
+            "PrevEarnMHs", "PrevEarnQTY", "ProgDate", "ProjectID",
+            "Quantity", "RevNO", "RFINO", "ROCBudgetQTY", "ROCID",
+            "ROCPercent", "ROCStep", "SchedActNO", "SchFinish", "SchStart",
+            "SecondActno", "SecondDwgNO", "Service", "ShopField", "ShtNO",
+            "SubArea", "PjtSystem", "SystemNO", "TagNO",
+            "UDF1", "UDF2", "UDF3", "UDF4", "UDF5", "UDF6", "UDF7", "UDF8", "UDF9", "UDF10",
+            "UDF11", "UDF12", "UDF13", "UDF14", "UDF15", "UDF16", "UDF17", "UDF18", "UDF20",
+            "UpdatedBy", "UpdatedUtcDate", "UOM", "WeekEndDate", "WorkPackage", "XRay"
+        };
 
-                // Push each record
-                foreach (var record in dirtyRecords)
+                // Step 1: Check which UniqueIDs exist at Central (one query)
+                var dirtyUniqueIds = dirtyRecords.Select(r => r.UniqueID).ToList();
+                var existingIds = new HashSet<string>();
+
+                var checkCmd = centralConn.CreateCommand();
+                checkCmd.CommandText = $"SELECT UniqueID FROM Activities WHERE UniqueID IN ({string.Join(",", dirtyUniqueIds.Select((id, i) => $"@id{i}"))})";
+                for (int i = 0; i < dirtyUniqueIds.Count; i++)
                 {
-                    try
+                    checkCmd.Parameters.AddWithValue($"@id{i}", dirtyUniqueIds[i]);
+                }
+
+                using (var reader = checkCmd.ExecuteReader())
+                {
+                    while (reader.Read())
                     {
-                        // Verify ownership at Central
-                        var checkOwnerCmd = centralConn.CreateCommand();
-                        checkOwnerCmd.CommandText = "SELECT AssignedTo FROM Activities WHERE UniqueID = @id";
-                        checkOwnerCmd.Parameters.AddWithValue("@id", record.UniqueID);
-                        var centralOwner = checkOwnerCmd.ExecuteScalar()?.ToString();
-
-                        if (centralOwner != null && centralOwner != record.AssignedTo)
-                        {
-                            result.FailedRecords.Add($"UniqueID {record.UniqueID}: No longer assigned to you");
-                            continue;
-                        }
-
-                        // Build UPDATE statement dynamically
-                        var setClauses = properties.Select(p => $"{p.Name} = @{p.Name}");
-                        var updateSql = $"UPDATE Activities SET {string.Join(", ", setClauses)} WHERE UniqueID = @UniqueID";
-
-                        var updateCmd = centralConn.CreateCommand();
-                        updateCmd.CommandText = updateSql;
-
-                        // Add parameters dynamically
-                        updateCmd.Parameters.AddWithValue("@UniqueID", record.UniqueID);
-                        foreach (var prop in properties)
-                        {
-                            var value = prop.GetValue(record);
-                            updateCmd.Parameters.AddWithValue($"@{prop.Name}", value ?? DBNull.Value);
-                        }
-
-                        updateCmd.ExecuteNonQuery();
-
-                        // Get assigned SyncVersion from Central
-                        var getVersionCmd = centralConn.CreateCommand();
-                        getVersionCmd.CommandText = "SELECT SyncVersion FROM Activities WHERE UniqueID = @id";
-                        getVersionCmd.Parameters.AddWithValue("@id", record.UniqueID);
-                        var versionResult = getVersionCmd.ExecuteScalar();
-
-                        if (versionResult == null)
-                        {
-                            result.FailedRecords.Add($"UniqueID {record.UniqueID}: Failed to get SyncVersion");
-                            continue;
-                        }
-
-                        long assignedVersion = Convert.ToInt64(versionResult);
-
-                        // Update local record with new SyncVersion and clear LocalDirty
-                        var updateLocalCmd = localConn.CreateCommand();
-                        updateLocalCmd.CommandText = @"
-                    UPDATE Activities 
-                    SET SyncVersion = @version, LocalDirty = 0 
-                    WHERE UniqueID = @id";
-                        updateLocalCmd.Parameters.AddWithValue("@version", assignedVersion);
-                        updateLocalCmd.Parameters.AddWithValue("@id", record.UniqueID);
-                        updateLocalCmd.ExecuteNonQuery();
-
-                        result.PushedRecords++;
+                        existingIds.Add(reader.GetString(0));
                     }
-                    catch (Exception ex)
+                }
+
+                // Step 2: Split into INSERT and UPDATE lists
+                var toInsert = dirtyRecords.Where(r => !existingIds.Contains(r.UniqueID)).ToList();
+                var toUpdate = dirtyRecords.Where(r => existingIds.Contains(r.UniqueID)).ToList();
+
+                // Step 3: Handle UPDATES - verify ownership first
+                var updateSuccessIds = new List<string>();
+                if (toUpdate.Count > 0)
+                {
+                    // Verify ownership for all records to update
+                    var ownerCheckCmd = centralConn.CreateCommand();
+                    ownerCheckCmd.CommandText = $"SELECT UniqueID, AssignedTo FROM Activities WHERE UniqueID IN ({string.Join(",", toUpdate.Select((r, i) => $"@uid{i}"))})";
+                    for (int i = 0; i < toUpdate.Count; i++)
                     {
-                        result.FailedRecords.Add($"UniqueID {record.UniqueID}: {ex.Message}");
-                        AppLogger.Error(ex, $"SyncManager.PushRecords - UniqueID {record.UniqueID}");
+                        ownerCheckCmd.Parameters.AddWithValue($"@uid{i}", toUpdate[i].UniqueID);
+                    }
+
+                    var ownershipMap = new Dictionary<string, string>();
+                    using (var ownerReader = ownerCheckCmd.ExecuteReader())
+                    {
+                        while (ownerReader.Read())
+                        {
+                            ownershipMap[ownerReader.GetString(0)] = ownerReader.GetString(1);
+                        }
+                    }
+
+                    // Filter out records not owned by current user
+                    var validUpdates = toUpdate.Where(r =>
+                    {
+                        if (ownershipMap.TryGetValue(r.UniqueID, out string owner) && owner == r.AssignedTo)
+                        {
+                            return true;
+                        }
+                        result.FailedRecords.Add($"UniqueID {r.UniqueID}: No longer assigned to you");
+                        return false;
+                    }).ToList();
+
+                    // Batch UPDATE
+                    foreach (var record in validUpdates)
+                    {
+                        try
+                        {
+                            var setClauses = syncColumns.Select(col => $"{col} = @{col}");
+                            var updateSql = $"UPDATE Activities SET {string.Join(", ", setClauses)} WHERE UniqueID = @UniqueID";
+
+                            var updateCmd = centralConn.CreateCommand();
+                            updateCmd.CommandText = updateSql;
+                            updateCmd.Parameters.AddWithValue("@UniqueID", record.UniqueID);
+
+                            foreach (var colName in syncColumns)
+                            {
+                                var prop = typeof(Activity).GetProperty(colName);
+                                if (prop != null)
+                                {
+                                    var value = prop.GetValue(record);
+                                    updateCmd.Parameters.AddWithValue($"@{colName}", value ?? DBNull.Value);
+                                }
+                                else
+                                {
+                                    updateCmd.Parameters.AddWithValue($"@{colName}", DBNull.Value);
+                                }
+                            }
+
+                            updateCmd.ExecuteNonQuery();
+                            updateSuccessIds.Add(record.UniqueID);
+                        }
+                        catch (Exception ex)
+                        {
+                            result.FailedRecords.Add($"UniqueID {record.UniqueID}: {ex.Message}");
+                            AppLogger.Error(ex, $"SyncManager.PushRecords UPDATE - UniqueID {record.UniqueID}");
+                        }
+                    }
+                }
+
+                // Step 4: Handle INSERTS
+                var insertSuccessIds = new List<string>();
+                if (toInsert.Count > 0)
+                {
+                    var insertColumns = new List<string> { "UniqueID" };
+                    insertColumns.AddRange(syncColumns);
+                    var insertParams = insertColumns.Select(c => "@" + c);
+
+                    var insertSql = $"INSERT INTO Activities ({string.Join(", ", insertColumns)}) VALUES ({string.Join(", ", insertParams)})";
+
+                    foreach (var record in toInsert)
+                    {
+                        try
+                        {
+                            var insertCmd = centralConn.CreateCommand();
+                            insertCmd.CommandText = insertSql;
+                            insertCmd.Parameters.AddWithValue("@UniqueID", record.UniqueID);
+
+                            foreach (var colName in syncColumns)
+                            {
+                                var prop = typeof(Activity).GetProperty(colName);
+                                if (prop != null)
+                                {
+                                    var value = prop.GetValue(record);
+                                    insertCmd.Parameters.AddWithValue($"@{colName}", value ?? DBNull.Value);
+                                }
+                                else
+                                {
+                                    insertCmd.Parameters.AddWithValue($"@{colName}", DBNull.Value);
+                                }
+                            }
+
+                            insertCmd.ExecuteNonQuery();
+                            insertSuccessIds.Add(record.UniqueID);
+                        }
+                        catch (Exception ex)
+                        {
+                            result.FailedRecords.Add($"UniqueID {record.UniqueID}: {ex.Message}");
+                            AppLogger.Error(ex, $"SyncManager.PushRecords INSERT - UniqueID {record.UniqueID}");
+                        }
+                    }
+                }
+
+                // Step 5: Get all assigned SyncVersions in batch
+                var allSuccessIds = updateSuccessIds.Concat(insertSuccessIds).ToList();
+                if (allSuccessIds.Count > 0)
+                {
+                    var versionMap = new Dictionary<string, long>();
+                    var getVersionsCmd = centralConn.CreateCommand();
+                    getVersionsCmd.CommandText = $"SELECT UniqueID, SyncVersion, ActivityID FROM Activities WHERE UniqueID IN ({string.Join(",", allSuccessIds.Select((id, i) => $"@vid{i}"))})";
+                    for (int i = 0; i < allSuccessIds.Count; i++)
+                    {
+                        getVersionsCmd.Parameters.AddWithValue($"@vid{i}", allSuccessIds[i]);
+                    }
+
+                    var activityIdMap = new Dictionary<string, int>();
+                    using (var versionReader = getVersionsCmd.ExecuteReader())
+                    {
+                        while (versionReader.Read())
+                        {
+                            string uid = versionReader.GetString(0);
+                            long syncVer = versionReader.GetInt64(1);
+                            int actId = versionReader.GetInt32(2);
+                            versionMap[uid] = syncVer;
+                            activityIdMap[uid] = actId;
+                        }
+                    }
+
+                    // Step 6: Update local records - clear LocalDirty and set SyncVersion/ActivityID
+                    foreach (var uniqueId in allSuccessIds)
+                    {
+                        if (versionMap.TryGetValue(uniqueId, out long syncVersion) && activityIdMap.TryGetValue(uniqueId, out int activityId))
+                        {
+                            var updateLocalCmd = localConn.CreateCommand();
+                            updateLocalCmd.CommandText = @"
+                        UPDATE Activities 
+                        SET SyncVersion = @version, ActivityID = @actId, LocalDirty = 0 
+                        WHERE UniqueID = @id";
+                            updateLocalCmd.Parameters.AddWithValue("@version", syncVersion);
+                            updateLocalCmd.Parameters.AddWithValue("@actId", activityId);
+                            updateLocalCmd.Parameters.AddWithValue("@id", uniqueId);
+                            updateLocalCmd.ExecuteNonQuery();
+                            result.PushedRecords++;
+                        }
                     }
                 }
 

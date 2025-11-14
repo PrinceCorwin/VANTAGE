@@ -82,23 +82,73 @@ namespace VANTAGE
             Close();
         }
 
-        private void BtnSync_Click(object sender, RoutedEventArgs e)
+        private async void BtnConfirmSync_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                var syncDialog = new SyncDialog();
-                bool? result = syncDialog.ShowDialog();
+                var selectedProjects = _projects.Where(p => p.IsSelected).Select(p => p.ProjectID).ToList();
 
-                if (result == true)
+                if (selectedProjects.Count == 0)
                 {
-                    // TODO: Refresh grid after sync
-                    MessageBox.Show("Sync completed successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show("Please select at least one project to sync.", "No Projects Selected", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
                 }
+
+                // Get Central path
+                string centralPath = SettingsManager.GetAppSetting("CentralDatabasePath", "");
+
+                // Check connection
+                if (!SyncManager.CheckCentralConnection(centralPath, out string errorMessage))
+                {
+                    MessageBox.Show($"MILESTONE could not establish connection:\n\n{errorMessage}\n\nPlease try again later.",
+                        "Connection Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                // Disable UI during sync
+                btnSync.IsEnabled = false;
+                btnCancel.IsEnabled = false;
+                projectList.IsEnabled = false;
+
+                // Mirror reference tables
+                DatabaseSetup.MirrorTablesFromCentral(centralPath);
+
+                // Push dirty records
+                var pushResult = await SyncManager.PushRecordsAsync(centralPath, selectedProjects);
+
+                // Pull updates
+                var pullResult = await SyncManager.PullRecordsAsync(centralPath, selectedProjects);
+
+                // Show results
+                var message = $"Sync completed successfully!\n\n" +
+                             $"Pushed: {pushResult.PushedRecords} records\n" +
+                             $"Pulled: {pullResult.PulledRecords} records\n" +
+                             $"Skipped: {pullResult.SkippedRecords} records";
+
+                if (pushResult.FailedRecords.Count > 0)
+                {
+                    message += $"\n\nFailed to push {pushResult.FailedRecords.Count} records:\n" +
+                              string.Join("\n", pushResult.FailedRecords.Take(5));
+                    if (pushResult.FailedRecords.Count > 5)
+                        message += $"\n... and {pushResult.FailedRecords.Count - 5} more";
+                }
+
+                MessageBox.Show(message, "Sync Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                DialogResult = true;
+                Close();
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Sync error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                AppLogger.Error(ex, "ProgressView.BtnSync_Click");
+                AppLogger.Error(ex, "SyncDialog.BtnSync_Click");
+            }
+            finally
+            {
+                // Re-enable UI
+                btnSync.IsEnabled = true;
+                btnCancel.IsEnabled = true;
+                projectList.IsEnabled = true;
             }
         }
     }
