@@ -511,11 +511,9 @@ namespace VANTAGE.Views
             try
             {
                 // Filter to only records the current user can edit
-                // Admin can edit any record, non-admin can only edit their own records
                 var editableActivities = selectedActivities.Where(a =>
-                  App.CurrentUser?.IsAdmin == true ||
-   string.Equals(a.AssignedTo, App.CurrentUser?.Username, StringComparison.OrdinalIgnoreCase)
-       ).ToList();
+                   string.Equals(a.AssignedTo, App.CurrentUser?.Username, StringComparison.OrdinalIgnoreCase)
+                       ).ToList();
 
                 if (!editableActivities.Any())
                 {
@@ -1051,9 +1049,7 @@ namespace VANTAGE.Views
             if (activity == null) return;
 
             // Check if user has permission to edit this record
-            // Admin can edit any record, non-admin can only edit their own records
-            bool canEdit = App.CurrentUser?.IsAdmin == true ||
-                          string.Equals(activity.AssignedTo, App.CurrentUser?.Username, StringComparison.OrdinalIgnoreCase);
+            bool canEdit = string.Equals(activity.AssignedTo, App.CurrentUser?.Username, StringComparison.OrdinalIgnoreCase);
 
             if (!canEdit)
             {
