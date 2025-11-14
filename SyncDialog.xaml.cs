@@ -110,6 +110,9 @@ namespace VANTAGE
                 btnCancel.IsEnabled = false;
                 projectList.IsEnabled = false;
 
+                // Start timer
+                var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+
                 // Mirror reference tables
                 DatabaseSetup.MirrorTablesFromCentral(centralPath);
 
@@ -119,8 +122,10 @@ namespace VANTAGE
                 // Pull updates
                 var pullResult = await SyncManager.PullRecordsAsync(centralPath, selectedProjects);
 
-                // Show results
-                var message = $"Sync completed successfully!\n\n" +
+                stopwatch.Stop();
+
+                // Show results with timing
+                var message = $"Sync completed in {stopwatch.Elapsed.TotalSeconds:F1} seconds\n\n" +
                              $"Pushed: {pushResult.PushedRecords} records\n" +
                              $"Pulled: {pullResult.PulledRecords} records\n" +
                              $"Skipped: {pullResult.SkippedRecords} records";

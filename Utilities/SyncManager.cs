@@ -51,10 +51,8 @@ namespace VANTAGE.Utilities
                 return false;
             }
         }
-        // Push LocalDirty records to Central and update their SyncVersion
-        // Push LocalDirty records to Central and update their SyncVersion
-        // Push LocalDirty records to Central and update their SyncVersion (optimized with batch operations)
-        // Push LocalDirty records to Central and update their SyncVersion (optimized with batch operations)
+
+        // Push LocalDirty records to Central and update their SyncVersion (optimized with transactions and batch operations)
         public static async Task<SyncResult> PushRecordsAsync(string centralDbPath, List<string> selectedProjects)
         {
             var result = new SyncResult();
@@ -76,7 +74,7 @@ namespace VANTAGE.Utilities
                 centralConn.Open();
                 localConn.Open();
 
-                // Explicit list of columns that exist in Central Activities table (matches schema exactly)
+                // Explicit list of columns that exist in Central Activities table
                 var syncColumns = new List<string>
         {
             "Area", "AssignedTo", "AzureUploadUtcDate", "Aux1", "Aux2", "Aux3",
@@ -120,7 +118,7 @@ namespace VANTAGE.Utilities
                 var toInsert = dirtyRecords.Where(r => !existingIds.Contains(r.UniqueID)).ToList();
                 var toUpdate = dirtyRecords.Where(r => existingIds.Contains(r.UniqueID)).ToList();
 
-                // Step 3: Handle UPDATES - verify ownership first
+                // Step 3: Handle UPDATES with transaction
                 var updateSuccessIds = new List<string>();
                 if (toUpdate.Count > 0)
                 {
@@ -152,60 +150,93 @@ namespace VANTAGE.Utilities
                         return false;
                     }).ToList();
 
-                    // Batch UPDATE
-                    foreach (var record in validUpdates)
+                    // Batch UPDATE with transaction and prepared statement
+                    if (validUpdates.Count > 0)
                     {
-                        try
+                        using var transaction = centralConn.BeginTransaction();
+
+                        var setClauses = syncColumns.Select(col => $"{col} = @{col}");
+                        var updateSql = $"UPDATE Activities SET {string.Join(", ", setClauses)} WHERE UniqueID = @UniqueID";
+
+                        using var updateCmd = centralConn.CreateCommand();
+                        updateCmd.Transaction = transaction;
+                        updateCmd.CommandText = updateSql;
+
+                        // Add parameters once
+                        updateCmd.Parameters.Add("@UniqueID", SqliteType.Text);
+                        foreach (var colName in syncColumns)
                         {
-                            var setClauses = syncColumns.Select(col => $"{col} = @{col}");
-                            var updateSql = $"UPDATE Activities SET {string.Join(", ", setClauses)} WHERE UniqueID = @UniqueID";
+                            updateCmd.Parameters.Add($"@{colName}", SqliteType.Text);
+                        }
 
-                            var updateCmd = centralConn.CreateCommand();
-                            updateCmd.CommandText = updateSql;
-                            updateCmd.Parameters.AddWithValue("@UniqueID", record.UniqueID);
+                        // Prepare statement (compile once)
+                        updateCmd.Prepare();
 
-                            foreach (var colName in syncColumns)
+                        foreach (var record in validUpdates)
+                        {
+                            try
                             {
-                                var prop = typeof(Activity).GetProperty(colName);
-                                if (prop != null)
-                                {
-                                    var value = prop.GetValue(record);
-                                    updateCmd.Parameters.AddWithValue($"@{colName}", value ?? DBNull.Value);
-                                }
-                                else
-                                {
-                                    updateCmd.Parameters.AddWithValue($"@{colName}", DBNull.Value);
-                                }
-                            }
+                                updateCmd.Parameters["@UniqueID"].Value = record.UniqueID;
 
-                            updateCmd.ExecuteNonQuery();
-                            updateSuccessIds.Add(record.UniqueID);
+                                foreach (var colName in syncColumns)
+                                {
+                                    var prop = typeof(Activity).GetProperty(colName);
+                                    if (prop != null)
+                                    {
+                                        var value = prop.GetValue(record);
+                                        updateCmd.Parameters[$"@{colName}"].Value = value ?? DBNull.Value;
+                                    }
+                                    else
+                                    {
+                                        updateCmd.Parameters[$"@{colName}"].Value = DBNull.Value;
+                                    }
+                                }
+
+                                updateCmd.ExecuteNonQuery();
+                                updateSuccessIds.Add(record.UniqueID);
+                            }
+                            catch (Exception ex)
+                            {
+                                result.FailedRecords.Add($"UniqueID {record.UniqueID}: {ex.Message}");
+                                AppLogger.Error(ex, $"SyncManager.PushRecords UPDATE - UniqueID {record.UniqueID}");
+                            }
                         }
-                        catch (Exception ex)
-                        {
-                            result.FailedRecords.Add($"UniqueID {record.UniqueID}: {ex.Message}");
-                            AppLogger.Error(ex, $"SyncManager.PushRecords UPDATE - UniqueID {record.UniqueID}");
-                        }
+
+                        transaction.Commit();
                     }
                 }
 
-                // Step 4: Handle INSERTS
+                // Step 4: Handle INSERTS with transaction and prepared statement
                 var insertSuccessIds = new List<string>();
                 if (toInsert.Count > 0)
                 {
+                    using var transaction = centralConn.BeginTransaction();
+
                     var insertColumns = new List<string> { "UniqueID" };
                     insertColumns.AddRange(syncColumns);
                     var insertParams = insertColumns.Select(c => "@" + c);
 
                     var insertSql = $"INSERT INTO Activities ({string.Join(", ", insertColumns)}) VALUES ({string.Join(", ", insertParams)})";
 
+                    using var insertCmd = centralConn.CreateCommand();
+                    insertCmd.Transaction = transaction;
+                    insertCmd.CommandText = insertSql;
+
+                    // Add parameters once
+                    insertCmd.Parameters.Add("@UniqueID", SqliteType.Text);
+                    foreach (var colName in syncColumns)
+                    {
+                        insertCmd.Parameters.Add($"@{colName}", SqliteType.Text);
+                    }
+
+                    // Prepare statement (compile once)
+                    insertCmd.Prepare();
+
                     foreach (var record in toInsert)
                     {
                         try
                         {
-                            var insertCmd = centralConn.CreateCommand();
-                            insertCmd.CommandText = insertSql;
-                            insertCmd.Parameters.AddWithValue("@UniqueID", record.UniqueID);
+                            insertCmd.Parameters["@UniqueID"].Value = record.UniqueID;
 
                             foreach (var colName in syncColumns)
                             {
@@ -213,11 +244,11 @@ namespace VANTAGE.Utilities
                                 if (prop != null)
                                 {
                                     var value = prop.GetValue(record);
-                                    insertCmd.Parameters.AddWithValue($"@{colName}", value ?? DBNull.Value);
+                                    insertCmd.Parameters[$"@{colName}"].Value = value ?? DBNull.Value;
                                 }
                                 else
                                 {
-                                    insertCmd.Parameters.AddWithValue($"@{colName}", DBNull.Value);
+                                    insertCmd.Parameters[$"@{colName}"].Value = DBNull.Value;
                                 }
                             }
 
@@ -230,13 +261,17 @@ namespace VANTAGE.Utilities
                             AppLogger.Error(ex, $"SyncManager.PushRecords INSERT - UniqueID {record.UniqueID}");
                         }
                     }
+
+                    transaction.Commit();
                 }
 
-                // Step 5: Get all assigned SyncVersions in batch
+                // Step 5: Get all assigned SyncVersions and ActivityIDs in ONE batch query
                 var allSuccessIds = updateSuccessIds.Concat(insertSuccessIds).ToList();
                 if (allSuccessIds.Count > 0)
                 {
                     var versionMap = new Dictionary<string, long>();
+                    var activityIdMap = new Dictionary<string, int>();
+
                     var getVersionsCmd = centralConn.CreateCommand();
                     getVersionsCmd.CommandText = $"SELECT UniqueID, SyncVersion, ActivityID FROM Activities WHERE UniqueID IN ({string.Join(",", allSuccessIds.Select((id, i) => $"@vid{i}"))})";
                     for (int i = 0; i < allSuccessIds.Count; i++)
@@ -244,7 +279,6 @@ namespace VANTAGE.Utilities
                         getVersionsCmd.Parameters.AddWithValue($"@vid{i}", allSuccessIds[i]);
                     }
 
-                    var activityIdMap = new Dictionary<string, int>();
                     using (var versionReader = getVersionsCmd.ExecuteReader())
                     {
                         while (versionReader.Read())
@@ -257,23 +291,34 @@ namespace VANTAGE.Utilities
                         }
                     }
 
-                    // Step 6: Update local records - clear LocalDirty and set SyncVersion/ActivityID
+                    // Step 6: Update local records with transaction and prepared statement
+                    using var localTransaction = localConn.BeginTransaction();
+
+                    var updateLocalCmd = localConn.CreateCommand();
+                    updateLocalCmd.Transaction = localTransaction;
+                    updateLocalCmd.CommandText = @"
+                UPDATE Activities 
+                SET SyncVersion = @version, ActivityID = @actId, LocalDirty = 0 
+                WHERE UniqueID = @id";
+
+                    updateLocalCmd.Parameters.Add("@version", SqliteType.Integer);
+                    updateLocalCmd.Parameters.Add("@actId", SqliteType.Integer);
+                    updateLocalCmd.Parameters.Add("@id", SqliteType.Text);
+                    updateLocalCmd.Prepare();
+
                     foreach (var uniqueId in allSuccessIds)
                     {
                         if (versionMap.TryGetValue(uniqueId, out long syncVersion) && activityIdMap.TryGetValue(uniqueId, out int activityId))
                         {
-                            var updateLocalCmd = localConn.CreateCommand();
-                            updateLocalCmd.CommandText = @"
-                        UPDATE Activities 
-                        SET SyncVersion = @version, ActivityID = @actId, LocalDirty = 0 
-                        WHERE UniqueID = @id";
-                            updateLocalCmd.Parameters.AddWithValue("@version", syncVersion);
-                            updateLocalCmd.Parameters.AddWithValue("@actId", activityId);
-                            updateLocalCmd.Parameters.AddWithValue("@id", uniqueId);
+                            updateLocalCmd.Parameters["@version"].Value = syncVersion;
+                            updateLocalCmd.Parameters["@actId"].Value = activityId;
+                            updateLocalCmd.Parameters["@id"].Value = uniqueId;
                             updateLocalCmd.ExecuteNonQuery();
                             result.PushedRecords++;
                         }
                     }
+
+                    localTransaction.Commit();
                 }
 
                 AppLogger.Info($"Push completed: {result.PushedRecords} pushed, {result.FailedRecords.Count} failed", "SyncManager.PushRecords");
