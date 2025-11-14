@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.Data.Sqlite;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
@@ -519,8 +520,8 @@ namespace VANTAGE.Views
                 if (!editableActivities.Any())
                 {
                     // User selected only other users' records - silently do nothing
- return;
- }
+                    return;
+                }
 
                 int successCount = 0;
                 foreach (var activity in editableActivities)
@@ -541,11 +542,11 @@ namespace VANTAGE.Views
                 UpdateSummaryPanel();
 
                 // Only show message if records were actually updated
-   if (successCount > 0)
-        {
-    MessageBox.Show($"Set {successCount} record(s) to {percent}%.",
-   "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-     }
+                if (successCount > 0)
+                {
+                    MessageBox.Show($"Set {successCount} record(s) to {percent}%.",
+                   "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
             }
             catch (Exception ex)
             {
@@ -1051,24 +1052,24 @@ namespace VANTAGE.Views
 
             // Check if user has permission to edit this record
             // Admin can edit any record, non-admin can only edit their own records
-            bool canEdit = App.CurrentUser?.IsAdmin == true || 
+            bool canEdit = App.CurrentUser?.IsAdmin == true ||
                           string.Equals(activity.AssignedTo, App.CurrentUser?.Username, StringComparison.OrdinalIgnoreCase);
 
             if (!canEdit)
-     {
-    e.Cancel = true;
-      // Silently prevent editing without showing a message
+            {
+                e.Cancel = true;
+                // Silently prevent editing without showing a message
                 return;
             }
 
-    if (sfActivities.CurrentColumn == null) return;
+            if (sfActivities.CurrentColumn == null) return;
 
-   var property = GetCachedProperty(sfActivities.CurrentColumn.MappingName);
-       if (property != null)
-       {
-   _originalCellValue = property.GetValue(activity);
-   }
-  }
+            var property = GetCachedProperty(sfActivities.CurrentColumn.MappingName);
+            if (property != null)
+            {
+                _originalCellValue = property.GetValue(activity);
+            }
+        }
         /// Auto-save when user finishes editing a cell
         // Auto-save when user finishes editing a cell - ONLY if value changed
         private async void sfActivities_CurrentCellEndEdit(object sender, Syncfusion.UI.Xaml.Grid.CurrentCellEndEditEventArgs e)
@@ -1166,138 +1167,225 @@ namespace VANTAGE.Views
 
         private async void MenuAssignToUser_Click(object sender, RoutedEventArgs e)
         {
-// Get selected activities
-    var selectedActivities = sfActivities.SelectedItems.Cast<Activity>().ToList();
+            // Get selected activities
+            var selectedActivities = sfActivities.SelectedItems.Cast<Activity>().ToList();
             if (!selectedActivities.Any())
-     {
-        MessageBox.Show("Please select one or more records to assign.", "No Selection", MessageBoxButton.OK, MessageBoxImage.Information);
-    return;
+            {
+                MessageBox.Show("Please select one or more records to assign.", "No Selection", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
             }
 
             // Filter: Only allow assigning records that user has permission to modify
             var allowedActivities = selectedActivities.Where(a =>
-      App.CurrentUser.IsAdmin || // Admins can assign any record
-      a.AssignedToUsername == App.CurrentUser.Username // User's own records
-   ).ToList();
+                App.CurrentUser.IsAdmin ||
+                a.AssignedTo == App.CurrentUser.Username
+            ).ToList();
 
             if (!allowedActivities.Any())
-       {
-       MessageBox.Show("You can only assign your own records.\n\nAdmins can assign any record.",
-           "Permission Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
-    return;
-      }
+            {
+                MessageBox.Show("You can only assign your own records.\n\nAdmins can assign any record.",
+                    "Permission Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
 
-  if (allowedActivities.Count < selectedActivities.Count)
-       {
-   var result = MessageBox.Show(
-          $"You can only assign {allowedActivities.Count} of {selectedActivities.Count} selected records.\n\n" +
-              $"Records assigned to other users cannot be reassigned.\n\nContinue with allowed records?",
-          "Partial Assignment",
-MessageBoxButton.YesNo,
-    MessageBoxImage.Question);
+            if (allowedActivities.Count < selectedActivities.Count)
+            {
+                var result = MessageBox.Show(
+                    $"You can only assign {allowedActivities.Count} of {selectedActivities.Count} selected records.\n\n" +
+                    $"Records assigned to other users cannot be reassigned.\n\nContinue with allowed records?",
+                    "Partial Assignment",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
 
-        if (result != MessageBoxResult.Yes)
-           return;
+                if (result != MessageBoxResult.Yes)
+                    return;
+            }
+
+            // Check for unsaved changes (LocalDirty=1)
+            var dirtyRecords = allowedActivities.Where(a => a.LocalDirty == 1).ToList();
+            if (dirtyRecords.Any())
+            {
+                var syncResult = MessageBox.Show(
+                    $"{dirtyRecords.Count} of the selected records have unsaved changes.\n\n" +
+                    $"You must sync these records as the current owner before reassigning.\n\n" +
+                    $"Sync now?",
+                    "Unsaved Changes",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning);
+
+                if (syncResult != MessageBoxResult.Yes)
+                    return;
+
+                MessageBox.Show("Please use the SYNC button to sync your changes first, then try reassignment again.",
+                    "Sync Required", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            // Check connection to Central
+            string centralPath = SettingsManager.GetAppSetting("CentralDatabasePath", "");
+            if (!SyncManager.CheckCentralConnection(centralPath, out string errorMessage))
+            {
+                MessageBox.Show(
+                    $"Reassignment requires connection to Central database.\n\n{errorMessage}\n\n" +
+                    $"Please ensure you have network access and try again.",
+                    "Connection Required",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+                return;
             }
 
             // Get list of all users for dropdown
-   var allUsers = GetAllUsers().Select(u => u.Username).ToList();
-        if (!allUsers.Any())
-  {
-    MessageBox.Show("No users found in the database.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-       return;
+            var allUsers = GetAllUsers().Select(u => u.Username).ToList();
+            if (!allUsers.Any())
+            {
+                MessageBox.Show("No users found in the database.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
             }
 
             // Show user selection dialog
-        var dialog = new Window
-      {
-                Title = "Assign to User",
-      Width = 300,
-        Height = 165,
-    WindowStartupLocation = WindowStartupLocation.CenterOwner,
-           Owner = Window.GetWindow(this),
-       Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF1E1E1E"))
-            };
-
-          var comboBox = new ComboBox
-      {
-             ItemsSource = allUsers,
-SelectedIndex = 0,
-     Margin = new Thickness(10),
-         Height = 30
-          };
-
-   var okButton = new Button
-   {
-     Content = "OK",
-   Width = 80,
-    Height = 30,
-Margin = new Thickness(5),
-                IsDefault = true
-        };
-
-     var cancelButton = new Button
-       {
-          Content = "Cancel",
-           Width = 80,
-  Height = 30,
-      Margin = new Thickness(5),
-    IsCancel = true
-            };
-
-    var buttonPanel = new StackPanel
+            var dialog = new Window
             {
-      Orientation = Orientation.Horizontal,
-          HorizontalAlignment = HorizontalAlignment.Center
+                Title = "Assign to User",
+                Width = 300,
+                Height = 165,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                Owner = Window.GetWindow(this),
+                Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF1E1E1E"))
+            };
+
+            var comboBox = new ComboBox
+            {
+                ItemsSource = allUsers,
+                SelectedIndex = 0,
+                Margin = new Thickness(10),
+                Height = 30
+            };
+
+            var okButton = new Button
+            {
+                Content = "OK",
+                Width = 80,
+                Height = 30,
+                Margin = new Thickness(5),
+                IsDefault = true
+            };
+
+            var cancelButton = new Button
+            {
+                Content = "Cancel",
+                Width = 80,
+                Height = 30,
+                Margin = new Thickness(5),
+                IsCancel = true
+            };
+
+            var buttonPanel = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                HorizontalAlignment = HorizontalAlignment.Center
             };
             buttonPanel.Children.Add(okButton);
             buttonPanel.Children.Add(cancelButton);
 
-        var stackPanel = new StackPanel();
-        stackPanel.Children.Add(new TextBlock
-     {
-     Text = "Select user to assign records to:",
-        Margin = new Thickness(10),
-                Foreground = Brushes.White
-    });
-    stackPanel.Children.Add(comboBox);
- stackPanel.Children.Add(buttonPanel);
-
-  dialog.Content = stackPanel;
-
-          bool? dialogResult = false;
-    okButton.Click += (s, args) => { dialogResult = true; dialog.Close(); };
-
-       if (dialog.ShowDialog() == true || dialogResult == true)
-     {
-                string selectedUser = comboBox.SelectedItem as string;
-    if (string.IsNullOrEmpty(selectedUser))
-    return;
-
-         try
+            var stackPanel = new StackPanel();
+            stackPanel.Children.Add(new TextBlock
             {
-           int successCount = 0;
-        foreach (var activity in allowedActivities)
-    {
-       activity.AssignedTo = selectedUser;
-        activity.UpdatedBy = App.CurrentUser.Username;
+                Text = "Select user to assign records to:",
+                Margin = new Thickness(10),
+                Foreground = Brushes.White
+            });
+            stackPanel.Children.Add(comboBox);
+            stackPanel.Children.Add(buttonPanel);
 
-     bool success = await ActivityRepository.UpdateActivityInDatabase(activity);
-           if (success)
-    {
-              successCount++;
-                 }
-           }
+            dialog.Content = stackPanel;
 
- MessageBox.Show($"Assigned {successCount} record(s) to {selectedUser}.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-           sfActivities.View.Refresh();
- }
-    catch (Exception ex)
+            bool? dialogResult = false;
+            okButton.Click += (s, args) => { dialogResult = true; dialog.Close(); };
+
+            if (dialog.ShowDialog() == true || dialogResult == true)
+            {
+                string selectedUser = comboBox.SelectedItem as string;
+                if (string.IsNullOrEmpty(selectedUser))
+                    return;
+
+                try
                 {
-  MessageBox.Show($"Error assigning records: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-         }
-   }
-     }
+                    // Step 1: Verify ownership at Central BEFORE making any changes
+                    using var centralConn = new SqliteConnection($"Data Source={centralPath}");
+                    centralConn.Open();
+
+                    var ownedRecords = new List<Activity>();
+                    var deniedRecords = new List<string>();
+
+                    foreach (var activity in allowedActivities)
+                    {
+                        var checkCmd = centralConn.CreateCommand();
+                        checkCmd.CommandText = "SELECT AssignedTo FROM Activities WHERE UniqueID = @id";
+                        checkCmd.Parameters.AddWithValue("@id", activity.UniqueID);
+                        var centralOwner = checkCmd.ExecuteScalar()?.ToString();
+
+                        if (centralOwner == App.CurrentUser.Username || App.CurrentUser.IsAdmin)
+                        {
+                            ownedRecords.Add(activity);
+                        }
+                        else
+                        {
+                            deniedRecords.Add(activity.UniqueID);
+                        }
+                    }
+
+                    if (deniedRecords.Any())
+                    {
+                        MessageBox.Show(
+                            $"{deniedRecords.Count} record(s) could not be reassigned - ownership changed at Central.\n\n" +
+                            $"First few: {string.Join(", ", deniedRecords.Take(3))}",
+                            "Ownership Conflict",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Warning);
+
+                        if (!ownedRecords.Any())
+                            return;
+                    }
+
+                    // Step 2: Update Central directly (bypass normal push to avoid ownership conflict)
+                    foreach (var activity in ownedRecords)
+                    {
+                        var updateCmd = centralConn.CreateCommand();
+                        updateCmd.CommandText = @"
+                    UPDATE Activities 
+                    SET AssignedTo = @newOwner, 
+                        UpdatedBy = @updatedBy, 
+                        UpdatedUtcDate = @updatedDate
+                    WHERE UniqueID = @id";
+                        updateCmd.Parameters.AddWithValue("@newOwner", selectedUser);
+                        updateCmd.Parameters.AddWithValue("@updatedBy", App.CurrentUser.Username);
+                        updateCmd.Parameters.AddWithValue("@updatedDate", DateTime.UtcNow.ToString("o"));
+                        updateCmd.Parameters.AddWithValue("@id", activity.UniqueID);
+                        updateCmd.ExecuteNonQuery();
+                    }
+
+                    centralConn.Close();
+
+                    // Step 3: Pull updated records back to local
+                    var projectIds = ownedRecords.Select(a => a.ProjectID).Distinct().ToList();
+                    var pullResult = await SyncManager.PullRecordsAsync(centralPath, projectIds);
+
+                    MessageBox.Show(
+                        $"Successfully reassigned {ownedRecords.Count} record(s) to {selectedUser}.",
+                        "Success",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+
+                    // Refresh grid
+                    await RefreshData();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error assigning records: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    AppLogger.Error(ex, "ProgressView.MenuAssignToUser_Click");
+                }
+            }
+        }
 
     }
 }
