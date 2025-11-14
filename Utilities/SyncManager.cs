@@ -8,6 +8,100 @@ namespace VANTAGE.Utilities
 {
     public static class SyncManager
     {
+        // Fast property accessor without reflection - returns value for given column name
+        private static object GetActivityValue(Activity activity, string columnName)
+        {
+            return columnName switch
+            {
+                "Area" => activity.Area,
+                "AssignedTo" => activity.AssignedTo,
+                "AzureUploadUtcDate" => activity.AzureUploadUtcDate,
+                "Aux1" => activity.Aux1,
+                "Aux2" => activity.Aux2,
+                "Aux3" => activity.Aux3,
+                "BaseUnit" => activity.BaseUnit,
+                "BudgetHoursGroup" => activity.BudgetHoursGroup,
+                "BudgetHoursROC" => activity.BudgetHoursROC,
+                "BudgetMHs" => activity.BudgetMHs,
+                "ChgOrdNO" => activity.ChgOrdNO,
+                "ClientBudget" => activity.ClientBudget,
+                "ClientCustom3" => activity.ClientCustom3,
+                "ClientEquivQty" => activity.ClientEquivQty,
+                "CompType" => activity.CompType,
+                "CreatedBy" => activity.CreatedBy,
+                "DateTrigger" => activity.DateTrigger,
+                "Description" => activity.Description,
+                "DwgNO" => activity.DwgNO,
+                "EarnQtyEntry" => activity.EarnQtyEntry,
+                "EarnedMHsRoc" => activity.EarnedMHsRoc,
+                "EqmtNO" => activity.EqmtNO,
+                "EquivQTY" => activity.EquivQTY,
+                "EquivUOM" => activity.EquivUOM,
+                "Estimator" => activity.Estimator,
+                "HexNO" => activity.HexNO,
+                "HtTrace" => activity.HtTrace,
+                "InsulType" => activity.InsulType,
+                "LineNO" => activity.LineNO,
+                "MtrlSpec" => activity.MtrlSpec,
+                "Notes" => activity.Notes,
+                "PaintCode" => activity.PaintCode,
+                "PercentEntry" => activity.PercentEntry,
+                "PhaseCategory" => activity.PhaseCategory,
+                "PhaseCode" => activity.PhaseCode,
+                "PipeGrade" => activity.PipeGrade,
+                "PipeSize1" => activity.PipeSize1,
+                "PipeSize2" => activity.PipeSize2,
+                "PrevEarnMHs" => activity.PrevEarnMHs,
+                "PrevEarnQTY" => activity.PrevEarnQTY,
+                "ProgDate" => activity.ProgDate,
+                "ProjectID" => activity.ProjectID,
+                "Quantity" => activity.Quantity,
+                "RevNO" => activity.RevNO,
+                "RFINO" => activity.RFINO,
+                "ROCBudgetQTY" => activity.ROCBudgetQTY,
+                "ROCID" => activity.ROCID,
+                "ROCPercent" => activity.ROCPercent,
+                "ROCStep" => activity.ROCStep,
+                "SchedActNO" => activity.SchedActNO,
+                "SchFinish" => activity.SchFinish,
+                "SchStart" => activity.SchStart,
+                "SecondActno" => activity.SecondActno,
+                "SecondDwgNO" => activity.SecondDwgNO,
+                "Service" => activity.Service,
+                "ShopField" => activity.ShopField,
+                "ShtNO" => activity.ShtNO,
+                "SubArea" => activity.SubArea,
+                "PjtSystem" => activity.PjtSystem,
+                "SystemNO" => activity.SystemNO,
+                "TagNO" => activity.TagNO,
+                "UDF1" => activity.UDF1,
+                "UDF2" => activity.UDF2,
+                "UDF3" => activity.UDF3,
+                "UDF4" => activity.UDF4,
+                "UDF5" => activity.UDF5,
+                "UDF6" => activity.UDF6,
+                "UDF7" => activity.UDF7,
+                "UDF8" => activity.UDF8,
+                "UDF9" => activity.UDF9,
+                "UDF10" => activity.UDF10,
+                "UDF11" => activity.UDF11,
+                "UDF12" => activity.UDF12,
+                "UDF13" => activity.UDF13,
+                "UDF14" => activity.UDF14,
+                "UDF15" => activity.UDF15,
+                "UDF16" => activity.UDF16,
+                "UDF17" => activity.UDF17,
+                "UDF18" => activity.UDF18,
+                "UDF20" => activity.UDF20,
+                "UpdatedBy" => activity.UpdatedBy,
+                "UpdatedUtcDate" => activity.UpdatedUtcDate,
+                "UOM" => activity.UOM,
+                "WeekEndDate" => activity.WeekEndDate,
+                "WorkPackage" => activity.WorkPackage,
+                "XRay" => activity.XRay,
+                _ => null
+            };
+        }
         // Check if Central database is accessible
         public static bool CheckCentralConnection(string centralDbPath, out string errorMessage)
         {
@@ -180,16 +274,8 @@ namespace VANTAGE.Utilities
 
                                 foreach (var colName in syncColumns)
                                 {
-                                    var prop = typeof(Activity).GetProperty(colName);
-                                    if (prop != null)
-                                    {
-                                        var value = prop.GetValue(record);
-                                        updateCmd.Parameters[$"@{colName}"].Value = value ?? DBNull.Value;
-                                    }
-                                    else
-                                    {
-                                        updateCmd.Parameters[$"@{colName}"].Value = DBNull.Value;
-                                    }
+                                    var value = GetActivityValue(record, colName);
+                                    updateCmd.Parameters[$"@{colName}"].Value = value ?? DBNull.Value;
                                 }
 
                                 updateCmd.ExecuteNonQuery();
@@ -240,16 +326,8 @@ namespace VANTAGE.Utilities
 
                             foreach (var colName in syncColumns)
                             {
-                                var prop = typeof(Activity).GetProperty(colName);
-                                if (prop != null)
-                                {
-                                    var value = prop.GetValue(record);
-                                    insertCmd.Parameters[$"@{colName}"].Value = value ?? DBNull.Value;
-                                }
-                                else
-                                {
-                                    insertCmd.Parameters[$"@{colName}"].Value = DBNull.Value;
-                                }
+                                var value = GetActivityValue(record, colName);
+                                insertCmd.Parameters[$"@{colName}"].Value = value ?? DBNull.Value;
                             }
 
                             insertCmd.ExecuteNonQuery();
@@ -314,13 +392,37 @@ namespace VANTAGE.Utilities
                             updateLocalCmd.Parameters["@actId"].Value = activityId;
                             updateLocalCmd.Parameters["@id"].Value = uniqueId;
                             updateLocalCmd.ExecuteNonQuery();
-                            result.PushedRecords++;
                         }
                     }
 
                     localTransaction.Commit();
+                    // Set counts
+                    result.InsertedRecords = insertSuccessIds.Count;
+                    result.UpdatedRecords = updateSuccessIds.Count;
+                    result.PushedRecords = result.InsertedRecords + result.UpdatedRecords;  // ADD THIS LINE
+                    result.PushedUniqueIds.AddRange(allSuccessIds);  // KEEP THIS LINE
+                                                                     // Update LastPulledSyncVersion to avoid re-pulling pushed records
+                    var maxSyncVersion = versionMap.Values.Any() ? versionMap.Values.Max() : 0;
+                    foreach (var projectId in selectedProjects)
+                    {
+                        var currentMax = Convert.ToInt64(SettingsManager.GetAppSetting($"LastPulledSyncVersion_{projectId}", "0"));
+                        if (maxSyncVersion > currentMax)
+                        {
+                            SettingsManager.SetAppSetting(
+                                $"LastPulledSyncVersion_{projectId}",
+                                maxSyncVersion.ToString(),
+                                "int"
+                            );
+                        }
+                    }
                 }
-
+                // Update statistics after bulk operations for optimal query performance
+                if (result.InsertedRecords > 100)
+                {
+                    var analyzeCmd = centralConn.CreateCommand();
+                    analyzeCmd.CommandText = "ANALYZE Activities";
+                    analyzeCmd.ExecuteNonQuery();
+                }
                 AppLogger.Info($"Push completed: {result.PushedRecords} pushed, {result.FailedRecords.Count} failed", "SyncManager.PushRecords");
             }
             catch (Exception ex)
@@ -335,16 +437,19 @@ namespace VANTAGE.Utilities
         public class SyncResult
         {
             public int TotalRecordsToPush { get; set; }
-            public int PushedRecords { get; set; }
+            public int PushedRecords { get; set; }  // KEEP THIS
+            public int InsertedRecords { get; set; }  // ADD THIS
+            public int UpdatedRecords { get; set; }
             public int PulledRecords { get; set; }
             public int SkippedRecords { get; set; }
             public List<string> FailedRecords { get; set; } = new List<string>();
             public string ErrorMessage { get; set; }
+            public List<string> PushedUniqueIds { get; set; } = new List<string>();
         }
         // Pull records from Central that have changed since last sync
         // Pull records from Central that have changed since last sync
         // Pull records from Central that have changed since last sync
-        public static async Task<SyncResult> PullRecordsAsync(string centralDbPath, List<string> selectedProjects)
+        public static async Task<SyncResult> PullRecordsAsync(string centralDbPath, List<string> selectedProjects, List<string> excludeUniqueIds = null)
         {
             var result = new SyncResult();
 
@@ -363,13 +468,26 @@ namespace VANTAGE.Utilities
                         SettingsManager.GetAppSetting($"LastPulledSyncVersion_{projectId}", "0")
                     );
 
-                    // Query Central for ALL records newer than last sync
+
+                    // Query Central for records newer than last sync (excluding just-pushed records)
                     var pullCmd = centralConn.CreateCommand();
-                    pullCmd.CommandText = @"
-                SELECT * FROM Activities 
-                WHERE ProjectID = @projectId 
-                  AND SyncVersion > @lastVersion
-                ORDER BY SyncVersion";
+                    string excludeClause = "";
+                    if (excludeUniqueIds != null && excludeUniqueIds.Any())
+                    {
+                        var excludeParams = string.Join(",", excludeUniqueIds.Select((id, i) => $"@exclude{i}"));
+                        excludeClause = $" AND UniqueID NOT IN ({excludeParams})";
+                        for (int i = 0; i < excludeUniqueIds.Count; i++)
+                        {
+                            pullCmd.Parameters.AddWithValue($"@exclude{i}", excludeUniqueIds[i]);
+                        }
+                    }
+
+                    pullCmd.CommandText = $@"
+                        SELECT * FROM Activities 
+                        WHERE ProjectID = @projectId 
+                          AND SyncVersion > @lastVersion
+                          {excludeClause}
+                        ORDER BY SyncVersion";
 
                     pullCmd.Parameters.AddWithValue("@projectId", projectId);
                     pullCmd.Parameters.AddWithValue("@lastVersion", lastPulledVersion);

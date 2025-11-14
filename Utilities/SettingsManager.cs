@@ -4,13 +4,14 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 
+
 namespace VANTAGE.Utilities
 {
     public static class SettingsManager
     {
-        
+
         /// Get an app-wide setting by name
-        
+
         /// 
         
         public static string GetAppSetting(string settingName, string defaultValue = "")

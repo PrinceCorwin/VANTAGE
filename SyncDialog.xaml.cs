@@ -120,13 +120,14 @@ namespace VANTAGE
                 var pushResult = await SyncManager.PushRecordsAsync(centralPath, selectedProjects);
 
                 // Pull updates
-                var pullResult = await SyncManager.PullRecordsAsync(centralPath, selectedProjects);
+                var pullResult = await SyncManager.PullRecordsAsync(centralPath, selectedProjects, pushResult.PushedUniqueIds);
 
                 stopwatch.Stop();
 
                 // Show results with timing
                 var message = $"Sync completed in {stopwatch.Elapsed.TotalSeconds:F1} seconds\n\n" +
-                             $"Pushed: {pushResult.PushedRecords} records\n" +
+                             $"Inserted: {pushResult.InsertedRecords} records\n" +
+                             $"Updated: {pushResult.UpdatedRecords} records\n" +
                              $"Pulled: {pullResult.PulledRecords} records\n" +
                              $"Skipped: {pullResult.SkippedRecords} records";
 

@@ -1347,16 +1347,19 @@ namespace VANTAGE.Views
                             return;
                     }
 
-                    // Step 2: Update Central directly (bypass normal push to avoid ownership conflict)
+                    // Step 2: Update Central directly with transaction
+                    using var transaction = centralConn.BeginTransaction();
+
                     foreach (var activity in ownedRecords)
                     {
                         var updateCmd = centralConn.CreateCommand();
+                        updateCmd.Transaction = transaction;
                         updateCmd.CommandText = @"
-                    UPDATE Activities 
-                    SET AssignedTo = @newOwner, 
-                        UpdatedBy = @updatedBy, 
-                        UpdatedUtcDate = @updatedDate
-                    WHERE UniqueID = @id";
+                            UPDATE Activities 
+                            SET AssignedTo = @newOwner, 
+                                UpdatedBy = @updatedBy, 
+                                UpdatedUtcDate = @updatedDate
+                            WHERE UniqueID = @id";
                         updateCmd.Parameters.AddWithValue("@newOwner", selectedUser);
                         updateCmd.Parameters.AddWithValue("@updatedBy", App.CurrentUser.Username);
                         updateCmd.Parameters.AddWithValue("@updatedDate", DateTime.UtcNow.ToString("o"));
@@ -1364,6 +1367,7 @@ namespace VANTAGE.Views
                         updateCmd.ExecuteNonQuery();
                     }
 
+                    transaction.Commit();
                     centralConn.Close();
 
                     // Step 3: Pull updated records back to local
