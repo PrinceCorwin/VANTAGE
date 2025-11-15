@@ -228,13 +228,14 @@ namespace VANTAGE.Utilities
 
         /// Import activities to database using NewVantage column names
 
-        // REPLACE the ImportToDatabase method (starting around line 272) with this:
-
         private static int ImportToDatabase(List<Activity> activities, bool replaceMode, IProgress<(int current, int total, string message)> progress = null)
         {
             using var connection = DatabaseSetup.GetConnection();
             connection.Open();
-
+            // Get distinct ProjectIDs BEFORE database operations (in-memory, fast)
+            var distinctProjectIds = replaceMode
+                ? activities.Select(a => a.ProjectID).Where(p => !string.IsNullOrWhiteSpace(p)).Distinct().ToList()
+                : null;
             using var transaction = connection.BeginTransaction();
 
             try
@@ -523,6 +524,27 @@ namespace VANTAGE.Utilities
                 }
 
                 transaction.Commit();
+                // AFTER commit, reset sync versions for replaced ProjectIDs
+                if (distinctProjectIds != null && distinctProjectIds.Any())
+                {
+                    AppLogger.Info($"Found {distinctProjectIds.Count} distinct ProjectIDs to reset: {string.Join(", ", distinctProjectIds)}", "ExcelImporter");
+
+                    foreach (var projectId in distinctProjectIds)
+                    {
+                        var settingName = $"LastPulledSyncVersion_{projectId}";
+
+                        // Delete from AppSettings (not UserSettings)
+                        var deleteCmd = connection.CreateCommand();
+                        deleteCmd.CommandText = "DELETE FROM AppSettings WHERE SettingName = @settingName";
+                        deleteCmd.Parameters.AddWithValue("@settingName", settingName);
+                        int rowsDeleted = deleteCmd.ExecuteNonQuery();
+                        AppLogger.Info($"Deleted {rowsDeleted} rows from AppSettings for {settingName}", "ExcelImporter");
+                    }
+                }
+                else
+                {
+                    AppLogger.Warning("distinctProjectIds is null or empty - no sync versions reset", "ExcelImporter");
+                }
                 System.Diagnostics.Debug.WriteLine($"✓ Import complete: {imported} imported, {skipped} skipped");
                 return imported;
             }

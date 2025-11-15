@@ -170,24 +170,24 @@ namespace VANTAGE.Utilities
 
                 // Explicit list of columns that exist in Central Activities table
                 var syncColumns = new List<string>
-        {
-            "Area", "AssignedTo", "AzureUploadUtcDate", "Aux1", "Aux2", "Aux3",
-            "BaseUnit", "BudgetHoursGroup", "BudgetHoursROC", "BudgetMHs",
-            "ChgOrdNO", "ClientBudget", "ClientCustom3", "ClientEquivQty",
-            "CompType", "CreatedBy", "DateTrigger", "Description", "DwgNO",
-            "EarnQtyEntry", "EarnedMHsRoc", "EqmtNO", "EquivQTY", "EquivUOM",
-            "Estimator", "HexNO", "HtTrace", "InsulType", "LineNO",
-            "MtrlSpec", "Notes", "PaintCode", "PercentEntry", "PhaseCategory",
-            "PhaseCode", "PipeGrade", "PipeSize1", "PipeSize2",
-            "PrevEarnMHs", "PrevEarnQTY", "ProgDate", "ProjectID",
-            "Quantity", "RevNO", "RFINO", "ROCBudgetQTY", "ROCID",
-            "ROCPercent", "ROCStep", "SchedActNO", "SchFinish", "SchStart",
-            "SecondActno", "SecondDwgNO", "Service", "ShopField", "ShtNO",
-            "SubArea", "PjtSystem", "SystemNO", "TagNO",
-            "UDF1", "UDF2", "UDF3", "UDF4", "UDF5", "UDF6", "UDF7", "UDF8", "UDF9", "UDF10",
-            "UDF11", "UDF12", "UDF13", "UDF14", "UDF15", "UDF16", "UDF17", "UDF18", "UDF20",
-            "UpdatedBy", "UpdatedUtcDate", "UOM", "WeekEndDate", "WorkPackage", "XRay"
-        };
+                    {
+                        "Area", "AssignedTo", "AzureUploadUtcDate", "Aux1", "Aux2", "Aux3",
+                        "BaseUnit", "BudgetHoursGroup", "BudgetHoursROC", "BudgetMHs",
+                        "ChgOrdNO", "ClientBudget", "ClientCustom3", "ClientEquivQty",
+                        "CompType", "CreatedBy", "DateTrigger", "Description", "DwgNO",
+                        "EarnQtyEntry", "EarnedMHsRoc", "EqmtNO", "EquivQTY", "EquivUOM",
+                        "Estimator", "HexNO", "HtTrace", "InsulType", "LineNO",
+                        "MtrlSpec", "Notes", "PaintCode", "PercentEntry", "PhaseCategory",
+                        "PhaseCode", "PipeGrade", "PipeSize1", "PipeSize2",
+                        "PrevEarnMHs", "PrevEarnQTY", "ProgDate", "ProjectID",
+                        "Quantity", "RevNO", "RFINO", "ROCBudgetQTY", "ROCID",
+                        "ROCPercent", "ROCStep", "SchedActNO", "SchFinish", "SchStart",
+                        "SecondActno", "SecondDwgNO", "Service", "ShopField", "ShtNO",
+                        "SubArea", "PjtSystem", "SystemNO", "TagNO",
+                        "UDF1", "UDF2", "UDF3", "UDF4", "UDF5", "UDF6", "UDF7", "UDF8", "UDF9", "UDF10",
+                        "UDF11", "UDF12", "UDF13", "UDF14", "UDF15", "UDF16", "UDF17", "UDF18", "UDF20",
+                        "UpdatedBy", "UpdatedUtcDate", "UOM", "WeekEndDate", "WorkPackage", "XRay"
+                    };
 
                 // Step 1: Check which UniqueIDs exist at Central (one query)
                 var dirtyUniqueIds = dirtyRecords.Select(r => r.UniqueID).ToList();
@@ -217,25 +217,37 @@ namespace VANTAGE.Utilities
                 if (toUpdate.Count > 0)
                 {
                     // Verify ownership for all records to update
+                    // Verify ownership and deletion status for all records to update
                     var ownerCheckCmd = centralConn.CreateCommand();
-                    ownerCheckCmd.CommandText = $"SELECT UniqueID, AssignedTo FROM Activities WHERE UniqueID IN ({string.Join(",", toUpdate.Select((r, i) => $"@uid{i}"))})";
+                    ownerCheckCmd.CommandText = $"SELECT UniqueID, AssignedTo, IsDeleted FROM Activities WHERE UniqueID IN ({string.Join(",", toUpdate.Select((r, i) => $"@uid{i}"))})";
                     for (int i = 0; i < toUpdate.Count; i++)
                     {
                         ownerCheckCmd.Parameters.AddWithValue($"@uid{i}", toUpdate[i].UniqueID);
                     }
 
                     var ownershipMap = new Dictionary<string, string>();
+                    var deletionMap = new Dictionary<string, int>();
                     using (var ownerReader = ownerCheckCmd.ExecuteReader())
                     {
                         while (ownerReader.Read())
                         {
                             ownershipMap[ownerReader.GetString(0)] = ownerReader.GetString(1);
+                            deletionMap[ownerReader.GetString(0)] = ownerReader.GetInt32(2);
                         }
                     }
 
                     // Filter out records not owned by current user
+                    // Filter out records not owned by current user OR deleted in Central
                     var validUpdates = toUpdate.Where(r =>
                     {
+                        // Check if deleted
+                        if (deletionMap.TryGetValue(r.UniqueID, out int isDeleted) && isDeleted == 1)
+                        {
+                            result.FailedRecords.Add($"UniqueID {r.UniqueID}: Record was deleted, please pull to sync");
+                            return false;
+                        }
+
+                        // Check ownership
                         if (ownershipMap.TryGetValue(r.UniqueID, out string owner) && owner == r.AssignedTo)
                         {
                             return true;
@@ -402,19 +414,19 @@ namespace VANTAGE.Utilities
                     result.PushedRecords = result.InsertedRecords + result.UpdatedRecords;  // ADD THIS LINE
                     result.PushedUniqueIds.AddRange(allSuccessIds);  // KEEP THIS LINE
                                                                      // Update LastPulledSyncVersion to avoid re-pulling pushed records
-                    var maxSyncVersion = versionMap.Values.Any() ? versionMap.Values.Max() : 0;
-                    foreach (var projectId in selectedProjects)
-                    {
-                        var currentMax = Convert.ToInt64(SettingsManager.GetAppSetting($"LastPulledSyncVersion_{projectId}", "0"));
-                        if (maxSyncVersion > currentMax)
-                        {
-                            SettingsManager.SetAppSetting(
-                                $"LastPulledSyncVersion_{projectId}",
-                                maxSyncVersion.ToString(),
-                                "int"
-                            );
-                        }
-                    }
+                    //var maxSyncVersion = versionMap.Values.Any() ? versionMap.Values.Max() : 0;
+                    //foreach (var projectId in selectedProjects)
+                    //{
+                    //    var currentMax = Convert.ToInt64(SettingsManager.GetAppSetting($"LastPulledSyncVersion_{projectId}", "0"));
+                    //    if (maxSyncVersion > currentMax)
+                    //    {
+                    //        SettingsManager.SetAppSetting(
+                    //            $"LastPulledSyncVersion_{projectId}",
+                    //            maxSyncVersion.ToString(),
+                    //            "int"
+                    //        );
+                    //    }
+                    //}
                 }
                 // Update statistics after bulk operations for optimal query performance
                 if (result.InsertedRecords > 100)
@@ -423,6 +435,62 @@ namespace VANTAGE.Utilities
                     analyzeCmd.CommandText = "ANALYZE Activities";
                     analyzeCmd.ExecuteNonQuery();
                 }
+
+                // NEW CODE STARTS HERE
+                // Force-pull any records that failed due to ownership conflicts
+                if (result.FailedRecords.Any())
+                {
+                    var failedUniqueIds = result.FailedRecords
+                        .Where(f => f.Contains("No longer assigned to you"))
+                        .Select(f => f.Split(':')[1].Trim().Split(' ')[0])
+                        .ToList();
+
+                    if (failedUniqueIds.Any())
+                    {
+                        var forcePullCmd = centralConn.CreateCommand();
+                        forcePullCmd.CommandText = $"SELECT * FROM Activities WHERE UniqueID IN ({string.Join(",", failedUniqueIds.Select((id, i) => $"@fuid{i}"))})";
+                        for (int i = 0; i < failedUniqueIds.Count; i++)
+                        {
+                            forcePullCmd.Parameters.AddWithValue($"@fuid{i}", failedUniqueIds[i]);
+                        }
+
+                        using var reader = forcePullCmd.ExecuteReader();
+                        while (reader.Read())
+                        {
+                            var columnNames = new List<string>();
+                            var paramNames = new List<string>();
+
+                            for (int i = 0; i < reader.FieldCount; i++)
+                            {
+                                string colName = reader.GetName(i);
+                                if (colName == "IsDeleted") continue;
+                                columnNames.Add(colName);
+                                paramNames.Add($"@{colName}");
+                            }
+
+                            columnNames.Add("LocalDirty");
+                            paramNames.Add("@LocalDirty");
+
+                            var insertSql = $"INSERT OR REPLACE INTO Activities ({string.Join(", ", columnNames)}) VALUES ({string.Join(", ", paramNames)})";
+                            var insertCmd = localConn.CreateCommand();
+                            insertCmd.CommandText = insertSql;
+
+                            for (int i = 0; i < reader.FieldCount; i++)
+                            {
+                                string colName = reader.GetName(i);
+                                if (colName == "IsDeleted") continue;
+                                insertCmd.Parameters.AddWithValue($"@{colName}", reader.GetValue(i) ?? DBNull.Value);
+                            }
+
+                            insertCmd.Parameters.AddWithValue("@LocalDirty", 0);
+                            insertCmd.ExecuteNonQuery();
+                        }
+
+                        AppLogger.Info($"Force-pulled {failedUniqueIds.Count} ownership-conflicted records from Central", "SyncManager.PushRecords");
+                    }
+                }
+                // NEW CODE ENDS HERE
+
                 AppLogger.Info($"Push completed: {result.PushedRecords} pushed, {result.FailedRecords.Count} failed", "SyncManager.PushRecords");
             }
             catch (Exception ex)
@@ -495,12 +563,34 @@ namespace VANTAGE.Utilities
                     long maxVersionPulled = lastPulledVersion;
 
                     using var reader = pullCmd.ExecuteReader();
+                    // REPLACE the entire while (reader.Read()) loop in PullRecordsAsync with this:
+
                     while (reader.Read())
                     {
                         try
                         {
                             string uniqueId = reader.GetString(reader.GetOrdinal("UniqueID"));
                             long syncVersion = reader.GetInt64(reader.GetOrdinal("SyncVersion"));
+
+                            // Check if record is deleted in Central
+                            int isDeleted = reader.GetInt32(reader.GetOrdinal("IsDeleted"));
+
+                            if (isDeleted == 1)
+                            {
+                                // Hard delete from local
+                                var deleteCmd = localConn.CreateCommand();
+                                deleteCmd.CommandText = "DELETE FROM Activities WHERE UniqueID = @uid";
+                                deleteCmd.Parameters.AddWithValue("@uid", uniqueId);
+                                deleteCmd.ExecuteNonQuery();
+
+                                // Update maxVersionPulled to track this deletion
+                                if (syncVersion > maxVersionPulled)
+                                {
+                                    maxVersionPulled = syncVersion;
+                                }
+
+                                continue; // Skip to next record
+                            }
 
                             // Build INSERT OR REPLACE dynamically (works with UniqueID as primary key)
                             var columnNames = new List<string>();
@@ -509,6 +599,10 @@ namespace VANTAGE.Utilities
                             for (int i = 0; i < reader.FieldCount; i++)
                             {
                                 string colName = reader.GetName(i);
+
+                                // Skip IsDeleted - it's Central-only, not synced to local
+                                if (colName == "IsDeleted") continue;
+
                                 columnNames.Add(colName);
                                 paramNames.Add($"@{colName}");
                             }
@@ -518,16 +612,20 @@ namespace VANTAGE.Utilities
                             paramNames.Add("@LocalDirty");
 
                             var insertSql = $@"
-                        INSERT OR REPLACE INTO Activities ({string.Join(", ", columnNames)}) 
-                        VALUES ({string.Join(", ", paramNames)})";
+    INSERT OR REPLACE INTO Activities ({string.Join(", ", columnNames)}) 
+    VALUES ({string.Join(", ", paramNames)})";
 
                             var insertCmd = localConn.CreateCommand();
                             insertCmd.CommandText = insertSql;
 
-                            // Add all parameters from Central
+                            // Add all parameters from Central (except IsDeleted)
                             for (int i = 0; i < reader.FieldCount; i++)
                             {
                                 string colName = reader.GetName(i);
+
+                                // Skip IsDeleted
+                                if (colName == "IsDeleted") continue;
+
                                 var value = reader.GetValue(i);
                                 insertCmd.Parameters.AddWithValue($"@{colName}", value ?? DBNull.Value);
                             }
