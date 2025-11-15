@@ -42,7 +42,7 @@ namespace VANTAGE
                     {
                         Title = "Locate Central Database",
                         Filter = "Database files (*.db)|*.db|All files (*.*)|*.*",
-                        InitialDirectory = @"G:\"
+                        InitialDirectory = @"C:\"
                     };
 
                     if (openFileDialog.ShowDialog() != true)

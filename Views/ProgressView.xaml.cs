@@ -30,61 +30,140 @@ namespace VANTAGE.Views
         private object _originalCellValue;
         private Dictionary<string, PropertyInfo> _propertyCache = new Dictionary<string, PropertyInfo>();
         // ProgressView.xaml.cs
+        // Replace DeleteSelectedActivities_Click in ProgressView.xaml.cs
+
         private async void DeleteSelectedActivities_Click(object sender, RoutedEventArgs e)
         {
             try
             {
                 var selected = sfActivities.SelectedItems?.Cast<Activity>().ToList();
                 if (selected == null || selected.Count == 0)
+                {
+                    MessageBox.Show("Please select one or more records to delete.",
+                        "No Selection", MessageBoxButton.OK, MessageBoxImage.Information);
                     return;
+                }
 
                 var currentUser = App.CurrentUser;
                 bool isAdmin = currentUser?.IsAdmin ?? false;
 
-                // Permissions: non-admin can delete only their own
-                if (!isAdmin && selected.Any(a =>
-                        !string.Equals(a.AssignedTo, currentUser?.Username, StringComparison.OrdinalIgnoreCase)))
+                // Check connection to Central
+                string centralPath = SettingsManager.GetAppSetting("CentralDatabasePath", "");
+                if (string.IsNullOrEmpty(centralPath))
                 {
-                    MessageBox.Show("You can only delete your own records.", "Access Denied",
-                                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show("Central database path not configured.",
+                        "Configuration Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
-                // Confirm
-                string preview = string.Join(", ", selected.Take(5).Select(a => a.ActivityID));
-                if (selected.Count > 5) preview += ", …";
+                if (!SyncManager.CheckCentralConnection(centralPath, out string connectionError))
+                {
+                    MessageBox.Show($"Deletion requires connection to Central database.\n\n{connectionError}\n\nPlease try again when connected.",
+                        "Connection Required", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                // Verify ownership in Central for each record
+                using var centralConn = new SqliteConnection($"Data Source={centralPath}");
+                centralConn.Open();
+
+                var ownedRecords = new List<Activity>();
+                var deniedRecords = new List<string>();
+
+                foreach (var activity in selected)
+                {
+                    var checkCmd = centralConn.CreateCommand();
+                    checkCmd.CommandText = "SELECT AssignedTo FROM Activities WHERE UniqueID = @id";
+                    checkCmd.Parameters.AddWithValue("@id", activity.UniqueID);
+                    var centralOwner = checkCmd.ExecuteScalar()?.ToString();
+
+                    if (isAdmin || string.Equals(centralOwner, currentUser?.Username, StringComparison.OrdinalIgnoreCase))
+                    {
+                        ownedRecords.Add(activity);
+                    }
+                    else
+                    {
+                        deniedRecords.Add(activity.UniqueID);
+                    }
+                }
+
+                if (deniedRecords.Any())
+                {
+                    MessageBox.Show(
+                        $"{deniedRecords.Count} record(s) could not be deleted - you do not own them.\n\n" +
+                        $"First few: {string.Join(", ", deniedRecords.Take(3))}",
+                        "Permission Denied",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+
+                    if (!ownedRecords.Any())
+                        return;
+                }
+
+                // Confirm deletion
+                string preview = string.Join(", ", ownedRecords.Take(5).Select(a => a.UniqueID));
+                if (ownedRecords.Count > 5) preview += ", …";
+
                 var confirm = MessageBox.Show(
-                    $"Delete {selected.Count} record(s)?\n\nFirst few IDs: {preview}",
-                    "Confirm Deletion", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                    $"Delete {ownedRecords.Count} record(s)?\n\nFirst few: {preview}\n\nThis action cannot be undone.",
+                    "Confirm Deletion",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
 
-                if (confirm != MessageBoxResult.Yes) return;
+                if (confirm != MessageBoxResult.Yes)
+                {
+                    centralConn.Close();
+                    return;
+                }
 
-                // Execute archive+delete
-                var ids = selected.Select(a => a.ActivityID).ToList();
-                int count = await ActivityRepository.ArchiveAndDeleteActivitiesAsync(ids, currentUser?.Username ?? "Unknown");
+                // Delete from local
+                using var localConn = DatabaseSetup.GetConnection();
+                localConn.Open();
 
-                // Refresh grid and totals
+                var uniqueIds = ownedRecords.Select(a => a.UniqueID).ToList();
+                string uniqueIdList = string.Join(",", uniqueIds.Select(id => $"'{id}'"));
+
+                var deleteLocalCmd = localConn.CreateCommand();
+                deleteLocalCmd.CommandText = $"DELETE FROM Activities WHERE UniqueID IN ({uniqueIdList})";
+                int localDeleted = deleteLocalCmd.ExecuteNonQuery();
+
+                // Set IsDeleted=1 in Central (SyncVersion auto-increments via trigger)
+                var deleteCentralCmd = centralConn.CreateCommand();
+                deleteCentralCmd.CommandText = $@"
+            UPDATE Activities 
+            SET IsDeleted = 1, 
+                UpdatedBy = @user, 
+                UpdatedUtcDate = @date 
+            WHERE UniqueID IN ({uniqueIdList})";
+                deleteCentralCmd.Parameters.AddWithValue("@user", currentUser?.Username ?? "Unknown");
+                deleteCentralCmd.Parameters.AddWithValue("@date", DateTime.UtcNow.ToString("o"));
+                int centralDeleted = deleteCentralCmd.ExecuteNonQuery();
+
+                centralConn.Close();
+
                 // Refresh grid and totals
                 if (ViewModel != null)
                 {
-                    await ViewModel.RefreshAsync();       // <- reloads using current filters
-                    await ViewModel.UpdateTotalsAsync();  // <- recompute summary panel
+                    await ViewModel.RefreshAsync();
+                    await ViewModel.UpdateTotalsAsync();
                 }
 
-
-                VANTAGE.Utilities.AppLogger.Info(
-                    $"User deleted {count} activities.",
+                AppLogger.Info(
+                    $"User deleted {localDeleted} activities (IsDeleted=1 set in Central for {centralDeleted} records).",
                     "ProgressView.DeleteSelectedActivities_Click",
                     currentUser?.Username);
 
-                MessageBox.Show($"{count} record(s) deleted and archived.",
-                                "Delete Successful", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show(
+                    $"{localDeleted} record(s) deleted successfully.",
+                    "Delete Complete",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
-                VANTAGE.Utilities.AppLogger.Error(ex, "ProgressView.DeleteSelectedActivities_Click");
+                AppLogger.Error(ex, "ProgressView.DeleteSelectedActivities_Click");
                 MessageBox.Show($"Delete failed:\n{ex.Message}", "Error",
-                                MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
         // PLACEHOLDER HANDLERS (Not Yet Implemented)
