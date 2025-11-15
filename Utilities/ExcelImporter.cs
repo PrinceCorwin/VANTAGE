@@ -527,19 +527,15 @@ namespace VANTAGE.Utilities
                 // AFTER commit, reset sync versions for replaced ProjectIDs
                 if (distinctProjectIds != null && distinctProjectIds.Any())
                 {
-                    AppLogger.Info($"Found {distinctProjectIds.Count} distinct ProjectIDs to reset: {string.Join(", ", distinctProjectIds)}", "ExcelImporter");
-
                     foreach (var projectId in distinctProjectIds)
                     {
-                        var settingName = $"LastPulledSyncVersion_{projectId}";
-
-                        // Delete from AppSettings (not UserSettings)
                         var deleteCmd = connection.CreateCommand();
                         deleteCmd.CommandText = "DELETE FROM AppSettings WHERE SettingName = @settingName";
-                        deleteCmd.Parameters.AddWithValue("@settingName", settingName);
-                        int rowsDeleted = deleteCmd.ExecuteNonQuery();
-                        AppLogger.Info($"Deleted {rowsDeleted} rows from AppSettings for {settingName}", "ExcelImporter");
+                        deleteCmd.Parameters.AddWithValue("@settingName", $"LastPulledSyncVersion_{projectId}");
+                        deleteCmd.ExecuteNonQuery();
                     }
+
+                    AppLogger.Info($"Reset sync versions for {distinctProjectIds.Count} projects after replace import", "ExcelImporter");
                 }
                 else
                 {

@@ -1,13 +1,75 @@
 ﻿<UserControl x:Class="VANTAGE.Views.ProgressView"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
-             xmlns:svg="http://sharpvectors.codeplex.com/runtime/"
+     xmlns:svg="http://sharpvectors.codeplex.com/runtime/"
+          xmlns:styles="clr-namespace:VANTAGE.Styles"
              mc:Ignorable="d"
-             d:DesignHeight="600" d:DesignWidth="1200"
-             Background="{StaticResource BackgroundColor}">
+     d:DesignHeight="600" d:DesignWidth="1200"
+      Background="{StaticResource BackgroundColor}">
+
+    <UserControl.Resources>
+        <styles:RecordOwnershipRowStyleSelector x:Key="RowStyleSelector" />
+        <!-- Style for empty/null required fields with red border -->
+        <Style x:Key="CompTypeRequiredStyle" TargetType="syncfusion:GridCell">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=CompType}" Value="">
+                    <Setter Property="Background" Value="#2e1e1e"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Path=CompType}" Value="{x:Null}">
+                    <Setter Property="Background" Value="#2e1e1e"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="PhaseCategoryRequiredStyle" TargetType="syncfusion:GridCell">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=PhaseCategory}" Value="">
+                    <Setter Property="Background" Value="#2e1e1e"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Path=PhaseCategory}" Value="{x:Null}">
+                    <Setter Property="Background" Value="#2e1e1e"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="ProjectIDRequiredStyle" TargetType="syncfusion:GridCell">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=ProjectID}" Value="">
+                    <Setter Property="Background" Value="#2e1e1e"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Path=ProjectID}" Value="{x:Null}">
+                    <Setter Property="Background" Value="#2e1e1e"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="WorkPackageRequiredStyle" TargetType="syncfusion:GridCell">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=WorkPackage}" Value="">
+                    <Setter Property="Background" Value="#2e1e1e"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Path=WorkPackage}" Value="{x:Null}">
+                    <Setter Property="Background" Value="#2e1e1e"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="PhaseCodeRequiredStyle" TargetType="syncfusion:GridCell">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=PhaseCode}" Value="">
+                    <Setter Property="BorderBrush" Value="Red"/>
+                    <Setter Property="BorderThickness" Value="0.5"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Path=PhaseCode}" Value="{x:Null}">
+                    <Setter Property="BorderBrush" Value="Red"/>
+                    <Setter Property="BorderThickness" Value="0.5"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
 
     <Grid>
         <Grid.ColumnDefinitions>
@@ -334,6 +396,7 @@
                     GridLinesVisibility="Both"
                     RowHeight="28"
                     HeaderRowHeight="32"
+                    RowStyleSelector="{StaticResource RowStyleSelector}"
                     CurrentCellEndEdit="sfActivities_CurrentCellEndEdit"
                     SelectionChanged="sfActivities_SelectionChanged"
                     CurrentCellBeginEdit="SfActivities_CurrentCellBeginEdit">
@@ -447,14 +510,16 @@
                               Width="120"
                               AllowEditing="True"
                               AllowFiltering="True"
-                              AllowSorting="True" />
+                              AllowSorting="True" 
+                              CellStyle="{StaticResource CompTypeRequiredStyle}" />
 
                         <syncfusion:GridTextColumn MappingName="PhaseCategory" 
                               HeaderText="PhaseCategory" 
                               Width="120"
                               AllowEditing="True"
                               AllowFiltering="True"
-                              AllowSorting="True" />
+                              AllowSorting="True"
+                              CellStyle="{StaticResource PhaseCategoryRequiredStyle}" />
 
                         <syncfusion:GridTextColumn MappingName="ROCStep" 
                               HeaderText="ROCStep" 
@@ -468,21 +533,24 @@
                               Width="100"
                               AllowEditing="True"
                               AllowFiltering="True"
-                              AllowSorting="True" />
+                              AllowSorting="True" 
+                              CellStyle="{StaticResource ProjectIDRequiredStyle}"/>
 
                         <syncfusion:GridTextColumn MappingName="WorkPackage" 
                               HeaderText="WorkPackage" 
                               Width="120"
                               AllowEditing="True"
                               AllowFiltering="True"
-                              AllowSorting="True" />
+                              AllowSorting="True" 
+                              CellStyle="{StaticResource WorkPackageRequiredStyle}"/>
 
                         <syncfusion:GridTextColumn MappingName="PhaseCode" 
                               HeaderText="PhaseCode" 
                               Width="100"
                               AllowEditing="True"
                               AllowFiltering="True"
-                              AllowSorting="True" />
+                              AllowSorting="True" 
+                              CellStyle="{StaticResource PhaseCodeRequiredStyle}"/>
 
                         <!-- DRAWING FIELDS -->
                         <syncfusion:GridTextColumn MappingName="DwgNO" 

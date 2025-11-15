@@ -1,7 +1,8 @@
-﻿using System;
+﻿using Microsoft.Data.Sqlite;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using Microsoft.Data.Sqlite;
 using VANTAGE.Models;
 
 namespace VANTAGE.Utilities
@@ -115,17 +116,68 @@ namespace VANTAGE.Utilities
                     return false;
                 }
 
+                // STEP 1: Check general network connectivity FIRST
+                if (!IsNetworkAvailable())
+                {
+                    errorMessage = "No network connection detected.\n\nPlease check your internet/network connection and try again.";
+                    return false;
+                }
+
+                // STEP 2: If path is on a network drive, verify the network path is accessible
+                if (centralDbPath.Length >= 2 && centralDbPath[1] == ':')
+                {
+                    try
+                    {
+                        DriveInfo drive = new DriveInfo(centralDbPath.Substring(0, 2));
+
+                        if (drive.DriveType == DriveType.Network)
+                        {
+                            // For network drives, verify the actual directory is accessible
+                            // This will fail if the drive is cached but network is disconnected
+                            string directory = System.IO.Path.GetDirectoryName(centralDbPath);
+
+                            try
+                            {
+                                // Attempt to list files - this requires actual network access
+                                var files = System.IO.Directory.GetFiles(directory, "*.db");
+
+                                if (files.Length == 0)
+                                {
+                                    errorMessage = $"No database files found in network directory.\n\nPath: {directory}";
+                                    return false;
+                                }
+                            }
+                            catch (System.IO.IOException)
+                            {
+                                errorMessage = $"Network drive is not accessible.\n\nThe network connection may be offline or the path is invalid.";
+                                return false;
+                            }
+                            catch (UnauthorizedAccessException)
+                            {
+                                errorMessage = "Access denied to network drive.\n\nCheck your permissions.";
+                                return false;
+                            }
+                        }
+                    }
+                    catch (Exception driveEx)
+                    {
+                        errorMessage = $"Cannot access drive: {driveEx.Message}";
+                        return false;
+                    }
+                }
+
+                // STEP 3: Verify file exists
                 if (!System.IO.File.Exists(centralDbPath))
                 {
                     errorMessage = "Central database file not found.";
                     return false;
                 }
 
-                // Try to open connection
+                // STEP 4: Try to open database connection
                 using var connection = new SqliteConnection($"Data Source={centralDbPath}");
                 connection.Open();
 
-                // Verify critical tables exist
+                // STEP 5: Verify critical tables exist
                 var cmd = connection.CreateCommand();
                 cmd.CommandText = "SELECT name FROM sqlite_master WHERE type='table' AND name='Activities'";
                 var result = cmd.ExecuteScalar();
@@ -136,12 +188,105 @@ namespace VANTAGE.Utilities
                     return false;
                 }
 
+                // STEP 6: Perform WRITE TEST to ensure we're not using a cached/read-only copy
+                try
+                {
+                    var timestamp = DateTime.UtcNow.Ticks;
+                    var writeTestCmd = connection.CreateCommand();
+                    writeTestCmd.CommandText = $@"
+                CREATE TEMP TABLE ConnectionTest_{timestamp} (TestTime INTEGER);
+                INSERT INTO ConnectionTest_{timestamp} (TestTime) VALUES (@time);
+                DROP TABLE ConnectionTest_{timestamp};";
+                    writeTestCmd.Parameters.AddWithValue("@time", timestamp);
+                    writeTestCmd.ExecuteNonQuery();
+                }
+                catch (SqliteException writeEx)
+                {
+                    errorMessage = $"Cannot write to Central database.\n\nThe database may be read-only, locked, or cached.\n\nError: {writeEx.Message}";
+                    return false;
+                }
+
                 return true;
+            }
+            catch (System.IO.IOException ioEx)
+            {
+                errorMessage = $"Network or file access error: {ioEx.Message}\n\nThe Central database may be on a disconnected network drive.";
+                AppLogger.Error(ioEx, "SyncManager.CheckCentralConnection");
+                return false;
+            }
+            catch (SqliteException sqlEx)
+            {
+                errorMessage = $"Database connection error: {sqlEx.Message}\n\nThe database file may be locked, corrupted, or offline.";
+                AppLogger.Error(sqlEx, "SyncManager.CheckCentralConnection");
+                return false;
             }
             catch (Exception ex)
             {
                 errorMessage = $"Cannot connect to Central database: {ex.Message}";
                 AppLogger.Error(ex, "SyncManager.CheckCentralConnection");
+                return false;
+            }
+        }
+
+        // Helper method: Check if network connectivity is available
+        private static bool IsNetworkAvailable()
+        {
+            try
+            {
+                // Check if any network interface is up and operational
+                if (!System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable())
+                {
+                    return false;
+                }
+
+                // Get all network interfaces
+                var interfaces = System.Net.NetworkInformation.NetworkInterface.GetAllNetworkInterfaces();
+
+                // Look for an active network interface (not loopback, not tunnel)
+                foreach (var ni in interfaces)
+                {
+                    // Skip loopback and tunnel interfaces
+                    if (ni.NetworkInterfaceType == System.Net.NetworkInformation.NetworkInterfaceType.Loopback ||
+                        ni.NetworkInterfaceType == System.Net.NetworkInformation.NetworkInterfaceType.Tunnel)
+                    {
+                        continue;
+                    }
+
+                    // Check if interface is up and has an IP address
+                    if (ni.OperationalStatus == System.Net.NetworkInformation.OperationalStatus.Up)
+                    {
+                        var ipProps = ni.GetIPProperties();
+
+                        // Check for valid IP address (not just link-local)
+                        foreach (var addr in ipProps.UnicastAddresses)
+                        {
+                            // IPv4 check
+                            if (addr.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                            {
+                                // Exclude link-local addresses (169.254.x.x)
+                                byte[] bytes = addr.Address.GetAddressBytes();
+                                if (!(bytes[0] == 169 && bytes[1] == 254))
+                                {
+                                    return true; // Found a valid network connection
+                                }
+                            }
+                            // IPv6 check
+                            else if (addr.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6)
+                            {
+                                if (!addr.Address.IsIPv6LinkLocal)
+                                {
+                                    return true; // Found a valid IPv6 connection
+                                }
+                            }
+                        }
+                    }
+                }
+
+                return false; // No active network interfaces found
+            }
+            catch
+            {
+                // If we can't determine network status, assume it's unavailable
                 return false;
             }
         }

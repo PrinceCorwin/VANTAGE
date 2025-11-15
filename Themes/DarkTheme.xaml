@@ -65,6 +65,10 @@
     <!-- === MY RECORDS HIGHLIGHT === -->
     <SolidColorBrush x:Key="MyRecordsBackground" Color="#1A27AE60"/>
 
+    <!-- === NON-OWNED RECORDS COLORS === -->
+    <SolidColorBrush x:Key="NotOwnedRowBackground" Color="#242738"/>
+    <SolidColorBrush x:Key="NotOwnedRowForeground" Color="#FF707070"/>
+
     <!-- ========================================= -->
     <!-- === DEFAULT BUTTON STYLE === -->
     <!-- ========================================= -->
