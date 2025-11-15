@@ -793,14 +793,18 @@ namespace VANTAGE.Utilities
                     }
 
                     // Update LastPulledSyncVersion for this project
-                    if (maxVersionPulled > lastPulledVersion)
-                    {
-                        SettingsManager.SetAppSetting(
-                            $"LastPulledSyncVersion_{projectId}",
-                            maxVersionPulled.ToString(),
-                            "int"
-                        );
-                    }
+                    // Query Central for max SyncVersion to track sync position
+                    var maxVersionCmd = centralConn.CreateCommand();
+                    maxVersionCmd.CommandText = "SELECT COALESCE(MAX(SyncVersion), 0) FROM Activities WHERE ProjectID = @projectId";
+                    maxVersionCmd.Parameters.AddWithValue("@projectId", projectId);
+                    long centralMaxVersion = Convert.ToInt64(maxVersionCmd.ExecuteScalar());
+
+                    // Always update to Central's max version (even if nothing was pulled)
+                    SettingsManager.SetAppSetting(
+                        $"LastPulledSyncVersion_{projectId}",
+                        centralMaxVersion.ToString(),
+                        "int"
+                    );
                 }
 
                 AppLogger.Info($"Pull completed: {result.PulledRecords} pulled", "SyncManager.PullRecords");

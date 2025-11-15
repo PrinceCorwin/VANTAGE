@@ -1277,6 +1277,21 @@
                            Foreground="{StaticResource TextColorSecondary}"
                            VerticalAlignment="Center"
                            Margin="10,0,0,0"/>
+                    <!-- NEW: Metadata Errors Button -->
+                    <Button x:Name="btnMetadataErrors"
+                                DockPanel.Dock="Left"
+                                Content="{Binding MetadataErrorButtonText}"
+                                Click="BtnMetadataErrors_Click"
+                                Background="{StaticResource ControlBackground}"
+                                Foreground="{StaticResource StatusRed}"
+                                BorderBrush="{StaticResource BorderColor}"
+                                BorderThickness="1"
+                                Padding="8,4"
+                                Margin="15,0,0,0"
+                                VerticalAlignment="Center"
+                                Cursor="Hand"
+                                FontSize="11"
+                                ToolTip="Click to view records with missing required metadata"/>
 
                     <StackPanel DockPanel.Dock="Right"
                         Orientation="Horizontal"

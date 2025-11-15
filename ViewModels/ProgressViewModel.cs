@@ -24,6 +24,19 @@ namespace VANTAGE.ViewModels
         public IEnumerable<string> ActiveFilterColumns => _activeFilters.Keys;
         private bool _myRecordsActive = false;
         private string _myRecordsUser = null;
+        private int _metadataErrorCount;
+        public int MetadataErrorCount
+        {
+            get => _metadataErrorCount;
+            set
+            {
+                _metadataErrorCount = value;
+                OnPropertyChanged(nameof(MetadataErrorCount));
+                OnPropertyChanged(nameof(MetadataErrorButtonText));
+            }
+        }
+
+        public string MetadataErrorButtonText => $"Metadata Errors: {_metadataErrorCount}";
         private string BuildUnifiedWhereClause()
         {
             var fb = new FilterBuilder();

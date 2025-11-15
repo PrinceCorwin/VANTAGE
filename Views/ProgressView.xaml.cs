@@ -168,7 +168,77 @@ namespace VANTAGE.Views
         }
         // PLACEHOLDER HANDLERS (Not Yet Implemented)
         // ========================================
+        private async void BtnMetadataErrors_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // Clear all existing filters first
+                BtnClearFilters_Click(null, null);
 
+                // Apply metadata error filter - records missing required fields
+                var errorFilter = @"(
+                        WorkPackage IS NULL OR WorkPackage = '' OR
+                        PhaseCode IS NULL OR PhaseCode = '' OR
+                        CompType IS NULL OR CompType = '' OR
+                        PhaseCategory IS NULL OR PhaseCategory = '' OR
+                        ProjectID IS NULL OR ProjectID = '' OR
+                        SchedActNO IS NULL OR SchedActNO = '' OR
+                        Description IS NULL OR Description = '' OR
+                        ROCStep IS NULL OR ROCStep = '' OR
+                        UDF18 IS NULL OR UDF18 = ''
+                    )";
+
+                await _viewModel.ApplyFilter("MetadataErrors", "Custom", errorFilter);
+
+                UpdateRecordCount();
+                UpdateSummaryPanel();
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "ProgressView.BtnMetadataErrors_Click");
+                MessageBox.Show($"Error filtering metadata errors: {ex.Message}", "Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+        private async Task CalculateMetadataErrorCount()
+        {
+            try
+            {
+                await Task.Run(() =>
+                {
+                    using var connection = DatabaseSetup.GetConnection();
+                    connection.Open();
+
+                    var cmd = connection.CreateCommand();
+                    cmd.CommandText = @"
+                SELECT COUNT(*) FROM Activities 
+                WHERE AssignedTo = @currentUser
+                  AND (
+                    WorkPackage IS NULL OR WorkPackage = '' OR
+                    PhaseCode IS NULL OR PhaseCode = '' OR
+                    CompType IS NULL OR CompType = '' OR
+                    PhaseCategory IS NULL OR PhaseCategory = '' OR
+                    ProjectID IS NULL OR ProjectID = '' OR
+                    SchedActNO IS NULL OR SchedActNO = '' OR
+                    Description IS NULL OR Description = '' OR
+                    ROCStep IS NULL OR ROCStep = '' OR
+                    UDF18 IS NULL OR UDF18 = ''
+                  )";
+                    cmd.Parameters.AddWithValue("@currentUser", App.CurrentUser?.Username ?? "");
+
+                    var count = Convert.ToInt32(cmd.ExecuteScalar());
+
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        _viewModel.MetadataErrorCount = count;
+                    });
+                });
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "ProgressView.CalculateMetadataErrorCount");
+            }
+        }
         private void MenuCopyRows_Click(object sender, RoutedEventArgs e)
         {
             MessageBox.Show("Copy Row(s) feature coming soon!",
@@ -740,7 +810,8 @@ namespace VANTAGE.Views
 
             await _viewModel.LoadInitialDataAsync();
             UpdateRecordCount();
-            UpdateSummaryPanel(); // <-- Add this to update summary after initial load
+            UpdateSummaryPanel(); 
+            await CalculateMetadataErrorCount(); 
         }
 
         private static IEnumerable<T> FindVisualChildren<T>(DependencyObject depObj) where T : DependencyObject
@@ -906,6 +977,20 @@ namespace VANTAGE.Views
         {
             try
             {
+                await CalculateMetadataErrorCount();
+                // Check for metadata errors before allowing sync
+                if (_viewModel.MetadataErrorCount > 0)
+                {
+                    MessageBox.Show(
+                        $"Cannot sync. You have {_viewModel.MetadataErrorCount} record(s) with missing required metadata.\n\n" +
+                        "Click 'Metadata Errors' button to view and fix these records.\n\n" +
+                        "Required fields: WorkPackage, PhaseCode, CompType, PhaseCategory, ProjectID, SchedActNO, Description, ROCStep, UDF18",
+                        "Metadata Errors",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+                    return;
+                }
+
                 var syncDialog = new SyncDialog();
                 bool? result = syncDialog.ShowDialog();
 
@@ -1095,6 +1180,7 @@ namespace VANTAGE.Views
             await _viewModel.RefreshAsync();
             UpdateRecordCount();
             UpdateSummaryPanel(); // Update summary panel after refresh
+            await CalculateMetadataErrorCount();
 
         }
 
@@ -1274,6 +1360,30 @@ namespace VANTAGE.Views
 
                 if (result != MessageBoxResult.Yes)
                     return;
+            }
+            // Check for metadata errors in allowed records
+            var recordsWithErrors = allowedActivities.Where(a =>
+                string.IsNullOrWhiteSpace(a.WorkPackage) ||
+                string.IsNullOrWhiteSpace(a.PhaseCode) ||
+                string.IsNullOrWhiteSpace(a.CompType) ||
+                string.IsNullOrWhiteSpace(a.PhaseCategory) ||
+                string.IsNullOrWhiteSpace(a.ProjectID) ||
+                string.IsNullOrWhiteSpace(a.SchedActNO) ||
+                string.IsNullOrWhiteSpace(a.Description) ||
+                string.IsNullOrWhiteSpace(a.ROCStep) ||
+                string.IsNullOrWhiteSpace(a.UDF18)
+            ).ToList();
+
+            if (recordsWithErrors.Any())
+            {
+                MessageBox.Show(
+                    $"Cannot reassign. {recordsWithErrors.Count} selected record(s) have missing required metadata.\n\n" +
+                    "Click 'Metadata Errors' button to view and fix these records.\n\n" +
+                    "Required fields: WorkPackage, PhaseCode, CompType, PhaseCategory, ProjectID, SchedActNO, Description, ROCStep, UDF18",
+                    "Metadata Errors",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+                return;
             }
 
             // Check for unsaved changes (LocalDirty=1)
@@ -1465,6 +1575,5 @@ namespace VANTAGE.Views
                 }
             }
         }
-
     }
 }
