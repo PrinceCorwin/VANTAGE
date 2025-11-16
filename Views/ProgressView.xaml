@@ -426,7 +426,7 @@
                     AllowSorting="True"
                     AllowFiltering="True"
                     SelectionMode="Extended"
-                    SelectionUnit="Row"
+                    SelectionUnit="Any"
                     ColumnSizer="Auto"
                     Background="{StaticResource BackgroundColor}"
                     Foreground="{StaticResource ForegroundColor}"
@@ -436,11 +436,13 @@
                     RowHeight="28"
                     HeaderRowHeight="32"
                     RowStyleSelector="{StaticResource RowStyleSelector}"
+                    ShowRowHeader="True"
+                    GridContextMenuOpening="sfActivities_GridContextMenuOpening"
                     CurrentCellEndEdit="sfActivities_CurrentCellEndEdit"
                     SelectionChanged="sfActivities_SelectionChanged"
                     CurrentCellBeginEdit="SfActivities_CurrentCellBeginEdit">
-                    
-                    <syncfusion:SfDataGrid.ContextMenu>
+
+                    <syncfusion:SfDataGrid.RecordContextMenu>
                         <ContextMenu
                              Background="{StaticResource ControlBackground}"
                              Foreground="{StaticResource ForegroundColor}"
@@ -518,8 +520,30 @@
                             </MenuItem>
 
                         </ContextMenu>
-                    </syncfusion:SfDataGrid.ContextMenu>
+                    </syncfusion:SfDataGrid.RecordContextMenu>
+                    <syncfusion:SfDataGrid.HeaderContextMenu>
+                        <ContextMenu Background="{StaticResource ControlBackground}"
+                 Foreground="{StaticResource ForegroundColor}"
+                 BorderBrush="{StaticResource BorderColor}">
+                            <MenuItem Header="Find &amp; Replace in this column..." 
+                  Click="MenuFindReplaceColumn_Click"
+                  Background="{StaticResource ControlBackground}"
+                  Foreground="{StaticResource ForegroundColor}">
+                                <MenuItem.Icon>
+                                    <TextBlock Text="🔍" FontSize="14"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+                        </ContextMenu>
+                    </syncfusion:SfDataGrid.HeaderContextMenu>
                     <syncfusion:SfDataGrid.Columns>
+                        <!--<syncfusion:GridCheckBoxColumn MappingName="IsSelected" 
+                               HeaderText="" 
+                               Width="40"
+                               AllowEditing="True"
+                               AllowFiltering="False"
+                               AllowSorting="False"
+                               AllowResizing="False"
+                               AllowDragging="False"/>-->
 
                         <!-- IDENTITY & KEY FIELDS -->
                         <syncfusion:GridTextColumn MappingName="UniqueID" 

@@ -1350,13 +1350,56 @@ namespace VANTAGE.Views
                     MessageBoxImage.Error);
             }
         }
+		private void MenuFindReplaceColumn_Click(object sender, RoutedEventArgs e)
+		{
+			MessageBox.Show("Find & Replace clicked - handler working!", "Test", MessageBoxButton.OK, MessageBoxImage.Information);
+		}
+		private Activity _lastSelectedRow = null;
+		private void sfActivities_GridContextMenuOpening(object sender, Syncfusion.UI.Xaml.Grid.GridContextMenuEventArgs e)
+		{
+			// Only show RecordContextMenu when right-clicking row header
+			if (e.ContextMenuType == Syncfusion.UI.Xaml.Grid.ContextMenuType.RecordCell)
+			{
+				// Cancel context menu for regular cells - only allow on row header
+				// Check if this is a row header click by checking RowColumnIndex
+				if (e.RowColumnIndex.ColumnIndex > 0)
+				{
+					e.Handled = true; // Cancel the context menu for regular cells
+				}
+			}
+		}
+		private void sfActivities_SelectionChanged(object sender, Syncfusion.UI.Xaml.Grid.GridSelectionChangedEventArgs e)
+		{
+			// With SelectionUnit="Any", row header clicks select all cells in the row
+			// but don't populate SelectedItems. We need to manually populate it.
 
-        private void sfActivities_SelectionChanged(object sender, Syncfusion.UI.Xaml.Grid.GridSelectionChangedEventArgs e)
-        {
-            // TODO: Implement selection change logic if needed
-        }
+			var selectedCells = sfActivities.GetSelectedCells();
 
-        private async void MenuAssignToUser_Click(object sender, RoutedEventArgs e)
+			if (selectedCells.Count > 0)
+			{
+				// Group cells by row to identify which rows are fully or partially selected
+				var rowsWithSelectedCells = selectedCells
+					.GroupBy(cell => cell.RowData)
+					.Select(g => g.Key as Activity)
+					.Where(activity => activity != null)
+					.Distinct()
+					.ToList();
+
+				// Clear and repopulate SelectedItems with rows that have selected cells
+				sfActivities.SelectedItems.Clear();
+				foreach (var row in rowsWithSelectedCells)
+				{
+					sfActivities.SelectedItems.Add(row);
+				}
+			}
+			else if (sfActivities.SelectedItems.Count > 0)
+			{
+				// No cells selected, clear SelectedItems
+				sfActivities.SelectedItems.Clear();
+			}
+		}
+
+		private async void MenuAssignToUser_Click(object sender, RoutedEventArgs e)
         {
             // Get selected activities
             var selectedActivities = sfActivities.SelectedItems.Cast<Activity>().ToList();
