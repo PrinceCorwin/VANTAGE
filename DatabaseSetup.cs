@@ -62,8 +62,6 @@ namespace VANTAGE
                 // Tables to mirror schema + data (metadata)
                 string[] metadataTables = { "Users", "Projects", "ColumnMappings", "Managers" };
 
-                // Activities and Deleted_Activities are created manually with local schema
-
                 // Mirror metadata tables (schema + data)
                 foreach (string tableName in metadataTables)
                 {
@@ -79,73 +77,7 @@ namespace VANTAGE
                 throw;
             }
         }
-        private static void EnsureDeletedActivitiesTable()
-        {
-            try
-            {
-                using var connection = GetConnection();
-                connection.Open();
-
-                // Check if Activities table exists first
-                using (var chkAct = connection.CreateCommand())
-                {
-                    chkAct.CommandText = "SELECT 1 FROM sqlite_master WHERE type='table' AND name='Activities';";
-                    var activitiesExists = chkAct.ExecuteScalar() != null;
-                    if (!activitiesExists)
-                    {
-                        VANTAGE.Utilities.AppLogger.Warning("Activities table not found; skipping Deleted_Activities creation.", "DB.EnsureDeletedActivitiesTable");
-                        return;
-                    }
-                }
-
-                VANTAGE.Utilities.AppLogger.Info("Ensuring Deleted_Activities…", "DB.EnsureDeletedActivitiesTable");
-
-                // Create the table if it doesn't exist (mirror columns only; no rows)
-                using (var create = connection.CreateCommand())
-                {
-                    create.CommandText = "CREATE TABLE IF NOT EXISTS Deleted_Activities AS SELECT * FROM Activities WHERE 0;";
-                    create.ExecuteNonQuery();
-                }
-
-                // Ensure audit columns exist (idempotent)
-                EnsureColumn(connection, "Deleted_Activities", "DeletedDate", "TEXT NOT NULL DEFAULT ''");
-                EnsureColumn(connection, "Deleted_Activities", "DeletedBy", "TEXT NULL");
-
-                // Helpful indexes
-                using (var idx = connection.CreateCommand())
-                {
-                    idx.CommandText = "CREATE INDEX IF NOT EXISTS IX_Deleted_Activities_DeletedDate ON Deleted_Activities(DeletedDate);";
-                    idx.ExecuteNonQuery();
-                }
-                using (var uidx = connection.CreateCommand())
-                {
-                    uidx.CommandText = "CREATE UNIQUE INDEX IF NOT EXISTS UX_Deleted_Activities_UniqueID ON Deleted_Activities(UniqueID);";
-                    uidx.ExecuteNonQuery();
-                }
-
-                VANTAGE.Utilities.AppLogger.Info("Deleted_Activities ensured.", "DB.EnsureDeletedActivitiesTable");
-            }
-            catch (Exception ex)
-            {
-                VANTAGE.Utilities.AppLogger.Error(ex, "DB.EnsureDeletedActivitiesTable");
-            }
-
-            static void EnsureColumn(Microsoft.Data.Sqlite.SqliteConnection conn, string table, string name, string def)
-            {
-                using var info = conn.CreateCommand();
-                info.CommandText = $"PRAGMA table_info('{table}');";
-                using var rd = info.ExecuteReader();
-                bool has = false;
-                while (rd.Read())
-                    if (string.Equals(rd["name"]?.ToString(), name, StringComparison.OrdinalIgnoreCase)) { has = true; break; }
-                if (!has)
-                {
-                    using var alter = conn.CreateCommand();
-                    alter.CommandText = $"ALTER TABLE {table} ADD COLUMN {name} {def};";
-                    alter.ExecuteNonQuery();
-                }
-            }
-        }
+        
         // Copy table schema from Central to Local
         private static void CopyTableSchema(SqliteConnection centralConn, SqliteConnection localConn, string tableName)
         {
@@ -388,8 +320,6 @@ namespace VANTAGE
 
                 command.ExecuteNonQuery();
 
-                // Create Deleted_Activities mirroring Activities structure
-                EnsureDeletedActivitiesTable();
             }
             catch (Exception ex)
             {

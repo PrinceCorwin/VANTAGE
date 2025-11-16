@@ -7,15 +7,15 @@ using VANTAGE.Models;
 
 namespace VANTAGE.Utilities
 {
-    /// <summary>
+    
     /// Helper class for exporting activities to Excel with different scenarios
-    /// </summary>
+    
     public static class ExportHelper
     {
-        /// <summary>
+        
         /// Export activities with options dialog (for MainWindow)
         /// Shows dialog to choose between all records or filtered records
-        /// </summary>
+        
         public static async Task ExportActivitiesWithOptionsAsync(
             Window owner,
             List<Activity> allActivities,
@@ -90,9 +90,9 @@ namespace VANTAGE.Utilities
             }
         }
 
-        /// <summary>
+        
         /// Export selected activities directly without options (for ProgressView context menu)
-        /// </summary>
+        
         public static async Task ExportSelectedActivitiesAsync(
             Window owner,
             List<Activity> selectedActivities)
@@ -136,9 +136,9 @@ namespace VANTAGE.Utilities
             }
         }
 
-        /// <summary>
+        
         /// Export deleted records directly without options (for DeletedRecordsView)
-        /// </summary>
+        
         public static async Task ExportDeletedRecordsAsync(
             Window owner,
             List<Activity> deletedActivities)
@@ -182,9 +182,9 @@ namespace VANTAGE.Utilities
             }
         }
 
-        /// <summary>
+        
         /// Export template (headers only) without any data
-        /// </summary>
+        
         public static async Task ExportTemplateAsync(Window owner)
         {
             try
@@ -219,9 +219,9 @@ namespace VANTAGE.Utilities
 
         #region Private Helper Methods
 
-        /// <summary>
+        
         /// Show save file dialog and return selected file path
-        /// </summary>
+        
         private static string ShowSaveFileDialog(string defaultFileName)
         {
             var dialog = new Microsoft.Win32.SaveFileDialog
@@ -238,9 +238,9 @@ namespace VANTAGE.Utilities
             return dialog.ShowDialog() == true ? dialog.FileName : null;
         }
 
-        /// <summary>
+        
         /// Log export action
-        /// </summary>
+        
         private static void LogExport(string action, int recordCount, string filePath)
         {
             try
@@ -257,9 +257,9 @@ namespace VANTAGE.Utilities
             }
         }
 
-        /// <summary>
+        
         /// Handle export errors with logging and user notification
-        /// </summary>
+        
         private static void HandleExportError(Window owner, string action, Exception ex)
         {
             try

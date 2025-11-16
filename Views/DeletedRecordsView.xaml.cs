@@ -1,5 +1,7 @@
-﻿using System;
+﻿using Microsoft.Data.Sqlite;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -12,20 +14,123 @@ namespace VANTAGE.Views
     public partial class DeletedRecordsView : Window
     {
         private List<Activity> _deletedActivities;
+        private List<ProjectSelection> _projects;
 
         public DeletedRecordsView()
         {
             InitializeComponent();
-            LoadDeletedRecords();
-            LoadAutoPurgeSetting();
+            LoadProjectsFromCentral();
         }
 
-        private async void LoadDeletedRecords()
+        private void LoadProjectsFromCentral()
         {
             try
             {
-                txtStatus.Text = "Loading deleted records...";
-                _deletedActivities = await ActivityRepository.GetDeletedActivitiesAsync();
+                busyIndicator.IsBusy = true;
+                // Check connection to Central
+                string centralPath = SettingsManager.GetAppSetting("CentralDatabasePath", "");
+                if (!SyncManager.CheckCentralConnection(centralPath, out string errorMessage))
+                {
+                    MessageBox.Show(
+                        $"Cannot load projects - Central database unavailable:\n\n{errorMessage}\n\n" +
+                        "Please ensure you have network access and try again.",
+                        "Connection Error",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error);
+                    Close();
+                    return;
+                }
+
+                // Get distinct ProjectIDs from Central where IsDeleted = 1
+                using var connection = new SqliteConnection($"Data Source={centralPath}");
+                connection.Open();
+
+                var cmd = connection.CreateCommand();
+                cmd.CommandText = "SELECT DISTINCT ProjectID FROM Activities WHERE IsDeleted = 1 ORDER BY ProjectID";
+
+                _projects = new List<ProjectSelection>();
+                using var reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    var projectId = reader.GetString(0);
+                    if (!string.IsNullOrWhiteSpace(projectId))
+                    {
+                        _projects.Add(new ProjectSelection { ProjectID = projectId, IsSelected = false });
+                    }
+                }
+
+                lstProjectFilter.ItemsSource = _projects;
+                txtStatus.Text = $"Found {_projects.Count} projects with deleted records";
+                busyIndicator.IsBusy = false;
+            }
+
+            catch (Exception ex)
+            {
+                busyIndicator.IsBusy = false;
+                MessageBox.Show($"Error loading projects: {ex.Message}",
+                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                AppLogger.Error(ex, "DeletedRecordsView.LoadProjectsFromCentral");
+            }
+        }
+
+        private async void BtnRefresh_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                busyIndicator.IsBusy = true;
+                // Check connection to Central
+                string centralPath = SettingsManager.GetAppSetting("CentralDatabasePath", "");
+                if (!SyncManager.CheckCentralConnection(centralPath, out string errorMessage))
+                {
+                    MessageBox.Show(
+                        $"Cannot refresh - Central database unavailable:\n\n{errorMessage}\n\n" +
+                        "Please try again when connected.",
+                        "Connection Error",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error);
+                    return;
+                }
+
+                // Get selected projects
+                var selectedProjects = _projects.Where(p => p.IsSelected).Select(p => p.ProjectID).ToList();
+
+                if (!selectedProjects.Any())
+                {
+                    MessageBox.Show(
+                        "Please select at least one project to view deleted records.",
+                        "No Projects Selected",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                    return;
+                }
+
+                txtStatus.Text = "Loading deleted records from Central...";
+
+                // Query Central for deleted records
+                using var connection = new SqliteConnection($"Data Source={centralPath}");
+                connection.Open();
+
+                var projectParams = string.Join(",", selectedProjects.Select((p, i) => $"@p{i}"));
+                var cmd = connection.CreateCommand();
+                cmd.CommandText = $@"
+                    SELECT * FROM Activities 
+                    WHERE IsDeleted = 1 
+                      AND ProjectID IN ({projectParams})
+                    ORDER BY UpdatedUtcDate DESC";
+
+                for (int i = 0; i < selectedProjects.Count; i++)
+                {
+                    cmd.Parameters.AddWithValue($"@p{i}", selectedProjects[i]);
+                }
+
+                _deletedActivities = new List<Activity>();
+                using var reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    var activity = MapReaderToActivity(reader);
+                    _deletedActivities.Add(activity);
+                }
+
                 sfDeletedActivities.ItemsSource = _deletedActivities;
                 txtRecordCount.Text = $"{_deletedActivities.Count} deleted records";
                 txtStatus.Text = "Ready";
@@ -34,25 +139,81 @@ namespace VANTAGE.Views
             {
                 MessageBox.Show($"Error loading deleted records: {ex.Message}",
                     "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                AppLogger.Error(ex, "DeletedRecordsView.BtnRefresh_Click");
                 txtStatus.Text = "Error loading records";
             }
-        }
-
-        private void LoadAutoPurgeSetting()
-        {
-            // Load from UserSettings (or AppSettings if you add it)
-            string setting = SettingsManager.GetUserSetting(App.CurrentUserID, "AutoPurgeDays") ?? "Never";
-
-            foreach (ComboBoxItem item in cmbAutoPurgeDays.Items)
+            finally  // ADD THIS ENTIRE BLOCK
             {
-                if (item.Content.ToString() == setting)
-                {
-                    cmbAutoPurgeDays.SelectedItem = item;
-                    break;
-                }
+                busyIndicator.IsBusy = false;
             }
         }
 
+        // Map database reader to Activity object
+        private Activity MapReaderToActivity(SqliteDataReader reader)
+        {
+            string GetStringSafe(string name)
+            {
+                try
+                {
+                    int i = reader.GetOrdinal(name);
+                    return reader.IsDBNull(i) ? "" : reader.GetString(i);
+                }
+                catch { return ""; }
+            }
+
+            int GetIntSafe(string name)
+            {
+                try
+                {
+                    int i = reader.GetOrdinal(name);
+                    return reader.IsDBNull(i) ? 0 : reader.GetInt32(i);
+                }
+                catch { return 0; }
+            }
+
+            double GetDoubleSafe(string name)
+            {
+                try
+                {
+                    int i = reader.GetOrdinal(name);
+                    return reader.IsDBNull(i) ? 0 : reader.GetDouble(i);
+                }
+                catch { return 0; }
+            }
+
+            // ADD THIS HELPER
+            DateTime? GetDateTimeSafe(string name)
+            {
+                try
+                {
+                    int i = reader.GetOrdinal(name);
+                    if (reader.IsDBNull(i)) return null;
+                    var s = reader.GetString(i);
+                    if (DateTime.TryParse(s, out var dt)) return dt;
+                    return null;
+                }
+                catch { return null; }
+            }
+
+            return new Activity
+            {
+                ActivityID = GetIntSafe("ActivityID"),
+                UniqueID = GetStringSafe("UniqueID"),
+                CompType = GetStringSafe("CompType"),
+                PhaseCategory = GetStringSafe("PhaseCategory"),
+                ROCStep = GetStringSafe("ROCStep"),
+                Description = GetStringSafe("Description"),
+                PhaseCode = GetStringSafe("PhaseCode"),
+                SchedActNO = GetStringSafe("SchedActNO"),
+                UDF1 = GetStringSafe("UDF1"),
+                UDF2 = GetStringSafe("UDF2"),
+                Quantity = GetDoubleSafe("Quantity"),
+                BudgetMHs = GetDoubleSafe("BudgetMHs"),
+                PercentEntry = GetDoubleSafe("PercentEntry"),
+                UpdatedBy = GetStringSafe("UpdatedBy"),
+                UpdatedUtcDate = GetDateTimeSafe("UpdatedUtcDate")  // ADD THIS LINE
+            };
+        }
         private async void BtnRestore_Click(object sender, RoutedEventArgs e)
         {
             var selectedActivities = sfDeletedActivities.SelectedItems.Cast<Activity>().ToList();
@@ -65,8 +226,8 @@ namespace VANTAGE.Views
             }
 
             var result = MessageBox.Show(
-                $"Restore {selectedActivities.Count} record(s) back to the active database?\n\n" +
-                $"These records will be available again in the Progress view.",
+                $"Restore {selectedActivities.Count} record(s)?\n\n" +
+                "Records will be set to IsDeleted=0 and users will receive them on next sync.",
                 "Confirm Restore",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Question);
@@ -76,33 +237,52 @@ namespace VANTAGE.Views
 
             try
             {
+                busyIndicator.IsBusy = true;
                 txtStatus.Text = "Restoring records...";
-                var activityIds = selectedActivities.Select(a => a.ActivityID).ToList();
-                int successCount = await ActivityRepository.RestoreActivitiesAsync(activityIds);
 
-                if (successCount > 0)
+                string centralPath = SettingsManager.GetAppSetting("CentralDatabasePath", "");
+                using var connection = new SqliteConnection($"Data Source={centralPath}");
+                connection.Open();
+
+                var uniqueIds = selectedActivities.Select(a => a.UniqueID).ToList();
+                var uniqueIdParams = string.Join(",", uniqueIds.Select((id, i) => $"@uid{i}"));
+
+                var cmd = connection.CreateCommand();
+                cmd.CommandText = $@"
+            UPDATE Activities 
+            SET IsDeleted = 0, 
+                UpdatedBy = @user, 
+                UpdatedUtcDate = @date 
+            WHERE UniqueID IN ({uniqueIdParams})";
+
+                cmd.Parameters.AddWithValue("@user", App.CurrentUser?.Username ?? "Admin");
+                cmd.Parameters.AddWithValue("@date", DateTime.UtcNow.ToString("o"));
+
+                for (int i = 0; i < uniqueIds.Count; i++)
                 {
-                    MessageBox.Show($"Successfully restored {successCount} record(s).",
-                        "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-
-                    // TODO: Add logging when logging system is implemented
-                    // Logger.Info($"Admin {App.CurrentUser.Username} restored {successCount} records");
-
-                    LoadDeletedRecords(); // Refresh grid
-                }
-                else
-                {
-                    MessageBox.Show("Failed to restore records.",
-                        "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    cmd.Parameters.AddWithValue($"@uid{i}", uniqueIds[i]);
                 }
 
-                txtStatus.Text = "Ready";
+                int restored = cmd.ExecuteNonQuery();
+
+                MessageBox.Show($"Successfully restored {restored} record(s).\n\nUsers will receive them on next sync.",
+                    "Restore Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                AppLogger.Info($"Admin restored {restored} records", "DeletedRecordsView.Restore", App.CurrentUser?.Username);
+
+                // Refresh grid
+                BtnRefresh_Click(null, null);
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error restoring records: {ex.Message}",
                     "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                txtStatus.Text = "Error";
+                AppLogger.Error(ex, "DeletedRecordsView.BtnRestore_Click");
+            }
+            finally
+            {
+                busyIndicator.IsBusy = false;
+                txtStatus.Text = "Ready";
             }
         }
 
@@ -119,9 +299,9 @@ namespace VANTAGE.Views
 
             var result = MessageBox.Show(
                 $"PERMANENTLY DELETE {selectedActivities.Count} record(s)?\n\n" +
-                $"⚠️ WARNING: This action CANNOT be undone!\n" +
-                $"⚠️ These records will be gone FOREVER!\n\n" +
-                $"Are you absolutely sure?",
+                "⚠️ WARNING: This action CANNOT be undone!\n" +
+                "⚠️ Records will be DELETED from Central database FOREVER!\n\n" +
+                "Are you absolutely sure?",
                 "⚠️ PERMANENT DELETION WARNING ⚠️",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Warning);
@@ -129,10 +309,9 @@ namespace VANTAGE.Views
             if (result != MessageBoxResult.Yes)
                 return;
 
-            // Double confirmation for safety
+            // Double confirmation
             var doubleCheck = MessageBox.Show(
-                "This is your FINAL warning.\n\n" +
-                "Click YES to PERMANENTLY DELETE these records.",
+                "FINAL WARNING: Click YES to PERMANENTLY DELETE.",
                 "Final Confirmation",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Stop);
@@ -142,33 +321,47 @@ namespace VANTAGE.Views
 
             try
             {
+                busyIndicator.IsBusy = true;
                 txtStatus.Text = "Purging records...";
-                var activityIds = selectedActivities.Select(a => a.ActivityID).ToList();
-                int successCount = await ActivityRepository.PurgeDeletedActivitiesAsync(activityIds);
 
-                if (successCount > 0)
+                string centralPath = SettingsManager.GetAppSetting("CentralDatabasePath", "");
+                using var connection = new SqliteConnection($"Data Source={centralPath}");
+                connection.Open();
+
+                var uniqueIds = selectedActivities.Select(a => a.UniqueID).ToList();
+                var uniqueIdParams = string.Join(",", uniqueIds.Select((id, i) => $"@uid{i}"));
+
+                var cmd = connection.CreateCommand();
+                cmd.CommandText = $@"
+            DELETE FROM Activities 
+            WHERE UniqueID IN ({uniqueIdParams}) 
+              AND IsDeleted = 1";
+
+                for (int i = 0; i < uniqueIds.Count; i++)
                 {
-                    MessageBox.Show($"Permanently deleted {successCount} record(s).",
-                        "Purged", MessageBoxButton.OK, MessageBoxImage.Information);
-
-                    // TODO: Add logging when logging system is implemented
-                    // Logger.Warning($"Admin {App.CurrentUser.Username} purged {successCount} records");
-
-                    LoadDeletedRecords(); // Refresh grid
-                }
-                else
-                {
-                    MessageBox.Show("Failed to purge records.",
-                        "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    cmd.Parameters.AddWithValue($"@uid{i}", uniqueIds[i]);
                 }
 
-                txtStatus.Text = "Ready";
+                int purged = cmd.ExecuteNonQuery();
+
+                MessageBox.Show($"Permanently deleted {purged} record(s) from Central database.",
+                    "Purge Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                AppLogger.Warning($"Admin purged {purged} records permanently", "DeletedRecordsView.Purge", App.CurrentUser?.Username);
+
+                // Refresh grid
+                BtnRefresh_Click(null, null);
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error purging records: {ex.Message}",
                     "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                txtStatus.Text = "Error";
+                AppLogger.Error(ex, "DeletedRecordsView.BtnPurge_Click");
+            }
+            finally
+            {
+                busyIndicator.IsBusy = false;
+                txtStatus.Text = "Ready";
             }
         }
 
@@ -176,51 +369,42 @@ namespace VANTAGE.Views
         {
             try
             {
-                // Get all deleted activities currently displayed
-                var deletedActivities = sfDeletedActivities.ItemsSource as List<Activity>;
-
-                if (deletedActivities == null || deletedActivities.Count == 0)
+                if (_deletedActivities == null || _deletedActivities.Count == 0)
                 {
-                    MessageBox.Show(
-                        "No deleted records to export.",
-                        "Export Deleted Records",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
+                    MessageBox.Show("No deleted records to export.", "Export Deleted Records",
+                        MessageBoxButton.OK, MessageBoxImage.Information);
                     return;
                 }
 
-                // Call export helper
-                await ExportHelper.ExportDeletedRecordsAsync(this, deletedActivities);
+                await ExportHelper.ExportDeletedRecordsAsync(this, _deletedActivities);
             }
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "Export Deleted Records Click", App.CurrentUser?.Username ?? "Unknown");
-                MessageBox.Show($"Export failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Export failed: {ex.Message}", "Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
-        private void BtnRefresh_Click(object sender, RoutedEventArgs e)
+        // Helper class for project selection
+        public class ProjectSelection : INotifyPropertyChanged
         {
-            LoadDeletedRecords();
-        }
-
-        private void CmbAutoPurgeDays_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (cmbAutoPurgeDays.SelectedItem == null) return;
-
-            var selected = (cmbAutoPurgeDays.SelectedItem as ComboBoxItem)?.Content.ToString();
-
-            // Save to UserSettings
-            SettingsManager.SetUserSetting(App.CurrentUserID, "AutoPurgeDays", selected, "text");
-
-            if (selected != "Never")
+            private bool _isSelected;
+            public string ProjectID { get; set; }
+            public bool IsSelected
             {
-                MessageBox.Show(
-                    $"Auto-purge enabled: Records older than {selected} will be permanently deleted on app startup.\n\n" +
-                    "This helps keep the database clean and performant.",
-                    "Auto-Purge Enabled",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                get => _isSelected;
+                set
+                {
+                    _isSelected = value;
+                    OnPropertyChanged(nameof(IsSelected));
+                }
+            }
+
+            public event PropertyChangedEventHandler PropertyChanged;
+            protected void OnPropertyChanged(string name)
+            {
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
             }
         }
     }

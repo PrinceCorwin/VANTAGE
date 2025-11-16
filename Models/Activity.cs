@@ -12,8 +12,8 @@ namespace VANTAGE.Models
         // Progress tracking (bidirectional updates)
         private double _percentEntry;
         private double _earnQtyEntry;
-        private double _quantity;
-        private double _budgetMHs;
+        private double _quantity = 0.001;
+        private double _budgetMHs = 0.001;
 
         // ========================================
         // SIMPLE AUTO-PROPERTIES (No backing fields needed)
@@ -161,10 +161,10 @@ namespace VANTAGE.Models
             }
         }
 
-        /// <summary>
+        
         /// Display-friendly version of UpdatedUtcDate
         /// Returns empty string for null, formatted datetime otherwise
-        /// </summary>
+        
         public string UpdatedUtcDateDisplay => UpdatedUtcDate.HasValue ? UpdatedUtcDate.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm") : "";
 
         private int _localDirty;
@@ -386,7 +386,7 @@ namespace VANTAGE.Models
         // ========================================
 
         public double ClientEquivQty { get; set; }
-        public double ClientBudget { get; set; }
+        public double ClientBudget { get; set; } = 0.001;
         public double ClientCustom3 { get; set; }
 
         

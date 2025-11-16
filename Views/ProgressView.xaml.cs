@@ -1215,10 +1215,10 @@ namespace VANTAGE.Views
         }
 
 
-        /// <summary>
+        
         /// Public method to refresh the grid data from the database
         /// Used by MainWindow after bulk operations like resetting LocalDirty
-        /// </summary>
+        
         public async Task RefreshData()
         {
             await _viewModel.RefreshAsync();

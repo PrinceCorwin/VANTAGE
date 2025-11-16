@@ -67,88 +67,6 @@ public static async Task<List<Activity>> GetDirtyActivitiesAsync(List<string> pr
         return dirtyActivities;
     });
 }
-        /// Archive activities to Deleted_Activities table and then delete from Activities
-
-        public static async Task<int> ArchiveAndDeleteActivitiesAsync(List<int> activityIds, string performedBy)
-        {
-            if (activityIds == null || activityIds.Count == 0) return 0;
-
-            using var connection = DatabaseSetup.GetConnection();
-            await connection.OpenAsync();
-            using var tx = connection.BeginTransaction();
-
-            var activityCols = await GetTableColumnsAsync(connection, "Activities", tx);
-            var deletedCols = await GetTableColumnsAsync(connection, "Deleted_Activities", tx);
-
-            bool hasDeletedAt = deletedCols.Contains("DeletedDate", StringComparer.OrdinalIgnoreCase);
-            bool hasDeletedBy = deletedCols.Contains("DeletedBy", StringComparer.OrdinalIgnoreCase);
-
-            var common = activityCols.Where(c => deletedCols.Contains(c, StringComparer.OrdinalIgnoreCase)).ToList();
-            if (common.Count == 0) throw new InvalidOperationException("No overlapping columns between Activities and Deleted_Activities.");
-
-            static string Q(string n) => $"\"{n.Replace("\"", "\"\"")}\"";
-            string insertCols = string.Join(", ", common.Select(Q))
-                 + (hasDeletedAt ? ", \"DeletedDate\"" : "")
-                 + (hasDeletedBy ? ", \"DeletedBy\"" : "");
-            string selectCols = string.Join(", ", common.Select(Q))
-            + (hasDeletedAt ? ", @DeletedDate" : "")
-            + (hasDeletedBy ? ", @deletedBy" : "");
-
-            string idList = string.Join(",", activityIds);
-
-            using (var insert = connection.CreateCommand())
-            {
-                insert.Transaction = tx;
-                insert.CommandText = $@"
-                       INSERT INTO Deleted_Activities ({insertCols})
-                       SELECT {selectCols}
-                       FROM Activities
-                       WHERE ActivityID IN ({idList});";
-                if (hasDeletedAt) insert.Parameters.AddWithValue("@DeletedDate", DateTime.UtcNow.ToString("o"));
-                if (hasDeletedBy) insert.Parameters.AddWithValue("@deletedBy", performedBy ?? "Unknown");
-                await insert.ExecuteNonQueryAsync();
-            }
-
-            using (var del = connection.CreateCommand())
-            {
-                del.Transaction = tx;
-                del.CommandText = $"DELETE FROM Activities WHERE ActivityID IN ({idList});";
-                await del.ExecuteNonQueryAsync();
-            }
-
-            await tx.CommitAsync();
-            VANTAGE.Utilities.AppLogger.Info($"Archived & deleted {activityIds.Count} activities.",
-             "ActivityRepository.ArchiveAndDeleteActivitiesAsync", performedBy);
-            return activityIds.Count;
-        }
-
-        private static async Task<HashSet<string>> GetTableColumnsAsync(SqliteConnection conn, string table, SqliteTransaction tx)
-        {
-            var cols = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            using var cmd = conn.CreateCommand();
-            cmd.Transaction = tx;
-            cmd.CommandText = $"PRAGMA table_info({table});";
-            using var rd = await cmd.ExecuteReaderAsync();
-            while (await rd.ReadAsync())
-            {
-                var name = rd["name"]?.ToString();
-                if (!string.IsNullOrWhiteSpace(name)) cols.Add(name);
-            }
-            return cols;
-        }
-
-
-        /// Get current mapping service (creates default if not initialized)
-
-        private static MappingService GetMappingService()
-        {
-            if (_mappingService == null)
-            {
-                _mappingService = new MappingService(); // Use defaults
-            }
-            return _mappingService;
-        }
-
 
         /// Update an existing activity in the database
 
@@ -971,42 +889,10 @@ public static async Task<List<Activity>> GetDirtyActivitiesAsync(List<string> pr
              }
          });
         }
-        /// <summary>
-        /// Get all deleted activities
-        /// </summary>
-        public static async Task<List<Activity>> GetDeletedActivitiesAsync()
-        {
-            return await Task.Run(() =>
-            {
-                var deletedActivities = new List<Activity>();
 
-                try
-                {
-                    using var connection = DatabaseSetup.GetConnection();
-                    connection.Open();
-
-                    var command = connection.CreateCommand();
-                    command.CommandText = "SELECT * FROM Deleted_Activities ORDER BY DeletedDate DESC";
-
-                    using var reader = command.ExecuteReader();
-                    while (reader.Read())
-                    {
-                        var activity = MapReaderToActivity(reader);
-                        // You can add DeletedDate and deletedBy to the Activity object if needed
-                        deletedActivities.Add(activity);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Error getting deleted activities: {ex.Message}");
-                }
-
-                return deletedActivities;
-            });
-        }
-        /// <summary>
+        
         /// Map database reader to Activity object
-        /// </summary>
+        
         private static Activity MapReaderToActivity(SqliteDataReader reader)
         {
             return new Activity
@@ -1140,158 +1026,6 @@ public static async Task<List<Activity>> GetDirtyActivitiesAsync(List<string> pr
             return DateTime.TryParse(dateStr, out DateTime result) ? result : (DateTime?)null;
         }
 
-        /// <summary>
-        /// Restore activities from Deleted_Activities back to Activities
-        /// </summary>
-        public static async Task<int> RestoreActivitiesAsync(List<int> activityIds)
-        {
-            return await Task.Run(() =>
-            {
-                try
-                {
-                    using var connection = DatabaseSetup.GetConnection();
-                    connection.Open();
-
-                    int successCount = 0;
-                    using var transaction = connection.BeginTransaction();
-
-                    try
-                    {
-                        foreach (var activityId in activityIds)
-                        {
-                            // Copy back to Activities (excluding DeletedDate and deletedBy)
-                            var copyCommand = connection.CreateCommand();
-                            copyCommand.Transaction = transaction;
-
-                            // Get all column names from Activities table (excluding the deleted metadata)
-                            copyCommand.CommandText = @"
-                        INSERT INTO Activities 
-                        SELECT ActivityID, UniqueID, Description, TagNO, Area, Phase, 
-                               Discipline, SubDiscipline, Category, SubCategory, 
-                               AssignedTo, WBS, SchedActNO, ProjectID, 
-                               SchStart, SchFinish, Quantity, Unit, EarnQtyEntry, 
-                               PercentEntry, BudgetMHs, EarnedMHsRoc, 
-                               HexNO, BaseUnit, BudgetHoursGroup, BudgetHoursROC, 
-                               PipeClass, PipeSpec, PipeSize1, PipeSize2, 
-                               PrevEarnMHs, PrevEarnQTY, ROCBudgetQTY, ROCPercent, 
-                               ROCID, EquivQTY, ClientBudget, ClientCustom3, 
-                               ClientEquivQty, WeekEndDate, ProgDate, 
-                               AzureUploadUtcDate, XRay, UpdatedBy
-                        FROM Deleted_Activities 
-                        WHERE ActivityID = @ActivityID";
-
-                            copyCommand.Parameters.AddWithValue("@ActivityID", activityId);
-
-                            if (copyCommand.ExecuteNonQuery() > 0)
-                            {
-                                // Remove from Deleted_Activities
-                                var deleteCommand = connection.CreateCommand();
-                                deleteCommand.Transaction = transaction;
-                                deleteCommand.CommandText = "DELETE FROM Deleted_Activities WHERE ActivityID = @ActivityID";
-                                deleteCommand.Parameters.AddWithValue("@ActivityID", activityId);
-                                deleteCommand.ExecuteNonQuery();
-
-                                successCount++;
-                            }
-                        }
-
-                        transaction.Commit();
-                        return successCount;
-                    }
-                    catch
-                    {
-                        transaction.Rollback();
-                        throw;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Error restoring activities: {ex.Message}");
-                    return 0;
-                }
-            });
-        }
-
-        /// <summary>
-        /// Permanently purge activities from Deleted_Activities
-        /// </summary>
-        public static async Task<int> PurgeDeletedActivitiesAsync(List<int> activityIds)
-        {
-            return await Task.Run(() =>
-            {
-                try
-                {
-                    using var connection = DatabaseSetup.GetConnection();
-                    connection.Open();
-
-                    int successCount = 0;
-                    using var transaction = connection.BeginTransaction();
-
-                    try
-                    {
-                        foreach (var activityId in activityIds)
-                        {
-                            var command = connection.CreateCommand();
-                            command.Transaction = transaction;
-                            command.CommandText = "DELETE FROM Deleted_Activities WHERE ActivityID = @ActivityID";
-                            command.Parameters.AddWithValue("@ActivityID", activityId);
-
-                            if (command.ExecuteNonQuery() > 0)
-                                successCount++;
-                        }
-
-                        transaction.Commit();
-                        return successCount;
-                    }
-                    catch
-                    {
-                        transaction.Rollback();
-                        throw;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Error purging deleted activities: {ex.Message}");
-                    return 0;
-                }
-            });
-        }
-
-        /// <summary>
-        /// Auto-purge deleted records older than specified days
-        /// </summary>
-        public static async Task<int> AutoPurgeOldDeletedActivitiesAsync(int daysToKeep)
-        {
-            return await Task.Run(() =>
-            {
-                try
-                {
-                    using var connection = DatabaseSetup.GetConnection();
-                    connection.Open();
-
-                    var cutoffDate = DateTime.UtcNow.AddDays(-daysToKeep);
-
-                    var command = connection.CreateCommand();
-                    command.CommandText = "DELETE FROM Deleted_Activities WHERE DeletedDate < @CutoffDate";
-                    command.Parameters.AddWithValue("@CutoffDate", cutoffDate.ToString("o")); // ISO 8601 format
-
-                    int rowsAffected = command.ExecuteNonQuery();
-
-                    if (rowsAffected > 0)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"Auto-purged {rowsAffected} old deleted records");
-                    }
-
-                    return rowsAffected;
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Error auto-purging: {ex.Message}");
-                    return 0;
-                }
-            });
-        }
-
         /// Get distinct values for a column, filtered by a WHERE clause. Returns up to 'limit' values and the true total count (can be > limit).
 
         public static async Task<(List<string> values, int totalCount)> GetDistinctColumnValuesForFilterAsync(string columnName, string whereClause, int limit = 1000)
@@ -1356,10 +1090,10 @@ public static async Task<List<Activity>> GetDirtyActivitiesAsync(List<string> pr
               });
         }
 
-        /// <summary>
+        
         /// TEST ONLY: Reset LocalDirty to 0 for all activities
         /// Used to verify that cell edits properly set LocalDirty = 1
-        /// </summary>
+        
         public static async Task<int> ResetAllLocalDirtyAsync()
         {
             return await Task.Run(() =>
@@ -1378,10 +1112,10 @@ public static async Task<List<Activity>> GetDirtyActivitiesAsync(List<string> pr
              });
         }
 
-        /// <summary>
+        
         /// TEST ONLY: Set UpdatedBy to a specific value for all activities
         /// Used to verify that cell edits properly update UpdatedBy
-        /// </summary>
+        
         public static async Task<int> SetAllUpdatedByAsync(string updatedBy)
         {
             return await Task.Run(() =>

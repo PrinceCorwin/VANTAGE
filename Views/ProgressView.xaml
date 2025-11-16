@@ -1051,7 +1051,7 @@
                                                      AllowFiltering="True"
                                                      AllowSorting="True"
                                                      NumberDecimalDigits="0" />
-                        <syncfusion:GridNumericColumn MappingName="SyncVersion"
+                        <syncfusion:GridTextColumn MappingName="SyncVersion"
                                     HeaderText="Sync Version"
                                     Width="120"
                                     DisplayBinding="{Binding SyncVersion}"
@@ -1066,7 +1066,7 @@
                                  AllowEditing="True"
                                  AllowFiltering="True"
                                  AllowSorting="True"
-                                 NumberDecimalDigits="2" />
+                                 NumberDecimalDigits="3" />
 
                         <syncfusion:GridTextColumn MappingName="UOM" 
                               HeaderText="UOM" 
@@ -1097,7 +1097,7 @@
                                  AllowEditing="True"
                                  AllowFiltering="True"
                                  AllowSorting="True"
-                                 NumberDecimalDigits="2" />
+                                 NumberDecimalDigits="3" />
 
                         <!-- CALCULATED FIELDS (READ-ONLY) -->
                         <syncfusion:GridNumericColumn MappingName="EarnMHsCalc" 
@@ -1121,7 +1121,7 @@
                                  AllowEditing="False"
                                  AllowFiltering="True"
                                  AllowSorting="True"
-                                 NumberDecimalDigits="2" />
+                                 NumberDecimalDigits="3" />
 
                         <syncfusion:GridNumericColumn MappingName="PercentCompleteCalc" 
                                  HeaderText="PercentCompleteCalc" 
@@ -1253,7 +1253,7 @@
                                  AllowEditing="True"
                                  AllowFiltering="True"
                                  AllowSorting="True"
-                                 NumberDecimalDigits="2" />
+                                 NumberDecimalDigits="3" />
 
                         <syncfusion:GridNumericColumn MappingName="ClientCustom3" 
                                  HeaderText="ClientCustom3" 

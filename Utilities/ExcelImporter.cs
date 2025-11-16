@@ -103,6 +103,11 @@ namespace VANTAGE.Utilities
                     sequence++;
                     System.Diagnostics.Debug.WriteLine($"  Generated UniqueID: {activity.UniqueID}");
                 }
+                // Apply defaults for zero/empty numeric values
+                if (activity.Quantity == 0) activity.Quantity = 0.001;
+                if (activity.BudgetMHs == 0) activity.BudgetMHs = 0.001;
+                if (activity.ClientBudget == 0) activity.ClientBudget = 0.001;
+
                 activity.ActivityID = 0;
                 activities.Add(activity);
             }
@@ -395,13 +400,6 @@ namespace VANTAGE.Utilities
                 // ✅ NOW LOOP THROUGH ACTIVITIES
                 foreach (var activity in activities)
                 {
-                    // Validate UniqueID
-                    if (string.IsNullOrWhiteSpace(activity.UniqueID))
-                    {
-                        System.Diagnostics.Debug.WriteLine($"  ✗ Skipping activity: missing UniqueID");
-                        skipped++;
-                        continue;
-                    }
 
                     // In combine mode, check if activity already exists
                     if (!replaceMode)
