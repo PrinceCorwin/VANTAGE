@@ -942,12 +942,15 @@ namespace VANTAGE.Views
 
         private void BtnFilterComplete_Click(object sender, RoutedEventArgs e)
         {
-            // Toggle filter
+            // Clear other percent filters first
+            sfActivities.Columns["PercentEntry"].FilterPredicates.Clear();
+
+            // Toggle this filter
             bool filterActive = btnFilterComplete.Content.ToString().Contains("✓");
 
             if (!filterActive)
             {
-                // Apply "Complete" filter (PercentEntry =100)
+                // Apply "Complete" filter (PercentEntry = 100)
                 sfActivities.Columns["PercentEntry"].FilterPredicates.Add(new Syncfusion.Data.FilterPredicate()
                 {
                     FilterType = Syncfusion.Data.FilterType.Equals,
@@ -955,14 +958,17 @@ namespace VANTAGE.Views
                     PredicateType = Syncfusion.Data.PredicateType.And
                 });
 
-                // Update button visuals
+                // Update all button visuals - only this one active
                 btnFilterComplete.Content = "Complete ✓";
                 btnFilterComplete.Background = (Brush)Application.Current.Resources["AccentColor"];
+                btnFilterNotComplete.Content = "Not Complete";
+                btnFilterNotComplete.Background = (Brush)Application.Current.Resources["ControlBackground"];
+                btnFilterNotStarted.Content = "Not Started";
+                btnFilterNotStarted.Background = (Brush)Application.Current.Resources["ControlBackground"];
             }
             else
             {
-                // Clear this filter only
-                sfActivities.Columns["PercentEntry"].FilterPredicates.Clear();
+                // Clear this filter
                 btnFilterComplete.Content = "Complete";
                 btnFilterComplete.Background = (Brush)Application.Current.Resources["ControlBackground"];
             }
@@ -977,8 +983,21 @@ namespace VANTAGE.Views
         {
             try
             {
+                // Check connection FIRST
+                string centralPath = SettingsManager.GetAppSetting("CentralDatabasePath", "");
+                if (!SyncManager.CheckCentralConnection(centralPath, out string errorMessage))
+                {
+                    MessageBox.Show(
+                        $"Cannot sync - Central database unavailable:\n\n{errorMessage}\n\n" +
+                        "Please ensure you have network access and try again.",
+                        "Connection Error",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error);
+                    return;
+                }
+
+                // Check metadata errors
                 await CalculateMetadataErrorCount();
-                // Check for metadata errors before allowing sync
                 if (_viewModel.MetadataErrorCount > 0)
                 {
                     MessageBox.Show(
@@ -993,7 +1012,6 @@ namespace VANTAGE.Views
 
                 var syncDialog = new SyncDialog();
                 bool? result = syncDialog.ShowDialog();
-
                 if (result == true)
                 {
                     // Refresh grid to show updated LocalDirty and pulled records
@@ -1008,12 +1026,15 @@ namespace VANTAGE.Views
         }
         private void BtnFilterNotComplete_Click(object sender, RoutedEventArgs e)
         {
-            // Toggle filter
+            // Clear other percent filters first
+            sfActivities.Columns["PercentEntry"].FilterPredicates.Clear();
+
+            // Toggle this filter
             bool filterActive = btnFilterNotComplete.Content.ToString().Contains("✓");
 
             if (!filterActive)
             {
-                // Apply "Not Complete" filter (PercentEntry <100)
+                // Apply "Not Complete" filter (PercentEntry < 100)
                 sfActivities.Columns["PercentEntry"].FilterPredicates.Add(new Syncfusion.Data.FilterPredicate()
                 {
                     FilterType = Syncfusion.Data.FilterType.LessThan,
@@ -1021,14 +1042,17 @@ namespace VANTAGE.Views
                     PredicateType = Syncfusion.Data.PredicateType.And
                 });
 
-                // Update button visuals
+                // Update all button visuals - only this one active
+                btnFilterComplete.Content = "Complete";
+                btnFilterComplete.Background = (Brush)Application.Current.Resources["ControlBackground"];
                 btnFilterNotComplete.Content = "Not Complete ✓";
                 btnFilterNotComplete.Background = (Brush)Application.Current.Resources["AccentColor"];
+                btnFilterNotStarted.Content = "Not Started";
+                btnFilterNotStarted.Background = (Brush)Application.Current.Resources["ControlBackground"];
             }
             else
             {
-                // Clear this filter only
-                sfActivities.Columns["PercentEntry"].FilterPredicates.Clear();
+                // Clear this filter
                 btnFilterNotComplete.Content = "Not Complete";
                 btnFilterNotComplete.Background = (Brush)Application.Current.Resources["ControlBackground"];
             }
@@ -1041,12 +1065,15 @@ namespace VANTAGE.Views
 
         private void BtnFilterNotStarted_Click(object sender, RoutedEventArgs e)
         {
-            // Toggle filter
+            // Clear other percent filters first
+            sfActivities.Columns["PercentEntry"].FilterPredicates.Clear();
+
+            // Toggle this filter
             bool filterActive = btnFilterNotStarted.Content.ToString().Contains("✓");
 
             if (!filterActive)
             {
-                // Apply "Not Started" filter (PercentEntry =0)
+                // Apply "Not Started" filter (PercentEntry = 0)
                 sfActivities.Columns["PercentEntry"].FilterPredicates.Add(new Syncfusion.Data.FilterPredicate()
                 {
                     FilterType = Syncfusion.Data.FilterType.Equals,
@@ -1054,14 +1081,17 @@ namespace VANTAGE.Views
                     PredicateType = Syncfusion.Data.PredicateType.And
                 });
 
-                // Update button visuals
+                // Update all button visuals - only this one active
+                btnFilterComplete.Content = "Complete";
+                btnFilterComplete.Background = (Brush)Application.Current.Resources["ControlBackground"];
+                btnFilterNotComplete.Content = "Not Complete";
+                btnFilterNotComplete.Background = (Brush)Application.Current.Resources["ControlBackground"];
                 btnFilterNotStarted.Content = "Not Started ✓";
                 btnFilterNotStarted.Background = (Brush)Application.Current.Resources["AccentColor"];
             }
             else
             {
-                // Clear this filter only
-                sfActivities.Columns["PercentEntry"].FilterPredicates.Clear();
+                // Clear this filter
                 btnFilterNotStarted.Content = "Not Started";
                 btnFilterNotStarted.Background = (Brush)Application.Current.Resources["ControlBackground"];
             }

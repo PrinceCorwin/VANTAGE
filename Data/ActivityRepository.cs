@@ -553,6 +553,7 @@ public static async Task<List<Activity>> GetDirtyActivitiesAsync(List<string> pr
                                  CreatedBy = GetStringSafe("CreatedBy"),
                                  UpdatedUtcDate = GetDateTimeFullSafe("UpdatedUtcDate"),
                                  LocalDirty = GetIntSafe("LocalDirty"),
+                                 SyncVersion = GetIntSafe("SyncVersion"),
 
                                  // Values
                                  BaseUnit = GetDoubleSafe("BaseUnit"),

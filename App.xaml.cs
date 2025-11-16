@@ -200,7 +200,7 @@ namespace VANTAGE
                 using var connection = DatabaseSetup.GetConnection();
                 connection.Open();
 
-                // 1) Check if user exists (keep your original semantics)
+                // 1) Check if user exists
                 using (var command = connection.CreateCommand())
                 {
                     command.CommandText = @"
@@ -225,14 +225,10 @@ namespace VANTAGE
                     }
                 }
 
-                // 2) New user: decide admin based on username
-                bool shouldBeAdmin =
-                    username.Equals("Steve", StringComparison.OrdinalIgnoreCase) ||
-                    username.Equals("Steve.Amalfitano", StringComparison.OrdinalIgnoreCase);
+                // 2) New user: Insert as non-admin by default
+                int isAdminInt = 0;
 
-                int isAdminInt = shouldBeAdmin ? 1 : 0;
-
-                // Insert with explicit IsAdmin = 0/1 to avoid NULLs
+                // Insert with explicit IsAdmin = 0 to avoid NULLs
                 using (var insertCommand = connection.CreateCommand())
                 {
                     insertCommand.CommandText = @"
@@ -251,13 +247,7 @@ namespace VANTAGE
                     newUserID = (long)idCmd.ExecuteScalar();
                 }
 
-                // If Steve, grant admin via helper (centralizes token + flip logic)
-                if (shouldBeAdmin)
-                {
-                    AdminHelper.GrantAdmin((int)newUserID, username);
-                }
-
-                // Re-read the row so we return authoritative values (including token if granted)
+                // Re-read the row so we return authoritative values
                 using (var getCmd = connection.CreateCommand())
                 {
                     getCmd.CommandText = @"
@@ -290,7 +280,7 @@ namespace VANTAGE
                     FullName = "",
                     Email = "",
                     PhoneNumber = "",
-                    IsAdmin = shouldBeAdmin,
+                    IsAdmin = false,
                     AdminToken = null
                 };
             }

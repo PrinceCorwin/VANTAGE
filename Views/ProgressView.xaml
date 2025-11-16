@@ -60,15 +60,54 @@
         <Style x:Key="PhaseCodeRequiredStyle" TargetType="syncfusion:GridCell">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=PhaseCode}" Value="">
-                    <Setter Property="BorderBrush" Value="Red"/>
-                    <Setter Property="BorderThickness" Value="0.5"/>
+                    <Setter Property="Background" Value="#2e1e1e"/>
                 </DataTrigger>
                 <DataTrigger Binding="{Binding Path=PhaseCode}" Value="{x:Null}">
-                    <Setter Property="BorderBrush" Value="Red"/>
-                    <Setter Property="BorderThickness" Value="0.5"/>
+                    <Setter Property="Background" Value="#2e1e1e"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
+        <Style x:Key="ROCStepRequiredStyle" TargetType="syncfusion:GridCell">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=ROCStep}" Value="">
+                    <Setter Property="Background" Value="#2e1e1e"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Path=ROCStep}" Value="{x:Null}">
+                    <Setter Property="Background" Value="#2e1e1e"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="DescRequiredStyle" TargetType="syncfusion:GridCell">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=Description}" Value="">
+                    <Setter Property="Background" Value="#2e1e1e"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Path=Description}" Value="{x:Null}">
+                    <Setter Property="Background" Value="#2e1e1e"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="SchedActNoRequiredStyle" TargetType="syncfusion:GridCell">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=SchedActNO}" Value="">
+                    <Setter Property="Background" Value="#2e1e1e"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Path=SchedActNO}" Value="{x:Null}">
+                    <Setter Property="Background" Value="#2e1e1e"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="UDF18RequiredStyle" TargetType="syncfusion:GridCell">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=UDF18}" Value="">
+                    <Setter Property="Background" Value="#2e1e1e"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Path=UDF18}" Value="{x:Null}">
+                    <Setter Property="Background" Value="#2e1e1e"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
     </UserControl.Resources>
 
     <Grid>
@@ -495,7 +534,8 @@
                               Width="250"
                               AllowEditing="True"
                               AllowFiltering="True"
-                              AllowSorting="True" />
+                              AllowSorting="True" 
+                              CellStyle="{StaticResource DescRequiredStyle}"/>
 
                         <syncfusion:GridTextColumn MappingName="AssignedTo" 
                               HeaderText="AssignedTo" 
@@ -526,7 +566,8 @@
                               Width="100"
                               AllowEditing="True"
                               AllowFiltering="True"
-                              AllowSorting="True" />
+                              AllowSorting="True" 
+                              CellStyle="{StaticResource ROCStepRequiredStyle}"/>
 
                         <syncfusion:GridTextColumn MappingName="ProjectID" 
                               HeaderText="ProjectID" 
@@ -607,7 +648,8 @@
                               IsHidden="True"
                               AllowEditing="True"
                               AllowFiltering="True"
-                              AllowSorting="True" />
+                              AllowSorting="True" 
+                              CellStyle="{StaticResource SchedActNoRequiredStyle}"/>
 
                         <syncfusion:GridDateTimeColumn MappingName="SchStart" 
                                   HeaderText="SchStart" 
@@ -964,10 +1006,11 @@
                         <syncfusion:GridTextColumn MappingName="UDF18" 
                               HeaderText="UDF18" 
                               Width="100"
-                              IsHidden="True"
+                              IsHidden="False"
                               AllowEditing="True"
                               AllowFiltering="True"
-                              AllowSorting="True" />
+                              AllowSorting="True" 
+                              CellStyle="{StaticResource UDF18RequiredStyle}"/>
 
                         <syncfusion:GridTextColumn MappingName="UDF20" 
                               HeaderText="UDF20" 
@@ -987,27 +1030,34 @@
                         <syncfusion:GridTextColumn MappingName="UpdatedBy" 
                               HeaderText="UpdatedBy" 
                               Width="120"
-                              IsHidden="True"
+                              IsHidden="False"
                               AllowEditing="False"
                               AllowFiltering="True"
                               AllowSorting="True" />
    
-           <syncfusion:GridTextColumn MappingName="UpdatedUtcDateDisplay" 
-                             HeaderText="UpdatedUtcDate" 
-                             Width="160"
-                             IsHidden="True"
-                             AllowEditing="False"
-                             AllowFiltering="True"
-                             AllowSorting="True" />
+                        <syncfusion:GridTextColumn MappingName="UpdatedUtcDateDisplay" 
+                                            HeaderText="UpdatedUtcDate" 
+                                            Width="160"
+                                            IsHidden="True"
+                                            AllowEditing="False"
+                                            AllowFiltering="True"
+                                            AllowSorting="True" />
 
-<syncfusion:GridNumericColumn MappingName="LocalDirty" 
-                             HeaderText="LocalDirty" 
-                             Width="100"
-                             IsHidden="True"
-                             AllowEditing="False"
-                             AllowFiltering="True"
-                             AllowSorting="True"
-                             NumberDecimalDigits="0" />
+                        <syncfusion:GridNumericColumn MappingName="LocalDirty" 
+                                                     HeaderText="LocalDirty" 
+                                                     Width="100"
+                                                     IsHidden="False"
+                                                     AllowEditing="False"
+                                                     AllowFiltering="True"
+                                                     AllowSorting="True"
+                                                     NumberDecimalDigits="0" />
+                        <syncfusion:GridNumericColumn MappingName="SyncVersion"
+                                    HeaderText="Sync Version"
+                                    Width="120"
+                                    DisplayBinding="{Binding SyncVersion}"
+                                    IsHidden="False"
+                                    AllowEditing="False"
+                                    TextAlignment="Right"/>
 
                         <!-- VALUE FIELDS - QUANTITIES AND PROGRESS -->
                         <syncfusion:GridNumericColumn MappingName="Quantity" 

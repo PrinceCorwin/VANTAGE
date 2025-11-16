@@ -168,6 +168,7 @@ namespace VANTAGE.Models
         public string UpdatedUtcDateDisplay => UpdatedUtcDate.HasValue ? UpdatedUtcDate.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm") : "";
 
         private int _localDirty;
+        public long SyncVersion { get; set; }
         public int LocalDirty
         {
             get => _localDirty;
