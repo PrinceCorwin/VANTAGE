@@ -70,6 +70,9 @@ public static async Task<List<Activity>> GetDirtyActivitiesAsync(List<string> pr
 
         /// Update an existing activity in the database
 
+        // COMPLETE UpdateActivityInDatabase - Replace in ActivityRepository.cs
+        // Includes ALL editable columns from Activities table
+
         public static async Task<bool> UpdateActivityInDatabase(Activity activity)
         {
             try
@@ -82,25 +85,66 @@ public static async Task<List<Activity>> GetDirtyActivitiesAsync(List<string> pr
                     var command = connection.CreateCommand();
                     command.CommandText = @"
                 UPDATE Activities SET
-                    HexNO = @HexNO,
-                    CompType = @CompType,
-                    PhaseCategory = @PhaseCategory,
-                    ROCStep = @ROCStep,
-                    Notes = @Notes,
                     Area = @Area,
+                    AssignedTo = @AssignedTo,
+                    AzureUploadUtcDate = @AzureUploadUtcDate,
                     Aux1 = @Aux1,
                     Aux2 = @Aux2,
                     Aux3 = @Aux3,
+                    BaseUnit = @BaseUnit,
+                    BudgetHoursGroup = @BudgetHoursGroup,
+                    BudgetHoursROC = @BudgetHoursROC,
+                    BudgetMHs = @BudgetMHs,
+                    ChgOrdNO = @ChgOrdNO,
+                    ClientBudget = @ClientBudget,
+                    ClientCustom3 = @ClientCustom3,
+                    ClientEquivQty = @ClientEquivQty,
+                    CompType = @CompType,
+                    DateTrigger = @DateTrigger,
                     Description = @Description,
+                    DwgNO = @DwgNO,
+                    EarnQtyEntry = @EarnQtyEntry,
+                    EarnedMHsRoc = @EarnedMHsRoc,
+                    EqmtNO = @EqmtNO,
+                    EquivQTY = @EquivQTY,
+                    EquivUOM = @EquivUOM,
+                    Estimator = @Estimator,
+                    HexNO = @HexNO,
+                    HtTrace = @HtTrace,
+                    InsulType = @InsulType,
+                    LineNO = @LineNO,
+                    LocalDirty = @LocalDirty,
+                    MtrlSpec = @MtrlSpec,
+                    Notes = @Notes,
+                    PaintCode = @PaintCode,
+                    PercentEntry = @PercentEntry,
+                    PhaseCategory = @PhaseCategory,
                     PhaseCode = @PhaseCode,
+                    PipeSize1 = @PipeSize1,
+                    PipeSize2 = @PipeSize2,
+                    PrevEarnMHs = @PrevEarnMHs,
+                    PrevEarnQTY = @PrevEarnQTY,
+                    ProgDate = @ProgDate,
                     ProjectID = @ProjectID,
+                    PjtSystem = @PjtSystem,
+                    Quantity = @Quantity,
+                    RevNO = @RevNO,
+                    RFINO = @RFINO,
+                    ROCBudgetQTY = @ROCBudgetQTY,
+                    ROCID = @ROCID,
+                    ROCPercent = @ROCPercent,
+                    ROCStep = @ROCStep,
                     SchedActNO = @SchedActNO,
+                    SchFinish = @SchFinish,
+                    SchStart = @SchStart,
+                    SecondActno = @SecondActno,
+                    SecondDwgNO = @SecondDwgNO,
                     Service = @Service,
                     ShopField = @ShopField,
+                    ShtNO = @ShtNO,
                     SubArea = @SubArea,
-                    PjtSystem = @PjtSystem,
+                    SystemNO = @SystemNO,
                     TagNO = @TagNO,
-                    WorkPackage = @WorkPackage,
                     UDF1 = @UDF1,
                     UDF2 = @UDF2,
                     UDF3 = @UDF3,
@@ -120,47 +164,75 @@ public static async Task<List<Activity>> GetDirtyActivitiesAsync(List<string> pr
                     UDF17 = @UDF17,
                     UDF18 = @UDF18,
                     UDF20 = @UDF20,
-                    AssignedTo = @AssignedTo,
+                    UOM = @UOM,
                     UpdatedBy = @UpdatedBy,
                     UpdatedUtcDate = @UpdatedUtcDate,
-                    LocalDirty = @LocalDirty,
-                    SchStart = @SchStart,
-                    SchFinish = @SchFinish,
-                    ProgDate = @ProgDate,
                     WeekEndDate = @WeekEndDate,
-                    AzureUploadUtcDate = @AzureUploadUtcDate,
-                    BudgetMHs = @BudgetMHs,
-                    EarnQtyEntry = @EarnQtyEntry,
-                    PercentEntry = @PercentEntry,
-                    Quantity = @Quantity,
-                    UOM = @UOM,
-                    PipeSize1 = @PipeSize1,
-                    PipeSize2 = @PipeSize2,
-                    ClientBudget = @ClientBudget,
-                    ClientCustom3 = @ClientCustom3
-                WHERE ActivityID = @ActivityID";
+                    WorkPackage = @WorkPackage,
+                    XRay = @XRay
+                WHERE UniqueID = @UniqueID";
 
-                    // Parameters (these already exist - no changes needed here)
-                    command.Parameters.AddWithValue("@ActivityID", activity.ActivityID);
-                    command.Parameters.AddWithValue("@HexNO", activity.HexNO);
-                    command.Parameters.AddWithValue("@CompType", activity.CompType ?? "");
-                    command.Parameters.AddWithValue("@PhaseCategory", activity.PhaseCategory ?? "");
-                    command.Parameters.AddWithValue("@ROCStep", activity.ROCStep ?? "");
-                    command.Parameters.AddWithValue("@Notes", activity.Notes ?? "");
+                    // Add parameters for ALL columns
                     command.Parameters.AddWithValue("@Area", activity.Area ?? "");
+                    command.Parameters.AddWithValue("@AssignedTo", activity.AssignedTo ?? "");
+                    command.Parameters.AddWithValue("@AzureUploadUtcDate", activity.AzureUploadUtcDate?.ToString("yyyy-MM-dd") ?? "");
                     command.Parameters.AddWithValue("@Aux1", activity.Aux1 ?? "");
                     command.Parameters.AddWithValue("@Aux2", activity.Aux2 ?? "");
                     command.Parameters.AddWithValue("@Aux3", activity.Aux3 ?? "");
+                    command.Parameters.AddWithValue("@BaseUnit", activity.BaseUnit);
+                    command.Parameters.AddWithValue("@BudgetHoursGroup", activity.BudgetHoursGroup);
+                    command.Parameters.AddWithValue("@BudgetHoursROC", activity.BudgetHoursROC);
+                    command.Parameters.AddWithValue("@BudgetMHs", activity.BudgetMHs);
+                    command.Parameters.AddWithValue("@ChgOrdNO", activity.ChgOrdNO ?? "");
+                    command.Parameters.AddWithValue("@ClientBudget", activity.ClientBudget);
+                    command.Parameters.AddWithValue("@ClientCustom3", activity.ClientCustom3);
+                    command.Parameters.AddWithValue("@ClientEquivQty", activity.ClientEquivQty);
+                    command.Parameters.AddWithValue("@CompType", activity.CompType ?? "");
+                    command.Parameters.AddWithValue("@DateTrigger", activity.DateTrigger);
                     command.Parameters.AddWithValue("@Description", activity.Description ?? "");
+                    command.Parameters.AddWithValue("@DwgNO", activity.DwgNO ?? "");
+                    command.Parameters.AddWithValue("@EarnQtyEntry", activity.EarnQtyEntry);
+                    command.Parameters.AddWithValue("@EarnedMHsRoc", activity.EarnedMHsRoc);
+                    command.Parameters.AddWithValue("@EqmtNO", activity.EqmtNO ?? "");
+                    command.Parameters.AddWithValue("@EquivQTY", activity.EquivQTY);
+                    command.Parameters.AddWithValue("@EquivUOM", activity.EquivUOM ?? "");
+                    command.Parameters.AddWithValue("@Estimator", activity.Estimator ?? "");
+                    command.Parameters.AddWithValue("@HexNO", activity.HexNO);
+                    command.Parameters.AddWithValue("@HtTrace", activity.HtTrace ?? "");
+                    command.Parameters.AddWithValue("@InsulType", activity.InsulType ?? "");
+                    command.Parameters.AddWithValue("@LineNO", activity.LineNO ?? "");
+                    command.Parameters.AddWithValue("@LocalDirty", activity.LocalDirty);
+                    command.Parameters.AddWithValue("@MtrlSpec", activity.MtrlSpec ?? "");
+                    command.Parameters.AddWithValue("@Notes", activity.Notes ?? "");
+                    command.Parameters.AddWithValue("@PaintCode", activity.PaintCode ?? "");
+                    command.Parameters.AddWithValue("@PercentEntry", activity.PercentEntry);
+                    command.Parameters.AddWithValue("@PhaseCategory", activity.PhaseCategory ?? "");
                     command.Parameters.AddWithValue("@PhaseCode", activity.PhaseCode ?? "");
+                    command.Parameters.AddWithValue("@PipeSize1", activity.PipeSize1);
+                    command.Parameters.AddWithValue("@PipeSize2", activity.PipeSize2);
+                    command.Parameters.AddWithValue("@PrevEarnMHs", activity.PrevEarnMHs);
+                    command.Parameters.AddWithValue("@PrevEarnQTY", activity.PrevEarnQTY);
+                    command.Parameters.AddWithValue("@ProgDate", activity.ProgDate?.ToString("yyyy-MM-dd") ?? "");
                     command.Parameters.AddWithValue("@ProjectID", activity.ProjectID ?? "");
+                    command.Parameters.AddWithValue("@PjtSystem", activity.PjtSystem ?? "");
+                    command.Parameters.AddWithValue("@Quantity", activity.Quantity);
+                    command.Parameters.AddWithValue("@RevNO", activity.RevNO ?? "");
+                    command.Parameters.AddWithValue("@RFINO", activity.RFINO ?? "");
+                    command.Parameters.AddWithValue("@ROCBudgetQTY", activity.ROCBudgetQTY);
+                    command.Parameters.AddWithValue("@ROCID", activity.ROCID);
+                    command.Parameters.AddWithValue("@ROCPercent", activity.ROCPercent);
+                    command.Parameters.AddWithValue("@ROCStep", activity.ROCStep ?? "");
                     command.Parameters.AddWithValue("@SchedActNO", activity.SchedActNO ?? "");
+                    command.Parameters.AddWithValue("@SchFinish", activity.SchFinish?.ToString("yyyy-MM-dd") ?? "");
+                    command.Parameters.AddWithValue("@SchStart", activity.SchStart?.ToString("yyyy-MM-dd") ?? "");
+                    command.Parameters.AddWithValue("@SecondActno", activity.SecondActno ?? "");
+                    command.Parameters.AddWithValue("@SecondDwgNO", activity.SecondDwgNO ?? "");
                     command.Parameters.AddWithValue("@Service", activity.Service ?? "");
                     command.Parameters.AddWithValue("@ShopField", activity.ShopField ?? "");
+                    command.Parameters.AddWithValue("@ShtNO", activity.ShtNO ?? "");
                     command.Parameters.AddWithValue("@SubArea", activity.SubArea ?? "");
-                    command.Parameters.AddWithValue("@PjtSystem", activity.PjtSystem ?? "");
+                    command.Parameters.AddWithValue("@SystemNO", activity.SystemNO ?? "");
                     command.Parameters.AddWithValue("@TagNO", activity.TagNO ?? "");
-                    command.Parameters.AddWithValue("@WorkPackage", activity.WorkPackage ?? "");
                     command.Parameters.AddWithValue("@UDF1", activity.UDF1 ?? "");
                     command.Parameters.AddWithValue("@UDF2", activity.UDF2 ?? "");
                     command.Parameters.AddWithValue("@UDF3", activity.UDF3 ?? "");
@@ -180,24 +252,13 @@ public static async Task<List<Activity>> GetDirtyActivitiesAsync(List<string> pr
                     command.Parameters.AddWithValue("@UDF17", activity.UDF17 ?? "");
                     command.Parameters.AddWithValue("@UDF18", activity.UDF18 ?? "");
                     command.Parameters.AddWithValue("@UDF20", activity.UDF20 ?? "");
-                    command.Parameters.AddWithValue("@AssignedTo", activity.AssignedTo ?? "");
-                    command.Parameters.AddWithValue("@UpdatedBy", App.CurrentUser?.Username ?? Environment.UserName);
-                    command.Parameters.AddWithValue("@BudgetMHs", activity.BudgetMHs);
-                    command.Parameters.AddWithValue("@EarnQtyEntry", activity.EarnQtyEntry);
-                    command.Parameters.AddWithValue("@PercentEntry", activity.PercentEntry);
-                    command.Parameters.AddWithValue("@Quantity", activity.Quantity);
                     command.Parameters.AddWithValue("@UOM", activity.UOM ?? "");
-                    command.Parameters.AddWithValue("@PipeSize1", activity.PipeSize1);
-                    command.Parameters.AddWithValue("@PipeSize2", activity.PipeSize2);
-                    command.Parameters.AddWithValue("@ClientBudget", activity.ClientBudget);
-                    command.Parameters.AddWithValue("@ClientCustom3", activity.ClientCustom3);
-                    command.Parameters.AddWithValue("@SchStart", activity.SchStart?.ToString("yyyy-MM-dd") ?? "");
-                    command.Parameters.AddWithValue("@SchFinish", activity.SchFinish?.ToString("yyyy-MM-dd") ?? "");
-                    command.Parameters.AddWithValue("@ProgDate", activity.ProgDate?.ToString("yyyy-MM-dd") ?? "");
+                    command.Parameters.AddWithValue("@UpdatedBy", activity.UpdatedBy ?? "");
+                    command.Parameters.AddWithValue("@UpdatedUtcDate", activity.UpdatedUtcDate?.ToString("o") ?? DateTime.UtcNow.ToString("o"));
                     command.Parameters.AddWithValue("@WeekEndDate", activity.WeekEndDate?.ToString("yyyy-MM-dd") ?? "");
-                    command.Parameters.AddWithValue("@AzureUploadUtcDate", activity.AzureUploadUtcDate?.ToString("yyyy-MM-dd") ?? "");
-                    command.Parameters.AddWithValue("@UpdatedUtcDate", DateTime.UtcNow.ToString("o"));
-                    command.Parameters.AddWithValue("@LocalDirty", 1);
+                    command.Parameters.AddWithValue("@WorkPackage", activity.WorkPackage ?? "");
+                    command.Parameters.AddWithValue("@XRay", activity.XRay);
+                    command.Parameters.AddWithValue("@UniqueID", activity.UniqueID);
 
                     int rowsAffected = command.ExecuteNonQuery();
                     return rowsAffected > 0;
@@ -207,6 +268,7 @@ public static async Task<List<Activity>> GetDirtyActivitiesAsync(List<string> pr
             }
             catch (Exception ex)
             {
+                AppLogger.Error(ex, "ActivityRepository.UpdateActivityInDatabase");
                 return false;
             }
         }
