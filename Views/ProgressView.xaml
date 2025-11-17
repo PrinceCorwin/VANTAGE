@@ -16,10 +16,10 @@
         <Style x:Key="CompTypeRequiredStyle" TargetType="syncfusion:GridCell">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=CompType}" Value="">
-                    <Setter Property="Background" Value="#2e1e1e"/>
+                    <Setter Property="Background" Value="#5b2626"/>
                 </DataTrigger>
                 <DataTrigger Binding="{Binding Path=CompType}" Value="{x:Null}">
-                    <Setter Property="Background" Value="#2e1e1e"/>
+                    <Setter Property="Background" Value="#5b2626"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
@@ -27,10 +27,10 @@
         <Style x:Key="PhaseCategoryRequiredStyle" TargetType="syncfusion:GridCell">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=PhaseCategory}" Value="">
-                    <Setter Property="Background" Value="#2e1e1e"/>
+                    <Setter Property="Background" Value="#5b2626"/>
                 </DataTrigger>
                 <DataTrigger Binding="{Binding Path=PhaseCategory}" Value="{x:Null}">
-                    <Setter Property="Background" Value="#2e1e1e"/>
+                    <Setter Property="Background" Value="#5b2626"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
@@ -38,10 +38,10 @@
         <Style x:Key="ProjectIDRequiredStyle" TargetType="syncfusion:GridCell">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=ProjectID}" Value="">
-                    <Setter Property="Background" Value="#2e1e1e"/>
+                    <Setter Property="Background" Value="#5b2626"/>
                 </DataTrigger>
                 <DataTrigger Binding="{Binding Path=ProjectID}" Value="{x:Null}">
-                    <Setter Property="Background" Value="#2e1e1e"/>
+                    <Setter Property="Background" Value="#5b2626"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
@@ -49,10 +49,10 @@
         <Style x:Key="WorkPackageRequiredStyle" TargetType="syncfusion:GridCell">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=WorkPackage}" Value="">
-                    <Setter Property="Background" Value="#2e1e1e"/>
+                    <Setter Property="Background" Value="#5b2626"/>
                 </DataTrigger>
                 <DataTrigger Binding="{Binding Path=WorkPackage}" Value="{x:Null}">
-                    <Setter Property="Background" Value="#2e1e1e"/>
+                    <Setter Property="Background" Value="#5b2626"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
@@ -60,50 +60,50 @@
         <Style x:Key="PhaseCodeRequiredStyle" TargetType="syncfusion:GridCell">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=PhaseCode}" Value="">
-                    <Setter Property="Background" Value="#2e1e1e"/>
+                    <Setter Property="Background" Value="#5b2626"/>
                 </DataTrigger>
                 <DataTrigger Binding="{Binding Path=PhaseCode}" Value="{x:Null}">
-                    <Setter Property="Background" Value="#2e1e1e"/>
+                    <Setter Property="Background" Value="#5b2626"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
         <Style x:Key="ROCStepRequiredStyle" TargetType="syncfusion:GridCell">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=ROCStep}" Value="">
-                    <Setter Property="Background" Value="#2e1e1e"/>
+                    <Setter Property="Background" Value="#5b2626"/>
                 </DataTrigger>
                 <DataTrigger Binding="{Binding Path=ROCStep}" Value="{x:Null}">
-                    <Setter Property="Background" Value="#2e1e1e"/>
+                    <Setter Property="Background" Value="#5b2626"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
         <Style x:Key="DescRequiredStyle" TargetType="syncfusion:GridCell">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=Description}" Value="">
-                    <Setter Property="Background" Value="#2e1e1e"/>
+                    <Setter Property="Background" Value="#5b2626"/>
                 </DataTrigger>
                 <DataTrigger Binding="{Binding Path=Description}" Value="{x:Null}">
-                    <Setter Property="Background" Value="#2e1e1e"/>
+                    <Setter Property="Background" Value="#5b2626"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
         <Style x:Key="SchedActNoRequiredStyle" TargetType="syncfusion:GridCell">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=SchedActNO}" Value="">
-                    <Setter Property="Background" Value="#2e1e1e"/>
+                    <Setter Property="Background" Value="#5b2626"/>
                 </DataTrigger>
                 <DataTrigger Binding="{Binding Path=SchedActNO}" Value="{x:Null}">
-                    <Setter Property="Background" Value="#2e1e1e"/>
+                    <Setter Property="Background" Value="#5b2626"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
         <Style x:Key="UDF18RequiredStyle" TargetType="syncfusion:GridCell">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=UDF18}" Value="">
-                    <Setter Property="Background" Value="#2e1e1e"/>
+                    <Setter Property="Background" Value="#5b2626"/>
                 </DataTrigger>
                 <DataTrigger Binding="{Binding Path=UDF18}" Value="{x:Null}">
-                    <Setter Property="Background" Value="#2e1e1e"/>
+                    <Setter Property="Background" Value="#5b2626"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
