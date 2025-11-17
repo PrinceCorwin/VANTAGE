@@ -236,8 +236,7 @@
                         Foreground="{StaticResource ForegroundColor}"
                         BorderBrush="{StaticResource BorderColor}"
                         BorderThickness="1"
-                        SelectionMode="Multiple"
-                        SelectionChanged="LstColumnVisibility_SelectionChanged">
+                        SelectionMode="Multiple">
                 </ListBox>
                 </StackPanel>
 

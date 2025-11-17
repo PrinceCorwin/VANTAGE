@@ -1,4 +1,6 @@
 ﻿using Microsoft.Data.Sqlite;
+using MILESTONE.Views;
+using Syncfusion.UI.Xaml.Grid;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -1194,10 +1196,10 @@ namespace VANTAGE.Views
             return users;
         }
 
-        private void LstColumnVisibility_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            // Not needed - using CheckBox events instead
-        }
+        //private void LstColumnVisibility_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        //{
+        //    // Not needed - using CheckBox events instead
+        //}
 
         private void TxtSearch_TextChanged(object sender, TextChangedEventArgs e)
         {
@@ -1350,25 +1352,58 @@ namespace VANTAGE.Views
                     MessageBoxImage.Error);
             }
         }
-		private void MenuFindReplaceColumn_Click(object sender, RoutedEventArgs e)
-		{
-			MessageBox.Show("Find & Replace clicked - handler working!", "Test", MessageBoxButton.OK, MessageBoxImage.Information);
-		}
-		private Activity _lastSelectedRow = null;
-		private void sfActivities_GridContextMenuOpening(object sender, Syncfusion.UI.Xaml.Grid.GridContextMenuEventArgs e)
-		{
-			// Only show RecordContextMenu when right-clicking row header
-			if (e.ContextMenuType == Syncfusion.UI.Xaml.Grid.ContextMenuType.RecordCell)
-			{
-				// Cancel context menu for regular cells - only allow on row header
-				// Check if this is a row header click by checking RowColumnIndex
-				if (e.RowColumnIndex.ColumnIndex > 0)
-				{
-					e.Handled = true; // Cancel the context menu for regular cells
-				}
-			}
-		}
-		private void sfActivities_SelectionChanged(object sender, Syncfusion.UI.Xaml.Grid.GridSelectionChangedEventArgs e)
+        private void MenuFindReplaceColumn_Click(object sender, RoutedEventArgs e)
+        {
+            var menuItem = sender as MenuItem;
+            if (menuItem == null) return;
+
+            var contextMenuInfo = menuItem.DataContext as Syncfusion.UI.Xaml.Grid.GridColumnContextMenuInfo;
+            if (contextMenuInfo == null)
+            {
+                MessageBox.Show("Could not determine which column was clicked.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            var column = contextMenuInfo.Column;
+            string columnName = column.MappingName;
+            string columnHeader = column.HeaderText;
+
+            // Open Find & Replace dialog
+            var dialog = new FindReplaceDialog();
+            dialog.Owner = Window.GetWindow(this);
+            dialog.SetTargetColumn(sfActivities, columnName, columnHeader);
+
+            dialog.ShowDialog();
+        }
+        private Activity _lastSelectedRow = null;
+        private void sfActivities_GridContextMenuOpening(object sender, Syncfusion.UI.Xaml.Grid.GridContextMenuEventArgs e)
+        {
+            // Only show RecordContextMenu when right-clicking row header
+            if (e.ContextMenuType == Syncfusion.UI.Xaml.Grid.ContextMenuType.RecordCell)
+            {
+                // Cancel context menu for regular cells - only allow on row header
+                if (e.RowColumnIndex.ColumnIndex > 0)
+                {
+                    e.Handled = true;
+                }
+            }
+            // Check if this is a column header and if it's read-only
+            else if (e.ContextMenuType == Syncfusion.UI.Xaml.Grid.ContextMenuType.Header)
+            {
+                var columnIndex = sfActivities.ResolveToGridVisibleColumnIndex(e.RowColumnIndex.ColumnIndex);
+                if (columnIndex >= 0 && columnIndex < sfActivities.Columns.Count)
+                {
+                    var column = sfActivities.Columns[columnIndex];
+
+                    // If column is read-only, cancel the context menu
+                    if (VANTAGE.Utilities.ColumnPermissions.IsReadOnly(column.MappingName))
+                    {
+                        e.Handled = true; // Cancel the entire context menu for read-only columns
+                    }
+                }
+            }
+        }
+        private void sfActivities_SelectionChanged(object sender, Syncfusion.UI.Xaml.Grid.GridSelectionChangedEventArgs e)
 		{
 			// With SelectionUnit="Any", row header clicks select all cells in the row
 			// but don't populate SelectedItems. We need to manually populate it.
