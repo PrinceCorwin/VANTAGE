@@ -592,20 +592,17 @@ namespace VANTAGE.Utilities
                         var worksheet = workbook.Worksheets.FirstOrDefault(ws => ws.Name == "Sheet1")
                             ?? workbook.Worksheets.FirstOrDefault();
 
-                        System.Diagnostics.Debug.WriteLine("Building column map...");
+
                         progress?.Report((0, 0, "Analyzing Excel structure..."));
                         var headerRow = worksheet.Row(1);
                         var columnMap = BuildColumnMap(headerRow);
 
-                        System.Diagnostics.Debug.WriteLine("Reading activities from Excel...");
+
                         progress?.Report((0, 0, "Reading Excel data..."));
                         var activities = ReadActivitiesFromExcel(worksheet, columnMap);
-                        System.Diagnostics.Debug.WriteLine($"Finished reading {activities.Count} activities");
 
-                        System.Diagnostics.Debug.WriteLine("Importing to database...");
                         progress?.Report((0, activities.Count, "Importing to database..."));
                         int imported = ImportToDatabase(activities, replaceMode, progress);
-                        System.Diagnostics.Debug.WriteLine($"Finished importing {imported} records");
 
                         progress?.Report((imported, imported, "Import complete!"));
                         return imported;
