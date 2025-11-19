@@ -59,9 +59,11 @@ namespace VANTAGE.Utilities
             return columnMap;
         }
 
-        
+
         /// Read activities from Excel worksheet
-        
+
+        // STEP 4: Replace ReadActivitiesFromExcel in ExcelImporter.cs
+
         private static List<Activity> ReadActivitiesFromExcel(IXLWorksheet worksheet, Dictionary<int, string> columnMap)
         {
             var activities = new List<Activity>();
@@ -103,12 +105,14 @@ namespace VANTAGE.Utilities
                     sequence++;
                     System.Diagnostics.Debug.WriteLine($"  Generated UniqueID: {activity.UniqueID}");
                 }
+
                 // Apply defaults for zero/empty numeric values
                 if (activity.Quantity == 0) activity.Quantity = 0.001;
                 if (activity.BudgetMHs == 0) activity.BudgetMHs = 0.001;
                 if (activity.ClientBudget == 0) activity.ClientBudget = 0.001;
 
                 activity.ActivityID = 0;
+
                 activities.Add(activity);
             }
 
@@ -116,9 +120,9 @@ namespace VANTAGE.Utilities
             return activities;
         }
 
-        
+
         /// Find the last row with actual data
-        
+
         private static int FindLastDataRow(IXLWorksheet worksheet)
         {
             return worksheet.LastRowUsed()?.RowNumber() ?? 1;
@@ -167,12 +171,12 @@ namespace VANTAGE.Utilities
                 if (propertyName == "PercentEntry")
                 {
                     double value = cell.GetDouble();
+                    System.Diagnostics.Debug.WriteLine($"IMPORTING PercentEntry: Excel value = {value}");
 
-                    // OLD EXCEL FORMAT: Values are 0-1 (e.g., 0.755 = 75.5%)
-                    // Convert to 0-100 format for storage
                     if (value >= 0 && value <= 1.0)
                     {
-                        activity.PercentEntry = value * 100.0; // 0.755 → 75.5
+                        activity.PercentEntry = value * 100.0;
+                        System.Diagnostics.Debug.WriteLine($"  Converted to: {activity.PercentEntry}");
                     }
                     // If value is > 1, assume it's already a percentage (0-100)
                     else if (value > 1 && value <= 100)

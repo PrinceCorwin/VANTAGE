@@ -568,6 +568,7 @@ public static async Task<List<Activity>> GetDirtyActivitiesAsync(List<string> pr
                                  ClientBudget = GetDoubleSafe("ClientBudget"),
                                  ClientCustom3 = GetDoubleSafe("ClientCustom3")
                              };
+                             activity.SuppressCalculations = false;
                              activities.Add(activity);
                          }
 
@@ -827,7 +828,7 @@ public static async Task<List<Activity>> GetDirtyActivitiesAsync(List<string> pr
                                  ClientBudget = GetDoubleSafe("ClientBudget"),
                                  ClientCustom3 = GetDoubleSafe("ClientCustom3")
                              };
-
+                             activity.SuppressCalculations = false;
                              activities.Add(activity);
                          }
 

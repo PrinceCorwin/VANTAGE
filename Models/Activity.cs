@@ -5,6 +5,7 @@ namespace VANTAGE.Models
 {
     public class Activity : INotifyPropertyChanged
     {
+        public bool SuppressCalculations { get; set; } = true;
         // ========================================
         // BACKING FIELDS (Only for properties with custom logic)
         // ========================================
@@ -45,9 +46,9 @@ namespace VANTAGE.Models
         public DateTime? WeekEndDate { get; set; }
         public DateTime? AzureUploadUtcDate { get; set; }
 
-        
+
         /// Status based on PercentEntry (0-100)
-        
+
         public string Status
         {
             get
@@ -220,7 +221,8 @@ namespace VANTAGE.Models
                 {
                     _budgetMHs = value;
                     OnPropertyChanged();
-                    RecalculatePercentEarned();
+                    if (!SuppressCalculations)
+                        RecalculatePercentEarned();
                 }
             }
         }
@@ -241,7 +243,8 @@ namespace VANTAGE.Models
                 {
                     _quantity = value;
                     OnPropertyChanged();
-                    UpdatePercCompleteFromEarnedQty();
+                    if (!SuppressCalculations)
+                        UpdatePercCompleteFromEarnedQty();
                 }
             }
         }
@@ -257,21 +260,21 @@ namespace VANTAGE.Models
                 {
                     _earnQtyEntry = value;
                     OnPropertyChanged();
-                    UpdatePercCompleteFromEarnedQty();
+                    if (!SuppressCalculations)
+                        UpdatePercCompleteFromEarnedQty();
                 }
             }
         }
 
-        
+
         /// PercentEntry: STORED AS 0-100 (percentage)
         /// Example: 75.5 means 75.5%
-        
+
         public double PercentEntry
         {
             get => _percentEntry;
             set
             {
-                // Clamp to 0-100 range
                 double clampedValue = Math.Max(0, Math.Min(100, value));
 
                 if (Math.Abs(_percentEntry - clampedValue) > 0.0001)
@@ -280,15 +283,16 @@ namespace VANTAGE.Models
                     OnPropertyChanged();
                     OnPropertyChanged(nameof(PercentEntry_Display));
                     OnPropertyChanged(nameof(Status));
-                    UpdateEarnedQtyFromPercComplete();
+                    if (!SuppressCalculations)
+                        UpdateEarnedQtyFromPercComplete();
                 }
             }
         }
 
-        
+
         /// Display PercentEntry with % symbol
         /// Same as PercentEntry since we store as 0-100
-        
+
         public string PercentEntry_Display => $"{PercentEntry:F1}%";
 
         
