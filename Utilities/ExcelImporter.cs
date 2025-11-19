@@ -103,7 +103,7 @@ namespace VANTAGE.Utilities
                 {
                     activity.UniqueID = $"i{timestamp}{sequence}{userSuffix}";
                     sequence++;
-                    System.Diagnostics.Debug.WriteLine($"  Generated UniqueID: {activity.UniqueID}");
+
                 }
 
                 // Apply defaults for zero/empty numeric values
@@ -171,12 +171,12 @@ namespace VANTAGE.Utilities
                 if (propertyName == "PercentEntry")
                 {
                     double value = cell.GetDouble();
-                    System.Diagnostics.Debug.WriteLine($"IMPORTING PercentEntry: Excel value = {value}");
+
 
                     if (value >= 0 && value <= 1.0)
                     {
                         activity.PercentEntry = value * 100.0;
-                        System.Diagnostics.Debug.WriteLine($"  Converted to: {activity.PercentEntry}");
+
                     }
                     // If value is > 1, assume it's already a percentage (0-100)
                     else if (value > 1 && value <= 100)
@@ -399,23 +399,30 @@ namespace VANTAGE.Utilities
                 command.Parameters.Add("@LocalDirty", SqliteType.Integer);
 
                 // ✅ PREPARE STATEMENT (COMPILE SQL ONCE)
+                // ✅ PREPARE STATEMENT (COMPILE SQL ONCE)
                 command.Prepare();
+
+                // ✅ CREATE DUPLICATE CHECK COMMAND ONCE (for Combine mode)
+                SqliteCommand checkCommand = null;
+                if (!replaceMode)
+                {
+                    checkCommand = connection.CreateCommand();
+                    checkCommand.CommandText = "SELECT COUNT(*) FROM Activities WHERE UniqueID = @id";
+                    checkCommand.Parameters.Add("@id", SqliteType.Text);
+                    checkCommand.Prepare();
+                }
 
                 // ✅ NOW LOOP THROUGH ACTIVITIES
                 foreach (var activity in activities)
                 {
-
                     // In combine mode, check if activity already exists
                     if (!replaceMode)
                     {
-                        var checkCommand = connection.CreateCommand();
-                        checkCommand.CommandText = "SELECT COUNT(*) FROM Activities WHERE UniqueID = @id";
-                        checkCommand.Parameters.AddWithValue("@id", activity.UniqueID);
+                        checkCommand.Parameters["@id"].Value = activity.UniqueID;
                         var exists = (long)checkCommand.ExecuteScalar() > 0;
 
                         if (exists)
                         {
-                            System.Diagnostics.Debug.WriteLine($"  → Skipping duplicate: {activity.UniqueID}");
                             skipped++;
                             continue;
                         }
@@ -513,7 +520,6 @@ namespace VANTAGE.Utilities
                     command.Parameters["@LocalDirty"].Value = 1;  // Mark as dirty - needs sync
 
                     // ✅ EXECUTE (USES PREPARED STATEMENT)
-                    System.Diagnostics.Debug.WriteLine($"LocalDirty value being inserted: {command.Parameters["@LocalDirty"].Value}");
                     command.ExecuteNonQuery();
                     imported++;
 
@@ -526,8 +532,14 @@ namespace VANTAGE.Utilities
                 }
 
                 transaction.Commit();
+
+                // Dispose duplicate check command if created
+                checkCommand?.Dispose();
+
                 // AFTER commit, reset sync versions for replaced ProjectIDs
                 if (distinctProjectIds != null && distinctProjectIds.Any())
+                    // AFTER commit, reset sync versions for replaced ProjectIDs
+                    if (distinctProjectIds != null && distinctProjectIds.Any())
                 {
                     foreach (var projectId in distinctProjectIds)
                     {
@@ -543,13 +555,13 @@ namespace VANTAGE.Utilities
                 {
                     AppLogger.Warning("distinctProjectIds is null or empty - no sync versions reset", "ExcelImporter");
                 }
-                System.Diagnostics.Debug.WriteLine($"✓ Import complete: {imported} imported, {skipped} skipped");
+
                 return imported;
             }
             catch (Exception ex)
             {
                 transaction.Rollback();
-                System.Diagnostics.Debug.WriteLine($"✗ Import failed, transaction rolled back: {ex.Message}");
+
                 throw;
             }
         }
