@@ -5,14 +5,101 @@ using ClosedXML.Excel;
 
 namespace VANTAGE.Utilities
 {
-
-    /// Export activities to Excel using OldVantage column names
-
+    // Export activities to Excel using OldVantage column names in exact order
     public static class ExcelExporter
     {
+        // EXACT column order as specified - DO NOT REORDER
+        private static readonly string[] ExportColumnOrder = new[]
+        {
+            "HexNO",
+            "Catg_ComponentType",
+            "Catg_PhaseCategory",
+            "Catg_ROC_Step",
+            "Dwg_PrimeDrawingNO",
+            "Dwg_RevisionNo",
+            "Dwg_SecondaryDrawingNO",
+            "Dwg_ShtNo",
+            "Notes_Comments",
+            "Sch_Actno",
+            "Sch_Start",
+            "Sch_Finish",
+            "Sch_Status",
+            "Tag_Aux1",
+            "Tag_Aux2",
+            "Tag_Aux3",
+            "Tag_Area",
+            "Tag_CONo",
+            "Tag_Descriptions",
+            "Tag_EqmtNo",
+            "Tag_Estimator",
+            "Tag_Insulation_Typ",
+            "Tag_LineNo",
+            "Tag_Matl_Spec",
+            "Tag_Phase Code",
+            "Tag_Paint_Code",
+            "Tag_Pipe_Grade",
+            "Tag_ProjectID",
+            "Tag_RFINo",
+            "Tag_Sch_ActNo",
+            "Tag_Service",
+            "Tag_ShopField",
+            "Tag_SubArea",
+            "Tag_System",
+            "Tag_SystemNo",
+            "Tag_TagNo",
+            "Tag_Tracing",
+            "Tag_WorkPackage",
+            "Tag_XRAY",
+            "Trg_DateTrigger",
+            "UDFOne",
+            "UDFTwo",
+            "UDFThree",
+            "UDFFour",
+            "UDFFive",
+            "UDFSix",
+            "UDFSeven",
+            "UDFEight",
+            "UDFNine",
+            "UDFTen",
+            "UDFEleven",
+            "UDFTwelve",
+            "UDFThirteen",
+            "UDFFourteen",
+            "UDFFifteen",
+            "UDFSixteen",
+            "UDFSeventeen",
+            "UDFEighteen",
+            "UDFNineteen",
+            "UDFTwenty",
+            "Val_Base_Unit",
+            "Val_BudgetedHours_Ind",
+            "Val_BudgetedHours_Group",
+            "Val_BudgetedHours_ROC",
+            "Val_EarnedHours_ROC",
+            "Val_EarnedHours_Ind",
+            "Val_EarnedQty",
+            "Val_Earn_Qty",
+            "Val_EQ-QTY",
+            "Val_EQ_UOM",
+            "Val_Perc_Complete",
+            "Val_Percent_Earned",
+            "Val_Quantity",
+            "Tag_ROC_ID",
+            "LookUP_ROC_ID",
+            "Val_ROC_Perc",
+            "Val_ROC_BudgetQty",
+            "Val_Pipe_Size1",
+            "Val_Pipe_Size2",
+            "Val_Prev_Earned_Hours",
+            "Val_Prev_Earned_Qty",
+            "Val_TimeStamp",
+            "Val_UOM",
+            "VAL_Client_EQ-QTY_BDG",
+            "VAL_UDF_Two",
+            "VAL_UDF_Three"
+        };
 
-        /// Export all activities to Excel file
-
+        // Export all activities to Excel file
         public static void ExportActivities(string filePath, List<Models.Activity> activities)
         {
             try
@@ -20,21 +107,23 @@ namespace VANTAGE.Utilities
                 using var workbook = new XLWorkbook();
                 var worksheet = workbook.Worksheets.Add("Sheet1");
 
-                // Get column mappings from database
-                var columnMappings = GetColumnMappings();
+                // Get column mappings from database (OldVantage -> DbColumnName)
+                var oldVantageToDbMapping = GetOldVantageToDbColumnMapping();
 
-                // Write headers (OldVantage names)
+                // Write headers in exact order
                 int colIndex = 1;
-                var columnOrder = new List<(string DbColumnName, string OldVantageName, int ExcelColumn)>();
+                var columnOrder = new List<(string OldVantageName, string DbColumnName, int ExcelColumn)>();
 
-                foreach (var mapping in columnMappings)
+                foreach (var oldVantageName in ExportColumnOrder)
                 {
-                    string headerName = string.IsNullOrEmpty(mapping.OldVantageName)
-                        ? mapping.DbColumnName
-                        : mapping.OldVantageName;
+                    worksheet.Cell(1, colIndex).Value = oldVantageName;
 
-                    worksheet.Cell(1, colIndex).Value = headerName;
-                    columnOrder.Add((mapping.DbColumnName, headerName, colIndex));
+                    // Find the database column name for this OldVantage name
+                    if (oldVantageToDbMapping.TryGetValue(oldVantageName, out string dbColumnName))
+                    {
+                        columnOrder.Add((oldVantageName, dbColumnName, colIndex));
+                    }
+
                     colIndex++;
                 }
 
@@ -84,9 +173,7 @@ namespace VANTAGE.Utilities
             }
         }
 
-
-        /// Export empty template (headers only)
-
+        // Export empty template (headers only)
         public static void ExportTemplate(string filePath)
         {
             try
@@ -94,18 +181,11 @@ namespace VANTAGE.Utilities
                 using var workbook = new XLWorkbook();
                 var worksheet = workbook.Worksheets.Add("Sheet1");
 
-                // Get column mappings from database
-                var columnMappings = GetColumnMappings();
-
-                // Write headers only (OldVantage names)
+                // Write headers only in exact order
                 int colIndex = 1;
-                foreach (var mapping in columnMappings)
+                foreach (var oldVantageName in ExportColumnOrder)
                 {
-                    string headerName = string.IsNullOrEmpty(mapping.OldVantageName)
-                        ? mapping.DbColumnName
-                        : mapping.OldVantageName;
-
-                    worksheet.Cell(1, colIndex).Value = headerName;
+                    worksheet.Cell(1, colIndex).Value = oldVantageName;
                     colIndex++;
                 }
 
@@ -122,12 +202,10 @@ namespace VANTAGE.Utilities
             }
         }
 
-
-        /// Get column mappings from database
-
-        private static List<(string DbColumnName, string OldVantageName)> GetColumnMappings()
+        // Get mapping of OldVantageName -> DbColumnName from database
+        private static Dictionary<string, string> GetOldVantageToDbColumnMapping()
         {
-            var mappings = new List<(string DbColumnName, string OldVantageName)>();
+            var mapping = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             using var connection = DatabaseSetup.GetConnection();
             connection.Open();
@@ -136,27 +214,23 @@ namespace VANTAGE.Utilities
             command.CommandText = @"
                 SELECT ColumnName, OldVantageName 
                 FROM ColumnMappings 
-                WHERE OldVantageName IS NOT NULL 
-                  AND OldVantageName != 'VAL_Client_Earned_EQ-QTY'
-                ORDER BY MappingID";
+                WHERE OldVantageName IS NOT NULL";
 
             using var reader = command.ExecuteReader();
             while (reader.Read())
             {
-                if (!reader.IsDBNull(0)) // Skip rows with NULL ColumnName
+                if (!reader.IsDBNull(0) && !reader.IsDBNull(1))
                 {
                     string dbColumnName = reader.GetString(0);
-                    string oldVantageName = reader.IsDBNull(1) ? null : reader.GetString(1);
-                    mappings.Add((dbColumnName, oldVantageName));
+                    string oldVantageName = reader.GetString(1);
+                    mapping[oldVantageName] = dbColumnName;
                 }
             }
 
-            return mappings;
+            return mapping;
         }
 
-
-        /// Get activity property value by database column name
-
+        // Get activity property value by database column name
         private static object GetActivityValue(Models.Activity activity, string dbColumnName)
         {
             // Get property name from DbColumnName

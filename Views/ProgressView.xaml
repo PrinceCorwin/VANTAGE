@@ -457,7 +457,7 @@
                                 </MenuItem.Icon>
                             </MenuItem>
 
-                            <Separator Background="{StaticResource BorderColor}"/>
+                            <!--<Separator Background="{StaticResource BorderColor}"/>-->
 
                             <!-- Placeholder 1 -->
                             <MenuItem Header="Copy Row(s)"
@@ -481,7 +481,7 @@
                                 </MenuItem.Icon>
                             </MenuItem>
 
-                            <Separator Background="{StaticResource BorderColor}"/>
+                            <!--<Separator Background="{StaticResource BorderColor}"/>-->
 
                             <!-- Placeholder 3 -->
                             <MenuItem Header="Export Selected"
@@ -505,7 +505,7 @@
                                 </MenuItem.Icon>
                             </MenuItem>
 
-                            <Separator Background="{StaticResource BorderColor}"/>
+                            <!--<Separator Background="{StaticResource BorderColor}"/>-->
 
                             <!-- Placeholder 5 -->
                             <MenuItem Header="Placeholder 2"
@@ -535,14 +535,6 @@
                         </ContextMenu>
                     </syncfusion:SfDataGrid.HeaderContextMenu>
                     <syncfusion:SfDataGrid.Columns>
-                        <!--<syncfusion:GridCheckBoxColumn MappingName="IsSelected" 
-                               HeaderText="" 
-                               Width="40"
-                               AllowEditing="True"
-                               AllowFiltering="False"
-                               AllowSorting="False"
-                               AllowResizing="False"
-                               AllowDragging="False"/>-->
 
                         <!-- IDENTITY & KEY FIELDS -->
                         <syncfusion:GridTextColumn MappingName="UniqueID" 
