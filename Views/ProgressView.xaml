@@ -461,13 +461,19 @@
 
                             <!-- Placeholder 1 -->
                             <MenuItem Header="Copy Row(s)"
-                                      Click="MenuCopyRows_Click"
                                       Background="{StaticResource ControlBackground}"
-                                      Foreground="{StaticResource ForegroundColor}"
-                                      IsEnabled="False">
+                                      Foreground="{StaticResource ForegroundColor}">
                                 <MenuItem.Icon>
                                     <TextBlock Text="📋" FontSize="14"/>
                                 </MenuItem.Icon>
+                                <MenuItem Header="Copy (Visible Columns)"
+                                          Click="MenuCopyVisibleColumns_Click"
+                                          Background="{StaticResource ControlBackground}"
+                                          Foreground="{StaticResource ForegroundColor}"/>
+                                <MenuItem Header="Copy (All Columns)"
+                                          Click="MenuCopyAllColumns_Click"
+                                          Background="{StaticResource ControlBackground}"
+                                          Foreground="{StaticResource ForegroundColor}"/>
                             </MenuItem>
 
                             <!-- Placeholder 2 -->

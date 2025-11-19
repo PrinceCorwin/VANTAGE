@@ -241,10 +241,143 @@ namespace VANTAGE.Views
                 AppLogger.Error(ex, "ProgressView.CalculateMetadataErrorCount");
             }
         }
-        private void MenuCopyRows_Click(object sender, RoutedEventArgs e)
+        // Add these two methods to ProgressView.xaml.cs (in the context menu handlers region)
+
+        // Copy (Visible Columns) - copies only visible columns manually
+        private void MenuCopyVisibleColumns_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Copy Row(s) feature coming soon!",
-                "Not Yet Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
+            try
+            {
+                // Check if records are selected
+                var selected = sfActivities.SelectedItems?.Cast<Activity>().ToList();
+                if (selected == null || selected.Count == 0)
+                {
+                    MessageBox.Show("Please select one or more records to copy.",
+                        "No Selection", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                // Get visible columns from grid (in display order)
+                var visibleColumns = sfActivities.Columns
+                    .Where(c => !c.IsHidden && c.Width > 0)
+                    .Select((col, index) => new { Column = col, Index = index })
+                    .OrderBy(x => x.Index)
+                    .Select(x => x.Column)
+                    .ToList();
+
+                var sb = new StringBuilder();
+
+                // Row 1: Column headers (only visible columns)
+                sb.AppendLine(string.Join("\t", visibleColumns.Select(c => c.HeaderText)));
+
+                // Rows 2+: Data rows (only visible columns)
+                foreach (var activity in selected)
+                {
+                    var values = visibleColumns.Select(col =>
+                    {
+                        var propertyName = col.MappingName;
+                        var property = typeof(Activity).GetProperty(propertyName);
+
+                        if (property == null)
+                            return string.Empty;
+
+                        var value = property.GetValue(activity);
+
+                        // Handle null values
+                        if (value == null)
+                            return string.Empty;
+
+                        // Format dates
+                        if (value is DateTime dt)
+                            return dt.ToString("yyyy-MM-dd HH:mm:ss");
+
+                        // Convert to string
+                        return value.ToString();
+                    });
+
+                    sb.AppendLine(string.Join("\t", values));
+                }
+
+                // Copy to clipboard
+                Clipboard.SetText(sb.ToString());
+
+                AppLogger.Info($"Copied {selected.Count} record(s) - {visibleColumns.Count} visible columns",
+                    "Copy Visible", App.CurrentUser?.Username ?? "Unknown");
+
+                // Silent success (clipboard populated)
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "Copy Visible Columns", App.CurrentUser?.Username ?? "Unknown");
+                MessageBox.Show($"Copy failed: {ex.Message}", "Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        // Copy (All Columns) - copies all Activity properties using reflection
+        private void MenuCopyAllColumns_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // Check if records are selected
+                var selected = sfActivities.SelectedItems?.Cast<Activity>().ToList();
+                if (selected == null || selected.Count == 0)
+                {
+                    MessageBox.Show("Please select one or more records to copy.",
+                        "No Selection", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                // Get all properties from Activity model using reflection
+                var activityType = typeof(Activity);
+                var properties = activityType.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                    .Where(p => p.CanRead) // Only readable properties
+                    .OrderBy(p => p.Name)   // Alphabetical order
+                    .ToList();
+
+                var sb = new StringBuilder();
+
+                // Build tab-delimited output
+                // Row 1: Column headers
+                sb.AppendLine(string.Join("\t", properties.Select(p => p.Name)));
+
+                // Rows 2+: Data rows
+                foreach (var activity in selected)
+                {
+                    var values = properties.Select(p =>
+                    {
+                        var value = p.GetValue(activity);
+
+                        // Handle null values
+                        if (value == null)
+                            return string.Empty;
+
+                        // Format dates
+                        if (value is DateTime dt)
+                            return dt.ToString("yyyy-MM-dd HH:mm:ss");
+
+                        // Convert to string
+                        return value.ToString();
+                    });
+
+                    sb.AppendLine(string.Join("\t", values));
+                }
+
+                // Copy to clipboard
+                Clipboard.SetText(sb.ToString());
+
+                AppLogger.Info($"Copied {selected.Count} record(s) - all columns ({properties.Count} properties)",
+                    "Copy All", App.CurrentUser?.Username ?? "Unknown");
+
+                // Optional: Show toast/status instead of MessageBox for better UX
+                // For now, silent success (clipboard populated)
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "Copy All Columns", App.CurrentUser?.Username ?? "Unknown");
+                MessageBox.Show($"Copy failed: {ex.Message}", "Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void MenuDuplicateRows_Click(object sender, RoutedEventArgs e)
