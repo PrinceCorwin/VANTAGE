@@ -20,6 +20,7 @@ using VANTAGE.Data;
 using VANTAGE.Models;
 using VANTAGE.Utilities;
 using VANTAGE.ViewModels;
+using System.Windows.Threading;
 
 namespace VANTAGE.Views
 {
@@ -30,8 +31,25 @@ namespace VANTAGE.Views
         private ProgressViewModel _viewModel;
         // one key per grid/view
         private const string GridPrefsKey = "ProgressGrid.PreferencesJson";
-        private ProgressViewModel ViewModel => DataContext as ProgressViewModel;
-        private object _originalCellValue;
+        private ProgressViewModel ViewModel
+        {
+            get
+            {
+                if (DataContext is ProgressViewModel vm)
+                    return vm;
+
+                AppLogger.Error(
+                    "ProgressView.DataContext was not a ProgressViewModel. " +
+                    $"Actual type: {(DataContext?.GetType().FullName ?? "null")}"
+                );
+
+                throw new InvalidOperationException(
+                    "ProgressView requires ProgressViewModel as its DataContext before using ViewModel."
+                );
+            }
+        }
+
+        private object? _originalCellValue;
         private Dictionary<string, PropertyInfo> _propertyCache = new Dictionary<string, PropertyInfo>();
         // ProgressView.xaml.cs
         // Replace DeleteSelectedActivities_Click in ProgressView.xaml.cs
@@ -155,7 +173,9 @@ namespace VANTAGE.Views
                 AppLogger.Info(
                     $"User deleted {localDeleted} activities (IsDeleted=1 set in Central for {centralDeleted} records).",
                     "ProgressView.DeleteSelectedActivities_Click",
-                    currentUser?.Username);
+                    currentUser?.Username ?? "UnknownUser"
+                );
+
 
                 MessageBox.Show(
                     $"{localDeleted} record(s) deleted successfully.",
@@ -781,9 +801,22 @@ namespace VANTAGE.Views
                         System.Windows.Threading.DispatcherPriority.Background);
                 }
             };
+            // *** NEW: create timer here so it is always non-null ***
+            _resizeSaveTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(500)
+            };
+            _resizeSaveTimer.Tick += ResizeSaveTimer_Tick;
             SetupColumnResizeSave();
         }
-        private void SfActivities_FilterChanged(object sender, Syncfusion.UI.Xaml.Grid.GridFilterEventArgs e)
+        private void ResizeSaveTimer_Tick(object? sender, EventArgs e)
+        {
+            _resizeSaveTimer.Stop();
+            SaveColumnState();
+        }
+
+        private void SfActivities_FilterChanged(object? sender, Syncfusion.UI.Xaml.Grid.GridFilterEventArgs e)
+
         {
             // Update FilteredCount based on Syncfusion's filtered records
             if (sfActivities.View != null)
@@ -795,37 +828,26 @@ namespace VANTAGE.Views
                 UpdateSummaryPanel(); // <-- update summary panel on filter change
             }
         }
-        private System.Windows.Threading.DispatcherTimer _resizeSaveTimer;
+        private readonly DispatcherTimer _resizeSaveTimer;
+
 
         private void SetupColumnResizeSave()
         {
-            // Create timer that waits 500ms after last resize before saving
-            _resizeSaveTimer = new System.Windows.Threading.DispatcherTimer
-            {
-                Interval = TimeSpan.FromMilliseconds(500)
-            };
-
-            _resizeSaveTimer.Tick += (s, e) =>
-            {
-                _resizeSaveTimer.Stop();
-                SaveColumnState();
-            };
-
             // Hook into column width changes
             foreach (var column in sfActivities.Columns)
             {
-                var descriptor = System.ComponentModel.DependencyPropertyDescriptor
+                var descriptor = DependencyPropertyDescriptor
                     .FromProperty(Syncfusion.UI.Xaml.Grid.GridColumn.WidthProperty,
-                                 typeof(Syncfusion.UI.Xaml.Grid.GridColumn));
+                                  typeof(Syncfusion.UI.Xaml.Grid.GridColumn));
 
                 descriptor?.AddValueChanged(column, (sender, args) =>
                 {
-                    // Reset timer on each resize event
                     _resizeSaveTimer.Stop();
                     _resizeSaveTimer.Start();
                 });
             }
         }
+
 
         // === PERCENT BUTTON HANDLERS ===
 
@@ -966,14 +988,39 @@ namespace VANTAGE.Views
         private async void BtnSetPercent_Click(object sender, RoutedEventArgs e)
         {
             var button = sender as Button;
-            if (button == null) return;
+            if (button == null)
+            {
+                MessageBox.Show(
+                    "Button source was not recognized.",
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
 
-            // Parse percent from button content
-            var buttonContent = button.Content.ToString();
+                AppLogger.Warning(
+                    "BtnSetPercent_Click called with non-Button sender.",
+                    "ProgressView.BtnSetPercent_Click",
+                    App.CurrentUser?.Username ?? "UnknownUser");
+
+                return;
+            }
+
+            // Safely get content as string (never null)
+            string buttonContent = button.Content?.ToString() ?? string.Empty;
+
+            // Expect content like "0%", "50%", "100%"
             if (!int.TryParse(buttonContent.TrimEnd('%'), out int percent))
             {
-                MessageBox.Show("Invalid percent value.", "Error",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(
+                    "Invalid percent value.",
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+
+                AppLogger.Warning(
+                    $"BtnSetPercent_Click invalid button content: '{buttonContent}'",
+                    "ProgressView.BtnSetPercent_Click",
+                    App.CurrentUser?.Username ?? "UnknownUser");
+
                 return;
             }
 
@@ -981,53 +1028,67 @@ namespace VANTAGE.Views
         }
 
 
+
         /// Context menu: Reset button to default value
 
         private void MenuItem_ResetPercent_Click(object sender, RoutedEventArgs e)
         {
             var menuItem = sender as MenuItem;
-            if (menuItem?.Tag == null) return;
+            if (menuItem?.Tag == null)
+                return;
 
-            // Get default value from menu item tag
-            int defaultValue = int.Parse(menuItem.Tag.ToString());
-
-            // Find which button's context menu this came from
-            var contextMenu = ((MenuItem)sender).Parent as ContextMenu;
+            // Safe cast
+            var contextMenu = menuItem.Parent as ContextMenu;
             var button = contextMenu?.PlacementTarget as Button;
+            if (button == null)
+                return;
 
-            if (button == null) return;
+            // This was your warning:
+            // int defaultValue = int.Parse(menuItem.Tag.ToString());
 
-            // Parse button Tag: "ButtonName|SettingKey|DefaultValue"
-            var tagParts = button.Tag?.ToString().Split('|');
-            if (tagParts == null || tagParts.Length != 3) return;
+            if (!int.TryParse(menuItem.Tag?.ToString() ?? "", out int defaultValue))
+            {
+                MessageBox.Show("Invalid default value.", "Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            // Safe parse tagParts
+            var tagParts = (button.Tag?.ToString() ?? "").Split('|');
+            if (tagParts.Length != 3)
+                return;
 
             string settingKey = tagParts[1];
 
             // Update button
             button.Content = $"{defaultValue}%";
 
-            // Save to user settings
-            SettingsManager.SetUserSetting(App.CurrentUserID, settingKey,
-                defaultValue.ToString(), "int");
+            SettingsManager.SetUserSetting(App.CurrentUserID,
+                settingKey,
+                defaultValue.ToString(),
+                "int");
 
             MessageBox.Show($"Button reset to {defaultValue}%", "Success",
                 MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
 
+
         /// Context menu: Set custom percent value
 
         private void MenuItem_CustomPercent_Click(object sender, RoutedEventArgs e)
         {
-            // Find which button's context menu this came from
-            var contextMenu = ((MenuItem)sender).Parent as ContextMenu;
+            var menuItem = sender as MenuItem;
+            if (menuItem == null)
+                return;
+
+            var contextMenu = menuItem.Parent as ContextMenu;
             var button = contextMenu?.PlacementTarget as Button;
+            if (button == null)
+                return;
 
-            if (button == null) return;
-
-            // Parse button Tag: "ButtonName|SettingKey|DefaultValue"
-            var tagParts = button.Tag?.ToString().Split('|');
-            if (tagParts == null || tagParts.Length != 3)
+            var tagParts = (button.Tag?.ToString() ?? "").Split('|');
+            if (tagParts.Length != 3)
             {
                 MessageBox.Show("Button configuration error.", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
@@ -1037,29 +1098,34 @@ namespace VANTAGE.Views
             string buttonName = tagParts[0];
             string settingKey = tagParts[1];
 
-            // Get current value
-            string currentValue = button.Content.ToString().TrimEnd('%');
-            int.TryParse(currentValue, out int currentPercent);
+            string rawValue = button.Content?.ToString()?.TrimEnd('%') ?? "";
+            int.TryParse(rawValue, out int currentPercent);
 
-            // Show custom dialog
-            var dialog = new CustomPercentDialog(currentPercent);
-            dialog.Owner = Window.GetWindow(this);
+            var dialog = new CustomPercentDialog(currentPercent)
+            {
+                Owner = Window.GetWindow(this)
+            };
 
             if (dialog.ShowDialog() == true)
             {
                 int newPercent = dialog.PercentValue;
 
-                // Update button
                 button.Content = $"{newPercent}%";
 
-                // Save to user settings
-                SettingsManager.SetUserSetting(App.CurrentUserID, settingKey,
-                    newPercent.ToString(), "int");
+                SettingsManager.SetUserSetting(
+                    App.CurrentUserID,
+                    settingKey,
+                    newPercent.ToString(),
+                    "int"
+                );
 
-                MessageBox.Show($"{buttonName} updated to {newPercent}%", "Success",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show($"{buttonName} updated to {newPercent}%",
+                    "Success",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
             }
         }
+
 
         // Keep your existing SetSelectedRecordsPercent helper method
         private async Task SetSelectedRecordsPercent(int percent)
@@ -1117,7 +1183,8 @@ namespace VANTAGE.Views
                     "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
-        private void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+
         {
             // Reset progress bar when loading starts
             if (e.PropertyName == nameof(_viewModel.IsLoading))
@@ -1605,8 +1672,9 @@ namespace VANTAGE.Views
             }
             catch (Exception ex)
             {
-                // TODO: Add proper logging when logging system is implemented
+                AppLogger.Error(ex, "ProgressView.SomeArea");
             }
+
 
             return users;
         }
@@ -1655,7 +1723,8 @@ namespace VANTAGE.Views
         }
         /// Prevent editing of records not assigned to current user
 
-        private void SfActivities_CurrentCellBeginEdit(object sender, Syncfusion.UI.Xaml.Grid.CurrentCellBeginEditEventArgs e)
+        private void SfActivities_CurrentCellBeginEdit(object? sender, CurrentCellBeginEditEventArgs e)
+
         {
             var activity = sfActivities.SelectedItem as Activity;
             if (activity == null) return;
