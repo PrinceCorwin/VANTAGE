@@ -47,6 +47,7 @@
 
   <ItemGroup>
     <Folder Include="Controls\" />
+    <Folder Include="Documents\" />
   </ItemGroup>
 
 </Project>

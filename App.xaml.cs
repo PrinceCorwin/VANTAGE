@@ -91,8 +91,59 @@ namespace VANTAGE
                     }
                 }
 
-                // Mirror reference tables from Central to Local (happens every startup)
-                DatabaseSetup.MirrorTablesFromCentral(centralDbPath);
+                // Check connection to Central before attempting to mirror tables
+                bool centralOnline = false;
+                while (!centralOnline)
+                {
+                    if (SyncManager.CheckCentralConnection(centralDbPath, out string connectionError))
+                    {
+                        centralOnline = true;
+                    }
+                    else
+                    {
+                        // Build detailed error message
+                        string dialogMessage = $"{connectionError}\n\n" +
+                            "Please check your network connection or ensure Google Drive is running.\n\n" +
+                            "• Click RETRY to test connection again\n" +
+                            "• Click WORK OFFLINE to continue without syncing (you can sync later when connection is restored)";
+
+                        // Show custom dialog with RETRY and WORK OFFLINE buttons
+                        var dialog = new VANTAGE.Views.ConnectionRetryDialog(dialogMessage);
+                        bool? result = dialog.ShowDialog();
+
+                        if (result == true && dialog.RetrySelected)
+                        {
+                            // User clicked RETRY - loop continues and connection check runs again
+                            continue;
+                        }
+                        else
+                        {
+                            // User clicked WORK OFFLINE
+                            AppLogger.Info("User chose to work offline - Central database unavailable at startup", "App.OnStartup");
+                            break;
+                        }
+                    }
+                }
+
+                // Mirror reference tables from Central to Local (only if connection successful)
+                if (centralOnline)
+                {
+                    try
+                    {
+                        DatabaseSetup.MirrorTablesFromCentral(centralDbPath);
+                        AppLogger.Info("Successfully mirrored reference tables from Central database", "App.OnStartup");
+                    }
+                    catch (Exception mirrorEx)
+                    {
+                        AppLogger.Error(mirrorEx, "App.OnStartup - MirrorTablesFromCentral");
+                        MessageBox.Show(
+                            $"Failed to sync reference tables from Central database:\n\n{mirrorEx.Message}\n\n" +
+                            "The application will continue, but some data may be outdated.",
+                            "Sync Warning",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Warning);
+                    }
+                }
 
                 VANTAGE.Utilities.AppLogger.Initialize();
                 VANTAGE.Utilities.AppLogger.Info("Milestone starting up...", "App.OnStartup");

@@ -1,6 +1,8 @@
-﻿using Microsoft.Data.Sqlite;
+﻿using Microsoft.Azure.Documents.SystemFunctions;
+using Microsoft.Data.Sqlite;
 using MILESTONE.Views;
 using Syncfusion.UI.Xaml.Grid;
+using Syncfusion.Windows.Tools.Controls;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -175,7 +177,7 @@ namespace VANTAGE.Views
             try
             {
                 // Clear all existing filters first
-                BtnClearFilters_Click(null, null);
+                await _viewModel.ClearAllFiltersAsync();
 
                 // Apply metadata error filter - records missing required fields
                 var errorFilter = @"(
@@ -190,7 +192,7 @@ namespace VANTAGE.Views
                         UDF18 IS NULL OR UDF18 = ''
                     )";
 
-                await _viewModel.ApplyFilter("MetadataErrors", "Custom", errorFilter);
+                await _viewModel.ApplyFilter("MetadataErrors", "IN", errorFilter);
 
                 UpdateRecordCount();
                 UpdateSummaryPanel();
@@ -380,10 +382,289 @@ namespace VANTAGE.Views
             }
         }
 
-        private void MenuDuplicateRows_Click(object sender, RoutedEventArgs e)
+        private async void MenuDuplicateRows_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Duplicate Row(s) feature coming soon!",
-                "Not Yet Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
+            try
+            {
+                var selected = sfActivities.SelectedItems?.Cast<Activity>().ToList();
+                if (selected == null || selected.Count == 0)
+                {
+                    MessageBox.Show("Please select one or more records to duplicate.",
+                        "No Selection", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                var result = MessageBox.Show(
+                    $"This will create {selected.Count} duplicate record(s).\n\nContinue?",
+                    "Confirm Duplication",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+                if (result != MessageBoxResult.Yes)
+                    return;
+
+                var timestamp = DateTime.Now.ToString("yyMMddHHmmss");
+                var userSuffix = App.CurrentUser?.Username?.Length >= 3
+                    ? App.CurrentUser.Username.Substring(App.CurrentUser.Username.Length - 3).ToLower()
+                    : "usr";
+                int sequence = 1;
+
+                var currentUser = App.CurrentUser?.Username ?? "Unknown";
+                int successCount = 0;
+
+                using var connection = DatabaseSetup.GetConnection();
+                connection.Open();
+                using var transaction = connection.BeginTransaction();
+
+                try
+                {
+                    foreach (var original in selected)
+                    {
+                        var duplicate = new Activity
+                        {
+                            UniqueID = $"i{timestamp}{sequence}{userSuffix}",
+                            ActivityID = 0,
+                            AssignedTo = currentUser,
+                            LocalDirty = 1,
+                            CreatedBy = currentUser,
+                            UpdatedBy = currentUser,
+                            UpdatedUtcDate = DateTime.UtcNow,
+                            SyncVersion = 0,
+                            WeekEndDate = null,
+                            ProgDate = null,
+                            AzureUploadUtcDate = null,
+                            SchStart = null,
+                            SchFinish = null,
+                            Area = original.Area,
+                            Aux1 = original.Aux1,
+                            Aux2 = original.Aux2,
+                            Aux3 = original.Aux3,
+                            BaseUnit = original.BaseUnit,
+                            BudgetHoursGroup = original.BudgetHoursGroup,
+                            BudgetHoursROC = original.BudgetHoursROC,
+                            BudgetMHs = original.BudgetMHs,
+                            ChgOrdNO = original.ChgOrdNO,
+                            ClientBudget = original.ClientBudget,
+                            ClientCustom3 = original.ClientCustom3,
+                            ClientEquivQty = original.ClientEquivQty,
+                            CompType = original.CompType,
+                            DateTrigger = original.DateTrigger,
+                            Description = original.Description,
+                            DwgNO = original.DwgNO,
+                            EarnQtyEntry = original.EarnQtyEntry,
+                            EarnedMHsRoc = original.EarnedMHsRoc,
+                            EqmtNO = original.EqmtNO,
+                            EquivQTY = original.EquivQTY,
+                            EquivUOM = original.EquivUOM,
+                            Estimator = original.Estimator,
+                            HexNO = original.HexNO,
+                            HtTrace = original.HtTrace,
+                            InsulType = original.InsulType,
+                            LineNO = original.LineNO,
+                            MtrlSpec = original.MtrlSpec,
+                            Notes = original.Notes,
+                            PaintCode = original.PaintCode,
+                            PercentEntry = original.PercentEntry,
+                            PhaseCategory = original.PhaseCategory,
+                            PhaseCode = original.PhaseCode,
+                            PipeGrade = original.PipeGrade,
+                            PipeSize1 = original.PipeSize1,
+                            PipeSize2 = original.PipeSize2,
+                            PrevEarnMHs = original.PrevEarnMHs,
+                            PrevEarnQTY = original.PrevEarnQTY,
+                            ProjectID = original.ProjectID,
+                            Quantity = original.Quantity,
+                            RevNO = original.RevNO,
+                            RFINO = original.RFINO,
+                            ROCBudgetQTY = original.ROCBudgetQTY,
+                            ROCID = original.ROCID,
+                            ROCPercent = original.ROCPercent,
+                            ROCStep = original.ROCStep,
+                            SchedActNO = original.SchedActNO,
+                            SecondActno = original.SecondActno,
+                            SecondDwgNO = original.SecondDwgNO,
+                            Service = original.Service,
+                            ShopField = original.ShopField,
+                            ShtNO = original.ShtNO,
+                            SubArea = original.SubArea,
+                            PjtSystem = original.PjtSystem,
+                            SystemNO = original.SystemNO,
+                            TagNO = original.TagNO,
+                            UDF1 = original.UDF1,
+                            UDF2 = original.UDF2,
+                            UDF3 = original.UDF3,
+                            UDF4 = original.UDF4,
+                            UDF5 = original.UDF5,
+                            UDF6 = original.UDF6,
+                            UDF7 = original.UDF7,
+                            UDF8 = original.UDF8,
+                            UDF9 = original.UDF9,
+                            UDF10 = original.UDF10,
+                            UDF11 = original.UDF11,
+                            UDF12 = original.UDF12,
+                            UDF13 = original.UDF13,
+                            UDF14 = original.UDF14,
+                            UDF15 = original.UDF15,
+                            UDF16 = original.UDF16,
+                            UDF17 = original.UDF17,
+                            UDF18 = original.UDF18,
+                            UDF20 = original.UDF20,
+                            UOM = original.UOM,
+                            WorkPackage = original.WorkPackage,
+                            XRay = original.XRay
+                        };
+
+                        var insertCmd = connection.CreateCommand();
+                        insertCmd.Transaction = transaction;
+                        insertCmd.CommandText = @"
+                    INSERT INTO Activities (
+                        UniqueID, ActivityID, Area, AssignedTo, AzureUploadUtcDate, Aux1, Aux2, Aux3,
+                        BaseUnit, BudgetHoursGroup, BudgetHoursROC, BudgetMHs, ChgOrdNO, ClientBudget,
+                        ClientCustom3, ClientEquivQty, CompType, CreatedBy, DateTrigger, Description,
+                        DwgNO, EarnQtyEntry, EarnedMHsRoc, EqmtNO, EquivQTY, EquivUOM, Estimator,
+                        HexNO, HtTrace, InsulType, LineNO, LocalDirty, MtrlSpec, Notes, PaintCode,
+                        PercentEntry, PhaseCategory, PhaseCode, PipeGrade, PipeSize1, PipeSize2,
+                        PrevEarnMHs, PrevEarnQTY, ProgDate, ProjectID, Quantity, RevNO, RFINO,
+                        ROCBudgetQTY, ROCID, ROCPercent, ROCStep, SchedActNO, SchFinish, SchStart,
+                        SecondActno, SecondDwgNO, Service, ShopField, ShtNO, SubArea, PjtSystem,
+                        SystemNO, TagNO, UDF1, UDF2, UDF3, UDF4, UDF5, UDF6, UDF7, UDF8, UDF9,
+                        UDF10, UDF11, UDF12, UDF13, UDF14, UDF15, UDF16, UDF17, UDF18, UDF20,
+                        UpdatedBy, UpdatedUtcDate, UOM, WeekEndDate, WorkPackage, XRay, SyncVersion
+                    ) VALUES (
+                        @UniqueID, @ActivityID, @Area, @AssignedTo, @AzureUploadUtcDate, @Aux1, @Aux2, @Aux3,
+                        @BaseUnit, @BudgetHoursGroup, @BudgetHoursROC, @BudgetMHs, @ChgOrdNO, @ClientBudget,
+                        @ClientCustom3, @ClientEquivQty, @CompType, @CreatedBy, @DateTrigger, @Description,
+                        @DwgNO, @EarnQtyEntry, @EarnedMHsRoc, @EqmtNO, @EquivQTY, @EquivUOM, @Estimator,
+                        @HexNO, @HtTrace, @InsulType, @LineNO, @LocalDirty, @MtrlSpec, @Notes, @PaintCode,
+                        @PercentEntry, @PhaseCategory, @PhaseCode, @PipeGrade, @PipeSize1, @PipeSize2,
+                        @PrevEarnMHs, @PrevEarnQTY, @ProgDate, @ProjectID, @Quantity, @RevNO, @RFINO,
+                        @ROCBudgetQTY, @ROCID, @ROCPercent, @ROCStep, @SchedActNO, @SchFinish, @SchStart,
+                        @SecondActno, @SecondDwgNO, @Service, @ShopField, @ShtNO, @SubArea, @PjtSystem,
+                        @SystemNO, @TagNO, @UDF1, @UDF2, @UDF3, @UDF4, @UDF5, @UDF6, @UDF7, @UDF8, @UDF9,
+                        @UDF10, @UDF11, @UDF12, @UDF13, @UDF14, @UDF15, @UDF16, @UDF17, @UDF18, @UDF20,
+                        @UpdatedBy, @UpdatedUtcDate, @UOM, @WeekEndDate, @WorkPackage, @XRay, @SyncVersion
+                    )";
+
+                        insertCmd.Parameters.AddWithValue("@UniqueID", duplicate.UniqueID);
+                        insertCmd.Parameters.AddWithValue("@ActivityID", duplicate.ActivityID);
+                        insertCmd.Parameters.AddWithValue("@Area", duplicate.Area ?? "");
+                        insertCmd.Parameters.AddWithValue("@AssignedTo", duplicate.AssignedTo ?? "");
+                        insertCmd.Parameters.AddWithValue("@AzureUploadUtcDate", duplicate.AzureUploadUtcDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? "");
+                        insertCmd.Parameters.AddWithValue("@Aux1", duplicate.Aux1 ?? "");
+                        insertCmd.Parameters.AddWithValue("@Aux2", duplicate.Aux2 ?? "");
+                        insertCmd.Parameters.AddWithValue("@Aux3", duplicate.Aux3 ?? "");
+                        insertCmd.Parameters.AddWithValue("@BaseUnit", duplicate.BaseUnit);
+                        insertCmd.Parameters.AddWithValue("@BudgetHoursGroup", duplicate.BudgetHoursGroup);
+                        insertCmd.Parameters.AddWithValue("@BudgetHoursROC", duplicate.BudgetHoursROC);
+                        insertCmd.Parameters.AddWithValue("@BudgetMHs", duplicate.BudgetMHs);
+                        insertCmd.Parameters.AddWithValue("@ChgOrdNO", duplicate.ChgOrdNO ?? "");
+                        insertCmd.Parameters.AddWithValue("@ClientBudget", duplicate.ClientBudget);
+                        insertCmd.Parameters.AddWithValue("@ClientCustom3", duplicate.ClientCustom3);
+                        insertCmd.Parameters.AddWithValue("@ClientEquivQty", duplicate.ClientEquivQty);
+                        insertCmd.Parameters.AddWithValue("@CompType", duplicate.CompType ?? "");
+                        insertCmd.Parameters.AddWithValue("@CreatedBy", duplicate.CreatedBy ?? "");
+                        insertCmd.Parameters.AddWithValue("@DateTrigger", duplicate.DateTrigger);
+                        insertCmd.Parameters.AddWithValue("@Description", duplicate.Description ?? "");
+                        insertCmd.Parameters.AddWithValue("@DwgNO", duplicate.DwgNO ?? "");
+                        insertCmd.Parameters.AddWithValue("@EarnQtyEntry", duplicate.EarnQtyEntry);
+                        insertCmd.Parameters.AddWithValue("@EarnedMHsRoc", duplicate.EarnedMHsRoc);
+                        insertCmd.Parameters.AddWithValue("@EqmtNO", duplicate.EqmtNO ?? "");
+                        insertCmd.Parameters.AddWithValue("@EquivQTY", duplicate.EquivQTY);
+                        insertCmd.Parameters.AddWithValue("@EquivUOM", duplicate.EquivUOM ?? "");
+                        insertCmd.Parameters.AddWithValue("@Estimator", duplicate.Estimator ?? "");
+                        insertCmd.Parameters.AddWithValue("@HexNO", duplicate.HexNO);
+                        insertCmd.Parameters.AddWithValue("@HtTrace", duplicate.HtTrace ?? "");
+                        insertCmd.Parameters.AddWithValue("@InsulType", duplicate.InsulType ?? "");
+                        insertCmd.Parameters.AddWithValue("@LineNO", duplicate.LineNO ?? "");
+                        insertCmd.Parameters.AddWithValue("@LocalDirty", duplicate.LocalDirty);
+                        insertCmd.Parameters.AddWithValue("@MtrlSpec", duplicate.MtrlSpec ?? "");
+                        insertCmd.Parameters.AddWithValue("@Notes", duplicate.Notes ?? "");
+                        insertCmd.Parameters.AddWithValue("@PaintCode", duplicate.PaintCode ?? "");
+                        insertCmd.Parameters.AddWithValue("@PercentEntry", duplicate.PercentEntry);
+                        insertCmd.Parameters.AddWithValue("@PhaseCategory", duplicate.PhaseCategory ?? "");
+                        insertCmd.Parameters.AddWithValue("@PhaseCode", duplicate.PhaseCode ?? "");
+                        insertCmd.Parameters.AddWithValue("@PipeGrade", duplicate.PipeGrade ?? "");
+                        insertCmd.Parameters.AddWithValue("@PipeSize1", duplicate.PipeSize1);
+                        insertCmd.Parameters.AddWithValue("@PipeSize2", duplicate.PipeSize2);
+                        insertCmd.Parameters.AddWithValue("@PrevEarnMHs", duplicate.PrevEarnMHs);
+                        insertCmd.Parameters.AddWithValue("@PrevEarnQTY", duplicate.PrevEarnQTY);
+                        insertCmd.Parameters.AddWithValue("@ProgDate", duplicate.ProgDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? "");
+                        insertCmd.Parameters.AddWithValue("@ProjectID", duplicate.ProjectID ?? "");
+                        insertCmd.Parameters.AddWithValue("@Quantity", duplicate.Quantity);
+                        insertCmd.Parameters.AddWithValue("@RevNO", duplicate.RevNO ?? "");
+                        insertCmd.Parameters.AddWithValue("@RFINO", duplicate.RFINO ?? "");
+                        insertCmd.Parameters.AddWithValue("@ROCBudgetQTY", duplicate.ROCBudgetQTY);
+                        insertCmd.Parameters.AddWithValue("@ROCID", duplicate.ROCID);
+                        insertCmd.Parameters.AddWithValue("@ROCPercent", duplicate.ROCPercent);
+                        insertCmd.Parameters.AddWithValue("@ROCStep", duplicate.ROCStep ?? "");
+                        insertCmd.Parameters.AddWithValue("@SchedActNO", duplicate.SchedActNO ?? "");
+                        insertCmd.Parameters.AddWithValue("@SchFinish", duplicate.SchFinish?.ToString("yyyy-MM-dd HH:mm:ss") ?? "");
+                        insertCmd.Parameters.AddWithValue("@SchStart", duplicate.SchStart?.ToString("yyyy-MM-dd HH:mm:ss") ?? "");
+                        insertCmd.Parameters.AddWithValue("@SecondActno", duplicate.SecondActno ?? "");
+                        insertCmd.Parameters.AddWithValue("@SecondDwgNO", duplicate.SecondDwgNO ?? "");
+                        insertCmd.Parameters.AddWithValue("@Service", duplicate.Service ?? "");
+                        insertCmd.Parameters.AddWithValue("@ShopField", duplicate.ShopField ?? "");
+                        insertCmd.Parameters.AddWithValue("@ShtNO", duplicate.ShtNO ?? "");
+                        insertCmd.Parameters.AddWithValue("@SubArea", duplicate.SubArea ?? "");
+                        insertCmd.Parameters.AddWithValue("@PjtSystem", duplicate.PjtSystem ?? "");
+                        insertCmd.Parameters.AddWithValue("@SystemNO", duplicate.SystemNO ?? "");
+                        insertCmd.Parameters.AddWithValue("@TagNO", duplicate.TagNO ?? "");
+                        insertCmd.Parameters.AddWithValue("@UDF1", duplicate.UDF1 ?? "");
+                        insertCmd.Parameters.AddWithValue("@UDF2", duplicate.UDF2 ?? "");
+                        insertCmd.Parameters.AddWithValue("@UDF3", duplicate.UDF3 ?? "");
+                        insertCmd.Parameters.AddWithValue("@UDF4", duplicate.UDF4 ?? "");
+                        insertCmd.Parameters.AddWithValue("@UDF5", duplicate.UDF5 ?? "");
+                        insertCmd.Parameters.AddWithValue("@UDF6", duplicate.UDF6 ?? "");
+                        insertCmd.Parameters.AddWithValue("@UDF7", duplicate.UDF7);
+                        insertCmd.Parameters.AddWithValue("@UDF8", duplicate.UDF8 ?? "");
+                        insertCmd.Parameters.AddWithValue("@UDF9", duplicate.UDF9 ?? "");
+                        insertCmd.Parameters.AddWithValue("@UDF10", duplicate.UDF10 ?? "");
+                        insertCmd.Parameters.AddWithValue("@UDF11", duplicate.UDF11 ?? "");
+                        insertCmd.Parameters.AddWithValue("@UDF12", duplicate.UDF12 ?? "");
+                        insertCmd.Parameters.AddWithValue("@UDF13", duplicate.UDF13 ?? "");
+                        insertCmd.Parameters.AddWithValue("@UDF14", duplicate.UDF14 ?? "");
+                        insertCmd.Parameters.AddWithValue("@UDF15", duplicate.UDF15 ?? "");
+                        insertCmd.Parameters.AddWithValue("@UDF16", duplicate.UDF16 ?? "");
+                        insertCmd.Parameters.AddWithValue("@UDF17", duplicate.UDF17 ?? "");
+                        insertCmd.Parameters.AddWithValue("@UDF18", duplicate.UDF18 ?? "");
+                        insertCmd.Parameters.AddWithValue("@UDF20", duplicate.UDF20 ?? "");
+                        insertCmd.Parameters.AddWithValue("@UpdatedBy", duplicate.UpdatedBy ?? "");
+                        insertCmd.Parameters.AddWithValue("@UpdatedUtcDate", duplicate.UpdatedUtcDate?.ToString("o") ?? DateTime.UtcNow.ToString("o"));
+                        insertCmd.Parameters.AddWithValue("@UOM", duplicate.UOM ?? "");
+                        insertCmd.Parameters.AddWithValue("@WeekEndDate", duplicate.WeekEndDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? "");
+                        insertCmd.Parameters.AddWithValue("@WorkPackage", duplicate.WorkPackage ?? "");
+                        insertCmd.Parameters.AddWithValue("@XRay", duplicate.XRay);
+                        insertCmd.Parameters.AddWithValue("@SyncVersion", duplicate.SyncVersion);
+
+                        insertCmd.ExecuteNonQuery();
+                        successCount++;
+                        sequence++;
+                    }
+
+                    transaction.Commit();
+
+                    AppLogger.Info($"Duplicated {successCount} record(s)", "Duplicate Rows", currentUser);
+
+                    await _viewModel.RefreshAsync();
+                    UpdateRecordCount();
+
+                    MessageBox.Show($"Successfully duplicated {successCount} record(s).\n\nThe new records are assigned to you and marked for sync.",
+                        "Duplication Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    AppLogger.Error(ex, "Duplicate Rows", currentUser);
+                    MessageBox.Show($"Duplication failed: {ex.Message}", "Error",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "Duplicate Rows", App.CurrentUser?.Username ?? "Unknown");
+                MessageBox.Show($"Duplication failed: {ex.Message}", "Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private async void MenuExportSelected_Click(object sender, RoutedEventArgs e)
@@ -1270,8 +1551,9 @@ namespace VANTAGE.Views
             UpdateSummaryPanel();
         }
 
-        private void BtnClearFilters_Click(object sender, RoutedEventArgs e)
+        private async void BtnClearFilters_Click(object sender, RoutedEventArgs e)
         {
+            await _viewModel.ClearAllFiltersAsync();
             // Clear all column filters (including column header filters)
             foreach (var column in sfActivities.Columns)
             {
