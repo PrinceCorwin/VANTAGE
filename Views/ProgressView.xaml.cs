@@ -1,5 +1,4 @@
-﻿using Microsoft.Azure.Documents.SystemFunctions;
-using Microsoft.Data.Sqlite;
+﻿using Microsoft.Data.Sqlite;
 using MILESTONE.Views;
 using Syncfusion.UI.Xaml.Grid;
 using Syncfusion.Windows.Tools.Controls;
@@ -1679,17 +1678,6 @@ namespace VANTAGE.Views
             return users;
         }
 
-        //private void LstColumnVisibility_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        //{
-        //    // Not needed - using CheckBox events instead
-        //}
-
-        private void TxtSearch_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            //_viewModel.SearchText = txtSearch.Text;
-            //UpdateRecordCount();
-        }
-
         private async void BtnRefresh_Click(object sender, RoutedEventArgs e)
         {
             await _viewModel.RefreshAsync();
@@ -1698,8 +1686,6 @@ namespace VANTAGE.Views
             await CalculateMetadataErrorCount();
 
         }
-
-
         
         /// Public method to refresh the grid data from the database
         /// Used by MainWindow after bulk operations like resetting LocalDirty
