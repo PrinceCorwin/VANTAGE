@@ -8,7 +8,7 @@ using VANTAGE.Utilities;
 
 namespace VANTAGE.Data
 {
-
+    
     /// Repository for Activity data access with pagination support
 
     public static class ActivityRepository
@@ -23,50 +23,50 @@ namespace VANTAGE.Data
         }
 
         // Get all LocalDirty=1 records for specified projects
-public static async Task<List<Activity>> GetDirtyActivitiesAsync(List<string> projectIds)
-{
-    return await Task.Run(() =>
+    public static async Task<List<Activity>> GetDirtyActivitiesAsync(List<string> projectIds)
     {
-        var dirtyActivities = new List<Activity>();
-
-        try
+        return await Task.Run(() =>
         {
-            using var connection = DatabaseSetup.GetConnection();
-            connection.Open();
+            var dirtyActivities = new List<Activity>();
 
-            // DEBUG: Log the query
-            var cmd = connection.CreateCommand();
-            cmd.CommandText = @"
-    SELECT * FROM Activities 
-    WHERE LocalDirty = 1 
-    AND ProjectID IN (" + string.Join(",", projectIds.Select((p, i) => $"@proj{i}")) + ")";
-
-            for (int i = 0; i < projectIds.Count; i++)
+            try
             {
-                cmd.Parameters.AddWithValue($"@proj{i}", projectIds[i]);
+                using var connection = DatabaseSetup.GetConnection();
+                connection.Open();
+
+                // DEBUG: Log the query
+                var cmd = connection.CreateCommand();
+                cmd.CommandText = @"
+        SELECT * FROM Activities 
+        WHERE LocalDirty = 1 
+        AND ProjectID IN (" + string.Join(",", projectIds.Select((p, i) => $"@proj{i}")) + ")";
+
+                for (int i = 0; i < projectIds.Count; i++)
+                {
+                    cmd.Parameters.AddWithValue($"@proj{i}", projectIds[i]);
+                }
+
+                // DEBUG OUTPUT
+                AppLogger.Info($"GetDirtyActivitiesAsync called with {projectIds.Count} projects: {string.Join(", ", projectIds)}", "ActivityRepository.GetDirtyActivitiesAsync");
+
+                using var reader = cmd.ExecuteReader();
+                int count = 0;
+                while (reader.Read())
+                {
+                    dirtyActivities.Add(MapReaderToActivity(reader));
+                    count++;
+                }
+
+                AppLogger.Info($"GetDirtyActivitiesAsync returning {count} records", "ActivityRepository.GetDirtyActivitiesAsync");
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "ActivityRepository.GetDirtyActivitiesAsync");
             }
 
-            // DEBUG OUTPUT
-            AppLogger.Info($"GetDirtyActivitiesAsync called with {projectIds.Count} projects: {string.Join(", ", projectIds)}", "ActivityRepository.GetDirtyActivitiesAsync");
-
-            using var reader = cmd.ExecuteReader();
-            int count = 0;
-            while (reader.Read())
-            {
-                dirtyActivities.Add(MapReaderToActivity(reader));
-                count++;
-            }
-
-            AppLogger.Info($"GetDirtyActivitiesAsync returning {count} records", "ActivityRepository.GetDirtyActivitiesAsync");
-        }
-        catch (Exception ex)
-        {
-            AppLogger.Error(ex, "ActivityRepository.GetDirtyActivitiesAsync");
-        }
-
-        return dirtyActivities;
-    });
-}
+            return dirtyActivities;
+        });
+    }
 
         /// Update an existing activity in the database
 
@@ -569,6 +569,7 @@ public static async Task<List<Activity>> GetDirtyActivitiesAsync(List<string> pr
                                  ClientCustom3 = GetDoubleSafe("ClientCustom3")
                              };
                              activity.SuppressCalculations = false;
+                             activity.RecalculateFromDatabase();
                              activities.Add(activity);
                          }
 
@@ -829,6 +830,7 @@ public static async Task<List<Activity>> GetDirtyActivitiesAsync(List<string> pr
                                  ClientCustom3 = GetDoubleSafe("ClientCustom3")
                              };
                              activity.SuppressCalculations = false;
+                             activity.RecalculateFromDatabase();
                              activities.Add(activity);
                          }
 

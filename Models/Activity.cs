@@ -475,10 +475,13 @@ namespace VANTAGE.Models
             OnPropertyChanged(nameof(EarnMHsCalc));
         }
 
-        
+        public void RecalculateFromDatabase()
+        {
+            RecalculatePercentEarned();
+        }
         /// Calculate ClientEquivEarnQTY
         /// Formula: IF(EarnMHsCalc > 0, ROUND((EarnMHsCalc / BudgetMHs) * ClientEquivQty, 3), 0)
-        
+
         private void RecalculateClientEarnedQty()
         {
             if (EarnMHsCalc > 0 && BudgetMHs > 0)

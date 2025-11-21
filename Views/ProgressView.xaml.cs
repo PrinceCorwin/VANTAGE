@@ -1248,12 +1248,14 @@ namespace VANTAGE.Views
 
             if (hasActiveFilter && sfActivities?.View?.Records != null)
             {
+                System.Diagnostics.Debug.WriteLine($"About to loop through {sfActivities.View.Records.Count} records");
                 // Filter is active - extract filtered activities
                 var filteredIds = new HashSet<int>();
                 foreach (var record in sfActivities.View.Records)
                 {
                     // Extract the underlying Activity from Syncfusion's record wrapper
                     var dataProperty = record.GetType().GetProperty("Data");
+                    System.Diagnostics.Debug.WriteLine($"Record type: {record.GetType().Name}, Has Data property: {dataProperty != null}");
                     if (dataProperty != null)
                     {
                         var data = dataProperty.GetValue(record);
@@ -1265,21 +1267,25 @@ namespace VANTAGE.Views
                 }
 
                 recordsToSum = _viewModel.Activities.Where(a => filteredIds.Contains(a.ActivityID)).ToList();
-                System.Diagnostics.Debug.WriteLine($"UpdateSummaryPanel: Calculating from {recordsToSum.Count} filtered records");
             }
             else if (_viewModel?.Activities != null && _viewModel.Activities.Count > 0)
             {
                 // No filter or filter not yet applied - use all records
                 recordsToSum = _viewModel.Activities.ToList();
-                System.Diagnostics.Debug.WriteLine($"UpdateSummaryPanel: Calculating from {recordsToSum.Count} total records (no filter)");
             }
             else
             {
                 // No records at all
                 recordsToSum = new List<Activity>();
-                System.Diagnostics.Debug.WriteLine("UpdateSummaryPanel: No records available");
             }
-
+            // Debug: Check what we're actually summing
+            System.Diagnostics.Debug.WriteLine($"UpdateSummaryPanel: About to sum {recordsToSum.Count} activities");
+            if (recordsToSum.Any())
+            {
+                double testBudget = recordsToSum.Sum(a => a.BudgetMHs);
+                double testEarned = recordsToSum.Sum(a => a.EarnMHsCalc);
+                System.Diagnostics.Debug.WriteLine($"  Test sum: Budget={testBudget:N2}, Earned={testEarned:N2}");
+            }
             // Call ViewModel method to update bound properties
             await _viewModel.UpdateTotalsAsync(recordsToSum);
         }
