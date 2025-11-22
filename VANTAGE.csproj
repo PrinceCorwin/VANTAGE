@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Images\SummitLogoNoText.jpg" />
     <None Remove="Images\SummitS-Full Summit Peak Logo.jpg" />
   </ItemGroup>
 
@@ -41,6 +42,7 @@
 </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="Images\SummitLogoNoText.jpg" />
     <Resource Include="Images\SummitS-Full Summit Peak Logo.jpg" />
   </ItemGroup>
 

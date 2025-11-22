@@ -112,7 +112,7 @@
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="150"/>
+            <ColumnDefinition Width="100"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
@@ -126,39 +126,43 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" />
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
                 <!-- Sidebar Controls -->
                 <StackPanel Grid.Row="0">
                     <TextBlock Text="QUICK FILTERS" 
-                           FontSize="12" 
-                           FontWeight="Bold"
-                           Foreground="{StaticResource TextColorSecondary}"
-                           Margin="0,0,0,10"/>
+                               HorizontalAlignment="Center"
+                               FontSize="10" 
+                               FontWeight="Bold"
+                               Foreground="{StaticResource TextColorSecondary}"
+                               Margin="0,0,0,10"/>
 
                     <Button x:Name="btnFilterComplete"
-                        Content="Complete"
-                        Height="35"
-                        Margin="0,0,0,5"
-                        Background="{StaticResource ControlBackground}"
-                        Foreground="{StaticResource ForegroundColor}"
-                        BorderBrush="{StaticResource BorderColor}"
-                        BorderThickness="1"
-                        HorizontalContentAlignment="Left"
-                        Padding="10,0"
-                        Click="BtnFilterComplete_Click"/>
+                            Content="Complete"
+                            Height="35"
+                            Margin="0,0,0,5"
+                            Background="{StaticResource ControlBackground}"
+                            Foreground="{StaticResource ForegroundColor}"
+                            BorderBrush="{StaticResource BorderColor}"
+                            BorderThickness="1"
+                            HorizontalContentAlignment="Center"
+                            Padding="10,0"
+                            FontSize="10"
+                            Click="BtnFilterComplete_Click"/>
 
-                    <Button x:Name="btnFilterNotComplete"
-                        Content="Not Complete"
+                    <Button x:Name="btnFilterInProgress"
+                        Content="In Progress"
                         Height="35"
                         Margin="0,0,0,5"
                         Background="{StaticResource ControlBackground}"
                         Foreground="{StaticResource ForegroundColor}"
                         BorderBrush="{StaticResource BorderColor}"
                         BorderThickness="1"
-                        HorizontalContentAlignment="Left"
+                        HorizontalContentAlignment="Center"
                         Padding="10,0"
-                        Click="BtnFilterNotComplete_Click"/>
+                        FontSize="10"
+                        Click="btnFilterInProgress_Click"/>
 
                     <Button x:Name="btnFilterNotStarted"
                         Content="Not Started"
@@ -168,8 +172,9 @@
                         Foreground="{StaticResource ForegroundColor}"
                         BorderBrush="{StaticResource BorderColor}"
                         BorderThickness="1"
-                        HorizontalContentAlignment="Left"
+                        HorizontalContentAlignment="Center"
                         Padding="10,0"
+                        FontSize="10"
                         Click="BtnFilterNotStarted_Click"/>
 
                     <Button x:Name="btnFilterUser2"
@@ -180,8 +185,9 @@
                         Foreground="{StaticResource ForegroundColor}"
                         BorderBrush="{StaticResource BorderColor}"
                         BorderThickness="1"
-                        HorizontalContentAlignment="Left"
+                        HorizontalContentAlignment="Center"
                         Padding="10,0"
+                        FontSize="10"
                         Click="BtnFilterUser2_Click"/>
 
                     <Button x:Name="btnFilterUser3"
@@ -192,8 +198,9 @@
                         Foreground="{StaticResource ForegroundColor}"
                         BorderBrush="{StaticResource BorderColor}"
                         BorderThickness="1"
-                        HorizontalContentAlignment="Left"
+                        HorizontalContentAlignment="Center"
                         Padding="10,0"
+                        FontSize="10"
                         Click="BtnFilterUser3_Click"/>
 
                     <Button x:Name="btnFilterMyRecords"
@@ -204,8 +211,9 @@
                         Foreground="{StaticResource ForegroundColor}"
                         BorderBrush="{StaticResource BorderColor}"
                         BorderThickness="1"
-                        HorizontalContentAlignment="Left"
+                        HorizontalContentAlignment="Center"
                         Padding="10,0"
+                        FontSize="10"
                         Click="BtnFilterMyRecords_Click"/>
 
                     <Button x:Name="btnClearFilters"
@@ -218,14 +226,30 @@
                         BorderThickness="1"
                         HorizontalContentAlignment="Center"
                         Padding="10,0"
+                        FontSize="10"
                         Click="BtnClearFilters_Click"/>
 
                     <Border Height="1" 
                         Background="{StaticResource BorderColor}" 
                         Margin="0,20,0,20"/>
 
-                    <TextBlock Text="COLUMN VISIBILITY" 
-                        FontSize="12" 
+                    <Button x:Name="btnColumnVisibility"
+                            Content="COLUMNS"
+                            Height="35"
+                            Margin="0,0,0,5"
+                            Background="{StaticResource ControlBackground}"
+                            Foreground="{StaticResource ForegroundColor}"
+                            BorderBrush="{StaticResource BorderColor}"
+                            BorderThickness="1"
+                            HorizontalContentAlignment="Center"
+                            Padding="10,0"
+                            FontSize="10"
+                            Click="BtnColumnVisibility_Click"/>
+
+                    <!--<TextBlock Text="Show Columns" 
+                        FontSize="10"
+                               TextWrapping="Wrap"
+                               TextAlignment="Center"
                         FontWeight="Bold"
                         Foreground="{StaticResource TextColorSecondary}"
                         Margin="0,0,0,10"/>
@@ -237,8 +261,20 @@
                         BorderBrush="{StaticResource BorderColor}"
                         BorderThickness="1"
                         SelectionMode="Multiple">
-                    </ListBox>
+                    </ListBox>-->
                 </StackPanel>
+                <!-- Spacer (pushes logo to bottom) -->
+                <Border Grid.Row="1" Height="20"/>
+                <!-- Logo at the bottom -->
+                <Border Grid.Row="2" 
+                Margin="0,0,0,0" 
+                Padding="0" 
+                HorizontalAlignment="Center" 
+                VerticalAlignment="Bottom">
+                    <Image Width="80" 
+                   Source="pack://application:,,,/images/SummitLogoNoText.jpg" 
+                   Stretch="Uniform" />
+                </Border>
             </Grid>
         </Border>
 
@@ -274,6 +310,8 @@
                                 Foreground="{StaticResource ForegroundColor}"
                                 BorderBrush="{StaticResource BorderColor}"
                                 BorderThickness="1"
+                                Padding="0"
+                                VerticalContentAlignment="Center"
                                 Click="BtnRefresh_Click"/>
 
                         <!-- NEW: Bulk Action Buttons -->
@@ -286,7 +324,7 @@
                                 Foreground="{StaticResource ForegroundColor}"
                                 BorderBrush="{StaticResource BorderColor}"
                                 BorderThickness="1"
-                                Padding="5,2,5,2"
+                                Padding="0"
                                 VerticalContentAlignment="Center"
                                 Click="MenuAssignToUser_Click"
                                 ToolTip="Assign selected records to user"/>
@@ -301,6 +339,8 @@
                                 Foreground="{StaticResource ForegroundColor}"
                                 BorderBrush="{StaticResource BorderColor}"
                                 BorderThickness="1"
+                                Padding="0"
+                                VerticalContentAlignment="Center"
                                 Click="BtnSetPercent_Click"
                                 ToolTip="Left-click: Apply | Right-click: Customize">
                             <Button.ContextMenu>
@@ -322,6 +362,8 @@
                                 Foreground="{StaticResource ForegroundColor}"
                                 BorderBrush="{StaticResource BorderColor}"
                                 BorderThickness="1"
+                                Padding="0"
+                                VerticalContentAlignment="Center"
                                 Click="BtnSetPercent_Click"
                                 ToolTip="Left-click: Apply | Right-click: Customize">
                             <Button.ContextMenu>
@@ -341,6 +383,8 @@
                                 Foreground="{StaticResource ForegroundColor}"
                                 BorderBrush="{StaticResource BorderColor}"
                                 BorderThickness="1"
+                                Padding="0"
+                                VerticalContentAlignment="Center"
                                 Click="BtnSync_Click"/>
                     </StackPanel>
 

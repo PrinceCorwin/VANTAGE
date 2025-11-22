@@ -765,7 +765,7 @@ namespace VANTAGE.Views
 
             _viewModel.PropertyChanged += ViewModel_PropertyChanged;
 
-            InitializeColumnVisibility();
+            //InitializeColumnVisibility();
             // InitializeColumnTooltips();
             UpdateRecordCount();
 
@@ -969,7 +969,7 @@ namespace VANTAGE.Views
                         col.Width = Math.Max(MinWidth, p.Width);
 
                 sfActivities.UpdateLayout(); // Force layout update
-                InitializeColumnVisibility(); // Sync sidebar checkboxes
+/*                InitializeColumnVisibility();*/ // Sync sidebar checkboxes
                 System.Diagnostics.Debug.WriteLine($"LoadColumnState: applied {prefs.Columns.Count} cols, key={GridPrefsKey}");
             }
             catch (Exception ex)
@@ -1353,32 +1353,32 @@ namespace VANTAGE.Views
 
             return "Unknown";
         }
-        private void InitializeColumnVisibility()
-        {
-            lstColumnVisibility.Items.Clear();
-            _columnMap.Clear();
+        //private void InitializeColumnVisibility()
+        //{
+        //    lstColumnVisibility.Items.Clear();
+        //    _columnMap.Clear();
 
-            foreach (var column in sfActivities.Columns)
-            {
-                // Get property name from mapping name
-                string columnName = GetColumnPropertyName(column);
-                _columnMap[columnName] = column;
+        //    foreach (var column in sfActivities.Columns)
+        //    {
+        //        // Get property name from mapping name
+        //        string columnName = GetColumnPropertyName(column);
+        //        _columnMap[columnName] = column;
 
-                var checkBox = new CheckBox
-                {
-                    Content = columnName,
-                    IsChecked = !column.IsHidden, // Syncfusion uses IsHidden instead of Visibility
-                    Margin = new Thickness(5, 2, 5, 2),
-                    Foreground = System.Windows.Media.Brushes.White,
-                    Tag = column
-                };
+        //        var checkBox = new CheckBox
+        //        {
+        //            Content = columnName,
+        //            IsChecked = !column.IsHidden, // Syncfusion uses IsHidden instead of Visibility
+        //            Margin = new Thickness(5, 2, 5, 2),
+        //            Foreground = System.Windows.Media.Brushes.White,
+        //            Tag = column
+        //        };
 
-                checkBox.Checked += ColumnCheckBox_Changed;
-                checkBox.Unchecked += ColumnCheckBox_Changed;
+        //        checkBox.Checked += ColumnCheckBox_Changed;
+        //        checkBox.Unchecked += ColumnCheckBox_Changed;
 
-                lstColumnVisibility.Items.Add(checkBox);
-            }
-        }
+        //        lstColumnVisibility.Items.Add(checkBox);
+        //    }
+        //}
 
         private void ColumnCheckBox_Changed(object sender, RoutedEventArgs e)
         {
@@ -1454,8 +1454,8 @@ namespace VANTAGE.Views
                 // Update all button visuals - only this one active
                 btnFilterComplete.Content = "Complete ✓";
                 btnFilterComplete.Background = (Brush)Application.Current.Resources["AccentColor"];
-                btnFilterNotComplete.Content = "Not Complete";
-                btnFilterNotComplete.Background = (Brush)Application.Current.Resources["ControlBackground"];
+                btnFilterInProgress.Content = "Not Complete";
+                btnFilterInProgress.Background = (Brush)Application.Current.Resources["ControlBackground"];
                 btnFilterNotStarted.Content = "Not Started";
                 btnFilterNotStarted.Background = (Brush)Application.Current.Resources["ControlBackground"];
             }
@@ -1517,13 +1517,94 @@ namespace VANTAGE.Views
                 AppLogger.Error(ex, "ProgressView.BtnSync_Click");
             }
         }
-        private void BtnFilterNotComplete_Click(object sender, RoutedEventArgs e)
+        // Remove: lstColumnVisibility references
+        // Remove: InitializeColumnVisibility() 
+        // Remove: LstColumnVisibility_SelectionChanged event handler
+        // Keep: _columnMap dictionary
+
+        private void BtnColumnVisibility_Click(object sender, RoutedEventArgs e)
+        {
+            var popup = new Window
+            {
+                Title = "Column Visibility",
+                Width = 350,
+                Height = 500,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                Owner = Window.GetWindow(this),
+                Background = (System.Windows.Media.Brush)FindResource("ControlBackground"),
+                ResizeMode = ResizeMode.NoResize
+            };
+
+            var grid = new Grid { Margin = new Thickness(20) };
+            grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+
+            var listBox = new ListBox
+            {
+                Background = (System.Windows.Media.Brush)FindResource("ControlBackground"),
+                Foreground = (System.Windows.Media.Brush)FindResource("ForegroundColor"),
+                BorderBrush = (System.Windows.Media.Brush)FindResource("BorderColor"),
+                BorderThickness = new Thickness(1)
+            };
+
+            // Populate with current grid columns
+            foreach (var column in sfActivities.Columns)
+            {
+                string columnName = GetColumnPropertyName(column);
+                var checkBox = new CheckBox
+                {
+                    Content = columnName,
+                    IsChecked = !column.IsHidden,
+                    Margin = new Thickness(5, 2, 5, 2),
+                    Foreground = System.Windows.Media.Brushes.White,
+                    Tag = column
+                };
+
+                checkBox.Checked += (s, args) =>
+                {
+                    var col = (Syncfusion.UI.Xaml.Grid.GridColumn)((CheckBox)s).Tag;
+                    col.IsHidden = false;
+                    SaveColumnState();
+                };
+
+                checkBox.Unchecked += (s, args) =>
+                {
+                    var col = (Syncfusion.UI.Xaml.Grid.GridColumn)((CheckBox)s).Tag;
+                    col.IsHidden = true;
+                    SaveColumnState();
+                };
+
+                listBox.Items.Add(checkBox);
+            }
+
+            Grid.SetRow(listBox, 0);
+            grid.Children.Add(listBox);
+
+            var closeButton = new Button
+            {
+                Content = "Close",
+                Width = 80,
+                Height = 30,
+                Margin = new Thickness(0, 10, 0, 0),
+                HorizontalAlignment = HorizontalAlignment.Right,
+                Background = (System.Windows.Media.Brush)FindResource("AccentColor"),
+                Foreground = (System.Windows.Media.Brush)FindResource("ForegroundColor")
+            };
+            closeButton.Click += (s, args) => popup.Close();
+
+            Grid.SetRow(closeButton, 1);
+            grid.Children.Add(closeButton);
+
+            popup.Content = grid;
+            popup.ShowDialog();
+        }
+        private void btnFilterInProgress_Click(object sender, RoutedEventArgs e)
         {
             // Clear other percent filters first
             sfActivities.Columns["PercentEntry"].FilterPredicates.Clear();
 
             // Toggle this filter
-            bool filterActive = btnFilterNotComplete.Content.ToString().Contains("✓");
+            bool filterActive = btnFilterInProgress.Content.ToString().Contains("✓");
 
             if (!filterActive)
             {
@@ -1538,16 +1619,16 @@ namespace VANTAGE.Views
                 // Update all button visuals - only this one active
                 btnFilterComplete.Content = "Complete";
                 btnFilterComplete.Background = (Brush)Application.Current.Resources["ControlBackground"];
-                btnFilterNotComplete.Content = "Not Complete ✓";
-                btnFilterNotComplete.Background = (Brush)Application.Current.Resources["AccentColor"];
+                btnFilterInProgress.Content = "In Progress ✓";
+                btnFilterInProgress.Background = (Brush)Application.Current.Resources["AccentColor"];
                 btnFilterNotStarted.Content = "Not Started";
                 btnFilterNotStarted.Background = (Brush)Application.Current.Resources["ControlBackground"];
             }
             else
             {
                 // Clear this filter
-                btnFilterNotComplete.Content = "Not Complete";
-                btnFilterNotComplete.Background = (Brush)Application.Current.Resources["ControlBackground"];
+                btnFilterInProgress.Content = "In Progress";
+                btnFilterInProgress.Background = (Brush)Application.Current.Resources["ControlBackground"];
             }
 
             sfActivities.View.RefreshFilter();
@@ -1577,8 +1658,8 @@ namespace VANTAGE.Views
                 // Update all button visuals - only this one active
                 btnFilterComplete.Content = "Complete";
                 btnFilterComplete.Background = (Brush)Application.Current.Resources["ControlBackground"];
-                btnFilterNotComplete.Content = "Not Complete";
-                btnFilterNotComplete.Background = (Brush)Application.Current.Resources["ControlBackground"];
+                btnFilterInProgress.Content = "Not Complete";
+                btnFilterInProgress.Background = (Brush)Application.Current.Resources["ControlBackground"];
                 btnFilterNotStarted.Content = "Not Started ✓";
                 btnFilterNotStarted.Background = (Brush)Application.Current.Resources["AccentColor"];
             }
@@ -1642,8 +1723,8 @@ namespace VANTAGE.Views
             btnFilterComplete.Content = "Complete";
             btnFilterComplete.Background = (Brush)Application.Current.Resources["ControlBackground"];
 
-            btnFilterNotComplete.Content = "Not Complete";
-            btnFilterNotComplete.Background = (Brush)Application.Current.Resources["ControlBackground"];
+            btnFilterInProgress.Content = "Not Complete";
+            btnFilterInProgress.Background = (Brush)Application.Current.Resources["ControlBackground"];
 
             btnFilterNotStarted.Content = "Not Started";
             btnFilterNotStarted.Background = (Brush)Application.Current.Resources["ControlBackground"];

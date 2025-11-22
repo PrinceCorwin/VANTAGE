@@ -26,7 +26,7 @@
 
             <Grid Height="40">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
+                    <!--<ColumnDefinition Width="Auto"/>-->
                     <!-- Logo -->
                     <ColumnDefinition Width="Auto"/>
                     <!-- Navigation -->
@@ -40,7 +40,7 @@
                     <!-- Window controls -->
                 </Grid.ColumnDefinitions>
 
-                <!-- COLUMN 0: LOGO (LEFT) -->
+                <!-- COLUMN 0: LOGO (LEFT) --><!--
                 <Border Grid.Column="0"
                 Background="Transparent"
                 HorizontalAlignment="Left"
@@ -50,10 +50,10 @@
                    Height="40"
                    Source="pack://application:,,,/images/SummitS-Full Summit Peak Logo.jpg"
                    Stretch="Uniform"/>
-                </Border>
+                </Border>-->
 
                 <!-- COLUMN 1: NAVIGATION BUTTONS -->
-                <StackPanel Grid.Column="1" 
+                <StackPanel Grid.Column="0" 
                     Orientation="Horizontal"
                     Background="{StaticResource ToolbarBackground}">
 
@@ -104,7 +104,7 @@
                 </StackPanel>
 
                 <!-- COLUMN 2: CREATE & EXCEL -->
-                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
 
                     <syncfusion:ButtonAdv x:Name="btnCreate"
                           Label="CREATE"
@@ -150,7 +150,7 @@
 
                 </StackPanel>
                 <!-- COLUMN 3: PBOOK, WP, REPORTS, ANALYSIS -->
-                <StackPanel Grid.Column="3" Orientation="Horizontal">
+                <StackPanel Grid.Column="2" Orientation="Horizontal">
 
                     <syncfusion:ButtonAdv x:Name="btnPbook"
                           Label="PROG BOOK"
@@ -251,7 +251,7 @@
                 </StackPanel>
 
                 <!-- COLUMN 4: TOOLS, ADMIN, TEST (LEFT-ALIGNED IN EXPANDING SPACE) -->
-                <StackPanel Grid.Column="4" 
+                <StackPanel Grid.Column="3" 
             Orientation="Horizontal"
             HorizontalAlignment="Left">
 
@@ -355,7 +355,7 @@
 
                 </StackPanel>
                 <!-- COLUMN 5: WINDOW CONTROLS (RIGHT) -->
-                <StackPanel Grid.Column="5" 
+                <StackPanel Grid.Column="4" 
                     Orientation="Horizontal"
                     HorizontalAlignment="Right"
                     VerticalAlignment="Center">
