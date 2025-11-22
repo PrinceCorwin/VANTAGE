@@ -118,8 +118,7 @@
 
         <!-- LEFT SIDEBAR: Quick Filters & Controls -->
         <Border Grid.Column="0" 
-                Background="{StaticResource SidebarBackground}" 
-                BorderBrush="{StaticResource SidebarBorder}" 
+
                 BorderThickness="0,0,1,0"
                 Padding="10">
             <Grid>
@@ -133,7 +132,7 @@
                 <StackPanel Grid.Row="0">
                     <TextBlock Text="QUICK FILTERS" 
                                HorizontalAlignment="Center"
-                               FontSize="10" 
+                               FontSize="11" 
                                FontWeight="Bold"
                                Foreground="{StaticResource TextColorSecondary}"
                                Margin="0,0,0,10"/>
@@ -144,11 +143,11 @@
                             Margin="0,0,0,5"
                             Background="{StaticResource ControlBackground}"
                             Foreground="{StaticResource ForegroundColor}"
-                            BorderBrush="{StaticResource BorderColor}"
+                            BorderBrush="{StaticResource ControlBorder}"
                             BorderThickness="1"
                             HorizontalContentAlignment="Center"
                             Padding="10,0"
-                            FontSize="10"
+                            FontSize="11"
                             Click="BtnFilterComplete_Click"/>
 
                     <Button x:Name="btnFilterInProgress"
@@ -157,11 +156,11 @@
                         Margin="0,0,0,5"
                         Background="{StaticResource ControlBackground}"
                         Foreground="{StaticResource ForegroundColor}"
-                        BorderBrush="{StaticResource BorderColor}"
+                        BorderBrush="{StaticResource ControlBorder}"
                         BorderThickness="1"
                         HorizontalContentAlignment="Center"
                         Padding="10,0"
-                        FontSize="10"
+                        FontSize="11"
                         Click="btnFilterInProgress_Click"/>
 
                     <Button x:Name="btnFilterNotStarted"
@@ -170,11 +169,11 @@
                         Margin="0,0,0,5"
                         Background="{StaticResource ControlBackground}"
                         Foreground="{StaticResource ForegroundColor}"
-                        BorderBrush="{StaticResource BorderColor}"
+                        BorderBrush="{StaticResource ControlBorder}"
                         BorderThickness="1"
                         HorizontalContentAlignment="Center"
                         Padding="10,0"
-                        FontSize="10"
+                        FontSize="11"
                         Click="BtnFilterNotStarted_Click"/>
 
                     <Button x:Name="btnFilterUser2"
@@ -183,11 +182,11 @@
                         Margin="0,0,0,5"
                         Background="{StaticResource ControlBackground}"
                         Foreground="{StaticResource ForegroundColor}"
-                        BorderBrush="{StaticResource BorderColor}"
+                        BorderBrush="{StaticResource ControlBorder}"
                         BorderThickness="1"
                         HorizontalContentAlignment="Center"
                         Padding="10,0"
-                        FontSize="10"
+                        FontSize="11"
                         Click="BtnFilterUser2_Click"/>
 
                     <Button x:Name="btnFilterUser3"
@@ -196,25 +195,25 @@
                         Margin="0,0,0,5"
                         Background="{StaticResource ControlBackground}"
                         Foreground="{StaticResource ForegroundColor}"
-                        BorderBrush="{StaticResource BorderColor}"
+                        BorderBrush="{StaticResource ControlBorder}"
                         BorderThickness="1"
                         HorizontalContentAlignment="Center"
                         Padding="10,0"
-                        FontSize="10"
+                        FontSize="11"
                         Click="BtnFilterUser3_Click"/>
 
                     <Button x:Name="btnFilterMyRecords"
-                        Content="My Records"
-                        Height="35"
-                        Margin="0,0,0,5"
-                        Background="{StaticResource ControlBackground}"
-                        Foreground="{StaticResource ForegroundColor}"
-                        BorderBrush="{StaticResource BorderColor}"
-                        BorderThickness="1"
-                        HorizontalContentAlignment="Center"
-                        Padding="10,0"
-                        FontSize="10"
-                        Click="BtnFilterMyRecords_Click"/>
+                            Content="My Records"
+                            Height="35"
+                            Margin="0,0,0,5"
+                            Background="{StaticResource ControlBackground}"
+                            Foreground="{StaticResource ForegroundColor}"
+                            BorderBrush="{StaticResource ControlBorder}"
+                            BorderThickness="1"
+                            HorizontalContentAlignment="Center"
+                            Padding="10,0"
+                            FontSize="11"
+                            Click="BtnFilterMyRecords_Click"/>
 
                     <Button x:Name="btnClearFilters"
                         Content="Clear Filters"
@@ -222,15 +221,15 @@
                         Margin="0,20,0,0"
                         Background="{StaticResource ControlBackground}"
                         Foreground="{StaticResource ForegroundColor}"
-                        BorderBrush="{StaticResource AccentColor}"
+                        BorderBrush="{StaticResource StatusGreen}"
                         BorderThickness="1"
                         HorizontalContentAlignment="Center"
                         Padding="10,0"
-                        FontSize="10"
+                        FontSize="11"
                         Click="BtnClearFilters_Click"/>
 
                     <Border Height="1" 
-                        Background="{StaticResource BorderColor}" 
+                        Background="{StaticResource ControlBorder}" 
                         Margin="0,20,0,20"/>
 
                     <Button x:Name="btnColumnVisibility"
@@ -239,29 +238,13 @@
                             Margin="0,0,0,5"
                             Background="{StaticResource ControlBackground}"
                             Foreground="{StaticResource ForegroundColor}"
-                            BorderBrush="{StaticResource BorderColor}"
+                            BorderBrush="{StaticResource ControlBorder}"
                             BorderThickness="1"
                             HorizontalContentAlignment="Center"
                             Padding="10,0"
-                            FontSize="10"
+                            FontSize="11"
                             Click="BtnColumnVisibility_Click"/>
 
-                    <!--<TextBlock Text="Show Columns" 
-                        FontSize="10"
-                               TextWrapping="Wrap"
-                               TextAlignment="Center"
-                        FontWeight="Bold"
-                        Foreground="{StaticResource TextColorSecondary}"
-                        Margin="0,0,0,10"/>
-
-                    <ListBox x:Name="lstColumnVisibility"
-                        Height="200"
-                        Background="{StaticResource ControlBackground}"
-                        Foreground="{StaticResource ForegroundColor}"
-                        BorderBrush="{StaticResource BorderColor}"
-                        BorderThickness="1"
-                        SelectionMode="Multiple">
-                    </ListBox>-->
                 </StackPanel>
                 <!-- Spacer (pushes logo to bottom) -->
                 <Border Grid.Row="1" Height="20"/>
@@ -294,7 +277,7 @@
             <!-- Combined Toolbar + Summary Panel -->
             <Border Grid.Row="0"
                     Background="{StaticResource ToolbarBackground}"
-                    BorderBrush="{StaticResource BorderColor}"
+                    BorderBrush="{StaticResource ControlBorder}"
                     BorderThickness="0,0,0,1"
                     Padding="10,0">
                         <DockPanel LastChildFill="True" VerticalAlignment="Center">
@@ -308,7 +291,7 @@
                                 Margin="20,0,0,0"
                                 Background="{StaticResource ControlBackground}"
                                 Foreground="{StaticResource ForegroundColor}"
-                                BorderBrush="{StaticResource BorderColor}"
+                                BorderBrush="{StaticResource ControlBorder}"
                                 BorderThickness="1"
                                 Padding="0"
                                 VerticalContentAlignment="Center"
@@ -322,7 +305,7 @@
                                 Margin="20,0,5,0"
                                 Background="{StaticResource ControlBackground}"
                                 Foreground="{StaticResource ForegroundColor}"
-                                BorderBrush="{StaticResource BorderColor}"
+                                BorderBrush="{StaticResource ControlBorder}"
                                 BorderThickness="1"
                                 Padding="0"
                                 VerticalContentAlignment="Center"
@@ -337,7 +320,7 @@
                                 Margin="5,0"
                                 Background="{StaticResource ControlBackground}"
                                 Foreground="{StaticResource ForegroundColor}"
-                                BorderBrush="{StaticResource BorderColor}"
+                                BorderBrush="{StaticResource ControlBorder}"
                                 BorderThickness="1"
                                 Padding="0"
                                 VerticalContentAlignment="Center"
@@ -360,7 +343,7 @@
                                 Margin="5,0"
                                 Background="{StaticResource ControlBackground}"
                                 Foreground="{StaticResource ForegroundColor}"
-                                BorderBrush="{StaticResource BorderColor}"
+                                BorderBrush="{StaticResource ControlBorder}"
                                 BorderThickness="1"
                                 Padding="0"
                                 VerticalContentAlignment="Center"
@@ -381,7 +364,7 @@
                                 Margin="20,0,0,0"
                                 Background="{StaticResource ControlBackground}"
                                 Foreground="{StaticResource ForegroundColor}"
-                                BorderBrush="{StaticResource BorderColor}"
+                                BorderBrush="{StaticResource ControlBorder}"
                                 BorderThickness="1"
                                 Padding="0"
                                 VerticalContentAlignment="Center"
@@ -438,7 +421,7 @@
 
             <!-- DataGrid with VIRTUALIZATION ENABLED -->
             <Border Grid.Row="2" 
-                    BorderBrush="{StaticResource BorderColor}" 
+                    BorderBrush="{StaticResource ControlBorder}" 
                     BorderThickness="0">
                 <syncfusion:SfDataGrid x:Name="sfActivities"
                     AutoGenerateColumns="False"
@@ -454,7 +437,7 @@
                     ColumnSizer="Auto"
                     Background="{StaticResource BackgroundColor}"
                     Foreground="{StaticResource ForegroundColor}"
-                    BorderBrush="{StaticResource BorderColor}"
+                    BorderBrush="{StaticResource ControlBorder}"
                     BorderThickness="0"
                     GridLinesVisibility="Both"
                     RowHeight="28"
@@ -470,7 +453,7 @@
                         <ContextMenu
                              Background="{StaticResource ControlBackground}"
                              Foreground="{StaticResource ForegroundColor}"
-                             BorderBrush="{StaticResource BorderColor}">
+                             BorderBrush="{StaticResource ControlBorder}">
 
                             <!-- Delete Row(s) -->
                             <MenuItem Header="Delete Row(s)"
@@ -547,12 +530,12 @@
                     </syncfusion:SfDataGrid.RecordContextMenu>
                     <syncfusion:SfDataGrid.HeaderContextMenu>
                         <ContextMenu Background="{StaticResource ControlBackground}"
-                 Foreground="{StaticResource ForegroundColor}"
-                 BorderBrush="{StaticResource BorderColor}">
+                                     Foreground="{StaticResource ForegroundColor}"
+                                     BorderBrush="{StaticResource ControlBorder}">
                             <MenuItem Header="Find &amp; Replace in this column..." 
-                  Click="MenuFindReplaceColumn_Click"
-                  Background="{StaticResource ControlBackground}"
-                  Foreground="{StaticResource ForegroundColor}">
+                                      Click="MenuFindReplaceColumn_Click"
+                                      Background="{StaticResource ControlBackground}"
+                                      Foreground="{StaticResource ForegroundColor}">
                                 <MenuItem.Icon>
                                     <TextBlock Text="🔍" FontSize="14"/>
                                 </MenuItem.Icon>
@@ -1345,649 +1328,6 @@
                               AllowFiltering="True"
                               AllowSorting="True"
                               NumberDecimalDigits="0" />
-
-
-                        <!--<syncfusion:GridTextColumn MappingName="SecondDwgNO" 
-                              HeaderText="SecondDwgNO" 
-                              Width="120"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="ShtNO" 
-                              HeaderText="ShtNO" 
-                              Width="80"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="RevNO" 
-                              HeaderText="RevNO" 
-                              Width="80"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        --><!-- NOTES --><!--
-                        <syncfusion:GridTextColumn MappingName="Notes" 
-                              HeaderText="Notes" 
-                              Width="200"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        --><!-- SCHEDULE FIELDS --><!--
-                        <syncfusion:GridTextColumn MappingName="SecondActno" 
-                              HeaderText="SecondActno" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridDateTimeColumn MappingName="SchStart" 
-                                  HeaderText="SchStart" 
-                                  Width="100"
-                                  IsHidden="False"
-                                  AllowEditing="True"
-                                  AllowFiltering="True"
-                                  AllowSorting="True"
-                                  Pattern="ShortDate" />
-
-                        <syncfusion:GridDateTimeColumn MappingName="SchFinish" 
-                                  HeaderText="SchFinish" 
-                                  Width="100"
-                                  IsHidden="False"
-                                  AllowEditing="True"
-                                  AllowFiltering="True"
-                                  AllowSorting="True"
-                                  Pattern="ShortDate" />
-
-                        --><!-- AUXILIARY TAG FIELDS --><!--
-                        <syncfusion:GridTextColumn MappingName="Aux1" 
-                              HeaderText="Aux1" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="Aux2" 
-                              HeaderText="Aux2" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="Aux3" 
-                              HeaderText="Aux3" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="Area" 
-                              HeaderText="Area" 
-                              Width="80"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="ChgOrdNO" 
-                              HeaderText="ChgOrdNO" 
-                              Width="80"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="EqmtNO" 
-                              HeaderText="EqmtNO" 
-                              Width="120"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="Estimator" 
-                              HeaderText="Estimator" 
-                              Width="120"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="InsulType" 
-                              HeaderText="InsulType" 
-                              Width="120"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="LineNO" 
-                              HeaderText="LineNO" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="MtrlSpec" 
-                              HeaderText="MtrlSpec" 
-                              Width="120"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="PaintCode" 
-                              HeaderText="PaintCode" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="PipeGrade" 
-                              HeaderText="PipeGrade" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="RFINO" 
-                              HeaderText="RFINO" 
-                              Width="80"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="Service" 
-                              HeaderText="Service" 
-                              Width="120"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="ShopField" 
-                              HeaderText="ShopField" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="SubArea" 
-                              HeaderText="SubArea" 
-                              Width="80"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="PjtSystem" 
-                              HeaderText="PjtSystem" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="SystemNO" 
-                              HeaderText="SystemNO" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="TagNO" 
-                              HeaderText="TagNO" 
-                              Width="120"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="HtTrace" 
-                              HeaderText="HtTrace" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        --><!-- NUMERIC TAG FIELDS --><!--
-                        <syncfusion:GridNumericColumn MappingName="HexNO" 
-                                 HeaderText="HexNO" 
-                                 Width="80"
-                                 IsHidden="True"
-                                 AllowEditing="True"
-                                 AllowFiltering="True"
-                                 AllowSorting="True"
-                                 NumberDecimalDigits="0" />
-
-                        <syncfusion:GridNumericColumn MappingName="ROCID" 
-                                 HeaderText="ROCID" 
-                                 Width="80"
-                                 IsHidden="True"
-                                 AllowEditing="True"
-                                 AllowFiltering="True"
-                                 AllowSorting="True"
-                                 NumberDecimalDigits="0" />
-
-                        <syncfusion:GridNumericColumn MappingName="XRay" 
-                                 HeaderText="XRay" 
-                                 Width="80"
-                                 IsHidden="True"
-                                 AllowEditing="True"
-                                 AllowFiltering="True"
-                                 AllowSorting="True"
-                                 NumberDecimalDigits="0" />
-
-                        <syncfusion:GridNumericColumn MappingName="DateTrigger" 
-                                 HeaderText="DateTrigger" 
-                                 Width="100"
-                                 IsHidden="True"
-                                 AllowEditing="True"
-                                 AllowFiltering="True"
-                                 AllowSorting="True"
-                                 NumberDecimalDigits="0" />
-
-                        <syncfusion:GridTextColumn MappingName="UDF1" 
-                              HeaderText="UDF1" 
-                              Width="100"
-                              IsHidden="False"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="UDF2" 
-                              HeaderText="UDF2" 
-                              Width="100"
-                              IsHidden="False"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="UDF3" 
-                              HeaderText="UDF3" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="UDF4" 
-                              HeaderText="UDF4" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="UDF5" 
-                              HeaderText="UDF5" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="UDF6" 
-                              HeaderText="UDF6" 
-                              Width="100"
-                              IsHidden="False"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="UDF7" 
-                              HeaderText="UDF7" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="UDF8" 
-                              HeaderText="UDF8" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="UDF9" 
-                              HeaderText="UDF9" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="UDF10" 
-                              HeaderText="UDF10" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-                        <syncfusion:GridTextColumn MappingName="UDF11" 
-                              HeaderText="UDF11" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="UDF12" 
-                              HeaderText="UDF12" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="UDF13" 
-                              HeaderText="UDF13" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="UDF14" 
-                              HeaderText="UDF14" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="UDF15" 
-                              HeaderText="UDF15" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="UDF16" 
-                              HeaderText="UDF16" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="UDF17" 
-                              HeaderText="UDF17" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="UDF18" 
-                              HeaderText="UDF18" 
-                              Width="100"
-                              IsHidden="False"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" 
-                              CellStyle="{StaticResource UDF18RequiredStyle}"/>
-
-                        <syncfusion:GridTextColumn MappingName="UDF20" 
-                              HeaderText="UDF20" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-                        <syncfusion:GridTextColumn MappingName="CreatedBy" 
-                              HeaderText="CreatedBy" 
-                              Width="120"
-                              IsHidden="True"
-                              AllowEditing="False"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="UpdatedBy" 
-                              HeaderText="UpdatedBy" 
-                              Width="120"
-                              IsHidden="False"
-                              AllowEditing="False"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-   
-                        <syncfusion:GridTextColumn MappingName="UpdatedUtcDateDisplay" 
-                                            HeaderText="UpdatedUtcDate" 
-                                            Width="160"
-                                            IsHidden="True"
-                                            AllowEditing="False"
-                                            AllowFiltering="True"
-                                            AllowSorting="True" />
-
-                        <syncfusion:GridNumericColumn MappingName="LocalDirty" 
-                                                     HeaderText="LocalDirty" 
-                                                     Width="100"
-                                                     IsHidden="False"
-                                                     AllowEditing="False"
-                                                     AllowFiltering="True"
-                                                     AllowSorting="True"
-                                                     NumberDecimalDigits="0" />
-                        
-                        <syncfusion:GridTextColumn MappingName="SyncVersion"
-                                    HeaderText="Sync Version"
-                                    Width="120"
-                                    DisplayBinding="{Binding SyncVersion}"
-                                    IsHidden="False"
-                                    AllowEditing="False"
-                                    AllowFiltering="True"
-                                    TextAlignment="Right"/>
-
-
-                        <syncfusion:GridTextColumn MappingName="UOM" 
-                              HeaderText="UOM" 
-                              Width="80"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-                        
-                        <syncfusion:GridTextColumn MappingName="Status" 
-                              HeaderText="Status" 
-                              Width="100"
-                              AllowEditing="False"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="ROCLookupID" 
-                              HeaderText="ROCLookupID" 
-                              Width="150"
-                              IsHidden="True"
-                              AllowEditing="False"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridNumericColumn MappingName="BaseUnit" 
-                                 HeaderText="BaseUnit" 
-                                 Width="100"
-                                 IsHidden="True"
-                                 AllowEditing="True"
-                                 AllowFiltering="True"
-                                 AllowSorting="True"
-                                 NumberDecimalDigits="2" />
-
-                        <syncfusion:GridNumericColumn MappingName="BudgetHoursGroup" 
-                                 HeaderText="BudgetHoursGroup" 
-                                 Width="120"
-                                 IsHidden="True"
-                                 AllowEditing="True"
-                                 AllowFiltering="True"
-                                 AllowSorting="True"
-                                 NumberDecimalDigits="2" />
-
-                        <syncfusion:GridNumericColumn MappingName="BudgetHoursROC" 
-                                 HeaderText="BudgetHoursROC" 
-                                 Width="120"
-                                 IsHidden="True"
-                                 AllowEditing="True"
-                                 AllowFiltering="True"
-                                 AllowSorting="True"
-                                 NumberDecimalDigits="2" />
-
-                        <syncfusion:GridNumericColumn MappingName="EarnedMHsRoc" 
-                                 HeaderText="EarnedMHsRoc" 
-                                 Width="120"
-                                 IsHidden="True"
-                                 AllowEditing="True"
-                                 AllowFiltering="True"
-                                 AllowSorting="True"
-                                 NumberDecimalDigits="2" />
-
-                        <syncfusion:GridTextColumn MappingName="EquivUOM" 
-                              HeaderText="EquivUOM" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="EquivQTY" 
-                              HeaderText="EquivQTY" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridNumericColumn MappingName="PipeSize1" 
-                                 HeaderText="PipeSize1" 
-                                 Width="100"
-                                 IsHidden="True"
-                                 AllowEditing="True"
-                                 AllowFiltering="True"
-                                 AllowSorting="True"
-                                 NumberDecimalDigits="2" />
-
-                        <syncfusion:GridNumericColumn MappingName="PipeSize2" 
-                                 HeaderText="PipeSize2" 
-                                 Width="100"
-                                 IsHidden="True"
-                                 AllowEditing="True"
-                                 AllowFiltering="True"
-                                 AllowSorting="True"
-                                 NumberDecimalDigits="2" />
-
-                        <syncfusion:GridNumericColumn MappingName="PrevEarnMHs" 
-                                 HeaderText="PrevEarnMHs" 
-                                 Width="120"
-                                 IsHidden="True"
-                                 AllowEditing="True"
-                                 AllowFiltering="True"
-                                 AllowSorting="True"
-                                 NumberDecimalDigits="2" />
-
-                        <syncfusion:GridNumericColumn MappingName="PrevEarnQTY" 
-                                 HeaderText="PrevEarnQTY" 
-                                 Width="120"
-                                 IsHidden="True"
-                                 AllowEditing="True"
-                                 AllowFiltering="True"
-                                 AllowSorting="True"
-                                 NumberDecimalDigits="2" />
-
-                        <syncfusion:GridNumericColumn MappingName="ROCBudgetQTY" 
-                                 HeaderText="ROCBudgetQTY" 
-                                 Width="120"
-                                 IsHidden="True"
-                                 AllowEditing="True"
-                                 AllowFiltering="True"
-                                 AllowSorting="True"
-                                 NumberDecimalDigits="2" />
-
-                        <syncfusion:GridNumericColumn MappingName="ROCPercent" 
-                                 HeaderText="ROCPercent" 
-                                 Width="100"
-                                 IsHidden="True"
-                                 AllowEditing="True"
-                                 AllowFiltering="True"
-                                 AllowSorting="True"
-                                 NumberDecimalDigits="2" />
-
-                        <syncfusion:GridNumericColumn MappingName="ClientBudget" 
-                                 HeaderText="ClientBudget" 
-                                 Width="120"
-                                 IsHidden="True"
-                                 AllowEditing="True"
-                                 AllowFiltering="True"
-                                 AllowSorting="True"
-                                 NumberDecimalDigits="3" />
-
-                        <syncfusion:GridNumericColumn MappingName="ClientCustom3" 
-                                 HeaderText="ClientCustom3" 
-                                 Width="120"
-                                 IsHidden="True"
-                                 AllowEditing="True"
-                                 AllowFiltering="True"
-                                 AllowSorting="True"
-                                 NumberDecimalDigits="2" />
-
-                        <syncfusion:GridTextColumn MappingName="ClientEquivEarnQTY" 
-                              HeaderText="ClientEquivEarnQTY" 
-                              Width="150"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridNumericColumn MappingName="ClientEquivQty" 
-                                 HeaderText="ClientEquivQty" 
-                                 Width="120"
-                                 IsHidden="True"
-                                 AllowEditing="True"
-                                 AllowFiltering="True"
-                                 AllowSorting="True"
-                                 NumberDecimalDigits="2" />
-
-                        <syncfusion:GridDateTimeColumn MappingName="ProgDate" 
-                                  HeaderText="ProgDate" 
-                                  Width="120"
-                                  IsHidden="True"
-                                  AllowEditing="False"
-                                  AllowFiltering="True"
-                                  AllowSorting="True"
-                                  Pattern="ShortDate" />
-
-                        <syncfusion:GridDateTimeColumn MappingName="WeekEndDate" 
-                                  HeaderText="WeekEndDate" 
-                                  Width="120"
-                                  IsHidden="True"
-                                  AllowEditing="False"
-                                  AllowFiltering="True"
-                                  AllowSorting="True"
-                                  Pattern="ShortDate" />
-
-                        <syncfusion:GridDateTimeColumn MappingName="AzureUploadUtcDate" 
-                                  HeaderText="AzureUploadUtcDate" 
-                                  Width="120"
-                                  IsHidden="True"
-                                  AllowEditing="False"
-                                  AllowFiltering="True"
-                                  AllowSorting="True"
-                                  Pattern="ShortDate" />-->
-
                     </syncfusion:SfDataGrid.Columns>
                 </syncfusion:SfDataGrid>
             </Border>
@@ -1995,7 +1335,7 @@
             <!-- BOTTOM TOOLBAR -->
             <Border Grid.Row="3" 
                     Background="{StaticResource ToolbarBackground}" 
-                    BorderBrush="{StaticResource BorderColor}" 
+                    BorderBrush="{StaticResource ControlBorder}" 
                     BorderThickness="0,1,0,0"
                     Padding="10,0">
                 <DockPanel>
@@ -2013,7 +1353,7 @@
                                 Click="BtnMetadataErrors_Click"
                                 Background="{StaticResource ControlBackground}"
                                 Foreground="{StaticResource StatusRed}"
-                                BorderBrush="{StaticResource BorderColor}"
+                                BorderBrush="{StaticResource ControlBorder}"
                                 BorderThickness="1"
                                 Padding="8,4"
                                 Margin="15,0,0,0"
@@ -2040,7 +1380,7 @@
                              Minimum="0"
                              Maximum="{Binding TotalRecordCount}"
                              Foreground="{StaticResource AccentColor}"
-                             BorderBrush="{StaticResource BorderColor}"
+                             BorderBrush="{StaticResource ControlBorder}"
                              BorderThickness="1"/>
 
                         <TextBlock Text="{Binding FilteredCount, StringFormat='{}{0:N0}'}"

@@ -173,16 +173,16 @@ namespace VANTAGE
 
         // === EXCEL DROPDOWN ===
 
-        private void BtnExcel_Click(object sender, RoutedEventArgs e)
-        {
-            // Open the dropdown menu
-            var button = sender as Button;
-            if (button?.ContextMenu != null)
-            {
-                button.ContextMenu.PlacementTarget = button;
-                button.ContextMenu.IsOpen = true;
-            }
-        }
+        //private void BtnExcel_Click(object sender, RoutedEventArgs e)
+        //{
+        //    // Open the dropdown menu
+        //    var button = sender as Button;
+        //    if (button?.ContextMenu != null)
+        //    {
+        //        button.ContextMenu.PlacementTarget = button;
+        //        button.ContextMenu.IsOpen = true;
+        //    }
+        //}
 
         private async void MenuExcelImportReplace_Click(object sender, RoutedEventArgs e)
         {
@@ -421,16 +421,16 @@ namespace VANTAGE
 
         // === REPORTS DROPDOWN ===
 
-        private void BtnReports_Click(object sender, RoutedEventArgs e)
-        {
-            // Open the dropdown menu
-            var button = sender as Button;
-            if (button?.ContextMenu != null)
-            {
-                button.ContextMenu.PlacementTarget = button;
-                button.ContextMenu.IsOpen = true;
-            }
-        }
+        //private void BtnReports_Click(object sender, RoutedEventArgs e)
+        //{
+        //    // Open the dropdown menu
+        //    var button = sender as Button;
+        //    if (button?.ContextMenu != null)
+        //    {
+        //        button.ContextMenu.PlacementTarget = button;
+        //        button.ContextMenu.IsOpen = true;
+        //    }
+        //}
 
         private void MenuReport1_Click(object sender, RoutedEventArgs e)
         {
@@ -484,16 +484,16 @@ namespace VANTAGE
 
         // === ANALYSIS DROPDOWN ===
 
-        private void BtnAnalysis_Click(object sender, RoutedEventArgs e)
-        {
-            // Open the dropdown menu
-            var button = sender as Button;
-            if (button?.ContextMenu != null)
-            {
-                button.ContextMenu.PlacementTarget = button;
-                button.ContextMenu.IsOpen = true;
-            }
-        }
+        //private void BtnAnalysis_Click(object sender, RoutedEventArgs e)
+        //{
+        //    // Open the dropdown menu
+        //    var button = sender as Button;
+        //    if (button?.ContextMenu != null)
+        //    {
+        //        button.ContextMenu.PlacementTarget = button;
+        //        button.ContextMenu.IsOpen = true;
+        //    }
+        //}
 
         private void MenuAnalysis1_Click(object sender, RoutedEventArgs e)
         {
@@ -547,22 +547,22 @@ namespace VANTAGE
 
         // === ADMIN DROPDOWN ===
 
-        private void BtnAdmin_Click(object sender, RoutedEventArgs e)
-        {
-            if (!App.CurrentUser.IsAdmin)
-            {
-                MessageBox.Show("You do not have admin privileges.", "Access Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
+        //private void BtnAdmin_Click(object sender, RoutedEventArgs e)
+        //{
+        //    if (!App.CurrentUser.IsAdmin)
+        //    {
+        //        MessageBox.Show("You do not have admin privileges.", "Access Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
+        //        return;
+        //    }
 
-            // Open the dropdown menu
-            var button = sender as Button;
-            if (button?.ContextMenu != null)
-            {
-                button.ContextMenu.PlacementTarget = button;
-                button.ContextMenu.IsOpen = true;
-            }
-        }
+        //    // Open the dropdown menu
+        //    var button = sender as Button;
+        //    if (button?.ContextMenu != null)
+        //    {
+        //        button.ContextMenu.PlacementTarget = button;
+        //        button.ContextMenu.IsOpen = true;
+        //    }
+        //}
 
         private void ToggleUserAdmin_Click(object sender, RoutedEventArgs e)
         {
@@ -871,46 +871,46 @@ namespace VANTAGE
         private async void ToggleUpdatedBy_Click(object sender, RoutedEventArgs e)
         {
             try
-       {
-   var result = MessageBox.Show(
-    "This will set UpdatedBy = 'Bob' for ALL records in the database.\n\n" +
-        "This is a TEST function to verify that cell edits properly update UpdatedBy.\n\n" +
-    "Continue?",
-          "Set UpdatedBy to Bob",
-              MessageBoxButton.YesNo,
-   MessageBoxImage.Question);
-
-       if (result != MessageBoxResult.Yes)
-      return;
-
-    int count = await ActivityRepository.SetAllUpdatedByAsync("Bob");
-
-        // Refresh the current view if it's ProgressView
-   if (ContentArea.Content is Views.ProgressView progressView)
             {
-  // Reload the grid to reflect updated UpdatedBy values
-await progressView.RefreshData();
-      }
+                var result = MessageBox.Show(
+                    "This will set UpdatedBy = 'Bob' for ALL records in the database.\n\n" +
+                    "This is a TEST function to verify that cell edits properly update UpdatedBy.\n\n" +
+                    "Continue?",
+                    "Set UpdatedBy to Bob",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
 
-    MessageBox.Show(
-          $"Successfully set UpdatedBy = 'Bob' for {count:N0} records.\n\n" +
-              "Grid has been refreshed with updated values.\n\n" +
-             "Now edit a cell to verify UpdatedBy gets set to your username.",
-    "Update Complete",
-          MessageBoxButton.OK,
- MessageBoxImage.Information);
+                if (result != MessageBoxResult.Yes)
+                    return;
+
+                int count = await ActivityRepository.SetAllUpdatedByAsync("Bob");
+
+                // Refresh the current view if it's ProgressView
+                if (ContentArea.Content is Views.ProgressView progressView)
+                {
+                    // Reload the grid to reflect updated UpdatedBy values
+                    await progressView.RefreshData();
+                }
+
+                MessageBox.Show(
+                    $"Successfully set UpdatedBy = 'Bob' for {count:N0} records.\n\n" +
+                    "Grid has been refreshed with updated values.\n\n" +
+                    "Now edit a cell to verify UpdatedBy gets set to your username.",
+                    "Update Complete",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
             }
-      catch (Exception ex)
- {
-            MessageBox.Show(
-            $"Error setting UpdatedBy: {ex.Message}",
-         "Error",
-        MessageBoxButton.OK,
-   MessageBoxImage.Error);
-    }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"Error setting UpdatedBy: {ex.Message}",
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
         }
 
-     private void MenuTest2_Click(object sender, RoutedEventArgs e)
+        private void MenuTest2_Click(object sender, RoutedEventArgs e)
         {
             MessageBox.Show("Test 2 - Not implemented", "Test", MessageBoxButton.OK, MessageBoxImage.Information);
         }
