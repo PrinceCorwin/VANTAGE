@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Syncfusion.Windows.Shared;
+using System;
 using System.Linq;
 using System.Reflection;
 using System.Windows;
@@ -7,16 +8,18 @@ using VANTAGE.Data;
 using VANTAGE.Models;
 using VANTAGE.Utilities;
 using VANTAGE.Views;
+using Syncfusion.Windows.Shared;
 
 namespace VANTAGE
 {
-    public partial class MainWindow : Window
+    public partial class MainWindow : ChromelessWindow
     {
         private System.Windows.Media.Animation.Storyboard _spinnerStoryboard;
 
         public MainWindow()
         {
-        
+
+
             InitializeComponent();
 
             // Initialize spinner animation
@@ -25,11 +28,33 @@ namespace VANTAGE
             LoadInitialModule();
         
             UpdateStatusBar();
-            
 
+            this.Loaded += (s, e) => HighlightNavigationButton(btnProgress);
             this.Closing += MainWindow_Closing;
         }
+        private void BtnMinimize_Click(object sender, RoutedEventArgs e)
+        {
+            this.WindowState = WindowState.Minimized;
+        }
 
+        private void BtnMaximize_Click(object sender, RoutedEventArgs e)
+        {
+            if (this.WindowState == WindowState.Maximized)
+            {
+                this.WindowState = WindowState.Normal;
+                btnMaximize.Content = "☐";
+            }
+            else
+            {
+                this.WindowState = WindowState.Maximized;
+                btnMaximize.Content = "❐";
+            }
+        }
+
+        private void BtnClose_Click(object sender, RoutedEventArgs e)
+        {
+            this.Close();
+        }
         private void InitializeSpinnerAnimation()
         {
             // Create continuous rotation animation for spinner
@@ -108,16 +133,37 @@ namespace VANTAGE
         }
 
         // TOOLBAR BUTTON HANDLERS
+        private void HighlightNavigationButton(Syncfusion.Windows.Tools.Controls.ButtonAdv activeButton)
+        {
+            // Reset both navigation buttons
+            borderProgress.Background = System.Windows.Media.Brushes.Transparent;
+            btnProgress.Foreground = (System.Windows.Media.Brush)FindResource("ForegroundColor");
 
+            borderSchedule.Background = System.Windows.Media.Brushes.Transparent;
+            btnSchedule.Foreground = (System.Windows.Media.Brush)FindResource("ForegroundColor");
+
+            // Highlight active button
+            if (activeButton == btnProgress)
+            {
+                borderProgress.Background = (System.Windows.Media.Brush)FindResource("AccentColor");
+                btnProgress.Foreground = (System.Windows.Media.Brush)FindResource("AccentColor");
+            }
+            else if (activeButton == btnSchedule)
+            {
+                borderSchedule.Background = (System.Windows.Media.Brush)FindResource("AccentColor");
+                btnSchedule.Foreground = (System.Windows.Media.Brush)FindResource("AccentColor");
+            }
+        }
         private void BtnProgress_Click(object sender, RoutedEventArgs e)
         {
             LoadProgressModule();
-            HighlightActiveButton(btnProgress);
+            HighlightNavigationButton(btnProgress);
         }
 
         private void BtnSchedule_Click(object sender, RoutedEventArgs e)
         {
             MessageBox.Show("SCHEDULE module coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
+            HighlightNavigationButton(btnSchedule);
         }
 
         private void BtnCreate_Click(object sender, RoutedEventArgs e)
@@ -970,24 +1016,6 @@ await progressView.RefreshData();
 
             // Save last module used
             SettingsManager.SetLastModuleUsed(App.CurrentUserID, "PROGRESS");
-        }
-
-        private void HighlightActiveButton(System.Windows.Controls.Button activeButton)
-        {
-            // Reset all buttons to default
-            btnProgress.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(42, 42, 42));
-            btnSchedule.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(42, 42, 42));
-            btnCreate.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(42, 42, 42));
-            btnExcel.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(42, 42, 42));
-            btnPbook.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(42, 42, 42));
-            btnWorkPackage.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(42, 42, 42));
-            btnReports.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(42, 42, 42));
-            btnAnalysis.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(42, 42, 42));
-            btnAdmin.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(42, 42, 42));
-            btnTools.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(42, 42, 42));
-
-            // Highlight active button
-            activeButton.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0, 120, 215)); // Accent blue
         }
     }
 }
