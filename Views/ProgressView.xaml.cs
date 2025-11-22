@@ -1249,23 +1249,24 @@ namespace VANTAGE.Views
             if (hasActiveFilter && sfActivities?.View?.Records != null)
             {
                 // Filter is active - extract filtered activities
-                var filteredIds = new HashSet<int>();
+                recordsToSum = new List<Activity>();
+
                 foreach (var record in sfActivities.View.Records)
                 {
-                    // Extract the underlying Activity from Syncfusion's record wrapper
-                    var dataProperty = record.GetType().GetProperty("Data");
+                    // Syncfusion wraps records in RecordEntry - extract the Data property
+                    var recordType = record.GetType();
+                    var dataProperty = recordType.GetProperty("Data");
                     if (dataProperty != null)
                     {
-                        var data = dataProperty.GetValue(record);
-                        if (data is Activity activity)
+                        var activity = dataProperty.GetValue(record) as Activity;
+                        if (activity != null)
                         {
-                            filteredIds.Add(activity.ActivityID);
+                            recordsToSum.Add(activity);
                         }
                     }
                 }
 
-                recordsToSum = _viewModel.Activities.Where(a => filteredIds.Contains(a.ActivityID)).ToList();
-                System.Diagnostics.Debug.WriteLine($"UpdateSummaryPanel: Calculating from {recordsToSum.Count} filtered records");
+                System.Diagnostics.Debug.WriteLine($"UpdateSummaryPanel: Extracted {recordsToSum.Count} filtered activities");
             }
             else if (_viewModel?.Activities != null && _viewModel.Activities.Count > 0)
             {
@@ -1279,7 +1280,17 @@ namespace VANTAGE.Views
                 recordsToSum = new List<Activity>();
                 System.Diagnostics.Debug.WriteLine("UpdateSummaryPanel: No records available");
             }
+            System.Diagnostics.Debug.WriteLine($"=== UpdateSummaryPanel ===");
+            System.Diagnostics.Debug.WriteLine($"recordsToSum.Count = {recordsToSum.Count}");
+            if (recordsToSum.Any())
+            {
+                var first = recordsToSum[0];
+                System.Diagnostics.Debug.WriteLine($"First record: PercentEntry={first.PercentEntry}, BudgetMHs={first.BudgetMHs}, EarnMHsCalc={first.EarnMHsCalc}");
 
+                double testBudget = recordsToSum.Sum(a => a.BudgetMHs);
+                double testEarned = recordsToSum.Sum(a => a.EarnMHsCalc);
+                System.Diagnostics.Debug.WriteLine($"Sum: Budget={testBudget:N2}, Earned={testEarned:N2}");
+            }
             // Call ViewModel method to update bound properties
             await _viewModel.UpdateTotalsAsync(recordsToSum);
         }

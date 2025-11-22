@@ -451,124 +451,137 @@ public static async Task<List<Activity>> GetDirtyActivitiesAsync(List<string> pr
                                      return 0;
                                  }
                              }
-
-                             // NEW: Read using NewVantage column names
-                             var activity = new Activity
+                             // ADD THESE 5 LINES HERE:
+                             if (activities.Count == 0)
                              {
-                                 ActivityID = GetIntSafe("ActivityID"),
-                                 HexNO = GetIntSafe("HexNO"),
+                                 double rawPercent = GetDoubleSafe("PercentEntry");
+                                 System.Diagnostics.Debug.WriteLine($"Raw DB value for PercentEntry: {rawPercent}");
+                             }
+                             // NEW: Read using NewVantage column names
+                             var activity = new Activity();
+                             activity.BeginInit();
+                             {
+                                 activity.ActivityID = GetIntSafe("ActivityID");
+                                 activity.HexNO = GetIntSafe("HexNO");
 
                                  // Categories
-                                 CompType = GetStringSafe("CompType"),
-                                 PhaseCategory = GetStringSafe("PhaseCategory"),
-                                 ROCStep = GetStringSafe("ROCStep"),
+                                 activity.CompType = GetStringSafe("CompType");
+                                 activity.PhaseCategory = GetStringSafe("PhaseCategory");
+                                 activity.ROCStep = GetStringSafe("ROCStep");
 
                                  // Drawings
-                                 DwgNO = GetStringSafe("DwgNO"),
-                                 RevNO = GetStringSafe("RevNO"),
-                                 SecondDwgNO = GetStringSafe("SecondDwgNO"),
-                                 ShtNO = GetStringSafe("ShtNO"),
+                                 activity.DwgNO = GetStringSafe("DwgNO");
+                                 activity.RevNO = GetStringSafe("RevNO");
+                                 activity.SecondDwgNO = GetStringSafe("SecondDwgNO");
+                                 activity.ShtNO = GetStringSafe("ShtNO");
 
                                  // Notes
-                                 Notes = GetStringSafe("Notes"),
+                                 activity.Notes = GetStringSafe("Notes");
 
                                  // Schedule
-                                 SecondActno = GetStringSafe("SecondActno"),
-                                 SchStart = GetDateTimeSafe("SchStart"),
-                                 SchFinish = GetDateTimeSafe("SchFinish"),
+                                 activity.SecondActno = GetStringSafe("SecondActno");
+                                 activity.SchStart = GetDateTimeSafe("SchStart");
+                                 activity.SchFinish = GetDateTimeSafe("SchFinish");
 
                                  // Tags / Aux
-                                 Aux1 = GetStringSafe("Aux1"),
-                                 Aux2 = GetStringSafe("Aux2"),
-                                 Aux3 = GetStringSafe("Aux3"),
-                                 Area = GetStringSafe("Area"),
-                                 ChgOrdNO = GetStringSafe("ChgOrdNO"),
-                                 Description = GetStringSafe("Description"),
-                                 EqmtNO = GetStringSafe("EqmtNO"),
-                                 Estimator = GetStringSafe("Estimator"),
-                                 InsulType = GetStringSafe("InsulType"),
-                                 LineNO = GetStringSafe("LineNO"),
-                                 MtrlSpec = GetStringSafe("MtrlSpec"),
-                                 PhaseCode = GetStringSafe("PhaseCode"),
-                                 PaintCode = GetStringSafe("PaintCode"),
-                                 PipeGrade = GetStringSafe("PipeGrade"),
-                                 ProjectID = GetStringSafe("ProjectID"),
-                                 RFINO = GetStringSafe("RFINO"),
-                                 SchedActNO = GetStringSafe("SchedActNO"),
-                                 Service = GetStringSafe("Service"),
-                                 ShopField = GetStringSafe("ShopField"),
-                                 SubArea = GetStringSafe("SubArea"),
-                                 PjtSystem = GetStringSafe("PjtSystem"),
-                                 SystemNO = GetStringSafe("SystemNO"),
-                                 TagNO = GetStringSafe("TagNO"),
-                                 HtTrace = GetStringSafe("HtTrace"),
-                                 WorkPackage = GetStringSafe("WorkPackage"),
+                                 activity.Aux1 = GetStringSafe("Aux1");
+                                 activity.Aux2 = GetStringSafe("Aux2");
+                                 activity.Aux3 = GetStringSafe("Aux3");
+                                 activity.Area = GetStringSafe("Area");
+                                 activity.ChgOrdNO = GetStringSafe("ChgOrdNO");
+                                 activity.Description = GetStringSafe("Description");
+                                 activity.EqmtNO = GetStringSafe("EqmtNO");
+                                 activity.Estimator = GetStringSafe("Estimator");
+                                 activity.InsulType = GetStringSafe("InsulType");
+                                 activity.LineNO = GetStringSafe("LineNO");
+                                 activity.MtrlSpec = GetStringSafe("MtrlSpec");
+                                 activity.PhaseCode = GetStringSafe("PhaseCode");
+                                 activity.PaintCode = GetStringSafe("PaintCode");
+                                 activity.PipeGrade = GetStringSafe("PipeGrade");
+                                 activity.ProjectID = GetStringSafe("ProjectID");
+                                 activity.RFINO = GetStringSafe("RFINO");
+                                 activity.SchedActNO = GetStringSafe("SchedActNO");
+                                 activity.Service = GetStringSafe("Service");
+                                 activity.ShopField = GetStringSafe("ShopField");
+                                 activity.SubArea = GetStringSafe("SubArea");
+                                 activity.PjtSystem = GetStringSafe("PjtSystem");
+                                 activity.SystemNO = GetStringSafe("SystemNO");
+                                 activity.TagNO = GetStringSafe("TagNO");
+                                 activity.HtTrace = GetStringSafe("HtTrace");
+                                 activity.WorkPackage = GetStringSafe("WorkPackage");
 
-                                 XRay = GetDoubleSafe("XRay"),
+                                 activity.XRay = GetDoubleSafe("XRay");
 
                                  // Trigger
-                                 DateTrigger = GetInt32FromObj("DateTrigger"),
+                                 activity.DateTrigger = GetInt32FromObj("DateTrigger");
 
                                  // UDFs
-                                 UDF1 = GetStringSafe("UDF1"),
-                                 UDF2 = GetStringSafe("UDF2"),
-                                 UDF3 = GetStringSafe("UDF3"),
-                                 UDF4 = GetStringSafe("UDF4"),
-                                 UDF5 = GetStringSafe("UDF5"),
-                                 UDF6 = GetStringSafe("UDF6"),
-                                 UDF7 = GetIntSafe("UDF7"),
-                                 UDF8 = GetStringSafe("UDF8"),
-                                 UDF9 = GetStringSafe("UDF9"),
-                                 UDF10 = GetStringSafe("UDF10"),
-
-                                 UDF14 = GetStringSafe("UDF14"),
-                                 UDF15 = GetStringSafe("UDF15"),
-                                 UDF16 = GetStringSafe("UDF16"),
-                                 UDF17 = GetStringSafe("UDF17"),
-                                 UDF18 = GetStringSafe("UDF18"),
-                                 UniqueID = GetStringSafe("UniqueID"),
-                                 UDF20 = GetStringSafe("UDF20"),
-                                 AssignedTo = GetStringSafe("AssignedTo"),
-                                 UpdatedBy = GetStringSafe("UpdatedBy"),
-                                 CreatedBy = GetStringSafe("CreatedBy"),
-                                 UpdatedUtcDate = GetDateTimeFullSafe("UpdatedUtcDate"),
-                                 LocalDirty = GetIntSafe("LocalDirty"),
-                                 SyncVersion = GetIntSafe("SyncVersion"),
+                                 activity.UDF1 = GetStringSafe("UDF1");
+                                 activity.UDF2 = GetStringSafe("UDF2");
+                                 activity.UDF3 = GetStringSafe("UDF3");
+                                 activity.UDF4 = GetStringSafe("UDF4");
+                                 activity.UDF5 = GetStringSafe("UDF5");
+                                 activity.UDF6 = GetStringSafe("UDF6");
+                                 activity.UDF7 = GetIntSafe("UDF7");
+                                 activity.UDF8 = GetStringSafe("UDF8");
+                                 activity.UDF9 = GetStringSafe("UDF9");
+                                 activity.UDF10 = GetStringSafe("UDF10");
+                                 activity.UDF11 = GetStringSafe("UDF11");
+                                 activity.UDF12 = GetStringSafe("UDF12");
+                                 activity.UDF13 = GetStringSafe("UDF13");
+                                 activity.UDF14 = GetStringSafe("UDF14");
+                                 activity.UDF15 = GetStringSafe("UDF15");
+                                 activity.UDF16 = GetStringSafe("UDF16");
+                                 activity.UDF17 = GetStringSafe("UDF17");
+                                 activity.UDF18 = GetStringSafe("UDF18");
+                                 activity.UniqueID = GetStringSafe("UniqueID");
+                                 activity.UDF20 = GetStringSafe("UDF20");
+                                 activity.AssignedTo = GetStringSafe("AssignedTo");
+                                 activity.UpdatedBy = GetStringSafe("UpdatedBy");
+                                 activity.CreatedBy = GetStringSafe("CreatedBy");
+                                 activity.UpdatedUtcDate = GetDateTimeFullSafe("UpdatedUtcDate");
+                                 activity.LocalDirty = GetIntSafe("LocalDirty");
+                                 activity.SyncVersion = GetIntSafe("SyncVersion");
 
                                  // Values
-                                 BaseUnit = GetDoubleSafe("BaseUnit"),
-                                 BudgetMHs = GetDoubleSafe("BudgetMHs"),
-                                 BudgetHoursGroup = GetDoubleSafe("BudgetHoursGroup"),
-                                 BudgetHoursROC = GetDoubleSafe("BudgetHoursROC"),
-                                 EarnedMHsRoc = GetDoubleSafe("EarnedMHsRoc"),
-                                 EarnQtyEntry = GetDoubleSafe("EarnQtyEntry"),
-                                 PercentEntry = GetDoubleSafe("PercentEntry"),
-                                 Quantity = GetDoubleSafe("Quantity"),
-                                 UOM = GetStringSafe("UOM"),
+                                 activity.BaseUnit = GetDoubleSafe("BaseUnit");
+                                 activity.BudgetMHs = GetDoubleSafe("BudgetMHs");
+                                 activity.BudgetHoursGroup = GetDoubleSafe("BudgetHoursGroup");
+                                 activity.BudgetHoursROC = GetDoubleSafe("BudgetHoursROC");
+                                 activity.EarnedMHsRoc = GetDoubleSafe("EarnedMHsRoc");
+                                 activity.EarnQtyEntry = GetDoubleSafe("EarnQtyEntry");
+                                 activity.PercentEntry = GetDoubleSafe("PercentEntry");
+                                 activity.Quantity = GetDoubleSafe("Quantity");
+                                 activity.UOM = GetStringSafe("UOM");
 
                                  // Equipment
-                                 EquivQTY = GetDoubleSafe("EquivQTY"),
-                                 EquivUOM = GetStringSafe("EquivUOM"),
+                                 activity.EquivQTY = GetDoubleSafe("EquivQTY");
+                                 activity.EquivUOM = GetStringSafe("EquivUOM");
 
                                  // ROC
-                                 ROCID = GetDoubleSafe("ROCID"),
-                                 ROCPercent = GetDoubleSafe("ROCPercent"),
-                                 ROCBudgetQTY = GetDoubleSafe("ROCBudgetQTY"),
+                                 activity.ROCID = GetDoubleSafe("ROCID");
+                                 activity.ROCPercent = GetDoubleSafe("ROCPercent");
+                                 activity.ROCBudgetQTY = GetDoubleSafe("ROCBudgetQTY");
 
                                  // Pipe
-                                 PipeSize1 = GetDoubleSafe("PipeSize1"),
-                                 PipeSize2 = GetDoubleSafe("PipeSize2"),
+                                 activity.PipeSize1 = GetDoubleSafe("PipeSize1");
+                                 activity.PipeSize2 = GetDoubleSafe("PipeSize2");
 
                                  // Previous
-                                 PrevEarnMHs = GetDoubleSafe("PrevEarnMHs"),
-                                 PrevEarnQTY = GetDoubleSafe("PrevEarnQTY"),
+                                 activity.PrevEarnMHs = GetDoubleSafe("PrevEarnMHs");
+                                 activity.PrevEarnQTY = GetDoubleSafe("PrevEarnQTY");
 
                                  // Client
-                                 ClientEquivQty = GetDoubleSafe("ClientEquivQty"),
-                                 ClientBudget = GetDoubleSafe("ClientBudget"),
-                                 ClientCustom3 = GetDoubleSafe("ClientCustom3")
+                                 activity.ClientEquivQty = GetDoubleSafe("ClientEquivQty");
+                                 activity.ClientBudget = GetDoubleSafe("ClientBudget");
+                                 activity.ClientCustom3 = GetDoubleSafe("ClientCustom3");
                              };
-                             activity.SuppressCalculations = false;
+                             if (activities.Count == 0) // Only first record
+                             {
+                                 System.Diagnostics.Debug.WriteLine($"DB Load - PercentEntry={activity.PercentEntry}, BudgetMHs={activity.BudgetMHs}, EarnMHsCalc={activity.EarnMHsCalc}");
+                             }
+                             activity.EndInit();
+                             //activity.SuppressCalculations = false;
                              activities.Add(activity);
                          }
 
@@ -718,117 +731,131 @@ public static async Task<List<Activity>> GetDirtyActivitiesAsync(List<string> pr
                                      return 0;
                                  }
                              }
-
-                             // Build activity object (EXACT same structure as GetPageAsync)
-                             var activity = new Activity
+                             // ADD THESE 5 LINES HERE:
+                             if (activities.Count == 0)
                              {
-                                 ActivityID = GetIntSafe("ActivityID"),
-                                 HexNO = GetIntSafe("HexNO"),
+                                 double rawPercent = GetDoubleSafe("PercentEntry");
+                                 System.Diagnostics.Debug.WriteLine($"Raw DB value for PercentEntry: {rawPercent}");
+                             }
+                             // Build activity object (EXACT same structure as GetPageAsync)
+                             var activity = new Activity();
+                             activity.BeginInit();
+                             {
+                                 activity.ActivityID = GetIntSafe("ActivityID");
+                                 activity.HexNO = GetIntSafe("HexNO");
 
                                  // Schedule dates
-                                 SchStart = GetDateTimeSafe("SchStart"),
-                                 SchFinish = GetDateTimeSafe("SchFinish"),
-                                 ProgDate = GetDateTimeSafe("ProgDate"),
-                                 WeekEndDate = GetDateTimeSafe("WeekEndDate"),
-                                 AzureUploadUtcDate = GetDateTimeSafe("AzureUploadUtcDate"),
+                                 activity.SchStart = GetDateTimeSafe("SchStart");
+                                 activity.SchFinish = GetDateTimeSafe("SchFinish");
+                                 activity.ProgDate = GetDateTimeSafe("ProgDate");
+                                 activity.WeekEndDate = GetDateTimeSafe("WeekEndDate");
+                                 activity.AzureUploadUtcDate = GetDateTimeSafe("AzureUploadUtcDate");
 
                                  // Text fields - Category
-                                 Area = GetStringSafe("Area"),
-                                 Aux1 = GetStringSafe("Aux1"),
-                                 Aux2 = GetStringSafe("Aux2"),
-                                 Aux3 = GetStringSafe("Aux3"),
-                                 ChgOrdNO = GetStringSafe("ChgOrdNO"),
-                                 CompType = GetStringSafe("CompType"),
-                                 Description = GetStringSafe("Description"),
-                                 DwgNO = GetStringSafe("DwgNO"),
-                                 EqmtNO = GetStringSafe("EqmtNO"),
-                                 Estimator = GetStringSafe("Estimator"),
-                                 HtTrace = GetStringSafe("HtTrace"),
-                                 InsulType = GetStringSafe("InsulType"),
-                                 LineNO = GetStringSafe("LineNO"),
-                                 MtrlSpec = GetStringSafe("MtrlSpec"),
-                                 Notes = GetStringSafe("Notes"),
-                                 PaintCode = GetStringSafe("PaintCode"),
-                                 PhaseCategory = GetStringSafe("PhaseCategory"),
-                                 PhaseCode = GetStringSafe("PhaseCode"),
-                                 PipeGrade = GetStringSafe("PipeGrade"),
-                                 ProjectID = GetStringSafe("ProjectID"),
-                                 RevNO = GetStringSafe("RevNO"),
-                                 RFINO = GetStringSafe("RFINO"),
-                                 ROCStep = GetStringSafe("ROCStep"),
-                                 SchedActNO = GetStringSafe("SchedActNO"),
-                                 SecondActno = GetStringSafe("SecondActno"),
-                                 SecondDwgNO = GetStringSafe("SecondDwgNO"),
-                                 Service = GetStringSafe("Service"),
-                                 ShopField = GetStringSafe("ShopField"),
-                                 ShtNO = GetStringSafe("ShtNO"),
-                                 SubArea = GetStringSafe("SubArea"),
-                                 PjtSystem = GetStringSafe("PjtSystem"),
-                                 SystemNO = GetStringSafe("SystemNO"),
-                                 TagNO = GetStringSafe("TagNO"),
-                                 WorkPackage = GetStringSafe("WorkPackage"),
-                                 DateTrigger = GetIntSafe("DateTrigger"),
-                                 XRay = GetIntSafe("XRay"),
+                                 activity.Area = GetStringSafe("Area");
+                                 activity.Aux1 = GetStringSafe("Aux1");
+                                 activity.Aux2 = GetStringSafe("Aux2");
+                                 activity.Aux3 = GetStringSafe("Aux3");
+                                 activity.ChgOrdNO = GetStringSafe("ChgOrdNO");
+                                 activity.CompType = GetStringSafe("CompType");
+                                 activity.Description = GetStringSafe("Description");
+                                 activity.DwgNO = GetStringSafe("DwgNO");
+                                 activity.EqmtNO = GetStringSafe("EqmtNO");
+                                 activity.Estimator = GetStringSafe("Estimator");
+                                 activity.HtTrace = GetStringSafe("HtTrace");
+                                 activity.InsulType = GetStringSafe("InsulType");
+                                 activity.LineNO = GetStringSafe("LineNO");
+                                 activity.MtrlSpec = GetStringSafe("MtrlSpec");
+                                 activity.Notes = GetStringSafe("Notes");
+                                 activity.PaintCode = GetStringSafe("PaintCode");
+                                 activity.PhaseCategory = GetStringSafe("PhaseCategory");
+                                 activity.PhaseCode = GetStringSafe("PhaseCode");
+                                 activity.PipeGrade = GetStringSafe("PipeGrade");
+                                 activity.ProjectID = GetStringSafe("ProjectID");
+                                 activity.RevNO = GetStringSafe("RevNO");
+                                 activity.RFINO = GetStringSafe("RFINO");
+                                 activity.ROCStep = GetStringSafe("ROCStep");
+                                 activity.SchedActNO = GetStringSafe("SchedActNO");
+                                 activity.SecondActno = GetStringSafe("SecondActno");
+                                 activity.SecondDwgNO = GetStringSafe("SecondDwgNO");
+                                 activity.Service = GetStringSafe("Service");
+                                 activity.ShopField = GetStringSafe("ShopField");
+                                 activity.ShtNO = GetStringSafe("ShtNO");
+                                 activity.SubArea = GetStringSafe("SubArea");
+                                 activity.PjtSystem = GetStringSafe("PjtSystem");
+                                 activity.SystemNO = GetStringSafe("SystemNO");
+                                 activity.TagNO = GetStringSafe("TagNO");
+                                 activity.WorkPackage = GetStringSafe("WorkPackage");
+                                 activity.DateTrigger = GetIntSafe("DateTrigger");
+                                 activity.XRay = GetIntSafe("XRay");
 
                                  // UDFs
-                                 UDF1 = GetStringSafe("UDF1"),
-                                 UDF2 = GetStringSafe("UDF2"),
-                                 UDF3 = GetStringSafe("UDF3"),
-                                 UDF4 = GetStringSafe("UDF4"),
-                                 UDF5 = GetStringSafe("UDF5"),
-                                 UDF6 = GetStringSafe("UDF6"),
-                                 UDF7 = GetIntSafe("UDF7"),
-                                 UDF8 = GetStringSafe("UDF8"),
-                                 UDF9 = GetStringSafe("UDF9"),
-                                 UDF10 = GetStringSafe("UDF10"),
-                                 UDF14 = GetStringSafe("UDF14"),
-                                 UDF15 = GetStringSafe("UDF15"),
-                                 UDF16 = GetStringSafe("UDF16"),
-                                 UDF17 = GetStringSafe("UDF17"),
-                                 UDF18 = GetStringSafe("UDF18"),
-                                 UniqueID = GetStringSafe("UniqueID"),
-                                 UDF20 = GetStringSafe("UDF20"),
-                                 AssignedTo = GetStringSafe("AssignedTo"),
-                                 UpdatedBy = GetStringSafe("UpdatedBy"),
-                                 CreatedBy = GetStringSafe("CreatedBy"),
-                                 UpdatedUtcDate = GetDateTimeFullSafe("UpdatedUtcDate"),
-                                 LocalDirty = GetIntSafe("LocalDirty"),
+                                 activity.UDF1 = GetStringSafe("UDF1");
+                                 activity.UDF2 = GetStringSafe("UDF2");
+                                 activity.UDF3 = GetStringSafe("UDF3");
+                                 activity.UDF4 = GetStringSafe("UDF4");
+                                 activity.UDF5 = GetStringSafe("UDF5");
+                                 activity.UDF6 = GetStringSafe("UDF6");
+                                 activity.UDF7 = GetIntSafe("UDF7");
+                                 activity.UDF8 = GetStringSafe("UDF8");
+                                 activity.UDF9 = GetStringSafe("UDF9");
+                                 activity.UDF10 = GetStringSafe("UDF10");
+                                 activity.UDF11 = GetStringSafe("UDF11");
+                                 activity.UDF12 = GetStringSafe("UDF12");
+                                 activity.UDF13 = GetStringSafe("UDF13");
+                                 activity.UDF14 = GetStringSafe("UDF14");
+                                 activity.UDF15 = GetStringSafe("UDF15");
+                                 activity.UDF16 = GetStringSafe("UDF16");
+                                 activity.UDF17 = GetStringSafe("UDF17");
+                                 activity.UDF18 = GetStringSafe("UDF18");
+                                 activity.UniqueID = GetStringSafe("UniqueID");
+                                 activity.UDF20 = GetStringSafe("UDF20");
+                                 activity.AssignedTo = GetStringSafe("AssignedTo");
+                                 activity.UpdatedBy = GetStringSafe("UpdatedBy");
+                                 activity.CreatedBy = GetStringSafe("CreatedBy");
+                                 activity.UpdatedUtcDate = GetDateTimeFullSafe("UpdatedUtcDate");
+                                 activity.LocalDirty = GetIntSafe("LocalDirty");
 
 
                                  // Values
-                                 BaseUnit = GetDoubleSafe("BaseUnit"),
-                                 BudgetMHs = GetDoubleSafe("BudgetMHs"),
-                                 BudgetHoursGroup = GetDoubleSafe("BudgetHoursGroup"),
-                                 BudgetHoursROC = GetDoubleSafe("BudgetHoursROC"),
-                                 EarnedMHsRoc = GetDoubleSafe("EarnedMHsRoc"),
-                                 EarnQtyEntry = GetDoubleSafe("EarnQtyEntry"),
-                                 PercentEntry = GetDoubleSafe("PercentEntry"),
-                                 Quantity = GetDoubleSafe("Quantity"),
-                                 UOM = GetStringSafe("UOM"),
+                                 activity.BaseUnit = GetDoubleSafe("BaseUnit");
+                                 activity.BudgetMHs = GetDoubleSafe("BudgetMHs");
+                                 activity.BudgetHoursGroup = GetDoubleSafe("BudgetHoursGroup");
+                                 activity.BudgetHoursROC = GetDoubleSafe("BudgetHoursROC");
+                                 activity.EarnedMHsRoc = GetDoubleSafe("EarnedMHsRoc");
+                                 activity.EarnQtyEntry = GetDoubleSafe("EarnQtyEntry");
+                                 activity.PercentEntry = GetDoubleSafe("PercentEntry");
+                                 activity.Quantity = GetDoubleSafe("Quantity");
+                                 activity.UOM = GetStringSafe("UOM");   
 
                                  // Equipment
-                                 EquivQTY = GetDoubleSafe("EquivQTY"),
-                                 EquivUOM = GetStringSafe("EquivUOM"),
+                                 activity.EquivQTY = GetDoubleSafe("EquivQTY");
+                                 activity.EquivUOM = GetStringSafe("EquivUOM"); 
 
                                  // ROC
-                                 ROCID = GetDoubleSafe("ROCID"),
-                                 ROCPercent = GetDoubleSafe("ROCPercent"),
-                                 ROCBudgetQTY = GetDoubleSafe("ROCBudgetQTY"),
+                                 activity.ROCID = GetDoubleSafe("ROCID");
+                                 activity.ROCPercent = GetDoubleSafe("ROCPercent");
+                                 activity.ROCBudgetQTY = GetDoubleSafe("ROCBudgetQTY");
 
                                  // Pipe
-                                 PipeSize1 = GetDoubleSafe("PipeSize1"),
-                                 PipeSize2 = GetDoubleSafe("PipeSize2"),
+                                 activity.PipeSize1 = GetDoubleSafe("PipeSize1");
+                                 activity.PipeSize2 = GetDoubleSafe("PipeSize2");
 
                                  // Previous
-                                 PrevEarnMHs = GetDoubleSafe("PrevEarnMHs"),
-                                 PrevEarnQTY = GetDoubleSafe("PrevEarnQTY"),
+                                 activity.PrevEarnMHs = GetDoubleSafe("PrevEarnMHs");
+                                 activity.PrevEarnQTY = GetDoubleSafe("PrevEarnQTY");
 
                                  // Client
-                                 ClientEquivQty = GetDoubleSafe("ClientEquivQty"),
-                                 ClientBudget = GetDoubleSafe("ClientBudget"),
-                                 ClientCustom3 = GetDoubleSafe("ClientCustom3")
+                                 activity.ClientEquivQty = GetDoubleSafe("ClientEquivQty");
+                                 activity.ClientBudget = GetDoubleSafe("ClientBudget");
+                                 activity.ClientCustom3 = GetDoubleSafe("ClientCustom3");
                              };
-                             activity.SuppressCalculations = false;
+                             if (activities.Count == 0) // Only first record
+                             {
+                                 System.Diagnostics.Debug.WriteLine($"DB Load - PercentEntry={activity.PercentEntry}, BudgetMHs={activity.BudgetMHs}, EarnMHsCalc={activity.EarnMHsCalc}");
+                             }
+                             activity.EndInit();
+                             //activity.SuppressCalculations = false;
                              activities.Add(activity);
                          }
 
