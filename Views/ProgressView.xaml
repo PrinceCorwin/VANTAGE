@@ -118,23 +118,32 @@
 
         <!-- LEFT SIDEBAR: Quick Filters & Controls -->
         <Border Grid.Column="0" 
-
-                BorderThickness="0,0,1,0"
-                Padding="10">
+                BorderThickness="1"
+                Padding="10,0,10,10"
+                Background="{StaticResource DarkBackgroundColor}"
+                BorderBrush="{StaticResource BorderColor}">
             <Grid>
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
+                
+                <StackPanel Grid.Row="0"
+                         Height="40">
+                </StackPanel>
 
                 <!-- Sidebar Controls -->
-                <StackPanel Grid.Row="0">
+                <StackPanel Grid.Row="1">
                     <TextBlock Text="QUICK FILTERS" 
                                HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
                                FontSize="11" 
                                FontWeight="Bold"
-                               Foreground="{StaticResource TextColorSecondary}"
+                               Height="30"
+                               Padding="10"
+                               Foreground="{StaticResource ForegroundColor}"
                                Margin="0,0,0,10"/>
 
                     <Button x:Name="btnFilterComplete"
@@ -233,7 +242,7 @@
                         Margin="0,20,0,20"/>
 
                     <Button x:Name="btnColumnVisibility"
-                            Content="COLUMNS"
+                            Content="Columns"
                             Height="35"
                             Margin="0,0,0,5"
                             Background="{StaticResource ControlBackground}"
@@ -247,9 +256,9 @@
 
                 </StackPanel>
                 <!-- Spacer (pushes logo to bottom) -->
-                <Border Grid.Row="1" Height="20"/>
+                <Border Grid.Row="2" Height="20"/>
                 <!-- Logo at the bottom -->
-                <Border Grid.Row="2" 
+                <Border Grid.Row="3" 
                 Margin="0,0,0,0" 
                 Padding="0" 
                 HorizontalAlignment="Center" 
@@ -276,9 +285,9 @@
 
             <!-- Combined Toolbar + Summary Panel -->
             <Border Grid.Row="0"
-                    Background="{StaticResource ToolbarBackground}"
-                    BorderBrush="{StaticResource ControlBorder}"
-                    BorderThickness="0,0,0,1"
+                    BorderThickness="0,1,1,1"
+                    Background="{StaticResource DarkBackgroundColor}"
+                    BorderBrush="{StaticResource BorderColor}"
                     Padding="10,0">
                         <DockPanel LastChildFill="True" VerticalAlignment="Center">
                     <!-- LEFT SIDE: Search controls -->
@@ -448,6 +457,17 @@
                     CurrentCellEndEdit="sfActivities_CurrentCellEndEdit"
                     SelectionChanged="sfActivities_SelectionChanged"
                     CurrentCellBeginEdit="SfActivities_CurrentCellBeginEdit">
+                    <!--<syncfusion:SfDataGrid.AlternatingRowStyle>
+                        <Style TargetType="syncfusion:VirtualizingCellsControl">
+                            <Setter Property="Background" Value="{StaticResource GridAlternatingRowBackground}"/>
+                        </Style>
+                    </syncfusion:SfDataGrid.AlternatingRowStyle>-->
+                    <syncfusion:SfDataGrid.HeaderStyle>
+                        <Style TargetType="syncfusion:GridHeaderCellControl">
+                            <Setter Property="Background" Value="{StaticResource GridHeaderBackground}"/>
+                            <Setter Property="Foreground" Value="{StaticResource TextColorSecondary}"/>
+                        </Style>
+                    </syncfusion:SfDataGrid.HeaderStyle>
 
                     <syncfusion:SfDataGrid.RecordContextMenu>
                         <ContextMenu

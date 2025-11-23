@@ -10,6 +10,8 @@
 
     <!-- === COLOR PALETTE === -->
     <SolidColorBrush x:Key="BackgroundColor" Color="#FF1E1E1E"/>
+    <SolidColorBrush x:Key="DarkBackgroundColor" Color="#000000EF"/>
+    <SolidColorBrush x:Key="DarkestBackgroundColor" Color="#161616"/> 
     <SolidColorBrush x:Key="ForegroundColor" Color="#E8EAED"/>
     <SolidColorBrush x:Key="TextColorPrimary" Color="#E8EAED"/>
     <SolidColorBrush x:Key="TextColorSecondary" Color="#FFB0B0B0"/>
@@ -32,8 +34,8 @@
     <SolidColorBrush x:Key="ControlHoverBackground" Color="#FF333333"/>
 
     <!-- === DATAGRID COLORS === -->
-    <SolidColorBrush x:Key="GridAlternatingRowBackground" Color="#FF252525"/>
-    <SolidColorBrush x:Key="GridHeaderBackground" Color="#FF2A2A2A"/>
+    <SolidColorBrush x:Key="GridAlternatingRowBackground" Color="#303030"/>
+    <SolidColorBrush x:Key="GridHeaderBackground" Color="#002234"/>
     <SolidColorBrush x:Key="GridHeaderForeground" Color="#E8EAED"/>
     <SolidColorBrush x:Key="GridSelectedRowBackground" Color="#330078D7"/>
     <SolidColorBrush x:Key="GridGridLineColor" Color="#FF3C3C3C"/>
@@ -66,8 +68,9 @@
     <SolidColorBrush x:Key="MyRecordsBackground" Color="#1A27AE60"/>
 
     <!-- === NON-OWNED RECORDS COLORS === -->
-    <SolidColorBrush x:Key="NotOwnedRowBackground" Color="#242738"/>
-    <SolidColorBrush x:Key="NotOwnedRowForeground" Color="#FF707070"/>
+    <!--<SolidColorBrush x:Key="NotOwnedRowBackground" Color="#242738"/>-->
+    <SolidColorBrush x:Key="NotOwnedRowBackground" Color="#000723"/>
+    <SolidColorBrush x:Key="NotOwnedRowForeground" Color="#11466f"/>
 
     <!-- ========================================= -->
     <!-- === DEFAULT BUTTON STYLE === -->

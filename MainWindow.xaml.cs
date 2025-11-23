@@ -142,6 +142,12 @@ namespace VANTAGE
             borderSchedule.Background = System.Windows.Media.Brushes.Transparent;
             btnSchedule.Foreground = (System.Windows.Media.Brush)FindResource("ForegroundColor");
 
+            ProgBookBorder.Background = System.Windows.Media.Brushes.Transparent;
+            btnPbook.Foreground = (System.Windows.Media.Brush)FindResource("ForegroundColor");
+
+            WorkPackageBorder.Background = System.Windows.Media.Brushes.Transparent;
+            btnWorkPackage.Foreground = (System.Windows.Media.Brush)FindResource("ForegroundColor");
+
             // Highlight active button
             if (activeButton == btnProgress)
             {
@@ -152,6 +158,16 @@ namespace VANTAGE
             {
                 borderSchedule.Background = (System.Windows.Media.Brush)FindResource("AccentColor");
                 btnSchedule.Foreground = (System.Windows.Media.Brush)FindResource("AccentColor");
+            }
+            else if (activeButton == btnPbook)
+            {
+                ProgBookBorder.Background = (System.Windows.Media.Brush)FindResource("AccentColor");
+                btnPbook.Foreground = (System.Windows.Media.Brush)FindResource("AccentColor");
+            }
+            else if (activeButton == btnWorkPackage)
+            {
+                WorkPackageBorder.Background = (System.Windows.Media.Brush)FindResource("AccentColor");
+                btnWorkPackage.Foreground = (System.Windows.Media.Brush)FindResource("AccentColor");
             }
         }
         private void BtnProgress_Click(object sender, RoutedEventArgs e)
@@ -165,15 +181,34 @@ namespace VANTAGE
             MessageBox.Show("SCHEDULE module coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
             HighlightNavigationButton(btnSchedule);
         }
+        private void BtnPbook_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("PRINT module coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
+            HighlightNavigationButton(btnPbook);
+        }
+
+        private void BtnWorkPackage_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("WORK PACKAGE module coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
+            HighlightNavigationButton(btnWorkPackage);
+        }
 
         private void BtnCreate_Click(object sender, RoutedEventArgs e)
         {
             MessageBox.Show("CREATE module coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
         }
+        private void ImportP6File_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        private void ExportP6File_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
 
         // === EXCEL DROPDOWN ===
 
-        //private void BtnExcel_Click(object sender, RoutedEventArgs e)
+        //private void btnFile_Click(object sender, RoutedEventArgs e)
         //{
         //    // Open the dropdown menu
         //    var button = sender as Button;
@@ -408,29 +443,6 @@ namespace VANTAGE
         {
             await ExportHelper.ExportTemplateAsync(this);
         }
-
-        private void BtnPbook_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("PRINT module coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
-        private void BtnWorkPackage_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("WORK PACKAGE module coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
-        // === REPORTS DROPDOWN ===
-
-        //private void BtnReports_Click(object sender, RoutedEventArgs e)
-        //{
-        //    // Open the dropdown menu
-        //    var button = sender as Button;
-        //    if (button?.ContextMenu != null)
-        //    {
-        //        button.ContextMenu.PlacementTarget = button;
-        //        button.ContextMenu.IsOpen = true;
-        //    }
-        //}
 
         private void MenuReport1_Click(object sender, RoutedEventArgs e)
         {

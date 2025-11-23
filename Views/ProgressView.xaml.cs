@@ -1725,16 +1725,16 @@ namespace VANTAGE.Views
 
             // Reset all filter button visuals
             //btnFilterComplete.Content = "Complete";
-            btnFilterComplete.Background = (Brush)Application.Current.Resources["ControlBackground"];
+            btnFilterComplete.BorderBrush = (Brush)Application.Current.Resources["ControlBorder"];
 
             //btnFilterInProgress.Content = "In Progress";
-            btnFilterInProgress.Background = (Brush)Application.Current.Resources["ControlBackground"];
+            btnFilterInProgress.BorderBrush = (Brush)Application.Current.Resources["ControlBorder"];
 
             //btnFilterNotStarted.Content = "Not Started";
-            btnFilterNotStarted.Background = (Brush)Application.Current.Resources["ControlBackground"];
+            btnFilterNotStarted.BorderBrush = (Brush)Application.Current.Resources["ControlBorder"];
 
             //btnFilterMyRecords.Content = "My Records";
-            btnFilterMyRecords.Background = (Brush)Application.Current.Resources["ControlBackground"];
+            btnFilterMyRecords.BorderBrush = (Brush)Application.Current.Resources["ControlBorder"];
 
             sfActivities.View.RefreshFilter();
             _viewModel.FilteredCount = sfActivities.View.Records.Count;
