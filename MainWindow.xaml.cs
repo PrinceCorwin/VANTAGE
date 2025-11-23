@@ -100,21 +100,6 @@ namespace VANTAGE
         {
             // TODO: Add proper logging when logging system is implemented
         }
-
-        private void LoadInitialModule()
-        {
-            // Load PROGRESS module by default
-            LoadProgressModule();
-
-            // Disable ADMIN button if not admin (with null check)
-            if (App.CurrentUser == null || !App.CurrentUser.IsAdmin)
-            {
-                btnAdmin.IsEnabled = false;
-                btnAdmin.Opacity = 0.5;
-                btnAdmin.ToolTip = "Admin privileges required";
-            }
-        }
-
         private void UpdateStatusBar()
         {
             // Update current user (with null check)
@@ -127,9 +112,49 @@ namespace VANTAGE
                 txtCurrentUser.Text = "User: Unknown";
             }
 
+            // Update last sync time
+            UpdateLastSyncDisplay();
+
             // TODO: Load projects into dropdown
-            // TODO: Update last sync time
             // TODO: Update record count
+        }
+
+        public void UpdateLastSyncDisplay()
+        {
+            var lastSyncString = SettingsManager.GetUserSetting(App.CurrentUserID, "LastSyncUtcDate");
+
+            if (string.IsNullOrEmpty(lastSyncString))
+            {
+                txtLastSyncsd.Text = "Last Sync: Never";
+                return;
+            }
+
+            if (DateTime.TryParse(lastSyncString, out DateTime lastSyncUtc))
+            {
+                var localTime = lastSyncUtc.ToLocalTime();
+                txtLastSyncsd.Text = $"Last Sync: {localTime:M/d/yyyy HH:mm}";
+            }
+            else
+            {
+                txtLastSyncsd.Text = "Last Sync: Never";
+            }
+        }
+        private void LoadInitialModule()
+        {
+            // Set app version dynamically
+            var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+            txtAppVersion.Text = $"Vantage: MILESTONE v{version?.Major}.{version?.Minor}.{version?.Build}";
+
+            // Load PROGRESS module by default
+            LoadProgressModule();
+
+            // Disable ADMIN button if not admin (with null check)
+            if (App.CurrentUser == null || !App.CurrentUser.IsAdmin)
+            {
+                btnAdmin.IsEnabled = false;
+                btnAdmin.Opacity = 0.5;
+                btnAdmin.ToolTip = "Admin privileges required";
+            }
         }
 
         // TOOLBAR BUTTON HANDLERS

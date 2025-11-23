@@ -1468,10 +1468,24 @@ namespace VANTAGE.Views
 
                 var syncDialog = new SyncDialog();
                 bool? result = syncDialog.ShowDialog();
+
                 if (result == true)
                 {
                     // Refresh grid to show updated LocalDirty and pulled records
                     await RefreshData();
+                    // After successful sync - save the timestamp
+                    SettingsManager.SetUserSetting(
+                        App.CurrentUserID,
+                        "LastSyncUtcDate",
+                        DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"),
+                        "text"
+                    );
+
+                    // Refresh MainWindow status bar
+                    if (Application.Current.MainWindow is MainWindow mainWindow)
+                    {
+                        mainWindow.UpdateLastSyncDisplay();
+                    }
                 }
             }
             catch (Exception ex)

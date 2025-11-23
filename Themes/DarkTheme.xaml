@@ -16,7 +16,8 @@
     <SolidColorBrush x:Key="TextColorPrimary" Color="#E8EAED"/>
     <SolidColorBrush x:Key="TextColorSecondary" Color="#FFB0B0B0"/>
     <SolidColorBrush x:Key="AccentColor" Color="#FF0078D7"/>
-    <SolidColorBrush x:Key="BorderColor" Color="#FF3C3C3C"/>
+    <!--<SolidColorBrush x:Key="BorderColor" Color="#FF3C3C3C"/>-->
+    <SolidColorBrush x:Key="BorderColor" Color="black"/>
     <SolidColorBrush x:Key="DisabledColor" Color="#FF6A6A6A"/>
     <SolidColorBrush x:Key="HoverColor" Color="#220078D7"/>
     <SolidColorBrush x:Key="SelectedColor" Color="#330078D7"/>
