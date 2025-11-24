@@ -11,6 +11,23 @@
       Background="{StaticResource BackgroundColor}">
 
     <UserControl.Resources>
+        <Style x:Key="RoundedButtonStyle" TargetType="Button">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                Padding="{TemplateBinding Padding}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4">
+                            <ContentPresenter Content="{TemplateBinding Content}"
+                                              HorizontalAlignment="Center" 
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
         <styles:RecordOwnershipRowStyleSelector x:Key="RowStyleSelector" />
         <!-- Style for empty/null required fields with red border -->
         <Style x:Key="CompTypeRequiredStyle" TargetType="syncfusion:GridCell">
@@ -143,6 +160,7 @@
 
                     <Button x:Name="btnFilterComplete"
                             Content="Complete"
+                            Style="{StaticResource RoundedButtonStyle}"
                             Height="35"
                             Margin="0,0,0,5"
                             Background="{StaticResource ControlBackground}"
@@ -155,59 +173,64 @@
                             Click="BtnFilterComplete_Click"/>
 
                     <Button x:Name="btnFilterInProgress"
-                        Content="In Progress"
-                        Height="35"
-                        Margin="0,0,0,5"
-                        Background="{StaticResource ControlBackground}"
-                        Foreground="{StaticResource ForegroundColor}"
-                        BorderBrush="{StaticResource ControlBorder}"
-                        BorderThickness="1"
-                        HorizontalContentAlignment="Center"
-                        Padding="10,0"
-                        FontSize="11"
-                        Click="btnFilterInProgress_Click"/>
+                            Content="In Progress"
+                            Style="{StaticResource RoundedButtonStyle}"
+                            Height="35"
+                            Margin="0,0,0,5"
+                            Background="{StaticResource ControlBackground}"
+                            Foreground="{StaticResource ForegroundColor}"
+                            BorderBrush="{StaticResource ControlBorder}"
+                            BorderThickness="1"
+                            HorizontalContentAlignment="Center"
+                            Padding="10,0"
+                            FontSize="11"
+                            Click="btnFilterInProgress_Click"/>
 
                     <Button x:Name="btnFilterNotStarted"
-                        Content="Not Started"
-                        Height="35"
-                        Margin="0,0,0,5"
-                        Background="{StaticResource ControlBackground}"
-                        Foreground="{StaticResource ForegroundColor}"
-                        BorderBrush="{StaticResource ControlBorder}"
-                        BorderThickness="1"
-                        HorizontalContentAlignment="Center"
-                        Padding="10,0"
-                        FontSize="11"
-                        Click="BtnFilterNotStarted_Click"/>
+                            Content="Not Started"
+                            Height="35"
+                            Margin="0,0,0,5"
+                            Style="{StaticResource RoundedButtonStyle}"
+                            Background="{StaticResource ControlBackground}"
+                            Foreground="{StaticResource ForegroundColor}"
+                            BorderBrush="{StaticResource ControlBorder}"
+                            BorderThickness="1"
+                            HorizontalContentAlignment="Center"
+                            Padding="10,0"
+                            FontSize="11"
+                            Click="BtnFilterNotStarted_Click"/>
 
                     <Button x:Name="btnFilterUser2"
-                        Content="USER 2"
-                        Height="35"
-                        Margin="0,0,0,5"
-                        Background="{StaticResource ControlBackground}"
-                        Foreground="{StaticResource ForegroundColor}"
-                        BorderBrush="{StaticResource ControlBorder}"
-                        BorderThickness="1"
-                        HorizontalContentAlignment="Center"
-                        Padding="10,0"
-                        FontSize="11"
-                        Click="BtnFilterUser2_Click"/>
+                            Content="USER 2"
+                            Style="{StaticResource RoundedButtonStyle}"
+                            Height="35"
+                            Margin="0,0,0,5"
+                            Background="{StaticResource ControlBackground}"
+                            Foreground="{StaticResource ForegroundColor}"
+                            BorderBrush="{StaticResource ControlBorder}"
+                            BorderThickness="1"
+                            HorizontalContentAlignment="Center"
+                            Padding="10,0"
+                            FontSize="11"
+                            Click="BtnFilterUser2_Click"/>
 
                     <Button x:Name="btnFilterUser3"
-                        Content="USER 3"
-                        Height="35"
-                        Margin="0,0,0,5"
-                        Background="{StaticResource ControlBackground}"
-                        Foreground="{StaticResource ForegroundColor}"
-                        BorderBrush="{StaticResource ControlBorder}"
-                        BorderThickness="1"
-                        HorizontalContentAlignment="Center"
-                        Padding="10,0"
-                        FontSize="11"
-                        Click="BtnFilterUser3_Click"/>
+                            Content="USER 3"
+                            Style="{StaticResource RoundedButtonStyle}"
+                            Height="35"
+                            Margin="0,0,0,5"
+                            Background="{StaticResource ControlBackground}"
+                            Foreground="{StaticResource ForegroundColor}"
+                            BorderBrush="{StaticResource ControlBorder}"
+                            BorderThickness="1"
+                            HorizontalContentAlignment="Center"
+                            Padding="10,0"
+                            FontSize="11"
+                            Click="BtnFilterUser3_Click"/>
 
                     <Button x:Name="btnFilterMyRecords"
                             Content="My Records"
+                            Style="{StaticResource RoundedButtonStyle}"
                             Height="35"
                             Margin="0,0,0,0"
                             Background="{StaticResource ControlBackground}"
@@ -224,35 +247,37 @@
                         Margin="0,10,0,10"/>
 
                     <Button x:Name="btnClearFilters"
-                        Content="Clear Filters"
-                        Height="35"
-                        Margin="0,0,0,0"
-                        Background="{StaticResource ControlBackground}"
-                        Foreground="{StaticResource ForegroundColor}"
-                        BorderBrush="{StaticResource StatusGreen}"
-                        BorderThickness="1"
-                        HorizontalContentAlignment="Center"
-                        Padding="10,0"
-                        FontSize="11"
-                        Click="BtnClearFilters_Click"/>
+                            Content="Clear Filters"
+                            Style="{StaticResource RoundedButtonStyle}"
+                            Height="35"
+                            Margin="0,0,0,0"
+                            Background="{StaticResource ControlBackground}"
+                            Foreground="{StaticResource ForegroundColor}"
+                            BorderBrush="{StaticResource StatusGreen}"
+                            BorderThickness="1"
+                            HorizontalContentAlignment="Center"
+                            Padding="10,0"
+                            FontSize="11"
+                            Click="BtnClearFilters_Click"/>
 
                     <Border Height="1" 
                         Background="{StaticResource ControlBorder}" 
                         Margin="0,10,0,10"/>
 
                     <Button x:Name="btnAssign"
-                                Content="Assign"
-                                Height="28"
-                                Margin="0,0,0,0"
-                                Background="{StaticResource ControlBackground}"
-                                Foreground="{StaticResource ForegroundColor}"
-                                BorderBrush="{StaticResource ControlBorder}"
-                                BorderThickness="1"
-                                Padding="10,0"
-                                FontSize="11"
-                                VerticalContentAlignment="Center"
-                                Click="MenuAssignToUser_Click"
-                                ToolTip="Assign selected records to user"/>
+                            Content="Assign"
+                            Style="{StaticResource RoundedButtonStyle}"
+                            Height="28"
+                            Margin="0,0,0,0"
+                            Background="{StaticResource ControlBackground}"
+                            Foreground="{StaticResource ForegroundColor}"
+                            BorderBrush="{StaticResource ControlBorder}"
+                            BorderThickness="1"
+                            Padding="10,0"
+                            FontSize="11"
+                            VerticalContentAlignment="Center"
+                            Click="MenuAssignToUser_Click"
+                            ToolTip="Assign selected records to user"/>
 
                     <Border Height="1" 
                         Background="{StaticResource ControlBorder}" 
@@ -260,6 +285,7 @@
 
                     <Button x:Name="btnColumnVisibility"
                             Content="Columns"
+                            Style="{StaticResource RoundedButtonStyle}"
                             Height="35"
                             Margin="0,0,0,0"
                             Background="{StaticResource ControlBackground}"
@@ -320,6 +346,7 @@
 
                         <Button x:Name="btnRefresh"
                                 Content="REFRESH"
+                                Style="{StaticResource RoundedButtonStyle}"
                                 Width="80"
                                 Margin="15,0,5,0"
                                 Background="{StaticResource ControlBackground}"
@@ -333,6 +360,7 @@
 
                         <Button x:Name="btnSetPercent100"
                                 Content="100%"
+                                Style="{StaticResource RoundedButtonStyle}"
                                 Tag="Button1|CustomPercentButton1|100"
                                 Width="60"
                                 Margin="5,0"
@@ -356,6 +384,7 @@
 
                         <Button x:Name="btnSetPercent0"
                                 Content="0%"
+                                Style="{StaticResource RoundedButtonStyle}"
                                 Tag="Button2|CustomPercentButton2|0"
                                 Width="60"
                                 Margin="5,0"
@@ -387,11 +416,12 @@
 
                         <Button x:Name="btnSync"
                                 Content="SYNC"
+                                Style="{StaticResource RoundedButtonStyle}"
                                 Width="80"
                                 Margin="10,0"
                                 Background="{StaticResource ControlBackgroundGreen}"
                                 Foreground="{StaticResource ForegroundColor}"
-                                BorderBrush="{StaticResource ControlBorder}"
+                                BorderBrush="{StaticResource TextColorSecondary}"
                                 BorderThickness="1"
                                 Padding="5"
                                 FontSize="12"
@@ -400,11 +430,12 @@
 
                         <Button x:Name="btnSubmit"
                                 Content="SUBMIT WEEK"
+                                Style="{StaticResource RoundedButtonStyle}"
                                 Width="150"
                                 Margin="10,0"
                                 Background="{StaticResource ControlBackgroundRed}"
                                 Foreground="{StaticResource ForegroundColor}"
-                                BorderBrush="{StaticResource ControlBorder}"
+                                BorderBrush="{StaticResource TextColorSecondary}"
                                 BorderThickness="1"
                                 Padding="5"
                                 FontSize="12"
