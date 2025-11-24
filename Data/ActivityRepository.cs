@@ -980,103 +980,106 @@ namespace VANTAGE.Data
          });
         }
 
-        
+
         /// Map database reader to Activity object
-        
+
         private static Activity MapReaderToActivity(SqliteDataReader reader)
         {
-            return new Activity
-            {
-                ActivityID = reader.GetInt32(reader.GetOrdinal("ActivityID")),
-                Area = GetStringOrDefault(reader, "Area"),
-                AssignedTo = GetStringOrDefault(reader, "AssignedTo"),
-                AzureUploadUtcDate = GetDateTimeOrNull(reader, "AzureUploadUtcDate"),
-                Aux1 = GetStringOrDefault(reader, "Aux1"),
-                Aux2 = GetStringOrDefault(reader, "Aux2"),
-                Aux3 = GetStringOrDefault(reader, "Aux3"),
-                BaseUnit = GetDoubleOrDefault(reader, "BaseUnit"),
-                BudgetMHs = GetDoubleOrDefault(reader, "BudgetMHs"),
-                BudgetHoursGroup = GetDoubleOrDefault(reader, "BudgetHoursGroup"),
-                BudgetHoursROC = GetDoubleOrDefault(reader, "BudgetHoursROC"),
-                ChgOrdNO = GetStringOrDefault(reader, "ChgOrdNO"),
-                ClientBudget = GetDoubleOrDefault(reader, "ClientBudget"),
-                ClientCustom3 = GetDoubleOrDefault(reader, "ClientCustom3"),
-                ClientEquivQty = GetDoubleOrDefault(reader, "ClientEquivQty"),
-                CompType = GetStringOrDefault(reader, "CompType"),
-                CreatedBy = GetStringOrDefault(reader, "CreatedBy"),
-                DateTrigger = GetIntOrDefault(reader, "DateTrigger"),
-                Description = GetStringOrDefault(reader, "Description"),
-                DwgNO = GetStringOrDefault(reader, "DwgNO"),
-                EarnedMHsRoc = GetDoubleOrDefault(reader, "EarnedMHsRoc"),
-                EarnQtyEntry = GetDoubleOrDefault(reader, "EarnQtyEntry"),
-                EqmtNO = GetStringOrDefault(reader, "EqmtNO"),
-                EquivQTY = GetDoubleFromStringColumn(reader, "EquivQTY"),
-                EquivUOM = GetStringOrDefault(reader, "EquivUOM"),
-                Estimator = GetStringOrDefault(reader, "Estimator"),
-                HexNO = GetIntOrDefault(reader, "HexNO"),
-                HtTrace = GetStringOrDefault(reader, "HtTrace"),
-                InsulType = GetStringOrDefault(reader, "InsulType"),
-                UpdatedBy = GetStringOrDefault(reader, "UpdatedBy"),
-                LineNO = GetStringOrDefault(reader, "LineNO"),
-                LocalDirty = GetIntOrDefault(reader, "LocalDirty"),
-                MtrlSpec = GetStringOrDefault(reader, "MtrlSpec"),
-                Notes = GetStringOrDefault(reader, "Notes"),
-                PaintCode = GetStringOrDefault(reader, "PaintCode"),
-                PercentEntry = GetDoubleOrDefault(reader, "PercentEntry"),
-                PhaseCategory = GetStringOrDefault(reader, "PhaseCategory"),
-                PhaseCode = GetStringOrDefault(reader, "PhaseCode"),
-                PipeGrade = GetStringOrDefault(reader, "PipeGrade"),
-                PipeSize1 = GetDoubleOrDefault(reader, "PipeSize1"),
-                PipeSize2 = GetDoubleOrDefault(reader, "PipeSize2"),
-                PrevEarnMHs = GetDoubleOrDefault(reader, "PrevEarnMHs"),
-                PrevEarnQTY = GetDoubleOrDefault(reader, "PrevEarnQTY"),
-                ProgDate = GetDateTimeOrNull(reader, "ProgDate"),
-                ProjectID = GetStringOrDefault(reader, "ProjectID"),
-                Quantity = GetDoubleOrDefault(reader, "Quantity"),
-                RevNO = GetStringOrDefault(reader, "RevNO"),
-                RFINO = GetStringOrDefault(reader, "RFINO"),
-                ROCBudgetQTY = GetDoubleOrDefault(reader, "ROCBudgetQTY"),
-                ROCID = GetDoubleOrDefault(reader, "ROCID"),
-                ROCPercent = GetDoubleOrDefault(reader, "ROCPercent"),
-                ROCStep = GetStringOrDefault(reader, "ROCStep"),
-                SchedActNO = GetStringOrDefault(reader, "SchedActNO"),
-                SchFinish = GetDateTimeOrNull(reader, "SchFinish"),
-                SchStart = GetDateTimeOrNull(reader, "SchStart"),
-                SecondActno = GetStringOrDefault(reader, "SecondActno"),
-                SecondDwgNO = GetStringOrDefault(reader, "SecondDwgNO"),
-                Service = GetStringOrDefault(reader, "Service"),
-                ShopField = GetStringOrDefault(reader, "ShopField"),
-                ShtNO = GetStringOrDefault(reader, "ShtNO"),
-                SubArea = GetStringOrDefault(reader, "SubArea"),
-                PjtSystem = GetStringOrDefault(reader, "PjtSystem"),
-                SystemNO = GetStringOrDefault(reader, "SystemNO"),
-                TagNO = GetStringOrDefault(reader, "TagNO"),
-                UDF1 = GetStringOrDefault(reader, "UDF1"),
-                UDF2 = GetStringOrDefault(reader, "UDF2"),
-                UDF3 = GetStringOrDefault(reader, "UDF3"),
-                UDF4 = GetStringOrDefault(reader, "UDF4"),
-                UDF5 = GetStringOrDefault(reader, "UDF5"),
-                UDF6 = GetStringOrDefault(reader, "UDF6"),
-                UDF7 = GetIntOrDefault(reader, "UDF7"),  // int, not string
-                UDF8 = GetStringOrDefault(reader, "UDF8"),
-                UDF9 = GetStringOrDefault(reader, "UDF9"),
-                UDF10 = GetStringOrDefault(reader, "UDF10"),
-                UDF11 = GetStringOrDefault(reader, "UDF11"),
-                UDF12 = GetStringOrDefault(reader, "UDF12"),
-                UDF13 = GetStringOrDefault(reader, "UDF13"),
-                UDF14 = GetStringOrDefault(reader, "UDF14"),
-                UDF15 = GetStringOrDefault(reader, "UDF15"),
-                UDF16 = GetStringOrDefault(reader, "UDF16"),
-                UDF17 = GetStringOrDefault(reader, "UDF17"),
-                UDF18 = GetStringOrDefault(reader, "UDF18"),
-                UDF20 = GetStringOrDefault(reader, "UDF20"),
-                UniqueID = GetStringOrDefault(reader, "UniqueID"),
-                UOM = GetStringOrDefault(reader, "UOM"),
-                UpdatedUtcDate = GetDateTimeOrNull(reader, "UpdatedUtcDate"),
-                WeekEndDate = GetDateTimeOrNull(reader, "WeekEndDate"),
-                WorkPackage = GetStringOrDefault(reader, "WorkPackage"),
-                XRay = GetDoubleOrDefault(reader, "XRay"),
-            };
+            var activity = new Activity();
+            activity.BeginInit();
+
+            activity.ActivityID = reader.GetInt32(reader.GetOrdinal("ActivityID"));
+            activity.Area = GetStringOrDefault(reader, "Area");
+            activity.AssignedTo = GetStringOrDefault(reader, "AssignedTo");
+            activity.AzureUploadUtcDate = GetDateTimeOrNull(reader, "AzureUploadUtcDate");
+            activity.Aux1 = GetStringOrDefault(reader, "Aux1");
+            activity.Aux2 = GetStringOrDefault(reader, "Aux2");
+            activity.Aux3 = GetStringOrDefault(reader, "Aux3");
+            activity.BaseUnit = GetDoubleOrDefault(reader, "BaseUnit");
+            activity.BudgetMHs = GetDoubleOrDefault(reader, "BudgetMHs");
+            activity.BudgetHoursGroup = GetDoubleOrDefault(reader, "BudgetHoursGroup");
+            activity.BudgetHoursROC = GetDoubleOrDefault(reader, "BudgetHoursROC");
+            activity.ChgOrdNO = GetStringOrDefault(reader, "ChgOrdNO");
+            activity.ClientBudget = GetDoubleOrDefault(reader, "ClientBudget");
+            activity.ClientCustom3 = GetDoubleOrDefault(reader, "ClientCustom3");
+            activity.ClientEquivQty = GetDoubleOrDefault(reader, "ClientEquivQty");
+            activity.CompType = GetStringOrDefault(reader, "CompType");
+            activity.CreatedBy = GetStringOrDefault(reader, "CreatedBy");
+            activity.DateTrigger = GetIntOrDefault(reader, "DateTrigger");
+            activity.Description = GetStringOrDefault(reader, "Description");
+            activity.DwgNO = GetStringOrDefault(reader, "DwgNO");
+            activity.EarnedMHsRoc = GetDoubleOrDefault(reader, "EarnedMHsRoc");
+            activity.EarnQtyEntry = GetDoubleOrDefault(reader, "EarnQtyEntry");
+            activity.EqmtNO = GetStringOrDefault(reader, "EqmtNO");
+            activity.EquivQTY = GetDoubleFromStringColumn(reader, "EquivQTY");
+            activity.EquivUOM = GetStringOrDefault(reader, "EquivUOM");
+            activity.Estimator = GetStringOrDefault(reader, "Estimator");
+            activity.HexNO = GetIntOrDefault(reader, "HexNO");
+            activity.HtTrace = GetStringOrDefault(reader, "HtTrace");
+            activity.InsulType = GetStringOrDefault(reader, "InsulType");
+            activity.UpdatedBy = GetStringOrDefault(reader, "UpdatedBy");
+            activity.LineNO = GetStringOrDefault(reader, "LineNO");
+            activity.LocalDirty = GetIntOrDefault(reader, "LocalDirty");
+            activity.MtrlSpec = GetStringOrDefault(reader, "MtrlSpec");
+            activity.Notes = GetStringOrDefault(reader, "Notes");
+            activity.PaintCode = GetStringOrDefault(reader, "PaintCode");
+            activity.PercentEntry = GetDoubleOrDefault(reader, "PercentEntry");
+            activity.PhaseCategory = GetStringOrDefault(reader, "PhaseCategory");
+            activity.PhaseCode = GetStringOrDefault(reader, "PhaseCode");
+            activity.PipeGrade = GetStringOrDefault(reader, "PipeGrade");
+            activity.PipeSize1 = GetDoubleOrDefault(reader, "PipeSize1");
+            activity.PipeSize2 = GetDoubleOrDefault(reader, "PipeSize2");
+            activity.PrevEarnMHs = GetDoubleOrDefault(reader, "PrevEarnMHs");
+            activity.PrevEarnQTY = GetDoubleOrDefault(reader, "PrevEarnQTY");
+            activity.ProgDate = GetDateTimeOrNull(reader, "ProgDate");
+            activity.ProjectID = GetStringOrDefault(reader, "ProjectID");
+            activity.Quantity = GetDoubleOrDefault(reader, "Quantity");
+            activity.RevNO = GetStringOrDefault(reader, "RevNO");
+            activity.RFINO = GetStringOrDefault(reader, "RFINO");
+            activity.ROCBudgetQTY = GetDoubleOrDefault(reader, "ROCBudgetQTY");
+            activity.ROCID = GetDoubleOrDefault(reader, "ROCID");
+            activity.ROCPercent = GetDoubleOrDefault(reader, "ROCPercent");
+            activity.ROCStep = GetStringOrDefault(reader, "ROCStep");
+            activity.SchedActNO = GetStringOrDefault(reader, "SchedActNO");
+            activity.SchFinish = GetDateTimeOrNull(reader, "SchFinish");
+            activity.SchStart = GetDateTimeOrNull(reader, "SchStart");
+            activity.SecondActno = GetStringOrDefault(reader, "SecondActno");
+            activity.SecondDwgNO = GetStringOrDefault(reader, "SecondDwgNO");
+            activity.Service = GetStringOrDefault(reader, "Service");
+            activity.ShopField = GetStringOrDefault(reader, "ShopField");
+            activity.ShtNO = GetStringOrDefault(reader, "ShtNO");
+            activity.SubArea = GetStringOrDefault(reader, "SubArea");
+            activity.PjtSystem = GetStringOrDefault(reader, "PjtSystem");
+            activity.SystemNO = GetStringOrDefault(reader, "SystemNO");
+            activity.TagNO = GetStringOrDefault(reader, "TagNO");
+            activity.UDF1 = GetStringOrDefault(reader, "UDF1");
+            activity.UDF2 = GetStringOrDefault(reader, "UDF2");
+            activity.UDF3 = GetStringOrDefault(reader, "UDF3");
+            activity.UDF4 = GetStringOrDefault(reader, "UDF4");
+            activity.UDF5 = GetStringOrDefault(reader, "UDF5");
+            activity.UDF6 = GetStringOrDefault(reader, "UDF6");
+            activity.UDF7 = GetIntOrDefault(reader, "UDF7");
+            activity.UDF8 = GetStringOrDefault(reader, "UDF8");
+            activity.UDF9 = GetStringOrDefault(reader, "UDF9");
+            activity.UDF10 = GetStringOrDefault(reader, "UDF10");
+            activity.UDF11 = GetStringOrDefault(reader, "UDF11");
+            activity.UDF12 = GetStringOrDefault(reader, "UDF12");
+            activity.UDF13 = GetStringOrDefault(reader, "UDF13");
+            activity.UDF14 = GetStringOrDefault(reader, "UDF14");
+            activity.UDF15 = GetStringOrDefault(reader, "UDF15");
+            activity.UDF16 = GetStringOrDefault(reader, "UDF16");
+            activity.UDF17 = GetStringOrDefault(reader, "UDF17");
+            activity.UDF18 = GetStringOrDefault(reader, "UDF18");
+            activity.UDF20 = GetStringOrDefault(reader, "UDF20");
+            activity.UniqueID = GetStringOrDefault(reader, "UniqueID");
+            activity.UOM = GetStringOrDefault(reader, "UOM");
+            activity.UpdatedUtcDate = GetDateTimeOrNull(reader, "UpdatedUtcDate");
+            activity.WeekEndDate = GetDateTimeOrNull(reader, "WeekEndDate");
+            activity.WorkPackage = GetStringOrDefault(reader, "WorkPackage");
+            activity.XRay = GetDoubleOrDefault(reader, "XRay");
+
+            activity.EndInit();
+            return activity;
         }
 
         // Helper methods remain the same

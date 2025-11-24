@@ -260,8 +260,8 @@ namespace VANTAGE.Models
                 {
                     _earnQtyEntry = value;
                     OnPropertyChanged();
-                    //if (!SuppressCalculations)
-                    //    UpdatePercCompleteFromEarnedQty();
+                    if (!_isInitializing)
+                        UpdatePercCompleteFromEarnedQty();
                 }
             }
         }

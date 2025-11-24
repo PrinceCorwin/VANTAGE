@@ -1,14 +1,15 @@
 ﻿using Syncfusion.Windows.Shared;
+using Syncfusion.Windows.Shared;
 using System;
 using System.Linq;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using VANTAGE.Data;
 using VANTAGE.Models;
 using VANTAGE.Utilities;
 using VANTAGE.Views;
-using Syncfusion.Windows.Shared;
 
 namespace VANTAGE
 {
@@ -50,7 +51,19 @@ namespace VANTAGE
                 btnMaximize.Content = "❐";
             }
         }
-
+        private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ClickCount == 2)
+            {
+                WindowState = WindowState == WindowState.Maximized
+                    ? WindowState.Normal
+                    : WindowState.Maximized;
+            }
+            else
+            {
+                DragMove();
+            }
+        }
         private void BtnClose_Click(object sender, RoutedEventArgs e)
         {
             this.Close();
