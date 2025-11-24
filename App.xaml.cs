@@ -217,9 +217,6 @@ namespace VANTAGE
                 // Step 6a: Initialize column mappings
                 ActivityRepository.InitializeMappings(null);
 
-                // Step 7: Determine which module to load
-                string lastModule = SettingsManager.GetLastModuleUsed(CurrentUserID, "PROGRESS");
-
                 // Step 8: Open main window
                 try
                 {

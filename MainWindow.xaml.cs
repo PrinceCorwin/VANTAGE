@@ -328,7 +328,7 @@ namespace VANTAGE
                 HideLoadingOverlay();
 
                 MessageBox.Show(
-                    $"Error importing Excel file:\n\n{ex.Message}\n\nCheck Output window for details.",
+                    $"Error importing Excel file:\n\n{ex.Message}",
                     "Import Error",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error
@@ -1063,9 +1063,6 @@ namespace VANTAGE
             // Load the actual ProgressView
             var progressView = new Views.ProgressView();
             ContentArea.Content = progressView;
-
-            // Save last module used
-            SettingsManager.SetLastModuleUsed(App.CurrentUserID, "PROGRESS");
         }
     }
 }

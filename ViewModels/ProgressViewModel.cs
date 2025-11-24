@@ -523,14 +523,10 @@ namespace VANTAGE.ViewModels
                 // Update filtered count immediately
                 FilteredCount = filteredTotal;
 
-                System.Diagnostics.Debug.WriteLine($"NO PAGINATION -> Loading {filteredTotal:N0} filtered records in batches of {BATCH_SIZE:N0}");
-
                 // Add first batch
                 Activities.AddRange(firstBatch);
                 int loaded = firstBatch.Count;
                 int pageNumber = 1;
-
-                System.Diagnostics.Debug.WriteLine($"  Batch 1: Loaded {loaded:N0} of {filteredTotal:N0} records");
 
                 // Load remaining batches
                 while (loaded < filteredTotal)
@@ -543,20 +539,15 @@ namespace VANTAGE.ViewModels
                     loaded += batch.Count;
                     pageNumber++;
 
-                    System.Diagnostics.Debug.WriteLine($"  Batch {pageNumber}: Loaded {loaded:N0} of {filteredTotal:N0} records");
-
                     // Small delay to let UI update (prevents freezing)
                     await Task.Delay(10);
                 }
 
                 // Update totals when complete
                 await UpdateTotalsAsync();
-
-                System.Diagnostics.Debug.WriteLine($"✓ Loaded {loaded:N0} activities (incremental batches)");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"✗ Error loading activities: {ex.Message}");
                 throw;
             }
             finally

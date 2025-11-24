@@ -565,7 +565,32 @@ namespace VANTAGE.Utilities
                 throw;
             }
         }
+        // Validate that all UniqueID values in the list are unique
+        // Throws exception with duplicate values if validation fails
+        private static void ValidateNoDuplicateUniqueIDs(List<Activity> activities)
+        {
+            var duplicates = activities
+                .Where(a => !string.IsNullOrWhiteSpace(a.UniqueID))
+                .GroupBy(a => a.UniqueID)
+                .Where(g => g.Count() > 1)
+                .Select(g => new { UniqueID = g.Key, Count = g.Count() })
+                .ToList();
 
+            if (duplicates.Any())
+            {
+                var duplicateList = string.Join("\n", duplicates.Take(10).Select(d => $"  • {d.UniqueID} ({d.Count} occurrences)"));
+
+                string message = $"The Excel file contains duplicate UDFNineteen values.\n\n" +
+                                 $"Duplicates found:\n{duplicateList}";
+
+                if (duplicates.Count > 10)
+                    message += $"\n  ... and {duplicates.Count - 10} more";
+
+                message += "\n\nPlease fix these duplicates in Excel and try again.";
+
+                throw new InvalidOperationException(message);
+            }
+        }
 
         /// Import activities from Excel file with progress reporting
 
@@ -613,6 +638,8 @@ namespace VANTAGE.Utilities
                         progress?.Report((0, 0, "Reading Excel data..."));
                         var activities = ReadActivitiesFromExcel(worksheet, columnMap);
 
+                        ValidateNoDuplicateUniqueIDs(activities);
+
                         progress?.Report((0, activities.Count, "Importing to database..."));
                         int imported = ImportToDatabase(activities, replaceMode, progress);
 
@@ -627,12 +654,5 @@ namespace VANTAGE.Utilities
                 }
             });
         }
-
-        // Keep the synchronous version for backward compatibility
-        public static int ImportActivities(string filePath, bool replaceMode)
-        {
-        return ImportActivitiesAsync(filePath, replaceMode).GetAwaiter().GetResult();
-        }
-
     }
 }

@@ -123,25 +123,7 @@ namespace VANTAGE.Utilities
                 System.Diagnostics.Debug.WriteLine($"Error setting user setting: {ex.Message}");
                 // TODO: Add proper logging (e.g., to file or central log)
             }
-        }
-
-        
-        /// Get last module used by user
-        
-        public static string GetLastModuleUsed(int userId, string defaultModule = "PROGRESS")
-        {
-            return GetUserSetting(userId, "LastModuleUsed", defaultModule);
-        }
-
-        
-        /// Set last module used by user
-        
-        public static void SetLastModuleUsed(int userId, string moduleName)
-        {
-            SetUserSetting(userId, "LastModuleUsed", moduleName, "string");
-        }
-        
-        
+        } 
         public static void InitializeDefaultAppSettings()
         {
             try
@@ -172,7 +154,6 @@ namespace VANTAGE.Utilities
                 // Set default user settings if not already set
                 if (string.IsNullOrEmpty(GetUserSetting(userId, "LastModuleUsed")))
                 {
-                    SetLastModuleUsed(userId, "PROGRESS");
                     SetUserSetting(userId, "Theme", "DarkTheme.xaml", "string");
                 }
             }

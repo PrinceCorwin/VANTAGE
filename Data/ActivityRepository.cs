@@ -627,10 +627,6 @@ namespace VANTAGE.Data
                          countCommand.CommandText = $"SELECT COUNT(*) FROM Activities {whereSQL}";
                          var totalCount = (long)countCommand.ExecuteScalar();
 
-                         System.Diagnostics.Debug.WriteLine(
-                       $"NO PAGINATION -> Loading ALL {totalCount} records | WHERE='{whereSQL.Replace("\n", " ").Replace("\r", "")}'"
-                          );
-
                          // Get valid usernames for validation
                          var validUsernames = GetValidUsernames();
 
@@ -858,8 +854,6 @@ namespace VANTAGE.Data
                              //activity.SuppressCalculations = false;
                              activities.Add(activity);
                          }
-
-                         System.Diagnostics.Debug.WriteLine($"✓ Loaded {activities.Count} activities (no pagination)");
 
                          // Return tuple with both activities and totalCount
                          return (activities, (int)totalCount);

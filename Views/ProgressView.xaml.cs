@@ -1609,13 +1609,13 @@ namespace VANTAGE.Views
 
                 // Reset other buttons and activate this one
                 btnFilterComplete.BorderBrush = (Brush)Application.Current.Resources["AccentColor"];
-                btnFilterInProgress.BorderBrush = (Brush)Application.Current.Resources["BorderColor"];
-                btnFilterNotStarted.BorderBrush = (Brush)Application.Current.Resources["BorderColor"];
+                btnFilterInProgress.BorderBrush = (Brush)Application.Current.Resources["ControlBorder"];
+                btnFilterNotStarted.BorderBrush = (Brush)Application.Current.Resources["ControlBorder"];
             }
             else
             {
                 // Just deactivate this button
-                btnFilterComplete.BorderBrush = (Brush)Application.Current.Resources["BorderColor"];
+                btnFilterComplete.BorderBrush = (Brush)Application.Current.Resources["ControlBorder"];
             }
 
             sfActivities.View.RefreshFilter();
@@ -1652,14 +1652,14 @@ namespace VANTAGE.Views
                 });
 
                 // Reset other buttons and activate this one
-                btnFilterComplete.BorderBrush = (Brush)Application.Current.Resources["BorderColor"];
+                btnFilterComplete.BorderBrush = (Brush)Application.Current.Resources["ControlBorder"];
                 btnFilterInProgress.BorderBrush = (Brush)Application.Current.Resources["AccentColor"];
-                btnFilterNotStarted.BorderBrush = (Brush)Application.Current.Resources["BorderColor"];
+                btnFilterNotStarted.BorderBrush = (Brush)Application.Current.Resources["ControlBorder"];
             }
             else
             {
                 // Just deactivate this button
-                btnFilterInProgress.BorderBrush = (Brush)Application.Current.Resources["BorderColor"];
+                btnFilterInProgress.BorderBrush = (Brush)Application.Current.Resources["ControlBorder"];
             }
 
             sfActivities.View.RefreshFilter();
@@ -1689,14 +1689,14 @@ namespace VANTAGE.Views
                 });
 
                 // Reset other buttons and activate this one
-                btnFilterComplete.BorderBrush = (Brush)Application.Current.Resources["BorderColor"];
-                btnFilterInProgress.BorderBrush = (Brush)Application.Current.Resources["BorderColor"];
+                btnFilterComplete.BorderBrush = (Brush)Application.Current.Resources["ControlBorder"];
+                btnFilterInProgress.BorderBrush = (Brush)Application.Current.Resources["ControlBorder"];
                 btnFilterNotStarted.BorderBrush = (Brush)Application.Current.Resources["AccentColor"];
             }
             else
             {
                 // Just deactivate this button
-                btnFilterNotStarted.BorderBrush = (Brush)Application.Current.Resources["BorderColor"];
+                btnFilterNotStarted.BorderBrush = (Brush)Application.Current.Resources["ControlBorder"];
             }
 
             sfActivities.View.RefreshFilter();
@@ -1729,7 +1729,7 @@ namespace VANTAGE.Views
                 sfActivities.Columns["AssignedTo"].FilterPredicates.Clear();
 
                 // Update button visuals - inactive
-                btnFilterMyRecords.BorderBrush = (Brush)Application.Current.Resources["BorderColor"];
+                btnFilterMyRecords.BorderBrush = (Brush)Application.Current.Resources["ControlBorder"];
             }
 
             sfActivities.View.RefreshFilter();
