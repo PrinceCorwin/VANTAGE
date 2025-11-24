@@ -126,13 +126,8 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
-                    <!--<RowDefinition Height="Auto" />-->
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                
-                <!--<StackPanel Grid.Row="0"
-                         Height="40">
-                </StackPanel>-->
 
                 <!-- Sidebar Controls -->
                 <StackPanel Grid.Row="0">
@@ -214,7 +209,7 @@
                     <Button x:Name="btnFilterMyRecords"
                             Content="My Records"
                             Height="35"
-                            Margin="0,0,0,5"
+                            Margin="0,0,0,0"
                             Background="{StaticResource ControlBackground}"
                             Foreground="{StaticResource ForegroundColor}"
                             BorderBrush="{StaticResource ControlBorder}"
@@ -223,11 +218,15 @@
                             Padding="10,0"
                             FontSize="11"
                             Click="BtnFilterMyRecords_Click"/>
+                    
+                    <Border Height="1" 
+                        Background="{StaticResource ControlBorder}" 
+                        Margin="0,10,0,10"/>
 
                     <Button x:Name="btnClearFilters"
                         Content="Clear Filters"
                         Height="35"
-                        Margin="0,20,0,0"
+                        Margin="0,0,0,0"
                         Background="{StaticResource ControlBackground}"
                         Foreground="{StaticResource ForegroundColor}"
                         BorderBrush="{StaticResource StatusGreen}"
@@ -239,12 +238,30 @@
 
                     <Border Height="1" 
                         Background="{StaticResource ControlBorder}" 
-                        Margin="0,20,0,20"/>
+                        Margin="0,10,0,10"/>
+
+                    <Button x:Name="btnAssign"
+                                Content="Assign"
+                                Height="28"
+                                Margin="0,0,0,0"
+                                Background="{StaticResource ControlBackground}"
+                                Foreground="{StaticResource ForegroundColor}"
+                                BorderBrush="{StaticResource ControlBorder}"
+                                BorderThickness="1"
+                                Padding="10,0"
+                                FontSize="11"
+                                VerticalContentAlignment="Center"
+                                Click="MenuAssignToUser_Click"
+                                ToolTip="Assign selected records to user"/>
+
+                    <Border Height="1" 
+                        Background="{StaticResource ControlBorder}" 
+                        Margin="0,10,0,10"/>
 
                     <Button x:Name="btnColumnVisibility"
                             Content="Columns"
                             Height="35"
-                            Margin="0,0,0,5"
+                            Margin="0,0,0,0"
                             Background="{StaticResource ControlBackground}"
                             Foreground="{StaticResource ForegroundColor}"
                             BorderBrush="{StaticResource ControlBorder}"
@@ -259,13 +276,13 @@
                 <Border Grid.Row="1" Height="20"/>
                 <!-- Logo at the bottom -->
                 <Border Grid.Row="3" 
-                Margin="0,0,0,0" 
-                Padding="0" 
-                HorizontalAlignment="Center" 
-                VerticalAlignment="Bottom">
+                        Margin="0,0,0,0" 
+                        Padding="0" 
+                        HorizontalAlignment="Center" 
+                        VerticalAlignment="Bottom">
                     <Image Width="80" 
-                   Source="pack://application:,,,/images/SummitLogoNoText.jpg" 
-                   Stretch="Uniform" />
+                           Source="pack://application:,,,/images/SummitLogoNoText.jpg" 
+                           Stretch="Uniform" />
                 </Border>
             </Grid>
         </Border>
@@ -273,14 +290,12 @@
         <!-- RIGHT SIDE: DataGrid -->
         <Grid Grid.Column="1">
             <Grid.RowDefinitions>
-                <RowDefinition Height="40"/>
-                <!-- Row 0: Filters/toolbar -->
+                <!-- Row 0: Toolbar -->
                 <RowDefinition Height="Auto"/>
-                <!-- Row 1:Summary panel -->
+                <!-- Row 2: DataGrid-->
                 <RowDefinition Height="*"/>
-                <!-- Row 2: DataGrid (was Row 1) -->
-                <RowDefinition Height="40"/>
-                <!-- Row 3: Paging (was Row 2) -->
+                <!-- Row 2: Footer-->
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
             <!-- Combined Toolbar + Summary Panel -->
@@ -288,50 +303,45 @@
                     BorderThickness="0,1,1,1"
                     Background="{StaticResource DarkBackgroundColor}"
                     BorderBrush="{StaticResource BorderColor}"
-                    Padding="10,0">
-                        <DockPanel LastChildFill="True" VerticalAlignment="Center">
-                    <!-- LEFT SIDE: Search controls -->
-                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" VerticalAlignment="Center">
+                    Padding="10,5">
+
+                <Grid VerticalAlignment="Center">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- LEFT SIDE: Refresh and Custom Percent Buttons -->
+                    <StackPanel Grid.Column="0" 
+                                Orientation="Horizontal" 
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center">
 
                         <Button x:Name="btnRefresh"
-                                Content="Refresh"
+                                Content="REFRESH"
                                 Width="80"
-                                Height="28"
-                                Margin="20,0,0,0"
+                                Margin="15,0,5,0"
                                 Background="{StaticResource ControlBackground}"
                                 Foreground="{StaticResource ForegroundColor}"
                                 BorderBrush="{StaticResource ControlBorder}"
                                 BorderThickness="1"
-                                Padding="0"
+                                Padding="5"
+                                FontSize="12"
                                 VerticalContentAlignment="Center"
                                 Click="BtnRefresh_Click"/>
-
-                        <!-- NEW: Bulk Action Buttons -->
-                        <Button x:Name="btnAssign"
-                                Content="Assign"
-                                Width="90"
-                                Height="28"
-                                Margin="20,0,5,0"
-                                Background="{StaticResource ControlBackground}"
-                                Foreground="{StaticResource ForegroundColor}"
-                                BorderBrush="{StaticResource ControlBorder}"
-                                BorderThickness="1"
-                                Padding="0"
-                                VerticalContentAlignment="Center"
-                                Click="MenuAssignToUser_Click"
-                                ToolTip="Assign selected records to user"/>
 
                         <Button x:Name="btnSetPercent100"
                                 Content="100%"
                                 Tag="Button1|CustomPercentButton1|100"
                                 Width="60"
-                                Height="28"
                                 Margin="5,0"
                                 Background="{StaticResource ControlBackground}"
                                 Foreground="{StaticResource ForegroundColor}"
                                 BorderBrush="{StaticResource ControlBorder}"
                                 BorderThickness="1"
-                                Padding="0"
+                                Padding="5"
+                                FontSize="12"
                                 VerticalContentAlignment="Center"
                                 Click="BtnSetPercent_Click"
                                 ToolTip="Left-click: Apply | Right-click: Customize">
@@ -348,13 +358,13 @@
                                 Content="0%"
                                 Tag="Button2|CustomPercentButton2|0"
                                 Width="60"
-                                Height="28"
                                 Margin="5,0"
                                 Background="{StaticResource ControlBackground}"
                                 Foreground="{StaticResource ForegroundColor}"
                                 BorderBrush="{StaticResource ControlBorder}"
                                 BorderThickness="1"
-                                Padding="0"
+                                Padding="5"
+                                FontSize="12"
                                 VerticalContentAlignment="Center"
                                 Click="BtnSetPercent_Click"
                                 ToolTip="Left-click: Apply | Right-click: Customize">
@@ -366,70 +376,96 @@
                                 </ContextMenu>
                             </Button.ContextMenu>
                         </Button>
+                    </StackPanel>
+
+                    <!-- CENTER: Sync and Submit Buttons -->
+                    <StackPanel Grid.Column="1" 
+                                Orientation="Horizontal" 
+                                HorizontalAlignment="Center"
+                                Margin="0,0,100,0"
+                                VerticalAlignment="Center">
+
                         <Button x:Name="btnSync"
                                 Content="SYNC"
                                 Width="80"
-                                Height="28"
-                                Margin="20,0,0,0"
-                                Background="{StaticResource ControlBackground}"
+                                Margin="10,0"
+                                Background="{StaticResource ControlBackgroundGreen}"
                                 Foreground="{StaticResource ForegroundColor}"
                                 BorderBrush="{StaticResource ControlBorder}"
                                 BorderThickness="1"
-                                Padding="0"
+                                Padding="5"
+                                FontSize="12"
                                 VerticalContentAlignment="Center"
                                 Click="BtnSync_Click"/>
+
+                        <Button x:Name="btnSubmit"
+                                Content="SUBMIT WEEK"
+                                Width="150"
+                                Margin="10,0"
+                                Background="{StaticResource ControlBackgroundRed}"
+                                Foreground="{StaticResource ForegroundColor}"
+                                BorderBrush="{StaticResource ControlBorder}"
+                                BorderThickness="1"
+                                Padding="5"
+                                FontSize="12"
+                                VerticalContentAlignment="Center"
+                                Click="BtnSubmit_Click"/>
                     </StackPanel>
 
                     <!-- RIGHT SIDE: Summary stats -->
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" DockPanel.Dock="Right">
+                    <StackPanel Grid.Column="2" 
+                                Orientation="Horizontal" 
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center">
+
                         <!-- Budgeted MHs -->
                         <StackPanel Orientation="Horizontal" Margin="0,0,30,0">
                             <TextBlock Text="Budgeted MHs:"
-                               Foreground="{StaticResource TextColorSecondary}"
-                               FontSize="14"
-                               VerticalAlignment="Center"/>
-                            <TextBlock Text="{Binding BudgetedMHs, StringFormat=N2}"
-                               Foreground="{StaticResource AccentColor}"
-                               FontSize="16"
-                               FontWeight="Bold"
-                               VerticalAlignment="Center"
-                               Margin="5,0,0,0"/>
+                                       Foreground="{StaticResource TextColorSecondary}"
+                                       FontSize="14"
+                                       VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding BudgetedMHs, StringFormat=N2}"
+                                       Foreground="{StaticResource AccentColor}"
+                                       FontSize="14"
+                                       FontWeight="Bold"
+                                       VerticalAlignment="Center"
+                                       Margin="5,0,0,0"/>
                         </StackPanel>
 
                         <!-- Earned MHs -->
                         <StackPanel Orientation="Horizontal" Margin="0,0,30,0">
                             <TextBlock Text="Earned MHs:"
-                               Foreground="{StaticResource TextColorSecondary}"
-                               FontSize="14"
-                               VerticalAlignment="Center"/>
-                            <TextBlock Text="{Binding EarnedMHs, StringFormat=N2}"
-                               Foreground="{StaticResource StatusGreen}"
-                               FontSize="16"
-                               FontWeight="Bold"
-                               VerticalAlignment="Center"
-                               Margin="5,0,0,0"/>
+                                       Foreground="{StaticResource TextColorSecondary}"
+                                       FontSize="14"
+                                       VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding EarnedMHs, StringFormat=N2}"
+                                       Foreground="{StaticResource StatusGreen}"
+                                       FontSize="14"
+                                       FontWeight="Bold"
+                                       VerticalAlignment="Center"
+                                       Margin="5,0,0,0"/>
                         </StackPanel>
 
                         <!-- Percent Complete -->
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="Percent Complete:"
-                               Foreground="{StaticResource TextColorSecondary}"
-                               FontSize="14"
-                               VerticalAlignment="Center"/>
+                                       Foreground="{StaticResource TextColorSecondary}"
+                                       FontSize="14"
+                                       VerticalAlignment="Center"/>
                             <TextBlock Text="{Binding PercentComplete, StringFormat='{}{0:N2}%'}"
-                                Foreground="{StaticResource StatusInProgress}"
-                                FontSize="16"
-                                FontWeight="Bold"
-                                VerticalAlignment="Center"
-                                Margin="5,0,0,0"/>
+                                       Foreground="{StaticResource StatusInProgress}"
+                                       FontSize="14"
+                                       FontWeight="Bold"
+                                       VerticalAlignment="Center"
+                                       Margin="5,0,0,0"/>
                         </StackPanel>
                     </StackPanel>
 
-                </DockPanel>
+                </Grid>
             </Border>
 
             <!-- DataGrid with VIRTUALIZATION ENABLED -->
-            <Border Grid.Row="2" 
+            <Border Grid.Row="1" 
                     BorderBrush="{StaticResource ControlBorder}" 
                     BorderThickness="0">
                 <syncfusion:SfDataGrid x:Name="sfActivities"
@@ -1353,7 +1389,7 @@
             </Border>
 
             <!-- BOTTOM TOOLBAR -->
-            <Border Grid.Row="3" 
+            <Border Grid.Row="2" 
                     Background="{StaticResource ToolbarBackground}" 
                     BorderBrush="{StaticResource ControlBorder}" 
                     BorderThickness="0,1,0,0"

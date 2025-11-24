@@ -40,8 +40,8 @@
                 <StackPanel Grid.Column="0" Orientation="Horizontal">
                     <Image Width="35" 
                            Margin="10,0,20,0"
-                   Source="pack://application:,,,/images/MilestoneLogoPngTransparentBG.png" 
-                   Stretch="Uniform" />
+                           Source="pack://application:,,,/images/MilestoneLogoPngTransparentBG.png" 
+                           Stretch="Uniform" />
 
                     <syncfusion:DropDownButtonAdv x:Name="btnFile"
                                 Label="File"
@@ -219,86 +219,86 @@
                 <!-- COLUMN 2: NAVIGATION BUTTONS -->
 
                 <StackPanel Grid.Column="1" 
-            Orientation="Horizontal"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center">
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center">
 
                     <Grid>
                         <syncfusion:ButtonAdv x:Name="btnProgress"
-                       Label="PROGRESS"
-                       Padding="15,0"
-                       Background="Transparent"
-                       Foreground="{StaticResource ForegroundColor}"
-                       BorderThickness="0"
-                       IconTemplate="{x:Null}"
-                       SmallIcon="{x:Null}"
-                       LargeIcon="{x:Null}"
-                       FontSize="12"
-                       FontWeight="Bold"
-                       Click="BtnProgress_Click"/>
+                                               Label="PROGRESS"
+                                               Padding="15,0"
+                                               Background="Transparent"
+                                               Foreground="{StaticResource ForegroundColor}"
+                                               BorderThickness="0"
+                                               IconTemplate="{x:Null}"
+                                               SmallIcon="{x:Null}"
+                                               LargeIcon="{x:Null}"
+                                               FontSize="12"
+                                               FontWeight="Bold"
+                                               Click="BtnProgress_Click"/>
                         <Border x:Name="borderProgress"
-                     Width="100"
-                     Height="3"
-                     HorizontalAlignment="Stretch"
-                     VerticalAlignment="Bottom"
-                     Background="Transparent"/>
+                                 Width="100"
+                                 Height="3"
+                                 HorizontalAlignment="Stretch"
+                                 VerticalAlignment="Bottom"
+                                 Background="Transparent"/>
                     </Grid>
 
-                    <Grid Width="100" Height="40">
+                    <Grid>
                         <syncfusion:ButtonAdv x:Name="btnSchedule"
-                       Label="SCHEDULE"
-                       Padding="15,0"
-                       Background="Transparent"
-                       Foreground="{StaticResource ForegroundColor}"
-                       BorderThickness="0"
-                       IconTemplate="{x:Null}"
-                       SmallIcon="{x:Null}"
-                       LargeIcon="{x:Null}"
-                       FontSize="12"
-                       FontWeight="Bold"
-                       Click="BtnSchedule_Click"/>
-                        <Border x:Name="borderSchedule"
-                         Width="100"
-                         Height="3"
-                         HorizontalAlignment="Stretch"
-                         VerticalAlignment="Bottom"
-                         Background="Transparent"/>
+                                               Label="SCHEDULE"
+                                               Padding="15,0"
+                                               Background="Transparent"
+                                               Foreground="{StaticResource ForegroundColor}"
+                                               BorderThickness="0"
+                                               IconTemplate="{x:Null}"
+                                               SmallIcon="{x:Null}"
+                                               LargeIcon="{x:Null}"
+                                               FontSize="12"
+                                               FontWeight="Bold"
+                                               Click="BtnSchedule_Click"/>
+                                                <Border x:Name="borderSchedule"
+                                                         Width="100"
+                                                         Height="3"
+                                                         HorizontalAlignment="Stretch"
+                                                         VerticalAlignment="Bottom"
+                                                         Background="Transparent"/>
                     </Grid>
-                    <Grid Width="100" Height="40">
+                    <Grid>
                         <syncfusion:ButtonAdv x:Name="btnPbook"
-                               Label="PROG BOOKS"
-                               Padding="15,0"
-                               Margin="5,0"
-                               Background="Transparent"
-                               Foreground="{StaticResource ForegroundColor}"
-                               BorderThickness="0"
-                               IconTemplate="{x:Null}"
-                               SmallIcon="{x:Null}"
-                               LargeIcon="{x:Null}"
-                               FontSize="12"
-                               FontWeight="Bold"
-                               Click="BtnPbook_Click"/>
+                                               Label="PROG BOOKS"
+                                               Padding="15,0"
+                                               Margin="5,0"
+                                               Background="Transparent"
+                                               Foreground="{StaticResource ForegroundColor}"
+                                               BorderThickness="0"
+                                               IconTemplate="{x:Null}"
+                                               SmallIcon="{x:Null}"
+                                               LargeIcon="{x:Null}"
+                                               FontSize="12"
+                                               FontWeight="Bold"
+                                               Click="BtnPbook_Click"/>
                         <Border x:Name="ProgBookBorder"
-                 Width="100"
-                 Height="3"
-                 HorizontalAlignment="Stretch"
-                 VerticalAlignment="Bottom"
-                 Background="Transparent"/>
+                                 Width="100"
+                                 Height="3"
+                                 HorizontalAlignment="Stretch"
+                                 VerticalAlignment="Bottom"
+                                 Background="Transparent"/>
                     </Grid>
-                    <Grid Width="100" Height="40">
+                    <Grid>
                         <syncfusion:ButtonAdv x:Name="btnWorkPackage"
-                             Label="WORK PKGS"
-                             Padding="15,0"
-                             Margin="5,0"
-                             Background="Transparent"
-                             Foreground="{StaticResource ForegroundColor}"
-                             BorderThickness="0"
-                             IconTemplate="{x:Null}"
-                             SmallIcon="{x:Null}"
-                             LargeIcon="{x:Null}"
-                             FontSize="12"
-                             FontWeight="Bold"
-                             Click="BtnWorkPackage_Click"/>
+                                             Label="WORK PKGS"
+                                             Padding="15,0"
+                                             Margin="5,0"
+                                             Background="Transparent"
+                                             Foreground="{StaticResource ForegroundColor}"
+                                             BorderThickness="0"
+                                             IconTemplate="{x:Null}"
+                                             SmallIcon="{x:Null}"
+                                             LargeIcon="{x:Null}"
+                                             FontSize="12"
+                                             FontWeight="Bold"
+                                             Click="BtnWorkPackage_Click"/>
                         <Border x:Name="WorkPackageBorder"
                                  Width="100"
                                  Height="3"
@@ -310,29 +310,29 @@
                 
                 <!-- COLUMN 3: WINDOW CONTROLS (RIGHT) -->
                 <StackPanel Grid.Column="2" 
-                    Orientation="Horizontal"
-                    HorizontalAlignment="Right"
-                    VerticalAlignment="Center">
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center">
 
                     <Button x:Name="btnMinimize"
-                    Content="─"
-                    Width="46"
-                    Background="Transparent"
-                    Foreground="{StaticResource ForegroundColor}"
-                    BorderThickness="0"
-                    FontSize="16"
-                    Click="BtnMinimize_Click"
-                    ToolTip="Minimize"/>
+                            Content="─"
+                            Width="46"
+                            Background="Transparent"
+                            Foreground="{StaticResource ForegroundColor}"
+                            BorderThickness="0"
+                            FontSize="16"
+                            Click="BtnMinimize_Click"
+                            ToolTip="Minimize"/>
 
                     <Button x:Name="btnMaximize"
-                    Content="☐"
-                    Width="46"
-                    Background="Transparent"
-                    Foreground="{StaticResource ForegroundColor}"
-                    BorderThickness="0"
-                    FontSize="16"
-                    Click="BtnMaximize_Click"
-                    ToolTip="Maximize"/>
+                            Content="☐"
+                            Width="46"
+                            Background="Transparent"
+                            Foreground="{StaticResource ForegroundColor}"
+                            BorderThickness="0"
+                            FontSize="16"
+                            Click="BtnMaximize_Click"
+                            ToolTip="Maximize"/>
 
                     <Button x:Name="btnClose"
                             Width="46"

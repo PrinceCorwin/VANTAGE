@@ -1434,7 +1434,10 @@ namespace VANTAGE.Views
         {
             // TODO: Implement
         }
+        private async void BtnSubmit_Click(object sender, RoutedEventArgs e)
+        {
 
+        }
         private async void BtnSync_Click(object sender, RoutedEventArgs e)
         {
             try
