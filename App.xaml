@@ -3,12 +3,21 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:VANTAGE"
              xmlns:converters="clr-namespace:VANTAGE.Converters"
+             xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
              ShutdownMode="OnExplicitShutdown">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <!-- Load Dark Theme by default -->
+
+                <!-- Syncfusion FluentDark Theme (from NuGet package) -->
+                <ResourceDictionary Source="/Syncfusion.Themes.FluentDark.WPF;component/MSControl/Button.xaml"/>
+                <ResourceDictionary Source="/Syncfusion.Themes.FluentDark.WPF;component/MSControl/Window.xaml"/>
+                <ResourceDictionary Source="/Syncfusion.Themes.FluentDark.WPF;component/MSControl/StatusBar.xaml"/>
+                <ResourceDictionary Source="/Syncfusion.Themes.FluentDark.WPF;component/MSControl/TabControl.xaml"/>
+
+                <!-- Your Custom Dark Theme (overrides Syncfusion where needed) -->
                 <ResourceDictionary Source="Themes/DarkTheme.xaml"/>
+
             </ResourceDictionary.MergedDictionaries>
 
             <!-- Converters -->

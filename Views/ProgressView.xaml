@@ -11,6 +11,23 @@
       Background="{StaticResource BackgroundColor}">
 
     <UserControl.Resources>
+        <Style x:Key="RoundedButtonStyle" TargetType="Button">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                Padding="{TemplateBinding Padding}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4">
+                            <ContentPresenter Content="{TemplateBinding Content}"
+                                              HorizontalAlignment="Center" 
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
         <styles:RecordOwnershipRowStyleSelector x:Key="RowStyleSelector" />
         <!-- Style for empty/null required fields with red border -->
         <Style x:Key="CompTypeRequiredStyle" TargetType="syncfusion:GridCell">
@@ -112,18 +129,19 @@
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="150"/>
+            <ColumnDefinition Width="100"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
         <!-- LEFT SIDEBAR: Quick Filters & Controls -->
         <Border Grid.Column="0" 
-                Background="{StaticResource SidebarBackground}" 
-                BorderBrush="{StaticResource SidebarBorder}" 
-                BorderThickness="0,0,1,0"
-                Padding="10">
+                BorderThickness="1"
+                Padding="10,0,10,10"
+                Background="{StaticResource DarkBackgroundColor}"
+                BorderBrush="{StaticResource BorderColor}">
             <Grid>
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
@@ -131,176 +149,228 @@
                 <!-- Sidebar Controls -->
                 <StackPanel Grid.Row="0">
                     <TextBlock Text="QUICK FILTERS" 
-                           FontSize="12" 
-                           FontWeight="Bold"
-                           Foreground="{StaticResource TextColorSecondary}"
-                           Margin="0,0,0,10"/>
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               FontSize="11" 
+                               FontWeight="Bold"
+                               Height="30"
+                               Padding="10"
+                               Foreground="{StaticResource ForegroundColor}"
+                               Margin="0,0,0,10"/>
 
                     <Button x:Name="btnFilterComplete"
-                        Content="Complete"
-                        Height="35"
-                        Margin="0,0,0,5"
-                        Background="{StaticResource ControlBackground}"
-                        Foreground="{StaticResource ForegroundColor}"
-                        BorderBrush="{StaticResource BorderColor}"
-                        BorderThickness="1"
-                        HorizontalContentAlignment="Left"
-                        Padding="10,0"
-                        Click="BtnFilterComplete_Click"/>
+                            Content="Complete"
+                            Style="{StaticResource RoundedButtonStyle}"
+                            Height="35"
+                            Margin="0,0,0,5"
+                            Background="{StaticResource ControlBackground}"
+                            Foreground="{StaticResource ForegroundColor}"
+                            BorderBrush="{StaticResource ControlBorder}"
+                            BorderThickness="1"
+                            HorizontalContentAlignment="Center"
+                            Padding="10,0"
+                            FontSize="11"
+                            Click="BtnFilterComplete_Click"/>
 
-                    <Button x:Name="btnFilterNotComplete"
-                        Content="Not Complete"
-                        Height="35"
-                        Margin="0,0,0,5"
-                        Background="{StaticResource ControlBackground}"
-                        Foreground="{StaticResource ForegroundColor}"
-                        BorderBrush="{StaticResource BorderColor}"
-                        BorderThickness="1"
-                        HorizontalContentAlignment="Left"
-                        Padding="10,0"
-                        Click="BtnFilterNotComplete_Click"/>
+                    <Button x:Name="btnFilterInProgress"
+                            Content="In Progress"
+                            Style="{StaticResource RoundedButtonStyle}"
+                            Height="35"
+                            Margin="0,0,0,5"
+                            Background="{StaticResource ControlBackground}"
+                            Foreground="{StaticResource ForegroundColor}"
+                            BorderBrush="{StaticResource ControlBorder}"
+                            BorderThickness="1"
+                            HorizontalContentAlignment="Center"
+                            Padding="10,0"
+                            FontSize="11"
+                            Click="btnFilterInProgress_Click"/>
 
                     <Button x:Name="btnFilterNotStarted"
-                        Content="Not Started"
-                        Height="35"
-                        Margin="0,0,0,5"
-                        Background="{StaticResource ControlBackground}"
-                        Foreground="{StaticResource ForegroundColor}"
-                        BorderBrush="{StaticResource BorderColor}"
-                        BorderThickness="1"
-                        HorizontalContentAlignment="Left"
-                        Padding="10,0"
-                        Click="BtnFilterNotStarted_Click"/>
+                            Content="Not Started"
+                            Height="35"
+                            Margin="0,0,0,5"
+                            Style="{StaticResource RoundedButtonStyle}"
+                            Background="{StaticResource ControlBackground}"
+                            Foreground="{StaticResource ForegroundColor}"
+                            BorderBrush="{StaticResource ControlBorder}"
+                            BorderThickness="1"
+                            HorizontalContentAlignment="Center"
+                            Padding="10,0"
+                            FontSize="11"
+                            Click="BtnFilterNotStarted_Click"/>
 
                     <Button x:Name="btnFilterUser2"
-                        Content="USER 2"
-                        Height="35"
-                        Margin="0,0,0,5"
-                        Background="{StaticResource ControlBackground}"
-                        Foreground="{StaticResource ForegroundColor}"
-                        BorderBrush="{StaticResource BorderColor}"
-                        BorderThickness="1"
-                        HorizontalContentAlignment="Left"
-                        Padding="10,0"
-                        Click="BtnFilterUser2_Click"/>
+                            Content="USER 2"
+                            Style="{StaticResource RoundedButtonStyle}"
+                            Height="35"
+                            Margin="0,0,0,5"
+                            Background="{StaticResource ControlBackground}"
+                            Foreground="{StaticResource ForegroundColor}"
+                            BorderBrush="{StaticResource ControlBorder}"
+                            BorderThickness="1"
+                            HorizontalContentAlignment="Center"
+                            Padding="10,0"
+                            FontSize="11"
+                            Click="BtnFilterUser2_Click"/>
 
                     <Button x:Name="btnFilterUser3"
-                        Content="USER 3"
-                        Height="35"
-                        Margin="0,0,0,5"
-                        Background="{StaticResource ControlBackground}"
-                        Foreground="{StaticResource ForegroundColor}"
-                        BorderBrush="{StaticResource BorderColor}"
-                        BorderThickness="1"
-                        HorizontalContentAlignment="Left"
-                        Padding="10,0"
-                        Click="BtnFilterUser3_Click"/>
+                            Content="USER 3"
+                            Style="{StaticResource RoundedButtonStyle}"
+                            Height="35"
+                            Margin="0,0,0,5"
+                            Background="{StaticResource ControlBackground}"
+                            Foreground="{StaticResource ForegroundColor}"
+                            BorderBrush="{StaticResource ControlBorder}"
+                            BorderThickness="1"
+                            HorizontalContentAlignment="Center"
+                            Padding="10,0"
+                            FontSize="11"
+                            Click="BtnFilterUser3_Click"/>
 
                     <Button x:Name="btnFilterMyRecords"
-                        Content="My Records"
-                        Height="35"
-                        Margin="0,0,0,5"
-                        Background="{StaticResource ControlBackground}"
-                        Foreground="{StaticResource ForegroundColor}"
-                        BorderBrush="{StaticResource BorderColor}"
-                        BorderThickness="1"
-                        HorizontalContentAlignment="Left"
-                        Padding="10,0"
-                        Click="BtnFilterMyRecords_Click"/>
+                            Content="My Records"
+                            Style="{StaticResource RoundedButtonStyle}"
+                            Height="35"
+                            Margin="0,0,0,0"
+                            Background="{StaticResource ControlBackground}"
+                            Foreground="{StaticResource ForegroundColor}"
+                            BorderBrush="{StaticResource ControlBorder}"
+                            BorderThickness="1"
+                            HorizontalContentAlignment="Center"
+                            Padding="10,0"
+                            FontSize="11"
+                            Click="BtnFilterMyRecords_Click"/>
+                    
+                    <Border Height="1" 
+                        Background="{StaticResource ControlBorder}" 
+                        Margin="0,10,0,10"/>
 
                     <Button x:Name="btnClearFilters"
-                        Content="Clear Filters"
-                        Height="35"
-                        Margin="0,20,0,0"
-                        Background="{StaticResource ControlBackground}"
-                        Foreground="{StaticResource ForegroundColor}"
-                        BorderBrush="{StaticResource AccentColor}"
-                        BorderThickness="1"
-                        HorizontalContentAlignment="Center"
-                        Padding="10,0"
-                        Click="BtnClearFilters_Click"/>
+                            Content="Clear Filters"
+                            Style="{StaticResource RoundedButtonStyle}"
+                            Height="35"
+                            Margin="0,0,0,0"
+                            Background="{StaticResource ControlBackground}"
+                            Foreground="{StaticResource ForegroundColor}"
+                            BorderBrush="{StaticResource StatusGreen}"
+                            BorderThickness="1"
+                            HorizontalContentAlignment="Center"
+                            Padding="10,0"
+                            FontSize="11"
+                            Click="BtnClearFilters_Click"/>
 
                     <Border Height="1" 
-                        Background="{StaticResource BorderColor}" 
-                        Margin="0,20,0,20"/>
+                        Background="{StaticResource ControlBorder}" 
+                        Margin="0,10,0,10"/>
 
-                    <TextBlock Text="COLUMN VISIBILITY" 
-                        FontSize="12" 
-                        FontWeight="Bold"
-                        Foreground="{StaticResource TextColorSecondary}"
-                        Margin="0,0,0,10"/>
+                    <Button x:Name="btnAssign"
+                            Content="Assign"
+                            Style="{StaticResource RoundedButtonStyle}"
+                            Height="28"
+                            Margin="0,0,0,0"
+                            Background="{StaticResource ControlBackground}"
+                            Foreground="{StaticResource ForegroundColor}"
+                            BorderBrush="{StaticResource ControlBorder}"
+                            BorderThickness="1"
+                            Padding="10,0"
+                            FontSize="11"
+                            VerticalContentAlignment="Center"
+                            Click="MenuAssignToUser_Click"
+                            ToolTip="Assign selected records to user"/>
 
-                    <ListBox x:Name="lstColumnVisibility"
-                        Height="200"
-                        Background="{StaticResource ControlBackground}"
-                        Foreground="{StaticResource ForegroundColor}"
-                        BorderBrush="{StaticResource BorderColor}"
-                        BorderThickness="1"
-                        SelectionMode="Multiple">
-                    </ListBox>
+                    <Border Height="1" 
+                        Background="{StaticResource ControlBorder}" 
+                        Margin="0,10,0,10"/>
+
+                    <Button x:Name="btnColumnVisibility"
+                            Content="Columns"
+                            Style="{StaticResource RoundedButtonStyle}"
+                            Height="35"
+                            Margin="0,0,0,0"
+                            Background="{StaticResource ControlBackground}"
+                            Foreground="{StaticResource ForegroundColor}"
+                            BorderBrush="{StaticResource ControlBorder}"
+                            BorderThickness="1"
+                            HorizontalContentAlignment="Center"
+                            Padding="10,0"
+                            FontSize="11"
+                            Click="BtnColumnVisibility_Click"/>
+
                 </StackPanel>
+                <!-- Spacer (pushes logo to bottom) -->
+                <Border Grid.Row="1" Height="20"/>
+                <!-- Logo at the bottom -->
+                <Border Grid.Row="3" 
+                        Margin="0,0,0,0" 
+                        Padding="0" 
+                        HorizontalAlignment="Center" 
+                        VerticalAlignment="Bottom">
+                    <Image Width="80" 
+                           Source="pack://application:,,,/images/SummitLogoNoText.jpg" 
+                           Stretch="Uniform" />
+                </Border>
             </Grid>
         </Border>
 
         <!-- RIGHT SIDE: DataGrid -->
         <Grid Grid.Column="1">
             <Grid.RowDefinitions>
-                <RowDefinition Height="40"/>
-                <!-- Row 0: Filters/toolbar -->
+                <!-- Row 0: Toolbar -->
                 <RowDefinition Height="Auto"/>
-                <!-- Row 1:Summary panel -->
+                <!-- Row 2: DataGrid-->
                 <RowDefinition Height="*"/>
-                <!-- Row 2: DataGrid (was Row 1) -->
-                <RowDefinition Height="40"/>
-                <!-- Row 3: Paging (was Row 2) -->
+                <!-- Row 2: Footer-->
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
             <!-- Combined Toolbar + Summary Panel -->
             <Border Grid.Row="0"
-                    Background="{StaticResource ToolbarBackground}"
+                    BorderThickness="0,1,1,1"
+                    Background="{StaticResource DarkBackgroundColor}"
                     BorderBrush="{StaticResource BorderColor}"
-                    BorderThickness="0,0,0,1"
-                    Padding="10,0">
-                        <DockPanel LastChildFill="True" VerticalAlignment="Center">
-                    <!-- LEFT SIDE: Search controls -->
-                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" VerticalAlignment="Center">
+                    Padding="10,5">
+
+                <Grid VerticalAlignment="Center">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- LEFT SIDE: Refresh and Custom Percent Buttons -->
+                    <StackPanel Grid.Column="0" 
+                                Orientation="Horizontal" 
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center">
 
                         <Button x:Name="btnRefresh"
-                                Content="Refresh"
+                                Content="REFRESH"
+                                Style="{StaticResource RoundedButtonStyle}"
                                 Width="80"
-                                Height="28"
-                                Margin="20,0,0,0"
+                                Margin="15,0,5,0"
                                 Background="{StaticResource ControlBackground}"
                                 Foreground="{StaticResource ForegroundColor}"
-                                BorderBrush="{StaticResource BorderColor}"
+                                BorderBrush="{StaticResource ControlBorder}"
                                 BorderThickness="1"
-                                Click="BtnRefresh_Click"/>
-
-                        <!-- NEW: Bulk Action Buttons -->
-                        <Button x:Name="btnAssign"
-                                Content="Assign"
-                                Width="90"
-                                Height="28"
-                                Margin="20,0,5,0"
-                                Background="{StaticResource ControlBackground}"
-                                Foreground="{StaticResource ForegroundColor}"
-                                BorderBrush="{StaticResource BorderColor}"
-                                BorderThickness="1"
-                                Padding="5,2,5,2"
+                                Padding="5"
+                                FontSize="12"
                                 VerticalContentAlignment="Center"
-                                Click="MenuAssignToUser_Click"
-                                ToolTip="Assign selected records to user"/>
+                                Click="BtnRefresh_Click"/>
 
                         <Button x:Name="btnSetPercent100"
                                 Content="100%"
+                                Style="{StaticResource RoundedButtonStyle}"
                                 Tag="Button1|CustomPercentButton1|100"
                                 Width="60"
-                                Height="28"
                                 Margin="5,0"
                                 Background="{StaticResource ControlBackground}"
                                 Foreground="{StaticResource ForegroundColor}"
-                                BorderBrush="{StaticResource BorderColor}"
+                                BorderBrush="{StaticResource ControlBorder}"
                                 BorderThickness="1"
+                                Padding="5"
+                                FontSize="12"
+                                VerticalContentAlignment="Center"
                                 Click="BtnSetPercent_Click"
                                 ToolTip="Left-click: Apply | Right-click: Customize">
                             <Button.ContextMenu>
@@ -314,14 +384,17 @@
 
                         <Button x:Name="btnSetPercent0"
                                 Content="0%"
+                                Style="{StaticResource RoundedButtonStyle}"
                                 Tag="Button2|CustomPercentButton2|0"
                                 Width="60"
-                                Height="28"
                                 Margin="5,0"
                                 Background="{StaticResource ControlBackground}"
                                 Foreground="{StaticResource ForegroundColor}"
-                                BorderBrush="{StaticResource BorderColor}"
+                                BorderBrush="{StaticResource ControlBorder}"
                                 BorderThickness="1"
+                                Padding="5"
+                                FontSize="12"
+                                VerticalContentAlignment="Center"
                                 Click="BtnSetPercent_Click"
                                 ToolTip="Left-click: Apply | Right-click: Customize">
                             <Button.ContextMenu>
@@ -332,69 +405,99 @@
                                 </ContextMenu>
                             </Button.ContextMenu>
                         </Button>
+                    </StackPanel>
+
+                    <!-- CENTER: Sync and Submit Buttons -->
+                    <StackPanel Grid.Column="1" 
+                                Orientation="Horizontal" 
+                                HorizontalAlignment="Center"
+                                Margin="0,0,100,0"
+                                VerticalAlignment="Center">
+
                         <Button x:Name="btnSync"
                                 Content="SYNC"
+                                Style="{StaticResource RoundedButtonStyle}"
                                 Width="80"
-                                Height="28"
-                                Margin="20,0,0,0"
-                                Background="{StaticResource ControlBackground}"
+                                Margin="10,0"
+                                Background="{StaticResource ControlBackgroundGreen}"
                                 Foreground="{StaticResource ForegroundColor}"
-                                BorderBrush="{StaticResource BorderColor}"
+                                BorderBrush="{StaticResource TextColorSecondary}"
                                 BorderThickness="1"
+                                Padding="5"
+                                FontSize="12"
+                                VerticalContentAlignment="Center"
                                 Click="BtnSync_Click"/>
+
+                        <Button x:Name="btnSubmit"
+                                Content="SUBMIT WEEK"
+                                Style="{StaticResource RoundedButtonStyle}"
+                                Width="150"
+                                Margin="10,0"
+                                Background="{StaticResource ControlBackgroundRed}"
+                                Foreground="{StaticResource ForegroundColor}"
+                                BorderBrush="{StaticResource TextColorSecondary}"
+                                BorderThickness="1"
+                                Padding="5"
+                                FontSize="12"
+                                VerticalContentAlignment="Center"
+                                Click="BtnSubmit_Click"/>
                     </StackPanel>
 
                     <!-- RIGHT SIDE: Summary stats -->
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" DockPanel.Dock="Right">
+                    <StackPanel Grid.Column="2" 
+                                Orientation="Horizontal" 
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center">
+
                         <!-- Budgeted MHs -->
                         <StackPanel Orientation="Horizontal" Margin="0,0,30,0">
                             <TextBlock Text="Budgeted MHs:"
-                               Foreground="{StaticResource TextColorSecondary}"
-                               FontSize="14"
-                               VerticalAlignment="Center"/>
-                            <TextBlock Text="{Binding BudgetedMHs, StringFormat=N2}"
-                               Foreground="{StaticResource AccentColor}"
-                               FontSize="16"
-                               FontWeight="Bold"
-                               VerticalAlignment="Center"
-                               Margin="5,0,0,0"/>
+                                       Foreground="{StaticResource TextColorSecondary}"
+                                       FontSize="14"
+                                       VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding BudgetedMHs, StringFormat=N2}"
+                                       Foreground="{StaticResource AccentColor}"
+                                       FontSize="14"
+                                       FontWeight="Bold"
+                                       VerticalAlignment="Center"
+                                       Margin="5,0,0,0"/>
                         </StackPanel>
 
                         <!-- Earned MHs -->
                         <StackPanel Orientation="Horizontal" Margin="0,0,30,0">
                             <TextBlock Text="Earned MHs:"
-                               Foreground="{StaticResource TextColorSecondary}"
-                               FontSize="14"
-                               VerticalAlignment="Center"/>
-                            <TextBlock Text="{Binding EarnedMHs, StringFormat=N2}"
-                               Foreground="{StaticResource StatusGreen}"
-                               FontSize="16"
-                               FontWeight="Bold"
-                               VerticalAlignment="Center"
-                               Margin="5,0,0,0"/>
+                                       Foreground="{StaticResource TextColorSecondary}"
+                                       FontSize="14"
+                                       VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding EarnedMHs, StringFormat=N2}"
+                                       Foreground="{StaticResource StatusGreen}"
+                                       FontSize="14"
+                                       FontWeight="Bold"
+                                       VerticalAlignment="Center"
+                                       Margin="5,0,0,0"/>
                         </StackPanel>
 
                         <!-- Percent Complete -->
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="Percent Complete:"
-                               Foreground="{StaticResource TextColorSecondary}"
-                               FontSize="14"
-                               VerticalAlignment="Center"/>
+                                       Foreground="{StaticResource TextColorSecondary}"
+                                       FontSize="14"
+                                       VerticalAlignment="Center"/>
                             <TextBlock Text="{Binding PercentComplete, StringFormat='{}{0:N2}%'}"
-                                Foreground="{StaticResource StatusInProgress}"
-                                FontSize="16"
-                                FontWeight="Bold"
-                                VerticalAlignment="Center"
-                                Margin="5,0,0,0"/>
+                                       Foreground="{StaticResource StatusInProgress}"
+                                       FontSize="14"
+                                       FontWeight="Bold"
+                                       VerticalAlignment="Center"
+                                       Margin="5,0,0,0"/>
                         </StackPanel>
                     </StackPanel>
 
-                </DockPanel>
+                </Grid>
             </Border>
 
             <!-- DataGrid with VIRTUALIZATION ENABLED -->
-            <Border Grid.Row="2" 
-                    BorderBrush="{StaticResource BorderColor}" 
+            <Border Grid.Row="1" 
+                    BorderBrush="{StaticResource ControlBorder}" 
                     BorderThickness="0">
                 <syncfusion:SfDataGrid x:Name="sfActivities"
                     AutoGenerateColumns="False"
@@ -410,7 +513,7 @@
                     ColumnSizer="Auto"
                     Background="{StaticResource BackgroundColor}"
                     Foreground="{StaticResource ForegroundColor}"
-                    BorderBrush="{StaticResource BorderColor}"
+                    BorderBrush="{StaticResource ControlBorder}"
                     BorderThickness="0"
                     GridLinesVisibility="Both"
                     RowHeight="28"
@@ -421,12 +524,23 @@
                     CurrentCellEndEdit="sfActivities_CurrentCellEndEdit"
                     SelectionChanged="sfActivities_SelectionChanged"
                     CurrentCellBeginEdit="SfActivities_CurrentCellBeginEdit">
+                    <!--<syncfusion:SfDataGrid.AlternatingRowStyle>
+                        <Style TargetType="syncfusion:VirtualizingCellsControl">
+                            <Setter Property="Background" Value="{StaticResource GridAlternatingRowBackground}"/>
+                        </Style>
+                    </syncfusion:SfDataGrid.AlternatingRowStyle>-->
+                    <syncfusion:SfDataGrid.HeaderStyle>
+                        <Style TargetType="syncfusion:GridHeaderCellControl">
+                            <Setter Property="Background" Value="{StaticResource GridHeaderBackground}"/>
+                            <Setter Property="Foreground" Value="{StaticResource TextColorSecondary}"/>
+                        </Style>
+                    </syncfusion:SfDataGrid.HeaderStyle>
 
                     <syncfusion:SfDataGrid.RecordContextMenu>
                         <ContextMenu
                              Background="{StaticResource ControlBackground}"
                              Foreground="{StaticResource ForegroundColor}"
-                             BorderBrush="{StaticResource BorderColor}">
+                             BorderBrush="{StaticResource ControlBorder}">
 
                             <!-- Delete Row(s) -->
                             <MenuItem Header="Delete Row(s)"
@@ -503,12 +617,12 @@
                     </syncfusion:SfDataGrid.RecordContextMenu>
                     <syncfusion:SfDataGrid.HeaderContextMenu>
                         <ContextMenu Background="{StaticResource ControlBackground}"
-                 Foreground="{StaticResource ForegroundColor}"
-                 BorderBrush="{StaticResource BorderColor}">
+                                     Foreground="{StaticResource ForegroundColor}"
+                                     BorderBrush="{StaticResource ControlBorder}">
                             <MenuItem Header="Find &amp; Replace in this column..." 
-                  Click="MenuFindReplaceColumn_Click"
-                  Background="{StaticResource ControlBackground}"
-                  Foreground="{StaticResource ForegroundColor}">
+                                      Click="MenuFindReplaceColumn_Click"
+                                      Background="{StaticResource ControlBackground}"
+                                      Foreground="{StaticResource ForegroundColor}">
                                 <MenuItem.Icon>
                                     <TextBlock Text="🔍" FontSize="14"/>
                                 </MenuItem.Icon>
@@ -1301,657 +1415,14 @@
                               AllowFiltering="True"
                               AllowSorting="True"
                               NumberDecimalDigits="0" />
-
-
-                        <!--<syncfusion:GridTextColumn MappingName="SecondDwgNO" 
-                              HeaderText="SecondDwgNO" 
-                              Width="120"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="ShtNO" 
-                              HeaderText="ShtNO" 
-                              Width="80"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="RevNO" 
-                              HeaderText="RevNO" 
-                              Width="80"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        --><!-- NOTES --><!--
-                        <syncfusion:GridTextColumn MappingName="Notes" 
-                              HeaderText="Notes" 
-                              Width="200"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        --><!-- SCHEDULE FIELDS --><!--
-                        <syncfusion:GridTextColumn MappingName="SecondActno" 
-                              HeaderText="SecondActno" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridDateTimeColumn MappingName="SchStart" 
-                                  HeaderText="SchStart" 
-                                  Width="100"
-                                  IsHidden="False"
-                                  AllowEditing="True"
-                                  AllowFiltering="True"
-                                  AllowSorting="True"
-                                  Pattern="ShortDate" />
-
-                        <syncfusion:GridDateTimeColumn MappingName="SchFinish" 
-                                  HeaderText="SchFinish" 
-                                  Width="100"
-                                  IsHidden="False"
-                                  AllowEditing="True"
-                                  AllowFiltering="True"
-                                  AllowSorting="True"
-                                  Pattern="ShortDate" />
-
-                        --><!-- AUXILIARY TAG FIELDS --><!--
-                        <syncfusion:GridTextColumn MappingName="Aux1" 
-                              HeaderText="Aux1" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="Aux2" 
-                              HeaderText="Aux2" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="Aux3" 
-                              HeaderText="Aux3" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="Area" 
-                              HeaderText="Area" 
-                              Width="80"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="ChgOrdNO" 
-                              HeaderText="ChgOrdNO" 
-                              Width="80"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="EqmtNO" 
-                              HeaderText="EqmtNO" 
-                              Width="120"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="Estimator" 
-                              HeaderText="Estimator" 
-                              Width="120"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="InsulType" 
-                              HeaderText="InsulType" 
-                              Width="120"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="LineNO" 
-                              HeaderText="LineNO" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="MtrlSpec" 
-                              HeaderText="MtrlSpec" 
-                              Width="120"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="PaintCode" 
-                              HeaderText="PaintCode" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="PipeGrade" 
-                              HeaderText="PipeGrade" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="RFINO" 
-                              HeaderText="RFINO" 
-                              Width="80"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="Service" 
-                              HeaderText="Service" 
-                              Width="120"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="ShopField" 
-                              HeaderText="ShopField" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="SubArea" 
-                              HeaderText="SubArea" 
-                              Width="80"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="PjtSystem" 
-                              HeaderText="PjtSystem" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="SystemNO" 
-                              HeaderText="SystemNO" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="TagNO" 
-                              HeaderText="TagNO" 
-                              Width="120"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="HtTrace" 
-                              HeaderText="HtTrace" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        --><!-- NUMERIC TAG FIELDS --><!--
-                        <syncfusion:GridNumericColumn MappingName="HexNO" 
-                                 HeaderText="HexNO" 
-                                 Width="80"
-                                 IsHidden="True"
-                                 AllowEditing="True"
-                                 AllowFiltering="True"
-                                 AllowSorting="True"
-                                 NumberDecimalDigits="0" />
-
-                        <syncfusion:GridNumericColumn MappingName="ROCID" 
-                                 HeaderText="ROCID" 
-                                 Width="80"
-                                 IsHidden="True"
-                                 AllowEditing="True"
-                                 AllowFiltering="True"
-                                 AllowSorting="True"
-                                 NumberDecimalDigits="0" />
-
-                        <syncfusion:GridNumericColumn MappingName="XRay" 
-                                 HeaderText="XRay" 
-                                 Width="80"
-                                 IsHidden="True"
-                                 AllowEditing="True"
-                                 AllowFiltering="True"
-                                 AllowSorting="True"
-                                 NumberDecimalDigits="0" />
-
-                        <syncfusion:GridNumericColumn MappingName="DateTrigger" 
-                                 HeaderText="DateTrigger" 
-                                 Width="100"
-                                 IsHidden="True"
-                                 AllowEditing="True"
-                                 AllowFiltering="True"
-                                 AllowSorting="True"
-                                 NumberDecimalDigits="0" />
-
-                        <syncfusion:GridTextColumn MappingName="UDF1" 
-                              HeaderText="UDF1" 
-                              Width="100"
-                              IsHidden="False"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="UDF2" 
-                              HeaderText="UDF2" 
-                              Width="100"
-                              IsHidden="False"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="UDF3" 
-                              HeaderText="UDF3" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="UDF4" 
-                              HeaderText="UDF4" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="UDF5" 
-                              HeaderText="UDF5" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="UDF6" 
-                              HeaderText="UDF6" 
-                              Width="100"
-                              IsHidden="False"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="UDF7" 
-                              HeaderText="UDF7" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="UDF8" 
-                              HeaderText="UDF8" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="UDF9" 
-                              HeaderText="UDF9" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="UDF10" 
-                              HeaderText="UDF10" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-                        <syncfusion:GridTextColumn MappingName="UDF11" 
-                              HeaderText="UDF11" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="UDF12" 
-                              HeaderText="UDF12" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="UDF13" 
-                              HeaderText="UDF13" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="UDF14" 
-                              HeaderText="UDF14" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="UDF15" 
-                              HeaderText="UDF15" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="UDF16" 
-                              HeaderText="UDF16" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="UDF17" 
-                              HeaderText="UDF17" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="UDF18" 
-                              HeaderText="UDF18" 
-                              Width="100"
-                              IsHidden="False"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" 
-                              CellStyle="{StaticResource UDF18RequiredStyle}"/>
-
-                        <syncfusion:GridTextColumn MappingName="UDF20" 
-                              HeaderText="UDF20" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-                        <syncfusion:GridTextColumn MappingName="CreatedBy" 
-                              HeaderText="CreatedBy" 
-                              Width="120"
-                              IsHidden="True"
-                              AllowEditing="False"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="UpdatedBy" 
-                              HeaderText="UpdatedBy" 
-                              Width="120"
-                              IsHidden="False"
-                              AllowEditing="False"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-   
-                        <syncfusion:GridTextColumn MappingName="UpdatedUtcDateDisplay" 
-                                            HeaderText="UpdatedUtcDate" 
-                                            Width="160"
-                                            IsHidden="True"
-                                            AllowEditing="False"
-                                            AllowFiltering="True"
-                                            AllowSorting="True" />
-
-                        <syncfusion:GridNumericColumn MappingName="LocalDirty" 
-                                                     HeaderText="LocalDirty" 
-                                                     Width="100"
-                                                     IsHidden="False"
-                                                     AllowEditing="False"
-                                                     AllowFiltering="True"
-                                                     AllowSorting="True"
-                                                     NumberDecimalDigits="0" />
-                        
-                        <syncfusion:GridTextColumn MappingName="SyncVersion"
-                                    HeaderText="Sync Version"
-                                    Width="120"
-                                    DisplayBinding="{Binding SyncVersion}"
-                                    IsHidden="False"
-                                    AllowEditing="False"
-                                    AllowFiltering="True"
-                                    TextAlignment="Right"/>
-
-
-                        <syncfusion:GridTextColumn MappingName="UOM" 
-                              HeaderText="UOM" 
-                              Width="80"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-                        
-                        <syncfusion:GridTextColumn MappingName="Status" 
-                              HeaderText="Status" 
-                              Width="100"
-                              AllowEditing="False"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="ROCLookupID" 
-                              HeaderText="ROCLookupID" 
-                              Width="150"
-                              IsHidden="True"
-                              AllowEditing="False"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridNumericColumn MappingName="BaseUnit" 
-                                 HeaderText="BaseUnit" 
-                                 Width="100"
-                                 IsHidden="True"
-                                 AllowEditing="True"
-                                 AllowFiltering="True"
-                                 AllowSorting="True"
-                                 NumberDecimalDigits="2" />
-
-                        <syncfusion:GridNumericColumn MappingName="BudgetHoursGroup" 
-                                 HeaderText="BudgetHoursGroup" 
-                                 Width="120"
-                                 IsHidden="True"
-                                 AllowEditing="True"
-                                 AllowFiltering="True"
-                                 AllowSorting="True"
-                                 NumberDecimalDigits="2" />
-
-                        <syncfusion:GridNumericColumn MappingName="BudgetHoursROC" 
-                                 HeaderText="BudgetHoursROC" 
-                                 Width="120"
-                                 IsHidden="True"
-                                 AllowEditing="True"
-                                 AllowFiltering="True"
-                                 AllowSorting="True"
-                                 NumberDecimalDigits="2" />
-
-                        <syncfusion:GridNumericColumn MappingName="EarnedMHsRoc" 
-                                 HeaderText="EarnedMHsRoc" 
-                                 Width="120"
-                                 IsHidden="True"
-                                 AllowEditing="True"
-                                 AllowFiltering="True"
-                                 AllowSorting="True"
-                                 NumberDecimalDigits="2" />
-
-                        <syncfusion:GridTextColumn MappingName="EquivUOM" 
-                              HeaderText="EquivUOM" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridTextColumn MappingName="EquivQTY" 
-                              HeaderText="EquivQTY" 
-                              Width="100"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridNumericColumn MappingName="PipeSize1" 
-                                 HeaderText="PipeSize1" 
-                                 Width="100"
-                                 IsHidden="True"
-                                 AllowEditing="True"
-                                 AllowFiltering="True"
-                                 AllowSorting="True"
-                                 NumberDecimalDigits="2" />
-
-                        <syncfusion:GridNumericColumn MappingName="PipeSize2" 
-                                 HeaderText="PipeSize2" 
-                                 Width="100"
-                                 IsHidden="True"
-                                 AllowEditing="True"
-                                 AllowFiltering="True"
-                                 AllowSorting="True"
-                                 NumberDecimalDigits="2" />
-
-                        <syncfusion:GridNumericColumn MappingName="PrevEarnMHs" 
-                                 HeaderText="PrevEarnMHs" 
-                                 Width="120"
-                                 IsHidden="True"
-                                 AllowEditing="True"
-                                 AllowFiltering="True"
-                                 AllowSorting="True"
-                                 NumberDecimalDigits="2" />
-
-                        <syncfusion:GridNumericColumn MappingName="PrevEarnQTY" 
-                                 HeaderText="PrevEarnQTY" 
-                                 Width="120"
-                                 IsHidden="True"
-                                 AllowEditing="True"
-                                 AllowFiltering="True"
-                                 AllowSorting="True"
-                                 NumberDecimalDigits="2" />
-
-                        <syncfusion:GridNumericColumn MappingName="ROCBudgetQTY" 
-                                 HeaderText="ROCBudgetQTY" 
-                                 Width="120"
-                                 IsHidden="True"
-                                 AllowEditing="True"
-                                 AllowFiltering="True"
-                                 AllowSorting="True"
-                                 NumberDecimalDigits="2" />
-
-                        <syncfusion:GridNumericColumn MappingName="ROCPercent" 
-                                 HeaderText="ROCPercent" 
-                                 Width="100"
-                                 IsHidden="True"
-                                 AllowEditing="True"
-                                 AllowFiltering="True"
-                                 AllowSorting="True"
-                                 NumberDecimalDigits="2" />
-
-                        <syncfusion:GridNumericColumn MappingName="ClientBudget" 
-                                 HeaderText="ClientBudget" 
-                                 Width="120"
-                                 IsHidden="True"
-                                 AllowEditing="True"
-                                 AllowFiltering="True"
-                                 AllowSorting="True"
-                                 NumberDecimalDigits="3" />
-
-                        <syncfusion:GridNumericColumn MappingName="ClientCustom3" 
-                                 HeaderText="ClientCustom3" 
-                                 Width="120"
-                                 IsHidden="True"
-                                 AllowEditing="True"
-                                 AllowFiltering="True"
-                                 AllowSorting="True"
-                                 NumberDecimalDigits="2" />
-
-                        <syncfusion:GridTextColumn MappingName="ClientEquivEarnQTY" 
-                              HeaderText="ClientEquivEarnQTY" 
-                              Width="150"
-                              IsHidden="True"
-                              AllowEditing="True"
-                              AllowFiltering="True"
-                              AllowSorting="True" />
-
-                        <syncfusion:GridNumericColumn MappingName="ClientEquivQty" 
-                                 HeaderText="ClientEquivQty" 
-                                 Width="120"
-                                 IsHidden="True"
-                                 AllowEditing="True"
-                                 AllowFiltering="True"
-                                 AllowSorting="True"
-                                 NumberDecimalDigits="2" />
-
-                        <syncfusion:GridDateTimeColumn MappingName="ProgDate" 
-                                  HeaderText="ProgDate" 
-                                  Width="120"
-                                  IsHidden="True"
-                                  AllowEditing="False"
-                                  AllowFiltering="True"
-                                  AllowSorting="True"
-                                  Pattern="ShortDate" />
-
-                        <syncfusion:GridDateTimeColumn MappingName="WeekEndDate" 
-                                  HeaderText="WeekEndDate" 
-                                  Width="120"
-                                  IsHidden="True"
-                                  AllowEditing="False"
-                                  AllowFiltering="True"
-                                  AllowSorting="True"
-                                  Pattern="ShortDate" />
-
-                        <syncfusion:GridDateTimeColumn MappingName="AzureUploadUtcDate" 
-                                  HeaderText="AzureUploadUtcDate" 
-                                  Width="120"
-                                  IsHidden="True"
-                                  AllowEditing="False"
-                                  AllowFiltering="True"
-                                  AllowSorting="True"
-                                  Pattern="ShortDate" />-->
-
                     </syncfusion:SfDataGrid.Columns>
                 </syncfusion:SfDataGrid>
             </Border>
 
             <!-- BOTTOM TOOLBAR -->
-            <Border Grid.Row="3" 
+            <Border Grid.Row="2" 
                     Background="{StaticResource ToolbarBackground}" 
-                    BorderBrush="{StaticResource BorderColor}" 
+                    BorderBrush="{StaticResource ControlBorder}" 
                     BorderThickness="0,1,0,0"
                     Padding="10,0">
                 <DockPanel>
@@ -1969,7 +1440,7 @@
                                 Click="BtnMetadataErrors_Click"
                                 Background="{StaticResource ControlBackground}"
                                 Foreground="{StaticResource StatusRed}"
-                                BorderBrush="{StaticResource BorderColor}"
+                                BorderBrush="{StaticResource ControlBorder}"
                                 BorderThickness="1"
                                 Padding="8,4"
                                 Margin="15,0,0,0"
@@ -1996,7 +1467,7 @@
                              Minimum="0"
                              Maximum="{Binding TotalRecordCount}"
                              Foreground="{StaticResource AccentColor}"
-                             BorderBrush="{StaticResource BorderColor}"
+                             BorderBrush="{StaticResource ControlBorder}"
                              BorderThickness="1"/>
 
                         <TextBlock Text="{Binding FilteredCount, StringFormat='{}{0:N0}'}"

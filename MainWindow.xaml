@@ -1,4 +1,4 @@
-﻿<Window x:Class="VANTAGE.MainWindow"
+﻿<syncfusion:ChromelessWindow x:Class="VANTAGE.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -6,280 +6,198 @@
         xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
         mc:Ignorable="d"
         Title="VANTAGE: MILESTONE"
-        Height="700"
-        Width="1200"
+        TitleBarHeight="0"
+        Height="1080"
+        Width="1920"
         WindowState="Maximized"
-        Background="{StaticResource BackgroundColor}">
-
+        Background="{StaticResource BackgroundColor}"
+        Icon="pack://application:,,,/images/AppIcon.ico">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="50"/>
+            <RowDefinition Height="40"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="30"/>
         </Grid.RowDefinitions>
-
         <!-- TOOLBAR -->
         <Border Grid.Row="0"
-                Background="{StaticResource ToolbarBackground}"
+                Background="{StaticResource DarkestBackgroundColor}"
                 BorderBrush="{StaticResource BorderColor}"
-                BorderThickness="0,0,0,1">
+                BorderThickness="0">
 
-            <Grid Margin="10,0">
+            <Grid Height="40">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
+                    <!-- Navigation -->
                     <ColumnDefinition Width="*"/>
+                    <!-- APP TOOLS -->
                     <ColumnDefinition Width="Auto"/>
+                    <!-- Window controls -->
+                    <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- COLUMN 0 : PROGRESS / SCHEDULE / CREATE / EXCEL -->
+               
+
+                <!-- COLUMN 1: /APP MENU ITEMS -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal">
+                    <Image Width="35" 
+                           Margin="10,0,20,0"
+                           Source="pack://application:,,,/images/MilestoneLogoPngTransparentBG.png" 
+                           Stretch="Uniform" />
 
-                    <!-- PROGRESS -->
-                    <Button x:Name="btnProgress"
-                            Content="PROGRESS"
-                            Width="100"
-                            Height="40"
-                            Margin="5,0"
-                            Background="{StaticResource ToolbarButtonActive}"
-                            Foreground="{StaticResource ForegroundColor}"
-                            BorderThickness="0"
-                            FontSize="12"
-                            FontWeight="Bold"
-                            Click="BtnProgress_Click"/>
-
-                    <!-- SCHEDULE -->
-                    <Button x:Name="btnSchedule"
-                            Content="SCHEDULE"
-                            Width="100"
-                            Height="40"
-                            Margin="5,0"
+                    <syncfusion:DropDownButtonAdv x:Name="btnFile"
+                                Label="File"
+                                Padding="0"
+                                Margin="5,0"
+                                Background="Transparent"
+                                Foreground="{StaticResource ForegroundColor}"
+                                BorderThickness="0"
+                                IconTemplate="{x:Null}"
+                                SmallIcon="{x:Null}"
+                                LargeIcon="{x:Null}"
+                                FontSize="12"
+                                SizeMode="Normal">
+                        <syncfusion:DropDownMenuGroup
                             Background="{StaticResource ControlBackground}"
                             Foreground="{StaticResource ForegroundColor}"
-                            BorderThickness="0"
-                            FontSize="12"
-                            FontWeight="Bold"
-                            Click="BtnSchedule_Click"/>
+                            BorderBrush="{StaticResource BorderColor}">
+                            <syncfusion:DropDownMenuItem Header="Import (Replace)" Click="MenuExcelImportReplace_Click"/>
+                            <syncfusion:DropDownMenuItem Header="Import (Combine)" Click="MenuExcelImportCombine_Click"/>
+                            <syncfusion:DropDownMenuItem Header="Export Activities" Click="ExcelExportActivities_Click"/>
+                            <syncfusion:DropDownMenuItem Header="Export Template" Click="ExcelExportTemplate_Click"/>
+                            <syncfusion:DropDownMenuItem Header="Create Record(s)" Click="BtnCreate_Click"/>
+                            <syncfusion:DropDownMenuItem Header="Import From P6 File" Click="ImportP6File_Click"/>
+                            <syncfusion:DropDownMenuItem Header="Export To P6 File" Click="ExportP6File_Click"/>
+                        </syncfusion:DropDownMenuGroup>
+                    </syncfusion:DropDownButtonAdv>
 
-                </StackPanel>
-
-                <!-- COLUMN 1 : PROG BOOK & WP -->
-                <StackPanel Grid.Column="1" Orientation="Horizontal">
-                    <!-- CREATE -->
-                    <Button x:Name="btnCreate"
-                            Content="CREATE"
-                            Width="100"
-                            Height="40"
+                    <syncfusion:DropDownButtonAdv x:Name="btnReports"
+                            Label="Reports"
+                            Padding="0"
                             Margin="5,0"
-                            Background="{StaticResource ControlBackground}"
+                            Background="Transparent"
                             Foreground="{StaticResource ForegroundColor}"
                             BorderThickness="0"
+                            IconTemplate="{x:Null}"
+                            SmallIcon="{x:Null}"
+                            LargeIcon="{x:Null}"
                             FontSize="12"
-                            FontWeight="Bold"
-                            Click="BtnCreate_Click"/>
+                            SizeMode="Normal">
+                            <syncfusion:DropDownMenuGroup
+                                Background="{StaticResource ControlBackground}"
+                                Foreground="{StaticResource ForegroundColor}"
+                                BorderBrush="{StaticResource BorderColor}">
+                                <syncfusion:DropDownMenuItem Header="REPORT 1" Click="MenuReport1_Click"/>
+                                <syncfusion:DropDownMenuItem Header="REPORT 2" Click="MenuReport2_Click"/>
+                                <syncfusion:DropDownMenuItem Header="REPORT 3" Click="MenuReport3_Click"/>
+                                <syncfusion:DropDownMenuItem Header="REPORT 4" Click="MenuReport4_Click"/>
+                                <syncfusion:DropDownMenuItem Header="REPORT 5" Click="MenuReport5_Click"/>
+                                <syncfusion:DropDownMenuItem Header="REPORT 6" Click="MenuReport6_Click"/>
+                                <syncfusion:DropDownMenuItem Header="REPORT 7" Click="MenuReport7_Click"/>
+                                <syncfusion:DropDownMenuItem Header="REPORT 8" Click="MenuReport8_Click"/>
+                                <syncfusion:DropDownMenuItem Header="REPORT 9" Click="MenuReport9_Click"/>
+                                <syncfusion:DropDownMenuItem Header="REPORT 10" Click="MenuReport10_Click"/>
+                            </syncfusion:DropDownMenuGroup>
+                    </syncfusion:DropDownButtonAdv>
 
-                    <!-- EXCEL -->
-                    <Button x:Name="btnExcel"
-                            Content="EXCEL ▼"
-                            Width="100"
-                            Height="40"
-                            Margin="5,0"
+                    <syncfusion:DropDownButtonAdv x:Name="btnAnalysis"
+                              Label="Analysis"
+                              Padding="0"
+                              Margin="5,0"
+                              Background="Transparent"
+                              Foreground="{StaticResource ForegroundColor}"
+                              BorderThickness="0"
+                              IconTemplate="{x:Null}"
+                              SmallIcon="{x:Null}"
+                              LargeIcon="{x:Null}"
+                              FontSize="12"
+                              SizeMode="Normal">
+                        <syncfusion:DropDownMenuGroup
                             Background="{StaticResource ControlBackground}"
                             Foreground="{StaticResource ForegroundColor}"
-                            BorderThickness="0"
-                            FontSize="12"
-                            FontWeight="Bold"
-                            Click="BtnExcel_Click">
+                            BorderBrush="{StaticResource BorderColor}">
+                            <syncfusion:DropDownMenuItem Header="ANALYSIS 1" Click="MenuAnalysis1_Click"/>
+                            <syncfusion:DropDownMenuItem Header="ANALYSIS 2" Click="MenuAnalysis2_Click"/>
+                            <syncfusion:DropDownMenuItem Header="ANALYSIS 3" Click="MenuAnalysis3_Click"/>
+                            <syncfusion:DropDownMenuItem Header="ANALYSIS 4" Click="MenuAnalysis4_Click"/>
+                            <syncfusion:DropDownMenuItem Header="ANALYSIS 5" Click="MenuAnalysis5_Click"/>
+                            <syncfusion:DropDownMenuItem Header="ANALYSIS 6" Click="MenuAnalysis6_Click"/>
+                            <syncfusion:DropDownMenuItem Header="ANALYSIS 7" Click="MenuAnalysis7_Click"/>
+                            <syncfusion:DropDownMenuItem Header="ANALYSIS 8" Click="MenuAnalysis8_Click"/>
+                            <syncfusion:DropDownMenuItem Header="ANALYSIS 9" Click="MenuAnalysis9_Click"/>
+                            <syncfusion:DropDownMenuItem Header="ANALYSIS 10" Click="MenuAnalysis10_Click"/>
+                        </syncfusion:DropDownMenuGroup>
+                    </syncfusion:DropDownButtonAdv>
 
-                        <Button.ContextMenu>
-                            <ContextMenu x:Name="menuExcel"
-                                         Background="{StaticResource ControlBackground}"
-                                         Foreground="{StaticResource ForegroundColor}"
-                                         BorderBrush="{StaticResource BorderColor}">
-                                <MenuItem Header="Import (Replace)" Click="MenuExcelImportReplace_Click"/>
-                                <MenuItem Header="Import (Combine)" Click="MenuExcelImportCombine_Click"/>
-                                <MenuItem Header="Export Activities" Click="ExcelExportActivities_Click"/>
-                                <MenuItem Header="Export Template" Click="ExcelExportTemplate_Click"/>
-                            </ContextMenu>
-                        </Button.ContextMenu>
-                    </Button>
-                </StackPanel>
-
-                <!-- COLUMN 2 : REPORTS / ANALYSIS / TOOLS / ADMIN / TEST -->
-                <StackPanel Grid.Column="2"
-                            Orientation="Horizontal"
-                            HorizontalAlignment="Left">
-
-                    <Button x:Name="btnPbook"
-                            Content="PROG BOOK"
-                            Width="100"
-                            Height="40"
-                            Margin="5,0"
+                    <syncfusion:DropDownButtonAdv x:Name="btnTools"
+                              Label="Tools"
+                              Padding="0"
+                              Margin="5,0"
+                              Background="Transparent"
+                              Foreground="{StaticResource ForegroundColor}"
+                              BorderThickness="0"
+                              IconTemplate="{x:Null}"
+                              SmallIcon="{x:Null}"
+                              LargeIcon="{x:Null}"
+                              FontSize="12"
+                              SizeMode="Normal">
+                        <syncfusion:DropDownMenuGroup
                             Background="{StaticResource ControlBackground}"
                             Foreground="{StaticResource ForegroundColor}"
-                            BorderThickness="0"
-                            FontSize="12"
-                            FontWeight="Bold"
-                            Click="BtnPbook_Click"/>
+                            BorderBrush="{StaticResource BorderColor}">
+                            <syncfusion:DropDownMenuItem Header="TOOL 1" Click="MenuTool1_Click"/>
+                            <syncfusion:DropDownMenuItem Header="TOOL 2" Click="MenuTool2_Click"/>
+                            <syncfusion:DropDownMenuItem Header="TOOL 3" Click="MenuTool3_Click"/>
+                            <syncfusion:DropDownMenuItem Header="TOOL 4" Click="MenuTool4_Click"/>
+                            <syncfusion:DropDownMenuItem Header="TOOL 5" Click="MenuTool5_Click"/>
+                            <syncfusion:DropDownMenuItem Header="TOOL 6" Click="MenuTool6_Click"/>
+                            <syncfusion:DropDownMenuItem Header="TOOL 7" Click="MenuTool7_Click"/>
+                            <syncfusion:DropDownMenuItem Header="TOOL 8" Click="MenuTool8_Click"/>
+                            <syncfusion:DropDownMenuItem Header="TOOL 9" Click="MenuTool9_Click"/>
+                            <syncfusion:DropDownMenuItem Header="TOOL 10" Click="MenuTool10_Click"/>
+                        </syncfusion:DropDownMenuGroup>
+                    </syncfusion:DropDownButtonAdv>
 
-                    <Button x:Name="btnWorkPackage"
-                            Content="WP"
-                            Width="120"
-                            Height="40"
-                            Margin="5,0"
+                    <syncfusion:DropDownButtonAdv x:Name="btnAdmin"
+                              Label="Admin"
+                              Padding="0"
+                              Margin="5,0"
+                          Background="Transparent"
+                          Foreground="{StaticResource ForegroundColor}"
+                              BorderThickness="0"
+                              IconTemplate="{x:Null}"
+                              SmallIcon="{x:Null}"
+                              LargeIcon="{x:Null}"
+                              FontSize="12"
+                              SizeMode="Normal">
+                        <syncfusion:DropDownMenuGroup
                             Background="{StaticResource ControlBackground}"
                             Foreground="{StaticResource ForegroundColor}"
-                            BorderThickness="0"
-                            FontSize="12"
-                            FontWeight="Bold"
-                            Click="BtnWorkPackage_Click"/>
+                            BorderBrush="{StaticResource BorderColor}">
+                            <syncfusion:DropDownMenuItem Header="Toggle User Admin" Click="ToggleUserAdmin_Click"/>
+                            <syncfusion:DropDownMenuItem Header="Deleted Records UI" Click="DeletedRecordsUi_Click"/>
+                            <syncfusion:DropDownMenuItem Header="ADMIN 3" Click="MenuAdmin3_Click"/>
+                            <syncfusion:DropDownMenuItem Header="ADMIN 4" Click="MenuAdmin4_Click"/>
+                            <syncfusion:DropDownMenuItem Header="ADMIN 5" Click="MenuAdmin5_Click"/>
+                            <syncfusion:DropDownMenuItem Header="ADMIN 6" Click="MenuAdmin6_Click"/>
+                            <syncfusion:DropDownMenuItem Header="ADMIN 7" Click="MenuAdmin7_Click"/>
+                            <syncfusion:DropDownMenuItem Header="ADMIN 8" Click="MenuAdmin8_Click"/>
+                            <syncfusion:DropDownMenuItem Header="ADMIN 9" Click="MenuAdmin9_Click"/>
+                            <syncfusion:DropDownMenuItem Header="ADMIN 10" Click="MenuAdmin10_Click"/>
+                        </syncfusion:DropDownMenuGroup>
+                    </syncfusion:DropDownButtonAdv>
 
-                    <!-- REPORTS -->
-                    <Button x:Name="btnReports"
-                            Content="REPORTS ▼"
-                            Width="100"
-                            Height="40"
-                            Margin="5,0"
-                            Background="{StaticResource ControlBackground}"
-                            Foreground="{StaticResource ForegroundColor}"
-                            BorderThickness="0"
-                            FontSize="12"
-                            FontWeight="Bold"
-                            Click="BtnReports_Click">
-
-                        <Button.ContextMenu>
-                            <ContextMenu x:Name="menuReports"
-                                         Background="{StaticResource ControlBackground}"
-                                         Foreground="{StaticResource ForegroundColor}"
-                                         BorderBrush="{StaticResource BorderColor}">
-                                <MenuItem Header="REPORT 1" Click="MenuReport1_Click"/>
-                                <MenuItem Header="REPORT 2" Click="MenuReport2_Click"/>
-                                <MenuItem Header="REPORT 3" Click="MenuReport3_Click"/>
-                                <MenuItem Header="REPORT 4" Click="MenuReport4_Click"/>
-                                <MenuItem Header="REPORT 5" Click="MenuReport5_Click"/>
-                                <MenuItem Header="REPORT 6" Click="MenuReport6_Click"/>
-                                <MenuItem Header="REPORT 7" Click="MenuReport7_Click"/>
-                                <MenuItem Header="REPORT 8" Click="MenuReport8_Click"/>
-                                <MenuItem Header="REPORT 9" Click="MenuReport9_Click"/>
-                                <MenuItem Header="REPORT 10" Click="MenuReport10_Click"/>
-                            </ContextMenu>
-                        </Button.ContextMenu>
-
-                    </Button>
-
-                    <!-- ANALYSIS -->
-                    <Button x:Name="btnAnalysis"
-                            Content="ANALYSIS ▼"
-                            Width="100"
-                            Height="40"
-                            Margin="5,0"
-                            Background="{StaticResource ControlBackground}"
-                            Foreground="{StaticResource ForegroundColor}"
-                            BorderThickness="0"
-                            FontSize="12"
-                            FontWeight="Bold"
-                            Click="BtnAnalysis_Click">
-
-                        <Button.ContextMenu>
-                            <ContextMenu x:Name="menuAnalysis"
-                                         Background="{StaticResource ControlBackground}"
-                                         Foreground="{StaticResource ForegroundColor}"
-                                         BorderBrush="{StaticResource BorderColor}">
-                                <MenuItem Header="ANALYSIS 1" Click="MenuAnalysis1_Click"/>
-                                <MenuItem Header="ANALYSIS 2" Click="MenuAnalysis2_Click"/>
-                                <MenuItem Header="ANALYSIS 3" Click="MenuAnalysis3_Click"/>
-                                <MenuItem Header="ANALYSIS 4" Click="MenuAnalysis4_Click"/>
-                                <MenuItem Header="ANALYSIS 5" Click="MenuAnalysis5_Click"/>
-                                <MenuItem Header="ANALYSIS 6" Click="MenuAnalysis6_Click"/>
-                                <MenuItem Header="ANALYSIS 7" Click="MenuAnalysis7_Click"/>
-                                <MenuItem Header="ANALYSIS 8" Click="MenuAnalysis8_Click"/>
-                                <MenuItem Header="ANALYSIS 9" Click="MenuAnalysis9_Click"/>
-                                <MenuItem Header="ANALYSIS 10" Click="MenuAnalysis10_Click"/>
-                            </ContextMenu>
-                        </Button.ContextMenu>
-
-                    </Button>
-
-                    <!-- TOOLS -->
-                    <Button x:Name="btnTools"
-                            Content="TOOLS ▼"
-                            Width="100"
-                            Height="40"
-                            Margin="5,0"
-                            Background="{StaticResource ControlBackground}"
-                            Foreground="{StaticResource ForegroundColor}"
-                            BorderThickness="0"
-                            FontSize="12"
-                            FontWeight="Bold"
-                            Click="BtnTools_Click">
-
-                        <Button.ContextMenu>
-                            <ContextMenu x:Name="menuTools"
-                                         Background="{StaticResource ControlBackground}"
-                                         Foreground="{StaticResource ForegroundColor}"
-                                         BorderBrush="{StaticResource BorderColor}">
-                                <MenuItem Header="TOOL 1" Click="MenuTool1_Click"/>
-                                <MenuItem Header="TOOL 2" Click="MenuTool2_Click"/>
-                                <MenuItem Header="TOOL 3" Click="MenuTool3_Click"/>
-                                <MenuItem Header="TOOL 4" Click="MenuTool4_Click"/>
-                                <MenuItem Header="TOOL 5" Click="MenuTool5_Click"/>
-                                <MenuItem Header="TOOL 6" Click="MenuTool6_Click"/>
-                                <MenuItem Header="TOOL 7" Click="MenuTool7_Click"/>
-                                <MenuItem Header="TOOL 8" Click="MenuTool8_Click"/>
-                                <MenuItem Header="TOOL 9" Click="MenuTool9_Click"/>
-                                <MenuItem Header="TOOL 10" Click="MenuTool10_Click"/>
-                            </ContextMenu>
-                        </Button.ContextMenu>
-
-                    </Button>
-
-                    <!-- ADMIN -->
-                    <Button x:Name="btnAdmin"
-                            Content="ADMIN ▼"
-                            Width="100"
-                            Height="40"
-                            Margin="5,0"
-                            Background="{StaticResource ControlBackground}"
-                            Foreground="{StaticResource ForegroundColor}"
-                            BorderThickness="0"
-                            FontSize="12"
-                            FontWeight="Bold"
-                            Click="BtnAdmin_Click">
-
-                        <Button.ContextMenu>
-                            <ContextMenu x:Name="menuAdmin"
-                                         Background="{StaticResource ControlBackground}"
-                                         Foreground="{StaticResource ForegroundColor}"
-                                         BorderBrush="{StaticResource BorderColor}">
-                                <MenuItem Header="Toggle User Admin" Click="ToggleUserAdmin_Click"/>
-                                <MenuItem Header="Deleted Records UI" Click="DeletedRecordsUi_Click"/>
-                                <MenuItem Header="ADMIN 3" Click="MenuAdmin3_Click"/>
-                                <MenuItem Header="ADMIN 4" Click="MenuAdmin4_Click"/>
-                                <MenuItem Header="ADMIN 5" Click="MenuAdmin5_Click"/>
-                                <MenuItem Header="ADMIN 6" Click="MenuAdmin6_Click"/>
-                                <MenuItem Header="ADMIN 7" Click="MenuAdmin7_Click"/>
-                                <MenuItem Header="ADMIN 8" Click="MenuAdmin8_Click"/>
-                                <MenuItem Header="ADMIN 9" Click="MenuAdmin9_Click"/>
-                                <MenuItem Header="ADMIN 10" Click="MenuAdmin10_Click"/>
-                            </ContextMenu>
-                        </Button.ContextMenu>
-
-                    </Button>
-
-                    <!-- TEST -->
-                    <Button x:Name="btnTest"
-                            Content="TEST ▼"
-                            Width="100"
-                            Height="40"
-                            Margin="5,0"
-                            Background="{StaticResource ControlBackground}"
-                            Foreground="{StaticResource ForegroundColor}"
-                            BorderThickness="0"
-                            FontSize="12"
-                            FontWeight="Bold"
-                            Click="BtnTest_Click">
-
-                        <Button.ContextMenu>
+                    <syncfusion:ButtonAdv x:Name="btnTest"
+                          Label="TEST ▼"
+                          Padding="0"
+                          Margin="5,0"
+                          Background="Transparent"
+                          Foreground="{StaticResource ForegroundColor}"
+                          BorderThickness="0"
+                          IconTemplate="{x:Null}"
+                          SmallIcon="{x:Null}"
+                          LargeIcon="{x:Null}"
+                          FontSize="12"
+                          Click="BtnTest_Click">
+                        <syncfusion:ButtonAdv.ContextMenu>
                             <ContextMenu x:Name="menuTest"
                                          Background="{StaticResource ControlBackground}"
                                          Foreground="{StaticResource ForegroundColor}"
@@ -294,26 +212,155 @@
                                 <MenuItem Header="Test 7" Click="MenuTest7_Click"/>
                                 <MenuItem Header="Test 8" Click="MenuTest8_Click"/>
                             </ContextMenu>
-                        </Button.ContextMenu>
+                        </syncfusion:ButtonAdv.ContextMenu>
+                    </syncfusion:ButtonAdv>
 
+                </StackPanel>
+                <!-- COLUMN 2: NAVIGATION BUTTONS -->
+
+                <StackPanel Grid.Column="1" 
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center">
+
+                    <Grid>
+                        <syncfusion:ButtonAdv x:Name="btnProgress"
+                                               Label="PROGRESS"
+                                               Padding="15,0"
+                                               Background="Transparent"
+                                               Foreground="{StaticResource ForegroundColor}"
+                                               BorderThickness="0"
+                                               IconTemplate="{x:Null}"
+                                               SmallIcon="{x:Null}"
+                                               LargeIcon="{x:Null}"
+                                               FontSize="12"
+                                               FontWeight="Bold"
+                                               Click="BtnProgress_Click"/>
+                        <Border x:Name="borderProgress"
+                                 Width="100"
+                                 Height="3"
+                                 HorizontalAlignment="Stretch"
+                                 VerticalAlignment="Bottom"
+                                 Background="Transparent"/>
+                    </Grid>
+
+                    <Grid>
+                        <syncfusion:ButtonAdv x:Name="btnSchedule"
+                                               Label="SCHEDULE"
+                                               Padding="15,0"
+                                               Background="Transparent"
+                                               Foreground="{StaticResource ForegroundColor}"
+                                               BorderThickness="0"
+                                               IconTemplate="{x:Null}"
+                                               SmallIcon="{x:Null}"
+                                               LargeIcon="{x:Null}"
+                                               FontSize="12"
+                                               FontWeight="Bold"
+                                               Click="BtnSchedule_Click"/>
+                                                <Border x:Name="borderSchedule"
+                                                         Width="100"
+                                                         Height="3"
+                                                         HorizontalAlignment="Stretch"
+                                                         VerticalAlignment="Bottom"
+                                                         Background="Transparent"/>
+                    </Grid>
+                    <Grid>
+                        <syncfusion:ButtonAdv x:Name="btnPbook"
+                                               Label="PROG BOOKS"
+                                               Padding="15,0"
+                                               Margin="5,0"
+                                               Background="Transparent"
+                                               Foreground="{StaticResource ForegroundColor}"
+                                               BorderThickness="0"
+                                               IconTemplate="{x:Null}"
+                                               SmallIcon="{x:Null}"
+                                               LargeIcon="{x:Null}"
+                                               FontSize="12"
+                                               FontWeight="Bold"
+                                               Click="BtnPbook_Click"/>
+                        <Border x:Name="ProgBookBorder"
+                                 Width="100"
+                                 Height="3"
+                                 HorizontalAlignment="Stretch"
+                                 VerticalAlignment="Bottom"
+                                 Background="Transparent"/>
+                    </Grid>
+                    <Grid>
+                        <syncfusion:ButtonAdv x:Name="btnWorkPackage"
+                                             Label="WORK PKGS"
+                                             Padding="15,0"
+                                             Margin="5,0"
+                                             Background="Transparent"
+                                             Foreground="{StaticResource ForegroundColor}"
+                                             BorderThickness="0"
+                                             IconTemplate="{x:Null}"
+                                             SmallIcon="{x:Null}"
+                                             LargeIcon="{x:Null}"
+                                             FontSize="12"
+                                             FontWeight="Bold"
+                                             Click="BtnWorkPackage_Click"/>
+                        <Border x:Name="WorkPackageBorder"
+                                 Width="100"
+                                 Height="3"
+                                 HorizontalAlignment="Stretch"
+                                 VerticalAlignment="Bottom"
+                                 Background="Transparent"/>
+                    </Grid>
+                </StackPanel>
+                
+                <!-- COLUMN 3: WINDOW CONTROLS (RIGHT) -->
+                <StackPanel Grid.Column="2" 
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center">
+
+                    <Button x:Name="btnMinimize"
+                            Content="─"
+                            Width="46"
+                            Background="Transparent"
+                            Foreground="{StaticResource ForegroundColor}"
+                            BorderThickness="0"
+                            FontSize="16"
+                            Click="BtnMinimize_Click"
+                            ToolTip="Minimize"/>
+
+                    <Button x:Name="btnMaximize"
+                            Content="☐"
+                            Width="46"
+                            Background="Transparent"
+                            Foreground="{StaticResource ForegroundColor}"
+                            BorderThickness="0"
+                            FontSize="16"
+                            Click="BtnMaximize_Click"
+                            ToolTip="Maximize"/>
+
+                    <Button x:Name="btnClose"
+                            Width="46"
+                            Click="BtnClose_Click"
+                            ToolTip="Close">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="border" Background="Transparent">
+                                    <TextBlock Text="✕" 
+                                               FontSize="16"
+                                               Foreground="{StaticResource ForegroundColor}"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="border" Property="Background" Value="#E81123"/>
+                                        <Setter TargetName="border" Property="TextBlock.Foreground" Value="White"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
                     </Button>
 
                 </StackPanel>
-
-                <!-- COLUMN 3 : LOGO -->
-                <Border Grid.Column="3"
-                        Background="Transparent"
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Center"
-                        Margin="10,0,0,0">
-                    <Image Width="100"
-                           Height="51"
-                           Source="pack://application:,,,/images/SummitS-Full Summit Peak Logo.jpg"
-                           Stretch="Uniform"/>
-                </Border>
+                    
 
             </Grid>
-
         </Border>
 
         <!-- CONTENT AREA -->
@@ -323,56 +370,68 @@
 
         <!-- STATUS BAR -->
         <Border Grid.Row="2"
-                Background="{StaticResource StatusBarBackground}"
-                BorderBrush="{StaticResource BorderColor}"
-                BorderThickness="0,1,0,0">
+        Background="{StaticResource StatusBarBackground}"
+        BorderBrush="{StaticResource BorderColor}"
+        BorderThickness="0,1,0,0">
             <Grid>
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
                 <TextBlock Grid.Column="0"
-                           x:Name="txtCurrentUser"
-                           Text="User: Steve.Amalfitano"
-                           Foreground="{StaticResource StatusBarForeground}"
-                           FontSize="11"
-                           VerticalAlignment="Center"
-                           Margin="10,0,20,0"/>
+                   x:Name="txtAppVersion"
+                   Text="Vantage: MILESTONE v1.0.0"
+                   Foreground="{StaticResource AccentColor}"
+                   FontSize="11"
+                   FontWeight="SemiBold"
+                   VerticalAlignment="Center"
+                   Margin="10,0,20,0"/>
 
-                <TextBlock Grid.Column="2"
-                           x:Name="txtLastSyncsd"
-                           Text="Last Sync: Never"
-                           Foreground="{StaticResource StatusBarForeground}"
-                           FontSize="11"
-                           VerticalAlignment="Center"
-                           Margin="0,0,20,0"/>
+                <TextBlock Grid.Column="1"
+                   x:Name="txtCurrentUser"
+                   Text="User: Steve.Amalfitano"
+                   Foreground="{StaticResource StatusBarForeground}"
+                   FontSize="11"
+                   VerticalAlignment="Center"
+                   Margin="0,0,20,0"/>
+
+                <TextBlock Grid.Column="3"
+                   x:Name="txtLastSyncsd"
+                   Text="Last Sync: Never"
+                   Foreground="{StaticResource StatusBarForeground}"
+                   FontSize="11"
+                   VerticalAlignment="Center"
+                   Margin="0,0,20,0"/>
             </Grid>
         </Border>
 
         <!-- Modern Loading Overlay for Excel Imports -->
         <Grid x:Name="LoadingOverlay"
-         Grid.RowSpan="3"
-        Background="#DD000000"
-        Visibility="Collapsed"
-           Panel.ZIndex="1000">
+                      Grid.RowSpan="3"
+                      Background="#DD000000"
+                      Visibility="Collapsed"
+                      Panel.ZIndex="1000">
+
             <!-- No border/box - just centered content -->
             <StackPanel HorizontalAlignment="Center"
-     VerticalAlignment="Center">
+                VerticalAlignment="Center">
+
                 <!-- Spinner -->
                 <Viewbox Width="80" Height="80" HorizontalAlignment="Center">
                     <Canvas Width="100" Height="100">
                         <Ellipse x:Name="SpinnerEllipse"
-      Width="80"
-          Height="80"
-            Canvas.Left="10"
-       Canvas.Top="10"
-        Stroke="{StaticResource AccentColor}"
-          StrokeThickness="8"
-      StrokeDashArray="60 40"
-        Fill="Transparent"
-      RenderTransformOrigin="0.5,0.5">
+                         Width="80"
+                         Height="80"
+                         Canvas.Left="10"
+                         Canvas.Top="10"
+                         Stroke="{StaticResource AccentColor}"
+                         StrokeThickness="8"
+                         StrokeDashArray="60 40"
+                         Fill="Transparent"
+                         RenderTransformOrigin="0.5,0.5">
                             <Ellipse.RenderTransform>
                                 <RotateTransform x:Name="SpinnerRotation" Angle="0"/>
                             </Ellipse.RenderTransform>
@@ -382,32 +441,33 @@
 
                 <!-- Loading Text -->
                 <TextBlock x:Name="txtLoadingMessage"
-         Text="Importing Excel File..."
-  FontSize="18"
-     FontWeight="SemiBold"
-          Foreground="White"
-                  HorizontalAlignment="Center"
-       Margin="0,30,0,10"/>
+                   Text="Importing Excel File..."
+                   FontSize="18"
+                   FontWeight="SemiBold"
+                   Foreground="White"
+                   HorizontalAlignment="Center"
+                   Margin="0,30,0,10"/>
 
                 <!-- Progress Text -->
                 <TextBlock x:Name="txtLoadingProgress"
-          Text="0 of 0 records"
-          FontSize="14"
-   Foreground="#CCCCCC"
-      HorizontalAlignment="Center"
-        Margin="0,0,0,15"/>
+                   Text="0 of 0 records"
+                   FontSize="14"
+                   Foreground="#CCCCCC"
+                   HorizontalAlignment="Center"
+                   Margin="0,0,0,15"/>
 
                 <!-- Progress Bar -->
                 <ProgressBar x:Name="LoadingProgressBar"
- Width="300"
-            Height="8"
-        Minimum="0"
-       Maximum="100"
-              Value="0"
-       Foreground="{StaticResource AccentColor}"
-    Background="#333333"
-      BorderThickness="0"/>
+                     Width="300"
+                     Height="8"
+                     Minimum="0"
+                     Maximum="100"
+                     Value="0"
+                     Foreground="{StaticResource AccentColor}"
+                     Background="#333333"
+                     BorderThickness="0"/>
             </StackPanel>
         </Grid>
+
     </Grid>
-</Window>
+</syncfusion:ChromelessWindow>

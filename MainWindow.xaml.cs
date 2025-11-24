@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Syncfusion.Windows.Shared;
+using System;
 using System.Linq;
 using System.Reflection;
 using System.Windows;
@@ -7,16 +8,18 @@ using VANTAGE.Data;
 using VANTAGE.Models;
 using VANTAGE.Utilities;
 using VANTAGE.Views;
+using Syncfusion.Windows.Shared;
 
 namespace VANTAGE
 {
-    public partial class MainWindow : Window
+    public partial class MainWindow : ChromelessWindow
     {
         private System.Windows.Media.Animation.Storyboard _spinnerStoryboard;
 
         public MainWindow()
         {
-        
+
+
             InitializeComponent();
 
             // Initialize spinner animation
@@ -25,11 +28,33 @@ namespace VANTAGE
             LoadInitialModule();
         
             UpdateStatusBar();
-            
 
+            this.Loaded += (s, e) => HighlightNavigationButton(btnProgress);
             this.Closing += MainWindow_Closing;
         }
+        private void BtnMinimize_Click(object sender, RoutedEventArgs e)
+        {
+            this.WindowState = WindowState.Minimized;
+        }
 
+        private void BtnMaximize_Click(object sender, RoutedEventArgs e)
+        {
+            if (this.WindowState == WindowState.Maximized)
+            {
+                this.WindowState = WindowState.Normal;
+                btnMaximize.Content = "☐";
+            }
+            else
+            {
+                this.WindowState = WindowState.Maximized;
+                btnMaximize.Content = "❐";
+            }
+        }
+
+        private void BtnClose_Click(object sender, RoutedEventArgs e)
+        {
+            this.Close();
+        }
         private void InitializeSpinnerAnimation()
         {
             // Create continuous rotation animation for spinner
@@ -75,21 +100,6 @@ namespace VANTAGE
         {
             // TODO: Add proper logging when logging system is implemented
         }
-
-        private void LoadInitialModule()
-        {
-            // Load PROGRESS module by default
-            LoadProgressModule();
-
-            // Disable ADMIN button if not admin (with null check)
-            if (App.CurrentUser == null || !App.CurrentUser.IsAdmin)
-            {
-                btnAdmin.IsEnabled = false;
-                btnAdmin.Opacity = 0.5;
-                btnAdmin.ToolTip = "Admin privileges required";
-            }
-        }
-
         private void UpdateStatusBar()
         {
             // Update current user (with null check)
@@ -102,41 +112,137 @@ namespace VANTAGE
                 txtCurrentUser.Text = "User: Unknown";
             }
 
+            // Update last sync time
+            UpdateLastSyncDisplay();
+
             // TODO: Load projects into dropdown
-            // TODO: Update last sync time
             // TODO: Update record count
         }
 
-        // TOOLBAR BUTTON HANDLERS
+        public void UpdateLastSyncDisplay()
+        {
+            var lastSyncString = SettingsManager.GetUserSetting(App.CurrentUserID, "LastSyncUtcDate");
 
+            if (string.IsNullOrEmpty(lastSyncString))
+            {
+                txtLastSyncsd.Text = "Last Sync: Never";
+                return;
+            }
+
+            if (DateTime.TryParse(lastSyncString, out DateTime lastSyncUtc))
+            {
+                var localTime = lastSyncUtc.ToLocalTime();
+                txtLastSyncsd.Text = $"Last Sync: {localTime:M/d/yyyy HH:mm}";
+            }
+            else
+            {
+                txtLastSyncsd.Text = "Last Sync: Never";
+            }
+        }
+        private void LoadInitialModule()
+        {
+            // Set app version dynamically
+            var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+            txtAppVersion.Text = $"Vantage: MILESTONE v{version?.Major}.{version?.Minor}.{version?.Build}";
+
+            // Load PROGRESS module by default
+            LoadProgressModule();
+
+            // Disable ADMIN button if not admin (with null check)
+            if (App.CurrentUser == null || !App.CurrentUser.IsAdmin)
+            {
+                btnAdmin.IsEnabled = false;
+                btnAdmin.Opacity = 0.5;
+                btnAdmin.ToolTip = "Admin privileges required";
+            }
+        }
+
+        // TOOLBAR BUTTON HANDLERS
+        private void HighlightNavigationButton(Syncfusion.Windows.Tools.Controls.ButtonAdv activeButton)
+        {
+            // Reset both navigation buttons
+            borderProgress.Background = System.Windows.Media.Brushes.Transparent;
+            btnProgress.Foreground = (System.Windows.Media.Brush)FindResource("ForegroundColor");
+
+            borderSchedule.Background = System.Windows.Media.Brushes.Transparent;
+            btnSchedule.Foreground = (System.Windows.Media.Brush)FindResource("ForegroundColor");
+
+            ProgBookBorder.Background = System.Windows.Media.Brushes.Transparent;
+            btnPbook.Foreground = (System.Windows.Media.Brush)FindResource("ForegroundColor");
+
+            WorkPackageBorder.Background = System.Windows.Media.Brushes.Transparent;
+            btnWorkPackage.Foreground = (System.Windows.Media.Brush)FindResource("ForegroundColor");
+
+            // Highlight active button
+            if (activeButton == btnProgress)
+            {
+                borderProgress.Background = (System.Windows.Media.Brush)FindResource("AccentColor");
+                btnProgress.Foreground = (System.Windows.Media.Brush)FindResource("AccentColor");
+            }
+            else if (activeButton == btnSchedule)
+            {
+                borderSchedule.Background = (System.Windows.Media.Brush)FindResource("AccentColor");
+                btnSchedule.Foreground = (System.Windows.Media.Brush)FindResource("AccentColor");
+            }
+            else if (activeButton == btnPbook)
+            {
+                ProgBookBorder.Background = (System.Windows.Media.Brush)FindResource("AccentColor");
+                btnPbook.Foreground = (System.Windows.Media.Brush)FindResource("AccentColor");
+            }
+            else if (activeButton == btnWorkPackage)
+            {
+                WorkPackageBorder.Background = (System.Windows.Media.Brush)FindResource("AccentColor");
+                btnWorkPackage.Foreground = (System.Windows.Media.Brush)FindResource("AccentColor");
+            }
+        }
         private void BtnProgress_Click(object sender, RoutedEventArgs e)
         {
             LoadProgressModule();
-            HighlightActiveButton(btnProgress);
+            HighlightNavigationButton(btnProgress);
         }
 
         private void BtnSchedule_Click(object sender, RoutedEventArgs e)
         {
             MessageBox.Show("SCHEDULE module coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
+            HighlightNavigationButton(btnSchedule);
+        }
+        private void BtnPbook_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("PRINT module coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
+            HighlightNavigationButton(btnPbook);
+        }
+
+        private void BtnWorkPackage_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("WORK PACKAGE module coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
+            HighlightNavigationButton(btnWorkPackage);
         }
 
         private void BtnCreate_Click(object sender, RoutedEventArgs e)
         {
             MessageBox.Show("CREATE module coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
         }
+        private void ImportP6File_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        private void ExportP6File_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
 
         // === EXCEL DROPDOWN ===
 
-        private void BtnExcel_Click(object sender, RoutedEventArgs e)
-        {
-            // Open the dropdown menu
-            var button = sender as Button;
-            if (button?.ContextMenu != null)
-            {
-                button.ContextMenu.PlacementTarget = button;
-                button.ContextMenu.IsOpen = true;
-            }
-        }
+        //private void btnFile_Click(object sender, RoutedEventArgs e)
+        //{
+        //    // Open the dropdown menu
+        //    var button = sender as Button;
+        //    if (button?.ContextMenu != null)
+        //    {
+        //        button.ContextMenu.PlacementTarget = button;
+        //        button.ContextMenu.IsOpen = true;
+        //    }
+        //}
 
         private async void MenuExcelImportReplace_Click(object sender, RoutedEventArgs e)
         {
@@ -363,29 +469,6 @@ namespace VANTAGE
             await ExportHelper.ExportTemplateAsync(this);
         }
 
-        private void BtnPbook_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("PRINT module coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
-        private void BtnWorkPackage_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("WORK PACKAGE module coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
-        // === REPORTS DROPDOWN ===
-
-        private void BtnReports_Click(object sender, RoutedEventArgs e)
-        {
-            // Open the dropdown menu
-            var button = sender as Button;
-            if (button?.ContextMenu != null)
-            {
-                button.ContextMenu.PlacementTarget = button;
-                button.ContextMenu.IsOpen = true;
-            }
-        }
-
         private void MenuReport1_Click(object sender, RoutedEventArgs e)
         {
             MessageBox.Show("Report 1 coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -438,16 +521,16 @@ namespace VANTAGE
 
         // === ANALYSIS DROPDOWN ===
 
-        private void BtnAnalysis_Click(object sender, RoutedEventArgs e)
-        {
-            // Open the dropdown menu
-            var button = sender as Button;
-            if (button?.ContextMenu != null)
-            {
-                button.ContextMenu.PlacementTarget = button;
-                button.ContextMenu.IsOpen = true;
-            }
-        }
+        //private void BtnAnalysis_Click(object sender, RoutedEventArgs e)
+        //{
+        //    // Open the dropdown menu
+        //    var button = sender as Button;
+        //    if (button?.ContextMenu != null)
+        //    {
+        //        button.ContextMenu.PlacementTarget = button;
+        //        button.ContextMenu.IsOpen = true;
+        //    }
+        //}
 
         private void MenuAnalysis1_Click(object sender, RoutedEventArgs e)
         {
@@ -501,22 +584,22 @@ namespace VANTAGE
 
         // === ADMIN DROPDOWN ===
 
-        private void BtnAdmin_Click(object sender, RoutedEventArgs e)
-        {
-            if (!App.CurrentUser.IsAdmin)
-            {
-                MessageBox.Show("You do not have admin privileges.", "Access Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
+        //private void BtnAdmin_Click(object sender, RoutedEventArgs e)
+        //{
+        //    if (!App.CurrentUser.IsAdmin)
+        //    {
+        //        MessageBox.Show("You do not have admin privileges.", "Access Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
+        //        return;
+        //    }
 
-            // Open the dropdown menu
-            var button = sender as Button;
-            if (button?.ContextMenu != null)
-            {
-                button.ContextMenu.PlacementTarget = button;
-                button.ContextMenu.IsOpen = true;
-            }
-        }
+        //    // Open the dropdown menu
+        //    var button = sender as Button;
+        //    if (button?.ContextMenu != null)
+        //    {
+        //        button.ContextMenu.PlacementTarget = button;
+        //        button.ContextMenu.IsOpen = true;
+        //    }
+        //}
 
         private void ToggleUserAdmin_Click(object sender, RoutedEventArgs e)
         {
@@ -825,46 +908,46 @@ namespace VANTAGE
         private async void ToggleUpdatedBy_Click(object sender, RoutedEventArgs e)
         {
             try
-       {
-   var result = MessageBox.Show(
-    "This will set UpdatedBy = 'Bob' for ALL records in the database.\n\n" +
-        "This is a TEST function to verify that cell edits properly update UpdatedBy.\n\n" +
-    "Continue?",
-          "Set UpdatedBy to Bob",
-              MessageBoxButton.YesNo,
-   MessageBoxImage.Question);
-
-       if (result != MessageBoxResult.Yes)
-      return;
-
-    int count = await ActivityRepository.SetAllUpdatedByAsync("Bob");
-
-        // Refresh the current view if it's ProgressView
-   if (ContentArea.Content is Views.ProgressView progressView)
             {
-  // Reload the grid to reflect updated UpdatedBy values
-await progressView.RefreshData();
-      }
+                var result = MessageBox.Show(
+                    "This will set UpdatedBy = 'Bob' for ALL records in the database.\n\n" +
+                    "This is a TEST function to verify that cell edits properly update UpdatedBy.\n\n" +
+                    "Continue?",
+                    "Set UpdatedBy to Bob",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
 
-    MessageBox.Show(
-          $"Successfully set UpdatedBy = 'Bob' for {count:N0} records.\n\n" +
-              "Grid has been refreshed with updated values.\n\n" +
-             "Now edit a cell to verify UpdatedBy gets set to your username.",
-    "Update Complete",
-          MessageBoxButton.OK,
- MessageBoxImage.Information);
+                if (result != MessageBoxResult.Yes)
+                    return;
+
+                int count = await ActivityRepository.SetAllUpdatedByAsync("Bob");
+
+                // Refresh the current view if it's ProgressView
+                if (ContentArea.Content is Views.ProgressView progressView)
+                {
+                    // Reload the grid to reflect updated UpdatedBy values
+                    await progressView.RefreshData();
+                }
+
+                MessageBox.Show(
+                    $"Successfully set UpdatedBy = 'Bob' for {count:N0} records.\n\n" +
+                    "Grid has been refreshed with updated values.\n\n" +
+                    "Now edit a cell to verify UpdatedBy gets set to your username.",
+                    "Update Complete",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
             }
-      catch (Exception ex)
- {
-            MessageBox.Show(
-            $"Error setting UpdatedBy: {ex.Message}",
-         "Error",
-        MessageBoxButton.OK,
-   MessageBoxImage.Error);
-    }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"Error setting UpdatedBy: {ex.Message}",
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
         }
 
-     private void MenuTest2_Click(object sender, RoutedEventArgs e)
+        private void MenuTest2_Click(object sender, RoutedEventArgs e)
         {
             MessageBox.Show("Test 2 - Not implemented", "Test", MessageBoxButton.OK, MessageBoxImage.Information);
         }
@@ -970,24 +1053,6 @@ await progressView.RefreshData();
 
             // Save last module used
             SettingsManager.SetLastModuleUsed(App.CurrentUserID, "PROGRESS");
-        }
-
-        private void HighlightActiveButton(System.Windows.Controls.Button activeButton)
-        {
-            // Reset all buttons to default
-            btnProgress.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(42, 42, 42));
-            btnSchedule.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(42, 42, 42));
-            btnCreate.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(42, 42, 42));
-            btnExcel.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(42, 42, 42));
-            btnPbook.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(42, 42, 42));
-            btnWorkPackage.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(42, 42, 42));
-            btnReports.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(42, 42, 42));
-            btnAnalysis.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(42, 42, 42));
-            btnAdmin.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(42, 42, 42));
-            btnTools.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(42, 42, 42));
-
-            // Highlight active button
-            activeButton.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0, 120, 215)); // Accent blue
         }
     }
 }

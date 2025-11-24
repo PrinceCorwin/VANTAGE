@@ -12,10 +12,12 @@ namespace VANTAGE.Styles
         {
             // Extract the Activity from Syncfusion's DataRow wrapper
             Activity activity = null;
+            DataRow dataRow = null;
 
-            if (item is DataRow dataRow)
+            if (item is DataRow dr)
             {
-                activity = dataRow.RowData as Activity;
+                activity = dr.RowData as Activity;
+                dataRow = dr;
             }
             else
             {
@@ -31,16 +33,21 @@ namespace VANTAGE.Styles
             // Check if current user owns this record
             bool isOwned = string.Equals(activity.AssignedTo, App.CurrentUser?.Username, StringComparison.OrdinalIgnoreCase);
 
-            // Return dimmed style for non-owned records (even for admins)
-            if (!isOwned)
+            var style = new Style(typeof(VirtualizingCellsControl));
+
+            // Apply alternating background for all rows
+            if (dataRow != null && dataRow.RowIndex % 2 != 0)
             {
-                var style = new Style(typeof(VirtualizingCellsControl));
-                style.Setters.Add(new Setter(VirtualizingCellsControl.BackgroundProperty, Application.Current.Resources["NotOwnedRowBackground"]));
-                style.Setters.Add(new Setter(VirtualizingCellsControl.ForegroundProperty, Application.Current.Resources["NotOwnedRowForeground"]));
-                return style;
+                style.Setters.Add(new Setter(VirtualizingCellsControl.BackgroundProperty, Application.Current.Resources["GridAlternatingRowBackground"]));
             }
 
-            return null; // Use default styling for owned records
+            // Apply dimmed foreground for non-owned records
+            if (!isOwned)
+            {
+                style.Setters.Add(new Setter(VirtualizingCellsControl.ForegroundProperty, Application.Current.Resources["NotOwnedRowForeground"]));
+            }
+
+            return style;
         }
     }
 }

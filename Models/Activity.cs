@@ -5,7 +5,7 @@ namespace VANTAGE.Models
 {
     public class Activity : INotifyPropertyChanged
     {
-        public bool SuppressCalculations { get; set; } = true;
+        //public bool SuppressCalculations { get; set; } = true;
         // ========================================
         // BACKING FIELDS (Only for properties with custom logic)
         // ========================================
@@ -221,7 +221,7 @@ namespace VANTAGE.Models
                 {
                     _budgetMHs = value;
                     OnPropertyChanged();
-                    if (!SuppressCalculations)
+                    if (!_isInitializing)  // Changed from SuppressCalculations
                         RecalculatePercentEarned();
                 }
             }
@@ -243,7 +243,7 @@ namespace VANTAGE.Models
                 {
                     _quantity = value;
                     OnPropertyChanged();
-                    if (!SuppressCalculations)
+                    if (!_isInitializing)  // Changed from SuppressCalculations
                         UpdatePercCompleteFromEarnedQty();
                 }
             }
@@ -260,13 +260,25 @@ namespace VANTAGE.Models
                 {
                     _earnQtyEntry = value;
                     OnPropertyChanged();
-                    if (!SuppressCalculations)
-                        UpdatePercCompleteFromEarnedQty();
+                    //if (!SuppressCalculations)
+                    //    UpdatePercCompleteFromEarnedQty();
                 }
             }
         }
 
+        // Flag to prevent calculations during batch loading
+        private bool _isInitializing = false;
 
+        public void BeginInit()
+        {
+            _isInitializing = true;
+        }
+
+        public void EndInit()
+        {
+            _isInitializing = false;
+            RecalculatePercentEarned(); // Trigger all calculations once
+        }
         /// PercentEntry: STORED AS 0-100 (percentage)
         /// Example: 75.5 means 75.5%
 
@@ -276,14 +288,13 @@ namespace VANTAGE.Models
             set
             {
                 double clampedValue = Math.Max(0, Math.Min(100, value));
-
                 if (Math.Abs(_percentEntry - clampedValue) > 0.0001)
                 {
                     _percentEntry = clampedValue;
                     OnPropertyChanged();
                     OnPropertyChanged(nameof(PercentEntry_Display));
                     OnPropertyChanged(nameof(Status));
-                    if (!SuppressCalculations)
+                    if (!_isInitializing)  // Changed from SuppressCalculations
                         UpdateEarnedQtyFromPercComplete();
                 }
             }

@@ -48,7 +48,6 @@ namespace VANTAGE.Utilities
                 // Skip calculated fields
                 if (calculatedFields.Contains(newVantageName))
                 {
-                    System.Diagnostics.Debug.WriteLine($"  Skipping calculated field: {oldVantageHeader} → {newVantageName}");
                     continue;
                 }
 
@@ -87,6 +86,7 @@ namespace VANTAGE.Utilities
                     continue;
 
                 var activity = new Activity();
+                activity.BeginInit();  // Start batch initialization - suppress calculations
 
                 // Set property values from Excel
                 foreach (var mapping in columnMap)
@@ -103,7 +103,6 @@ namespace VANTAGE.Utilities
                 {
                     activity.UniqueID = $"i{timestamp}{sequence}{userSuffix}";
                     sequence++;
-
                 }
 
                 // Apply defaults for zero/empty numeric values
@@ -112,6 +111,8 @@ namespace VANTAGE.Utilities
                 if (activity.ClientBudget == 0) activity.ClientBudget = 0.001;
 
                 activity.ActivityID = 0;
+
+                activity.EndInit();  // End batch initialization - trigger calculations once
 
                 activities.Add(activity);
             }
@@ -168,15 +169,14 @@ namespace VANTAGE.Utilities
             try
             {
                 // Special handling for PercentEntry: convert 0-1 decimal to 0-100 percentage
+                // Special handling for PercentEntry: convert 0-1 decimal to 0-100 percentage
                 if (propertyName == "PercentEntry")
                 {
                     double value = cell.GetDouble();
 
-
                     if (value >= 0 && value <= 1.0)
                     {
                         activity.PercentEntry = value * 100.0;
-
                     }
                     // If value is > 1, assume it's already a percentage (0-100)
                     else if (value > 1 && value <= 100)

@@ -77,7 +77,8 @@ namespace VANTAGE
                 throw;
             }
         }
-        
+
+        // Copy table schema from Central to Local
         // Copy table schema from Central to Local
         private static void CopyTableSchema(SqliteConnection centralConn, SqliteConnection localConn, string tableName)
         {
@@ -93,13 +94,17 @@ namespace VANTAGE
                 throw new Exception($"Table {tableName} not found in Central database");
             }
 
-            // Replace CREATE TABLE with CREATE TABLE IF NOT EXISTS
-            createTableSql = createTableSql.Replace("CREATE TABLE", "CREATE TABLE IF NOT EXISTS");
+            // Drop the existing table if it exists
+            var dropCmd = localConn.CreateCommand();
+            dropCmd.CommandText = $"DROP TABLE IF EXISTS {tableName}";
+            dropCmd.ExecuteNonQuery();
 
-            // Execute on local database
+            // Create the table with the exact schema from Central
             var createCmd = localConn.CreateCommand();
             createCmd.CommandText = createTableSql;
             createCmd.ExecuteNonQuery();
+
+            AppLogger.Info($"Recreated table schema for {tableName}", "DatabaseSetup.CopyTableSchema");
         }
 
         // Copy table data from Central to Local
