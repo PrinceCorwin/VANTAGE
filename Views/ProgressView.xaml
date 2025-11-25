@@ -27,7 +27,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#4A4A4A"/>
+                                
                                 <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource AccentColor}"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
@@ -359,7 +359,7 @@
 
                         <Button x:Name="btnRefresh"
                                 Content="REFRESH"
-                                
+                                Style="{StaticResource RoundedButtonStyle}"
                                 Width="80"
                                 Margin="15,0,5,0"
                                 Background="{StaticResource ControlBackground}"
@@ -373,7 +373,7 @@
 
                         <Button x:Name="btnSetPercent100"
                                 Content="100%"
-                                
+                                Style="{StaticResource RoundedButtonStyle}"
                                 Tag="Button1|CustomPercentButton1|100"
                                 Width="60"
                                 Margin="5,0"
@@ -397,7 +397,7 @@
 
                         <Button x:Name="btnSetPercent0"
                                 Content="0%"
-                                
+                                Style="{StaticResource RoundedButtonStyle}"
                                 Tag="Button2|CustomPercentButton2|0"
                                 Width="60"
                                 Margin="5,0"
@@ -482,12 +482,12 @@
                                        Foreground="{StaticResource TextColorSecondary}"
                                        FontSize="14"
                                        VerticalAlignment="Center"/>
-                                        <TextBlock Text="{Binding EarnedMHs, StringFormat=N2}"
-                                       Foreground="{StaticResource StatusGreen}"
-                                       FontSize="14"
-                                       FontWeight="Bold"
-                                       VerticalAlignment="Center"
-                                       Margin="5,0,0,0"/>
+                            <TextBlock Text="{Binding EarnedMHs, StringFormat=N2}"
+                                        Foreground="{StaticResource StatusGreen}"
+                                        FontSize="14"
+                                        FontWeight="Bold"
+                                        VerticalAlignment="Center"
+                                        Margin="5,0,0,0"/>
                         </StackPanel>
 
                         <!-- Percent Complete -->
