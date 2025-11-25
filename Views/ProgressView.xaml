@@ -11,6 +11,7 @@
       Background="{StaticResource BackgroundColor}">
 
     <UserControl.Resources>
+        
         <Style x:Key="RoundedButtonStyle" TargetType="Button">
             <Setter Property="Template">
                 <Setter.Value>

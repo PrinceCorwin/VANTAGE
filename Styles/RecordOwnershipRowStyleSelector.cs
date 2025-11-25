@@ -1,7 +1,8 @@
+using Syncfusion.UI.Xaml.Grid;
 using System;
 using System.Windows;
 using System.Windows.Controls;
-using Syncfusion.UI.Xaml.Grid;
+using System.Windows.Media;
 using VANTAGE.Models;
 
 namespace VANTAGE.Styles
@@ -46,6 +47,15 @@ namespace VANTAGE.Styles
             {
                 style.Setters.Add(new Setter(VirtualizingCellsControl.ForegroundProperty, Application.Current.Resources["NotOwnedRowForeground"]));
             }
+            // Add hover trigger to keep foreground readable
+            var hoverTrigger = new Trigger
+            {
+                Property = VirtualizingCellsControl.IsMouseOverProperty,
+                Value = true
+            };
+            hoverTrigger.Setters.Add(new Setter(VirtualizingCellsControl.BackgroundProperty, Application.Current.Resources["TextColorSecondary"]));
+
+            style.Triggers.Add(hoverTrigger);
 
             return style;
         }
