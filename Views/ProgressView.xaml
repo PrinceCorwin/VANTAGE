@@ -7,7 +7,7 @@
              xmlns:svg="http://sharpvectors.codeplex.com/runtime/"
              xmlns:styles="clr-namespace:VANTAGE.Styles"
              mc:Ignorable="d"
-             d:DesignHeight="600" d:DesignWidth="1200"
+             d:DesignHeight="1080" d:DesignWidth="1920"
              Background="{StaticResource BackgroundColor}">
 
     <UserControl.Resources>
@@ -214,8 +214,8 @@
                             FontSize="11"
                             Click="BtnFilterNotStarted_Click"/>
 
-                    <Button x:Name="btnFilterUser2"
-                            Content="USER 2"
+                    <Button x:Name="btnChangedRows"
+                            Content="Changed"
                             
                             Height="35"
                             Margin="0,0,0,5"
@@ -226,7 +226,7 @@
                             HorizontalContentAlignment="Center"
                             Padding="10,0"
                             FontSize="11"
-                            Click="BtnFilterUser2_Click"/>
+                            Click="btnChangedRows_Click"/>
 
                     <Button x:Name="btnFilterUser3"
                             Content="USER 3"
@@ -538,11 +538,6 @@
                     CurrentCellEndEdit="sfActivities_CurrentCellEndEdit"
                     SelectionChanged="sfActivities_SelectionChanged"
                     CurrentCellBeginEdit="SfActivities_CurrentCellBeginEdit">
-                    <!--<syncfusion:SfDataGrid.AlternatingRowStyle>
-                        <Style TargetType="syncfusion:VirtualizingCellsControl">
-                            <Setter Property="Background" Value="{StaticResource GridAlternatingRowBackground}"/>
-                        </Style>
-                    </syncfusion:SfDataGrid.AlternatingRowStyle>-->
                     <syncfusion:SfDataGrid.HeaderStyle>
                         <Style TargetType="syncfusion:GridHeaderCellControl">
                             <Setter Property="Background" Value="{StaticResource GridHeaderBackground}"/>

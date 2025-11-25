@@ -1432,9 +1432,39 @@ namespace VANTAGE.Views
 
         // === FILTER EVENT HANDLERS ===
 
-        private void BtnFilterUser2_Click(object sender, RoutedEventArgs e)
+        // Add this method to ProgressView.xaml.cs
+
+        private void btnChangedRows_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: Implement
+            // Toggle filter based on whether predicates already exist
+            bool filterActive = sfActivities.Columns["LocalDirty"].FilterPredicates.Count > 0;
+
+            if (!filterActive)
+            {
+                // Apply "Changed Rows" filter (LocalDirty = 1)
+                sfActivities.Columns["LocalDirty"].FilterPredicates.Add(new Syncfusion.Data.FilterPredicate()
+                {
+                    FilterType = Syncfusion.Data.FilterType.Equals,
+                    FilterValue = 1,
+                    PredicateType = Syncfusion.Data.PredicateType.And
+                });
+
+                // Update button visuals - active
+                btnChangedRows.BorderBrush = (Brush)Application.Current.Resources["AccentColor"];
+            }
+            else
+            {
+                // Clear this filter
+                sfActivities.Columns["LocalDirty"].FilterPredicates.Clear();
+
+                // Update button visuals - inactive
+                btnChangedRows.BorderBrush = (Brush)Application.Current.Resources["ControlBorder"];
+            }
+
+            sfActivities.View.RefreshFilter();
+            _viewModel.FilteredCount = sfActivities.View.Records.Count;
+            UpdateRecordCount();
+            UpdateSummaryPanel();
         }
 
         private void BtnFilterUser3_Click(object sender, RoutedEventArgs e)

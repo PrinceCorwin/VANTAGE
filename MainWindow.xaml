@@ -409,14 +409,12 @@
                    Margin="0,0,20,0"/>
             </Grid>
         </Border>
-
-        <!-- Modern Loading Overlay for Excel Imports -->
         <!-- Modern Loading Overlay for Excel Imports -->
         <Grid x:Name="LoadingOverlay"
-      Grid.RowSpan="3"
-      Background="#DD000000"
-      Visibility="Collapsed"
-      Panel.ZIndex="1000">
+              Grid.RowSpan="3"
+              Background="#DD000000"
+              Visibility="Collapsed"
+              Panel.ZIndex="1000">
             <StackPanel HorizontalAlignment="Center"
                 VerticalAlignment="Center">
                 <!-- Syncfusion Busy Indicator -->
