@@ -411,36 +411,21 @@
         </Border>
 
         <!-- Modern Loading Overlay for Excel Imports -->
+        <!-- Modern Loading Overlay for Excel Imports -->
         <Grid x:Name="LoadingOverlay"
-                      Grid.RowSpan="3"
-                      Background="#DD000000"
-                      Visibility="Collapsed"
-                      Panel.ZIndex="1000">
-
-            <!-- No border/box - just centered content -->
+      Grid.RowSpan="3"
+      Background="#DD000000"
+      Visibility="Collapsed"
+      Panel.ZIndex="1000">
             <StackPanel HorizontalAlignment="Center"
                 VerticalAlignment="Center">
-
-                <!-- Spinner -->
-                <Viewbox Width="80" Height="80" HorizontalAlignment="Center">
-                    <Canvas Width="100" Height="100">
-                        <Ellipse x:Name="SpinnerEllipse"
-                         Width="80"
-                         Height="80"
-                         Canvas.Left="10"
-                         Canvas.Top="10"
-                         Stroke="{StaticResource AccentColor}"
-                         StrokeThickness="8"
-                         StrokeDashArray="60 40"
-                         Fill="Transparent"
-                         RenderTransformOrigin="0.5,0.5">
-                            <Ellipse.RenderTransform>
-                                <RotateTransform x:Name="SpinnerRotation" Angle="0"/>
-                            </Ellipse.RenderTransform>
-                        </Ellipse>
-                    </Canvas>
-                </Viewbox>
-
+                <!-- Syncfusion Busy Indicator -->
+                <syncfusion:SfBusyIndicator x:Name="BusyIndicator"
+                                    IsBusy="True"
+                                    AnimationType="DualRing"
+                                    ViewboxWidth="80"
+                                    ViewboxHeight="80"
+                                    Foreground="{StaticResource AccentColor}"/>
                 <!-- Loading Text -->
                 <TextBlock x:Name="txtLoadingMessage"
                    Text="Importing Excel File..."
@@ -449,7 +434,6 @@
                    Foreground="White"
                    HorizontalAlignment="Center"
                    Margin="0,30,0,10"/>
-
                 <!-- Progress Text -->
                 <TextBlock x:Name="txtLoadingProgress"
                    Text="0 of 0 records"
@@ -457,7 +441,6 @@
                    Foreground="#CCCCCC"
                    HorizontalAlignment="Center"
                    Margin="0,0,0,15"/>
-
                 <!-- Progress Bar -->
                 <ProgressBar x:Name="LoadingProgressBar"
                      Width="300"

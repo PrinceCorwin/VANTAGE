@@ -3,6 +3,7 @@ using Microsoft.Data.Sqlite;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using VANTAGE.Utilities;
 
 
 namespace VANTAGE.Utilities
@@ -13,7 +14,38 @@ namespace VANTAGE.Utilities
         /// Get an app-wide setting by name
 
         /// 
-        
+        /// <summary>
+        /// Remove an app-wide setting by name.
+        /// Used to clean up LastPulledSyncVersion entries when removing projects from Local.
+        /// </summary>
+        /// <param name="settingName">The setting name to remove</param>
+        /// <returns>True if a setting was removed, false if it didn't exist</returns>
+        public static bool RemoveAppSetting(string settingName)
+        {
+            try
+            {
+                using var connection = DatabaseSetup.GetConnection();
+                connection.Open();
+
+                var command = connection.CreateCommand();
+                command.CommandText = "DELETE FROM AppSettings WHERE SettingName = @name";
+                command.Parameters.AddWithValue("@name", settingName);
+
+                int rowsAffected = command.ExecuteNonQuery();
+
+                if (rowsAffected > 0)
+                {
+                    AppLogger.Info($"Removed AppSetting: {settingName}", "SettingsManager.RemoveAppSetting");
+                }
+
+                return rowsAffected > 0;
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "SettingsManager.RemoveAppSetting");
+                return false;
+            }
+        }
         public static string GetAppSetting(string settingName, string defaultValue = "")
         {
 
@@ -133,8 +165,8 @@ namespace VANTAGE.Utilities
                 {
                     SetAppSetting("Theme", "DarkTheme.xaml", "string");
                     SetAppSetting("ToolbarLocation", "Top", "string");
-                    SetAppSetting("WindowWidth", "1200", "int");
-                    SetAppSetting("WindowHeight", "700", "int");
+                    SetAppSetting("WindowWidth", "1920", "int");
+                    SetAppSetting("WindowHeight", "1080", "int");
                 }
             }
             catch (Exception ex)

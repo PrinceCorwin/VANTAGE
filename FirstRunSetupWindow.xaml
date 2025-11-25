@@ -2,6 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Welcome to VANTAGE" Height="350" Width="400"
+        Icon="pack://application:,,,/images/AppIcon.ico"
         WindowStartupLocation="CenterScreen"
         Background="{StaticResource BackgroundColor}"
         Foreground="{StaticResource ForegroundColor}"

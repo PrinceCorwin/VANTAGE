@@ -21,9 +21,135 @@ namespace VANTAGE.Data
         {
             _mappingService = new MappingService(projectID);
         }
+        /// <summary>
+        /// Get count of LocalDirty=1 records grouped by ProjectID for projects NOT in the selected list.
+        /// Used to warn users about unsaved changes before removing projects from Local.
+        /// </summary>
+        /// <param name="selectedProjectIds">List of project IDs the user HAS selected (we want counts for everything else)</param>
+        /// <returns>Dictionary of ProjectID to dirty record count (only projects with count > 0)</returns>
+        public static async Task<Dictionary<string, int>> GetDirtyCountByExcludedProjectsAsync(List<string> selectedProjectIds)
+        {
+            return await Task.Run(() =>
+            {
+                var dirtyCounts = new Dictionary<string, int>();
+
+                try
+                {
+                    using var connection = DatabaseSetup.GetConnection();
+                    connection.Open();
+
+                    var cmd = connection.CreateCommand();
+
+                    // Build the NOT IN clause for selected projects
+                    if (selectedProjectIds != null && selectedProjectIds.Count > 0)
+                    {
+                        var paramNames = selectedProjectIds.Select((p, i) => $"@proj{i}").ToList();
+                        cmd.CommandText = $@"
+                    SELECT ProjectID, COUNT(*) as DirtyCount
+                    FROM Activities 
+                    WHERE LocalDirty = 1 
+                    AND ProjectID IS NOT NULL
+                    AND ProjectID NOT IN ({string.Join(",", paramNames)})
+                    GROUP BY ProjectID
+                    HAVING COUNT(*) > 0";
+
+                        for (int i = 0; i < selectedProjectIds.Count; i++)
+                        {
+                            cmd.Parameters.AddWithValue($"@proj{i}", selectedProjectIds[i]);
+                        }
+                    }
+                    else
+                    {
+                        // No projects selected - get all dirty records by project
+                        cmd.CommandText = @"
+                    SELECT ProjectID, COUNT(*) as DirtyCount
+                    FROM Activities 
+                    WHERE LocalDirty = 1 
+                    AND ProjectID IS NOT NULL
+                    GROUP BY ProjectID
+                    HAVING COUNT(*) > 0";
+                    }
+
+                    using var reader = cmd.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        string projectId = reader.GetString(0);
+                        int count = reader.GetInt32(1);
+                        dirtyCounts[projectId] = count;
+                    }
+
+                    AppLogger.Info($"GetDirtyCountByExcludedProjectsAsync found {dirtyCounts.Count} projects with unsaved changes",
+                        "ActivityRepository.GetDirtyCountByExcludedProjectsAsync");
+                }
+                catch (Exception ex)
+                {
+                    AppLogger.Error(ex, "ActivityRepository.GetDirtyCountByExcludedProjectsAsync");
+                }
+
+                return dirtyCounts;
+            });
+        }
+
+        /// <summary>
+        /// Remove all activities from Local database for the specified project IDs.
+        /// This is a hard delete (not soft delete) - records are permanently removed from Local only.
+        /// Central database is NOT affected.
+        /// </summary>
+        /// <param name="projectIdsToRemove">List of project IDs to remove from Local</param>
+        /// <returns>Number of records removed</returns>
+        public static async Task<int> RemoveActivitiesByProjectIdsAsync(List<string> projectIdsToRemove)
+        {
+            if (projectIdsToRemove == null || projectIdsToRemove.Count == 0)
+                return 0;
+
+            return await Task.Run(() =>
+            {
+                try
+                {
+                    using var connection = DatabaseSetup.GetConnection();
+                    connection.Open();
+
+                    using var transaction = connection.BeginTransaction();
+
+                    try
+                    {
+                        var cmd = connection.CreateCommand();
+                        cmd.Transaction = transaction;
+
+                        // Build parameterized IN clause
+                        var paramNames = projectIdsToRemove.Select((p, i) => $"@proj{i}").ToList();
+                        cmd.CommandText = $"DELETE FROM Activities WHERE ProjectID IN ({string.Join(",", paramNames)})";
+
+                        for (int i = 0; i < projectIdsToRemove.Count; i++)
+                        {
+                            cmd.Parameters.AddWithValue($"@proj{i}", projectIdsToRemove[i]);
+                        }
+
+                        int rowsDeleted = cmd.ExecuteNonQuery();
+
+                        transaction.Commit();
+
+                        AppLogger.Info($"RemoveActivitiesByProjectIdsAsync removed {rowsDeleted} records from {projectIdsToRemove.Count} projects: {string.Join(", ", projectIdsToRemove)}",
+                            "ActivityRepository.RemoveActivitiesByProjectIdsAsync");
+
+                        return rowsDeleted;
+                    }
+                    catch
+                    {
+                        transaction.Rollback();
+                        throw;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    AppLogger.Error(ex, "ActivityRepository.RemoveActivitiesByProjectIdsAsync");
+                    return 0;
+                }
+            });
+        }
 
         // Get all LocalDirty=1 records for specified projects
-    public static async Task<List<Activity>> GetDirtyActivitiesAsync(List<string> projectIds)
+        public static async Task<List<Activity>> GetDirtyActivitiesAsync(List<string> projectIds)
     {
         return await Task.Run(() =>
         {

@@ -1,11 +1,11 @@
 ﻿using Syncfusion.Windows.Shared;
-using Syncfusion.Windows.Shared;
 using System;
 using System.Linq;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media.Imaging;
 using VANTAGE.Data;
 using VANTAGE.Models;
 using VANTAGE.Utilities;
@@ -15,22 +15,24 @@ namespace VANTAGE
 {
     public partial class MainWindow : ChromelessWindow
     {
-        private System.Windows.Media.Animation.Storyboard _spinnerStoryboard;
-
         public MainWindow()
         {
 
 
             InitializeComponent();
-
-            // Initialize spinner animation
-            InitializeSpinnerAnimation();
        
             LoadInitialModule();
         
             UpdateStatusBar();
 
-            this.Loaded += (s, e) => HighlightNavigationButton(btnProgress);
+            this.Loaded += (s, e) =>
+            {
+                HighlightNavigationButton(btnProgress);
+
+                // Force taskbar icon refresh (fixes first-run icon not showing)
+                var iconPath = new Uri("pack://application:,,,/images/AppIcon.ico", UriKind.Absolute);
+                this.Icon = BitmapFrame.Create(iconPath);
+            };
             this.Closing += MainWindow_Closing;
         }
         private void BtnMinimize_Click(object sender, RoutedEventArgs e)
@@ -68,22 +70,6 @@ namespace VANTAGE
         {
             this.Close();
         }
-        private void InitializeSpinnerAnimation()
-        {
-            // Create continuous rotation animation for spinner
-            var rotation = new System.Windows.Media.Animation.DoubleAnimation
-            {
-                From = 0,
-                To = 360,
-                Duration = TimeSpan.FromSeconds(1),
-                RepeatBehavior = System.Windows.Media.Animation.RepeatBehavior.Forever
-            };
-
-            _spinnerStoryboard = new System.Windows.Media.Animation.Storyboard();
-            _spinnerStoryboard.Children.Add(rotation);
-            System.Windows.Media.Animation.Storyboard.SetTarget(rotation, SpinnerRotation);
-            System.Windows.Media.Animation.Storyboard.SetTargetProperty(rotation, new PropertyPath("Angle"));
-        }
 
         private void ShowLoadingOverlay(string message = "Processing...")
         {
@@ -91,12 +77,10 @@ namespace VANTAGE
             txtLoadingProgress.Text = "";
             LoadingProgressBar.Value = 0;
             LoadingOverlay.Visibility = Visibility.Visible;
-            _spinnerStoryboard.Begin();
         }
 
         private void HideLoadingOverlay()
         {
-            _spinnerStoryboard.Stop();
             LoadingOverlay.Visibility = Visibility.Collapsed;
         }
 

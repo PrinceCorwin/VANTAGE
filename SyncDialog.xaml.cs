@@ -1,9 +1,12 @@
-﻿using System;
+﻿using DocumentFormat.OpenXml.Spreadsheet;
+using DocumentFormat.OpenXml.Wordprocessing;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows;
-using VANTAGE.Models;
+using VANTAGE.Data;
+using VANTAGE.Dialogs;
 using VANTAGE.Utilities;
 
 namespace VANTAGE
@@ -11,6 +14,7 @@ namespace VANTAGE
     public partial class SyncDialog : Window
     {
         private List<ProjectSelection> _projects;
+        private HashSet<string> _projectsWithLocalRecords;
 
         public SyncDialog()
         {
@@ -23,6 +27,7 @@ namespace VANTAGE
             try
             {
                 _projects = new List<ProjectSelection>();
+                _projectsWithLocalRecords = new HashSet<string>();
 
                 using var connection = DatabaseSetup.GetConnection();
                 connection.Open();
@@ -49,19 +54,18 @@ namespace VANTAGE
                 activityCmd.CommandText = "SELECT DISTINCT ProjectID FROM Activities WHERE ProjectID IS NOT NULL";
 
                 using var activityReader = activityCmd.ExecuteReader();
-                var existingProjects = new HashSet<string>();
                 while (activityReader.Read())
                 {
                     if (!activityReader.IsDBNull(0))
                     {
-                        existingProjects.Add(activityReader.GetString(0));
+                        _projectsWithLocalRecords.Add(activityReader.GetString(0));
                     }
                 }
 
                 // Mark projects as selected if they have activities
                 foreach (var project in _projects)
                 {
-                    if (existingProjects.Contains(project.ProjectID))
+                    if (_projectsWithLocalRecords.Contains(project.ProjectID))
                     {
                         project.IsSelected = true;
                     }
@@ -105,6 +109,62 @@ namespace VANTAGE
                     return;
                 }
 
+                // ============================================================
+                // NEW: Check for excluded projects with unsaved changes
+                // ============================================================
+
+                // Find projects that have local records but are NOT selected
+                var excludedProjects = _projectsWithLocalRecords
+                    .Where(p => !selectedProjects.Contains(p))
+                    .ToList();
+
+                if (excludedProjects.Count > 0)
+                {
+                    // Check if any excluded projects have dirty (unsaved) records
+                    var dirtyCountsByProject = await ActivityRepository.GetDirtyCountByExcludedProjectsAsync(selectedProjects);
+
+                    if (dirtyCountsByProject.Count > 0)
+                    {
+                        // Build project names dictionary for display
+                        var projectNames = _projects.ToDictionary(p => p.ProjectID, p => p.ProjectName);
+
+                        // Show warning dialog
+                        var warningDialog = new UnsyncedChangesWarningDialog(dirtyCountsByProject, projectNames);
+                        warningDialog.Owner = this;
+
+                        bool? result = warningDialog.ShowDialog();
+
+                        if (result != true)
+                        {
+                            // User clicked "No, Go Back" - return to project selection
+                            return;
+                        }
+
+                        // User clicked "Yes, I'm Sure" - proceed with removal
+                        AppLogger.Info($"User confirmed removal of {dirtyCountsByProject.Values.Sum()} dirty records from {dirtyCountsByProject.Count} excluded projects",
+                            "SyncDialog.BtnConfirmSync_Click");
+                    }
+
+                    // Remove records from Local for excluded projects
+                    int removedCount = await ActivityRepository.RemoveActivitiesByProjectIdsAsync(excludedProjects);
+
+                    // Remove LastPulledSyncVersion settings for excluded projects
+                    foreach (var projectId in excludedProjects)
+                    {
+                        SettingsManager.RemoveAppSetting($"LastPulledSyncVersion_{projectId}");
+                    }
+
+                    if (removedCount > 0)
+                    {
+                        AppLogger.Info($"Removed {removedCount} records from {excludedProjects.Count} excluded projects: {string.Join(", ", excludedProjects)}",
+                            "SyncDialog.BtnConfirmSync_Click");
+                    }
+                }
+
+                // ============================================================
+                // END NEW CODE - Continue with normal sync
+                // ============================================================
+
                 // Disable UI during sync
                 btnSync.IsEnabled = false;
                 btnCancel.IsEnabled = false;
@@ -147,7 +207,7 @@ namespace VANTAGE
             catch (Exception ex)
             {
                 MessageBox.Show($"Sync error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                AppLogger.Error(ex, "SyncDialog.BtnSync_Click");
+                AppLogger.Error(ex, "SyncDialog.BtnConfirmSync_Click");
             }
             finally
             {

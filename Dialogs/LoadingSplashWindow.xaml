@@ -1,0 +1,59 @@
+﻿<Window x:Class="VANTAGE.Dialogs.LoadingSplashWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
+        Title="VANTAGE: MILESTONE"
+        Height="200"
+        Width="400"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="NoResize"
+        ShowInTaskbar="True"
+        Topmost="True"
+        Icon="pack://application:,,,/images/AppIcon.ico">
+
+    <Border Background="{StaticResource WindowBackground}"
+            BorderBrush="{StaticResource AccentColor}"
+            BorderThickness="1"
+            CornerRadius="8">
+
+        <Grid Margin="30">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- App Title -->
+            <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,20">
+                <Image Source="pack://application:,,,/images/MilestoneLogoPngTransparentBG.png" 
+                       Height="32" 
+                       Margin="0,0,12,0"/>
+                <TextBlock Text="VANTAGE: MILESTONE"
+                           FontSize="20"
+                           FontWeight="Bold"
+                           Foreground="{StaticResource ForegroundColor}"
+                           VerticalAlignment="Center"/>
+            </StackPanel>
+
+            <!-- Spinner -->
+            <syncfusion:SfBusyIndicator Grid.Row="1"
+                                        IsBusy="True"
+                                        AnimationType="DualRing"
+                                        ViewboxWidth="50"
+                                        ViewboxHeight="50"
+                                        Foreground="{StaticResource AccentColor}"/>
+
+            <!-- Status Text -->
+            <TextBlock Grid.Row="2"
+                       x:Name="txtStatus"
+                       Text="Initializing..."
+                       FontSize="13"
+                       Foreground="{StaticResource ForegroundColor}"
+                       HorizontalAlignment="Center"
+                       Margin="0,20,0,0"/>
+        </Grid>
+    </Border>
+</Window>
