@@ -85,7 +85,27 @@ namespace VANTAGE
             DialogResult = false;
             Close();
         }
+        private void ShowLoadingOverlay(string message = "Processing...")
+        {
+            txtLoadingMessage.Text = message;
+            txtLoadingProgress.Text = "";
+            LoadingProgressBar.Value = 0;
+            LoadingOverlay.Visibility = Visibility.Visible;
+        }
 
+        private void HideLoadingOverlay()
+        {
+            LoadingOverlay.Visibility = Visibility.Collapsed;
+        }
+
+        private void UpdateLoadingProgress(int current, int total, string message = null)
+        {
+            if (message != null)
+                txtLoadingMessage.Text = message;
+
+            txtLoadingProgress.Text = $"{current:N0} of {total:N0} records";
+            LoadingProgressBar.Value = total > 0 ? (current * 100.0 / total) : 0;
+        }
         private async void BtnConfirmSync_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -109,26 +129,18 @@ namespace VANTAGE
                     return;
                 }
 
-                // ============================================================
-                // NEW: Check for excluded projects with unsaved changes
-                // ============================================================
-
-                // Find projects that have local records but are NOT selected
+                // Check for excluded projects with unsaved changes
                 var excludedProjects = _projectsWithLocalRecords
                     .Where(p => !selectedProjects.Contains(p))
                     .ToList();
 
                 if (excludedProjects.Count > 0)
                 {
-                    // Check if any excluded projects have dirty (unsaved) records
                     var dirtyCountsByProject = await ActivityRepository.GetDirtyCountByExcludedProjectsAsync(selectedProjects);
 
                     if (dirtyCountsByProject.Count > 0)
                     {
-                        // Build project names dictionary for display
                         var projectNames = _projects.ToDictionary(p => p.ProjectID, p => p.ProjectName);
-
-                        // Show warning dialog
                         var warningDialog = new UnsyncedChangesWarningDialog(dirtyCountsByProject, projectNames);
                         warningDialog.Owner = this;
 
@@ -136,11 +148,9 @@ namespace VANTAGE
 
                         if (result != true)
                         {
-                            // User clicked "No, Go Back" - return to project selection
                             return;
                         }
 
-                        // User clicked "Yes, I'm Sure" - proceed with removal
                         AppLogger.Info($"User confirmed removal of {dirtyCountsByProject.Values.Sum()} dirty records from {dirtyCountsByProject.Count} excluded projects",
                             "SyncDialog.BtnConfirmSync_Click");
                     }
@@ -161,28 +171,40 @@ namespace VANTAGE
                     }
                 }
 
-                // ============================================================
-                // END NEW CODE - Continue with normal sync
-                // ============================================================
-
                 // Disable UI during sync
                 btnSync.IsEnabled = false;
                 btnCancel.IsEnabled = false;
                 projectList.IsEnabled = false;
 
+                // Show loading overlay
+                ShowLoadingOverlay("Syncing with Central Database...");
+                txtLoadingProgress.Text = "Please wait...";
+
+                // Small delay to let UI update before blocking operations
+                await Task.Delay(100);
+
                 // Start timer
                 var stopwatch = System.Diagnostics.Stopwatch.StartNew();
 
-                // Mirror reference tables
-                DatabaseSetup.MirrorTablesFromCentral(centralPath);
+                // Run sync operations on background thread to keep UI responsive
+                var (pushResult, pullResult) = await Task.Run(() =>
+                {
+                    // Mirror reference tables
+                    DatabaseSetup.MirrorTablesFromCentral(centralPath);
 
-                // Push dirty records
-                var pushResult = await SyncManager.PushRecordsAsync(centralPath, selectedProjects);
+                    // Push dirty records
+                    var push = SyncManager.PushRecordsAsync(centralPath, selectedProjects).Result;
 
-                // Pull updates
-                var pullResult = await SyncManager.PullRecordsAsync(centralPath, selectedProjects, pushResult.PushedUniqueIds);
+                    // Pull updates
+                    var pull = SyncManager.PullRecordsAsync(centralPath, selectedProjects, push.PushedUniqueIds).Result;
+
+                    return (push, pull);
+                });
 
                 stopwatch.Stop();
+
+                // Hide loading overlay
+                HideLoadingOverlay();
 
                 // Show results with timing
                 var message = $"Sync completed in {stopwatch.Elapsed.TotalSeconds:F1} seconds\n\n" +
@@ -206,6 +228,7 @@ namespace VANTAGE
             }
             catch (Exception ex)
             {
+                HideLoadingOverlay();
                 MessageBox.Show($"Sync error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 AppLogger.Error(ex, "SyncDialog.BtnConfirmSync_Click");
             }
