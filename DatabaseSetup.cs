@@ -1,4 +1,5 @@
-﻿using Microsoft.Data.Sqlite;
+﻿using Microsoft.Data.SqlClient;
+using Microsoft.Data.Sqlite;
 using Microsoft.Win32;
 using System;
 using System.IO;
@@ -48,6 +49,90 @@ namespace VANTAGE
                 throw;
             }
         }
+
+        // Add this method to DatabaseSetup.cs
+        // Also add this using statement at the top: using Microsoft.Data.SqlClient;
+
+        // Mirror reference tables from Azure to Local SQLite
+        // Unlike the old SQLite-to-SQLite copy, we don't copy schema (local tables already exist)
+        // We only copy data from Azure into existing local tables
+        public static void MirrorTablesFromAzure()
+        {
+            try
+            {
+                using var azureConn = AzureDbManager.GetConnection();
+                using var localConn = GetConnection();
+                azureConn.Open();
+                localConn.Open();
+
+                // Tables to mirror from Azure
+                string[] metadataTables = { "Users", "Projects", "ColumnMappings", "Managers" };
+
+                foreach (string tableName in metadataTables)
+                {
+                    CopyTableDataFromAzure(azureConn, localConn, tableName);
+                }
+
+                AppLogger.Info("Mirrored tables from Azure database", "DatabaseSetup.MirrorTablesFromAzure");
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "DatabaseSetup.MirrorTablesFromAzure");
+                throw;
+            }
+        }
+
+        // Copy table data from Azure SQL to Local SQLite
+        private static void CopyTableDataFromAzure(SqlConnection azureConn, SqliteConnection localConn, string tableName)
+        {
+            // Clear existing data in local table
+            var deleteCmd = localConn.CreateCommand();
+            deleteCmd.CommandText = $"DELETE FROM {tableName}";
+            deleteCmd.ExecuteNonQuery();
+
+            // Get all data from Azure
+            var selectCmd = azureConn.CreateCommand();
+            selectCmd.CommandText = $"SELECT * FROM {tableName}";
+
+            using var reader = selectCmd.ExecuteReader();
+
+            // Build column list from the reader
+            var columnNames = new List<string>();
+            for (int i = 0; i < reader.FieldCount; i++)
+            {
+                columnNames.Add(reader.GetName(i));
+            }
+
+            string columns = string.Join(", ", columnNames);
+            string parameters = string.Join(", ", columnNames.Select(c => "@" + c));
+            string insertSql = $"INSERT INTO {tableName} ({columns}) VALUES ({parameters})";
+
+            // Copy each row
+            int rowCount = 0;
+            while (reader.Read())
+            {
+                var insertCmd = localConn.CreateCommand();
+                insertCmd.CommandText = insertSql;
+
+                for (int i = 0; i < columnNames.Count; i++)
+                {
+                    var value = reader[i];
+                    // Convert boolean to int for SQLite compatibility
+                    if (value is bool boolValue)
+                    {
+                        value = boolValue ? 1 : 0;
+                        AppLogger.Info($"Converted bool {boolValue} to {value} for column {columnNames[i]}", "CopyTableDataFromAzure");
+                    }
+                    insertCmd.Parameters.AddWithValue("@" + columnNames[i], value ?? DBNull.Value);
+                }
+
+                insertCmd.ExecuteNonQuery();
+                rowCount++;
+            }
+
+            AppLogger.Info($"Copied {rowCount} rows to {tableName}", "DatabaseSetup.CopyTableDataFromAzure");
+        }
+
         // Mirror reference tables from Central database to Local database
         public static void MirrorTablesFromCentral(string centralDbPath)
         {
@@ -228,6 +313,63 @@ namespace VANTAGE
                 UNIQUE(UserID, SettingName)
             );
 
+            -- Users table (mirrored from Azure)
+            CREATE TABLE IF NOT EXISTS Users (
+                UserID INTEGER PRIMARY KEY,
+                Username TEXT NOT NULL,
+                FullName TEXT,
+                Email TEXT,
+                PhoneNumber TEXT,
+                IsAdmin INTEGER DEFAULT 0,
+                AdminToken TEXT
+            );
+
+            -- Projects table (mirrored from Azure)
+            CREATE TABLE IF NOT EXISTS Projects (
+                ProjectID TEXT PRIMARY KEY NOT NULL,
+                Description TEXT NOT NULL DEFAULT '',
+                ClientName TEXT NOT NULL DEFAULT '',
+                ClientStreetAddress TEXT NOT NULL DEFAULT '',
+                ClientCity TEXT NOT NULL DEFAULT '',
+                ClientState TEXT NOT NULL DEFAULT '',
+                ClientZipCode TEXT NOT NULL DEFAULT '',
+                ProjectStreetAddress TEXT NOT NULL DEFAULT '',
+                ProjectCity TEXT NOT NULL DEFAULT '',
+                ProjectState TEXT NOT NULL DEFAULT '',
+                ProjectZipCode TEXT NOT NULL DEFAULT '',
+                ProjectManager TEXT NOT NULL DEFAULT '',
+                SiteManager TEXT NOT NULL DEFAULT '',
+                OM INTEGER NOT NULL DEFAULT 0,
+                SM INTEGER NOT NULL DEFAULT 0,
+                EN INTEGER NOT NULL DEFAULT 0,
+                PM INTEGER NOT NULL DEFAULT 0
+            );
+
+            -- ColumnMappings table (mirrored from Azure)
+            CREATE TABLE IF NOT EXISTS ColumnMappings (
+                MappingID INTEGER PRIMARY KEY,
+                ColumnName TEXT NOT NULL,
+                OldVantageName TEXT,
+                AzureName TEXT,
+                DataType TEXT,
+                IsEditable INTEGER DEFAULT 0,
+                IsCalculated INTEGER DEFAULT 0,
+                CalcFormula TEXT,
+                Notes TEXT
+            );
+
+            -- Managers table (mirrored from Azure)
+            CREATE TABLE IF NOT EXISTS Managers (
+                ManagerID INTEGER PRIMARY KEY,
+                FullName TEXT NOT NULL DEFAULT '',
+                Position TEXT NOT NULL DEFAULT '',
+                Company TEXT NOT NULL DEFAULT '',
+                PhoneNumber TEXT NOT NULL DEFAULT '',
+                Email TEXT NOT NULL DEFAULT '',
+                ProjectsAssigned TEXT,
+                IsActive INTEGER NOT NULL DEFAULT 1
+            );
+
             -- Activities table (local schema with UniqueID as primary key)
             CREATE TABLE IF NOT EXISTS Activities (
                 UniqueID              TEXT PRIMARY KEY NOT NULL,
@@ -321,10 +463,17 @@ namespace VANTAGE
                 XRay                  REAL NOT NULL DEFAULT 0,
                 SyncVersion           INTEGER NOT NULL DEFAULT 0
             );
+
+            -- Indexes for performance
+            CREATE INDEX IF NOT EXISTS idx_project ON Activities(ProjectID);
+            CREATE INDEX IF NOT EXISTS idx_area ON Activities(Area);
+            CREATE INDEX IF NOT EXISTS idx_assigned_to ON Activities(AssignedTo);
+            CREATE INDEX IF NOT EXISTS idx_unique_id ON Activities(UniqueID);
+            CREATE INDEX IF NOT EXISTS idx_roc_id ON Activities(ROCID);
+            CREATE INDEX IF NOT EXISTS idx_column_name ON ColumnMappings(ColumnName);
         ";
 
                 command.ExecuteNonQuery();
-
             }
             catch (Exception ex)
             {

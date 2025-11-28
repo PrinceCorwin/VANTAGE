@@ -20,6 +20,7 @@ using VANTAGE.Models;
 using VANTAGE.Utilities;
 using VANTAGE.ViewModels;
 using System.Windows.Threading;
+using Microsoft.Data.SqlClient;
 
 namespace VANTAGE.Views
 {
@@ -47,12 +48,8 @@ namespace VANTAGE.Views
                 );
             }
         }
-
         private object? _originalCellValue;
         private Dictionary<string, PropertyInfo> _propertyCache = new Dictionary<string, PropertyInfo>();
-        // ProgressView.xaml.cs
-        // Replace DeleteSelectedActivities_Click in ProgressView.xaml.cs
-
         private async void DeleteSelectedActivities_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -68,37 +65,29 @@ namespace VANTAGE.Views
                 var currentUser = App.CurrentUser;
                 bool isAdmin = currentUser?.IsAdmin ?? false;
 
-                // Check connection to Central
-                string centralPath = SettingsManager.GetAppSetting("CentralDatabasePath", "");
-                if (string.IsNullOrEmpty(centralPath))
+                // Check connection to Azure
+                if (!AzureDbManager.CheckConnection(out string connectionError))
                 {
-                    MessageBox.Show("Central database path not configured.",
-                        "Configuration Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    return;
-                }
-
-                if (!SyncManager.CheckCentralConnection(centralPath, out string connectionError))
-                {
-                    MessageBox.Show($"Deletion requires connection to Central database.\n\n{connectionError}\n\nPlease try again when connected.",
+                    MessageBox.Show($"Deletion requires connection to Azure database.\n\n{connectionError}\n\nPlease try again when connected.",
                         "Connection Required", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
-                // Verify ownership in Central for each record
-                using var centralConn = new SqliteConnection($"Data Source={centralPath}");
-                centralConn.Open();
+                // Verify ownership in Azure for each record
+                using var azureConn = AzureDbManager.GetConnection();
+                azureConn.Open();
 
                 var ownedRecords = new List<Activity>();
                 var deniedRecords = new List<string>();
 
                 foreach (var activity in selected)
                 {
-                    var checkCmd = centralConn.CreateCommand();
+                    var checkCmd = azureConn.CreateCommand();
                     checkCmd.CommandText = "SELECT AssignedTo FROM Activities WHERE UniqueID = @id";
                     checkCmd.Parameters.AddWithValue("@id", activity.UniqueID);
-                    var centralOwner = checkCmd.ExecuteScalar()?.ToString();
+                    var azureOwner = checkCmd.ExecuteScalar()?.ToString();
 
-                    if (isAdmin || string.Equals(centralOwner, currentUser?.Username, StringComparison.OrdinalIgnoreCase))
+                    if (isAdmin || string.Equals(azureOwner, currentUser?.Username, StringComparison.OrdinalIgnoreCase))
                     {
                         ownedRecords.Add(activity);
                     }
@@ -133,7 +122,7 @@ namespace VANTAGE.Views
 
                 if (confirm != MessageBoxResult.Yes)
                 {
-                    centralConn.Close();
+                    azureConn.Close();
                     return;
                 }
 
@@ -148,19 +137,19 @@ namespace VANTAGE.Views
                 deleteLocalCmd.CommandText = $"DELETE FROM Activities WHERE UniqueID IN ({uniqueIdList})";
                 int localDeleted = deleteLocalCmd.ExecuteNonQuery();
 
-                // Set IsDeleted=1 in Central (SyncVersion auto-increments via trigger)
-                var deleteCentralCmd = centralConn.CreateCommand();
-                deleteCentralCmd.CommandText = $@"
+                // Set IsDeleted=1 in Azure (SyncVersion auto-increments via trigger)
+                var deleteAzureCmd = azureConn.CreateCommand();
+                deleteAzureCmd.CommandText = $@"
             UPDATE Activities 
             SET IsDeleted = 1, 
                 UpdatedBy = @user, 
                 UpdatedUtcDate = @date 
             WHERE UniqueID IN ({uniqueIdList})";
-                deleteCentralCmd.Parameters.AddWithValue("@user", currentUser?.Username ?? "Unknown");
-                deleteCentralCmd.Parameters.AddWithValue("@date", DateTime.UtcNow.ToString("o"));
-                int centralDeleted = deleteCentralCmd.ExecuteNonQuery();
+                deleteAzureCmd.Parameters.AddWithValue("@user", currentUser?.Username ?? "Unknown");
+                deleteAzureCmd.Parameters.AddWithValue("@date", DateTime.UtcNow.ToString("o"));
+                int azureDeleted = deleteAzureCmd.ExecuteNonQuery();
 
-                centralConn.Close();
+                azureConn.Close();
 
                 // Refresh grid and totals
                 if (ViewModel != null)
@@ -170,11 +159,10 @@ namespace VANTAGE.Views
                 }
 
                 AppLogger.Info(
-                    $"User deleted {localDeleted} activities (IsDeleted=1 set in Central for {centralDeleted} records).",
+                    $"User deleted {localDeleted} activities (IsDeleted=1 set in Azure for {azureDeleted} records).",
                     "ProgressView.DeleteSelectedActivities_Click",
                     currentUser?.Username ?? "UnknownUser"
                 );
-
 
                 MessageBox.Show(
                     $"{localDeleted} record(s) deleted successfully.",
@@ -1479,13 +1467,12 @@ namespace VANTAGE.Views
         {
             try
             {
-                // Check connection FIRST
-                string centralPath = SettingsManager.GetAppSetting("CentralDatabasePath", "");
-                if (!SyncManager.CheckCentralConnection(centralPath, out string errorMessage))
+                // Check Azure connection FIRST
+                if (!AzureDbManager.CheckConnection(out string errorMessage))
                 {
                     MessageBox.Show(
-                        $"Cannot sync - Central database unavailable:\n\n{errorMessage}\n\n" +
-                        "Please ensure you have network access and try again.",
+                        $"Cannot sync - Azure database unavailable:\n\n{errorMessage}\n\n" +
+                        "Please check your internet connection and try again.",
                         "Connection Error",
                         MessageBoxButton.OK,
                         MessageBoxImage.Error);
@@ -2054,7 +2041,7 @@ namespace VANTAGE.Views
 			}
 		}
 
-		private async void MenuAssignToUser_Click(object sender, RoutedEventArgs e)
+        private async void MenuAssignToUser_Click(object sender, RoutedEventArgs e)
         {
             // Get selected activities
             var selectedActivities = sfActivities.SelectedItems.Cast<Activity>().ToList();
@@ -2089,6 +2076,7 @@ namespace VANTAGE.Views
                 if (result != MessageBoxResult.Yes)
                     return;
             }
+
             // Check for metadata errors in allowed records
             var recordsWithErrors = allowedActivities.Where(a =>
                 string.IsNullOrWhiteSpace(a.WorkPackage) ||
@@ -2134,13 +2122,12 @@ namespace VANTAGE.Views
                 return;
             }
 
-            // Check connection to Central
-            string centralPath = SettingsManager.GetAppSetting("CentralDatabasePath", "");
-            if (!SyncManager.CheckCentralConnection(centralPath, out string errorMessage))
+            // Check connection to Azure
+            if (!AzureDbManager.CheckConnection(out string errorMessage))
             {
                 MessageBox.Show(
-                    $"Reassignment requires connection to Central database.\n\n{errorMessage}\n\n" +
-                    $"Please ensure you have network access and try again.",
+                    $"Reassignment requires connection to Azure database.\n\n{errorMessage}\n\n" +
+                    $"Please check your internet connection and try again.",
                     "Connection Required",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
@@ -2223,21 +2210,21 @@ namespace VANTAGE.Views
 
                 try
                 {
-                    // Step 1: Verify ownership at Central BEFORE making any changes
-                    using var centralConn = new SqliteConnection($"Data Source={centralPath}");
-                    centralConn.Open();
+                    // Step 1: Verify ownership at Azure BEFORE making any changes
+                    using var azureConn = AzureDbManager.GetConnection();
+                    azureConn.Open();
 
                     var ownedRecords = new List<Activity>();
                     var deniedRecords = new List<string>();
 
                     foreach (var activity in allowedActivities)
                     {
-                        var checkCmd = centralConn.CreateCommand();
+                        var checkCmd = azureConn.CreateCommand();
                         checkCmd.CommandText = "SELECT AssignedTo FROM Activities WHERE UniqueID = @id";
                         checkCmd.Parameters.AddWithValue("@id", activity.UniqueID);
-                        var centralOwner = checkCmd.ExecuteScalar()?.ToString();
+                        var azureOwner = checkCmd.ExecuteScalar()?.ToString();
 
-                        if (centralOwner == App.CurrentUser.Username || App.CurrentUser.IsAdmin)
+                        if (azureOwner == App.CurrentUser.Username || App.CurrentUser.IsAdmin)
                         {
                             ownedRecords.Add(activity);
                         }
@@ -2250,7 +2237,7 @@ namespace VANTAGE.Views
                     if (deniedRecords.Any())
                     {
                         MessageBox.Show(
-                            $"{deniedRecords.Count} record(s) could not be reassigned - ownership changed at Central.\n\n" +
+                            $"{deniedRecords.Count} record(s) could not be reassigned - ownership changed at Azure.\n\n" +
                             $"First few: {string.Join(", ", deniedRecords.Take(3))}",
                             "Ownership Conflict",
                             MessageBoxButton.OK,
@@ -2260,19 +2247,19 @@ namespace VANTAGE.Views
                             return;
                     }
 
-                    // Step 2: Update Central directly with transaction
-                    using var transaction = centralConn.BeginTransaction();
+                    // Step 2: Update Azure directly with transaction
+                    using var transaction = azureConn.BeginTransaction();
 
                     foreach (var activity in ownedRecords)
                     {
-                        var updateCmd = centralConn.CreateCommand();
+                        var updateCmd = azureConn.CreateCommand();
                         updateCmd.Transaction = transaction;
                         updateCmd.CommandText = @"
-                            UPDATE Activities 
-                            SET AssignedTo = @newOwner, 
-                                UpdatedBy = @updatedBy, 
-                                UpdatedUtcDate = @updatedDate
-                            WHERE UniqueID = @id";
+                    UPDATE Activities 
+                    SET AssignedTo = @newOwner, 
+                        UpdatedBy = @updatedBy, 
+                        UpdatedUtcDate = @updatedDate
+                    WHERE UniqueID = @id";
                         updateCmd.Parameters.AddWithValue("@newOwner", selectedUser);
                         updateCmd.Parameters.AddWithValue("@updatedBy", App.CurrentUser.Username);
                         updateCmd.Parameters.AddWithValue("@updatedDate", DateTime.UtcNow.ToString("o"));
@@ -2281,11 +2268,11 @@ namespace VANTAGE.Views
                     }
 
                     transaction.Commit();
-                    centralConn.Close();
+                    azureConn.Close();
 
                     // Step 3: Pull updated records back to local
                     var projectIds = ownedRecords.Select(a => a.ProjectID).Distinct().ToList();
-                    var pullResult = await SyncManager.PullRecordsAsync(centralPath, projectIds);
+                    var pullResult = await SyncManager.PullRecordsAsync(projectIds);
 
                     MessageBox.Show(
                         $"Successfully reassigned {ownedRecords.Count} record(s) to {selectedUser}.",

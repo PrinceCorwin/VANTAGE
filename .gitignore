@@ -11,6 +11,9 @@ obj/
 .vscode/
 .idea/
 
+# Connection String (don't sync)
+**/Credentials.cs
+
 # Local database (don't sync)
 Documents/VANTAGE/VANTAGE_Local.db
 

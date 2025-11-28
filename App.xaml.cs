@@ -15,9 +15,6 @@ namespace VANTAGE
         public static User CurrentUser { get; set; }
         public static int CurrentUserID { get; set; }
 
-        // Temp storage for Central DB path during first run
-        private string _tempCentralDbPath;
-
         // Loading splash window
         private LoadingSplashWindow _splashWindow;
 
@@ -44,53 +41,12 @@ namespace VANTAGE
                 );
 
                 bool isFirstRun = !File.Exists(localDbPath);
-
                 if (isFirstRun)
                 {
                     // Show loading splash (also establishes correct taskbar icon)
                     _splashWindow = new LoadingSplashWindow();
                     _splashWindow.Show();
-                    _splashWindow.UpdateStatus("Locating Central Database...");
-
-                    // Prompt user to browse to Central.db
-                    var openFileDialog = new Microsoft.Win32.OpenFileDialog
-                    {
-                        Title = "Locate Central Database",
-                        Filter = "Database files (*.db)|*.db|All files (*.*)|*.*",
-                        InitialDirectory = @"C:\"
-                    };
-
-                    if (openFileDialog.ShowDialog(_splashWindow) != true)
-                    {
-                        _splashWindow.Close();
-                        MessageBox.Show("Central database location is required to initialize VANTAGE.",
-                            "Setup Required", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        this.Shutdown();
-                        return;
-                    }
-
-                    string selectedPath = openFileDialog.FileName;
-
-                    _splashWindow.UpdateStatus("Validating Central Database...");
-
-                    // Validate the selected database
-                    bool isValid = false;
-                    string validationError = null;
-                    await Task.Run(() =>
-                    {
-                        isValid = DatabaseSetup.ValidateCentralDatabase(selectedPath, out validationError);
-                    });
-
-                    if (!isValid)
-                    {
-                        _splashWindow.Close();
-                        MessageBox.Show($"Invalid Central database:\n\n{validationError}\n\nPlease select a valid Central database file.",
-                            "Invalid Database", MessageBoxButton.OK, MessageBoxImage.Error);
-                        this.Shutdown();
-                        return;
-                    }
-
-                    _tempCentralDbPath = selectedPath;
+                    _splashWindow.UpdateStatus("First Run Setup...");
                 }
 
                 // Show loading splash for subsequent runs (if not already showing)
@@ -107,49 +63,20 @@ namespace VANTAGE
                     DatabaseSetup.InitializeDatabase();
                 });
 
-                // Save or read Central.db path
-                string centralDbPath = string.Empty;
-
-                if (isFirstRun && !string.IsNullOrEmpty(_tempCentralDbPath))
-                {
-                    await Task.Run(() =>
-                    {
-                        SettingsManager.SetAppSetting("CentralDatabasePath", _tempCentralDbPath, "string");
-                    });
-                    centralDbPath = _tempCentralDbPath;
-                    _tempCentralDbPath = null;
-                }
-                else if (!isFirstRun)
-                {
-                    centralDbPath = await Task.Run(() =>
-                    {
-                        return SettingsManager.GetAppSetting("CentralDatabasePath", "");
-                    });
-
-                    if (string.IsNullOrEmpty(centralDbPath))
-                    {
-                        _splashWindow.Close();
-                        MessageBox.Show("Central database path not found.",
-                            "Configuration Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        this.Shutdown();
-                        return;
-                    }
-                }
-
-                // Check connection to Central before attempting to mirror tables
-                _splashWindow.UpdateStatus("Connecting to Central Database...");
-                bool centralOnline = false;
-                while (!centralOnline)
+                // Check connection to Azure before attempting to mirror tables
+                _splashWindow.UpdateStatus("Connecting to Azure Database...");
+                bool azureOnline = false;
+                while (!azureOnline)
                 {
                     string connectionError = null;
                     bool connectionResult = await Task.Run(() =>
                     {
-                        return SyncManager.CheckCentralConnection(centralDbPath, out connectionError);
+                        return AzureDbManager.CheckConnection(out connectionError);
                     });
 
                     if (connectionResult)
                     {
-                        centralOnline = true;
+                        azureOnline = true;
                     }
                     else
                     {
@@ -157,8 +84,9 @@ namespace VANTAGE
                         _splashWindow.Hide();
 
                         // Build detailed error message
+                        // Build detailed error message
                         string dialogMessage = $"{connectionError}\n\n" +
-                            "Please check your network connection or ensure Google Drive is running.\n\n" +
+                            "Please check your internet connection.\n\n" +
                             "• Click RETRY to test connection again\n" +
                             "• Click WORK OFFLINE to continue without syncing (you can sync later when connection is restored)";
 
@@ -185,14 +113,14 @@ namespace VANTAGE
                 }
 
                 // Mirror reference tables from Central to Local (only if connection successful)
-                if (centralOnline)
+                if (azureOnline)
                 {
                     try
                     {
                         _splashWindow.UpdateStatus("Syncing Reference Tables...");
                         await Task.Run(() =>
                         {
-                            DatabaseSetup.MirrorTablesFromCentral(centralDbPath);
+                            DatabaseSetup.MirrorTablesFromAzure();
                         });
                         AppLogger.Info("Successfully mirrored reference tables from Central database", "App.OnStartup");
                     }

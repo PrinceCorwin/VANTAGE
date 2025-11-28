@@ -1,4 +1,4 @@
-﻿using Microsoft.Data.Sqlite;
+﻿using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -19,21 +19,21 @@ namespace VANTAGE.Views
         public DeletedRecordsView()
         {
             InitializeComponent();
-            LoadProjectsFromCentral();
+            LoadProjectsFromAzure();
         }
 
-        private void LoadProjectsFromCentral()
+        private void LoadProjectsFromAzure()
         {
             try
             {
                 busyIndicator.IsBusy = true;
-                // Check connection to Central
-                string centralPath = SettingsManager.GetAppSetting("CentralDatabasePath", "");
-                if (!SyncManager.CheckCentralConnection(centralPath, out string errorMessage))
+
+                // Check connection to Azure
+                if (!AzureDbManager.CheckConnection(out string errorMessage))
                 {
                     MessageBox.Show(
-                        $"Cannot load projects - Central database unavailable:\n\n{errorMessage}\n\n" +
-                        "Please ensure you have network access and try again.",
+                        $"Cannot load projects - Azure database unavailable:\n\n{errorMessage}\n\n" +
+                        "Please check your internet connection and try again.",
                         "Connection Error",
                         MessageBoxButton.OK,
                         MessageBoxImage.Error);
@@ -41,8 +41,8 @@ namespace VANTAGE.Views
                     return;
                 }
 
-                // Get distinct ProjectIDs from Central where IsDeleted = 1
-                using var connection = new SqliteConnection($"Data Source={centralPath}");
+                // Get distinct ProjectIDs from Azure where IsDeleted = 1
+                using var connection = AzureDbManager.GetConnection();
                 connection.Open();
 
                 var cmd = connection.CreateCommand();
@@ -63,13 +63,12 @@ namespace VANTAGE.Views
                 txtStatus.Text = $"Found {_projects.Count} projects with deleted records";
                 busyIndicator.IsBusy = false;
             }
-
             catch (Exception ex)
             {
                 busyIndicator.IsBusy = false;
                 MessageBox.Show($"Error loading projects: {ex.Message}",
                     "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                AppLogger.Error(ex, "DeletedRecordsView.LoadProjectsFromCentral");
+                AppLogger.Error(ex, "DeletedRecordsView.LoadProjectsFromAzure");
             }
         }
 
@@ -78,12 +77,12 @@ namespace VANTAGE.Views
             try
             {
                 busyIndicator.IsBusy = true;
-                // Check connection to Central
-                string centralPath = SettingsManager.GetAppSetting("CentralDatabasePath", "");
-                if (!SyncManager.CheckCentralConnection(centralPath, out string errorMessage))
+
+                // Check connection to Azure
+                if (!AzureDbManager.CheckConnection(out string errorMessage))
                 {
                     MessageBox.Show(
-                        $"Cannot refresh - Central database unavailable:\n\n{errorMessage}\n\n" +
+                        $"Cannot refresh - Azure database unavailable:\n\n{errorMessage}\n\n" +
                         "Please try again when connected.",
                         "Connection Error",
                         MessageBoxButton.OK,
@@ -104,10 +103,10 @@ namespace VANTAGE.Views
                     return;
                 }
 
-                txtStatus.Text = "Loading deleted records from Central...";
+                txtStatus.Text = "Loading deleted records from Azure...";
 
-                // Query Central for deleted records
-                using var connection = new SqliteConnection($"Data Source={centralPath}");
+                // Query Azure for deleted records
+                using var connection = AzureDbManager.GetConnection();
                 connection.Open();
 
                 var projectParams = string.Join(",", selectedProjects.Select((p, i) => $"@p{i}"));
@@ -142,14 +141,14 @@ namespace VANTAGE.Views
                 AppLogger.Error(ex, "DeletedRecordsView.BtnRefresh_Click");
                 txtStatus.Text = "Error loading records";
             }
-            finally  // ADD THIS ENTIRE BLOCK
+            finally
             {
                 busyIndicator.IsBusy = false;
             }
         }
 
         // Map database reader to Activity object
-        private Activity MapReaderToActivity(SqliteDataReader reader)
+        private Activity MapReaderToActivity(SqlDataReader reader)
         {
             string GetStringSafe(string name)
             {
@@ -181,7 +180,6 @@ namespace VANTAGE.Views
                 catch { return 0; }
             }
 
-            // ADD THIS HELPER
             DateTime? GetDateTimeSafe(string name)
             {
                 try
@@ -211,9 +209,10 @@ namespace VANTAGE.Views
                 BudgetMHs = GetDoubleSafe("BudgetMHs"),
                 PercentEntry = GetDoubleSafe("PercentEntry"),
                 UpdatedBy = GetStringSafe("UpdatedBy"),
-                UpdatedUtcDate = GetDateTimeSafe("UpdatedUtcDate")  // ADD THIS LINE
+                UpdatedUtcDate = GetDateTimeSafe("UpdatedUtcDate")
             };
         }
+
         private async void BtnRestore_Click(object sender, RoutedEventArgs e)
         {
             var selectedActivities = sfDeletedActivities.SelectedItems.Cast<Activity>().ToList();
@@ -240,8 +239,7 @@ namespace VANTAGE.Views
                 busyIndicator.IsBusy = true;
                 txtStatus.Text = "Restoring records...";
 
-                string centralPath = SettingsManager.GetAppSetting("CentralDatabasePath", "");
-                using var connection = new SqliteConnection($"Data Source={centralPath}");
+                using var connection = AzureDbManager.GetConnection();
                 connection.Open();
 
                 var uniqueIds = selectedActivities.Select(a => a.UniqueID).ToList();
@@ -249,11 +247,11 @@ namespace VANTAGE.Views
 
                 var cmd = connection.CreateCommand();
                 cmd.CommandText = $@"
-            UPDATE Activities 
-            SET IsDeleted = 0, 
-                UpdatedBy = @user, 
-                UpdatedUtcDate = @date 
-            WHERE UniqueID IN ({uniqueIdParams})";
+                    UPDATE Activities 
+                    SET IsDeleted = 0, 
+                        UpdatedBy = @user, 
+                        UpdatedUtcDate = @date 
+                    WHERE UniqueID IN ({uniqueIdParams})";
 
                 cmd.Parameters.AddWithValue("@user", App.CurrentUser?.Username ?? "Admin");
                 cmd.Parameters.AddWithValue("@date", DateTime.UtcNow.ToString("o"));
@@ -300,7 +298,7 @@ namespace VANTAGE.Views
             var result = MessageBox.Show(
                 $"PERMANENTLY DELETE {selectedActivities.Count} record(s)?\n\n" +
                 "⚠️ WARNING: This action CANNOT be undone!\n" +
-                "⚠️ Records will be DELETED from Central database FOREVER!\n\n" +
+                "⚠️ Records will be DELETED from Azure database FOREVER!\n\n" +
                 "Are you absolutely sure?",
                 "⚠️ PERMANENT DELETION WARNING ⚠️",
                 MessageBoxButton.YesNo,
@@ -324,8 +322,7 @@ namespace VANTAGE.Views
                 busyIndicator.IsBusy = true;
                 txtStatus.Text = "Purging records...";
 
-                string centralPath = SettingsManager.GetAppSetting("CentralDatabasePath", "");
-                using var connection = new SqliteConnection($"Data Source={centralPath}");
+                using var connection = AzureDbManager.GetConnection();
                 connection.Open();
 
                 var uniqueIds = selectedActivities.Select(a => a.UniqueID).ToList();
@@ -333,9 +330,9 @@ namespace VANTAGE.Views
 
                 var cmd = connection.CreateCommand();
                 cmd.CommandText = $@"
-            DELETE FROM Activities 
-            WHERE UniqueID IN ({uniqueIdParams}) 
-              AND IsDeleted = 1";
+                    DELETE FROM Activities 
+                    WHERE UniqueID IN ({uniqueIdParams}) 
+                      AND IsDeleted = 1";
 
                 for (int i = 0; i < uniqueIds.Count; i++)
                 {
@@ -344,7 +341,7 @@ namespace VANTAGE.Views
 
                 int purged = cmd.ExecuteNonQuery();
 
-                MessageBox.Show($"Permanently deleted {purged} record(s) from Central database.",
+                MessageBox.Show($"Permanently deleted {purged} record(s) from Azure database.",
                     "Purge Complete", MessageBoxButton.OK, MessageBoxImage.Information);
 
                 AppLogger.Warning($"Admin purged {purged} records permanently", "DeletedRecordsView.Purge", App.CurrentUser?.Username);

@@ -118,11 +118,8 @@ namespace VANTAGE
                     return;
                 }
 
-                // Get Central path
-                string centralPath = SettingsManager.GetAppSetting("CentralDatabasePath", "");
-
-                // Check connection
-                if (!SyncManager.CheckCentralConnection(centralPath, out string errorMessage))
+                // Check Azure connection
+                if (!AzureDbManager.CheckConnection(out string errorMessage))
                 {
                     MessageBox.Show($"MILESTONE could not establish connection:\n\n{errorMessage}\n\nPlease try again later.",
                         "Connection Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -177,7 +174,7 @@ namespace VANTAGE
                 projectList.IsEnabled = false;
 
                 // Show loading overlay
-                ShowLoadingOverlay("Syncing with Central Database...");
+                ShowLoadingOverlay("Syncing with Azure Database...");
                 txtLoadingProgress.Text = "Please wait...";
 
                 // Small delay to let UI update before blocking operations
@@ -190,13 +187,13 @@ namespace VANTAGE
                 var (pushResult, pullResult) = await Task.Run(() =>
                 {
                     // Mirror reference tables
-                    DatabaseSetup.MirrorTablesFromCentral(centralPath);
+                    DatabaseSetup.MirrorTablesFromAzure();
 
                     // Push dirty records
-                    var push = SyncManager.PushRecordsAsync(centralPath, selectedProjects).Result;
+                    var push = SyncManager.PushRecordsAsync(selectedProjects).Result;
 
                     // Pull updates
-                    var pull = SyncManager.PullRecordsAsync(centralPath, selectedProjects, push.PushedUniqueIds).Result;
+                    var pull = SyncManager.PullRecordsAsync(selectedProjects, push.PushedUniqueIds).Result;
 
                     return (push, pull);
                 });
