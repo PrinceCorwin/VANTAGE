@@ -13,8 +13,8 @@ namespace VANTAGE.Views
 {
     public partial class DeletedRecordsView : Window
     {
-        private List<Activity> _deletedActivities;
-        private List<ProjectSelection> _projects;
+        private List<Activity>? _deletedActivities;
+        private List<ProjectSelection>? _projects;
 
         public DeletedRecordsView()
         {
@@ -72,7 +72,7 @@ namespace VANTAGE.Views
             }
         }
 
-        private async void BtnRefresh_Click(object sender, RoutedEventArgs e)
+        private async void BtnRefresh_Click(object? sender, RoutedEventArgs? e)
         {
             try
             {
@@ -91,9 +91,9 @@ namespace VANTAGE.Views
                 }
 
                 // Get selected projects
-                var selectedProjects = _projects.Where(p => p.IsSelected).Select(p => p.ProjectID).ToList();
+                var selectedProjects = _projects?.Where(p => p.IsSelected).Select(p => p.ProjectID).ToList();
 
-                if (!selectedProjects.Any())
+                if (selectedProjects == null || !selectedProjects.Any())
                 {
                     MessageBox.Show(
                         "Please select at least one project to view deleted records.",
@@ -105,30 +105,35 @@ namespace VANTAGE.Views
 
                 txtStatus.Text = "Loading deleted records from Azure...";
 
-                // Query Azure for deleted records
-                using var connection = AzureDbManager.GetConnection();
-                connection.Open();
-
-                var projectParams = string.Join(",", selectedProjects.Select((p, i) => $"@p{i}"));
-                var cmd = connection.CreateCommand();
-                cmd.CommandText = $@"
-                    SELECT * FROM Activities 
-                    WHERE IsDeleted = 1 
-                      AND ProjectID IN ({projectParams})
-                    ORDER BY UpdatedUtcDate DESC";
-
-                for (int i = 0; i < selectedProjects.Count; i++)
+                _deletedActivities = await Task.Run(() =>
                 {
-                    cmd.Parameters.AddWithValue($"@p{i}", selectedProjects[i]);
-                }
+                    var results = new List<Activity>();
 
-                _deletedActivities = new List<Activity>();
-                using var reader = cmd.ExecuteReader();
-                while (reader.Read())
-                {
-                    var activity = MapReaderToActivity(reader);
-                    _deletedActivities.Add(activity);
-                }
+                    using var connection = AzureDbManager.GetConnection();
+                    connection.Open();
+
+                    var projectParams = string.Join(",", selectedProjects.Select((p, i) => $"@p{i}"));
+                    var cmd = connection.CreateCommand();
+                    cmd.CommandText = $@"
+                SELECT * FROM Activities 
+                WHERE IsDeleted = 1 
+                  AND ProjectID IN ({projectParams})
+                ORDER BY UpdatedUtcDate DESC";
+
+                    for (int i = 0; i < selectedProjects.Count; i++)
+                    {
+                        cmd.Parameters.AddWithValue($"@p{i}", selectedProjects[i]);
+                    }
+
+                    using var reader = cmd.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        var activity = MapReaderToActivity(reader);
+                        results.Add(activity);
+                    }
+
+                    return results;
+                });
 
                 sfDeletedActivities.ItemsSource = _deletedActivities;
                 txtRecordCount.Text = $"{_deletedActivities.Count} deleted records";
@@ -239,37 +244,43 @@ namespace VANTAGE.Views
                 busyIndicator.IsBusy = true;
                 txtStatus.Text = "Restoring records...";
 
-                using var connection = AzureDbManager.GetConnection();
-                connection.Open();
-
                 var uniqueIds = selectedActivities.Select(a => a.UniqueID).ToList();
-                var uniqueIdParams = string.Join(",", uniqueIds.Select((id, i) => $"@uid{i}"));
+                var username = App.CurrentUser?.Username ?? "Admin";
 
-                var cmd = connection.CreateCommand();
-                cmd.CommandText = $@"
-                    UPDATE Activities 
-                    SET IsDeleted = 0, 
-                        UpdatedBy = @user, 
-                        UpdatedUtcDate = @date 
-                    WHERE UniqueID IN ({uniqueIdParams})";
-
-                cmd.Parameters.AddWithValue("@user", App.CurrentUser?.Username ?? "Admin");
-                cmd.Parameters.AddWithValue("@date", DateTime.UtcNow.ToString("o"));
-
-                for (int i = 0; i < uniqueIds.Count; i++)
+                int restored = await Task.Run(() =>
                 {
-                    cmd.Parameters.AddWithValue($"@uid{i}", uniqueIds[i]);
-                }
+                    using var connection = AzureDbManager.GetConnection();
+                    connection.Open();
 
-                int restored = cmd.ExecuteNonQuery();
+                    var uniqueIdParams = string.Join(",", uniqueIds.Select((id, i) => $"@uid{i}"));
+
+                    var cmd = connection.CreateCommand();
+                    cmd.CommandText = $@"
+                UPDATE Activities 
+                SET IsDeleted = 0, 
+                    UpdatedBy = @user, 
+                    UpdatedUtcDate = @date 
+                WHERE UniqueID IN ({uniqueIdParams})";
+
+                    cmd.Parameters.AddWithValue("@user", username);
+                    cmd.Parameters.AddWithValue("@date", DateTime.UtcNow.ToString("o"));
+
+                    for (int i = 0; i < uniqueIds.Count; i++)
+                    {
+                        cmd.Parameters.AddWithValue($"@uid{i}", uniqueIds[i]);
+                    }
+
+                    return cmd.ExecuteNonQuery();
+                });
 
                 MessageBox.Show($"Successfully restored {restored} record(s).\n\nUsers will receive them on next sync.",
                     "Restore Complete", MessageBoxButton.OK, MessageBoxImage.Information);
 
-                AppLogger.Info($"Admin restored {restored} records", "DeletedRecordsView.Restore", App.CurrentUser?.Username);
+                AppLogger.Info($"Admin restored {restored} records", "DeletedRecordsView.BtnRestore_Click", App.CurrentUser?.Username);
 
                 // Refresh grid
-                BtnRefresh_Click(null, null);
+                await Task.Run(() => { }); // Yield to UI
+                BtnRefresh_Click(sender, e);
             }
             catch (Exception ex)
             {
@@ -322,32 +333,36 @@ namespace VANTAGE.Views
                 busyIndicator.IsBusy = true;
                 txtStatus.Text = "Purging records...";
 
-                using var connection = AzureDbManager.GetConnection();
-                connection.Open();
-
                 var uniqueIds = selectedActivities.Select(a => a.UniqueID).ToList();
-                var uniqueIdParams = string.Join(",", uniqueIds.Select((id, i) => $"@uid{i}"));
 
-                var cmd = connection.CreateCommand();
-                cmd.CommandText = $@"
-                    DELETE FROM Activities 
-                    WHERE UniqueID IN ({uniqueIdParams}) 
-                      AND IsDeleted = 1";
-
-                for (int i = 0; i < uniqueIds.Count; i++)
+                int purged = await Task.Run(() =>
                 {
-                    cmd.Parameters.AddWithValue($"@uid{i}", uniqueIds[i]);
-                }
+                    using var connection = AzureDbManager.GetConnection();
+                    connection.Open();
 
-                int purged = cmd.ExecuteNonQuery();
+                    var uniqueIdParams = string.Join(",", uniqueIds.Select((id, i) => $"@uid{i}"));
+
+                    var cmd = connection.CreateCommand();
+                    cmd.CommandText = $@"
+                DELETE FROM Activities 
+                WHERE UniqueID IN ({uniqueIdParams}) 
+                  AND IsDeleted = 1";
+
+                    for (int i = 0; i < uniqueIds.Count; i++)
+                    {
+                        cmd.Parameters.AddWithValue($"@uid{i}", uniqueIds[i]);
+                    }
+
+                    return cmd.ExecuteNonQuery();
+                });
 
                 MessageBox.Show($"Permanently deleted {purged} record(s) from Azure database.",
                     "Purge Complete", MessageBoxButton.OK, MessageBoxImage.Information);
 
-                AppLogger.Warning($"Admin purged {purged} records permanently", "DeletedRecordsView.Purge", App.CurrentUser?.Username);
+                AppLogger.Warning($"Admin purged {purged} records permanently", "DeletedRecordsView.BtnPurge_Click", App.CurrentUser?.Username);
 
                 // Refresh grid
-                BtnRefresh_Click(null, null);
+                BtnRefresh_Click(sender, e);
             }
             catch (Exception ex)
             {
@@ -387,7 +402,7 @@ namespace VANTAGE.Views
         public class ProjectSelection : INotifyPropertyChanged
         {
             private bool _isSelected;
-            public string ProjectID { get; set; }
+            public string ProjectID { get; set; } = null!;
             public bool IsSelected
             {
                 get => _isSelected;
@@ -398,7 +413,7 @@ namespace VANTAGE.Views
                 }
             }
 
-            public event PropertyChangedEventHandler PropertyChanged;
+            public event PropertyChangedEventHandler? PropertyChanged;
             protected void OnPropertyChanged(string name)
             {
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));

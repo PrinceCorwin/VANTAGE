@@ -3,8 +3,8 @@
     public class AppSettings
     {
         public int SettingID { get; set; }
-        public string SettingName { get; set; }
-        public string SettingValue { get; set; }
-        public string DataType { get; set; }
+        public string SettingName { get; set; } = null!;
+        public string SettingValue { get; set; } = null!;
+        public string DataType { get; set; } = null!;
     }
 }

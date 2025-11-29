@@ -7,8 +7,8 @@ namespace MILESTONE.Views
 {
     public partial class FindReplaceDialog : Syncfusion.Windows.Shared.ChromelessWindow
     {
-        private Syncfusion.UI.Xaml.Grid.SfDataGrid _dataGrid;
-        private string _columnMappingName;
+        private Syncfusion.UI.Xaml.Grid.SfDataGrid _dataGrid = null!;
+        private string _columnMappingName = null!;
 
         public FindReplaceDialog()
         {
@@ -46,8 +46,8 @@ namespace MILESTONE.Views
                 var allActivities = _dataGrid.View.Records.Select(r => r.Data).Cast<Activity>().ToList();
 
                 var editableActivities = allActivities.Where(a =>
-                    VANTAGE.App.CurrentUser.IsAdmin ||
-                    string.Equals(a.AssignedTo, VANTAGE.App.CurrentUser?.Username, System.StringComparison.OrdinalIgnoreCase)
+                    App.CurrentUser!.IsAdmin ||
+                    string.Equals(a.AssignedTo, App.CurrentUser?.Username, System.StringComparison.OrdinalIgnoreCase)
                 ).ToList();
 
                 var provider = _dataGrid.View.GetPropertyAccessProvider();
@@ -71,7 +71,7 @@ namespace MILESTONE.Views
                     if (currentValue == null)
                         continue;
 
-                    string currentText = currentValue.ToString();
+                    string currentText = currentValue.ToString() ?? string.Empty;
 
                     bool isMatch = false;
                     if (wholeCell)
@@ -109,7 +109,7 @@ namespace MILESTONE.Views
 
                         try
                         {
-                            object newValue = ConvertToPropertyType(newTextValue, currentValue.GetType());
+                            object? newValue = ConvertToPropertyType(newTextValue, currentValue.GetType());
                             provider.SetValue(activity, _columnMappingName, newValue);
 
                             // Mark as dirty and update metadata
@@ -157,7 +157,7 @@ namespace MILESTONE.Views
         }
 
         // Helper method to convert string back to the original property type
-        private object ConvertToPropertyType(string value, System.Type targetType)
+        private object? ConvertToPropertyType(string value, System.Type targetType)
         {
             if (targetType == typeof(string))
                 return value;

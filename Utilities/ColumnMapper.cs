@@ -11,11 +11,12 @@ namespace VANTAGE.Utilities
     public static class ColumnMapper
     {
         // Cache for mappings loaded from database
-        private static Dictionary<string, (string OldVantage, string Azure)> _mappings;
+        private static Dictionary<string, (string? OldVantage, string? Azure)> _mappings = null!;
+        
         private static bool _isLoaded = false;
 
         // Add a second mapping for OldVantageName -> NewVantage/ColumnName
-        private static Dictionary<string, string> _oldToNewMapping;
+        private static Dictionary<string, string> _oldToNewMapping = null!;
 
 
         /// Load mappings from ColumnMappings table
@@ -24,7 +25,7 @@ namespace VANTAGE.Utilities
         {
             if (_isLoaded) return;
 
-            _mappings = new Dictionary<string, (string, string)>(StringComparer.OrdinalIgnoreCase);
+            _mappings = new Dictionary<string, (string?, string?)>(StringComparer.OrdinalIgnoreCase);
             _oldToNewMapping = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             try
@@ -38,9 +39,9 @@ namespace VANTAGE.Utilities
                 using var reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {
-                    string colName = reader.IsDBNull(0) ? null : reader.GetString(0);
-                    string oldName = reader.IsDBNull(1) ? null : reader.GetString(1);
-                    string azureName = reader.IsDBNull(2) ? null : reader.GetString(2);
+                    string? colName = reader.IsDBNull(0) ? null : reader.GetString(0);
+                    string? oldName = reader.IsDBNull(1) ? null : reader.GetString(1);
+                    string? azureName = reader.IsDBNull(2) ? null : reader.GetString(2);
 
                     if (!string.IsNullOrEmpty(colName))
                         _mappings[colName] = (oldName, azureName);
@@ -54,7 +55,7 @@ namespace VANTAGE.Utilities
             {
                 System.Diagnostics.Debug.WriteLine($"✗ Error loading column mappings: {ex.Message}");
                 // Initialize empty to prevent repeated failures
-                _mappings = new Dictionary<string, (string, string)>();
+                _mappings = new Dictionary<string, (string?, string?)>();
                 _oldToNewMapping = new Dictionary<string, string>();
                 _isLoaded = true;
             }

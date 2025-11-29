@@ -10,8 +10,8 @@ namespace VANTAGE
 {
     public class DatabaseSetup
     {
-        public static string DbPath { get; private set; }
-       
+        public static string DbPath { get; private set; } = null!;
+
         public static void MirrorTablesFromAzure()
         {
             try
@@ -88,147 +88,6 @@ namespace VANTAGE
 
             AppLogger.Info($"Copied {rowCount} rows to {tableName}", "DatabaseSetup.CopyTableDataFromAzure");
         }
-
-        // Mirror reference tables from Central database to Local database
-        //public static void MirrorTablesFromCentral(string centralDbPath)
-        //{
-        //    try
-        //    {
-        //        using var centralConn = new SqliteConnection($"Data Source={centralDbPath}");
-        //        using var localConn = GetConnection();
-
-        //        centralConn.Open();
-        //        localConn.Open();
-
-        //        // Tables to mirror schema + data (metadata)
-        //        string[] metadataTables = { "Users", "Projects", "ColumnMappings", "Managers" };
-
-        //        // Mirror metadata tables (schema + data)
-        //        foreach (string tableName in metadataTables)
-        //        {
-        //            CopyTableSchema(centralConn, localConn, tableName);
-        //            CopyTableData(centralConn, localConn, tableName);
-        //        }
-
-        //        VANTAGE.Utilities.AppLogger.Info($"Mirrored tables from Central database", "DatabaseSetup.MirrorTablesFromCentral");
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        VANTAGE.Utilities.AppLogger.Error(ex, "DatabaseSetup.MirrorTablesFromCentral");
-        //        throw;
-        //    }
-        //}
-
-        // Copy table schema from Central to Local
-        //private static void CopyTableSchema(SqliteConnection centralConn, SqliteConnection localConn, string tableName)
-        //{
-        //    // Get the CREATE TABLE statement from Central
-        //    var schemaCmd = centralConn.CreateCommand();
-        //    schemaCmd.CommandText = "SELECT sql FROM sqlite_master WHERE type='table' AND name=@tableName";
-        //    schemaCmd.Parameters.AddWithValue("@tableName", tableName);
-
-        //    string createTableSql = schemaCmd.ExecuteScalar()?.ToString();
-
-        //    if (string.IsNullOrEmpty(createTableSql))
-        //    {
-        //        throw new Exception($"Table {tableName} not found in Central database");
-        //    }
-
-        //    // Drop the existing table if it exists
-        //    var dropCmd = localConn.CreateCommand();
-        //    dropCmd.CommandText = $"DROP TABLE IF EXISTS {tableName}";
-        //    dropCmd.ExecuteNonQuery();
-
-        //    // Create the table with the exact schema from Central
-        //    var createCmd = localConn.CreateCommand();
-        //    createCmd.CommandText = createTableSql;
-        //    createCmd.ExecuteNonQuery();
-
-        //    AppLogger.Info($"Recreated table schema for {tableName}", "DatabaseSetup.CopyTableSchema");
-        //}
-
-        // Copy table data from Central to Local
-        //private static void CopyTableData(SqliteConnection centralConn, SqliteConnection localConn, string tableName)
-        //{
-        //    // Clear existing data in local table
-        //    var deleteCmd = localConn.CreateCommand();
-        //    deleteCmd.CommandText = $"DELETE FROM {tableName}";
-        //    deleteCmd.ExecuteNonQuery();
-
-        //    // Get all data from Central
-        //    var selectCmd = centralConn.CreateCommand();
-        //    selectCmd.CommandText = $"SELECT * FROM {tableName}";
-
-        //    using var reader = selectCmd.ExecuteReader();
-
-        //    // Build column list
-        //    var columnNames = new System.Collections.Generic.List<string>();
-        //    for (int i = 0; i < reader.FieldCount; i++)
-        //    {
-        //        columnNames.Add(reader.GetName(i));
-        //    }
-
-        //    string columns = string.Join(", ", columnNames);
-        //    string parameters = string.Join(", ", columnNames.Select(c => "@" + c));
-        //    string insertSql = $"INSERT INTO {tableName} ({columns}) VALUES ({parameters})";
-
-        //    // Copy each row
-        //    while (reader.Read())
-        //    {
-        //        var insertCmd = localConn.CreateCommand();
-        //        insertCmd.CommandText = insertSql;
-
-        //        for (int i = 0; i < columnNames.Count; i++)
-        //        {
-        //            insertCmd.Parameters.AddWithValue("@" + columnNames[i], reader[i] ?? DBNull.Value);
-        //        }
-
-        //        insertCmd.ExecuteNonQuery();
-        //    }
-        //}
-        // Validate that the selected file is a valid Central database
-        //public static bool ValidateCentralDatabase(string centralDbPath, out string errorMessage)
-        //{
-        //    errorMessage = string.Empty;
-
-        //    // Check if file exists
-        //    if (!File.Exists(centralDbPath))
-        //    {
-        //        errorMessage = "The selected file does not exist.";
-        //        return false;
-        //    }
-
-        //    try
-        //    {
-        //        // Try to open as SQLite database
-        //        using var connection = new SqliteConnection($"Data Source={centralDbPath}");
-        //        connection.Open();
-
-        //        // Check for required tables
-        //        string[] requiredTables = { "Users", "Projects", "ColumnMappings", "Managers" };
-
-        //        foreach (string tableName in requiredTables)
-        //        {
-        //            var command = connection.CreateCommand();
-        //            command.CommandText = "SELECT name FROM sqlite_master WHERE type='table' AND name=@tableName";
-        //            command.Parameters.AddWithValue("@tableName", tableName);
-
-        //            var result = command.ExecuteScalar();
-        //            if (result == null)
-        //            {
-        //                errorMessage = $"Central database is missing required table: {tableName}";
-        //                return false;
-        //            }
-        //        }
-
-        //        return true;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        errorMessage = $"Failed to validate Central database: {ex.Message}";
-        //        return false;
-        //    }
-        //}
         public static void InitializeDatabase()
         {
             try
@@ -237,8 +96,8 @@ namespace VANTAGE
                 DbPath = GetOrSetDatabasePath();
 
                 // Step 2: Create directory if it doesn't exist
-                string directory = Path.GetDirectoryName(DbPath);
-                if (!Directory.Exists(directory))
+                string? directory = Path.GetDirectoryName(DbPath);
+                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
                 {
                     Directory.CreateDirectory(directory);
                 }

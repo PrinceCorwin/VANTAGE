@@ -237,7 +237,7 @@ namespace VANTAGE.Utilities
 
         /// Import activities to database using NewVantage column names
 
-        private static int ImportToDatabase(List<Activity> activities, bool replaceMode, IProgress<(int current, int total, string message)> progress = null)
+        private static int ImportToDatabase(List<Activity> activities, bool replaceMode, IProgress<(int current, int total, string message)>? progress = null)
         {
             using var connection = DatabaseSetup.GetConnection();
             connection.Open();
@@ -403,7 +403,7 @@ namespace VANTAGE.Utilities
                 command.Prepare();
 
                 // ✅ CREATE DUPLICATE CHECK COMMAND ONCE (for Combine mode)
-                SqliteCommand checkCommand = null;
+                SqliteCommand? checkCommand = null;
                 if (!replaceMode)
                 {
                     checkCommand = connection.CreateCommand();
@@ -416,10 +416,10 @@ namespace VANTAGE.Utilities
                 foreach (var activity in activities)
                 {
                     // In combine mode, check if activity already exists
-                    if (!replaceMode)
+                    if (!replaceMode && checkCommand != null)
                     {
                         checkCommand.Parameters["@id"].Value = activity.UniqueID;
-                        var exists = (long)checkCommand.ExecuteScalar() > 0;
+                        var exists = Convert.ToInt64(checkCommand.ExecuteScalar() ?? 0) > 0;
 
                         if (exists)
                         {
@@ -558,10 +558,9 @@ namespace VANTAGE.Utilities
 
                 return imported;
             }
-            catch (Exception ex)
+            catch
             {
                 transaction.Rollback();
-
                 throw;
             }
         }
@@ -598,7 +597,7 @@ namespace VANTAGE.Utilities
         /// <param name="replaceMode">True = replace all existing, False = combine/add</param>
         /// <param name="progress">Optional progress callback (current, total, message)</param>
         /// <returns>Number of records imported</returns>
-        public static async Task<int> ImportActivitiesAsync(string filePath, bool replaceMode, IProgress<(int current, int total, string message)> progress = null)
+        public static async Task<int> ImportActivitiesAsync(string filePath, bool replaceMode, IProgress<(int current, int total, string message)>? progress = null)
         {
             return await Task.Run(() =>
             {
@@ -629,6 +628,10 @@ namespace VANTAGE.Utilities
                         var worksheet = workbook.Worksheets.FirstOrDefault(ws => ws.Name == "Sheet1")
                             ?? workbook.Worksheets.FirstOrDefault();
 
+                        if (worksheet == null)
+                        {
+                            throw new InvalidOperationException("No worksheets found in the Excel file.");
+                        }
 
                         progress?.Report((0, 0, "Analyzing Excel structure..."));
                         var headerRow = worksheet.Row(1);

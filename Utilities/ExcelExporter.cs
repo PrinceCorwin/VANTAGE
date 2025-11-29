@@ -119,7 +119,7 @@ namespace VANTAGE.Utilities
                     worksheet.Cell(1, colIndex).Value = oldVantageName;
 
                     // Find the database column name for this OldVantage name
-                    if (oldVantageToDbMapping.TryGetValue(oldVantageName, out string dbColumnName))
+                    if (oldVantageToDbMapping.TryGetValue(oldVantageName, out string? dbColumnName) && dbColumnName != null)
                     {
                         columnOrder.Add((oldVantageName, dbColumnName, colIndex));
                     }
@@ -233,8 +233,8 @@ namespace VANTAGE.Utilities
         // Get activity property value by database column name
         private static object GetActivityValue(Models.Activity activity, string dbColumnName)
         {
-            // Get property name from DbColumnName
-            string propertyName = ColumnMapper.GetPropertyName(dbColumnName);
+            // Database column names now match property names directly
+            string propertyName = dbColumnName;
 
             // Use reflection to get value
             var property = typeof(Models.Activity).GetProperty(propertyName);

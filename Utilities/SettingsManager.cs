@@ -59,7 +59,7 @@ namespace VANTAGE.Utilities
                 command.Parameters.AddWithValue("@name", settingName);
 
                 var result = command.ExecuteScalar();
-                return result != null ? result.ToString() : defaultValue;
+                return result != null ? result.ToString() ?? defaultValue : defaultValue;
             }
             catch (Exception ex)
             {
@@ -116,7 +116,7 @@ namespace VANTAGE.Utilities
                 command.Parameters.AddWithValue("@name", settingName);
 
                 var result = command.ExecuteScalar();
-                return result != null ? result.ToString() : defaultValue;
+                return result != null ? result.ToString() ?? defaultValue : defaultValue;
             }
             catch (Exception ex)
             {

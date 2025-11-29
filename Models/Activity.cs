@@ -25,21 +25,21 @@ namespace VANTAGE.Models
         public int HexNO { get; set; }
 
         // Categories
-        public string CompType { get; set; }
-        public string PhaseCategory { get; set; }
-        public string ROCStep { get; set; }
+        public string? CompType { get; set; }
+        public string? PhaseCategory { get; set; }
+        public string? ROCStep { get; set; }
 
         // Drawings
-        public string DwgNO { get; set; }
-        public string RevNO { get; set; }
-        public string SecondDwgNO { get; set; }
-        public string ShtNO { get; set; }
+        public string? DwgNO { get; set; }
+        public string? RevNO { get; set; }
+        public string? SecondDwgNO { get; set; }
+        public string? ShtNO { get; set; }
 
         // Notes
-        public string Notes { get; set; }
+        public string? Notes { get; set; }
 
         // Schedule
-        public string SecondActno { get; set; }
+        public string? SecondActno { get; set; }
         public DateTime? SchStart { get; set; }
         public DateTime? SchFinish { get; set; }
         public DateTime? ProgDate { get; set; }
@@ -59,64 +59,64 @@ namespace VANTAGE.Models
             }
         }
         // Tags - Core Fields
-        public string TagNO { get; set; }
-        public string Description { get; set; }
-        public string Area { get; set; }
-        public string SubArea { get; set; }
-        public string PjtSystem { get; set; }
-        public string SystemNO { get; set; }
-        public string ProjectID { get; set; }
-        public string WorkPackage { get; set; }
-        public string PhaseCode { get; set; }
-        public string Service { get; set; }
-        public string ShopField { get; set; }
+        public string? TagNO { get; set; }
+        public string? Description { get; set; }
+        public string? Area { get; set; }
+        public string? SubArea { get; set; }
+        public string? PjtSystem { get; set; }
+        public string? SystemNO { get; set; }
+        public string? ProjectID { get; set; }
+        public string? WorkPackage { get; set; }
+        public string? PhaseCode { get; set; }
+        public string? Service { get; set; }
+        public string? ShopField { get; set; }
 
         // Tags - Equipment/Line
-        public string EqmtNO { get; set; }
-        public string LineNO { get; set; }
-        public string ChgOrdNO { get; set; }
+        public string? EqmtNO { get; set; }
+        public string? LineNO { get; set; }
+        public string? ChgOrdNO { get; set; }
 
         // Tags - Material Specs
-        public string MtrlSpec { get; set; }
-        public string PipeGrade { get; set; }
-        public string PaintCode { get; set; }
-        public string InsulType { get; set; }
-        public string HtTrace { get; set; }
+        public string? MtrlSpec { get; set; }
+        public string? PipeGrade { get; set; }
+        public string? PaintCode { get; set; }
+        public string? InsulType { get; set; }
+        public string? HtTrace { get; set; }
 
         // Tags - Auxiliary
-        public string Aux1 { get; set; }
-        public string Aux2 { get; set; }
-        public string Aux3 { get; set; }
-        public string Estimator { get; set; }
-        public string RFINO { get; set; }
-        public string SchedActNO { get; set; }
+        public string? Aux1 { get; set; }
+        public string? Aux2 { get; set; }
+        public string? Aux3 { get; set; }
+        public string? Estimator { get; set; }
+        public string? RFINO { get; set; }
+        public string? SchedActNO { get; set; }
         public double XRay { get; set; }
 
         // Trigger
         public int DateTrigger { get; set; }
         // User-Defined Fields
-        public string UDF1 { get; set; }
-        public string UDF2 { get; set; }
-        public string UDF3 { get; set; }
-        public string UDF4 { get; set; }
-        public string UDF5 { get; set; }
-        public string UDF6 { get; set; }
+        public string? UDF1 { get; set; }
+        public string? UDF2 { get; set; }
+        public string? UDF3 { get; set; }
+        public string? UDF4 { get; set; }
+        public string? UDF5 { get; set; }
+        public string? UDF6 { get; set; }
         public int UDF7 { get; set; }
-        public string UDF8 { get; set; }
-        public string UDF9 { get; set; }
-        public string UDF10 { get; set; }
-        public string UDF11 { get; set; }
-        public string UDF12 { get; set; }
-        public string UDF13 { get; set; }
-        public string UDF14 { get; set; }
-        public string UDF15 { get; set; }
-        public string UDF16 { get; set; }
-        public string UDF17 { get; set; }
-        public string UDF18 { get; set; }
-        public string UDF20 { get; set; }
+        public string? UDF8 { get; set; }
+        public string? UDF9 { get; set; }
+        public string? UDF10 { get; set; }
+        public string? UDF11 { get; set; }
+        public string? UDF12 { get; set; }
+        public string? UDF13 { get; set; }
+        public string? UDF14 { get; set; }
+        public string? UDF15 { get; set; }
+        public string? UDF16 { get; set; }
+        public string? UDF17 { get; set; }
+        public string? UDF18 { get; set; }
+        public string? UDF20 { get; set; }
 
         // Special UDF Fields (with helper properties)
-        private string _assignedTo;
+        private string _assignedTo = null!;
         public string AssignedTo
         {
             get => _assignedTo;
@@ -133,7 +133,7 @@ namespace VANTAGE.Models
         }
 
         // Tracking fields with PropertyChanged notifications
-        private string _updatedBy;
+        private string _updatedBy = null!;
         public string UpdatedBy
         {
             get => _updatedBy;
@@ -183,8 +183,8 @@ namespace VANTAGE.Models
             }
         }
 
-        public string CreatedBy { get; set; }
-        public string UniqueID { get; set; }  // Read-only unique identifier
+        public string CreatedBy { get; set; } = null!;
+        public string UniqueID { get; set; } = null!;
 
         // Helper properties for assignment
         public string AssignedToUsername => AssignedTo;
@@ -249,7 +249,7 @@ namespace VANTAGE.Models
             }
         }
 
-        public string UOM { get; set; }
+        public string? UOM { get; set; }
 
         public double EarnQtyEntry
         {
@@ -363,7 +363,7 @@ namespace VANTAGE.Models
         // ========================================
 
         public double EquivQTY { get; set; }
-        public string EquivUOM { get; set; }
+        public string? EquivUOM { get; set; }
 
         // ========================================
         // VALUES - ROC (Rate of Completion)
@@ -510,9 +510,9 @@ namespace VANTAGE.Models
         // INOTIFYPROPERTYCHANGED IMPLEMENTATION
         // ========================================
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
-        protected void OnPropertyChanged(string propertyName = null)
+        protected void OnPropertyChanged(string? propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }

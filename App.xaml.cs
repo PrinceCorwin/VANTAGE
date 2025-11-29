@@ -12,11 +12,11 @@ namespace VANTAGE
     public partial class App : Application
     {
         // Current user info (global for app)
-        public static User CurrentUser { get; set; }
+        public static User? CurrentUser { get; set; }
         public static int CurrentUserID { get; set; }
 
         // Loading splash window
-        private LoadingSplashWindow _splashWindow;
+        private LoadingSplashWindow? _splashWindow;
 
         protected override void OnStartup(StartupEventArgs e)
         {
@@ -68,7 +68,7 @@ namespace VANTAGE
                 bool azureOnline = false;
                 while (!azureOnline)
                 {
-                    string connectionError = null;
+                    string? connectionError = null;
                     bool connectionResult = await Task.Run(() =>
                     {
                         return AzureDbManager.CheckConnection(out connectionError);
@@ -177,38 +177,38 @@ namespace VANTAGE
                     CurrentUser.IsAdmin = false;
                 }
 
-                // Step 5: Check if user has completed profile
-                if (string.IsNullOrEmpty(CurrentUser.FullName) || string.IsNullOrEmpty(CurrentUser.Email))
-                {
-                    // Hide splash to show setup window
-                    _splashWindow.Hide();
+                //// Step 5: Check if user has completed profile
+                //if (string.IsNullOrEmpty(CurrentUser.FullName) || string.IsNullOrEmpty(CurrentUser.Email))
+                //{
+                //    // Hide splash to show setup window
+                //    _splashWindow.Hide();
 
-                    FirstRunSetupWindow setupWindow = new FirstRunSetupWindow(CurrentUser);
-                    bool? result = setupWindow.ShowDialog();
+                //    FirstRunSetupWindow setupWindow = new FirstRunSetupWindow(CurrentUser);
+                //    bool? result = setupWindow.ShowDialog();
 
-                    if (result != true)
-                    {
-                        _splashWindow.Close();
-                        MessageBox.Show("Profile setup is required to use MILESTONE.", "Setup Required", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        this.Shutdown();
-                        return;
-                    }
+                //    if (result != true)
+                //    {
+                //        _splashWindow.Close();
+                //        MessageBox.Show("Profile setup is required to use MILESTONE.", "Setup Required", MessageBoxButton.OK, MessageBoxImage.Warning);
+                //        this.Shutdown();
+                //        return;
+                //    }
 
-                    // Show splash again
-                    _splashWindow.Show();
-                    _splashWindow.UpdateStatus("Saving User Profile...");
+                //    // Show splash again
+                //    _splashWindow.Show();
+                //    _splashWindow.UpdateStatus("Saving User Profile...");
 
-                    var refreshedUser = await Task.Run(() => GetUserByID(CurrentUserID));
-                    if (refreshedUser != null)
-                    {
-                        CurrentUser = refreshedUser;
-                        // Re-check admin status after refresh
-                        if (azureOnline)
-                        {
-                            CurrentUser.IsAdmin = await Task.Run(() => AzureDbManager.IsUserAdmin(CurrentUser.Username));
-                        }
-                    }
-                }
+                //    var refreshedUser = await Task.Run(() => GetUserByID(CurrentUserID));
+                //    if (refreshedUser != null)
+                //    {
+                //        CurrentUser = refreshedUser;
+                //        // Re-check admin status after refresh
+                //        if (azureOnline)
+                //        {
+                //            CurrentUser.IsAdmin = await Task.Run(() => AzureDbManager.IsUserAdmin(CurrentUser.Username));
+                //        }
+                //    }
+                //}
 
                 // Step 6: Initialize user settings
                 _splashWindow.UpdateStatus("Loading User Settings...");
@@ -253,7 +253,7 @@ namespace VANTAGE
         }
 
         // Get existing user - returns null if user doesn't exist
-        private static User GetUser(string username)
+        private static User? GetUser(string username)
         {
             try
             {
@@ -262,9 +262,9 @@ namespace VANTAGE
 
                 var command = connection.CreateCommand();
                 command.CommandText = @"
-            SELECT UserID, Username, FullName, Email, PhoneNumber
-            FROM Users
-            WHERE Username = @username";
+                    SELECT UserID, Username, FullName, Email
+                    FROM Users
+                    WHERE Username = @username";
                 command.Parameters.AddWithValue("@username", username);
 
                 using var reader = command.ExecuteReader();
@@ -276,7 +276,7 @@ namespace VANTAGE
                         Username = reader.GetString(1),
                         FullName = reader.IsDBNull(2) ? "" : reader.GetString(2),
                         Email = reader.IsDBNull(3) ? "" : reader.GetString(3),
-                        PhoneNumber = reader.IsDBNull(4) ? "" : reader.GetString(4)
+                        //PhoneNumber = reader.IsDBNull(4) ? "" : reader.GetString(4)
                     };
                 }
 
@@ -285,39 +285,6 @@ namespace VANTAGE
             catch
             {
                 throw;
-            }
-        }
-
-        // Get user by ID
-        private static User GetUserByID(int userID)
-        {
-            try
-            {
-                using var connection = DatabaseSetup.GetConnection();
-                connection.Open();
-
-                var command = connection.CreateCommand();
-                command.CommandText = "SELECT UserID, Username, FullName, Email, PhoneNumber FROM Users WHERE UserID = @id";
-                command.Parameters.AddWithValue("@id", userID);
-
-                using var reader = command.ExecuteReader();
-                if (reader.Read())
-                {
-                    return new User
-                    {
-                        UserID = reader.GetInt32(0),
-                        Username = reader.GetString(1),
-                        FullName = reader.IsDBNull(2) ? "" : reader.GetString(2),
-                        Email = reader.IsDBNull(3) ? "" : reader.GetString(3),
-                        PhoneNumber = reader.IsDBNull(4) ? "" : reader.GetString(4)
-                    };
-                }
-
-                return null;
-            }
-            catch (Exception ex)
-            {
-                return null;
             }
         }
     }

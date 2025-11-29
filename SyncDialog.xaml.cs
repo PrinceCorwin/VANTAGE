@@ -13,8 +13,8 @@ namespace VANTAGE
 {
     public partial class SyncDialog : Window
     {
-        private List<ProjectSelection> _projects;
-        private HashSet<string> _projectsWithLocalRecords;
+        private List<ProjectSelection> _projects = null!;
+        private HashSet<string> _projectsWithLocalRecords = null!;
 
         public SyncDialog()
         {
@@ -98,14 +98,14 @@ namespace VANTAGE
             LoadingOverlay.Visibility = Visibility.Collapsed;
         }
 
-        private void UpdateLoadingProgress(int current, int total, string message = null)
-        {
-            if (message != null)
-                txtLoadingMessage.Text = message;
+        //private void UpdateLoadingProgress(int current, int total, string? message = null)
+        //{
+        //    if (message != null)
+        //        txtLoadingMessage.Text = message;
 
-            txtLoadingProgress.Text = $"{current:N0} of {total:N0} records";
-            LoadingProgressBar.Value = total > 0 ? (current * 100.0 / total) : 0;
-        }
+        //    txtLoadingProgress.Text = $"{current:N0} of {total:N0} records";
+        //    LoadingProgressBar.Value = total > 0 ? (current * 100.0 / total) : 0;
+        //}
         private async void BtnConfirmSync_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -193,7 +193,7 @@ namespace VANTAGE
                     var push = SyncManager.PushRecordsAsync(selectedProjects).Result;
 
                     // Pull updates
-                    var pull = SyncManager.PullRecordsAsync(selectedProjects, push.PushedUniqueIds).Result;
+                    var pull = SyncManager.PullRecordsAsync(selectedProjects).Result;
 
                     return (push, pull);
                 });
@@ -240,10 +240,11 @@ namespace VANTAGE
     }
 
     // Model for project selection
+    // Model for project selection
     public class ProjectSelection : INotifyPropertyChanged
     {
-        public string ProjectID { get; set; }
-        public string ProjectName { get; set; }
+        public string ProjectID { get; set; } = null!;
+        public string ProjectName { get; set; } = string.Empty;
 
         private bool _isSelected;
         public bool IsSelected
@@ -256,8 +257,8 @@ namespace VANTAGE
             }
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected void OnPropertyChanged(string propertyName)
+        public event PropertyChangedEventHandler? PropertyChanged;
+        protected void OnPropertyChanged(string? propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }

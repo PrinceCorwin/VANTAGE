@@ -23,7 +23,7 @@ namespace VANTAGE.ViewModels
         private Dictionary<string, ColumnFilter> _activeFilters = new Dictionary<string, ColumnFilter>();
         public IEnumerable<string> ActiveFilterColumns => _activeFilters.Keys;
         private bool _myRecordsActive = false;
-        private string _myRecordsUser = null;
+        private string? _myRecordsUser = null;
         private int _metadataErrorCount;
         public int MetadataErrorCount
         {
@@ -409,7 +409,7 @@ namespace VANTAGE.ViewModels
             }
             catch (Exception ex)
             {
-                // TODO: Add proper logging when logging system is implemented
+                AppLogger.Error(ex, "ProgressViewModel.ApplySearchFilterAsync");
             }
             finally
             {
@@ -450,7 +450,7 @@ namespace VANTAGE.ViewModels
         // ========================================
         // METHODS
         // ========================================
-        private string _currentWhereClause = null;
+        private string? _currentWhereClause = null;
 
         public async Task ApplyMyRecordsFilter(bool active, string currentUsername)
         {
@@ -486,7 +486,7 @@ namespace VANTAGE.ViewModels
             }
             catch (Exception ex)
             {
-                // TODO: Add proper logging when logging system is implemented
+                AppLogger.Error(ex, "ProgressViewModel.LoadInitialDataAsync");
                 throw;
             }
             finally
@@ -548,6 +548,7 @@ namespace VANTAGE.ViewModels
             }
             catch (Exception ex)
             {
+                AppLogger.Error(ex, "ProgressViewModel.LoadAllActivitiesAsync");
                 throw;
             }
             finally
@@ -575,8 +576,8 @@ namespace VANTAGE.ViewModels
     // Add this helper class at the bottom of the file (outside ProgressViewModel class)
     public class ColumnFilter
     {
-        public string ColumnName { get; set; }
-        public string FilterType { get; set; }
-        public string FilterValue { get; set; }
+        public string ColumnName { get; set; } = null!;
+        public string FilterType { get; set; } = null!;
+        public string FilterValue { get; set; } = null!;
     }
 }

@@ -85,7 +85,7 @@ namespace VANTAGE
             LoadingOverlay.Visibility = Visibility.Collapsed;
         }
 
-        private void UpdateLoadingProgress(int current, int total, string message = null)
+        private void UpdateLoadingProgress(int current, int total, string? message = null)
         {
             if (message != null)
                 txtLoadingMessage.Text = message;
@@ -94,7 +94,7 @@ namespace VANTAGE
             LoadingProgressBar.Value = total > 0 ? (current * 100.0 / total) : 0;
         }
 
-        private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
         {
             // TODO: Add proper logging when logging system is implemented
         }
@@ -405,7 +405,7 @@ namespace VANTAGE
                 var gridField = progressView.GetType().GetField("sfActivities",
                     System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
 
-                List<Activity> filteredActivities = null;
+                List<Activity>? filteredActivities = null;
                 bool hasActiveFilters = false;
 
                 if (gridField != null)
@@ -416,6 +416,7 @@ namespace VANTAGE
                         filteredActivities = grid.View.Records
                             .Select(r => r.Data as Activity)
                             .Where(a => a != null)
+                            .Cast<Activity>()
                             .ToList();
 
                         hasActiveFilters = filteredActivities.Count < allActivities.Count;
@@ -550,7 +551,7 @@ namespace VANTAGE
 
         private void ToggleUserAdmin_Click(object sender, RoutedEventArgs e)
         {
-            if (!App.CurrentUser.IsAdmin)
+            if (App.CurrentUser == null || !App.CurrentUser.IsAdmin)
             {
                 MessageBox.Show("You do not have admin privileges.", "Access Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
@@ -750,7 +751,7 @@ namespace VANTAGE
         private void DeletedRecordsUi_Click(object sender, RoutedEventArgs e)
         {
             // Security check
-            if (!App.CurrentUser.IsAdmin)
+            if (App.CurrentUser == null || !App.CurrentUser.IsAdmin)
             {
                 MessageBox.Show("This feature is only available to administrators.",
                     "Access Denied", MessageBoxButton.OK, MessageBoxImage.Warning);

@@ -14,10 +14,10 @@ namespace VANTAGE.Data
     public static class ActivityRepository
     {
         // Mapping service instance (initialized per-project when needed)
-        private static MappingService _mappingService;
+        private static MappingService? _mappingService;
 
         /// Initialize mapping service for a specific project
-        public static void InitializeMappings(string projectID = null)
+        public static void InitializeMappings(string? projectID = null)
         {
             _mappingService = new MappingService(projectID);
         }
@@ -422,7 +422,8 @@ namespace VANTAGE.Data
             }
             catch (Exception ex)
             {
-                // TODO: Add proper logging when logging system is implemented
+                AppLogger.Error(ex, "ActivityRepository.MethodName");
+                throw;
             }
 
             return validUsers;
@@ -456,7 +457,7 @@ namespace VANTAGE.Data
         public static async Task<(List<Activity> activities, int totalCount)> GetPageAsync(
             int pageNumber,
             int pageSize,
-            string whereClause = null)
+            string? whereClause = null)
         {
             return await Task.Run(() =>
                  {
@@ -471,7 +472,7 @@ namespace VANTAGE.Data
                          // Get total count with filter
                          var countCommand = connection.CreateCommand();
                          countCommand.CommandText = $"SELECT COUNT(*) FROM Activities {whereSQL}";
-                         var totalCount = (long)countCommand.ExecuteScalar();
+                         var totalCount = Convert.ToInt64(countCommand.ExecuteScalar() ?? 0);
 
                          // Get valid usernames for validation
                          var validUsernames = GetValidUsernames();
@@ -716,6 +717,7 @@ namespace VANTAGE.Data
                      }
                      catch (Exception ex)
                      {
+                         AppLogger.Error(ex, "ActivityRepository.MethodName");
                          throw;
                      }
                  });
@@ -728,7 +730,7 @@ namespace VANTAGE.Data
         /// <param name="whereClause">Optional SQL WHERE clause for filtering</param>
         /// <returns>Tuple of (all activities list, total count)</returns>
         public static async Task<(List<Activity> activities, int totalCount)> GetAllActivitiesAsync(
-                   string whereClause = null)
+            string? whereClause = null)
         {
             return await Task.Run(() =>
                  {
@@ -751,7 +753,7 @@ namespace VANTAGE.Data
                          // Get total count with filter
                          var countCommand = connection.CreateCommand();
                          countCommand.CommandText = $"SELECT COUNT(*) FROM Activities {whereSQL}";
-                         var totalCount = (long)countCommand.ExecuteScalar();
+                         var totalCount = Convert.ToInt64(countCommand.ExecuteScalar() ?? 0);
 
                          // Get valid usernames for validation
                          var validUsernames = GetValidUsernames();
@@ -834,19 +836,6 @@ namespace VANTAGE.Data
                                  {
                                      int i = reader.GetOrdinal(name);
                                      return reader.IsDBNull(i) ? 0 : reader.GetDouble(i);
-                                 }
-                                 catch
-                                 {
-                                     return 0;
-                                 }
-                             }
-
-                             int GetInt32FromObj(string name)
-                             {
-                                 try
-                                 {
-                                     int i = reader.GetOrdinal(name);
-                                     return reader.IsDBNull(i) ? 0 : Convert.ToInt32(reader.GetValue(i));
                                  }
                                  catch
                                  {
@@ -995,7 +984,7 @@ namespace VANTAGE.Data
 
         /// Get totals for filtered records (all pages)
 
-        public static async Task<(double budgetedMHs, double earnedMHs)> GetTotalsAsync(string whereClause = null)
+        public static async Task<(double budgetedMHs, double earnedMHs)> GetTotalsAsync(string? whereClause = null)
         {
             return await Task.Run(() =>
          {
@@ -1032,6 +1021,7 @@ namespace VANTAGE.Data
              }
              catch (Exception ex)
              {
+                 AppLogger.Error(ex, "ActivityRepository.MethodName");
                  return (0, 0);
              }
          });
@@ -1059,7 +1049,7 @@ namespace VANTAGE.Data
                      ["EarnMHsCalc"] = "CASE WHEN PercentEntry >= 100 THEN BudgetMHs ELSE ROUND(PercentEntry / 100.0 * BudgetMHs, 3) END"
                  };
 
-                 string dbExpression = null;
+                 string? dbExpression = null;
                  if (!string.IsNullOrEmpty(columnName) && calcMap.TryGetValue(columnName, out var expr))
                  {
                      dbExpression = expr;
@@ -1085,7 +1075,7 @@ namespace VANTAGE.Data
                      else
                      {
                          var raw = reader.GetValue(0);
-                         vals.Add(Convert.ToString(raw));
+                         vals.Add(Convert.ToString(raw) ?? "");
                      }
                  }
 
@@ -1095,6 +1085,7 @@ namespace VANTAGE.Data
              }
              catch (Exception ex)
              {
+                 AppLogger.Error(ex, "ActivityRepository.MethodName");
                  return (vals, vals.Count);
              }
          });
@@ -1258,7 +1249,7 @@ namespace VANTAGE.Data
                           ["EarnMHsCalc"] = "CASE WHEN PercentEntry >= 100 THEN BudgetMHs ELSE ROUND(PercentEntry / 100.0 * BudgetMHs, 3) END"
                       };
 
-                      string dbExpression = null;
+                      string? dbExpression = null;
                       if (!string.IsNullOrEmpty(columnName) && calcMap.TryGetValue(columnName, out var expr))
                       {
                           dbExpression = expr;
@@ -1289,7 +1280,7 @@ namespace VANTAGE.Data
                           else
                           {
                               var raw = reader.GetValue(0);
-                              vals.Add(Convert.ToString(raw));
+                              vals.Add(Convert.ToString(raw) ?? "");
                           }
                       }
 
@@ -1298,6 +1289,7 @@ namespace VANTAGE.Data
                   }
                   catch (Exception ex)
                   {
+                      AppLogger.Error(ex, "ActivityRepository.MethodName");
                       return (vals, vals.Count);
                   }
               });

@@ -12,7 +12,7 @@ namespace VANTAGE.Utilities
     public static class SyncManager
     {
         // Fast property accessor without reflection - returns value for given column name
-        private static object GetActivityValue(Activity activity, string columnName)
+        private static object? GetActivityValue(Activity activity, string columnName)
         {
             return columnName switch
             {
@@ -111,13 +111,6 @@ namespace VANTAGE.Utilities
         {
             return AzureDbManager.CheckConnection(out errorMessage);
         }
-
-        // Legacy method signature for compatibility - now checks Azure instead of file path
-        //[Obsolete("Use CheckAzureConnection() instead. This method ignores the centralDbPath parameter.")]
-        //public static bool CheckCentralConnection(string centralDbPath, out string errorMessage)
-        //{
-        //    return AzureDbManager.CheckConnection(out errorMessage);
-        //}
 
         public static async Task<SyncResult> PushRecordsAsync(List<string> selectedProjects)
         {
@@ -249,7 +242,7 @@ namespace VANTAGE.Utilities
                             return false;
                         }
 
-                        if (ownershipMap.TryGetValue(r.UniqueID, out string owner) && owner == r.AssignedTo)
+                        if (ownershipMap.TryGetValue(r.UniqueID, out string? owner) && owner == r.AssignedTo)
                         {
                             return true;
                         }
@@ -603,13 +596,6 @@ namespace VANTAGE.Utilities
             return typeof(string);
         }
 
-        // Legacy method signature for compatibility
-        //[Obsolete("Use PushRecordsAsync(List<string> selectedProjects) instead. The centralDbPath parameter is ignored.")]
-        //public static async Task<SyncResult> PushRecordsAsync(string centralDbPath, List<string> selectedProjects)
-        //{
-        //    return await PushRecordsAsync(selectedProjects);
-        //}
-
         // Result class for sync operations
         public class SyncResult
         {
@@ -620,12 +606,12 @@ namespace VANTAGE.Utilities
             public int PulledRecords { get; set; }
             public int SkippedRecords { get; set; }
             public List<string> FailedRecords { get; set; } = new List<string>();
-            public string ErrorMessage { get; set; }
+            public string? ErrorMessage { get; set; }
             public List<string> PushedUniqueIds { get; set; } = new List<string>();
         }
 
         // Pull records from Azure that have changed since last sync
-        public static async Task<SyncResult> PullRecordsAsync(List<string> selectedProjects, List<string> excludeUniqueIds = null)
+        public static async Task<SyncResult> PullRecordsAsync(List<string> selectedProjects)
         {
             // Note: excludeUniqueIds parameter kept for backward compatibility but ignored
             var result = new SyncResult();
@@ -776,12 +762,5 @@ namespace VANTAGE.Utilities
 
             return result;
         }
-
-        // Legacy method signature for compatibility
-        //[Obsolete("Use PullRecordsAsync(List<string> selectedProjects, List<string> excludeUniqueIds) instead. The centralDbPath parameter is ignored.")]
-        //public static async Task<SyncResult> PullRecordsAsync(string centralDbPath, List<string> selectedProjects, List<string> excludeUniqueIds = null)
-        //{
-        //    return await PullRecordsAsync(selectedProjects, excludeUniqueIds);
-        //}
     }
 }

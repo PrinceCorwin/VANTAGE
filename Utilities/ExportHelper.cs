@@ -219,10 +219,10 @@ namespace VANTAGE.Utilities
 
         #region Private Helper Methods
 
-        
+
         /// Show save file dialog and return selected file path
-        
-        private static string ShowSaveFileDialog(string defaultFileName)
+
+        private static string? ShowSaveFileDialog(string defaultFileName)
         {
             var dialog = new Microsoft.Win32.SaveFileDialog
             {

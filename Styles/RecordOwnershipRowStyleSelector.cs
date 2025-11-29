@@ -9,11 +9,11 @@ namespace VANTAGE.Styles
 {
     public class RecordOwnershipRowStyleSelector : StyleSelector
     {
-        public override Style SelectStyle(object item, DependencyObject container)
+        public override Style? SelectStyle(object item, DependencyObject container)
         {
             // Extract the Activity from Syncfusion's DataRow wrapper
-            Activity activity = null;
-            DataRow dataRow = null;
+            Activity? activity = null;
+            DataRow? dataRow = null;
 
             if (item is DataRow dr)
             {
@@ -47,6 +47,7 @@ namespace VANTAGE.Styles
             {
                 style.Setters.Add(new Setter(VirtualizingCellsControl.ForegroundProperty, Application.Current.Resources["NotOwnedRowForeground"]));
             }
+
             // Add hover trigger to keep foreground readable
             var hoverTrigger = new Trigger
             {
@@ -54,7 +55,6 @@ namespace VANTAGE.Styles
                 Value = true
             };
             hoverTrigger.Setters.Add(new Setter(VirtualizingCellsControl.BackgroundProperty, Application.Current.Resources["TextColorSecondary"]));
-
             style.Triggers.Add(hoverTrigger);
 
             return style;

@@ -9,18 +9,18 @@ namespace VANTAGE.Utilities
     
     public class MappingService
     {
-        private readonly string _projectID;
-        private Dictionary<string, ColumnMappingInfo> _mappings;
+        private readonly string? _projectID;
+        private Dictionary<string, ColumnMappingInfo> _mappings = null!;
 
-        public MappingService(string projectID = null)
+        public MappingService(string? projectID = null)
         {
             _projectID = projectID;
             LoadMappings();
         }
 
-        
+
         /// Get property name from database column name
-        
+
         public string GetPropertyName(string dbColumnName)
         {
             if (_mappings.TryGetValue(dbColumnName, out var mapping))
@@ -28,13 +28,13 @@ namespace VANTAGE.Utilities
                 return mapping.PropertyName;
             }
 
-            // Fallback to ColumnMapper default
-            return ColumnMapper.GetPropertyName(dbColumnName);
+            // Database column names now match property names directly
+            return dbColumnName;
         }
 
-        
+
         /// Get database column name from property name
-        
+
         public string GetDbColumnName(string propertyName)
         {
             var mapping = _mappings.Values.FirstOrDefault(m => m.PropertyName == propertyName);
@@ -43,13 +43,13 @@ namespace VANTAGE.Utilities
                 return mapping.DbColumnName;
             }
 
-            // Fallback to ColumnMapper default
-            return ColumnMapper.GetDbColumnName(propertyName);
+            // Database column names now match property names directly
+            return propertyName;
         }
 
-        
+
         /// Get display name for a database column
-        
+
         public string GetDisplayName(string dbColumnName)
         {
             if (_mappings.TryGetValue(dbColumnName, out var mapping))
@@ -146,13 +146,13 @@ namespace VANTAGE.Utilities
             }
             catch (Exception ex)
             {
-                // TODO: Add proper logging when logging system is implemented
+                AppLogger.Error(ex, "MappingService.LoadMappings");
             }
         }
 
-        
+
         /// Get all database column names in display order
-        
+
         public IEnumerable<string> GetAllDbColumnNames()
         {
             if (_mappings.Any())
@@ -162,19 +162,19 @@ namespace VANTAGE.Utilities
                     .Select(m => m.DbColumnName);
             }
 
-            // Fallback to ColumnMapper defaults
-            return ColumnMapper.GetAllDbColumnNames();
+            // Return empty collection if no mappings loaded
+            return Enumerable.Empty<string>();
         }
     }
 
-    
+
     /// Column mapping information
-    
+
     public class ColumnMappingInfo
     {
-        public string DbColumnName { get; set; }
-        public string DisplayName { get; set; }
-        public string PropertyName { get; set; }
+        public string DbColumnName { get; set; } = null!;
+        public string DisplayName { get; set; } = null!;
+        public string PropertyName { get; set; } = null!;
         public bool IsVisible { get; set; }
         public int ColumnOrder { get; set; }
         public int Width { get; set; }

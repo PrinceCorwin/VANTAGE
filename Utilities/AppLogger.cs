@@ -12,8 +12,8 @@ namespace VANTAGE.Utilities
 
         private static readonly object _sync = new object();
         private static bool _initialized = false;
-        private static string _logDir;
-        private static string _logFilePath;
+        private static string _logDir = null!;
+        private static string _logFilePath = null!;
 
         // Toggle file logging (DB logging is always attempted)
         public static bool FileLoggingEnabled { get; set; } = true;
@@ -38,22 +38,22 @@ namespace VANTAGE.Utilities
             Info("AppLogger initialized.");
         }
 
-        public static void Debug(string message, string context = null, string username = null)
+        public static void Debug(string message, string? context = null, string? username = null)
             => Write(LogLevel.Debug, message, context, username);
 
-        public static void Info(string message, string context = null, string username = null)
+        public static void Info(string message, string? context = null, string? username = null)
             => Write(LogLevel.Info, message, context, username);
 
-        public static void Warning(string message, string context = null, string username = null)
+        public static void Warning(string message, string? context = null, string? username = null)
             => Write(LogLevel.Warning, message, context, username);
 
-        public static void Error(string message, string context = null, string username = null, Exception ex = null)
+        public static void Error(string message, string? context = null, string? username = null, Exception? ex = null)
             => Write(LogLevel.Error, message, context, username, ex);
 
-        public static void Error(Exception ex, string context = null, string username = null, string message = null)
+        public static void Error(Exception? ex, string? context = null, string? username = null, string? message = null)
             => Write(LogLevel.Error, message ?? ex?.Message ?? "Unhandled exception", context, username, ex);
 
-        private static void Write(LogLevel level, string message, string context, string username, Exception ex = null)
+        private static void Write(LogLevel level, string message, string? context, string? username, Exception? ex = null)
         {
             if (!_initialized) Initialize(); // safety net
 

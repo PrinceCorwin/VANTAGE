@@ -33,7 +33,7 @@ namespace VANTAGE.Utilities
             }
             catch (Exception ex)
             {
-                // TODO: Add proper logging (e.g., to file or central log)
+                AppLogger.Error(ex, "MainWindow.ApplySavedTheme");
                 SwitchTheme("Dark", saveToSettings: false);
             }
         }

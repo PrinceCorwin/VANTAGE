@@ -66,8 +66,8 @@ namespace VANTAGE.Dialogs
     /// </summary>
     public class ProjectDirtyInfo
     {
-        public string ProjectID { get; set; }
-        public string ProjectName { get; set; }
+        public string? ProjectID { get; set; }
+        public string? ProjectName { get; set; }
         public int DirtyCount { get; set; }
     }
 }

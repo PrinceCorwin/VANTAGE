@@ -49,7 +49,7 @@ namespace VANTAGE.Views
             }
         }
         private object? _originalCellValue;
-        private Dictionary<string, PropertyInfo> _propertyCache = new Dictionary<string, PropertyInfo>();
+        private Dictionary<string, PropertyInfo?> _propertyCache = new Dictionary<string, PropertyInfo?>();
         private async void DeleteSelectedActivities_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -1290,7 +1290,10 @@ namespace VANTAGE.Views
                 System.Diagnostics.Debug.WriteLine($"Sum: Budget={testBudget:N2}, Earned={testEarned:N2}");
             }
             // Call ViewModel method to update bound properties
-            await _viewModel.UpdateTotalsAsync(recordsToSum);
+            if (_viewModel != null)
+            {
+                await _viewModel.UpdateTotalsAsync(recordsToSum);
+            }
         }
 
         /// Auto-save when user finishes editing a cell
@@ -1351,39 +1354,13 @@ namespace VANTAGE.Views
 
             return "Unknown";
         }
-        //private void InitializeColumnVisibility()
-        //{
-        //    lstColumnVisibility.Items.Clear();
-        //    _columnMap.Clear();
-
-        //    foreach (var column in sfActivities.Columns)
-        //    {
-        //        // Get property name from mapping name
-        //        string columnName = GetColumnPropertyName(column);
-        //        _columnMap[columnName] = column;
-
-        //        var checkBox = new CheckBox
-        //        {
-        //            Content = columnName,
-        //            IsChecked = !column.IsHidden, // Syncfusion uses IsHidden instead of Visibility
-        //            Margin = new Thickness(5, 2, 5, 2),
-        //            Foreground = System.Windows.Media.Brushes.White,
-        //            Tag = column
-        //        };
-
-        //        checkBox.Checked += ColumnCheckBox_Changed;
-        //        checkBox.Unchecked += ColumnCheckBox_Changed;
-
-        //        lstColumnVisibility.Items.Add(checkBox);
-        //    }
-        //}
 
         private void ColumnCheckBox_Changed(object sender, RoutedEventArgs e)
         {
             var checkBox = sender as CheckBox;
             if (checkBox == null) return;
 
-            string columnName = checkBox.Content?.ToString();
+            string? columnName = checkBox.Content?.ToString();
             if (string.IsNullOrEmpty(columnName) || !_columnMap.ContainsKey(columnName))
                 return;
 
@@ -1461,7 +1438,7 @@ namespace VANTAGE.Views
         }
         private async void BtnSubmit_Click(object sender, RoutedEventArgs e)
         {
-
+            await Task.CompletedTask; // TODO: Implement submit functionality
         }
         private async void BtnSync_Click(object sender, RoutedEventArgs e)
         {
@@ -1733,7 +1710,7 @@ namespace VANTAGE.Views
                 sfActivities.Columns["AssignedTo"].FilterPredicates.Add(new Syncfusion.Data.FilterPredicate()
                 {
                     FilterType = Syncfusion.Data.FilterType.Equals,
-                    FilterValue = App.CurrentUser.Username,
+                    FilterValue = App.CurrentUser!.Username,
                     PredicateType = Syncfusion.Data.PredicateType.And
                 });
 
@@ -1836,11 +1813,19 @@ namespace VANTAGE.Views
 
         // Capture original value when cell edit begins
         // Helper method to get cached property
-        private PropertyInfo GetCachedProperty(string columnName)
+        private PropertyInfo? GetCachedProperty(string columnName)
         {
             if (!_propertyCache.ContainsKey(columnName))
             {
-                _propertyCache[columnName] = typeof(Activity).GetProperty(columnName);
+                var prop = typeof(Activity).GetProperty(columnName);
+                if (prop != null)
+                {
+                    _propertyCache[columnName] = prop;
+                }
+                else
+                {
+                    return null;
+                }
             }
             return _propertyCache[columnName];
         }
@@ -1889,7 +1874,7 @@ namespace VANTAGE.Views
                 if (property == null)
                     return;
 
-                object currentValue = property.GetValue(editedActivity);
+                object? currentValue = property.GetValue(editedActivity);
 
                 // Compare with original value - only save if changed
                 bool valueChanged = false;
@@ -1982,7 +1967,6 @@ namespace VANTAGE.Views
 
             dialog.ShowDialog();
         }
-        private Activity _lastSelectedRow = null;
         private void sfActivities_GridContextMenuOpening(object sender, Syncfusion.UI.Xaml.Grid.GridContextMenuEventArgs e)
         {
             // Only show RecordContextMenu when right-clicking row header
@@ -2053,8 +2037,8 @@ namespace VANTAGE.Views
 
             // Filter: Only allow assigning records that user has permission to modify
             var allowedActivities = selectedActivities.Where(a =>
-                App.CurrentUser.IsAdmin ||
-                a.AssignedTo == App.CurrentUser.Username
+                App.CurrentUser!.IsAdmin ||
+                a.AssignedTo == App.CurrentUser!.Username
             ).ToList();
 
             if (!allowedActivities.Any())
@@ -2204,7 +2188,7 @@ namespace VANTAGE.Views
 
             if (dialog.ShowDialog() == true || dialogResult == true)
             {
-                string selectedUser = comboBox.SelectedItem as string;
+                string? selectedUser = comboBox.SelectedItem as string;
                 if (string.IsNullOrEmpty(selectedUser))
                     return;
 
@@ -2224,7 +2208,7 @@ namespace VANTAGE.Views
                         checkCmd.Parameters.AddWithValue("@id", activity.UniqueID);
                         var azureOwner = checkCmd.ExecuteScalar()?.ToString();
 
-                        if (azureOwner == App.CurrentUser.Username || App.CurrentUser.IsAdmin)
+                        if (azureOwner == App.CurrentUser!.Username || App.CurrentUser!.IsAdmin)
                         {
                             ownedRecords.Add(activity);
                         }
@@ -2261,7 +2245,7 @@ namespace VANTAGE.Views
                         UpdatedUtcDate = @updatedDate
                     WHERE UniqueID = @id";
                         updateCmd.Parameters.AddWithValue("@newOwner", selectedUser);
-                        updateCmd.Parameters.AddWithValue("@updatedBy", App.CurrentUser.Username);
+                        updateCmd.Parameters.AddWithValue("@updatedBy", App.CurrentUser!.Username);
                         updateCmd.Parameters.AddWithValue("@updatedDate", DateTime.UtcNow.ToString("o"));
                         updateCmd.Parameters.AddWithValue("@id", activity.UniqueID);
                         updateCmd.ExecuteNonQuery();
@@ -2271,7 +2255,12 @@ namespace VANTAGE.Views
                     azureConn.Close();
 
                     // Step 3: Pull updated records back to local
-                    var projectIds = ownedRecords.Select(a => a.ProjectID).Distinct().ToList();
+                    var projectIds = ownedRecords
+                        .Select(a => a.ProjectID)
+                        .Where(p => !string.IsNullOrEmpty(p))
+                        .Cast<string>()
+                        .Distinct()
+                        .ToList();
                     var pullResult = await SyncManager.PullRecordsAsync(projectIds);
 
                     MessageBox.Show(
