@@ -113,13 +113,12 @@ namespace VANTAGE.Utilities
         }
 
         // Legacy method signature for compatibility - now checks Azure instead of file path
-        [Obsolete("Use CheckAzureConnection() instead. This method ignores the centralDbPath parameter.")]
-        public static bool CheckCentralConnection(string centralDbPath, out string errorMessage)
-        {
-            return AzureDbManager.CheckConnection(out errorMessage);
-        }
+        //[Obsolete("Use CheckAzureConnection() instead. This method ignores the centralDbPath parameter.")]
+        //public static bool CheckCentralConnection(string centralDbPath, out string errorMessage)
+        //{
+        //    return AzureDbManager.CheckConnection(out errorMessage);
+        //}
 
-        // Push LocalDirty records to Azure using temp table approach for scalability
         public static async Task<SyncResult> PushRecordsAsync(List<string> selectedProjects)
         {
             var result = new SyncResult();
@@ -164,6 +163,8 @@ namespace VANTAGE.Utilities
                     "UpdatedBy", "UpdatedUtcDate", "UOM", "WeekEndDate", "WorkPackage", "XRay"
                 };
 
+                var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+
                 // ============================================================
                 // STEP 1: Create temp table and populate with all dirty UniqueIDs
                 // ============================================================
@@ -173,24 +174,21 @@ namespace VANTAGE.Utilities
                     CREATE TABLE #SyncBatch (UniqueID NVARCHAR(100) PRIMARY KEY)";
                 createTempCmd.ExecuteNonQuery();
 
-                // Insert all UniqueIDs using parameterized batch
-                using (var transaction = azureConn.BeginTransaction())
+                // Bulk insert UniqueIDs to temp table using DataTable
+                var uniqueIdTable = new DataTable();
+                uniqueIdTable.Columns.Add("UniqueID", typeof(string));
+                foreach (var record in dirtyRecords)
                 {
-                    var insertTempCmd = azureConn.CreateCommand();
-                    insertTempCmd.Transaction = transaction;
-                    insertTempCmd.CommandText = "INSERT INTO #SyncBatch (UniqueID) VALUES (@uid)";
-                    var uidParam = insertTempCmd.Parameters.Add("@uid", SqlDbType.NVarChar, 100);
-
-                    foreach (var record in dirtyRecords)
-                    {
-                        uidParam.Value = record.UniqueID;
-                        insertTempCmd.ExecuteNonQuery();
-                    }
-
-                    transaction.Commit();
+                    uniqueIdTable.Rows.Add(record.UniqueID);
                 }
 
-                AppLogger.Info($"Populated temp table with {dirtyRecords.Count} UniqueIDs", "SyncManager.PushRecords");
+                using (var bulkCopy = new SqlBulkCopy(azureConn))
+                {
+                    bulkCopy.DestinationTableName = "#SyncBatch";
+                    bulkCopy.WriteToServer(uniqueIdTable);
+                }
+
+                AppLogger.Info($"Step 1 complete ({stopwatch.Elapsed.TotalSeconds:F1}s): Populated temp table with {dirtyRecords.Count} UniqueIDs", "SyncManager.PushRecords");
 
                 // ============================================================
                 // STEP 2: Find which UniqueIDs already exist in Azure (using JOIN)
@@ -214,7 +212,7 @@ namespace VANTAGE.Utilities
                 var toInsert = dirtyRecords.Where(r => !existingIds.Contains(r.UniqueID)).ToList();
                 var toUpdate = dirtyRecords.Where(r => existingIds.Contains(r.UniqueID)).ToList();
 
-                AppLogger.Info($"Records to insert: {toInsert.Count}, Records to update: {toUpdate.Count}", "SyncManager.PushRecords");
+                AppLogger.Info($"Step 2 complete ({stopwatch.Elapsed.TotalSeconds:F1}s): Records to insert: {toInsert.Count}, Records to update: {toUpdate.Count}", "SyncManager.PushRecords");
 
                 // ============================================================
                 // STEP 3: Handle UPDATES - verify ownership first (using JOIN)
@@ -259,108 +257,148 @@ namespace VANTAGE.Utilities
                         return false;
                     }).ToList();
 
-                    // Perform updates with parameterized command
+                    // Bulk update using staging table approach
                     if (validUpdates.Count > 0)
                     {
-                        using var transaction = azureConn.BeginTransaction();
+                        // Create staging table for updates
+                        var createStagingCmd = azureConn.CreateCommand();
+                        createStagingCmd.CommandText = @"
+                            IF OBJECT_ID('tempdb..#UpdateStaging') IS NOT NULL DROP TABLE #UpdateStaging;
+                            CREATE TABLE #UpdateStaging (
+                                UniqueID NVARCHAR(100) PRIMARY KEY,
+                                " + string.Join(",\n                        ", syncColumns.Select(c => $"[{c}] NVARCHAR(MAX)")) + @"
+                            )";
+                        createStagingCmd.ExecuteNonQuery();
 
-                        var setClauses = syncColumns.Select(col => $"[{col}] = @{col}");
-                        var updateSql = $"UPDATE Activities SET {string.Join(", ", setClauses)} WHERE [UniqueID] = @UniqueID";
-
-                        using var updateCmd = azureConn.CreateCommand();
-                        updateCmd.Transaction = transaction;
-                        updateCmd.CommandText = updateSql;
-
-                        updateCmd.Parameters.Add("@UniqueID", SqlDbType.NVarChar, 100);
+                        // Build DataTable for updates
+                        var updateTable = new DataTable();
+                        updateTable.Columns.Add("UniqueID", typeof(string));
                         foreach (var colName in syncColumns)
                         {
-                            updateCmd.Parameters.Add($"@{colName}", SqlDbType.NVarChar);
+                            updateTable.Columns.Add(colName, typeof(string));
                         }
 
                         foreach (var record in validUpdates)
                         {
-                            try
+                            var row = updateTable.NewRow();
+                            row["UniqueID"] = record.UniqueID;
+                            foreach (var colName in syncColumns)
                             {
-                                updateCmd.Parameters["@UniqueID"].Value = record.UniqueID;
-
-                                foreach (var colName in syncColumns)
-                                {
-                                    var value = GetActivityValue(record, colName);
-                                    updateCmd.Parameters[$"@{colName}"].Value = value ?? DBNull.Value;
-                                }
-
-                                int rowsAffected = updateCmd.ExecuteNonQuery();
-                                if (rowsAffected > 0)
-                                {
-                                    updateSuccessIds.Add(record.UniqueID);
-                                }
-                                else
-                                {
-                                    result.FailedRecords.Add($"UniqueID {record.UniqueID}: No rows updated");
-                                }   
-                                
+                                var value = GetActivityValue(record, colName);
+                                row[colName] = value?.ToString() ?? (object)DBNull.Value;
                             }
-                            catch (Exception ex)
-                            {
-                                result.FailedRecords.Add($"UniqueID {record.UniqueID}: {ex.Message}");
-                                AppLogger.Error(ex, $"SyncManager.PushRecords UPDATE - UniqueID {record.UniqueID}");
-                            }
+                            updateTable.Rows.Add(row);
                         }
 
-                        transaction.Commit();
+                        // Bulk insert to staging table
+                        using (var bulkCopy = new SqlBulkCopy(azureConn))
+                        {
+                            bulkCopy.DestinationTableName = "#UpdateStaging";
+                            bulkCopy.BulkCopyTimeout = 120;
+                            bulkCopy.WriteToServer(updateTable);
+                        }
+
+                        // Single UPDATE statement using JOIN
+                        var updateFromStagingCmd = azureConn.CreateCommand();
+                        updateFromStagingCmd.CommandTimeout = 120;
+                        var setClause = string.Join(", ", syncColumns.Select(c => $"a.[{c}] = s.[{c}]"));
+                        updateFromStagingCmd.CommandText = $@"
+                    UPDATE a
+                    SET {setClause}
+                    FROM Activities a
+                    INNER JOIN #UpdateStaging s ON a.[UniqueID] = s.[UniqueID]";
+                        int updatedCount = updateFromStagingCmd.ExecuteNonQuery();
+
+                        updateSuccessIds.AddRange(validUpdates.Select(r => r.UniqueID));
+                        AppLogger.Info($"Step 3 complete ({stopwatch.Elapsed.TotalSeconds:F1}s): Bulk updated {updatedCount} records", "SyncManager.PushRecords");
                     }
                 }
 
                 // ============================================================
-                // STEP 4: Handle INSERTS with parameterized command
+                // STEP 4: Handle INSERTS with SqlBulkCopy (trigger disabled)
                 // ============================================================
                 var insertSuccessIds = new List<string>();
 
                 if (toInsert.Count > 0)
                 {
-                    using var transaction = azureConn.BeginTransaction();
+                    // Disable the trigger for bulk insert performance
+                    var disableTriggerCmd = azureConn.CreateCommand();
+                    disableTriggerCmd.CommandText = "DISABLE TRIGGER TR_Activities_SyncVersion ON Activities";
+                    disableTriggerCmd.ExecuteNonQuery();
 
-                    var insertColumns = new List<string> { "UniqueID", "IsDeleted" };
-                    insertColumns.AddRange(syncColumns);
-                    var insertParams = insertColumns.Select(c => "@" + c);
-
-                    var insertSql = $"INSERT INTO Activities ({string.Join(", ", insertColumns.Select(c => $"[{c}]"))}) VALUES ({string.Join(", ", insertParams)})";
-
-                    using var insertCmd = azureConn.CreateCommand();
-                    insertCmd.Transaction = transaction;
-                    insertCmd.CommandText = insertSql;
-
-                    insertCmd.Parameters.Add("@UniqueID", SqlDbType.NVarChar, 100);
-                    insertCmd.Parameters.Add("@IsDeleted", SqlDbType.Int);
-                    foreach (var colName in syncColumns)
+                    try
                     {
-                        insertCmd.Parameters.Add($"@{colName}", SqlDbType.NVarChar);
-                    }
+                        // Build DataTable matching Azure Activities schema
+                        var dataTable = new DataTable();
+                        dataTable.Columns.Add("UniqueID", typeof(string));
+                        dataTable.Columns.Add("IsDeleted", typeof(bool));
+                        dataTable.Columns.Add("SyncVersion", typeof(long));
 
-                    foreach (var record in toInsert)
-                    {
-                        try
+                        foreach (var colName in syncColumns)
                         {
-                            insertCmd.Parameters["@UniqueID"].Value = record.UniqueID;
-                            insertCmd.Parameters["@IsDeleted"].Value = 0;
+                            var colType = GetColumnType(colName);
+                            dataTable.Columns.Add(colName, colType);
+                        }
+
+                        // Reserve SyncVersion range atomically
+                        long startVersion;
+                        var reserveCmd = azureConn.CreateCommand();
+                        reserveCmd.CommandText = @"
+                    UPDATE GlobalSyncVersion 
+                    SET CurrentVersion = CurrentVersion + @count 
+                    OUTPUT INSERTED.CurrentVersion - @count + 1";
+                        reserveCmd.Parameters.AddWithValue("@count", toInsert.Count);
+                        startVersion = Convert.ToInt64(reserveCmd.ExecuteScalar());
+
+                        AppLogger.Info($"Reserved SyncVersion range {startVersion} to {startVersion + toInsert.Count - 1}", "SyncManager.PushRecords");
+
+                        // Populate DataTable with records and assigned SyncVersions
+                        long currentVersion = startVersion;
+                        foreach (var record in toInsert)
+                        {
+                            var row = dataTable.NewRow();
+                            row["UniqueID"] = record.UniqueID;
+                            row["IsDeleted"] = false;
+                            row["SyncVersion"] = currentVersion++;
 
                             foreach (var colName in syncColumns)
                             {
                                 var value = GetActivityValue(record, colName);
-                                insertCmd.Parameters[$"@{colName}"].Value = value ?? DBNull.Value;
+                                row[colName] = value ?? DBNull.Value;
                             }
 
-                            insertCmd.ExecuteNonQuery();
-                            insertSuccessIds.Add(record.UniqueID);
+                            dataTable.Rows.Add(row);
                         }
-                        catch (Exception ex)
-                        {
-                            result.FailedRecords.Add($"UniqueID {record.UniqueID}: {ex.Message}");
-                            AppLogger.Error(ex, $"SyncManager.PushRecords INSERT - UniqueID {record.UniqueID}");
-                        }
-                    }
 
-                    transaction.Commit();
+                        // Bulk insert
+                        using (var bulkCopy = new SqlBulkCopy(azureConn))
+                        {
+                            bulkCopy.DestinationTableName = "Activities";
+                            bulkCopy.BatchSize = 5000;
+                            bulkCopy.BulkCopyTimeout = 120;
+
+                            // Map columns explicitly
+                            bulkCopy.ColumnMappings.Add("UniqueID", "UniqueID");
+                            bulkCopy.ColumnMappings.Add("IsDeleted", "IsDeleted");
+                            bulkCopy.ColumnMappings.Add("SyncVersion", "SyncVersion");
+                            foreach (var colName in syncColumns)
+                            {
+                                bulkCopy.ColumnMappings.Add(colName, colName);
+                            }
+
+                            bulkCopy.WriteToServer(dataTable);
+                        }
+
+                        insertSuccessIds.AddRange(toInsert.Select(r => r.UniqueID));
+                        AppLogger.Info($"Step 4 complete ({stopwatch.Elapsed.TotalSeconds:F1}s): Bulk inserted {toInsert.Count} records", "SyncManager.PushRecords");
+                    }
+                    finally
+                    {
+                        // Re-enable the trigger
+                        var enableTriggerCmd = azureConn.CreateCommand();
+                        enableTriggerCmd.CommandText = "ENABLE TRIGGER TR_Activities_SyncVersion ON Activities";
+                        enableTriggerCmd.ExecuteNonQuery();
+                    }
                 }
 
                 // ============================================================
@@ -370,25 +408,22 @@ namespace VANTAGE.Utilities
 
                 if (allSuccessIds.Count > 0)
                 {
-                    // Rebuild temp table with only successful IDs
-                    var rebuildTempCmd = azureConn.CreateCommand();
-                    rebuildTempCmd.CommandText = "DELETE FROM #SyncBatch";
-                    rebuildTempCmd.ExecuteNonQuery();
+                    // Rebuild temp table with only successful IDs using bulk copy
+                    var clearTempCmd = azureConn.CreateCommand();
+                    clearTempCmd.CommandText = "DELETE FROM #SyncBatch";
+                    clearTempCmd.ExecuteNonQuery();
 
-                    using (var tempTransaction = azureConn.BeginTransaction())
+                    var successIdTable = new DataTable();
+                    successIdTable.Columns.Add("UniqueID", typeof(string));
+                    foreach (var uid in allSuccessIds)
                     {
-                        var insertTempCmd = azureConn.CreateCommand();
-                        insertTempCmd.Transaction = tempTransaction;
-                        insertTempCmd.CommandText = "INSERT INTO #SyncBatch (UniqueID) VALUES (@uid)";
-                        var uidParam = insertTempCmd.Parameters.Add("@uid", SqlDbType.NVarChar, 100);
+                        successIdTable.Rows.Add(uid);
+                    }
 
-                        foreach (var uid in allSuccessIds)
-                        {
-                            uidParam.Value = uid;
-                            insertTempCmd.ExecuteNonQuery();
-                        }
-
-                        tempTransaction.Commit();
+                    using (var bulkCopy = new SqlBulkCopy(azureConn))
+                    {
+                        bulkCopy.DestinationTableName = "#SyncBatch";
+                        bulkCopy.WriteToServer(successIdTable);
                     }
 
                     // Get versions using JOIN
@@ -397,9 +432,9 @@ namespace VANTAGE.Utilities
 
                     var getVersionsCmd = azureConn.CreateCommand();
                     getVersionsCmd.CommandText = @"
-                        SELECT a.[UniqueID], a.[SyncVersion], a.[ActivityID] 
-                        FROM Activities a 
-                        INNER JOIN #SyncBatch s ON a.[UniqueID] = s.[UniqueID]";
+                SELECT a.[UniqueID], a.[SyncVersion], a.[ActivityID] 
+                FROM Activities a 
+                INNER JOIN #SyncBatch s ON a.[UniqueID] = s.[UniqueID]";
 
                     using (var versionReader = getVersionsCmd.ExecuteReader())
                     {
@@ -413,6 +448,8 @@ namespace VANTAGE.Utilities
                         }
                     }
 
+                    AppLogger.Info($"Step 5 complete ({stopwatch.Elapsed.TotalSeconds:F1}s): Retrieved versions for {versionMap.Count} records", "SyncManager.PushRecords");
+
                     // ============================================================
                     // STEP 6: Update local records with SyncVersion and clear LocalDirty
                     // ============================================================
@@ -421,9 +458,9 @@ namespace VANTAGE.Utilities
                     var updateLocalCmd = localConn.CreateCommand();
                     updateLocalCmd.Transaction = localTransaction;
                     updateLocalCmd.CommandText = @"
-                        UPDATE Activities 
-                        SET SyncVersion = @version, ActivityID = @actId, LocalDirty = 0 
-                        WHERE UniqueID = @id";
+                UPDATE Activities 
+                SET SyncVersion = @version, ActivityID = @actId, LocalDirty = 0 
+                WHERE UniqueID = @id";
 
                     updateLocalCmd.Parameters.Add("@version", SqliteType.Integer);
                     updateLocalCmd.Parameters.Add("@actId", SqliteType.Integer);
@@ -441,6 +478,8 @@ namespace VANTAGE.Utilities
                     }
 
                     localTransaction.Commit();
+
+                    AppLogger.Info($"Step 6 complete ({stopwatch.Elapsed.TotalSeconds:F1}s): Updated local records", "SyncManager.PushRecords");
 
                     // Set result counts
                     result.InsertedRecords = insertSuccessIds.Count;
@@ -475,27 +514,24 @@ namespace VANTAGE.Utilities
                         clearTempCmd.CommandText = "DELETE FROM #SyncBatch";
                         clearTempCmd.ExecuteNonQuery();
 
-                        using (var tempTransaction = azureConn.BeginTransaction())
+                        var failedIdTable = new DataTable();
+                        failedIdTable.Columns.Add("UniqueID", typeof(string));
+                        foreach (var uid in failedUniqueIds)
                         {
-                            var insertTempCmd = azureConn.CreateCommand();
-                            insertTempCmd.Transaction = tempTransaction;
-                            insertTempCmd.CommandText = "INSERT INTO #SyncBatch (UniqueID) VALUES (@uid)";
-                            var uidParam = insertTempCmd.Parameters.Add("@uid", SqlDbType.NVarChar, 100);
+                            failedIdTable.Rows.Add(uid);
+                        }
 
-                            foreach (var uid in failedUniqueIds)
-                            {
-                                uidParam.Value = uid;
-                                insertTempCmd.ExecuteNonQuery();
-                            }
-
-                            tempTransaction.Commit();
+                        using (var bulkCopy = new SqlBulkCopy(azureConn))
+                        {
+                            bulkCopy.DestinationTableName = "#SyncBatch";
+                            bulkCopy.WriteToServer(failedIdTable);
                         }
 
                         // Force-pull using JOIN
                         var forcePullCmd = azureConn.CreateCommand();
                         forcePullCmd.CommandText = @"
-                            SELECT a.* FROM Activities a 
-                            INNER JOIN #SyncBatch s ON a.[UniqueID] = s.[UniqueID]";
+                    SELECT a.* FROM Activities a 
+                    INNER JOIN #SyncBatch s ON a.[UniqueID] = s.[UniqueID]";
 
                         using var reader = forcePullCmd.ExecuteReader();
                         while (reader.Read())
@@ -534,9 +570,8 @@ namespace VANTAGE.Utilities
                     }
                 }
 
-                // Temp table automatically dropped when connection closes
-
-                AppLogger.Info($"Push completed: {result.PushedRecords} pushed ({result.InsertedRecords} inserted, {result.UpdatedRecords} updated), {result.FailedRecords.Count} failed", "SyncManager.PushRecords");
+                stopwatch.Stop();
+                AppLogger.Info($"Push completed in {stopwatch.Elapsed.TotalSeconds:F1}s: {result.PushedRecords} pushed ({result.InsertedRecords} inserted, {result.UpdatedRecords} updated), {result.FailedRecords.Count} failed", "SyncManager.PushRecords");
             }
             catch (Exception ex)
             {
@@ -547,12 +582,33 @@ namespace VANTAGE.Utilities
             return result;
         }
 
-        // Legacy method signature for compatibility
-        [Obsolete("Use PushRecordsAsync(List<string> selectedProjects) instead. The centralDbPath parameter is ignored.")]
-        public static async Task<SyncResult> PushRecordsAsync(string centralDbPath, List<string> selectedProjects)
+        // Helper method to get column type for DataTable
+        private static Type GetColumnType(string columnName)
         {
-            return await PushRecordsAsync(selectedProjects);
+            // Numeric columns
+            var numericColumns = new HashSet<string>
+            {
+                "BaseUnit", "BudgetHoursGroup", "BudgetHoursROC", "BudgetMHs",
+                "ClientBudget", "ClientCustom3", "ClientEquivQty", "DateTrigger",
+                "EarnQtyEntry", "EarnedMHsRoc", "HexNO", "PercentEntry",
+                "PipeSize1", "PipeSize2", "PrevEarnMHs", "PrevEarnQTY",
+                "Quantity", "ROCBudgetQTY", "ROCID", "ROCPercent", "XRay"
+            };
+
+            if (numericColumns.Contains(columnName))
+            {
+                return typeof(double);
+            }
+
+            return typeof(string);
         }
+
+        // Legacy method signature for compatibility
+        //[Obsolete("Use PushRecordsAsync(List<string> selectedProjects) instead. The centralDbPath parameter is ignored.")]
+        //public static async Task<SyncResult> PushRecordsAsync(string centralDbPath, List<string> selectedProjects)
+        //{
+        //    return await PushRecordsAsync(selectedProjects);
+        //}
 
         // Result class for sync operations
         public class SyncResult
@@ -571,41 +627,18 @@ namespace VANTAGE.Utilities
         // Pull records from Azure that have changed since last sync
         public static async Task<SyncResult> PullRecordsAsync(List<string> selectedProjects, List<string> excludeUniqueIds = null)
         {
+            // Note: excludeUniqueIds parameter kept for backward compatibility but ignored
             var result = new SyncResult();
 
             try
             {
+                var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+
                 using var azureConn = AzureDbManager.GetConnection();
                 using var localConn = DatabaseSetup.GetConnection();
 
-                azureConn.Open();
+                await Task.Run(() => azureConn.Open());
                 localConn.Open();
-
-                // If we have UniqueIDs to exclude, create temp table
-                if (excludeUniqueIds != null && excludeUniqueIds.Any())
-                {
-                    var createTempCmd = azureConn.CreateCommand();
-                    createTempCmd.CommandText = @"
-                        IF OBJECT_ID('tempdb..#ExcludeBatch') IS NOT NULL DROP TABLE #ExcludeBatch;
-                        CREATE TABLE #ExcludeBatch (UniqueID NVARCHAR(100) PRIMARY KEY)";
-                    createTempCmd.ExecuteNonQuery();
-
-                    using (var tempTransaction = azureConn.BeginTransaction())
-                    {
-                        var insertTempCmd = azureConn.CreateCommand();
-                        insertTempCmd.Transaction = tempTransaction;
-                        insertTempCmd.CommandText = "INSERT INTO #ExcludeBatch (UniqueID) VALUES (@uid)";
-                        var uidParam = insertTempCmd.Parameters.Add("@uid", SqlDbType.NVarChar, 100);
-
-                        foreach (var uid in excludeUniqueIds)
-                        {
-                            uidParam.Value = uid;
-                            insertTempCmd.ExecuteNonQuery();
-                        }
-
-                        tempTransaction.Commit();
-                    }
-                }
 
                 foreach (var projectId in selectedProjects)
                 {
@@ -614,107 +647,114 @@ namespace VANTAGE.Utilities
                     );
 
                     var pullCmd = azureConn.CreateCommand();
-
-                    // Use LEFT JOIN with NULL check to exclude pushed records
-                    if (excludeUniqueIds != null && excludeUniqueIds.Any())
-                    {
-                        pullCmd.CommandText = @"
-                            SELECT a.* FROM Activities a
-                            LEFT JOIN #ExcludeBatch e ON a.[UniqueID] = e.[UniqueID]
-                            WHERE a.[ProjectID] = @projectId 
-                              AND a.[SyncVersion] > @lastVersion
-                              AND e.[UniqueID] IS NULL
-                            ORDER BY a.[SyncVersion]";
-                    }
-                    else
-                    {
-                        pullCmd.CommandText = @"
-                            SELECT * FROM Activities 
-                            WHERE [ProjectID] = @projectId 
-                              AND [SyncVersion] > @lastVersion
-                            ORDER BY [SyncVersion]";
-                    }
-
+                    pullCmd.CommandTimeout = 120;
+                    pullCmd.CommandText = @"
+                SELECT * FROM Activities 
+                WHERE [ProjectID] = @projectId 
+                  AND [SyncVersion] > @lastVersion
+                ORDER BY [SyncVersion]";
                     pullCmd.Parameters.AddWithValue("@projectId", projectId);
                     pullCmd.Parameters.AddWithValue("@lastVersion", lastPulledVersion);
 
+                    // Read all records into memory first
+                    var recordsToPull = new List<Dictionary<string, object>>();
+                    var recordsToDelete = new List<string>();
                     long maxVersionPulled = lastPulledVersion;
 
-                    using var reader = pullCmd.ExecuteReader();
-
-                    while (reader.Read())
+                    using (var reader = await Task.Run(() => pullCmd.ExecuteReader()))
                     {
-                        try
+                        while (reader.Read())
                         {
                             string uniqueId = reader.GetString(reader.GetOrdinal("UniqueID"));
                             long syncVersion = reader.GetInt64(reader.GetOrdinal("SyncVersion"));
                             int isDeleted = reader.GetBoolean(reader.GetOrdinal("IsDeleted")) ? 1 : 0;
 
-                            if (isDeleted == 1)
-                            {
-                                var deleteCmd = localConn.CreateCommand();
-                                deleteCmd.CommandText = "DELETE FROM Activities WHERE UniqueID = @uid";
-                                deleteCmd.Parameters.AddWithValue("@uid", uniqueId);
-                                deleteCmd.ExecuteNonQuery();
-
-                                if (syncVersion > maxVersionPulled)
-                                {
-                                    maxVersionPulled = syncVersion;
-                                }
-
-                                continue;
-                            }
-
-                            var columnNames = new List<string>();
-                            var paramNames = new List<string>();
-
-                            for (int i = 0; i < reader.FieldCount; i++)
-                            {
-                                string colName = reader.GetName(i);
-                                if (colName == "IsDeleted") continue;
-
-                                columnNames.Add(colName);
-                                paramNames.Add($"@{colName}");
-                            }
-
-                            columnNames.Add("LocalDirty");
-                            paramNames.Add("@LocalDirty");
-
-                            var insertSql = $@"
-                                INSERT OR REPLACE INTO Activities ({string.Join(", ", columnNames)}) 
-                                VALUES ({string.Join(", ", paramNames)})";
-
-                            var insertCmd = localConn.CreateCommand();
-                            insertCmd.CommandText = insertSql;
-
-                            for (int i = 0; i < reader.FieldCount; i++)
-                            {
-                                string colName = reader.GetName(i);
-                                if (colName == "IsDeleted") continue;
-
-                                var value = reader.GetValue(i);
-                                insertCmd.Parameters.AddWithValue($"@{colName}", value ?? DBNull.Value);
-                            }
-
-                            insertCmd.Parameters.AddWithValue("@LocalDirty", 0);
-
-                            insertCmd.ExecuteNonQuery();
-                            result.PulledRecords++;
-
                             if (syncVersion > maxVersionPulled)
                             {
                                 maxVersionPulled = syncVersion;
                             }
-                        }
-                        catch (Exception ex)
-                        {
-                            AppLogger.Error(ex, $"SyncManager.PullRecords - Error pulling record");
+
+                            if (isDeleted == 1)
+                            {
+                                recordsToDelete.Add(uniqueId);
+                                continue;
+                            }
+
+                            // Store record data
+                            var recordData = new Dictionary<string, object>();
+                            for (int i = 0; i < reader.FieldCount; i++)
+                            {
+                                string colName = reader.GetName(i);
+                                if (colName == "IsDeleted") continue;
+                                recordData[colName] = reader.GetValue(i);
+                            }
+                            recordsToPull.Add(recordData);
                         }
                     }
-                    reader.Close();
-                    // Update LastPulledSyncVersion
+
+                    AppLogger.Info($"Project {projectId}: {recordsToPull.Count} to pull, {recordsToDelete.Count} to delete", "SyncManager.PullRecords");
+
+                    // Bulk delete records marked as deleted in Azure
+                    if (recordsToDelete.Count > 0)
+                    {
+                        using var deleteTransaction = localConn.BeginTransaction();
+                        var deleteCmd = localConn.CreateCommand();
+                        deleteCmd.Transaction = deleteTransaction;
+                        deleteCmd.CommandText = "DELETE FROM Activities WHERE UniqueID = @uid";
+                        deleteCmd.Parameters.Add("@uid", SqliteType.Text);
+
+                        foreach (var uid in recordsToDelete)
+                        {
+                            deleteCmd.Parameters["@uid"].Value = uid;
+                            deleteCmd.ExecuteNonQuery();
+                        }
+
+                        deleteTransaction.Commit();
+                        AppLogger.Info($"Deleted {recordsToDelete.Count} records from local (marked deleted in Azure)", "SyncManager.PullRecords");
+                    }
+
+                    // Bulk insert/update pulled records
+                    if (recordsToPull.Count > 0)
+                    {
+                        // Get column names from first record
+                        var colNames = recordsToPull[0].Keys.ToList();
+                        colNames.Add("LocalDirty");
+
+                        var insertSql = $@"
+                    INSERT OR REPLACE INTO Activities ({string.Join(", ", colNames)}) 
+                    VALUES ({string.Join(", ", colNames.Select(c => "@" + c))})";
+
+                        using var insertTransaction = localConn.BeginTransaction();
+                        var insertCmd = localConn.CreateCommand();
+                        insertCmd.Transaction = insertTransaction;
+                        insertCmd.CommandText = insertSql;
+
+                        // Add parameters once
+                        foreach (var colName in colNames)
+                        {
+                            if (colName == "LocalDirty")
+                                insertCmd.Parameters.Add("@LocalDirty", SqliteType.Integer);
+                            else
+                                insertCmd.Parameters.Add("@" + colName, SqliteType.Text);
+                        }
+
+                        foreach (var record in recordsToPull)
+                        {
+                            foreach (var colName in record.Keys)
+                            {
+                                insertCmd.Parameters["@" + colName].Value = record[colName] ?? DBNull.Value;
+                            }
+                            insertCmd.Parameters["@LocalDirty"].Value = 0;
+                            insertCmd.ExecuteNonQuery();
+                        }
+
+                        insertTransaction.Commit();
+                        result.PulledRecords += recordsToPull.Count;
+                    }
+
+                    // Update LastPulledSyncVersion to Azure's max for this project
                     var maxVersionCmd = azureConn.CreateCommand();
-                    maxVersionCmd.CommandText = "SELECT ISNULL(MAX(SyncVersion), 0) FROM Activities WHERE ProjectID = @projectId";
+                    maxVersionCmd.CommandText = "SELECT ISNULL(MAX(SyncVersion), 0) FROM Activities WHERE [ProjectID] = @projectId";
                     maxVersionCmd.Parameters.AddWithValue("@projectId", projectId);
                     long azureMaxVersion = Convert.ToInt64(maxVersionCmd.ExecuteScalar());
 
@@ -725,9 +765,8 @@ namespace VANTAGE.Utilities
                     );
                 }
 
-                // Temp table automatically dropped when connection closes
-
-                AppLogger.Info($"Pull completed: {result.PulledRecords} pulled", "SyncManager.PullRecords");
+                stopwatch.Stop();
+                AppLogger.Info($"Pull completed in {stopwatch.Elapsed.TotalSeconds:F1}s: {result.PulledRecords} pulled", "SyncManager.PullRecords");
             }
             catch (Exception ex)
             {
@@ -739,10 +778,10 @@ namespace VANTAGE.Utilities
         }
 
         // Legacy method signature for compatibility
-        [Obsolete("Use PullRecordsAsync(List<string> selectedProjects, List<string> excludeUniqueIds) instead. The centralDbPath parameter is ignored.")]
-        public static async Task<SyncResult> PullRecordsAsync(string centralDbPath, List<string> selectedProjects, List<string> excludeUniqueIds = null)
-        {
-            return await PullRecordsAsync(selectedProjects, excludeUniqueIds);
-        }
+        //[Obsolete("Use PullRecordsAsync(List<string> selectedProjects, List<string> excludeUniqueIds) instead. The centralDbPath parameter is ignored.")]
+        //public static async Task<SyncResult> PullRecordsAsync(string centralDbPath, List<string> selectedProjects, List<string> excludeUniqueIds = null)
+        //{
+        //    return await PullRecordsAsync(selectedProjects, excludeUniqueIds);
+        //}
     }
 }

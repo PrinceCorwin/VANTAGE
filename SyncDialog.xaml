@@ -1,7 +1,7 @@
 ﻿<Window x:Class="VANTAGE.SyncDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Sync with Central Database"
+        Title="Sync with Azure Database"
         Icon="pack://application:,,,/images/AppIcon.ico"
         Height="500"
         Width="600"
@@ -56,7 +56,7 @@
                    Foreground="{StaticResource ForegroundColor}"
                    Opacity="0.8"
                    Margin="0,0,0,20">
-            <Run Text="• Checked projects will sync changes up to Central and pull updates down"/>
+            <Run Text="• Checked projects will sync changes up to Azure and pull updates down"/>
             <LineBreak/>
             <Run Text="• Unchecked projects will not be synced"/>
         </TextBlock>

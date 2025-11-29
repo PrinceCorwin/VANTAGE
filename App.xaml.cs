@@ -83,8 +83,6 @@ namespace VANTAGE
                         // Hide splash temporarily to show retry dialog
                         _splashWindow.Hide();
 
-                        // Build detailed error message
-                        // Build detailed error message
                         string dialogMessage = $"{connectionError}\n\n" +
                             "Please check your internet connection.\n\n" +
                             "• Click RETRY to test connection again\n" +
@@ -106,13 +104,13 @@ namespace VANTAGE
                         else
                         {
                             // User clicked WORK OFFLINE
-                            AppLogger.Info("User chose to work offline - Central database unavailable at startup", "App.OnStartup");
+                            AppLogger.Info("User chose to work offline - Azure database unavailable at startup", "App.OnStartup");
                             break;
                         }
                     }
                 }
 
-                // Mirror reference tables from Central to Local (only if connection successful)
+                // Mirror reference tables from Azure to Local (only if connection successful)
                 if (azureOnline)
                 {
                     try
@@ -122,13 +120,13 @@ namespace VANTAGE
                         {
                             DatabaseSetup.MirrorTablesFromAzure();
                         });
-                        AppLogger.Info("Successfully mirrored reference tables from Central database", "App.OnStartup");
+                        AppLogger.Info("Successfully mirrored reference tables from Azure database", "App.OnStartup");
                     }
                     catch (Exception mirrorEx)
                     {
-                        AppLogger.Error(mirrorEx, "App.OnStartup - MirrorTablesFromCentral");
+                        AppLogger.Error(mirrorEx, "App.OnStartup - MirrorTablesFromAzure");
                         MessageBox.Show(
-                            $"Failed to sync reference tables from Central database:\n\n{mirrorEx.Message}\n\n" +
+                            $"Failed to sync reference tables from Azure database:\n\n{mirrorEx.Message}\n\n" +
                             "The application will continue, but some data may be outdated.",
                             "Sync Warning",
                             MessageBoxButton.OK,
@@ -151,24 +149,32 @@ namespace VANTAGE
 
                 // Step 4: Check if user exists in database
                 _splashWindow.UpdateStatus("Loading User Profile...");
-                CurrentUser = await Task.Run(() => GetOrCreateUser(windowsUsername));
+                CurrentUser = await Task.Run(() => GetUser(windowsUsername));
+
+                if (CurrentUser == null)
+                {
+                    _splashWindow.Close();
+                    MessageBox.Show(
+                        $"User '{windowsUsername}' is not authorized to use MILESTONE.\n\n" +
+                        "Please contact your administrator to be added to the system.",
+                        "Access Denied",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+                    this.Shutdown();
+                    return;
+                }
+
                 CurrentUserID = CurrentUser.UserID;
 
-                // Step 4b: Verify admin token if user claims to be admin
-                if (CurrentUser.IsAdmin)
+                // Step 4b: Check admin status from Azure (only if online)
+                if (azureOnline)
                 {
-                    bool tokenValid = await Task.Run(() => AdminHelper.VerifyAdminToken(
-                        CurrentUser.UserID,
-                        CurrentUser.Username,
-                        CurrentUser.AdminToken
-                    ));
-
-                    if (!tokenValid)
-                    {
-                        await Task.Run(() => AdminHelper.RevokeAdmin(CurrentUserID));
-                        CurrentUser.IsAdmin = false;
-                        CurrentUser.AdminToken = null;
-                    }
+                    CurrentUser.IsAdmin = await Task.Run(() => AzureDbManager.IsUserAdmin(CurrentUser.Username));
+                }
+                else
+                {
+                    // Offline - no admin access
+                    CurrentUser.IsAdmin = false;
                 }
 
                 // Step 5: Check if user has completed profile
@@ -183,7 +189,7 @@ namespace VANTAGE
                     if (result != true)
                     {
                         _splashWindow.Close();
-                        MessageBox.Show("Profile setup is required to use VANTAGE.", "Setup Required", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        MessageBox.Show("Profile setup is required to use MILESTONE.", "Setup Required", MessageBoxButton.OK, MessageBoxImage.Warning);
                         this.Shutdown();
                         return;
                     }
@@ -196,21 +202,10 @@ namespace VANTAGE
                     if (refreshedUser != null)
                     {
                         CurrentUser = refreshedUser;
-
-                        // Sync new/updated user to Central database
-                        string centralPath = await Task.Run(() => SettingsManager.GetAppSetting("CentralDatabasePath", ""));
-                        if (!string.IsNullOrEmpty(centralPath))
+                        // Re-check admin status after refresh
+                        if (azureOnline)
                         {
-                            await Task.Run(() => DatabaseSetup.AddUserToCentral(
-                                centralPath,
-                                CurrentUser.UserID,
-                                CurrentUser.Username,
-                                CurrentUser.FullName,
-                                CurrentUser.Email,
-                                CurrentUser.PhoneNumber,
-                                CurrentUser.IsAdmin,
-                                CurrentUser.AdminToken
-                            ));
+                            CurrentUser.IsAdmin = await Task.Run(() => AzureDbManager.IsUserAdmin(CurrentUser.Username));
                         }
                     }
                 }
@@ -257,100 +252,35 @@ namespace VANTAGE
             }
         }
 
-
-        /// <summary>
-        /// Get existing user or create new user if doesn't exist
-        /// </summary>
-        private static User GetOrCreateUser(string username)
+        // Get existing user - returns null if user doesn't exist
+        private static User GetUser(string username)
         {
             try
             {
                 using var connection = DatabaseSetup.GetConnection();
                 connection.Open();
 
-                // 1) Check if user exists
-                using (var command = connection.CreateCommand())
-                {
-                    command.CommandText = @"
-                SELECT UserID, Username, FullName, Email, PhoneNumber, IsAdmin, AdminToken
-                FROM Users
-                WHERE Username = @username";
-                    command.Parameters.AddWithValue("@username", username);
+                var command = connection.CreateCommand();
+                command.CommandText = @"
+            SELECT UserID, Username, FullName, Email, PhoneNumber
+            FROM Users
+            WHERE Username = @username";
+                command.Parameters.AddWithValue("@username", username);
 
-                    using var reader = command.ExecuteReader();
-                    if (reader.Read())
+                using var reader = command.ExecuteReader();
+                if (reader.Read())
+                {
+                    return new User
                     {
-                        return new User
-                        {
-                            UserID = reader.GetInt32(0),
-                            Username = reader.GetString(1),
-                            FullName = reader.IsDBNull(2) ? "" : reader.GetString(2),
-                            Email = reader.IsDBNull(3) ? "" : reader.GetString(3),
-                            PhoneNumber = reader.IsDBNull(4) ? "" : reader.GetString(4),
-                            IsAdmin = !reader.IsDBNull(5) && reader.GetInt32(5) == 1,
-                            AdminToken = reader.IsDBNull(6) ? null : reader.GetString(6)
-                        };
-                    }
+                        UserID = reader.GetInt32(0),
+                        Username = reader.GetString(1),
+                        FullName = reader.IsDBNull(2) ? "" : reader.GetString(2),
+                        Email = reader.IsDBNull(3) ? "" : reader.GetString(3),
+                        PhoneNumber = reader.IsDBNull(4) ? "" : reader.GetString(4)
+                    };
                 }
 
-                // 2) New user: Insert as non-admin by default
-                int isAdminInt = 0;
-
-                // Insert with explicit IsAdmin = 0 to avoid NULLs
-                using (var insertCommand = connection.CreateCommand())
-                {
-                    insertCommand.CommandText = @"
-                INSERT INTO Users (Username, FullName, Email, PhoneNumber, IsAdmin, AdminToken)
-                VALUES (@username, '', '', '', @isAdmin, NULL)";
-                    insertCommand.Parameters.AddWithValue("@username", username);
-                    insertCommand.Parameters.AddWithValue("@isAdmin", isAdminInt);
-                    insertCommand.ExecuteNonQuery();
-                }
-
-                // Get new ID
-                long newUserID;
-                using (var idCmd = connection.CreateCommand())
-                {
-                    idCmd.CommandText = "SELECT last_insert_rowid()";
-                    newUserID = (long)idCmd.ExecuteScalar();
-                }
-
-                // Re-read the row so we return authoritative values
-                using (var getCmd = connection.CreateCommand())
-                {
-                    getCmd.CommandText = @"
-                SELECT UserID, Username, FullName, Email, PhoneNumber, IsAdmin, AdminToken
-                FROM Users
-                WHERE UserID = @id";
-                    getCmd.Parameters.AddWithValue("@id", (int)newUserID);
-
-                    using var reader = getCmd.ExecuteReader();
-                    if (reader.Read())
-                    {
-                        return new User
-                        {
-                            UserID = reader.GetInt32(0),
-                            Username = reader.GetString(1),
-                            FullName = reader.IsDBNull(2) ? "" : reader.GetString(2),
-                            Email = reader.IsDBNull(3) ? "" : reader.GetString(3),
-                            PhoneNumber = reader.IsDBNull(4) ? "" : reader.GetString(4),
-                            IsAdmin = !reader.IsDBNull(5) && reader.GetInt32(5) == 1,
-                            AdminToken = reader.IsDBNull(6) ? null : reader.GetString(6)
-                        };
-                    }
-                }
-
-                // Fallback (shouldn't hit)
-                return new User
-                {
-                    UserID = (int)newUserID,
-                    Username = username,
-                    FullName = "",
-                    Email = "",
-                    PhoneNumber = "",
-                    IsAdmin = false,
-                    AdminToken = null
-                };
+                return null;
             }
             catch
             {
@@ -358,10 +288,7 @@ namespace VANTAGE
             }
         }
 
-
-        /// <summary>
-        /// Get user by ID
-        /// </summary>
+        // Get user by ID
         private static User GetUserByID(int userID)
         {
             try
@@ -370,7 +297,7 @@ namespace VANTAGE
                 connection.Open();
 
                 var command = connection.CreateCommand();
-                command.CommandText = "SELECT UserID, Username, FullName, Email, PhoneNumber, IsAdmin, AdminToken FROM Users WHERE UserID = @id";
+                command.CommandText = "SELECT UserID, Username, FullName, Email, PhoneNumber FROM Users WHERE UserID = @id";
                 command.Parameters.AddWithValue("@id", userID);
 
                 using var reader = command.ExecuteReader();
@@ -382,9 +309,7 @@ namespace VANTAGE
                         Username = reader.GetString(1),
                         FullName = reader.IsDBNull(2) ? "" : reader.GetString(2),
                         Email = reader.IsDBNull(3) ? "" : reader.GetString(3),
-                        PhoneNumber = reader.IsDBNull(4) ? "" : reader.GetString(4),
-                        IsAdmin = reader.IsDBNull(5) ? false : reader.GetInt32(5) == 1,
-                        AdminToken = reader.IsDBNull(6) ? "" : reader.GetString(6)
+                        PhoneNumber = reader.IsDBNull(4) ? "" : reader.GetString(4)
                     };
                 }
 

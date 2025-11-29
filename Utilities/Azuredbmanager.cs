@@ -28,7 +28,33 @@ namespace VANTAGE.Utilities
 
             return builder.ConnectionString;
         }
+        // Check if user is admin by querying Azure Admins table
+        public static bool IsUserAdmin(string username)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(username))
+                    return false;
 
+                if (!IsNetworkAvailable())
+                    return false;
+
+                using var connection = GetConnection();
+                connection.Open();
+
+                var cmd = connection.CreateCommand();
+                cmd.CommandText = "SELECT COUNT(*) FROM Admins WHERE Username = @username";
+                cmd.Parameters.AddWithValue("@username", username);
+
+                int count = Convert.ToInt32(cmd.ExecuteScalar());
+                return count > 0;
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "AzureDbManager.IsUserAdmin");
+                return false;
+            }
+        }
         // Get the Azure connection string
         public static string ConnectionString => _connectionString;
 
