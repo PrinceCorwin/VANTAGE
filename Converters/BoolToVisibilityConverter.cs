@@ -5,6 +5,7 @@ using System.Windows.Data;
 
 namespace VANTAGE.Converters
 {
+    //todo: need to check if we still need this converter in light of recent changes
     public class BoolToVisibilityConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
