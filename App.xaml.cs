@@ -15,9 +15,6 @@ namespace VANTAGE
         public static User CurrentUser { get; set; }
         public static int CurrentUserID { get; set; }
 
-        // Temp storage for Central DB path during first run
-        private string _tempCentralDbPath;
-
         // Loading splash window
         private LoadingSplashWindow _splashWindow;
 
@@ -44,53 +41,12 @@ namespace VANTAGE
                 );
 
                 bool isFirstRun = !File.Exists(localDbPath);
-
                 if (isFirstRun)
                 {
                     // Show loading splash (also establishes correct taskbar icon)
                     _splashWindow = new LoadingSplashWindow();
                     _splashWindow.Show();
-                    _splashWindow.UpdateStatus("Locating Central Database...");
-
-                    // Prompt user to browse to Central.db
-                    var openFileDialog = new Microsoft.Win32.OpenFileDialog
-                    {
-                        Title = "Locate Central Database",
-                        Filter = "Database files (*.db)|*.db|All files (*.*)|*.*",
-                        InitialDirectory = @"C:\"
-                    };
-
-                    if (openFileDialog.ShowDialog(_splashWindow) != true)
-                    {
-                        _splashWindow.Close();
-                        MessageBox.Show("Central database location is required to initialize VANTAGE.",
-                            "Setup Required", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        this.Shutdown();
-                        return;
-                    }
-
-                    string selectedPath = openFileDialog.FileName;
-
-                    _splashWindow.UpdateStatus("Validating Central Database...");
-
-                    // Validate the selected database
-                    bool isValid = false;
-                    string validationError = null;
-                    await Task.Run(() =>
-                    {
-                        isValid = DatabaseSetup.ValidateCentralDatabase(selectedPath, out validationError);
-                    });
-
-                    if (!isValid)
-                    {
-                        _splashWindow.Close();
-                        MessageBox.Show($"Invalid Central database:\n\n{validationError}\n\nPlease select a valid Central database file.",
-                            "Invalid Database", MessageBoxButton.OK, MessageBoxImage.Error);
-                        this.Shutdown();
-                        return;
-                    }
-
-                    _tempCentralDbPath = selectedPath;
+                    _splashWindow.UpdateStatus("First Run Setup...");
                 }
 
                 // Show loading splash for subsequent runs (if not already showing)
@@ -107,58 +63,28 @@ namespace VANTAGE
                     DatabaseSetup.InitializeDatabase();
                 });
 
-                // Save or read Central.db path
-                string centralDbPath = string.Empty;
-
-                if (isFirstRun && !string.IsNullOrEmpty(_tempCentralDbPath))
-                {
-                    await Task.Run(() =>
-                    {
-                        SettingsManager.SetAppSetting("CentralDatabasePath", _tempCentralDbPath, "string");
-                    });
-                    centralDbPath = _tempCentralDbPath;
-                    _tempCentralDbPath = null;
-                }
-                else if (!isFirstRun)
-                {
-                    centralDbPath = await Task.Run(() =>
-                    {
-                        return SettingsManager.GetAppSetting("CentralDatabasePath", "");
-                    });
-
-                    if (string.IsNullOrEmpty(centralDbPath))
-                    {
-                        _splashWindow.Close();
-                        MessageBox.Show("Central database path not found.",
-                            "Configuration Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        this.Shutdown();
-                        return;
-                    }
-                }
-
-                // Check connection to Central before attempting to mirror tables
-                _splashWindow.UpdateStatus("Connecting to Central Database...");
-                bool centralOnline = false;
-                while (!centralOnline)
+                // Check connection to Azure before attempting to mirror tables
+                _splashWindow.UpdateStatus("Connecting to Azure Database...");
+                bool azureOnline = false;
+                while (!azureOnline)
                 {
                     string connectionError = null;
                     bool connectionResult = await Task.Run(() =>
                     {
-                        return SyncManager.CheckCentralConnection(centralDbPath, out connectionError);
+                        return AzureDbManager.CheckConnection(out connectionError);
                     });
 
                     if (connectionResult)
                     {
-                        centralOnline = true;
+                        azureOnline = true;
                     }
                     else
                     {
                         // Hide splash temporarily to show retry dialog
                         _splashWindow.Hide();
 
-                        // Build detailed error message
                         string dialogMessage = $"{connectionError}\n\n" +
-                            "Please check your network connection or ensure Google Drive is running.\n\n" +
+                            "Please check your internet connection.\n\n" +
                             "• Click RETRY to test connection again\n" +
                             "• Click WORK OFFLINE to continue without syncing (you can sync later when connection is restored)";
 
@@ -178,29 +104,29 @@ namespace VANTAGE
                         else
                         {
                             // User clicked WORK OFFLINE
-                            AppLogger.Info("User chose to work offline - Central database unavailable at startup", "App.OnStartup");
+                            AppLogger.Info("User chose to work offline - Azure database unavailable at startup", "App.OnStartup");
                             break;
                         }
                     }
                 }
 
-                // Mirror reference tables from Central to Local (only if connection successful)
-                if (centralOnline)
+                // Mirror reference tables from Azure to Local (only if connection successful)
+                if (azureOnline)
                 {
                     try
                     {
                         _splashWindow.UpdateStatus("Syncing Reference Tables...");
                         await Task.Run(() =>
                         {
-                            DatabaseSetup.MirrorTablesFromCentral(centralDbPath);
+                            DatabaseSetup.MirrorTablesFromAzure();
                         });
-                        AppLogger.Info("Successfully mirrored reference tables from Central database", "App.OnStartup");
+                        AppLogger.Info("Successfully mirrored reference tables from Azure database", "App.OnStartup");
                     }
                     catch (Exception mirrorEx)
                     {
-                        AppLogger.Error(mirrorEx, "App.OnStartup - MirrorTablesFromCentral");
+                        AppLogger.Error(mirrorEx, "App.OnStartup - MirrorTablesFromAzure");
                         MessageBox.Show(
-                            $"Failed to sync reference tables from Central database:\n\n{mirrorEx.Message}\n\n" +
+                            $"Failed to sync reference tables from Azure database:\n\n{mirrorEx.Message}\n\n" +
                             "The application will continue, but some data may be outdated.",
                             "Sync Warning",
                             MessageBoxButton.OK,
@@ -223,24 +149,32 @@ namespace VANTAGE
 
                 // Step 4: Check if user exists in database
                 _splashWindow.UpdateStatus("Loading User Profile...");
-                CurrentUser = await Task.Run(() => GetOrCreateUser(windowsUsername));
+                CurrentUser = await Task.Run(() => GetUser(windowsUsername));
+
+                if (CurrentUser == null)
+                {
+                    _splashWindow.Close();
+                    MessageBox.Show(
+                        $"User '{windowsUsername}' is not authorized to use MILESTONE.\n\n" +
+                        "Please contact your administrator to be added to the system.",
+                        "Access Denied",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+                    this.Shutdown();
+                    return;
+                }
+
                 CurrentUserID = CurrentUser.UserID;
 
-                // Step 4b: Verify admin token if user claims to be admin
-                if (CurrentUser.IsAdmin)
+                // Step 4b: Check admin status from Azure (only if online)
+                if (azureOnline)
                 {
-                    bool tokenValid = await Task.Run(() => AdminHelper.VerifyAdminToken(
-                        CurrentUser.UserID,
-                        CurrentUser.Username,
-                        CurrentUser.AdminToken
-                    ));
-
-                    if (!tokenValid)
-                    {
-                        await Task.Run(() => AdminHelper.RevokeAdmin(CurrentUserID));
-                        CurrentUser.IsAdmin = false;
-                        CurrentUser.AdminToken = null;
-                    }
+                    CurrentUser.IsAdmin = await Task.Run(() => AzureDbManager.IsUserAdmin(CurrentUser.Username));
+                }
+                else
+                {
+                    // Offline - no admin access
+                    CurrentUser.IsAdmin = false;
                 }
 
                 // Step 5: Check if user has completed profile
@@ -255,7 +189,7 @@ namespace VANTAGE
                     if (result != true)
                     {
                         _splashWindow.Close();
-                        MessageBox.Show("Profile setup is required to use VANTAGE.", "Setup Required", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        MessageBox.Show("Profile setup is required to use MILESTONE.", "Setup Required", MessageBoxButton.OK, MessageBoxImage.Warning);
                         this.Shutdown();
                         return;
                     }
@@ -268,21 +202,10 @@ namespace VANTAGE
                     if (refreshedUser != null)
                     {
                         CurrentUser = refreshedUser;
-
-                        // Sync new/updated user to Central database
-                        string centralPath = await Task.Run(() => SettingsManager.GetAppSetting("CentralDatabasePath", ""));
-                        if (!string.IsNullOrEmpty(centralPath))
+                        // Re-check admin status after refresh
+                        if (azureOnline)
                         {
-                            await Task.Run(() => DatabaseSetup.AddUserToCentral(
-                                centralPath,
-                                CurrentUser.UserID,
-                                CurrentUser.Username,
-                                CurrentUser.FullName,
-                                CurrentUser.Email,
-                                CurrentUser.PhoneNumber,
-                                CurrentUser.IsAdmin,
-                                CurrentUser.AdminToken
-                            ));
+                            CurrentUser.IsAdmin = await Task.Run(() => AzureDbManager.IsUserAdmin(CurrentUser.Username));
                         }
                     }
                 }
@@ -329,100 +252,35 @@ namespace VANTAGE
             }
         }
 
-
-        /// <summary>
-        /// Get existing user or create new user if doesn't exist
-        /// </summary>
-        private static User GetOrCreateUser(string username)
+        // Get existing user - returns null if user doesn't exist
+        private static User GetUser(string username)
         {
             try
             {
                 using var connection = DatabaseSetup.GetConnection();
                 connection.Open();
 
-                // 1) Check if user exists
-                using (var command = connection.CreateCommand())
-                {
-                    command.CommandText = @"
-                SELECT UserID, Username, FullName, Email, PhoneNumber, IsAdmin, AdminToken
-                FROM Users
-                WHERE Username = @username";
-                    command.Parameters.AddWithValue("@username", username);
+                var command = connection.CreateCommand();
+                command.CommandText = @"
+            SELECT UserID, Username, FullName, Email, PhoneNumber
+            FROM Users
+            WHERE Username = @username";
+                command.Parameters.AddWithValue("@username", username);
 
-                    using var reader = command.ExecuteReader();
-                    if (reader.Read())
+                using var reader = command.ExecuteReader();
+                if (reader.Read())
+                {
+                    return new User
                     {
-                        return new User
-                        {
-                            UserID = reader.GetInt32(0),
-                            Username = reader.GetString(1),
-                            FullName = reader.IsDBNull(2) ? "" : reader.GetString(2),
-                            Email = reader.IsDBNull(3) ? "" : reader.GetString(3),
-                            PhoneNumber = reader.IsDBNull(4) ? "" : reader.GetString(4),
-                            IsAdmin = !reader.IsDBNull(5) && reader.GetInt32(5) == 1,
-                            AdminToken = reader.IsDBNull(6) ? null : reader.GetString(6)
-                        };
-                    }
+                        UserID = reader.GetInt32(0),
+                        Username = reader.GetString(1),
+                        FullName = reader.IsDBNull(2) ? "" : reader.GetString(2),
+                        Email = reader.IsDBNull(3) ? "" : reader.GetString(3),
+                        PhoneNumber = reader.IsDBNull(4) ? "" : reader.GetString(4)
+                    };
                 }
 
-                // 2) New user: Insert as non-admin by default
-                int isAdminInt = 0;
-
-                // Insert with explicit IsAdmin = 0 to avoid NULLs
-                using (var insertCommand = connection.CreateCommand())
-                {
-                    insertCommand.CommandText = @"
-                INSERT INTO Users (Username, FullName, Email, PhoneNumber, IsAdmin, AdminToken)
-                VALUES (@username, '', '', '', @isAdmin, NULL)";
-                    insertCommand.Parameters.AddWithValue("@username", username);
-                    insertCommand.Parameters.AddWithValue("@isAdmin", isAdminInt);
-                    insertCommand.ExecuteNonQuery();
-                }
-
-                // Get new ID
-                long newUserID;
-                using (var idCmd = connection.CreateCommand())
-                {
-                    idCmd.CommandText = "SELECT last_insert_rowid()";
-                    newUserID = (long)idCmd.ExecuteScalar();
-                }
-
-                // Re-read the row so we return authoritative values
-                using (var getCmd = connection.CreateCommand())
-                {
-                    getCmd.CommandText = @"
-                SELECT UserID, Username, FullName, Email, PhoneNumber, IsAdmin, AdminToken
-                FROM Users
-                WHERE UserID = @id";
-                    getCmd.Parameters.AddWithValue("@id", (int)newUserID);
-
-                    using var reader = getCmd.ExecuteReader();
-                    if (reader.Read())
-                    {
-                        return new User
-                        {
-                            UserID = reader.GetInt32(0),
-                            Username = reader.GetString(1),
-                            FullName = reader.IsDBNull(2) ? "" : reader.GetString(2),
-                            Email = reader.IsDBNull(3) ? "" : reader.GetString(3),
-                            PhoneNumber = reader.IsDBNull(4) ? "" : reader.GetString(4),
-                            IsAdmin = !reader.IsDBNull(5) && reader.GetInt32(5) == 1,
-                            AdminToken = reader.IsDBNull(6) ? null : reader.GetString(6)
-                        };
-                    }
-                }
-
-                // Fallback (shouldn't hit)
-                return new User
-                {
-                    UserID = (int)newUserID,
-                    Username = username,
-                    FullName = "",
-                    Email = "",
-                    PhoneNumber = "",
-                    IsAdmin = false,
-                    AdminToken = null
-                };
+                return null;
             }
             catch
             {
@@ -430,10 +288,7 @@ namespace VANTAGE
             }
         }
 
-
-        /// <summary>
-        /// Get user by ID
-        /// </summary>
+        // Get user by ID
         private static User GetUserByID(int userID)
         {
             try
@@ -442,7 +297,7 @@ namespace VANTAGE
                 connection.Open();
 
                 var command = connection.CreateCommand();
-                command.CommandText = "SELECT UserID, Username, FullName, Email, PhoneNumber, IsAdmin, AdminToken FROM Users WHERE UserID = @id";
+                command.CommandText = "SELECT UserID, Username, FullName, Email, PhoneNumber FROM Users WHERE UserID = @id";
                 command.Parameters.AddWithValue("@id", userID);
 
                 using var reader = command.ExecuteReader();
@@ -454,9 +309,7 @@ namespace VANTAGE
                         Username = reader.GetString(1),
                         FullName = reader.IsDBNull(2) ? "" : reader.GetString(2),
                         Email = reader.IsDBNull(3) ? "" : reader.GetString(3),
-                        PhoneNumber = reader.IsDBNull(4) ? "" : reader.GetString(4),
-                        IsAdmin = reader.IsDBNull(5) ? false : reader.GetInt32(5) == 1,
-                        AdminToken = reader.IsDBNull(6) ? "" : reader.GetString(6)
+                        PhoneNumber = reader.IsDBNull(4) ? "" : reader.GetString(4)
                     };
                 }
 

@@ -17,12 +17,10 @@ namespace VANTAGE
     {
         public MainWindow()
         {
-
-
             InitializeComponent();
-       
+
             LoadInitialModule();
-        
+
             UpdateStatusBar();
 
             this.Loaded += (s, e) =>
@@ -35,6 +33,7 @@ namespace VANTAGE
             };
             this.Closing += MainWindow_Closing;
         }
+
         private void BtnMinimize_Click(object sender, RoutedEventArgs e)
         {
             this.WindowState = WindowState.Minimized;
@@ -53,6 +52,7 @@ namespace VANTAGE
                 btnMaximize.Content = "❐";
             }
         }
+
         private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ClickCount == 2)
@@ -66,6 +66,7 @@ namespace VANTAGE
                 DragMove();
             }
         }
+
         private void BtnClose_Click(object sender, RoutedEventArgs e)
         {
             this.Close();
@@ -88,7 +89,7 @@ namespace VANTAGE
         {
             if (message != null)
                 txtLoadingMessage.Text = message;
-            
+
             txtLoadingProgress.Text = $"{current:N0} of {total:N0} records";
             LoadingProgressBar.Value = total > 0 ? (current * 100.0 / total) : 0;
         }
@@ -97,6 +98,7 @@ namespace VANTAGE
         {
             // TODO: Add proper logging when logging system is implemented
         }
+
         private void UpdateStatusBar()
         {
             // Update current user (with null check)
@@ -111,9 +113,6 @@ namespace VANTAGE
 
             // Update last sync time
             UpdateLastSyncDisplay();
-
-            // TODO: Load projects into dropdown
-            // TODO: Update record count
         }
 
         public void UpdateLastSyncDisplay()
@@ -136,6 +135,7 @@ namespace VANTAGE
                 txtLastSyncsd.Text = "Last Sync: Never";
             }
         }
+
         private void LoadInitialModule()
         {
             // Set app version dynamically
@@ -145,12 +145,12 @@ namespace VANTAGE
             // Load PROGRESS module by default
             LoadProgressModule();
 
-            // Disable ADMIN button if not admin (with null check)
+            // Disable ADMIN button if not admin (checked against Azure)
             if (App.CurrentUser == null || !App.CurrentUser.IsAdmin)
             {
                 btnAdmin.IsEnabled = false;
                 btnAdmin.Opacity = 0.5;
-                btnAdmin.ToolTip = "Admin privileges required";
+                btnAdmin.ToolTip = "Admin privileges required (or offline)";
             }
         }
 
@@ -192,6 +192,7 @@ namespace VANTAGE
                 btnWorkPackage.Foreground = (System.Windows.Media.Brush)FindResource("AccentColor");
             }
         }
+
         private void BtnProgress_Click(object sender, RoutedEventArgs e)
         {
             LoadProgressModule();
@@ -203,6 +204,7 @@ namespace VANTAGE
             MessageBox.Show("SCHEDULE module coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
             HighlightNavigationButton(btnSchedule);
         }
+
         private void BtnPbook_Click(object sender, RoutedEventArgs e)
         {
             MessageBox.Show("PRINT module coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -219,27 +221,16 @@ namespace VANTAGE
         {
             MessageBox.Show("CREATE module coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
         }
+
         private void ImportP6File_Click(object sender, RoutedEventArgs e)
         {
             MessageBox.Show("coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
         }
+
         private void ExportP6File_Click(object sender, RoutedEventArgs e)
         {
             MessageBox.Show("coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
         }
-
-        // === EXCEL DROPDOWN ===
-
-        //private void btnFile_Click(object sender, RoutedEventArgs e)
-        //{
-        //    // Open the dropdown menu
-        //    var button = sender as Button;
-        //    if (button?.ContextMenu != null)
-        //    {
-        //        button.ContextMenu.PlacementTarget = button;
-        //        button.ContextMenu.IsOpen = true;
-        //    }
-        //}
 
         private async void MenuExcelImportReplace_Click(object sender, RoutedEventArgs e)
         {
@@ -271,18 +262,17 @@ namespace VANTAGE
                         // Create progress reporter
                         var progress = new Progress<(int current, int total, string message)>(report =>
                         {
-                            // Update UI on UI thread
                             Dispatcher.Invoke(() =>
+                            {
+                                if (report.total > 0)
                                 {
-                                    if (report.total > 0)
-                                    {
-                                        UpdateLoadingProgress(report.current, report.total, report.message);
-                                    }
-                                    else
-                                    {
-                                        txtLoadingMessage.Text = report.message;
-                                    }
-                                });
+                                    UpdateLoadingProgress(report.current, report.total, report.message);
+                                }
+                                else
+                                {
+                                    txtLoadingMessage.Text = report.message;
+                                }
+                            });
                         });
 
                         // Import with replace mode (async)
@@ -301,16 +291,14 @@ namespace VANTAGE
                         // Refresh the view if we're on Progress module
                         if (ContentArea.Content is Views.ProgressView)
                         {
-                            LoadProgressModule(); // Reload to show new data
+                            LoadProgressModule();
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                // Hide loading overlay on error
                 HideLoadingOverlay();
-
                 MessageBox.Show(
                     $"Error importing Excel file:\n\n{ex.Message}",
                     "Import Error",
@@ -340,18 +328,17 @@ namespace VANTAGE
                     // Create progress reporter
                     var progress = new Progress<(int current, int total, string message)>(report =>
                     {
-                        // Update UI on UI thread
                         Dispatcher.Invoke(() =>
+                        {
+                            if (report.total > 0)
                             {
-                                if (report.total > 0)
-                                {
-                                    UpdateLoadingProgress(report.current, report.total, report.message);
-                                }
-                                else
-                                {
-                                    txtLoadingMessage.Text = report.message;
-                                }
-                            });
+                                UpdateLoadingProgress(report.current, report.total, report.message);
+                            }
+                            else
+                            {
+                                txtLoadingMessage.Text = report.message;
+                            }
+                        });
                     });
 
                     // Import with combine mode (async)
@@ -370,15 +357,13 @@ namespace VANTAGE
                     // Refresh the view if we're on Progress module
                     if (ContentArea.Content is Views.ProgressView)
                     {
-                        LoadProgressModule(); // Reload to show new data
+                        LoadProgressModule();
                     }
                 }
-            }            
+            }
             catch (Exception ex)
             {
-                // Hide loading overlay on error
                 HideLoadingOverlay();
-
                 MessageBox.Show(
                     $"Error importing Excel file:\n\n{ex.Message}",
                     "Import Error",
@@ -417,7 +402,6 @@ namespace VANTAGE
                 }
 
                 // Get filtered activities from the grid's view
-                // Use reflection to access the private sfActivities field
                 var gridField = progressView.GetType().GetField("sfActivities",
                     System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
 
@@ -429,25 +413,21 @@ namespace VANTAGE
                     var grid = gridField.GetValue(progressView) as Syncfusion.UI.Xaml.Grid.SfDataGrid;
                     if (grid?.View != null)
                     {
-                        // Get filtered records from the grid's view
                         filteredActivities = grid.View.Records
                             .Select(r => r.Data as Activity)
                             .Where(a => a != null)
                             .ToList();
 
-                        // Check if filters are active by comparing counts
                         hasActiveFilters = filteredActivities.Count < allActivities.Count;
                     }
                 }
 
-                // If we couldn't get filtered activities, use all activities
                 if (filteredActivities == null)
                 {
                     filteredActivities = allActivities;
                     hasActiveFilters = false;
                 }
 
-                // Call export helper with options
                 await ExportHelper.ExportActivitiesWithOptionsAsync(
                     this,
                     allActivities,
@@ -516,19 +496,6 @@ namespace VANTAGE
             MessageBox.Show("Report 10 coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
-        // === ANALYSIS DROPDOWN ===
-
-        //private void BtnAnalysis_Click(object sender, RoutedEventArgs e)
-        //{
-        //    // Open the dropdown menu
-        //    var button = sender as Button;
-        //    if (button?.ContextMenu != null)
-        //    {
-        //        button.ContextMenu.PlacementTarget = button;
-        //        button.ContextMenu.IsOpen = true;
-        //    }
-        //}
-
         private void MenuAnalysis1_Click(object sender, RoutedEventArgs e)
         {
             MessageBox.Show("Analysis 1 coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -581,23 +548,6 @@ namespace VANTAGE
 
         // === ADMIN DROPDOWN ===
 
-        //private void BtnAdmin_Click(object sender, RoutedEventArgs e)
-        //{
-        //    if (!App.CurrentUser.IsAdmin)
-        //    {
-        //        MessageBox.Show("You do not have admin privileges.", "Access Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
-        //        return;
-        //    }
-
-        //    // Open the dropdown menu
-        //    var button = sender as Button;
-        //    if (button?.ContextMenu != null)
-        //    {
-        //        button.ContextMenu.PlacementTarget = button;
-        //        button.ContextMenu.IsOpen = true;
-        //    }
-        //}
-
         private void ToggleUserAdmin_Click(object sender, RoutedEventArgs e)
         {
             if (!App.CurrentUser.IsAdmin)
@@ -608,24 +558,33 @@ namespace VANTAGE
 
             try
             {
-                // Get list of all users
-                using var connection = DatabaseSetup.GetConnection();
-                connection.Open();
+                // Check Azure connection first
+                if (!AzureDbManager.CheckConnection(out string connectionError))
+                {
+                    MessageBox.Show($"Cannot manage admins - Azure unavailable:\n\n{connectionError}",
+                        "Connection Required", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
 
-                var command = connection.CreateCommand();
-                command.CommandText = "SELECT UserID, Username, FullName, IsAdmin FROM Users ORDER BY Username";
+                // Get list of all users from local database (for display)
+                using var localConn = DatabaseSetup.GetConnection();
+                localConn.Open();
 
-                var users = new List<(int UserID, string Username, string FullName, bool IsAdmin)>();
+                var command = localConn.CreateCommand();
+                command.CommandText = "SELECT UserID, Username, FullName FROM Users ORDER BY Username";
+
+                var users = new System.Collections.Generic.List<(int UserID, string Username, string FullName)>();
                 using var reader = command.ExecuteReader();
                 while (reader.Read())
                 {
                     users.Add((
                         reader.GetInt32(0),
                         reader.GetString(1),
-                        reader.IsDBNull(2) ? "" : reader.GetString(2),
-                        reader.GetInt32(3) == 1
+                        reader.IsDBNull(2) ? "" : reader.GetString(2)
                     ));
                 }
+                reader.Close();
+                localConn.Close();
 
                 if (users.Count == 0)
                 {
@@ -633,9 +592,22 @@ namespace VANTAGE
                     return;
                 }
 
-                // Show user selection dialog
+                // Check which users are admins from Azure
+                var adminUsers = new System.Collections.Generic.HashSet<string>();
+                using var azureConn = AzureDbManager.GetConnection();
+                azureConn.Open();
+                var adminCmd = azureConn.CreateCommand();
+                adminCmd.CommandText = "SELECT Username FROM Admins";
+                using var adminReader = adminCmd.ExecuteReader();
+                while (adminReader.Read())
+                {
+                    adminUsers.Add(adminReader.GetString(0).ToLower());
+                }
+                adminReader.Close();
+
+                // Build display list
                 var userList = users.Select(u =>
-                    $"{u.Username} ({u.FullName}) - {(u.IsAdmin ? "ADMIN" : "User")}"
+                    $"{u.Username} ({u.FullName}) - {(adminUsers.Contains(u.Username.ToLower()) ? "ADMIN" : "User")}"
                 ).ToList();
 
                 var dialog = new System.Windows.Window
@@ -697,40 +669,54 @@ namespace VANTAGE
                     if (listBox.SelectedIndex >= 0)
                     {
                         var selectedUser = users[listBox.SelectedIndex];
-                        bool wasAdmin = selectedUser.IsAdmin;
+                        bool isCurrentlyAdmin = adminUsers.Contains(selectedUser.Username.ToLower());
 
-                        if (selectedUser.IsAdmin)
+                        try
                         {
-                            AdminHelper.RevokeAdmin(selectedUser.UserID);
-                            MessageBox.Show($"Admin revoked from {selectedUser.Username}", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-                        }
-                        else
-                        {
-                            AdminHelper.GrantAdmin(selectedUser.UserID, selectedUser.Username);
-                            MessageBox.Show($"Admin granted to {selectedUser.Username}", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-                        }
+                            var toggleCmd = azureConn.CreateCommand();
 
-                        // If the selected user is the current user, update UI
-                        if (selectedUser.UserID == App.CurrentUserID)
-                        {
-                            if (wasAdmin)
+                            if (isCurrentlyAdmin)
                             {
-                                // Revoked admin from current user
-                                App.CurrentUser.IsAdmin = false;
-                                App.CurrentUser.AdminToken = null;
-                                btnAdmin.IsEnabled = false;
-                                btnAdmin.Opacity = 0.5;
-                                btnAdmin.ToolTip = "Admin privileges required";
+                                // Remove from Admins table
+                                toggleCmd.CommandText = "DELETE FROM Admins WHERE Username = @username";
+                                toggleCmd.Parameters.AddWithValue("@username", selectedUser.Username);
+                                toggleCmd.ExecuteNonQuery();
+                                MessageBox.Show($"Admin revoked from {selectedUser.Username}", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
                             }
                             else
                             {
-                                // Granted admin to current user
-                                App.CurrentUser.IsAdmin = true;
-                                App.CurrentUser.AdminToken = AdminHelper.GenerateAdminToken(App.CurrentUserID, App.CurrentUser.Username);
-                                btnAdmin.IsEnabled = true;
-                                btnAdmin.Opacity = 1.0;
-                                btnAdmin.ToolTip = null;
+                                // Add to Admins table
+                                toggleCmd.CommandText = "INSERT INTO Admins (Username, FullName) VALUES (@username, @fullname)";
+                                toggleCmd.Parameters.AddWithValue("@username", selectedUser.Username);
+                                toggleCmd.Parameters.AddWithValue("@fullname", selectedUser.FullName);
+                                toggleCmd.ExecuteNonQuery();
+                                MessageBox.Show($"Admin granted to {selectedUser.Username}", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
                             }
+
+                            // If the selected user is the current user, update UI
+                            if (selectedUser.UserID == App.CurrentUserID)
+                            {
+                                if (isCurrentlyAdmin)
+                                {
+                                    // Revoked admin from current user
+                                    App.CurrentUser.IsAdmin = false;
+                                    btnAdmin.IsEnabled = false;
+                                    btnAdmin.Opacity = 0.5;
+                                    btnAdmin.ToolTip = "Admin privileges required";
+                                }
+                                else
+                                {
+                                    // Granted admin to current user
+                                    App.CurrentUser.IsAdmin = true;
+                                    btnAdmin.IsEnabled = true;
+                                    btnAdmin.Opacity = 1.0;
+                                    btnAdmin.ToolTip = null;
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show($"Error updating admin status: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                         }
 
                         dialog.DialogResult = true;
@@ -752,6 +738,8 @@ namespace VANTAGE
 
                 dialog.Content = stackPanel;
                 dialog.ShowDialog();
+
+                azureConn.Close();
             }
             catch (Exception ex)
             {
@@ -813,6 +801,7 @@ namespace VANTAGE
         {
             MessageBox.Show("Admin 10 coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
         }
+
         // TEST BUTTON HANDLER
         private void BtnTest_Click(object sender, RoutedEventArgs e)
         {
@@ -824,6 +813,7 @@ namespace VANTAGE
         // TEST MENU HANDLERS
         private void MenuToggleAdmin_Click(object sender, RoutedEventArgs e)
         {
+            // This is a TEST function - toggle current user's admin status via Azure
             try
             {
                 if (App.CurrentUser == null)
@@ -832,26 +822,51 @@ namespace VANTAGE
                     return;
                 }
 
-                if (App.CurrentUser.IsAdmin)
+                if (!AzureDbManager.CheckConnection(out string connectionError))
                 {
-                    // Revoke admin
-                    AdminHelper.RevokeAdmin(App.CurrentUserID);
+                    MessageBox.Show($"Cannot toggle admin - Azure unavailable:\n\n{connectionError}",
+                        "Connection Required", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                using var azureConn = AzureDbManager.GetConnection();
+                azureConn.Open();
+
+                // Check if current user is admin
+                var checkCmd = azureConn.CreateCommand();
+                checkCmd.CommandText = "SELECT COUNT(*) FROM Admins WHERE Username = @username";
+                checkCmd.Parameters.AddWithValue("@username", App.CurrentUser.Username);
+                bool isAdmin = Convert.ToInt32(checkCmd.ExecuteScalar()) > 0;
+
+                if (isAdmin)
+                {
+                    // Remove from Admins
+                    var deleteCmd = azureConn.CreateCommand();
+                    deleteCmd.CommandText = "DELETE FROM Admins WHERE Username = @username";
+                    deleteCmd.Parameters.AddWithValue("@username", App.CurrentUser.Username);
+                    deleteCmd.ExecuteNonQuery();
+
                     App.CurrentUser.IsAdmin = false;
-                    App.CurrentUser.AdminToken = null;
                     btnAdmin.IsEnabled = false;
                     btnAdmin.Opacity = 0.5;
                     MessageBox.Show($"Admin revoked from {App.CurrentUser.Username}", "Admin Toggled", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 else
                 {
-                    // Grant admin
-                    AdminHelper.GrantAdmin(App.CurrentUserID, App.CurrentUser.Username);
+                    // Add to Admins
+                    var insertCmd = azureConn.CreateCommand();
+                    insertCmd.CommandText = "INSERT INTO Admins (Username, FullName) VALUES (@username, @fullname)";
+                    insertCmd.Parameters.AddWithValue("@username", App.CurrentUser.Username);
+                    insertCmd.Parameters.AddWithValue("@fullname", App.CurrentUser.FullName ?? "");
+                    insertCmd.ExecuteNonQuery();
+
                     App.CurrentUser.IsAdmin = true;
-                    App.CurrentUser.AdminToken = AdminHelper.GenerateAdminToken(App.CurrentUserID, App.CurrentUser.Username);
                     btnAdmin.IsEnabled = true;
                     btnAdmin.Opacity = 1.0;
                     MessageBox.Show($"Admin granted to {App.CurrentUser.Username}", "Admin Toggled", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
+
+                azureConn.Close();
             }
             catch (Exception ex)
             {
@@ -863,43 +878,42 @@ namespace VANTAGE
         private async void MenuResetLocalDirty_Click(object sender, RoutedEventArgs e)
         {
             try
-        {
-          var result = MessageBox.Show(
-     "This will set LocalDirty = 0 for ALL records in the database.\n\n" +
-      "This is a TEST function to verify that cell edits properly set LocalDirty = 1.\n\n" +
-        "Continue?",
-    "Reset LocalDirty",
-      MessageBoxButton.YesNo,
-       MessageBoxImage.Question);
+            {
+                var result = MessageBox.Show(
+                    "This will set LocalDirty = 0 for ALL records in the database.\n\n" +
+                    "This is a TEST function to verify that cell edits properly set LocalDirty = 1.\n\n" +
+                    "Continue?",
+                    "Reset LocalDirty",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
 
-      if (result != MessageBoxResult.Yes)
-     return;
+                if (result != MessageBoxResult.Yes)
+                    return;
 
                 int count = await ActivityRepository.ResetAllLocalDirtyAsync();
 
-        // Refresh the current view if it's ProgressView
-          if (ContentArea.Content is Views.ProgressView progressView)
-             {
-            // Reload the grid to reflect updated LocalDirty values
-   await progressView.RefreshData();
-     }
+                // Refresh the current view if it's ProgressView
+                if (ContentArea.Content is Views.ProgressView progressView)
+                {
+                    await progressView.RefreshData();
+                }
 
-    MessageBox.Show(
-  $"Successfully reset LocalDirty to 0 for {count:N0} records.\n\n" +
-        "Grid has been refreshed with updated values.\n\n" +
-      "Now edit a cell to verify LocalDirty gets set to 1.",
-        "Reset Complete",
-           MessageBoxButton.OK,
-         MessageBoxImage.Information);
-    }
+                MessageBox.Show(
+                    $"Successfully reset LocalDirty to 0 for {count:N0} records.\n\n" +
+                    "Grid has been refreshed with updated values.\n\n" +
+                    "Now edit a cell to verify LocalDirty gets set to 1.",
+                    "Reset Complete",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+            }
             catch (Exception ex)
             {
                 MessageBox.Show(
-         $"Error resetting LocalDirty: {ex.Message}",
-    "Error",
-        MessageBoxButton.OK,
-          MessageBoxImage.Error);
-      }
+                    $"Error resetting LocalDirty: {ex.Message}",
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
         }
 
         private async void ToggleUpdatedBy_Click(object sender, RoutedEventArgs e)
@@ -922,7 +936,6 @@ namespace VANTAGE
                 // Refresh the current view if it's ProgressView
                 if (ContentArea.Content is Views.ProgressView progressView)
                 {
-                    // Reload the grid to reflect updated UpdatedBy values
                     await progressView.RefreshData();
                 }
 
@@ -978,11 +991,11 @@ namespace VANTAGE
         {
             MessageBox.Show("Test 8 - Not implemented", "Test", MessageBoxButton.OK, MessageBoxImage.Information);
         }
+
         // === TOOLS DROPDOWN ===
 
         private void BtnTools_Click(object sender, RoutedEventArgs e)
         {
-            // Open the dropdown menu
             var button = sender as Button;
             if (button?.ContextMenu != null)
             {
@@ -990,6 +1003,7 @@ namespace VANTAGE
                 button.ContextMenu.IsOpen = true;
             }
         }
+
         private void MenuTool1_Click(object sender, RoutedEventArgs e)
         {
             MessageBox.Show("Tool 1 coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -1044,7 +1058,6 @@ namespace VANTAGE
 
         private void LoadProgressModule()
         {
-            // Load the actual ProgressView
             var progressView = new Views.ProgressView();
             ContentArea.Content = progressView;
         }
