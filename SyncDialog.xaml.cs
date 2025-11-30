@@ -98,14 +98,6 @@ namespace VANTAGE
             LoadingOverlay.Visibility = Visibility.Collapsed;
         }
 
-        //private void UpdateLoadingProgress(int current, int total, string? message = null)
-        //{
-        //    if (message != null)
-        //        txtLoadingMessage.Text = message;
-
-        //    txtLoadingProgress.Text = $"{current:N0} of {total:N0} records";
-        //    LoadingProgressBar.Value = total > 0 ? (current * 100.0 / total) : 0;
-        //}
         private async void BtnConfirmSync_Click(object sender, RoutedEventArgs e)
         {
             try

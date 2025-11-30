@@ -73,7 +73,7 @@ namespace VANTAGE.Models
 
         // Tags - Equipment/Line
         public string? EqmtNO { get; set; }
-        public string? LineNO { get; set; }
+        public string? LineNumber { get; set; }
         public string? ChgOrdNO { get; set; }
 
         // Tags - Material Specs

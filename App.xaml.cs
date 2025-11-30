@@ -276,7 +276,6 @@ namespace VANTAGE
                         Username = reader.GetString(1),
                         FullName = reader.IsDBNull(2) ? "" : reader.GetString(2),
                         Email = reader.IsDBNull(3) ? "" : reader.GetString(3),
-                        //PhoneNumber = reader.IsDBNull(4) ? "" : reader.GetString(4)
                     };
                 }
 

@@ -275,7 +275,7 @@ namespace VANTAGE.Utilities
                 ROCID, ROCPercent, ROCBudgetQTY,
                 DwgNO, RevNO, SecondDwgNO, ShtNO,
                 TagNO, WorkPackage, PhaseCode, Service, ShopField, SchedActNO, SecondActno,
-                EqmtNO, LineNO, ChgOrdNO,
+                EqmtNO, LineNumber, ChgOrdNO,
                 MtrlSpec, PipeGrade, PaintCode, InsulType, HtTrace,
                 Aux1, Aux2, Aux3, Estimator, RFINO, XRay,
                 EquivQTY, EquivUOM,
@@ -297,7 +297,7 @@ namespace VANTAGE.Utilities
                 @ROCID, @ROCPercent, @ROCBudgetQTY,
                 @DwgNO, @RevNO, @SecondDwgNO, @ShtNO,
                 @TagNO, @WorkPackage, @PhaseCode, @Service, @ShopField, @SchedActNO, @SecondActno,
-                @EqmtNO, @LineNO, @ChgOrdNO,
+                @EqmtNO, @LineNumber, @ChgOrdNO,
                 @MtrlSpec, @PipeGrade, @PaintCode, @InsulType, @HtTrace,
                 @Aux1, @Aux2, @Aux3, @Estimator, @RFINO, @XRay,
                 @EquivQTY, @EquivUOM,
@@ -350,7 +350,7 @@ namespace VANTAGE.Utilities
                 command.Parameters.Add("@SchedActNO", SqliteType.Text);
                 command.Parameters.Add("@SecondActno", SqliteType.Text);
                 command.Parameters.Add("@EqmtNO", SqliteType.Text);
-                command.Parameters.Add("@LineNO", SqliteType.Text);
+                command.Parameters.Add("@LineNumber", SqliteType.Text);
                 command.Parameters.Add("@ChgOrdNO", SqliteType.Text);
                 command.Parameters.Add("@MtrlSpec", SqliteType.Text);
                 command.Parameters.Add("@PipeGrade", SqliteType.Text);
@@ -471,7 +471,7 @@ namespace VANTAGE.Utilities
                     command.Parameters["@SchedActNO"].Value = activity.SchedActNO ?? "";
                     command.Parameters["@SecondActno"].Value = activity.SecondActno ?? "";
                     command.Parameters["@EqmtNO"].Value = activity.EqmtNO ?? "";
-                    command.Parameters["@LineNO"].Value = activity.LineNO ?? "";
+                    command.Parameters["@LineNumber"].Value = activity.LineNumber ?? "";
                     command.Parameters["@ChgOrdNO"].Value = activity.ChgOrdNO ?? "";
                     command.Parameters["@MtrlSpec"].Value = activity.MtrlSpec ?? "";
                     command.Parameters["@PipeGrade"].Value = activity.PipeGrade ?? "";

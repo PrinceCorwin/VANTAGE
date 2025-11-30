@@ -33,7 +33,7 @@ namespace VANTAGE.Utilities
             "Tag_EqmtNo",
             "Tag_Estimator",
             "Tag_Insulation_Typ",
-            "Tag_LineNo",
+            "Tag_LineNumber",
             "Tag_Matl_Spec",
             "Tag_Phase Code",
             "Tag_Paint_Code",

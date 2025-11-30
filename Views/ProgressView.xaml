@@ -985,8 +985,8 @@
                            AllowFiltering="True"
                            AllowSorting="True" />
 
-                        <syncfusion:GridTextColumn MappingName="LineNO"
-                           HeaderText="LineNO"
+                        <syncfusion:GridTextColumn MappingName="LineNumber"
+                           HeaderText="LineNumber"
                            Width="100"
                            IsHidden="True"
                            AllowEditing="True"

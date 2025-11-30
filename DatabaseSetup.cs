@@ -132,8 +132,8 @@ namespace VANTAGE
                 UserID INTEGER PRIMARY KEY,
                 Username TEXT NOT NULL,
                 FullName TEXT,
-                Email TEXT,
-                PhoneNumber TEXT
+                Email TEXT
+
             );
 
             -- Projects table (mirrored from Azure)
@@ -176,7 +176,6 @@ namespace VANTAGE
                 FullName TEXT NOT NULL DEFAULT '',
                 Position TEXT NOT NULL DEFAULT '',
                 Company TEXT NOT NULL DEFAULT '',
-                PhoneNumber TEXT NOT NULL DEFAULT '',
                 Email TEXT NOT NULL DEFAULT '',
                 ProjectsAssigned TEXT,
                 IsActive INTEGER NOT NULL DEFAULT 1
@@ -214,7 +213,7 @@ namespace VANTAGE
                 HexNO                 INTEGER NOT NULL DEFAULT 0,
                 HtTrace               TEXT NOT NULL DEFAULT '',
                 InsulType             TEXT NOT NULL DEFAULT '',
-                LineNO                TEXT NOT NULL DEFAULT '',
+                LineNumber            TEXT NOT NULL DEFAULT '',
                 LocalDirty            INTEGER NOT NULL DEFAULT 0,
                 MtrlSpec              TEXT NOT NULL DEFAULT '',
                 Notes                 TEXT NOT NULL DEFAULT '',

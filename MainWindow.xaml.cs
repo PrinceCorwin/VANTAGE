@@ -96,7 +96,7 @@ namespace VANTAGE
 
         private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
         {
-            // TODO: Add proper logging when logging system is implemented
+            AppLogger.Info("Application closing", "MainWindow.MainWindow_Closing", App.CurrentUser?.Username);
         }
 
         private void UpdateStatusBar()

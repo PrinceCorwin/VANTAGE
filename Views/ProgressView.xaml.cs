@@ -467,7 +467,7 @@ namespace VANTAGE.Views
                             HexNO = original.HexNO,
                             HtTrace = original.HtTrace,
                             InsulType = original.InsulType,
-                            LineNO = original.LineNO,
+                            LineNumber = original.LineNumber,
                             MtrlSpec = original.MtrlSpec,
                             Notes = original.Notes,
                             PaintCode = original.PaintCode,
@@ -529,7 +529,7 @@ namespace VANTAGE.Views
                         BaseUnit, BudgetHoursGroup, BudgetHoursROC, BudgetMHs, ChgOrdNO, ClientBudget,
                         ClientCustom3, ClientEquivQty, CompType, CreatedBy, DateTrigger, Description,
                         DwgNO, EarnQtyEntry, EarnedMHsRoc, EqmtNO, EquivQTY, EquivUOM, Estimator,
-                        HexNO, HtTrace, InsulType, LineNO, LocalDirty, MtrlSpec, Notes, PaintCode,
+                        HexNO, HtTrace, InsulType, LineNumber, LocalDirty, MtrlSpec, Notes, PaintCode,
                         PercentEntry, PhaseCategory, PhaseCode, PipeGrade, PipeSize1, PipeSize2,
                         PrevEarnMHs, PrevEarnQTY, ProgDate, ProjectID, Quantity, RevNO, RFINO,
                         ROCBudgetQTY, ROCID, ROCPercent, ROCStep, SchedActNO, SchFinish, SchStart,
@@ -542,7 +542,7 @@ namespace VANTAGE.Views
                         @BaseUnit, @BudgetHoursGroup, @BudgetHoursROC, @BudgetMHs, @ChgOrdNO, @ClientBudget,
                         @ClientCustom3, @ClientEquivQty, @CompType, @CreatedBy, @DateTrigger, @Description,
                         @DwgNO, @EarnQtyEntry, @EarnedMHsRoc, @EqmtNO, @EquivQTY, @EquivUOM, @Estimator,
-                        @HexNO, @HtTrace, @InsulType, @LineNO, @LocalDirty, @MtrlSpec, @Notes, @PaintCode,
+                        @HexNO, @HtTrace, @InsulType, @LineNumber, @LocalDirty, @MtrlSpec, @Notes, @PaintCode,
                         @PercentEntry, @PhaseCategory, @PhaseCode, @PipeGrade, @PipeSize1, @PipeSize2,
                         @PrevEarnMHs, @PrevEarnQTY, @ProgDate, @ProjectID, @Quantity, @RevNO, @RFINO,
                         @ROCBudgetQTY, @ROCID, @ROCPercent, @ROCStep, @SchedActNO, @SchFinish, @SchStart,
@@ -582,7 +582,7 @@ namespace VANTAGE.Views
                         insertCmd.Parameters.AddWithValue("@HexNO", duplicate.HexNO);
                         insertCmd.Parameters.AddWithValue("@HtTrace", duplicate.HtTrace ?? "");
                         insertCmd.Parameters.AddWithValue("@InsulType", duplicate.InsulType ?? "");
-                        insertCmd.Parameters.AddWithValue("@LineNO", duplicate.LineNO ?? "");
+                        insertCmd.Parameters.AddWithValue("@LineNumber", duplicate.LineNumber ?? "");
                         insertCmd.Parameters.AddWithValue("@LocalDirty", duplicate.LocalDirty);
                         insertCmd.Parameters.AddWithValue("@MtrlSpec", duplicate.MtrlSpec ?? "");
                         insertCmd.Parameters.AddWithValue("@Notes", duplicate.Notes ?? "");

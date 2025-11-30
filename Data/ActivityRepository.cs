@@ -238,7 +238,7 @@ namespace VANTAGE.Data
                     HexNO = @HexNO,
                     HtTrace = @HtTrace,
                     InsulType = @InsulType,
-                    LineNO = @LineNO,
+                    LineNumber = @LineNumber,
                     LocalDirty = @LocalDirty,
                     MtrlSpec = @MtrlSpec,
                     Notes = @Notes,
@@ -326,7 +326,7 @@ namespace VANTAGE.Data
                     command.Parameters.AddWithValue("@HexNO", activity.HexNO);
                     command.Parameters.AddWithValue("@HtTrace", activity.HtTrace ?? "");
                     command.Parameters.AddWithValue("@InsulType", activity.InsulType ?? "");
-                    command.Parameters.AddWithValue("@LineNO", activity.LineNO ?? "");
+                    command.Parameters.AddWithValue("@LineNumber", activity.LineNumber ?? "");
                     command.Parameters.AddWithValue("@LocalDirty", activity.LocalDirty);
                     command.Parameters.AddWithValue("@MtrlSpec", activity.MtrlSpec ?? "");
                     command.Parameters.AddWithValue("@Notes", activity.Notes ?? "");
@@ -620,7 +620,7 @@ namespace VANTAGE.Data
                                  activity.EqmtNO = GetStringSafe("EqmtNO");
                                  activity.Estimator = GetStringSafe("Estimator");
                                  activity.InsulType = GetStringSafe("InsulType");
-                                 activity.LineNO = GetStringSafe("LineNO");
+                                 activity.LineNumber = GetStringSafe("LineNumber");
                                  activity.MtrlSpec = GetStringSafe("MtrlSpec");
                                  activity.PhaseCode = GetStringSafe("PhaseCode");
                                  activity.PaintCode = GetStringSafe("PaintCode");
@@ -875,7 +875,7 @@ namespace VANTAGE.Data
                                  activity.Estimator = GetStringSafe("Estimator");
                                  activity.HtTrace = GetStringSafe("HtTrace");
                                  activity.InsulType = GetStringSafe("InsulType");
-                                 activity.LineNO = GetStringSafe("LineNO");
+                                 activity.LineNumber = GetStringSafe("LineNumber");
                                  activity.MtrlSpec = GetStringSafe("MtrlSpec");
                                  activity.Notes = GetStringSafe("Notes");
                                  activity.PaintCode = GetStringSafe("PaintCode");
@@ -1129,7 +1129,7 @@ namespace VANTAGE.Data
             activity.HtTrace = GetStringOrDefault(reader, "HtTrace");
             activity.InsulType = GetStringOrDefault(reader, "InsulType");
             activity.UpdatedBy = GetStringOrDefault(reader, "UpdatedBy");
-            activity.LineNO = GetStringOrDefault(reader, "LineNO");
+            activity.LineNumber = GetStringOrDefault(reader, "LineNumber");
             activity.LocalDirty = GetIntOrDefault(reader, "LocalDirty");
             activity.MtrlSpec = GetStringOrDefault(reader, "MtrlSpec");
             activity.Notes = GetStringOrDefault(reader, "Notes");
