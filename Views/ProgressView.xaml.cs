@@ -1909,8 +1909,37 @@ namespace VANTAGE.Views
 
                 if (!valueChanged)
                 {
-                    System.Diagnostics.Debug.WriteLine($"⊘ No change detected for {columnName}, skipping save");
                     return;
+                }
+                if (columnName == "PercentEntry")
+                {
+                    double oldPercent = (_originalCellValue as double?) ?? 0;
+                    double newPercent = (currentValue as double?) ?? 0;
+
+                    // 0 → >0: Set SchStart = today (if null)
+                    if (oldPercent == 0 && newPercent > 0 && editedActivity.SchStart == null)
+                    {
+                        editedActivity.SchStart = DateTime.Today;
+                    }
+
+                    // Any → 100: Set SchFinish = today (if null)
+                    if (newPercent == 100 && editedActivity.SchFinish == null)
+                    {
+                        editedActivity.SchFinish = DateTime.Today;
+                    }
+
+                    // 100 → <100: Clear SchFinish
+                    if (oldPercent == 100 && newPercent < 100)
+                    {
+                        editedActivity.SchFinish = null;
+                    }
+
+                    // >0 → 0: Clear both dates
+                    if (oldPercent > 0 && newPercent == 0)
+                    {
+                        editedActivity.SchStart = null;
+                        editedActivity.SchFinish = null;
+                    }
                 }
 
                 editedActivity.UpdatedBy = App.CurrentUser?.Username ?? "Unknown";
@@ -2085,7 +2114,48 @@ namespace VANTAGE.Views
                     MessageBoxImage.Warning);
                 return;
             }
+            // Check for split SchedActNO ownership
+            var selectedSchedActNOs = allowedActivities
+                .Where(a => !string.IsNullOrWhiteSpace(a.SchedActNO))
+                .GroupBy(a => a.SchedActNO)
+                .ToDictionary(g => g.Key!, g => g.Count());
 
+            if (selectedSchedActNOs.Any())
+            {
+                var splitActNOs = new List<string>();
+
+                using var connection = DatabaseSetup.GetConnection();
+                connection.Open();
+
+                foreach (var kvp in selectedSchedActNOs)
+                {
+                    var countCmd = connection.CreateCommand();
+                    countCmd.CommandText = "SELECT COUNT(*) FROM Activities WHERE SchedActNO = @schedActNO";
+                    countCmd.Parameters.AddWithValue("@schedActNO", kvp.Key);
+                    var totalCount = Convert.ToInt32(countCmd.ExecuteScalar() ?? 0);
+
+                    if (totalCount > kvp.Value)
+                    {
+                        splitActNOs.Add($"{kvp.Key} ({kvp.Value} of {totalCount} selected)");
+                    }
+                }
+
+                connection.Close();
+
+                if (splitActNOs.Any())
+                {
+                    var message = "Cannot reassign. The following SchedActNOs have activities that are not selected:\n\n" +
+                                  string.Join("\n", splitActNOs.Take(10));
+
+                    if (splitActNOs.Count > 10)
+                        message += $"\n... and {splitActNOs.Count - 10} more";
+
+                    message += "\n\nAll activities sharing a SchedActNO must be reassigned together.";
+
+                    MessageBox.Show(message, "Split Ownership Not Allowed", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+            }
             // Check for unsaved changes (LocalDirty=1)
             var dirtyRecords = allowedActivities.Where(a => a.LocalDirty == 1).ToList();
             if (dirtyRecords.Any())

@@ -110,6 +110,24 @@ namespace VANTAGE.Utilities
                 if (activity.BudgetMHs == 0) activity.BudgetMHs = 0.001;
                 if (activity.ClientBudget == 0) activity.ClientBudget = 0.001;
 
+                // Always clear WeekEndDate on import
+                activity.WeekEndDate = null;
+
+                // Apply auto-date logic based on PercentEntry
+                if (activity.PercentEntry > 0 && activity.SchStart == null)
+                {
+                    activity.SchStart = DateTime.Today;
+                }
+                if (activity.PercentEntry == 100 && activity.SchFinish == null)
+                {
+                    activity.SchFinish = DateTime.Today;
+                }
+                if (activity.PercentEntry == 0)
+                {
+                    activity.SchStart = null;
+                    activity.SchFinish = null;
+                }
+
                 activity.ActivityID = 0;
 
                 activity.EndInit();  // End batch initialization - trigger calculations once
