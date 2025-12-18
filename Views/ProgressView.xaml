@@ -1077,14 +1077,14 @@
                               AllowSorting="True"
                               NumberDecimalDigits="2" />
 
-                        <syncfusion:GridDateTimeColumn MappingName="ProgDate"
-                               HeaderText="ProgDate"
-                               Width="120"
-                               IsHidden="True"
-                               AllowEditing="False"
-                               AllowFiltering="True"
-                               AllowSorting="True"
-                               Pattern="ShortDate" />
+                        <syncfusion:GridTextColumn MappingName="ProgDate"
+                           HeaderText="ProgDate"
+                           Width="150"
+                           IsHidden="True"
+                           AllowEditing="False"
+                           AllowFiltering="True"
+                           AllowSorting="True"
+                           DisplayBinding="{Binding ProgDate, StringFormat='{}{0:MM/dd/yyyy hh:mm tt}'}" />
 
                         <syncfusion:GridTextColumn MappingName="RevNO"
                            HeaderText="RevNO"

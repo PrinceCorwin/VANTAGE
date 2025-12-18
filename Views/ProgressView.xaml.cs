@@ -1438,8 +1438,338 @@ namespace VANTAGE.Views
         }
         private async void BtnSubmit_Click(object sender, RoutedEventArgs e)
         {
-            await Task.CompletedTask; // TODO: Implement submit functionality
+            try
+            {
+                // Step 1: Check Azure connection
+                if (!AzureDbManager.CheckConnection(out string errorMessage))
+                {
+                    MessageBox.Show(
+                        $"Submit Progress requires connection to Azure.\n\n{errorMessage}",
+                        "Connection Required",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error);
+                    return;
+                }
+
+                // Step 2: Get distinct ProjectIDs for current user's activities
+                var userProjects = new List<string>();
+                using (var localConn = DatabaseSetup.GetConnection())
+                {
+                    localConn.Open();
+                    var cmd = localConn.CreateCommand();
+                    cmd.CommandText = @"
+                SELECT DISTINCT ProjectID 
+                FROM Activities 
+                WHERE AssignedTo = @username 
+                  AND ProjectID IS NOT NULL 
+                  AND ProjectID != ''";
+                    cmd.Parameters.AddWithValue("@username", App.CurrentUser!.Username);
+
+                    using var reader = cmd.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        userProjects.Add(reader.GetString(0));
+                    }
+                }
+
+                if (!userProjects.Any())
+                {
+                    MessageBox.Show(
+                        "You have no activities assigned to submit.",
+                        "No Activities",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                    return;
+                }
+
+                // Step 3: Select project (if multiple)
+                string selectedProject;
+                if (userProjects.Count == 1)
+                {
+                    selectedProject = userProjects[0];
+                }
+                else
+                {
+                    // Show project selection dialog
+                    var projectDialog = new Window
+                    {
+                        Title = "Select Project",
+                        Width = 300,
+                        Height = 165,
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                        Owner = Window.GetWindow(this),
+                        Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF1E1E1E"))
+                    };
+
+                    var projectCombo = new ComboBox
+                    {
+                        ItemsSource = userProjects,
+                        SelectedIndex = 0,
+                        Margin = new Thickness(10),
+                        Height = 30
+                    };
+
+                    var okBtn = new Button { Content = "OK", Width = 80, Height = 30, Margin = new Thickness(5), IsDefault = true };
+                    var cancelBtn = new Button { Content = "Cancel", Width = 80, Height = 30, Margin = new Thickness(5), IsCancel = true };
+
+                    var btnPanel = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Center };
+                    btnPanel.Children.Add(okBtn);
+                    btnPanel.Children.Add(cancelBtn);
+
+                    var stack = new StackPanel();
+                    stack.Children.Add(new TextBlock { Text = "Select project to submit:", Margin = new Thickness(10), Foreground = Brushes.White });
+                    stack.Children.Add(projectCombo);
+                    stack.Children.Add(btnPanel);
+
+                    projectDialog.Content = stack;
+
+                    bool? dialogResult = false;
+                    okBtn.Click += (s, args) => { dialogResult = true; projectDialog.Close(); };
+
+                    if (projectDialog.ShowDialog() != true && dialogResult != true)
+                        return;
+
+                    selectedProject = projectCombo.SelectedItem as string ?? userProjects[0];
+                }
+                // Step 4: Force sync to ensure data is current
+                var pushResult = await SyncManager.PushRecordsAsync(new List<string> { selectedProject });
+                var pullResult = await SyncManager.PullRecordsAsync(new List<string> { selectedProject });
+
+                if (!string.IsNullOrEmpty(pushResult.ErrorMessage))
+                {
+                    MessageBox.Show(
+                        $"Sync failed during push:\n\n{pushResult.ErrorMessage}",
+                        "Sync Error",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error);
+                    return;
+                }
+
+                if (!string.IsNullOrEmpty(pullResult.ErrorMessage))
+                {
+                    MessageBox.Show(
+                        $"Sync failed during pull:\n\n{pullResult.ErrorMessage}",
+                        "Sync Error",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error);
+                    return;
+                }
+
+                // Step 5: Date picker dialog (default to previous Sunday)
+                var today = DateTime.Today;
+                var daysSinceSunday = (int)today.DayOfWeek;
+                var previousSunday = today.AddDays(-daysSinceSunday);
+
+                var dateDialog = new Window
+                {
+                    Title = "Select Week Ending Date",
+                    Width = 320,
+                    Height = 180,
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                    Owner = Window.GetWindow(this),
+                    Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF1E1E1E"))
+                };
+
+                var datePicker = new DatePicker
+                {
+                    SelectedDate = previousSunday,
+                    Margin = new Thickness(10),
+                    Height = 30
+                };
+
+                var dateOkBtn = new Button { Content = "OK", Width = 80, Height = 30, Margin = new Thickness(5), IsDefault = true };
+                var dateCancelBtn = new Button { Content = "Cancel", Width = 80, Height = 30, Margin = new Thickness(5), IsCancel = true };
+
+                var dateBtnPanel = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Center };
+                dateBtnPanel.Children.Add(dateOkBtn);
+                dateBtnPanel.Children.Add(dateCancelBtn);
+
+                var dateStack = new StackPanel();
+                dateStack.Children.Add(new TextBlock { Text = "Select week ending date:", Margin = new Thickness(10), Foreground = Brushes.White });
+                dateStack.Children.Add(datePicker);
+                dateStack.Children.Add(dateBtnPanel);
+
+                dateDialog.Content = dateStack;
+
+                bool? dateDialogResult = false;
+                dateOkBtn.Click += (s, args) => { dateDialogResult = true; dateDialog.Close(); };
+
+                if (dateDialog.ShowDialog() != true && dateDialogResult != true)
+                    return;
+
+                if (!datePicker.SelectedDate.HasValue)
+                {
+                    MessageBox.Show("Please select a valid date.", "Invalid Date", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                var selectedWeekEndDate = datePicker.SelectedDate.Value;
+                var weekEndDateStr = selectedWeekEndDate.ToString("yyyy-MM-dd");
+                // Step 6: Check for existing snapshots on Azure
+                using var azureConn = AzureDbManager.GetConnection();
+                azureConn.Open();
+
+                var checkCmd = azureConn.CreateCommand();
+                checkCmd.CommandText = @"
+            SELECT TOP 1 ExportedBy 
+            FROM ProgressSnapshots 
+            WHERE AssignedTo = @username 
+              AND ProjectID = @projectId 
+              AND WeekEndDate = @weekEndDate";
+                checkCmd.Parameters.AddWithValue("@username", App.CurrentUser!.Username);
+                checkCmd.Parameters.AddWithValue("@projectId", selectedProject);
+                checkCmd.Parameters.AddWithValue("@weekEndDate", weekEndDateStr);
+
+                var existingExportedBy = checkCmd.ExecuteScalar();
+
+                if (existingExportedBy != null && existingExportedBy != DBNull.Value)
+                {
+                    // Already exported - block
+                    MessageBox.Show(
+                        $"Progress for week ending {weekEndDateStr} has already been exported by {existingExportedBy}.\n\n" +
+                        "You cannot overwrite exported snapshots.",
+                        "Already Exported",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+                    azureConn.Close();
+                    return;
+                }
+
+                if (existingExportedBy == DBNull.Value || existingExportedBy == null)
+                {
+                    // Check if any snapshots exist (even if not exported)
+                    var countCmd = azureConn.CreateCommand();
+                    countCmd.CommandText = @"
+                SELECT COUNT(*) 
+                FROM ProgressSnapshots 
+                WHERE AssignedTo = @username 
+                  AND ProjectID = @projectId 
+                  AND WeekEndDate = @weekEndDate";
+                    countCmd.Parameters.AddWithValue("@username", App.CurrentUser!.Username);
+                    countCmd.Parameters.AddWithValue("@projectId", selectedProject);
+                    countCmd.Parameters.AddWithValue("@weekEndDate", weekEndDateStr);
+
+                    var existingCount = Convert.ToInt32(countCmd.ExecuteScalar() ?? 0);
+
+                    if (existingCount > 0)
+                    {
+                        var overwriteResult = MessageBox.Show(
+                            $"You already have {existingCount} snapshots for week ending {weekEndDateStr}.\n\n" +
+                            "Do you want to overwrite them with current progress?",
+                            "Overwrite Existing?",
+                            MessageBoxButton.YesNo,
+                            MessageBoxImage.Question);
+
+                        if (overwriteResult != MessageBoxResult.Yes)
+                        {
+                            azureConn.Close();
+                            return;
+                        }
+
+                        // Delete existing snapshots for overwrite
+                        var deleteCmd = azureConn.CreateCommand();
+                        deleteCmd.CommandText = @"
+                    DELETE FROM ProgressSnapshots 
+                    WHERE AssignedTo = @username 
+                      AND ProjectID = @projectId 
+                      AND WeekEndDate = @weekEndDate";
+                        deleteCmd.Parameters.AddWithValue("@username", App.CurrentUser!.Username);
+                        deleteCmd.Parameters.AddWithValue("@projectId", selectedProject);
+                        deleteCmd.Parameters.AddWithValue("@weekEndDate", weekEndDateStr);
+                        deleteCmd.ExecuteNonQuery();
+
+                        AppLogger.Info($"Deleted {existingCount} existing snapshots for overwrite", "ProgressView.BtnSubmit_Click", App.CurrentUser!.Username);
+                    }
+                }
+
+                // Step 7: Copy Activities from Azure to ProgressSnapshots
+                var insertCmd = azureConn.CreateCommand();
+                insertCmd.CommandText = @"
+            INSERT INTO ProgressSnapshots (
+                UniqueID, WeekEndDate, Area, AssignedTo, AzureUploadUtcDate,
+                Aux1, Aux2, Aux3, BaseUnit, BudgetHoursGroup, BudgetHoursROC, BudgetMHs,
+                ChgOrdNO, ClientBudget, ClientCustom3, ClientEquivQty, CompType, CreatedBy,
+                DateTrigger, Description, DwgNO, EarnQtyEntry, EarnedMHsRoc, EqmtNO,
+                EquivQTY, EquivUOM, Estimator, HexNO, HtTrace, InsulType, LineNumber,
+                MtrlSpec, Notes, PaintCode, PercentEntry, PhaseCategory, PhaseCode,
+                PipeGrade, PipeSize1, PipeSize2, PrevEarnMHs, PrevEarnQTY, ProgDate,
+                ProjectID, Quantity, RevNO, RFINO, ROCBudgetQTY, ROCID, ROCPercent,
+                ROCStep, SchedActNO, SchFinish, SchStart, SecondActno, SecondDwgNO,
+                Service, ShopField, ShtNO, SubArea, PjtSystem, SystemNO, TagNO,
+                UDF1, UDF2, UDF3, UDF4, UDF5, UDF6, UDF7, UDF8, UDF9, UDF10,
+                UDF11, UDF12, UDF13, UDF14, UDF15, UDF16, UDF17, UDF18, UDF20,
+                UpdatedBy, UpdatedUtcDate, UOM, WorkPackage, XRay, ExportedBy, ExportedDate
+            )
+            SELECT 
+                UniqueID, @weekEndDate, Area, AssignedTo, AzureUploadUtcDate,
+                Aux1, Aux2, Aux3, BaseUnit, BudgetHoursGroup, BudgetHoursROC, BudgetMHs,
+                ChgOrdNO, ClientBudget, ClientCustom3, ClientEquivQty, CompType, CreatedBy,
+                DateTrigger, Description, DwgNO, EarnQtyEntry, EarnedMHsRoc, EqmtNO,
+                EquivQTY, EquivUOM, Estimator, HexNO, HtTrace, InsulType, LineNumber,
+                MtrlSpec, Notes, PaintCode, PercentEntry, PhaseCategory, PhaseCode,
+                PipeGrade, PipeSize1, PipeSize2, PrevEarnMHs, PrevEarnQTY, ProgDate,
+                ProjectID, Quantity, RevNO, RFINO, ROCBudgetQTY, ROCID, ROCPercent,
+                ROCStep, SchedActNO, SchFinish, SchStart, SecondActno, SecondDwgNO,
+                Service, ShopField, ShtNO, SubArea, PjtSystem, SystemNO, TagNO,
+                UDF1, UDF2, UDF3, UDF4, UDF5, UDF6, UDF7, UDF8, UDF9, UDF10,
+                UDF11, UDF12, UDF13, UDF14, UDF15, UDF16, UDF17, UDF18, UDF20,
+                UpdatedBy, UpdatedUtcDate, UOM, WorkPackage, XRay, NULL, NULL
+            FROM Activities
+            WHERE AssignedTo = @username 
+              AND ProjectID = @projectId
+              AND IsDeleted = 0";
+                insertCmd.Parameters.AddWithValue("@weekEndDate", weekEndDateStr);
+                insertCmd.Parameters.AddWithValue("@username", App.CurrentUser!.Username);
+                insertCmd.Parameters.AddWithValue("@projectId", selectedProject);
+
+                int snapshotCount = insertCmd.ExecuteNonQuery();
+
+                azureConn.Close();
+
+                AppLogger.Info($"Created {snapshotCount} snapshots for week ending {weekEndDateStr}", "ProgressView.BtnSubmit_Click", App.CurrentUser!.Username);
+                // Step 8: Update local Activities.WeekEndDate and ProgDate
+                using (var localConn = DatabaseSetup.GetConnection())
+                {
+                    localConn.Open();
+                    var updateLocalCmd = localConn.CreateCommand();
+                    updateLocalCmd.CommandText = @"
+                            UPDATE Activities 
+                            SET WeekEndDate = @weekEndDate,
+                                ProgDate = @progDate,
+                                LocalDirty = 1
+                            WHERE AssignedTo = @username 
+                              AND ProjectID = @projectId";
+                    updateLocalCmd.Parameters.AddWithValue("@weekEndDate", weekEndDateStr);
+                    updateLocalCmd.Parameters.AddWithValue("@progDate", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                    updateLocalCmd.Parameters.AddWithValue("@username", App.CurrentUser!.Username);
+                    updateLocalCmd.Parameters.AddWithValue("@projectId", selectedProject);
+                    updateLocalCmd.ExecuteNonQuery();
+                }
+
+                // Step 9: Push WeekEndDate changes to Azure
+                await SyncManager.PushRecordsAsync(new List<string> { selectedProject });
+
+                // Step 10: Refresh grid and show success
+                await RefreshData();
+
+                MessageBox.Show(
+                    $"Successfully submitted {snapshotCount} activities for week ending {weekEndDateStr}.",
+                    "Progress Submitted",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "ProgressView.BtnSubmit_Click", App.CurrentUser?.Username);
+                MessageBox.Show(
+                    $"Error submitting progress:\n\n{ex.Message}",
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
         }
+
+
         private async void BtnSync_Click(object sender, RoutedEventArgs e)
         {
             try

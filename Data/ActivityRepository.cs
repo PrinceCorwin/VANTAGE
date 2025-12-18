@@ -609,6 +609,8 @@ namespace VANTAGE.Data
                                  activity.SecondActno = GetStringSafe("SecondActno");
                                  activity.SchStart = GetDateTimeSafe("SchStart");
                                  activity.SchFinish = GetDateTimeSafe("SchFinish");
+                                 activity.WeekEndDate = GetDateTimeSafe("WeekEndDate");
+                                 activity.ProgDate = GetDateTimeFullSafe("ProgDate");
 
                                  // Tags / Aux
                                  activity.Aux1 = GetStringSafe("Aux1");
