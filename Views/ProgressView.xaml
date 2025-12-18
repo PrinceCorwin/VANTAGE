@@ -774,7 +774,6 @@
                         <syncfusion:GridTextColumn MappingName="SchedActNO" 
                               HeaderText="SchedActNO" 
                               Width="100"
-                              IsHidden="True"
                               AllowEditing="True"
                               AllowFiltering="True"
                               AllowSorting="True" 

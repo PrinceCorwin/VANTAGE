@@ -126,11 +126,11 @@ namespace VANTAGE
                 LastModified DATETIME DEFAULT CURRENT_TIMESTAMP,
                 UNIQUE(UserID, SettingName)
             );
+
             -- Schedule table (local only - P6 import data)
             CREATE TABLE IF NOT EXISTS Schedule (
                 SchedActNO            TEXT NOT NULL,
                 WeekEndDate           TEXT NOT NULL,
-                ProjectID             TEXT NOT NULL DEFAULT '',
                 WbsId                 TEXT NOT NULL DEFAULT '',
                 Description           TEXT NOT NULL DEFAULT '',
                 P6_PlannedStart       TEXT,
@@ -146,6 +146,13 @@ namespace VANTAGE
                 UpdatedBy             TEXT NOT NULL DEFAULT '',
                 UpdatedUtcDate        TEXT NOT NULL,
                 PRIMARY KEY (SchedActNO, WeekEndDate)
+            );
+
+            -- ScheduleProjectMappings table (local only - which projects does this schedule cover)
+            CREATE TABLE IF NOT EXISTS ScheduleProjectMappings (
+                WeekEndDate           TEXT NOT NULL,
+                ProjectID             TEXT NOT NULL,
+                PRIMARY KEY (WeekEndDate, ProjectID)
             );
 
             -- Users table (mirrored from Azure)
@@ -304,7 +311,7 @@ namespace VANTAGE
             CREATE INDEX IF NOT EXISTS idx_roc_id ON Activities(ROCID);
             CREATE INDEX IF NOT EXISTS idx_column_name ON ColumnMappings(ColumnName);
             CREATE INDEX IF NOT EXISTS idx_schedule_weekenddate ON Schedule(WeekEndDate);
-            CREATE INDEX IF NOT EXISTS idx_schedule_projectid ON Schedule(ProjectID);
+            CREATE INDEX IF NOT EXISTS idx_schedprojmap_weekenddate ON ScheduleProjectMappings(WeekEndDate);
         ";
 
                 command.ExecuteNonQuery();

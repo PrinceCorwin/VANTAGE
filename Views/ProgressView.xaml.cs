@@ -1440,15 +1440,36 @@ namespace VANTAGE.Views
         {
             try
             {
-                // Step 1: Check Azure connection
-                if (!AzureDbManager.CheckConnection(out string errorMessage))
+                // Step 1: Check Azure connection with retry option
+                bool isConnected = false;
+                while (!isConnected)
                 {
-                    MessageBox.Show(
-                        $"Submit Progress requires connection to Azure.\n\n{errorMessage}",
-                        "Connection Required",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Error);
-                    return;
+                    var connectDialog = new Dialogs.BusyDialog(Window.GetWindow(this), "Checking Azure connection...");
+                    connectDialog.Show();
+
+                    var (connected, connError) = await Task.Run(() =>
+                    {
+                        bool result = AzureDbManager.CheckConnection(out string err);
+                        return (result, err);
+                    });
+
+                    connectDialog.Close();
+
+                    if (connected)
+                    {
+                        isConnected = true;
+                    }
+                    else
+                    {
+                        var retryResult = MessageBox.Show(
+                            $"Submit Progress requires connection to Azure.\n\n{connError}\n\nWould you like to retry?",
+                            "Connection Failed",
+                            MessageBoxButton.YesNo,
+                            MessageBoxImage.Warning);
+
+                        if (retryResult != MessageBoxResult.Yes)
+                            return;
+                    }
                 }
 
                 // Step 2: Get distinct ProjectIDs for current user's activities
@@ -1490,7 +1511,6 @@ namespace VANTAGE.Views
                 }
                 else
                 {
-                    // Show project selection dialog
                     var projectDialog = new Window
                     {
                         Title = "Select Project",
@@ -1531,31 +1551,8 @@ namespace VANTAGE.Views
 
                     selectedProject = projectCombo.SelectedItem as string ?? userProjects[0];
                 }
-                // Step 4: Force sync to ensure data is current
-                var pushResult = await SyncManager.PushRecordsAsync(new List<string> { selectedProject });
-                var pullResult = await SyncManager.PullRecordsAsync(new List<string> { selectedProject });
 
-                if (!string.IsNullOrEmpty(pushResult.ErrorMessage))
-                {
-                    MessageBox.Show(
-                        $"Sync failed during push:\n\n{pushResult.ErrorMessage}",
-                        "Sync Error",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Error);
-                    return;
-                }
-
-                if (!string.IsNullOrEmpty(pullResult.ErrorMessage))
-                {
-                    MessageBox.Show(
-                        $"Sync failed during pull:\n\n{pullResult.ErrorMessage}",
-                        "Sync Error",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Error);
-                    return;
-                }
-
-                // Step 5: Date picker dialog (default to previous Sunday)
+                // Step 4: Date picker dialog (default to previous Sunday)
                 var today = DateTime.Today;
                 var daysSinceSunday = (int)today.DayOfWeek;
                 var previousSunday = today.AddDays(-daysSinceSunday);
@@ -1605,51 +1602,114 @@ namespace VANTAGE.Views
 
                 var selectedWeekEndDate = datePicker.SelectedDate.Value;
                 var weekEndDateStr = selectedWeekEndDate.ToString("yyyy-MM-dd");
-                // Step 6: Check for existing snapshots on Azure
-                using var azureConn = AzureDbManager.GetConnection();
-                azureConn.Open();
 
-                var checkCmd = azureConn.CreateCommand();
-                checkCmd.CommandText = @"
-            SELECT TOP 1 ExportedBy 
-            FROM ProgressSnapshots 
-            WHERE AssignedTo = @username 
-              AND ProjectID = @projectId 
-              AND WeekEndDate = @weekEndDate";
-                checkCmd.Parameters.AddWithValue("@username", App.CurrentUser!.Username);
-                checkCmd.Parameters.AddWithValue("@projectId", selectedProject);
-                checkCmd.Parameters.AddWithValue("@weekEndDate", weekEndDateStr);
+                // Step 5: Check for split SchedActNO ownership
+                var splitOwnershipIssues = await OwnershipHelper.CheckSplitOwnershipAsync(
+                    selectedProject, App.CurrentUser!.Username);
 
-                var existingExportedBy = checkCmd.ExecuteScalar();
-
-                if (existingExportedBy != null && existingExportedBy != DBNull.Value)
+                if (splitOwnershipIssues.Any())
                 {
-                    // Already exported - block
-                    MessageBox.Show(
-                        $"Progress for week ending {weekEndDateStr} has already been exported by {existingExportedBy}.\n\n" +
-                        "You cannot overwrite exported snapshots.",
-                        "Already Exported",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Warning);
-                    azureConn.Close();
-                    return;
+                    var message = OwnershipHelper.BuildSplitOwnershipMessage(splitOwnershipIssues);
+                    var result = MessageBox.Show(message, "Split Ownership Detected", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+
+                    if (result != MessageBoxResult.Yes)
+                        return;
+
+                    var reassignDialog = new Dialogs.BusyDialog(Window.GetWindow(this), "Reassigning records...");
+                    reassignDialog.Show();
+
+                    try
+                    {
+                        var reassignProgress = new Progress<string>(status => reassignDialog.UpdateStatus(status));
+                        var totalReassigned = await OwnershipHelper.ResolveSplitOwnershipAsync(
+                            selectedProject, App.CurrentUser!.Username, splitOwnershipIssues, reassignProgress);
+
+                        reassignDialog.Close();
+
+                        MessageBox.Show(
+                            $"Reassigned {totalReassigned} records to their respective owners.\n\nContinuing with submit...",
+                            "Records Reassigned",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Information);
+                    }
+                    catch (Exception ex)
+                    {
+                        reassignDialog.Close();
+                        AppLogger.Error(ex, "ProgressView.BtnSubmit_Click.Reassign");
+                        MessageBox.Show($"Error reassigning records: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
                 }
-
-                if (existingExportedBy == DBNull.Value || existingExportedBy == null)
+                // Step 6: Check for existing snapshots on Azure
+                var existingExportedBy = await Task.Run(() =>
                 {
-                    // Check if any snapshots exist (even if not exported)
-                    var countCmd = azureConn.CreateCommand();
-                    countCmd.CommandText = @"
-                SELECT COUNT(*) 
+                    using var azureConn = AzureDbManager.GetConnection();
+                    azureConn.Open();
+
+                    var checkCmd = azureConn.CreateCommand();
+                    checkCmd.CommandText = @"
+                SELECT TOP 1 ExportedBy 
                 FROM ProgressSnapshots 
                 WHERE AssignedTo = @username 
                   AND ProjectID = @projectId 
                   AND WeekEndDate = @weekEndDate";
-                    countCmd.Parameters.AddWithValue("@username", App.CurrentUser!.Username);
-                    countCmd.Parameters.AddWithValue("@projectId", selectedProject);
-                    countCmd.Parameters.AddWithValue("@weekEndDate", weekEndDateStr);
+                    checkCmd.Parameters.AddWithValue("@username", App.CurrentUser!.Username);
+                    checkCmd.Parameters.AddWithValue("@projectId", selectedProject);
+                    checkCmd.Parameters.AddWithValue("@weekEndDate", weekEndDateStr);
 
-                    var existingCount = Convert.ToInt32(countCmd.ExecuteScalar() ?? 0);
+                    return checkCmd.ExecuteScalar();
+                });
+
+                bool needsDelete = false;
+
+                if (existingExportedBy != null && existingExportedBy != DBNull.Value)
+                {
+                    string exportedByUser = existingExportedBy.ToString()!;
+
+                    if (!exportedByUser.Equals(App.CurrentUser!.Username, StringComparison.OrdinalIgnoreCase))
+                    {
+                        MessageBox.Show(
+                            $"Progress for week ending {weekEndDateStr} has already been exported by {exportedByUser}.\n\n" +
+                            "You cannot overwrite snapshots exported by another user.",
+                            "Already Exported",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Warning);
+                        return;
+                    }
+
+                    var overwriteResult = MessageBox.Show(
+                        $"You already exported progress for week ending {weekEndDateStr}.\n\n" +
+                        "Do you want to overwrite with current progress?\n\n" +
+                        "Note: This will clear the export lock.",
+                        "Overwrite Exported Snapshots?",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Warning);
+
+                    if (overwriteResult != MessageBoxResult.Yes)
+                        return;
+
+                    needsDelete = true;
+                }
+                else
+                {
+                    var existingCount = await Task.Run(() =>
+                    {
+                        using var azureConn = AzureDbManager.GetConnection();
+                        azureConn.Open();
+
+                        var countCmd = azureConn.CreateCommand();
+                        countCmd.CommandText = @"
+                    SELECT COUNT(*) 
+                    FROM ProgressSnapshots 
+                    WHERE AssignedTo = @username 
+                      AND ProjectID = @projectId 
+                      AND WeekEndDate = @weekEndDate";
+                        countCmd.Parameters.AddWithValue("@username", App.CurrentUser!.Username);
+                        countCmd.Parameters.AddWithValue("@projectId", selectedProject);
+                        countCmd.Parameters.AddWithValue("@weekEndDate", weekEndDateStr);
+
+                        return Convert.ToInt32(countCmd.ExecuteScalar() ?? 0);
+                    });
 
                     if (existingCount > 0)
                     {
@@ -1661,102 +1721,162 @@ namespace VANTAGE.Views
                             MessageBoxImage.Question);
 
                         if (overwriteResult != MessageBoxResult.Yes)
-                        {
-                            azureConn.Close();
                             return;
-                        }
 
-                        // Delete existing snapshots for overwrite
-                        var deleteCmd = azureConn.CreateCommand();
-                        deleteCmd.CommandText = @"
-                    DELETE FROM ProgressSnapshots 
-                    WHERE AssignedTo = @username 
-                      AND ProjectID = @projectId 
-                      AND WeekEndDate = @weekEndDate";
-                        deleteCmd.Parameters.AddWithValue("@username", App.CurrentUser!.Username);
-                        deleteCmd.Parameters.AddWithValue("@projectId", selectedProject);
-                        deleteCmd.Parameters.AddWithValue("@weekEndDate", weekEndDateStr);
-                        deleteCmd.ExecuteNonQuery();
-
-                        AppLogger.Info($"Deleted {existingCount} existing snapshots for overwrite", "ProgressView.BtnSubmit_Click", App.CurrentUser!.Username);
+                        needsDelete = true;
                     }
                 }
 
-                // Step 7: Copy Activities from Azure to ProgressSnapshots
-                var insertCmd = azureConn.CreateCommand();
-                insertCmd.CommandText = @"
-            INSERT INTO ProgressSnapshots (
-                UniqueID, WeekEndDate, Area, AssignedTo, AzureUploadUtcDate,
-                Aux1, Aux2, Aux3, BaseUnit, BudgetHoursGroup, BudgetHoursROC, BudgetMHs,
-                ChgOrdNO, ClientBudget, ClientCustom3, ClientEquivQty, CompType, CreatedBy,
-                DateTrigger, Description, DwgNO, EarnQtyEntry, EarnedMHsRoc, EqmtNO,
-                EquivQTY, EquivUOM, Estimator, HexNO, HtTrace, InsulType, LineNumber,
-                MtrlSpec, Notes, PaintCode, PercentEntry, PhaseCategory, PhaseCode,
-                PipeGrade, PipeSize1, PipeSize2, PrevEarnMHs, PrevEarnQTY, ProgDate,
-                ProjectID, Quantity, RevNO, RFINO, ROCBudgetQTY, ROCID, ROCPercent,
-                ROCStep, SchedActNO, SchFinish, SchStart, SecondActno, SecondDwgNO,
-                Service, ShopField, ShtNO, SubArea, PjtSystem, SystemNO, TagNO,
-                UDF1, UDF2, UDF3, UDF4, UDF5, UDF6, UDF7, UDF8, UDF9, UDF10,
-                UDF11, UDF12, UDF13, UDF14, UDF15, UDF16, UDF17, UDF18, UDF20,
-                UpdatedBy, UpdatedUtcDate, UOM, WorkPackage, XRay, ExportedBy, ExportedDate
-            )
-            SELECT 
-                UniqueID, @weekEndDate, Area, AssignedTo, AzureUploadUtcDate,
-                Aux1, Aux2, Aux3, BaseUnit, BudgetHoursGroup, BudgetHoursROC, BudgetMHs,
-                ChgOrdNO, ClientBudget, ClientCustom3, ClientEquivQty, CompType, CreatedBy,
-                DateTrigger, Description, DwgNO, EarnQtyEntry, EarnedMHsRoc, EqmtNO,
-                EquivQTY, EquivUOM, Estimator, HexNO, HtTrace, InsulType, LineNumber,
-                MtrlSpec, Notes, PaintCode, PercentEntry, PhaseCategory, PhaseCode,
-                PipeGrade, PipeSize1, PipeSize2, PrevEarnMHs, PrevEarnQTY, ProgDate,
-                ProjectID, Quantity, RevNO, RFINO, ROCBudgetQTY, ROCID, ROCPercent,
-                ROCStep, SchedActNO, SchFinish, SchStart, SecondActno, SecondDwgNO,
-                Service, ShopField, ShtNO, SubArea, PjtSystem, SystemNO, TagNO,
-                UDF1, UDF2, UDF3, UDF4, UDF5, UDF6, UDF7, UDF8, UDF9, UDF10,
-                UDF11, UDF12, UDF13, UDF14, UDF15, UDF16, UDF17, UDF18, UDF20,
-                UpdatedBy, UpdatedUtcDate, UOM, WorkPackage, XRay, NULL, NULL
-            FROM Activities
-            WHERE AssignedTo = @username 
-              AND ProjectID = @projectId
-              AND IsDeleted = 0";
-                insertCmd.Parameters.AddWithValue("@weekEndDate", weekEndDateStr);
-                insertCmd.Parameters.AddWithValue("@username", App.CurrentUser!.Username);
-                insertCmd.Parameters.AddWithValue("@projectId", selectedProject);
+                // Step 7: Show busy dialog - user is committed
+                var busyDialog = new Dialogs.BusyDialog(Window.GetWindow(this), "Starting...");
+                busyDialog.Show();
 
-                int snapshotCount = insertCmd.ExecuteNonQuery();
+                var progress = new Progress<string>(status => busyDialog.UpdateStatus(status));
+                var currentUser = App.CurrentUser!.Username;
+                var progDateStr = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
 
-                azureConn.Close();
-
-                AppLogger.Info($"Created {snapshotCount} snapshots for week ending {weekEndDateStr}", "ProgressView.BtnSubmit_Click", App.CurrentUser!.Username);
-                // Step 8: Update local Activities.WeekEndDate and ProgDate
-                using (var localConn = DatabaseSetup.GetConnection())
+                try
                 {
-                    localConn.Open();
-                    var updateLocalCmd = localConn.CreateCommand();
-                    updateLocalCmd.CommandText = @"
+                    var (success, submitError, snapshotCount) = await Task.Run(async () =>
+                    {
+                        var reporter = (IProgress<string>)progress;
+
+                        // Step 8: Force sync to ensure Azure has latest local changes
+                        reporter.Report("Syncing data...");
+                        var pushResult = await SyncManager.PushRecordsAsync(new List<string> { selectedProject });
+                        if (!string.IsNullOrEmpty(pushResult.ErrorMessage))
+                            return (false, $"Sync failed during push:\n\n{pushResult.ErrorMessage}", 0);
+
+                        var pullResult = await SyncManager.PullRecordsAsync(new List<string> { selectedProject });
+                        if (!string.IsNullOrEmpty(pullResult.ErrorMessage))
+                            return (false, $"Sync failed during pull:\n\n{pullResult.ErrorMessage}", 0);
+
+                        // Step 9: Delete existing snapshots if needed
+                        if (needsDelete)
+                        {
+                            reporter.Report("Deleting existing snapshots...");
+
+                            using var deleteConn = AzureDbManager.GetConnection();
+                            deleteConn.Open();
+
+                            var deleteCmd = deleteConn.CreateCommand();
+                            deleteCmd.CommandText = @"
+                            DELETE FROM ProgressSnapshots 
+                            WHERE AssignedTo = @username 
+                              AND ProjectID = @projectId 
+                              AND WeekEndDate = @weekEndDate";
+                            deleteCmd.Parameters.AddWithValue("@username", currentUser);
+                            deleteCmd.Parameters.AddWithValue("@projectId", selectedProject);
+                            deleteCmd.Parameters.AddWithValue("@weekEndDate", weekEndDateStr);
+                            var deletedCount = deleteCmd.ExecuteNonQuery();
+
+                            AppLogger.Info($"Deleted {deletedCount} existing snapshots for overwrite", "ProgressView.BtnSubmit_Click", currentUser);
+                        }
+
+                        // Step 10: Copy Activities from Azure to ProgressSnapshots
+                        reporter.Report("Creating snapshots...");
+
+                        int snapshots;
+                        using (var azureConn = AzureDbManager.GetConnection())
+                        {
+                            azureConn.Open();
+
+                            var insertCmd = azureConn.CreateCommand();
+                            insertCmd.CommandText = @"
+                            INSERT INTO ProgressSnapshots (
+                                UniqueID, WeekEndDate, Area, AssignedTo, AzureUploadUtcDate,
+                                Aux1, Aux2, Aux3, BaseUnit, BudgetHoursGroup, BudgetHoursROC, BudgetMHs,
+                                ChgOrdNO, ClientBudget, ClientCustom3, ClientEquivQty, CompType, CreatedBy,
+                                DateTrigger, Description, DwgNO, EarnQtyEntry, EarnedMHsRoc, EqmtNO,
+                                EquivQTY, EquivUOM, Estimator, HexNO, HtTrace, InsulType, LineNumber,
+                                MtrlSpec, Notes, PaintCode, PercentEntry, PhaseCategory, PhaseCode,
+                                PipeGrade, PipeSize1, PipeSize2, PrevEarnMHs, PrevEarnQTY, ProgDate,
+                                ProjectID, Quantity, RevNO, RFINO, ROCBudgetQTY, ROCID, ROCPercent,
+                                ROCStep, SchedActNO, SchFinish, SchStart, SecondActno, SecondDwgNO,
+                                Service, ShopField, ShtNO, SubArea, PjtSystem, SystemNO, TagNO,
+                                UDF1, UDF2, UDF3, UDF4, UDF5, UDF6, UDF7, UDF8, UDF9, UDF10,
+                                UDF11, UDF12, UDF13, UDF14, UDF15, UDF16, UDF17, UDF18, UDF20,
+                                UpdatedBy, UpdatedUtcDate, UOM, WorkPackage, XRay, ExportedBy, ExportedDate
+                            )
+                            SELECT 
+                                UniqueID, @weekEndDate, Area, AssignedTo, AzureUploadUtcDate,
+                                Aux1, Aux2, Aux3, BaseUnit, BudgetHoursGroup, BudgetHoursROC, BudgetMHs,
+                                ChgOrdNO, ClientBudget, ClientCustom3, ClientEquivQty, CompType, CreatedBy,
+                                DateTrigger, Description, DwgNO, EarnQtyEntry, EarnedMHsRoc, EqmtNO,
+                                EquivQTY, EquivUOM, Estimator, HexNO, HtTrace, InsulType, LineNumber,
+                                MtrlSpec, Notes, PaintCode, PercentEntry, PhaseCategory, PhaseCode,
+                                PipeGrade, PipeSize1, PipeSize2, PrevEarnMHs, PrevEarnQTY, ProgDate,
+                                ProjectID, Quantity, RevNO, RFINO, ROCBudgetQTY, ROCID, ROCPercent,
+                                ROCStep, SchedActNO, SchFinish, SchStart, SecondActno, SecondDwgNO,
+                                Service, ShopField, ShtNO, SubArea, PjtSystem, SystemNO, TagNO,
+                                UDF1, UDF2, UDF3, UDF4, UDF5, UDF6, UDF7, UDF8, UDF9, UDF10,
+                                UDF11, UDF12, UDF13, UDF14, UDF15, UDF16, UDF17, UDF18, UDF20,
+                                UpdatedBy, UpdatedUtcDate, UOM, WorkPackage, XRay, NULL, NULL
+                            FROM Activities
+                            WHERE AssignedTo = @username 
+                              AND ProjectID = @projectId
+                              AND IsDeleted = 0";
+                            insertCmd.Parameters.AddWithValue("@weekEndDate", weekEndDateStr);
+                            insertCmd.Parameters.AddWithValue("@username", currentUser);
+                            insertCmd.Parameters.AddWithValue("@projectId", selectedProject);
+
+                            snapshots = insertCmd.ExecuteNonQuery();
+                        }
+
+                        AppLogger.Info($"Created {snapshots} snapshots for week ending {weekEndDateStr}", "ProgressView.BtnSubmit_Click", currentUser);
+
+                        // Step 11: Update local Activities.WeekEndDate and ProgDate
+                        reporter.Report("Updating local records...");
+
+                        using (var localConn = DatabaseSetup.GetConnection())
+                        {
+                            localConn.Open();
+                            var updateLocalCmd = localConn.CreateCommand();
+                            updateLocalCmd.CommandText = @"
                             UPDATE Activities 
                             SET WeekEndDate = @weekEndDate,
                                 ProgDate = @progDate,
                                 LocalDirty = 1
                             WHERE AssignedTo = @username 
                               AND ProjectID = @projectId";
-                    updateLocalCmd.Parameters.AddWithValue("@weekEndDate", weekEndDateStr);
-                    updateLocalCmd.Parameters.AddWithValue("@progDate", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
-                    updateLocalCmd.Parameters.AddWithValue("@username", App.CurrentUser!.Username);
-                    updateLocalCmd.Parameters.AddWithValue("@projectId", selectedProject);
-                    updateLocalCmd.ExecuteNonQuery();
+                            updateLocalCmd.Parameters.AddWithValue("@weekEndDate", weekEndDateStr);
+                            updateLocalCmd.Parameters.AddWithValue("@progDate", progDateStr);
+                            updateLocalCmd.Parameters.AddWithValue("@username", currentUser);
+                            updateLocalCmd.Parameters.AddWithValue("@projectId", selectedProject);
+                            updateLocalCmd.ExecuteNonQuery();
+                        }
+
+                        // Step 12: Push WeekEndDate changes to Azure
+                        reporter.Report("Syncing changes...");
+                        await SyncManager.PushRecordsAsync(new List<string> { selectedProject });
+
+                        return (true, string.Empty, snapshots);
+                    });
+
+                    if (!success)
+                    {
+                        busyDialog.Close();
+                        MessageBox.Show(submitError, "Sync Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
+
+                    // Step 13: Refresh grid (must be on UI thread)
+                    busyDialog.UpdateStatus("Refreshing...");
+                    await RefreshData();
+
+                    busyDialog.Close();
+
+                    MessageBox.Show(
+                        $"Successfully submitted {snapshotCount} activities for week ending {weekEndDateStr}.",
+                        "Progress Submitted",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
                 }
-
-                // Step 9: Push WeekEndDate changes to Azure
-                await SyncManager.PushRecordsAsync(new List<string> { selectedProject });
-
-                // Step 10: Refresh grid and show success
-                await RefreshData();
-
-                MessageBox.Show(
-                    $"Successfully submitted {snapshotCount} activities for week ending {weekEndDateStr}.",
-                    "Progress Submitted",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                catch
+                {
+                    busyDialog.Close();
+                    throw;
+                }
             }
             catch (Exception ex)
             {
@@ -1774,16 +1894,36 @@ namespace VANTAGE.Views
         {
             try
             {
-                // Check Azure connection FIRST
-                if (!AzureDbManager.CheckConnection(out string errorMessage))
+                // Check Azure connection with retry option
+                bool isConnected = false;
+                while (!isConnected)
                 {
-                    MessageBox.Show(
-                        $"Cannot sync - Azure database unavailable:\n\n{errorMessage}\n\n" +
-                        "Please check your internet connection and try again.",
-                        "Connection Error",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Error);
-                    return;
+                    var connectDialog = new Dialogs.BusyDialog(Window.GetWindow(this), "Checking Azure connection...");
+                    connectDialog.Show();
+
+                    var (connected, connError) = await Task.Run(() =>
+                    {
+                        bool result = AzureDbManager.CheckConnection(out string err);
+                        return (result, err);
+                    });
+
+                    connectDialog.Close();
+
+                    if (connected)
+                    {
+                        isConnected = true;
+                    }
+                    else
+                    {
+                        var retryResult = MessageBox.Show(
+                            $"Cannot sync - Azure database unavailable:\n\n{connError}\n\nWould you like to retry?",
+                            "Connection Failed",
+                            MessageBoxButton.YesNo,
+                            MessageBoxImage.Warning);
+
+                        if (retryResult != MessageBoxResult.Yes)
+                            return;
+                    }
                 }
 
                 // Check metadata errors
@@ -1800,13 +1940,95 @@ namespace VANTAGE.Views
                     return;
                 }
 
-                var syncDialog = new SyncDialog();
-                bool? result = syncDialog.ShowDialog();
+                // Check for split ownership across all user's projects
+                var userProjects = new List<string>();
+                using (var localConn = DatabaseSetup.GetConnection())
+                {
+                    localConn.Open();
+                    var cmd = localConn.CreateCommand();
+                    cmd.CommandText = @"
+                SELECT DISTINCT ProjectID 
+                FROM Activities 
+                WHERE AssignedTo = @username 
+                  AND ProjectID IS NOT NULL 
+                  AND ProjectID != ''";
+                    cmd.Parameters.AddWithValue("@username", App.CurrentUser!.Username);
 
-                if (result == true)
+                    using var reader = cmd.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        userProjects.Add(reader.GetString(0));
+                    }
+                }
+
+                var allSplitIssues = new List<(string ProjectID, List<SplitOwnershipIssue> Issues)>();
+
+                if (userProjects.Any())
+                {
+                    var checkDialog = new Dialogs.BusyDialog(Window.GetWindow(this), "Checking ownership...");
+                    checkDialog.Show();
+
+                    foreach (var projectId in userProjects)
+                    {
+                        var issues = await OwnershipHelper.CheckSplitOwnershipAsync(projectId, App.CurrentUser!.Username);
+                        if (issues.Any())
+                        {
+                            allSplitIssues.Add((projectId, issues));
+                        }
+                    }
+
+                    checkDialog.Close();
+                }
+
+                if (allSplitIssues.Any())
+                {
+                    // Flatten all issues for the message
+                    var flatIssues = allSplitIssues.SelectMany(x => x.Issues).ToList();
+                    var message = OwnershipHelper.BuildSplitOwnershipMessage(flatIssues);
+
+                    var result = MessageBox.Show(message, "Split Ownership Detected", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+
+                    if (result != MessageBoxResult.Yes)
+                        return;
+
+                    var reassignDialog = new Dialogs.BusyDialog(Window.GetWindow(this), "Reassigning records...");
+                    reassignDialog.Show();
+
+                    try
+                    {
+                        var reassignProgress = new Progress<string>(status => reassignDialog.UpdateStatus(status));
+                        int totalReassigned = 0;
+
+                        foreach (var (projectId, issues) in allSplitIssues)
+                        {
+                            totalReassigned += await OwnershipHelper.ResolveSplitOwnershipAsync(
+                                projectId, App.CurrentUser!.Username, issues, reassignProgress);
+                        }
+
+                        reassignDialog.Close();
+
+                        MessageBox.Show(
+                            $"Reassigned {totalReassigned} records to their respective owners.\n\nContinuing with sync...",
+                            "Records Reassigned",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Information);
+                    }
+                    catch (Exception ex)
+                    {
+                        reassignDialog.Close();
+                        AppLogger.Error(ex, "ProgressView.BtnSync_Click.Reassign");
+                        MessageBox.Show($"Error reassigning records: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
+                }
+
+                var syncDialog = new SyncDialog();
+                bool? dialogResult = syncDialog.ShowDialog();
+                if (dialogResult == true)
                 {
                     // Refresh grid to show updated LocalDirty and pulled records
                     await RefreshData();
+
                     // After successful sync - save the timestamp
                     SettingsManager.SetUserSetting(
                         App.CurrentUserID,
@@ -2444,29 +2666,33 @@ namespace VANTAGE.Views
                     MessageBoxImage.Warning);
                 return;
             }
-            // Check for split SchedActNO ownership
-            var selectedSchedActNOs = allowedActivities
-                .Where(a => !string.IsNullOrWhiteSpace(a.SchedActNO))
-                .GroupBy(a => a.SchedActNO)
-                .ToDictionary(g => g.Key!, g => g.Count());
+            // Check for split SchedActNO ownership (per ProjectID)
+            var selectedByProjectAndActNO = allowedActivities
+                .Where(a => !string.IsNullOrWhiteSpace(a.SchedActNO) && !string.IsNullOrWhiteSpace(a.ProjectID))
+                .GroupBy(a => (a.ProjectID!, a.SchedActNO!))
+                .ToDictionary(g => g.Key, g => g.Count());
 
-            if (selectedSchedActNOs.Any())
+            if (selectedByProjectAndActNO.Any())
             {
-                var splitActNOs = new List<string>();
+                var splitActNOs = new List<(string ProjectID, string SchedActNO, int Selected, int Total)>();
 
                 using var connection = DatabaseSetup.GetConnection();
                 connection.Open();
 
-                foreach (var kvp in selectedSchedActNOs)
+                foreach (var kvp in selectedByProjectAndActNO)
                 {
                     var countCmd = connection.CreateCommand();
-                    countCmd.CommandText = "SELECT COUNT(*) FROM Activities WHERE SchedActNO = @schedActNO";
-                    countCmd.Parameters.AddWithValue("@schedActNO", kvp.Key);
+                    countCmd.CommandText = @"
+            SELECT COUNT(*) FROM Activities 
+            WHERE ProjectID = @projectId 
+              AND SchedActNO = @schedActNO";
+                    countCmd.Parameters.AddWithValue("@projectId", kvp.Key.Item1);
+                    countCmd.Parameters.AddWithValue("@schedActNO", kvp.Key.Item2);
                     var totalCount = Convert.ToInt32(countCmd.ExecuteScalar() ?? 0);
 
                     if (totalCount > kvp.Value)
                     {
-                        splitActNOs.Add($"{kvp.Key} ({kvp.Value} of {totalCount} selected)");
+                        splitActNOs.Add((kvp.Key.Item1, kvp.Key.Item2, kvp.Value, totalCount));
                     }
                 }
 
@@ -2474,16 +2700,55 @@ namespace VANTAGE.Views
 
                 if (splitActNOs.Any())
                 {
-                    var message = "Cannot reassign. The following SchedActNOs have activities that are not selected:\n\n" +
-                                  string.Join("\n", splitActNOs.Take(10));
+                    var displayList = splitActNOs
+                        .Take(10)
+                        .Select(s => $"{s.ProjectID}/{s.SchedActNO} ({s.Selected} of {s.Total} selected)");
+
+                    var message = "The following SchedActNOs have activities that are not selected:\n\n" +
+                                  string.Join("\n", displayList);
 
                     if (splitActNOs.Count > 10)
                         message += $"\n... and {splitActNOs.Count - 10} more";
 
-                    message += "\n\nAll activities sharing a SchedActNO must be reassigned together.";
+                    message += "\n\nAll activities sharing a SchedActNO within a project must be reassigned together.\n\n" +
+                               "Click YES to automatically include all related activities and continue with assignment.\n" +
+                               "Click NO to cancel.";
 
-                    MessageBox.Show(message, "Split Ownership Not Allowed", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    return;
+                    var result = MessageBox.Show(message, "Include Related Activities?", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+                    if (result != MessageBoxResult.Yes)
+                        return;
+
+                    // Get all activities for the split SchedActNOs and add to allowedActivities
+                    var allActivities = _viewModel.Activities;
+                    if (allActivities != null && allActivities.Any())
+                    {
+                        var currentIds = new HashSet<string>(allowedActivities.Select(a => a.UniqueID));
+
+                        foreach (var split in splitActNOs)
+                        {
+                            var matching = allActivities
+                                .Where(a => a.ProjectID == split.ProjectID && a.SchedActNO == split.SchedActNO)
+                                .Where(a => !currentIds.Contains(a.UniqueID));
+
+                            foreach (var activity in matching)
+                            {
+                                // Check permission for newly added activities
+                                if (App.CurrentUser!.IsAdmin || activity.AssignedTo == App.CurrentUser!.Username)
+                                {
+                                    allowedActivities.Add(activity);
+                                    currentIds.Add(activity.UniqueID);
+                                }
+                            }
+                        }
+
+                        // Update grid selection to reflect what will be assigned
+                        sfActivities.SelectedItems.Clear();
+                        foreach (var activity in allowedActivities)
+                        {
+                            sfActivities.SelectedItems.Add(activity);
+                        }
+                    }
                 }
             }
             // Check for unsaved changes (LocalDirty=1)
@@ -2506,16 +2771,36 @@ namespace VANTAGE.Views
                 return;
             }
 
-            // Check connection to Azure
-            if (!AzureDbManager.CheckConnection(out string errorMessage))
+            // Check connection to Azure with retry option
+            bool isConnected = false;
+            while (!isConnected)
             {
-                MessageBox.Show(
-                    $"Reassignment requires connection to Azure database.\n\n{errorMessage}\n\n" +
-                    $"Please check your internet connection and try again.",
-                    "Connection Required",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
-                return;
+                var connectDialog = new Dialogs.BusyDialog(Window.GetWindow(this), "Checking Azure connection...");
+                connectDialog.Show();
+
+                var (connected, connError) = await Task.Run(() =>
+                {
+                    bool result = AzureDbManager.CheckConnection(out string err);
+                    return (result, err);
+                });
+
+                connectDialog.Close();
+
+                if (connected)
+                {
+                    isConnected = true;
+                }
+                else
+                {
+                    var retryResult = MessageBox.Show(
+                        $"Cannot connect to Azure database.\n\n{connError}\n\nWould you like to retry?",
+                        "Connection Failed",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Warning);
+
+                    if (retryResult != MessageBoxResult.Yes)
+                        return;
+                }
             }
 
             // Get list of all users for dropdown
@@ -2592,88 +2877,180 @@ namespace VANTAGE.Views
                 if (string.IsNullOrEmpty(selectedUser))
                     return;
 
+                var busyDialog = new Dialogs.BusyDialog(Window.GetWindow(this), "Starting...");
+                busyDialog.Show();
+
+                var progress = new Progress<string>(status => busyDialog.UpdateStatus(status));
+                var currentUser = App.CurrentUser!.Username;
+                var isAdmin = App.CurrentUser!.IsAdmin;
+
                 try
                 {
-                    // Step 1: Verify ownership at Azure BEFORE making any changes
-                    using var azureConn = AzureDbManager.GetConnection();
-                    azureConn.Open();
-
-                    var ownedRecords = new List<Activity>();
-                    var deniedRecords = new List<string>();
-
-                    foreach (var activity in allowedActivities)
+                    var (success, resultMessage, updatedCount) = await Task.Run(async () =>
                     {
-                        var checkCmd = azureConn.CreateCommand();
-                        checkCmd.CommandText = "SELECT AssignedTo FROM Activities WHERE UniqueID = @id";
-                        checkCmd.Parameters.AddWithValue("@id", activity.UniqueID);
-                        var azureOwner = checkCmd.ExecuteScalar()?.ToString();
+                        var reporter = (IProgress<string>)progress;
 
-                        if (azureOwner == App.CurrentUser!.Username || App.CurrentUser!.IsAdmin)
-                        {
-                            ownedRecords.Add(activity);
-                        }
-                        else
-                        {
-                            deniedRecords.Add(activity.UniqueID);
-                        }
-                    }
+                        // Step 1: Verify ownership at Azure BEFORE making any changes (bulk query)
+                        reporter.Report("Verifying ownership...");
 
-                    if (deniedRecords.Any())
-                    {
-                        MessageBox.Show(
-                            $"{deniedRecords.Count} record(s) could not be reassigned - ownership changed at Azure.\n\n" +
-                            $"First few: {string.Join(", ", deniedRecords.Take(3))}",
-                            "Ownership Conflict",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Warning);
+                        using var azureConn = AzureDbManager.GetConnection();
+                        azureConn.Open();
+
+                        // Build temp table with UniqueIDs to check
+                        var uniqueIds = allowedActivities.Select(a => a.UniqueID).ToList();
+
+                        var createTempCmd = azureConn.CreateCommand();
+                        createTempCmd.CommandText = "CREATE TABLE #CheckOwnership (UniqueID NVARCHAR(50) PRIMARY KEY)";
+                        createTempCmd.ExecuteNonQuery();
+
+                        // Bulk insert UniqueIDs into temp table
+                        using (var bulkCopy = new Microsoft.Data.SqlClient.SqlBulkCopy(azureConn))
+                        {
+                            bulkCopy.DestinationTableName = "#CheckOwnership";
+
+                            var dt = new System.Data.DataTable();
+                            dt.Columns.Add("UniqueID", typeof(string));
+                            foreach (var id in uniqueIds)
+                            {
+                                dt.Rows.Add(id);
+                            }
+                            bulkCopy.WriteToServer(dt);
+                        }
+
+                        // Query all ownerships in one call
+                        var ownershipMap = new Dictionary<string, string>();
+                        var ownerQuery = azureConn.CreateCommand();
+                        ownerQuery.CommandText = @"
+            SELECT a.UniqueID, a.AssignedTo 
+            FROM Activities a
+            INNER JOIN #CheckOwnership c ON a.UniqueID = c.UniqueID";
+
+                        using (var reader = ownerQuery.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                var id = reader.GetString(0);
+                                var owner = reader.IsDBNull(1) ? "" : reader.GetString(1);
+                                ownershipMap[id] = owner;
+                            }
+                        }
+
+                        var ownedRecords = new List<Activity>();
+                        var deniedRecords = new List<string>();
+
+                        foreach (var activity in allowedActivities)
+                        {
+                            if (ownershipMap.TryGetValue(activity.UniqueID, out var azureOwner))
+                            {
+                                if (azureOwner == currentUser || isAdmin)
+                                {
+                                    ownedRecords.Add(activity);
+                                }
+                                else
+                                {
+                                    deniedRecords.Add(activity.UniqueID);
+                                }
+                            }
+                            else
+                            {
+                                // Record not found in Azure - allow assignment
+                                ownedRecords.Add(activity);
+                            }
+                        }
+
+                        if (deniedRecords.Any())
+                        {
+                            var deniedMsg = $"{deniedRecords.Count} record(s) could not be reassigned - ownership changed at Azure.\n\n" +
+                                           $"First few: {string.Join(", ", deniedRecords.Take(3))}";
+
+                            if (!ownedRecords.Any())
+                            {
+                                return (false, deniedMsg, 0);
+                            }
+
+                            // Continue with owned records - we'll show a warning after
+                        }
 
                         if (!ownedRecords.Any())
-                            return;
-                    }
+                        {
+                            return (false, "No records available to reassign.", 0);
+                        }
 
-                    // Step 2: Update Azure directly with transaction
-                    using var transaction = azureConn.BeginTransaction();
+                        // Step 2: Bulk update Azure using temp table
+                        reporter.Report("Updating records...");
 
-                    foreach (var activity in ownedRecords)
-                    {
+                        var createUpdateTempCmd = azureConn.CreateCommand();
+                        createUpdateTempCmd.CommandText = "CREATE TABLE #UpdateBatch (UniqueID NVARCHAR(50) PRIMARY KEY)";
+                        createUpdateTempCmd.ExecuteNonQuery();
+
+                        using (var bulkCopy = new Microsoft.Data.SqlClient.SqlBulkCopy(azureConn))
+                        {
+                            bulkCopy.DestinationTableName = "#UpdateBatch";
+
+                            var dt = new System.Data.DataTable();
+                            dt.Columns.Add("UniqueID", typeof(string));
+                            foreach (var activity in ownedRecords)
+                            {
+                                dt.Rows.Add(activity.UniqueID);
+                            }
+                            bulkCopy.WriteToServer(dt);
+                        }
+
                         var updateCmd = azureConn.CreateCommand();
-                        updateCmd.Transaction = transaction;
                         updateCmd.CommandText = @"
-                    UPDATE Activities 
-                    SET AssignedTo = @newOwner, 
-                        UpdatedBy = @updatedBy, 
-                        UpdatedUtcDate = @updatedDate
-                    WHERE UniqueID = @id";
+            UPDATE a
+            SET AssignedTo = @newOwner, 
+                UpdatedBy = @updatedBy, 
+                UpdatedUtcDate = @updatedDate,
+                SyncVersion = SyncVersion + 1
+            FROM Activities a
+            INNER JOIN #UpdateBatch b ON a.UniqueID = b.UniqueID";
                         updateCmd.Parameters.AddWithValue("@newOwner", selectedUser);
-                        updateCmd.Parameters.AddWithValue("@updatedBy", App.CurrentUser!.Username);
+                        updateCmd.Parameters.AddWithValue("@updatedBy", currentUser);
                         updateCmd.Parameters.AddWithValue("@updatedDate", DateTime.UtcNow.ToString("o"));
-                        updateCmd.Parameters.AddWithValue("@id", activity.UniqueID);
-                        updateCmd.ExecuteNonQuery();
+                        var updated = updateCmd.ExecuteNonQuery();
+
+                        azureConn.Close();
+
+                        AppLogger.Info($"Reassigned {updated} records to {selectedUser}", "ProgressView.MenuAssignToUser_Click", currentUser);
+
+                        // Step 3: Pull updated records back to local
+                        reporter.Report("Syncing changes...");
+
+                        var projectIds = ownedRecords
+                            .Select(a => a.ProjectID)
+                            .Where(p => !string.IsNullOrEmpty(p))
+                            .Cast<string>()
+                            .Distinct()
+                            .ToList();
+
+                        await SyncManager.PullRecordsAsync(projectIds);
+
+                        return (true, string.Empty, updated);
+                    });
+
+                    if (!success)
+                    {
+                        busyDialog.Close();
+                        MessageBox.Show(resultMessage, "Assignment Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
                     }
 
-                    transaction.Commit();
-                    azureConn.Close();
+                    // Refresh grid (must be on UI thread)
+                    busyDialog.UpdateStatus("Refreshing...");
+                    await RefreshData();
 
-                    // Step 3: Pull updated records back to local
-                    var projectIds = ownedRecords
-                        .Select(a => a.ProjectID)
-                        .Where(p => !string.IsNullOrEmpty(p))
-                        .Cast<string>()
-                        .Distinct()
-                        .ToList();
-                    var pullResult = await SyncManager.PullRecordsAsync(projectIds);
+                    busyDialog.Close();
 
                     MessageBox.Show(
-                        $"Successfully reassigned {ownedRecords.Count} record(s) to {selectedUser}.",
+                        $"Successfully reassigned {updatedCount} record(s) to {selectedUser}.",
                         "Success",
                         MessageBoxButton.OK,
                         MessageBoxImage.Information);
-
-                    // Refresh grid
-                    await RefreshData();
                 }
                 catch (Exception ex)
                 {
+                    busyDialog.Close();
                     MessageBox.Show($"Error assigning records: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     AppLogger.Error(ex, "ProgressView.MenuAssignToUser_Click");
                 }
