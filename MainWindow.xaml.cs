@@ -7,6 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
 using VANTAGE.Data;
+using VANTAGE.Dialogs;
 using VANTAGE.Models;
 using VANTAGE.Utilities;
 using VANTAGE.Views;
@@ -222,9 +223,64 @@ namespace VANTAGE
             MessageBox.Show("CREATE module coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
-        private void ImportP6File_Click(object sender, RoutedEventArgs e)
+        private async void ImportP6File_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
+            try
+            {
+                // Step 1: File picker
+                var fileDialog = new Microsoft.Win32.OpenFileDialog
+                {
+                    Filter = "Excel Files|*.xlsx;*.xls",
+                    Title = "Select P6 Schedule File"
+                };
+
+                if (fileDialog.ShowDialog() != true)
+                    return;
+
+                // Step 2: Show P6ImportDialog
+                var p6Dialog = new VANTAGE.Dialogs.P6ImportDialog(fileDialog.FileName);
+                if (p6Dialog.ShowDialog() != true)
+                    return;
+
+                // Step 3: Import with BusyDialog
+                var busyDialog = new BusyDialog(this);
+                busyDialog.UpdateStatus("Importing P6 schedule...");
+                busyDialog.Show();
+
+                try
+                {
+                    int imported = await ScheduleExcelImporter.ImportFromP6Async(
+                        fileDialog.FileName,
+                        p6Dialog.SelectedWeekEndDate,
+                        p6Dialog.SelectedProjectIDs,
+                        new Progress<string>(msg => busyDialog.UpdateStatus(msg))
+                    );
+
+                    busyDialog.Close();
+
+                    // Step 4: Show results
+                    MessageBox.Show(
+                        $"Successfully imported {imported} schedule activities for week ending {p6Dialog.SelectedWeekEndDate:yyyy-MM-dd}\n\n" +
+                        $"Projects: {string.Join(", ", p6Dialog.SelectedProjectIDs)}",
+                        "Import Complete",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    busyDialog.Close();
+                    throw;
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "MainWindow.ImportP6File_Click", App.CurrentUser?.Username);
+                MessageBox.Show(
+                    $"Import failed: {ex.Message}",
+                    "Import Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
         }
 
         private void ExportP6File_Click(object sender, RoutedEventArgs e)
