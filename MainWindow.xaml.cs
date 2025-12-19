@@ -202,8 +202,14 @@ namespace VANTAGE
 
         private void BtnSchedule_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("SCHEDULE module coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
             HighlightNavigationButton(btnSchedule);
+
+            // Clear current content
+            ContentArea.Content = null;
+
+            // Load Schedule Module
+            var scheduleView = new VANTAGE.Views.ScheduleView();
+            ContentArea.Content = scheduleView;
         }
 
         private void BtnPbook_Click(object sender, RoutedEventArgs e)
