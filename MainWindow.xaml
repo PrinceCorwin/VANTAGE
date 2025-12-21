@@ -207,7 +207,7 @@
                                 <MenuItem Header="Toggle Admin Status" Click="MenuToggleAdmin_Click"/>
                                 <MenuItem Header="Reset LocalDirty (All Records)" Click="MenuResetLocalDirty_Click"/>
                                 <MenuItem Header="Toggle UpdatedBy" Click="ToggleUpdatedBy_Click"/>
-                                <MenuItem Header="Test 3" Click="MenuTest3_Click"/>
+                                <MenuItem Header="Schedule Diagnostics" Click="MenuScheduleDiagnostics_Click"/>
                                 <MenuItem Header="Test 4" Click="MenuTest4_Click"/>
                                 <MenuItem Header="Test 5" Click="MenuTest5_Click"/>
                                 <MenuItem Header="Test 6" Click="MenuTest6_Click"/>

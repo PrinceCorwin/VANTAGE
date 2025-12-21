@@ -11,7 +11,6 @@ namespace VANTAGE.Repositories
     public static class ScheduleRepository
     {
         // Get master grid rows with P6 data + MS rollups
-        // Get master grid rows with P6 data + MS rollups
         public static async Task<List<ScheduleMasterRow>> GetScheduleMasterRowsAsync(DateTime weekEndDate)
         {
             return await Task.Run(() =>
@@ -107,12 +106,17 @@ namespace VANTAGE.Repositories
                 string projectIdList = "'" + string.Join("','", projectIds) + "'";
 
                 // ONE query to calculate rollups for ALL SchedActNOs
+                // Calculate weighted average directly in SQL (stays in 0-100 scale)
                 cmd.CommandText = $@"
             SELECT 
                 SchedActNO,
                 MIN(SchStart) as MS_ActualStart,
                 MAX(SchFinish) as MS_ActualFinish,
-                SUM(BudgetMHs * PercentEntry) as TotalEarnedMHs,
+                CASE 
+                    WHEN SUM(BudgetMHs) > 0 
+                    THEN SUM(BudgetMHs * PercentEntry) / SUM(BudgetMHs)
+                    ELSE 0 
+                END as MS_PercentComplete,
                 SUM(BudgetMHs) as MS_BudgetMHs
             FROM ProgressSnapshots
             WHERE WeekEndDate = @weekEndDate
@@ -128,16 +132,26 @@ namespace VANTAGE.Repositories
                 while (reader.Read())
                 {
                     string schedActNo = reader.GetString(0);
-                    DateTime? msStart = reader.IsDBNull(1) ? null : reader.GetDateTime(1);
-                    DateTime? msFinish = reader.IsDBNull(2) ? null : reader.GetDateTime(2);
-                    double msBudgetMHs = reader.IsDBNull(4) ? 0 : reader.GetDouble(4);
 
-                    double msPercent = 0;
-                    if (!reader.IsDBNull(3) && msBudgetMHs > 0)
+                    // SchStart and SchFinish are stored as TEXT (VARCHAR) in Azure, not DATETIME
+                    DateTime? msStart = null;
+                    if (!reader.IsDBNull(1))
                     {
-                        double totalEarnedMHs = reader.GetDouble(3);
-                        msPercent = totalEarnedMHs / msBudgetMHs;
+                        string startStr = reader.GetString(1);
+                        if (DateTime.TryParse(startStr, out DateTime parsedStart))
+                            msStart = parsedStart;
                     }
+
+                    DateTime? msFinish = null;
+                    if (!reader.IsDBNull(2))
+                    {
+                        string finishStr = reader.GetString(2);
+                        if (DateTime.TryParse(finishStr, out DateTime parsedFinish))
+                            msFinish = parsedFinish;
+                    }
+
+                    double msPercent = reader.IsDBNull(3) ? 0 : reader.GetDouble(3);
+                    double msBudgetMHs = reader.IsDBNull(4) ? 0 : reader.GetDouble(4);
 
                     rollupDict[schedActNo] = (msStart, msFinish, msPercent, msBudgetMHs);
                 }
@@ -182,7 +196,7 @@ namespace VANTAGE.Repositories
             }
 
             return projectIds;
-        }      
+        }
 
         // Get distinct WeekEndDates available in Schedule table
         public static async Task<List<DateTime>> GetAvailableWeekEndDatesAsync()

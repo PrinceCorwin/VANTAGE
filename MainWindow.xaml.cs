@@ -34,7 +34,22 @@ namespace VANTAGE
             };
             this.Closing += MainWindow_Closing;
         }
-
+        private void MenuScheduleDiagnostics_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                VANTAGE.Diagnostics.ScheduleDiagnostic.RunDiagnostic();
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "MainWindow.MenuScheduleDiagnostics_Click");
+                MessageBox.Show(
+                    $"Diagnostic failed: {ex.Message}",
+                    "Diagnostic Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
         private void BtnMinimize_Click(object sender, RoutedEventArgs e)
         {
             this.WindowState = WindowState.Minimized;
