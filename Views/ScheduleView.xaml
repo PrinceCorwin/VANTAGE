@@ -6,6 +6,50 @@
              skinManager:SfSkinManager.Theme="{skinManager:SkinManagerExtension ThemeName=FluentDark}"
              Background="{StaticResource BackgroundColor}">
 
+    <UserControl.Resources>
+        <!-- Filter Button Style with Visual Feedback -->
+        <Style x:Key="FilterToggleButtonStyle" TargetType="ToggleButton">
+            <Setter Property="Background" Value="{StaticResource ControlBackground}"/>
+            <Setter Property="Foreground" Value="{StaticResource ForegroundColor}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource ControlBorder}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Width" Value="100"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="3">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                            Margin="5,0"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#3A3A3C"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource AccentColor}"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource AccentColor}"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#2A2A2C"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -50,45 +94,35 @@
 
                 <ToggleButton x:Name="btnFilterActualStart"
                              Content="Actual Start"
-                             Width="100"
-                             Height="32"
                              IsChecked="{Binding FilterActualStart, Mode=TwoWay}"
-                             Background="{StaticResource ControlBackground}"
-                             Foreground="{StaticResource ForegroundColor}"
-                             BorderBrush="{StaticResource ControlBorder}"
-                             BorderThickness="1"
-                             HorizontalContentAlignment="Center"
-                             FontSize="11"
+                             Style="{StaticResource FilterToggleButtonStyle}"
                              Margin="0,0,5,0"/>
 
                 <ToggleButton x:Name="btnFilterActualFinish"
                              Content="Actual Finish"
-                             Width="100"
-                             Height="32"
                              IsChecked="{Binding FilterActualFinish, Mode=TwoWay}"
-                             Background="{StaticResource ControlBackground}"
-                             Foreground="{StaticResource ForegroundColor}"
-                             BorderBrush="{StaticResource ControlBorder}"
-                             BorderThickness="1"
-                             HorizontalContentAlignment="Center"
-                             FontSize="11"
+                             Style="{StaticResource FilterToggleButtonStyle}"
                              Margin="0,0,5,0"/>
 
                 <ToggleButton x:Name="btnFilter3WLA"
                              Content="3WLA"
-                             Width="100"
-                             Height="32"
                              IsChecked="{Binding Filter3WLA, Mode=TwoWay}"
-                             Background="{StaticResource ControlBackground}"
-                             Foreground="{StaticResource ForegroundColor}"
-                             BorderBrush="{StaticResource ControlBorder}"
-                             BorderThickness="1"
-                             HorizontalContentAlignment="Center"
-                             FontSize="11"
+                             Style="{StaticResource FilterToggleButtonStyle}"
                              Margin="0,0,20,0"/>
+                <Button x:Name="btnSave"
+                            Content="SAVE"
+                            Width="80"
+                            Height="32"
+                            Background="{StaticResource ControlBackground}"
+                            Foreground="{StaticResource ForegroundColor}"
+                            BorderBrush="{StaticResource ControlBorder}"
+                            BorderThickness="1"
+                            FontSize="11"
+                            Click="btnSave_Click"
+                            Margin="0,0,5,0"/>
             </StackPanel>
         </Border>
-        
+
         <!-- MASTER GRID -->
         <syncfusion:SfDataGrid x:Name="sfScheduleMaster"
                       Grid.Row="1"
@@ -120,15 +154,27 @@
                                           Width="250"
                                           AllowEditing="False"/>
 
+                <syncfusion:GridDateTimeColumn MappingName="P6_PlannedStart" 
+                                              HeaderText="P6 Planned Start" 
+                                              Width="130"
+                                              DisplayBinding="{Binding P6_PlannedStart, StringFormat='yyyy-MM-dd'}"
+                                              AllowEditing="False"/>
+
+                <syncfusion:GridDateTimeColumn MappingName="P6_PlannedFinish" 
+                                              HeaderText="P6 Planned Finish" 
+                                              Width="130"
+                                              DisplayBinding="{Binding P6_PlannedFinish, StringFormat='yyyy-MM-dd'}"
+                                              AllowEditing="False"/>
+
                 <syncfusion:GridDateTimeColumn MappingName="P6_ActualStart" 
-                                              HeaderText="P6 Start" 
-                                              Width="110"
+                                              HeaderText="P6 Actual Start" 
+                                              Width="130"
                                               DisplayBinding="{Binding P6_ActualStart, StringFormat='yyyy-MM-dd'}"
                                               AllowEditing="False"/>
 
                 <syncfusion:GridDateTimeColumn MappingName="P6_ActualFinish" 
-                                              HeaderText="P6 Finish" 
-                                              Width="110"
+                                              HeaderText="P6 Actual Finish" 
+                                              Width="130"
                                               DisplayBinding="{Binding P6_ActualFinish, StringFormat='yyyy-MM-dd'}"
                                               AllowEditing="False"/>
 
@@ -179,14 +225,20 @@
                                           AllowEditing="True"/>
 
                 <syncfusion:GridDateTimeColumn MappingName="ThreeWeekStart" 
-                                              HeaderText="3WLA Start" 
-                                              Width="110"
-                                              AllowEditing="True"/>
+                              HeaderText="3WLA Start" 
+                              Width="110"
+                              AllowEditing="True"
+                              AllowNullValue="True"
+                              NullText=""
+                              Pattern="ShortDate"/>
 
                 <syncfusion:GridDateTimeColumn MappingName="ThreeWeekFinish" 
-                                              HeaderText="3WLA Finish" 
-                                              Width="110"
-                                              AllowEditing="True"/>
+                              HeaderText="3WLA Finish" 
+                              Width="110"
+                              AllowEditing="True"
+                              AllowNullValue="True"
+                              NullText=""
+                              Pattern="ShortDate"/>
             </syncfusion:SfDataGrid.Columns>
         </syncfusion:SfDataGrid>
 

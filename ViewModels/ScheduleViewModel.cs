@@ -4,7 +4,6 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows.Data;
 using VANTAGE.Models;
 using VANTAGE.Repositories;
 using VANTAGE.Utilities;
@@ -14,14 +13,14 @@ namespace VANTAGE.ViewModels
     public class ScheduleViewModel : INotifyPropertyChanged
     {
         private ObservableCollection<ScheduleMasterRow> _masterRows = new ObservableCollection<ScheduleMasterRow>();
-        private ICollectionView? _masterRowsView;
+        private List<ScheduleMasterRow> _allMasterRows = new List<ScheduleMasterRow>(); // Store unfiltered data
         private DateTime? _selectedWeekEndDate;
         private bool _isLoading;
         private bool _filterActualStart;
         private bool _filterActualFinish;
         private bool _filter3WLA;
 
-        // Master grid data
+        // Master grid data (filtered)
         public ObservableCollection<ScheduleMasterRow> MasterRows
         {
             get => _masterRows;
@@ -29,10 +28,6 @@ namespace VANTAGE.ViewModels
             {
                 _masterRows = value;
                 OnPropertyChanged(nameof(MasterRows));
-
-                // Create collection view for filtering
-                _masterRowsView = CollectionViewSource.GetDefaultView(_masterRows);
-                _masterRowsView.Filter = FilterMasterRow;
             }
         }
 
@@ -59,7 +54,7 @@ namespace VANTAGE.ViewModels
             }
         }
 
-        // Filter toggles
+        // Filter toggles - MUTUALLY EXCLUSIVE
         public bool FilterActualStart
         {
             get => _filterActualStart;
@@ -68,8 +63,18 @@ namespace VANTAGE.ViewModels
                 if (_filterActualStart != value)
                 {
                     _filterActualStart = value;
+
+                    // Turn off other filters if this one is being activated
+                    if (value)
+                    {
+                        _filterActualFinish = false;
+                        _filter3WLA = false;
+                        OnPropertyChanged(nameof(FilterActualFinish));
+                        OnPropertyChanged(nameof(Filter3WLA));
+                    }
+
                     OnPropertyChanged(nameof(FilterActualStart));
-                    RefreshFilter();
+                    ApplyFilter();
                 }
             }
         }
@@ -82,8 +87,18 @@ namespace VANTAGE.ViewModels
                 if (_filterActualFinish != value)
                 {
                     _filterActualFinish = value;
+
+                    // Turn off other filters if this one is being activated
+                    if (value)
+                    {
+                        _filterActualStart = false;
+                        _filter3WLA = false;
+                        OnPropertyChanged(nameof(FilterActualStart));
+                        OnPropertyChanged(nameof(Filter3WLA));
+                    }
+
                     OnPropertyChanged(nameof(FilterActualFinish));
-                    RefreshFilter();
+                    ApplyFilter();
                 }
             }
         }
@@ -96,8 +111,18 @@ namespace VANTAGE.ViewModels
                 if (_filter3WLA != value)
                 {
                     _filter3WLA = value;
+
+                    // Turn off other filters if this one is being activated
+                    if (value)
+                    {
+                        _filterActualStart = false;
+                        _filterActualFinish = false;
+                        OnPropertyChanged(nameof(FilterActualStart));
+                        OnPropertyChanged(nameof(FilterActualFinish));
+                    }
+
                     OnPropertyChanged(nameof(Filter3WLA));
-                    RefreshFilter();
+                    ApplyFilter();
                 }
             }
         }
@@ -156,10 +181,13 @@ namespace VANTAGE.ViewModels
 
                 var masterRows = await ScheduleRepository.GetScheduleMasterRowsAsync(weekEndDate);
 
-                // Replace the entire collection to trigger the setter
-                MasterRows = new ObservableCollection<ScheduleMasterRow>(masterRows);
+                // Store the full unfiltered dataset
+                _allMasterRows = masterRows;
 
-                AppLogger.Info($"Loaded {MasterRows.Count} schedule activities for {weekEndDate:yyyy-MM-dd}",
+                // Apply current filter (or show all if no filter active)
+                ApplyFilter();
+
+                AppLogger.Info($"Loaded {_allMasterRows.Count} schedule activities for {weekEndDate:yyyy-MM-dd}",
                     "ScheduleViewModel.LoadScheduleDataAsync");
             }
             catch (Exception ex)
@@ -172,30 +200,45 @@ namespace VANTAGE.ViewModels
             }
         }
 
-        // Filter predicate for master rows
-        private bool FilterMasterRow(object obj)
+        // Apply filter by rebuilding the ObservableCollection
+        private void ApplyFilter()
         {
-            if (obj is not ScheduleMasterRow row)
-                return false;
+            System.Diagnostics.Debug.WriteLine($"=== ApplyFilter: ActualStart={FilterActualStart}, ActualFinish={FilterActualFinish}, 3WLA={Filter3WLA} ===");
+
+            List<ScheduleMasterRow> filteredRows;
 
             // If no filters active, show all
             if (!FilterActualStart && !FilterActualFinish && !Filter3WLA)
-                return true;
-
-            bool passesFilter = false;
-
-            // Actual Start filter - show rows where P6 and MS differ
-            if (FilterActualStart)
             {
-                if (row.HasStartVariance)
-                    passesFilter = true;
+                filteredRows = _allMasterRows;
+                System.Diagnostics.Debug.WriteLine($"No filters active - showing all {filteredRows.Count} rows");
+            }
+            else
+            {
+                // Apply the active filter
+                filteredRows = _allMasterRows.Where(row => FilterMasterRow(row)).ToList();
+                System.Diagnostics.Debug.WriteLine($"Filter applied - showing {filteredRows.Count} of {_allMasterRows.Count} rows");
             }
 
-            // Actual Finish filter - show rows where P6 and MS differ
+            // Rebuild the ObservableCollection
+            MasterRows = new ObservableCollection<ScheduleMasterRow>(filteredRows);
+        }
+
+        // Filter predicate for master rows - returns true if row should be shown
+        private bool FilterMasterRow(ScheduleMasterRow row)
+        {
+            // Actual Start filter - show rows where P6 and MS start dates differ
+            if (FilterActualStart)
+            {
+                bool hasVariance = row.HasStartVariance;
+                System.Diagnostics.Debug.WriteLine($"[{row.SchedActNO}] Filter result: {hasVariance}");
+                return hasVariance;
+            }
+
+            // Actual Finish filter - show rows where P6 and MS finish dates differ
             if (FilterActualFinish)
             {
-                if (row.HasFinishVariance)
-                    passesFilter = true;
+                return row.HasFinishVariance;
             }
 
             // 3WLA filter - show rows starting/finishing in next 3 weeks
@@ -204,20 +247,11 @@ namespace VANTAGE.ViewModels
                 var today = DateTime.Today;
                 var threeWeeksOut = today.AddDays(21);
 
-                if ((row.P6_PlannedStart.HasValue && row.P6_PlannedStart.Value >= today && row.P6_PlannedStart.Value <= threeWeeksOut) ||
-                    (row.P6_PlannedFinish.HasValue && row.P6_PlannedFinish.Value >= today && row.P6_PlannedFinish.Value <= threeWeeksOut))
-                {
-                    passesFilter = true;
-                }
+                return (row.P6_PlannedStart.HasValue && row.P6_PlannedStart.Value >= today && row.P6_PlannedStart.Value <= threeWeeksOut) ||
+                       (row.P6_PlannedFinish.HasValue && row.P6_PlannedFinish.Value >= today && row.P6_PlannedFinish.Value <= threeWeeksOut);
             }
 
-            return passesFilter;
-        }
-
-        // Refresh filter
-        private void RefreshFilter()
-        {
-            _masterRowsView?.Refresh();
+            return true;
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;

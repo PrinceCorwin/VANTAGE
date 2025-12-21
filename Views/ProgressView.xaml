@@ -1137,22 +1137,26 @@
                               NumberDecimalDigits="2" />
 
                         <syncfusion:GridDateTimeColumn MappingName="SchFinish"
-                               HeaderText="SchFinish"
-                               Width="100"
-                               IsHidden="False"
-                               AllowEditing="True"
-                               AllowFiltering="True"
-                               AllowSorting="True"
-                               Pattern="ShortDate" />
+                            HeaderText="SchFinish"
+                            Width="100"
+                            IsHidden="False"
+                            AllowEditing="True"
+                            AllowFiltering="True"
+                            AllowSorting="True"
+                            AllowNullValue="True"
+                            NullText=""
+                            Pattern="ShortDate" />
 
                         <syncfusion:GridDateTimeColumn MappingName="SchStart"
-                               HeaderText="SchStart"
-                               Width="100"
-                               IsHidden="False"
-                               AllowEditing="True"
-                               AllowFiltering="True"
-                               AllowSorting="True"
-                               Pattern="ShortDate" />
+                           HeaderText="SchStart"
+                           Width="100"
+                           IsHidden="False"
+                           AllowEditing="True"
+                           AllowFiltering="True"
+                           AllowSorting="True"
+                           AllowNullValue="True"
+                           NullText=""
+                           Pattern="ShortDate" />
 
                         <syncfusion:GridTextColumn MappingName="SecondActno"
                            HeaderText="SecondActno"

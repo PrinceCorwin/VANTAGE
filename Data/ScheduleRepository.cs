@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
 using VANTAGE.Models;
 using VANTAGE.Utilities;
-
 namespace VANTAGE.Repositories
 {
     // Repository for local Schedule table operations
@@ -86,6 +85,122 @@ namespace VANTAGE.Repositories
             });
         }
 
+        // Update editable fields in Schedule table (local SQLite)
+        // Only updates: ThreeWeekStart, ThreeWeekFinish, MissedStartReason, MissedFinishReason
+        public static async Task<bool> UpdateScheduleRowAsync(ScheduleMasterRow row, string username)
+        {
+            return await Task.Run(() =>
+            {
+                try
+                {
+                    using var connection = new SqliteConnection($"Data Source={DatabaseSetup.DbPath}");
+                    connection.Open();
+
+                    var cmd = connection.CreateCommand();
+                    cmd.CommandText = @"
+                        UPDATE Schedule 
+                        SET ThreeWeekStart = @threeWeekStart,
+                            ThreeWeekFinish = @threeWeekFinish,
+                            MissedStartReason = @missedStartReason,
+                            MissedFinishReason = @missedFinishReason,
+                            UpdatedBy = @updatedBy,
+                            UpdatedUtcDate = @updatedUtcDate
+                        WHERE SchedActNO = @schedActNo 
+                          AND WeekEndDate = @weekEndDate";
+
+                    cmd.Parameters.AddWithValue("@threeWeekStart",
+                        row.ThreeWeekStart?.ToString("yyyy-MM-dd") ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@threeWeekFinish",
+                        row.ThreeWeekFinish?.ToString("yyyy-MM-dd") ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@missedStartReason",
+                        row.MissedStartReason ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@missedFinishReason",
+                        row.MissedFinishReason ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@updatedBy", username);
+                    cmd.Parameters.AddWithValue("@updatedUtcDate", DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"));
+                    cmd.Parameters.AddWithValue("@schedActNo", row.SchedActNO);
+                    cmd.Parameters.AddWithValue("@weekEndDate", row.WeekEndDate.ToString("yyyy-MM-dd"));
+
+                    int rowsAffected = cmd.ExecuteNonQuery();
+
+                    if (rowsAffected > 0)
+                    {
+                        AppLogger.Info($"Updated Schedule row: {row.SchedActNO}",
+                            "ScheduleRepository.UpdateScheduleRowAsync", username);
+                        return true;
+                    }
+                    else
+                    {
+                        AppLogger.Warning($"No rows updated for SchedActNO: {row.SchedActNO}, WeekEndDate: {row.WeekEndDate:yyyy-MM-dd}",
+                            "ScheduleRepository.UpdateScheduleRowAsync");
+                        return false;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    AppLogger.Error(ex, "ScheduleRepository.UpdateScheduleRowAsync");
+                    return false;
+                }
+            });
+        }
+        // Save all editable fields for all rows in one transaction
+        public static async Task<int> SaveAllScheduleRowsAsync(IEnumerable<ScheduleMasterRow> rows, string username)
+        {
+            return await Task.Run(() =>
+            {
+                int savedCount = 0;
+
+                try
+                {
+                    using var connection = new SqliteConnection($"Data Source={DatabaseSetup.DbPath}");
+                    connection.Open();
+
+                    using var transaction = connection.BeginTransaction();
+
+                    var cmd = connection.CreateCommand();
+                    cmd.Transaction = transaction;
+                    cmd.CommandText = @"
+                UPDATE Schedule 
+                SET ThreeWeekStart = @threeWeekStart,
+                    ThreeWeekFinish = @threeWeekFinish,
+                    MissedStartReason = @missedStartReason,
+                    MissedFinishReason = @missedFinishReason,
+                    UpdatedBy = @updatedBy,
+                    UpdatedUtcDate = @updatedUtcDate
+                WHERE SchedActNO = @schedActNo 
+                  AND WeekEndDate = @weekEndDate";
+
+                    foreach (var row in rows)
+                    {
+                        cmd.Parameters.Clear();
+                        cmd.Parameters.AddWithValue("@threeWeekStart",
+                            row.ThreeWeekStart?.ToString("yyyy-MM-dd") ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@threeWeekFinish",
+                            row.ThreeWeekFinish?.ToString("yyyy-MM-dd") ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@missedStartReason",
+                            row.MissedStartReason ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@missedFinishReason",
+                            row.MissedFinishReason ?? (object)DBNull.Value);
+                        cmd.Parameters.AddWithValue("@updatedBy", username);
+                        cmd.Parameters.AddWithValue("@updatedUtcDate", DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"));
+                        cmd.Parameters.AddWithValue("@schedActNo", row.SchedActNO);
+                        cmd.Parameters.AddWithValue("@weekEndDate", row.WeekEndDate.ToString("yyyy-MM-dd"));
+
+                        savedCount += cmd.ExecuteNonQuery();
+                    }
+
+                    transaction.Commit();
+
+                    AppLogger.Info($"Batch saved {savedCount} schedule rows", "ScheduleRepository.SaveAllScheduleRowsAsync", username);
+                    return savedCount;
+                }
+                catch (Exception ex)
+                {
+                    AppLogger.Error(ex, "ScheduleRepository.SaveAllScheduleRowsAsync");
+                    throw;
+                }
+            });
+        }
         // Calculate MS rollups for ALL rows in ONE Azure query
         private static void CalculateAllMSRollups(
             List<ScheduleMasterRow> masterRows,
