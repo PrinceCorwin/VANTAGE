@@ -19,7 +19,7 @@ namespace VANTAGE.ViewModels
         private bool _filterActualStart;
         private bool _filterActualFinish;
         private bool _filter3WLA;
-
+        public string RequiredFieldsButtonText => $"{RequiredFieldsCount} Required Fields";
         // Master grid data (filtered)
         public ObservableCollection<ScheduleMasterRow> MasterRows
         {
@@ -137,7 +137,34 @@ namespace VANTAGE.ViewModels
                 OnPropertyChanged(nameof(IsLoading));
             }
         }
-
+        private int _requiredFieldsCount;
+        public int RequiredFieldsCount
+        {
+            get => _requiredFieldsCount;
+            set
+            {
+                if (_requiredFieldsCount != value)
+                {
+                    _requiredFieldsCount = value;
+                    OnPropertyChanged(nameof(RequiredFieldsCount));
+                    OnPropertyChanged(nameof(RequiredFieldsButtonText));
+                }
+            }
+        }
+        private bool _filterRequiredFields;
+        public bool FilterRequiredFields
+        {
+            get => _filterRequiredFields;
+            set
+            {
+                if (_filterRequiredFields != value)
+                {
+                    _filterRequiredFields = value;
+                    OnPropertyChanged(nameof(FilterRequiredFields));
+                    ApplyFilter();
+                }
+            }
+        }
         // Initialize - load available dates
         public async Task InitializeAsync()
         {
@@ -171,22 +198,38 @@ namespace VANTAGE.ViewModels
                 IsLoading = false;
             }
         }
+        public void UpdateRequiredFieldsCount()
+        {
+            if (MasterRows == null || MasterRows.Count == 0)
+            {
+                RequiredFieldsCount = 0;
+                return;
+            }
 
+            int count = 0;
+            foreach (var row in MasterRows)
+            {
+                if (row.IsMissedStartReasonRequired) count++;
+                if (row.IsMissedFinishReasonRequired) count++;
+                if (row.IsThreeWeekStartRequired) count++;
+                if (row.IsThreeWeekFinishRequired) count++;
+            }
+
+            RequiredFieldsCount = count;
+        }
         // Load schedule data for selected week
         public async Task LoadScheduleDataAsync(DateTime weekEndDate)
         {
             try
             {
                 IsLoading = true;
-
                 var masterRows = await ScheduleRepository.GetScheduleMasterRowsAsync(weekEndDate);
-
                 // Store the full unfiltered dataset
                 _allMasterRows = masterRows;
-
                 // Apply current filter (or show all if no filter active)
                 ApplyFilter();
-
+                // Update required fields count for conditional formatting
+                UpdateRequiredFieldsCount();
                 AppLogger.Info($"Loaded {_allMasterRows.Count} schedule activities for {weekEndDate:yyyy-MM-dd}",
                     "ScheduleViewModel.LoadScheduleDataAsync");
             }
@@ -203,12 +246,10 @@ namespace VANTAGE.ViewModels
         // Apply filter by rebuilding the ObservableCollection
         private void ApplyFilter()
         {
-            System.Diagnostics.Debug.WriteLine($"=== ApplyFilter: ActualStart={FilterActualStart}, ActualFinish={FilterActualFinish}, 3WLA={Filter3WLA} ===");
-
+            System.Diagnostics.Debug.WriteLine($"=== ApplyFilter: ActualStart={FilterActualStart}, ActualFinish={FilterActualFinish}, 3WLA={Filter3WLA}, RequiredFields={FilterRequiredFields} ===");
             List<ScheduleMasterRow> filteredRows;
-
             // If no filters active, show all
-            if (!FilterActualStart && !FilterActualFinish && !Filter3WLA)
+            if (!FilterActualStart && !FilterActualFinish && !Filter3WLA && !FilterRequiredFields)
             {
                 filteredRows = _allMasterRows;
                 System.Diagnostics.Debug.WriteLine($"No filters active - showing all {filteredRows.Count} rows");
@@ -219,7 +260,6 @@ namespace VANTAGE.ViewModels
                 filteredRows = _allMasterRows.Where(row => FilterMasterRow(row)).ToList();
                 System.Diagnostics.Debug.WriteLine($"Filter applied - showing {filteredRows.Count} of {_allMasterRows.Count} rows");
             }
-
             // Rebuild the ObservableCollection
             MasterRows = new ObservableCollection<ScheduleMasterRow>(filteredRows);
         }
@@ -227,6 +267,14 @@ namespace VANTAGE.ViewModels
         // Filter predicate for master rows - returns true if row should be shown
         private bool FilterMasterRow(ScheduleMasterRow row)
         {
+            // Required Fields filter - show rows with any required field incomplete
+            if (FilterRequiredFields)
+            {
+                return row.IsMissedStartReasonRequired ||
+                       row.IsMissedFinishReasonRequired ||
+                       row.IsThreeWeekStartRequired ||
+                       row.IsThreeWeekFinishRequired;
+            }
             // Actual Start filter - show rows where P6 and MS start dates differ
             if (FilterActualStart)
             {
@@ -234,23 +282,19 @@ namespace VANTAGE.ViewModels
                 System.Diagnostics.Debug.WriteLine($"[{row.SchedActNO}] Filter result: {hasVariance}");
                 return hasVariance;
             }
-
             // Actual Finish filter - show rows where P6 and MS finish dates differ
             if (FilterActualFinish)
             {
                 return row.HasFinishVariance;
             }
-
             // 3WLA filter - show rows starting/finishing in next 3 weeks
             if (Filter3WLA)
             {
                 var today = DateTime.Today;
                 var threeWeeksOut = today.AddDays(21);
-
                 return (row.P6_PlannedStart.HasValue && row.P6_PlannedStart.Value >= today && row.P6_PlannedStart.Value <= threeWeeksOut) ||
                        (row.P6_PlannedFinish.HasValue && row.P6_PlannedFinish.Value >= today && row.P6_PlannedFinish.Value <= threeWeeksOut);
             }
-
             return true;
         }
 

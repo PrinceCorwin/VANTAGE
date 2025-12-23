@@ -48,6 +48,38 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        <!-- Required field styles (red background when field needs attention) -->
+        <Style x:Key="MissedStartReasonRequiredStyle" TargetType="syncfusion:GridCell">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=IsMissedStartReasonRequired}" Value="True">
+                    <Setter Property="Background" Value="#5b2626"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="MissedFinishReasonRequiredStyle" TargetType="syncfusion:GridCell">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=IsMissedFinishReasonRequired}" Value="True">
+                    <Setter Property="Background" Value="#5b2626"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="ThreeWeekStartRequiredStyle" TargetType="syncfusion:GridCell">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=IsThreeWeekStartRequired}" Value="True">
+                    <Setter Property="Background" Value="#5b2626"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="ThreeWeekFinishRequiredStyle" TargetType="syncfusion:GridCell">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=IsThreeWeekFinishRequired}" Value="True">
+                    <Setter Property="Background" Value="#5b2626"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
     </UserControl.Resources>
 
     <Grid>
@@ -215,14 +247,16 @@
                                              AllowEditing="False"/>
 
                 <syncfusion:GridTextColumn MappingName="MissedStartReason" 
-                                          HeaderText="Missed Start Reason" 
-                                          Width="200"
-                                          AllowEditing="True"/>
+                          HeaderText="Missed Start Reason" 
+                          Width="200"
+                          AllowEditing="True"
+                          CellStyle="{StaticResource MissedStartReasonRequiredStyle}"/>
 
                 <syncfusion:GridTextColumn MappingName="MissedFinishReason" 
-                                          HeaderText="Missed Finish Reason" 
-                                          Width="200"
-                                          AllowEditing="True"/>
+                          HeaderText="Missed Finish Reason" 
+                          Width="200"
+                          AllowEditing="True"
+                          CellStyle="{StaticResource MissedFinishReasonRequiredStyle}"/>
 
                 <syncfusion:GridDateTimeColumn MappingName="ThreeWeekStart" 
                               HeaderText="3WLA Start" 
@@ -230,7 +264,8 @@
                               AllowEditing="True"
                               AllowNullValue="True"
                               NullText=""
-                              Pattern="ShortDate"/>
+                              Pattern="ShortDate"
+                              CellStyle="{StaticResource ThreeWeekStartRequiredStyle}"/>
 
                 <syncfusion:GridDateTimeColumn MappingName="ThreeWeekFinish" 
                               HeaderText="3WLA Finish" 
@@ -238,7 +273,8 @@
                               AllowEditing="True"
                               AllowNullValue="True"
                               NullText=""
-                              Pattern="ShortDate"/>
+                              Pattern="ShortDate"
+                              CellStyle="{StaticResource ThreeWeekFinishRequiredStyle}"/>
             </syncfusion:SfDataGrid.Columns>
         </syncfusion:SfDataGrid>
 
@@ -255,6 +291,17 @@
                           Text="Ready"
                           Foreground="{StaticResource ForegroundColor}"
                           FontSize="12"/>
+                <Button x:Name="btnRequiredFields"
+                        Content="{Binding RequiredFieldsButtonText}"
+                        Click="btnRequiredFields_Click"
+                        Background="{StaticResource ControlBackground}"
+                        Foreground="{StaticResource StatusRed}"
+                        BorderBrush="{StaticResource ControlBorder}"
+                        BorderThickness="1"
+                        Padding="8,4"
+                        Margin="20,0,0,0"
+                        FontSize="11"
+                        ToolTip="Click to filter rows with required fields"/>
             </StackPanel>
         </Border>
 

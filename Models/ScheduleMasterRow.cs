@@ -44,6 +44,7 @@ namespace VANTAGE.Models
                 {
                     _missedStartReason = value;
                     OnPropertyChanged(nameof(MissedStartReason));
+                    OnPropertyChanged(nameof(IsMissedStartReasonRequired));
                 }
             }
         }
@@ -58,6 +59,7 @@ namespace VANTAGE.Models
                 {
                     _missedFinishReason = value;
                     OnPropertyChanged(nameof(MissedFinishReason));
+                    OnPropertyChanged(nameof(IsMissedFinishReasonRequired));
                 }
             }
         }
@@ -72,6 +74,7 @@ namespace VANTAGE.Models
                 {
                     _threeWeekStart = value;
                     OnPropertyChanged(nameof(ThreeWeekStart));
+                    OnPropertyChanged(nameof(IsThreeWeekStartRequired));
                 }
             }
         }
@@ -86,6 +89,7 @@ namespace VANTAGE.Models
                 {
                     _threeWeekFinish = value;
                     OnPropertyChanged(nameof(ThreeWeekFinish));
+                    OnPropertyChanged(nameof(IsThreeWeekFinishRequired));
                 }
             }
         }
@@ -127,7 +131,57 @@ namespace VANTAGE.Models
                 return P6_ActualFinish.Value.Date != MS_ActualFinish.Value.Date;
             }
         }
+        // ========================================
+        // REQUIRED FIELD INDICATORS (for conditional formatting)
+        // ========================================
 
+        public bool IsMissedStartReasonRequired
+        {
+            get
+            {
+                return HasStartVariance && string.IsNullOrWhiteSpace(MissedStartReason);
+            }
+        }
+
+        public bool IsMissedFinishReasonRequired
+        {
+            get
+            {
+                return HasFinishVariance && string.IsNullOrWhiteSpace(MissedFinishReason);
+            }
+        }
+
+        public bool IsThreeWeekStartRequired
+        {
+            get
+            {
+                if (ThreeWeekStart.HasValue)
+                    return false;
+
+                if (!P6_PlannedStart.HasValue)
+                    return false;
+
+                // Required if P6_PlannedStart is within 21 days after WeekEndDate
+                var daysUntilStart = (P6_PlannedStart.Value - WeekEndDate).TotalDays;
+                return daysUntilStart >= 0 && daysUntilStart <= 21;
+            }
+        }
+
+        public bool IsThreeWeekFinishRequired
+        {
+            get
+            {
+                if (ThreeWeekFinish.HasValue)
+                    return false;
+
+                if (!P6_PlannedFinish.HasValue)
+                    return false;
+
+                // Required if P6_PlannedFinish is within 21 days after WeekEndDate
+                var daysUntilFinish = (P6_PlannedFinish.Value - WeekEndDate).TotalDays;
+                return daysUntilFinish >= 0 && daysUntilFinish <= 21;
+            }
+        }
         // ========================================
         // CHILD COLLECTION (for detail grid expansion)
         // ========================================
