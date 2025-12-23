@@ -1881,8 +1881,22 @@ namespace VANTAGE.Views
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "ProgressView.BtnSubmit_Click", App.CurrentUser?.Username);
+
+                // Check for primary key violation and show user-friendly message
+                string userMessage;
+                if (ex.Message.Contains("PRIMARY KEY") || ex.Message.Contains("duplicate key"))
+                {
+                    userMessage = "Some records have already been submitted for this week by another user.\n\n" +
+                                  "This can happen when records were reassigned after another user submitted.\n\n" +
+                                  "Please sync your data and try again, or contact your administrator if the problem persists.";
+                }
+                else
+                {
+                    userMessage = ex.Message;
+                }
+
                 MessageBox.Show(
-                    $"Error submitting progress:\n\n{ex.Message}",
+                    $"Error submitting progress:\n\n{userMessage}",
                     "Error",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);

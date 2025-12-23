@@ -30,9 +30,20 @@ namespace VANTAGE.Repositories
                         return masterRows;
                     }
 
-                    // Step 2: Get all Schedule rows for this weekEndDate
+                    // Step 2: Get distinct SchedActNOs from ProgressSnapshots (user's actual data)
+                    var snapshotSchedActNOs = GetSchedActNOsFromSnapshots(weekEndDate, projectIds);
+
+                    if (snapshotSchedActNOs.Count == 0)
+                    {
+                        AppLogger.Warning($"No SchedActNOs found in ProgressSnapshots for WeekEndDate {weekEndDate:yyyy-MM-dd}", "ScheduleRepository.GetScheduleMasterRowsAsync");
+                        return masterRows;
+                    }
+
+                    // Step 3: Get Schedule rows ONLY for SchedActNOs that exist in snapshots
+                    string schedActNoList = "'" + string.Join("','", snapshotSchedActNOs) + "'";
+
                     var scheduleCmd = connection.CreateCommand();
-                    scheduleCmd.CommandText = @"
+                    scheduleCmd.CommandText = $@"
                 SELECT 
                     SchedActNO, WbsId, Description,
                     P6_PlannedStart, P6_PlannedFinish, P6_ActualStart, P6_ActualFinish,
@@ -40,6 +51,7 @@ namespace VANTAGE.Repositories
                     ThreeWeekStart, ThreeWeekFinish, MissedStartReason, MissedFinishReason
                 FROM Schedule
                 WHERE WeekEndDate = @weekEndDate
+                  AND SchedActNO IN ({schedActNoList})
                 ORDER BY SchedActNO";
                     scheduleCmd.Parameters.AddWithValue("@weekEndDate", weekEndDate.ToString("yyyy-MM-dd"));
 
@@ -69,7 +81,7 @@ namespace VANTAGE.Repositories
                         masterRows.Add(masterRow);
                     }
 
-                    // Step 3: Calculate ALL MS rollups in ONE Azure query
+                    // Step 4: Calculate MS rollups
                     CalculateAllMSRollups(masterRows, weekEndDate, projectIds);
 
                     AppLogger.Info($"Loaded {masterRows.Count} schedule master rows for {weekEndDate:yyyy-MM-dd}",
@@ -84,7 +96,41 @@ namespace VANTAGE.Repositories
                 }
             });
         }
+        // Get distinct SchedActNOs from ProgressSnapshots for the given week and projects
+        private static HashSet<string> GetSchedActNOsFromSnapshots(DateTime weekEndDate, List<string> projectIds)
+        {
+            var schedActNOs = new HashSet<string>();
 
+            try
+            {
+                using var azureConn = AzureDbManager.GetConnection();
+                azureConn.Open();
+
+                string projectIdList = "'" + string.Join("','", projectIds) + "'";
+
+                var cmd = azureConn.CreateCommand();
+                cmd.CommandText = $@"
+            SELECT DISTINCT SchedActNO 
+            FROM ProgressSnapshots 
+            WHERE WeekEndDate = @weekEndDate 
+              AND ProjectID IN ({projectIdList})
+              AND SchedActNO IS NOT NULL 
+              AND SchedActNO <> ''";
+                cmd.Parameters.AddWithValue("@weekEndDate", weekEndDate.ToString("yyyy-MM-dd"));
+
+                using var reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    schedActNOs.Add(reader.GetString(0));
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "ScheduleRepository.GetSchedActNOsFromSnapshots");
+            }
+
+            return schedActNOs;
+        }
         // Update editable fields in Schedule table (local SQLite)
         // Only updates: ThreeWeekStart, ThreeWeekFinish, MissedStartReason, MissedFinishReason
         public static async Task<bool> UpdateScheduleRowAsync(ScheduleMasterRow row, string username)
