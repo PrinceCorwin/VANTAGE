@@ -164,6 +164,7 @@
                       EditTrigger="OnTap"
                       ColumnSizer="Star"
                       SelectionMode="Single"
+                      SelectionUnit="Cell"
                       GridLinesVisibility="Both"
                       HeaderRowHeight="35"
                       RowHeight="30"

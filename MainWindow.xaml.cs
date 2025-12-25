@@ -287,7 +287,7 @@ namespace VANTAGE
                         MessageBoxButton.OK,
                         MessageBoxImage.Information);
                 }
-                catch (Exception ex)
+                catch
                 {
                     busyDialog.Close();
                     throw;

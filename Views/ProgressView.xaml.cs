@@ -177,8 +177,7 @@ namespace VANTAGE.Views
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
-        // PLACEHOLDER HANDLERS (Not Yet Implemented)
-        // ========================================
+
         private async void BtnMetadataErrors_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -744,11 +743,11 @@ namespace VANTAGE.Views
             InitializeComponent();
             // Apply FluentDark theme to grid
             Syncfusion.SfSkinManager.SfSkinManager.SetTheme(sfActivities, new Syncfusion.SfSkinManager.Theme("FluentDark"));
-
             // Hook into Syncfusion's filter changed event
             sfActivities.FilterChanged += SfActivities_FilterChanged;
             sfActivities.CurrentCellBeginEdit += SfActivities_CurrentCellBeginEdit;
-
+            sfActivities.GridCopyContent += SfActivities_GridCopyContent;
+            sfActivities.GridPasteContent += SfActivities_GridPasteContent;
             // VM
             _viewModel = new ProgressViewModel();
             this.DataContext = _viewModel;
@@ -804,7 +803,47 @@ namespace VANTAGE.Views
             _resizeSaveTimer.Stop();
             SaveColumnState();
         }
+        // Handle paste to ensure cell enters edit mode and value persists
+        private void SfActivities_GridPasteContent(object? sender, GridCopyPasteEventArgs e)
+        {
+            // Get the current cell
+            var currentCell = sfActivities.SelectionController.CurrentCellManager.CurrentCell;
+            if (currentCell == null)
+                return;
 
+            // Check permission to edit this record
+            var activity = sfActivities.SelectedItem as Activity;
+            if (activity == null)
+                return;
+
+            bool canEdit = string.Equals(activity.AssignedTo, App.CurrentUser?.Username, StringComparison.OrdinalIgnoreCase);
+            if (!canEdit)
+            {
+                e.Handled = true; // Block paste for records user doesn't own
+                return;
+            }
+
+            // If not in edit mode, enter edit mode so paste triggers normal edit flow
+            if (!currentCell.IsEditing)
+            {
+                sfActivities.SelectionController.CurrentCellManager.BeginEdit();
+            }
+        }
+
+        // Handle copy to ensure only cell value is copied when in single-cell context
+        private void SfActivities_GridCopyContent(object? sender, GridCopyPasteEventArgs e)
+        {
+            // Get the current cell
+            var currentCell = sfActivities.SelectionController.CurrentCellManager.CurrentCell;
+            if (currentCell == null)
+                return;
+
+            // If not in edit mode, enter edit mode so copy gets just the cell value
+            if (!currentCell.IsEditing)
+            {
+                sfActivities.SelectionController.CurrentCellManager.BeginEdit();
+            }
+        }
         private void SfActivities_FilterChanged(object? sender, Syncfusion.UI.Xaml.Grid.GridFilterEventArgs e)
 
         {

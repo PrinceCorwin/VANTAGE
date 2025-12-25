@@ -59,7 +59,9 @@ namespace VANTAGE.Views
                 SaveColumnState();
             };
             SetupColumnResizeSave();
+
         }
+        
         private void btnRequiredFields_Click(object sender, RoutedEventArgs e)
         {
             // Toggle the filter - clicking again clears it
