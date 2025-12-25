@@ -13,13 +13,30 @@ namespace VANTAGE.ViewModels
     public class ScheduleViewModel : INotifyPropertyChanged
     {
         private ObservableCollection<ScheduleMasterRow> _masterRows = new ObservableCollection<ScheduleMasterRow>();
-        private List<ScheduleMasterRow> _allMasterRows = new List<ScheduleMasterRow>(); // Store unfiltered data
+        private List<ScheduleMasterRow> _allMasterRows = new List<ScheduleMasterRow>();
+        private ObservableCollection<ProgressSnapshot> _detailActivities = new ObservableCollection<ProgressSnapshot>();
         private DateTime? _selectedWeekEndDate;
         private bool _isLoading;
         private bool _filterActualStart;
         private bool _filterActualFinish;
         private bool _filter3WLA;
+        private string? _selectedSchedActNO;
+        private bool _hasUnsavedChanges;
+        public bool HasUnsavedChanges
+        {
+            get => _hasUnsavedChanges;
+            set
+            {
+                if (_hasUnsavedChanges != value)
+                {
+                    _hasUnsavedChanges = value;
+                    OnPropertyChanged(nameof(HasUnsavedChanges));
+                }
+            }
+        }
+
         public string RequiredFieldsButtonText => $"{RequiredFieldsCount} Required Fields";
+
         // Master grid data (filtered)
         public ObservableCollection<ScheduleMasterRow> MasterRows
         {
@@ -28,6 +45,28 @@ namespace VANTAGE.ViewModels
             {
                 _masterRows = value;
                 OnPropertyChanged(nameof(MasterRows));
+            }
+        }
+
+        // Detail grid data (child ProgressSnapshots for selected master row)
+        public ObservableCollection<ProgressSnapshot> DetailActivities
+        {
+            get => _detailActivities;
+            set
+            {
+                _detailActivities = value;
+                OnPropertyChanged(nameof(DetailActivities));
+            }
+        }
+
+        // Track which SchedActNO is currently selected
+        public string? SelectedSchedActNO
+        {
+            get => _selectedSchedActNO;
+            set
+            {
+                _selectedSchedActNO = value;
+                OnPropertyChanged(nameof(SelectedSchedActNO));
             }
         }
 
@@ -44,6 +83,9 @@ namespace VANTAGE.ViewModels
                 {
                     _selectedWeekEndDate = value;
                     OnPropertyChanged(nameof(SelectedWeekEndDate));
+
+                    // Clear detail when week changes
+                    ClearDetailActivities();
 
                     // Load data for new week
                     if (value.HasValue)
@@ -64,13 +106,14 @@ namespace VANTAGE.ViewModels
                 {
                     _filterActualStart = value;
 
-                    // Turn off other filters if this one is being activated
                     if (value)
                     {
                         _filterActualFinish = false;
                         _filter3WLA = false;
+                        _filterRequiredFields = false;
                         OnPropertyChanged(nameof(FilterActualFinish));
                         OnPropertyChanged(nameof(Filter3WLA));
+                        OnPropertyChanged(nameof(FilterRequiredFields));
                     }
 
                     OnPropertyChanged(nameof(FilterActualStart));
@@ -88,13 +131,14 @@ namespace VANTAGE.ViewModels
                 {
                     _filterActualFinish = value;
 
-                    // Turn off other filters if this one is being activated
                     if (value)
                     {
                         _filterActualStart = false;
                         _filter3WLA = false;
+                        _filterRequiredFields = false;
                         OnPropertyChanged(nameof(FilterActualStart));
                         OnPropertyChanged(nameof(Filter3WLA));
+                        OnPropertyChanged(nameof(FilterRequiredFields));
                     }
 
                     OnPropertyChanged(nameof(FilterActualFinish));
@@ -112,13 +156,14 @@ namespace VANTAGE.ViewModels
                 {
                     _filter3WLA = value;
 
-                    // Turn off other filters if this one is being activated
                     if (value)
                     {
                         _filterActualStart = false;
                         _filterActualFinish = false;
+                        _filterRequiredFields = false;
                         OnPropertyChanged(nameof(FilterActualStart));
                         OnPropertyChanged(nameof(FilterActualFinish));
+                        OnPropertyChanged(nameof(FilterRequiredFields));
                     }
 
                     OnPropertyChanged(nameof(Filter3WLA));
@@ -137,6 +182,7 @@ namespace VANTAGE.ViewModels
                 OnPropertyChanged(nameof(IsLoading));
             }
         }
+
         private int _requiredFieldsCount;
         public int RequiredFieldsCount
         {
@@ -151,6 +197,7 @@ namespace VANTAGE.ViewModels
                 }
             }
         }
+
         private bool _filterRequiredFields;
         public bool FilterRequiredFields
         {
@@ -160,12 +207,138 @@ namespace VANTAGE.ViewModels
                 if (_filterRequiredFields != value)
                 {
                     _filterRequiredFields = value;
+
+                    if (value)
+                    {
+                        _filterActualStart = false;
+                        _filterActualFinish = false;
+                        _filter3WLA = false;
+                        OnPropertyChanged(nameof(FilterActualStart));
+                        OnPropertyChanged(nameof(FilterActualFinish));
+                        OnPropertyChanged(nameof(Filter3WLA));
+                    }
+
                     OnPropertyChanged(nameof(FilterRequiredFields));
                     ApplyFilter();
                 }
             }
         }
-        // Initialize - load available dates
+
+        // ========================================
+        // DETAIL ACTIVITIES METHODS
+        // ========================================
+
+        public void ClearDetailActivities()
+        {
+            DetailActivities.Clear();
+            SelectedSchedActNO = null;
+        }
+
+        public async Task LoadDetailActivitiesAsync(string schedActNO)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(schedActNO) || !SelectedWeekEndDate.HasValue)
+                {
+                    ClearDetailActivities();
+                    return;
+                }
+
+                SelectedSchedActNO = schedActNO;
+
+                var snapshots = await ScheduleRepository.GetSnapshotsBySchedActNOAsync(
+                    schedActNO,
+                    SelectedWeekEndDate.Value);
+
+                DetailActivities = new ObservableCollection<ProgressSnapshot>(snapshots);
+
+                AppLogger.Info($"Loaded {snapshots.Count} detail activities for {schedActNO}",
+                    "ScheduleViewModel.LoadDetailActivitiesAsync");
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "ScheduleViewModel.LoadDetailActivitiesAsync");
+                ClearDetailActivities();
+            }
+        }
+
+        // Called after detail grid edit to recalculate MS rollups for the selected SchedActNO
+        public async Task RecalculateMSRollupsAsync(string schedActNO)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(schedActNO) || !SelectedWeekEndDate.HasValue)
+                    return;
+
+                // Find the master row in both filtered and unfiltered collections
+                var masterRow = _allMasterRows.FirstOrDefault(r => r.SchedActNO == schedActNO);
+                var displayedRow = MasterRows.FirstOrDefault(r => r.SchedActNO == schedActNO);
+
+                if (masterRow == null)
+                    return;
+
+                // Recalculate from current DetailActivities (already updated in memory)
+                if (DetailActivities.Count > 0)
+                {
+                    // MS_ActualStart = MIN(SchStart) where SchStart is not null
+                    var starts = DetailActivities
+                        .Where(d => d.SchStart.HasValue)
+                        .Select(d => d.SchStart!.Value)
+                        .ToList();
+
+                    masterRow.MS_ActualStart = starts.Any() ? starts.Min() : (DateTime?)null;
+
+                    // MS_ActualFinish = MAX(SchFinish) only if ALL activities have SchFinish
+                    var allHaveFinish = DetailActivities.All(d => d.SchFinish.HasValue);
+                    if (allHaveFinish && DetailActivities.Count > 0)
+                    {
+                        masterRow.MS_ActualFinish = DetailActivities.Max(d => d.SchFinish!.Value);
+                    }
+                    else
+                    {
+                        masterRow.MS_ActualFinish = null;
+                    }
+
+                    // MS_PercentComplete = weighted average (BudgetMHs * PercentEntry) / SUM(BudgetMHs)
+                    double totalBudget = DetailActivities.Sum(d => d.BudgetMHs);
+                    if (totalBudget > 0)
+                    {
+                        double weightedSum = DetailActivities.Sum(d => d.BudgetMHs * d.PercentEntry);
+                        masterRow.MS_PercentComplete = weightedSum / totalBudget;
+                    }
+                    else
+                    {
+                        masterRow.MS_PercentComplete = 0;
+                    }
+
+                    // MS_BudgetMHs = SUM(BudgetMHs)
+                    masterRow.MS_BudgetMHs = totalBudget;
+                }
+
+                // Update the displayed row if it exists (might be filtered out)
+                if (displayedRow != null && displayedRow != masterRow)
+                {
+                    displayedRow.MS_ActualStart = masterRow.MS_ActualStart;
+                    displayedRow.MS_ActualFinish = masterRow.MS_ActualFinish;
+                    displayedRow.MS_PercentComplete = masterRow.MS_PercentComplete;
+                    displayedRow.MS_BudgetMHs = masterRow.MS_BudgetMHs;
+                }
+
+                // Update required fields count since variance properties may have changed
+                UpdateRequiredFieldsCount();
+
+                AppLogger.Info($"Recalculated MS rollups for {schedActNO}", "ScheduleViewModel.RecalculateMSRollupsAsync");
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "ScheduleViewModel.RecalculateMSRollupsAsync");
+            }
+        }
+
+        // ========================================
+        // INITIALIZATION AND DATA LOADING
+        // ========================================
+
         public async Task InitializeAsync()
         {
             try
@@ -180,7 +353,6 @@ namespace VANTAGE.ViewModels
                     AvailableWeekEndDates.Add(date);
                 }
 
-                // Auto-select most recent date
                 if (AvailableWeekEndDates.Count > 0)
                 {
                     SelectedWeekEndDate = AvailableWeekEndDates[0];
@@ -198,16 +370,17 @@ namespace VANTAGE.ViewModels
                 IsLoading = false;
             }
         }
+
         public void UpdateRequiredFieldsCount()
         {
-            if (MasterRows == null || MasterRows.Count == 0)
+            if (_allMasterRows == null || _allMasterRows.Count == 0)
             {
                 RequiredFieldsCount = 0;
                 return;
             }
 
             int count = 0;
-            foreach (var row in MasterRows)
+            foreach (var row in _allMasterRows)
             {
                 if (row.IsMissedStartReasonRequired) count++;
                 if (row.IsMissedFinishReasonRequired) count++;
@@ -217,19 +390,20 @@ namespace VANTAGE.ViewModels
 
             RequiredFieldsCount = count;
         }
-        // Load schedule data for selected week
+
         public async Task LoadScheduleDataAsync(DateTime weekEndDate)
         {
             try
             {
                 IsLoading = true;
                 var masterRows = await ScheduleRepository.GetScheduleMasterRowsAsync(weekEndDate);
-                // Store the full unfiltered dataset
                 _allMasterRows = masterRows;
-                // Apply current filter (or show all if no filter active)
                 ApplyFilter();
-                // Update required fields count for conditional formatting
                 UpdateRequiredFieldsCount();
+
+                // Reset unsaved changes flag when fresh data loads
+                HasUnsavedChanges = false;
+
                 AppLogger.Info($"Loaded {_allMasterRows.Count} schedule activities for {weekEndDate:yyyy-MM-dd}",
                     "ScheduleViewModel.LoadScheduleDataAsync");
             }
@@ -243,31 +417,28 @@ namespace VANTAGE.ViewModels
             }
         }
 
-        // Apply filter by rebuilding the ObservableCollection
+        // ========================================
+        // FILTERING
+        // ========================================
+
         private void ApplyFilter()
         {
-            System.Diagnostics.Debug.WriteLine($"=== ApplyFilter: ActualStart={FilterActualStart}, ActualFinish={FilterActualFinish}, 3WLA={Filter3WLA}, RequiredFields={FilterRequiredFields} ===");
             List<ScheduleMasterRow> filteredRows;
-            // If no filters active, show all
+
             if (!FilterActualStart && !FilterActualFinish && !Filter3WLA && !FilterRequiredFields)
             {
                 filteredRows = _allMasterRows;
-                System.Diagnostics.Debug.WriteLine($"No filters active - showing all {filteredRows.Count} rows");
             }
             else
             {
-                // Apply the active filter
                 filteredRows = _allMasterRows.Where(row => FilterMasterRow(row)).ToList();
-                System.Diagnostics.Debug.WriteLine($"Filter applied - showing {filteredRows.Count} of {_allMasterRows.Count} rows");
             }
-            // Rebuild the ObservableCollection
+
             MasterRows = new ObservableCollection<ScheduleMasterRow>(filteredRows);
         }
 
-        // Filter predicate for master rows - returns true if row should be shown
         private bool FilterMasterRow(ScheduleMasterRow row)
         {
-            // Required Fields filter - show rows with any required field incomplete
             if (FilterRequiredFields)
             {
                 return row.IsMissedStartReasonRequired ||
@@ -275,19 +446,17 @@ namespace VANTAGE.ViewModels
                        row.IsThreeWeekStartRequired ||
                        row.IsThreeWeekFinishRequired;
             }
-            // Actual Start filter - show rows where P6 and MS start dates differ
+
             if (FilterActualStart)
             {
-                bool hasVariance = row.HasStartVariance;
-                System.Diagnostics.Debug.WriteLine($"[{row.SchedActNO}] Filter result: {hasVariance}");
-                return hasVariance;
+                return row.HasStartVariance;
             }
-            // Actual Finish filter - show rows where P6 and MS finish dates differ
+
             if (FilterActualFinish)
             {
                 return row.HasFinishVariance;
             }
-            // 3WLA filter - show rows starting/finishing in next 3 weeks
+
             if (Filter3WLA)
             {
                 var today = DateTime.Today;
@@ -295,6 +464,7 @@ namespace VANTAGE.ViewModels
                 return (row.P6_PlannedStart.HasValue && row.P6_PlannedStart.Value >= today && row.P6_PlannedStart.Value <= threeWeeksOut) ||
                        (row.P6_PlannedFinish.HasValue && row.P6_PlannedFinish.Value >= today && row.P6_PlannedFinish.Value <= threeWeeksOut);
             }
+
             return true;
         }
 

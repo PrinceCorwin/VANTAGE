@@ -25,10 +25,65 @@ namespace VANTAGE.Models
         // MS ROLLUPS (calculated from ProgressSnapshots)
         // ========================================
 
-        public DateTime? MS_ActualStart { get; set; }
-        public DateTime? MS_ActualFinish { get; set; }
-        public double MS_PercentComplete { get; set; }
-        public double MS_BudgetMHs { get; set; }
+        private DateTime? _msActualStart;
+        public DateTime? MS_ActualStart
+        {
+            get => _msActualStart;
+            set
+            {
+                if (_msActualStart != value)
+                {
+                    _msActualStart = value;
+                    OnPropertyChanged(nameof(MS_ActualStart));
+                    OnPropertyChanged(nameof(HasStartVariance));
+                    OnPropertyChanged(nameof(IsMissedStartReasonRequired));
+                }
+            }
+        }
+
+        private DateTime? _msActualFinish;
+        public DateTime? MS_ActualFinish
+        {
+            get => _msActualFinish;
+            set
+            {
+                if (_msActualFinish != value)
+                {
+                    _msActualFinish = value;
+                    OnPropertyChanged(nameof(MS_ActualFinish));
+                    OnPropertyChanged(nameof(HasFinishVariance));
+                    OnPropertyChanged(nameof(IsMissedFinishReasonRequired));
+                }
+            }
+        }
+
+        private double _msPercentComplete;
+        public double MS_PercentComplete
+        {
+            get => _msPercentComplete;
+            set
+            {
+                if (Math.Abs(_msPercentComplete - value) > 0.0001)
+                {
+                    _msPercentComplete = value;
+                    OnPropertyChanged(nameof(MS_PercentComplete));
+                }
+            }
+        }
+
+        private double _msBudgetMHs;
+        public double MS_BudgetMHs
+        {
+            get => _msBudgetMHs;
+            set
+            {
+                if (Math.Abs(_msBudgetMHs - value) > 0.0001)
+                {
+                    _msBudgetMHs = value;
+                    OnPropertyChanged(nameof(MS_BudgetMHs));
+                }
+            }
+        }
 
         // ========================================
         // EDITABLE FIELDS (user edits in Schedule Module)
@@ -114,7 +169,7 @@ namespace VANTAGE.Models
                 if (P6_ActualStart.HasValue != MS_ActualStart.HasValue)
                     return true;
 
-                return P6_ActualStart.Value.Date != MS_ActualStart.Value.Date;
+                return P6_ActualStart!.Value.Date != MS_ActualStart!.Value.Date;
             }
         }
 
@@ -128,9 +183,10 @@ namespace VANTAGE.Models
                 if (P6_ActualFinish.HasValue != MS_ActualFinish.HasValue)
                     return true;
 
-                return P6_ActualFinish.Value.Date != MS_ActualFinish.Value.Date;
+                return P6_ActualFinish!.Value.Date != MS_ActualFinish!.Value.Date;
             }
         }
+
         // ========================================
         // REQUIRED FIELD INDICATORS (for conditional formatting)
         // ========================================
@@ -161,7 +217,6 @@ namespace VANTAGE.Models
                 if (!P6_PlannedStart.HasValue)
                     return false;
 
-                // Required if P6_PlannedStart is within 21 days after WeekEndDate
                 var daysUntilStart = (P6_PlannedStart.Value - WeekEndDate).TotalDays;
                 return daysUntilStart >= 0 && daysUntilStart <= 21;
             }
@@ -177,11 +232,11 @@ namespace VANTAGE.Models
                 if (!P6_PlannedFinish.HasValue)
                     return false;
 
-                // Required if P6_PlannedFinish is within 21 days after WeekEndDate
                 var daysUntilFinish = (P6_PlannedFinish.Value - WeekEndDate).TotalDays;
                 return daysUntilFinish >= 0 && daysUntilFinish <= 21;
             }
         }
+
         // ========================================
         // CHILD COLLECTION (for detail grid expansion)
         // ========================================

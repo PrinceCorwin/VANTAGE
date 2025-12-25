@@ -131,6 +131,91 @@ namespace VANTAGE.Repositories
 
             return schedActNOs;
         }
+        // Update ProgressSnapshot in Azure AND corresponding Activity in local SQLite
+        public static async Task<bool> UpdateSnapshotAndActivityAsync(ProgressSnapshot snapshot, string username)
+        {
+            return await Task.Run(() =>
+            {
+                try
+                {
+                    // Step 1: Update ProgressSnapshot in Azure
+                    using var azureConn = AzureDbManager.GetConnection();
+                    azureConn.Open();
+
+                    var azureCmd = azureConn.CreateCommand();
+                    azureCmd.CommandText = @"
+                UPDATE ProgressSnapshots 
+                SET PercentEntry = @percentEntry,
+                    BudgetMHs = @budgetMHs,
+                    SchStart = @schStart,
+                    SchFinish = @schFinish,
+                    UpdatedBy = @updatedBy,
+                    UpdatedUtcDate = @updatedUtcDate
+                WHERE UniqueID = @uniqueId
+                  AND WeekEndDate = @weekEndDate";
+
+                    azureCmd.Parameters.AddWithValue("@percentEntry", snapshot.PercentEntry);
+                    azureCmd.Parameters.AddWithValue("@budgetMHs", snapshot.BudgetMHs);
+                    azureCmd.Parameters.AddWithValue("@schStart",
+                        snapshot.SchStart?.ToString("yyyy-MM-dd HH:mm:ss") ?? (object)DBNull.Value);
+                    azureCmd.Parameters.AddWithValue("@schFinish",
+                        snapshot.SchFinish?.ToString("yyyy-MM-dd HH:mm:ss") ?? (object)DBNull.Value);
+                    azureCmd.Parameters.AddWithValue("@updatedBy", username);
+                    azureCmd.Parameters.AddWithValue("@updatedUtcDate", DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"));
+                    azureCmd.Parameters.AddWithValue("@uniqueId", snapshot.UniqueID);
+                    azureCmd.Parameters.AddWithValue("@weekEndDate", snapshot.WeekEndDate.ToString("yyyy-MM-dd"));
+
+                    int azureRows = azureCmd.ExecuteNonQuery();
+                    azureConn.Close();
+
+                    if (azureRows == 0)
+                    {
+                        AppLogger.Warning($"No Azure snapshot updated for UniqueID: {snapshot.UniqueID}",
+                            "ScheduleRepository.UpdateSnapshotAndActivityAsync");
+                        return false;
+                    }
+
+                    // Step 2: Update corresponding Activity in local SQLite
+                    using var localConn = new SqliteConnection($"Data Source={DatabaseSetup.DbPath}");
+                    localConn.Open();
+
+                    var localCmd = localConn.CreateCommand();
+                    localCmd.CommandText = @"
+                UPDATE Activities 
+                SET PercentEntry = @percentEntry,
+                    BudgetMHs = @budgetMHs,
+                    SchStart = @schStart,
+                    SchFinish = @schFinish,
+                    UpdatedBy = @updatedBy,
+                    UpdatedUtcDate = @updatedUtcDate,
+                    LocalDirty = 1
+                WHERE UniqueID = @uniqueId";
+
+                    localCmd.Parameters.AddWithValue("@percentEntry", snapshot.PercentEntry);
+                    localCmd.Parameters.AddWithValue("@budgetMHs", snapshot.BudgetMHs);
+                    localCmd.Parameters.AddWithValue("@schStart",
+                        snapshot.SchStart?.ToString("yyyy-MM-dd HH:mm:ss") ?? (object)DBNull.Value);
+                    localCmd.Parameters.AddWithValue("@schFinish",
+                        snapshot.SchFinish?.ToString("yyyy-MM-dd HH:mm:ss") ?? (object)DBNull.Value);
+                    localCmd.Parameters.AddWithValue("@updatedBy", username);
+                    localCmd.Parameters.AddWithValue("@updatedUtcDate", DateTime.UtcNow.ToString("o"));
+                    localCmd.Parameters.AddWithValue("@uniqueId", snapshot.UniqueID);
+
+                    int localRows = localCmd.ExecuteNonQuery();
+                    localConn.Close();
+
+                    AppLogger.Info($"Updated snapshot and activity: {snapshot.UniqueID} (Azure: {azureRows}, Local: {localRows})",
+                        "ScheduleRepository.UpdateSnapshotAndActivityAsync", username);
+
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    AppLogger.Error(ex, "ScheduleRepository.UpdateSnapshotAndActivityAsync");
+                    return false;
+                }
+            });
+        }
         // Update editable fields in Schedule table (local SQLite)
         // Only updates: ThreeWeekStart, ThreeWeekFinish, MissedStartReason, MissedFinishReason
         public static async Task<bool> UpdateScheduleRowAsync(ScheduleMasterRow row, string username)
@@ -358,7 +443,96 @@ namespace VANTAGE.Repositories
 
             return projectIds;
         }
+        // Get ProgressSnapshots for a specific SchedActNO (for detail grid)
+        public static async Task<List<ProgressSnapshot>> GetSnapshotsBySchedActNOAsync(string schedActNO, DateTime weekEndDate)
+        {
+            return await Task.Run(() =>
+            {
+                var snapshots = new List<ProgressSnapshot>();
 
+                try
+                {
+                    // First get ProjectIDs for this week
+                    using var localConn = new SqliteConnection($"Data Source={DatabaseSetup.DbPath}");
+                    localConn.Open();
+                    var projectIds = GetProjectIDsForWeek(localConn, weekEndDate);
+                    localConn.Close();
+
+                    if (projectIds.Count == 0)
+                    {
+                        AppLogger.Warning($"No ProjectIDs mapped for WeekEndDate {weekEndDate:yyyy-MM-dd}",
+                            "ScheduleRepository.GetSnapshotsBySchedActNOAsync");
+                        return snapshots;
+                    }
+
+                    // Query Azure for snapshots
+                    using var azureConn = AzureDbManager.GetConnection();
+                    azureConn.Open();
+
+                    string projectIdList = "'" + string.Join("','", projectIds) + "'";
+
+                    var cmd = azureConn.CreateCommand();
+                    cmd.CommandText = $@"
+                SELECT 
+                    UniqueID, WeekEndDate, SchedActNO, Description, 
+                    PercentEntry, BudgetMHs, SchStart, SchFinish,
+                    AssignedTo, ProjectID, UpdatedBy, UpdatedUtcDate
+                FROM ProgressSnapshots
+                WHERE SchedActNO = @schedActNO
+                  AND WeekEndDate = @weekEndDate
+                  AND ProjectID IN ({projectIdList})
+                ORDER BY UniqueID";
+
+                    cmd.Parameters.AddWithValue("@schedActNO", schedActNO);
+                    cmd.Parameters.AddWithValue("@weekEndDate", weekEndDate.ToString("yyyy-MM-dd"));
+
+                    using var reader = cmd.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        var snapshot = new ProgressSnapshot
+                        {
+                            UniqueID = reader.GetString(0),
+                            WeekEndDate = DateTime.Parse(reader.GetString(1)),
+                            SchedActNO = reader.GetString(2),
+                            Description = reader.IsDBNull(3) ? string.Empty : reader.GetString(3),
+                            PercentEntry = reader.IsDBNull(4) ? 0 : reader.GetDouble(4),
+                            BudgetMHs = reader.IsDBNull(5) ? 0 : reader.GetDouble(5),
+                            AssignedTo = reader.IsDBNull(8) ? string.Empty : reader.GetString(8),
+                            ProjectID = reader.IsDBNull(9) ? string.Empty : reader.GetString(9),
+                            UpdatedBy = reader.IsDBNull(10) ? string.Empty : reader.GetString(10),
+                            UpdatedUtcDate = reader.IsDBNull(11) ? DateTime.MinValue : DateTime.Parse(reader.GetString(11))
+                        };
+
+                        // SchStart and SchFinish are stored as TEXT
+                        if (!reader.IsDBNull(6))
+                        {
+                            string startStr = reader.GetString(6);
+                            if (DateTime.TryParse(startStr, out DateTime parsedStart))
+                                snapshot.SchStart = parsedStart;
+                        }
+
+                        if (!reader.IsDBNull(7))
+                        {
+                            string finishStr = reader.GetString(7);
+                            if (DateTime.TryParse(finishStr, out DateTime parsedFinish))
+                                snapshot.SchFinish = parsedFinish;
+                        }
+
+                        snapshots.Add(snapshot);
+                    }
+
+                    AppLogger.Info($"Loaded {snapshots.Count} snapshots for SchedActNO {schedActNO}",
+                        "ScheduleRepository.GetSnapshotsBySchedActNOAsync");
+
+                    return snapshots;
+                }
+                catch (Exception ex)
+                {
+                    AppLogger.Error(ex, "ScheduleRepository.GetSnapshotsBySchedActNOAsync");
+                    return snapshots;
+                }
+            });
+        }
         // Get distinct WeekEndDates available in Schedule table
         public static async Task<List<DateTime>> GetAvailableWeekEndDatesAsync()
         {

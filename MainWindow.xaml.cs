@@ -112,6 +112,16 @@ namespace VANTAGE
 
         private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
         {
+            // Check for unsaved Schedule changes
+            if (ContentArea.Content is ScheduleView scheduleView)
+            {
+                if (!scheduleView.TryClose())
+                {
+                    e.Cancel = true;
+                    return;
+                }
+            }
+
             AppLogger.Info("Application closing", "MainWindow.MainWindow_Closing", App.CurrentUser?.Username);
         }
 
@@ -211,30 +221,45 @@ namespace VANTAGE
 
         private void BtnProgress_Click(object sender, RoutedEventArgs e)
         {
+            if (!CanLeaveCurrentView())
+                return;
+
             LoadProgressModule();
             HighlightNavigationButton(btnProgress);
         }
 
         private void BtnSchedule_Click(object sender, RoutedEventArgs e)
         {
+            // Already on Schedule? No need to check
+            if (ContentArea.Content is ScheduleView)
+            {
+                HighlightNavigationButton(btnSchedule);
+                return;
+            }
+
+            if (!CanLeaveCurrentView())
+                return;
+
             HighlightNavigationButton(btnSchedule);
-
-            // Clear current content
             ContentArea.Content = null;
-
-            // Load Schedule Module
-            var scheduleView = new VANTAGE.Views.ScheduleView();
+            var scheduleView = new ScheduleView();
             ContentArea.Content = scheduleView;
         }
 
         private void BtnPbook_Click(object sender, RoutedEventArgs e)
         {
+            if (!CanLeaveCurrentView())
+                return;
+
             MessageBox.Show("PRINT module coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
             HighlightNavigationButton(btnPbook);
         }
 
         private void BtnWorkPackage_Click(object sender, RoutedEventArgs e)
         {
+            if (!CanLeaveCurrentView())
+                return;
+
             MessageBox.Show("WORK PACKAGE module coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
             HighlightNavigationButton(btnWorkPackage);
         }
@@ -1138,6 +1163,15 @@ namespace VANTAGE
         {
             var progressView = new Views.ProgressView();
             ContentArea.Content = progressView;
+        }
+        // Check if current view is ScheduleView with unsaved changes
+        private bool CanLeaveCurrentView()
+        {
+            if (ContentArea.Content is ScheduleView scheduleView)
+            {
+                return scheduleView.TryClose();
+            }
+            return true;
         }
     }
 }
