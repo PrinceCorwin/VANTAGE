@@ -1640,6 +1640,7 @@ namespace VANTAGE.Views
                         return;
                     }
                 }
+
                 // Step 6: Check for existing snapshots on Azure
                 var existingExportedBy = await Task.Run(() =>
                 {
@@ -1734,10 +1735,11 @@ namespace VANTAGE.Views
                 var progress = new Progress<string>(status => busyDialog.UpdateStatus(status));
                 var currentUser = App.CurrentUser!.Username;
                 var progDateStr = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                var ownerWindow = Window.GetWindow(this);
 
                 try
                 {
-                    var (success, submitError, snapshotCount) = await Task.Run(async () =>
+                    var (success, submitError, snapshotCount, skippedCount) = await Task.Run(async () =>
                     {
                         var reporter = (IProgress<string>)progress;
 
@@ -1745,11 +1747,11 @@ namespace VANTAGE.Views
                         reporter.Report("Syncing data...");
                         var pushResult = await SyncManager.PushRecordsAsync(new List<string> { selectedProject });
                         if (!string.IsNullOrEmpty(pushResult.ErrorMessage))
-                            return (false, $"Sync failed during push:\n\n{pushResult.ErrorMessage}", 0);
+                            return (false, $"Sync failed during push:\n\n{pushResult.ErrorMessage}", 0, 0);
 
                         var pullResult = await SyncManager.PullRecordsAsync(new List<string> { selectedProject });
                         if (!string.IsNullOrEmpty(pullResult.ErrorMessage))
-                            return (false, $"Sync failed during pull:\n\n{pullResult.ErrorMessage}", 0);
+                            return (false, $"Sync failed during pull:\n\n{pullResult.ErrorMessage}", 0, 0);
 
                         // Step 9: Delete existing snapshots if needed
                         if (needsDelete)
@@ -1761,10 +1763,10 @@ namespace VANTAGE.Views
 
                             var deleteCmd = deleteConn.CreateCommand();
                             deleteCmd.CommandText = @"
-                            DELETE FROM ProgressSnapshots 
-                            WHERE AssignedTo = @username 
-                              AND ProjectID = @projectId 
-                              AND WeekEndDate = @weekEndDate";
+                        DELETE FROM ProgressSnapshots 
+                        WHERE AssignedTo = @username 
+                          AND ProjectID = @projectId 
+                          AND WeekEndDate = @weekEndDate";
                             deleteCmd.Parameters.AddWithValue("@username", currentUser);
                             deleteCmd.Parameters.AddWithValue("@projectId", selectedProject);
                             deleteCmd.Parameters.AddWithValue("@weekEndDate", weekEndDateStr);
@@ -1773,104 +1775,179 @@ namespace VANTAGE.Views
                             AppLogger.Info($"Deleted {deletedCount} existing snapshots for overwrite", "ProgressView.BtnSubmit_Click", currentUser);
                         }
 
-                        // Step 10: Copy Activities from Azure to ProgressSnapshots
-                        reporter.Report("Creating snapshots...");
+                        // Step 10: Check for records already submitted by other users
+                        reporter.Report("Checking for conflicts...");
 
-                        int snapshots;
+                        int skipped = 0;
                         using (var azureConn = AzureDbManager.GetConnection())
                         {
                             azureConn.Open();
 
+                            var conflictCheck = azureConn.CreateCommand();
+                            conflictCheck.CommandText = @"
+                        SELECT ps.AssignedTo as OriginalSubmitter, COUNT(*) as RecordCount
+                        FROM Activities a
+                        INNER JOIN ProgressSnapshots ps ON ps.UniqueID = a.UniqueID AND ps.WeekEndDate = @weekEndDate
+                        WHERE a.AssignedTo = @username 
+                          AND a.ProjectID = @projectId
+                          AND a.IsDeleted = 0
+                          AND ps.AssignedTo <> @username
+                        GROUP BY ps.AssignedTo";
+                            conflictCheck.Parameters.AddWithValue("@weekEndDate", weekEndDateStr);
+                            conflictCheck.Parameters.AddWithValue("@username", currentUser);
+                            conflictCheck.Parameters.AddWithValue("@projectId", selectedProject);
+
+                            var conflicts = new List<(string User, int Count)>();
+                            using (var conflictReader = conflictCheck.ExecuteReader())
+                            {
+                                while (conflictReader.Read())
+                                {
+                                    conflicts.Add((conflictReader.GetString(0), conflictReader.GetInt32(1)));
+                                }
+                            }
+
+                            if (conflicts.Any())
+                            {
+                                skipped = conflicts.Sum(c => c.Count);
+                                var conflictDetails = string.Join("\n", conflicts.Select(c => $"  • {c.Count} records by {c.User}"));
+
+                                bool proceed = false;
+                                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                                {
+                                    busyDialog.Hide();  // Hide the busy dialog
+
+                                    var result = MessageBox.Show(
+                                        ownerWindow,
+                                        $"{skipped} of your assigned records were already submitted for this week by other users:\n\n" +
+                                        $"{conflictDetails}\n\n" +
+                                        $"These records will be SKIPPED. Do you want to submit the remaining records?\n\n" +
+                                        $"(You may need to coordinate with the users above if this is unexpected.)",
+                                        "Records Already Submitted",
+                                        MessageBoxButton.YesNo,
+                                        MessageBoxImage.Warning);
+                                    proceed = (result == MessageBoxResult.Yes);
+
+                                    if (proceed)
+                                        busyDialog.Show();  // Show it again only if continuing
+                                });
+
+                                if (!proceed)
+                                    return (false, "Cancelled by user", 0, 0);
+                            }
+
+                            // Step 11: Copy Activities from Azure to ProgressSnapshots (skip existing)
+                            reporter.Report("Creating snapshots...");
+
                             var insertCmd = azureConn.CreateCommand();
                             insertCmd.CommandText = @"
-                            INSERT INTO ProgressSnapshots (
-                                UniqueID, WeekEndDate, Area, AssignedTo, AzureUploadUtcDate,
-                                Aux1, Aux2, Aux3, BaseUnit, BudgetHoursGroup, BudgetHoursROC, BudgetMHs,
-                                ChgOrdNO, ClientBudget, ClientCustom3, ClientEquivQty, CompType, CreatedBy,
-                                DateTrigger, Description, DwgNO, EarnQtyEntry, EarnedMHsRoc, EqmtNO,
-                                EquivQTY, EquivUOM, Estimator, HexNO, HtTrace, InsulType, LineNumber,
-                                MtrlSpec, Notes, PaintCode, PercentEntry, PhaseCategory, PhaseCode,
-                                PipeGrade, PipeSize1, PipeSize2, PrevEarnMHs, PrevEarnQTY, ProgDate,
-                                ProjectID, Quantity, RevNO, RFINO, ROCBudgetQTY, ROCID, ROCPercent,
-                                ROCStep, SchedActNO, SchFinish, SchStart, SecondActno, SecondDwgNO,
-                                Service, ShopField, ShtNO, SubArea, PjtSystem, SystemNO, TagNO,
-                                UDF1, UDF2, UDF3, UDF4, UDF5, UDF6, UDF7, UDF8, UDF9, UDF10,
-                                UDF11, UDF12, UDF13, UDF14, UDF15, UDF16, UDF17, UDF18, UDF20,
-                                UpdatedBy, UpdatedUtcDate, UOM, WorkPackage, XRay, ExportedBy, ExportedDate
-                            )
-                            SELECT 
-                                UniqueID, @weekEndDate, Area, AssignedTo, AzureUploadUtcDate,
-                                Aux1, Aux2, Aux3, BaseUnit, BudgetHoursGroup, BudgetHoursROC, BudgetMHs,
-                                ChgOrdNO, ClientBudget, ClientCustom3, ClientEquivQty, CompType, CreatedBy,
-                                DateTrigger, Description, DwgNO, EarnQtyEntry, EarnedMHsRoc, EqmtNO,
-                                EquivQTY, EquivUOM, Estimator, HexNO, HtTrace, InsulType, LineNumber,
-                                MtrlSpec, Notes, PaintCode, PercentEntry, PhaseCategory, PhaseCode,
-                                PipeGrade, PipeSize1, PipeSize2, PrevEarnMHs, PrevEarnQTY, ProgDate,
-                                ProjectID, Quantity, RevNO, RFINO, ROCBudgetQTY, ROCID, ROCPercent,
-                                ROCStep, SchedActNO, SchFinish, SchStart, SecondActno, SecondDwgNO,
-                                Service, ShopField, ShtNO, SubArea, PjtSystem, SystemNO, TagNO,
-                                UDF1, UDF2, UDF3, UDF4, UDF5, UDF6, UDF7, UDF8, UDF9, UDF10,
-                                UDF11, UDF12, UDF13, UDF14, UDF15, UDF16, UDF17, UDF18, UDF20,
-                                UpdatedBy, UpdatedUtcDate, UOM, WorkPackage, XRay, NULL, NULL
-                            FROM Activities
-                            WHERE AssignedTo = @username 
-                              AND ProjectID = @projectId
-                              AND IsDeleted = 0";
+                        INSERT INTO ProgressSnapshots (
+                            UniqueID, WeekEndDate, Area, AssignedTo, AzureUploadUtcDate,
+                            Aux1, Aux2, Aux3, BaseUnit, BudgetHoursGroup, BudgetHoursROC, BudgetMHs,
+                            ChgOrdNO, ClientBudget, ClientCustom3, ClientEquivQty, CompType, CreatedBy,
+                            DateTrigger, Description, DwgNO, EarnQtyEntry, EarnedMHsRoc, EqmtNO,
+                            EquivQTY, EquivUOM, Estimator, HexNO, HtTrace, InsulType, LineNumber,
+                            MtrlSpec, Notes, PaintCode, PercentEntry, PhaseCategory, PhaseCode,
+                            PipeGrade, PipeSize1, PipeSize2, PrevEarnMHs, PrevEarnQTY, ProgDate,
+                            ProjectID, Quantity, RevNO, RFINO, ROCBudgetQTY, ROCID, ROCPercent,
+                            ROCStep, SchedActNO, SchFinish, SchStart, SecondActno, SecondDwgNO,
+                            Service, ShopField, ShtNO, SubArea, PjtSystem, SystemNO, TagNO,
+                            UDF1, UDF2, UDF3, UDF4, UDF5, UDF6, UDF7, UDF8, UDF9, UDF10,
+                            UDF11, UDF12, UDF13, UDF14, UDF15, UDF16, UDF17, UDF18, UDF20,
+                            UpdatedBy, UpdatedUtcDate, UOM, WorkPackage, XRay, ExportedBy, ExportedDate
+                        )
+                        SELECT 
+                            UniqueID, @weekEndDate, Area, AssignedTo, AzureUploadUtcDate,
+                            Aux1, Aux2, Aux3, BaseUnit, BudgetHoursGroup, BudgetHoursROC, BudgetMHs,
+                            ChgOrdNO, ClientBudget, ClientCustom3, ClientEquivQty, CompType, CreatedBy,
+                            DateTrigger, Description, DwgNO, EarnQtyEntry, EarnedMHsRoc, EqmtNO,
+                            EquivQTY, EquivUOM, Estimator, HexNO, HtTrace, InsulType, LineNumber,
+                            MtrlSpec, Notes, PaintCode, PercentEntry, PhaseCategory, PhaseCode,
+                            PipeGrade, PipeSize1, PipeSize2, PrevEarnMHs, PrevEarnQTY, ProgDate,
+                            ProjectID, Quantity, RevNO, RFINO, ROCBudgetQTY, ROCID, ROCPercent,
+                            ROCStep, SchedActNO, SchFinish, SchStart, SecondActno, SecondDwgNO,
+                            Service, ShopField, ShtNO, SubArea, PjtSystem, SystemNO, TagNO,
+                            UDF1, UDF2, UDF3, UDF4, UDF5, UDF6, UDF7, UDF8, UDF9, UDF10,
+                            UDF11, UDF12, UDF13, UDF14, UDF15, UDF16, UDF17, UDF18, UDF20,
+                            UpdatedBy, UpdatedUtcDate, UOM, WorkPackage, XRay, NULL, NULL
+                        FROM Activities a
+                        WHERE AssignedTo = @username 
+                          AND ProjectID = @projectId
+                          AND IsDeleted = 0
+                          AND NOT EXISTS (
+                              SELECT 1 FROM ProgressSnapshots ps 
+                              WHERE ps.UniqueID = a.UniqueID 
+                                AND ps.WeekEndDate = @weekEndDate
+                          )";
                             insertCmd.Parameters.AddWithValue("@weekEndDate", weekEndDateStr);
                             insertCmd.Parameters.AddWithValue("@username", currentUser);
                             insertCmd.Parameters.AddWithValue("@projectId", selectedProject);
 
-                            snapshots = insertCmd.ExecuteNonQuery();
-                        }
+                            int snapshots = insertCmd.ExecuteNonQuery();
 
-                        AppLogger.Info($"Created {snapshots} snapshots for week ending {weekEndDateStr}", "ProgressView.BtnSubmit_Click", currentUser);
+                            AppLogger.Info($"Created {snapshots} snapshots for week ending {weekEndDateStr} ({skipped} skipped)", "ProgressView.BtnSubmit_Click", currentUser);
 
-                        // Step 11: Update local Activities.WeekEndDate and ProgDate
-                        reporter.Report("Updating local records...");
+                            // Step 12: Update local Activities.WeekEndDate and ProgDate
+                            reporter.Report("Updating local records...");
 
-                        using (var localConn = DatabaseSetup.GetConnection())
-                        {
-                            localConn.Open();
-                            var updateLocalCmd = localConn.CreateCommand();
-                            updateLocalCmd.CommandText = @"
+                            using (var localConn = DatabaseSetup.GetConnection())
+                            {
+                                localConn.Open();
+                                var updateLocalCmd = localConn.CreateCommand();
+                                updateLocalCmd.CommandText = @"
                             UPDATE Activities 
                             SET WeekEndDate = @weekEndDate,
                                 ProgDate = @progDate,
                                 LocalDirty = 1
                             WHERE AssignedTo = @username 
                               AND ProjectID = @projectId";
-                            updateLocalCmd.Parameters.AddWithValue("@weekEndDate", weekEndDateStr);
-                            updateLocalCmd.Parameters.AddWithValue("@progDate", progDateStr);
-                            updateLocalCmd.Parameters.AddWithValue("@username", currentUser);
-                            updateLocalCmd.Parameters.AddWithValue("@projectId", selectedProject);
-                            updateLocalCmd.ExecuteNonQuery();
+                                updateLocalCmd.Parameters.AddWithValue("@weekEndDate", weekEndDateStr);
+                                updateLocalCmd.Parameters.AddWithValue("@progDate", progDateStr);
+                                updateLocalCmd.Parameters.AddWithValue("@username", currentUser);
+                                updateLocalCmd.Parameters.AddWithValue("@projectId", selectedProject);
+                                updateLocalCmd.ExecuteNonQuery();
+                            }
+
+                            // Step 13: Push WeekEndDate changes to Azure
+                            reporter.Report("Syncing changes...");
+                            await SyncManager.PushRecordsAsync(new List<string> { selectedProject });
+
+                            return (true, string.Empty, snapshots, skipped);
                         }
-
-                        // Step 12: Push WeekEndDate changes to Azure
-                        reporter.Report("Syncing changes...");
-                        await SyncManager.PushRecordsAsync(new List<string> { selectedProject });
-
-                        return (true, string.Empty, snapshots);
                     });
 
                     if (!success)
                     {
                         busyDialog.Close();
-                        MessageBox.Show(submitError, "Sync Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        if (submitError != "Cancelled by user")
+                        {
+                            MessageBox.Show(submitError, "Sync Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        }
                         return;
                     }
 
-                    // Step 13: Refresh grid (must be on UI thread)
+                    // Step 14: Refresh grid
                     busyDialog.UpdateStatus("Refreshing...");
                     await RefreshData();
 
                     busyDialog.Close();
 
-                    MessageBox.Show(
-                        $"Successfully submitted {snapshotCount} activities for week ending {weekEndDateStr}.",
-                        "Progress Submitted",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
+                    if (skippedCount > 0)
+                    {
+                        MessageBox.Show(
+                            $"Submitted {snapshotCount} activities for week ending {weekEndDateStr}.\n\n" +
+                            $"{skippedCount} records were skipped because they were already submitted by another user.",
+                            "Progress Submitted",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Information);
+                    }
+                    else
+                    {
+                        MessageBox.Show(
+                            $"Successfully submitted {snapshotCount} activities for week ending {weekEndDateStr}.",
+                            "Progress Submitted",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Information);
+                    }
                 }
                 catch
                 {
@@ -1882,7 +1959,6 @@ namespace VANTAGE.Views
             {
                 AppLogger.Error(ex, "ProgressView.BtnSubmit_Click", App.CurrentUser?.Username);
 
-                // Check for primary key violation and show user-friendly message
                 string userMessage;
                 if (ex.Message.Contains("PRIMARY KEY") || ex.Message.Contains("duplicate key"))
                 {
