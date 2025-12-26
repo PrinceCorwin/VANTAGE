@@ -329,9 +329,126 @@ namespace VANTAGE
             }
         }
 
-        private void ExportP6File_Click(object sender, RoutedEventArgs e)
+        private async void ExportP6File_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
+            try
+            {
+                // Check if we're in Schedule view
+                if (!(ContentArea.Content is Views.ScheduleView scheduleView))
+                {
+                    MessageBox.Show(
+                        "Please navigate to the Schedule module first.",
+                        "Export to P6",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                    return;
+                }
+
+                var viewModel = scheduleView.DataContext as ViewModels.ScheduleViewModel;
+                if (viewModel == null || viewModel.MasterRows == null || viewModel.MasterRows.Count == 0)
+                {
+                    MessageBox.Show(
+                        "No schedule data loaded. Please select a Week Ending date first.",
+                        "Export to P6",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+                    return;
+                }
+
+                // Check for unsaved changes
+                if (viewModel.HasUnsavedChanges)
+                {
+                    var saveResult = MessageBox.Show(
+                        "You have unsaved changes that must be saved before exporting.\n\nSave now and continue with export?",
+                        "Save Required",
+                        MessageBoxButton.OKCancel,
+                        MessageBoxImage.Information);
+
+                    if (saveResult == MessageBoxResult.Cancel)
+                        return;
+
+                    // Save before proceeding
+                    scheduleView.SaveChanges();
+                }
+
+                // Check required fields count
+                if (viewModel.RequiredFieldsCount > 0)
+                {
+                    MessageBox.Show(
+                        $"Cannot export: {viewModel.RequiredFieldsCount} required field(s) are incomplete.\n\n" +
+                        "Please complete all Missed Reason and 3WLA fields before exporting.\n\n" +
+                        "Click the 'Required Fields' button in the status bar to see which rows need attention.",
+                        "Export Blocked",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+                    return;
+                }
+
+                // Get all master rows (unfiltered) for export
+                var allRows = viewModel.GetAllMasterRows();
+
+                // Show export options dialog
+                var exportDialog = new Dialogs.P6ExportDialog(viewModel.SelectedWeekEndDate ?? DateTime.Today, allRows.Count);
+                exportDialog.Owner = this;
+                if (exportDialog.ShowDialog() != true)
+                    return;
+
+                // Get week end date for filename
+                string defaultFileName = $"To_P6_{viewModel.SelectedWeekEndDate:yyyy-MM-dd}.xlsx";
+
+                // Show save dialog
+                var saveDialog = new Microsoft.Win32.SaveFileDialog
+                {
+                    Filter = "Excel Files|*.xlsx",
+                    Title = "Export to P6 File",
+                    FileName = defaultFileName
+                };
+
+                if (saveDialog.ShowDialog() != true)
+                    return;
+
+                // Export with busy dialog
+                var busyDialog = new Dialogs.BusyDialog(this);
+                busyDialog.UpdateStatus("Exporting to P6 format...");
+                busyDialog.Show();
+
+                try
+                {
+                    int exported = await Utilities.ScheduleExcelExporter.ExportToP6Async(
+                        allRows,
+                        saveDialog.FileName,
+                        exportDialog.StartTime,
+                        exportDialog.FinishTime,
+                        new Progress<string>(msg => busyDialog.UpdateStatus(msg)));
+
+                    busyDialog.Close();
+
+                    AppLogger.Info(
+                        $"Exported {exported} schedule activities to P6 file: {saveDialog.FileName}",
+                        "MainWindow.ExportP6File_Click",
+                        App.CurrentUser?.Username);
+
+                    MessageBox.Show(
+                        $"Successfully exported {exported} activities to:\n\n{saveDialog.FileName}",
+                        "Export Complete",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                }
+                catch
+                {
+                    busyDialog.Close();
+                    throw;
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "MainWindow.ExportP6File_Click", App.CurrentUser?.Username);
+                MessageBox.Show(
+                    $"Export failed: {ex.Message}",
+                    "Export Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
         }
 
         private async void MenuExcelImportReplace_Click(object sender, RoutedEventArgs e)

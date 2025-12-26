@@ -459,15 +459,19 @@ namespace VANTAGE.ViewModels
 
             if (Filter3WLA)
             {
-                var today = DateTime.Today;
-                var threeWeeksOut = today.AddDays(21);
-                return (row.P6_PlannedStart.HasValue && row.P6_PlannedStart.Value >= today && row.P6_PlannedStart.Value <= threeWeeksOut) ||
-                       (row.P6_PlannedFinish.HasValue && row.P6_PlannedFinish.Value >= today && row.P6_PlannedFinish.Value <= threeWeeksOut);
+                var referenceDate = SelectedWeekEndDate ?? DateTime.Today;
+                var threeWeeksOut = referenceDate.AddDays(21);
+                return (row.P6_PlannedStart.HasValue && row.P6_PlannedStart.Value >= referenceDate && row.P6_PlannedStart.Value <= threeWeeksOut) ||
+                       (row.P6_PlannedFinish.HasValue && row.P6_PlannedFinish.Value >= referenceDate && row.P6_PlannedFinish.Value <= threeWeeksOut);
             }
 
             return true;
         }
-
+        // Returns the unfiltered list of all master rows (for export)
+        public List<ScheduleMasterRow> GetAllMasterRows()
+        {
+            return _allMasterRows ?? new List<ScheduleMasterRow>();
+        }
         public event PropertyChangedEventHandler? PropertyChanged;
         protected void OnPropertyChanged(string? propertyName = null)
         {

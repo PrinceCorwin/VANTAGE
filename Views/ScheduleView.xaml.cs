@@ -156,6 +156,7 @@ namespace VANTAGE.Views
                     columnName == "ThreeWeekStart" || columnName == "ThreeWeekFinish")
                 {
                     _viewModel.HasUnsavedChanges = true;
+                    _viewModel.UpdateRequiredFieldsCount();
                 }
             }
             catch (Exception ex)
@@ -358,6 +359,40 @@ namespace VANTAGE.Views
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "ScheduleView.btnSave_Click");
+                MessageBox.Show($"Error saving: {ex.Message}", "Save Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                txtStatus.Text = "Save failed";
+            }
+            finally
+            {
+                btnSave.IsEnabled = true;
+            }
+        }
+        // Public method for MainWindow to call when exporting
+        public void SaveChanges()
+        {
+            btnSave_Click(this, new RoutedEventArgs());
+        }
+
+        private async Task SaveChangesAsync()
+        {
+            try
+            {
+                if (_viewModel.MasterRows == null || _viewModel.MasterRows.Count == 0)
+                    return;
+
+                btnSave.IsEnabled = false;
+                txtStatus.Text = "Saving...";
+
+                string username = App.CurrentUser?.Username ?? "Unknown";
+                int savedCount = await ScheduleRepository.SaveAllScheduleRowsAsync(_viewModel.MasterRows, username);
+
+                txtStatus.Text = $"Saved {savedCount} rows";
+                AppLogger.Info($"Saved {savedCount} schedule rows", "ScheduleView.SaveChanges", username);
+                _viewModel.HasUnsavedChanges = false;
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "ScheduleView.SaveChanges");
                 MessageBox.Show($"Error saving: {ex.Message}", "Save Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 txtStatus.Text = "Save failed";
             }
