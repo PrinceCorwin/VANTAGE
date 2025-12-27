@@ -311,6 +311,11 @@ namespace VANTAGE
                         "Import Complete",
                         MessageBoxButton.OK,
                         MessageBoxImage.Information);
+                    // Refresh Schedule view if currently active
+                    if (ContentArea.Content is VANTAGE.Views.ScheduleView scheduleView)
+                    {
+                        await scheduleView.RefreshDataAsync(p6Dialog.SelectedWeekEndDate);
+                    }
                 }
                 catch
                 {

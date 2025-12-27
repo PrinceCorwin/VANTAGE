@@ -212,7 +212,28 @@ namespace VANTAGE.Views
         // ========================================
         // DETAIL GRID EDIT HANDLER
         // ========================================
+        // Public method for MainWindow to call after P6 import
+        public async Task RefreshDataAsync(DateTime weekEndDate)
+        {
+            try
+            {
+                // Reload available week end dates (new import may have added one)
+                await _viewModel.InitializeAsync();
 
+                // Select the imported week end date
+                _viewModel.SelectedWeekEndDate = weekEndDate;
+
+                // Load data for that date
+                await _viewModel.LoadScheduleDataAsync(weekEndDate);
+
+                txtStatus.Text = "Data refreshed";
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "ScheduleView.RefreshDataAsync");
+                txtStatus.Text = "Refresh failed";
+            }
+        }
         private async void SfScheduleDetail_CurrentCellEndEdit(object? sender, Syncfusion.UI.Xaml.Grid.CurrentCellEndEditEventArgs e)
         {
             try
@@ -307,30 +328,6 @@ namespace VANTAGE.Views
         // EXISTING METHODS
         // ========================================
 
-        private void btnRequiredFields_Click(object sender, RoutedEventArgs e)
-        {
-            // Toggle the filter - clicking again clears it
-            _viewModel.FilterRequiredFields = !_viewModel.FilterRequiredFields;
-
-            // Clear other filters when this one is activated
-            if (_viewModel.FilterRequiredFields)
-            {
-                _viewModel.FilterActualStart = false;
-                _viewModel.FilterActualFinish = false;
-                _viewModel.Filter3WLA = false;
-            }
-
-            // Update status bar
-            if (_viewModel.FilterRequiredFields)
-            {
-                txtStatus.Text = "Filtered: Required Fields";
-            }
-            else
-            {
-                txtStatus.Text = "Ready";
-            }
-        }
-
         private async void ScheduleView_Loaded(object sender, RoutedEventArgs e)
         {
             await _viewModel.InitializeAsync();
@@ -365,6 +362,26 @@ namespace VANTAGE.Views
             finally
             {
                 btnSave.IsEnabled = true;
+            }
+        }
+        private async void btnRefresh_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (!_viewModel.SelectedWeekEndDate.HasValue)
+                {
+                    txtStatus.Text = "No week selected";
+                    return;
+                }
+
+                txtStatus.Text = "Refreshing...";
+                await _viewModel.LoadScheduleDataAsync(_viewModel.SelectedWeekEndDate.Value);
+                txtStatus.Text = "Refreshed";
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "ScheduleView.btnRefresh_Click");
+                txtStatus.Text = "Refresh failed";
             }
         }
         // Public method for MainWindow to call when exporting

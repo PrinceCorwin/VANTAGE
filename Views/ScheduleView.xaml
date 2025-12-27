@@ -83,7 +83,7 @@
         <Style x:Key="MissedStartReasonRequiredStyle" TargetType="syncfusion:GridCell">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=IsMissedStartReasonRequired}" Value="True">
-                    <Setter Property="Background" Value="#5b2626"/>
+                    <Setter Property="Background" Value="{StaticResource StatusRedBg}"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
@@ -91,7 +91,7 @@
         <Style x:Key="MissedFinishReasonRequiredStyle" TargetType="syncfusion:GridCell">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=IsMissedFinishReasonRequired}" Value="True">
-                    <Setter Property="Background" Value="#5b2626"/>
+                    <Setter Property="Background" Value="{StaticResource StatusRedBg}"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
@@ -99,7 +99,7 @@
         <Style x:Key="ThreeWeekStartRequiredStyle" TargetType="syncfusion:GridCell">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=IsThreeWeekStartRequired}" Value="True">
-                    <Setter Property="Background" Value="#5b2626"/>
+                    <Setter Property="Background" Value="{StaticResource StatusRedBg}"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
@@ -107,7 +107,31 @@
         <Style x:Key="ThreeWeekFinishRequiredStyle" TargetType="syncfusion:GridCell">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=IsThreeWeekFinishRequired}" Value="True">
-                    <Setter Property="Background" Value="#5b2626"/>
+                    <Setter Property="Background" Value="{StaticResource StatusRedBg}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="MSStartVarianceStyle" TargetType="syncfusion:GridCell">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=HasStartVariance}" Value="True">
+                    <Setter Property="Background" Value="{StaticResource StatusYellowBg}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="MSFinishVarianceStyle" TargetType="syncfusion:GridCell">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=HasFinishVariance}" Value="True">
+                    <Setter Property="Background" Value="{StaticResource StatusYellowBg}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="MSBudgetMHsVarianceStyle" TargetType="syncfusion:GridCell">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=HasBudgetMHsVariance}" Value="True">
+                    <Setter Property="Background" Value="{StaticResource StatusYellowBg}"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
@@ -155,15 +179,15 @@
                           Foreground="{StaticResource ForegroundColor}"
                           Margin="0,0,10,0"/>
 
-                <ToggleButton x:Name="btnFilterActualStart"
-                             Content="Actual Start"
-                             IsChecked="{Binding FilterActualStart, Mode=TwoWay}"
+                <ToggleButton x:Name="btnFilterMissedStart"
+                             Content="Missed Start"
+                             IsChecked="{Binding FilterMissedStart, Mode=TwoWay}"
                              Style="{StaticResource FilterToggleButtonStyle}"
                              Margin="0,0,5,0"/>
 
-                <ToggleButton x:Name="btnFilterActualFinish"
-                             Content="Actual Finish"
-                             IsChecked="{Binding FilterActualFinish, Mode=TwoWay}"
+                <ToggleButton x:Name="btnFilterMissedFinish"
+                             Content="Missed Finish"
+                             IsChecked="{Binding FilterMissedFinish, Mode=TwoWay}"
                              Style="{StaticResource FilterToggleButtonStyle}"
                              Margin="0,0,5,0"/>
 
@@ -171,7 +195,32 @@
                              Content="3WLA"
                              IsChecked="{Binding Filter3WLA, Mode=TwoWay}"
                              Style="{StaticResource FilterToggleButtonStyle}"
+                             Margin="0,0,5,0"/>
+
+                <ToggleButton x:Name="btnFilterActualsDiscrepancies"
+                             Content="Actuals"
+                             IsChecked="{Binding FilterActualsDiscrepancies, Mode=TwoWay}"
+                             Style="{StaticResource FilterToggleButtonStyle}"
+                             Margin="0,0,5,0"/>
+
+                <ToggleButton x:Name="btnFilterRequiredFields"
+                             Content="{Binding RequiredFieldsButtonText}"
+                             IsChecked="{Binding FilterRequiredFields, Mode=TwoWay}"
+                             Style="{StaticResource FilterToggleButtonStyle}"
+                             Foreground="{StaticResource StatusRed}"
+                             Width="130"
                              Margin="0,0,20,0"/>
+                <Button x:Name="btnRefresh"
+                        Content="Refresh"
+                        Width="80"
+                        Height="32"
+                        Background="{StaticResource ControlBackground}"
+                        Foreground="{StaticResource ForegroundColor}"
+                        BorderBrush="{StaticResource ControlBorder}"
+                        BorderThickness="1"
+                        FontSize="11"
+                        Click="btnRefresh_Click"
+                        Margin="0,0,5,0"/>
                 <Button x:Name="btnSave"
                         Content="SAVE"
                         Width="80"
@@ -278,13 +327,15 @@
                                                   HeaderText="MS Start" 
                                                   Width="110"
                                                   DisplayBinding="{Binding MS_ActualStart, StringFormat='yyyy-MM-dd'}"
-                                                  AllowEditing="False"/>
+                                                  AllowEditing="False"
+                                                  CellStyle="{StaticResource MSStartVarianceStyle}"/>
 
                     <syncfusion:GridDateTimeColumn MappingName="MS_ActualFinish" 
                                                   HeaderText="MS Finish" 
                                                   Width="110"
                                                   DisplayBinding="{Binding MS_ActualFinish, StringFormat='yyyy-MM-dd'}"
-                                                  AllowEditing="False"/>
+                                                  AllowEditing="False"
+                                                  CellStyle="{StaticResource MSFinishVarianceStyle}"/>
 
                     <syncfusion:GridNumericColumn MappingName="MS_PercentComplete" 
                                                  HeaderText="MS %" 
@@ -296,7 +347,8 @@
                                                  HeaderText="MS MHs" 
                                                  Width="90"
                                                  NumberDecimalDigits="1"
-                                                 AllowEditing="False"/>
+                                                 AllowEditing="False"
+                                                 CellStyle="{StaticResource MSBudgetMHsVarianceStyle}"/>
 
                     <syncfusion:GridTextColumn MappingName="MissedStartReason" 
                               HeaderText="Missed Start Reason" 
@@ -433,25 +485,33 @@
                 BorderBrush="{StaticResource ControlBorder}"
                 BorderThickness="0,1,0,0"
                 Height="30">
-            <StackPanel Orientation="Horizontal" 
-                       Margin="15,0"
-                       VerticalAlignment="Center">
-                <TextBlock x:Name="txtStatus"
-                          Text="Ready"
-                          Foreground="{StaticResource ForegroundColor}"
-                          FontSize="12"/>
-                <Button x:Name="btnRequiredFields"
-                        Content="{Binding RequiredFieldsButtonText}"
-                        Click="btnRequiredFields_Click"
-                        Background="{StaticResource ControlBackground}"
-                        Foreground="{StaticResource StatusRed}"
-                        BorderBrush="{StaticResource ControlBorder}"
-                        BorderThickness="1"
-                        Padding="8,4"
-                        Margin="20,0,0,0"
-                        FontSize="11"
-                        ToolTip="Click to filter rows with required fields"/>
-            </StackPanel>
+            <Grid>
+                <StackPanel Orientation="Horizontal" 
+                           HorizontalAlignment="Left"
+                           VerticalAlignment="Center"
+                           Margin="15,0">
+                    <TextBlock x:Name="txtStatus"
+                              Text="Ready"
+                              Foreground="{StaticResource ForegroundColor}"
+                              FontSize="12"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal"
+                           HorizontalAlignment="Right"
+                           VerticalAlignment="Center"
+                           Margin="15,0">
+                    <Rectangle Width="14" Height="14" Fill="{StaticResource StatusRedBg}" Margin="0,0,5,0"/>
+                    <TextBlock Text="Required" 
+                              Foreground="{StaticResource ForegroundColor}" 
+                              FontSize="11"
+                              VerticalAlignment="Center"
+                              Margin="0,0,15,0"/>
+                    <Rectangle Width="14" Height="14" Fill="{StaticResource StatusYellow}" Margin="0,0,5,0"/>
+                    <TextBlock Text="Warning" 
+                              Foreground="{StaticResource ForegroundColor}" 
+                              FontSize="11"
+                              VerticalAlignment="Center"/>
+                </StackPanel>
+            </Grid>
         </Border>
 
         <!-- LOADING OVERLAY -->

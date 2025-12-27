@@ -47,8 +47,10 @@
     <!-- === STATUS COLORS === -->
     <SolidColorBrush x:Key="StatusGreen" Color="#FF27AE60"/>
     <SolidColorBrush x:Key="StatusGray" Color="#FF7F8C8D"/>
-    <SolidColorBrush x:Key="StatusYellow" Color="#FFF39C12"/>
+    <SolidColorBrush x:Key="StatusYellow" Color="#5b4b26"/>
+    <SolidColorBrush x:Key="StatusYellowBg" Color="#5b4b26"/>
     <SolidColorBrush x:Key="StatusRed" Color="#b63434"/>
+    <SolidColorBrush x:Key="StatusRedBg" Color="#5b2626"/>
     <SolidColorBrush x:Key="StatusComplete" Color="#FF27AE60"/>
     <SolidColorBrush x:Key="StatusInProgress" Color="#FF3498DB"/>
     <SolidColorBrush x:Key="StatusNotStarted" Color="#FF95A5A6"/>

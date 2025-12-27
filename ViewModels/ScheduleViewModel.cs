@@ -17,9 +17,10 @@ namespace VANTAGE.ViewModels
         private ObservableCollection<ProgressSnapshot> _detailActivities = new ObservableCollection<ProgressSnapshot>();
         private DateTime? _selectedWeekEndDate;
         private bool _isLoading;
-        private bool _filterActualStart;
-        private bool _filterActualFinish;
+        private bool _filterMissedStart;
+        private bool _filterMissedFinish;
         private bool _filter3WLA;
+        private bool _filterActualsDiscrepancies;
         private string? _selectedSchedActNO;
         private bool _hasUnsavedChanges;
         public bool HasUnsavedChanges
@@ -97,51 +98,55 @@ namespace VANTAGE.ViewModels
         }
 
         // Filter toggles - MUTUALLY EXCLUSIVE
-        public bool FilterActualStart
+        public bool FilterMissedStart
         {
-            get => _filterActualStart;
+            get => _filterMissedStart;
             set
             {
-                if (_filterActualStart != value)
+                if (_filterMissedStart != value)
                 {
-                    _filterActualStart = value;
+                    _filterMissedStart = value;
 
                     if (value)
                     {
-                        _filterActualFinish = false;
+                        _filterMissedFinish = false;
                         _filter3WLA = false;
                         _filterRequiredFields = false;
-                        OnPropertyChanged(nameof(FilterActualFinish));
+                        _filterActualsDiscrepancies = false;
+                        OnPropertyChanged(nameof(FilterMissedFinish));
                         OnPropertyChanged(nameof(Filter3WLA));
                         OnPropertyChanged(nameof(FilterRequiredFields));
+                        OnPropertyChanged(nameof(FilterActualsDiscrepancies));
                     }
 
-                    OnPropertyChanged(nameof(FilterActualStart));
+                    OnPropertyChanged(nameof(FilterMissedStart));
                     ApplyFilter();
                 }
             }
         }
 
-        public bool FilterActualFinish
+        public bool FilterMissedFinish
         {
-            get => _filterActualFinish;
+            get => _filterMissedFinish;
             set
             {
-                if (_filterActualFinish != value)
+                if (_filterMissedFinish != value)
                 {
-                    _filterActualFinish = value;
+                    _filterMissedFinish = value;
 
                     if (value)
                     {
-                        _filterActualStart = false;
+                        _filterMissedStart = false;
                         _filter3WLA = false;
                         _filterRequiredFields = false;
-                        OnPropertyChanged(nameof(FilterActualStart));
+                        _filterActualsDiscrepancies = false;
+                        OnPropertyChanged(nameof(FilterMissedStart));
                         OnPropertyChanged(nameof(Filter3WLA));
                         OnPropertyChanged(nameof(FilterRequiredFields));
+                        OnPropertyChanged(nameof(FilterActualsDiscrepancies));
                     }
 
-                    OnPropertyChanged(nameof(FilterActualFinish));
+                    OnPropertyChanged(nameof(FilterMissedFinish));
                     ApplyFilter();
                 }
             }
@@ -158,12 +163,14 @@ namespace VANTAGE.ViewModels
 
                     if (value)
                     {
-                        _filterActualStart = false;
-                        _filterActualFinish = false;
+                        _filterMissedStart = false;
+                        _filterMissedFinish = false;
                         _filterRequiredFields = false;
-                        OnPropertyChanged(nameof(FilterActualStart));
-                        OnPropertyChanged(nameof(FilterActualFinish));
+                        _filterActualsDiscrepancies = false;
+                        OnPropertyChanged(nameof(FilterMissedStart));
+                        OnPropertyChanged(nameof(FilterMissedFinish));
                         OnPropertyChanged(nameof(FilterRequiredFields));
+                        OnPropertyChanged(nameof(FilterActualsDiscrepancies));
                     }
 
                     OnPropertyChanged(nameof(Filter3WLA));
@@ -210,12 +217,14 @@ namespace VANTAGE.ViewModels
 
                     if (value)
                     {
-                        _filterActualStart = false;
-                        _filterActualFinish = false;
+                        _filterMissedStart = false;
+                        _filterMissedFinish = false;
                         _filter3WLA = false;
-                        OnPropertyChanged(nameof(FilterActualStart));
-                        OnPropertyChanged(nameof(FilterActualFinish));
+                        _filterActualsDiscrepancies = false;
+                        OnPropertyChanged(nameof(FilterMissedStart));
+                        OnPropertyChanged(nameof(FilterMissedFinish));
                         OnPropertyChanged(nameof(Filter3WLA));
+                        OnPropertyChanged(nameof(FilterActualsDiscrepancies));
                     }
 
                     OnPropertyChanged(nameof(FilterRequiredFields));
@@ -223,7 +232,32 @@ namespace VANTAGE.ViewModels
                 }
             }
         }
+        public bool FilterActualsDiscrepancies
+        {
+            get => _filterActualsDiscrepancies;
+            set
+            {
+                if (_filterActualsDiscrepancies != value)
+                {
+                    _filterActualsDiscrepancies = value;
 
+                    if (value)
+                    {
+                        _filterMissedStart = false;
+                        _filterMissedFinish = false;
+                        _filter3WLA = false;
+                        _filterRequiredFields = false;
+                        OnPropertyChanged(nameof(FilterMissedStart));
+                        OnPropertyChanged(nameof(FilterMissedFinish));
+                        OnPropertyChanged(nameof(Filter3WLA));
+                        OnPropertyChanged(nameof(FilterRequiredFields));
+                    }
+
+                    OnPropertyChanged(nameof(FilterActualsDiscrepancies));
+                    ApplyFilter();
+                }
+            }
+        }
         // ========================================
         // DETAIL ACTIVITIES METHODS
         // ========================================
@@ -425,7 +459,7 @@ namespace VANTAGE.ViewModels
         {
             List<ScheduleMasterRow> filteredRows;
 
-            if (!FilterActualStart && !FilterActualFinish && !Filter3WLA && !FilterRequiredFields)
+            if (!FilterMissedStart && !FilterMissedFinish && !Filter3WLA && !FilterRequiredFields && !FilterActualsDiscrepancies)
             {
                 filteredRows = _allMasterRows;
             }
@@ -447,22 +481,24 @@ namespace VANTAGE.ViewModels
                        row.IsThreeWeekFinishRequired;
             }
 
-            if (FilterActualStart)
+            if (FilterMissedStart)
             {
-                return row.HasStartVariance;
+                return row.IsMissedStartReasonRequired;
             }
 
-            if (FilterActualFinish)
+            if (FilterMissedFinish)
             {
-                return row.HasFinishVariance;
+                return row.IsMissedFinishReasonRequired;
             }
 
             if (Filter3WLA)
             {
-                var referenceDate = SelectedWeekEndDate ?? DateTime.Today;
-                var threeWeeksOut = referenceDate.AddDays(21);
-                return (row.P6_PlannedStart.HasValue && row.P6_PlannedStart.Value >= referenceDate && row.P6_PlannedStart.Value <= threeWeeksOut) ||
-                       (row.P6_PlannedFinish.HasValue && row.P6_PlannedFinish.Value >= referenceDate && row.P6_PlannedFinish.Value <= threeWeeksOut);
+                return row.IsThreeWeekStartRequired || row.IsThreeWeekFinishRequired;
+            }
+
+            if (FilterActualsDiscrepancies)
+            {
+                return row.HasStartVariance || row.HasFinishVariance;
             }
 
             return true;
