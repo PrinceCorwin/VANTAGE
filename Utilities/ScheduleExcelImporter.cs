@@ -427,13 +427,15 @@ namespace VANTAGE.Utilities
 
                 var cmd = azureConn.CreateCommand();
                 cmd.CommandText = $@"
-            SELECT DISTINCT SchedActNO 
-            FROM ProgressSnapshots 
-            WHERE WeekEndDate = @weekEndDate 
-              AND ProjectID IN ({projectIdList})
-              AND SchedActNO IS NOT NULL 
-              AND SchedActNO <> ''";
+                    SELECT DISTINCT SchedActNO 
+                    FROM ProgressSnapshots 
+                    WHERE WeekEndDate = @weekEndDate 
+                      AND ProjectID IN ({projectIdList})
+                      AND AssignedTo = @username
+                      AND SchedActNO IS NOT NULL 
+                      AND SchedActNO <> ''";
                 cmd.Parameters.AddWithValue("@weekEndDate", weekEndDate.ToString("yyyy-MM-dd"));
+                cmd.Parameters.AddWithValue("@username", App.CurrentUser?.Username ?? "");
 
                 using var reader = cmd.ExecuteReader();
                 while (reader.Read())

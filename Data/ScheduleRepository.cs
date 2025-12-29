@@ -437,7 +437,7 @@ namespace VANTAGE.Repositories
                 return null;
             }
         }
-        // Get distinct SchedActNOs from ProgressSnapshots for the given week and projects
+        // May need to be deleted. Get distinct SchedActNOs from ProgressSnapshots for the given week and projects
         private static HashSet<string> GetSchedActNOsFromSnapshots(DateTime weekEndDate, List<string> projectIds)
         {
             var schedActNOs = new HashSet<string>();
@@ -713,26 +713,28 @@ namespace VANTAGE.Repositories
                 // Calculate weighted average directly in SQL (stays in 0-100 scale)
                 // MS_ActualFinish only populated if ALL activities have a finish date
                 cmd.CommandText = $@"
-            SELECT 
-                SchedActNO,
-                MIN(SchStart) as MS_ActualStart,
-                CASE 
-                    WHEN COUNT(*) = COUNT(SchFinish) 
-                    THEN MAX(SchFinish)
-                    ELSE NULL 
-                END as MS_ActualFinish,
-                CASE 
-                    WHEN SUM(BudgetMHs) > 0 
-                    THEN SUM(BudgetMHs * PercentEntry) / SUM(BudgetMHs)
-                    ELSE 0 
-                END as MS_PercentComplete,
-                SUM(BudgetMHs) as MS_BudgetMHs
-            FROM ProgressSnapshots
-            WHERE WeekEndDate = @weekEndDate
-              AND ProjectID IN ({projectIdList})
-            GROUP BY SchedActNO";
+                        SELECT 
+                            SchedActNO,
+                            MIN(SchStart) as MS_ActualStart,
+                            CASE 
+                                WHEN COUNT(*) = COUNT(SchFinish) 
+                                THEN MAX(SchFinish)
+                                ELSE NULL 
+                            END as MS_ActualFinish,
+                            CASE 
+                                WHEN SUM(BudgetMHs) > 0 
+                                THEN SUM(BudgetMHs * PercentEntry) / SUM(BudgetMHs)
+                                ELSE 0 
+                            END as MS_PercentComplete,
+                            SUM(BudgetMHs) as MS_BudgetMHs
+                        FROM ProgressSnapshots
+                        WHERE WeekEndDate = @weekEndDate
+                          AND ProjectID IN ({projectIdList})
+                          AND AssignedTo = @username
+                        GROUP BY SchedActNO";
 
                 cmd.Parameters.AddWithValue("@weekEndDate", weekEndDate.ToString("yyyy-MM-dd"));
+                cmd.Parameters.AddWithValue("@username", App.CurrentUser?.Username ?? "");
 
                 // Create dictionary for fast lookup
                 var rollupDict = new Dictionary<string, (DateTime? Start, DateTime? Finish, double Percent, double MHs)>();
@@ -836,18 +838,20 @@ namespace VANTAGE.Repositories
 
                     var cmd = azureConn.CreateCommand();
                     cmd.CommandText = $@"
-                SELECT 
-                    UniqueID, WeekEndDate, SchedActNO, Description, 
-                    PercentEntry, BudgetMHs, SchStart, SchFinish,
-                    AssignedTo, ProjectID, UpdatedBy, UpdatedUtcDate
-                FROM ProgressSnapshots
-                WHERE SchedActNO = @schedActNO
-                  AND WeekEndDate = @weekEndDate
-                  AND ProjectID IN ({projectIdList})
-                ORDER BY UniqueID";
+                            SELECT 
+                                UniqueID, WeekEndDate, SchedActNO, Description, 
+                                PercentEntry, BudgetMHs, SchStart, SchFinish,
+                                AssignedTo, ProjectID, UpdatedBy, UpdatedUtcDate
+                            FROM ProgressSnapshots
+                            WHERE SchedActNO = @schedActNO
+                              AND WeekEndDate = @weekEndDate
+                              AND ProjectID IN ({projectIdList})
+                              AND AssignedTo = @username
+                            ORDER BY UniqueID";
 
                     cmd.Parameters.AddWithValue("@schedActNO", schedActNO);
                     cmd.Parameters.AddWithValue("@weekEndDate", weekEndDate.ToString("yyyy-MM-dd"));
+                    cmd.Parameters.AddWithValue("@username", App.CurrentUser?.Username ?? "");
 
                     using var reader = cmd.ExecuteReader();
                     while (reader.Read())

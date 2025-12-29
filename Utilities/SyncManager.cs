@@ -18,7 +18,7 @@ namespace VANTAGE.Utilities
             {
                 "Area" => activity.Area,
                 "AssignedTo" => activity.AssignedTo,
-                "AzureUploadUtcDate" => activity.AzureUploadUtcDate,
+                "AzureUploadUtcDate" => activity.AzureUploadUtcDate?.ToString("yyyy-MM-dd HH:mm:ss"),
                 "Aux1" => activity.Aux1,
                 "Aux2" => activity.Aux2,
                 "Aux3" => activity.Aux3,
@@ -97,7 +97,7 @@ namespace VANTAGE.Utilities
                 "UDF18" => activity.UDF18,
                 "UDF20" => activity.UDF20,
                 "UpdatedBy" => activity.UpdatedBy,
-                "UpdatedUtcDate" => activity.UpdatedUtcDate,
+                "UpdatedUtcDate" => activity.UpdatedUtcDate?.ToString("yyyy-MM-dd HH:mm:ss"),
                 "UOM" => activity.UOM,
                 "WeekEndDate" => activity.WeekEndDate,
                 "WorkPackage" => activity.WorkPackage,

@@ -1642,6 +1642,36 @@ namespace VANTAGE.Views
                 var selectedWeekEndDate = datePicker.SelectedDate.Value;
                 var weekEndDateStr = selectedWeekEndDate.ToString("yyyy-MM-dd");
 
+                // Check for dates that are after the selected WeekEndDate
+                var futureStartDates = _viewModel.Activities
+                    .Where(a => a.AssignedTo == App.CurrentUser?.Username &&
+                                a.ProjectID == selectedProject &&
+                                a.SchStart != null &&
+                                a.SchStart.Value.Date > selectedWeekEndDate.Date)
+                    .ToList();
+
+                var futureFinishDates = _viewModel.Activities
+                    .Where(a => a.AssignedTo == App.CurrentUser?.Username &&
+                                a.ProjectID == selectedProject &&
+                                a.SchFinish != null &&
+                                a.SchFinish.Value.Date > selectedWeekEndDate.Date)
+                    .ToList();
+
+                if (futureStartDates.Any() || futureFinishDates.Any())
+                {
+                    int totalCount = futureStartDates.Count + futureFinishDates.Count;
+                    string message = $"Cannot submit progress for week ending {selectedWeekEndDate:MM/dd/yyyy}.\n\n";
+
+                    if (futureStartDates.Any())
+                        message += $"• {futureStartDates.Count} activity(s) have Start dates after the selected week\n";
+                    if (futureFinishDates.Any())
+                        message += $"• {futureFinishDates.Count} activity(s) have Finish dates after the selected week\n";
+
+                    message += "\nPlease fix these dates before submitting, or select a later week end date.";
+
+                    MessageBox.Show(message, "Invalid Dates", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
                 // Step 5: Check for split SchedActNO ownership
                 var splitOwnershipIssues = await OwnershipHelper.CheckSplitOwnershipAsync(
                     selectedProject, App.CurrentUser!.Username);
@@ -1924,7 +1954,22 @@ namespace VANTAGE.Views
                             int snapshots = insertCmd.ExecuteNonQuery();
 
                             AppLogger.Info($"Created {snapshots} snapshots for week ending {weekEndDateStr} ({skipped} skipped)", "ProgressView.BtnSubmit_Click", currentUser);
+                            // Step 13: Purge old snapshots (older than 4 weeks from today)
+                            reporter.Report("Cleaning up old snapshots...");
 
+                            var purgeCmd = azureConn.CreateCommand();
+                            purgeCmd.CommandText = @"
+                                DELETE FROM ProgressSnapshots 
+                                WHERE WeekEndDate < @cutoffDate";
+                            purgeCmd.Parameters.AddWithValue("@cutoffDate", DateTime.Now.AddDays(-28).ToString("yyyy-MM-dd"));
+
+                            int purgedCount = purgeCmd.ExecuteNonQuery();
+
+                            if (purgedCount > 0)
+                            {
+                                AppLogger.Info($"Purged {purgedCount} old snapshots (before {DateTime.Now.AddDays(-28):yyyy-MM-dd})",
+                                    "ProgressView.BtnSubmit_Click", currentUser);
+                            }
                             // Step 12: Update local Activities.WeekEndDate and ProgDate
                             reporter.Report("Updating local records...");
 
@@ -2597,29 +2642,112 @@ namespace VANTAGE.Views
                     double oldPercent = (_originalCellValue as double?) ?? 0;
                     double newPercent = (currentValue as double?) ?? 0;
 
-                    // 0 → >0: Set SchStart = today (if null)
-                    if (oldPercent == 0 && newPercent > 0 && editedActivity.SchStart == null)
-                    {
-                        editedActivity.SchStart = DateTime.Today;
-                    }
-
-                    // Any → 100: Set SchFinish = today (if null)
-                    if (newPercent == 100 && editedActivity.SchFinish == null)
-                    {
-                        editedActivity.SchFinish = DateTime.Today;
-                    }
-
-                    // 100 → <100: Clear SchFinish
-                    if (oldPercent == 100 && newPercent < 100)
-                    {
-                        editedActivity.SchFinish = null;
-                    }
-
-                    // >0 → 0: Clear both dates
-                    if (oldPercent > 0 && newPercent == 0)
+                    // 0% → clear both dates
+                    if (newPercent == 0)
                     {
                         editedActivity.SchStart = null;
                         editedActivity.SchFinish = null;
+                    }
+                    // >0 and <100 → set SchStart if null, clear SchFinish
+                    else if (newPercent > 0 && newPercent < 100)
+                    {
+                        if (editedActivity.SchStart == null)
+                        {
+                            editedActivity.SchStart = DateTime.Today;
+                        }
+                        editedActivity.SchFinish = null;
+                    }
+                    // 100% → set both dates if null
+                    else if (newPercent >= 100)
+                    {
+                        if (editedActivity.SchStart == null)
+                        {
+                            editedActivity.SchStart = DateTime.Today;
+                        }
+                        if (editedActivity.SchFinish == null)
+                        {
+                            editedActivity.SchFinish = DateTime.Today;
+                        }
+                    }
+                }
+                else if (columnName == "SchStart")
+                {
+                    // Can't set start if percent is 0
+                    if (editedActivity.SchStart != null && editedActivity.PercentEntry == 0)
+                    {
+                        MessageBox.Show("Cannot set Start date when % Complete is 0.\n\nSet % Complete to greater than 0 first.",
+                            "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        editedActivity.SchStart = null;
+                        sfActivities.View?.Refresh();
+                        return;
+                    }
+
+                    // Can't set start in the future
+                    if (editedActivity.SchStart != null && editedActivity.SchStart.Value.Date > DateTime.Today)
+                    {
+                        MessageBox.Show("Start date cannot be in the future.",
+                            "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        editedActivity.SchStart = DateTime.Today;
+                        sfActivities.View?.Refresh();
+                    }
+                    // Can't set start after finish
+                    if (editedActivity.SchStart != null && editedActivity.SchFinish != null &&
+                        editedActivity.SchStart.Value.Date > editedActivity.SchFinish.Value.Date)
+                    {
+                        MessageBox.Show("Start date cannot be after Finish date.\n\nFinish date has been updated to match Start date.",
+                            "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        editedActivity.SchFinish = editedActivity.SchStart;
+                        sfActivities.View?.Refresh();
+                    }
+                    // Can't clear start if percent > 0
+                    if (editedActivity.SchStart == null && editedActivity.PercentEntry > 0)
+                    {
+                        MessageBox.Show("Cannot clear Start date when % Complete is greater than 0.\n\nSet % Complete to 0 first.",
+                            "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        editedActivity.SchStart = DateTime.Today;
+                        sfActivities.View?.Refresh();
+                        return;
+                    }
+                }
+                else if (columnName == "SchFinish")
+                {
+                    // Can't set finish if percent < 100
+                    if (editedActivity.SchFinish != null && editedActivity.PercentEntry < 100)
+                    {
+                        MessageBox.Show("Cannot set Finish date when % Complete is less than 100.\n\nSet % Complete to 100 first.",
+                            "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        editedActivity.SchFinish = null;
+                        sfActivities.View?.Refresh();
+                        return;
+                    }
+
+                    // Can't set finish in the future
+                    if (editedActivity.SchFinish != null && editedActivity.SchFinish.Value.Date > DateTime.Today)
+                    {
+                        MessageBox.Show("Finish date cannot be in the future.",
+                            "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        editedActivity.SchFinish = DateTime.Today;
+                        sfActivities.View?.Refresh();
+                    }
+
+                    // Can't set finish before start
+                    if (editedActivity.SchFinish != null && editedActivity.SchStart != null &&
+                        editedActivity.SchFinish.Value.Date < editedActivity.SchStart.Value.Date)
+                    {
+                        MessageBox.Show("Finish date cannot be before Start date.",
+                            "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        editedActivity.SchFinish = editedActivity.SchStart;
+                        sfActivities.View?.Refresh();
+                    }
+
+                    // Can't clear finish if percent is 100
+                    if (editedActivity.SchFinish == null && editedActivity.PercentEntry >= 100)
+                    {
+                        MessageBox.Show("Cannot clear Finish date when % Complete is 100.\n\nSet % Complete to less than 100 first.",
+                            "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        editedActivity.SchFinish = DateTime.Today;
+                        sfActivities.View?.Refresh();
+                        return;
                     }
                 }
 
