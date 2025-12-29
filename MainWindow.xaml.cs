@@ -398,19 +398,35 @@ namespace VANTAGE
                 if (exportDialog.ShowDialog() != true)
                     return;
 
-                // Get week end date for filename
-                string defaultFileName = $"To_P6_{viewModel.SelectedWeekEndDate:yyyy-MM-dd}.xlsx";
+                // Get current date for filenames
+                string dateStamp = DateTime.Now.ToString("yyyy-MM-dd");
 
-                // Show save dialog
-                var saveDialog = new Microsoft.Win32.SaveFileDialog
+                // Show save dialog for P6 file
+                var p6SaveDialog = new Microsoft.Win32.SaveFileDialog
                 {
                     Filter = "Excel Files|*.xlsx",
-                    Title = "Export to P6 File",
-                    FileName = defaultFileName
+                    Title = "Save P6 Export File",
+                    FileName = $"To_P6_{dateStamp}.xlsx"
                 };
 
-                if (saveDialog.ShowDialog() != true)
+                if (p6SaveDialog.ShowDialog() != true)
                     return;
+
+                string p6FilePath = p6SaveDialog.FileName;
+
+                // Show save dialog for Schedule Reports file
+                var reportsSaveDialog = new Microsoft.Win32.SaveFileDialog
+                {
+                    Filter = "Excel Files|*.xlsx",
+                    Title = "Save 3WLA File",
+                    FileName = $"3WLA_{dateStamp}.xlsx",
+                    InitialDirectory = System.IO.Path.GetDirectoryName(p6FilePath)
+                };
+
+                if (reportsSaveDialog.ShowDialog() != true)
+                    return;
+
+                string reportsFilePath = reportsSaveDialog.FileName;
 
                 // Export with busy dialog
                 var busyDialog = new Dialogs.BusyDialog(this);
@@ -419,22 +435,38 @@ namespace VANTAGE
 
                 try
                 {
+                    // Export P6 file
                     int exported = await Utilities.ScheduleExcelExporter.ExportToP6Async(
                         allRows,
-                        saveDialog.FileName,
+                        p6FilePath,
                         exportDialog.StartTime,
                         exportDialog.FinishTime,
                         new Progress<string>(msg => busyDialog.UpdateStatus(msg)));
 
+                    // Export Schedule Reports file
+                    busyDialog.UpdateStatus("Creating Schedule Reports...");
+                    var weekEndDate = allRows.FirstOrDefault()?.WeekEndDate ?? DateTime.Today;
+                    await Utilities.ScheduleReportExporter.ExportAsync(
+                        allRows,
+                        weekEndDate,
+                        reportsFilePath,
+                        new Progress<string>(msg => busyDialog.UpdateStatus(msg)));
                     busyDialog.Close();
 
                     AppLogger.Info(
-                        $"Exported {exported} schedule activities to P6 file: {saveDialog.FileName}",
+                        $"Exported {exported} schedule activities to P6 file: {p6FilePath}",
+                        "MainWindow.ExportP6File_Click",
+                        App.CurrentUser?.Username);
+
+                    AppLogger.Info(
+                        $"Created Schedule Reports: {reportsFilePath}",
                         "MainWindow.ExportP6File_Click",
                         App.CurrentUser?.Username);
 
                     MessageBox.Show(
-                        $"Successfully exported {exported} activities to:\n\n{saveDialog.FileName}",
+                        $"Successfully exported {exported} activities.\n\n" +
+                        $"P6 File:\n{p6FilePath}\n\n" +
+                        $"Schedule Reports:\n{reportsFilePath}",
                         "Export Complete",
                         MessageBoxButton.OK,
                         MessageBoxImage.Information);

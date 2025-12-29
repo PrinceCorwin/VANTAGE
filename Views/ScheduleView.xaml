@@ -273,7 +273,8 @@
                           AllowResizingColumns="True"
                           AllowDraggingColumns="True"
                           ShowRowHeader="True"
-                          RowHeaderWidth="30">
+                          RowHeaderWidth="30"
+                          CurrentCellBeginEdit="SfScheduleMaster_CurrentCellBeginEdit">
 
                 <syncfusion:SfDataGrid.Columns>
 
@@ -281,6 +282,48 @@
                                               HeaderText="SchedActNO" 
                                               Width="120"
                                               AllowEditing="False"/>
+                    <syncfusion:GridTextColumn MappingName="MissedStartReason" 
+                                              HeaderText="Missed Start Reason" 
+                                              Width="200"
+                                              AllowEditing="True"
+                                              CellStyle="{StaticResource MissedStartReasonRequiredStyle}"/>
+
+                    <syncfusion:GridTextColumn MappingName="MissedFinishReason" 
+                                                HeaderText="Missed Finish Reason" 
+                                                Width="200"
+                                                AllowEditing="True"
+                                                CellStyle="{StaticResource MissedFinishReasonRequiredStyle}"/>
+
+                    <syncfusion:GridDateTimeColumn MappingName="ThreeWeekStart" 
+                                                  HeaderText="3WLA Start" 
+                                                  Width="110"
+                                                  AllowEditing="True"
+                                                  AllowNullValue="True"
+                                                  NullText=""
+                                                  Pattern="ShortDate"
+                                                  CellStyle="{StaticResource ThreeWeekStartRequiredStyle}"/>
+
+                    <syncfusion:GridDateTimeColumn MappingName="ThreeWeekFinish" 
+                                                  HeaderText="3WLA Finish" 
+                                                  Width="110"
+                                                  AllowEditing="True"
+                                                  AllowNullValue="True"
+                                                  NullText=""
+                                                  Pattern="ShortDate"
+                                                  CellStyle="{StaticResource ThreeWeekFinishRequiredStyle}"/>
+                    <syncfusion:GridDateTimeColumn MappingName="MS_ActualStart" 
+                                                  HeaderText="MS Start" 
+                                                  Width="110"
+                                                  DisplayBinding="{Binding MS_ActualStart, StringFormat='yyyy-MM-dd'}"
+                                                  AllowEditing="False"
+                                                  CellStyle="{StaticResource MSStartVarianceStyle}"/>
+
+                    <syncfusion:GridDateTimeColumn MappingName="MS_ActualFinish" 
+                                                  HeaderText="MS Finish" 
+                                                  Width="110"
+                                                  DisplayBinding="{Binding MS_ActualFinish, StringFormat='yyyy-MM-dd'}"
+                                                  AllowEditing="False"
+                                                  CellStyle="{StaticResource MSFinishVarianceStyle}"/>
 
                     <syncfusion:GridTextColumn MappingName="Description" 
                                               HeaderText="Description" 
@@ -323,20 +366,6 @@
                                                  NumberDecimalDigits="1"
                                                  AllowEditing="False"/>
 
-                    <syncfusion:GridDateTimeColumn MappingName="MS_ActualStart" 
-                                                  HeaderText="MS Start" 
-                                                  Width="110"
-                                                  DisplayBinding="{Binding MS_ActualStart, StringFormat='yyyy-MM-dd'}"
-                                                  AllowEditing="False"
-                                                  CellStyle="{StaticResource MSStartVarianceStyle}"/>
-
-                    <syncfusion:GridDateTimeColumn MappingName="MS_ActualFinish" 
-                                                  HeaderText="MS Finish" 
-                                                  Width="110"
-                                                  DisplayBinding="{Binding MS_ActualFinish, StringFormat='yyyy-MM-dd'}"
-                                                  AllowEditing="False"
-                                                  CellStyle="{StaticResource MSFinishVarianceStyle}"/>
-
                     <syncfusion:GridNumericColumn MappingName="MS_PercentComplete" 
                                                  HeaderText="MS %" 
                                                  Width="80"
@@ -349,36 +378,6 @@
                                                  NumberDecimalDigits="1"
                                                  AllowEditing="False"
                                                  CellStyle="{StaticResource MSBudgetMHsVarianceStyle}"/>
-
-                    <syncfusion:GridTextColumn MappingName="MissedStartReason" 
-                              HeaderText="Missed Start Reason" 
-                              Width="200"
-                              AllowEditing="True"
-                              CellStyle="{StaticResource MissedStartReasonRequiredStyle}"/>
-
-                    <syncfusion:GridTextColumn MappingName="MissedFinishReason" 
-                              HeaderText="Missed Finish Reason" 
-                              Width="200"
-                              AllowEditing="True"
-                              CellStyle="{StaticResource MissedFinishReasonRequiredStyle}"/>
-
-                    <syncfusion:GridDateTimeColumn MappingName="ThreeWeekStart" 
-                                  HeaderText="3WLA Start" 
-                                  Width="110"
-                                  AllowEditing="True"
-                                  AllowNullValue="True"
-                                  NullText=""
-                                  Pattern="ShortDate"
-                                  CellStyle="{StaticResource ThreeWeekStartRequiredStyle}"/>
-
-                    <syncfusion:GridDateTimeColumn MappingName="ThreeWeekFinish" 
-                                  HeaderText="3WLA Finish" 
-                                  Width="110"
-                                  AllowEditing="True"
-                                  AllowNullValue="True"
-                                  NullText=""
-                                  Pattern="ShortDate"
-                                  CellStyle="{StaticResource ThreeWeekFinishRequiredStyle}"/>
                 </syncfusion:SfDataGrid.Columns>
             </syncfusion:SfDataGrid>
 
@@ -434,6 +433,10 @@
                             <syncfusion:GridTextColumn MappingName="UniqueID" 
                                                       HeaderText="UniqueID" 
                                                       Width="150"
+                                                      AllowEditing="False"/>
+                            <syncfusion:GridTextColumn MappingName="SchedActNO" 
+                                                      HeaderText="SchedActNO" 
+                                                      Width="130"
                                                       AllowEditing="False"/>
 
                             <syncfusion:GridTextColumn MappingName="Description" 

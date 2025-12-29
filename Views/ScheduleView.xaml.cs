@@ -168,7 +168,29 @@ namespace VANTAGE.Views
         // ========================================
         // EXIT HANDLING - PROMPT FOR UNSAVED CHANGES
         // ========================================
+        private void SfScheduleMaster_CurrentCellBeginEdit(object sender, Syncfusion.UI.Xaml.Grid.CurrentCellBeginEditEventArgs e)
+        {
+            // Block editing of 3WLA date columns when actuals exist
+            if (e.Column == null)
+                return;
 
+            var row = sfScheduleMaster.CurrentItem as ScheduleMasterRow;
+            if (row == null)
+                return;
+
+            string columnName = e.Column.MappingName;
+
+            if (columnName == "ThreeWeekStart" && !row.IsThreeWeekStartEditable)
+            {
+                e.Cancel = true;
+                txtStatus.Text = "3WLA Start is locked (actual start exists)";
+            }
+            else if (columnName == "ThreeWeekFinish" && !row.IsThreeWeekFinishEditable)
+            {
+                e.Cancel = true;
+                txtStatus.Text = "3WLA Finish is locked (actual finish exists)";
+            }
+        }
         private void ScheduleView_Unloaded(object sender, RoutedEventArgs e)
         {
             // Save UI state regardless
@@ -254,6 +276,115 @@ namespace VANTAGE.Views
                     return;
 
                 string username = App.CurrentUser?.Username ?? "Unknown";
+                DateTime weekEndDate = _viewModel.SelectedWeekEndDate ?? DateTime.Today;
+
+                // Handle PercentEntry changes - auto-adjust dates
+                if (columnName == "PercentEntry")
+                {
+                    if (editedSnapshot.PercentEntry == 0)
+                    {
+                        // 0% = not started - clear both dates
+                        editedSnapshot.SchStart = null;
+                        editedSnapshot.SchFinish = null;
+                    }
+                    else if (editedSnapshot.PercentEntry > 0 && editedSnapshot.PercentEntry < 100)
+                    {
+                        // In progress - needs start, no finish
+                        if (editedSnapshot.SchStart == null)
+                        {
+                            editedSnapshot.SchStart = weekEndDate;
+                        }
+                        editedSnapshot.SchFinish = null;
+                    }
+                    else if (editedSnapshot.PercentEntry >= 100)
+                    {
+                        // Complete - needs both start and finish
+                        if (editedSnapshot.SchStart == null)
+                        {
+                            editedSnapshot.SchStart = weekEndDate;
+                        }
+                        if (editedSnapshot.SchFinish == null)
+                        {
+                            editedSnapshot.SchFinish = weekEndDate;
+                        }
+                    }
+                }
+
+                // Handle SchStart changes - validate
+                if (columnName == "SchStart")
+                {
+                    // Can't set start if percent is 0
+                    if (editedSnapshot.SchStart != null && editedSnapshot.PercentEntry == 0)
+                    {
+                        MessageBox.Show("Cannot set Start date when % Complete is 0.\n\nSet % Complete first.",
+                            "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        editedSnapshot.SchStart = null;
+                        sfScheduleDetail.View?.Refresh();
+                        return;
+                    }
+
+                    // Can't set start in the future
+                    if (editedSnapshot.SchStart != null && editedSnapshot.SchStart.Value.Date > weekEndDate.Date)
+                    {
+                        MessageBox.Show($"Start date cannot be after Week End Date ({weekEndDate:M/d/yyyy}).\n\nActual dates must be in the past.",
+                            "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        editedSnapshot.SchStart = weekEndDate;
+                        sfScheduleDetail.View?.Refresh();
+                    }
+
+                    // Can't clear start if percent > 0
+                    if (editedSnapshot.SchStart == null && editedSnapshot.PercentEntry > 0)
+                    {
+                        MessageBox.Show("Cannot clear Start date when % Complete is greater than 0.\n\nSet % Complete to 0 first.",
+                            "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        editedSnapshot.SchStart = weekEndDate;
+                        sfScheduleDetail.View?.Refresh();
+                        return;
+                    }
+                }
+
+                // Handle SchFinish changes - validate
+                if (columnName == "SchFinish")
+                {
+                    // Can't set finish if percent is not 100
+                    if (editedSnapshot.SchFinish != null && editedSnapshot.PercentEntry < 100)
+                    {
+                        MessageBox.Show("Cannot set Finish date when % Complete is less than 100.\n\nSet % Complete to 100 first.",
+                            "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        editedSnapshot.SchFinish = null;
+                        sfScheduleDetail.View?.Refresh();
+                        return;
+                    }
+
+                    // Can't set finish in the future
+                    if (editedSnapshot.SchFinish != null && editedSnapshot.SchFinish.Value.Date > weekEndDate.Date)
+                    {
+                        MessageBox.Show($"Finish date cannot be after Week End Date ({weekEndDate:M/d/yyyy}).\n\nActual dates must be in the past.",
+                            "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        editedSnapshot.SchFinish = weekEndDate;
+                        sfScheduleDetail.View?.Refresh();
+                    }
+
+                    // Can't set finish before start
+                    if (editedSnapshot.SchFinish != null && editedSnapshot.SchStart != null &&
+                        editedSnapshot.SchFinish.Value.Date < editedSnapshot.SchStart.Value.Date)
+                    {
+                        MessageBox.Show("Finish date cannot be before Start date.",
+                            "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        editedSnapshot.SchFinish = editedSnapshot.SchStart;
+                        sfScheduleDetail.View?.Refresh();
+                    }
+
+                    // Can't clear finish if percent is 100
+                    if (editedSnapshot.SchFinish == null && editedSnapshot.PercentEntry >= 100)
+                    {
+                        MessageBox.Show("Cannot clear Finish date when % Complete is 100.\n\nSet % Complete to less than 100 first.",
+                            "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        editedSnapshot.SchFinish = weekEndDate;
+                        sfScheduleDetail.View?.Refresh();
+                        return;
+                    }
+                }
 
                 // Update timestamp
                 editedSnapshot.UpdatedBy = username;
@@ -261,21 +392,71 @@ namespace VANTAGE.Views
 
                 txtStatus.Text = "Saving...";
 
-                // Update both Azure snapshot and local Activity
-                bool success = await ScheduleRepository.UpdateSnapshotAndActivityAsync(editedSnapshot, username);
+                // Update Azure snapshot
+                bool success = await ScheduleRepository.UpdateSnapshotAsync(editedSnapshot, username);
 
                 if (success)
                 {
                     // Recalculate MS rollups for this SchedActNO
-                    if (!string.IsNullOrEmpty(_viewModel.SelectedSchedActNO))
+                    if (!string.IsNullOrEmpty(editedSnapshot.SchedActNO))
                     {
-                        await _viewModel.RecalculateMSRollupsAsync(_viewModel.SelectedSchedActNO);
+                        // Capture current state before recalculation
+                        var masterRow = _viewModel.MasterRows?.FirstOrDefault(r => r.SchedActNO == editedSnapshot.SchedActNO);
+                        DateTime? previousMSStart = masterRow?.MS_ActualStart;
+                        DateTime? previousMSFinish = masterRow?.MS_ActualFinish;
+
+                        await _viewModel.RecalculateMSRollupsAsync(editedSnapshot.SchedActNO);
+
+                        // Check if actuals were created (changed from null to non-null)
+                        if (masterRow != null)
+                        {
+                            bool startCreated = previousMSStart == null && masterRow.MS_ActualStart != null;
+                            bool finishCreated = previousMSFinish == null && masterRow.MS_ActualFinish != null;
+
+                            if (startCreated || finishCreated)
+                            {
+                                // Get ProjectID for the 3WLA table
+                                string? projectId = ScheduleRepository.GetFirstProjectIDForWeek(weekEndDate);
+                                if (!string.IsNullOrEmpty(projectId))
+                                {
+                                    // Clear the 3WLA dates that are now obsolete
+                                    await ScheduleRepository.ClearThreeWeekDatesAsync(
+                                        editedSnapshot.SchedActNO,
+                                        projectId,
+                                        startCreated,
+                                        finishCreated,
+                                        username);
+
+                                    // Update the in-memory master row
+                                    if (startCreated)
+                                        masterRow.ThreeWeekStart = null;
+                                    if (finishCreated)
+                                        masterRow.ThreeWeekFinish = null;
+
+                                    string cleared = (startCreated && finishCreated) ? "3WLA Start and Finish" :
+                                                     startCreated ? "3WLA Start" : "3WLA Finish";
+                                    txtStatus.Text = $"Saved - {cleared} cleared";
+                                }
+                                else
+                                {
+                                    txtStatus.Text = "Saved";
+                                }
+                            }
+                            else
+                            {
+                                txtStatus.Text = "Saved";
+                            }
+                        }
+                        else
+                        {
+                            txtStatus.Text = "Saved";
+                        }
                     }
 
                     // Force master grid to refresh and show updated values
                     sfScheduleMaster.View?.Refresh();
+                    sfScheduleDetail.View?.Refresh();
 
-                    txtStatus.Text = "Saved";
                     AppLogger.Info($"Detail edit saved: {editedSnapshot.UniqueID} - {columnName}",
                         "ScheduleView.SfScheduleDetail_CurrentCellEndEdit", username);
                 }

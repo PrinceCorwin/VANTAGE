@@ -139,10 +139,9 @@ namespace VANTAGE
                 P6_ActualFinish       TEXT,
                 P6_PercentComplete    REAL NOT NULL DEFAULT 0,
                 P6_BudgetMHs          REAL NOT NULL DEFAULT 0,
-                ThreeWeekStart        TEXT,
-                ThreeWeekFinish       TEXT,
                 MissedStartReason     TEXT,
                 MissedFinishReason    TEXT,
+                InMS                  INTEGER NOT NULL DEFAULT 0,
                 UpdatedBy             TEXT NOT NULL DEFAULT '',
                 UpdatedUtcDate        TEXT NOT NULL,
                 PRIMARY KEY (SchedActNO, WeekEndDate)
@@ -153,6 +152,15 @@ namespace VANTAGE
                 WeekEndDate           TEXT NOT NULL,
                 ProjectID             TEXT NOT NULL,
                 PRIMARY KEY (WeekEndDate, ProjectID)
+            );
+
+            -- ThreeWeekLookahead table (local only - user forecasts that persist across P6 imports)
+            CREATE TABLE IF NOT EXISTS ThreeWeekLookahead (
+                SchedActNO            TEXT NOT NULL,
+                ProjectID             TEXT NOT NULL,
+                ThreeWeekStart        TEXT,
+                ThreeWeekFinish       TEXT,
+                PRIMARY KEY (SchedActNO, ProjectID)
             );
 
             -- Users table (mirrored from Azure)
@@ -312,6 +320,7 @@ namespace VANTAGE
             CREATE INDEX IF NOT EXISTS idx_column_name ON ColumnMappings(ColumnName);
             CREATE INDEX IF NOT EXISTS idx_schedule_weekenddate ON Schedule(WeekEndDate);
             CREATE INDEX IF NOT EXISTS idx_schedprojmap_weekenddate ON ScheduleProjectMappings(WeekEndDate);
+            CREATE INDEX IF NOT EXISTS idx_3wla_projectid ON ThreeWeekLookahead(ProjectID);
         ";
 
                 command.ExecuteNonQuery();

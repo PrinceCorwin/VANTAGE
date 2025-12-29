@@ -296,7 +296,6 @@ namespace VANTAGE.ViewModels
             }
         }
 
-        // Called after detail grid edit to recalculate MS rollups for the selected SchedActNO
         public async Task RecalculateMSRollupsAsync(string schedActNO)
         {
             try
@@ -319,7 +318,6 @@ namespace VANTAGE.ViewModels
                         .Where(d => d.SchStart.HasValue)
                         .Select(d => d.SchStart!.Value)
                         .ToList();
-
                     masterRow.MS_ActualStart = starts.Any() ? starts.Min() : (DateTime?)null;
 
                     // MS_ActualFinish = MAX(SchFinish) only if ALL activities have SchFinish
@@ -349,6 +347,30 @@ namespace VANTAGE.ViewModels
                     masterRow.MS_BudgetMHs = totalBudget;
                 }
 
+                // Clear "Started Early" if no longer valid
+                if (masterRow.MissedStartReason == "Started Early")
+                {
+                    bool stillStartedEarly = masterRow.MS_ActualStart != null &&
+                                             masterRow.P6_PlannedStart != null &&
+                                             masterRow.MS_ActualStart.Value.Date < masterRow.P6_PlannedStart.Value.Date;
+                    if (!stillStartedEarly)
+                    {
+                        masterRow.MissedStartReason = null;
+                    }
+                }
+
+                // Clear "Finished Early" if no longer valid
+                if (masterRow.MissedFinishReason == "Finished Early")
+                {
+                    bool stillFinishedEarly = masterRow.MS_ActualFinish != null &&
+                                              masterRow.P6_PlannedFinish != null &&
+                                              masterRow.MS_ActualFinish.Value.Date < masterRow.P6_PlannedFinish.Value.Date;
+                    if (!stillFinishedEarly)
+                    {
+                        masterRow.MissedFinishReason = null;
+                    }
+                }
+
                 // Update the displayed row if it exists (might be filtered out)
                 if (displayedRow != null && displayedRow != masterRow)
                 {
@@ -356,6 +378,8 @@ namespace VANTAGE.ViewModels
                     displayedRow.MS_ActualFinish = masterRow.MS_ActualFinish;
                     displayedRow.MS_PercentComplete = masterRow.MS_PercentComplete;
                     displayedRow.MS_BudgetMHs = masterRow.MS_BudgetMHs;
+                    displayedRow.MissedStartReason = masterRow.MissedStartReason;
+                    displayedRow.MissedFinishReason = masterRow.MissedFinishReason;
                 }
 
                 // Update required fields count since variance properties may have changed

@@ -37,6 +37,8 @@ namespace VANTAGE.Models
                     OnPropertyChanged(nameof(MS_ActualStart));
                     OnPropertyChanged(nameof(HasStartVariance));
                     OnPropertyChanged(nameof(IsMissedStartReasonRequired));
+                    OnPropertyChanged(nameof(IsThreeWeekStartEditable));
+                    OnPropertyChanged(nameof(IsThreeWeekStartRequired));  // Add this line
                 }
             }
         }
@@ -53,6 +55,8 @@ namespace VANTAGE.Models
                     OnPropertyChanged(nameof(MS_ActualFinish));
                     OnPropertyChanged(nameof(HasFinishVariance));
                     OnPropertyChanged(nameof(IsMissedFinishReasonRequired));
+                    OnPropertyChanged(nameof(IsThreeWeekFinishEditable));
+                    OnPropertyChanged(nameof(IsThreeWeekFinishRequired));  // Add this line
                 }
             }
         }
@@ -187,6 +191,7 @@ namespace VANTAGE.Models
                 return P6_ActualFinish!.Value.Date != MS_ActualFinish!.Value.Date;
             }
         }
+
         public bool HasBudgetMHsVariance
         {
             get
@@ -204,6 +209,19 @@ namespace VANTAGE.Models
                 return ratio < 0.99 || ratio > 1.01;
             }
         }
+
+        // ========================================
+        // EDITABLE STATE PROPERTIES
+        // ========================================
+
+        // ThreeWeekStart is only editable when there's no actual start (forecasting)
+        // When MS_ActualStart exists, the field shows the actual and is read-only
+        public bool IsThreeWeekStartEditable => MS_ActualStart == null;
+
+        // ThreeWeekFinish is only editable when there's no actual finish (forecasting)
+        // When MS_ActualFinish exists, the field shows the actual and is read-only
+        public bool IsThreeWeekFinishEditable => MS_ActualFinish == null;
+
         // ========================================
         // REQUIRED FIELD INDICATORS (for conditional formatting)
         // ========================================
@@ -259,6 +277,9 @@ namespace VANTAGE.Models
                 if (ThreeWeekStart.HasValue)
                     return false; // Already has 3WLA date
 
+                if (MS_ActualStart.HasValue)
+                    return false; // Already started - no forecast needed
+
                 if (!P6_PlannedStart.HasValue)
                     return false; // No planned start
 
@@ -282,6 +303,9 @@ namespace VANTAGE.Models
             {
                 if (ThreeWeekFinish.HasValue)
                     return false; // Already has 3WLA date
+
+                if (MS_ActualFinish.HasValue)
+                    return false; // Already finished - no forecast needed
 
                 if (!P6_PlannedFinish.HasValue)
                     return false; // No planned finish

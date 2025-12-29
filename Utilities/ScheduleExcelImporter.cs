@@ -266,6 +266,9 @@ namespace VANTAGE.Utilities
         // Import schedule rows to database with transaction
         private static int ImportToDatabase(List<Schedule> scheduleRows, List<string> projectIds, DateTime weekEndDate)
         {
+            // First, query Azure for SchedActNOs that exist in ProgressSnapshots
+            var msSchedActNOs = GetSchedActNOsFromSnapshots(weekEndDate, projectIds);
+
             using var connection = new SqliteConnection($"Data Source={DatabaseSetup.DbPath}");
             connection.Open();
 
@@ -273,6 +276,56 @@ namespace VANTAGE.Utilities
 
             try
             {
+                // Build list of imported SchedActNOs for purge logic
+                var importedActNos = scheduleRows.Select(s => s.SchedActNO).ToHashSet();
+                string actNoList = "'" + string.Join("','", importedActNos) + "'";
+                string projectIdList = "'" + string.Join("','", projectIds) + "'";
+
+                // Delete orphaned ThreeWeekLookahead rows (actno not in current import for these projects)
+                var deleteOrphanedCmd = connection.CreateCommand();
+                deleteOrphanedCmd.CommandText = $@"
+            DELETE FROM ThreeWeekLookahead 
+            WHERE ProjectID IN ({projectIdList})
+              AND SchedActNO NOT IN ({actNoList})";
+                int deletedCount = deleteOrphanedCmd.ExecuteNonQuery();
+                if (deletedCount > 0)
+                {
+                    AppLogger.Info($"Deleted {deletedCount} orphaned ThreeWeekLookahead rows",
+                        "ScheduleExcelImporter.ImportToDatabase",
+                        App.CurrentUser?.Username);
+                }
+
+                // Clear stale dates (set to NULL if in the past)
+                var clearStaleStartCmd = connection.CreateCommand();
+                clearStaleStartCmd.CommandText = @"
+            UPDATE ThreeWeekLookahead 
+            SET ThreeWeekStart = NULL
+            WHERE ThreeWeekStart IS NOT NULL AND ThreeWeekStart < @weekEndDate";
+                clearStaleStartCmd.Parameters.AddWithValue("@weekEndDate", weekEndDate.ToString("yyyy-MM-dd"));
+                int clearedStarts = clearStaleStartCmd.ExecuteNonQuery();
+
+                var clearStaleFinishCmd = connection.CreateCommand();
+                clearStaleFinishCmd.CommandText = @"
+            UPDATE ThreeWeekLookahead 
+            SET ThreeWeekFinish = NULL
+            WHERE ThreeWeekFinish IS NOT NULL AND ThreeWeekFinish < @weekEndDate";
+                clearStaleFinishCmd.Parameters.AddWithValue("@weekEndDate", weekEndDate.ToString("yyyy-MM-dd"));
+                int clearedFinishes = clearStaleFinishCmd.ExecuteNonQuery();
+
+                if (clearedStarts > 0 || clearedFinishes > 0)
+                {
+                    AppLogger.Info($"Cleared stale 3WLA dates: {clearedStarts} starts, {clearedFinishes} finishes",
+                        "ScheduleExcelImporter.ImportToDatabase",
+                        App.CurrentUser?.Username);
+                }
+
+                // Delete rows where both dates are now NULL (no longer useful)
+                var deleteEmptyCmd = connection.CreateCommand();
+                deleteEmptyCmd.CommandText = @"
+            DELETE FROM ThreeWeekLookahead 
+            WHERE ThreeWeekStart IS NULL AND ThreeWeekFinish IS NULL";
+                deleteEmptyCmd.ExecuteNonQuery();
+
                 // Clear ALL existing Schedule data
                 var deleteScheduleCmd = connection.CreateCommand();
                 deleteScheduleCmd.CommandText = "DELETE FROM Schedule";
@@ -283,25 +336,34 @@ namespace VANTAGE.Utilities
                 deleteMappingsCmd.CommandText = "DELETE FROM ScheduleProjectMappings";
                 deleteMappingsCmd.ExecuteNonQuery();
 
-                // Insert Schedule rows
+                // Insert Schedule rows with InMS flag
                 var insertScheduleCmd = connection.CreateCommand();
                 insertScheduleCmd.CommandText = @"
-                    INSERT INTO Schedule (
-                        SchedActNO, WeekEndDate, WbsId, Description,
-                        P6_PlannedStart, P6_PlannedFinish, P6_ActualStart, P6_ActualFinish,
-                        P6_PercentComplete, P6_BudgetMHs,
-                        ThreeWeekStart, ThreeWeekFinish, MissedStartReason, MissedFinishReason,
-                        UpdatedBy, UpdatedUtcDate
-                    ) VALUES (
-                        @schedActNo, @weekEndDate, @wbsId, @description,
-                        @plannedStart, @plannedFinish, @actualStart, @actualFinish,
-                        @percentComplete, @budgetMHs,
-                        @threeWeekStart, @threeWeekFinish, @missedStartReason, @missedFinishReason,
-                        @updatedBy, @updatedUtc
-                    )";
+            INSERT INTO Schedule (
+                SchedActNO, WeekEndDate, WbsId, Description,
+                P6_PlannedStart, P6_PlannedFinish, P6_ActualStart, P6_ActualFinish,
+                P6_PercentComplete, P6_BudgetMHs,
+                MissedStartReason, MissedFinishReason,
+                InMS, UpdatedBy, UpdatedUtcDate
+            ) VALUES (
+                @schedActNo, @weekEndDate, @wbsId, @description,
+                @plannedStart, @plannedFinish, @actualStart, @actualFinish,
+                @percentComplete, @budgetMHs,
+                @missedStartReason, @missedFinishReason,
+                @inMS, @updatedBy, @updatedUtc
+            )";
+
+                int inMSCount = 0;
+                int notInMSCount = 0;
 
                 foreach (var schedule in scheduleRows)
                 {
+                    bool inMS = msSchedActNOs.Contains(schedule.SchedActNO);
+                    if (inMS)
+                        inMSCount++;
+                    else
+                        notInMSCount++;
+
                     insertScheduleCmd.Parameters.Clear();
                     insertScheduleCmd.Parameters.AddWithValue("@schedActNo", schedule.SchedActNO);
                     insertScheduleCmd.Parameters.AddWithValue("@weekEndDate", weekEndDate.ToString("yyyy-MM-dd"));
@@ -313,10 +375,9 @@ namespace VANTAGE.Utilities
                     insertScheduleCmd.Parameters.AddWithValue("@actualFinish", schedule.P6_ActualFinish?.ToString("yyyy-MM-dd") ?? (object)DBNull.Value);
                     insertScheduleCmd.Parameters.AddWithValue("@percentComplete", schedule.P6_PercentComplete);
                     insertScheduleCmd.Parameters.AddWithValue("@budgetMHs", schedule.P6_BudgetMHs);
-                    insertScheduleCmd.Parameters.AddWithValue("@threeWeekStart", schedule.ThreeWeekStart?.ToString("yyyy-MM-dd") ?? (object)DBNull.Value);
-                    insertScheduleCmd.Parameters.AddWithValue("@threeWeekFinish", schedule.ThreeWeekFinish?.ToString("yyyy-MM-dd") ?? (object)DBNull.Value);
                     insertScheduleCmd.Parameters.AddWithValue("@missedStartReason", schedule.MissedStartReason ?? (object)DBNull.Value);
                     insertScheduleCmd.Parameters.AddWithValue("@missedFinishReason", schedule.MissedFinishReason ?? (object)DBNull.Value);
+                    insertScheduleCmd.Parameters.AddWithValue("@inMS", inMS ? 1 : 0);
                     insertScheduleCmd.Parameters.AddWithValue("@updatedBy", schedule.UpdatedBy);
                     insertScheduleCmd.Parameters.AddWithValue("@updatedUtc", schedule.UpdatedUtcDate.ToString("yyyy-MM-ddTHH:mm:ssZ"));
 
@@ -326,8 +387,8 @@ namespace VANTAGE.Utilities
                 // Insert ScheduleProjectMappings
                 var insertMappingCmd = connection.CreateCommand();
                 insertMappingCmd.CommandText = @"
-                    INSERT INTO ScheduleProjectMappings (WeekEndDate, ProjectID)
-                    VALUES (@weekEndDate, @projectId)";
+            INSERT INTO ScheduleProjectMappings (WeekEndDate, ProjectID)
+            VALUES (@weekEndDate, @projectId)";
 
                 foreach (var projectId in projectIds)
                 {
@@ -338,6 +399,11 @@ namespace VANTAGE.Utilities
                 }
 
                 transaction.Commit();
+
+                AppLogger.Info($"Imported {scheduleRows.Count} P6 activities ({inMSCount} in MS, {notInMSCount} not in MS)",
+                    "ScheduleExcelImporter.ImportToDatabase",
+                    App.CurrentUser?.Username);
+
                 return scheduleRows.Count;
             }
             catch
@@ -345,6 +411,45 @@ namespace VANTAGE.Utilities
                 transaction.Rollback();
                 throw;
             }
+        }
+
+        // Query Azure for SchedActNOs that exist in ProgressSnapshots for this week/projects
+        private static HashSet<string> GetSchedActNOsFromSnapshots(DateTime weekEndDate, List<string> projectIds)
+        {
+            var schedActNOs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            try
+            {
+                using var azureConn = AzureDbManager.GetConnection();
+                azureConn.Open();
+
+                string projectIdList = "'" + string.Join("','", projectIds) + "'";
+
+                var cmd = azureConn.CreateCommand();
+                cmd.CommandText = $@"
+            SELECT DISTINCT SchedActNO 
+            FROM ProgressSnapshots 
+            WHERE WeekEndDate = @weekEndDate 
+              AND ProjectID IN ({projectIdList})
+              AND SchedActNO IS NOT NULL 
+              AND SchedActNO <> ''";
+                cmd.Parameters.AddWithValue("@weekEndDate", weekEndDate.ToString("yyyy-MM-dd"));
+
+                using var reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    schedActNOs.Add(reader.GetString(0));
+                }
+
+                AppLogger.Info($"Found {schedActNOs.Count} SchedActNOs in ProgressSnapshots",
+                    "ScheduleExcelImporter.GetSchedActNOsFromSnapshots");
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "ScheduleExcelImporter.GetSchedActNOsFromSnapshots");
+            }
+
+            return schedActNOs;
         }
     }
 }

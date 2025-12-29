@@ -15,7 +15,6 @@ namespace VANTAGE.Repositories
             return await Task.Run(() =>
             {
                 var masterRows = new List<ScheduleMasterRow>();
-
                 try
                 {
                     using var connection = new SqliteConnection($"Data Source={DatabaseSetup.DbPath}");
@@ -23,70 +22,124 @@ namespace VANTAGE.Repositories
 
                     // Step 1: Get ProjectIDs for this schedule
                     var projectIds = GetProjectIDsForWeek(connection, weekEndDate);
-
                     if (projectIds.Count == 0)
                     {
                         AppLogger.Warning($"No ProjectIDs mapped for WeekEndDate {weekEndDate:yyyy-MM-dd}", "ScheduleRepository.GetScheduleMasterRowsAsync");
                         return masterRows;
                     }
 
-                    // Step 2: Get distinct SchedActNOs from ProgressSnapshots (user's actual data)
-                    var snapshotSchedActNOs = GetSchedActNOsFromSnapshots(weekEndDate, projectIds);
-
-                    if (snapshotSchedActNOs.Count == 0)
-                    {
-                        AppLogger.Warning($"No SchedActNOs found in ProgressSnapshots for WeekEndDate {weekEndDate:yyyy-MM-dd}", "ScheduleRepository.GetScheduleMasterRowsAsync");
-                        return masterRows;
-                    }
-
-                    // Step 3: Get Schedule rows ONLY for SchedActNOs that exist in snapshots
-                    string schedActNoList = "'" + string.Join("','", snapshotSchedActNOs) + "'";
-
+                    // Step 2: Get Schedule rows WHERE InMS = 1 (only rows with MILESTONE data)
                     var scheduleCmd = connection.CreateCommand();
-                    scheduleCmd.CommandText = $@"
-                SELECT 
-                    SchedActNO, WbsId, Description,
+                    scheduleCmd.CommandText = @"
+                SELECT SchedActNO, WbsId, Description,
                     P6_PlannedStart, P6_PlannedFinish, P6_ActualStart, P6_ActualFinish,
                     P6_PercentComplete, P6_BudgetMHs,
-                    ThreeWeekStart, ThreeWeekFinish, MissedStartReason, MissedFinishReason
+                    MissedStartReason, MissedFinishReason
                 FROM Schedule
                 WHERE WeekEndDate = @weekEndDate
-                  AND SchedActNO IN ({schedActNoList})
+                  AND InMS = 1
                 ORDER BY SchedActNO";
                     scheduleCmd.Parameters.AddWithValue("@weekEndDate", weekEndDate.ToString("yyyy-MM-dd"));
 
-                    using var reader = scheduleCmd.ExecuteReader();
-                    while (reader.Read())
+                    var schedActNOs = new List<string>();
+
+                    using (var reader = scheduleCmd.ExecuteReader())
                     {
-                        var schedActNo = reader.GetString(0);
-
-                        var masterRow = new ScheduleMasterRow
+                        while (reader.Read())
                         {
-                            SchedActNO = schedActNo,
-                            WbsId = reader.GetString(1),
-                            Description = reader.GetString(2),
-                            P6_PlannedStart = reader.IsDBNull(3) ? null : DateTime.Parse(reader.GetString(3)),
-                            P6_PlannedFinish = reader.IsDBNull(4) ? null : DateTime.Parse(reader.GetString(4)),
-                            P6_ActualStart = reader.IsDBNull(5) ? null : DateTime.Parse(reader.GetString(5)),
-                            P6_ActualFinish = reader.IsDBNull(6) ? null : DateTime.Parse(reader.GetString(6)),
-                            P6_PercentComplete = reader.GetDouble(7),
-                            P6_BudgetMHs = reader.GetDouble(8),
-                            ThreeWeekStart = reader.IsDBNull(9) ? null : DateTime.Parse(reader.GetString(9)),
-                            ThreeWeekFinish = reader.IsDBNull(10) ? null : DateTime.Parse(reader.GetString(10)),
-                            MissedStartReason = reader.IsDBNull(11) ? null : reader.GetString(11),
-                            MissedFinishReason = reader.IsDBNull(12) ? null : reader.GetString(12),
-                            WeekEndDate = weekEndDate
-                        };
+                            var schedActNo = reader.GetString(0);
+                            schedActNOs.Add(schedActNo);
 
-                        masterRows.Add(masterRow);
+                            var masterRow = new ScheduleMasterRow
+                            {
+                                SchedActNO = schedActNo,
+                                WbsId = reader.GetString(1),
+                                Description = reader.GetString(2),
+                                P6_PlannedStart = reader.IsDBNull(3) ? null : DateTime.Parse(reader.GetString(3)),
+                                P6_PlannedFinish = reader.IsDBNull(4) ? null : DateTime.Parse(reader.GetString(4)),
+                                P6_ActualStart = reader.IsDBNull(5) ? null : DateTime.Parse(reader.GetString(5)),
+                                P6_ActualFinish = reader.IsDBNull(6) ? null : DateTime.Parse(reader.GetString(6)),
+                                P6_PercentComplete = reader.GetDouble(7),
+                                P6_BudgetMHs = reader.GetDouble(8),
+                                MissedStartReason = reader.IsDBNull(9) ? null : reader.GetString(9),
+                                MissedFinishReason = reader.IsDBNull(10) ? null : reader.GetString(10),
+                                WeekEndDate = weekEndDate
+                            };
+                            masterRows.Add(masterRow);
+                        }
+                    }
+
+                    if (masterRows.Count == 0)
+                    {
+                        AppLogger.Warning($"No Schedule rows with InMS=1 for WeekEndDate {weekEndDate:yyyy-MM-dd}", "ScheduleRepository.GetScheduleMasterRowsAsync");
+                        return masterRows;
+                    }
+
+                    // Step 3: Load ThreeWeekLookahead data into dictionary
+                    string projectIdList = "'" + string.Join("','", projectIds) + "'";
+                    string schedActNoList = "'" + string.Join("','", schedActNOs) + "'";
+
+                    var threeWeekDict = new Dictionary<string, (DateTime? Start, DateTime? Finish)>();
+                    var threeWeekCmd = connection.CreateCommand();
+                    threeWeekCmd.CommandText = $@"
+                SELECT SchedActNO, ThreeWeekStart, ThreeWeekFinish
+                FROM ThreeWeekLookahead
+                WHERE ProjectID IN ({projectIdList})
+                  AND SchedActNO IN ({schedActNoList})";
+
+                    using (var twReader = threeWeekCmd.ExecuteReader())
+                    {
+                        while (twReader.Read())
+                        {
+                            string actNo = twReader.GetString(0);
+                            DateTime? start = twReader.IsDBNull(1) ? null : DateTime.Parse(twReader.GetString(1));
+                            DateTime? finish = twReader.IsDBNull(2) ? null : DateTime.Parse(twReader.GetString(2));
+
+                            // If same SchedActNO exists for multiple ProjectIDs, first one wins
+                            if (!threeWeekDict.ContainsKey(actNo))
+                            {
+                                threeWeekDict[actNo] = (start, finish);
+                            }
+                        }
+                    }
+
+                    // Apply 3WLA dates to master rows
+                    foreach (var row in masterRows)
+                    {
+                        if (threeWeekDict.TryGetValue(row.SchedActNO, out var threeWeekDates))
+                        {
+                            row.ThreeWeekStart = threeWeekDates.Start;
+                            row.ThreeWeekFinish = threeWeekDates.Finish;
+                        }
                     }
 
                     // Step 4: Calculate MS rollups
                     CalculateAllMSRollups(masterRows, weekEndDate, projectIds);
 
+                    // Step 5: Apply default MissedReasons based on MS rollups (only if fields are empty)
+                    foreach (var row in masterRows)
+                    {
+                        // Default MissedStartReason to "Started Early" if MS started before planned
+                        if (string.IsNullOrEmpty(row.MissedStartReason) &&
+                            row.MS_ActualStart != null &&
+                            row.P6_PlannedStart != null &&
+                            row.MS_ActualStart.Value.Date < row.P6_PlannedStart.Value.Date)
+                        {
+                            row.MissedStartReason = "Started Early";
+                        }
+
+                        // Default MissedFinishReason to "Finished Early" if MS finished before planned
+                        if (string.IsNullOrEmpty(row.MissedFinishReason) &&
+                            row.MS_ActualFinish != null &&
+                            row.P6_PlannedFinish != null &&
+                            row.MS_ActualFinish.Value.Date < row.P6_PlannedFinish.Value.Date)
+                        {
+                            row.MissedFinishReason = "Finished Early";
+                        }
+                    }
+
                     AppLogger.Info($"Loaded {masterRows.Count} schedule master rows for {weekEndDate:yyyy-MM-dd}",
                         "ScheduleRepository.GetScheduleMasterRowsAsync");
-
                     return masterRows;
                 }
                 catch (Exception ex)
@@ -95,6 +148,294 @@ namespace VANTAGE.Repositories
                     throw;
                 }
             });
+        }
+        // Get "In P6, Not in MS" rows for NotIn report
+        public static async Task<List<(string SchedActNO, string Description, string WbsId)>> GetP6NotInMSAsync(DateTime weekEndDate)
+        {
+            return await Task.Run(() =>
+            {
+                var results = new List<(string SchedActNO, string Description, string WbsId)>();
+
+                try
+                {
+                    using var connection = new SqliteConnection($"Data Source={DatabaseSetup.DbPath}");
+                    connection.Open();
+
+                    var cmd = connection.CreateCommand();
+                    cmd.CommandText = @"
+                SELECT SchedActNO, Description, WbsId
+                FROM Schedule
+                WHERE WeekEndDate = @weekEndDate
+                  AND InMS = 0
+                ORDER BY SchedActNO";
+                    cmd.Parameters.AddWithValue("@weekEndDate", weekEndDate.ToString("yyyy-MM-dd"));
+
+                    using var reader = cmd.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        results.Add((
+                            reader.GetString(0),
+                            reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
+                            reader.IsDBNull(2) ? string.Empty : reader.GetString(2)
+                        ));
+                    }
+
+                    AppLogger.Info($"Found {results.Count} P6 activities not in MS for {weekEndDate:yyyy-MM-dd}",
+                        "ScheduleRepository.GetP6NotInMSAsync");
+                }
+                catch (Exception ex)
+                {
+                    AppLogger.Error(ex, "ScheduleRepository.GetP6NotInMSAsync");
+                }
+
+                return results;
+            });
+        }
+
+        // Get "In MS, Not in P6" SchedActNOs for NotIn report
+        public static async Task<List<string>> GetMSNotInP6Async(DateTime weekEndDate)
+        {
+            return await Task.Run(() =>
+            {
+                var results = new List<string>();
+
+                try
+                {
+                    using var connection = new SqliteConnection($"Data Source={DatabaseSetup.DbPath}");
+                    connection.Open();
+
+                    // Get ProjectIDs for this week
+                    var projectIds = GetProjectIDsForWeek(connection, weekEndDate);
+                    if (projectIds.Count == 0)
+                        return results;
+
+                    // Get all SchedActNOs from Schedule for this week
+                    var p6ActNOs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                    var schedCmd = connection.CreateCommand();
+                    schedCmd.CommandText = @"
+                SELECT SchedActNO FROM Schedule WHERE WeekEndDate = @weekEndDate";
+                    schedCmd.Parameters.AddWithValue("@weekEndDate", weekEndDate.ToString("yyyy-MM-dd"));
+
+                    using (var reader = schedCmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            p6ActNOs.Add(reader.GetString(0));
+                        }
+                    }
+
+                    // Query Azure for SchedActNOs in ProgressSnapshots
+                    string projectIdList = "'" + string.Join("','", projectIds) + "'";
+
+                    using var azureConn = AzureDbManager.GetConnection();
+                    azureConn.Open();
+
+                    var azureCmd = azureConn.CreateCommand();
+                    azureCmd.CommandText = $@"
+                SELECT DISTINCT SchedActNO 
+                FROM ProgressSnapshots 
+                WHERE WeekEndDate = @weekEndDate 
+                  AND ProjectID IN ({projectIdList})
+                  AND SchedActNO IS NOT NULL 
+                  AND SchedActNO <> ''";
+                    azureCmd.Parameters.AddWithValue("@weekEndDate", weekEndDate.ToString("yyyy-MM-dd"));
+
+                    using var azureReader = azureCmd.ExecuteReader();
+                    while (azureReader.Read())
+                    {
+                        string actNo = azureReader.GetString(0);
+                        if (!p6ActNOs.Contains(actNo))
+                        {
+                            results.Add(actNo);
+                        }
+                    }
+
+                    results.Sort();
+
+                    AppLogger.Info($"Found {results.Count} MS activities not in P6 for {weekEndDate:yyyy-MM-dd}",
+                        "ScheduleRepository.GetMSNotInP6Async");
+                }
+                catch (Exception ex)
+                {
+                    AppLogger.Error(ex, "ScheduleRepository.GetMSNotInP6Async");
+                }
+
+                return results;
+            });
+        }
+        // Saves 3WLA dates to ThreeWeekLookahead table
+        // INSERT OR REPLACE - creates new row or updates existing
+        public static async Task SaveThreeWeekLookaheadAsync(
+            string schedActNo,
+            string projectId,
+            DateTime? threeWeekStart,
+            DateTime? threeWeekFinish,
+            string username)
+        {
+            await Task.Run(() =>
+            {
+                try
+                {
+                    using var connection = new SqliteConnection($"Data Source={DatabaseSetup.DbPath}");
+                    connection.Open();
+
+                    // If both dates are null, delete the row instead of inserting empty
+                    if (threeWeekStart == null && threeWeekFinish == null)
+                    {
+                        var deleteCmd = connection.CreateCommand();
+                        deleteCmd.CommandText = @"
+                    DELETE FROM ThreeWeekLookahead 
+                    WHERE SchedActNO = @schedActNo AND ProjectID = @projectId";
+                        deleteCmd.Parameters.AddWithValue("@schedActNo", schedActNo);
+                        deleteCmd.Parameters.AddWithValue("@projectId", projectId);
+                        deleteCmd.ExecuteNonQuery();
+                        return;
+                    }
+
+                    var cmd = connection.CreateCommand();
+                    cmd.CommandText = @"
+                INSERT INTO ThreeWeekLookahead (SchedActNO, ProjectID, ThreeWeekStart, ThreeWeekFinish)
+                VALUES (@schedActNo, @projectId, @threeWeekStart, @threeWeekFinish)
+                ON CONFLICT (SchedActNO, ProjectID) DO UPDATE SET
+                    ThreeWeekStart = @threeWeekStart,
+                    ThreeWeekFinish = @threeWeekFinish";
+
+                    cmd.Parameters.AddWithValue("@schedActNo", schedActNo);
+                    cmd.Parameters.AddWithValue("@projectId", projectId);
+                    cmd.Parameters.AddWithValue("@threeWeekStart",
+                        threeWeekStart?.ToString("yyyy-MM-dd") ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@threeWeekFinish",
+                        threeWeekFinish?.ToString("yyyy-MM-dd") ?? (object)DBNull.Value);
+
+                    cmd.ExecuteNonQuery();
+
+                    AppLogger.Info($"Saved 3WLA for {schedActNo}: Start={threeWeekStart:yyyy-MM-dd}, Finish={threeWeekFinish:yyyy-MM-dd}",
+                        "ScheduleRepository.SaveThreeWeekLookaheadAsync", username);
+                }
+                catch (Exception ex)
+                {
+                    AppLogger.Error(ex, "ScheduleRepository.SaveThreeWeekLookaheadAsync");
+                    throw;
+                }
+            });
+        }
+        // Add this method to ScheduleRepository.cs after SaveThreeWeekLookaheadAsync
+
+        // Clears ThreeWeekStart and/or ThreeWeekFinish from ThreeWeekLookahead table
+        // Used when actuals are created (forecast no longer needed)
+        // Deletes the row entirely if both dates become null after clearing
+        public static async Task ClearThreeWeekDatesAsync(
+            string schedActNo,
+            string projectId,
+            bool clearStart,
+            bool clearFinish,
+            string username)
+        {
+            if (!clearStart && !clearFinish)
+                return;
+
+            await Task.Run(() =>
+            {
+                try
+                {
+                    using var connection = new SqliteConnection($"Data Source={DatabaseSetup.DbPath}");
+                    connection.Open();
+
+                    // First check if the row exists and get current values
+                    var checkCmd = connection.CreateCommand();
+                    checkCmd.CommandText = @"
+                SELECT ThreeWeekStart, ThreeWeekFinish 
+                FROM ThreeWeekLookahead 
+                WHERE SchedActNO = @schedActNo AND ProjectID = @projectId";
+                    checkCmd.Parameters.AddWithValue("@schedActNo", schedActNo);
+                    checkCmd.Parameters.AddWithValue("@projectId", projectId);
+
+                    string? currentStart = null;
+                    string? currentFinish = null;
+                    bool rowExists = false;
+
+                    using (var reader = checkCmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            rowExists = true;
+                            currentStart = reader.IsDBNull(0) ? null : reader.GetString(0);
+                            currentFinish = reader.IsDBNull(1) ? null : reader.GetString(1);
+                        }
+                    }
+
+                    if (!rowExists)
+                        return;
+
+                    // Calculate what the new values will be
+                    string? newStart = clearStart ? null : currentStart;
+                    string? newFinish = clearFinish ? null : currentFinish;
+
+                    // If both will be null, delete the row
+                    if (newStart == null && newFinish == null)
+                    {
+                        var deleteCmd = connection.CreateCommand();
+                        deleteCmd.CommandText = @"
+                    DELETE FROM ThreeWeekLookahead 
+                    WHERE SchedActNO = @schedActNo AND ProjectID = @projectId";
+                        deleteCmd.Parameters.AddWithValue("@schedActNo", schedActNo);
+                        deleteCmd.Parameters.AddWithValue("@projectId", projectId);
+                        deleteCmd.ExecuteNonQuery();
+
+                        AppLogger.Info($"Deleted 3WLA row for {schedActNo} (both dates cleared)",
+                            "ScheduleRepository.ClearThreeWeekDatesAsync", username);
+                    }
+                    else
+                    {
+                        // Update only the dates that need clearing
+                        var updateCmd = connection.CreateCommand();
+                        updateCmd.CommandText = @"
+                    UPDATE ThreeWeekLookahead 
+                    SET ThreeWeekStart = @threeWeekStart,
+                        ThreeWeekFinish = @threeWeekFinish
+                    WHERE SchedActNO = @schedActNo AND ProjectID = @projectId";
+                        updateCmd.Parameters.AddWithValue("@threeWeekStart", newStart ?? (object)DBNull.Value);
+                        updateCmd.Parameters.AddWithValue("@threeWeekFinish", newFinish ?? (object)DBNull.Value);
+                        updateCmd.Parameters.AddWithValue("@schedActNo", schedActNo);
+                        updateCmd.Parameters.AddWithValue("@projectId", projectId);
+                        updateCmd.ExecuteNonQuery();
+
+                        string cleared = (clearStart && clearFinish) ? "Start and Finish" :
+                                         clearStart ? "Start" : "Finish";
+                        AppLogger.Info($"Cleared 3WLA {cleared} for {schedActNo}",
+                            "ScheduleRepository.ClearThreeWeekDatesAsync", username);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    AppLogger.Error(ex, "ScheduleRepository.ClearThreeWeekDatesAsync");
+                    throw;
+                }
+            });
+        }
+
+        // Gets the first ProjectID from ScheduleProjectMappings for a given WeekEndDate
+        public static string? GetFirstProjectIDForWeek(DateTime weekEndDate)
+        {
+            try
+            {
+                using var connection = new SqliteConnection($"Data Source={DatabaseSetup.DbPath}");
+                connection.Open();
+
+                var cmd = connection.CreateCommand();
+                cmd.CommandText = @"
+            SELECT ProjectID FROM ScheduleProjectMappings 
+            WHERE WeekEndDate = @weekEndDate 
+            LIMIT 1";
+                cmd.Parameters.AddWithValue("@weekEndDate", weekEndDate.ToString("yyyy-MM-dd"));
+
+                return cmd.ExecuteScalar() as string;
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "ScheduleRepository.GetFirstProjectIDForWeek");
+                return null;
+            }
         }
         // Get distinct SchedActNOs from ProgressSnapshots for the given week and projects
         private static HashSet<string> GetSchedActNOsFromSnapshots(DateTime weekEndDate, List<string> projectIds)
@@ -132,13 +473,14 @@ namespace VANTAGE.Repositories
             return schedActNOs;
         }
         // Update ProgressSnapshot in Azure AND corresponding Activity in local SQLite
-        public static async Task<bool> UpdateSnapshotAndActivityAsync(ProgressSnapshot snapshot, string username)
+        // Replaces UpdateSnapshotAndActivityAsync - only updates Azure snapshot, NOT local Activity
+        // Reason: Editing historical snapshots shouldn't overwrite current Activity progress
+        public static async Task<bool> UpdateSnapshotAsync(ProgressSnapshot snapshot, string username)
         {
             return await Task.Run(() =>
             {
                 try
                 {
-                    // Step 1: Update ProgressSnapshot in Azure
                     using var azureConn = AzureDbManager.GetConnection();
                     azureConn.Open();
 
@@ -166,52 +508,22 @@ namespace VANTAGE.Repositories
                     azureCmd.Parameters.AddWithValue("@weekEndDate", snapshot.WeekEndDate.ToString("yyyy-MM-dd"));
 
                     int azureRows = azureCmd.ExecuteNonQuery();
-                    azureConn.Close();
 
                     if (azureRows == 0)
                     {
                         AppLogger.Warning($"No Azure snapshot updated for UniqueID: {snapshot.UniqueID}",
-                            "ScheduleRepository.UpdateSnapshotAndActivityAsync");
+                            "ScheduleRepository.UpdateSnapshotAsync");
                         return false;
                     }
 
-                    // Step 2: Update corresponding Activity in local SQLite
-                    using var localConn = new SqliteConnection($"Data Source={DatabaseSetup.DbPath}");
-                    localConn.Open();
-
-                    var localCmd = localConn.CreateCommand();
-                    localCmd.CommandText = @"
-                UPDATE Activities 
-                SET PercentEntry = @percentEntry,
-                    BudgetMHs = @budgetMHs,
-                    SchStart = @schStart,
-                    SchFinish = @schFinish,
-                    UpdatedBy = @updatedBy,
-                    UpdatedUtcDate = @updatedUtcDate,
-                    LocalDirty = 1
-                WHERE UniqueID = @uniqueId";
-
-                    localCmd.Parameters.AddWithValue("@percentEntry", snapshot.PercentEntry);
-                    localCmd.Parameters.AddWithValue("@budgetMHs", snapshot.BudgetMHs);
-                    localCmd.Parameters.AddWithValue("@schStart",
-                        snapshot.SchStart?.ToString("yyyy-MM-dd HH:mm:ss") ?? (object)DBNull.Value);
-                    localCmd.Parameters.AddWithValue("@schFinish",
-                        snapshot.SchFinish?.ToString("yyyy-MM-dd HH:mm:ss") ?? (object)DBNull.Value);
-                    localCmd.Parameters.AddWithValue("@updatedBy", username);
-                    localCmd.Parameters.AddWithValue("@updatedUtcDate", DateTime.UtcNow.ToString("o"));
-                    localCmd.Parameters.AddWithValue("@uniqueId", snapshot.UniqueID);
-
-                    int localRows = localCmd.ExecuteNonQuery();
-                    localConn.Close();
-
-                    AppLogger.Info($"Updated snapshot and activity: {snapshot.UniqueID} (Azure: {azureRows}, Local: {localRows})",
-                        "ScheduleRepository.UpdateSnapshotAndActivityAsync", username);
+                    AppLogger.Info($"Updated snapshot: {snapshot.UniqueID}",
+                        "ScheduleRepository.UpdateSnapshotAsync", username);
 
                     return true;
                 }
                 catch (Exception ex)
                 {
-                    AppLogger.Error(ex, "ScheduleRepository.UpdateSnapshotAndActivityAsync");
+                    AppLogger.Error(ex, "ScheduleRepository.UpdateSnapshotAsync");
                     return false;
                 }
             });
@@ -280,48 +592,94 @@ namespace VANTAGE.Repositories
             return await Task.Run(() =>
             {
                 int savedCount = 0;
-
                 try
                 {
                     using var connection = new SqliteConnection($"Data Source={DatabaseSetup.DbPath}");
                     connection.Open();
-
                     using var transaction = connection.BeginTransaction();
 
-                    var cmd = connection.CreateCommand();
-                    cmd.Transaction = transaction;
-                    cmd.CommandText = @"
+                    // Get first ProjectID for this WeekEndDate (for ThreeWeekLookahead)
+                    var firstRow = rows.FirstOrDefault();
+                    if (firstRow == null)
+                        return 0;
+
+                    string? projectId = GetFirstProjectIDForWeek(firstRow.WeekEndDate);
+                    if (string.IsNullOrEmpty(projectId))
+                    {
+                        AppLogger.Warning("No ProjectID found for WeekEndDate, cannot save 3WLA dates",
+                            "ScheduleRepository.SaveAllScheduleRowsAsync");
+                        return 0;
+                    }
+
+                    // Command for updating MissedReasons in Schedule table
+                    var scheduleCmd = connection.CreateCommand();
+                    scheduleCmd.Transaction = transaction;
+                    scheduleCmd.CommandText = @"
                 UPDATE Schedule 
-                SET ThreeWeekStart = @threeWeekStart,
-                    ThreeWeekFinish = @threeWeekFinish,
-                    MissedStartReason = @missedStartReason,
+                SET MissedStartReason = @missedStartReason,
                     MissedFinishReason = @missedFinishReason,
                     UpdatedBy = @updatedBy,
                     UpdatedUtcDate = @updatedUtcDate
                 WHERE SchedActNO = @schedActNo 
                   AND WeekEndDate = @weekEndDate";
 
+                    // Command for upserting 3WLA dates to ThreeWeekLookahead table
+                    var threeWeekCmd = connection.CreateCommand();
+                    threeWeekCmd.Transaction = transaction;
+                    threeWeekCmd.CommandText = @"
+                INSERT INTO ThreeWeekLookahead (SchedActNO, ProjectID, ThreeWeekStart, ThreeWeekFinish)
+                VALUES (@schedActNo, @projectId, @threeWeekStart, @threeWeekFinish)
+                ON CONFLICT (SchedActNO, ProjectID) DO UPDATE SET
+                    ThreeWeekStart = @threeWeekStart,
+                    ThreeWeekFinish = @threeWeekFinish";
+
+                    // Command for deleting empty 3WLA rows
+                    var deleteCmd = connection.CreateCommand();
+                    deleteCmd.Transaction = transaction;
+                    deleteCmd.CommandText = @"
+                DELETE FROM ThreeWeekLookahead 
+                WHERE SchedActNO = @schedActNo AND ProjectID = @projectId";
+
                     foreach (var row in rows)
                     {
-                        cmd.Parameters.Clear();
-                        cmd.Parameters.AddWithValue("@threeWeekStart",
-                            row.ThreeWeekStart?.ToString("yyyy-MM-dd") ?? (object)DBNull.Value);
-                        cmd.Parameters.AddWithValue("@threeWeekFinish",
-                            row.ThreeWeekFinish?.ToString("yyyy-MM-dd") ?? (object)DBNull.Value);
-                        cmd.Parameters.AddWithValue("@missedStartReason",
+                        // Update MissedReasons in Schedule table
+                        scheduleCmd.Parameters.Clear();
+                        scheduleCmd.Parameters.AddWithValue("@missedStartReason",
                             row.MissedStartReason ?? (object)DBNull.Value);
-                        cmd.Parameters.AddWithValue("@missedFinishReason",
+                        scheduleCmd.Parameters.AddWithValue("@missedFinishReason",
                             row.MissedFinishReason ?? (object)DBNull.Value);
-                        cmd.Parameters.AddWithValue("@updatedBy", username);
-                        cmd.Parameters.AddWithValue("@updatedUtcDate", DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"));
-                        cmd.Parameters.AddWithValue("@schedActNo", row.SchedActNO);
-                        cmd.Parameters.AddWithValue("@weekEndDate", row.WeekEndDate.ToString("yyyy-MM-dd"));
+                        scheduleCmd.Parameters.AddWithValue("@updatedBy", username);
+                        scheduleCmd.Parameters.AddWithValue("@updatedUtcDate", DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"));
+                        scheduleCmd.Parameters.AddWithValue("@schedActNo", row.SchedActNO);
+                        scheduleCmd.Parameters.AddWithValue("@weekEndDate", row.WeekEndDate.ToString("yyyy-MM-dd"));
+                        scheduleCmd.ExecuteNonQuery();
 
-                        savedCount += cmd.ExecuteNonQuery();
+                        // Save or delete 3WLA dates
+                        if (row.ThreeWeekStart == null && row.ThreeWeekFinish == null)
+                        {
+                            // Delete row if both dates are null
+                            deleteCmd.Parameters.Clear();
+                            deleteCmd.Parameters.AddWithValue("@schedActNo", row.SchedActNO);
+                            deleteCmd.Parameters.AddWithValue("@projectId", projectId);
+                            deleteCmd.ExecuteNonQuery();
+                        }
+                        else
+                        {
+                            // Upsert 3WLA dates
+                            threeWeekCmd.Parameters.Clear();
+                            threeWeekCmd.Parameters.AddWithValue("@schedActNo", row.SchedActNO);
+                            threeWeekCmd.Parameters.AddWithValue("@projectId", projectId);
+                            threeWeekCmd.Parameters.AddWithValue("@threeWeekStart",
+                                row.ThreeWeekStart?.ToString("yyyy-MM-dd") ?? (object)DBNull.Value);
+                            threeWeekCmd.Parameters.AddWithValue("@threeWeekFinish",
+                                row.ThreeWeekFinish?.ToString("yyyy-MM-dd") ?? (object)DBNull.Value);
+                            threeWeekCmd.ExecuteNonQuery();
+                        }
+
+                        savedCount++;
                     }
 
                     transaction.Commit();
-
                     AppLogger.Info($"Batch saved {savedCount} schedule rows", "ScheduleRepository.SaveAllScheduleRowsAsync", username);
                     return savedCount;
                 }
@@ -334,9 +692,9 @@ namespace VANTAGE.Repositories
         }
         // Calculate MS rollups for ALL rows in ONE Azure query
         private static void CalculateAllMSRollups(
-            List<ScheduleMasterRow> masterRows,
-            DateTime weekEndDate,
-            List<string> projectIds)
+    List<ScheduleMasterRow> masterRows,
+    DateTime weekEndDate,
+    List<string> projectIds)
         {
             try
             {
@@ -353,11 +711,16 @@ namespace VANTAGE.Repositories
 
                 // ONE query to calculate rollups for ALL SchedActNOs
                 // Calculate weighted average directly in SQL (stays in 0-100 scale)
+                // MS_ActualFinish only populated if ALL activities have a finish date
                 cmd.CommandText = $@"
             SELECT 
                 SchedActNO,
                 MIN(SchStart) as MS_ActualStart,
-                MAX(SchFinish) as MS_ActualFinish,
+                CASE 
+                    WHEN COUNT(*) = COUNT(SchFinish) 
+                    THEN MAX(SchFinish)
+                    ELSE NULL 
+                END as MS_ActualFinish,
                 CASE 
                     WHEN SUM(BudgetMHs) > 0 
                     THEN SUM(BudgetMHs * PercentEntry) / SUM(BudgetMHs)
