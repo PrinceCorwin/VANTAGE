@@ -192,6 +192,7 @@ namespace VANTAGE.Views
                         CompType IS NULL OR CompType = '' OR
                         PhaseCategory IS NULL OR PhaseCategory = '' OR
                         ProjectID IS NULL OR ProjectID = '' OR
+                        NOT EXISTS (SELECT 1 FROM Projects p WHERE p.ProjectID = Activities.ProjectID) OR
                         SchedActNO IS NULL OR SchedActNO = '' OR
                         Description IS NULL OR Description = '' OR
                         ROCStep IS NULL OR ROCStep = '' OR
@@ -221,18 +222,19 @@ namespace VANTAGE.Views
 
                     var cmd = connection.CreateCommand();
                     cmd.CommandText = @"
-                SELECT COUNT(*) FROM Activities 
-                WHERE AssignedTo = @currentUser
+                SELECT COUNT(*) FROM Activities a
+                WHERE a.AssignedTo = @currentUser
                   AND (
-                    WorkPackage IS NULL OR WorkPackage = '' OR
-                    PhaseCode IS NULL OR PhaseCode = '' OR
-                    CompType IS NULL OR CompType = '' OR
-                    PhaseCategory IS NULL OR PhaseCategory = '' OR
-                    ProjectID IS NULL OR ProjectID = '' OR
-                    SchedActNO IS NULL OR SchedActNO = '' OR
-                    Description IS NULL OR Description = '' OR
-                    ROCStep IS NULL OR ROCStep = '' OR
-                    UDF18 IS NULL OR UDF18 = ''
+                    a.WorkPackage IS NULL OR a.WorkPackage = '' OR
+                    a.PhaseCode IS NULL OR a.PhaseCode = '' OR
+                    a.CompType IS NULL OR a.CompType = '' OR
+                    a.PhaseCategory IS NULL OR a.PhaseCategory = '' OR
+                    a.ProjectID IS NULL OR a.ProjectID = '' OR
+                    NOT EXISTS (SELECT 1 FROM Projects p WHERE p.ProjectID = a.ProjectID) OR
+                    a.SchedActNO IS NULL OR a.SchedActNO = '' OR
+                    a.Description IS NULL OR a.Description = '' OR
+                    a.ROCStep IS NULL OR a.ROCStep = '' OR
+                    a.UDF18 IS NULL OR a.UDF18 = ''
                   )";
                     cmd.Parameters.AddWithValue("@currentUser", App.CurrentUser?.Username ?? "");
 
@@ -2905,7 +2907,7 @@ namespace VANTAGE.Views
                 string.IsNullOrWhiteSpace(a.PhaseCode) ||
                 string.IsNullOrWhiteSpace(a.CompType) ||
                 string.IsNullOrWhiteSpace(a.PhaseCategory) ||
-                string.IsNullOrWhiteSpace(a.ProjectID) ||
+                a.HasInvalidProjectID ||
                 string.IsNullOrWhiteSpace(a.SchedActNO) ||
                 string.IsNullOrWhiteSpace(a.Description) ||
                 string.IsNullOrWhiteSpace(a.ROCStep) ||

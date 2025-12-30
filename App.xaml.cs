@@ -121,6 +121,7 @@ namespace VANTAGE
                             DatabaseSetup.MirrorTablesFromAzure();
                         });
                         AppLogger.Info("Successfully mirrored reference tables from Azure database", "App.OnStartup");
+                        ProjectCache.Reload();
                     }
                     catch (Exception mirrorEx)
                     {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using VANTAGE.Utilities;
 
 namespace VANTAGE.Models
 {
@@ -58,6 +59,21 @@ namespace VANTAGE.Models
                 return "In Progress";
             }
         }
+
+        // Returns true if ProjectID is empty/null OR not found in Projects table
+        public bool HasInvalidProjectID
+        {
+            get
+            {
+                // Empty or null is invalid
+                if (string.IsNullOrWhiteSpace(ProjectID))
+                    return true;
+
+                // Check against valid ProjectIDs from Projects table
+                return !ProjectCache.IsValidProjectId(ProjectID);
+            }
+        }
+
         // Tags - Core Fields
         public string? TagNO { get; set; }
         public string? Description { get; set; }
