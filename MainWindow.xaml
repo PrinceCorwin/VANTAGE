@@ -145,7 +145,7 @@
                             Background="{StaticResource ControlBackground}"
                             Foreground="{StaticResource ForegroundColor}"
                             BorderBrush="{StaticResource BorderColor}">
-                            <syncfusion:DropDownMenuItem Header="TOOL 1" Click="MenuTool1_Click"/>
+                            <syncfusion:DropDownMenuItem Header="Delete My Snapshots" Click="MenuDeleteSnapshots_Click"/>
                             <syncfusion:DropDownMenuItem Header="TOOL 2" Click="MenuTool2_Click"/>
                             <syncfusion:DropDownMenuItem Header="TOOL 3" Click="MenuTool3_Click"/>
                             <syncfusion:DropDownMenuItem Header="TOOL 4" Click="MenuTool4_Click"/>

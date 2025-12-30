@@ -1253,9 +1253,22 @@ namespace VANTAGE
             }
         }
 
-        private void MenuTool1_Click(object sender, RoutedEventArgs e)
+        private void MenuDeleteSnapshots_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Tool 1 coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
+            // Check Azure connection first
+            if (!AzureDbManager.CheckConnection(out string errorMessage))
+            {
+                MessageBox.Show(
+                    $"Cannot connect to Azure database:\n\n{errorMessage}\n\nThis feature requires an active connection.",
+                    "Connection Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+                return;
+            }
+
+            var dialog = new Dialogs.DeleteSnapshotsDialog();
+            dialog.Owner = this;
+            dialog.ShowDialog();
         }
 
         private void MenuTool2_Click(object sender, RoutedEventArgs e)

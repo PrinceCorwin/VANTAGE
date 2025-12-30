@@ -412,8 +412,9 @@
                                   HeaderRowHeight="32"
                                   RowHeight="28"
                                   AllowSorting="True"
-                                  AllowFiltering="False"
+                                  AllowFiltering="True"
                                   AllowResizingColumns="True"
+                                  AllowDraggingColumns="True"
                                   ShowRowHeader="True"
                                   RowHeaderWidth="25">
 

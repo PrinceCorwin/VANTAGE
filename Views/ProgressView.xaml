@@ -68,10 +68,7 @@
 
         <Style x:Key="ProjectIDRequiredStyle" TargetType="syncfusion:GridCell">
             <Style.Triggers>
-                <DataTrigger Binding="{Binding Path=ProjectID}" Value="">
-                    <Setter Property="Background" Value="{StaticResource StatusRedBg}"/>
-                </DataTrigger>
-                <DataTrigger Binding="{Binding Path=ProjectID}" Value="{x:Null}">
+                <DataTrigger Binding="{Binding Path=HasInvalidProjectID}" Value="True">
                     <Setter Property="Background" Value="{StaticResource StatusRedBg}"/>
                 </DataTrigger>
             </Style.Triggers>

@@ -20,6 +20,7 @@ namespace VANTAGE.Views
         private const string GridPrefsKey = "ScheduleGrid.PreferencesJson";
         private const string MasterHeightKey = "ScheduleView_MasterGridHeight";
         private const string DetailHeightKey = "ScheduleView_DetailGridHeight";
+        private const string DetailGridPrefsKey = "ScheduleDetailGrid.PreferencesJson";
         private DispatcherTimer _resizeSaveTimer = null!;
 
         public ScheduleView()
@@ -35,11 +36,14 @@ namespace VANTAGE.Views
             Loaded += (_, __) =>
             {
                 sfScheduleMaster.Opacity = 0;
+                sfScheduleDetail.Opacity = 0;
                 Dispatcher.BeginInvoke(new Action(() =>
                 {
                     LoadColumnState();
+                    LoadDetailColumnState();
                     LoadSplitterState();
                     sfScheduleMaster.Opacity = 1;
+                    sfScheduleDetail.Opacity = 1;
                 }), DispatcherPriority.ContextIdle);
             };
 
@@ -60,7 +64,11 @@ namespace VANTAGE.Views
             _resizeSaveTimer.Tick += (s, e) =>
             {
                 _resizeSaveTimer.Stop();
-                SaveColumnState();
+                if (_resizeSaveTimer.Tag as string == "Detail")
+                    SaveDetailColumnState();
+                else
+                    SaveColumnState();
+                _resizeSaveTimer.Tag = null;
             };
             SetupColumnResizeSave();
 
@@ -71,6 +79,23 @@ namespace VANTAGE.Views
             sfScheduleMaster.SelectionChanged += SfScheduleMaster_SelectionChanged;
             // Wire up detail grid edit handler
             sfScheduleDetail.CurrentCellEndEdit += SfScheduleDetail_CurrentCellEndEdit;
+            // Detail grid column persistence
+            sfScheduleDetail.QueryColumnDragging += (s, e) =>
+            {
+                if (e.Reason == Syncfusion.UI.Xaml.Grid.QueryColumnDraggingReason.Dropped)
+                {
+                    Dispatcher.BeginInvoke(new Action(() => SaveDetailColumnState()), DispatcherPriority.Background);
+                }
+            };
+            sfScheduleDetail.ResizingColumns += (s, e) =>
+            {
+                if (e.Reason == Syncfusion.UI.Xaml.Grid.ColumnResizingReason.Resized)
+                {
+                    _resizeSaveTimer.Stop();
+                    _resizeSaveTimer.Tag = "Detail"; // Mark which grid triggered the save
+                    _resizeSaveTimer.Start();
+                }
+            };
             // Wire up master grid edit handler for tracking unsaved changes
             sfScheduleMaster.CurrentCellEndEdit += SfScheduleMaster_CurrentCellEndEdit;
         }
@@ -193,12 +218,9 @@ namespace VANTAGE.Views
         }
         private void ScheduleView_Unloaded(object sender, RoutedEventArgs e)
         {
-            // Save UI state regardless
             SaveColumnState();
+            SaveDetailColumnState();
             SaveSplitterState();
-
-            // Note: Prompting in Unloaded is too late - the view is already closing.
-            // For proper exit prompting, we expose a public method for MainWindow to call.
         }
 
         // Call this from MainWindow before switching away from Schedule view
@@ -611,6 +633,7 @@ namespace VANTAGE.Views
                 if (e.Reason == Syncfusion.UI.Xaml.Grid.ColumnResizingReason.Resized)
                 {
                     _resizeSaveTimer.Stop();
+                    _resizeSaveTimer.Tag = "Master";
                     _resizeSaveTimer.Start();
                 }
             };
@@ -704,7 +727,94 @@ namespace VANTAGE.Views
                 AppLogger.Error(ex, "ScheduleView.LoadColumnState");
             }
         }
+        private void SaveDetailColumnState()
+        {
+            try
+            {
+                if (sfScheduleDetail?.Columns == null || sfScheduleDetail.Columns.Count == 0)
+                    return;
 
+                var prefs = new GridPreferences
+                {
+                    Version = 1,
+                    SchemaHash = ComputeSchemaHash(sfScheduleDetail),
+                    Columns = sfScheduleDetail.Columns
+                        .Select(c => new GridColumnPref
+                        {
+                            Name = c.MappingName,
+                            OrderIndex = sfScheduleDetail.Columns.IndexOf(c),
+                            Width = c.Width,
+                            IsHidden = c.IsHidden
+                        })
+                        .ToList()
+                };
+
+                var json = JsonSerializer.Serialize(prefs);
+                SettingsManager.SetUserSetting(App.CurrentUserID, DetailGridPrefsKey, json, "json");
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "ScheduleView.SaveDetailColumnState");
+            }
+        }
+
+        private void LoadDetailColumnState()
+        {
+            try
+            {
+                if (sfScheduleDetail?.Columns == null || App.CurrentUserID <= 0)
+                    return;
+
+                var raw = SettingsManager.GetUserSetting(App.CurrentUserID, DetailGridPrefsKey);
+
+                if (string.IsNullOrWhiteSpace(raw))
+                    return;
+
+                GridPreferences? prefs = null;
+                try { prefs = JsonSerializer.Deserialize<GridPreferences>(raw); }
+                catch { return; }
+
+                if (prefs == null)
+                    return;
+
+                var currentHash = ComputeSchemaHash(sfScheduleDetail);
+                if (!string.Equals(prefs.SchemaHash, currentHash, StringComparison.Ordinal))
+                    return;
+
+                var byName = sfScheduleDetail.Columns.ToDictionary(c => c.MappingName, c => c);
+
+                // 1) Visibility first
+                foreach (var p in prefs.Columns)
+                    if (byName.TryGetValue(p.Name, out var col))
+                        col.IsHidden = p.IsHidden;
+
+                // 2) Order (move columns to target positions)
+                var orderedPrefs = prefs.Columns.OrderBy(x => x.OrderIndex).ToList();
+                for (int target = 0; target < orderedPrefs.Count; target++)
+                {
+                    var p = orderedPrefs[target];
+                    if (!byName.TryGetValue(p.Name, out var col)) continue;
+                    int cur = sfScheduleDetail.Columns.IndexOf(col);
+                    if (cur != target && cur >= 0)
+                    {
+                        sfScheduleDetail.Columns.RemoveAt(cur);
+                        sfScheduleDetail.Columns.Insert(target, col);
+                    }
+                }
+
+                // 3) Width last (guard against tiny widths)
+                const double MinWidth = 40.0;
+                foreach (var p in prefs.Columns)
+                    if (byName.TryGetValue(p.Name, out var col))
+                        col.Width = Math.Max(MinWidth, p.Width);
+
+                sfScheduleDetail.UpdateLayout();
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "ScheduleView.LoadDetailColumnState");
+            }
+        }
         private static string ComputeSchemaHash(Syncfusion.UI.Xaml.Grid.SfDataGrid grid)
         {
             using var sha = SHA256.Create();
