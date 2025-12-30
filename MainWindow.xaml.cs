@@ -171,12 +171,10 @@ namespace VANTAGE
             // Load PROGRESS module by default
             LoadProgressModule();
 
-            // Disable ADMIN button if not admin (checked against Azure)
+            // Hide ADMIN button if not admin (checked against Azure)
             if (App.CurrentUser == null || !App.CurrentUser.IsAdmin)
             {
-                btnAdmin.IsEnabled = false;
-                btnAdmin.Opacity = 0.5;
-                btnAdmin.ToolTip = "Admin privileges required (or offline)";
+                btnAdmin.Visibility = Visibility.Collapsed;
             }
         }
 
@@ -957,17 +955,13 @@ namespace VANTAGE
                                 {
                                     // Revoked admin from current user
                                     App.CurrentUser.IsAdmin = false;
-                                    btnAdmin.IsEnabled = false;
-                                    btnAdmin.Opacity = 0.5;
-                                    btnAdmin.ToolTip = "Admin privileges required";
+                                    btnAdmin.Visibility = Visibility.Collapsed;
                                 }
                                 else
                                 {
                                     // Granted admin to current user
                                     App.CurrentUser.IsAdmin = true;
-                                    btnAdmin.IsEnabled = true;
-                                    btnAdmin.Opacity = 1.0;
-                                    btnAdmin.ToolTip = null;
+                                    btnAdmin.Visibility = Visibility.Visible;
                                 }
                             }
                         }
@@ -1104,8 +1098,7 @@ namespace VANTAGE
                     deleteCmd.ExecuteNonQuery();
 
                     App.CurrentUser.IsAdmin = false;
-                    btnAdmin.IsEnabled = false;
-                    btnAdmin.Opacity = 0.5;
+                    btnAdmin.Visibility = Visibility.Collapsed;
                     MessageBox.Show($"Admin revoked from {App.CurrentUser.Username}", "Admin Toggled", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 else
@@ -1118,8 +1111,7 @@ namespace VANTAGE
                     insertCmd.ExecuteNonQuery();
 
                     App.CurrentUser.IsAdmin = true;
-                    btnAdmin.IsEnabled = true;
-                    btnAdmin.Opacity = 1.0;
+                    btnAdmin.Visibility = Visibility.Visible;
                     MessageBox.Show($"Admin granted to {App.CurrentUser.Username}", "Admin Toggled", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
 

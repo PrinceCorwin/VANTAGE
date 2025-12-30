@@ -154,25 +154,13 @@
                        Margin="15,0"
                        VerticalAlignment="Center">
 
-                <TextBlock Text="Week Ending:" 
-                          VerticalAlignment="Center"
-                          Foreground="{StaticResource ForegroundColor}"
-                          Margin="0,0,10,0"/>
-                <ComboBox x:Name="cmbWeekEndDate"
-                         Width="150"
-                         Height="32"
-                         ItemsSource="{Binding AvailableWeekEndDates}"
-                         SelectedItem="{Binding SelectedWeekEndDate, Mode=TwoWay}"
-                         Background="{StaticResource ControlBackground}"
-                         Foreground="{StaticResource ControlForeground}"
-                         BorderBrush="{StaticResource ControlBorder}"
-                         Margin="0,0,20,0">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding StringFormat='yyyy-MM-dd'}"/>
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
+                <TextBlock x:Name="txtWeekEndDate"
+                       VerticalAlignment="Center"
+                       Foreground="{StaticResource ForegroundColor}"
+                       Margin="0,0,20,0">
+                <Run Text="Week Ending: "/>
+                <Run Text="{Binding SelectedWeekEndDate, StringFormat='MM-dd-yyyy', TargetNullValue='(No schedule loaded)'}"/>
+                </TextBlock>
 
                 <TextBlock Text="Filters:" 
                           VerticalAlignment="Center"
