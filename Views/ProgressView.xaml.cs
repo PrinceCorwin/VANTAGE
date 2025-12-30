@@ -140,11 +140,11 @@ namespace VANTAGE.Views
                 // Set IsDeleted=1 in Azure (SyncVersion auto-increments via trigger)
                 var deleteAzureCmd = azureConn.CreateCommand();
                 deleteAzureCmd.CommandText = $@"
-            UPDATE Activities 
-            SET IsDeleted = 1, 
-                UpdatedBy = @user, 
-                UpdatedUtcDate = @date 
-            WHERE UniqueID IN ({uniqueIdList})";
+                        UPDATE Activities 
+                        SET IsDeleted = 1, 
+                            UpdatedBy = @user, 
+                            UpdatedUtcDate = @date 
+                        WHERE UniqueID IN ({uniqueIdList})";
                 deleteAzureCmd.Parameters.AddWithValue("@user", currentUser?.Username ?? "Unknown");
                 deleteAzureCmd.Parameters.AddWithValue("@date", DateTime.UtcNow.ToString("o"));
                 int azureDeleted = deleteAzureCmd.ExecuteNonQuery();
