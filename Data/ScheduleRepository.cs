@@ -28,16 +28,26 @@ namespace VANTAGE.Repositories
                         return masterRows;
                     }
 
-                    // Step 2: Get Schedule rows WHERE InMS = 1 (only rows with MILESTONE data)
+                    // Step 2: Query Azure for MS rollups FIRST - this determines which activities to show
+                    var rollupDict = GetMSRollupsFromAzure(weekEndDate, projectIds);
+                    if (rollupDict.Count == 0)
+                    {
+                        AppLogger.Info($"No ProgressSnapshots found for WeekEndDate {weekEndDate:yyyy-MM-dd}", "ScheduleRepository.GetScheduleMasterRowsAsync");
+                        return masterRows;
+                    }
+
+                    // Step 3: Get Schedule rows only for SchedActNOs that have MS data
+                    string schedActNoList = "'" + string.Join("','", rollupDict.Keys) + "'";
+
                     var scheduleCmd = connection.CreateCommand();
-                    scheduleCmd.CommandText = @"
+                    scheduleCmd.CommandText = $@"
                 SELECT SchedActNO, WbsId, Description,
                     P6_PlannedStart, P6_PlannedFinish, P6_ActualStart, P6_ActualFinish,
                     P6_PercentComplete, P6_BudgetMHs,
                     MissedStartReason, MissedFinishReason
                 FROM Schedule
                 WHERE WeekEndDate = @weekEndDate
-                  AND InMS = 1
+                  AND SchedActNO IN ({schedActNoList})
                 ORDER BY SchedActNO";
                     scheduleCmd.Parameters.AddWithValue("@weekEndDate", weekEndDate.ToString("yyyy-MM-dd"));
 
@@ -65,19 +75,29 @@ namespace VANTAGE.Repositories
                                 MissedFinishReason = reader.IsDBNull(10) ? null : reader.GetString(10),
                                 WeekEndDate = weekEndDate
                             };
+
+                            // Apply MS rollups from dictionary
+                            if (rollupDict.TryGetValue(schedActNo, out var rollup))
+                            {
+                                masterRow.MS_ActualStart = rollup.Start;
+                                masterRow.MS_ActualFinish = rollup.Finish;
+                                masterRow.MS_PercentComplete = rollup.Percent;
+                                masterRow.MS_BudgetMHs = rollup.MHs;
+                            }
+
                             masterRows.Add(masterRow);
                         }
                     }
 
                     if (masterRows.Count == 0)
                     {
-                        AppLogger.Warning($"No Schedule rows with InMS=1 for WeekEndDate {weekEndDate:yyyy-MM-dd}", "ScheduleRepository.GetScheduleMasterRowsAsync");
+                        AppLogger.Warning($"No Schedule rows found for SchedActNOs with MS data for WeekEndDate {weekEndDate:yyyy-MM-dd}", "ScheduleRepository.GetScheduleMasterRowsAsync");
                         return masterRows;
                     }
 
-                    // Step 3: Load ThreeWeekLookahead data into dictionary
+                    // Step 4: Load ThreeWeekLookahead data
                     string projectIdList = "'" + string.Join("','", projectIds) + "'";
-                    string schedActNoList = "'" + string.Join("','", schedActNOs) + "'";
+                    schedActNoList = "'" + string.Join("','", schedActNOs) + "'";
 
                     var threeWeekDict = new Dictionary<string, (DateTime? Start, DateTime? Finish)>();
                     var threeWeekCmd = connection.CreateCommand();
@@ -113,9 +133,6 @@ namespace VANTAGE.Repositories
                         }
                     }
 
-                    // Step 4: Calculate MS rollups
-                    CalculateAllMSRollups(masterRows, weekEndDate, projectIds);
-
                     // Step 5: Apply default MissedReasons based on MS rollups (only if fields are empty)
                     foreach (var row in masterRows)
                     {
@@ -149,7 +166,87 @@ namespace VANTAGE.Repositories
                 }
             });
         }
-        // Get "In P6, Not in MS" rows for NotIn report
+        private static Dictionary<string, (DateTime? Start, DateTime? Finish, double Percent, double MHs)> GetMSRollupsFromAzure(
+    DateTime weekEndDate,
+    List<string> projectIds)
+        {
+            var rollupDict = new Dictionary<string, (DateTime? Start, DateTime? Finish, double Percent, double MHs)>();
+
+            try
+            {
+                using var azureConn = AzureDbManager.GetConnection();
+                azureConn.Open();
+
+                var cmd = azureConn.CreateCommand();
+
+                // Build ProjectID IN clause
+                string projectIdList = "'" + string.Join("','", projectIds) + "'";
+
+                // ONE query to calculate rollups for ALL SchedActNOs
+                // Calculate weighted average directly in SQL (stays in 0-100 scale)
+                // MS_ActualFinish only populated if ALL activities have a finish date
+                cmd.CommandText = $@"
+            SELECT 
+                SchedActNO,
+                MIN(SchStart) as MS_ActualStart,
+                CASE 
+                    WHEN COUNT(*) = COUNT(SchFinish) 
+                    THEN MAX(SchFinish)
+                    ELSE NULL 
+                END as MS_ActualFinish,
+                CASE 
+                    WHEN SUM(BudgetMHs) > 0 
+                    THEN SUM(BudgetMHs * PercentEntry) / SUM(BudgetMHs)
+                    ELSE 0 
+                END as MS_PercentComplete,
+                SUM(BudgetMHs) as MS_BudgetMHs
+            FROM ProgressSnapshots
+            WHERE WeekEndDate = @weekEndDate
+              AND ProjectID IN ({projectIdList})
+              AND AssignedTo = @username
+            GROUP BY SchedActNO";
+
+                cmd.Parameters.AddWithValue("@weekEndDate", weekEndDate.ToString("yyyy-MM-dd"));
+                cmd.Parameters.AddWithValue("@username", App.CurrentUser?.Username ?? "");
+
+                using var reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    string schedActNo = reader.GetString(0);
+
+                    // SchStart and SchFinish are stored as TEXT (VARCHAR) in Azure, not DATETIME
+                    DateTime? msStart = null;
+                    if (!reader.IsDBNull(1))
+                    {
+                        string startStr = reader.GetString(1);
+                        if (DateTime.TryParse(startStr, out DateTime parsedStart))
+                            msStart = parsedStart;
+                    }
+
+                    DateTime? msFinish = null;
+                    if (!reader.IsDBNull(2))
+                    {
+                        string finishStr = reader.GetString(2);
+                        if (DateTime.TryParse(finishStr, out DateTime parsedFinish))
+                            msFinish = parsedFinish;
+                    }
+
+                    double msPercent = reader.IsDBNull(3) ? 0 : reader.GetDouble(3);
+                    double msBudgetMHs = reader.IsDBNull(4) ? 0 : reader.GetDouble(4);
+
+                    rollupDict[schedActNo] = (msStart, msFinish, msPercent, msBudgetMHs);
+                }
+
+                AppLogger.Info($"Retrieved MS rollups for {rollupDict.Count} SchedActNOs from Azure", "ScheduleRepository.GetMSRollupsFromAzure");
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "ScheduleRepository.GetMSRollupsFromAzure");
+                // Return empty dict - don't throw, let caller handle empty result
+            }
+
+            return rollupDict;
+        }
         public static async Task<List<(string SchedActNO, string Description, string WbsId)>> GetP6NotInMSAsync(DateTime weekEndDate)
         {
             return await Task.Run(() =>
@@ -161,23 +258,59 @@ namespace VANTAGE.Repositories
                     using var connection = new SqliteConnection($"Data Source={DatabaseSetup.DbPath}");
                     connection.Open();
 
+                    // Get ProjectIDs for this week
+                    var projectIds = GetProjectIDsForWeek(connection, weekEndDate);
+                    if (projectIds.Count == 0)
+                        return results;
+
+                    // Get all SchedActNOs that have MS data (from Azure)
+                    var msSchedActNOs = new HashSet<string>();
+                    using (var azureConn = AzureDbManager.GetConnection())
+                    {
+                        azureConn.Open();
+
+                        string projectIdList = "'" + string.Join("','", projectIds) + "'";
+
+                        var azureCmd = azureConn.CreateCommand();
+                        azureCmd.CommandText = $@"
+                    SELECT DISTINCT SchedActNO
+                    FROM ProgressSnapshots
+                    WHERE WeekEndDate = @weekEndDate
+                      AND ProjectID IN ({projectIdList})
+                      AND AssignedTo = @username";
+                        azureCmd.Parameters.AddWithValue("@weekEndDate", weekEndDate.ToString("yyyy-MM-dd"));
+                        azureCmd.Parameters.AddWithValue("@username", App.CurrentUser?.Username ?? "");
+
+                        using var azureReader = azureCmd.ExecuteReader();
+                        while (azureReader.Read())
+                        {
+                            msSchedActNOs.Add(azureReader.GetString(0));
+                        }
+                    }
+
+                    // Get all P6 SchedActNOs and filter out ones that have MS data
                     var cmd = connection.CreateCommand();
                     cmd.CommandText = @"
                 SELECT SchedActNO, Description, WbsId
                 FROM Schedule
                 WHERE WeekEndDate = @weekEndDate
-                  AND InMS = 0
                 ORDER BY SchedActNO";
                     cmd.Parameters.AddWithValue("@weekEndDate", weekEndDate.ToString("yyyy-MM-dd"));
 
                     using var reader = cmd.ExecuteReader();
                     while (reader.Read())
                     {
-                        results.Add((
-                            reader.GetString(0),
-                            reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
-                            reader.IsDBNull(2) ? string.Empty : reader.GetString(2)
-                        ));
+                        string schedActNo = reader.GetString(0);
+
+                        // Only include if NOT in MS data
+                        if (!msSchedActNOs.Contains(schedActNo))
+                        {
+                            results.Add((
+                                schedActNo,
+                                reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
+                                reader.IsDBNull(2) ? string.Empty : reader.GetString(2)
+                            ));
+                        }
                     }
 
                     AppLogger.Info($"Found {results.Count} P6 activities not in MS for {weekEndDate:yyyy-MM-dd}",
@@ -690,103 +823,6 @@ namespace VANTAGE.Repositories
                 }
             });
         }
-        // Calculate MS rollups for ALL rows in ONE Azure query
-        private static void CalculateAllMSRollups(
-    List<ScheduleMasterRow> masterRows,
-    DateTime weekEndDate,
-    List<string> projectIds)
-        {
-            try
-            {
-                if (masterRows.Count == 0) return;
-
-                // Connect to Azure for ProgressSnapshots
-                using var azureConn = AzureDbManager.GetConnection();
-                azureConn.Open();
-
-                var cmd = azureConn.CreateCommand();
-
-                // Build ProjectID IN clause
-                string projectIdList = "'" + string.Join("','", projectIds) + "'";
-
-                // ONE query to calculate rollups for ALL SchedActNOs
-                // Calculate weighted average directly in SQL (stays in 0-100 scale)
-                // MS_ActualFinish only populated if ALL activities have a finish date
-                cmd.CommandText = $@"
-                        SELECT 
-                            SchedActNO,
-                            MIN(SchStart) as MS_ActualStart,
-                            CASE 
-                                WHEN COUNT(*) = COUNT(SchFinish) 
-                                THEN MAX(SchFinish)
-                                ELSE NULL 
-                            END as MS_ActualFinish,
-                            CASE 
-                                WHEN SUM(BudgetMHs) > 0 
-                                THEN SUM(BudgetMHs * PercentEntry) / SUM(BudgetMHs)
-                                ELSE 0 
-                            END as MS_PercentComplete,
-                            SUM(BudgetMHs) as MS_BudgetMHs
-                        FROM ProgressSnapshots
-                        WHERE WeekEndDate = @weekEndDate
-                          AND ProjectID IN ({projectIdList})
-                          AND AssignedTo = @username
-                        GROUP BY SchedActNO";
-
-                cmd.Parameters.AddWithValue("@weekEndDate", weekEndDate.ToString("yyyy-MM-dd"));
-                cmd.Parameters.AddWithValue("@username", App.CurrentUser?.Username ?? "");
-
-                // Create dictionary for fast lookup
-                var rollupDict = new Dictionary<string, (DateTime? Start, DateTime? Finish, double Percent, double MHs)>();
-
-                using var reader = cmd.ExecuteReader();
-                while (reader.Read())
-                {
-                    string schedActNo = reader.GetString(0);
-
-                    // SchStart and SchFinish are stored as TEXT (VARCHAR) in Azure, not DATETIME
-                    DateTime? msStart = null;
-                    if (!reader.IsDBNull(1))
-                    {
-                        string startStr = reader.GetString(1);
-                        if (DateTime.TryParse(startStr, out DateTime parsedStart))
-                            msStart = parsedStart;
-                    }
-
-                    DateTime? msFinish = null;
-                    if (!reader.IsDBNull(2))
-                    {
-                        string finishStr = reader.GetString(2);
-                        if (DateTime.TryParse(finishStr, out DateTime parsedFinish))
-                            msFinish = parsedFinish;
-                    }
-
-                    double msPercent = reader.IsDBNull(3) ? 0 : reader.GetDouble(3);
-                    double msBudgetMHs = reader.IsDBNull(4) ? 0 : reader.GetDouble(4);
-
-                    rollupDict[schedActNo] = (msStart, msFinish, msPercent, msBudgetMHs);
-                }
-
-                // Apply rollups to master rows
-                foreach (var row in masterRows)
-                {
-                    if (rollupDict.TryGetValue(row.SchedActNO, out var rollup))
-                    {
-                        row.MS_ActualStart = rollup.Start;
-                        row.MS_ActualFinish = rollup.Finish;
-                        row.MS_PercentComplete = rollup.Percent;
-                        row.MS_BudgetMHs = rollup.MHs;
-                    }
-                }
-
-                AppLogger.Info($"Calculated MS rollups for {rollupDict.Count} SchedActNOs", "ScheduleRepository.CalculateAllMSRollups");
-            }
-            catch (Exception ex)
-            {
-                AppLogger.Error(ex, "ScheduleRepository.CalculateAllMSRollups");
-                // Don't throw - just leave MS values at defaults
-            }
-        }
 
         // Get ProjectIDs that this schedule covers
         private static List<string> GetProjectIDsForWeek(SqliteConnection connection, DateTime weekEndDate)
@@ -808,6 +844,8 @@ namespace VANTAGE.Repositories
 
             return projectIds;
         }
+
+
         // Get ProgressSnapshots for a specific SchedActNO (for detail grid)
         public static async Task<List<ProgressSnapshot>> GetSnapshotsBySchedActNOAsync(string schedActNO, DateTime weekEndDate)
         {

@@ -1260,25 +1260,165 @@ namespace VANTAGE
             {
                 MessageBox.Show(
                     $"Cannot connect to Azure database:\n\n{errorMessage}\n\nThis feature requires an active connection.",
-                    "Connection Error",
+                    "Connection Required",
                     MessageBoxButton.OK,
-                    MessageBoxImage.Error);
+                    MessageBoxImage.Warning);
                 return;
             }
 
             var dialog = new Dialogs.DeleteSnapshotsDialog();
             dialog.Owner = this;
-            dialog.ShowDialog();
+
+            if (dialog.ShowDialog() == true)
+            {
+                // Snapshots were deleted - refresh ScheduleView if loaded
+                if (ContentArea.Content is Views.ScheduleView scheduleView)
+                {
+                    var viewModel = scheduleView.DataContext as ViewModels.ScheduleViewModel;
+                    if (viewModel?.SelectedWeekEndDate != null)
+                    {
+                        _ = viewModel.LoadScheduleDataAsync(viewModel.SelectedWeekEndDate.Value);
+                    }
+                }
+            }
         }
 
-        private void MenuTool2_Click(object sender, RoutedEventArgs e)
+        private async void MenuClearLocalActivities_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Tool 2 coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
+            var result = MessageBox.Show(
+                "This will DELETE ALL ACTIVITIES from your local database.\n\n" +
+                "This does NOT affect the Azure database.\n" +
+                "You can restore data by syncing from Azure.\n\n" +
+                "Continue?",
+                "Clear Local Activities",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (result != MessageBoxResult.Yes)
+                return;
+
+            try
+            {
+                int deletedCount = 0;
+
+                await Task.Run(() =>
+                {
+                    using var conn = DatabaseSetup.GetConnection();
+                    conn.Open();
+
+                    var cmd = conn.CreateCommand();
+                    cmd.CommandText = "SELECT COUNT(*) FROM Activities";
+                    deletedCount = Convert.ToInt32(cmd.ExecuteScalar() ?? 0);
+
+                    cmd.CommandText = "DELETE FROM Activities";
+                    cmd.ExecuteNonQuery();
+
+                    // Also reset LastPulledSyncVersion so next sync pulls everything
+                    cmd.CommandText = "DELETE FROM AppSettings WHERE SettingName LIKE 'LastPulledSyncVersion_%'";
+                    cmd.ExecuteNonQuery();
+                });
+
+                AppLogger.Info($"Cleared {deletedCount} local activities", "MainWindow.MenuClearLocalActivities_Click", App.CurrentUser?.Username);
+
+                // Clear the grid if ProgressView is loaded
+                if (ContentArea.Content is Views.ProgressView progressView)
+                {
+                    await progressView.RefreshData();
+                }
+
+                MessageBox.Show(
+                    $"Successfully deleted {deletedCount:N0} activities from local database.\n\n" +
+                    "LastPulledSyncVersion has been reset.\n" +
+                    "Sync to restore data from Azure.",
+                    "Clear Complete",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "MainWindow.MenuClearLocalActivities_Click");
+                MessageBox.Show($"Error clearing activities:\n{ex.Message}", "Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
-        private void MenuTool3_Click(object sender, RoutedEventArgs e)
+        private async void MenuClearLocalSchedule_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Tool 3 coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
+            var result = MessageBox.Show(
+                "This will DELETE ALL SCHEDULE DATA from your local database:\n\n" +
+                "• Schedule table (P6 import data)\n" +
+                "• ScheduleProjectMappings\n" +
+                "• ThreeWeekLookahead\n\n" +
+                "This does NOT affect Azure data.\n\n" +
+                "Continue?",
+                "Clear Local Schedule",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (result != MessageBoxResult.Yes)
+                return;
+
+            try
+            {
+                int scheduleCount = 0;
+                int mappingsCount = 0;
+                int lookaheadCount = 0;
+
+                await Task.Run(() =>
+                {
+                    using var conn = DatabaseSetup.GetConnection();
+                    conn.Open();
+
+                    var cmd = conn.CreateCommand();
+
+                    // Get counts before delete
+                    cmd.CommandText = "SELECT COUNT(*) FROM Schedule";
+                    scheduleCount = Convert.ToInt32(cmd.ExecuteScalar() ?? 0);
+
+                    cmd.CommandText = "SELECT COUNT(*) FROM ScheduleProjectMappings";
+                    mappingsCount = Convert.ToInt32(cmd.ExecuteScalar() ?? 0);
+
+                    cmd.CommandText = "SELECT COUNT(*) FROM ThreeWeekLookahead";
+                    lookaheadCount = Convert.ToInt32(cmd.ExecuteScalar() ?? 0);
+
+                    // Delete all schedule data
+                    cmd.CommandText = "DELETE FROM Schedule";
+                    cmd.ExecuteNonQuery();
+
+                    cmd.CommandText = "DELETE FROM ScheduleProjectMappings";
+                    cmd.ExecuteNonQuery();
+
+                    cmd.CommandText = "DELETE FROM ThreeWeekLookahead";
+                    cmd.ExecuteNonQuery();
+                });
+
+                AppLogger.Info(
+                    $"Cleared local schedule: {scheduleCount} schedule rows, {mappingsCount} mappings, {lookaheadCount} lookahead rows",
+                    "MainWindow.MenuClearLocalSchedule_Click",
+                    App.CurrentUser?.Username);
+
+                // Refresh ScheduleView if loaded
+                if (ContentArea.Content is Views.ScheduleView scheduleView)
+                {
+                    scheduleView.ClearScheduleDisplay();
+                }
+
+                MessageBox.Show(
+                    $"Successfully cleared local schedule data:\n\n" +
+                    $"• Schedule rows: {scheduleCount:N0}\n" +
+                    $"• Project mappings: {mappingsCount:N0}\n" +
+                    $"• Lookahead rows: {lookaheadCount:N0}\n\n" +
+                    "Import a new P6 file to reload.",
+                    "Clear Complete",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "MainWindow.MenuClearLocalSchedule_Click");
+                MessageBox.Show($"Error clearing schedule:\n{ex.Message}", "Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void MenuTool4_Click(object sender, RoutedEventArgs e)

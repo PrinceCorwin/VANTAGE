@@ -263,12 +263,8 @@ namespace VANTAGE.Utilities
         }
 
         // Import schedule rows to database with transaction
-        // Import schedule rows to database with transaction
         private static int ImportToDatabase(List<Schedule> scheduleRows, List<string> projectIds, DateTime weekEndDate)
         {
-            // First, query Azure for SchedActNOs that exist in ProgressSnapshots
-            var msSchedActNOs = GetSchedActNOsFromSnapshots(weekEndDate, projectIds);
-
             using var connection = new SqliteConnection($"Data Source={DatabaseSetup.DbPath}");
             connection.Open();
 
@@ -277,25 +273,27 @@ namespace VANTAGE.Utilities
             try
             {
                 // Build list of imported SchedActNOs for purge logic
-                var importedActNos = scheduleRows.Select(s => s.SchedActNO).ToHashSet();
-                string actNoList = "'" + string.Join("','", importedActNos) + "'";
-                string projectIdList = "'" + string.Join("','", projectIds) + "'";
+                var importedActNos = scheduleRows.Select(s => s.SchedActNO).ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-                // Delete orphaned ThreeWeekLookahead rows (actno not in current import for these projects)
-                var deleteOrphanedCmd = connection.CreateCommand();
-                deleteOrphanedCmd.CommandText = $@"
+                // Purge ThreeWeekLookahead for SchedActNOs NOT in this import (for imported ProjectIDs)
+                string projectIdList = "'" + string.Join("','", projectIds) + "'";
+                string actNoList = "'" + string.Join("','", importedActNos) + "'";
+
+                var purgeOrphanCmd = connection.CreateCommand();
+                purgeOrphanCmd.CommandText = $@"
             DELETE FROM ThreeWeekLookahead 
             WHERE ProjectID IN ({projectIdList})
               AND SchedActNO NOT IN ({actNoList})";
-                int deletedCount = deleteOrphanedCmd.ExecuteNonQuery();
-                if (deletedCount > 0)
+                int orphansPurged = purgeOrphanCmd.ExecuteNonQuery();
+
+                if (orphansPurged > 0)
                 {
-                    AppLogger.Info($"Deleted {deletedCount} orphaned ThreeWeekLookahead rows",
+                    AppLogger.Info($"Purged {orphansPurged} orphaned ThreeWeekLookahead rows",
                         "ScheduleExcelImporter.ImportToDatabase",
                         App.CurrentUser?.Username);
                 }
 
-                // Clear stale dates (set to NULL if in the past)
+                // Clear stale 3WLA dates (dates in the past of selected WeekEndDate)
                 var clearStaleStartCmd = connection.CreateCommand();
                 clearStaleStartCmd.CommandText = @"
             UPDATE ThreeWeekLookahead 
@@ -336,34 +334,25 @@ namespace VANTAGE.Utilities
                 deleteMappingsCmd.CommandText = "DELETE FROM ScheduleProjectMappings";
                 deleteMappingsCmd.ExecuteNonQuery();
 
-                // Insert Schedule rows with InMS flag
+                // Insert Schedule rows (InMS always 0 - column is obsolete but kept for schema compatibility)
                 var insertScheduleCmd = connection.CreateCommand();
                 insertScheduleCmd.CommandText = @"
-            INSERT INTO Schedule (
-                SchedActNO, WeekEndDate, WbsId, Description,
-                P6_PlannedStart, P6_PlannedFinish, P6_ActualStart, P6_ActualFinish,
-                P6_PercentComplete, P6_BudgetMHs,
-                MissedStartReason, MissedFinishReason,
-                InMS, UpdatedBy, UpdatedUtcDate
-            ) VALUES (
-                @schedActNo, @weekEndDate, @wbsId, @description,
-                @plannedStart, @plannedFinish, @actualStart, @actualFinish,
-                @percentComplete, @budgetMHs,
-                @missedStartReason, @missedFinishReason,
-                @inMS, @updatedBy, @updatedUtc
-            )";
-
-                int inMSCount = 0;
-                int notInMSCount = 0;
+                INSERT INTO Schedule (
+                    SchedActNO, WeekEndDate, WbsId, Description,
+                    P6_PlannedStart, P6_PlannedFinish, P6_ActualStart, P6_ActualFinish,
+                    P6_PercentComplete, P6_BudgetMHs,
+                    MissedStartReason, MissedFinishReason,
+                    UpdatedBy, UpdatedUtcDate
+                ) VALUES (
+                    @schedActNo, @weekEndDate, @wbsId, @description,
+                    @plannedStart, @plannedFinish, @actualStart, @actualFinish,
+                    @percentComplete, @budgetMHs,
+                    @missedStartReason, @missedFinishReason,
+                    @updatedBy, @updatedUtc
+                )";
 
                 foreach (var schedule in scheduleRows)
                 {
-                    bool inMS = msSchedActNOs.Contains(schedule.SchedActNO);
-                    if (inMS)
-                        inMSCount++;
-                    else
-                        notInMSCount++;
-
                     insertScheduleCmd.Parameters.Clear();
                     insertScheduleCmd.Parameters.AddWithValue("@schedActNo", schedule.SchedActNO);
                     insertScheduleCmd.Parameters.AddWithValue("@weekEndDate", weekEndDate.ToString("yyyy-MM-dd"));
@@ -377,7 +366,6 @@ namespace VANTAGE.Utilities
                     insertScheduleCmd.Parameters.AddWithValue("@budgetMHs", schedule.P6_BudgetMHs);
                     insertScheduleCmd.Parameters.AddWithValue("@missedStartReason", schedule.MissedStartReason ?? (object)DBNull.Value);
                     insertScheduleCmd.Parameters.AddWithValue("@missedFinishReason", schedule.MissedFinishReason ?? (object)DBNull.Value);
-                    insertScheduleCmd.Parameters.AddWithValue("@inMS", inMS ? 1 : 0);
                     insertScheduleCmd.Parameters.AddWithValue("@updatedBy", schedule.UpdatedBy);
                     insertScheduleCmd.Parameters.AddWithValue("@updatedUtc", schedule.UpdatedUtcDate.ToString("yyyy-MM-ddTHH:mm:ssZ"));
 
@@ -400,7 +388,7 @@ namespace VANTAGE.Utilities
 
                 transaction.Commit();
 
-                AppLogger.Info($"Imported {scheduleRows.Count} P6 activities ({inMSCount} in MS, {notInMSCount} not in MS)",
+                AppLogger.Info($"Imported {scheduleRows.Count} P6 activities for {weekEndDate:yyyy-MM-dd}",
                     "ScheduleExcelImporter.ImportToDatabase",
                     App.CurrentUser?.Username);
 
@@ -411,47 +399,6 @@ namespace VANTAGE.Utilities
                 transaction.Rollback();
                 throw;
             }
-        }
-
-        // Query Azure for SchedActNOs that exist in ProgressSnapshots for this week/projects
-        private static HashSet<string> GetSchedActNOsFromSnapshots(DateTime weekEndDate, List<string> projectIds)
-        {
-            var schedActNOs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-            try
-            {
-                using var azureConn = AzureDbManager.GetConnection();
-                azureConn.Open();
-
-                string projectIdList = "'" + string.Join("','", projectIds) + "'";
-
-                var cmd = azureConn.CreateCommand();
-                cmd.CommandText = $@"
-                    SELECT DISTINCT SchedActNO 
-                    FROM ProgressSnapshots 
-                    WHERE WeekEndDate = @weekEndDate 
-                      AND ProjectID IN ({projectIdList})
-                      AND AssignedTo = @username
-                      AND SchedActNO IS NOT NULL 
-                      AND SchedActNO <> ''";
-                cmd.Parameters.AddWithValue("@weekEndDate", weekEndDate.ToString("yyyy-MM-dd"));
-                cmd.Parameters.AddWithValue("@username", App.CurrentUser?.Username ?? "");
-
-                using var reader = cmd.ExecuteReader();
-                while (reader.Read())
-                {
-                    schedActNOs.Add(reader.GetString(0));
-                }
-
-                AppLogger.Info($"Found {schedActNOs.Count} SchedActNOs in ProgressSnapshots",
-                    "ScheduleExcelImporter.GetSchedActNOsFromSnapshots");
-            }
-            catch (Exception ex)
-            {
-                AppLogger.Error(ex, "ScheduleExcelImporter.GetSchedActNOsFromSnapshots");
-            }
-
-            return schedActNOs;
         }
     }
 }

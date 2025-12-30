@@ -146,8 +146,8 @@
                             Foreground="{StaticResource ForegroundColor}"
                             BorderBrush="{StaticResource BorderColor}">
                             <syncfusion:DropDownMenuItem Header="Delete My Snapshots" Click="MenuDeleteSnapshots_Click"/>
-                            <syncfusion:DropDownMenuItem Header="TOOL 2" Click="MenuTool2_Click"/>
-                            <syncfusion:DropDownMenuItem Header="TOOL 3" Click="MenuTool3_Click"/>
+                            <syncfusion:DropDownMenuItem Header="Clear Local Activities" Click="MenuClearLocalActivities_Click"/>
+                            <syncfusion:DropDownMenuItem Header="Clear Local Schedule" Click="MenuClearLocalSchedule_Click"/>
                             <syncfusion:DropDownMenuItem Header="TOOL 4" Click="MenuTool4_Click"/>
                             <syncfusion:DropDownMenuItem Header="TOOL 5" Click="MenuTool5_Click"/>
                             <syncfusion:DropDownMenuItem Header="TOOL 6" Click="MenuTool6_Click"/>

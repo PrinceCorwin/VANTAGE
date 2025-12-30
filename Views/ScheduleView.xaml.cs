@@ -223,7 +223,6 @@ namespace VANTAGE.Views
             SaveSplitterState();
         }
 
-        // Call this from MainWindow before switching away from Schedule view
         public bool TryClose()
         {
             if (!_viewModel.HasUnsavedChanges)
@@ -495,6 +494,18 @@ namespace VANTAGE.Views
                 txtStatus.Text = "Save failed";
                 MessageBox.Show($"Error saving: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+        // Public method for MainWindow to call when clearing local schedule data
+        // Public method for MainWindow to call when clearing local schedule data
+        public void ClearScheduleDisplay()
+        {
+            _viewModel.MasterRows.Clear();
+            _viewModel.DetailActivities.Clear();
+            _viewModel.SelectedWeekEndDate = null;
+            _viewModel.HasUnsavedChanges = false;
+            txtDetailHeader.Text = "Select a row above to view detail activities";
+            txtStatus.Text = "Schedule cleared";
         }
         // ========================================
         // MASTER GRID SELECTION - LOAD DETAIL

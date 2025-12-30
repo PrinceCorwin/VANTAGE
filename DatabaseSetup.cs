@@ -141,7 +141,6 @@ namespace VANTAGE
                 P6_BudgetMHs          REAL NOT NULL DEFAULT 0,
                 MissedStartReason     TEXT,
                 MissedFinishReason    TEXT,
-                InMS                  INTEGER NOT NULL DEFAULT 0,
                 UpdatedBy             TEXT NOT NULL DEFAULT '',
                 UpdatedUtcDate        TEXT NOT NULL,
                 PRIMARY KEY (SchedActNO, WeekEndDate)
