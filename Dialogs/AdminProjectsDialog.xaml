@@ -1,0 +1,271 @@
+﻿<Window x:Class="VANTAGE.Dialogs.AdminProjectsDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:skinManager="clr-namespace:Syncfusion.SfSkinManager;assembly=Syncfusion.SfSkinManager.WPF"
+        skinManager:SfSkinManager.Theme="{skinManager:SkinManagerExtension ThemeName=FluentDark}"
+        Title="Admin: Edit Projects"
+        Height="700"
+        Width="850"
+        WindowStartupLocation="CenterOwner"
+        Background="{StaticResource BackgroundColor}"
+        ResizeMode="CanResize"
+        MinHeight="600"
+        MinWidth="700"
+        WindowStyle="SingleBorderWindow">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="10"/>
+            <RowDefinition Height="180"/>
+            <RowDefinition Height="15"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="10"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <TextBlock Grid.Row="0" 
+                   Text="Projects" 
+                   FontWeight="SemiBold" 
+                   FontSize="16" 
+                   Foreground="{StaticResource ForegroundColor}"/>
+
+        <!-- Project List -->
+        <Border Grid.Row="2"
+                Background="{StaticResource ControlBackground}"
+                BorderBrush="{StaticResource BorderColor}"
+                BorderThickness="1"
+                CornerRadius="4">
+            <Grid>
+                <ListView x:Name="lvProjects"
+                          Background="Transparent"
+                          BorderThickness="0"
+                          Foreground="{StaticResource ForegroundColor}"
+                          SelectionMode="Single"
+                          SelectionChanged="LvProjects_SelectionChanged"
+                          ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                          ScrollViewer.VerticalScrollBarVisibility="Auto">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="Project ID" Width="90" DisplayMemberBinding="{Binding ProjectID}"/>
+                            <GridViewColumn Header="Description" Width="150" DisplayMemberBinding="{Binding Description}"/>
+                            <GridViewColumn Header="Client Name" Width="120" DisplayMemberBinding="{Binding ClientName}"/>
+                            <GridViewColumn Header="Client Address" Width="140" DisplayMemberBinding="{Binding ClientStreetAddress}"/>
+                            <GridViewColumn Header="Client City" Width="90" DisplayMemberBinding="{Binding ClientCity}"/>
+                            <GridViewColumn Header="Client State" Width="50" DisplayMemberBinding="{Binding ClientState}"/>
+                            <GridViewColumn Header="Client Zip" Width="60" DisplayMemberBinding="{Binding ClientZipCode}"/>
+                            <GridViewColumn Header="Project Address" Width="140" DisplayMemberBinding="{Binding ProjectStreetAddress}"/>
+                            <GridViewColumn Header="Project City" Width="90" DisplayMemberBinding="{Binding ProjectCity}"/>
+                            <GridViewColumn Header="Project State" Width="50" DisplayMemberBinding="{Binding ProjectState}"/>
+                            <GridViewColumn Header="Project Zip" Width="60" DisplayMemberBinding="{Binding ProjectZipCode}"/>
+                            <GridViewColumn Header="Project Mgr" Width="100" DisplayMemberBinding="{Binding ProjectManager}"/>
+                            <GridViewColumn Header="Site Mgr" Width="100" DisplayMemberBinding="{Binding SiteManager}"/>
+                            <GridViewColumn Header="OM" Width="35" DisplayMemberBinding="{Binding OM}"/>
+                            <GridViewColumn Header="SM" Width="35" DisplayMemberBinding="{Binding SM}"/>
+                            <GridViewColumn Header="EN" Width="35" DisplayMemberBinding="{Binding EN}"/>
+                            <GridViewColumn Header="PM" Width="35" DisplayMemberBinding="{Binding PM}"/>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+
+                <StackPanel x:Name="pnlLoading"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Visibility="Collapsed">
+                    <TextBlock Text="Loading projects..."
+                               Foreground="{StaticResource ForegroundColor}"
+                               Opacity="0.6"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Project Count -->
+        <TextBlock x:Name="txtProjectCount" 
+                   Grid.Row="4" 
+                   Text="0 project(s)" 
+                   Foreground="{StaticResource ForegroundColor}"
+                   Opacity="0.6"
+                   FontSize="12"/>
+
+        <!-- Edit Form -->
+        <Border Grid.Row="6"
+                Background="{StaticResource ControlBackground}"
+                BorderBrush="{StaticResource BorderColor}"
+                BorderThickness="1"
+                CornerRadius="4"
+                Padding="15">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Left Column -->
+                    <StackPanel Grid.Column="0">
+                        <!-- Project ID and Description -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" MinWidth="100"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="Project ID *" Foreground="{StaticResource ForegroundColor}" FontSize="12" Margin="0,0,0,5"/>
+                                <TextBox x:Name="txtProjectID" Height="28" Width="100" HorizontalAlignment="Left" FontSize="13" Background="{StaticResource BackgroundColor}" Foreground="{StaticResource ForegroundColor}" BorderBrush="{StaticResource BorderColor}" Padding="5,3"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="Description" Foreground="{StaticResource ForegroundColor}" FontSize="12" Margin="0,0,0,5"/>
+                                <TextBox x:Name="txtDescription" Height="28" FontSize="13" Background="{StaticResource BackgroundColor}" Foreground="{StaticResource ForegroundColor}" BorderBrush="{StaticResource BorderColor}" Padding="5,3"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Client Info -->
+                        <TextBlock Text="Client Information" Foreground="{StaticResource ForegroundColor}" FontWeight="SemiBold" FontSize="13" Margin="0,15,0,8"/>
+
+                        <TextBlock Text="Client Name" Foreground="{StaticResource ForegroundColor}" FontSize="12" Margin="0,0,0,5"/>
+                        <TextBox x:Name="txtClientName" Height="28" FontSize="13" Background="{StaticResource BackgroundColor}" Foreground="{StaticResource ForegroundColor}" BorderBrush="{StaticResource BorderColor}" Padding="5,3"/>
+
+                        <TextBlock Text="Street Address" Foreground="{StaticResource ForegroundColor}" FontSize="12" Margin="0,8,0,5"/>
+                        <TextBox x:Name="txtClientStreetAddress" Height="28" FontSize="13" Background="{StaticResource BackgroundColor}" Foreground="{StaticResource ForegroundColor}" BorderBrush="{StaticResource BorderColor}" Padding="5,3"/>
+
+                        <Grid Margin="0,8,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="City" Foreground="{StaticResource ForegroundColor}" FontSize="12" Margin="0,0,0,5"/>
+                                <TextBox x:Name="txtClientCity" Height="28" FontSize="13" Background="{StaticResource BackgroundColor}" Foreground="{StaticResource ForegroundColor}" BorderBrush="{StaticResource BorderColor}" Padding="5,3"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="State" Foreground="{StaticResource ForegroundColor}" FontSize="12" Margin="0,0,0,5"/>
+                                <TextBox x:Name="txtClientState" Height="28" FontSize="13" Background="{StaticResource BackgroundColor}" Foreground="{StaticResource ForegroundColor}" BorderBrush="{StaticResource BorderColor}" Padding="5,3"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="4">
+                                <TextBlock Text="Zip" Foreground="{StaticResource ForegroundColor}" FontSize="12" Margin="0,0,0,5"/>
+                                <TextBox x:Name="txtClientZipCode" Height="28" FontSize="13" Background="{StaticResource BackgroundColor}" Foreground="{StaticResource ForegroundColor}" BorderBrush="{StaticResource BorderColor}" Padding="5,3"/>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- Right Column -->
+                    <StackPanel Grid.Column="2">
+                        <!-- Management -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="Project Manager" Foreground="{StaticResource ForegroundColor}" FontSize="12" Margin="0,0,0,5"/>
+                                <TextBox x:Name="txtProjectManager" Height="28" FontSize="13" Background="{StaticResource BackgroundColor}" Foreground="{StaticResource ForegroundColor}" BorderBrush="{StaticResource BorderColor}" Padding="5,3"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="Site Manager" Foreground="{StaticResource ForegroundColor}" FontSize="12" Margin="0,0,0,5"/>
+                                <TextBox x:Name="txtSiteManager" Height="28" FontSize="13" Background="{StaticResource BackgroundColor}" Foreground="{StaticResource ForegroundColor}" BorderBrush="{StaticResource BorderColor}" Padding="5,3"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Project Site -->
+                        <TextBlock Text="Project Site" Foreground="{StaticResource ForegroundColor}" FontWeight="SemiBold" FontSize="13" Margin="0,15,0,8"/>
+
+                        <TextBlock Text="Street Address" Foreground="{StaticResource ForegroundColor}" FontSize="12" Margin="0,0,0,5"/>
+                        <TextBox x:Name="txtProjectStreetAddress" Height="28" FontSize="13" Background="{StaticResource BackgroundColor}" Foreground="{StaticResource ForegroundColor}" BorderBrush="{StaticResource BorderColor}" Padding="5,3"/>
+
+                        <Grid Margin="0,8,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="City" Foreground="{StaticResource ForegroundColor}" FontSize="12" Margin="0,0,0,5"/>
+                                <TextBox x:Name="txtProjectCity" Height="28" FontSize="13" Background="{StaticResource BackgroundColor}" Foreground="{StaticResource ForegroundColor}" BorderBrush="{StaticResource BorderColor}" Padding="5,3"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="State" Foreground="{StaticResource ForegroundColor}" FontSize="12" Margin="0,0,0,5"/>
+                                <TextBox x:Name="txtProjectState" Height="28" FontSize="13" Background="{StaticResource BackgroundColor}" Foreground="{StaticResource ForegroundColor}" BorderBrush="{StaticResource BorderColor}" Padding="5,3"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="4">
+                                <TextBlock Text="Zip" Foreground="{StaticResource ForegroundColor}" FontSize="12" Margin="0,0,0,5"/>
+                                <TextBox x:Name="txtProjectZipCode" Height="28" FontSize="13" Background="{StaticResource BackgroundColor}" Foreground="{StaticResource ForegroundColor}" BorderBrush="{StaticResource BorderColor}" Padding="5,3"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Flags -->
+                        <TextBlock Text="Flags" Foreground="{StaticResource ForegroundColor}" FontWeight="SemiBold" FontSize="13" Margin="0,15,0,8"/>
+
+                        <StackPanel Orientation="Horizontal">
+                            <CheckBox x:Name="chkOM" Content="OM" Foreground="{StaticResource ForegroundColor}" Margin="0,0,20,0"/>
+                            <CheckBox x:Name="chkSM" Content="SM" Foreground="{StaticResource ForegroundColor}" Margin="0,0,20,0"/>
+                            <CheckBox x:Name="chkEN" Content="EN" Foreground="{StaticResource ForegroundColor}" Margin="0,0,20,0"/>
+                            <CheckBox x:Name="chkPM" Content="PM" Foreground="{StaticResource ForegroundColor}"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+            </ScrollViewer>
+        </Border>
+
+        <!-- Action Buttons -->
+        <StackPanel Grid.Row="7" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,15,0,0">
+            <Button x:Name="btnNew"
+                    Content="New Project"
+                    Width="100"
+                    Height="35"
+                    Margin="0,0,10,0"
+                    Background="{StaticResource ControlBackground}"
+                    Foreground="{StaticResource ForegroundColor}"
+                    BorderBrush="{StaticResource ControlBorder}"
+                    BorderThickness="1"
+                    Click="BtnNew_Click"/>
+
+            <Button x:Name="btnDelete"
+                    Content="Delete"
+                    Width="80"
+                    Height="35"
+                    Margin="0,0,10,0"
+                    Background="#B33A3A"
+                    Foreground="{StaticResource ForegroundColor}"
+                    BorderBrush="#B33A3A"
+                    BorderThickness="1"
+                    IsEnabled="False"
+                    Click="BtnDelete_Click"/>
+
+            <Button x:Name="btnClose"
+                    Content="Close"
+                    Width="80"
+                    Height="35"
+                    Margin="0,0,10,0"
+                    Background="{StaticResource ControlBackground}"
+                    Foreground="{StaticResource ForegroundColor}"
+                    BorderBrush="{StaticResource ControlBorder}"
+                    BorderThickness="1"
+                    Click="BtnClose_Click"/>
+
+            <Button x:Name="btnSave"
+                    Content="Add Project"
+                    Width="110"
+                    Height="35"
+                    Background="#2D7D46"
+                    Foreground="{StaticResource ForegroundColor}"
+                    BorderBrush="#2D7D46"
+                    BorderThickness="1"
+                    Click="BtnSave_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

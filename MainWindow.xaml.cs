@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using VANTAGE.Data;
 using VANTAGE.Dialogs;
@@ -1013,19 +1014,102 @@ namespace VANTAGE
             deletedRecordsWindow.ShowDialog();
         }
 
-        private void MenuAdmin3_Click(object sender, RoutedEventArgs e)
+        // ============================================
+        // ADD THIS METHOD TO MainWindow.xaml.cs
+        // Replace one of the MenuAdmin#_Click placeholders (e.g., MenuAdmin3_Click)
+        // ============================================
+
+        private void MenuEditSnapshots_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Admin 3 coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
+            // Check admin status
+            if (App.CurrentUser == null || !App.CurrentUser.IsAdmin)
+            {
+                MessageBox.Show("You do not have admin privileges.", "Access Denied",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // Check Azure connection first
+            if (!AzureDbManager.CheckConnection(out string errorMessage))
+            {
+                MessageBox.Show(
+                    $"Cannot connect to Azure database:\n\n{errorMessage}\n\nThis feature requires an active connection.",
+                    "Connection Required",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+                return;
+            }
+
+            var dialog = new Dialogs.AdminSnapshotsDialog();
+            dialog.Owner = this;
+            dialog.ShowDialog();
+
+            // Refresh ScheduleView if loaded (snapshots may have been deleted)
+            if (ContentArea.Content is Views.ScheduleView scheduleView)
+            {
+                var viewModel = scheduleView.DataContext as ViewModels.ScheduleViewModel;
+                if (viewModel?.SelectedWeekEndDate != null)
+                {
+                    _ = viewModel.LoadScheduleDataAsync(viewModel.SelectedWeekEndDate.Value);
+                }
+            }
         }
 
-        private void MenuAdmin4_Click(object sender, RoutedEventArgs e)
+        private void MenuEditUsers_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Admin 4 coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
+            // Check admin status
+            if (App.CurrentUser == null || !App.CurrentUser.IsAdmin)
+            {
+                MessageBox.Show("You do not have admin privileges.", "Access Denied",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // Check Azure connection first
+            if (!AzureDbManager.CheckConnection(out string errorMessage))
+            {
+                MessageBox.Show(
+                    $"Cannot connect to Azure database:\n\n{errorMessage}\n\nThis feature requires an active connection.",
+                    "Connection Required",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+                return;
+            }
+
+            var dialog = new Dialogs.AdminUsersDialog();
+            dialog.Owner = this;
+            dialog.ShowDialog();
         }
 
-        private void MenuAdmin5_Click(object sender, RoutedEventArgs e)
+        // ============================================
+        // ADD THIS METHOD TO MainWindow.xaml.cs
+        // Replace one of the MenuAdmin#_Click placeholders (e.g., MenuAdmin5_Click)
+        // ============================================
+
+        private void MenuEditProjects_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Admin 5 coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
+            // Check admin status
+            if (App.CurrentUser == null || !App.CurrentUser.IsAdmin)
+            {
+                MessageBox.Show("You do not have admin privileges.", "Access Denied",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // Check Azure connection first
+            if (!AzureDbManager.CheckConnection(out string errorMessage))
+            {
+                MessageBox.Show(
+                    $"Cannot connect to Azure database:\n\n{errorMessage}\n\nThis feature requires an active connection.",
+                    "Connection Required",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+                return;
+            }
+
+            var dialog = new Dialogs.AdminProjectsDialog();
+            dialog.Owner = this;
+            dialog.ShowDialog();
         }
 
         private void MenuAdmin6_Click(object sender, RoutedEventArgs e)
@@ -1206,19 +1290,170 @@ namespace VANTAGE
             }
         }
 
-        private void MenuTest2_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Test 2 - Not implemented", "Test", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
+        // ============================================
+        // ADD THIS METHOD TO MainWindow.xaml.cs
+        // Replace one of the MenuTest#_Click placeholders
+        // ============================================
 
-        private void MenuTest3_Click(object sender, RoutedEventArgs e)
+        private async void MenuClearAzureActivities_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Test 3 - Not implemented", "Test", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
+            // Check Azure connection first
+            if (!AzureDbManager.CheckConnection(out string errorMessage))
+            {
+                MessageBox.Show(
+                    $"Cannot connect to Azure database:\n\n{errorMessage}",
+                    "Connection Required",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+                return;
+            }
 
-        private void MenuTest4_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Test 4 - Not implemented", "Test", MessageBoxButton.OK, MessageBoxImage.Information);
+            // First warning
+            var result = MessageBox.Show(
+                "⚠️ DANGER: This will DELETE ALL ACTIVITIES from the AZURE database!\n\n" +
+                "This affects ALL USERS and CANNOT be undone.\n\n" +
+                "Are you absolutely sure?",
+                "Clear Azure Activities",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (result != MessageBoxResult.Yes)
+                return;
+
+            // Require typing DELETE to confirm
+            var confirmDialog = new Window
+            {
+                Title = "Confirm Deletion",
+                Width = 400,
+                Height = 200,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                Owner = this,
+                Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF1E1E1E")),
+                ResizeMode = ResizeMode.NoResize
+            };
+
+            var stack = new StackPanel { Margin = new Thickness(20) };
+            stack.Children.Add(new TextBlock
+            {
+                Text = "Type DELETE to confirm:",
+                Foreground = Brushes.White,
+                FontSize = 14,
+                Margin = new Thickness(0, 0, 0, 10)
+            });
+
+            var textBox = new TextBox
+            {
+                Height = 30,
+                FontSize = 14,
+                Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF2D2D2D")),
+                Foreground = Brushes.White,
+                BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF3F3F3F")),
+                Padding = new Thickness(5)
+            };
+            stack.Children.Add(textBox);
+
+            var btnPanel = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                HorizontalAlignment = HorizontalAlignment.Right,
+                Margin = new Thickness(0, 20, 0, 0)
+            };
+
+            var btnCancel = new Button
+            {
+                Content = "Cancel",
+                Width = 80,
+                Height = 30,
+                Margin = new Thickness(0, 0, 10, 0),
+                Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF3F3F3F")),
+                Foreground = Brushes.White
+            };
+            btnCancel.Click += (s, args) => confirmDialog.DialogResult = false;
+
+            var btnConfirm = new Button
+            {
+                Content = "Confirm",
+                Width = 80,
+                Height = 30,
+                Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFB33A3A")),
+                Foreground = Brushes.White
+            };
+            btnConfirm.Click += (s, args) =>
+            {
+                if (textBox.Text == "DELETE")
+                    confirmDialog.DialogResult = true;
+                else
+                    MessageBox.Show("You must type DELETE exactly.", "Invalid", MessageBoxButton.OK, MessageBoxImage.Warning);
+            };
+
+            btnPanel.Children.Add(btnCancel);
+            btnPanel.Children.Add(btnConfirm);
+            stack.Children.Add(btnPanel);
+
+            confirmDialog.Content = stack;
+
+            if (confirmDialog.ShowDialog() != true)
+                return;
+
+            // Execute deletion
+            try
+            {
+                int deletedCount = 0;
+
+                await Task.Run(() =>
+                {
+                    using var azureConn = AzureDbManager.GetConnection();
+                    azureConn.Open();
+
+                    // Get count first
+                    using var countCmd = azureConn.CreateCommand();
+                    countCmd.CommandText = "SELECT COUNT(*) FROM Activities";
+                    deletedCount = Convert.ToInt32(countCmd.ExecuteScalar() ?? 0);
+
+                    // Delete all
+                    using var deleteCmd = azureConn.CreateCommand();
+                    deleteCmd.CommandText = "DELETE FROM Activities";
+                    deleteCmd.ExecuteNonQuery();
+                });
+                // After deleting from Azure, reset local sync state
+                await Task.Run(() =>
+                {
+                    using var localConn = DatabaseSetup.GetConnection();
+                    localConn.Open();
+
+                    // Reset LastPulledSyncVersion so next sync works properly
+                    var resetCmd = localConn.CreateCommand();
+                    resetCmd.CommandText = "DELETE FROM AppSettings WHERE SettingName LIKE 'LastPulledSyncVersion_%'";
+                    resetCmd.ExecuteNonQuery();
+
+                    // Set all local records to dirty so they'll push on next sync
+                    var dirtyCmd = localConn.CreateCommand();
+                    dirtyCmd.CommandText = "UPDATE Activities SET LocalDirty = 1";
+                    dirtyCmd.ExecuteNonQuery();
+                });
+                // Refresh the grid if ProgressView is loaded
+                if (ContentArea.Content is Views.ProgressView progressView)
+                {
+                    await progressView.RefreshData();
+                }
+                AppLogger.Info($"CLEARED AZURE ACTIVITIES: Deleted {deletedCount} records",
+                    "MainWindow.MenuClearAzureActivities_Click",
+                    App.CurrentUser?.Username);
+
+                MessageBox.Show(
+                    $"Successfully deleted {deletedCount:N0} activities from Azure.\n\n" +
+                    "Sync state has been reset.\n" +
+                    "Local records marked dirty - sync to re-upload.",
+                    "Azure Cleared",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "MainWindow.MenuClearAzureActivities_Click");
+                MessageBox.Show($"Error clearing Azure activities:\n{ex.Message}", "Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void MenuTest5_Click(object sender, RoutedEventArgs e)

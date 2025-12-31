@@ -1,0 +1,158 @@
+﻿<Window x:Class="VANTAGE.Dialogs.AdminSnapshotsDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:skinManager="clr-namespace:Syncfusion.SfSkinManager;assembly=Syncfusion.SfSkinManager.WPF"
+        skinManager:SfSkinManager.Theme="{skinManager:SkinManagerExtension ThemeName=FluentDark}"
+        Title="Admin: Edit Snapshots Table"
+        Height="550"
+        Width="700"
+        WindowStartupLocation="CenterOwner"
+        Background="{StaticResource BackgroundColor}"
+        ResizeMode="CanResize"
+        MinHeight="400"
+        MinWidth="500"
+        WindowStyle="SingleBorderWindow">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="15"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="15"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0">
+            <TextBlock Text="Manage Progress Snapshots" 
+                       FontWeight="SemiBold" 
+                       FontSize="16" 
+                       Foreground="{StaticResource ForegroundColor}"/>
+            <TextBlock Text="View and delete snapshots for any user. Grouped by User, Project, and Week."
+                       Foreground="{StaticResource ForegroundColor}"
+                       Opacity="0.6"
+                       FontSize="12"
+                       Margin="0,5,0,0"/>
+        </StackPanel>
+
+        <!-- Snapshots List -->
+        <Border Grid.Row="2"
+                Background="{StaticResource ControlBackground}"
+                BorderBrush="{StaticResource BorderColor}"
+                BorderThickness="1"
+                CornerRadius="4">
+            <Grid>
+                <ListView x:Name="lvSnapshots"
+                          Background="Transparent"
+                          BorderThickness="0"
+                          Foreground="{StaticResource ForegroundColor}"
+                          SelectionMode="Extended">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Width="30">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                                  VerticalAlignment="Center"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Header="Username" Width="120" DisplayMemberBinding="{Binding Username}"/>
+                            <GridViewColumn Header="Project ID" Width="100" DisplayMemberBinding="{Binding ProjectID}"/>
+                            <GridViewColumn Header="Week Ending" Width="120" DisplayMemberBinding="{Binding WeekEndDateDisplay}"/>
+                            <GridViewColumn Header="Count" Width="70" DisplayMemberBinding="{Binding SnapshotCount}"/>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+
+                <!-- No Snapshots Message -->
+                <TextBlock x:Name="txtNoSnapshots"
+                           Text="No snapshots found in database."
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Foreground="{StaticResource ForegroundColor}"
+                           Opacity="0.6"
+                           Visibility="Collapsed"/>
+
+                <!-- Loading State -->
+                <StackPanel x:Name="pnlLoading"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Visibility="Collapsed">
+                    <TextBlock Text="Loading snapshots..."
+                               Foreground="{StaticResource ForegroundColor}"
+                               Opacity="0.6"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Selection Summary and Select All -->
+        <DockPanel Grid.Row="3" Margin="0,10,0,0">
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                <Button x:Name="btnSelectAll"
+                        Content="Select All"
+                        Width="80"
+                        Height="28"
+                        Margin="0,0,10,0"
+                        Background="{StaticResource ControlBackground}"
+                        Foreground="{StaticResource ForegroundColor}"
+                        BorderBrush="{StaticResource ControlBorder}"
+                        BorderThickness="1"
+                        Click="BtnSelectAll_Click"/>
+                <Button x:Name="btnSelectNone"
+                        Content="Select None"
+                        Width="80"
+                        Height="28"
+                        Background="{StaticResource ControlBackground}"
+                        Foreground="{StaticResource ForegroundColor}"
+                        BorderBrush="{StaticResource ControlBorder}"
+                        BorderThickness="1"
+                        Click="BtnSelectNone_Click"/>
+            </StackPanel>
+            <TextBlock x:Name="txtSelectionSummary"
+                       Text="0 groups selected (0 snapshots)"
+                       Foreground="{StaticResource ForegroundColor}"
+                       Opacity="0.7"
+                       FontSize="12"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right"/>
+        </DockPanel>
+
+        <!-- Buttons -->
+        <StackPanel Grid.Row="5" 
+                    Orientation="Horizontal" 
+                    HorizontalAlignment="Right">
+            <Button x:Name="btnDeleteAll"
+                    Content="Delete ALL Snapshots"
+                    Width="150"
+                    Height="35"
+                    Margin="0,0,10,0"
+                    Background="#B33A3A"
+                    Foreground="{StaticResource ForegroundColor}"
+                    BorderBrush="#B33A3A"
+                    BorderThickness="1"
+                    Click="BtnDeleteAll_Click"/>
+            <Button x:Name="btnCancel"
+                    Content="Close"
+                    Width="100"
+                    Height="35"
+                    Margin="0,0,10,0"
+                    Background="{StaticResource ControlBackground}"
+                    Foreground="{StaticResource ForegroundColor}"
+                    BorderBrush="{StaticResource ControlBorder}"
+                    BorderThickness="1"
+                    Click="BtnCancel_Click"/>
+            <Button x:Name="btnDelete"
+                    Content="Delete Selected"
+                    Width="120"
+                    Height="35"
+                    Background="#B33A3A"
+                    Foreground="{StaticResource ForegroundColor}"
+                    BorderBrush="#B33A3A"
+                    BorderThickness="1"
+                    IsEnabled="False"
+                    Click="BtnDelete_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>
