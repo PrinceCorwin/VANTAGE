@@ -452,7 +452,6 @@ namespace VANTAGE.Repositories
                 }
             });
         }
-        // Add this method to ScheduleRepository.cs after SaveThreeWeekLookaheadAsync
 
         // Clears ThreeWeekStart and/or ThreeWeekFinish from ThreeWeekLookahead table
         // Used when actuals are created (forecast no longer needed)

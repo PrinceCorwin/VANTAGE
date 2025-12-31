@@ -1,9 +1,11 @@
 # MILESTONE - Construction Progress Tracking Application
 
 ## Project Overview
-WPF construction progress tracking application replacing a legacy MS Access VBA system for Summit Constructors. Manages industrial construction activities for pharmaceutical, microchip, and data center projects. Each database record represents specific field actions (welding, bolt-ups, steel erection). Handles datasets from thousands to 200k+ records.
+WPF construction progress tracking application replacing a legacy MS Access VBA system (OldVantage) for Summit Constructors. Manages industrial construction activities for pharmaceutical, microchip, and data center projects (clients: Eli Lilly, Intel, Samsung, TSMC). Each database record represents specific field actions (welding, bolt-ups, steel erection). Current scale: 4,800+ test records, target: 200k+ production records.
 
 Integrates with P6 Primavera scheduling software for schedule data import/export.
+
+**Current Status:** Progress Module and Schedule Module are READY FOR TESTING.
 
 ## Tech Stack
 - WPF .NET 8
@@ -17,6 +19,7 @@ Integrates with P6 Primavera scheduling software for schedule data import/export
 - No quick fixes or patches - do it right the first time
 - Delete/refactor legacy code that is no longer relevant
 - Prefer complete architectural solutions over workarounds
+- No production deadline pressure - quality over timeline
 
 ## C# Code Conventions
 
@@ -99,10 +102,61 @@ protected void OnPropertyChanged(string? propertyName = null)
 - Use bulk operations and prepared statements for large datasets
 - SqlBulkCopy with optimized triggers for sync operations
 
-## Architecture Notes
-- Progress Module: Complete (Excel import/export, filtering, sorting, pagination, sync)
-- Schedule Module: Active development (P6 import, comparison grids, edit capabilities)
-- Future: AI integration for schedule conflict detection, material expediting, anomaly detection
+## Module Status
+
+### Progress Module [COMPLETE]
+- SfDataGrid with 90+ columns and built-in virtualization
+- Activity Model: 78 editable + 5 calculated + 7 system-managed fields
+- Excel Import/Export compatible with OldVantage naming
+- Cell editing with auto-save, Find & Replace with permissions
+- Assignment & ownership with email notifications
+- Metadata validation (9 required fields, ProjectID validation)
+- Soft delete (Azure IsDeleted flag) with hard delete locally
+
+### Schedule Module [COMPLETE]
+- P6 Import: Weekly TASK sheet with WeekEndDate/ProjectID selection
+- Comparison View: P6 vs MILESTONE rollups side-by-side
+- MS Rollups: Calculated from ProgressSnapshots (MIN start, MAX finish when all complete, weighted % avg)
+- Detail Grid: Edit individual ProgressSnapshots with real-time save
+- 3WLA Planning: Three-Week Lookahead forecast dates that persist across imports
+- P6 Export: Export corrected dates/percents back to P6-compatible format
+- User-scoped: All queries filter by AssignedTo = current user
+
+### Sync System [COMPLETE]
+- Bidirectional sync with SyncVersion-based change tracking
+- Push: SqlBulkCopy with disabled trigger (~3s for 4,800 records)
+- Pull: Bulk transaction to SQLite (~3s for 4,800 records)
+- Conflict resolution with ownership validation
+
+### Admin System [COMPLETE]
+- Azure Admins table (single source of truth)
+- Admin dialogs: Users, Projects, Snapshots management
+- DeletedRecordsView: View, restore, purge deleted records
+
+## Key Files
+- `AzureDbManager.cs` - Azure SQL connection and utilities
+- `Credentials.cs` - Connection string, email credentials (gitignored)
+- `SyncManager.cs` - Push/Pull logic with bulk operations
+- `DatabaseSetup.cs` - Local SQLite initialization, MirrorTablesFromAzure
+- `App.xaml.cs` - Startup, user authorization, admin check
+- `ScheduleRepository.cs` - Schedule data access layer
+- `ScheduleExcelImporter.cs` / `ScheduleExcelExporter.cs` - P6 import/export
+- `ProgressView.xaml.cs` - Progress module UI and edit validation
+- `ProjectCache.cs` - Valid ProjectID cache for validation
+- `EmailService.cs` - Azure Communication Services email sending
+
+## Action Items - Remaining
+1. Find-Replace in Schedule Detail Grid
+2. Copy/Paste in Schedule Detail Grid
+3. Idea Board / Bug Report feature
+4. Export/Import UserSettings (PC migration support)
+5. Export Logs with email option
+
+## Future AI Integration
+- Schedule conflict detection
+- Material expediting alerts
+- Anomaly detection in production data
+- AI-powered error message interpretation
 
 ## Communication Preferences
 - Be direct, skip pleasantries

@@ -1,5 +1,3 @@
-﻿// Add this file as Dialogs/AdminUsersDialog.xaml.cs
-
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;

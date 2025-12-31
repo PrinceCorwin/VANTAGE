@@ -1,5 +1,3 @@
-﻿// Add this file as Dialogs/AdminSnapshotsDialog.xaml.cs
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;

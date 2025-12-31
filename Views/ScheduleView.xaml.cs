@@ -98,6 +98,10 @@ namespace VANTAGE.Views
             };
             // Wire up master grid edit handler for tracking unsaved changes
             sfScheduleMaster.CurrentCellEndEdit += SfScheduleMaster_CurrentCellEndEdit;
+
+            // Wire up copy/paste handlers for detail grid
+            sfScheduleDetail.GridCopyContent += SfScheduleDetail_GridCopyContent;
+            sfScheduleDetail.GridPasteContent += SfScheduleDetail_GridPasteContent;
         }
 
         // ========================================
@@ -497,7 +501,6 @@ namespace VANTAGE.Views
         }
 
         // Public method for MainWindow to call when clearing local schedule data
-        // Public method for MainWindow to call when clearing local schedule data
         public void ClearScheduleDisplay()
         {
             _viewModel.MasterRows.Clear();
@@ -826,6 +829,50 @@ namespace VANTAGE.Views
                 AppLogger.Error(ex, "ScheduleView.LoadDetailColumnState");
             }
         }
+
+        // ========================================
+        // DETAIL GRID COPY/PASTE HANDLERS
+        // ========================================
+
+        private void SfScheduleDetail_GridCopyContent(object? sender, Syncfusion.UI.Xaml.Grid.GridCopyPasteEventArgs e)
+        {
+            var currentCell = sfScheduleDetail.SelectionController.CurrentCellManager.CurrentCell;
+            if (currentCell == null)
+                return;
+
+            // Enter edit mode so copy gets just the cell value
+            if (!currentCell.IsEditing)
+            {
+                sfScheduleDetail.SelectionController.CurrentCellManager.BeginEdit();
+            }
+        }
+
+        private void SfScheduleDetail_GridPasteContent(object? sender, Syncfusion.UI.Xaml.Grid.GridCopyPasteEventArgs e)
+        {
+            var currentCell = sfScheduleDetail.SelectionController.CurrentCellManager.CurrentCell;
+            if (currentCell == null)
+                return;
+
+            // Check permission to edit this record
+            var snapshot = sfScheduleDetail.SelectedItem as ProgressSnapshot;
+            if (snapshot == null)
+                return;
+
+            bool canEdit = string.Equals(snapshot.AssignedTo, App.CurrentUser?.Username, StringComparison.OrdinalIgnoreCase);
+            if (!canEdit)
+            {
+                e.Handled = true;
+                txtStatus.Text = "Cannot paste - you don't own this record";
+                return;
+            }
+
+            // Enter edit mode so paste triggers normal edit flow
+            if (!currentCell.IsEditing)
+            {
+                sfScheduleDetail.SelectionController.CurrentCellManager.BeginEdit();
+            }
+        }
+
         private static string ComputeSchemaHash(Syncfusion.UI.Xaml.Grid.SfDataGrid grid)
         {
             using var sha = SHA256.Create();

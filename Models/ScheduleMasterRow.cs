@@ -38,7 +38,7 @@ namespace VANTAGE.Models
                     OnPropertyChanged(nameof(HasStartVariance));
                     OnPropertyChanged(nameof(IsMissedStartReasonRequired));
                     OnPropertyChanged(nameof(IsThreeWeekStartEditable));
-                    OnPropertyChanged(nameof(IsThreeWeekStartRequired));  // Add this line
+                    OnPropertyChanged(nameof(IsThreeWeekStartRequired));
                 }
             }
         }
@@ -56,7 +56,7 @@ namespace VANTAGE.Models
                     OnPropertyChanged(nameof(HasFinishVariance));
                     OnPropertyChanged(nameof(IsMissedFinishReasonRequired));
                     OnPropertyChanged(nameof(IsThreeWeekFinishEditable));
-                    OnPropertyChanged(nameof(IsThreeWeekFinishRequired));  // Add this line
+                    OnPropertyChanged(nameof(IsThreeWeekFinishRequired));
                 }
             }
         }

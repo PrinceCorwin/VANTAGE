@@ -573,7 +573,7 @@ namespace VANTAGE.ViewModels
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
-    // Add this helper class at the bottom of the file (outside ProgressViewModel class)
+
     public class ColumnFilter
     {
         public string ColumnName { get; set; } = null!;

@@ -1398,7 +1398,9 @@ namespace VANTAGE
             // Execute deletion
             try
             {
+                int totalCount = 0;
                 int deletedCount = 0;
+                const int batchSize = 50000;
 
                 await Task.Run(() =>
                 {
@@ -1408,13 +1410,21 @@ namespace VANTAGE
                     // Get count first
                     using var countCmd = azureConn.CreateCommand();
                     countCmd.CommandText = "SELECT COUNT(*) FROM Activities";
-                    deletedCount = Convert.ToInt32(countCmd.ExecuteScalar() ?? 0);
+                    countCmd.CommandTimeout = 120;
+                    totalCount = Convert.ToInt32(countCmd.ExecuteScalar() ?? 0);
 
-                    // Delete all
-                    using var deleteCmd = azureConn.CreateCommand();
-                    deleteCmd.CommandText = "DELETE FROM Activities";
-                    deleteCmd.ExecuteNonQuery();
+                    // Delete in batches to avoid timeout
+                    int batchDeleted;
+                    do
+                    {
+                        using var deleteCmd = azureConn.CreateCommand();
+                        deleteCmd.CommandText = $"DELETE TOP ({batchSize}) FROM Activities";
+                        deleteCmd.CommandTimeout = 300;
+                        batchDeleted = deleteCmd.ExecuteNonQuery();
+                        deletedCount += batchDeleted;
+                    } while (batchDeleted > 0);
                 });
+
                 // After deleting from Azure, reset local sync state
                 await Task.Run(() =>
                 {
@@ -1422,20 +1432,22 @@ namespace VANTAGE
                     localConn.Open();
 
                     // Reset LastPulledSyncVersion so next sync works properly
-                    var resetCmd = localConn.CreateCommand();
+                    using var resetCmd = localConn.CreateCommand();
                     resetCmd.CommandText = "DELETE FROM AppSettings WHERE SettingName LIKE 'LastPulledSyncVersion_%'";
                     resetCmd.ExecuteNonQuery();
 
                     // Set all local records to dirty so they'll push on next sync
-                    var dirtyCmd = localConn.CreateCommand();
+                    using var dirtyCmd = localConn.CreateCommand();
                     dirtyCmd.CommandText = "UPDATE Activities SET LocalDirty = 1";
                     dirtyCmd.ExecuteNonQuery();
                 });
+
                 // Refresh the grid if ProgressView is loaded
                 if (ContentArea.Content is Views.ProgressView progressView)
                 {
                     await progressView.RefreshData();
                 }
+
                 AppLogger.Info($"CLEARED AZURE ACTIVITIES: Deleted {deletedCount} records",
                     "MainWindow.MenuClearAzureActivities_Click",
                     App.CurrentUser?.Username);

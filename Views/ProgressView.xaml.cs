@@ -1438,8 +1438,6 @@ namespace VANTAGE.Views
 
         // === FILTER EVENT HANDLERS ===
 
-        // Add this method to ProgressView.xaml.cs
-
         private void btnChangedRows_Click(object sender, RoutedEventArgs e)
         {
             // Toggle filter based on whether predicates already exist
@@ -2463,26 +2461,16 @@ namespace VANTAGE.Views
         private async void BtnClearFilters_Click(object sender, RoutedEventArgs e)
         {
             await _viewModel.ClearAllFiltersAsync();
-            // Clear all column filters (including column header filters)
-            foreach (var column in sfActivities.Columns)
-            {
-                column.FilterPredicates.Clear();
-            }
+
+            // Clear all column filters using Syncfusion's built-in method
+            sfActivities.ClearFilters();
 
             // Reset all filter button visuals
-            //btnFilterComplete.Content = "Complete";
             btnFilterComplete.BorderBrush = (Brush)Application.Current.Resources["ControlBorder"];
-
-            //btnFilterInProgress.Content = "In Progress";
             btnFilterInProgress.BorderBrush = (Brush)Application.Current.Resources["ControlBorder"];
-
-            //btnFilterNotStarted.Content = "Not Started";
             btnFilterNotStarted.BorderBrush = (Brush)Application.Current.Resources["ControlBorder"];
-
-            //btnFilterMyRecords.Content = "My Records";
             btnFilterMyRecords.BorderBrush = (Brush)Application.Current.Resources["ControlBorder"];
 
-            sfActivities.View.RefreshFilter();
             _viewModel.FilteredCount = sfActivities.View.Records.Count;
             UpdateRecordCount();
             UpdateSummaryPanel();

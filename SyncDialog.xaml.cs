@@ -232,7 +232,6 @@ namespace VANTAGE
     }
 
     // Model for project selection
-    // Model for project selection
     public class ProjectSelection : INotifyPropertyChanged
     {
         public string ProjectID { get; set; } = null!;

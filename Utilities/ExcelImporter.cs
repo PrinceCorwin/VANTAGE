@@ -187,7 +187,6 @@ namespace VANTAGE.Utilities
             try
             {
                 // Special handling for PercentEntry: convert 0-1 decimal to 0-100 percentage
-                // Special handling for PercentEntry: convert 0-1 decimal to 0-100 percentage
                 if (propertyName == "PercentEntry")
                 {
                     double value = cell.GetDouble();
@@ -280,7 +279,7 @@ namespace VANTAGE.Utilities
                 int imported = 0;
                 int skipped = 0;
 
-                // ✅ CREATE COMMAND ONCE (OUTSIDE THE LOOP)
+                // Create command once (outside the loop)
                 using var command = connection.CreateCommand();
                 command.CommandText = @"
             INSERT INTO Activities (
@@ -329,7 +328,7 @@ namespace VANTAGE.Utilities
                 @UpdatedUtcDate, @LocalDirty
             )";
 
-                // ✅ ADD PARAMETERS ONCE
+                // Add parameters once
                 command.Parameters.Add("@HexNO", SqliteType.Integer);
                 command.Parameters.Add("@ProjectID", SqliteType.Text);
                 command.Parameters.Add("@Description", SqliteType.Text);
@@ -416,11 +415,10 @@ namespace VANTAGE.Utilities
                 command.Parameters.Add("@UpdatedUtcDate", SqliteType.Text);
                 command.Parameters.Add("@LocalDirty", SqliteType.Integer);
 
-                // ✅ PREPARE STATEMENT (COMPILE SQL ONCE)
-                // ✅ PREPARE STATEMENT (COMPILE SQL ONCE)
+                // Prepare statement (compile SQL once)
                 command.Prepare();
 
-                // ✅ CREATE DUPLICATE CHECK COMMAND ONCE (for Combine mode)
+                // Create duplicate check command once (for Combine mode)
                 SqliteCommand? checkCommand = null;
                 if (!replaceMode)
                 {
@@ -430,7 +428,7 @@ namespace VANTAGE.Utilities
                     checkCommand.Prepare();
                 }
 
-                // ✅ NOW LOOP THROUGH ACTIVITIES
+                // Loop through activities
                 foreach (var activity in activities)
                 {
                     // In combine mode, check if activity already exists
@@ -446,7 +444,7 @@ namespace VANTAGE.Utilities
                         }
                     }
 
-                    // ✅ SET PARAMETER VALUES (REUSE SAME COMMAND)
+                    // Set parameter values (reuse same command)
                     command.Parameters["@HexNO"].Value = activity.HexNO;
                     command.Parameters["@ProjectID"].Value = activity.ProjectID ?? "";
                     command.Parameters["@Description"].Value = activity.Description ?? "";
@@ -537,7 +535,7 @@ namespace VANTAGE.Utilities
                     command.Parameters["@UpdatedUtcDate"].Value = DateTime.UtcNow.ToString("o");
                     command.Parameters["@LocalDirty"].Value = 1;  // Mark as dirty - needs sync
 
-                    // ✅ EXECUTE (USES PREPARED STATEMENT)
+                    // Execute (uses prepared statement)
                     command.ExecuteNonQuery();
                     imported++;
 

@@ -181,7 +181,6 @@ namespace VANTAGE.Utilities
         }
 
         // Set Schedule property value from P6 Excel cell
-        // Set Schedule property value from P6 Excel cell
         private static void SetScheduleProperty(Schedule schedule, string fieldName, IXLCell cell)
         {
             if (cell.IsEmpty())
