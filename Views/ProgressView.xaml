@@ -704,13 +704,12 @@
                                  AllowSorting="True"
                                  NumberDecimalDigits="2" />
 
-                        <syncfusion:GridNumericColumn MappingName="Quantity" 
+                        <syncfusion:GridTextColumn MappingName="Quantity" 
                                  HeaderText="Quantity" 
                                  Width="100"
                                  AllowEditing="True"
                                  AllowFiltering="True"
-                                 AllowSorting="True"
-                                 NumberDecimalDigits="3" />
+                                 AllowSorting="True"/>
 
                         <syncfusion:GridNumericColumn MappingName="EarnedQtyCalc" 
                                  HeaderText="EarnedQtyCalc" 
@@ -720,13 +719,12 @@
                                  AllowSorting="True"
                                  NumberDecimalDigits="3" />
 
-                        <syncfusion:GridNumericColumn MappingName="PercentEntry" 
+                        <syncfusion:GridTextColumn MappingName="PercentEntry" 
                                  HeaderText="PercentEntry" 
                                  Width="100"
                                  AllowEditing="True"
                                  AllowFiltering="True"
-                                 AllowSorting="True"
-                                 NumberDecimalDigits="2" />
+                                 AllowSorting="True"/>
 
                         <syncfusion:GridNumericColumn MappingName="PercentCompleteCalc" 
                                  HeaderText="PercentCompleteCalc" 
@@ -736,13 +734,12 @@
                                  AllowSorting="True"
                                  NumberDecimalDigits="2" />
 
-                        <syncfusion:GridNumericColumn MappingName="BudgetMHs" 
+                        <syncfusion:GridTextColumn MappingName="BudgetMHs" 
                                  HeaderText="BudgetMHs" 
                                  Width="100"
                                  AllowEditing="True"
                                  AllowFiltering="True"
-                                 AllowSorting="True"
-                                 NumberDecimalDigits="3" />
+                                 AllowSorting="True"/>
 
                         <syncfusion:GridNumericColumn MappingName="EarnMHsCalc" 
                                  HeaderText="EarnMHsCalc" 
@@ -863,14 +860,13 @@
                            AllowFiltering="True"
                            AllowSorting="True" />
 
-                        <syncfusion:GridNumericColumn MappingName="ClientBudget"
+                        <syncfusion:GridTextColumn MappingName="ClientBudget"
                               HeaderText="ClientBudget"
                               Width="120"
                               IsHidden="True"
                               AllowEditing="True"
                               AllowFiltering="True"
-                              AllowSorting="True"
-                              NumberDecimalDigits="3" />
+                              AllowSorting="True"/>
 
                         <syncfusion:GridNumericColumn MappingName="ClientCustom3"
                               HeaderText="ClientCustom3"
