@@ -392,7 +392,38 @@ namespace VANTAGE.ViewModels
                 AppLogger.Error(ex, "ScheduleViewModel.RecalculateMSRollupsAsync");
             }
         }
+        // Recalculates MS rollups for a specific SchedActNO after bulk edits
+        public async Task RecalculateMSRollupsForActivityAsync(string schedActNO)
+        {
+            if (string.IsNullOrEmpty(schedActNO) || !SelectedWeekEndDate.HasValue)
+                return;
 
+            try
+            {
+                // Find the master row
+                var masterRow = MasterRows?.FirstOrDefault(r => r.SchedActNO == schedActNO);
+                if (masterRow == null)
+                    return;
+
+                // Get fresh rollup data from Azure
+                var rollups = await ScheduleRepository.GetMSRollupForActivityAsync(schedActNO, SelectedWeekEndDate.Value);
+
+                if (rollups != null)
+                {
+                    masterRow.MS_ActualStart = rollups.MS_ActualStart;
+                    masterRow.MS_ActualFinish = rollups.MS_ActualFinish;
+                    masterRow.MS_PercentComplete = rollups.MS_PercentComplete;
+                    masterRow.MS_BudgetMHs = rollups.MS_BudgetMHs;
+                }
+
+                // Also refresh the detail activities
+                await LoadDetailActivitiesAsync(schedActNO);
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "ScheduleViewModel.RecalculateMSRollupsForActivityAsync");
+            }
+        }
         // ========================================
         // INITIALIZATION AND DATA LOADING
         // ========================================

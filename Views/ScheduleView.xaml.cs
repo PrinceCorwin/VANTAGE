@@ -1,4 +1,6 @@
-﻿using System;
+﻿using MILESTONE.Views;
+using Syncfusion.UI.Xaml.Grid;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
@@ -99,7 +101,102 @@ namespace VANTAGE.Views
             // Wire up master grid edit handler for tracking unsaved changes
             sfScheduleMaster.CurrentCellEndEdit += SfScheduleMaster_CurrentCellEndEdit;
         }
+        // Controls which columns show the Find & Replace context menu
+        private void SfScheduleDetail_GridContextMenuOpening(object sender, Syncfusion.UI.Xaml.Grid.GridContextMenuEventArgs e)
+        {
+            // Only show context menu for column headers
+            if (e.ContextMenuType != Syncfusion.UI.Xaml.Grid.ContextMenuType.Header)
+            {
+                e.Handled = true;
+                return;
+            }
 
+            // Get the column that was right-clicked
+            var columnIndex = sfScheduleDetail.ResolveToGridVisibleColumnIndex(e.RowColumnIndex.ColumnIndex);
+            if (columnIndex < 0 || columnIndex >= sfScheduleDetail.Columns.Count)
+            {
+                e.Handled = true;
+                return;
+            }
+
+            var column = sfScheduleDetail.Columns[columnIndex];
+
+            // Only allow Find & Replace on editable columns
+            var editableColumns = new HashSet<string> { "PercentEntry", "BudgetMHs", "SchStart", "SchFinish", "Description" };
+
+            if (!editableColumns.Contains(column.MappingName))
+            {
+                e.Handled = true;
+                return;
+            }
+
+            // Store the column index in the context menu's Tag for the click handler
+            if (e.ContextMenu != null)
+            {
+                e.ContextMenu.Tag = columnIndex;
+            }
+        }
+
+        // Handles the Find & Replace menu click for detail grid
+        private async void MenuDetailFindReplace_Click(object sender, RoutedEventArgs e)
+        {
+            // Get the column from the context menu's placement target
+            if (sender is not MenuItem menuItem)
+                return;
+
+            // Walk up to find the ContextMenu, then get ColumnIndex from stored tag
+            var contextMenu = menuItem.Parent as ContextMenu;
+            if (contextMenu?.Tag is not int columnIndex)
+            {
+                MessageBox.Show("Unable to determine column.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            if (columnIndex < 0 || columnIndex >= sfScheduleDetail.Columns.Count)
+            {
+                MessageBox.Show("Invalid column index.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            var column = sfScheduleDetail.Columns[columnIndex];
+            string columnName = column.MappingName;
+            string columnHeader = column.HeaderText;
+
+            // Open Find & Replace dialog
+            var dialog = new FindReplaceDialog();
+            dialog.Owner = Window.GetWindow(this);
+            dialog.SetTargetColumn(sfScheduleDetail, columnName, columnHeader);
+
+            dialog.ShowDialog();
+
+            // If replacements were made, recalculate MS rollups
+            if (dialog.ReplacementsMade)
+            {
+                try
+                {
+                    txtStatus.Text = "Recalculating rollups...";
+
+                    // Get the currently selected SchedActNO
+                    var selectedRow = sfScheduleMaster.SelectedItem as ScheduleMasterRow;
+                    if (selectedRow != null && _viewModel.SelectedWeekEndDate.HasValue)
+                    {
+                        // Recalculate rollups for this activity
+                        await _viewModel.RecalculateMSRollupsForActivityAsync(selectedRow.SchedActNO);
+
+                        // Refresh both grids
+                        sfScheduleMaster.View?.Refresh();
+                        sfScheduleDetail.View?.Refresh();
+                    }
+
+                    txtStatus.Text = "Find & Replace complete - rollups updated";
+                }
+                catch (Exception ex)
+                {
+                    AppLogger.Error(ex, "ScheduleView.MenuDetailFindReplace_Click");
+                    txtStatus.Text = "Find & Replace complete";
+                }
+            }
+        }
         // ========================================
         // SPLITTER STATE PERSISTENCE
         // ========================================

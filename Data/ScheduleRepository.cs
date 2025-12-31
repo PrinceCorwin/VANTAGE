@@ -247,6 +247,97 @@ namespace VANTAGE.Repositories
 
             return rollupDict;
         }
+        // Gets MS rollup for a single SchedActNO (used after Find & Replace)
+        public static async Task<MSRollupResult?> GetMSRollupForActivityAsync(string schedActNO, DateTime weekEndDate)
+        {
+            return await Task.Run<MSRollupResult?>(() =>
+            {
+                try
+                {
+                    // Get ProjectIDs for this week
+                    using var localConn = new SqliteConnection($"Data Source={DatabaseSetup.DbPath}");
+                    localConn.Open();
+                    var projectIds = GetProjectIDsForWeek(localConn, weekEndDate);
+                    localConn.Close();
+
+                    if (projectIds.Count == 0)
+                        return null;
+
+                    string username = App.CurrentUser?.Username ?? "";
+
+                    using var azureConn = AzureDbManager.GetConnection();
+                    azureConn.Open();
+
+                    string projectIdList = "'" + string.Join("','", projectIds) + "'";
+
+                    var cmd = azureConn.CreateCommand();
+                    cmd.CommandText = $@"
+                SELECT 
+                    MIN(SchStart) as MS_ActualStart,
+                    CASE 
+                        WHEN COUNT(*) = COUNT(SchFinish) 
+                        THEN MAX(SchFinish)
+                        ELSE NULL 
+                    END as MS_ActualFinish,
+                    CASE 
+                        WHEN SUM(BudgetMHs) > 0 
+                        THEN SUM(BudgetMHs * PercentEntry) / SUM(BudgetMHs)
+                        ELSE 0 
+                    END as MS_PercentComplete,
+                    SUM(BudgetMHs) as MS_BudgetMHs
+                FROM ProgressSnapshots
+                WHERE SchedActNO = @schedActNO
+                  AND WeekEndDate = @weekEndDate
+                  AND ProjectID IN ({projectIdList})
+                  AND AssignedTo = @username";
+
+                    cmd.Parameters.AddWithValue("@schedActNO", schedActNO);
+                    cmd.Parameters.AddWithValue("@weekEndDate", weekEndDate.ToString("yyyy-MM-dd"));
+                    cmd.Parameters.AddWithValue("@username", username);
+
+                    using var reader = cmd.ExecuteReader();
+                    if (reader.Read())
+                    {
+                        var result = new MSRollupResult();
+
+                        if (!reader.IsDBNull(0))
+                        {
+                            string startStr = reader.GetString(0);
+                            if (DateTime.TryParse(startStr, out DateTime parsed))
+                                result.MS_ActualStart = parsed;
+                        }
+
+                        if (!reader.IsDBNull(1))
+                        {
+                            string finishStr = reader.GetString(1);
+                            if (DateTime.TryParse(finishStr, out DateTime parsed))
+                                result.MS_ActualFinish = parsed;
+                        }
+
+                        result.MS_PercentComplete = reader.IsDBNull(2) ? 0 : reader.GetDouble(2);
+                        result.MS_BudgetMHs = reader.IsDBNull(3) ? 0 : reader.GetDouble(3);
+
+                        return result;
+                    }
+
+                    return null;
+                }
+                catch (Exception ex)
+                {
+                    AppLogger.Error(ex, "ScheduleRepository.GetMSRollupForActivityAsync");
+                    return null;
+                }
+            });
+        }
+
+        // Helper class for rollup results
+        public class MSRollupResult
+        {
+            public DateTime? MS_ActualStart { get; set; }
+            public DateTime? MS_ActualFinish { get; set; }
+            public double MS_PercentComplete { get; set; }
+            public double MS_BudgetMHs { get; set; }
+        }
         public static async Task<List<(string SchedActNO, string Description, string WbsId)>> GetP6NotInMSAsync(DateTime weekEndDate)
         {
             return await Task.Run(() =>

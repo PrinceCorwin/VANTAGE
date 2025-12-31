@@ -416,6 +416,7 @@
                                   AllowResizingColumns="True"
                                   AllowDraggingColumns="True"
                                   ShowRowHeader="True"
+                                  GridContextMenuOpening="SfScheduleDetail_GridContextMenuOpening"
                                   RowHeaderWidth="25">
 
                         <syncfusion:SfDataGrid.Columns>
@@ -433,16 +434,14 @@
                                                       Width="200"
                                                       AllowEditing="False"/>
 
-                            <syncfusion:GridNumericColumn MappingName="PercentEntry" 
+                            <syncfusion:GridTextColumn MappingName="PercentEntry" 
                                                          HeaderText="%" 
                                                          Width="70"
-                                                         NumberDecimalDigits="1"
                                                          AllowEditing="True"/>
 
-                            <syncfusion:GridNumericColumn MappingName="BudgetMHs" 
+                            <syncfusion:GridTextColumn MappingName="BudgetMHs" 
                                                          HeaderText="Budget MHs" 
                                                          Width="100"
-                                                         NumberDecimalDigits="1"
                                                          AllowEditing="True"/>
 
                             <syncfusion:GridDateTimeColumn MappingName="SchStart" 
@@ -466,6 +465,20 @@
                                                       Width="120"
                                                       AllowEditing="False"/>
                         </syncfusion:SfDataGrid.Columns>
+                        <syncfusion:SfDataGrid.HeaderContextMenu>
+                            <ContextMenu Background="{StaticResource ControlBackground}"
+                                         Foreground="{StaticResource ForegroundColor}"
+                                         BorderBrush="{StaticResource ControlBorder}">
+                                <MenuItem Header="Find &amp; Replace in this column..." 
+                                          Click="MenuDetailFindReplace_Click"
+                                          Background="{StaticResource ControlBackground}"
+                                          Foreground="{StaticResource ForegroundColor}">
+                                    <MenuItem.Icon>
+                                        <TextBlock Text="🔍" FontSize="14"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                            </ContextMenu>
+                        </syncfusion:SfDataGrid.HeaderContextMenu>
                     </syncfusion:SfDataGrid>
                 </Grid>
             </Border>
