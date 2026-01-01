@@ -17,9 +17,6 @@
 - [ ] Find-Replace in Schedule Detail Grid
 - [ ] Idea Board / Bug Report feature
 
-### Medium Priority
-- [ ] Export Logs with email option
-
 ### Future / AI Integration
 - [ ] AI error message interpreter
 - [ ] Schedule conflict detection
@@ -29,6 +26,7 @@
 ## Recently Completed
 
 ### December 31, 2024
+- Added Export Logs with email option (Tools menu)
 - Added Export/Import UserSettings (Tools menu) for PC migration
 - Added Ctrl+C/Ctrl+V cell copy/paste to Schedule detail grid
 - Cleaned up duplicate and AI instruction comments
@@ -68,3 +66,4 @@ None currently tracked.
 - Email notifications
 - Admin dialogs
 - UserSettings export/import with immediate reload
+- Log export to file and email with attachment

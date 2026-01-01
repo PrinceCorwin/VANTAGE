@@ -1787,9 +1787,11 @@ namespace VANTAGE
             }
         }
 
-        private void MenuTool6_Click(object sender, RoutedEventArgs e)
+        private void MenuExportLogs_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Tool 6 coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
+            var dialog = new Dialogs.ExportLogsDialog();
+            dialog.Owner = this;
+            dialog.ShowDialog();
         }
 
         private void MenuTool7_Click(object sender, RoutedEventArgs e)

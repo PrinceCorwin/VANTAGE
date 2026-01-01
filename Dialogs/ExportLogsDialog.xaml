@@ -1,0 +1,155 @@
+<Window x:Class="VANTAGE.Dialogs.ExportLogsDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:skinManager="clr-namespace:Syncfusion.SfSkinManager;assembly=Syncfusion.SfSkinManager.WPF"
+        skinManager:SfSkinManager.Theme="{skinManager:SkinManagerExtension ThemeName=FluentDark}"
+        Title="Export Logs"
+        Height="400"
+        Width="450"
+        WindowStartupLocation="CenterOwner"
+        Background="{StaticResource BackgroundColor}"
+        ResizeMode="NoResize"
+        WindowStyle="SingleBorderWindow">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="20"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="15"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="15"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="20"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0">
+            <TextBlock Text="Export Application Logs"
+                       FontWeight="SemiBold"
+                       FontSize="16"
+                       Foreground="{StaticResource ForegroundColor}"/>
+            <TextBlock Text="Export logs to file or email for support."
+                       Foreground="{StaticResource ForegroundColor}"
+                       Opacity="0.7"
+                       FontSize="12"
+                       Margin="0,5,0,0"/>
+        </StackPanel>
+
+        <!-- Date Range -->
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="100"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="Date Range:"
+                       VerticalAlignment="Center"
+                       Foreground="{StaticResource ForegroundColor}"/>
+            <ComboBox x:Name="cboDateRange"
+                      Grid.Column="1"
+                      Height="30"
+                      Background="{StaticResource ControlBackground}"
+                      Foreground="{StaticResource ControlForeground}"
+                      BorderBrush="{StaticResource ControlBorder}"
+                      SelectionChanged="CboDateRange_SelectionChanged">
+                <ComboBoxItem Content="Last 24 hours" IsSelected="True"/>
+                <ComboBoxItem Content="Last 7 days"/>
+                <ComboBoxItem Content="Last 30 days"/>
+                <ComboBoxItem Content="All time"/>
+            </ComboBox>
+        </Grid>
+
+        <!-- Log Level -->
+        <Grid Grid.Row="4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="100"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="Log Level:"
+                       VerticalAlignment="Center"
+                       Foreground="{StaticResource ForegroundColor}"/>
+            <ComboBox x:Name="cboLogLevel"
+                      Grid.Column="1"
+                      Height="30"
+                      Background="{StaticResource ControlBackground}"
+                      Foreground="{StaticResource ControlForeground}"
+                      BorderBrush="{StaticResource ControlBorder}"
+                      SelectionChanged="CboLogLevel_SelectionChanged">
+                <ComboBoxItem Content="All levels" IsSelected="True"/>
+                <ComboBoxItem Content="Info and above"/>
+                <ComboBoxItem Content="Warning and above"/>
+                <ComboBoxItem Content="Errors only"/>
+            </ComboBox>
+        </Grid>
+
+        <!-- Preview -->
+        <Border Grid.Row="6"
+                Background="{StaticResource ControlBackground}"
+                BorderBrush="{StaticResource ControlBorder}"
+                BorderThickness="1"
+                Padding="10">
+            <TextBlock x:Name="txtPreview"
+                       Text="0 log entries found"
+                       Foreground="{StaticResource ForegroundColor}"/>
+        </Border>
+
+        <!-- Email Section -->
+        <StackPanel Grid.Row="8">
+            <TextBlock Text="Email To (optional):"
+                       Foreground="{StaticResource ForegroundColor}"
+                       Margin="0,0,0,8"/>
+            <ComboBox x:Name="cboUsers"
+                      Height="30"
+                      Background="{StaticResource ControlBackground}"
+                      Foreground="{StaticResource ControlForeground}"
+                      BorderBrush="{StaticResource ControlBorder}"
+                      DisplayMemberPath="DisplayName"
+                      SelectionChanged="CboUsers_SelectionChanged"/>
+            <TextBlock x:Name="txtEmail"
+                       Text=""
+                       Foreground="{StaticResource ForegroundColor}"
+                       Opacity="0.7"
+                       FontSize="11"
+                       Margin="0,5,0,0"/>
+        </StackPanel>
+
+        <!-- Buttons -->
+        <StackPanel Grid.Row="10"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right">
+            <Button x:Name="btnCancel"
+                    Content="Cancel"
+                    Width="90"
+                    Height="35"
+                    Margin="0,0,10,0"
+                    Background="{StaticResource ControlBackground}"
+                    Foreground="{StaticResource ForegroundColor}"
+                    BorderBrush="{StaticResource ControlBorder}"
+                    BorderThickness="1"
+                    Click="BtnCancel_Click"/>
+            <Button x:Name="btnExport"
+                    Content="Export File"
+                    Width="100"
+                    Height="35"
+                    Margin="0,0,10,0"
+                    Background="{StaticResource ControlBackground}"
+                    Foreground="{StaticResource ForegroundColor}"
+                    BorderBrush="{StaticResource ControlBorder}"
+                    BorderThickness="1"
+                    Click="BtnExport_Click"/>
+            <Button x:Name="btnEmail"
+                    Content="Send Email"
+                    Width="100"
+                    Height="35"
+                    Background="#0078D7"
+                    Foreground="White"
+                    BorderBrush="#0078D7"
+                    BorderThickness="1"
+                    IsEnabled="False"
+                    Click="BtnEmail_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

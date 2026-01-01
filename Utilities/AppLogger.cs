@@ -6,6 +6,19 @@ using Microsoft.Data.Sqlite;
 
 namespace VANTAGE.Utilities
 {
+    public class LogEntry
+    {
+        public int LogID { get; set; }
+        public DateTime TimestampUtc { get; set; }
+        public string Level { get; set; } = string.Empty;
+        public string Message { get; set; } = string.Empty;
+        public string? Context { get; set; }
+        public string? Username { get; set; }
+        public string? ExceptionType { get; set; }
+        public string? ExceptionMessage { get; set; }
+        public string? StackTrace { get; set; }
+    }
+
     public static class AppLogger
     {
         public enum LogLevel { Debug, Info, Warning, Error }
@@ -165,6 +178,99 @@ namespace VANTAGE.Utilities
             {
                 // If this fails at very early startup, we still let the app run.
             }
+        }
+
+        // Get logs from database with optional filters
+        public static List<LogEntry> GetLogs(DateTime? fromDate = null, DateTime? toDate = null, LogLevel? minLevel = null)
+        {
+            var logs = new List<LogEntry>();
+
+            try
+            {
+                using var connection = DatabaseSetup.GetConnection();
+                connection.Open();
+
+                var sql = new StringBuilder("SELECT LogID, TimestampUtc, Level, Message, Context, Username, ExceptionType, ExceptionMessage, StackTrace FROM Logs WHERE 1=1");
+
+                if (fromDate.HasValue)
+                    sql.Append(" AND TimestampUtc >= @fromDate");
+                if (toDate.HasValue)
+                    sql.Append(" AND TimestampUtc <= @toDate");
+                if (minLevel.HasValue)
+                {
+                    var levels = minLevel.Value switch
+                    {
+                        LogLevel.Error => "'Error'",
+                        LogLevel.Warning => "'Warning','Error'",
+                        LogLevel.Info => "'Info','Warning','Error'",
+                        _ => "'Debug','Info','Warning','Error'"
+                    };
+                    sql.Append($" AND Level IN ({levels})");
+                }
+
+                sql.Append(" ORDER BY TimestampUtc DESC");
+
+                using var cmd = connection.CreateCommand();
+                cmd.CommandText = sql.ToString();
+
+                if (fromDate.HasValue)
+                    cmd.Parameters.AddWithValue("@fromDate", fromDate.Value.ToString("o"));
+                if (toDate.HasValue)
+                    cmd.Parameters.AddWithValue("@toDate", toDate.Value.ToString("o"));
+
+                using var reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    logs.Add(new LogEntry
+                    {
+                        LogID = reader.GetInt32(0),
+                        TimestampUtc = DateTime.TryParse(reader.GetString(1), out var ts) ? ts : DateTime.MinValue,
+                        Level = reader.GetString(2),
+                        Message = reader.GetString(3),
+                        Context = reader.IsDBNull(4) ? null : reader.GetString(4),
+                        Username = reader.IsDBNull(5) ? null : reader.GetString(5),
+                        ExceptionType = reader.IsDBNull(6) ? null : reader.GetString(6),
+                        ExceptionMessage = reader.IsDBNull(7) ? null : reader.GetString(7),
+                        StackTrace = reader.IsDBNull(8) ? null : reader.GetString(8)
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"GetLogs error: {ex.Message}");
+            }
+
+            return logs;
+        }
+
+        // Export logs to formatted text
+        public static string ExportLogsToText(List<LogEntry> logs)
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine($"MILESTONE Log Export - Generated {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+            sb.AppendLine($"Total Entries: {logs.Count}");
+            sb.AppendLine(new string('=', 80));
+            sb.AppendLine();
+
+            foreach (var log in logs)
+            {
+                sb.AppendLine($"[{log.TimestampUtc:yyyy-MM-dd HH:mm:ss}] {log.Level}");
+                if (!string.IsNullOrEmpty(log.Context))
+                    sb.AppendLine($"  Context: {log.Context}");
+                if (!string.IsNullOrEmpty(log.Username))
+                    sb.AppendLine($"  User: {log.Username}");
+                sb.AppendLine($"  Message: {log.Message}");
+                if (!string.IsNullOrEmpty(log.ExceptionType))
+                {
+                    sb.AppendLine($"  Exception: {log.ExceptionType}");
+                    sb.AppendLine($"  {log.ExceptionMessage}");
+                    if (!string.IsNullOrEmpty(log.StackTrace))
+                        sb.AppendLine($"  {log.StackTrace}");
+                }
+                sb.AppendLine();
+            }
+
+            return sb.ToString();
         }
     }
 }

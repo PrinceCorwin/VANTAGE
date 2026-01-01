@@ -174,5 +174,49 @@ This is an automated message from MILESTONE. Please do not reply to this email."
                 return false;
             }
         }
+
+        // Send email with file attachment
+        public static async Task<bool> SendEmailWithAttachmentAsync(
+            string recipientEmail,
+            string recipientName,
+            string subject,
+            string htmlBody,
+            string attachmentName,
+            byte[] attachmentData,
+            string contentType = "text/plain")
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(recipientEmail))
+                {
+                    AppLogger.Warning("Cannot send email - recipient email is empty",
+                        "EmailService.SendEmailWithAttachmentAsync");
+                    return false;
+                }
+
+                var client = GetClient();
+
+                var emailMessage = new EmailMessage(
+                    senderAddress: Credentials.AzureEmailSenderAddress,
+                    recipientAddress: recipientEmail,
+                    content: new EmailContent(subject) { Html = htmlBody });
+
+                // Add attachment
+                var attachment = new EmailAttachment(attachmentName, contentType, BinaryData.FromBytes(attachmentData));
+                emailMessage.Attachments.Add(attachment);
+
+                await client.SendAsync(WaitUntil.Started, emailMessage);
+
+                AppLogger.Info($"Email with attachment sent to {recipientEmail}: {subject}",
+                    "EmailService.SendEmailWithAttachmentAsync", App.CurrentUser?.Username ?? "Unknown");
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "EmailService.SendEmailWithAttachmentAsync");
+                return false;
+            }
+        }
     }
 }
