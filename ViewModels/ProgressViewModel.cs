@@ -24,6 +24,8 @@ namespace VANTAGE.ViewModels
         public IEnumerable<string> ActiveFilterColumns => _activeFilters.Keys;
         private bool _myRecordsActive = false;
         private string? _myRecordsUser = null;
+        private bool _todayFilterActive = false;
+        private Dictionary<(string SchedActNO, string ProjectID), (DateTime? Start, DateTime? Finish)> _threeWeekDates = new();
         private int _metadataErrorCount;
         public int MetadataErrorCount
         {
@@ -85,9 +87,11 @@ namespace VANTAGE.ViewModels
                 _activeFilters.Clear();   // remove column filters
                 _myRecordsActive = false; // remove My Records
                 _myRecordsUser = null;
+                _todayFilterActive = false; // remove Today filter
                 _searchText = "";         // clear search box (optional; keep if this is your desired UX)
                 OnPropertyChanged(nameof(SearchText));
                 OnPropertyChanged(nameof(ActiveFilterColumns));
+                OnPropertyChanged(nameof(TodayFilterActive));
 
                 await RebuildAndReloadAsync();
             }
@@ -99,6 +103,79 @@ namespace VANTAGE.ViewModels
             {
                 IsLoading = false;
             }
+        }
+
+        // ========================================
+        // TODAY FILTER
+        // ========================================
+
+        public bool TodayFilterActive
+        {
+            get => _todayFilterActive;
+            set
+            {
+                if (_todayFilterActive != value)
+                {
+                    _todayFilterActive = value;
+                    OnPropertyChanged(nameof(TodayFilterActive));
+                }
+            }
+        }
+
+        public async Task LoadThreeWeekDatesAsync()
+        {
+            await Task.Run(() =>
+            {
+                _threeWeekDates.Clear();
+                using var connection = DatabaseSetup.GetConnection();
+                connection.Open();
+
+                var cmd = connection.CreateCommand();
+                cmd.CommandText = @"
+                    SELECT SchedActNO, ProjectID, ThreeWeekStart, ThreeWeekFinish
+                    FROM ThreeWeekLookahead";
+
+                using var reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    string schedActNo = reader.GetString(0);
+                    string projectId = reader.GetString(1);
+                    DateTime? start = reader.IsDBNull(2) ? null : DateTime.Parse(reader.GetString(2));
+                    DateTime? finish = reader.IsDBNull(3) ? null : DateTime.Parse(reader.GetString(3));
+
+                    _threeWeekDates[(schedActNo, projectId)] = (start, finish);
+                }
+            });
+        }
+
+        public bool PassesTodayFilter(Activity activity)
+        {
+            DateTime today = DateTime.Today;
+
+            // Criteria 1: In progress (started but not finished)
+            if (activity.PercentEntry > 0 && activity.PercentEntry < 100)
+            {
+                return true;
+            }
+
+            // Get 3WLA dates for this activity
+            var key = (activity.SchedActNO ?? "", activity.ProjectID ?? "");
+            _threeWeekDates.TryGetValue(key, out var threeWeekDates);
+
+            // Criteria 2: Not started but should have (3WLA start <= today)
+            if (activity.PercentEntry == 0 && threeWeekDates.Start.HasValue && threeWeekDates.Start.Value.Date <= today)
+            {
+                return true;
+            }
+
+            // Criteria 3: Anomaly - not started, no 3WLA start, but 3WLA finish <= today
+            if (activity.PercentEntry == 0 && !threeWeekDates.Start.HasValue &&
+                threeWeekDates.Finish.HasValue && threeWeekDates.Finish.Value.Date <= today)
+            {
+                return true;
+            }
+
+            return false;
         }
 
 

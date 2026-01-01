@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dotnet build:*)",
+      "Bash(start \"\" \"bin/Debug/net8.0-windows/VANTAGE.exe\")",
+      "Bash(taskkill:*)"
+    ]
+  }
+}

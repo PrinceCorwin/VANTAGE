@@ -1,6 +1,6 @@
 # MILESTONE - Project Status
 
-**Last Updated:** December 31, 2025
+**Last Updated:** January 1, 2026
 
 ## Current Status
 
@@ -13,16 +13,28 @@
 
 ## Feature Backlog
 
-### Future / AI Integration
-- [ ] AI error message interpreter
-- [ ] Schedule conflict detection
-- [ ] Material expediting alerts
-- [ ] Anomaly detection
+### To Do
+- [x] Fix btnFilterLocalDirty filter - active border highlight doesn't clear when Clear Filters is clicked
+- [ ] Add user defined filters
+- [x] Admin able to edit ideas/bug reports (Type/Title/Desc editable by owner or admin; admin can view/restore/permanently delete soft-deleted items; 30-day auto-purge)
+- [x] Today filter button - filter to activities where today is within 3WLA dates (loads 3WLA from local DB, filters by in-progress OR should-have-started)
+- [x] Are we programmatically maintaining 3WLA table? (Yes - on P6 import: clears stale dates for all projects, deletes empty rows)
+- [x] Schedule view yellow conditional formatting not affecting PercentComplete - should trigger if P6 > MS
+- [ ] Discrepancy filter - filter by Actual Start, Actual Finish, MHs, % Complete where P6 ≠ MS
+- [ ] Multiple grid layouts - add new, delete, save named layouts
+
+### AI Integration
+See `AI_Implementation_Items.md` for detailed AI feature planning.
 
 ### Shelved
 - [ ] Find-Replace in Schedule Detail Grid
 
 ## Recently Completed
+
+### January 1, 2026
+- Added Today filter button to Progress view (filters by in-progress or 3WLA scheduled for today)
+- Added PercentComplete yellow variance highlighting to Schedule view (P6 > MS)
+- Enhanced Feedback Board: owner/admin can edit Type/Title/Description, admin can view/restore/permanently delete, 30-day auto-purge, changed "Closed" status to "Rejected"
 
 ### December 31, 2025
 - Added Settings button (⋮) to toolbar with dropdown menu

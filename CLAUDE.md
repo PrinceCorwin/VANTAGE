@@ -89,7 +89,7 @@ if (!AzureDbManager.CheckConnection(out string errorMessage))
 ```
 
 ## Syncfusion Notes
-- SfDataGrid does NOT support ICollectionView.Filter - use ObservableCollection manipulation
+- SfDataGrid: Use `sfGrid.View.Filter` for custom filtering (not ICollectionView.Filter)
 - FluentDark theme requires SfSkinManager on dialogs
 - Column persistence: width, order, visibility stored in UserSettings
 - Virtualization is automatic - don't implement manual
@@ -135,6 +135,7 @@ if (!AzureDbManager.CheckConnection(out string errorMessage))
 | `ScheduleExcelExporter.cs` | P6 export logic |
 | `ProjectCache.cs` | Valid ProjectID validation cache |
 | `EmailService.cs` | Azure Communication Services |
+| `FeedbackDialog.cs` | Feedback Board (Ideas/Bugs) with Azure sync |
 | `Credentials.cs` | Connection strings (gitignored) |
 
 ## Communication Preferences

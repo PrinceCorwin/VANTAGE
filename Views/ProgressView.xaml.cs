@@ -1457,7 +1457,7 @@ namespace VANTAGE.Views
 
         // === FILTER EVENT HANDLERS ===
 
-        private void btnChangedRows_Click(object sender, RoutedEventArgs e)
+        private void BtnFilterLocalDirty_Click(object sender, RoutedEventArgs e)
         {
             // Toggle filter based on whether predicates already exist
             bool filterActive = sfActivities.Columns["LocalDirty"].FilterPredicates.Count > 0;
@@ -1473,7 +1473,7 @@ namespace VANTAGE.Views
                 });
 
                 // Update button visuals - active
-                btnChangedRows.BorderBrush = (Brush)Application.Current.Resources["AccentColor"];
+                btnFilterLocalDirty.BorderBrush = (Brush)Application.Current.Resources["AccentColor"];
             }
             else
             {
@@ -1481,7 +1481,7 @@ namespace VANTAGE.Views
                 sfActivities.Columns["LocalDirty"].FilterPredicates.Clear();
 
                 // Update button visuals - inactive
-                btnChangedRows.BorderBrush = (Brush)Application.Current.Resources["ControlBorder"];
+                btnFilterLocalDirty.BorderBrush = (Brush)Application.Current.Resources["ControlBorder"];
             }
 
             sfActivities.View.RefreshFilter();
@@ -2477,18 +2477,69 @@ namespace VANTAGE.Views
             UpdateSummaryPanel();
         }
 
+        private async void BtnFilterToday_Click(object sender, RoutedEventArgs e)
+        {
+            bool filterActive = _viewModel.TodayFilterActive;
+
+            if (!filterActive)
+            {
+                // Load 3WLA dates if not already loaded
+                await _viewModel.LoadThreeWeekDatesAsync();
+
+                // Enable the Today filter
+                _viewModel.TodayFilterActive = true;
+
+                // Apply custom filter predicate
+                sfActivities.View.Filter = (obj) =>
+                {
+                    if (obj is Activity activity)
+                    {
+                        return _viewModel.PassesTodayFilter(activity);
+                    }
+                    return false;
+                };
+
+                // Update button visuals - active
+                btnFilterToday.BorderBrush = (Brush)Application.Current.Resources["AccentColor"];
+            }
+            else
+            {
+                // Disable the Today filter
+                _viewModel.TodayFilterActive = false;
+
+                // Remove custom filter
+                sfActivities.View.Filter = null;
+
+                // Update button visuals - inactive
+                btnFilterToday.BorderBrush = (Brush)Application.Current.Resources["ControlBorder"];
+            }
+
+            sfActivities.View.RefreshFilter();
+            _viewModel.FilteredCount = sfActivities.View.Records.Count;
+            UpdateRecordCount();
+            UpdateSummaryPanel();
+        }
+
         private async void BtnClearFilters_Click(object sender, RoutedEventArgs e)
         {
             await _viewModel.ClearAllFiltersAsync();
 
+            // Clear custom View filter (Today filter)
+            sfActivities.View.Filter = null;
+
             // Clear all column filters using Syncfusion's built-in method
             sfActivities.ClearFilters();
+
+            // Refresh to apply cleared filters
+            sfActivities.View.RefreshFilter();
 
             // Reset all filter button visuals
             btnFilterComplete.BorderBrush = (Brush)Application.Current.Resources["ControlBorder"];
             btnFilterInProgress.BorderBrush = (Brush)Application.Current.Resources["ControlBorder"];
             btnFilterNotStarted.BorderBrush = (Brush)Application.Current.Resources["ControlBorder"];
+            btnFilterLocalDirty.BorderBrush = (Brush)Application.Current.Resources["ControlBorder"];
             btnFilterMyRecords.BorderBrush = (Brush)Application.Current.Resources["ControlBorder"];
+            btnFilterToday.BorderBrush = (Brush)Application.Current.Resources["ControlBorder"];
 
             _viewModel.FilteredCount = sfActivities.View.Records.Count;
             UpdateRecordCount();

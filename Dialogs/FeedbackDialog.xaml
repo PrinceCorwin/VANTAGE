@@ -70,8 +70,17 @@
                     <ComboBoxItem Content="New"/>
                     <ComboBoxItem Content="In Progress"/>
                     <ComboBoxItem Content="Complete"/>
-                    <ComboBoxItem Content="Closed"/>
+                    <ComboBoxItem Content="Rejected"/>
                 </ComboBox>
+
+                <CheckBox x:Name="chkShowDeleted"
+                          Content="Show Deleted"
+                          Foreground="{StaticResource ForegroundColor}"
+                          VerticalAlignment="Center"
+                          Margin="20,0,0,0"
+                          Visibility="Collapsed"
+                          Checked="ChkShowDeleted_Changed"
+                          Unchecked="ChkShowDeleted_Changed"/>
             </StackPanel>
 
             <Border Grid.Row="4"
@@ -90,7 +99,7 @@
                             <GridView>
                                 <GridViewColumn Header="Type" Width="70" DisplayMemberBinding="{Binding Type}"/>
                                 <GridViewColumn Header="Title" Width="200" DisplayMemberBinding="{Binding Title}"/>
-                                <GridViewColumn Header="Status" Width="90" DisplayMemberBinding="{Binding Status}"/>
+                                <GridViewColumn Header="Status" Width="90" DisplayMemberBinding="{Binding StatusDisplay}"/>
                                 <GridViewColumn Header="Created By" Width="100" DisplayMemberBinding="{Binding CreatedBy}"/>
                                 <GridViewColumn Header="Date" Width="90" DisplayMemberBinding="{Binding CreatedDateDisplay}"/>
                             </GridView>
@@ -193,7 +202,7 @@
                             <ComboBoxItem Content="New" IsSelected="True"/>
                             <ComboBoxItem Content="In Progress"/>
                             <ComboBoxItem Content="Complete"/>
-                            <ComboBoxItem Content="Closed"/>
+                            <ComboBoxItem Content="Rejected"/>
                         </ComboBox>
                         <TextBlock x:Name="txtStatusNote"
                                    Text="(Admins only)"
@@ -242,17 +251,36 @@
                             Click="BtnSave_Click"/>
                 </Grid>
 
-                <Button x:Name="btnDelete"
-                        Content="Delete"
-                        Height="35"
-                        Margin="0,10,0,0"
-                        Background="#B33A3A"
-                        Foreground="{StaticResource ForegroundColor}"
-                        BorderBrush="#B33A3A"
-                        BorderThickness="1"
-                        IsEnabled="False"
-                        Visibility="Collapsed"
-                        Click="BtnDelete_Click"/>
+                <Grid Margin="0,10,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Button x:Name="btnRestore"
+                            Grid.Column="0"
+                            Content="Restore"
+                            Height="35"
+                            Background="#2D7D46"
+                            Foreground="{StaticResource ForegroundColor}"
+                            BorderBrush="#2D7D46"
+                            BorderThickness="1"
+                            Visibility="Collapsed"
+                            Click="BtnRestore_Click"/>
+
+                    <Button x:Name="btnDelete"
+                            Grid.Column="2"
+                            Content="Delete"
+                            Height="35"
+                            Background="#B33A3A"
+                            Foreground="{StaticResource ForegroundColor}"
+                            BorderBrush="#B33A3A"
+                            BorderThickness="1"
+                            IsEnabled="False"
+                            Visibility="Collapsed"
+                            Click="BtnDelete_Click"/>
+                </Grid>
 
                 <Button x:Name="btnClose"
                         Content="Close"

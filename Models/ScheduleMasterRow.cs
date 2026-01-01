@@ -71,6 +71,7 @@ namespace VANTAGE.Models
                 {
                     _msPercentComplete = value;
                     OnPropertyChanged(nameof(MS_PercentComplete));
+                    OnPropertyChanged(nameof(HasPercentCompleteVariance));
                 }
             }
         }
@@ -207,6 +208,15 @@ namespace VANTAGE.Models
                 // Check if ratio is less than 99% in either direction
                 double ratio = MS_BudgetMHs / P6_BudgetMHs;
                 return ratio < 0.99 || ratio > 1.01;
+            }
+        }
+
+        public bool HasPercentCompleteVariance
+        {
+            get
+            {
+                // Highlight if P6 percent is greater than MS percent
+                return P6_PercentComplete > MS_PercentComplete;
             }
         }
 

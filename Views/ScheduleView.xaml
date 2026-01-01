@@ -135,6 +135,14 @@
                 </DataTrigger>
             </Style.Triggers>
         </Style>
+
+        <Style x:Key="MSPercentCompleteVarianceStyle" TargetType="syncfusion:GridCell">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=HasPercentCompleteVariance}" Value="True">
+                    <Setter Property="Background" Value="{StaticResource StatusYellowBg}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
     </UserControl.Resources>
 
     <Grid>
@@ -186,7 +194,7 @@
                              Margin="0,0,5,0"/>
 
                 <ToggleButton x:Name="btnFilterActualsDiscrepancies"
-                             Content="Actuals"
+                             Content="Discrepancies"
                              IsChecked="{Binding FilterActualsDiscrepancies, Mode=TwoWay}"
                              Style="{StaticResource FilterToggleButtonStyle}"
                              Margin="0,0,5,0"/>
@@ -354,11 +362,12 @@
                                                  NumberDecimalDigits="1"
                                                  AllowEditing="False"/>
 
-                    <syncfusion:GridNumericColumn MappingName="MS_PercentComplete" 
-                                                 HeaderText="MS %" 
+                    <syncfusion:GridNumericColumn MappingName="MS_PercentComplete"
+                                                 HeaderText="MS %"
                                                  Width="80"
                                                  NumberDecimalDigits="1"
-                                                 AllowEditing="False"/>
+                                                 AllowEditing="False"
+                                                 CellStyle="{StaticResource MSPercentCompleteVarianceStyle}"/>
 
                     <syncfusion:GridNumericColumn MappingName="MS_BudgetMHs" 
                                                  HeaderText="MS MHs" 
@@ -498,7 +507,7 @@
                               VerticalAlignment="Center"
                               Margin="0,0,15,0"/>
                     <Rectangle Width="14" Height="14" Fill="{StaticResource StatusYellow}" Margin="0,0,5,0"/>
-                    <TextBlock Text="Warning" 
+                    <TextBlock Text="P6 vs MS Discrepancies" 
                               Foreground="{StaticResource ForegroundColor}" 
                               FontSize="11"
                               VerticalAlignment="Center"/>

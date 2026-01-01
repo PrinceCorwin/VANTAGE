@@ -27,6 +27,7 @@ namespace VANTAGE.Dialogs
                 cboStatus.IsEnabled = true;
                 txtStatusNote.Visibility = Visibility.Collapsed;
                 btnDelete.Visibility = Visibility.Visible;
+                chkShowDeleted.Visibility = Visibility.Visible;
             }
 
             Loaded += FeedbackDialog_Loaded;
@@ -34,7 +35,39 @@ namespace VANTAGE.Dialogs
 
         private async void FeedbackDialog_Loaded(object sender, RoutedEventArgs e)
         {
+            // Auto-purge deleted items older than 30 days
+            await PurgeOldDeletedItemsAsync();
             await LoadFeedbackAsync();
+        }
+
+        private async System.Threading.Tasks.Task PurgeOldDeletedItemsAsync()
+        {
+            try
+            {
+                int purged = await System.Threading.Tasks.Task.Run(() =>
+                {
+                    using var azureConn = AzureDbManager.GetConnection();
+                    azureConn.Open();
+
+                    var cmd = azureConn.CreateCommand();
+                    cmd.CommandText = @"
+                        DELETE FROM Feedback
+                        WHERE IsDeleted = 1
+                          AND UpdatedUtcDate < DATEADD(day, -30, GETUTCDATE())";
+
+                    return cmd.ExecuteNonQuery();
+                });
+
+                if (purged > 0)
+                {
+                    AppLogger.Info($"Auto-purged {purged} deleted feedback item(s) older than 30 days",
+                        "FeedbackDialog.PurgeOldDeletedItemsAsync", App.CurrentUser?.Username);
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "FeedbackDialog.PurgeOldDeletedItemsAsync");
+            }
         }
 
         private async System.Threading.Tasks.Task LoadFeedbackAsync()
@@ -44,6 +77,8 @@ namespace VANTAGE.Dialogs
 
             try
             {
+                bool includeDeleted = _isAdmin && (chkShowDeleted.IsChecked == true);
+
                 var feedbackList = await System.Threading.Tasks.Task.Run(() =>
                 {
                     var list = new List<FeedbackItem>();
@@ -52,12 +87,16 @@ namespace VANTAGE.Dialogs
                     azureConn.Open();
 
                     var cmd = azureConn.CreateCommand();
-                    cmd.CommandText = @"
-                        SELECT Id, Type, Title, Description, Status,
-                               CreatedBy, CreatedUtcDate, UpdatedBy, UpdatedUtcDate
-                        FROM Feedback
-                        WHERE IsDeleted = 0
-                        ORDER BY Id DESC";
+                    cmd.CommandText = includeDeleted
+                        ? @"SELECT Id, Type, Title, Description, Status,
+                                   CreatedBy, CreatedUtcDate, UpdatedBy, UpdatedUtcDate, IsDeleted
+                            FROM Feedback
+                            ORDER BY Id DESC"
+                        : @"SELECT Id, Type, Title, Description, Status,
+                                   CreatedBy, CreatedUtcDate, UpdatedBy, UpdatedUtcDate, IsDeleted
+                            FROM Feedback
+                            WHERE IsDeleted = 0
+                            ORDER BY Id DESC";
 
                     using var reader = cmd.ExecuteReader();
                     while (reader.Read())
@@ -73,6 +112,7 @@ namespace VANTAGE.Dialogs
                             CreatedUtcDate = reader.IsDBNull(6) ? string.Empty : reader.GetDateTime(6).ToString("yyyy-MM-dd HH:mm"),
                             UpdatedBy = reader.IsDBNull(7) ? null : reader.GetString(7),
                             UpdatedUtcDate = reader.IsDBNull(8) ? null : reader.GetDateTime(8).ToString("yyyy-MM-dd HH:mm"),
+                            IsDeleted = reader.GetBoolean(9),
                             IsNew = false
                         });
                     }
@@ -95,6 +135,11 @@ namespace VANTAGE.Dialogs
                 MessageBox.Show($"Error loading feedback:\n{ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+        private async void ChkShowDeleted_Changed(object sender, RoutedEventArgs e)
+        {
+            await LoadFeedbackAsync();
         }
 
         private void ApplyFilters()
@@ -166,12 +211,28 @@ namespace VANTAGE.Dialogs
                 {
                     info += $"\nUpdated by {_selectedFeedback.UpdatedBy} on {_selectedFeedback.UpdatedUtcDate} UTC";
                 }
+                if (_selectedFeedback.IsDeleted)
+                {
+                    info += "\n\n** THIS ITEM IS DELETED **";
+                }
                 txtCreatedInfo.Text = info;
 
-                // Disable type change on existing items
-                cboType.IsEnabled = false;
+                // Check if current user is owner or admin
+                string currentUser = App.CurrentUser?.Username ?? "";
+                bool isOwner = _selectedFeedback.CreatedBy.Equals(currentUser, StringComparison.OrdinalIgnoreCase);
+                bool canEdit = (_isAdmin || isOwner) && !_selectedFeedback.IsDeleted;
+
+                // Enable Type for owner or admin (disabled for deleted items)
+                cboType.IsEnabled = canEdit;
+                // Enable Title/Description for owner or admin (disabled for deleted items)
+                txtTitle.IsReadOnly = !canEdit;
+                txtDescription.IsReadOnly = !canEdit;
+
                 btnSave.Content = "Save Changes";
+                btnSave.IsEnabled = !_selectedFeedback.IsDeleted;
                 btnDelete.IsEnabled = _isAdmin;
+                btnDelete.Content = _selectedFeedback.IsDeleted ? "Permanently Delete" : "Delete";
+                btnRestore.Visibility = (_isAdmin && _selectedFeedback.IsDeleted) ? Visibility.Visible : Visibility.Collapsed;
             }
             else
             {
@@ -185,11 +246,16 @@ namespace VANTAGE.Dialogs
             cboType.SelectedIndex = 0; // Default to "Idea"
             cboType.IsEnabled = true;
             txtTitle.Text = string.Empty;
+            txtTitle.IsReadOnly = false;
             txtDescription.Text = string.Empty;
+            txtDescription.IsReadOnly = false;
             cboStatus.SelectedIndex = 0; // Default to "New"
             txtCreatedInfo.Text = string.Empty;
             btnSave.Content = "Submit";
+            btnSave.IsEnabled = true;
             btnDelete.IsEnabled = false;
+            btnDelete.Content = "Delete";
+            btnRestore.Visibility = Visibility.Collapsed;
             lvFeedback.SelectedItem = null;
         }
 
@@ -279,9 +345,10 @@ namespace VANTAGE.Dialogs
                         var cmd = azureConn.CreateCommand();
                         cmd.CommandText = @"
                             UPDATE Feedback
-                            SET Title = @title, Description = @description, Status = @status,
+                            SET Type = @type, Title = @title, Description = @description, Status = @status,
                                 UpdatedBy = @updatedBy, UpdatedUtcDate = @updatedUtcDate
                             WHERE Id = @id";
+                        cmd.Parameters.AddWithValue("@type", type);
                         cmd.Parameters.AddWithValue("@title", title);
                         cmd.Parameters.AddWithValue("@description", string.IsNullOrEmpty(description) ? DBNull.Value : description);
                         cmd.Parameters.AddWithValue("@status", status);
@@ -293,7 +360,8 @@ namespace VANTAGE.Dialogs
                     });
 
                     // Update in-memory
-                    _selectedFeedback!.Title = title;
+                    _selectedFeedback!.Type = type;
+                    _selectedFeedback.Title = title;
                     _selectedFeedback.Description = description;
                     _selectedFeedback.Status = status;
                     _selectedFeedback.UpdatedBy = currentUser;
@@ -434,14 +502,76 @@ namespace VANTAGE.Dialogs
             }
         }
 
+        private async void BtnRestore_Click(object sender, RoutedEventArgs e)
+        {
+            if (_selectedFeedback == null || !_selectedFeedback.IsDeleted)
+                return;
+
+            btnRestore.IsEnabled = false;
+
+            try
+            {
+                int feedbackId = _selectedFeedback.Id;
+                string title = _selectedFeedback.Title;
+                string currentUser = App.CurrentUser?.Username ?? "Unknown";
+
+                await System.Threading.Tasks.Task.Run(() =>
+                {
+                    using var azureConn = AzureDbManager.GetConnection();
+                    azureConn.Open();
+
+                    var cmd = azureConn.CreateCommand();
+                    cmd.CommandText = @"
+                        UPDATE Feedback
+                        SET IsDeleted = 0, UpdatedBy = @updatedBy, UpdatedUtcDate = @updatedUtcDate
+                        WHERE Id = @id";
+                    cmd.Parameters.AddWithValue("@id", feedbackId);
+                    cmd.Parameters.AddWithValue("@updatedBy", currentUser);
+                    cmd.Parameters.AddWithValue("@updatedUtcDate", DateTime.UtcNow);
+                    cmd.ExecuteNonQuery();
+                });
+
+                // Update in-memory
+                _selectedFeedback.IsDeleted = false;
+                _selectedFeedback.UpdatedBy = currentUser;
+                _selectedFeedback.UpdatedUtcDate = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm");
+
+                AppLogger.Info($"Restored feedback: {title} (ID: {feedbackId})",
+                    "FeedbackDialog.BtnRestore_Click", currentUser);
+
+                MessageBox.Show("Feedback restored successfully.", "Restored",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+
+                // Reload to refresh the list
+                await LoadFeedbackAsync();
+                await RefreshLocalFeedbackAsync();
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "FeedbackDialog.BtnRestore_Click");
+                MessageBox.Show($"Error restoring feedback:\n{ex.Message}", "Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                btnRestore.IsEnabled = true;
+            }
+        }
+
         private async void BtnDelete_Click(object sender, RoutedEventArgs e)
         {
             if (_selectedFeedback == null)
                 return;
 
+            bool isPermanentDelete = _selectedFeedback.IsDeleted;
+            string deleteType = isPermanentDelete ? "permanently delete" : "delete";
+            string warning = isPermanentDelete
+                ? "This will PERMANENTLY remove the item from the database."
+                : "This will mark the item as deleted. Admins can restore or permanently delete it later.";
+
             var result = MessageBox.Show(
-                $"Are you sure you want to delete this feedback?\n\n\"{_selectedFeedback.Title}\"\n\nThis action cannot be undone.",
-                "Confirm Delete",
+                $"Are you sure you want to {deleteType} this feedback?\n\n\"{_selectedFeedback.Title}\"\n\n{warning}",
+                isPermanentDelete ? "Confirm Permanent Delete" : "Confirm Delete",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Warning);
 
@@ -461,17 +591,33 @@ namespace VANTAGE.Dialogs
                     azureConn.Open();
 
                     var cmd = azureConn.CreateCommand();
-                    cmd.CommandText = "UPDATE Feedback SET IsDeleted = 1 WHERE Id = @id";
-                    cmd.Parameters.AddWithValue("@id", feedbackId);
+                    if (isPermanentDelete)
+                    {
+                        // Permanent delete - remove from database
+                        cmd.CommandText = "DELETE FROM Feedback WHERE Id = @id";
+                        cmd.Parameters.AddWithValue("@id", feedbackId);
+                    }
+                    else
+                    {
+                        // Soft delete - mark as deleted with timestamp
+                        cmd.CommandText = @"
+                            UPDATE Feedback
+                            SET IsDeleted = 1, UpdatedBy = @updatedBy, UpdatedUtcDate = @updatedUtcDate
+                            WHERE Id = @id";
+                        cmd.Parameters.AddWithValue("@id", feedbackId);
+                        cmd.Parameters.AddWithValue("@updatedBy", App.CurrentUser?.Username ?? "Unknown");
+                        cmd.Parameters.AddWithValue("@updatedUtcDate", DateTime.UtcNow);
+                    }
                     cmd.ExecuteNonQuery();
                 });
 
                 _allFeedback.Remove(_selectedFeedback);
 
-                AppLogger.Info($"Deleted feedback: {title} (ID: {feedbackId})",
+                string action = isPermanentDelete ? "Permanently deleted" : "Deleted";
+                AppLogger.Info($"{action} feedback: {title} (ID: {feedbackId})",
                     "FeedbackDialog.BtnDelete_Click", App.CurrentUser?.Username);
 
-                MessageBox.Show("Feedback deleted successfully.", "Deleted",
+                MessageBox.Show($"Feedback {action.ToLower()} successfully.", action,
                     MessageBoxButton.OK, MessageBoxImage.Information);
 
                 ApplyFilters();
@@ -537,9 +683,13 @@ namespace VANTAGE.Dialogs
         public string? UpdatedBy { get; set; }
         public string? UpdatedUtcDate { get; set; }
         public bool IsNew { get; set; }
+        public bool IsDeleted { get; set; }
 
         // Display property for the date column
         public string CreatedDateDisplay => CreatedUtcDate.Length >= 10 ? CreatedUtcDate.Substring(0, 10) : CreatedUtcDate;
+
+        // Display property for status showing deleted indicator
+        public string StatusDisplay => IsDeleted ? "(Deleted)" : Status;
 
         public event PropertyChangedEventHandler? PropertyChanged;
         protected void OnPropertyChanged(string? propertyName = null)
