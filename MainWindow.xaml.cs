@@ -1668,14 +1668,123 @@ namespace VANTAGE
             }
         }
 
-        private void MenuTool4_Click(object sender, RoutedEventArgs e)
+        private void MenuExportSettings_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Tool 4 coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
+            try
+            {
+                var settings = SettingsManager.GetAllUserSettings(App.CurrentUserID);
+
+                if (settings.Count == 0)
+                {
+                    MessageBox.Show("No settings to export.", "Export Settings",
+                        MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                var exportFile = new UserSettingsExportFile
+                {
+                    ExportedBy = App.CurrentUser?.Username ?? "Unknown",
+                    ExportedDate = DateTime.UtcNow.ToString("o"),
+                    AppVersion = "1.0.0",
+                    Settings = settings
+                };
+
+                var dialog = new Microsoft.Win32.SaveFileDialog
+                {
+                    Title = "Export Settings",
+                    Filter = "JSON Files (*.json)|*.json",
+                    DefaultExt = ".json",
+                    FileName = $"MILESTONE_Settings_{App.CurrentUser?.Username}_{DateTime.Now:yyyy-MM-dd}.json"
+                };
+
+                if (dialog.ShowDialog() == true)
+                {
+                    var json = System.Text.Json.JsonSerializer.Serialize(exportFile,
+                        new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+                    System.IO.File.WriteAllText(dialog.FileName, json);
+
+                    AppLogger.Info($"Exported {settings.Count} settings to {dialog.FileName}",
+                        "MainWindow.MenuExportSettings_Click", App.CurrentUser?.Username ?? "Unknown");
+
+                    MessageBox.Show($"Exported {settings.Count} settings successfully.",
+                        "Export Settings", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "MainWindow.MenuExportSettings_Click");
+                MessageBox.Show($"Export failed:\n{ex.Message}", "Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
-        private void MenuTool5_Click(object sender, RoutedEventArgs e)
+        private void MenuImportSettings_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Tool 5 coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
+            try
+            {
+                var dialog = new Microsoft.Win32.OpenFileDialog
+                {
+                    Title = "Import Settings",
+                    Filter = "JSON Files (*.json)|*.json",
+                    DefaultExt = ".json"
+                };
+
+                if (dialog.ShowDialog() != true)
+                    return;
+
+                var json = System.IO.File.ReadAllText(dialog.FileName);
+                var importFile = System.Text.Json.JsonSerializer.Deserialize<UserSettingsExportFile>(json);
+
+                if (importFile == null || importFile.Settings == null || importFile.Settings.Count == 0)
+                {
+                    MessageBox.Show("No settings found in file.", "Import Settings",
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                var result = MessageBox.Show(
+                    $"Found {importFile.Settings.Count} settings exported by '{importFile.ExportedBy}' on {importFile.ExportedDate}.\n\n" +
+                    "Choose import mode:\n" +
+                    "YES = Replace all (delete existing, import new)\n" +
+                    "NO = Merge (keep existing, add/update from file)\n" +
+                    "CANCEL = Abort import",
+                    "Import Settings",
+                    MessageBoxButton.YesNoCancel,
+                    MessageBoxImage.Question);
+
+                if (result == MessageBoxResult.Cancel)
+                    return;
+
+                bool replaceAll = (result == MessageBoxResult.Yes);
+                int imported = SettingsManager.ImportUserSettings(App.CurrentUserID, importFile.Settings, replaceAll);
+
+                // Reload settings in current views
+                if (ContentArea.Content is ProgressView progressView)
+                {
+                    progressView.ReloadColumnSettings();
+                }
+                else if (ContentArea.Content is ScheduleView scheduleView)
+                {
+                    scheduleView.ReloadColumnSettings();
+                }
+
+                MessageBox.Show(
+                    $"Imported {imported} settings.\n\nSettings applied to current view.",
+                    "Import Settings",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+            }
+            catch (System.Text.Json.JsonException)
+            {
+                MessageBox.Show("Invalid settings file format.", "Import Settings",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "MainWindow.MenuImportSettings_Click");
+                MessageBox.Show($"Import failed:\n{ex.Message}", "Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void MenuTool6_Click(object sender, RoutedEventArgs e)

@@ -8,6 +8,23 @@ using VANTAGE.Utilities;
 
 namespace VANTAGE.Utilities
 {
+    // Export format for a single setting
+    public class UserSettingExport
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Value { get; set; } = string.Empty;
+        public string DataType { get; set; } = "string";
+    }
+
+    // Export file format
+    public class UserSettingsExportFile
+    {
+        public string ExportedBy { get; set; } = string.Empty;
+        public string ExportedDate { get; set; } = string.Empty;
+        public string AppVersion { get; set; } = "1.0.0";
+        public List<UserSettingExport> Settings { get; set; } = new();
+    }
+
     public static class SettingsManager
     {
 
@@ -194,6 +211,95 @@ namespace VANTAGE.Utilities
                 System.Diagnostics.Debug.WriteLine($"Error initializing user settings: {ex.Message}");
                 // TODO: Add proper logging (e.g., to file or central log)
             }
+        }
+
+        // Get all settings for a user (for export)
+        public static List<UserSettingExport> GetAllUserSettings(int userId)
+        {
+            var settings = new List<UserSettingExport>();
+
+            try
+            {
+                using var connection = DatabaseSetup.GetConnection();
+                connection.Open();
+
+                var command = connection.CreateCommand();
+                command.CommandText = "SELECT SettingName, SettingValue, DataType FROM UserSettings WHERE UserID = @userId";
+                command.Parameters.AddWithValue("@userId", userId);
+
+                using var reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    settings.Add(new UserSettingExport
+                    {
+                        Name = reader.GetString(0),
+                        Value = reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
+                        DataType = reader.IsDBNull(2) ? "string" : reader.GetString(2)
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "SettingsManager.GetAllUserSettings");
+            }
+
+            return settings;
+        }
+
+        // Import settings for a user
+        // replaceAll: true = delete existing settings first; false = merge (update existing, add new)
+        public static int ImportUserSettings(int userId, List<UserSettingExport> settings, bool replaceAll)
+        {
+            int imported = 0;
+
+            try
+            {
+                using var connection = DatabaseSetup.GetConnection();
+                connection.Open();
+
+                using var transaction = connection.BeginTransaction();
+
+                if (replaceAll)
+                {
+                    var deleteCmd = connection.CreateCommand();
+                    deleteCmd.CommandText = "DELETE FROM UserSettings WHERE UserID = @userId";
+                    deleteCmd.Parameters.AddWithValue("@userId", userId);
+                    deleteCmd.ExecuteNonQuery();
+                }
+
+                var insertCmd = connection.CreateCommand();
+                insertCmd.CommandText = @"
+                    INSERT INTO UserSettings (UserID, SettingName, SettingValue, DataType)
+                    VALUES (@userId, @name, @value, @type)
+                    ON CONFLICT(UserID, SettingName)
+                    DO UPDATE SET SettingValue = @value, DataType = @type";
+                insertCmd.Parameters.Add("@userId", SqliteType.Integer);
+                insertCmd.Parameters.Add("@name", SqliteType.Text);
+                insertCmd.Parameters.Add("@value", SqliteType.Text);
+                insertCmd.Parameters.Add("@type", SqliteType.Text);
+
+                foreach (var setting in settings)
+                {
+                    insertCmd.Parameters["@userId"].Value = userId;
+                    insertCmd.Parameters["@name"].Value = setting.Name;
+                    insertCmd.Parameters["@value"].Value = setting.Value;
+                    insertCmd.Parameters["@type"].Value = setting.DataType;
+                    insertCmd.ExecuteNonQuery();
+                    imported++;
+                }
+
+                transaction.Commit();
+
+                AppLogger.Info($"Imported {imported} user settings (replaceAll={replaceAll})",
+                    "SettingsManager.ImportUserSettings", App.CurrentUser?.Username ?? "Unknown");
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "SettingsManager.ImportUserSettings");
+                return 0;
+            }
+
+            return imported;
         }
     }
 }

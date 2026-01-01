@@ -935,6 +935,12 @@ namespace VANTAGE.Views
             }
         }
 
+        // Public method for MainWindow to call after settings import
+        public void ReloadColumnSettings()
+        {
+            LoadColumnState();
+        }
+
         private void LoadColumnState()
         {
             try
