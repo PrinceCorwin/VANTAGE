@@ -22,7 +22,7 @@ namespace VANTAGE
                 localConn.Open();
 
                 // Tables to mirror from Azure
-                string[] metadataTables = { "Users", "Projects", "ColumnMappings", "Managers" };
+                string[] metadataTables = { "Users", "Projects", "ColumnMappings", "Managers", "Feedback" };
 
                 foreach (string tableName in metadataTables)
                 {
@@ -215,6 +215,22 @@ namespace VANTAGE
                 ProjectsAssigned TEXT,
                 IsActive INTEGER NOT NULL DEFAULT 1
             );
+
+            -- Feedback table (mirrored from Azure)
+            CREATE TABLE IF NOT EXISTS Feedback (
+                Id INTEGER PRIMARY KEY,
+                Type TEXT NOT NULL DEFAULT 'Idea',
+                Title TEXT NOT NULL DEFAULT '',
+                Description TEXT,
+                Status TEXT NOT NULL DEFAULT 'New',
+                CreatedBy TEXT NOT NULL DEFAULT '',
+                CreatedUtcDate TEXT NOT NULL,
+                UpdatedBy TEXT,
+                UpdatedUtcDate TEXT,
+                IsDeleted INTEGER NOT NULL DEFAULT 0
+            );
+            CREATE INDEX IF NOT EXISTS idx_feedback_type ON Feedback(Type);
+            CREATE INDEX IF NOT EXISTS idx_feedback_status ON Feedback(Status);
 
             -- Activities table (local schema with UniqueID as primary key)
             CREATE TABLE IF NOT EXISTS Activities (

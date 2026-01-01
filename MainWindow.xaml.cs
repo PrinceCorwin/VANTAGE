@@ -1794,9 +1794,22 @@ namespace VANTAGE
             dialog.ShowDialog();
         }
 
-        private void MenuTool7_Click(object sender, RoutedEventArgs e)
+        private void MenuFeedbackBoard_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Tool 7 coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
+            // Check Azure connection first
+            if (!AzureDbManager.CheckConnection(out string errorMessage))
+            {
+                MessageBox.Show(
+                    $"Cannot connect to Azure database:\n\n{errorMessage}\n\nFeedback Board requires an active connection.",
+                    "Connection Required",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+                return;
+            }
+
+            var dialog = new Dialogs.FeedbackDialog();
+            dialog.Owner = this;
+            dialog.ShowDialog();
         }
 
         private void MenuTool8_Click(object sender, RoutedEventArgs e)

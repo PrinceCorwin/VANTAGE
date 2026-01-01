@@ -151,7 +151,7 @@
                             <syncfusion:DropDownMenuItem Header="Export Settings" Click="MenuExportSettings_Click"/>
                             <syncfusion:DropDownMenuItem Header="Import Settings" Click="MenuImportSettings_Click"/>
                             <syncfusion:DropDownMenuItem Header="Export Logs" Click="MenuExportLogs_Click"/>
-                            <syncfusion:DropDownMenuItem Header="TOOL 7" Click="MenuTool7_Click"/>
+                            <syncfusion:DropDownMenuItem Header="Feedback Board" Click="MenuFeedbackBoard_Click"/>
                             <syncfusion:DropDownMenuItem Header="TOOL 8" Click="MenuTool8_Click"/>
                             <syncfusion:DropDownMenuItem Header="TOOL 9" Click="MenuTool9_Click"/>
                             <syncfusion:DropDownMenuItem Header="TOOL 10" Click="MenuTool10_Click"/>

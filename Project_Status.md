@@ -1,6 +1,6 @@
 # MILESTONE - Project Status
 
-**Last Updated:** December 31, 2024
+**Last Updated:** December 31, 2025
 
 ## Current Status
 
@@ -13,17 +13,21 @@
 
 ## Feature Backlog
 
-### High Priority
-- [ ] Find-Replace in Schedule Detail Grid
-- [ ] Idea Board / Bug Report feature
-
 ### Future / AI Integration
 - [ ] AI error message interpreter
 - [ ] Schedule conflict detection
 - [ ] Material expediting alerts
 - [ ] Anomaly detection
 
+### Shelved
+- [ ] Find-Replace in Schedule Detail Grid
+
 ## Recently Completed
+
+### December 31, 2025
+- Added Feedback Board (Tools menu) - combined Ideas/Bug Reports with Azure sync
+- Admin email notifications on new feedback submissions
+- Admin-only status management and delete functionality
 
 ### December 31, 2024
 - Added Export Logs with email option (Tools menu)

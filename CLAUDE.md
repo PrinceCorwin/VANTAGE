@@ -13,6 +13,12 @@ WPF application for Summit Constructors replacing legacy MS Access system. Track
 - ONE change at a time, test before proceeding
 - No quick fixes - proper architectural solutions
 - Delete/refactor legacy code when no longer relevant
+- After completing a feature: identify improvements, check for dead code, suggest refactoring
+
+## Git Commits
+- Do NOT add "Generated with Claude" or "Co-Authored-By: Claude" to commit messages
+- Do NOT add AI attribution comments in code
+- Write clear, concise commit messages describing the change
 
 ## C# Code Conventions
 
@@ -41,28 +47,98 @@ AppLogger.Error(ex, "ClassName.MethodName");
 AppLogger.Info($"Action description", "ClassName.MethodName", App.CurrentUser!.Username);
 ```
 
+Log these user actions with username parameter:
+- AssignTo changes
+- Sync operations
+- Delete operations
+- Bulk updates
+
 ## Database Conventions
 - Dates: TEXT/VARCHAR (P6 exports text) - use string parsing, not DATETIME
 - Percentages: 0-100 format (not 0-1 decimal)
 - Sync: UniqueID matching, SyncVersion monotonic integers
 - Azure PK: ActivityID (auto-increment); Local PK: UniqueID
+- ExecuteScalar can return null: `Convert.ToInt64(cmd.ExecuteScalar() ?? 0)`
+
+## Data Patterns
+
+### User Ownership
+- Activities have `AssignedTo` field - users only edit their own records
+- Admins bypass ownership checks: `AzureDbManager.IsUserAdmin(username)`
+- Always verify ownership before edits/deletes
+
+### Sync System
+- `LocalDirty = 1` marks records for push to Azure
+- Azure is source of truth; local SQLite is cache
+- Always set after edits:
+```csharp
+activity.UpdatedBy = App.CurrentUser?.Username ?? "Unknown";
+activity.UpdatedUtcDate = DateTime.UtcNow;
+activity.LocalDirty = 1;
+await ActivityRepository.UpdateActivityInDatabase(activity);
+```
+
+### Azure Connection Check
+```csharp
+if (!AzureDbManager.CheckConnection(out string errorMessage))
+{
+    MessageBox.Show($"Cannot connect to Azure database:\n\n{errorMessage}",
+        "Connection Error", MessageBoxButton.OK, MessageBoxImage.Error);
+    return;
+}
+```
+
+## Syncfusion Notes
+- SfDataGrid does NOT support ICollectionView.Filter - use ObservableCollection manipulation
+- FluentDark theme requires SfSkinManager on dialogs
+- Column persistence: width, order, visibility stored in UserSettings
+- Virtualization is automatic - don't implement manual
+- CommonMark: blank line required before lists and after headers
+
+## Edit Validation Rules
+- PercentEntry changes auto-adjust SchStart/SchFinish dates
+- SchStart: cannot be future, cannot be after SchFinish, cannot clear if PercentEntry > 0
+- SchFinish: requires PercentEntry = 100, cannot be before SchStart
+- Metadata errors (9 required fields) block sync operations
+- Required fields: WorkPackage, PhaseCode, CompType, PhaseCategory, ProjectID, SchedActNO, Description, ROCStep, UDF18
 
 ## Performance Rules
 - NO Debug.WriteLine in loops
 - Bulk operations for large datasets
 - SqlBulkCopy for sync
+- Prepared statements for repeated queries
+
+## Testing
+- Test datasets: 13-row (quick validation), 4,802-row (stress/performance)
+- Test after EVERY change before proceeding
+- Multi-user scenarios require Azure connection
+- Don't assume database is clean - may have test data
+
+## Avoid
+- XML doc comments (`/// <summary>`)
+- Debug.WriteLine in loops
+- Quick patches - proper solutions only
+- DATETIME types for dates - always TEXT
+- Assuming Azure tables match local schema exactly (Azure has IsDeleted, Admins table)
 
 ## Key Files
 | File | Purpose |
 |------|---------|
-| `AzureDbManager.cs` | Azure connection, utilities |
+| `AzureDbManager.cs` | Azure connection, utilities, admin check |
 | `SyncManager.cs` | Push/Pull sync logic |
 | `DatabaseSetup.cs` | SQLite init, MirrorTablesFromAzure |
+| `ActivityRepository.cs` | Activity CRUD operations |
 | `ScheduleRepository.cs` | Schedule data access |
-| `ProgressView.xaml.cs` | Progress module UI |
+| `ProgressView.xaml.cs` | Progress module UI, edit validation |
+| `ScheduleView.xaml.cs` | Schedule module UI |
+| `ScheduleExcelImporter.cs` | P6 import logic |
+| `ScheduleExcelExporter.cs` | P6 export logic |
+| `ProjectCache.cs` | Valid ProjectID validation cache |
+| `EmailService.cs` | Azure Communication Services |
 | `Credentials.cs` | Connection strings (gitignored) |
 
 ## Communication Preferences
 - Be direct, skip pleasantries
 - State what to do and why
 - Challenge assumptions if there's a better approach
+- Present code one block at a time, wait for confirmation
