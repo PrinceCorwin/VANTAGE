@@ -1794,8 +1794,74 @@ namespace VANTAGE
             dialog.ShowDialog();
         }
 
+        private void BtnSettings_Click(object sender, RoutedEventArgs e)
+        {
+            popupSettings.IsOpen = !popupSettings.IsOpen;
+        }
+
+        private void MenuResetGridLayouts_Click(object sender, RoutedEventArgs e)
+        {
+            popupSettings.IsOpen = false;
+            var result = MessageBox.Show(
+                "Reset all grid column layouts to defaults?\n\nThis will clear column widths, order, and visibility settings for Progress and Schedule grids.",
+                "Reset Grid Layouts",
+                MessageBoxButton.OKCancel,
+                MessageBoxImage.Question);
+
+            if (result != MessageBoxResult.OK)
+                return;
+
+            // Tell current view to skip saving on unload (prevents re-saving deleted settings)
+            if (ContentArea.Content is ProgressView currentProgressView)
+            {
+                currentProgressView.SkipSaveOnClose();
+            }
+            else if (ContentArea.Content is ScheduleView currentScheduleView)
+            {
+                currentScheduleView.SkipSaveOnClose();
+            }
+
+            string[] gridSettingKeys = new[]
+            {
+                "ProgressGrid.PreferencesJson",
+                "ScheduleGrid.PreferencesJson",
+                "ScheduleDetailGrid.PreferencesJson",
+                "ScheduleView_MasterGridHeight",
+                "ScheduleView_DetailGridHeight"
+            };
+
+            int cleared = 0;
+            foreach (var key in gridSettingKeys)
+            {
+                if (SettingsManager.RemoveUserSetting(App.CurrentUserID, key))
+                    cleared++;
+            }
+
+            // Reload module entirely to recreate view with XAML defaults
+            if (ContentArea.Content is ProgressView)
+            {
+                LoadProgressModule();
+            }
+            else if (ContentArea.Content is ScheduleView)
+            {
+                ContentArea.Content = null;
+                ContentArea.Content = new ScheduleView();
+            }
+
+            MessageBox.Show(
+                $"Cleared {cleared} grid layout setting(s).\n\nGrid layouts have been reset to defaults.",
+                "Reset Complete",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+
+            AppLogger.Info($"Reset {cleared} grid layout settings",
+                "MainWindow.MenuResetGridLayouts_Click", App.CurrentUser?.Username);
+        }
+
         private void MenuFeedbackBoard_Click(object sender, RoutedEventArgs e)
         {
+            popupSettings.IsOpen = false;
+
             // Check Azure connection first
             if (!AzureDbManager.CheckConnection(out string errorMessage))
             {

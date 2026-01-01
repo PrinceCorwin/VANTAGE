@@ -22,6 +22,7 @@ namespace VANTAGE.Views
         private const string DetailHeightKey = "ScheduleView_DetailGridHeight";
         private const string DetailGridPrefsKey = "ScheduleDetailGrid.PreferencesJson";
         private DispatcherTimer _resizeSaveTimer = null!;
+        private bool _skipSaveColumnState = false;
 
         public ScheduleView()
         {
@@ -142,6 +143,9 @@ namespace VANTAGE.Views
         {
             try
             {
+                if (_skipSaveColumnState)
+                    return;
+
                 if (App.CurrentUserID <= 0)
                     return;
 
@@ -653,10 +657,19 @@ namespace VANTAGE.Views
             };
         }
 
+        // Skip saving column state on next unload (used by reset)
+        public void SkipSaveOnClose()
+        {
+            _skipSaveColumnState = true;
+        }
+
         private void SaveColumnState()
         {
             try
             {
+                if (_skipSaveColumnState)
+                    return;
+
                 if (sfScheduleMaster?.Columns == null || sfScheduleMaster.Columns.Count == 0)
                     return;
 
@@ -752,6 +765,9 @@ namespace VANTAGE.Views
         {
             try
             {
+                if (_skipSaveColumnState)
+                    return;
+
                 if (sfScheduleDetail?.Columns == null || sfScheduleDetail.Columns.Count == 0)
                     return;
 

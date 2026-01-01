@@ -151,7 +151,6 @@
                             <syncfusion:DropDownMenuItem Header="Export Settings" Click="MenuExportSettings_Click"/>
                             <syncfusion:DropDownMenuItem Header="Import Settings" Click="MenuImportSettings_Click"/>
                             <syncfusion:DropDownMenuItem Header="Export Logs" Click="MenuExportLogs_Click"/>
-                            <syncfusion:DropDownMenuItem Header="Feedback Board" Click="MenuFeedbackBoard_Click"/>
                             <syncfusion:DropDownMenuItem Header="TOOL 8" Click="MenuTool8_Click"/>
                             <syncfusion:DropDownMenuItem Header="TOOL 9" Click="MenuTool9_Click"/>
                             <syncfusion:DropDownMenuItem Header="TOOL 10" Click="MenuTool10_Click"/>
@@ -311,10 +310,54 @@
                 </StackPanel>
                 
                 <!-- COLUMN 3: WINDOW CONTROLS (RIGHT) -->
-                <StackPanel Grid.Column="2" 
+                <StackPanel Grid.Column="2"
                             Orientation="Horizontal"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center">
+
+                    <!-- Settings Button + Popup -->
+                    <Button x:Name="btnSettings"
+                            Content="⋮"
+                            Padding="8,0"
+                            Margin="5,0,10,0"
+                            Background="Transparent"
+                            Foreground="{StaticResource ForegroundColor}"
+                            BorderThickness="0"
+                            FontSize="16"
+                            FontWeight="Bold"
+                            ToolTip="Settings"
+                            Click="BtnSettings_Click"/>
+
+                    <Popup x:Name="popupSettings"
+                           PlacementTarget="{Binding ElementName=btnSettings}"
+                           Placement="Bottom"
+                           StaysOpen="False"
+                           AllowsTransparency="True">
+                        <Border Background="{StaticResource ControlBackground}"
+                                BorderBrush="{StaticResource BorderColor}"
+                                BorderThickness="1"
+                                CornerRadius="2"
+                                Padding="0">
+                            <StackPanel>
+                                <Button Content="Reset Grid Layouts"
+                                        Background="Transparent"
+                                        Foreground="{StaticResource ForegroundColor}"
+                                        BorderThickness="0"
+                                        Padding="12,8"
+                                        HorizontalContentAlignment="Left"
+                                        Click="MenuResetGridLayouts_Click"
+                                        Cursor="Hand"/>
+                                <Button Content="Feedback Board"
+                                        Background="Transparent"
+                                        Foreground="{StaticResource ForegroundColor}"
+                                        BorderThickness="0"
+                                        Padding="12,8"
+                                        HorizontalContentAlignment="Left"
+                                        Click="MenuFeedbackBoard_Click"
+                                        Cursor="Hand"/>
+                            </StackPanel>
+                        </Border>
+                    </Popup>
 
                     <Button x:Name="btnMinimize"
                             Content="─"

@@ -170,9 +170,38 @@ namespace VANTAGE.Utilities
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error setting user setting: {ex.Message}");
-                // TODO: Add proper logging (e.g., to file or central log)
             }
-        } 
+        }
+
+        // Remove a user-specific setting by name
+        public static bool RemoveUserSetting(int userId, string settingName)
+        {
+            try
+            {
+                using var connection = DatabaseSetup.GetConnection();
+                connection.Open();
+
+                var command = connection.CreateCommand();
+                command.CommandText = "DELETE FROM UserSettings WHERE UserID = @userId AND SettingName = @name";
+                command.Parameters.AddWithValue("@userId", userId);
+                command.Parameters.AddWithValue("@name", settingName);
+
+                int rowsAffected = command.ExecuteNonQuery();
+
+                if (rowsAffected > 0)
+                {
+                    AppLogger.Info($"Removed UserSetting: {settingName}", "SettingsManager.RemoveUserSetting");
+                }
+
+                return rowsAffected > 0;
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "SettingsManager.RemoveUserSetting");
+                return false;
+            }
+        }
+
         public static void InitializeDefaultAppSettings()
         {
             try

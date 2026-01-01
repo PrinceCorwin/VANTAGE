@@ -31,6 +31,7 @@ namespace VANTAGE.Views
         private ProgressViewModel _viewModel;
         // one key per grid/view
         private const string GridPrefsKey = "ProgressGrid.PreferencesJson";
+        private bool _skipSaveColumnState = false;
         private ProgressViewModel ViewModel
         {
             get
@@ -899,11 +900,23 @@ namespace VANTAGE.Views
                 btnSetPercent0.Content = $"{percent2}%";
             }
         }
-        /// Save current column configuration to user settings
+        // Skip saving column state on next unload (used by reset)
+        public void SkipSaveOnClose()
+        {
+            _skipSaveColumnState = true;
+        }
+
+        // Save current column configuration to user settings
         private void SaveColumnState()
         {
             try
             {
+                if (_skipSaveColumnState)
+                {
+                    System.Diagnostics.Debug.WriteLine("SaveColumnState: SKIPPED (reset in progress)");
+                    return;
+                }
+
                 if (sfActivities?.Columns == null || sfActivities.Columns.Count == 0)
                 {
                     System.Diagnostics.Debug.WriteLine("SaveColumnState: no columns to save.");

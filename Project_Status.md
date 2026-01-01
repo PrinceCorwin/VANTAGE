@@ -25,7 +25,10 @@
 ## Recently Completed
 
 ### December 31, 2025
-- Added Feedback Board (Tools menu) - combined Ideas/Bug Reports with Azure sync
+- Added Settings button (⋮) to toolbar with dropdown menu
+- Added Reset Grid Layouts option (clears Progress/Schedule column preferences)
+- Moved Feedback Board from Tools menu to Settings menu
+- Added Feedback Board - combined Ideas/Bug Reports with Azure sync
 - Admin email notifications on new feedback submissions
 - Admin-only status management and delete functionality
 
