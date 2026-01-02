@@ -1,0 +1,131 @@
+<Window x:Class="VANTAGE.Dialogs.ManageLayoutsDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:skinManager="clr-namespace:Syncfusion.SfSkinManager;assembly=Syncfusion.SfSkinManager.WPF"
+        skinManager:SfSkinManager.Theme="{skinManager:SkinManagerExtension ThemeName=FluentDark}"
+        Title="Manage Grid Layouts"
+        Height="400"
+        Width="450"
+        WindowStartupLocation="CenterOwner"
+        Background="{StaticResource BackgroundColor}"
+        ResizeMode="NoResize"
+        WindowStyle="SingleBorderWindow">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="10"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="15"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="15"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="20"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <TextBlock Grid.Row="0"
+                   Text="Saved Layouts (max 5)"
+                   FontWeight="SemiBold"
+                   FontSize="14"
+                   Foreground="{StaticResource ForegroundColor}"/>
+
+        <!-- Layouts List -->
+        <ListBox x:Name="lstLayouts"
+                 Grid.Row="2"
+                 Background="{StaticResource ControlBackground}"
+                 Foreground="{StaticResource ForegroundColor}"
+                 BorderBrush="{StaticResource ControlBorder}"
+                 SelectionChanged="LstLayouts_SelectionChanged"/>
+
+        <!-- List Action Buttons -->
+        <Grid Grid.Row="4">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                <Button x:Name="btnApply"
+                        Content="Apply"
+                        Width="70"
+                        Height="28"
+                        Margin="0,0,10,0"
+                        Background="{StaticResource ControlBackground}"
+                        Foreground="{StaticResource StatusGreen}"
+                        BorderBrush="{StaticResource ControlBorder}"
+                        Click="BtnApply_Click"
+                        IsEnabled="False"/>
+                <Button x:Name="btnRename"
+                        Content="Rename"
+                        Width="70"
+                        Height="28"
+                        Margin="0,0,10,0"
+                        Background="{StaticResource ControlBackground}"
+                        Foreground="{StaticResource ForegroundColor}"
+                        BorderBrush="{StaticResource ControlBorder}"
+                        Click="BtnRename_Click"
+                        IsEnabled="False"/>
+                <Button x:Name="btnDelete"
+                        Content="Delete"
+                        Width="70"
+                        Height="28"
+                        Background="{StaticResource ControlBackground}"
+                        Foreground="{StaticResource StatusRed}"
+                        BorderBrush="{StaticResource ControlBorder}"
+                        Click="BtnDelete_Click"
+                        IsEnabled="False"/>
+            </StackPanel>
+            <Button x:Name="btnDefault"
+                    Content="Default"
+                    Width="70"
+                    Height="28"
+                    HorizontalAlignment="Right"
+                    Background="{StaticResource ControlBackground}"
+                    Foreground="{StaticResource ForegroundColor}"
+                    BorderBrush="{StaticResource ControlBorder}"
+                    Click="BtnDefault_Click"/>
+        </Grid>
+
+        <!-- Separator -->
+        <Border Grid.Row="6"
+                Height="1"
+                Background="{StaticResource ControlBorder}"/>
+
+        <!-- Save New Layout Section -->
+        <Grid Grid.Row="8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="10"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="10"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBox x:Name="txtNewLayoutName"
+                     Grid.Column="0"
+                     Height="28"
+                     Background="{StaticResource ControlBackground}"
+                     Foreground="{StaticResource ForegroundColor}"
+                     BorderBrush="{StaticResource ControlBorder}"
+                     VerticalContentAlignment="Center"
+                     Padding="5,0"/>
+
+            <Button x:Name="btnSaveNew"
+                    Grid.Column="2"
+                    Content="Save New"
+                    Width="80"
+                    Height="28"
+                    Background="{StaticResource ControlBackground}"
+                    Foreground="{StaticResource StatusGreen}"
+                    BorderBrush="{StaticResource ControlBorder}"
+                    Click="BtnSaveNew_Click"/>
+
+            <Button x:Name="btnClose"
+                    Grid.Column="4"
+                    Content="Close"
+                    Width="70"
+                    Height="28"
+                    Background="{StaticResource ControlBackground}"
+                    Foreground="{StaticResource ForegroundColor}"
+                    BorderBrush="{StaticResource ControlBorder}"
+                    Click="BtnClose_Click"/>
+        </Grid>
+    </Grid>
+</Window>

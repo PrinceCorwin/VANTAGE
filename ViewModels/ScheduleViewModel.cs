@@ -522,7 +522,8 @@ namespace VANTAGE.ViewModels
 
             if (FilterActualsDiscrepancies)
             {
-                return row.HasStartVariance || row.HasFinishVariance;
+                return row.HasStartVariance || row.HasFinishVariance ||
+                       row.HasBudgetMHsVariance || row.HasPercentCompleteVariance;
             }
 
             return true;

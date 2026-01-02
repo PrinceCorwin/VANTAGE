@@ -56,7 +56,8 @@
                                 SmallIcon="{x:Null}"
                                 LargeIcon="{x:Null}"
                                 FontSize="12"
-                                SizeMode="Normal">
+                                SizeMode="Normal"
+                                ToolTip="File actions">
                         <syncfusion:DropDownMenuGroup
                             Background="{StaticResource ControlBackground}"
                             Foreground="{StaticResource ForegroundColor}"
@@ -82,7 +83,8 @@
                             SmallIcon="{x:Null}"
                             LargeIcon="{x:Null}"
                             FontSize="12"
-                            SizeMode="Normal">
+                            SizeMode="Normal"
+                            ToolTip="Generate progress and analysis reports">
                             <syncfusion:DropDownMenuGroup
                                 Background="{StaticResource ControlBackground}"
                                 Foreground="{StaticResource ForegroundColor}"
@@ -111,7 +113,8 @@
                               SmallIcon="{x:Null}"
                               LargeIcon="{x:Null}"
                               FontSize="12"
-                              SizeMode="Normal">
+                              SizeMode="Normal"
+                              ToolTip="Data analysis tools">
                         <syncfusion:DropDownMenuGroup
                             Background="{StaticResource ControlBackground}"
                             Foreground="{StaticResource ForegroundColor}"
@@ -140,7 +143,8 @@
                               SmallIcon="{x:Null}"
                               LargeIcon="{x:Null}"
                               FontSize="12"
-                              SizeMode="Normal">
+                              SizeMode="Normal"
+                              ToolTip="Utilities and maintenance options">
                         <syncfusion:DropDownMenuGroup
                             Background="{StaticResource ControlBackground}"
                             Foreground="{StaticResource ForegroundColor}"
@@ -236,7 +240,8 @@
                                                LargeIcon="{x:Null}"
                                                FontSize="12"
                                                FontWeight="Bold"
-                                               Click="BtnProgress_Click"/>
+                                               Click="BtnProgress_Click"
+                                               ToolTip="Track activity completion and earned values"/>
                         <Border x:Name="borderProgress"
                                  Width="100"
                                  Height="3"
@@ -257,7 +262,8 @@
                                                LargeIcon="{x:Null}"
                                                FontSize="12"
                                                FontWeight="Bold"
-                                               Click="BtnSchedule_Click"/>
+                                               Click="BtnSchedule_Click"
+                                               ToolTip="View and edit P6 schedule data"/>
                                                 <Border x:Name="borderSchedule"
                                                          Width="100"
                                                          Height="3"
@@ -278,7 +284,8 @@
                                                LargeIcon="{x:Null}"
                                                FontSize="12"
                                                FontWeight="Bold"
-                                               Click="BtnPbook_Click"/>
+                                               Click="BtnPbook_Click"
+                                               ToolTip="Generate progress books"/>
                         <Border x:Name="ProgBookBorder"
                                  Width="100"
                                  Height="3"
@@ -299,7 +306,8 @@
                                              LargeIcon="{x:Null}"
                                              FontSize="12"
                                              FontWeight="Bold"
-                                             Click="BtnWorkPackage_Click"/>
+                                             Click="BtnWorkPackage_Click"
+                                             ToolTip="Manage work packages"/>
                         <Border x:Name="WorkPackageBorder"
                                  Width="100"
                                  Height="3"
@@ -339,14 +347,15 @@
                                 CornerRadius="2"
                                 Padding="0">
                             <StackPanel>
-                                <Button Content="Reset Grid Layouts"
+                                <Button Content="Grid Layouts..."
                                         Background="Transparent"
                                         Foreground="{StaticResource ForegroundColor}"
                                         BorderThickness="0"
                                         Padding="12,8"
                                         HorizontalContentAlignment="Left"
-                                        Click="MenuResetGridLayouts_Click"
-                                        Cursor="Hand"/>
+                                        Click="MenuGridLayouts_Click"
+                                        Cursor="Hand"
+                                        ToolTip="Save and apply custom column layouts"/>
                                 <Button Content="Feedback Board"
                                         Background="Transparent"
                                         Foreground="{StaticResource ForegroundColor}"
@@ -354,7 +363,8 @@
                                         Padding="12,8"
                                         HorizontalContentAlignment="Left"
                                         Click="MenuFeedbackBoard_Click"
-                                        Cursor="Hand"/>
+                                        Cursor="Hand"
+                                        ToolTip="Submit ideas or report bugs"/>
                             </StackPanel>
                         </Border>
                     </Popup>

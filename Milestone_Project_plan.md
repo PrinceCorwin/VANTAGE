@@ -71,6 +71,7 @@ Frozen copy of Activity at weekly submission time.
 - Assignment/ownership with email notifications
 - Metadata validation (9 required fields)
 - Soft delete (Azure IsDeleted flag)
+- User-defined filters (multi-condition with AND/OR logic)
 
 ### Schedule Module
 - P6 Primavera import/export

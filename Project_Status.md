@@ -15,13 +15,15 @@
 
 ### To Do
 - [x] Fix btnFilterLocalDirty filter - active border highlight doesn't clear when Clear Filters is clicked
-- [ ] Add user defined filters
+- [x] Add user defined filters
 - [x] Admin able to edit ideas/bug reports (Type/Title/Desc editable by owner or admin; admin can view/restore/permanently delete soft-deleted items; 30-day auto-purge)
 - [x] Today filter button - filter to activities where today is within 3WLA dates (loads 3WLA from local DB, filters by in-progress OR should-have-started)
 - [x] Are we programmatically maintaining 3WLA table? (Yes - on P6 import: clears stale dates for all projects, deletes empty rows)
 - [x] Schedule view yellow conditional formatting not affecting PercentComplete - should trigger if P6 > MS
-- [ ] Discrepancy filter - filter by Actual Start, Actual Finish, MHs, % Complete where P6 ≠ MS
-- [ ] Multiple grid layouts - add new, delete, save named layouts
+- [x] Discrepancy filter - filter by Actual Start, Actual Finish, MHs, % Complete where P6 ≠ MS
+- [x] Multiple grid layouts - add new, delete, save named layouts
+- [x] Review all views and dialogs - add tooltips to controls
+- [x] Clean up DarkTheme of unused variables
 
 ### AI Integration
 See `AI_Implementation_Items.md` for detailed AI feature planning.
@@ -32,6 +34,14 @@ See `AI_Implementation_Items.md` for detailed AI feature planning.
 ## Recently Completed
 
 ### January 1, 2026
+- Cleaned up DarkTheme.xaml - removed 22 unused variables (reduced from 122 to 94 lines)
+- Added tooltips to ProgressView.xaml (12 buttons), MainWindow.xaml (10 controls), ScheduleView.xaml (8 controls)
+- Renamed btnFilterActualsDiscrepancies to btnFilterDiscrepancies in ScheduleView
+- Added multiple grid layouts feature (ManageLayoutsDialog: save up to 5 named layouts, apply/rename/delete, Default button resets to XAML defaults)
+- Added user-defined filters feature (ManageFiltersDialog, dropdown button in sidebar, up to 5 conditions with AND/OR logic, saved to UserSettings)
+- Fixed LocalDirty filter button (renamed to btnFilterLocalDirty) - now clears highlight when Clear Filters clicked
+- Fixed Discrepancy filter to include all 4 variance types (Start, Finish, MHs, PercentComplete)
+- Fixed SAVE button hover styling in Schedule view to use theme variables
 - Added Today filter button to Progress view (filters by in-progress or 3WLA scheduled for today)
 - Added PercentComplete yellow variance highlighting to Schedule view (P6 > MS)
 - Enhanced Feedback Board: owner/admin can edit Type/Title/Description, admin can view/restore/permanently delete, 30-day auto-purge, changed "Closed" status to "Rejected"
@@ -86,3 +96,5 @@ None currently tracked.
 - Admin dialogs
 - UserSettings export/import with immediate reload
 - Log export to file and email with attachment
+- User-defined filters create/edit/delete and apply
+- Grid layouts save/apply/rename/delete and reset to default

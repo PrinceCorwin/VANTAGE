@@ -33,7 +33,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#3A3A3C"/>
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource ControlHoverBackground}"/>
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
                                 <Setter TargetName="border" Property="Background" Value="{StaticResource AccentColor}"/>
@@ -41,7 +41,7 @@
                                 <Setter Property="Foreground" Value="White"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#2A2A2C"/>
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource ControlPressedBackground}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -179,25 +179,29 @@
                              Content="Missed Start"
                              IsChecked="{Binding FilterMissedStart, Mode=TwoWay}"
                              Style="{StaticResource FilterToggleButtonStyle}"
-                             Margin="0,0,5,0"/>
+                             Margin="0,0,5,0"
+                             ToolTip="Show activities that missed their planned start date"/>
 
                 <ToggleButton x:Name="btnFilterMissedFinish"
                              Content="Missed Finish"
                              IsChecked="{Binding FilterMissedFinish, Mode=TwoWay}"
                              Style="{StaticResource FilterToggleButtonStyle}"
-                             Margin="0,0,5,0"/>
+                             Margin="0,0,5,0"
+                             ToolTip="Show activities that missed their planned finish date"/>
 
                 <ToggleButton x:Name="btnFilter3WLA"
                              Content="3WLA"
                              IsChecked="{Binding Filter3WLA, Mode=TwoWay}"
                              Style="{StaticResource FilterToggleButtonStyle}"
-                             Margin="0,0,5,0"/>
+                             Margin="0,0,5,0"
+                             ToolTip="Show activities in 3-week lookahead window"/>
 
-                <ToggleButton x:Name="btnFilterActualsDiscrepancies"
+                <ToggleButton x:Name="btnFilterDiscrepancies"
                              Content="Discrepancies"
                              IsChecked="{Binding FilterActualsDiscrepancies, Mode=TwoWay}"
                              Style="{StaticResource FilterToggleButtonStyle}"
-                             Margin="0,0,5,0"/>
+                             Margin="0,0,5,0"
+                             ToolTip="Show activities where P6 and MS values differ"/>
 
                 <ToggleButton x:Name="btnFilterRequiredFields"
                              Content="{Binding RequiredFieldsButtonText}"
@@ -205,7 +209,8 @@
                              Style="{StaticResource FilterToggleButtonStyle}"
                              Foreground="{StaticResource StatusRed}"
                              Width="130"
-                             Margin="0,0,20,0"/>
+                             Margin="0,0,20,0"
+                             ToolTip="Show activities missing required field values"/>
                 <Button x:Name="btnRefresh"
                         Content="Refresh"
                         Width="80"
@@ -216,7 +221,8 @@
                         BorderThickness="1"
                         FontSize="11"
                         Click="btnRefresh_Click"
-                        Margin="0,0,5,0"/>
+                        Margin="0,0,5,0"
+                        ToolTip="Reload schedule data from database"/>
                 <Button x:Name="btnSave"
                         Content="SAVE"
                         Width="80"
@@ -224,12 +230,36 @@
                         BorderThickness="1"
                         FontSize="11"
                         Click="btnSave_Click"
-                        Margin="0,0,5,0">
+                        Margin="0,0,5,0"
+                        ToolTip="Save all pending changes to database">
                     <Button.Style>
                         <Style TargetType="Button">
                             <Setter Property="Background" Value="{StaticResource ControlBackground}"/>
                             <Setter Property="Foreground" Value="{StaticResource ForegroundColor}"/>
                             <Setter Property="BorderBrush" Value="{StaticResource ControlBorder}"/>
+                            <Setter Property="Cursor" Value="Hand"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="border"
+                                                Background="{TemplateBinding Background}"
+                                                BorderBrush="{TemplateBinding BorderBrush}"
+                                                BorderThickness="{TemplateBinding BorderThickness}"
+                                                CornerRadius="3">
+                                            <ContentPresenter HorizontalAlignment="Center"
+                                                            VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="border" Property="Background" Value="{StaticResource ControlHoverBackground}"/>
+                                            </Trigger>
+                                            <Trigger Property="IsPressed" Value="True">
+                                                <Setter TargetName="border" Property="Background" Value="{StaticResource ControlPressedBackground}"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding HasUnsavedChanges}" Value="True">
                                     <Setter Property="Background" Value="{StaticResource StatusRed}"/>
@@ -384,7 +414,8 @@
                          Height="6"
                          ResizeDirection="Rows"
                          ResizeBehavior="PreviousAndNext"
-                         Style="{StaticResource HorizontalGridSplitterStyle}"/>
+                         Style="{StaticResource HorizontalGridSplitterStyle}"
+                         ToolTip="Drag to resize grids"/>
 
             <!-- DETAIL GRID (Child ProgressSnapshots) -->
             <Border Grid.Row="2"

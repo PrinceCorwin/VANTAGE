@@ -8,12 +8,16 @@ WPF application for Summit Constructors replacing legacy MS Access system. Track
 - WPF .NET 8, Syncfusion 31.2.12 (FluentDark theme)
 - SQLite (local) + Azure SQL Server (central sync)
 - MVVM with async/await
+- Project is a work in progress - architecture and conventions may evolve.
+- Local database can be deleted and re-synced from Azure at any time.
+- Don't reject refactoring opportunities for fear user downtime. There are no production users yet.
 
 ## Development Approach
 - ONE change at a time, test before proceeding
 - No quick fixes - proper architectural solutions
 - Delete/refactor legacy code when no longer relevant
 - After completing a feature: identify improvements, check for dead code, suggest refactoring
+- Add brief intuitive tool tips to all created controls
 
 ## Git Commits
 - Do NOT add "Generated with Claude" or "Co-Authored-By: Claude" to commit messages
@@ -25,6 +29,7 @@ WPF application for Summit Constructors replacing legacy MS Access system. Track
 ### Comments
 - Use ONLY `//` style comments
 - NEVER use `/// <summary>` XML documentation
+- Add brief but intuitive desriptive comments for added methods, complex logic, or non-obvious decisions
 
 ### Nullable Reference Types
 ```csharp
@@ -136,6 +141,8 @@ if (!AzureDbManager.CheckConnection(out string errorMessage))
 | `ProjectCache.cs` | Valid ProjectID validation cache |
 | `EmailService.cs` | Azure Communication Services |
 | `FeedbackDialog.cs` | Feedback Board (Ideas/Bugs) with Azure sync |
+| `ManageFiltersDialog.cs` | User-defined filters dialog |
+| `ManageLayoutsDialog.cs` | Named grid layouts dialog |
 | `Credentials.cs` | Connection strings (gitignored) |
 
 ## Communication Preferences

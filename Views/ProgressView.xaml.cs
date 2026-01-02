@@ -21,6 +21,7 @@ using VANTAGE.Utilities;
 using VANTAGE.ViewModels;
 using System.Windows.Threading;
 using Microsoft.Data.SqlClient;
+using VANTAGE.Dialogs;
 
 namespace VANTAGE.Views
 {
@@ -28,6 +29,7 @@ namespace VANTAGE.Views
     {
         private const int ColumnUniqueValueDisplayLimit = 1000; // configurable
         private Dictionary<string, Syncfusion.UI.Xaml.Grid.GridColumn> _columnMap = new Dictionary<string, Syncfusion.UI.Xaml.Grid.GridColumn>();
+        private UserFilter? _activeUserFilter;
         private ProgressViewModel _viewModel;
         // one key per grid/view
         private const string GridPrefsKey = "ProgressGrid.PreferencesJson";
@@ -954,6 +956,80 @@ namespace VANTAGE.Views
             LoadColumnState();
         }
 
+        // Get current grid preferences for layout save
+        public GridPreferencesData GetGridPreferences()
+        {
+            if (sfActivities?.Columns == null || sfActivities.Columns.Count == 0)
+                return new GridPreferencesData();
+
+            return new GridPreferencesData
+            {
+                Version = 1,
+                SchemaHash = ComputeSchemaHash(sfActivities),
+                Columns = sfActivities.Columns
+                    .Select(c => new GridColumnPrefData
+                    {
+                        Name = c.MappingName,
+                        OrderIndex = sfActivities.Columns.IndexOf(c),
+                        Width = c.Width,
+                        IsHidden = c.IsHidden
+                    })
+                    .ToList()
+            };
+        }
+
+        // Apply external layout preferences
+        public void ApplyGridPreferences(GridPreferencesData prefs)
+        {
+            try
+            {
+                if (sfActivities?.Columns == null || prefs?.Columns == null || prefs.Columns.Count == 0)
+                    return;
+
+                // Validate schema hash
+                var currentHash = ComputeSchemaHash(sfActivities);
+                if (!string.Equals(prefs.SchemaHash, currentHash, StringComparison.Ordinal))
+                {
+                    System.Diagnostics.Debug.WriteLine($"ApplyGridPreferences: schema mismatch (saved {prefs.SchemaHash} vs current {currentHash}). Skipped.");
+                    return;
+                }
+
+                var byName = sfActivities.Columns.ToDictionary(c => c.MappingName, c => c);
+
+                // 1) Visibility first
+                foreach (var p in prefs.Columns)
+                    if (byName.TryGetValue(p.Name, out var col))
+                        col.IsHidden = p.IsHidden;
+
+                // 2) Order (move columns to target positions)
+                var orderedPrefs = prefs.Columns.OrderBy(x => x.OrderIndex).ToList();
+                for (int target = 0; target < orderedPrefs.Count; target++)
+                {
+                    var p = orderedPrefs[target];
+                    if (!byName.TryGetValue(p.Name, out var col)) continue;
+                    int cur = sfActivities.Columns.IndexOf(col);
+                    if (cur != target && cur >= 0)
+                    {
+                        sfActivities.Columns.RemoveAt(cur);
+                        sfActivities.Columns.Insert(target, col);
+                    }
+                }
+
+                // 3) Width last (guard against tiny widths)
+                const double MinWidth = 40.0;
+                foreach (var p in prefs.Columns)
+                    if (byName.TryGetValue(p.Name, out var col))
+                        col.Width = Math.Max(MinWidth, p.Width);
+
+                sfActivities.UpdateLayout();
+                System.Diagnostics.Debug.WriteLine($"ApplyGridPreferences: applied {prefs.Columns.Count} columns");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"ApplyGridPreferences error: {ex}");
+            }
+        }
+
         private void LoadColumnState()
         {
             try
@@ -1490,9 +1566,237 @@ namespace VANTAGE.Views
             UpdateSummaryPanel();
         }
 
-        private void BtnFilterUser3_Click(object sender, RoutedEventArgs e)
+        private void BtnUserFilters_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: Implement
+            // Populate and show context menu
+            PopulateUserFiltersMenu();
+            ctxUserFilters.PlacementTarget = btnUserFilters;
+            ctxUserFilters.Placement = PlacementMode.Bottom;
+            ctxUserFilters.IsOpen = true;
+        }
+
+        private void PopulateUserFiltersMenu()
+        {
+            ctxUserFilters.Items.Clear();
+
+            // Get saved filters
+            var filters = ManageFiltersDialog.GetSavedFilters();
+
+            // Add each saved filter as a menu item
+            foreach (var filter in filters)
+            {
+                var menuItem = new MenuItem
+                {
+                    Header = filter.Name,
+                    Tag = filter
+                };
+                menuItem.Click += UserFilterMenuItem_Click;
+
+                // Show checkmark if this is the active filter
+                if (_activeUserFilter != null && _activeUserFilter.Name == filter.Name)
+                {
+                    menuItem.Icon = new System.Windows.Controls.TextBlock { Text = "\u2713", FontWeight = FontWeights.Bold };
+                }
+
+                ctxUserFilters.Items.Add(menuItem);
+            }
+
+            // Add Clear Filter option
+            var clearItem = new MenuItem
+            {
+                Header = "Clear Filter",
+                IsEnabled = _activeUserFilter != null
+            };
+            clearItem.Click += ClearUserFilter_Click;
+            ctxUserFilters.Items.Add(clearItem);
+
+            // Add Manage option
+            var manageItem = new MenuItem
+            {
+                Header = "Manage..."
+            };
+            manageItem.Click += ManageFilters_Click;
+            ctxUserFilters.Items.Add(manageItem);
+        }
+
+        private void UserFilterMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is MenuItem menuItem && menuItem.Tag is UserFilter filter)
+            {
+                ApplyUserFilter(filter);
+            }
+        }
+
+        private void ApplyUserFilter(UserFilter filter)
+        {
+            try
+            {
+                _activeUserFilter = filter;
+
+                // Update button text to show filter name
+                txtUserFilterName.Text = filter.Name;
+
+                // Highlight button border
+                btnUserFilters.BorderBrush = (Brush)Application.Current.Resources["AccentColor"];
+
+                // Build and apply the filter using Syncfusion's View.Filter
+                sfActivities.View.Filter = record =>
+                {
+                    if (record is not Activity activity)
+                        return true;
+
+                    bool? result = null;
+
+                    foreach (var condition in filter.Conditions)
+                    {
+                        bool conditionResult = EvaluateCondition(activity, condition);
+
+                        if (result == null)
+                        {
+                            result = conditionResult;
+                        }
+                        else
+                        {
+                            if (condition.LogicOperator == "OR")
+                            {
+                                result = result.Value || conditionResult;
+                            }
+                            else // AND
+                            {
+                                result = result.Value && conditionResult;
+                            }
+                        }
+                    }
+
+                    return result ?? true;
+                };
+
+                sfActivities.View.RefreshFilter();
+                _viewModel.FilteredCount = sfActivities.View.Records.Count;
+                UpdateRecordCount();
+                UpdateSummaryPanel();
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "ProgressView.ApplyUserFilter");
+                MessageBox.Show($"Error applying filter: {ex.Message}", "Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private bool EvaluateCondition(Activity activity, FilterCondition condition)
+        {
+            try
+            {
+                // Get property value using reflection
+                var property = typeof(Activity).GetProperty(condition.Column);
+                if (property == null)
+                    return true;
+
+                var value = property.GetValue(activity);
+                var stringValue = value?.ToString() ?? string.Empty;
+                var compareValue = condition.Value ?? string.Empty;
+
+                switch (condition.Criteria)
+                {
+                    case FilterCriteria.Equals:
+                        if (value is double d)
+                            return double.TryParse(compareValue, out var cd) && Math.Abs(d - cd) < 0.0001;
+                        if (value is int i)
+                            return int.TryParse(compareValue, out var ci) && i == ci;
+                        return stringValue.Equals(compareValue, StringComparison.OrdinalIgnoreCase);
+
+                    case FilterCriteria.NotEquals:
+                        if (value is double d2)
+                            return !double.TryParse(compareValue, out var cd2) || Math.Abs(d2 - cd2) >= 0.0001;
+                        if (value is int i2)
+                            return !int.TryParse(compareValue, out var ci2) || i2 != ci2;
+                        return !stringValue.Equals(compareValue, StringComparison.OrdinalIgnoreCase);
+
+                    case FilterCriteria.Contains:
+                        return stringValue.Contains(compareValue, StringComparison.OrdinalIgnoreCase);
+
+                    case FilterCriteria.NotContains:
+                        return !stringValue.Contains(compareValue, StringComparison.OrdinalIgnoreCase);
+
+                    case FilterCriteria.StartsWith:
+                        return stringValue.StartsWith(compareValue, StringComparison.OrdinalIgnoreCase);
+
+                    case FilterCriteria.EndsWith:
+                        return stringValue.EndsWith(compareValue, StringComparison.OrdinalIgnoreCase);
+
+                    case FilterCriteria.IsEmpty:
+                        return string.IsNullOrEmpty(stringValue);
+
+                    case FilterCriteria.IsNotEmpty:
+                        return !string.IsNullOrEmpty(stringValue);
+
+                    case FilterCriteria.GreaterThan:
+                        if (double.TryParse(stringValue, out var numVal) && double.TryParse(compareValue, out var numCompare))
+                            return numVal > numCompare;
+                        return false;
+
+                    case FilterCriteria.GreaterThanOrEqual:
+                        if (double.TryParse(stringValue, out var numVal2) && double.TryParse(compareValue, out var numCompare2))
+                            return numVal2 >= numCompare2;
+                        return false;
+
+                    case FilterCriteria.LessThan:
+                        if (double.TryParse(stringValue, out var numVal3) && double.TryParse(compareValue, out var numCompare3))
+                            return numVal3 < numCompare3;
+                        return false;
+
+                    case FilterCriteria.LessThanOrEqual:
+                        if (double.TryParse(stringValue, out var numVal4) && double.TryParse(compareValue, out var numCompare4))
+                            return numVal4 <= numCompare4;
+                        return false;
+
+                    default:
+                        return true;
+                }
+            }
+            catch
+            {
+                return true;
+            }
+        }
+
+        private void ClearUserFilter_Click(object sender, RoutedEventArgs e)
+        {
+            ClearUserFilter();
+        }
+
+        private void ClearUserFilter()
+        {
+            _activeUserFilter = null;
+            txtUserFilterName.Text = "USER";
+            btnUserFilters.BorderBrush = (Brush)Application.Current.Resources["ControlBorder"];
+
+            // Clear the View.Filter (but keep column filters)
+            sfActivities.View.Filter = null;
+            sfActivities.View.RefreshFilter();
+
+            _viewModel.FilteredCount = sfActivities.View.Records.Count;
+            UpdateRecordCount();
+            UpdateSummaryPanel();
+        }
+
+        private void ManageFilters_Click(object sender, RoutedEventArgs e)
+        {
+            // Clear active user filter when opening Manage dialog
+            ClearUserFilter();
+
+            // Get available columns from the grid
+            var columns = sfActivities.Columns
+                .Select(c => c.MappingName)
+                .Where(name => !string.IsNullOrEmpty(name))
+                .ToList();
+
+            var dialog = new ManageFiltersDialog(columns)
+            {
+                Owner = Window.GetWindow(this)
+            };
+            dialog.ShowDialog();
         }
         private async void BtnSubmit_Click(object sender, RoutedEventArgs e)
         {
@@ -2540,6 +2844,11 @@ namespace VANTAGE.Views
             btnFilterLocalDirty.BorderBrush = (Brush)Application.Current.Resources["ControlBorder"];
             btnFilterMyRecords.BorderBrush = (Brush)Application.Current.Resources["ControlBorder"];
             btnFilterToday.BorderBrush = (Brush)Application.Current.Resources["ControlBorder"];
+
+            // Reset user filter button
+            _activeUserFilter = null;
+            txtUserFilterName.Text = "USER";
+            btnUserFilters.BorderBrush = (Brush)Application.Current.Resources["ControlBorder"];
 
             _viewModel.FilteredCount = sfActivities.View.Records.Count;
             UpdateRecordCount();

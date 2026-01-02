@@ -704,6 +704,167 @@ namespace VANTAGE.Views
             LoadDetailColumnState();
         }
 
+        // Get current master grid preferences for layout save
+        public GridPreferencesData GetMasterGridPreferences()
+        {
+            if (sfScheduleMaster?.Columns == null || sfScheduleMaster.Columns.Count == 0)
+                return new GridPreferencesData();
+
+            return new GridPreferencesData
+            {
+                Version = 1,
+                SchemaHash = ComputeSchemaHash(sfScheduleMaster),
+                Columns = sfScheduleMaster.Columns
+                    .Select(c => new GridColumnPrefData
+                    {
+                        Name = c.MappingName,
+                        OrderIndex = sfScheduleMaster.Columns.IndexOf(c),
+                        Width = c.Width,
+                        IsHidden = c.IsHidden
+                    })
+                    .ToList()
+            };
+        }
+
+        // Get current detail grid preferences for layout save
+        public GridPreferencesData GetDetailGridPreferences()
+        {
+            if (sfScheduleDetail?.Columns == null || sfScheduleDetail.Columns.Count == 0)
+                return new GridPreferencesData();
+
+            return new GridPreferencesData
+            {
+                Version = 1,
+                SchemaHash = ComputeSchemaHash(sfScheduleDetail),
+                Columns = sfScheduleDetail.Columns
+                    .Select(c => new GridColumnPrefData
+                    {
+                        Name = c.MappingName,
+                        OrderIndex = sfScheduleDetail.Columns.IndexOf(c),
+                        Width = c.Width,
+                        IsHidden = c.IsHidden
+                    })
+                    .ToList()
+            };
+        }
+
+        // Get current splitter heights for layout save
+        public (double Master, double Detail) GetSplitterHeights()
+        {
+            return (MasterGridRow.ActualHeight, DetailGridRow.ActualHeight);
+        }
+
+        // Apply external master grid layout preferences
+        public void ApplyMasterGridPreferences(GridPreferencesData prefs)
+        {
+            try
+            {
+                if (sfScheduleMaster?.Columns == null || prefs?.Columns == null || prefs.Columns.Count == 0)
+                    return;
+
+                var currentHash = ComputeSchemaHash(sfScheduleMaster);
+                if (!string.Equals(prefs.SchemaHash, currentHash, StringComparison.Ordinal))
+                    return;
+
+                var byName = sfScheduleMaster.Columns.ToDictionary(c => c.MappingName, c => c);
+
+                // 1) Visibility
+                foreach (var p in prefs.Columns)
+                    if (byName.TryGetValue(p.Name, out var col))
+                        col.IsHidden = p.IsHidden;
+
+                // 2) Order
+                var orderedPrefs = prefs.Columns.OrderBy(x => x.OrderIndex).ToList();
+                for (int target = 0; target < orderedPrefs.Count; target++)
+                {
+                    var p = orderedPrefs[target];
+                    if (!byName.TryGetValue(p.Name, out var col)) continue;
+                    int cur = sfScheduleMaster.Columns.IndexOf(col);
+                    if (cur != target && cur >= 0)
+                    {
+                        sfScheduleMaster.Columns.RemoveAt(cur);
+                        sfScheduleMaster.Columns.Insert(target, col);
+                    }
+                }
+
+                // 3) Width
+                const double MinWidth = 40.0;
+                foreach (var p in prefs.Columns)
+                    if (byName.TryGetValue(p.Name, out var col))
+                        col.Width = Math.Max(MinWidth, p.Width);
+
+                sfScheduleMaster.UpdateLayout();
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "ScheduleView.ApplyMasterGridPreferences");
+            }
+        }
+
+        // Apply external detail grid layout preferences
+        public void ApplyDetailGridPreferences(GridPreferencesData prefs)
+        {
+            try
+            {
+                if (sfScheduleDetail?.Columns == null || prefs?.Columns == null || prefs.Columns.Count == 0)
+                    return;
+
+                var currentHash = ComputeSchemaHash(sfScheduleDetail);
+                if (!string.Equals(prefs.SchemaHash, currentHash, StringComparison.Ordinal))
+                    return;
+
+                var byName = sfScheduleDetail.Columns.ToDictionary(c => c.MappingName, c => c);
+
+                // 1) Visibility
+                foreach (var p in prefs.Columns)
+                    if (byName.TryGetValue(p.Name, out var col))
+                        col.IsHidden = p.IsHidden;
+
+                // 2) Order
+                var orderedPrefs = prefs.Columns.OrderBy(x => x.OrderIndex).ToList();
+                for (int target = 0; target < orderedPrefs.Count; target++)
+                {
+                    var p = orderedPrefs[target];
+                    if (!byName.TryGetValue(p.Name, out var col)) continue;
+                    int cur = sfScheduleDetail.Columns.IndexOf(col);
+                    if (cur != target && cur >= 0)
+                    {
+                        sfScheduleDetail.Columns.RemoveAt(cur);
+                        sfScheduleDetail.Columns.Insert(target, col);
+                    }
+                }
+
+                // 3) Width
+                const double MinWidth = 40.0;
+                foreach (var p in prefs.Columns)
+                    if (byName.TryGetValue(p.Name, out var col))
+                        col.Width = Math.Max(MinWidth, p.Width);
+
+                sfScheduleDetail.UpdateLayout();
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "ScheduleView.ApplyDetailGridPreferences");
+            }
+        }
+
+        // Apply external splitter heights
+        public void ApplySplitterHeights(double masterHeight, double detailHeight)
+        {
+            try
+            {
+                masterHeight = Math.Max(100, masterHeight);
+                detailHeight = Math.Max(80, detailHeight);
+
+                MasterGridRow.Height = new GridLength(masterHeight);
+                DetailGridRow.Height = new GridLength(detailHeight);
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "ScheduleView.ApplySplitterHeights");
+            }
+        }
+
         private void LoadColumnState()
         {
             try

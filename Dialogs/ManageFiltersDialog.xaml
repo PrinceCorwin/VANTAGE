@@ -1,0 +1,151 @@
+<Window x:Class="VANTAGE.Dialogs.ManageFiltersDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:skinManager="clr-namespace:Syncfusion.SfSkinManager;assembly=Syncfusion.SfSkinManager.WPF"
+        skinManager:SfSkinManager.Theme="{skinManager:SkinManagerExtension ThemeName=FluentDark}"
+        Title="Manage Filters"
+        Height="500"
+        Width="750"
+        WindowStartupLocation="CenterOwner"
+        Background="{StaticResource BackgroundColor}"
+        ResizeMode="NoResize"
+        WindowStyle="SingleBorderWindow">
+
+    <Grid Margin="20">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200"/>
+            <ColumnDefinition Width="20"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Left: Saved Filters List -->
+        <Grid Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="10"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="10"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0"
+                       Text="Saved Filters"
+                       FontWeight="SemiBold"
+                       FontSize="14"
+                       Foreground="{StaticResource ForegroundColor}"/>
+
+            <ListBox x:Name="lstFilters"
+                     Grid.Row="2"
+                     Background="{StaticResource ControlBackground}"
+                     Foreground="{StaticResource ForegroundColor}"
+                     BorderBrush="{StaticResource ControlBorder}"
+                     SelectionChanged="LstFilters_SelectionChanged"/>
+
+            <StackPanel Grid.Row="4" Orientation="Horizontal">
+                <Button x:Name="btnNewFilter"
+                        Content="New"
+                        Width="60"
+                        Height="28"
+                        Margin="0,0,10,0"
+                        Background="{StaticResource ControlBackground}"
+                        Foreground="{StaticResource ForegroundColor}"
+                        BorderBrush="{StaticResource ControlBorder}"
+                        Click="BtnNewFilter_Click"/>
+                <Button x:Name="btnDeleteFilter"
+                        Content="Delete"
+                        Width="60"
+                        Height="28"
+                        Background="{StaticResource ControlBackground}"
+                        Foreground="{StaticResource StatusRed}"
+                        BorderBrush="{StaticResource ControlBorder}"
+                        Click="BtnDeleteFilter_Click"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Right: Filter Editor -->
+        <Grid Grid.Column="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="15"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="15"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="15"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Filter Name -->
+            <StackPanel Grid.Row="0" Orientation="Horizontal">
+                <TextBlock Text="Filter Name:"
+                           Foreground="{StaticResource ForegroundColor}"
+                           VerticalAlignment="Center"
+                           Width="80"/>
+                <TextBox x:Name="txtFilterName"
+                         Width="200"
+                         Height="28"
+                         Background="{StaticResource ControlBackground}"
+                         Foreground="{StaticResource ForegroundColor}"
+                         BorderBrush="{StaticResource ControlBorder}"
+                         VerticalContentAlignment="Center"
+                         Padding="5,0"/>
+            </StackPanel>
+
+            <!-- Column Headers -->
+            <Grid Grid.Row="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="10"/>
+                    <ColumnDefinition Width="140"/>
+                    <ColumnDefinition Width="10"/>
+                    <ColumnDefinition Width="120"/>
+                    <ColumnDefinition Width="10"/>
+                    <ColumnDefinition Width="60"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="Column" Foreground="{StaticResource TextColorSecondary}" FontSize="11"/>
+                <TextBlock Grid.Column="2" Text="Criteria" Foreground="{StaticResource TextColorSecondary}" FontSize="11"/>
+                <TextBlock Grid.Column="4" Text="Value" Foreground="{StaticResource TextColorSecondary}" FontSize="11"/>
+                <TextBlock Grid.Column="6" Text="Logic" Foreground="{StaticResource TextColorSecondary}" FontSize="11"/>
+            </Grid>
+
+            <!-- Filter Conditions -->
+            <ScrollViewer Grid.Row="4" VerticalScrollBarVisibility="Auto">
+                <StackPanel x:Name="pnlConditions">
+                    <!-- Condition rows will be added dynamically -->
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Add Condition Button -->
+            <StackPanel Grid.Row="6" Orientation="Horizontal">
+                <Button x:Name="btnAddCondition"
+                        Content="+ Add Condition"
+                        Width="110"
+                        Height="28"
+                        Background="{StaticResource ControlBackground}"
+                        Foreground="{StaticResource ForegroundColor}"
+                        BorderBrush="{StaticResource ControlBorder}"
+                        Click="BtnAddCondition_Click"/>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="150,0,0,0">
+                    <Button x:Name="btnSave"
+                            Content="Save"
+                            Width="80"
+                            Height="28"
+                            Margin="0,0,10,0"
+                            Background="{StaticResource ControlBackground}"
+                            Foreground="{StaticResource StatusGreen}"
+                            BorderBrush="{StaticResource ControlBorder}"
+                            Click="BtnSave_Click"/>
+                    <Button x:Name="btnClose"
+                            Content="Close"
+                            Width="80"
+                            Height="28"
+                            Background="{StaticResource ControlBackground}"
+                            Foreground="{StaticResource ForegroundColor}"
+                            BorderBrush="{StaticResource ControlBorder}"
+                            Click="BtnClose_Click"/>
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>

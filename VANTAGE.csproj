@@ -16,6 +16,9 @@
 		<Copyright>Copyright © 2025 Steve Amalfitano</Copyright>
 		<Description>Construction Progress Tracking Application</Description>
 	</PropertyGroup>
+	<ItemGroup>
+	  <None Remove="nul" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Azure.Communication.Email" Version="1.1.0" />

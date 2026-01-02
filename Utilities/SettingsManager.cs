@@ -3,6 +3,8 @@ using Microsoft.Data.Sqlite;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
+using VANTAGE.Models;
 using VANTAGE.Utilities;
 
 
@@ -329,6 +331,133 @@ namespace VANTAGE.Utilities
             }
 
             return imported;
+        }
+
+        // Grid Layout constants
+        private const string LayoutIndexKey = "GridLayouts.Index";
+        private const string LayoutDataPrefix = "GridLayout.";
+        private const string LayoutDataSuffix = ".Data";
+        private const string ActiveLayoutKey = "GridLayouts.ActiveLayout";
+        public const int MaxLayouts = 5;
+
+        // Get list of saved layout names
+        public static List<string> GetGridLayoutNames(int userId)
+        {
+            try
+            {
+                var json = GetUserSetting(userId, LayoutIndexKey);
+                if (!string.IsNullOrWhiteSpace(json))
+                {
+                    return System.Text.Json.JsonSerializer.Deserialize<List<string>>(json) ?? new List<string>();
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "SettingsManager.GetGridLayoutNames");
+            }
+            return new List<string>();
+        }
+
+        // Save layout names index
+        public static void SaveGridLayoutNames(int userId, List<string> names)
+        {
+            try
+            {
+                var json = System.Text.Json.JsonSerializer.Serialize(names);
+                SetUserSetting(userId, LayoutIndexKey, json, "json");
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "SettingsManager.SaveGridLayoutNames");
+            }
+        }
+
+        // Get a specific layout by name
+        public static GridLayout? GetGridLayout(int userId, string layoutName)
+        {
+            try
+            {
+                var key = $"{LayoutDataPrefix}{layoutName}{LayoutDataSuffix}";
+                var json = GetUserSetting(userId, key);
+                if (!string.IsNullOrWhiteSpace(json))
+                {
+                    return System.Text.Json.JsonSerializer.Deserialize<GridLayout>(json);
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "SettingsManager.GetGridLayout");
+            }
+            return null;
+        }
+
+        // Save a layout
+        public static void SaveGridLayout(int userId, GridLayout layout)
+        {
+            try
+            {
+                var key = $"{LayoutDataPrefix}{layout.Name}{LayoutDataSuffix}";
+                var json = System.Text.Json.JsonSerializer.Serialize(layout);
+                SetUserSetting(userId, key, json, "json");
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "SettingsManager.SaveGridLayout");
+            }
+        }
+
+        // Delete a layout and remove from index
+        public static void DeleteGridLayout(int userId, string layoutName)
+        {
+            try
+            {
+                // Remove from index
+                var names = GetGridLayoutNames(userId);
+                if (names.Remove(layoutName))
+                {
+                    SaveGridLayoutNames(userId, names);
+                }
+
+                // Delete the layout data
+                var key = $"{LayoutDataPrefix}{layoutName}{LayoutDataSuffix}";
+                RemoveUserSetting(userId, key);
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "SettingsManager.DeleteGridLayout");
+            }
+        }
+
+        // Get the currently active layout name
+        public static string GetActiveLayoutName(int userId)
+        {
+            return GetUserSetting(userId, ActiveLayoutKey);
+        }
+
+        // Set the currently active layout name
+        public static void SetActiveLayoutName(int userId, string layoutName)
+        {
+            SetUserSetting(userId, ActiveLayoutKey, layoutName);
+        }
+
+        // Delete all layout data (for reset)
+        public static void ClearAllGridLayouts(int userId)
+        {
+            try
+            {
+                var names = GetGridLayoutNames(userId);
+                foreach (var name in names)
+                {
+                    var key = $"{LayoutDataPrefix}{name}{LayoutDataSuffix}";
+                    RemoveUserSetting(userId, key);
+                }
+                RemoveUserSetting(userId, LayoutIndexKey);
+                RemoveUserSetting(userId, ActiveLayoutKey);
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "SettingsManager.ClearAllGridLayouts");
+            }
         }
     }
 }

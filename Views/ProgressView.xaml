@@ -171,7 +171,6 @@
 
                     <Button x:Name="btnFilterComplete"
                             Content="Complete"
-                            
                             Height="35"
                             Margin="0,0,0,5"
                             Background="{StaticResource ControlBackground}"
@@ -181,11 +180,11 @@
                             HorizontalContentAlignment="Center"
                             Padding="10,0"
                             FontSize="11"
-                            Click="BtnFilterComplete_Click"/>
+                            Click="BtnFilterComplete_Click"
+                            ToolTip="Show only 100% complete activities"/>
 
                     <Button x:Name="btnFilterInProgress"
                             Content="In Progress"
-                            
                             Height="35"
                             Margin="0,0,0,5"
                             Background="{StaticResource ControlBackground}"
@@ -195,13 +194,13 @@
                             HorizontalContentAlignment="Center"
                             Padding="10,0"
                             FontSize="11"
-                            Click="btnFilterInProgress_Click"/>
+                            Click="btnFilterInProgress_Click"
+                            ToolTip="Show activities between 1-99% complete"/>
 
                     <Button x:Name="btnFilterNotStarted"
                             Content="Not Started"
                             Height="35"
                             Margin="0,0,0,0"
-                            
                             Background="{StaticResource ControlBackground}"
                             Foreground="{StaticResource ForegroundColor}"
                             BorderBrush="{StaticResource ControlBorder}"
@@ -209,7 +208,8 @@
                             HorizontalContentAlignment="Center"
                             Padding="10,0"
                             FontSize="11"
-                            Click="BtnFilterNotStarted_Click"/>
+                            Click="BtnFilterNotStarted_Click"
+                            ToolTip="Show activities at 0% complete"/>
 
                     <Border Height="1" 
                         Background="{StaticResource ControlBorder}" 
@@ -226,25 +226,11 @@
                             HorizontalContentAlignment="Center"
                             Padding="10,0"
                             FontSize="11"
-                            Click="BtnFilterLocalDirty_Click"/>
-
-                    <Button x:Name="btnFilterUser3"
-                            Content="USER 3"
-                            
-                            Height="35"
-                            Margin="0,0,0,5"
-                            Background="{StaticResource ControlBackground}"
-                            Foreground="{StaticResource ForegroundColor}"
-                            BorderBrush="{StaticResource ControlBorder}"
-                            BorderThickness="1"
-                            HorizontalContentAlignment="Center"
-                            Padding="10,0"
-                            FontSize="11"
-                            Click="BtnFilterUser3_Click"/>
+                            Click="BtnFilterLocalDirty_Click"
+                            ToolTip="Show records with unsaved local changes"/>
 
                     <Button x:Name="btnFilterMyRecords"
                             Content="My Records"
-
                             Height="35"
                             Margin="0,0,0,0"
                             Background="{StaticResource ControlBackground}"
@@ -254,11 +240,11 @@
                             HorizontalContentAlignment="Center"
                             Padding="10,0"
                             FontSize="11"
-                            Click="BtnFilterMyRecords_Click"/>
+                            Click="BtnFilterMyRecords_Click"
+                            ToolTip="Show only records assigned to me"/>
 
                     <Button x:Name="btnFilterToday"
                             Content="Today"
-
                             Height="35"
                             Margin="0,5,0,0"
                             Background="{StaticResource ControlBackground}"
@@ -268,7 +254,63 @@
                             HorizontalContentAlignment="Center"
                             Padding="10,0"
                             FontSize="11"
-                            Click="BtnFilterToday_Click"/>
+                            Click="BtnFilterToday_Click"
+                            ToolTip="Show activities scheduled within 3-week lookahead"/>
+
+                    <Button x:Name="btnUserFilters"
+                            Height="35"
+                            Margin="0,5,0,0"
+                            Background="{StaticResource ControlBackground}"
+                            Foreground="{StaticResource ForegroundColor}"
+                            BorderBrush="{StaticResource ControlBorder}"
+                            BorderThickness="1"
+                            HorizontalContentAlignment="Center"
+                            Padding="5,0"
+                            FontSize="11"
+                            Click="BtnUserFilters_Click"
+                            ToolTip="Apply saved custom filters">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock x:Name="txtUserFilterName" Text="USER" VerticalAlignment="Center"/>
+                            <TextBlock Text=" &#x25BC;" FontSize="8" VerticalAlignment="Center" Margin="3,1,0,0"/>
+                        </StackPanel>
+                        <Button.ContextMenu>
+                            <ContextMenu x:Name="ctxUserFilters"
+                                         Background="{StaticResource ControlBackground}"
+                                         Foreground="{StaticResource ForegroundColor}"
+                                         BorderBrush="{StaticResource ControlBorder}"
+                                         BorderThickness="1"
+                                         Padding="0">
+                                <ContextMenu.ItemContainerStyle>
+                                    <Style TargetType="MenuItem">
+                                        <Setter Property="Background" Value="{StaticResource ControlBackground}"/>
+                                        <Setter Property="Foreground" Value="{StaticResource ForegroundColor}"/>
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="MenuItem">
+                                                    <Border x:Name="Border"
+                                                            Background="{TemplateBinding Background}"
+                                                            BorderThickness="0"
+                                                            Padding="10,6">
+                                                        <ContentPresenter ContentSource="Header"
+                                                                          VerticalAlignment="Center"/>
+                                                    </Border>
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsHighlighted" Value="True">
+                                                            <Setter TargetName="Border" Property="Background" Value="{StaticResource ControlHoverBackground}"/>
+                                                        </Trigger>
+                                                        <Trigger Property="IsEnabled" Value="False">
+                                                            <Setter Property="Foreground" Value="#FF888888"/>
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </ContextMenu.ItemContainerStyle>
+                                <!-- Items populated dynamically -->
+                            </ContextMenu>
+                        </Button.ContextMenu>
+                    </Button>
 
                     <Border Height="1"
                         Background="{StaticResource ControlBorder}"
@@ -276,7 +318,6 @@
 
                     <Button x:Name="btnClearFilters"
                             Content="Clear Filters"
-                            
                             Height="35"
                             Margin="0,0,0,0"
                             Background="{StaticResource ControlBackground}"
@@ -286,7 +327,8 @@
                             HorizontalContentAlignment="Center"
                             Padding="10,0"
                             FontSize="11"
-                            Click="BtnClearFilters_Click"/>
+                            Click="BtnClearFilters_Click"
+                            ToolTip="Remove all active filters"/>
 
                     <Border Height="1" 
                         Background="{StaticResource ControlBorder}" 
@@ -313,7 +355,6 @@
 
                     <Button x:Name="btnColumnVisibility"
                             Content="Columns"
-                            
                             Height="35"
                             Margin="0,0,0,0"
                             Background="{StaticResource ControlBackground}"
@@ -323,7 +364,8 @@
                             HorizontalContentAlignment="Center"
                             Padding="10,0"
                             FontSize="11"
-                            Click="BtnColumnVisibility_Click"/>
+                            Click="BtnColumnVisibility_Click"
+                            ToolTip="Show or hide grid columns"/>
 
                 </StackPanel>
                 <!-- Spacer (pushes logo to bottom) -->
@@ -384,7 +426,8 @@
                                 Padding="5"
                                 FontSize="12"
                                 VerticalContentAlignment="Center"
-                                Click="BtnRefresh_Click"/>
+                                Click="BtnRefresh_Click"
+                                ToolTip="Reload data from local database"/>
 
                         <Button x:Name="btnSetPercent100"
                                 Content="100%"
@@ -454,7 +497,8 @@
                                 Padding="5"
                                 FontSize="12"
                                 VerticalContentAlignment="Center"
-                                Click="BtnSync_Click"/>
+                                Click="BtnSync_Click"
+                                ToolTip="Push local changes and pull updates from Azure"/>
 
                         <Button x:Name="btnSubmit"
                                 Content="SUBMIT WEEK"
@@ -468,7 +512,8 @@
                                 Padding="5"
                                 FontSize="12"
                                 VerticalContentAlignment="Center"
-                                Click="BtnSubmit_Click"/>
+                                Click="BtnSubmit_Click"
+                                ToolTip="Submit weekly progress and create snapshot"/>
                     </StackPanel>
 
                     <!-- RIGHT SIDE: Summary stats -->

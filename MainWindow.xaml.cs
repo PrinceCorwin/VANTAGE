@@ -1799,19 +1799,152 @@ namespace VANTAGE
             popupSettings.IsOpen = !popupSettings.IsOpen;
         }
 
-        private void MenuResetGridLayouts_Click(object sender, RoutedEventArgs e)
+        private void MenuGridLayouts_Click(object sender, RoutedEventArgs e)
         {
             popupSettings.IsOpen = false;
-            var result = MessageBox.Show(
-                "Reset all grid column layouts to defaults?\n\nThis will clear column widths, order, and visibility settings for Progress and Schedule grids.",
-                "Reset Grid Layouts",
-                MessageBoxButton.OKCancel,
-                MessageBoxImage.Question);
 
-            if (result != MessageBoxResult.OK)
-                return;
+            var dialog = new ManageLayoutsDialog(
+                getCurrentLayout: GatherCurrentLayout,
+                applyLayout: ApplyLayout,
+                resetToDefault: ResetGridLayoutsToDefault);
+            dialog.Owner = this;
+            dialog.ShowDialog();
+        }
 
-            // Tell current view to skip saving on unload (prevents re-saving deleted settings)
+        // Gather current grid state from all views into a unified layout
+        private GridLayout GatherCurrentLayout()
+        {
+            var layout = new GridLayout();
+
+            // Get Progress grid preferences
+            if (ContentArea.Content is ProgressView progressView)
+            {
+                layout.ProgressGrid = progressView.GetGridPreferences();
+            }
+            else
+            {
+                // Not currently viewing Progress - try to load from saved settings
+                var json = SettingsManager.GetUserSetting(App.CurrentUserID, "ProgressGrid.PreferencesJson");
+                if (!string.IsNullOrWhiteSpace(json))
+                {
+                    try
+                    {
+                        var prefs = System.Text.Json.JsonSerializer.Deserialize<GridPreferencesData>(json);
+                        if (prefs != null) layout.ProgressGrid = prefs;
+                    }
+                    catch { }
+                }
+            }
+
+            // Get Schedule grid preferences
+            if (ContentArea.Content is ScheduleView scheduleView)
+            {
+                layout.ScheduleMasterGrid = scheduleView.GetMasterGridPreferences();
+                layout.ScheduleDetailGrid = scheduleView.GetDetailGridPreferences();
+                var heights = scheduleView.GetSplitterHeights();
+                layout.ScheduleMasterHeight = heights.Master;
+                layout.ScheduleDetailHeight = heights.Detail;
+            }
+            else
+            {
+                // Not currently viewing Schedule - try to load from saved settings
+                var masterJson = SettingsManager.GetUserSetting(App.CurrentUserID, "ScheduleGrid.PreferencesJson");
+                var detailJson = SettingsManager.GetUserSetting(App.CurrentUserID, "ScheduleDetailGrid.PreferencesJson");
+                var masterHeight = SettingsManager.GetUserSetting(App.CurrentUserID, "ScheduleView_MasterGridHeight");
+                var detailHeight = SettingsManager.GetUserSetting(App.CurrentUserID, "ScheduleView_DetailGridHeight");
+
+                try
+                {
+                    if (!string.IsNullOrWhiteSpace(masterJson))
+                    {
+                        var prefs = System.Text.Json.JsonSerializer.Deserialize<GridPreferencesData>(masterJson);
+                        if (prefs != null) layout.ScheduleMasterGrid = prefs;
+                    }
+                    if (!string.IsNullOrWhiteSpace(detailJson))
+                    {
+                        var prefs = System.Text.Json.JsonSerializer.Deserialize<GridPreferencesData>(detailJson);
+                        if (prefs != null) layout.ScheduleDetailGrid = prefs;
+                    }
+                    if (double.TryParse(masterHeight, out double mh))
+                        layout.ScheduleMasterHeight = mh;
+                    if (double.TryParse(detailHeight, out double dh))
+                        layout.ScheduleDetailHeight = dh;
+                }
+                catch { }
+            }
+
+            return layout;
+        }
+
+        // Apply a layout to all grids
+        private void ApplyLayout(GridLayout layout)
+        {
+            // Apply to Progress grid
+            if (ContentArea.Content is ProgressView progressView)
+            {
+                progressView.ApplyGridPreferences(layout.ProgressGrid);
+            }
+
+            // Apply to Schedule grid
+            if (ContentArea.Content is ScheduleView scheduleView)
+            {
+                scheduleView.ApplyMasterGridPreferences(layout.ScheduleMasterGrid);
+                scheduleView.ApplyDetailGridPreferences(layout.ScheduleDetailGrid);
+                if (layout.ScheduleMasterHeight > 0 && layout.ScheduleDetailHeight > 0)
+                {
+                    scheduleView.ApplySplitterHeights(layout.ScheduleMasterHeight, layout.ScheduleDetailHeight);
+                }
+            }
+
+            // Also save to individual settings so they persist when views reload
+            SaveLayoutToIndividualSettings(layout);
+        }
+
+        // Save layout data to individual UserSettings keys for view persistence
+        private void SaveLayoutToIndividualSettings(GridLayout layout)
+        {
+            try
+            {
+                if (layout.ProgressGrid?.Columns?.Count > 0)
+                {
+                    var json = System.Text.Json.JsonSerializer.Serialize(layout.ProgressGrid);
+                    SettingsManager.SetUserSetting(App.CurrentUserID, "ProgressGrid.PreferencesJson", json, "json");
+                }
+
+                if (layout.ScheduleMasterGrid?.Columns?.Count > 0)
+                {
+                    var json = System.Text.Json.JsonSerializer.Serialize(layout.ScheduleMasterGrid);
+                    SettingsManager.SetUserSetting(App.CurrentUserID, "ScheduleGrid.PreferencesJson", json, "json");
+                }
+
+                if (layout.ScheduleDetailGrid?.Columns?.Count > 0)
+                {
+                    var json = System.Text.Json.JsonSerializer.Serialize(layout.ScheduleDetailGrid);
+                    SettingsManager.SetUserSetting(App.CurrentUserID, "ScheduleDetailGrid.PreferencesJson", json, "json");
+                }
+
+                if (layout.ScheduleMasterHeight > 0)
+                {
+                    SettingsManager.SetUserSetting(App.CurrentUserID, "ScheduleView_MasterGridHeight",
+                        layout.ScheduleMasterHeight.ToString(), "double");
+                }
+
+                if (layout.ScheduleDetailHeight > 0)
+                {
+                    SettingsManager.SetUserSetting(App.CurrentUserID, "ScheduleView_DetailGridHeight",
+                        layout.ScheduleDetailHeight.ToString(), "double");
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "MainWindow.SaveLayoutToIndividualSettings");
+            }
+        }
+
+        // Reset grids to XAML defaults without affecting saved layouts
+        private void ResetGridLayoutsToDefault()
+        {
+            // Tell current view to skip saving on unload
             if (ContentArea.Content is ProgressView currentProgressView)
             {
                 currentProgressView.SkipSaveOnClose();
@@ -1821,6 +1954,7 @@ namespace VANTAGE
                 currentScheduleView.SkipSaveOnClose();
             }
 
+            // Clear individual grid settings (but NOT saved layouts)
             string[] gridSettingKeys = new[]
             {
                 "ProgressGrid.PreferencesJson",
@@ -1830,14 +1964,12 @@ namespace VANTAGE
                 "ScheduleView_DetailGridHeight"
             };
 
-            int cleared = 0;
             foreach (var key in gridSettingKeys)
             {
-                if (SettingsManager.RemoveUserSetting(App.CurrentUserID, key))
-                    cleared++;
+                SettingsManager.RemoveUserSetting(App.CurrentUserID, key);
             }
 
-            // Reload module entirely to recreate view with XAML defaults
+            // Reload module to recreate view with XAML defaults
             if (ContentArea.Content is ProgressView)
             {
                 LoadProgressModule();
@@ -1848,14 +1980,8 @@ namespace VANTAGE
                 ContentArea.Content = new ScheduleView();
             }
 
-            MessageBox.Show(
-                $"Cleared {cleared} grid layout setting(s).\n\nGrid layouts have been reset to defaults.",
-                "Reset Complete",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
-
-            AppLogger.Info($"Reset {cleared} grid layout settings",
-                "MainWindow.MenuResetGridLayouts_Click", App.CurrentUser?.Username);
+            AppLogger.Info("Reset grid layouts to defaults",
+                "MainWindow.ResetGridLayoutsToDefault", App.CurrentUser?.Username);
         }
 
         private void MenuFeedbackBoard_Click(object sender, RoutedEventArgs e)
