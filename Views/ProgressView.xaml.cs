@@ -1360,6 +1360,34 @@ namespace VANTAGE.Views
 
             loadingProgressBar.BeginAnimation(System.Windows.Controls.Primitives.RangeBase.ValueProperty, animation);
         }
+        // Returns the currently filtered/visible activities from the grid
+        public List<Activity> GetFilteredActivities()
+        {
+            if (sfActivities?.View?.Records == null)
+                return _viewModel?.Activities?.ToList() ?? new List<Activity>();
+
+            var filtered = new List<Activity>();
+            foreach (var record in sfActivities.View.Records)
+            {
+                var recordType = record.GetType();
+                var dataProperty = recordType.GetProperty("Data");
+                if (dataProperty != null)
+                {
+                    var activity = dataProperty.GetValue(record) as Activity;
+                    if (activity != null)
+                        filtered.Add(activity);
+                }
+            }
+            return filtered;
+        }
+
+        // Refreshes the grid and summary panel after external changes
+        public void RefreshAfterProrate()
+        {
+            sfActivities.View.Refresh();
+            UpdateSummaryPanel();
+        }
+
         // Update summary totals based on currently visible (filtered) records
         private async void UpdateSummaryPanel()
         {

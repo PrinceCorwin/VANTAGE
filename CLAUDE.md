@@ -143,6 +143,7 @@ if (!AzureDbManager.CheckConnection(out string errorMessage))
 | `FeedbackDialog.cs` | Feedback Board (Ideas/Bugs) with Azure sync |
 | `ManageFiltersDialog.cs` | User-defined filters dialog |
 | `ManageLayoutsDialog.cs` | Named grid layouts dialog |
+| `ProrateDialog.cs` | Prorate BudgetMHs across filtered activities |
 | `Credentials.cs` | Connection strings (gitignored) |
 
 ## Communication Preferences

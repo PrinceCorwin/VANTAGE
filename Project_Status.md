@@ -1,6 +1,6 @@
 # MILESTONE - Project Status
 
-**Last Updated:** January 1, 2026
+**Last Updated:** January 2, 2026
 
 ## Current Status
 
@@ -24,14 +24,23 @@
 - [x] Multiple grid layouts - add new, delete, save named layouts
 - [x] Review all views and dialogs - add tooltips to controls
 - [x] Clean up DarkTheme of unused variables
+- [x] Prorate filtered activities BudgetMHs (New Total/Add/Subtract with Keep Percent or Keep Earned options)
+- [ ] Update Schedule view Discrepancies button to dropdown filter with Actual Start, Actual Finish, MHs, % Complete as selectable items
+- [ ] Progress Book creation
+- [ ] Work Package creation
+- [ ] Theme selection
 
 ### AI Integration
 See `AI_Implementation_Items.md` for detailed AI feature planning.
 
 ### Shelved
 - [ ] Find-Replace in Schedule Detail Grid
+- [ ] Disable Tooltips setting in Settings dropdown (see `Plans/DisableTooltips_Plan.md`)
 
 ## Recently Completed
+
+### January 2, 2026
+- Added Prorate MHs feature (Tools menu → Prorate MHs...): distribute BudgetMHs changes across filtered activities proportionally with New Total/Add/Subtract operations and Keep Percent Complete or Keep Earned MHs preserve modes; includes placeholder detection (<0.01 MHs), minimum constraint (0.001 MHs floor), 100% complete activity handling, input validation
 
 ### January 1, 2026
 - Cleaned up DarkTheme.xaml - removed 22 unused variables (reduced from 122 to 94 lines)
@@ -98,3 +107,4 @@ None currently tracked.
 - Log export to file and email with attachment
 - User-defined filters create/edit/delete and apply
 - Grid layouts save/apply/rename/delete and reset to default
+- Prorate MHs with various operation/preserve combinations

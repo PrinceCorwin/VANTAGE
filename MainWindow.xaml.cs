@@ -2004,9 +2004,30 @@ namespace VANTAGE
             dialog.ShowDialog();
         }
 
-        private void MenuTool8_Click(object sender, RoutedEventArgs e)
+        // Opens the Prorate MHs dialog for the currently filtered activities in Progress view
+        private void MenuProrateMHs_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Tool 8 coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
+            // Check if Progress view is active
+            if (ContentArea.Content is not Views.ProgressView progressView)
+            {
+                MessageBox.Show("Prorate MHs is only available in the Progress view.",
+                    "Wrong View", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            // Get filtered activities
+            var filteredActivities = progressView.GetFilteredActivities();
+            if (filteredActivities.Count == 0)
+            {
+                MessageBox.Show("No activities to prorate. Import or filter activities first.",
+                    "No Activities", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            // Open prorate dialog
+            var dialog = new Dialogs.ProrateDialog(filteredActivities, progressView.RefreshAfterProrate);
+            dialog.Owner = this;
+            dialog.ShowDialog();
         }
 
         private void MenuTool9_Click(object sender, RoutedEventArgs e)

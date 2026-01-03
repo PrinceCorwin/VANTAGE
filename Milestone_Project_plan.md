@@ -72,6 +72,7 @@ Frozen copy of Activity at weekly submission time.
 - Metadata validation (9 required fields)
 - Soft delete (Azure IsDeleted flag)
 - User-defined filters (multi-condition with AND/OR logic)
+- Prorate BudgetMHs across filtered activities (proportional distribution)
 
 ### Schedule Module
 - P6 Primavera import/export
