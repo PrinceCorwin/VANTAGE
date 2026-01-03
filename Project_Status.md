@@ -25,7 +25,7 @@
 - [x] Review all views and dialogs - add tooltips to controls
 - [x] Clean up DarkTheme of unused variables
 - [x] Prorate filtered activities BudgetMHs (New Total/Add/Subtract with Keep Percent or Keep Earned options)
-- [ ] Update Schedule view Discrepancies button to dropdown filter with Actual Start, Actual Finish, MHs, % Complete as selectable items
+- [x] Update Schedule view Discrepancies button to dropdown filter with Actual Start, Actual Finish, MHs, % Complete as selectable items
 - [ ] Progress Book creation
 - [ ] Work Package creation
 - [ ] Theme selection
@@ -40,6 +40,10 @@ See `AI_Implementation_Items.md` for detailed AI feature planning.
 ## Recently Completed
 
 ### January 2, 2026
+- Converted Discrepancies button to dropdown filter with 5 options (Clear Filter, Actual Start, Actual Finish, MHs, % Complete); each filters by that specific variance type; mutually exclusive with other filters
+- Added Clear Filters button to Schedule view toolbar; clears all toggle filters, discrepancy filter, and column header filters
+- Refresh button now also clears all filters when reloading data
+- Fixed Refresh button focus styling (no longer retains highlight after click)
 - Added Prorate MHs feature (Tools menu → Prorate MHs...): distribute BudgetMHs changes across filtered activities proportionally with New Total/Add/Subtract operations and Keep Percent Complete or Keep Earned MHs preserve modes; includes placeholder detection (<0.01 MHs), minimum constraint (0.001 MHs floor), 100% complete activity handling, input validation
 
 ### January 1, 2026
@@ -108,3 +112,4 @@ None currently tracked.
 - User-defined filters create/edit/delete and apply
 - Grid layouts save/apply/rename/delete and reset to default
 - Prorate MHs with various operation/preserve combinations
+- Discrepancy dropdown filter (each type individually, clear filter, clear all filters button)

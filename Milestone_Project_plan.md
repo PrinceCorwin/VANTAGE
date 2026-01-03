@@ -77,9 +77,10 @@ Frozen copy of Activity at weekly submission time.
 ### Schedule Module
 - P6 Primavera import/export
 - Compare P6 schedule vs MILESTONE actuals
+- Discrepancy filters: Actual Start, Actual Finish, MHs, % Complete (dropdown with clear option)
 - MS Rollups: MIN(start), MAX(finish when all complete), weighted % average
 - Three-Week Lookahead (3WLA) forecasting
-- Master/detail grid layout
+- Master/detail grid layout with Clear Filters button
 
 ### Admin System
 - Azure Admins table (single source of truth)

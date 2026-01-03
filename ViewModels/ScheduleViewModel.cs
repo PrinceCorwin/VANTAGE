@@ -10,6 +10,9 @@ using VANTAGE.Utilities;
 
 namespace VANTAGE.ViewModels
 {
+    // Filter types for P6 vs MS discrepancies
+    public enum DiscrepancyFilterType { None, Start, Finish, MHs, PercentComplete }
+
     public class ScheduleViewModel : INotifyPropertyChanged
     {
         private ObservableCollection<ScheduleMasterRow> _masterRows = new ObservableCollection<ScheduleMasterRow>();
@@ -20,7 +23,7 @@ namespace VANTAGE.ViewModels
         private bool _filterMissedStart;
         private bool _filterMissedFinish;
         private bool _filter3WLA;
-        private bool _filterActualsDiscrepancies;
+        private DiscrepancyFilterType _discrepancyFilter = DiscrepancyFilterType.None;
         private string? _selectedSchedActNO;
         private bool _hasUnsavedChanges;
         public bool HasUnsavedChanges
@@ -112,11 +115,11 @@ namespace VANTAGE.ViewModels
                         _filterMissedFinish = false;
                         _filter3WLA = false;
                         _filterRequiredFields = false;
-                        _filterActualsDiscrepancies = false;
+                        _discrepancyFilter = DiscrepancyFilterType.None;
                         OnPropertyChanged(nameof(FilterMissedFinish));
                         OnPropertyChanged(nameof(Filter3WLA));
                         OnPropertyChanged(nameof(FilterRequiredFields));
-                        OnPropertyChanged(nameof(FilterActualsDiscrepancies));
+                        OnPropertyChanged(nameof(DiscrepancyFilter));
                     }
 
                     OnPropertyChanged(nameof(FilterMissedStart));
@@ -139,11 +142,11 @@ namespace VANTAGE.ViewModels
                         _filterMissedStart = false;
                         _filter3WLA = false;
                         _filterRequiredFields = false;
-                        _filterActualsDiscrepancies = false;
+                        _discrepancyFilter = DiscrepancyFilterType.None;
                         OnPropertyChanged(nameof(FilterMissedStart));
                         OnPropertyChanged(nameof(Filter3WLA));
                         OnPropertyChanged(nameof(FilterRequiredFields));
-                        OnPropertyChanged(nameof(FilterActualsDiscrepancies));
+                        OnPropertyChanged(nameof(DiscrepancyFilter));
                     }
 
                     OnPropertyChanged(nameof(FilterMissedFinish));
@@ -166,11 +169,11 @@ namespace VANTAGE.ViewModels
                         _filterMissedStart = false;
                         _filterMissedFinish = false;
                         _filterRequiredFields = false;
-                        _filterActualsDiscrepancies = false;
+                        _discrepancyFilter = DiscrepancyFilterType.None;
                         OnPropertyChanged(nameof(FilterMissedStart));
                         OnPropertyChanged(nameof(FilterMissedFinish));
                         OnPropertyChanged(nameof(FilterRequiredFields));
-                        OnPropertyChanged(nameof(FilterActualsDiscrepancies));
+                        OnPropertyChanged(nameof(DiscrepancyFilter));
                     }
 
                     OnPropertyChanged(nameof(Filter3WLA));
@@ -220,11 +223,11 @@ namespace VANTAGE.ViewModels
                         _filterMissedStart = false;
                         _filterMissedFinish = false;
                         _filter3WLA = false;
-                        _filterActualsDiscrepancies = false;
+                        _discrepancyFilter = DiscrepancyFilterType.None;
                         OnPropertyChanged(nameof(FilterMissedStart));
                         OnPropertyChanged(nameof(FilterMissedFinish));
                         OnPropertyChanged(nameof(Filter3WLA));
-                        OnPropertyChanged(nameof(FilterActualsDiscrepancies));
+                        OnPropertyChanged(nameof(DiscrepancyFilter));
                     }
 
                     OnPropertyChanged(nameof(FilterRequiredFields));
@@ -232,16 +235,17 @@ namespace VANTAGE.ViewModels
                 }
             }
         }
-        public bool FilterActualsDiscrepancies
+        public DiscrepancyFilterType DiscrepancyFilter
         {
-            get => _filterActualsDiscrepancies;
+            get => _discrepancyFilter;
             set
             {
-                if (_filterActualsDiscrepancies != value)
+                if (_discrepancyFilter != value)
                 {
-                    _filterActualsDiscrepancies = value;
+                    _discrepancyFilter = value;
 
-                    if (value)
+                    // Mutual exclusivity - clear other filters when activating
+                    if (value != DiscrepancyFilterType.None)
                     {
                         _filterMissedStart = false;
                         _filterMissedFinish = false;
@@ -253,11 +257,30 @@ namespace VANTAGE.ViewModels
                         OnPropertyChanged(nameof(FilterRequiredFields));
                     }
 
-                    OnPropertyChanged(nameof(FilterActualsDiscrepancies));
+                    OnPropertyChanged(nameof(DiscrepancyFilter));
                     ApplyFilter();
                 }
             }
         }
+
+        // Clears all filter toggles and discrepancy filter
+        public void ClearAllFilters()
+        {
+            _filterMissedStart = false;
+            _filterMissedFinish = false;
+            _filter3WLA = false;
+            _filterRequiredFields = false;
+            _discrepancyFilter = DiscrepancyFilterType.None;
+
+            OnPropertyChanged(nameof(FilterMissedStart));
+            OnPropertyChanged(nameof(FilterMissedFinish));
+            OnPropertyChanged(nameof(Filter3WLA));
+            OnPropertyChanged(nameof(FilterRequiredFields));
+            OnPropertyChanged(nameof(DiscrepancyFilter));
+
+            ApplyFilter();
+        }
+
         // ========================================
         // DETAIL ACTIVITIES METHODS
         // ========================================
@@ -483,7 +506,7 @@ namespace VANTAGE.ViewModels
         {
             List<ScheduleMasterRow> filteredRows;
 
-            if (!FilterMissedStart && !FilterMissedFinish && !Filter3WLA && !FilterRequiredFields && !FilterActualsDiscrepancies)
+            if (!FilterMissedStart && !FilterMissedFinish && !Filter3WLA && !FilterRequiredFields && DiscrepancyFilter == DiscrepancyFilterType.None)
             {
                 filteredRows = _allMasterRows;
             }
@@ -520,10 +543,16 @@ namespace VANTAGE.ViewModels
                 return row.IsThreeWeekStartRequired || row.IsThreeWeekFinishRequired;
             }
 
-            if (FilterActualsDiscrepancies)
+            if (DiscrepancyFilter != DiscrepancyFilterType.None)
             {
-                return row.HasStartVariance || row.HasFinishVariance ||
-                       row.HasBudgetMHsVariance || row.HasPercentCompleteVariance;
+                return DiscrepancyFilter switch
+                {
+                    DiscrepancyFilterType.Start => row.HasStartVariance,
+                    DiscrepancyFilterType.Finish => row.HasFinishVariance,
+                    DiscrepancyFilterType.MHs => row.HasBudgetMHsVariance,
+                    DiscrepancyFilterType.PercentComplete => row.HasPercentCompleteVariance,
+                    _ => true
+                };
             }
 
             return true;

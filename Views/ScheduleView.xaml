@@ -196,12 +196,30 @@
                              Margin="0,0,5,0"
                              ToolTip="Show activities in 3-week lookahead window"/>
 
-                <ToggleButton x:Name="btnFilterDiscrepancies"
-                             Content="Discrepancies"
-                             IsChecked="{Binding FilterActualsDiscrepancies, Mode=TwoWay}"
-                             Style="{StaticResource FilterToggleButtonStyle}"
-                             Margin="0,0,5,0"
-                             ToolTip="Show activities where P6 and MS values differ"/>
+                <syncfusion:DropDownButtonAdv x:Name="btnFilterDiscrepancies"
+                                              Label="Discrepancies"
+                                              Padding="0"
+                                              Margin="0,0,5,0"
+                                              Background="Transparent"
+                                              Foreground="{StaticResource ForegroundColor}"
+                                              BorderThickness="0"
+                                              IconTemplate="{x:Null}"
+                                              SmallIcon="{x:Null}"
+                                              LargeIcon="{x:Null}"
+                                              FontSize="12"
+                                              SizeMode="Normal"
+                                              ToolTip="Filter by P6 vs MS discrepancy type">
+                    <syncfusion:DropDownMenuGroup
+                        Background="{StaticResource ControlBackground}"
+                        Foreground="{StaticResource ForegroundColor}"
+                        BorderBrush="{StaticResource BorderColor}">
+                        <syncfusion:DropDownMenuItem Header="Clear Filter" Click="FilterDiscrepancy_Clear_Click"/>
+                        <syncfusion:DropDownMenuItem Header="Actual Start" Click="FilterDiscrepancy_Start_Click"/>
+                        <syncfusion:DropDownMenuItem Header="Actual Finish" Click="FilterDiscrepancy_Finish_Click"/>
+                        <syncfusion:DropDownMenuItem Header="MHs" Click="FilterDiscrepancy_MHs_Click"/>
+                        <syncfusion:DropDownMenuItem Header="% Complete" Click="FilterDiscrepancy_Percent_Click"/>
+                    </syncfusion:DropDownMenuGroup>
+                </syncfusion:DropDownButtonAdv>
 
                 <ToggleButton x:Name="btnFilterRequiredFields"
                              Content="{Binding RequiredFieldsButtonText}"
@@ -222,7 +240,61 @@
                         FontSize="11"
                         Click="btnRefresh_Click"
                         Margin="0,0,5,0"
-                        ToolTip="Reload schedule data from database"/>
+                        Focusable="False"
+                        ToolTip="Reload schedule data and clear all filters">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="border"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="3">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="border" Property="Background" Value="{StaticResource ControlHoverBackground}"/>
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter TargetName="border" Property="Background" Value="{StaticResource ControlPressedBackground}"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+                <Button x:Name="btnClearFilters"
+                        Content="Clear Filters"
+                        Width="90"
+                        Height="32"
+                        Background="{StaticResource ControlBackground}"
+                        Foreground="{StaticResource ForegroundColor}"
+                        BorderBrush="{StaticResource ControlBorder}"
+                        BorderThickness="1"
+                        FontSize="11"
+                        Click="btnClearFilters_Click"
+                        Margin="0,0,5,0"
+                        Focusable="False"
+                        ToolTip="Clear all active filters">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="border"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="3">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="border" Property="Background" Value="{StaticResource ControlHoverBackground}"/>
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter TargetName="border" Property="Background" Value="{StaticResource ControlPressedBackground}"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
                 <Button x:Name="btnSave"
                         Content="SAVE"
                         Width="80"

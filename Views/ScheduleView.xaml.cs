@@ -596,6 +596,15 @@ namespace VANTAGE.Views
                 }
 
                 txtStatus.Text = "Refreshing...";
+
+                // Clear all filters before reloading
+                _viewModel.ClearAllFilters();
+                if (sfScheduleMaster?.View != null)
+                {
+                    sfScheduleMaster.View.Filter = null;
+                    sfScheduleMaster.View.RefreshFilter();
+                }
+
                 await _viewModel.LoadScheduleDataAsync(_viewModel.SelectedWeekEndDate.Value);
                 txtStatus.Text = "Refreshed";
             }
@@ -1062,6 +1071,76 @@ namespace VANTAGE.Views
             using var sha = SHA256.Create();
             var names = string.Join("|", grid.Columns.Select(c => c.MappingName).OrderBy(n => n));
             return Convert.ToHexString(sha.ComputeHash(Encoding.UTF8.GetBytes(names)));
+        }
+
+        // ========================================
+        // DISCREPANCY FILTER DROPDOWN HANDLERS
+        // ========================================
+
+        // Clear discrepancy filter
+        private void FilterDiscrepancy_Clear_Click(object sender, RoutedEventArgs e)
+        {
+            _viewModel.DiscrepancyFilter = DiscrepancyFilterType.None;
+            txtStatus.Text = "Filter cleared";
+        }
+
+        // Filter by Actual Start variance (P6 vs MS)
+        private void FilterDiscrepancy_Start_Click(object sender, RoutedEventArgs e)
+        {
+            _viewModel.DiscrepancyFilter = _viewModel.DiscrepancyFilter == DiscrepancyFilterType.Start
+                ? DiscrepancyFilterType.None
+                : DiscrepancyFilterType.Start;
+            txtStatus.Text = _viewModel.DiscrepancyFilter == DiscrepancyFilterType.Start
+                ? "Filtered: Actual Start discrepancies"
+                : "Filter cleared";
+        }
+
+        // Filter by Actual Finish variance (P6 vs MS)
+        private void FilterDiscrepancy_Finish_Click(object sender, RoutedEventArgs e)
+        {
+            _viewModel.DiscrepancyFilter = _viewModel.DiscrepancyFilter == DiscrepancyFilterType.Finish
+                ? DiscrepancyFilterType.None
+                : DiscrepancyFilterType.Finish;
+            txtStatus.Text = _viewModel.DiscrepancyFilter == DiscrepancyFilterType.Finish
+                ? "Filtered: Actual Finish discrepancies"
+                : "Filter cleared";
+        }
+
+        // Filter by BudgetMHs variance (P6 vs MS)
+        private void FilterDiscrepancy_MHs_Click(object sender, RoutedEventArgs e)
+        {
+            _viewModel.DiscrepancyFilter = _viewModel.DiscrepancyFilter == DiscrepancyFilterType.MHs
+                ? DiscrepancyFilterType.None
+                : DiscrepancyFilterType.MHs;
+            txtStatus.Text = _viewModel.DiscrepancyFilter == DiscrepancyFilterType.MHs
+                ? "Filtered: MHs discrepancies"
+                : "Filter cleared";
+        }
+
+        // Filter by PercentComplete variance (P6 vs MS)
+        private void FilterDiscrepancy_Percent_Click(object sender, RoutedEventArgs e)
+        {
+            _viewModel.DiscrepancyFilter = _viewModel.DiscrepancyFilter == DiscrepancyFilterType.PercentComplete
+                ? DiscrepancyFilterType.None
+                : DiscrepancyFilterType.PercentComplete;
+            txtStatus.Text = _viewModel.DiscrepancyFilter == DiscrepancyFilterType.PercentComplete
+                ? "Filtered: % Complete discrepancies"
+                : "Filter cleared";
+        }
+
+        // Clear all filters (button and header filters)
+        private void btnClearFilters_Click(object sender, RoutedEventArgs e)
+        {
+            _viewModel.ClearAllFilters();
+
+            // Clear column header filters on master grid
+            if (sfScheduleMaster?.View != null)
+            {
+                sfScheduleMaster.View.Filter = null;
+                sfScheduleMaster.View.RefreshFilter();
+            }
+
+            txtStatus.Text = "All filters cleared";
         }
 
         // ========================================
