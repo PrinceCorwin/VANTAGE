@@ -23,7 +23,7 @@ namespace VANTAGE
             base.OnStartup(e);
 
             // Register Syncfusion license FIRST (before any UI components or database setup)
-            Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("Ngo9BigBOggjHTQxAR8/V1JFaF5cXGRCf1FpRmJGdld5fUVHYVZUTXxaS00DNHVRdkdmWH9dcXVVRGBYVUNxWUdWYEg=");
+            Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("Ngo9BigBOggjGyl/VkR+XU9Ff1RDX3xKf0x/TGpQb19xflBPallYVBYiSV9jS3hTd0VnWXhbcHFQQWhfVE91XQ==");
 
             // Start async initialization
             InitializeApplicationAsync();
