@@ -41,12 +41,12 @@
 		<PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="9.0.10" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
 		<PackageReference Include="SharpVectors.Wpf" Version="1.8.5" />
-		<PackageReference Include="Syncfusion.SfBusyIndicator.WPF" Version="31.2.12" />
-		<PackageReference Include="Syncfusion.SfGrid.WPF" Version="31.2.12" />
-		<PackageReference Include="Syncfusion.SfInput.WPF" Version="31.2.12" />
-		<PackageReference Include="Syncfusion.SfTextInputLayout.WPF" Version="31.2.12" />
-		<PackageReference Include="Syncfusion.Tools.WPF" Version="31.2.12" />
-		<PackageReference Include="Syncfusion.Themes.FluentDark.WPF" Version="31.2.12" />
+		<PackageReference Include="Syncfusion.SfBusyIndicator.WPF" Version="32.1.21" />
+		<PackageReference Include="Syncfusion.SfGrid.WPF" Version="32.1.21" />
+		<PackageReference Include="Syncfusion.SfInput.WPF" Version="32.1.21" />
+		<PackageReference Include="Syncfusion.SfTextInputLayout.WPF" Version="32.1.21" />
+		<PackageReference Include="Syncfusion.Tools.WPF" Version="32.1.21" />
+		<PackageReference Include="Syncfusion.Themes.FluentDark.WPF" Version="32.1.21" />
 	</ItemGroup>
 
 	<ItemGroup>
