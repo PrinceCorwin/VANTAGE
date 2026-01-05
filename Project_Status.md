@@ -1,6 +1,6 @@
 # MILESTONE - Project Status
 
-**Last Updated:** January 2, 2026
+**Last Updated:** January 4, 2026
 
 ## Current Status
 
@@ -10,6 +10,7 @@
 | Schedule | READY FOR TESTING | All core features complete |
 | Sync | COMPLETE | Bidirectional sync working |
 | Admin | COMPLETE | User/project/snapshot management |
+| Work Package | IN DEVELOPMENT | PDF generation, template editors pending |
 
 ## Feature Backlog
 
@@ -27,7 +28,7 @@
 - [x] Prorate filtered activities BudgetMHs (New Total/Add/Subtract with Keep Percent or Keep Earned options)
 - [x] Update Schedule view Discrepancies button to dropdown filter with Actual Start, Actual Finish, MHs, % Complete as selectable items
 - [ ] Progress Book creation
-- [ ] Work Package creation
+- [~] Work Package creation (in progress - see WorkPackage_Status.md)
 - [ ] Theme selection
 
 ### AI Integration
@@ -38,6 +39,13 @@ See `AI_Implementation_Items.md` for detailed AI feature planning.
 - [ ] Disable Tooltips setting in Settings dropdown (see `Plans/DisableTooltips_Plan.md`)
 
 ## Recently Completed
+
+### January 4, 2026
+- Created Work Package module - view shell with 60/40 split, tabs, preview panel
+- Added FormTemplates/WPTemplates database tables and seeded built-in templates
+- Implemented PDF renderers (Cover, List, Form, Grid types) using Syncfusion.Pdf
+- Added token resolution system for dynamic content ({WorkPackage}, {ProjectName}, etc.)
+- Replaced legacy SHBrowseForFolder P/Invoke with modern IFileDialog COM interface
 
 ### January 2, 2026
 - Converted Discrepancies button to dropdown filter with 5 options (Clear Filter, Actual Start, Actual Finish, MHs, % Complete); each filters by that specific variance type; mutually exclusive with other filters

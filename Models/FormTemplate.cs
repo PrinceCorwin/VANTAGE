@@ -1,0 +1,166 @@
+using System.ComponentModel;
+using System.Text.Json.Serialization;
+
+namespace VANTAGE.Models
+{
+    // Main FormTemplate entity stored in database
+    public class FormTemplate : INotifyPropertyChanged
+    {
+        private string _templateId = System.Guid.NewGuid().ToString();
+        private string _templateName = string.Empty;
+        private string _templateType = string.Empty;
+        private string _structureJson = string.Empty;
+        private bool _isBuiltIn;
+        private string _createdBy = string.Empty;
+        private string _createdUtc = string.Empty;
+
+        public string TemplateID
+        {
+            get => _templateId;
+            set { _templateId = value; OnPropertyChanged(nameof(TemplateID)); }
+        }
+
+        public string TemplateName
+        {
+            get => _templateName;
+            set { _templateName = value; OnPropertyChanged(nameof(TemplateName)); }
+        }
+
+        // Cover, List, Form, or Grid
+        public string TemplateType
+        {
+            get => _templateType;
+            set { _templateType = value; OnPropertyChanged(nameof(TemplateType)); }
+        }
+
+        // JSON structure varies by TemplateType
+        public string StructureJson
+        {
+            get => _structureJson;
+            set { _structureJson = value; OnPropertyChanged(nameof(StructureJson)); }
+        }
+
+        public bool IsBuiltIn
+        {
+            get => _isBuiltIn;
+            set { _isBuiltIn = value; OnPropertyChanged(nameof(IsBuiltIn)); }
+        }
+
+        public string CreatedBy
+        {
+            get => _createdBy;
+            set { _createdBy = value; OnPropertyChanged(nameof(CreatedBy)); }
+        }
+
+        public string CreatedUtc
+        {
+            get => _createdUtc;
+            set { _createdUtc = value; OnPropertyChanged(nameof(CreatedUtc)); }
+        }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        protected void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+    }
+
+    // JSON structure for Cover type templates
+    // Default image: images/CoverPic.png (null means use default)
+    public class CoverStructure
+    {
+        [JsonPropertyName("title")]
+        public string Title { get; set; } = "WORK PACKAGE COVER SHEET";
+
+        // null = use default images/CoverPic.png; otherwise absolute path to custom image
+        [JsonPropertyName("imagePath")]
+        public string? ImagePath { get; set; }
+
+        [JsonPropertyName("imageWidthPercent")]
+        public int ImageWidthPercent { get; set; } = 80;
+
+        [JsonPropertyName("footerText")]
+        public string? FooterText { get; set; }
+    }
+
+    // JSON structure for List type templates (e.g., TOC)
+    public class ListStructure
+    {
+        [JsonPropertyName("title")]
+        public string Title { get; set; } = "WORK PACKAGE TABLE OF CONTENTS";
+
+        [JsonPropertyName("items")]
+        public List<string> Items { get; set; } = new();
+
+        [JsonPropertyName("footerText")]
+        public string? FooterText { get; set; }
+    }
+
+    // JSON structure for Form type templates (sections with items)
+    public class FormStructure
+    {
+        [JsonPropertyName("title")]
+        public string Title { get; set; } = "WORK PACKAGE FORM";
+
+        [JsonPropertyName("columns")]
+        public List<TemplateColumn> Columns { get; set; } = new();
+
+        [JsonPropertyName("rowHeightIncreasePercent")]
+        public int RowHeightIncreasePercent { get; set; } = 0;
+
+        [JsonPropertyName("sections")]
+        public List<SectionDefinition> Sections { get; set; } = new();
+
+        [JsonPropertyName("footerText")]
+        public string? FooterText { get; set; }
+    }
+
+    // JSON structure for Grid type templates (empty rows for data entry)
+    public class GridStructure
+    {
+        [JsonPropertyName("title")]
+        public string Title { get; set; } = "WORK PACKAGE GRID";
+
+        [JsonPropertyName("columns")]
+        public List<TemplateColumn> Columns { get; set; } = new();
+
+        [JsonPropertyName("rowCount")]
+        public int RowCount { get; set; } = 22;
+
+        [JsonPropertyName("rowHeightIncreasePercent")]
+        public int RowHeightIncreasePercent { get; set; } = 0;
+
+        [JsonPropertyName("footerText")]
+        public string? FooterText { get; set; }
+    }
+
+    // Column definition used by Form and Grid types
+    public class TemplateColumn
+    {
+        [JsonPropertyName("name")]
+        public string Name { get; set; } = string.Empty;
+
+        [JsonPropertyName("widthPercent")]
+        public int WidthPercent { get; set; } = 10;
+    }
+
+    // Section definition used by Form type
+    public class SectionDefinition
+    {
+        [JsonPropertyName("name")]
+        public string Name { get; set; } = string.Empty;
+
+        [JsonPropertyName("items")]
+        public List<string> Items { get; set; } = new();
+    }
+
+    // Constants for template types
+    public static class TemplateTypes
+    {
+        public const string Cover = "Cover";
+        public const string List = "List";
+        public const string Form = "Form";
+        public const string Grid = "Grid";
+    }
+}

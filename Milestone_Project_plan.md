@@ -87,6 +87,14 @@ Frozen copy of Activity at weekly submission time.
 - Manage users, projects, snapshots
 - View/restore/purge deleted records
 
+### Work Package Module
+- PDF generation for construction work packages (replaces legacy MS Access VBA)
+- Four template types: Cover (image), List (TOC), Form (checklist), Grid (empty rows)
+- Token-based content binding ({WorkPackage}, {ProjectName}, {PrintedDate}, etc.)
+- Customizable templates stored in local SQLite (FormTemplates, WPTemplates tables)
+- Syncfusion.Pdf for PDF generation, merge individual forms into single package
+- See `WorkPackage_Module_Plan.md` and `WorkPackage_Status.md` for details
+
 ## Performance Targets
 - Sync 5k records: ~6 seconds
 - Grid handles 200k+ records via virtualization

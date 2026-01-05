@@ -256,11 +256,20 @@ namespace VANTAGE
 
         private void BtnWorkPackage_Click(object sender, RoutedEventArgs e)
         {
+            // Already on WorkPackage? No need to check
+            if (ContentArea.Content is Views.WorkPackageView)
+            {
+                HighlightNavigationButton(btnWorkPackage);
+                return;
+            }
+
             if (!CanLeaveCurrentView())
                 return;
 
-            MessageBox.Show("WORK PACKAGE module coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
             HighlightNavigationButton(btnWorkPackage);
+            ContentArea.Content = null;
+            var workPackageView = new Views.WorkPackageView();
+            ContentArea.Content = workPackageView;
         }
 
         private void BtnCreate_Click(object sender, RoutedEventArgs e)
@@ -2047,12 +2056,16 @@ namespace VANTAGE
             var progressView = new Views.ProgressView();
             ContentArea.Content = progressView;
         }
-        // Check if current view is ScheduleView with unsaved changes
+        // Check if current view has unsaved changes
         private bool CanLeaveCurrentView()
         {
             if (ContentArea.Content is ScheduleView scheduleView)
             {
                 return scheduleView.TryClose();
+            }
+            if (ContentArea.Content is Views.WorkPackageView workPackageView)
+            {
+                return workPackageView.CanLeaveView();
             }
             return true;
         }

@@ -3,7 +3,11 @@
     "allow": [
       "Bash(dotnet build:*)",
       "Bash(start \"\" \"bin/Debug/net8.0-windows/VANTAGE.exe\")",
-      "Bash(taskkill:*)"
+      "Bash(taskkill:*)",
+      "Bash(ls:*)",
+      "Bash(tree:*)",
+      "Bash(dir /AD \"C:\\\\Users\\\\steve\\\\source\\\\repos\\\\PrinceCorwin\\\\VANTAGE\")",
+      "WebSearch"
     ]
   }
 }

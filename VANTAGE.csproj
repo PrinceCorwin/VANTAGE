@@ -41,6 +41,9 @@
 		<PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="9.0.10" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
 		<PackageReference Include="SharpVectors.Wpf" Version="1.8.5" />
+		<PackageReference Include="System.Drawing.Common" Version="8.0.0" />
+		<PackageReference Include="Syncfusion.Pdf.WPF" Version="32.1.21" />
+		<PackageReference Include="Syncfusion.PdfViewer.WPF" Version="32.1.21" />
 		<PackageReference Include="Syncfusion.SfBusyIndicator.WPF" Version="32.1.21" />
 		<PackageReference Include="Syncfusion.SfGrid.WPF" Version="32.1.21" />
 		<PackageReference Include="Syncfusion.SfInput.WPF" Version="32.1.21" />
@@ -51,6 +54,7 @@
 
 	<ItemGroup>
 		<Resource Include="Images\AppIcon.ico" />
+		<Resource Include="Images\CoverPic.png" />
 		<Resource Include="Images\MilestoneLogoPngTransparentBG.png" />
 		<Resource Include="Images\SummitLogoNoText.jpg" />
 		<Resource Include="Images\SummitS-Full Summit Peak Logo.jpg" />

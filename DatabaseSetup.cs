@@ -3,7 +3,9 @@ using Microsoft.Data.Sqlite;
 using Microsoft.Win32;
 using System;
 using System.IO;
+using System.Text.Json;
 using System.Windows;
+using VANTAGE.Models;
 using VANTAGE.Utilities;
 
 namespace VANTAGE
@@ -186,6 +188,8 @@ namespace VANTAGE
                 ProjectZipCode TEXT NOT NULL DEFAULT '',
                 ProjectManager TEXT NOT NULL DEFAULT '',
                 SiteManager TEXT NOT NULL DEFAULT '',
+                Phone TEXT NOT NULL DEFAULT '',
+                Fax TEXT NOT NULL DEFAULT '',
                 OM INTEGER NOT NULL DEFAULT 0,
                 SM INTEGER NOT NULL DEFAULT 0,
                 EN INTEGER NOT NULL DEFAULT 0,
@@ -229,8 +233,6 @@ namespace VANTAGE
                 UpdatedUtcDate TEXT,
                 IsDeleted INTEGER NOT NULL DEFAULT 0
             );
-            CREATE INDEX IF NOT EXISTS idx_feedback_type ON Feedback(Type);
-            CREATE INDEX IF NOT EXISTS idx_feedback_status ON Feedback(Status);
 
             -- Activities table (local schema with UniqueID as primary key)
             CREATE TABLE IF NOT EXISTS Activities (
@@ -325,6 +327,27 @@ namespace VANTAGE
                 XRay                  REAL NOT NULL DEFAULT 0,
                 SyncVersion           INTEGER NOT NULL DEFAULT 0
             );
+            -- FormTemplates table (local only - Work Package form definitions)
+            CREATE TABLE IF NOT EXISTS FormTemplates (
+                TemplateID TEXT PRIMARY KEY,
+                TemplateName TEXT NOT NULL,
+                TemplateType TEXT NOT NULL,
+                StructureJson TEXT NOT NULL,
+                IsBuiltIn INTEGER NOT NULL DEFAULT 0,
+                CreatedBy TEXT NOT NULL,
+                CreatedUtc TEXT NOT NULL
+            );
+
+            -- WPTemplates table (local only - Work Package template definitions)
+            CREATE TABLE IF NOT EXISTS WPTemplates (
+                WPTemplateID TEXT PRIMARY KEY,
+                WPTemplateName TEXT NOT NULL,
+                FormsJson TEXT NOT NULL,
+                DefaultSettings TEXT NOT NULL,
+                IsBuiltIn INTEGER NOT NULL DEFAULT 0,
+                CreatedBy TEXT NOT NULL,
+                CreatedUtc TEXT NOT NULL
+            );
 
             -- Indexes for performance
             CREATE INDEX IF NOT EXISTS idx_project ON Activities(ProjectID);
@@ -336,15 +359,282 @@ namespace VANTAGE
             CREATE INDEX IF NOT EXISTS idx_schedule_weekenddate ON Schedule(WeekEndDate);
             CREATE INDEX IF NOT EXISTS idx_schedprojmap_weekenddate ON ScheduleProjectMappings(WeekEndDate);
             CREATE INDEX IF NOT EXISTS idx_3wla_projectid ON ThreeWeekLookahead(ProjectID);
+            CREATE INDEX IF NOT EXISTS idx_feedback_type ON Feedback(Type);
+            CREATE INDEX IF NOT EXISTS idx_feedback_status ON Feedback(Status);
+            CREATE INDEX IF NOT EXISTS idx_formtemplate_name ON FormTemplates(TemplateName);
+            CREATE INDEX IF NOT EXISTS idx_formtemplate_type ON FormTemplates(TemplateType);
+            CREATE INDEX IF NOT EXISTS idx_wptemplate_name ON WPTemplates(WPTemplateName);
         ";
 
                 command.ExecuteNonQuery();
+
+                // Seed built-in templates if not present
+                SeedBuiltInTemplates(connection);
             }
             catch (Exception ex)
             {
                 VANTAGE.Utilities.AppLogger.Error(ex, "DatabaseSetup.InitializeDatabase");
                 throw;
             }
+        }
+
+        // Seed built-in form templates and WP templates
+        private static void SeedBuiltInTemplates(SqliteConnection connection)
+        {
+            try
+            {
+                // Check if built-in templates already exist
+                var checkCmd = connection.CreateCommand();
+                checkCmd.CommandText = "SELECT COUNT(*) FROM FormTemplates WHERE IsBuiltIn = 1";
+                var count = Convert.ToInt64(checkCmd.ExecuteScalar() ?? 0);
+                if (count > 0)
+                {
+                    return; // Already seeded
+                }
+
+                var createdUtc = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ");
+                var createdBy = "System";
+
+                // Built-in Form Template IDs (stable for references)
+                const string coverSheetId = "builtin-cover-sheet";
+                const string tocId = "builtin-toc";
+                const string checklistId = "builtin-checklist";
+                const string punchlistId = "builtin-punchlist";
+                const string signoffId = "builtin-signoff";
+                const string dwgLogId = "builtin-dwg-log";
+
+                // 1. Cover Sheet (Cover type)
+                var coverStructure = new CoverStructure
+                {
+                    Title = "WORK PACKAGE COVER SHEET",
+                    ImagePath = null, // null = use default images/CoverPic.png
+                    ImageWidthPercent = 80,
+                    FooterText = null
+                };
+                InsertFormTemplate(connection, coverSheetId, "Cover Sheet", TemplateTypes.Cover,
+                    JsonSerializer.Serialize(coverStructure), createdBy, createdUtc);
+
+                // 2. TOC (List type)
+                var tocStructure = new ListStructure
+                {
+                    Title = "WORK PACKAGE TABLE OF CONTENTS",
+                    Items = new List<string>
+                    {
+                        "WP DOC EXPIRATION DATE: {ExpirationDate}",
+                        "PRINTED: {PrintedDate}",
+                        "WP NAME: {WPName}",
+                        "SCHEDULE ACTIVITY NO: {SchedActNO}",
+                        "PHASE CODE: {PhaseCode}",
+                        "",
+                        "1    WP Coversheet",
+                        "2    WP Checklist",
+                        "3    Drawing Log",
+                        "4    Drawings",
+                        "5    Punchlist Form",
+                        "6    WP Walkdown and Acceptance Form"
+                    },
+                    FooterText = null
+                };
+                InsertFormTemplate(connection, tocId, "Table of Contents", TemplateTypes.List,
+                    JsonSerializer.Serialize(tocStructure), createdBy, createdUtc);
+
+                // 3. Checklist - Summit Standard (Form type)
+                var checklistStructure = new FormStructure
+                {
+                    Title = "WORK PACKAGE CHECKLIST",
+                    Columns = new List<TemplateColumn>
+                    {
+                        new TemplateColumn { Name = "ITEM", WidthPercent = 50 },
+                        new TemplateColumn { Name = "DATE", WidthPercent = 12 },
+                        new TemplateColumn { Name = "SIGN", WidthPercent = 15 },
+                        new TemplateColumn { Name = "COMMENTS", WidthPercent = 23 }
+                    },
+                    RowHeightIncreasePercent = 0,
+                    Sections = new List<SectionDefinition>
+                    {
+                        new SectionDefinition
+                        {
+                            Name = "6 WEEK ASSEMBLY",
+                            Items = new List<string>
+                            {
+                                "Documents Assembled",
+                                "Estimate/Quantities Verified",
+                                "Material Takeoff Complete",
+                                "Work Package Assembled",
+                                "Work Package Final Review",
+                                "Work Package Assigned to Craft Superintendent"
+                            }
+                        },
+                        new SectionDefinition
+                        {
+                            Name = "3 WEEK REVIEW",
+                            Items = new List<string>
+                            {
+                                "Documents Reviewed",
+                                "Materials Confirmed Onsite",
+                                "RFIs Closed and Incorporated",
+                                "Final Document Revisions Confirmed",
+                                "Work Package Issued to Construction"
+                            }
+                        },
+                        new SectionDefinition
+                        {
+                            Name = "CONSTRUCTION COMPLETE SIGN-OFFS",
+                            Items = new List<string>
+                            {
+                                "Work Package Walked Down and Verified Complete",
+                                "Quality Signoffs Complete",
+                                "Engineering Signoffs Complete"
+                            }
+                        }
+                    },
+                    FooterText = null
+                };
+                InsertFormTemplate(connection, checklistId, "Checklist - Summit Standard", TemplateTypes.Form,
+                    JsonSerializer.Serialize(checklistStructure), createdBy, createdUtc);
+
+                // 4. Punchlist (Grid type)
+                var punchlistStructure = new GridStructure
+                {
+                    Title = "WORK PACKAGE PUNCHLIST",
+                    Columns = new List<TemplateColumn>
+                    {
+                        new TemplateColumn { Name = "PL NO", WidthPercent = 6 },
+                        new TemplateColumn { Name = "TAG/LINE/CABLE", WidthPercent = 12 },
+                        new TemplateColumn { Name = "RAISED BY/ON", WidthPercent = 10 },
+                        new TemplateColumn { Name = "PL ITEM DESCRIPTION", WidthPercent = 30 },
+                        new TemplateColumn { Name = "RP", WidthPercent = 5 },
+                        new TemplateColumn { Name = "DUE BY", WidthPercent = 9 },
+                        new TemplateColumn { Name = "CL DATE", WidthPercent = 7 },
+                        new TemplateColumn { Name = "CL BY", WidthPercent = 7 },
+                        new TemplateColumn { Name = "VR DATE", WidthPercent = 7 },
+                        new TemplateColumn { Name = "VR BY", WidthPercent = 7 }
+                    },
+                    RowCount = 22,
+                    RowHeightIncreasePercent = 0,
+                    FooterText = null
+                };
+                InsertFormTemplate(connection, punchlistId, "Punchlist", TemplateTypes.Grid,
+                    JsonSerializer.Serialize(punchlistStructure), createdBy, createdUtc);
+
+                // 5. Signoff Sheet (Form type)
+                var signoffStructure = new FormStructure
+                {
+                    Title = "WORK PACKAGE SIGN-OFF SHEET",
+                    Columns = new List<TemplateColumn>
+                    {
+                        new TemplateColumn { Name = "ITEM", WidthPercent = 50 },
+                        new TemplateColumn { Name = "DATE", WidthPercent = 12 },
+                        new TemplateColumn { Name = "SIGN", WidthPercent = 15 },
+                        new TemplateColumn { Name = "COMMENTS", WidthPercent = 23 }
+                    },
+                    RowHeightIncreasePercent = 0,
+                    Sections = new List<SectionDefinition>
+                    {
+                        new SectionDefinition
+                        {
+                            Name = "GENERAL INFORMATION",
+                            Items = new List<string>
+                            {
+                                "Date Completed",
+                                "Date of Walkdown",
+                                "Punchlist Generated Date",
+                                "Punchlist Completed Date"
+                            }
+                        },
+                        new SectionDefinition
+                        {
+                            Name = "SIGN-OFFS",
+                            Items = new List<string>
+                            {
+                                "General Foreman",
+                                "Superintendent",
+                                "Engineering (see note below)***",
+                                "Quality Control",
+                                "Package Completed Accepted"
+                            }
+                        },
+                        new SectionDefinition
+                        {
+                            Name = "ADDITIONAL NOTES",
+                            Items = new List<string>()
+                        }
+                    },
+                    FooterText = "***As part of the sign-off all drawings used in the package will be manually checked against the current revisions to ensure that the latest revisions were utilized for construction. The Field Engineer and/or Project Engineer will physically walk down the scope of this work to ensure that all components have been installed and documented properly. The Project Engineer will confirm all MTRs and COCs were compiled and all Heat Numbers transfered to the material as well as to the Heat Mapped/Weld Mapped Drawings"
+                };
+                InsertFormTemplate(connection, signoffId, "Signoff Sheet", TemplateTypes.Form,
+                    JsonSerializer.Serialize(signoffStructure), createdBy, createdUtc);
+
+                // 6. DWG Log (Grid type - placeholder)
+                var dwgLogStructure = new GridStructure
+                {
+                    Title = "DRAWING LOG",
+                    Columns = new List<TemplateColumn>
+                    {
+                        new TemplateColumn { Name = "DWG NO", WidthPercent = 20 },
+                        new TemplateColumn { Name = "DESCRIPTION", WidthPercent = 40 },
+                        new TemplateColumn { Name = "REV", WidthPercent = 10 },
+                        new TemplateColumn { Name = "DATE", WidthPercent = 15 },
+                        new TemplateColumn { Name = "NOTES", WidthPercent = 15 }
+                    },
+                    RowCount = 20,
+                    RowHeightIncreasePercent = 0,
+                    FooterText = "Drawing log integration coming soon - Procore API integration pending"
+                };
+                InsertFormTemplate(connection, dwgLogId, "Drawing Log", TemplateTypes.Grid,
+                    JsonSerializer.Serialize(dwgLogStructure), createdBy, createdUtc);
+
+                // Built-in WP Template: Summit Standard WP
+                var wpFormsJson = JsonSerializer.Serialize(new List<FormReference>
+                {
+                    new FormReference { FormTemplateId = coverSheetId },
+                    new FormReference { FormTemplateId = tocId },
+                    new FormReference { FormTemplateId = checklistId },
+                    new FormReference { FormTemplateId = dwgLogId },
+                    new FormReference { FormTemplateId = punchlistId },
+                    new FormReference { FormTemplateId = signoffId }
+                });
+                var wpSettings = JsonSerializer.Serialize(new WPTemplateSettings { ExpirationDays = 14 });
+
+                var wpCmd = connection.CreateCommand();
+                wpCmd.CommandText = @"
+                    INSERT INTO WPTemplates (WPTemplateID, WPTemplateName, FormsJson, DefaultSettings,
+                                             IsBuiltIn, CreatedBy, CreatedUtc)
+                    VALUES (@wpTemplateId, @wpTemplateName, @formsJson, @defaultSettings,
+                            1, @createdBy, @createdUtc)";
+                wpCmd.Parameters.AddWithValue("@wpTemplateId", "builtin-summit-standard");
+                wpCmd.Parameters.AddWithValue("@wpTemplateName", "Summit Standard WP");
+                wpCmd.Parameters.AddWithValue("@formsJson", wpFormsJson);
+                wpCmd.Parameters.AddWithValue("@defaultSettings", wpSettings);
+                wpCmd.Parameters.AddWithValue("@createdBy", createdBy);
+                wpCmd.Parameters.AddWithValue("@createdUtc", createdUtc);
+                wpCmd.ExecuteNonQuery();
+
+                AppLogger.Info("Seeded built-in Work Package templates", "DatabaseSetup.SeedBuiltInTemplates");
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "DatabaseSetup.SeedBuiltInTemplates");
+            }
+        }
+
+        // Helper to insert a form template
+        private static void InsertFormTemplate(SqliteConnection connection, string templateId, string name,
+            string type, string structureJson, string createdBy, string createdUtc)
+        {
+            var cmd = connection.CreateCommand();
+            cmd.CommandText = @"
+                INSERT INTO FormTemplates (TemplateID, TemplateName, TemplateType, StructureJson,
+                                           IsBuiltIn, CreatedBy, CreatedUtc)
+                VALUES (@templateId, @templateName, @templateType, @structureJson,
+                        1, @createdBy, @createdUtc)";
+            cmd.Parameters.AddWithValue("@templateId", templateId);
+            cmd.Parameters.AddWithValue("@templateName", name);
+            cmd.Parameters.AddWithValue("@templateType", type);
+            cmd.Parameters.AddWithValue("@structureJson", structureJson);
+            cmd.Parameters.AddWithValue("@createdBy", createdBy);
+            cmd.Parameters.AddWithValue("@createdUtc", createdUtc);
+            cmd.ExecuteNonQuery();
         }
 
         public static SqliteConnection GetConnection()
