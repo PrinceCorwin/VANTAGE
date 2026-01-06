@@ -1,126 +1,217 @@
-# VANTAGE
+# MILESTONE
 
-VANTAGE is a comprehensive construction project management and progress tracking application built with WPF (Windows Presentation Foundation) and .NET 8. Designed for engineering and construction professionals, VANTAGE provides powerful tools for monitoring project activities, tracking earned value metrics, managing schedules, and generating insightful reports. The application features a modern Material Design interface with customizable themes, advanced filtering capabilities, and robust data management through both local SQLite and Azure cloud storage options.
+Vantage: MILESTONE is a comprehensive construction project management and progress tracking application built with WPF (Windows Presentation Foundation) and .NET 8. Designed for field engineers and project managers in industrial construction (pharmaceutical, microchip, data center facilities), MILESTONE provides powerful tools for tracking construction activities, managing schedules with P6 Primavera integration, generating work package documents, and enabling multi-user collaboration. The application features a modern Syncfusion FluentDark interface, bidirectional cloud synchronization, and is architected for upcoming AI-powered analytics.
+
+---
 
 ## ✨ Current Features
 
-📊 **Progress Tracking Module**
-- Real-time activity monitoring with customizable data grids
+### 📊 Progress Tracking Module
+- Real-time activity monitoring with Syncfusion SfDataGrid (90+ columns, 200k+ record virtualization)
 - Earned value management with automatic calculations (EarnMHs, PercentComplete, EarnedQty)
 - Bidirectional updates between percent complete and earned quantities
-- Advanced filtering and sorting capabilities with saved filter presets
-- Column visibility customization and user preference management
-- Pagination support for handling large datasets efficiently
+- Advanced filtering: user-defined multi-condition filters (AND/OR logic), saved filter presets
+- Multiple named grid layouts (save up to 5, apply/rename/delete, reset to defaults)
+- Excel import/export with legacy OldVantage compatibility
+- Prorate BudgetMHs across filtered activities with proportional distribution
+- Activity assignment with email notifications
+- "Today" filter for three-week lookahead activities
 
-🎨 **Modern User Interface**
-- Material Design themed interface with dark/light mode support
-- Responsive and intuitive navigation with toolbar-based module switching
-- Context-aware tooltips and user-friendly controls
-- Real-time status bar updates showing current user and system status
+### 📅 Schedule Module
+- **P6 Primavera Integration:** Import/export schedules, bidirectional sync
+- **Discrepancy Detection:** Filter by Actual Start, Actual Finish, MHs, or % Complete variances
+- **MS Rollups:** Automatic MIN(start), MAX(finish), weighted % average calculations
+- **Three-Week Lookahead (3WLA):** Forecasting and schedule tracking
+- **Visual Variance Highlighting:** Yellow highlighting when P6 progress exceeds MILESTONE
+- Master/detail grid layout with Clear Filters functionality
+- Missed reason tracking for schedule accountability
 
-💾 **Data Management**
-- Local SQLite database for offline work and data persistence
-- Excel import/export functionality (replace or combine modes)
-- Azure Table Storage integration for cloud synchronization
-- Comprehensive activity schema with 80+ customizable fields
-- User settings and preferences storage
+### 📦 Work Package Module *(In Development)*
+- PDF generation for construction work packages (replaces legacy MS Access VBA system)
+- Four template types: Cover (image), List (TOC), Form (checklist), Grid (empty rows)
+- Token-based dynamic content binding ({WorkPackage}, {ProjectName}, {PrintedDate}, etc.)
+- Customizable templates with clone-to-edit workflow
+- Built-in templates: Cover Sheet, TOC, Checklist, Punchlist, Signoff Sheet, DWG Log
+- Syncfusion PDF rendering with multi-form merge into single package
+- Live PDF preview panel
 
-👥 **User Management & Security**
+### 🔄 Synchronization System
+- **Hybrid Architecture:** Local SQLite for offline work + Azure SQL Server as central authority
+- **SyncVersion-Based Tracking:** Reliable multi-user sync without clock drift issues
+- **Conflict Resolution:** Ownership-based editing, Azure always wins on conflicts
+- **Performance:** 5k records sync in ~6 seconds
+- Soft delete propagation with restore capability
+
+### 👥 User Management & Administration
 - Windows authentication integration
-- Role-based access control with admin privileges
-- User-specific settings and personalized views
-- Activity assignment and ownership tracking
+- Role-based access control with admin privileges (Azure Admins table)
+- User-specific settings and personalized grid layouts
+- Admin tools: Manage users, projects, snapshots, deleted records
+- Feedback Board with Ideas/Bug Reports and admin moderation
 
-📋 **Reporting Capabilities**
-- Multiple pre-configured report templates (10 report slots)
-- Export capabilities for sharing and archival
-- Custom report generation framework (expandable)
+### 🎨 Modern User Interface
+- Syncfusion FluentDark themed interface
+- Responsive toolbar-based module navigation
+- Context-aware tooltips throughout all views and dialogs
+- Real-time status bar with user info and system status
+- Chromeless window design
 
-## 🚀 Future Features
+### 🛠️ Tools & Utilities
+- Export logs with optional email attachment
+- Export/Import UserSettings for PC migration
+- Clear Local Activities / Clear Local Schedule tools
+- Cell copy/paste (Ctrl+C/Ctrl+V) in grids
 
-📅 **P6 Schedule Interface**
-- Direct integration with Primavera P6 schedules
-- Bidirectional synchronization between VANTAGE and P6
-- Schedule activity linking and cross-referencing
-- Critical path analysis and schedule variance reporting
-- Import/export of P6 XER files
-- Real-time schedule updates and conflict resolution
+---
 
-📈 **Analysis and Reports with Graphical Statistics**
-- Interactive dashboards with real-time data visualization
-- Customizable charts and graphs (bar, line, pie, Gantt)
+## 🚀 Planned Features
+
+### 🤖 AI Integration *(High Priority)*
+Five AI-powered features planned using Anthropic Claude API:
+
+| Feature | Purpose |
+|---------|---------|
+| **AI Error Assistant** | Translate technical errors into plain English with suggested fixes |
+| **AI Description Analysis** | Standardize activity descriptions, detect anomalies |
+| **Metadata Consistency Analysis** | Flag outliers, suggest corrections, ensure data quality |
+| **AI MissedReason Assistant** | Standardize missed reason entries with category suggestions |
+| **AI Schedule Analysis** | Flag relationship violations, sequence errors, progress anomalies |
+
+*Expected daily cost at full usage: $0.20-0.50/day*
+
+### 🏗️ Procore Integration *(Pending)*
+- OAuth 2.0 authentication with token management
+- Fetch construction drawings for DWG Log forms
+- Production and sandbox environment support
+
+### 📈 Analysis & Reporting *(Future)*
+- Interactive dashboards with real-time visualization
 - Earned Value Analysis (EVA) with SPI/CPI metrics
 - Progress S-curves and trend analysis
 - Resource utilization and productivity metrics
-- Heat maps for activity status and bottleneck identification
-- Comparative analysis across projects and time periods
-- Automated report generation with graphical insights
-- Export visualizations to PDF, PowerPoint, and image formats
+- Export visualizations to PDF and image formats
 
-🔄 **Enhanced Cloud Capabilities**
-- Multi-user collaboration with real-time updates
-- Conflict resolution for concurrent edits
-- Mobile companion app for field updates
-- Offline sync with intelligent merge strategies
+### 📱 Enhanced Collaboration *(Future Consideration)*
+- Potential Blazor migration for cloud-first architecture
+- Mobile capabilities for field updates
+- Real-time collaborative editing
 
-🤖 **Advanced Analytics**
-- Predictive analytics for project completion forecasting
-- AI-powered recommendations for schedule optimization
-- Anomaly detection for progress discrepancies
-- Historical trend analysis and benchmarking
+---
 
 ## 🛠️ Technology Stack
 
-- **Framework:** .NET 8.0 (Windows)
-- **UI:** WPF with Material Design themes
-- **Database:** SQLite (local) / Azure Table Storage (cloud)
-- **Architecture:** MVVM pattern with CommunityToolkit.Mvvm
-- **Data Export:** ClosedXML for Excel operations
-- **Cloud Services:** Azure.Data.Tables, Azure.Identity
+| Component | Technology |
+|-----------|------------|
+| **Framework** | .NET 8.0 (Windows) |
+| **UI** | WPF with Syncfusion 31.2.12 (FluentDark theme) |
+| **Local Database** | SQLite |
+| **Cloud Database** | Azure SQL Server (mile-wip-server-stecor / MILESTONE-WIP-DB) |
+| **Architecture** | MVVM pattern with async/await |
+| **Data Export** | ClosedXML for Excel, Syncfusion.Pdf for PDF generation |
+| **Cloud Services** | Azure SQL, planned Azure Blob for PDF archival |
+| **AI Services** | Anthropic Claude API *(planned)* |
+
+---
 
 ## 📋 Requirements
 
 - Windows 10/11
 - .NET 8.0 Runtime
 - Visual Studio 2022 (for development)
+- Syncfusion License (community or commercial)
+- Azure SQL Server access (for multi-user sync)
+
+---
 
 ## 🚦 Getting Started
 
 1. Clone the repository
-2. Open `VANTAGE.sln` in Visual Studio 2022
+2. Open `MILESTONE.sln` in Visual Studio 2022
 3. Restore NuGet packages
-4. Build and run the solution
-5. On first run, the application will:
+4. Configure Azure connection string in `AzureDbManager.cs`
+5. Build and run the solution
+6. On first run, the application will:
+   - Check Azure connectivity
    - Initialize the local SQLite database
-   - Create default app settings
-   - Set up your user profile with Windows authentication
+   - Validate user authorization against Users table
+   - Set up user profile with Windows authentication
+
+---
 
 ## 📂 Project Structure
 
-- **Models/** - Data models (Activity, User, Settings)
-- **Views/** - XAML views and code-behind
-- **ViewModels/** - MVVM view models
-- **Data/** - Database repositories and data access
-- **Utilities/** - Helper classes (FilterBuilder, ColumnMapper, ThemeManager, AdminHelper)
-- **Controls/** - Custom WPF controls
-- **Themes/** - Material Design theme resources
+```
+MILESTONE/
+├── Models/              # Data models (Activity, User, Project, Templates)
+├── Views/               # XAML views and code-behind
+├── ViewModels/          # MVVM view models
+├── Data/                # Repositories and data access
+│   ├── ActivityRepository.cs
+│   ├── ScheduleRepository.cs
+│   ├── TemplateRepository.cs
+│   └── AzureDbManager.cs
+├── Services/            # Business logic services
+│   ├── SyncManager.cs
+│   ├── TokenResolver.cs
+│   └── WorkPackageGenerator.cs
+├── Utilities/           # Helper classes
+│   ├── AppLogger.cs
+│   ├── ColumnMapper.cs
+│   ├── FilterBuilder.cs
+│   └── UserHelper.cs
+├── Controls/            # Custom WPF controls
+├── Themes/              # Syncfusion FluentDark theme resources
+├── PDF/                 # PDF renderers (Cover, List, Form, Grid)
+└── Plans/               # Development documentation
+```
+
+---
 
 ## 🎯 Key Modules
 
-- **PROGRESS** - Main activity tracking and progress entry module
-- **SCHEDULE** - Schedule management (upcoming)
-- **REPORTS** - Report generation and export
-- **ANALYSIS** - Data analysis and visualization (upcoming)
-- **ADMIN** - Administrative functions and user management
+| Module | Status | Description |
+|--------|--------|-------------|
+| **PROGRESS** | ✅ Ready for Testing | Activity tracking, earned value, Excel import/export |
+| **SCHEDULE** | ✅ Ready for Testing | P6 integration, 3WLA, discrepancy detection |
+| **SYNC** | ✅ Complete | Bidirectional Azure synchronization |
+| **ADMIN** | ✅ Complete | User, project, snapshot management |
+| **WORK PKGS** | 🔄 In Development | PDF work package generation |
+| **AI** | 📋 Planned | Claude API integration for analytics |
 
-## 📝 License
+---
+
+## ⚡ Performance Targets
+
+| Metric | Target |
+|--------|--------|
+| Sync 5k records | ~6 seconds |
+| Grid virtualization | 200k+ records |
+| MS rollup calculation | <3 seconds for 200 activities |
+
+---
+
+## 📝 Development Notes
+
+- **One change at a time:** Test before proceeding
+- **No quick fixes:** Proper architectural solutions preferred
+- **Nullable reference types:** Enabled throughout project
+- **Logging:** AppLogger with Info/Error/Warning levels
+- **Local database:** Can be deleted and re-synced from Azure at any time
+
+---
+
+## 📜 License
 
 *License information to be added*
+
+---
 
 ## 👥 Contributing
 
 *Contribution guidelines to be added*
 
+---
+
 ## 📧 Contact
 
-*Contact information to be added Soon*
+*Contact information to be added*
