@@ -1,6 +1,6 @@
-# MILESTONE
+# VANTAGE: MILESTONE
 
-Vantage: MILESTONE is a comprehensive construction project management and progress tracking application built with WPF (Windows Presentation Foundation) and .NET 8. Designed for field engineers and project managers in industrial construction (pharmaceutical, microchip, data center facilities), MILESTONE provides powerful tools for tracking construction activities, managing schedules with P6 Primavera integration, generating work package documents, and enabling multi-user collaboration. The application features a modern Syncfusion FluentDark interface, bidirectional cloud synchronization, and is architected for upcoming AI-powered analytics.
+VANTAGE: MILESTONE is a comprehensive construction project management and progress tracking application built with WPF (Windows Presentation Foundation) and .NET 8. Designed for field engineers and project managers in industrial construction (pharmaceutical, microchip, data center facilities), MILESTONE provides powerful tools for tracking construction activities, managing schedules with P6 Primavera integration, generating work package documents, and enabling multi-user collaboration. The application features a modern Syncfusion FluentDark interface, bidirectional cloud synchronization, and is architected for upcoming AI-powered analytics.
 
 ---
 
