@@ -1,6 +1,6 @@
 # MILESTONE - Project Status
 
-**Last Updated:** January 4, 2026
+**Last Updated:** January 4, 2026 (Session 2)
 
 ## Current Status
 
@@ -29,6 +29,7 @@
 - [x] Update Schedule view Discrepancies button to dropdown filter with Actual Start, Actual Finish, MHs, % Complete as selectable items
 - [ ] Progress Book creation
 - [~] Work Package creation (in progress - see WorkPackage_Status.md)
+- [ ] Procore Drawings integration (planned - see Procore_Plan.md)
 - [ ] Theme selection
 
 ### AI Integration
@@ -40,7 +41,16 @@ See `AI_Implementation_Items.md` for detailed AI feature planning.
 
 ## Recently Completed
 
-### January 4, 2026
+### January 4, 2026 (Session 2)
+- Fixed Work Package UI styling - applied SfSkinManager FluentDark theme to all controls
+- Fixed Form Template tab layout - dropdown 30% width, Type to right of dropdown
+- Redesigned Generate tab - shortened fields, moved Generate button right of Output
+- Converted Add Form dropdown to menu-style button (DropDownButtonAdv like File/Tools)
+- Re-enabled PDF preview with Syncfusion PdfViewerControl and proper error handling
+- Verified folder browser and Generate button save PDFs correctly
+- Planned Procore Drawings integration (see Procore_Plan.md)
+
+### January 4, 2026 (Session 1)
 - Created Work Package module - view shell with 60/40 split, tabs, preview panel
 - Added FormTemplates/WPTemplates database tables and seeded built-in templates
 - Implemented PDF renderers (Cover, List, Form, Grid types) using Syncfusion.Pdf
