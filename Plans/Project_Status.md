@@ -31,6 +31,9 @@
 - [~] Work Package creation (in progress - see WorkPackage_Status.md)
 - [ ] Procore Drawings integration (planned - see Procore_Plan.md)
 - [ ] Theme selection
+- [ ] Review project files for hard coded colors and replace with theme variables
+- [ ] Add Offline Indicator in MainWindow status bar when no internet connection detected
+- [ ] Add "Only My Records" option to SYNC dialog that is default selected which only syncs records owned by the current user and removes records from local DB that are owned by other users after they are uploaded if necessary
 
 ### AI Integration
 See `AI_Implementation_Items.md` for detailed AI feature planning.
