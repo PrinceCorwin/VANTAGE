@@ -27,16 +27,24 @@
 - [x] Clean up DarkTheme of unused variables
 - [x] Prorate filtered activities BudgetMHs (New Total/Add/Subtract with Keep Percent or Keep Earned options)
 - [x] Update Schedule view Discrepancies button to dropdown filter with Actual Start, Actual Finish, MHs, % Complete as selectable items
-- [ ] Progress Book creation
-- [~] Work Package creation (in progress - see WorkPackage_Status.md)
-- [ ] Procore Drawings integration (planned - see Procore_Plan.md)
-- [ ] Theme selection
-- [ ] Review project files for hard coded colors and replace with theme variables
-- [ ] Add Offline Indicator in MainWindow status bar when no internet connection detected
 - [ ] Add "Only My Records" option to SYNC dialog that is default selected which only syncs records owned by the current user and removes records from local DB that are owned by other users after they are uploaded if necessary
+- [ ] Progress Book creation
+- [~] Work Package creation (in progress - see WorkPackage_Status.md) - Still need to fix margins on printed PDFs, implement template editors, and add built-in templates
+- [ ] Procore Drawings integration (planned - see Procore_Plan.md)
+- [ ] Theme selection by user - save preference in UserSettings and apply on startup
+- [ ] Review project files for hard coded colors and replace with theme variables
+- [ ] Add Offline Indicator in MainWindow status bar when no internet connection detected-clickable to retry connection
+- [ ] Review project file organization and clean up as needed
+- [ ] Add 'Revert to Snapshot' menu item in Tools - user selects from list of thier snapshots to revert local data to that snapshot state
 
 ### AI Integration
 See `AI_Implementation_Items.md` for detailed AI feature planning.
+
+### Procore Integration
+See `Procore_Plan.md` for detailed Procore feature planning.
+
+### Help and AI Sidebar
+See `Help_AI_Sidebar_Plan.md` for detailed Help and AI sidebar feature planning
 
 ### Shelved
 - [ ] Find-Replace in Schedule Detail Grid
