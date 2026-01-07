@@ -50,6 +50,7 @@
 		<PackageReference Include="Syncfusion.SfTextInputLayout.WPF" Version="32.1.22" />
 		<PackageReference Include="Syncfusion.Tools.WPF" Version="32.1.22" />
 		<PackageReference Include="Syncfusion.Themes.FluentDark.WPF" Version="32.1.22" />
+		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2903.40" />
 	</ItemGroup>
 
 	<ItemGroup>
