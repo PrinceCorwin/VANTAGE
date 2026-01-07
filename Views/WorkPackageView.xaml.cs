@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -8,7 +9,9 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Interop;
+using System.Windows.Media;
 using Microsoft.Win32;
 using Syncfusion.Windows.Tools.Controls;
 using VANTAGE.Models;
@@ -34,6 +37,22 @@ namespace VANTAGE.Views
         public string Description { get; set; } = "";
     }
 
+    // Converter to display TemplateColumn as "Name (Width%)"
+    public class ColumnDisplayConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is TemplateColumn col)
+                return $"{col.Name} ({col.WidthPercent}%)";
+            return value?.ToString() ?? "";
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     public partial class WorkPackageView : UserControl
     {
         private List<FormTemplate> _formTemplates = new();
@@ -49,6 +68,46 @@ namespace VANTAGE.Views
         // Clone state for form templates
         private string? _clonedFormType;
         private string? _clonedFormStructure;
+
+        // Current editor type being displayed
+        private string? _currentEditorType;
+
+        // Cover editor controls
+        private TextBox? _coverTitleBox;
+        private TextBox? _coverImagePathBox;
+        private Slider? _coverImageWidthSlider;
+        private TextBox? _coverFooterTextBox;
+
+        // List editor controls
+        private TextBox? _listTitleBox;
+        private ListBox? _listItemsBox;
+        private ObservableCollection<string>? _listItems;
+        private TextBox? _listNewItemBox;
+        private TextBox? _listFooterTextBox;
+
+        // Grid editor controls
+        private TextBox? _gridTitleBox;
+        private ListBox? _gridColumnsBox;
+        private ObservableCollection<TemplateColumn>? _gridColumns;
+        private TextBox? _gridNewColumnNameBox;
+        private Syncfusion.Windows.Shared.IntegerTextBox? _gridNewColumnWidthBox;
+        private Syncfusion.Windows.Shared.IntegerTextBox? _gridRowCountBox;
+        private Slider? _gridRowHeightSlider;
+        private TextBox? _gridFooterTextBox;
+
+        // Form editor controls
+        private TextBox? _formTitleBox;
+        private ListBox? _formColumnsBox;
+        private ObservableCollection<TemplateColumn>? _formColumns;
+        private TextBox? _formNewColumnNameBox;
+        private Syncfusion.Windows.Shared.IntegerTextBox? _formNewColumnWidthBox;
+        private ListBox? _formSectionsBox;
+        private ObservableCollection<SectionDefinition>? _formSections;
+        private TextBox? _formNewSectionBox;
+        private ListBox? _formSectionItemsBox;
+        private TextBox? _formNewItemBox;
+        private Slider? _formRowHeightSlider;
+        private TextBox? _formFooterTextBox;
 
         private readonly WorkPackageGenerator _generator = new();
 
@@ -577,14 +636,16 @@ namespace VANTAGE.Views
 
                 if (selectedTab?.Header?.ToString() == "Form Templates" && _selectedFormTemplate != null)
                 {
-                    // Preview single form template
-                    previewStream = _generator.GenerateFormPreview(_selectedFormTemplate,
+                    // Preview single form template with actual context if on Generate tab selections exist
+                    var formContext = BuildPreviewContext();
+                    previewStream = _generator.GenerateFormPreview(_selectedFormTemplate, formContext,
                         string.IsNullOrEmpty(txtLogoPath.Text) ? null : txtLogoPath.Text);
                 }
                 else if (cboWPTemplate.SelectedValue is string wpTemplateId)
                 {
-                    // Preview full WP template
-                    previewStream = await _generator.GeneratePreviewAsync(wpTemplateId,
+                    // Preview full WP template with actual UI selections
+                    var context = BuildPreviewContext();
+                    previewStream = await _generator.GeneratePreviewAsync(wpTemplateId, context,
                         string.IsNullOrEmpty(txtLogoPath.Text) ? null : txtLogoPath.Text);
                 }
 
@@ -624,6 +685,41 @@ namespace VANTAGE.Views
             pdfPlaceholder.Text = message;
             pdfPlaceholderBorder.Visibility = Visibility.Visible;
             pdfViewer.Visibility = Visibility.Collapsed;
+        }
+
+        // Build TokenContext from current UI selections (or placeholders if not selected)
+        private TokenContext BuildPreviewContext()
+        {
+            // Get project ID
+            var projectId = cboProject.SelectedValue as string ?? "SAMPLE";
+
+            // Get first selected work package (for preview)
+            var selectedWPs = lstWorkPackages.SelectedItems.Cast<string>().ToList();
+            var workPackage = selectedWPs.FirstOrDefault() ?? "50.SAMPLE.WP";
+
+            // Get PKG Manager
+            var pkgManager = cboPKGManager.SelectedItem as UserItem;
+            var pkgManagerUsername = pkgManager?.Username ?? "pkgmgr";
+            var pkgManagerFullName = pkgManager?.FullName ?? "Package Manager";
+
+            // Get Scheduler
+            var scheduler = cboScheduler.SelectedItem as UserItem;
+            var schedulerUsername = scheduler?.Username ?? "scheduler";
+            var schedulerFullName = scheduler?.FullName ?? "Scheduler";
+
+            // Get WP Name Pattern
+            var wpNamePattern = txtWPNamePattern.Text;
+
+            return new TokenContext
+            {
+                ProjectID = projectId,
+                WorkPackage = workPackage,
+                PKGManagerUsername = pkgManagerUsername,
+                PKGManagerFullName = pkgManagerFullName,
+                SchedulerUsername = schedulerUsername,
+                SchedulerFullName = schedulerFullName,
+                WPNamePattern = wpNamePattern
+            };
         }
 
         // WP Template edit selection changed
@@ -825,16 +921,112 @@ namespace VANTAGE.Views
                 txtFormTemplateName.Text = template.TemplateName;
                 lblFormTemplateType.Text = template.TemplateType;
 
-                // TODO: Load type-specific editor
+                // Load type-specific editor
+                LoadFormTemplateEditor(template);
             }
             else
             {
                 // "+ Add New" selected - show type selection dialog
-                _selectedFormTemplate = null;
-                txtFormTemplateName.Text = "";
-                lblFormTemplateType.Text = "";
+                ShowTypeSelectionDialog();
+            }
+        }
 
-                // TODO: Show type selection dialog
+        // Show dialog for selecting template type when creating new template
+        private void ShowTypeSelectionDialog()
+        {
+            var dialog = new TemplateTypeDialog
+            {
+                Owner = Window.GetWindow(this)
+            };
+
+            if (dialog.ShowDialog() == true && !string.IsNullOrEmpty(dialog.SelectedType))
+            {
+                // Create new template with selected type
+                var newTemplate = new FormTemplate
+                {
+                    TemplateID = System.Guid.NewGuid().ToString(),
+                    TemplateName = $"New {dialog.SelectedType} Template",
+                    TemplateType = dialog.SelectedType,
+                    IsBuiltIn = false,
+                    CreatedBy = App.CurrentUser?.Username ?? "Unknown",
+                    CreatedUtc = DateTime.UtcNow.ToString("o")
+                };
+
+                // Initialize with default structure based on type
+                newTemplate.StructureJson = dialog.SelectedType switch
+                {
+                    TemplateTypes.Cover => JsonSerializer.Serialize(new CoverStructure()),
+                    TemplateTypes.List => JsonSerializer.Serialize(new ListStructure()),
+                    TemplateTypes.Grid => JsonSerializer.Serialize(new GridStructure()),
+                    TemplateTypes.Form => JsonSerializer.Serialize(new FormStructure()),
+                    _ => "{}"
+                };
+
+                _selectedFormTemplate = newTemplate;
+                txtFormTemplateName.Text = newTemplate.TemplateName;
+                lblFormTemplateType.Text = newTemplate.TemplateType;
+
+                // Load the editor for this type
+                LoadFormTemplateEditor(newTemplate);
+                _hasUnsavedChanges = true;
+            }
+            else
+            {
+                // User cancelled - reset to first template if available
+                if (_formTemplates.Count > 0)
+                {
+                    cboFormTemplateEdit.SelectedIndex = 0;
+                }
+                else
+                {
+                    _selectedFormTemplate = null;
+                    txtFormTemplateName.Text = "";
+                    lblFormTemplateType.Text = "";
+                    ClearFormEditor();
+                }
+            }
+        }
+
+        // Load the appropriate editor for the template type
+        private void LoadFormTemplateEditor(FormTemplate template)
+        {
+            try
+            {
+                switch (template.TemplateType)
+                {
+                    case TemplateTypes.Cover:
+                        var coverStructure = JsonSerializer.Deserialize<CoverStructure>(template.StructureJson) ?? new CoverStructure();
+                        BuildCoverEditor(coverStructure);
+                        break;
+
+                    case TemplateTypes.List:
+                        var listStructure = JsonSerializer.Deserialize<ListStructure>(template.StructureJson) ?? new ListStructure();
+                        BuildListEditor(listStructure);
+                        break;
+
+                    case TemplateTypes.Grid:
+                        var gridStructure = JsonSerializer.Deserialize<GridStructure>(template.StructureJson) ?? new GridStructure();
+                        BuildGridEditor(gridStructure);
+                        break;
+
+                    case TemplateTypes.Form:
+                        var formStructure = JsonSerializer.Deserialize<FormStructure>(template.StructureJson) ?? new FormStructure();
+                        BuildFormEditor(formStructure);
+                        break;
+
+                    case TemplateTypes.Drawings:
+                        ShowEditorPlaceholder(template.TemplateType);
+                        break;
+
+                    default:
+                        ShowEditorPlaceholder(template.TemplateType);
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "WorkPackageView.LoadFormTemplateEditor");
+                ShowEditorPlaceholder(template.TemplateType);
             }
         }
 
@@ -890,6 +1082,9 @@ namespace VANTAGE.Views
                 return;
             }
 
+            // Get structure JSON from current editor if supported
+            string? editorStructureJson = GetStructureJsonFromEditor();
+
             // Check if saving a built-in template - preserve clone data
             if (_selectedFormTemplate?.IsBuiltIn == true)
             {
@@ -897,9 +1092,9 @@ namespace VANTAGE.Views
                     "Save as New", MessageBoxButton.YesNo, MessageBoxImage.Question);
                 if (result != MessageBoxResult.Yes) return;
 
-                // Preserve data for clone
+                // Preserve data for clone - use editor value if available
                 _clonedFormType = _selectedFormTemplate.TemplateType;
-                _clonedFormStructure = _selectedFormTemplate.StructureJson;
+                _clonedFormStructure = editorStructureJson ?? _selectedFormTemplate.StructureJson;
                 _selectedFormTemplate = null; // Create new
             }
 
@@ -916,7 +1111,7 @@ namespace VANTAGE.Views
                         return;
                     }
 
-                    // Create new from clone data
+                    // Create new from clone data (may include editor changes)
                     var template = new FormTemplate
                     {
                         TemplateID = Guid.NewGuid().ToString(),
@@ -937,8 +1132,12 @@ namespace VANTAGE.Views
                 }
                 else
                 {
-                    // Update existing
+                    // Update existing - use editor structure if available
                     _selectedFormTemplate.TemplateName = txtFormTemplateName.Text;
+                    if (editorStructureJson != null)
+                    {
+                        _selectedFormTemplate.StructureJson = editorStructureJson;
+                    }
                     await TemplateRepository.UpdateFormTemplateAsync(_selectedFormTemplate);
                     savedTemplateId = _selectedFormTemplate.TemplateID;
                     lblStatus.Text = "Template saved";
@@ -1016,5 +1215,1094 @@ namespace VANTAGE.Views
 
             return true;
         }
+
+        #region Form Template Editors
+
+        // Build and display the Cover type editor
+        private void BuildCoverEditor(CoverStructure structure)
+        {
+            _currentEditorType = TemplateTypes.Cover;
+
+            var panel = new StackPanel { Margin = new Thickness(0, 10, 0, 0) };
+
+            // Title
+            panel.Children.Add(new TextBlock
+            {
+                Text = "Title",
+                FontWeight = FontWeights.SemiBold,
+                Foreground = (Brush)FindResource("ForegroundColor"),
+                Margin = new Thickness(0, 0, 0, 5)
+            });
+            _coverTitleBox = new TextBox
+            {
+                Text = structure.Title,
+                Height = 28,
+                Margin = new Thickness(0, 0, 0, 15)
+            };
+            _coverTitleBox.TextChanged += (s, e) => _hasUnsavedChanges = true;
+            panel.Children.Add(_coverTitleBox);
+
+            // Image Path
+            panel.Children.Add(new TextBlock
+            {
+                Text = "Cover Image",
+                FontWeight = FontWeights.SemiBold,
+                Foreground = (Brush)FindResource("ForegroundColor"),
+                Margin = new Thickness(0, 0, 0, 5)
+            });
+            var imagePathGrid = new Grid { Margin = new Thickness(0, 0, 0, 15) };
+            imagePathGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            imagePathGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+            _coverImagePathBox = new TextBox
+            {
+                Text = structure.ImagePath ?? "(default)",
+                Height = 28,
+                IsReadOnly = true,
+                ToolTip = "Leave empty to use default cover image"
+            };
+            Grid.SetColumn(_coverImagePathBox, 0);
+            imagePathGrid.Children.Add(_coverImagePathBox);
+
+            var browseBtn = new Button
+            {
+                Content = "Browse",
+                Padding = new Thickness(8, 4, 8, 4),
+                Margin = new Thickness(5, 0, 0, 0)
+            };
+            browseBtn.Click += BrowseCoverImage_Click;
+            Grid.SetColumn(browseBtn, 1);
+            imagePathGrid.Children.Add(browseBtn);
+
+            panel.Children.Add(imagePathGrid);
+
+            // Image Width Percent
+            panel.Children.Add(new TextBlock
+            {
+                Text = $"Image Width: {structure.ImageWidthPercent}%",
+                FontWeight = FontWeights.SemiBold,
+                Foreground = (Brush)FindResource("ForegroundColor"),
+                Margin = new Thickness(0, 0, 0, 5),
+                Name = "lblImageWidth"
+            });
+            _coverImageWidthSlider = new Slider
+            {
+                Minimum = 20,
+                Maximum = 100,
+                Value = structure.ImageWidthPercent,
+                TickFrequency = 10,
+                IsSnapToTickEnabled = true,
+                Margin = new Thickness(0, 0, 0, 15)
+            };
+            // Update label when slider changes
+            var widthLabel = panel.Children[panel.Children.Count - 1] as TextBlock;
+            _coverImageWidthSlider.ValueChanged += (s, e) =>
+            {
+                if (widthLabel != null)
+                    widthLabel.Text = $"Image Width: {(int)_coverImageWidthSlider.Value}%";
+                _hasUnsavedChanges = true;
+            };
+            panel.Children.Add(_coverImageWidthSlider);
+
+            // Footer Text
+            panel.Children.Add(new TextBlock
+            {
+                Text = "Footer Text (optional)",
+                FontWeight = FontWeights.SemiBold,
+                Foreground = (Brush)FindResource("ForegroundColor"),
+                Margin = new Thickness(0, 0, 0, 5)
+            });
+            _coverFooterTextBox = new TextBox
+            {
+                Text = structure.FooterText ?? "",
+                Height = 60,
+                AcceptsReturn = true,
+                TextWrapping = TextWrapping.Wrap,
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                Margin = new Thickness(0, 0, 0, 15)
+            };
+            _coverFooterTextBox.TextChanged += (s, e) => _hasUnsavedChanges = true;
+            panel.Children.Add(_coverFooterTextBox);
+
+            FormEditorContent.Content = panel;
+        }
+
+        // Browse for cover image
+        private void BrowseCoverImage_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new OpenFileDialog
+            {
+                Filter = "Image Files|*.png;*.jpg;*.jpeg;*.bmp;*.gif",
+                Title = "Select Cover Image"
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                if (_coverImagePathBox != null)
+                {
+                    _coverImagePathBox.Text = dialog.FileName;
+                    _hasUnsavedChanges = true;
+                }
+            }
+        }
+
+        // Build and display the List type editor
+        private void BuildListEditor(ListStructure structure)
+        {
+            _currentEditorType = TemplateTypes.List;
+            _listItems = new ObservableCollection<string>(structure.Items);
+
+            var panel = new StackPanel { Margin = new Thickness(0, 10, 0, 0) };
+
+            // Title
+            panel.Children.Add(new TextBlock
+            {
+                Text = "Title",
+                FontWeight = FontWeights.SemiBold,
+                Foreground = (Brush)FindResource("ForegroundColor"),
+                Margin = new Thickness(0, 0, 0, 5)
+            });
+            _listTitleBox = new TextBox
+            {
+                Text = structure.Title,
+                Height = 28,
+                Margin = new Thickness(0, 0, 0, 15)
+            };
+            _listTitleBox.TextChanged += (s, e) => _hasUnsavedChanges = true;
+            panel.Children.Add(_listTitleBox);
+
+            // Items Label
+            panel.Children.Add(new TextBlock
+            {
+                Text = "Items (use blank lines for spacing)",
+                FontWeight = FontWeights.SemiBold,
+                Foreground = (Brush)FindResource("ForegroundColor"),
+                Margin = new Thickness(0, 0, 0, 5)
+            });
+
+            // Items list with buttons
+            var itemsGrid = new Grid { Margin = new Thickness(0, 0, 0, 10) };
+            itemsGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            itemsGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+            _listItemsBox = new ListBox
+            {
+                Height = 180,
+                ItemsSource = _listItems,
+                ToolTip = "Select an item to move or remove"
+            };
+            Grid.SetColumn(_listItemsBox, 0);
+            itemsGrid.Children.Add(_listItemsBox);
+
+            // Button panel
+            var btnPanel = new StackPanel { VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(5, 0, 0, 0) };
+            var btnUp = new Button { Content = "▲", Padding = new Thickness(8, 4, 8, 4), Margin = new Thickness(0, 0, 0, 5), ToolTip = "Move up" };
+            btnUp.Click += ListItemMoveUp_Click;
+            btnPanel.Children.Add(btnUp);
+
+            var btnDown = new Button { Content = "▼", Padding = new Thickness(8, 4, 8, 4), Margin = new Thickness(0, 0, 0, 5), ToolTip = "Move down" };
+            btnDown.Click += ListItemMoveDown_Click;
+            btnPanel.Children.Add(btnDown);
+
+            var btnRemove = new Button { Content = "✕", Padding = new Thickness(8, 4, 8, 4), Margin = new Thickness(0, 0, 0, 5), ToolTip = "Remove" };
+            btnRemove.Click += ListItemRemove_Click;
+            btnPanel.Children.Add(btnRemove);
+
+            var btnEdit = new Button { Content = "✎", Padding = new Thickness(8, 4, 8, 4), ToolTip = "Edit" };
+            btnEdit.Click += ListItemEdit_Click;
+            btnPanel.Children.Add(btnEdit);
+
+            Grid.SetColumn(btnPanel, 1);
+            itemsGrid.Children.Add(btnPanel);
+            panel.Children.Add(itemsGrid);
+
+            // Add new item row
+            var addGrid = new Grid { Margin = new Thickness(0, 0, 0, 15) };
+            addGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            addGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+            _listNewItemBox = new TextBox { Height = 28, ToolTip = "Enter new item text" };
+            _listNewItemBox.KeyDown += (s, e) =>
+            {
+                if (e.Key == System.Windows.Input.Key.Enter) ListItemAdd_Click(s, e);
+            };
+            Grid.SetColumn(_listNewItemBox, 0);
+            addGrid.Children.Add(_listNewItemBox);
+
+            var btnAdd = new Button { Content = "+ Add", Padding = new Thickness(8, 4, 8, 4), Margin = new Thickness(5, 0, 0, 0) };
+            btnAdd.Click += ListItemAdd_Click;
+            Grid.SetColumn(btnAdd, 1);
+            addGrid.Children.Add(btnAdd);
+            panel.Children.Add(addGrid);
+
+            // Footer Text
+            panel.Children.Add(new TextBlock
+            {
+                Text = "Footer Text (optional)",
+                FontWeight = FontWeights.SemiBold,
+                Foreground = (Brush)FindResource("ForegroundColor"),
+                Margin = new Thickness(0, 0, 0, 5)
+            });
+            _listFooterTextBox = new TextBox
+            {
+                Text = structure.FooterText ?? "",
+                Height = 60,
+                AcceptsReturn = true,
+                TextWrapping = TextWrapping.Wrap,
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                Margin = new Thickness(0, 0, 0, 15)
+            };
+            _listFooterTextBox.TextChanged += (s, e) => _hasUnsavedChanges = true;
+            panel.Children.Add(_listFooterTextBox);
+
+            FormEditorContent.Content = panel;
+        }
+
+        // List item button handlers
+        private void ListItemMoveUp_Click(object sender, RoutedEventArgs e)
+        {
+            if (_listItemsBox?.SelectedIndex > 0 && _listItems != null)
+            {
+                int idx = _listItemsBox.SelectedIndex;
+                _listItems.Move(idx, idx - 1);
+                _listItemsBox.SelectedIndex = idx - 1;
+                _hasUnsavedChanges = true;
+            }
+        }
+
+        private void ListItemMoveDown_Click(object sender, RoutedEventArgs e)
+        {
+            if (_listItemsBox != null && _listItems != null && _listItemsBox.SelectedIndex >= 0 && _listItemsBox.SelectedIndex < _listItems.Count - 1)
+            {
+                int idx = _listItemsBox.SelectedIndex;
+                _listItems.Move(idx, idx + 1);
+                _listItemsBox.SelectedIndex = idx + 1;
+                _hasUnsavedChanges = true;
+            }
+        }
+
+        private void ListItemRemove_Click(object sender, RoutedEventArgs e)
+        {
+            if (_listItemsBox?.SelectedIndex >= 0 && _listItems != null)
+            {
+                _listItems.RemoveAt(_listItemsBox.SelectedIndex);
+                _hasUnsavedChanges = true;
+            }
+        }
+
+        private void ListItemEdit_Click(object sender, RoutedEventArgs e)
+        {
+            if (_listItemsBox?.SelectedIndex >= 0 && _listItems != null && _listNewItemBox != null)
+            {
+                int idx = _listItemsBox.SelectedIndex;
+                // Copy selected item to the new item box for editing
+                _listNewItemBox.Text = _listItems[idx];
+                _listItems.RemoveAt(idx);
+                _listNewItemBox.Focus();
+                _hasUnsavedChanges = true;
+            }
+        }
+
+        private void ListItemAdd_Click(object sender, RoutedEventArgs e)
+        {
+            if (_listNewItemBox != null && _listItems != null)
+            {
+                _listItems.Add(_listNewItemBox.Text);
+                _listNewItemBox.Clear();
+                _hasUnsavedChanges = true;
+            }
+        }
+
+        // Get List structure JSON from editor
+        private string GetListStructureJson()
+        {
+            var structure = new ListStructure
+            {
+                Title = _listTitleBox?.Text ?? "WORK PACKAGE TABLE OF CONTENTS",
+                Items = _listItems?.ToList() ?? new List<string>(),
+                FooterText = string.IsNullOrWhiteSpace(_listFooterTextBox?.Text) ? null : _listFooterTextBox.Text
+            };
+            return JsonSerializer.Serialize(structure);
+        }
+
+        // Get Cover structure JSON from editor
+        private string GetCoverStructureJson()
+        {
+            var structure = new CoverStructure
+            {
+                Title = _coverTitleBox?.Text ?? "WORK PACKAGE COVER SHEET",
+                ImagePath = _coverImagePathBox?.Text == "(default)" ? null : _coverImagePathBox?.Text,
+                ImageWidthPercent = (int)(_coverImageWidthSlider?.Value ?? 80),
+                FooterText = string.IsNullOrWhiteSpace(_coverFooterTextBox?.Text) ? null : _coverFooterTextBox.Text
+            };
+            return JsonSerializer.Serialize(structure);
+        }
+
+        // Build and display the Grid type editor
+        private void BuildGridEditor(GridStructure structure)
+        {
+            _currentEditorType = TemplateTypes.Grid;
+            _gridColumns = new ObservableCollection<TemplateColumn>(structure.Columns);
+
+            var panel = new StackPanel { Margin = new Thickness(0, 10, 0, 0) };
+
+            // Title
+            panel.Children.Add(new TextBlock
+            {
+                Text = "Title",
+                FontWeight = FontWeights.SemiBold,
+                Foreground = (Brush)FindResource("ForegroundColor"),
+                Margin = new Thickness(0, 0, 0, 5)
+            });
+            _gridTitleBox = new TextBox
+            {
+                Text = structure.Title,
+                Height = 28,
+                Margin = new Thickness(0, 0, 0, 15)
+            };
+            _gridTitleBox.TextChanged += (s, e) => _hasUnsavedChanges = true;
+            panel.Children.Add(_gridTitleBox);
+
+            // Columns Label
+            panel.Children.Add(new TextBlock
+            {
+                Text = "Columns (name and width %)",
+                FontWeight = FontWeights.SemiBold,
+                Foreground = (Brush)FindResource("ForegroundColor"),
+                Margin = new Thickness(0, 0, 0, 5)
+            });
+
+            // Columns list with buttons
+            var colGrid = new Grid { Margin = new Thickness(0, 0, 0, 10) };
+            colGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            colGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+            _gridColumnsBox = new ListBox
+            {
+                Height = 140,
+                ItemsSource = _gridColumns,
+                ToolTip = "Select a column to move or remove"
+            };
+            // Custom display for columns showing name and width
+            _gridColumnsBox.ItemTemplate = CreateColumnItemTemplate();
+            Grid.SetColumn(_gridColumnsBox, 0);
+            colGrid.Children.Add(_gridColumnsBox);
+
+            // Button panel
+            var btnPanel = new StackPanel { VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(5, 0, 0, 0) };
+            var btnUp = new Button { Content = "▲", Padding = new Thickness(8, 4, 8, 4), Margin = new Thickness(0, 0, 0, 5), ToolTip = "Move up" };
+            btnUp.Click += GridColumnMoveUp_Click;
+            btnPanel.Children.Add(btnUp);
+
+            var btnDown = new Button { Content = "▼", Padding = new Thickness(8, 4, 8, 4), Margin = new Thickness(0, 0, 0, 5), ToolTip = "Move down" };
+            btnDown.Click += GridColumnMoveDown_Click;
+            btnPanel.Children.Add(btnDown);
+
+            var btnRemove = new Button { Content = "✕", Padding = new Thickness(8, 4, 8, 4), ToolTip = "Remove" };
+            btnRemove.Click += GridColumnRemove_Click;
+            btnPanel.Children.Add(btnRemove);
+
+            Grid.SetColumn(btnPanel, 1);
+            colGrid.Children.Add(btnPanel);
+            panel.Children.Add(colGrid);
+
+            // Add new column row
+            var addGrid = new Grid { Margin = new Thickness(0, 0, 0, 15) };
+            addGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            addGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(60) });
+            addGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+            _gridNewColumnNameBox = new TextBox { Height = 28, ToolTip = "Column name" };
+            Grid.SetColumn(_gridNewColumnNameBox, 0);
+            addGrid.Children.Add(_gridNewColumnNameBox);
+
+            _gridNewColumnWidthBox = new Syncfusion.Windows.Shared.IntegerTextBox
+            {
+                Value = 20,
+                MinValue = 1,
+                MaxValue = 100,
+                Height = 28,
+                Margin = new Thickness(5, 0, 0, 0),
+                ToolTip = "Width %"
+            };
+            Grid.SetColumn(_gridNewColumnWidthBox, 1);
+            addGrid.Children.Add(_gridNewColumnWidthBox);
+
+            var btnAdd = new Button { Content = "+ Add", Padding = new Thickness(8, 4, 8, 4), Margin = new Thickness(5, 0, 0, 0) };
+            btnAdd.Click += GridColumnAdd_Click;
+            Grid.SetColumn(btnAdd, 2);
+            addGrid.Children.Add(btnAdd);
+            panel.Children.Add(addGrid);
+
+            // Row Count
+            var rowGrid = new Grid { Margin = new Thickness(0, 0, 0, 15) };
+            rowGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            rowGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(80) });
+
+            rowGrid.Children.Add(new TextBlock
+            {
+                Text = "Row Count:",
+                FontWeight = FontWeights.SemiBold,
+                Foreground = (Brush)FindResource("ForegroundColor"),
+                VerticalAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(0, 0, 10, 0)
+            });
+
+            _gridRowCountBox = new Syncfusion.Windows.Shared.IntegerTextBox
+            {
+                Value = structure.RowCount,
+                MinValue = 1,
+                MaxValue = 100,
+                Height = 28,
+                ToolTip = "Number of empty rows"
+            };
+            _gridRowCountBox.ValueChanged += (s, e) => _hasUnsavedChanges = true;
+            Grid.SetColumn(_gridRowCountBox, 1);
+            rowGrid.Children.Add(_gridRowCountBox);
+            panel.Children.Add(rowGrid);
+
+            // Row Height Increase
+            var heightLabel = new TextBlock
+            {
+                Text = $"Row Height Increase: {structure.RowHeightIncreasePercent}%",
+                FontWeight = FontWeights.SemiBold,
+                Foreground = (Brush)FindResource("ForegroundColor"),
+                Margin = new Thickness(0, 0, 0, 5)
+            };
+            panel.Children.Add(heightLabel);
+
+            _gridRowHeightSlider = new Slider
+            {
+                Minimum = 0,
+                Maximum = 100,
+                Value = structure.RowHeightIncreasePercent,
+                TickFrequency = 10,
+                IsSnapToTickEnabled = true,
+                Margin = new Thickness(0, 0, 0, 15)
+            };
+            _gridRowHeightSlider.ValueChanged += (s, e) =>
+            {
+                heightLabel.Text = $"Row Height Increase: {(int)_gridRowHeightSlider.Value}%";
+                _hasUnsavedChanges = true;
+            };
+            panel.Children.Add(_gridRowHeightSlider);
+
+            // Footer Text
+            panel.Children.Add(new TextBlock
+            {
+                Text = "Footer Text (optional)",
+                FontWeight = FontWeights.SemiBold,
+                Foreground = (Brush)FindResource("ForegroundColor"),
+                Margin = new Thickness(0, 0, 0, 5)
+            });
+            _gridFooterTextBox = new TextBox
+            {
+                Text = structure.FooterText ?? "",
+                Height = 60,
+                AcceptsReturn = true,
+                TextWrapping = TextWrapping.Wrap,
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                Margin = new Thickness(0, 0, 0, 15)
+            };
+            _gridFooterTextBox.TextChanged += (s, e) => _hasUnsavedChanges = true;
+            panel.Children.Add(_gridFooterTextBox);
+
+            FormEditorContent.Content = panel;
+        }
+
+        // Create item template for column display
+        private DataTemplate CreateColumnItemTemplate()
+        {
+            var template = new DataTemplate();
+            var factory = new FrameworkElementFactory(typeof(TextBlock));
+            factory.SetBinding(TextBlock.TextProperty, new System.Windows.Data.Binding
+            {
+                Converter = new ColumnDisplayConverter()
+            });
+            template.VisualTree = factory;
+            return template;
+        }
+
+        // Grid column button handlers
+        private void GridColumnMoveUp_Click(object sender, RoutedEventArgs e)
+        {
+            if (_gridColumnsBox?.SelectedIndex > 0 && _gridColumns != null)
+            {
+                int idx = _gridColumnsBox.SelectedIndex;
+                _gridColumns.Move(idx, idx - 1);
+                _gridColumnsBox.SelectedIndex = idx - 1;
+                _hasUnsavedChanges = true;
+            }
+        }
+
+        private void GridColumnMoveDown_Click(object sender, RoutedEventArgs e)
+        {
+            if (_gridColumnsBox != null && _gridColumns != null && _gridColumnsBox.SelectedIndex >= 0 && _gridColumnsBox.SelectedIndex < _gridColumns.Count - 1)
+            {
+                int idx = _gridColumnsBox.SelectedIndex;
+                _gridColumns.Move(idx, idx + 1);
+                _gridColumnsBox.SelectedIndex = idx + 1;
+                _hasUnsavedChanges = true;
+            }
+        }
+
+        private void GridColumnRemove_Click(object sender, RoutedEventArgs e)
+        {
+            if (_gridColumnsBox?.SelectedIndex >= 0 && _gridColumns != null)
+            {
+                _gridColumns.RemoveAt(_gridColumnsBox.SelectedIndex);
+                _hasUnsavedChanges = true;
+            }
+        }
+
+        private void GridColumnAdd_Click(object sender, RoutedEventArgs e)
+        {
+            if (_gridNewColumnNameBox != null && _gridNewColumnWidthBox != null && _gridColumns != null)
+            {
+                if (string.IsNullOrWhiteSpace(_gridNewColumnNameBox.Text))
+                {
+                    MessageBox.Show("Please enter a column name.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+                _gridColumns.Add(new TemplateColumn
+                {
+                    Name = _gridNewColumnNameBox.Text,
+                    WidthPercent = (int)(_gridNewColumnWidthBox.Value ?? 20)
+                });
+                _gridNewColumnNameBox.Clear();
+                _hasUnsavedChanges = true;
+            }
+        }
+
+        // Get Grid structure JSON from editor
+        private string GetGridStructureJson()
+        {
+            var structure = new GridStructure
+            {
+                Title = _gridTitleBox?.Text ?? "WORK PACKAGE GRID",
+                Columns = _gridColumns?.ToList() ?? new List<TemplateColumn>(),
+                RowCount = (int)(_gridRowCountBox?.Value ?? 22),
+                RowHeightIncreasePercent = (int)(_gridRowHeightSlider?.Value ?? 0),
+                FooterText = string.IsNullOrWhiteSpace(_gridFooterTextBox?.Text) ? null : _gridFooterTextBox.Text
+            };
+            return JsonSerializer.Serialize(structure);
+        }
+
+        // Build Form editor (sections with items and columns)
+        private void BuildFormEditor(FormStructure structure)
+        {
+            _currentEditorType = TemplateTypes.Form;
+            var scrollViewer = new ScrollViewer { VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
+            var panel = new StackPanel { Margin = new Thickness(15) };
+
+            // Title
+            panel.Children.Add(new TextBlock
+            {
+                Text = "Title",
+                FontWeight = FontWeights.SemiBold,
+                FontSize = 14,
+                Foreground = (Brush)FindResource("ForegroundColor"),
+                Margin = new Thickness(0, 0, 0, 5)
+            });
+            _formTitleBox = new TextBox
+            {
+                Text = structure.Title,
+                Height = 28,
+                Margin = new Thickness(0, 0, 0, 15)
+            };
+            _formTitleBox.TextChanged += (s, e) => _hasUnsavedChanges = true;
+            panel.Children.Add(_formTitleBox);
+
+            // Columns section
+            panel.Children.Add(new TextBlock
+            {
+                Text = "Columns",
+                FontWeight = FontWeights.SemiBold,
+                FontSize = 14,
+                Foreground = (Brush)FindResource("ForegroundColor"),
+                Margin = new Thickness(0, 0, 0, 5)
+            });
+
+            var colGrid = new Grid { Margin = new Thickness(0, 0, 0, 5) };
+            colGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            colGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+            _formColumns = new ObservableCollection<TemplateColumn>(structure.Columns);
+            _formColumnsBox = new ListBox
+            {
+                Height = 80,
+                ItemsSource = _formColumns
+            };
+            _formColumnsBox.ItemTemplate = CreateColumnItemTemplate();
+            Grid.SetColumn(_formColumnsBox, 0);
+            colGrid.Children.Add(_formColumnsBox);
+
+            var colBtnPanel = new StackPanel { VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(5, 0, 0, 0) };
+            var btnColUp = new Button { Content = "▲", Padding = new Thickness(8, 4, 8, 4), Margin = new Thickness(0, 0, 0, 3), ToolTip = "Move up" };
+            btnColUp.Click += FormColumnMoveUp_Click;
+            colBtnPanel.Children.Add(btnColUp);
+            var btnColDown = new Button { Content = "▼", Padding = new Thickness(8, 4, 8, 4), Margin = new Thickness(0, 0, 0, 3), ToolTip = "Move down" };
+            btnColDown.Click += FormColumnMoveDown_Click;
+            colBtnPanel.Children.Add(btnColDown);
+            var btnColRemove = new Button { Content = "✕", Padding = new Thickness(8, 4, 8, 4), ToolTip = "Remove" };
+            btnColRemove.Click += FormColumnRemove_Click;
+            colBtnPanel.Children.Add(btnColRemove);
+            Grid.SetColumn(colBtnPanel, 1);
+            colGrid.Children.Add(colBtnPanel);
+            panel.Children.Add(colGrid);
+
+            // Add column row
+            var addColGrid = new Grid { Margin = new Thickness(0, 0, 0, 15) };
+            addColGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            addColGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(60) });
+            addColGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+            _formNewColumnNameBox = new TextBox { Height = 28, ToolTip = "Column name" };
+            Grid.SetColumn(_formNewColumnNameBox, 0);
+            addColGrid.Children.Add(_formNewColumnNameBox);
+
+            _formNewColumnWidthBox = new Syncfusion.Windows.Shared.IntegerTextBox
+            {
+                Value = 20,
+                MinValue = 5,
+                MaxValue = 100,
+                Height = 28,
+                Width = 55,
+                Margin = new Thickness(5, 0, 0, 0),
+                ToolTip = "Width %"
+            };
+            Grid.SetColumn(_formNewColumnWidthBox, 1);
+            addColGrid.Children.Add(_formNewColumnWidthBox);
+
+            var btnAddCol = new Button { Content = "Add", Padding = new Thickness(8, 4, 8, 4), Margin = new Thickness(5, 0, 0, 0), ToolTip = "Add column" };
+            btnAddCol.Click += FormColumnAdd_Click;
+            Grid.SetColumn(btnAddCol, 2);
+            addColGrid.Children.Add(btnAddCol);
+            panel.Children.Add(addColGrid);
+
+            // Separator
+            panel.Children.Add(new Separator { Margin = new Thickness(0, 0, 0, 15) });
+
+            // Sections
+            panel.Children.Add(new TextBlock
+            {
+                Text = "Sections",
+                FontWeight = FontWeights.SemiBold,
+                FontSize = 14,
+                Foreground = (Brush)FindResource("ForegroundColor"),
+                Margin = new Thickness(0, 0, 0, 5)
+            });
+
+            var secGrid = new Grid { Margin = new Thickness(0, 0, 0, 5) };
+            secGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            secGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+            _formSections = new ObservableCollection<SectionDefinition>(structure.Sections);
+            _formSectionsBox = new ListBox
+            {
+                Height = 80,
+                ItemsSource = _formSections,
+                DisplayMemberPath = "Name"
+            };
+            _formSectionsBox.SelectionChanged += FormSectionSelected;
+            Grid.SetColumn(_formSectionsBox, 0);
+            secGrid.Children.Add(_formSectionsBox);
+
+            var secBtnPanel = new StackPanel { VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(5, 0, 0, 0) };
+            var btnSecUp = new Button { Content = "▲", Padding = new Thickness(8, 4, 8, 4), Margin = new Thickness(0, 0, 0, 3), ToolTip = "Move up" };
+            btnSecUp.Click += FormSectionMoveUp_Click;
+            secBtnPanel.Children.Add(btnSecUp);
+            var btnSecDown = new Button { Content = "▼", Padding = new Thickness(8, 4, 8, 4), Margin = new Thickness(0, 0, 0, 3), ToolTip = "Move down" };
+            btnSecDown.Click += FormSectionMoveDown_Click;
+            secBtnPanel.Children.Add(btnSecDown);
+            var btnSecRemove = new Button { Content = "✕", Padding = new Thickness(8, 4, 8, 4), ToolTip = "Remove" };
+            btnSecRemove.Click += FormSectionRemove_Click;
+            secBtnPanel.Children.Add(btnSecRemove);
+            Grid.SetColumn(secBtnPanel, 1);
+            secGrid.Children.Add(secBtnPanel);
+            panel.Children.Add(secGrid);
+
+            // Add section row
+            var addSecGrid = new Grid { Margin = new Thickness(0, 0, 0, 15) };
+            addSecGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            addSecGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+            _formNewSectionBox = new TextBox { Height = 28, ToolTip = "Section name" };
+            Grid.SetColumn(_formNewSectionBox, 0);
+            addSecGrid.Children.Add(_formNewSectionBox);
+
+            var btnAddSec = new Button { Content = "Add", Padding = new Thickness(8, 4, 8, 4), Margin = new Thickness(5, 0, 0, 0), ToolTip = "Add section" };
+            btnAddSec.Click += FormSectionAdd_Click;
+            Grid.SetColumn(btnAddSec, 1);
+            addSecGrid.Children.Add(btnAddSec);
+            panel.Children.Add(addSecGrid);
+
+            // Section Items (shown when section selected)
+            panel.Children.Add(new TextBlock
+            {
+                Text = "Section Items",
+                FontWeight = FontWeights.SemiBold,
+                FontSize = 14,
+                Foreground = (Brush)FindResource("ForegroundColor"),
+                Margin = new Thickness(0, 0, 0, 5)
+            });
+            panel.Children.Add(new TextBlock
+            {
+                Text = "(Select a section above to edit its items)",
+                FontStyle = FontStyles.Italic,
+                Foreground = (Brush)FindResource("TextColorSecondary"),
+                Margin = new Thickness(0, 0, 0, 5)
+            });
+
+            var itemGrid = new Grid { Margin = new Thickness(0, 0, 0, 5) };
+            itemGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            itemGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+            _formSectionItemsBox = new ListBox { Height = 80 };
+            Grid.SetColumn(_formSectionItemsBox, 0);
+            itemGrid.Children.Add(_formSectionItemsBox);
+
+            var itemBtnPanel = new StackPanel { VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(5, 0, 0, 0) };
+            var btnItemUp = new Button { Content = "▲", Padding = new Thickness(8, 4, 8, 4), Margin = new Thickness(0, 0, 0, 3), ToolTip = "Move up" };
+            btnItemUp.Click += FormItemMoveUp_Click;
+            itemBtnPanel.Children.Add(btnItemUp);
+            var btnItemDown = new Button { Content = "▼", Padding = new Thickness(8, 4, 8, 4), Margin = new Thickness(0, 0, 0, 3), ToolTip = "Move down" };
+            btnItemDown.Click += FormItemMoveDown_Click;
+            itemBtnPanel.Children.Add(btnItemDown);
+            var btnItemRemove = new Button { Content = "✕", Padding = new Thickness(8, 4, 8, 4), ToolTip = "Remove" };
+            btnItemRemove.Click += FormItemRemove_Click;
+            itemBtnPanel.Children.Add(btnItemRemove);
+            Grid.SetColumn(itemBtnPanel, 1);
+            itemGrid.Children.Add(itemBtnPanel);
+            panel.Children.Add(itemGrid);
+
+            // Add item row
+            var addItemGrid = new Grid { Margin = new Thickness(0, 0, 0, 15) };
+            addItemGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            addItemGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+            _formNewItemBox = new TextBox { Height = 28, ToolTip = "Item text" };
+            Grid.SetColumn(_formNewItemBox, 0);
+            addItemGrid.Children.Add(_formNewItemBox);
+
+            var btnAddItem = new Button { Content = "Add", Padding = new Thickness(8, 4, 8, 4), Margin = new Thickness(5, 0, 0, 0), ToolTip = "Add item" };
+            btnAddItem.Click += FormItemAdd_Click;
+            Grid.SetColumn(btnAddItem, 1);
+            addItemGrid.Children.Add(btnAddItem);
+            panel.Children.Add(addItemGrid);
+
+            // Separator
+            panel.Children.Add(new Separator { Margin = new Thickness(0, 0, 0, 15) });
+
+            // Row Height Increase slider
+            panel.Children.Add(new TextBlock
+            {
+                Text = "Row Height Increase %",
+                FontWeight = FontWeights.SemiBold,
+                FontSize = 14,
+                Foreground = (Brush)FindResource("ForegroundColor"),
+                Margin = new Thickness(0, 0, 0, 5)
+            });
+            var sliderGrid = new Grid { Margin = new Thickness(0, 0, 0, 15) };
+            sliderGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            sliderGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(50) });
+
+            _formRowHeightSlider = new Slider
+            {
+                Minimum = 0,
+                Maximum = 100,
+                Value = structure.RowHeightIncreasePercent,
+                TickFrequency = 10,
+                IsSnapToTickEnabled = true,
+                ToolTip = "Increase row height for taller text"
+            };
+            _formRowHeightSlider.ValueChanged += (s, e) => _hasUnsavedChanges = true;
+            Grid.SetColumn(_formRowHeightSlider, 0);
+            sliderGrid.Children.Add(_formRowHeightSlider);
+
+            var sliderLabel = new TextBlock
+            {
+                Foreground = (Brush)FindResource("ForegroundColor"),
+                VerticalAlignment = VerticalAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Right
+            };
+            sliderLabel.SetBinding(TextBlock.TextProperty, new Binding("Value")
+            {
+                Source = _formRowHeightSlider,
+                StringFormat = "{0:0}%"
+            });
+            Grid.SetColumn(sliderLabel, 1);
+            sliderGrid.Children.Add(sliderLabel);
+            panel.Children.Add(sliderGrid);
+
+            // Footer Text
+            panel.Children.Add(new TextBlock
+            {
+                Text = "Footer Text (optional)",
+                FontWeight = FontWeights.SemiBold,
+                FontSize = 14,
+                Foreground = (Brush)FindResource("ForegroundColor"),
+                Margin = new Thickness(0, 0, 0, 5)
+            });
+            _formFooterTextBox = new TextBox
+            {
+                Text = structure.FooterText ?? "",
+                Height = 28
+            };
+            _formFooterTextBox.TextChanged += (s, e) => _hasUnsavedChanges = true;
+            panel.Children.Add(_formFooterTextBox);
+
+            scrollViewer.Content = panel;
+            FormEditorContent.Content = scrollViewer;
+        }
+
+        // Form column button handlers
+        private void FormColumnMoveUp_Click(object sender, RoutedEventArgs e)
+        {
+            if (_formColumnsBox?.SelectedIndex > 0 && _formColumns != null)
+            {
+                int idx = _formColumnsBox.SelectedIndex;
+                _formColumns.Move(idx, idx - 1);
+                _formColumnsBox.SelectedIndex = idx - 1;
+                _hasUnsavedChanges = true;
+            }
+        }
+
+        private void FormColumnMoveDown_Click(object sender, RoutedEventArgs e)
+        {
+            if (_formColumnsBox != null && _formColumns != null &&
+                _formColumnsBox.SelectedIndex >= 0 && _formColumnsBox.SelectedIndex < _formColumns.Count - 1)
+            {
+                int idx = _formColumnsBox.SelectedIndex;
+                _formColumns.Move(idx, idx + 1);
+                _formColumnsBox.SelectedIndex = idx + 1;
+                _hasUnsavedChanges = true;
+            }
+        }
+
+        private void FormColumnRemove_Click(object sender, RoutedEventArgs e)
+        {
+            if (_formColumnsBox?.SelectedIndex >= 0 && _formColumns != null)
+            {
+                _formColumns.RemoveAt(_formColumnsBox.SelectedIndex);
+                _hasUnsavedChanges = true;
+            }
+        }
+
+        private void FormColumnAdd_Click(object sender, RoutedEventArgs e)
+        {
+            if (_formNewColumnNameBox != null && _formNewColumnWidthBox != null && _formColumns != null)
+            {
+                if (string.IsNullOrWhiteSpace(_formNewColumnNameBox.Text))
+                {
+                    MessageBox.Show("Please enter a column name.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+                _formColumns.Add(new TemplateColumn
+                {
+                    Name = _formNewColumnNameBox.Text,
+                    WidthPercent = (int)(_formNewColumnWidthBox.Value ?? 20)
+                });
+                _formNewColumnNameBox.Clear();
+                _hasUnsavedChanges = true;
+            }
+        }
+
+        // Form section button handlers
+        private void FormSectionMoveUp_Click(object sender, RoutedEventArgs e)
+        {
+            if (_formSectionsBox?.SelectedIndex > 0 && _formSections != null)
+            {
+                int idx = _formSectionsBox.SelectedIndex;
+                _formSections.Move(idx, idx - 1);
+                _formSectionsBox.SelectedIndex = idx - 1;
+                _hasUnsavedChanges = true;
+            }
+        }
+
+        private void FormSectionMoveDown_Click(object sender, RoutedEventArgs e)
+        {
+            if (_formSectionsBox != null && _formSections != null &&
+                _formSectionsBox.SelectedIndex >= 0 && _formSectionsBox.SelectedIndex < _formSections.Count - 1)
+            {
+                int idx = _formSectionsBox.SelectedIndex;
+                _formSections.Move(idx, idx + 1);
+                _formSectionsBox.SelectedIndex = idx + 1;
+                _hasUnsavedChanges = true;
+            }
+        }
+
+        private void FormSectionRemove_Click(object sender, RoutedEventArgs e)
+        {
+            if (_formSectionsBox?.SelectedIndex >= 0 && _formSections != null)
+            {
+                _formSections.RemoveAt(_formSectionsBox.SelectedIndex);
+                if (_formSectionItemsBox != null)
+                    _formSectionItemsBox.ItemsSource = null;
+                _hasUnsavedChanges = true;
+            }
+        }
+
+        private void FormSectionAdd_Click(object sender, RoutedEventArgs e)
+        {
+            if (_formNewSectionBox != null && _formSections != null)
+            {
+                if (string.IsNullOrWhiteSpace(_formNewSectionBox.Text))
+                {
+                    MessageBox.Show("Please enter a section name.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+                _formSections.Add(new SectionDefinition { Name = _formNewSectionBox.Text });
+                _formNewSectionBox.Clear();
+                _hasUnsavedChanges = true;
+            }
+        }
+
+        // Called when section selection changes - show items for selected section
+        private void FormSectionSelected(object sender, SelectionChangedEventArgs e)
+        {
+            if (_formSectionsBox?.SelectedItem is SectionDefinition section && _formSectionItemsBox != null)
+            {
+                _formSectionItemsBox.ItemsSource = section.Items;
+            }
+            else if (_formSectionItemsBox != null)
+            {
+                _formSectionItemsBox.ItemsSource = null;
+            }
+        }
+
+        // Form item button handlers (for items within selected section)
+        private void FormItemMoveUp_Click(object sender, RoutedEventArgs e)
+        {
+            if (_formSectionsBox?.SelectedItem is SectionDefinition section &&
+                _formSectionItemsBox?.SelectedIndex > 0)
+            {
+                int idx = _formSectionItemsBox.SelectedIndex;
+                var item = section.Items[idx];
+                section.Items.RemoveAt(idx);
+                section.Items.Insert(idx - 1, item);
+                _formSectionItemsBox.ItemsSource = null;
+                _formSectionItemsBox.ItemsSource = section.Items;
+                _formSectionItemsBox.SelectedIndex = idx - 1;
+                _hasUnsavedChanges = true;
+            }
+        }
+
+        private void FormItemMoveDown_Click(object sender, RoutedEventArgs e)
+        {
+            if (_formSectionsBox?.SelectedItem is SectionDefinition section &&
+                _formSectionItemsBox?.SelectedIndex >= 0 &&
+                _formSectionItemsBox.SelectedIndex < section.Items.Count - 1)
+            {
+                int idx = _formSectionItemsBox.SelectedIndex;
+                var item = section.Items[idx];
+                section.Items.RemoveAt(idx);
+                section.Items.Insert(idx + 1, item);
+                _formSectionItemsBox.ItemsSource = null;
+                _formSectionItemsBox.ItemsSource = section.Items;
+                _formSectionItemsBox.SelectedIndex = idx + 1;
+                _hasUnsavedChanges = true;
+            }
+        }
+
+        private void FormItemRemove_Click(object sender, RoutedEventArgs e)
+        {
+            if (_formSectionsBox?.SelectedItem is SectionDefinition section &&
+                _formSectionItemsBox?.SelectedIndex >= 0)
+            {
+                section.Items.RemoveAt(_formSectionItemsBox.SelectedIndex);
+                _formSectionItemsBox.ItemsSource = null;
+                _formSectionItemsBox.ItemsSource = section.Items;
+                _hasUnsavedChanges = true;
+            }
+        }
+
+        private void FormItemAdd_Click(object sender, RoutedEventArgs e)
+        {
+            if (_formSectionsBox?.SelectedItem is SectionDefinition section && _formNewItemBox != null)
+            {
+                if (string.IsNullOrWhiteSpace(_formNewItemBox.Text))
+                {
+                    MessageBox.Show("Please enter an item text.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+                section.Items.Add(_formNewItemBox.Text);
+                if (_formSectionItemsBox != null)
+                {
+                    _formSectionItemsBox.ItemsSource = null;
+                    _formSectionItemsBox.ItemsSource = section.Items;
+                }
+                _formNewItemBox.Clear();
+                _hasUnsavedChanges = true;
+            }
+            else
+            {
+                MessageBox.Show("Please select a section first.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
+        // Get Form structure JSON from editor
+        private string GetFormStructureJson()
+        {
+            var structure = new FormStructure
+            {
+                Title = _formTitleBox?.Text ?? "WORK PACKAGE FORM",
+                Columns = _formColumns?.ToList() ?? new List<TemplateColumn>(),
+                Sections = _formSections?.ToList() ?? new List<SectionDefinition>(),
+                RowHeightIncreasePercent = (int)(_formRowHeightSlider?.Value ?? 0),
+                FooterText = string.IsNullOrWhiteSpace(_formFooterTextBox?.Text) ? null : _formFooterTextBox.Text
+            };
+            return JsonSerializer.Serialize(structure);
+        }
+
+        // Get structure JSON from current editor (returns null if editor doesn't support editing)
+        private string? GetStructureJsonFromEditor()
+        {
+            return _currentEditorType switch
+            {
+                TemplateTypes.Cover => GetCoverStructureJson(),
+                TemplateTypes.List => GetListStructureJson(),
+                TemplateTypes.Grid => GetGridStructureJson(),
+                TemplateTypes.Form => GetFormStructureJson(),
+                _ => null // Return null for unsupported editors (will use original structure)
+            };
+        }
+
+        // Clear editor content
+        private void ClearFormEditor()
+        {
+            FormEditorContent.Content = null;
+            _currentEditorType = null;
+        }
+
+        // Show placeholder for unsupported editor types
+        private void ShowEditorPlaceholder(string templateType)
+        {
+            _currentEditorType = templateType;
+            var panel = new StackPanel
+            {
+                VerticalAlignment = VerticalAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Margin = new Thickness(20)
+            };
+            panel.Children.Add(new TextBlock
+            {
+                Text = $"Editor for '{templateType}' type",
+                FontWeight = FontWeights.SemiBold,
+                Foreground = (Brush)FindResource("ForegroundColor"),
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Margin = new Thickness(0, 0, 0, 10)
+            });
+            panel.Children.Add(new TextBlock
+            {
+                Text = "Coming soon - clone existing templates for now",
+                Foreground = (Brush)FindResource("TextColorSecondary"),
+                FontStyle = FontStyles.Italic,
+                HorizontalAlignment = HorizontalAlignment.Center
+            });
+            FormEditorContent.Content = panel;
+        }
+
+        #endregion
     }
 }
