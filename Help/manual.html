@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MILESTONE User Manual</title>
+    <style>
+        :root {
+            --bg-color: #1e1e1e;
+            --bg-secondary: #252526;
+            --bg-tertiary: #2d2d30;
+            --text-primary: #ffffff;
+            --text-secondary: #aaaaaa;
+            --accent-color: #0078d4;
+            --border-color: #3f3f46;
+            --code-bg: #1e1e1e;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        h1 {
+            color: var(--accent-color);
+            font-size: 28px;
+            font-weight: 600;
+            margin-top: 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--accent-color);
+        }
+
+        h2 {
+            color: var(--accent-color);
+            font-size: 22px;
+            font-weight: 600;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        h3 {
+            color: var(--text-primary);
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 25px;
+        }
+
+        p {
+            color: var(--text-secondary);
+            margin: 10px 0;
+        }
+
+        a {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        ul, ol {
+            color: var(--text-secondary);
+            padding-left: 25px;
+        }
+
+        li {
+            margin: 8px 0;
+        }
+
+        code {
+            background-color: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+            padding: 2px 6px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 13px;
+        }
+
+        .keyboard-shortcut {
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 3px 8px;
+            font-family: 'Consolas', monospace;
+            font-size: 12px;
+            color: var(--text-primary);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 10px 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        td {
+            background-color: var(--bg-secondary);
+            color: var(--text-secondary);
+        }
+
+        .note {
+            background-color: var(--bg-secondary);
+            border-left: 4px solid var(--accent-color);
+            padding: 12px 15px;
+            margin: 15px 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .note-title {
+            color: var(--accent-color);
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .warning {
+            background-color: #3d2a1a;
+            border-left: 4px solid #d4a017;
+            padding: 12px 15px;
+            margin: 15px 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .warning-title {
+            color: #d4a017;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .toc {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .toc-title {
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+
+        .toc ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .toc li {
+            margin: 8px 0;
+        }
+
+        .toc a {
+            color: var(--text-secondary);
+        }
+
+        .toc a:hover {
+            color: var(--accent-color);
+        }
+
+        img {
+            max-width: 100%;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+
+        .placeholder {
+            background-color: var(--bg-secondary);
+            border: 2px dashed var(--border-color);
+            border-radius: 4px;
+            padding: 40px;
+            text-align: center;
+            color: var(--text-secondary);
+            font-style: italic;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>MILESTONE User Manual</h1>
+    <p>Construction Project Management System</p>
+
+    <div class="toc">
+        <div class="toc-title">Table of Contents</div>
+        <ul>
+            <li><a href="#getting-started">1. Getting Started</a></li>
+            <li><a href="#progress-module">2. Progress Module</a></li>
+            <li><a href="#schedule-module">3. Schedule Module</a></li>
+            <li><a href="#work-packages">4. Work Packages</a></li>
+            <li><a href="#progress-books">5. Progress Books</a></li>
+            <li><a href="#administration">6. Administration</a></li>
+            <li><a href="#reference">7. Reference</a></li>
+        </ul>
+    </div>
+
+    <!-- ============================================ -->
+    <h2 id="getting-started">1. Getting Started</h2>
+    <!-- ============================================ -->
+
+    <h3>What is MILESTONE?</h3>
+    <p>MILESTONE is a construction activity tracking and work package generation system designed for field engineers working on industrial construction projects.</p>
+
+    <h3>Logging In</h3>
+    <div class="placeholder">Screenshot: Login screen (start-login-screen.png)</div>
+    <p>Enter your username and password, then click <strong>Login</strong>.</p>
+
+    <h3>The Main Interface</h3>
+    <div class="placeholder">Screenshot: Main interface overview (start-main-interface.png)</div>
+    <p>The main window consists of:</p>
+    <ul>
+        <li><strong>Toolbar</strong> — Navigation buttons for each module</li>
+        <li><strong>Content Area</strong> — The current module view</li>
+        <li><strong>Status Bar</strong> — Shows current user, sync status, and version</li>
+    </ul>
+
+    <h3>Keyboard Shortcuts</h3>
+    <table>
+        <tr>
+            <th>Shortcut</th>
+            <th>Action</th>
+        </tr>
+        <tr>
+            <td><span class="keyboard-shortcut">F1</span></td>
+            <td>Open Help / AI Sidebar</td>
+        </tr>
+        <tr>
+            <td><span class="keyboard-shortcut">Esc</span></td>
+            <td>Close sidebar</td>
+        </tr>
+    </table>
+
+    <!-- ============================================ -->
+    <h2 id="progress-module">2. Progress Module</h2>
+    <!-- ============================================ -->
+
+    <h3>Overview</h3>
+    <p>The Progress Module is where you track construction activity completion. Use this module for daily progress entry and reviewing assigned work.</p>
+
+    <div class="placeholder">Screenshot: Progress module full view (progress-full-view.png)</div>
+
+    <h3>Toolbar</h3>
+    <div class="placeholder">Screenshot: Progress toolbar (progress-toolbar.png)</div>
+    <p>Content coming soon...</p>
+
+    <h3>Filtering and Search</h3>
+    <p>Content coming soon...</p>
+
+    <h3>Updating Progress</h3>
+    <p>Content coming soon...</p>
+
+    <h3>Syncing Data</h3>
+    <p>Content coming soon...</p>
+
+    <!-- ============================================ -->
+    <h2 id="schedule-module">3. Schedule Module</h2>
+    <!-- ============================================ -->
+
+    <h3>Overview</h3>
+    <p>The Schedule Module provides a three-week lookahead view and integrates with P6 Primavera for schedule tracking.</p>
+
+    <div class="placeholder">Screenshot: Schedule module full view (schedule-full-view.png)</div>
+
+    <h3>Three-Week Lookahead</h3>
+    <p>Content coming soon...</p>
+
+    <h3>Missed Reasons</h3>
+    <p>Content coming soon...</p>
+
+    <h3>P6 Integration</h3>
+    <p>Content coming soon...</p>
+
+    <!-- ============================================ -->
+    <h2 id="work-packages">4. Work Packages</h2>
+    <!-- ============================================ -->
+
+    <h3>Overview</h3>
+    <p>The Work Packages module lets you generate PDF work packages for field crews, including cover sheets, activity lists, forms, and drawings.</p>
+
+    <div class="placeholder">Screenshot: Work Packages full view (wp-full-view.png)</div>
+
+    <h3>Creating a Work Package</h3>
+    <p>Content coming soon...</p>
+
+    <h3>Selecting Activities</h3>
+    <p>Content coming soon...</p>
+
+    <h3>Template Configuration</h3>
+    <p>Content coming soon...</p>
+
+    <h3>Generating PDFs</h3>
+    <p>Content coming soon...</p>
+
+    <!-- ============================================ -->
+    <h2 id="progress-books">5. Progress Books</h2>
+    <!-- ============================================ -->
+
+    <h3>Overview</h3>
+    <p>Progress Books are printable checklists showing activities grouped by Area, Module, or Drawing. Field crews use these to mark completed items, which are then entered into MILESTONE by Field Engineers.</p>
+
+    <div class="placeholder">Screenshot: Progress Books full view (pb-full-view.png)</div>
+
+    <h3>Creating a Progress Book</h3>
+    <p>Content coming soon...</p>
+
+    <h3>Selecting Groupings</h3>
+    <p>Content coming soon...</p>
+
+    <h3>Printing and Exporting</h3>
+    <p>Content coming soon...</p>
+
+    <div class="note">
+        <div class="note-title">Future Feature</div>
+        <p>A mobile version is planned that will allow field crews to fill out Progress Books digitally with real-time sync.</p>
+    </div>
+
+    <!-- ============================================ -->
+    <h2 id="administration">6. Administration</h2>
+    <!-- ============================================ -->
+
+    <h3>Overview</h3>
+    <p>Administration features are available to users with admin privileges.</p>
+
+    <h3>User Management</h3>
+    <p>Content coming soon...</p>
+
+    <h3>Project Setup</h3>
+    <p>Content coming soon...</p>
+
+    <h3>Database Sync</h3>
+    <p>Content coming soon...</p>
+
+    <!-- ============================================ -->
+    <h2 id="reference">7. Reference</h2>
+    <!-- ============================================ -->
+
+    <h3>Glossary</h3>
+    <table>
+        <tr>
+            <th>Term</th>
+            <th>Definition</th>
+        </tr>
+        <tr>
+            <td>Activity</td>
+            <td>A single trackable unit of work (e.g., weld, bolt-up, cable pull)</td>
+        </tr>
+        <tr>
+            <td>FE</td>
+            <td>Field Engineer</td>
+        </tr>
+        <tr>
+            <td>Lookahead</td>
+            <td>A rolling schedule view showing upcoming work</td>
+        </tr>
+        <tr>
+            <td>P6</td>
+            <td>Primavera P6 scheduling software</td>
+        </tr>
+        <tr>
+            <td>ROC</td>
+            <td>Rate of Completion</td>
+        </tr>
+        <tr>
+            <td>Sync</td>
+            <td>Upload/download data to central database</td>
+        </tr>
+        <tr>
+            <td>Work Package</td>
+            <td>A bundle of documents for a specific scope of work</td>
+        </tr>
+    </table>
+
+    <h3>Troubleshooting</h3>
+    <p>Content coming soon...</p>
+
+    <h3>Getting Help</h3>
+    <p>Press <span class="keyboard-shortcut">F1</span> at any time to open the Help sidebar. Use the <strong>AI Assistant</strong> tab (coming soon) for interactive help.</p>
+
+</body>
+</html>

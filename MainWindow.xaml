@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
+        xmlns:views="clr-namespace:VANTAGE.Views"
         mc:Ignorable="d"
         Title="VANTAGE: MILESTONE"
         ShowTitle="False"                   
@@ -322,6 +323,55 @@
                             Orientation="Horizontal"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center">
+                    <!-- Help Button + Popup -->
+                    <Button x:Name="btnHelp"
+            Content="?"
+            Padding="8,0"
+            Margin="5,0"
+            Background="Transparent"
+            Foreground="{StaticResource ForegroundColor}"
+            BorderThickness="0"
+            FontSize="16"
+            FontWeight="Bold"
+            ToolTip="Help"
+            Click="BtnHelp_Click"/>
+
+                    <Popup x:Name="popupHelp"
+                           PlacementTarget="{Binding ElementName=btnHelp}"
+                           Placement="Bottom"
+                           StaysOpen="False"
+                           AllowsTransparency="True">
+                        <Border Background="{StaticResource ControlBackground}"
+                                BorderBrush="{StaticResource BorderColor}"
+                                BorderThickness="1"
+                                CornerRadius="2"
+                                Padding="0">
+                            <StackPanel>
+                                <Button Background="Transparent"
+                                        Foreground="{StaticResource ForegroundColor}"
+                                        BorderThickness="0"
+                                        Padding="12,8"
+                                        HorizontalContentAlignment="Left"
+                                        Click="MenuHelpSidebar_Click"
+                                        Cursor="Hand"
+                                        ToolTip="Open context-aware help and AI assistant (F1)">
+                                    <Grid Width="180">
+                                        <TextBlock Text="Help / AI Sidebar" HorizontalAlignment="Left"/>
+                                        <TextBlock Text="F1" HorizontalAlignment="Right" Foreground="{StaticResource TextColorSecondary}"/>
+                                    </Grid>
+                                </Button>
+                                <Separator Background="{StaticResource BorderColor}" Margin="5,2"/>
+                                <Button Content="About MILESTONE"
+                                        Background="Transparent"
+                                        Foreground="{StaticResource ForegroundColor}"
+                                        BorderThickness="0"
+                                        Padding="12,8"
+                                        HorizontalContentAlignment="Left"
+                                        Click="MenuAbout_Click"
+                                        Cursor="Hand"/>
+                            </StackPanel>
+                        </Border>
+                    </Popup>
 
                     <!-- Settings Button + Popup -->
                     <Button x:Name="btnSettings"
@@ -418,11 +468,34 @@
             </Grid>
         </Border>
 
-        <!-- CONTENT AREA -->
+        <!-- CONTENT AREA WITH SIDEBAR -->
         <Border Grid.Row="1" Background="{StaticResource BackgroundColor}">
-            <ContentControl x:Name="ContentArea"/>
-        </Border>
+            <Grid x:Name="ContentGrid">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition x:Name="SplitterColumn" Width="0"/>
+                    <ColumnDefinition x:Name="SidebarColumn" Width="0"/>
+                </Grid.ColumnDefinitions>
 
+                <!-- Main Content -->
+                <ContentControl x:Name="ContentArea" Grid.Column="0"/>
+
+                <!-- GridSplitter (only visible when sidebar open) -->
+                <GridSplitter x:Name="SidebarSplitter"
+                              Grid.Column="1"
+                              Width="5"
+                              HorizontalAlignment="Stretch"
+                              Background="{StaticResource BorderColor}"
+                              Visibility="Collapsed"
+                              Cursor="SizeWE"
+                              DragCompleted="SidebarSplitter_DragCompleted"/>
+
+                <!-- Side Panel -->
+                <views:SidePanelView x:Name="SidePanel"
+                             Grid.Column="2"
+                             Visibility="Collapsed"/>
+            </Grid>
+        </Border>
         <!-- STATUS BAR -->
         <Border Grid.Row="2"
         Background="{StaticResource StatusBarBackground}"

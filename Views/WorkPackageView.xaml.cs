@@ -19,6 +19,7 @@ using VANTAGE.Repositories;
 using VANTAGE.Services;
 using VANTAGE.Services.PdfRenderers;
 using VANTAGE.Utilities;
+using VANTAGE.Interfaces;
 
 namespace VANTAGE.Views
 {
@@ -53,7 +54,7 @@ namespace VANTAGE.Views
         }
     }
 
-    public partial class WorkPackageView : UserControl
+    public partial class WorkPackageView : UserControl, IHelpAware
     {
         private List<FormTemplate> _formTemplates = new();
         private List<WPTemplate> _wpTemplates = new();
@@ -111,6 +112,9 @@ namespace VANTAGE.Views
 
         private readonly WorkPackageGenerator _generator = new();
 
+        // IHelpAware implementation
+        public string HelpAnchor => "work-packages";
+        public string ModuleDisplayName => "Work Packages";
         public WorkPackageView()
         {
             InitializeComponent();

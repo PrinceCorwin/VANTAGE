@@ -12,6 +12,8 @@ using VANTAGE.Dialogs;
 using VANTAGE.Models;
 using VANTAGE.Utilities;
 using VANTAGE.Views;
+using VANTAGE.Interfaces;
+using VANTAGE.ViewModels;
 
 namespace VANTAGE
 {
@@ -20,6 +22,8 @@ namespace VANTAGE
         public MainWindow()
         {
             InitializeComponent();
+
+            InitializeSidePanel();
 
             LoadInitialModule();
 
@@ -34,6 +38,130 @@ namespace VANTAGE
                 this.Icon = BitmapFrame.Create(iconPath);
             };
             this.Closing += MainWindow_Closing;
+        }
+        private SidePanelViewModel _sidePanelViewModel = null!;
+        // ========================================
+        // SIDE PANEL / HELP
+        // ========================================
+        private void SidebarSplitter_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
+        {
+            // Save the new width to the ViewModel (which persists to settings)
+            _sidePanelViewModel.PanelWidth = SidebarColumn.Width.Value;
+        }
+        private void InitializeSidePanel()
+        {
+            _sidePanelViewModel = new SidePanelViewModel();
+            SidePanel.DataContext = _sidePanelViewModel;
+            _sidePanelViewModel.PropertyChanged += SidePanelViewModel_PropertyChanged;
+        }
+
+        private void SidePanelViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(SidePanelViewModel.IsOpen))
+            {
+                UpdateSidebarVisibility();
+            }
+        }
+
+        private void UpdateSidebarVisibility()
+        {
+            if (_sidePanelViewModel.IsOpen)
+            {
+                SidebarColumn.Width = new GridLength(_sidePanelViewModel.PanelWidth);
+                SplitterColumn.Width = new GridLength(5);
+                SidebarSplitter.Visibility = Visibility.Visible;
+                SidePanel.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                SidebarColumn.Width = new GridLength(0);
+                SplitterColumn.Width = new GridLength(0);
+                SidebarSplitter.Visibility = Visibility.Collapsed;
+                SidePanel.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void BtnHelp_Click(object sender, RoutedEventArgs e)
+        {
+            popupHelp.IsOpen = !popupHelp.IsOpen;
+        }
+        private void UpdateSidebarContext()
+        {
+            if (!_sidePanelViewModel.IsOpen) return;
+
+            string anchor = "getting-started";
+            string displayName = "Getting Started";
+
+            // Check DataContext first (ViewModels)
+            if (ContentArea.Content is FrameworkElement view && view.DataContext is IHelpAware helpAwareVm)
+            {
+                anchor = helpAwareVm.HelpAnchor;
+                displayName = helpAwareVm.ModuleDisplayName;
+            }
+            // Fallback: check if view itself implements IHelpAware
+            else if (ContentArea.Content is IHelpAware helpAwareView)
+            {
+                anchor = helpAwareView.HelpAnchor;
+                displayName = helpAwareView.ModuleDisplayName;
+            }
+
+            _sidePanelViewModel.CurrentHelpAnchor = anchor;
+            _sidePanelViewModel.CurrentModuleDisplayName = displayName;
+        }
+        private void MenuHelpSidebar_Click(object sender, RoutedEventArgs e)
+        {
+            popupHelp.IsOpen = false;
+
+            // Get context from current view
+            string anchor = "getting-started";
+            string displayName = "Getting Started";
+
+            // Check DataContext first (ViewModels)
+            if (ContentArea.Content is FrameworkElement view && view.DataContext is IHelpAware helpAwareVm)
+            {
+                anchor = helpAwareVm.HelpAnchor;
+                displayName = helpAwareVm.ModuleDisplayName;
+            }
+            // Fallback: check if view itself implements IHelpAware
+            else if (ContentArea.Content is IHelpAware helpAwareView)
+            {
+                anchor = helpAwareView.HelpAnchor;
+                displayName = helpAwareView.ModuleDisplayName;
+            }
+
+            _sidePanelViewModel.ShowHelp(anchor, displayName);
+        }
+
+        private void MenuAbout_Click(object sender, RoutedEventArgs e)
+        {
+            popupHelp.IsOpen = false;
+
+            var version = Assembly.GetExecutingAssembly().GetName().Version;
+            MessageBox.Show(
+                $"MILESTONE\n\n" +
+                $"Version: {version?.Major}.{version?.Minor}.{version?.Build}\n\n" +
+                $"Construction Project Management System\n\n" +
+                $"© {DateTime.Now.Year} Summit Constructors",
+                "About MILESTONE",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
+
+        // Optional: Allow toggling sidebar with keyboard shortcut (F1)
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            base.OnKeyDown(e);
+
+            if (e.Key == Key.F1)
+            {
+                MenuHelpSidebar_Click(this, new RoutedEventArgs());
+                e.Handled = true;
+            }
+            else if (e.Key == Key.Escape && _sidePanelViewModel.IsOpen)
+            {
+                _sidePanelViewModel.Close();
+                e.Handled = true;
+            }
         }
         private void MenuScheduleDiagnostics_Click(object sender, RoutedEventArgs e)
         {
@@ -225,6 +353,7 @@ namespace VANTAGE
 
             LoadProgressModule();
             HighlightNavigationButton(btnProgress);
+            UpdateSidebarContext();
         }
 
         private void BtnSchedule_Click(object sender, RoutedEventArgs e)
@@ -243,15 +372,26 @@ namespace VANTAGE
             ContentArea.Content = null;
             var scheduleView = new ScheduleView();
             ContentArea.Content = scheduleView;
+            UpdateSidebarContext();
         }
 
         private void BtnPbook_Click(object sender, RoutedEventArgs e)
         {
+            // Already on ProgressBooks? No need to check
+            if (ContentArea.Content is ProgressBooksView)
+            {
+                HighlightNavigationButton(btnPbook);
+                return;
+            }
+
             if (!CanLeaveCurrentView())
                 return;
 
-            MessageBox.Show("PRINT module coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
             HighlightNavigationButton(btnPbook);
+            ContentArea.Content = null;
+            var progressBooksView = new ProgressBooksView();
+            ContentArea.Content = progressBooksView;
+            UpdateSidebarContext();
         }
 
         private void BtnWorkPackage_Click(object sender, RoutedEventArgs e)
@@ -270,6 +410,7 @@ namespace VANTAGE
             ContentArea.Content = null;
             var workPackageView = new Views.WorkPackageView();
             ContentArea.Content = workPackageView;
+            UpdateSidebarContext();
         }
 
         private void BtnCreate_Click(object sender, RoutedEventArgs e)

@@ -56,7 +56,7 @@
                         BorderThickness="0"
                         FontSize="14"
                         Click="BtnClose_Click"
-                        ToolTip="Close sidebar"
+                        ToolTip="Close sidebar (Esc)"
                         Cursor="Hand"/>
             </Grid>
         </Border>

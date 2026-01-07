@@ -6,13 +6,14 @@ using System.Windows.Data;
 using VANTAGE.Data;
 using VANTAGE.Models;
 using VANTAGE.Utilities;
+using VANTAGE.Interfaces;
 
 
 
 namespace VANTAGE.ViewModels
 {
 
-    public class ProgressViewModel : INotifyPropertyChanged
+    public class ProgressViewModel : INotifyPropertyChanged, IHelpAware
     {
         private BulkObservableCollection<Activity> _activities;
         private ICollectionView _activitiesView;
@@ -27,6 +28,11 @@ namespace VANTAGE.ViewModels
         private bool _todayFilterActive = false;
         private Dictionary<(string SchedActNO, string ProjectID), (DateTime? Start, DateTime? Finish)> _threeWeekDates = new();
         private int _metadataErrorCount;
+
+        // IHelpAware implementation
+        public string HelpAnchor => "progress-module";
+        public string ModuleDisplayName => "Progress Module";
+
         public int MetadataErrorCount
         {
             get => _metadataErrorCount;

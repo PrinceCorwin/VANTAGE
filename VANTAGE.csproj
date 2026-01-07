@@ -19,6 +19,11 @@
 	<ItemGroup>
 	  <None Remove="nul" />
 	</ItemGroup>
+	<ItemGroup>
+		<None Update="Help\manual.html">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Azure.Communication.Email" Version="1.1.0" />
@@ -64,5 +69,6 @@
 	<ItemGroup>
 		<Folder Include="Controls\" />
 		<Folder Include="Documents\" />
+		<Folder Include="Help\" />
 	</ItemGroup>
 </Project>
