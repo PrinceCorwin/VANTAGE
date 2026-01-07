@@ -1,6 +1,6 @@
 # MILESTONE - Project Status
 
-**Last Updated:** January 4, 2026 (Session 2)
+**Last Updated:** January 6, 2026
 
 ## Current Status
 
@@ -10,7 +10,7 @@
 | Schedule | READY FOR TESTING | All core features complete |
 | Sync | COMPLETE | Bidirectional sync working |
 | Admin | COMPLETE | User/project/snapshot management |
-| Work Package | IN DEVELOPMENT | PDF generation, template editors pending |
+| Work Package | IN DEVELOPMENT | PDF generation working, Drawings type and template editors pending |
 
 ## Feature Backlog
 
@@ -29,7 +29,7 @@
 - [x] Update Schedule view Discrepancies button to dropdown filter with Actual Start, Actual Finish, MHs, % Complete as selectable items
 - [ ] Add "Only My Records" option to SYNC dialog that is default selected which only syncs records owned by the current user and removes records from local DB that are owned by other users after they are uploaded if necessary
 - [ ] Progress Book creation
-- [~] Work Package creation (in progress - see WorkPackage_Status.md) - Still need to fix margins on printed PDFs, implement template editors, and add built-in templates
+- [~] Work Package creation (in progress - see WorkPackage_Status.md) - Need to add Drawings form type and implement template editors
 - [ ] Procore Drawings integration (planned - see Procore_Plan.md)
 - [ ] Theme selection by user - save preference in UserSettings and apply on startup
 - [ ] Review project files for hard coded colors and replace with theme variables
@@ -51,6 +51,11 @@ See `Help_AI_Sidebar_Plan.md` for detailed Help and AI sidebar feature planning
 - [ ] Disable Tooltips setting in Settings dropdown (see `Plans/DisableTooltips_Plan.md`)
 
 ## Recently Completed
+
+### January 6, 2026
+- Fixed PDF page size in MergeDocuments (was causing right-side cutoff)
+- Fixed preview token resolution - body tokens (SchedActNO, PhaseCode, WPName) now resolve from database when work package is selected
+- Preview now uses actual UI selections (project, work package, PKG Manager, Scheduler) instead of placeholder data
 
 ### January 4, 2026 (Session 2)
 - Fixed Work Package UI styling - applied SfSkinManager FluentDark theme to all controls

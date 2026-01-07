@@ -155,6 +155,36 @@ namespace VANTAGE.Models
         public List<string> Items { get; set; } = new();
     }
 
+    // JSON structure for Drawings type templates (drawing images)
+    public class DrawingsStructure
+    {
+        [JsonPropertyName("title")]
+        public string Title { get; set; } = "WORK PACKAGE DRAWINGS";
+
+        // Source type: "Local" for local folder, "Procore" for Procore API (future)
+        [JsonPropertyName("source")]
+        public string Source { get; set; } = "Local";
+
+        // For Local source: folder path pattern (can use tokens like {WorkPackage})
+        [JsonPropertyName("folderPath")]
+        public string? FolderPath { get; set; }
+
+        // File extensions to include (e.g., "*.pdf,*.png,*.jpg")
+        [JsonPropertyName("fileExtensions")]
+        public string FileExtensions { get; set; } = "*.pdf,*.png,*.jpg,*.jpeg,*.tif,*.tiff";
+
+        // Images per page (1, 2, or 4)
+        [JsonPropertyName("imagesPerPage")]
+        public int ImagesPerPage { get; set; } = 1;
+
+        // Include drawing file name as caption
+        [JsonPropertyName("showCaptions")]
+        public bool ShowCaptions { get; set; } = true;
+
+        [JsonPropertyName("footerText")]
+        public string? FooterText { get; set; }
+    }
+
     // Constants for template types
     public static class TemplateTypes
     {
@@ -162,5 +192,6 @@ namespace VANTAGE.Models
         public const string List = "List";
         public const string Form = "Form";
         public const string Grid = "Grid";
+        public const string Drawings = "Drawings";
     }
 }

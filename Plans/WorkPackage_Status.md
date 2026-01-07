@@ -1,6 +1,6 @@
 # Work Package Module - Development Status
 
-**Last Updated:** January 4, 2026
+**Last Updated:** January 6, 2026
 
 ## Current Status
 
@@ -9,41 +9,58 @@
 | Database Tables | COMPLETE | FormTemplates, WPTemplates tables created |
 | Models | COMPLETE | FormTemplate, WPTemplate, structure classes |
 | TemplateRepository | COMPLETE | CRUD operations for templates |
-| Built-in Templates | COMPLETE | 6 form templates + 1 WP template seeded |
-| TokenResolver | COMPLETE | Token replacement service |
-| PDF Renderers | COMPLETE | Base + Cover/List/Form/Grid renderers |
-| WorkPackageGenerator | COMPLETE | PDF generation orchestrator |
+| Built-in Templates | COMPLETE | 7 form templates + 1 WP template seeded |
+| TokenResolver | COMPLETE | Token replacement with database queries |
+| PDF Renderers | COMPLETE | Base + Cover/List/Form/Grid/Drawings renderers |
+| WorkPackageGenerator | COMPLETE | PDF generation with proper page sizing |
 | WorkPackageView Shell | COMPLETE | 60/40 split layout with tabs |
 | Generate Tab UI | COMPLETE | Layout finalized |
 | WP Templates Tab UI | COMPLETE | Template editing, form ordering |
-| Form Templates Tab UI | PARTIAL | Selection/clone/delete done, editors pending |
-| PDF Preview | COMPLETE | PdfViewerControl with error handling |
+| Form Templates Tab UI | NEEDS TESTING | Selection/clone/delete + Cover/List/Grid/Form editors |
+| PDF Preview | COMPLETE | Uses actual UI selections for token resolution |
+| PDF Export | COMPLETE | Generates correctly formatted PDFs |
 | MainWindow Navigation | COMPLETE | WORK PKGS button wired up |
 
 ## To Do
 
-### UI Fixes - COMPLETE
-- [x] Widen Form Template dropdown to 30% of tab width
-- [x] Fix save message: "select a template to clone first"
-- [x] Redesign Generate tab: shortened fields, Generate button moved right of Output
-- [x] Fix checkbox text color to match labels
-- [x] Convert Add Form dropdown to menu-style button (like File/Tools)
-- [x] Apply SfSkinManager FluentDark theme to all controls (ComboBox, ListBox, TextBox)
+### Needs Testing
+- [ ] Cover editor - test editing existing template, saving, preview
+- [ ] List editor - test item add/remove/reorder, saving, preview
+- [ ] Grid editor - test column add/remove/reorder, row count, saving, preview
+- [ ] Form editor - test sections/items/columns, saving, preview
+- [ ] Type selection dialog - test creating new templates of each type
+- [ ] PDF header content needs tweaking
 
-### PDF Output Issues
-- [ ] Fix PDF margin issues (needs discussion)
-- [x] Re-enable PDF preview with proper error handling
-- [ ] Review/fix built-in form template content (preview now working)
-
-### Form Template Editors
-- [ ] Develop Form Template tab type-specific editors (Cover, List, Form, Grid)
+### Next Up
+- [ ] Drawings editor (folder path, images per page, source selection)
 
 ### Low Priority
 - [ ] Add "Insert Field" button functionality for WP Name Pattern
 - [ ] Import/Export templates to JSON
-- [ ] Type selection dialog when creating new Form Template
+- [ ] Procore integration for Drawings (see Procore_Plan.md)
 
 ## Recently Completed
+
+### January 6, 2026 (Session 2)
+- Implemented form template editors for Cover, List, Grid, and Form types
+  - Cover: title, image path with browse button, image width slider, footer
+  - List: title, dynamic item list with reorder/edit/remove, footer
+  - Grid: title, column definitions with width%, row count, row height slider, footer
+  - Form: title, columns, sections with items (most complex), row height slider, footer
+- Added ColumnDisplayConverter for column list display formatting
+- Added TemplateTypeDialog for creating new templates with type selection
+  - Shows when "+ Add New" is selected in Form Templates tab
+  - Options: Cover, List, Grid, Form (Drawings not included - needs external data)
+
+### January 6, 2026 (Session 1)
+- Fixed PDF page size in MergeDocuments (612x792 = 8.5x11 inches)
+- Fixed preview token resolution - body tokens now resolve from database
+- Preview uses actual UI selections (project, work package, users) instead of placeholders
+- Added Drawings form template type with DrawingsRenderer
+  - Supports local folder source (Procore API planned for future)
+  - Layout options: 1, 2, or 4 images per page
+  - Token support in folder path (e.g., {WorkPackage})
+  - Optional captions with filename
 
 ### January 4, 2026 (Session 2)
 - Verified folder browser dialog working correctly (IFileDialog COM)
@@ -74,9 +91,8 @@
 
 ## Known Issues
 
-1. **Form Template editors not implemented** - Cannot edit form structure yet
-2. **PDF margin issues** - Margins need adjustment (pending discussion)
-3. **Built-in template content** - Some forms need content fixes
+1. **Drawings editor not implemented** - Cannot configure Drawings templates yet (use default or clone)
+2. **Drawings PDF source not supported** - PDF files are skipped (image formats only for now)
 
 ## Files Created/Modified
 
@@ -94,7 +110,9 @@
 | Services/PdfRenderers/ListRenderer.cs | List type renderer |
 | Services/PdfRenderers/FormRenderer.cs | Form type renderer |
 | Services/PdfRenderers/GridRenderer.cs | Grid type renderer |
+| Services/PdfRenderers/DrawingsRenderer.cs | Drawings type renderer |
 | Services/PdfRenderers/WorkPackageGenerator.cs | PDF generation orchestrator |
+| Views/TemplateTypeDialog.xaml(.cs) | Type selection dialog for new templates |
 
 ### Modified Files
 | File | Change |
@@ -110,6 +128,7 @@
 - **List**: Header + text items + optional footer
 - **Form**: Header + sections with items + columns + optional footer
 - **Grid**: Header + column headers + N empty rows + optional footer
+- **Drawings**: Header + drawing images from local folder (1, 2, or 4 per page)
 
 ### Output Structure
 ```

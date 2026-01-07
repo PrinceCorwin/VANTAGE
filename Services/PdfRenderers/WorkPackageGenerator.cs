@@ -26,6 +26,7 @@ namespace VANTAGE.Services.PdfRenderers
         private readonly ListRenderer _listRenderer = new();
         private readonly FormRenderer _formRenderer = new();
         private readonly GridRenderer _gridRenderer = new();
+        private readonly DrawingsRenderer _drawingsRenderer = new();
 
         // Generate PDFs for a single work package
         public async Task<GenerationResult> GenerateAsync(
@@ -179,6 +180,7 @@ namespace VANTAGE.Services.PdfRenderers
                 TemplateTypes.List => _listRenderer.Render(template.StructureJson, context, logoPath),
                 TemplateTypes.Form => _formRenderer.Render(template.StructureJson, context, logoPath),
                 TemplateTypes.Grid => _gridRenderer.Render(template.StructureJson, context, logoPath),
+                TemplateTypes.Drawings => _drawingsRenderer.Render(template.StructureJson, context, logoPath),
                 _ => throw new InvalidOperationException($"Unknown template type: {template.TemplateType}")
             };
         }
@@ -187,6 +189,10 @@ namespace VANTAGE.Services.PdfRenderers
         private PdfDocument MergeDocuments(List<(PdfDocument doc, string name)> documents)
         {
             var mergedDoc = new PdfDocument();
+
+            // Set page size to match our standard letter size (8.5 x 11 inches)
+            mergedDoc.PageSettings.Size = new System.Drawing.SizeF(612f, 792f);
+            mergedDoc.PageSettings.Margins.All = 0;
 
             foreach (var (doc, _) in documents)
             {
@@ -208,9 +214,15 @@ namespace VANTAGE.Services.PdfRenderers
         // Generate preview PDF for a WP template (with placeholder data)
         public async Task<MemoryStream?> GeneratePreviewAsync(string wpTemplateId, string? logoPath = null)
         {
+            var context = TokenResolver.GetPlaceholderContext();
+            return await GeneratePreviewAsync(wpTemplateId, context, logoPath);
+        }
+
+        // Generate preview PDF for a WP template with provided context
+        public async Task<MemoryStream?> GeneratePreviewAsync(string wpTemplateId, TokenContext context, string? logoPath = null)
+        {
             try
             {
-                var context = TokenResolver.GetPlaceholderContext();
                 var tempFolder = Path.GetTempPath();
 
                 var result = await GenerateAsync(wpTemplateId, context, tempFolder, false, logoPath);
@@ -242,9 +254,15 @@ namespace VANTAGE.Services.PdfRenderers
         // Generate preview PDF for a single form template (with placeholder data)
         public MemoryStream? GenerateFormPreview(FormTemplate template, string? logoPath = null)
         {
+            var context = TokenResolver.GetPlaceholderContext();
+            return GenerateFormPreview(template, context, logoPath);
+        }
+
+        // Generate preview PDF for a single form template with provided context
+        public MemoryStream? GenerateFormPreview(FormTemplate template, TokenContext context, string? logoPath = null)
+        {
             try
             {
-                var context = TokenResolver.GetPlaceholderContext();
                 var doc = RenderForm(template, context, logoPath);
 
                 var memStream = new MemoryStream();

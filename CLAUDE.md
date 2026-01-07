@@ -118,6 +118,8 @@ if (!AzureDbManager.CheckConnection(out string errorMessage))
 - Test after EVERY change before proceeding
 - Multi-user scenarios require Azure connection
 - Don't assume database is clean - may have test data
+- NEVER run the app from Claude Code - it leaves background processes that must be manually killed
+- User will run the app from Visual Studio for all testing - wait for their feedback before proceeding
 
 ## Avoid
 - XML doc comments (`/// <summary>`)
