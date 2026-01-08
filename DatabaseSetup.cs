@@ -412,7 +412,7 @@ namespace VANTAGE
                     ImageWidthPercent = 80,
                     FooterText = null
                 };
-                InsertFormTemplate(connection, coverSheetId, "Cover Sheet", TemplateTypes.Cover,
+                InsertFormTemplate(connection, coverSheetId, "Cover Sheet - Template", TemplateTypes.Cover,
                     JsonSerializer.Serialize(coverStructure), createdBy, createdUtc);
 
                 // 2. TOC (List type)
@@ -436,10 +436,10 @@ namespace VANTAGE
                     },
                     FooterText = null
                 };
-                InsertFormTemplate(connection, tocId, "Table of Contents", TemplateTypes.List,
+                InsertFormTemplate(connection, tocId, "Table of Contents - Template", TemplateTypes.List,
                     JsonSerializer.Serialize(tocStructure), createdBy, createdUtc);
 
-                // 3. Checklist - Summit Standard (Form type)
+                // 3. Checklist (Form type)
                 var checklistStructure = new FormStructure
                 {
                     Title = "WORK PACKAGE CHECKLIST",
@@ -491,7 +491,7 @@ namespace VANTAGE
                     },
                     FooterText = null
                 };
-                InsertFormTemplate(connection, checklistId, "Checklist - Summit Standard", TemplateTypes.Form,
+                InsertFormTemplate(connection, checklistId, "Checklist - Template", TemplateTypes.Form,
                     JsonSerializer.Serialize(checklistStructure), createdBy, createdUtc);
 
                 // 4. Punchlist (Grid type)
@@ -515,7 +515,7 @@ namespace VANTAGE
                     RowHeightIncreasePercent = 0,
                     FooterText = null
                 };
-                InsertFormTemplate(connection, punchlistId, "Punchlist", TemplateTypes.Grid,
+                InsertFormTemplate(connection, punchlistId, "Punchlist - Template", TemplateTypes.Grid,
                     JsonSerializer.Serialize(punchlistStructure), createdBy, createdUtc);
 
                 // 5. Signoff Sheet (Form type)
@@ -563,7 +563,7 @@ namespace VANTAGE
                     },
                     FooterText = "***As part of the sign-off all drawings used in the package will be manually checked against the current revisions to ensure that the latest revisions were utilized for construction. The Field Engineer and/or Project Engineer will physically walk down the scope of this work to ensure that all components have been installed and documented properly. The Project Engineer will confirm all MTRs and COCs were compiled and all Heat Numbers transfered to the material as well as to the Heat Mapped/Weld Mapped Drawings"
                 };
-                InsertFormTemplate(connection, signoffId, "Signoff Sheet", TemplateTypes.Form,
+                InsertFormTemplate(connection, signoffId, "Signoff Sheet - Template", TemplateTypes.Form,
                     JsonSerializer.Serialize(signoffStructure), createdBy, createdUtc);
 
                 // 6. DWG Log (Grid type - for tracking drawings)
@@ -582,7 +582,7 @@ namespace VANTAGE
                     RowHeightIncreasePercent = 0,
                     FooterText = null
                 };
-                InsertFormTemplate(connection, dwgLogId, "Drawing Log", TemplateTypes.Grid,
+                InsertFormTemplate(connection, dwgLogId, "Drawing Log - Template", TemplateTypes.Grid,
                     JsonSerializer.Serialize(dwgLogStructure), createdBy, createdUtc);
 
                 // 7. Drawings (Drawings type - displays drawing images from local folder)
@@ -596,7 +596,7 @@ namespace VANTAGE
                     ShowCaptions = true,
                     FooterText = null
                 };
-                InsertFormTemplate(connection, drawingsId, "Drawings", TemplateTypes.Drawings,
+                InsertFormTemplate(connection, drawingsId, "Drawings - Template", TemplateTypes.Drawings,
                     JsonSerializer.Serialize(drawingsStructure), createdBy, createdUtc);
 
                 // Built-in WP Template: Summit Standard WP

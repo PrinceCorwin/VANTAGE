@@ -52,6 +52,8 @@
                             <GridViewColumn Header="Project ID" Width="90" DisplayMemberBinding="{Binding ProjectID}"/>
                             <GridViewColumn Header="Description" Width="150" DisplayMemberBinding="{Binding Description}"/>
                             <GridViewColumn Header="Client Name" Width="120" DisplayMemberBinding="{Binding ClientName}"/>
+                            <GridViewColumn Header="Phone" Width="100" DisplayMemberBinding="{Binding Phone}"/>
+                            <GridViewColumn Header="Fax" Width="100" DisplayMemberBinding="{Binding Fax}"/>
                             <GridViewColumn Header="Client Address" Width="140" DisplayMemberBinding="{Binding ClientStreetAddress}"/>
                             <GridViewColumn Header="Client City" Width="90" DisplayMemberBinding="{Binding ClientCity}"/>
                             <GridViewColumn Header="Client State" Width="50" DisplayMemberBinding="{Binding ClientState}"/>
@@ -130,6 +132,23 @@
 
                         <TextBlock Text="Client Name" Foreground="{StaticResource ForegroundColor}" FontSize="12" Margin="0,0,0,5"/>
                         <TextBox x:Name="txtClientName" Height="28" FontSize="13" Background="{StaticResource BackgroundColor}" Foreground="{StaticResource ForegroundColor}" BorderBrush="{StaticResource BorderColor}" Padding="5,3"/>
+
+                        <Grid Margin="0,8,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="Phone" Foreground="{StaticResource ForegroundColor}" FontSize="12" Margin="0,0,0,5"/>
+                                <TextBox x:Name="txtPhone" Height="28" FontSize="13" Background="{StaticResource BackgroundColor}" Foreground="{StaticResource ForegroundColor}" BorderBrush="{StaticResource BorderColor}" Padding="5,3"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="Fax" Foreground="{StaticResource ForegroundColor}" FontSize="12" Margin="0,0,0,5"/>
+                                <TextBox x:Name="txtFax" Height="28" FontSize="13" Background="{StaticResource BackgroundColor}" Foreground="{StaticResource ForegroundColor}" BorderBrush="{StaticResource BorderColor}" Padding="5,3"/>
+                            </StackPanel>
+                        </Grid>
 
                         <TextBlock Text="Street Address" Foreground="{StaticResource ForegroundColor}" FontSize="12" Margin="0,8,0,5"/>
                         <TextBox x:Name="txtClientStreetAddress" Height="28" FontSize="13" Background="{StaticResource BackgroundColor}" Foreground="{StaticResource ForegroundColor}" BorderBrush="{StaticResource BorderColor}" Padding="5,3"/>

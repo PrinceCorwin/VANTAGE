@@ -54,24 +54,23 @@ namespace VANTAGE.Services.PdfRenderers
             return document;
         }
 
-        // Render the common header block (logo, project info, title bar)
+        // Render the common header block (logo, WP name, project info, form title, title bar, PKG/Scheduler)
         // Returns the Y position after the header
-        protected float RenderHeader(PdfPage page, TokenContext context, string title, string? logoPath = null)
+        protected float RenderHeader(PdfPage page, TokenContext context, string formTitle, string? logoPath = null)
         {
             var graphics = page.Graphics;
             float y = MarginTop;
 
-            // Row 1: Logo | Project Name + Phone/Fax
-            float logoWidth = 100f;
-            float logoHeight = 50f;
+            // Logo dimensions
+            float logoWidth = 120f;
+            float logoHeight = 60f;
 
-            // Draw logo
+            // Row 1: Logo (left) | WP Name Pattern (right)
             try
             {
                 PdfImage? logo = LoadImage(logoPath);
                 if (logo != null)
                 {
-                    // Scale to fit within logo area while maintaining aspect ratio
                     float scale = Math.Min(logoWidth / logo.Width, logoHeight / logo.Height);
                     float drawWidth = logo.Width * scale;
                     float drawHeight = logo.Height * scale;
@@ -83,53 +82,71 @@ namespace VANTAGE.Services.PdfRenderers
                 AppLogger.Error(ex, "BaseRenderer.RenderHeader (logo)");
             }
 
-            // Draw project info to the right of logo
-            float infoX = MarginLeft + logoWidth + 10f;
+            // WP Name Pattern on the right (top row)
+            string wpName = TokenResolver.Resolve("{WPName}", context);
+            var wpNameSize = HeaderFont.MeasureString(wpName);
+            graphics.DrawString(wpName, HeaderFont, BlackBrush,
+                new PointF(MarginLeft + ContentWidth - wpNameSize.Width, y + 10f));
+
+            // Row 2: Project ID + name (left) | Form title (right)
+            float infoY = y + logoHeight + 8f;
+            string projectId = context.ProjectID;
             string projectName = TokenResolver.Resolve("{ProjectName}", context);
+            string projectDisplay = string.IsNullOrEmpty(projectName) ? projectId : $"{projectId} {projectName}";
+            graphics.DrawString(projectDisplay, HeaderFont, BlackBrush, new PointF(MarginLeft, infoY));
+
+            // Form title on the right (same row as project)
+            var formTitleSize = HeaderFont.MeasureString(formTitle);
+            graphics.DrawString(formTitle, HeaderFont, BlackBrush,
+                new PointF(MarginLeft + ContentWidth - formTitleSize.Width, infoY));
+            infoY += 16f;
+
+            // Row 3-4: Phone and Fax under project name
             string phone = TokenResolver.Resolve("{Phone}", context);
             string fax = TokenResolver.Resolve("{Fax}", context);
 
-            graphics.DrawString(projectName, HeaderFont, BlackBrush, new PointF(infoX, y));
-            y += 15f;
-
             if (!string.IsNullOrEmpty(phone))
             {
-                graphics.DrawString($"Phone: {phone}", SmallFont, BlackBrush, new PointF(infoX, y));
-                y += 12f;
+                graphics.DrawString($"PHONE: {phone}", SmallFont, BlackBrush, new PointF(MarginLeft, infoY));
+                infoY += 12f;
             }
             if (!string.IsNullOrEmpty(fax))
             {
-                graphics.DrawString($"Fax: {fax}", SmallFont, BlackBrush, new PointF(infoX, y));
+                graphics.DrawString($"FAX: {fax}", SmallFont, BlackBrush, new PointF(MarginLeft, infoY));
+                infoY += 12f;
             }
 
-            y = MarginTop + logoHeight + 10f;
+            // Move to title bar position
+            y = infoY + 10f;
 
-            // Title bar with borders
-            float titleBarHeight = 24f;
+            // Title bar: "{WorkPackage} Work Package" between two thick lines
+            string workPackage = TokenResolver.Resolve("{WorkPackage}", context);
+            string titleBarText = $"{workPackage} WORK PACKAGE";
+
+            float titleBarHeight = 28f;
             graphics.DrawLine(ThickPen, MarginLeft, y, MarginLeft + ContentWidth, y);
-            y += 2f;
+            y += 3f;
 
-            // Center the title text
-            var titleSize = TitleFont.MeasureString(title);
+            var titleSize = TitleFont.MeasureString(titleBarText);
             float titleX = MarginLeft + (ContentWidth - titleSize.Width) / 2;
-            graphics.DrawString(title, TitleFont, BlackBrush, new PointF(titleX, y + 3f));
+            graphics.DrawString(titleBarText, TitleFont, BlackBrush, new PointF(titleX, y + 2f));
 
-            y += titleBarHeight - 2f;
+            y += titleBarHeight - 3f;
             graphics.DrawLine(ThickPen, MarginLeft, y, MarginLeft + ContentWidth, y);
-            y += 4f;
+            y += 6f;
 
-            // PKG Manager / Scheduler row
+            // PKG Manager (left) / Scheduler (right) row
             string pkgManager = TokenResolver.Resolve("{PKGManager}", context);
             string scheduler = TokenResolver.Resolve("{Scheduler}", context);
 
             graphics.DrawString($"PKG MGR: {pkgManager}", SmallFont, BlackBrush, new PointF(MarginLeft, y));
 
-            var schedulerText = $"Scheduler: {scheduler}";
+            var schedulerText = $"SCHEDULER: {scheduler}";
             var schedulerSize = SmallFont.MeasureString(schedulerText);
             graphics.DrawString(schedulerText, SmallFont, BlackBrush,
                 new PointF(MarginLeft + ContentWidth - schedulerSize.Width, y));
 
-            y += 18f;
+            y += 20f;
 
             return y;
         }

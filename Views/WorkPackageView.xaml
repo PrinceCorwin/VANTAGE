@@ -113,11 +113,11 @@
         </Border>
 
         <!-- Main Content - Split View -->
-        <Grid Grid.Row="1">
+        <Grid x:Name="MainSplitGrid" Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="6*" MinWidth="400"/>
+                <ColumnDefinition x:Name="LeftPanelColumn" Width="6*" MinWidth="400"/>
                 <ColumnDefinition Width="5"/>
-                <ColumnDefinition Width="4*" MinWidth="300"/>
+                <ColumnDefinition x:Name="RightPanelColumn" Width="4*" MinWidth="300"/>
             </Grid.ColumnDefinitions>
 
             <!-- Left Panel - Tabs -->
@@ -179,18 +179,21 @@
                             <ComboBox x:Name="cboWPTemplate"
                                       DisplayMemberPath="WPTemplateName"
                                       SelectedValuePath="WPTemplateID"
+                                      SelectionChanged="CboWPTemplate_SelectionChanged"
                                       ToolTip="Select the work package template to use"
                                       Margin="0,0,0,15"/>
 
                             <!-- PKG Manager -->
                             <TextBlock Text="PKG Manager" FontWeight="Bold" Margin="0,0,0,5"/>
                             <ComboBox x:Name="cboPKGManager"
+                                      SelectionChanged="CboPKGManager_SelectionChanged"
                                       ToolTip="Select the package manager"
                                       Margin="0,0,0,15"/>
 
                             <!-- Scheduler -->
                             <TextBlock Text="Scheduler" FontWeight="Bold" Margin="0,0,0,5"/>
                             <ComboBox x:Name="cboScheduler"
+                                      SelectionChanged="CboScheduler_SelectionChanged"
                                       ToolTip="Select the scheduler"
                                       Margin="0,0,0,15"/>
 
@@ -225,7 +228,7 @@
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBox x:Name="txtLogoPath" IsReadOnly="True" ToolTip="Path to custom logo image"/>
+                                <TextBox x:Name="txtLogoPath" IsReadOnly="True" ToolTip="Leave as (default) to use the built-in Summit logo, or browse to select a custom logo"/>
                                 <Button Grid.Column="1" Content="Browse" Click="BtnBrowseLogo_Click" Padding="8,4" Margin="5,0,0,0"/>
                             </Grid>
 
@@ -400,7 +403,8 @@
                           Width="5"
                           HorizontalAlignment="Stretch"
                           Background="{StaticResource BorderColor}"
-                          Cursor="SizeWE"/>
+                          Cursor="SizeWE"
+                          DragCompleted="GridSplitter_DragCompleted"/>
 
             <!-- Right Panel - Preview -->
             <Grid Grid.Column="2" Background="{StaticResource ControlBackground}">

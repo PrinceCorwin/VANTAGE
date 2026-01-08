@@ -42,11 +42,11 @@ namespace VANTAGE.Dialogs
 
                     var cmd = azureConn.CreateCommand();
                     cmd.CommandText = @"
-                        SELECT ProjectID, Description, ClientName, 
+                        SELECT ProjectID, Description, ClientName,
                                ClientStreetAddress, ClientCity, ClientState, ClientZipCode,
                                ProjectStreetAddress, ProjectCity, ProjectState, ProjectZipCode,
-                               ProjectManager, SiteManager, OM, SM, EN, PM
-                        FROM Projects 
+                               ProjectManager, SiteManager, OM, SM, EN, PM, Phone, Fax
+                        FROM Projects
                         ORDER BY ProjectID";
 
                     using var reader = cmd.ExecuteReader();
@@ -71,6 +71,8 @@ namespace VANTAGE.Dialogs
                             SM = reader.IsDBNull(14) ? 0 : (reader.GetBoolean(14) ? 1 : 0),
                             EN = reader.IsDBNull(15) ? 0 : (reader.GetBoolean(15) ? 1 : 0),
                             PM = reader.IsDBNull(16) ? 0 : (reader.GetBoolean(16) ? 1 : 0),
+                            Phone = reader.IsDBNull(17) ? string.Empty : reader.GetString(17),
+                            Fax = reader.IsDBNull(18) ? string.Empty : reader.GetString(18),
                             IsNew = false
                         });
                     }
@@ -105,6 +107,8 @@ namespace VANTAGE.Dialogs
                 txtProjectID.Text = _selectedProject.ProjectID;
                 txtDescription.Text = _selectedProject.Description;
                 txtClientName.Text = _selectedProject.ClientName;
+                txtPhone.Text = _selectedProject.Phone;
+                txtFax.Text = _selectedProject.Fax;
                 txtClientStreetAddress.Text = _selectedProject.ClientStreetAddress;
                 txtClientCity.Text = _selectedProject.ClientCity;
                 txtClientState.Text = _selectedProject.ClientState;
@@ -136,6 +140,8 @@ namespace VANTAGE.Dialogs
             txtProjectID.Text = string.Empty;
             txtDescription.Text = string.Empty;
             txtClientName.Text = string.Empty;
+            txtPhone.Text = string.Empty;
+            txtFax.Text = string.Empty;
             txtClientStreetAddress.Text = string.Empty;
             txtClientCity.Text = string.Empty;
             txtClientState.Text = string.Empty;
@@ -197,6 +203,8 @@ namespace VANTAGE.Dialogs
                     ProjectID = projectId,
                     Description = txtDescription.Text.Trim(),
                     ClientName = txtClientName.Text.Trim(),
+                    Phone = txtPhone.Text.Trim(),
+                    Fax = txtFax.Text.Trim(),
                     ClientStreetAddress = txtClientStreetAddress.Text.Trim(),
                     ClientCity = txtClientCity.Text.Trim(),
                     ClientState = txtClientState.Text.Trim(),
@@ -226,11 +234,11 @@ namespace VANTAGE.Dialogs
                             INSERT INTO Projects (ProjectID, Description, ClientName,
                                 ClientStreetAddress, ClientCity, ClientState, ClientZipCode,
                                 ProjectStreetAddress, ProjectCity, ProjectState, ProjectZipCode,
-                                ProjectManager, SiteManager, OM, SM, EN, PM)
+                                ProjectManager, SiteManager, OM, SM, EN, PM, Phone, Fax)
                             VALUES (@projectId, @description, @clientName,
                                 @clientStreetAddress, @clientCity, @clientState, @clientZipCode,
                                 @projectStreetAddress, @projectCity, @projectState, @projectZipCode,
-                                @projectManager, @siteManager, @om, @sm, @en, @pm)";
+                                @projectManager, @siteManager, @om, @sm, @en, @pm, @phone, @fax)";
 
                         AddProjectParameters(cmd, projectData);
                         cmd.ExecuteNonQuery();
@@ -255,19 +263,21 @@ namespace VANTAGE.Dialogs
 
                         var cmd = azureConn.CreateCommand();
                         cmd.CommandText = @"
-                            UPDATE Projects SET 
-                                Description = @description, 
+                            UPDATE Projects SET
+                                Description = @description,
                                 ClientName = @clientName,
-                                ClientStreetAddress = @clientStreetAddress, 
-                                ClientCity = @clientCity, 
-                                ClientState = @clientState, 
+                                Phone = @phone,
+                                Fax = @fax,
+                                ClientStreetAddress = @clientStreetAddress,
+                                ClientCity = @clientCity,
+                                ClientState = @clientState,
                                 ClientZipCode = @clientZipCode,
-                                ProjectStreetAddress = @projectStreetAddress, 
-                                ProjectCity = @projectCity, 
-                                ProjectState = @projectState, 
+                                ProjectStreetAddress = @projectStreetAddress,
+                                ProjectCity = @projectCity,
+                                ProjectState = @projectState,
                                 ProjectZipCode = @projectZipCode,
-                                ProjectManager = @projectManager, 
-                                SiteManager = @siteManager, 
+                                ProjectManager = @projectManager,
+                                SiteManager = @siteManager,
                                 OM = @om, SM = @sm, EN = @en, PM = @pm
                             WHERE ProjectID = @projectId";
 
@@ -278,6 +288,8 @@ namespace VANTAGE.Dialogs
                     // Update in-memory
                     _selectedProject.Description = projectData.Description;
                     _selectedProject.ClientName = projectData.ClientName;
+                    _selectedProject.Phone = projectData.Phone;
+                    _selectedProject.Fax = projectData.Fax;
                     _selectedProject.ClientStreetAddress = projectData.ClientStreetAddress;
                     _selectedProject.ClientCity = projectData.ClientCity;
                     _selectedProject.ClientState = projectData.ClientState;
@@ -324,6 +336,8 @@ namespace VANTAGE.Dialogs
             cmd.Parameters.AddWithValue("@projectId", project.ProjectID);
             cmd.Parameters.AddWithValue("@description", project.Description);
             cmd.Parameters.AddWithValue("@clientName", project.ClientName);
+            cmd.Parameters.AddWithValue("@phone", project.Phone);
+            cmd.Parameters.AddWithValue("@fax", project.Fax);
             cmd.Parameters.AddWithValue("@clientStreetAddress", project.ClientStreetAddress);
             cmd.Parameters.AddWithValue("@clientCity", project.ClientCity);
             cmd.Parameters.AddWithValue("@clientState", project.ClientState);
@@ -450,6 +464,8 @@ namespace VANTAGE.Dialogs
             set { _clientName = value; OnPropertyChanged(nameof(ClientName)); }
         }
 
+        public string Phone { get; set; } = string.Empty;
+        public string Fax { get; set; } = string.Empty;
         public string ClientStreetAddress { get; set; } = string.Empty;
         public string ClientCity { get; set; } = string.Empty;
         public string ClientState { get; set; } = string.Empty;

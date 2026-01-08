@@ -29,17 +29,37 @@
 - [ ] Grid editor - test column add/remove/reorder, row count, saving, preview
 - [ ] Form editor - test sections/items/columns, saving, preview
 - [ ] Type selection dialog - test creating new templates of each type
-- [ ] PDF header content needs tweaking
+- [x] PDF header content - updated layout (logo, form name, project, phone/fax, title bar, PKG/Scheduler)
 
 ### Next Up
 - [ ] Drawings editor (folder path, images per page, source selection)
 
 ### Low Priority
-- [ ] Add "Insert Field" button functionality for WP Name Pattern
+- [ ] User-editable header template (allow customizing header layout/content per WP template)
 - [ ] Import/Export templates to JSON
 - [ ] Procore integration for Drawings (see Procore_Plan.md)
 
 ## Recently Completed
+
+### January 7, 2026
+- Logo path field now shows "(default)" instead of hardcoded path (matches Cover Image behavior)
+- Added persistence for Generate tab selections (Project, WP Template, PKG Manager, Scheduler)
+- Added Phone and Fax fields to AdminProjectsDialog for project editing
+- Redesigned PDF header layout:
+  - Row 1: Logo (left) | WP Name Pattern (right)
+  - Row 2: ProjectID + Name (left) | Form Title (right)
+  - Row 3-4: Phone/Fax (left)
+  - Title bar: {WorkPackage} WORK PACKAGE
+  - PKG MGR / SCHEDULER below title bar
+- Renamed built-in form templates to include " - Template" suffix for clarity
+- Added duplicate name validation when saving form templates
+- Fixed Form Templates tab bugs:
+  - Type selection dialog no longer appears on Clone+Save or Delete
+  - Editor changes now properly saved when saving cloned templates
+- PDF Viewer improvements:
+  - Default zoom set to Fit Width
+  - Minimum zoom reduced to 10% (was 50%)
+- Splitter position now persists to UserSettings
 
 ### January 6, 2026 (Session 2)
 - Implemented form template editors for Cover, List, Grid, and Form types

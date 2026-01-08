@@ -73,6 +73,9 @@ namespace VANTAGE.Views
         // Current editor type being displayed
         private string? _currentEditorType;
 
+        // Flag to suppress type dialog during programmatic dropdown updates
+        private bool _suppressTypeDialog;
+
         // Cover editor controls
         private TextBox? _coverTitleBox;
         private TextBox? _coverImagePathBox;
@@ -115,6 +118,32 @@ namespace VANTAGE.Views
         // IHelpAware implementation
         public string HelpAnchor => "work-packages";
         public string ModuleDisplayName => "Work Packages";
+
+        // Gets the default logo path if it exists, otherwise null
+        private string? GetDefaultLogoPath()
+        {
+            var possiblePaths = new[]
+            {
+                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Images", "SummitS-Full Summit Peak Logo.jpg"),
+                @"C:\Users\steve\source\repos\PrinceCorwin\VANTAGE\Images\SummitS-Full Summit Peak Logo.jpg"
+            };
+
+            foreach (var path in possiblePaths)
+            {
+                if (File.Exists(path))
+                    return path;
+            }
+            return null;
+        }
+
+        // Resolves the logo path - converts "(default)" to actual path
+        private string? GetResolvedLogoPath()
+        {
+            if (string.IsNullOrEmpty(txtLogoPath.Text) || txtLogoPath.Text == "(default)")
+                return GetDefaultLogoPath();
+            return txtLogoPath.Text;
+        }
+
         public WorkPackageView()
         {
             InitializeComponent();
@@ -150,7 +179,7 @@ namespace VANTAGE.Views
                     txtOutputFolder.Text = lastOutput;
                 }
 
-                // Load last used logo path from settings, or use default Summit logo
+                // Load last used logo path from settings, or show "(default)" for built-in logo
                 var lastLogo = SettingsManager.GetUserSetting(App.CurrentUserID, "WorkPackage.LastLogoPath");
                 if (!string.IsNullOrEmpty(lastLogo) && File.Exists(lastLogo))
                 {
@@ -158,21 +187,15 @@ namespace VANTAGE.Views
                 }
                 else
                 {
-                    // Default to Summit logo - check multiple possible locations
-                    var possiblePaths = new[]
-                    {
-                        Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Images", "SummitS-Full Summit Peak Logo.jpg"),
-                        @"C:\Users\steve\source\repos\PrinceCorwin\VANTAGE\Images\SummitS-Full Summit Peak Logo.jpg"
-                    };
+                    txtLogoPath.Text = "(default)";
+                }
 
-                    foreach (var path in possiblePaths)
-                    {
-                        if (File.Exists(path))
-                        {
-                            txtLogoPath.Text = path;
-                            break;
-                        }
-                    }
+                // Restore splitter position
+                var splitterRatio = SettingsManager.GetUserSetting(App.CurrentUserID, "WorkPackage.SplitterRatio");
+                if (!string.IsNullOrEmpty(splitterRatio) && double.TryParse(splitterRatio, out double ratio) && ratio > 0 && ratio < 1)
+                {
+                    LeftPanelColumn.Width = new GridLength(ratio, GridUnitType.Star);
+                    RightPanelColumn.Width = new GridLength(1 - ratio, GridUnitType.Star);
                 }
 
                 lblStatus.Text = "Ready";
@@ -234,16 +257,32 @@ namespace VANTAGE.Views
             });
         }
 
-        // Populate all dropdowns
+        // Populate all dropdowns and restore saved selections
         private void PopulateDropdowns()
         {
             // Projects dropdown
             cboProject.ItemsSource = _projects;
 
+            // Restore last selected project
+            var lastProjectId = SettingsManager.GetUserSetting(App.CurrentUserID, "WorkPackage.LastProjectID");
+            if (!string.IsNullOrEmpty(lastProjectId) && _projects.Any(p => p.ProjectID == lastProjectId))
+            {
+                cboProject.SelectedValue = lastProjectId;
+            }
+
             // WP Templates dropdown (Generate tab)
             cboWPTemplate.ItemsSource = _wpTemplates;
-            if (_wpTemplates.Any())
+
+            // Restore last selected WP template, or default to first
+            var lastWPTemplateId = SettingsManager.GetUserSetting(App.CurrentUserID, "WorkPackage.LastWPTemplateID");
+            if (!string.IsNullOrEmpty(lastWPTemplateId) && _wpTemplates.Any(t => t.WPTemplateID == lastWPTemplateId))
+            {
+                cboWPTemplate.SelectedValue = lastWPTemplateId;
+            }
+            else if (_wpTemplates.Any())
+            {
                 cboWPTemplate.SelectedIndex = 0;
+            }
 
             // Users for PKG Manager and Scheduler (show "FullName (Username)")
             var userItems = _users.Select(u => new UserItem
@@ -256,6 +295,24 @@ namespace VANTAGE.Views
             cboPKGManager.DisplayMemberPath = "Display";
             cboScheduler.ItemsSource = userItems;
             cboScheduler.DisplayMemberPath = "Display";
+
+            // Restore last selected PKG Manager
+            var lastPKGManager = SettingsManager.GetUserSetting(App.CurrentUserID, "WorkPackage.LastPKGManager");
+            if (!string.IsNullOrEmpty(lastPKGManager))
+            {
+                var pkgManagerItem = userItems.FirstOrDefault(u => u.Username == lastPKGManager);
+                if (pkgManagerItem != null)
+                    cboPKGManager.SelectedItem = pkgManagerItem;
+            }
+
+            // Restore last selected Scheduler
+            var lastScheduler = SettingsManager.GetUserSetting(App.CurrentUserID, "WorkPackage.LastScheduler");
+            if (!string.IsNullOrEmpty(lastScheduler))
+            {
+                var schedulerItem = userItems.FirstOrDefault(u => u.Username == lastScheduler);
+                if (schedulerItem != null)
+                    cboScheduler.SelectedItem = schedulerItem;
+            }
 
             // WP Templates dropdown (Edit tab) - with "+ Add New" option
             PopulateWPTemplateEditDropdown();
@@ -309,12 +366,40 @@ namespace VANTAGE.Views
             cboFormTemplateEdit.DisplayMemberPath = "TemplateName";
         }
 
-        // Project selection changed - load work packages
+        // Project selection changed - load work packages and save selection
         private async void CboProject_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (cboProject.SelectedValue is string projectId)
             {
+                SettingsManager.SetUserSetting(App.CurrentUserID, "WorkPackage.LastProjectID", projectId, "string");
                 await LoadWorkPackagesAsync(projectId);
+            }
+        }
+
+        // WP Template selection changed - save selection
+        private void CboWPTemplate_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (cboWPTemplate.SelectedValue is string wpTemplateId)
+            {
+                SettingsManager.SetUserSetting(App.CurrentUserID, "WorkPackage.LastWPTemplateID", wpTemplateId, "string");
+            }
+        }
+
+        // PKG Manager selection changed - save selection
+        private void CboPKGManager_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (cboPKGManager.SelectedItem is UserItem user)
+            {
+                SettingsManager.SetUserSetting(App.CurrentUserID, "WorkPackage.LastPKGManager", user.Username, "string");
+            }
+        }
+
+        // Scheduler selection changed - save selection
+        private void CboScheduler_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (cboScheduler.SelectedItem is UserItem user)
+            {
+                SettingsManager.SetUserSetting(App.CurrentUserID, "WorkPackage.LastScheduler", user.Username, "string");
             }
         }
 
@@ -566,7 +651,7 @@ namespace VANTAGE.Views
                     txtWPNamePattern.Text,
                     txtOutputFolder.Text,
                     chkIndividualPdfs.IsChecked == true,
-                    string.IsNullOrEmpty(txtLogoPath.Text) ? null : txtLogoPath.Text
+                    GetResolvedLogoPath()
                 );
 
                 int successCount = results.Count(r => r.Success);
@@ -643,14 +728,14 @@ namespace VANTAGE.Views
                     // Preview single form template with actual context if on Generate tab selections exist
                     var formContext = BuildPreviewContext();
                     previewStream = _generator.GenerateFormPreview(_selectedFormTemplate, formContext,
-                        string.IsNullOrEmpty(txtLogoPath.Text) ? null : txtLogoPath.Text);
+                        GetResolvedLogoPath());
                 }
                 else if (cboWPTemplate.SelectedValue is string wpTemplateId)
                 {
                     // Preview full WP template with actual UI selections
                     var context = BuildPreviewContext();
                     previewStream = await _generator.GeneratePreviewAsync(wpTemplateId, context,
-                        string.IsNullOrEmpty(txtLogoPath.Text) ? null : txtLogoPath.Text);
+                        GetResolvedLogoPath());
                 }
 
                 if (previewStream != null && previewStream.Length > 0)
@@ -658,6 +743,8 @@ namespace VANTAGE.Views
                     // Load PDF into viewer
                     previewStream.Position = 0;
                     pdfViewer.Load(previewStream);
+                    pdfViewer.MinimumZoomPercentage = 10;
+                    pdfViewer.ZoomMode = Syncfusion.Windows.PdfViewer.ZoomMode.FitWidth;
 
                     // Show viewer, hide placeholder
                     pdfViewer.Visibility = Visibility.Visible;
@@ -689,6 +776,18 @@ namespace VANTAGE.Views
             pdfPlaceholder.Text = message;
             pdfPlaceholderBorder.Visibility = Visibility.Visible;
             pdfViewer.Visibility = Visibility.Collapsed;
+        }
+
+        // Save splitter position when user drags it
+        private void GridSplitter_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
+        {
+            // Save the left panel width as a ratio of total width
+            double totalWidth = LeftPanelColumn.ActualWidth + RightPanelColumn.ActualWidth;
+            if (totalWidth > 0)
+            {
+                double leftRatio = LeftPanelColumn.ActualWidth / totalWidth;
+                SettingsManager.SetUserSetting(App.CurrentUserID, "WorkPackage.SplitterRatio", leftRatio.ToString("F4"), "string");
+            }
         }
 
         // Build TokenContext from current UI selections (or placeholders if not selected)
@@ -928,9 +1027,9 @@ namespace VANTAGE.Views
                 // Load type-specific editor
                 LoadFormTemplateEditor(template);
             }
-            else
+            else if (!_suppressTypeDialog)
             {
-                // "+ Add New" selected - show type selection dialog
+                // "+ Add New" selected by user - show type selection dialog
                 ShowTypeSelectionDialog();
             }
         }
@@ -1071,8 +1170,19 @@ namespace VANTAGE.Views
             if (success)
             {
                 _formTemplates = await TemplateRepository.GetAllFormTemplatesAsync();
+
+                _suppressTypeDialog = true;
                 PopulateFormTemplateEditDropdown();
+                _suppressTypeDialog = false;
+
                 PopulateAddFormMenu();
+
+                // Select first template if available
+                if (_formTemplates.Count > 0)
+                {
+                    cboFormTemplateEdit.SelectedIndex = 1; // Skip "+ Add New"
+                }
+
                 lblStatus.Text = "Template deleted";
             }
         }
@@ -1083,6 +1193,19 @@ namespace VANTAGE.Views
             if (string.IsNullOrWhiteSpace(txtFormTemplateName.Text))
             {
                 MessageBox.Show("Please enter a template name.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // Check for duplicate name (exclude current template if editing existing)
+            string newName = txtFormTemplateName.Text.Trim();
+            var duplicate = _formTemplates.FirstOrDefault(t =>
+                t.TemplateName.Equals(newName, StringComparison.OrdinalIgnoreCase) &&
+                t.TemplateID != _selectedFormTemplate?.TemplateID);
+
+            if (duplicate != null)
+            {
+                MessageBox.Show($"A form template named '{newName}' already exists. Please choose a different name.",
+                    "Duplicate Name", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -1115,13 +1238,13 @@ namespace VANTAGE.Views
                         return;
                     }
 
-                    // Create new from clone data (may include editor changes)
+                    // Create new from clone data - use editor changes if available
                     var template = new FormTemplate
                     {
                         TemplateID = Guid.NewGuid().ToString(),
-                        TemplateName = txtFormTemplateName.Text,
+                        TemplateName = newName,
                         TemplateType = _clonedFormType,
-                        StructureJson = _clonedFormStructure,
+                        StructureJson = editorStructureJson ?? _clonedFormStructure,
                         IsBuiltIn = false,
                         CreatedBy = App.CurrentUser?.Username ?? "Unknown",
                         CreatedUtc = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ")
@@ -1137,7 +1260,7 @@ namespace VANTAGE.Views
                 else
                 {
                     // Update existing - use editor structure if available
-                    _selectedFormTemplate.TemplateName = txtFormTemplateName.Text;
+                    _selectedFormTemplate.TemplateName = newName;
                     if (editorStructureJson != null)
                     {
                         _selectedFormTemplate.StructureJson = editorStructureJson;
@@ -1149,7 +1272,11 @@ namespace VANTAGE.Views
 
                 _hasUnsavedChanges = false;
                 _formTemplates = await TemplateRepository.GetAllFormTemplatesAsync();
+
+                _suppressTypeDialog = true;
                 PopulateFormTemplateEditDropdown();
+                _suppressTypeDialog = false;
+
                 PopulateAddFormMenu();
 
                 // Auto-select the saved template
