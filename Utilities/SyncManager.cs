@@ -611,7 +611,7 @@ namespace VANTAGE.Utilities
         }
 
         // Pull records from Azure that have changed since last sync
-        public static async Task<SyncResult> PullRecordsAsync(List<string> selectedProjects)
+        public static async Task<SyncResult> PullRecordsAsync(List<string> selectedProjects, string? ownerFilter = null)
         {
             // Note: excludeUniqueIds parameter kept for backward compatibility but ignored
             var result = new SyncResult();
@@ -634,13 +634,28 @@ namespace VANTAGE.Utilities
 
                     var pullCmd = azureConn.CreateCommand();
                     pullCmd.CommandTimeout = 120;
-                    pullCmd.CommandText = @"
-                SELECT * FROM Activities 
-                WHERE [ProjectID] = @projectId 
-                  AND [SyncVersion] > @lastVersion
-                ORDER BY [SyncVersion]";
+
+                    // Build query with optional owner filter
+                    var sql = @"
+                            SELECT * FROM Activities 
+                            WHERE [ProjectID] = @projectId 
+                              AND [SyncVersion] > @lastVersion";
+
+                    if (!string.IsNullOrEmpty(ownerFilter))
+                    {
+                        sql += " AND [AssignedTo] = @ownerFilter";
+                    }
+
+                    sql += " ORDER BY [SyncVersion]";
+
+                    pullCmd.CommandText = sql;
                     pullCmd.Parameters.AddWithValue("@projectId", projectId);
                     pullCmd.Parameters.AddWithValue("@lastVersion", lastPulledVersion);
+
+                    if (!string.IsNullOrEmpty(ownerFilter))
+                    {
+                        pullCmd.Parameters.AddWithValue("@ownerFilter", ownerFilter);
+                    }
 
                     // Read all records into memory first
                     var recordsToPull = new List<Dictionary<string, object>>();
@@ -752,7 +767,8 @@ namespace VANTAGE.Utilities
                 }
 
                 stopwatch.Stop();
-                AppLogger.Info($"Pull completed in {stopwatch.Elapsed.TotalSeconds:F1}s: {result.PulledRecords} pulled", "SyncManager.PullRecords");
+                var filterInfo = string.IsNullOrEmpty(ownerFilter) ? "" : $" (filtered to {ownerFilter})";
+                AppLogger.Info($"Pull completed in {stopwatch.Elapsed.TotalSeconds:F1}s: {result.PulledRecords} pulled{filterInfo}", "SyncManager.PullRecords");
             }
             catch (Exception ex)
             {

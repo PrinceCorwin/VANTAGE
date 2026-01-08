@@ -1,6 +1,6 @@
 # MILESTONE - Project Status
 
-**Last Updated:** January 6, 2026
+**Last Updated:** January 8, 2026
 
 ## Current Status
 
@@ -27,7 +27,7 @@
 - [x] Clean up DarkTheme of unused variables
 - [x] Prorate filtered activities BudgetMHs (New Total/Add/Subtract with Keep Percent or Keep Earned options)
 - [x] Update Schedule view Discrepancies button to dropdown filter with Actual Start, Actual Finish, MHs, % Complete as selectable items
-- [ ] Add "Only My Records" option to SYNC dialog that is default selected which only syncs records owned by the current user and removes records from local DB that are owned by other users after they are uploaded if necessary
+- [x] Add "My Records Only" option to SYNC dialog - only pulls records owned by current user and removes other users' records from local DB after push
 - [ ] Progress Book creation
 - [~] Work Package creation (in progress - see WorkPackage_Status.md) - Need to add Drawings form type and implement template editors
 - [ ] Procore Drawings integration (planned - see Procore_Plan.md)
@@ -51,6 +51,13 @@ See `Help_AI_Sidebar_Plan.md` for detailed Help and AI sidebar feature planning
 - [ ] Disable Tooltips setting in Settings dropdown (see `Plans/DisableTooltips_Plan.md`)
 
 ## Recently Completed
+
+### January 8, 2026
+- Added "My Records Only" checkbox to SYNC dialog - pulls only records assigned to current user
+- Modified SyncManager.PullRecordsAsync to accept optional ownerFilter parameter for filtered pulls
+- Added state transition detection - toggling from ON to OFF triggers full re-pull with user confirmation
+- Added RemoveNonOwnedLocalRecords helper to delete other users' records from local DB after sync
+- Setting persists per user in UserSettings table (lazy initialization)
 
 ### January 6, 2026
 - Fixed PDF page size in MergeDocuments (was causing right-side cutoff)
@@ -147,3 +154,4 @@ None currently tracked.
 - Grid layouts save/apply/rename/delete and reset to default
 - Prorate MHs with various operation/preserve combinations
 - Discrepancy dropdown filter (each type individually, clear filter, clear all filters button)
+- My Records Only sync (toggle on/off, full re-pull on disable, local cleanup)

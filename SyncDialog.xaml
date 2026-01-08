@@ -12,9 +12,15 @@
     <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <!-- Header -->
             <RowDefinition Height="*"/>
+            <!-- Project List -->
             <RowDefinition Height="Auto"/>
+            <!-- My Records Only checkbox -->
             <RowDefinition Height="Auto"/>
+            <!-- Info Text -->
+            <RowDefinition Height="Auto"/>
+            <!-- Buttons -->
         </Grid.RowDefinitions>
 
         <!-- Header -->
@@ -49,20 +55,31 @@
                 </ItemsControl>
             </ScrollViewer>
         </Border>
+        <!-- My Records Only Option -->
+        <CheckBox x:Name="chkMyRecordsOnly"
+          Grid.Row="2"
+          Content="My Records Only - Pull only records assigned to me"
+          Foreground="{StaticResource ForegroundColor}"
+          IsChecked="False"
+          Margin="0,0,0,10"
+          VerticalAlignment="Top"/>
 
         <!-- Info Text -->
-        <TextBlock Grid.Row="2"
-                   TextWrapping="Wrap"
-                   Foreground="{StaticResource ForegroundColor}"
-                   Opacity="0.8"
-                   Margin="0,0,0,20">
+        <TextBlock Grid.Row="3"
+           TextWrapping="Wrap"
+           Foreground="{StaticResource ForegroundColor}"
+           Opacity="0.8"
+           Margin="0,0,0,20">
             <Run Text="• Checked projects will sync changes up to Azure and pull updates down"/>
             <LineBreak/>
             <Run Text="• Unchecked projects will not be synced"/>
+            <LineBreak/>
+            <Run Text="• 'My Records Only' removes other users' records from local database"/>
         </TextBlock>
 
+
         <!-- Buttons -->
-        <StackPanel Grid.Row="3" 
+        <StackPanel Grid.Row="4" 
                     Orientation="Horizontal" 
                     HorizontalAlignment="Right">
             <Button x:Name="btnCancel"
