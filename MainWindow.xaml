@@ -103,9 +103,9 @@
                             Background="{StaticResource ControlBackground}"
                             Foreground="{StaticResource ForegroundColor}"
                             BorderBrush="{StaticResource BorderColor}">
-                            <syncfusion:DropDownMenuItem Header="Help / AI Sidebar (F1)" Click="MenuHelpSidebar_Click" ToolTip="Open context-aware help and AI assistant"/>
+                            <syncfusion:DropDownMenuItem Header="Help / AI Sidebar     (F1)" Click="MenuHelpSidebar_Click" ToolTip="Open context-aware help and AI assistant"/>
                             <Separator Background="{StaticResource BorderColor}" Margin="5,2"/>
-                            <syncfusion:DropDownMenuItem Header="Prorate MHs..." Click="MenuProrateMHs_Click"/>
+                            <syncfusion:DropDownMenuItem Header="Prorate MHs" Click="MenuProrateMHs_Click"/>
                         </syncfusion:DropDownMenuGroup>
                     </syncfusion:DropDownButtonAdv>
 
