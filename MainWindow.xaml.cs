@@ -81,10 +81,6 @@ namespace VANTAGE
             }
         }
 
-        private void BtnHelp_Click(object sender, RoutedEventArgs e)
-        {
-            popupHelp.IsOpen = !popupHelp.IsOpen;
-        }
         private void UpdateSidebarContext()
         {
             if (!_sidePanelViewModel.IsOpen) return;
@@ -110,8 +106,6 @@ namespace VANTAGE
         }
         private void MenuHelpSidebar_Click(object sender, RoutedEventArgs e)
         {
-            popupHelp.IsOpen = false;
-
             // Get context from current view
             string anchor = "getting-started";
             string displayName = "Getting Started";
@@ -134,8 +128,6 @@ namespace VANTAGE
 
         private void MenuAbout_Click(object sender, RoutedEventArgs e)
         {
-            popupHelp.IsOpen = false;
-
             var version = Assembly.GetExecutingAssembly().GetName().Version;
             MessageBox.Show(
                 $"MILESTONE\n\n" +
@@ -852,106 +844,6 @@ namespace VANTAGE
             await ExportHelper.ExportTemplateAsync(this);
         }
 
-        private void MenuReport1_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Report 1 coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
-        private void MenuReport2_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Report 2 coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
-        private void MenuReport3_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Report 3 coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
-        private void MenuReport4_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Report 4 coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
-        private void MenuReport5_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Report 5 coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
-        private void MenuReport6_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Report 6 coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
-        private void MenuReport7_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Report 7 coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
-        private void MenuReport8_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Report 8 coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
-        private void MenuReport9_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Report 9 coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
-        private void MenuReport10_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Report 10 coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
-        private void MenuAnalysis1_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Analysis 1 coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
-        private void MenuAnalysis2_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Analysis 2 coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
-        private void MenuAnalysis3_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Analysis 3 coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
-        private void MenuAnalysis4_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Analysis 4 coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
-        private void MenuAnalysis5_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Analysis 5 coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
-        private void MenuAnalysis6_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Analysis 6 coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
-        private void MenuAnalysis7_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Analysis 7 coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
-        private void MenuAnalysis8_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Analysis 8 coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
-        private void MenuAnalysis9_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Analysis 9 coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
-        private void MenuAnalysis10_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Analysis 10 coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
         // === ADMIN DROPDOWN ===
 
         private void ToggleUserAdmin_Click(object sender, RoutedEventArgs e)
@@ -1164,11 +1056,6 @@ namespace VANTAGE
             deletedRecordsWindow.ShowDialog();
         }
 
-        // ============================================
-        // ADD THIS METHOD TO MainWindow.xaml.cs
-        // Replace one of the MenuAdmin#_Click placeholders (e.g., MenuAdmin3_Click)
-        // ============================================
-
         private void MenuEditSnapshots_Click(object sender, RoutedEventArgs e)
         {
             // Check admin status
@@ -1231,11 +1118,6 @@ namespace VANTAGE
             dialog.ShowDialog();
         }
 
-        // ============================================
-        // ADD THIS METHOD TO MainWindow.xaml.cs
-        // Replace one of the MenuAdmin#_Click placeholders (e.g., MenuAdmin5_Click)
-        // ============================================
-
         private void MenuEditProjects_Click(object sender, RoutedEventArgs e)
         {
             // Check admin status
@@ -1260,31 +1142,6 @@ namespace VANTAGE
             var dialog = new Dialogs.AdminProjectsDialog();
             dialog.Owner = this;
             dialog.ShowDialog();
-        }
-
-        private void MenuAdmin6_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Admin 6 coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
-        private void MenuAdmin7_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Admin 7 coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
-        private void MenuAdmin8_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Admin 8 coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
-        private void MenuAdmin9_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Admin 9 coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
-        private void MenuAdmin10_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Admin 10 coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         // TEST BUTTON HANDLER
@@ -1616,26 +1473,6 @@ namespace VANTAGE
                 MessageBox.Show($"Error clearing Azure activities:\n{ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
-        }
-
-        private void MenuTest5_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Test 5 - Not implemented", "Test", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
-        private void MenuTest6_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Test 6 - Not implemented", "Test", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
-        private void MenuTest7_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Test 7 - Not implemented", "Test", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
-        private void MenuTest8_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Test 8 - Not implemented", "Test", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         // === TOOLS DROPDOWN ===
@@ -2178,16 +2015,6 @@ namespace VANTAGE
             var dialog = new Dialogs.ProrateDialog(filteredActivities, progressView.RefreshAfterProrate);
             dialog.Owner = this;
             dialog.ShowDialog();
-        }
-
-        private void MenuTool9_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Tool 9 coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
-        private void MenuTool10_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Tool 10 coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         // MODULE LOADING

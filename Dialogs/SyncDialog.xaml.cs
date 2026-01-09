@@ -8,7 +8,7 @@ using VANTAGE.Dialogs;
 using VANTAGE.Models;
 using VANTAGE.Utilities;
 
-namespace VANTAGE
+namespace VANTAGE.Dialogs
 {
     public partial class SyncDialog : Window
     {

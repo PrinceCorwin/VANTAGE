@@ -20,45 +20,16 @@ using VANTAGE.Services;
 using VANTAGE.Services.PdfRenderers;
 using VANTAGE.Utilities;
 using VANTAGE.Interfaces;
+using VANTAGE.Dialogs;
+using VANTAGE.Converters;
 
 namespace VANTAGE.Views
 {
-    // Helper class for user dropdown items
-    public class UserItem
-    {
-        public string Display { get; set; } = "";
-        public string Username { get; set; } = "";
-        public string FullName { get; set; } = "";
-    }
-
-    // Helper class for project dropdown items
-    public class ProjectItem
-    {
-        public string ProjectID { get; set; } = "";
-        public string Description { get; set; } = "";
-    }
-
-    // Converter to display TemplateColumn as "Name (Width%)"
-    public class ColumnDisplayConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            if (value is TemplateColumn col)
-                return $"{col.Name} ({col.WidthPercent}%)";
-            return value?.ToString() ?? "";
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
     public partial class WorkPackageView : UserControl, IHelpAware
     {
         private List<FormTemplate> _formTemplates = new();
         private List<WPTemplate> _wpTemplates = new();
-        private List<ProjectItem> _projects = new();
+        private List<Models.ProjectItem> _projects = new();
         private List<User> _users = new();
         private ObservableCollection<FormTemplate> _wpFormsList = new();
 
@@ -218,14 +189,14 @@ namespace VANTAGE.Views
                     connection.Open();
 
                     // Load projects
-                    _projects = new List<ProjectItem>();
+                    _projects = new List<Models.ProjectItem>();
                     var projCmd = connection.CreateCommand();
                     projCmd.CommandText = "SELECT ProjectID, Description FROM Projects ORDER BY ProjectID";
                     using (var reader = projCmd.ExecuteReader())
                     {
                         while (reader.Read())
                         {
-                            _projects.Add(new ProjectItem
+                            _projects.Add(new Models.ProjectItem
                             {
                                 ProjectID = reader.GetString(0),
                                 Description = reader.GetString(1)
@@ -285,7 +256,7 @@ namespace VANTAGE.Views
             }
 
             // Users for PKG Manager and Scheduler (show "FullName (Username)")
-            var userItems = _users.Select(u => new UserItem
+            var userItems = _users.Select(u => new Models.UserItem
             {
                 Display = $"{u.FullName} ({u.Username})",
                 Username = u.Username,
@@ -388,7 +359,7 @@ namespace VANTAGE.Views
         // PKG Manager selection changed - save selection
         private void CboPKGManager_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (cboPKGManager.SelectedItem is UserItem user)
+            if (cboPKGManager.SelectedItem is Models.UserItem user)
             {
                 SettingsManager.SetUserSetting(App.CurrentUserID, "WorkPackage.LastPKGManager", user.Username, "string");
             }
@@ -397,7 +368,7 @@ namespace VANTAGE.Views
         // Scheduler selection changed - save selection
         private void CboScheduler_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (cboScheduler.SelectedItem is UserItem user)
+            if (cboScheduler.SelectedItem is Models.UserItem user)
             {
                 SettingsManager.SetUserSetting(App.CurrentUserID, "WorkPackage.LastScheduler", user.Username, "string");
             }
@@ -632,8 +603,8 @@ namespace VANTAGE.Views
             }
 
             // Get user selections
-            var pkgManager = cboPKGManager.SelectedItem as UserItem;
-            var scheduler = cboScheduler.SelectedItem as UserItem;
+            var pkgManager = cboPKGManager.SelectedItem as Models.UserItem;
+            var scheduler = cboScheduler.SelectedItem as Models.UserItem;
 
             btnGenerate.IsEnabled = false;
             lblStatus.Text = $"Generating {selectedWPs.Count} work package(s)...";
@@ -801,12 +772,12 @@ namespace VANTAGE.Views
             var workPackage = selectedWPs.FirstOrDefault() ?? "50.SAMPLE.WP";
 
             // Get PKG Manager
-            var pkgManager = cboPKGManager.SelectedItem as UserItem;
+            var pkgManager = cboPKGManager.SelectedItem as Models.UserItem;
             var pkgManagerUsername = pkgManager?.Username ?? "pkgmgr";
             var pkgManagerFullName = pkgManager?.FullName ?? "Package Manager";
 
             // Get Scheduler
-            var scheduler = cboScheduler.SelectedItem as UserItem;
+            var scheduler = cboScheduler.SelectedItem as Models.UserItem;
             var schedulerUsername = scheduler?.Username ?? "scheduler";
             var schedulerFullName = scheduler?.FullName ?? "Scheduler";
 

@@ -1,4 +1,4 @@
-﻿<Window x:Class="VANTAGE.SyncDialog"
+﻿<Window x:Class="VANTAGE.Dialogs.SyncDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Sync with Azure Database"

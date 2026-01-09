@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 
-namespace VANTAGE.Views
+namespace VANTAGE.Dialogs
 {
     public partial class ConnectionRetryDialog : Window
     {

@@ -1,4 +1,4 @@
-﻿<syncfusion:ChromelessWindow x:Class="MILESTONE.Views.FindReplaceDialog"
+﻿<syncfusion:ChromelessWindow x:Class="VANTAGE.Dialogs.FindReplaceDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:syncfusion="http://schemas.syncfusion.com/wpf"

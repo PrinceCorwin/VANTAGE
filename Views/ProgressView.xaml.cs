@@ -1,5 +1,4 @@
 ﻿using Microsoft.Data.Sqlite;
-using MILESTONE.Views;
 using Syncfusion.UI.Xaml.Grid;
 using Syncfusion.Windows.Tools.Controls;
 using System.Collections.Generic;

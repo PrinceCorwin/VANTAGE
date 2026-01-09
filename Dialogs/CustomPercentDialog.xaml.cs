@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Input;
 
-namespace VANTAGE.Views
+namespace VANTAGE.Dialogs
 {
     public partial class CustomPercentDialog : Window
     {

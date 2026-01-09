@@ -89,7 +89,7 @@ namespace VANTAGE
                             "• Click WORK OFFLINE to continue without syncing (you can sync later when connection is restored)";
 
                         // Show custom dialog with RETRY and WORK OFFLINE buttons
-                        var dialog = new VANTAGE.Views.ConnectionRetryDialog(dialogMessage);
+                        var dialog = new VANTAGE.Dialogs.ConnectionRetryDialog(dialogMessage);
                         bool? result = dialog.ShowDialog();
 
                         // Show splash again

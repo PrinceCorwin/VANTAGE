@@ -1,4 +1,4 @@
-﻿<Window x:Class="VANTAGE.Views.ConnectionRetryDialog"
+﻿<Window x:Class="VANTAGE.Dialogs.ConnectionRetryDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Azure Database Connection Error"

@@ -3,7 +3,7 @@ using System.Linq;
 using VANTAGE.Models;
 using VANTAGE;
 
-namespace MILESTONE.Views
+namespace VANTAGE.Dialogs
 {
     public partial class FindReplaceDialog : Syncfusion.Windows.Shared.ChromelessWindow
     {

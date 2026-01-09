@@ -209,3 +209,52 @@ Using Syncfusion.Pdf library:
 - External drawings fetch
 - Azure sync for templates
 - PDF archival to Azure Blob
+
+## Completed Implementation
+
+### Files Created
+| File | Purpose |
+|------|---------|
+| Views/WorkPackageView.xaml | Main view with split layout |
+| Views/WorkPackageView.xaml.cs | View code-behind |
+| Models/FormTemplate.cs | Form template model + JSON structures |
+| Models/WPTemplate.cs | WP template model |
+| Data/TemplateRepository.cs | Template CRUD operations |
+| Services/TokenResolver.cs | Token replacement service |
+| Services/PdfRenderers/BaseRenderer.cs | Shared PDF rendering logic |
+| Services/PdfRenderers/CoverRenderer.cs | Cover type renderer |
+| Services/PdfRenderers/ListRenderer.cs | List type renderer |
+| Services/PdfRenderers/FormRenderer.cs | Form type renderer |
+| Services/PdfRenderers/GridRenderer.cs | Grid type renderer |
+| Services/PdfRenderers/DrawingsRenderer.cs | Drawings type renderer |
+| Services/PdfRenderers/WorkPackageGenerator.cs | PDF generation orchestrator |
+| Views/TemplateTypeDialog.xaml(.cs) | Type selection dialog for new templates |
+
+### January 7, 2026
+- Logo path field shows "(default)" instead of hardcoded path
+- Added persistence for Generate tab selections (Project, WP Template, PKG Manager, Scheduler)
+- Added Phone and Fax fields to AdminProjectsDialog
+- Redesigned PDF header layout (logo, WP name, project info, phone/fax, title bar, PKG/Scheduler)
+- Renamed built-in form templates to include " - Template" suffix
+- Added duplicate name validation when saving form templates
+- Fixed Form Templates tab bugs (Type selection dialog, editor changes on clone)
+- PDF Viewer: default zoom Fit Width, minimum zoom 10%
+- Splitter position persists to UserSettings
+
+### January 6, 2026
+- Implemented form template editors for Cover, List, Grid, and Form types
+- Added ColumnDisplayConverter for column list display formatting
+- Added TemplateTypeDialog for creating new templates with type selection
+- Fixed PDF page size in MergeDocuments (612x792 = 8.5x11 inches)
+- Fixed preview token resolution - body tokens resolve from database
+- Preview uses actual UI selections instead of placeholders
+- Added Drawings form template type with DrawingsRenderer
+
+### January 4, 2026
+- Created WorkPackageView.xaml with 60/40 split layout, tabs, preview panel
+- Wired up MainWindow navigation (BtnWorkPackage_Click)
+- Applied SfSkinManager FluentDark theme to all controls
+- Re-enabled PDF preview with Syncfusion PdfViewerControl
+- Verified folder browser and Generate button save PDFs correctly
+- Replaced legacy SHBrowseForFolder P/Invoke with modern IFileDialog COM interface
+- Created database tables (FormTemplates, WPTemplates) and seeded built-in templates

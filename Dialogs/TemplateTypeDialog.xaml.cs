@@ -1,7 +1,7 @@
 using System.Windows;
 using VANTAGE.Models;
 
-namespace VANTAGE.Views
+namespace VANTAGE.Dialogs
 {
     // Dialog for selecting the type of form template to create
     public partial class TemplateTypeDialog : Window

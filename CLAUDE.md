@@ -2,7 +2,7 @@
 
 WPF application for Summit Constructors replacing legacy MS Access system. Tracks construction activities (welding, bolt-ups, steel erection) for industrial projects. Integrates with P6 Primavera for schedule import/export.
 
-**See also:** `Project_Status.md` (current status, backlog), `Milestone_Project_plan.md` (architecture), `Schedule_Module_plan.md` (schedule module details), `WorkPackage_Status.md` (work package module status)
+**See also:** `Project_Status.md` (current status, backlog), `Milestone_Project_plan.md` (architecture), `Schedule_Module_plan.md` (schedule module details), `WorkPackage_Module_Plan.md` (work package module)
 
 ## Tech Stack
 - WPF .NET 8, Syncfusion 31.2.12 (FluentDark theme)

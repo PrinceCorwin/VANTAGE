@@ -63,73 +63,26 @@
                             Background="{StaticResource ControlBackground}"
                             Foreground="{StaticResource ForegroundColor}"
                             BorderBrush="{StaticResource BorderColor}">
-                            <syncfusion:DropDownMenuItem Header="Import (Replace)" Click="MenuExcelImportReplace_Click"/>
-                            <syncfusion:DropDownMenuItem Header="Import (Combine)" Click="MenuExcelImportCombine_Click"/>
+                            <!-- Activities -->
+                            <syncfusion:DropDownMenuItem Header="Import Activities (Replace)" Click="MenuExcelImportReplace_Click"/>
+                            <syncfusion:DropDownMenuItem Header="Import Activities (Combine)" Click="MenuExcelImportCombine_Click"/>
                             <syncfusion:DropDownMenuItem Header="Export Activities" Click="ExcelExportActivities_Click"/>
-                            <syncfusion:DropDownMenuItem Header="Export Template" Click="ExcelExportTemplate_Click"/>
-                            <syncfusion:DropDownMenuItem Header="Create Record(s)" Click="BtnCreate_Click"/>
+                            <syncfusion:DropDownMenuItem Header="Export Activities Template" Click="ExcelExportTemplate_Click"/>
+                            <syncfusion:DropDownMenuItem Header="Create Activities" Click="BtnCreate_Click"/>
+                            <syncfusion:DropDownMenuItem Header="Clear Local Activities" Click="MenuClearLocalActivities_Click"/>
+                            <Separator Background="{StaticResource BorderColor}" Margin="5,2"/>
+                            <!-- P6 Files -->
                             <syncfusion:DropDownMenuItem Header="Import From P6 File" Click="ImportP6File_Click"/>
                             <syncfusion:DropDownMenuItem Header="Export To P6 File" Click="ExportP6File_Click"/>
-                        </syncfusion:DropDownMenuGroup>
-                    </syncfusion:DropDownButtonAdv>
-
-                    <syncfusion:DropDownButtonAdv x:Name="btnReports"
-                            Label="Reports"
-                            Padding="0"
-                            Margin="5,0"
-                            Background="Transparent"
-                            Foreground="{StaticResource ForegroundColor}"
-                            BorderThickness="0"
-                            IconTemplate="{x:Null}"
-                            SmallIcon="{x:Null}"
-                            LargeIcon="{x:Null}"
-                            FontSize="12"
-                            SizeMode="Normal"
-                            ToolTip="Generate progress and analysis reports">
-                            <syncfusion:DropDownMenuGroup
-                                Background="{StaticResource ControlBackground}"
-                                Foreground="{StaticResource ForegroundColor}"
-                                BorderBrush="{StaticResource BorderColor}">
-                                <syncfusion:DropDownMenuItem Header="REPORT 1" Click="MenuReport1_Click"/>
-                                <syncfusion:DropDownMenuItem Header="REPORT 2" Click="MenuReport2_Click"/>
-                                <syncfusion:DropDownMenuItem Header="REPORT 3" Click="MenuReport3_Click"/>
-                                <syncfusion:DropDownMenuItem Header="REPORT 4" Click="MenuReport4_Click"/>
-                                <syncfusion:DropDownMenuItem Header="REPORT 5" Click="MenuReport5_Click"/>
-                                <syncfusion:DropDownMenuItem Header="REPORT 6" Click="MenuReport6_Click"/>
-                                <syncfusion:DropDownMenuItem Header="REPORT 7" Click="MenuReport7_Click"/>
-                                <syncfusion:DropDownMenuItem Header="REPORT 8" Click="MenuReport8_Click"/>
-                                <syncfusion:DropDownMenuItem Header="REPORT 9" Click="MenuReport9_Click"/>
-                                <syncfusion:DropDownMenuItem Header="REPORT 10" Click="MenuReport10_Click"/>
-                            </syncfusion:DropDownMenuGroup>
-                    </syncfusion:DropDownButtonAdv>
-
-                    <syncfusion:DropDownButtonAdv x:Name="btnAnalysis"
-                              Label="Analysis"
-                              Padding="0"
-                              Margin="5,0"
-                              Background="Transparent"
-                              Foreground="{StaticResource ForegroundColor}"
-                              BorderThickness="0"
-                              IconTemplate="{x:Null}"
-                              SmallIcon="{x:Null}"
-                              LargeIcon="{x:Null}"
-                              FontSize="12"
-                              SizeMode="Normal"
-                              ToolTip="Data analysis tools">
-                        <syncfusion:DropDownMenuGroup
-                            Background="{StaticResource ControlBackground}"
-                            Foreground="{StaticResource ForegroundColor}"
-                            BorderBrush="{StaticResource BorderColor}">
-                            <syncfusion:DropDownMenuItem Header="ANALYSIS 1" Click="MenuAnalysis1_Click"/>
-                            <syncfusion:DropDownMenuItem Header="ANALYSIS 2" Click="MenuAnalysis2_Click"/>
-                            <syncfusion:DropDownMenuItem Header="ANALYSIS 3" Click="MenuAnalysis3_Click"/>
-                            <syncfusion:DropDownMenuItem Header="ANALYSIS 4" Click="MenuAnalysis4_Click"/>
-                            <syncfusion:DropDownMenuItem Header="ANALYSIS 5" Click="MenuAnalysis5_Click"/>
-                            <syncfusion:DropDownMenuItem Header="ANALYSIS 6" Click="MenuAnalysis6_Click"/>
-                            <syncfusion:DropDownMenuItem Header="ANALYSIS 7" Click="MenuAnalysis7_Click"/>
-                            <syncfusion:DropDownMenuItem Header="ANALYSIS 8" Click="MenuAnalysis8_Click"/>
-                            <syncfusion:DropDownMenuItem Header="ANALYSIS 9" Click="MenuAnalysis9_Click"/>
-                            <syncfusion:DropDownMenuItem Header="ANALYSIS 10" Click="MenuAnalysis10_Click"/>
+                            <syncfusion:DropDownMenuItem Header="Clear Local Schedule" Click="MenuClearLocalSchedule_Click"/>
+                            <Separator Background="{StaticResource BorderColor}" Margin="5,2"/>
+                            <!-- Settings -->
+                            <syncfusion:DropDownMenuItem Header="Import Settings" Click="MenuImportSettings_Click"/>
+                            <syncfusion:DropDownMenuItem Header="Export Settings" Click="MenuExportSettings_Click"/>
+                            <Separator Background="{StaticResource BorderColor}" Margin="5,2"/>
+                            <!-- Other -->
+                            <syncfusion:DropDownMenuItem Header="Export Logs" Click="MenuExportLogs_Click"/>
+                            <syncfusion:DropDownMenuItem Header="Delete My Snapshots" Click="MenuDeleteSnapshots_Click"/>
                         </syncfusion:DropDownMenuGroup>
                     </syncfusion:DropDownButtonAdv>
 
@@ -150,15 +103,9 @@
                             Background="{StaticResource ControlBackground}"
                             Foreground="{StaticResource ForegroundColor}"
                             BorderBrush="{StaticResource BorderColor}">
-                            <syncfusion:DropDownMenuItem Header="Delete My Snapshots" Click="MenuDeleteSnapshots_Click"/>
-                            <syncfusion:DropDownMenuItem Header="Clear Local Activities" Click="MenuClearLocalActivities_Click"/>
-                            <syncfusion:DropDownMenuItem Header="Clear Local Schedule" Click="MenuClearLocalSchedule_Click"/>
-                            <syncfusion:DropDownMenuItem Header="Export Settings" Click="MenuExportSettings_Click"/>
-                            <syncfusion:DropDownMenuItem Header="Import Settings" Click="MenuImportSettings_Click"/>
-                            <syncfusion:DropDownMenuItem Header="Export Logs" Click="MenuExportLogs_Click"/>
+                            <syncfusion:DropDownMenuItem Header="Help / AI Sidebar (F1)" Click="MenuHelpSidebar_Click" ToolTip="Open context-aware help and AI assistant"/>
+                            <Separator Background="{StaticResource BorderColor}" Margin="5,2"/>
                             <syncfusion:DropDownMenuItem Header="Prorate MHs..." Click="MenuProrateMHs_Click"/>
-                            <syncfusion:DropDownMenuItem Header="TOOL 9" Click="MenuTool9_Click"/>
-                            <syncfusion:DropDownMenuItem Header="TOOL 10" Click="MenuTool10_Click"/>
                         </syncfusion:DropDownMenuGroup>
                     </syncfusion:DropDownButtonAdv>
 
@@ -179,15 +126,12 @@
                             Foreground="{StaticResource ForegroundColor}"
                             BorderBrush="{StaticResource BorderColor}">
                             <syncfusion:DropDownMenuItem Header="Toggle User Admin" Click="ToggleUserAdmin_Click"/>
-                            <syncfusion:DropDownMenuItem Header="Deleted Records UI" Click="DeletedRecordsUi_Click"/>
-                            <syncfusion:DropDownMenuItem Header="Edit Snapshots Table" Click="MenuEditSnapshots_Click"/>
+                            <Separator Background="{StaticResource BorderColor}" Margin="5,2"/>
                             <syncfusion:DropDownMenuItem Header="Edit Users" Click="MenuEditUsers_Click"/>
                             <syncfusion:DropDownMenuItem Header="Edit Projects" Click="MenuEditProjects_Click"/>
-                            <syncfusion:DropDownMenuItem Header="ADMIN 6" Click="MenuAdmin6_Click"/>
-                            <syncfusion:DropDownMenuItem Header="ADMIN 7" Click="MenuAdmin7_Click"/>
-                            <syncfusion:DropDownMenuItem Header="ADMIN 8" Click="MenuAdmin8_Click"/>
-                            <syncfusion:DropDownMenuItem Header="ADMIN 9" Click="MenuAdmin9_Click"/>
-                            <syncfusion:DropDownMenuItem Header="ADMIN 10" Click="MenuAdmin10_Click"/>
+                            <syncfusion:DropDownMenuItem Header="Edit Snapshots" Click="MenuEditSnapshots_Click"/>
+                            <Separator Background="{StaticResource BorderColor}" Margin="5,2"/>
+                            <syncfusion:DropDownMenuItem Header="Deleted Records UI" Click="DeletedRecordsUi_Click"/>
                         </syncfusion:DropDownMenuGroup>
                     </syncfusion:DropDownButtonAdv>
 
@@ -213,10 +157,6 @@
                                 <MenuItem Header="Toggle UpdatedBy" Click="ToggleUpdatedBy_Click"/>
                                 <MenuItem Header="Schedule Diagnostics" Click="MenuScheduleDiagnostics_Click"/>
                                 <MenuItem Header="Clear Azure Activities" Click="MenuClearAzureActivities_Click"/>
-                                <MenuItem Header="Test 5" Click="MenuTest5_Click"/>
-                                <MenuItem Header="Test 6" Click="MenuTest6_Click"/>
-                                <MenuItem Header="Test 7" Click="MenuTest7_Click"/>
-                                <MenuItem Header="Test 8" Click="MenuTest8_Click"/>
                             </ContextMenu>
                         </syncfusion:ButtonAdv.ContextMenu>
                     </syncfusion:ButtonAdv>
@@ -323,56 +263,6 @@
                             Orientation="Horizontal"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center">
-                    <!-- Help Button + Popup -->
-                    <Button x:Name="btnHelp"
-            Content="?"
-            Padding="8,0"
-            Margin="5,0"
-            Background="Transparent"
-            Foreground="{StaticResource ForegroundColor}"
-            BorderThickness="0"
-            FontSize="16"
-            FontWeight="Bold"
-            ToolTip="Help"
-            Click="BtnHelp_Click"/>
-
-                    <Popup x:Name="popupHelp"
-                           PlacementTarget="{Binding ElementName=btnHelp}"
-                           Placement="Bottom"
-                           StaysOpen="False"
-                           AllowsTransparency="True">
-                        <Border Background="{StaticResource ControlBackground}"
-                                BorderBrush="{StaticResource BorderColor}"
-                                BorderThickness="1"
-                                CornerRadius="2"
-                                Padding="0">
-                            <StackPanel>
-                                <Button Background="Transparent"
-                                        Foreground="{StaticResource ForegroundColor}"
-                                        BorderThickness="0"
-                                        Padding="12,8"
-                                        HorizontalContentAlignment="Left"
-                                        Click="MenuHelpSidebar_Click"
-                                        Cursor="Hand"
-                                        ToolTip="Open context-aware help and AI assistant (F1)">
-                                    <Grid Width="180">
-                                        <TextBlock Text="Help / AI Sidebar" HorizontalAlignment="Left"/>
-                                        <TextBlock Text="F1" HorizontalAlignment="Right" Foreground="{StaticResource TextColorSecondary}"/>
-                                    </Grid>
-                                </Button>
-                                <Separator Background="{StaticResource BorderColor}" Margin="5,2"/>
-                                <Button Content="About MILESTONE"
-                                        Background="Transparent"
-                                        Foreground="{StaticResource ForegroundColor}"
-                                        BorderThickness="0"
-                                        Padding="12,8"
-                                        HorizontalContentAlignment="Left"
-                                        Click="MenuAbout_Click"
-                                        Cursor="Hand"/>
-                            </StackPanel>
-                        </Border>
-                    </Popup>
-
                     <!-- Settings Button + Popup -->
                     <Button x:Name="btnSettings"
                             Content="⋮"
@@ -406,6 +296,7 @@
                                         Click="MenuGridLayouts_Click"
                                         Cursor="Hand"
                                         ToolTip="Save and apply custom column layouts"/>
+                                <Separator Background="{StaticResource BorderColor}" Margin="5,2"/>
                                 <Button Content="Feedback Board"
                                         Background="Transparent"
                                         Foreground="{StaticResource ForegroundColor}"
@@ -415,6 +306,16 @@
                                         Click="MenuFeedbackBoard_Click"
                                         Cursor="Hand"
                                         ToolTip="Submit ideas or report bugs"/>
+                                <Separator Background="{StaticResource BorderColor}" Margin="5,2"/>
+                                <Button Content="About MILESTONE"
+                                        Background="Transparent"
+                                        Foreground="{StaticResource ForegroundColor}"
+                                        BorderThickness="0"
+                                        Padding="12,8"
+                                        HorizontalContentAlignment="Left"
+                                        Click="MenuAbout_Click"
+                                        Cursor="Hand"
+                                        ToolTip="Application version and information"/>
                             </StackPanel>
                         </Border>
                     </Popup>
