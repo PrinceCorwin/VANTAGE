@@ -45,7 +45,7 @@
 
 ### Medium Priority
 - [ ] Review project files for hard coded colors, replace with theme variables
-- [ ] Review project file organization and clean up
+- [x] Review project file organization and clean up (Phase 1 complete - dialogs moved, files renamed)
 - [ ] User-editable header template for WP (allow customizing header layout)
 - [ ] Import/Export WP templates to JSON
 
@@ -77,9 +77,17 @@
 ## Recent Completions
 
 ### January 8, 2026
+- File organization cleanup:
+  - Moved 5 dialogs to Dialogs/ folder with namespace updates
+  - Renamed 8 files to PascalCase (preserved git history)
+  - Moved ScheduleProjectMapping from Utilities to Models
+  - Created WorkPackageViewModel (partial extraction)
+  - Extracted UserItem, ProjectItem to Models/
+  - Extracted ColumnDisplayConverter to Converters/
 - Reorganized MainWindow menus: File menu grouped with separators, removed Reports/Analysis menus, cleaned up placeholders
 - Moved Help/AI Sidebar to Tools menu, About to hamburger menu
 - Added separators to Admin and Tools menus
+- Consolidated status docs into single Project_Status.md
 
 ### January 7-8, 2026
 - Added "My Records Only" checkbox to SYNC dialog
