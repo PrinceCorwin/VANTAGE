@@ -399,6 +399,78 @@ namespace VANTAGE.Data
             }
         }
 
+        // Bulk update PercentEntry for multiple activities in a single transaction
+        // Much faster than calling UpdateActivityInDatabase in a loop
+        // Batches updates to avoid SQLite's 999 parameter limit
+        public static async Task<int> BulkUpdatePercentAsync(
+            List<string> uniqueIds,
+            double percentValue,
+            string updatedBy)
+        {
+            if (uniqueIds == null || uniqueIds.Count == 0)
+                return 0;
+
+            const int batchSize = 500; // Stay well under SQLite's 999 parameter limit
+
+            return await Task.Run(() =>
+            {
+                using var connection = DatabaseSetup.GetConnection();
+                connection.Open();
+                using var transaction = connection.BeginTransaction();
+
+                try
+                {
+                    int totalAffected = 0;
+                    var percentRounded = NumericHelper.RoundToPlaces(percentValue);
+                    var updatedDate = DateTime.UtcNow.ToString("o");
+
+                    // Process in batches to avoid "too many SQL variables" error
+                    for (int batchStart = 0; batchStart < uniqueIds.Count; batchStart += batchSize)
+                    {
+                        var batch = uniqueIds.Skip(batchStart).Take(batchSize).ToList();
+
+                        var cmd = connection.CreateCommand();
+                        cmd.Transaction = transaction;
+
+                        // Build parameterized WHERE IN clause for this batch
+                        var idParams = new List<string>();
+                        for (int i = 0; i < batch.Count; i++)
+                        {
+                            idParams.Add($"@id{i}");
+                            cmd.Parameters.AddWithValue($"@id{i}", batch[i]);
+                        }
+
+                        cmd.CommandText = $@"
+                            UPDATE Activities SET
+                                PercentEntry = @percent,
+                                EarnQtyEntry = ROUND((@percent / 100.0) * Quantity, 3),
+                                UpdatedBy = @updatedBy,
+                                UpdatedUtcDate = @updatedDate,
+                                LocalDirty = 1
+                            WHERE UniqueID IN ({string.Join(",", idParams)})";
+
+                        cmd.Parameters.AddWithValue("@percent", percentRounded);
+                        cmd.Parameters.AddWithValue("@updatedBy", updatedBy);
+                        cmd.Parameters.AddWithValue("@updatedDate", updatedDate);
+
+                        totalAffected += cmd.ExecuteNonQuery();
+                    }
+
+                    transaction.Commit();
+
+                    AppLogger.Info($"Bulk updated PercentEntry to {percentValue}% for {totalAffected} records",
+                        "ActivityRepository.BulkUpdatePercentAsync", updatedBy);
+
+                    return totalAffected;
+                }
+                catch
+                {
+                    transaction.Rollback();
+                    throw;
+                }
+            });
+        }
+
 
         /// Get list of valid usernames from Users table
 

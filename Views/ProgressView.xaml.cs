@@ -1251,65 +1251,103 @@ namespace VANTAGE.Views
         }
 
 
+        // Enumerate selected items in chunks to keep UI responsive
+        // Returns UniqueIDs of selected records that belong to the current user
+        private async Task<List<string>> GetSelectedUserUniqueIdsChunkedAsync(string currentUser)
+        {
+            var result = new List<string>();
+            var items = sfActivities.SelectedItems;
+            int count = items.Count;
+            const int chunkSize = 500;
+
+            for (int processed = 0; processed < count; processed += chunkSize)
+            {
+                // Process a chunk of items
+                int endIndex = Math.Min(processed + chunkSize, count);
+                for (int i = processed; i < endIndex; i++)
+                {
+                    if (items[i] is Activity a &&
+                        string.Equals(a.AssignedTo, currentUser, StringComparison.OrdinalIgnoreCase))
+                    {
+                        result.Add(a.UniqueID);
+                    }
+                }
+
+                // Yield to UI thread to keep overlay animating
+                if (processed + chunkSize < count)
+                {
+                    await Task.Delay(1);
+                }
+            }
+
+            return result;
+        }
+
         // Bulk update percent for selected records
+        // Uses chunked enumeration for large selections to keep UI responsive
         private async Task SetSelectedRecordsPercent(int percent)
         {
-            var selectedActivities = sfActivities.SelectedItems.Cast<Activity>().ToList();
-
-            if (!selectedActivities.Any())
-            {
-                MessageBox.Show("Please select one or more records.",
-                    "No Selection", MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
-            }
-
-            // Find MainWindow from application windows (Application.Current.MainWindow may return VS design window)
             var mainWindow = Application.Current.Windows.OfType<VANTAGE.MainWindow>().FirstOrDefault();
-            if (mainWindow == null)
-            {
-                // Fall back to processing without overlay
-                MessageBox.Show("MainWindow not found - processing without overlay", "Debug", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
 
             try
             {
-                // Show overlay immediately
-                mainWindow?.ShowLoadingOverlay($"Updating {selectedActivities.Count} records...");
+                // Fast count check (O(1))
+                int selectedCount = sfActivities.SelectedItems.Count;
 
-                // Filter to only records the current user can edit
-                var editableActivities = selectedActivities.Where(a =>
-                   string.Equals(a.AssignedTo, App.CurrentUser?.Username, StringComparison.OrdinalIgnoreCase)
-                       ).ToList();
-
-                if (!editableActivities.Any())
+                if (selectedCount == 0)
                 {
+                    MessageBox.Show("Please select one or more records.",
+                        "No Selection", MessageBoxButton.OK, MessageBoxImage.Information);
                     return;
                 }
 
-                int successCount = 0;
-                foreach (var activity in editableActivities)
-                {
-                    activity.PercentEntry = percent;
-                    activity.UpdatedBy = App.CurrentUser?.Username ?? "Unknown";
-                    activity.UpdatedUtcDate = DateTime.UtcNow;
-                    activity.LocalDirty = 1;
+                var currentUser = App.CurrentUser?.Username ?? "Unknown";
+                const int largeSelectionThreshold = 5000;
 
-                    bool success = await ActivityRepository.UpdateActivityInDatabase(activity);
-                    if (success) successCount++;
+                mainWindow?.ShowLoadingOverlay($"Processing {selectedCount:N0} selected records...");
+                await Task.Delay(10);
+
+                List<string> idsToUpdate;
+
+                if (selectedCount > largeSelectionThreshold)
+                {
+                    // Large selection - use chunked enumeration to keep UI responsive
+                    idsToUpdate = await GetSelectedUserUniqueIdsChunkedAsync(currentUser);
+                }
+                else
+                {
+                    // Small selection - enumerate directly (fast enough)
+                    var selectedActivities = sfActivities.SelectedItems.Cast<Activity>().ToList();
+                    idsToUpdate = selectedActivities
+                        .Where(a => string.Equals(a.AssignedTo, currentUser, StringComparison.OrdinalIgnoreCase))
+                        .Select(a => a.UniqueID)
+                        .ToList();
                 }
 
-                // Refresh grid to show updated values
-                sfActivities.View.Refresh();
+                if (idsToUpdate.Count == 0)
+                {
+                    MessageBox.Show("None of the selected records are assigned to you.",
+                        "No Editable Records", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                mainWindow?.ShowLoadingOverlay($"Updating {idsToUpdate.Count:N0} records...");
+
+                int successCount = await ActivityRepository.BulkUpdatePercentAsync(idsToUpdate, percent, currentUser);
+
+                // Reload from database to ensure consistency
+                await _viewModel.RefreshAsync();
                 UpdateSummaryPanel();
 
                 if (successCount > 0)
                 {
-                    MessageBox.Show($"Set {successCount} record(s) to {percent}%.",
-                   "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show($"Set {successCount:N0} record(s) to {percent}%.",
+                        "Success", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
             }
             catch (Exception ex)
             {
+                AppLogger.Error(ex, "ProgressView.SetSelectedRecordsPercent");
                 MessageBox.Show($"Error updating records: {ex.Message}",
                     "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }

@@ -77,6 +77,12 @@
 ## Recent Completions
 
 ### January 10, 2026
+- Bulk percent update performance optimization:
+  - Added BulkUpdatePercentAsync to ActivityRepository for single-transaction batch updates
+  - Batches updates in groups of 500 to avoid SQLite's 999 parameter limit
+  - Replaced per-record database updates with bulk operation (40k records now updates in seconds vs minutes)
+  - Added chunked enumeration for large selections (>5000 records) with Task.Delay yields to keep UI responsive
+  - Filters selected records to user's records only without freezing UI
 - UserSettings refactored to remove UserID:
   - Removed UserID column from UserSettings table (single user per machine)
   - Simplified all SettingsManager methods to not require userId parameter
