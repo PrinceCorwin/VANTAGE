@@ -9,7 +9,9 @@
       "Bash(dir /AD \"C:\\\\Users\\\\steve\\\\source\\\\repos\\\\PrinceCorwin\\\\VANTAGE\")",
       "WebSearch",
       "Bash(git mv:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push)"
     ]
   }
 }

@@ -35,6 +35,10 @@ Core record representing a construction activity.
 **Calculated Fields:**
 - `EarnMHsCalc`, `EarnedQtyCalc`, `PercentCompleteCalc`, `Status`, `ROCLookupID`
 
+**Numeric Precision:**
+- All double values enforced to 3 decimal places via `NumericHelper.RoundToPlaces()`
+- Applied at: import, model setters, grid edit, export, database save
+
 ### ProgressSnapshots (Azure)
 Frozen copy of Activity at weekly submission time.
 - Composite PK: `UniqueID + WeekEndDate`

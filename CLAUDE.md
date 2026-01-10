@@ -136,6 +136,7 @@ if (!AzureDbManager.CheckConnection(out string errorMessage))
 | `DatabaseSetup.cs` | SQLite init, MirrorTablesFromAzure |
 | `ActivityRepository.cs` | Activity CRUD operations |
 | `ScheduleRepository.cs` | Schedule data access |
+| `NumericHelper.cs` | 3 decimal place rounding for all double values |
 | `ProgressView.xaml.cs` | Progress module UI, edit validation |
 | `ScheduleView.xaml.cs` | Schedule module UI |
 | `ScheduleExcelImporter.cs` | P6 import logic |

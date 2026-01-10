@@ -77,6 +77,15 @@
 ## Recent Completions
 
 ### January 9, 2026
+- 3 Decimal Place Precision enforcement:
+  - Created NumericHelper.RoundToPlaces() centralized rounding utility
+  - Excel import: rounds all double values on read
+  - Model setters: rounds BudgetMHs, Quantity, EarnQtyEntry, PercentEntry
+  - Grid edit: auto-rounds on cell exit before saving
+  - Excel export: rounds all double values on write
+  - Database save: defensive rounding in ActivityRepository
+  - Future: admin-configurable decimal places (low priority)
+
 - Revert to Snapshot feature:
   - Renamed DeleteSnapshotsDialog to ManageSnapshotsDialog
   - Added "Revert To Selected" button (enabled for single selection only)
