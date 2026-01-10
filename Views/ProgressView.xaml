@@ -1519,33 +1519,16 @@
                                 FontSize="11"
                                 ToolTip="Click to view records with missing required metadata"/>
 
-                    <StackPanel DockPanel.Dock="Right"
-                        Orientation="Horizontal"
-                        VerticalAlignment="Center"
-                        Margin="0,0,10,0"
-                        Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}">
-
-                        <TextBlock Text="Loading..."
-                           Foreground="{StaticResource TextColorSecondary}"
-                           VerticalAlignment="Center"
-                           Margin="0,0,10,0"
-                           FontSize="12"/>
-
-                        <ProgressBar x:Name="loadingProgressBar"
-                             Width="200"
-                             Height="8"
-                             Minimum="0"
-                             Maximum="{Binding TotalRecordCount}"
-                             Foreground="{StaticResource AccentColor}"
-                             BorderBrush="{StaticResource ControlBorder}"
-                             BorderThickness="1"/>
-
-                        <TextBlock Text="{Binding FilteredCount, StringFormat='{}{0:N0}'}"
-                               Foreground="{StaticResource TextColorSecondary}"
-                               VerticalAlignment="Center"
-                               Margin="8,0,0,0"
-                               FontSize="11"/>
-                    </StackPanel>
+                    <syncfusion:SfLinearProgressBar x:Name="loadingProgressBar"
+                         DockPanel.Dock="Right"
+                         Width="200"
+                         Height="8"
+                         Margin="0,0,10,0"
+                         IsIndeterminate="True"
+                         ProgressColor="{StaticResource AccentColor}"
+                         TrackColor="{StaticResource ControlBorder}"
+                         Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}"
+                         ToolTip="Loading data"/>
                     <Border/>
                 </DockPanel>
             </Border>
