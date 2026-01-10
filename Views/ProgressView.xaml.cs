@@ -1251,7 +1251,7 @@ namespace VANTAGE.Views
         }
 
 
-        // Keep your existing SetSelectedRecordsPercent helper method
+        // Bulk update percent for selected records
         private async Task SetSelectedRecordsPercent(int percent)
         {
             var selectedActivities = sfActivities.SelectedItems.Cast<Activity>().ToList();
@@ -1265,6 +1265,10 @@ namespace VANTAGE.Views
 
             try
             {
+                // Block UI during bulk update to prevent concurrent edits
+                _viewModel.IsLoading = true;
+                sfActivities.IsEnabled = false;
+
                 // Filter to only records the current user can edit
                 var editableActivities = selectedActivities.Where(a =>
                    string.Equals(a.AssignedTo, App.CurrentUser?.Username, StringComparison.OrdinalIgnoreCase)
@@ -1305,6 +1309,12 @@ namespace VANTAGE.Views
             {
                 MessageBox.Show($"Error updating records: {ex.Message}",
                     "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                // Always restore UI state
+                sfActivities.IsEnabled = true;
+                _viewModel.IsLoading = false;
             }
         }
         private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)

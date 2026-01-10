@@ -90,6 +90,7 @@
   - Settings grouped between Feedback Board and About MILESTONE
   - Replaced WPF ProgressBar with Syncfusion SfLinearProgressBar (indeterminate marquee animation)
   - Simplified progress bar to just show animated bar during loading (removed text labels)
+  - Custom Percent Buttons now block UI during bulk updates (prevents concurrent edit conflicts)
 
 ### January 9, 2026
 - 3 Decimal Place Precision enforcement:
