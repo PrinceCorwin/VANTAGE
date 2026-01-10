@@ -22,7 +22,7 @@
         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,15">
             <TextBlock Text="⚠"
                        FontSize="28"
-                       Foreground="#FFFFC107"
+                       Foreground="{StaticResource WarningText}"
                        VerticalAlignment="Center"
                        Margin="0,0,12,0"/>
             <TextBlock Text="Unsaved Changes Will Be Lost"
@@ -39,7 +39,7 @@
                    FontSize="13"
                    Margin="0,0,0,15">
             <Run Text="The following projects have unsaved local edits that have "/>
-            <Run Text="NOT" FontWeight="Bold" Foreground="#FFFF6B6B"/>
+            <Run Text="NOT" FontWeight="Bold" Foreground="{StaticResource WarningHighlight}"/>
             <Run Text=" been synced to Central. If you continue, these changes will be permanently lost:"/>
         </TextBlock>
 
@@ -60,22 +60,22 @@
                                 </Grid.ColumnDefinitions>
 
                                 <StackPanel Grid.Column="0" Orientation="Horizontal">
-                                    <TextBlock Text="•" 
-                                               Foreground="#FFFF6B6B" 
+                                    <TextBlock Text="•"
+                                               Foreground="{StaticResource WarningHighlight}"
                                                FontSize="14"
                                                Margin="0,0,8,0"/>
                                     <TextBlock Foreground="{StaticResource ForegroundColor}" FontSize="13">
                                         <Run Text="{Binding ProjectID}" FontWeight="SemiBold"/>
                                         <Run Text=" - "/>
-                                        <Run Text="{Binding ProjectName}" Foreground="#FFB0B0B0"/>
+                                        <Run Text="{Binding ProjectName}" Foreground="{StaticResource TextColorSecondary}"/>
                                     </TextBlock>
                                 </StackPanel>
 
-                                <Border Grid.Column="1" 
-                                        Background="#44FF6B6B" 
+                                <Border Grid.Column="1"
+                                        Background="{StaticResource WarningHighlightBackground}"
                                         CornerRadius="3"
                                         Padding="8,2">
-                                    <TextBlock Foreground="#FFFF6B6B" 
+                                    <TextBlock Foreground="{StaticResource WarningHighlight}"
                                                FontWeight="Bold"
                                                FontSize="12">
                                         <Run Text="{Binding DirtyCount}"/>
@@ -93,7 +93,7 @@
         <TextBlock Grid.Row="3"
                    x:Name="txtSummary"
                    TextWrapping="Wrap"
-                   Foreground="#FFB0B0B0"
+                   Foreground="{StaticResource TextColorSecondary}"
                    FontSize="12"
                    FontStyle="Italic"
                    Margin="0,0,0,20"
@@ -131,8 +131,8 @@
                     Width="120"
                     Height="38"
                     Background="{StaticResource ControlBackground}"
-                    Foreground="#FFFF6B6B"
-                    BorderBrush="#FFFF6B6B"
+                    Foreground="{StaticResource WarningHighlight}"
+                    BorderBrush="{StaticResource WarningHighlight}"
                     BorderThickness="1"
                     Click="BtnConfirm_Click"/>
         </Grid>

@@ -913,8 +913,7 @@ namespace VANTAGE
                     Width = 400,
                     Height = 300,
                     WindowStartupLocation = WindowStartupLocation.CenterScreen,
-                    Background = new System.Windows.Media.SolidColorBrush(
-                        (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#FF1E1E1E"))
+                    Background = ThemeHelper.BackgroundColor
                 };
 
                 var stackPanel = new System.Windows.Controls.StackPanel { Margin = new Thickness(10) };
@@ -922,16 +921,15 @@ namespace VANTAGE
                 var label = new System.Windows.Controls.TextBlock
                 {
                     Text = "Select user to toggle admin status:",
-                    Foreground = System.Windows.Media.Brushes.White,
+                    Foreground = ThemeHelper.ForegroundColor,
                     Margin = new Thickness(0, 0, 0, 10)
                 };
 
                 var listBox = new System.Windows.Controls.ListBox
                 {
                     Height = 150,
-                    Background = new System.Windows.Media.SolidColorBrush(
-                        (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#FF2A2A2A")),
-                    Foreground = System.Windows.Media.Brushes.White
+                    Background = ThemeHelper.ControlBackground,
+                    Foreground = ThemeHelper.ForegroundColor
                 };
 
                 foreach (var userStr in userList)
@@ -1334,7 +1332,7 @@ namespace VANTAGE
                 Height = 200,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 Owner = this,
-                Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF1E1E1E")),
+                Background = ThemeHelper.BackgroundColor,
                 ResizeMode = ResizeMode.NoResize
             };
 
@@ -1342,7 +1340,7 @@ namespace VANTAGE
             stack.Children.Add(new TextBlock
             {
                 Text = "Type DELETE to confirm:",
-                Foreground = Brushes.White,
+                Foreground = ThemeHelper.ForegroundColor,
                 FontSize = 14,
                 Margin = new Thickness(0, 0, 0, 10)
             });
@@ -1351,9 +1349,9 @@ namespace VANTAGE
             {
                 Height = 30,
                 FontSize = 14,
-                Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF2D2D2D")),
-                Foreground = Brushes.White,
-                BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF3F3F3F")),
+                Background = ThemeHelper.ControlBackground,
+                Foreground = ThemeHelper.ForegroundColor,
+                BorderBrush = ThemeHelper.SidebarBorder,
                 Padding = new Thickness(5)
             };
             stack.Children.Add(textBox);
@@ -1371,8 +1369,8 @@ namespace VANTAGE
                 Width = 80,
                 Height = 30,
                 Margin = new Thickness(0, 0, 10, 0),
-                Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF3F3F3F")),
-                Foreground = Brushes.White
+                Background = ThemeHelper.SidebarBorder,
+                Foreground = ThemeHelper.ForegroundColor
             };
             btnCancel.Click += (s, args) => confirmDialog.DialogResult = false;
 
@@ -1381,8 +1379,8 @@ namespace VANTAGE
                 Content = "Confirm",
                 Width = 80,
                 Height = 30,
-                Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFB33A3A")),
-                Foreground = Brushes.White
+                Background = ThemeHelper.ButtonDangerBackground,
+                Foreground = ThemeHelper.ForegroundColor
             };
             btnConfirm.Click += (s, args) =>
             {

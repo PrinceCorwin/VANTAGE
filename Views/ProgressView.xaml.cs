@@ -1913,7 +1913,7 @@ namespace VANTAGE.Views
                         Height = 165,
                         WindowStartupLocation = WindowStartupLocation.CenterOwner,
                         Owner = Window.GetWindow(this),
-                        Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF1E1E1E"))
+                        Background = ThemeHelper.BackgroundColor
                     };
 
                     var projectCombo = new ComboBox
@@ -1932,7 +1932,7 @@ namespace VANTAGE.Views
                     btnPanel.Children.Add(cancelBtn);
 
                     var stack = new StackPanel();
-                    stack.Children.Add(new TextBlock { Text = "Select project to submit:", Margin = new Thickness(10), Foreground = Brushes.White });
+                    stack.Children.Add(new TextBlock { Text = "Select project to submit:", Margin = new Thickness(10), Foreground = ThemeHelper.ForegroundColor });
                     stack.Children.Add(projectCombo);
                     stack.Children.Add(btnPanel);
 
@@ -1959,7 +1959,7 @@ namespace VANTAGE.Views
                     Height = 180,
                     WindowStartupLocation = WindowStartupLocation.CenterOwner,
                     Owner = Window.GetWindow(this),
-                    Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF1E1E1E"))
+                    Background = ThemeHelper.BackgroundColor
                 };
 
                 var datePicker = new DatePicker
@@ -1977,7 +1977,7 @@ namespace VANTAGE.Views
                 dateBtnPanel.Children.Add(dateCancelBtn);
 
                 var dateStack = new StackPanel();
-                dateStack.Children.Add(new TextBlock { Text = "Select week ending date:", Margin = new Thickness(10), Foreground = Brushes.White });
+                dateStack.Children.Add(new TextBlock { Text = "Select week ending date:", Margin = new Thickness(10), Foreground = ThemeHelper.ForegroundColor });
                 dateStack.Children.Add(datePicker);
                 dateStack.Children.Add(dateBtnPanel);
 
@@ -3488,7 +3488,7 @@ namespace VANTAGE.Views
                 Height = 165,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 Owner = Window.GetWindow(this),
-                Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF1E1E1E"))
+                Background = ThemeHelper.BackgroundColor
             };
 
             var comboBox = new ComboBox
@@ -3530,7 +3530,7 @@ namespace VANTAGE.Views
             {
                 Text = "Select user to assign records to:",
                 Margin = new Thickness(10),
-                Foreground = Brushes.White
+                Foreground = ThemeHelper.ForegroundColor
             });
             stackPanel.Children.Add(comboBox);
             stackPanel.Children.Add(buttonPanel);

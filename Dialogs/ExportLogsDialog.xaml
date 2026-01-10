@@ -144,9 +144,9 @@
                     Content="Send Email"
                     Width="100"
                     Height="35"
-                    Background="#0078D7"
-                    Foreground="White"
-                    BorderBrush="#0078D7"
+                    Background="{StaticResource ButtonPrimaryBackground}"
+                    Foreground="{StaticResource OverlayText}"
+                    BorderBrush="{StaticResource ButtonPrimaryBorder}"
                     BorderThickness="1"
                     IsEnabled="False"
                     Click="BtnEmail_Click"/>

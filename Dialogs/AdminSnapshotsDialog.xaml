@@ -128,9 +128,9 @@
                     Width="150"
                     Height="35"
                     Margin="0,0,10,0"
-                    Background="#B33A3A"
+                    Background="{StaticResource ButtonDangerBackground}"
                     Foreground="{StaticResource ForegroundColor}"
-                    BorderBrush="#B33A3A"
+                    BorderBrush="{StaticResource ButtonDangerBorder}"
                     BorderThickness="1"
                     Click="BtnDeleteAll_Click"/>
             <Button x:Name="btnCancel"
@@ -147,9 +147,9 @@
                     Content="Delete Selected"
                     Width="120"
                     Height="35"
-                    Background="#B33A3A"
+                    Background="{StaticResource ButtonDangerBackground}"
                     Foreground="{StaticResource ForegroundColor}"
-                    BorderBrush="#B33A3A"
+                    BorderBrush="{StaticResource ButtonDangerBorder}"
                     BorderThickness="1"
                     IsEnabled="False"
                     Click="BtnDelete_Click"/>

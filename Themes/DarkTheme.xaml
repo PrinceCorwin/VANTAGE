@@ -49,6 +49,41 @@
     <SolidColorBrush x:Key="NotOwnedRowBackground" Color="#000723"/>
     <SolidColorBrush x:Key="NotOwnedRowForeground" Color="#336e9c"/>
 
+    <!-- === ACTION BUTTON COLORS === -->
+    <!-- Green buttons: Add, Submit, Save, Restore -->
+    <SolidColorBrush x:Key="ButtonSuccessBackground" Color="#2D7D46"/>
+    <SolidColorBrush x:Key="ButtonSuccessBorder" Color="#2D7D46"/>
+    <SolidColorBrush x:Key="ButtonSuccessHover" Color="#359954"/>
+
+    <!-- Red buttons: Delete, Remove, Destructive actions -->
+    <SolidColorBrush x:Key="ButtonDangerBackground" Color="#B33A3A"/>
+    <SolidColorBrush x:Key="ButtonDangerBorder" Color="#B33A3A"/>
+    <SolidColorBrush x:Key="ButtonDangerHover" Color="#CC4444"/>
+
+    <!-- Blue buttons: Primary actions -->
+    <SolidColorBrush x:Key="ButtonPrimaryBackground" Color="#0078D7"/>
+    <SolidColorBrush x:Key="ButtonPrimaryBorder" Color="#0078D7"/>
+    <SolidColorBrush x:Key="ButtonPrimaryHover" Color="#1A8BE0"/>
+
+    <!-- === OVERLAY COLORS === -->
+    <SolidColorBrush x:Key="OverlayBackground" Color="#DD000000"/>
+    <SolidColorBrush x:Key="OverlayText" Color="White"/>
+    <SolidColorBrush x:Key="OverlayTextSecondary" Color="#CCCCCC"/>
+    <!-- Note: TrackColor on SfLinearProgressBar doesn't accept resource binding -->
+
+    <!-- === ERROR/WARNING COLORS === -->
+    <SolidColorBrush x:Key="ErrorText" Color="#FFE74C3C"/>
+    <SolidColorBrush x:Key="WarningText" Color="#FFFFC107"/>
+    <SolidColorBrush x:Key="WarningHighlight" Color="#FFFF6B6B"/>
+    <SolidColorBrush x:Key="WarningHighlightBackground" Color="#44FF6B6B"/>
+
+    <!-- === UI ELEMENT COLORS === -->
+    <SolidColorBrush x:Key="SidebarBackground" Color="#FF252526"/>
+    <SolidColorBrush x:Key="SidebarBorder" Color="#FF3F3F46"/>
+    <SolidColorBrush x:Key="DividerColor" Color="#FF3F3F46"/>
+    <SolidColorBrush x:Key="SplitterDots" Color="#666666"/>
+    <SolidColorBrush x:Key="DisabledText" Color="#FF888888"/>
+
     <!-- ========================================= -->
     <!-- === DEFAULT BUTTON STYLE === -->
     <!-- ========================================= -->

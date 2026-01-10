@@ -32,7 +32,7 @@
                                 <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource AccentColor}"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#3A3A3A"/>
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource ControlBorder}"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter TargetName="border" Property="Opacity" Value="0.5"/>
@@ -299,7 +299,7 @@
                                                             <Setter TargetName="Border" Property="Background" Value="{StaticResource ControlHoverBackground}"/>
                                                         </Trigger>
                                                         <Trigger Property="IsEnabled" Value="False">
-                                                            <Setter Property="Foreground" Value="#FF888888"/>
+                                                            <Setter Property="Foreground" Value="{StaticResource DisabledText}"/>
                                                         </Trigger>
                                                     </ControlTemplate.Triggers>
                                                 </ControlTemplate>
@@ -617,7 +617,7 @@
                             <MenuItem Header="Delete Row(s)"
                                       Click="DeleteSelectedActivities_Click"
                                       Background="{StaticResource ControlBackground}"
-                                      Foreground="#FFE74C3C">
+                                      Foreground="{StaticResource ErrorText}">
                                 <MenuItem.Icon>
                                     <TextBlock Text="🗑️" FontSize="14"/>
                                 </MenuItem.Icon>

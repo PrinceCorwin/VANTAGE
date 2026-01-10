@@ -44,7 +44,7 @@
 - [x] Add 'Revert to Snapshot' functionality (via Manage Snapshots dialog)
 
 ### Medium Priority
-- [ ] Review project files for hard coded colors, replace with theme variables
+- [x] Review project files for hard coded colors, replace with theme variables
 - [x] Review project file organization and clean up (Phase 1 complete - dialogs moved, files renamed)
 - [ ] User-editable header template for WP (allow customizing header layout)
 - [ ] Import/Export WP templates to JSON
@@ -77,6 +77,12 @@
 ## Recent Completions
 
 ### January 10, 2026
+- Theme resources refactoring:
+  - Added 20+ new color resources to DarkTheme.xaml (action buttons, overlays, errors, warnings, UI elements)
+  - Created ThemeHelper utility class for code-behind theme resource access
+  - Updated 15 XAML files to use theme resources instead of hard-coded hex colors
+  - Updated 4 code-behind files to use ThemeHelper (MainWindow, AdminSnapshotsDialog, ProgressView, P6ImportDialog)
+  - Widened DeletedRecordsView sidebar from 170px to 190px for header text
 - Bulk percent update performance optimization:
   - Added BulkUpdatePercentAsync to ActivityRepository for single-transaction batch updates
   - Batches updates in groups of 500 to avoid SQLite's 999 parameter limit

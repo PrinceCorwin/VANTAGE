@@ -295,8 +295,7 @@ namespace VANTAGE.Dialogs
                 Height = 200,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 Owner = this,
-                Background = new System.Windows.Media.SolidColorBrush(
-                    (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#FF1E1E1E")),
+                Background = ThemeHelper.BackgroundColor,
                 ResizeMode = ResizeMode.NoResize
             };
 
@@ -304,7 +303,7 @@ namespace VANTAGE.Dialogs
             stack.Children.Add(new System.Windows.Controls.TextBlock
             {
                 Text = "Type DELETE to confirm:",
-                Foreground = System.Windows.Media.Brushes.White,
+                Foreground = ThemeHelper.ForegroundColor,
                 FontSize = 14,
                 Margin = new Thickness(0, 0, 0, 10)
             });
@@ -313,11 +312,9 @@ namespace VANTAGE.Dialogs
             {
                 Height = 30,
                 FontSize = 14,
-                Background = new System.Windows.Media.SolidColorBrush(
-                    (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#FF2D2D2D")),
-                Foreground = System.Windows.Media.Brushes.White,
-                BorderBrush = new System.Windows.Media.SolidColorBrush(
-                    (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#FF3F3F3F")),
+                Background = ThemeHelper.ControlBackground,
+                Foreground = ThemeHelper.ForegroundColor,
+                BorderBrush = ThemeHelper.SidebarBorder,
                 Padding = new Thickness(5)
             };
             stack.Children.Add(textBox);
@@ -337,9 +334,8 @@ namespace VANTAGE.Dialogs
                 Width = 80,
                 Height = 30,
                 Margin = new Thickness(0, 0, 10, 0),
-                Background = new System.Windows.Media.SolidColorBrush(
-                    (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#FF3F3F3F")),
-                Foreground = System.Windows.Media.Brushes.White
+                Background = ThemeHelper.SidebarBorder,
+                Foreground = ThemeHelper.ForegroundColor
             };
             btnCancel.Click += (s, args) => confirmDialog.Close();
 
@@ -348,9 +344,8 @@ namespace VANTAGE.Dialogs
                 Content = "Confirm",
                 Width = 80,
                 Height = 30,
-                Background = new System.Windows.Media.SolidColorBrush(
-                    (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#FFB33A3A")),
-                Foreground = System.Windows.Media.Brushes.White
+                Background = ThemeHelper.ButtonDangerBackground,
+                Foreground = ThemeHelper.ForegroundColor
             };
             btnConfirm.Click += (s, args) =>
             {

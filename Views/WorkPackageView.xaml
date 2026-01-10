@@ -54,7 +54,7 @@
                                 <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource AccentColor}"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#3A3A3A"/>
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource ControlBorder}"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter TargetName="border" Property="Opacity" Value="0.5"/>
@@ -437,7 +437,7 @@
                 <Grid Grid.Row="1" Margin="5">
                     <!-- Placeholder shown when no PDF loaded -->
                     <Border x:Name="pdfPlaceholderBorder"
-                            Background="#2A2A2A"
+                            Background="{StaticResource ControlBackground}"
                             BorderBrush="{StaticResource BorderColor}"
                             BorderThickness="1">
                         <TextBlock x:Name="pdfPlaceholder"

@@ -25,7 +25,14 @@ WPF application for Summit Constructors replacing legacy MS Access system. Track
 - Do NOT add "Generated with Claude" or "Co-Authored-By: Claude" to commit messages
 - Do NOT add AI attribution comments in code
 - Write clear, concise commit messages describing the change
-- ALWAYS update relevant plan and status docs (Project_Status.md, etc.) before committing
+
+### MANDATORY Pre-Commit Checklist
+**STOP. Before running `git commit`, you MUST complete these steps IN ORDER:**
+1. Update Project_Status.md - Add completed work to "Recent Completions", mark backlog items as [x] complete
+2. Update any other relevant plan docs if the work relates to a specific feature plan
+3. ONLY THEN proceed with git add and git commit
+
+**This is NOT optional. Failure to update status docs before committing is a workflow violation.**
 
 ## C# Code Conventions
 

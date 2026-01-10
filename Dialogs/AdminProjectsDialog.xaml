@@ -258,9 +258,9 @@
                     Width="80"
                     Height="35"
                     Margin="0,0,10,0"
-                    Background="#B33A3A"
+                    Background="{StaticResource ButtonDangerBackground}"
                     Foreground="{StaticResource ForegroundColor}"
-                    BorderBrush="#B33A3A"
+                    BorderBrush="{StaticResource ButtonDangerBorder}"
                     BorderThickness="1"
                     IsEnabled="False"
                     Click="BtnDelete_Click"/>
@@ -280,9 +280,9 @@
                     Content="Add Project"
                     Width="110"
                     Height="35"
-                    Background="#2D7D46"
+                    Background="{StaticResource ButtonSuccessBackground}"
                     Foreground="{StaticResource ForegroundColor}"
-                    BorderBrush="#2D7D46"
+                    BorderBrush="{StaticResource ButtonSuccessBorder}"
                     BorderThickness="1"
                     Click="BtnSave_Click"/>
         </StackPanel>

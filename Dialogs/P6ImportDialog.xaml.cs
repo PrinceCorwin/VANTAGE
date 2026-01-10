@@ -99,12 +99,12 @@ namespace VANTAGE.Dialogs
                 if (SelectedWeekEndDate.DayOfWeek != DayOfWeek.Sunday)
                 {
                     txtWeekEndHelper.Text = "⚠ Warning: Selected date is not a Sunday";
-                    txtWeekEndHelper.Foreground = System.Windows.Media.Brushes.Orange;
+                    txtWeekEndHelper.Foreground = ThemeHelper.WarningText;
                 }
                 else
                 {
                     txtWeekEndHelper.Text = "Week ending date confirmed";
-                    txtWeekEndHelper.Foreground = System.Windows.Media.Brushes.Gray;
+                    txtWeekEndHelper.Foreground = ThemeHelper.TextColorSecondary;
                 }
             }
         }

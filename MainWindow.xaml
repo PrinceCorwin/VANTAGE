@@ -454,7 +454,7 @@
         <!-- Modern Loading Overlay for Excel Imports -->
         <Grid x:Name="LoadingOverlay"
               Grid.RowSpan="3"
-              Background="#DD000000"
+              Background="{StaticResource OverlayBackground}"
               Visibility="Collapsed"
               Panel.ZIndex="1000">
             <StackPanel HorizontalAlignment="Center"
@@ -471,14 +471,14 @@
                    Text="Importing Excel File..."
                    FontSize="18"
                    FontWeight="SemiBold"
-                   Foreground="White"
+                   Foreground="{StaticResource OverlayText}"
                    HorizontalAlignment="Center"
                    Margin="0,30,0,10"/>
                 <!-- Progress Text -->
                 <TextBlock x:Name="txtLoadingProgress"
                    Text="0 of 0 records"
                    FontSize="14"
-                   Foreground="#CCCCCC"
+                   Foreground="{StaticResource OverlayTextSecondary}"
                    HorizontalAlignment="Center"
                    Margin="0,0,0,15"/>
                 <!-- Progress Bar -->
