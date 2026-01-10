@@ -1,6 +1,6 @@
 # MILESTONE - Project Status
 
-**Last Updated:** January 8, 2026
+**Last Updated:** January 9, 2026
 
 ## Module Status
 
@@ -41,7 +41,7 @@
 - [ ] Progress Book creation
 - [ ] Theme selection by user - save preference, apply on startup
 - [ ] Add Offline Indicator in status bar - clickable to retry connection
-- [ ] Add 'Revert to Snapshot' in Tools menu
+- [x] Add 'Revert to Snapshot' functionality (via Manage Snapshots dialog)
 
 ### Medium Priority
 - [ ] Review project files for hard coded colors, replace with theme variables
@@ -75,6 +75,18 @@
 - [ ] Disable Tooltips setting (see DisableTooltips_Plan.md)
 
 ## Recent Completions
+
+### January 9, 2026
+- Revert to Snapshot feature:
+  - Renamed DeleteSnapshotsDialog to ManageSnapshotsDialog
+  - Added "Revert To Selected" button (enabled for single selection only)
+  - Warning dialog with backup option before reverting
+  - Backup creates snapshot with today's date
+  - Pre-sync ensures pending changes are saved before revert
+  - Ownership validation skips records now owned by others
+  - Created SkippedRecordsDialog to show records that couldn't be restored
+  - Restores all fields except UniqueID, AssignedTo, and calculated fields
+  - Records marked LocalDirty=1 for user-controlled sync
 
 ### January 8, 2026
 - File organization cleanup:
@@ -123,3 +135,4 @@
 - Discrepancy dropdown filter
 - My Records Only sync (toggle on/off, full re-pull on disable)
 - Work Package PDF generation and preview
+- Manage Snapshots: delete multiple weeks, revert to single week with/without backup

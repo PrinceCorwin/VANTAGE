@@ -145,6 +145,7 @@ if (!AzureDbManager.CheckConnection(out string errorMessage))
 | `FeedbackDialog.cs` | Feedback Board (Ideas/Bugs) with Azure sync |
 | `ManageFiltersDialog.cs` | User-defined filters dialog |
 | `ManageLayoutsDialog.cs` | Named grid layouts dialog |
+| `ManageSnapshotsDialog.cs` | Delete/Revert snapshot weeks |
 | `ProrateDialog.cs` | Prorate BudgetMHs across filtered activities |
 | `Credentials.cs` | Connection strings (gitignored) |
 | `WorkPackageView.xaml.cs` | Work Package module UI |
