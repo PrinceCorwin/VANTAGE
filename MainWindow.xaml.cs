@@ -213,7 +213,6 @@ namespace VANTAGE
         {
             txtLoadingMessage.Text = message;
             txtLoadingProgress.Text = "";
-            LoadingProgressBar.Value = 0;
             LoadingOverlay.Visibility = Visibility.Visible;
         }
 
@@ -228,7 +227,7 @@ namespace VANTAGE
                 txtLoadingMessage.Text = message;
 
             txtLoadingProgress.Text = $"{current:N0} of {total:N0} records";
-            LoadingProgressBar.Value = total > 0 ? (current * 100.0 / total) : 0;
+            // Progress bar uses indeterminate mode - animation runs automatically
         }
 
         private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)

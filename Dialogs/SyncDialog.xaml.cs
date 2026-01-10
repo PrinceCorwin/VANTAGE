@@ -98,7 +98,6 @@ namespace VANTAGE.Dialogs
         {
             txtLoadingMessage.Text = message;
             txtLoadingProgress.Text = "";
-            LoadingProgressBar.Value = 0;
             LoadingOverlay.Visibility = Visibility.Visible;
         }
 

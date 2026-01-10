@@ -482,15 +482,12 @@
                    HorizontalAlignment="Center"
                    Margin="0,0,0,15"/>
                 <!-- Progress Bar -->
-                <ProgressBar x:Name="LoadingProgressBar"
+                <syncfusion:SfLinearProgressBar x:Name="LoadingProgressBar"
                      Width="300"
                      Height="8"
-                     Minimum="0"
-                     Maximum="100"
-                     Value="0"
-                     Foreground="{StaticResource AccentColor}"
-                     Background="#333333"
-                     BorderThickness="0"/>
+                     IsIndeterminate="True"
+                     ProgressColor="{StaticResource AccentColor}"
+                     TrackColor="#333333"/>
             </StackPanel>
         </Grid>
 

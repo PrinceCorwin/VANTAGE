@@ -1263,24 +1263,18 @@ namespace VANTAGE.Views
                 return;
             }
 
-            // Use full overlay for large selections (>150), simple blocking for smaller
-            bool useLargeSelectionOverlay = selectedActivities.Count > 150;
-            var mainWindow = useLargeSelectionOverlay
-                ? Application.Current.MainWindow as MainWindow
-                : null;
+            // Find MainWindow from application windows (Application.Current.MainWindow may return VS design window)
+            var mainWindow = Application.Current.Windows.OfType<VANTAGE.MainWindow>().FirstOrDefault();
+            if (mainWindow == null)
+            {
+                // Fall back to processing without overlay
+                MessageBox.Show("MainWindow not found - processing without overlay", "Debug", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
 
             try
             {
-                // Block UI during bulk update to prevent concurrent edits
-                if (useLargeSelectionOverlay)
-                {
-                    mainWindow?.ShowLoadingOverlay($"Updating {selectedActivities.Count} records...");
-                }
-                else
-                {
-                    _viewModel.IsLoading = true;
-                    sfActivities.IsEnabled = false;
-                }
+                // Show overlay immediately
+                mainWindow?.ShowLoadingOverlay($"Updating {selectedActivities.Count} records...");
 
                 // Filter to only records the current user can edit
                 var editableActivities = selectedActivities.Where(a =>
@@ -1289,7 +1283,6 @@ namespace VANTAGE.Views
 
                 if (!editableActivities.Any())
                 {
-                    // User selected only other users' records - silently do nothing
                     return;
                 }
 
@@ -1297,8 +1290,6 @@ namespace VANTAGE.Views
                 foreach (var activity in editableActivities)
                 {
                     activity.PercentEntry = percent;
-
-                    // Update ALL tracking fields on the in-memory object
                     activity.UpdatedBy = App.CurrentUser?.Username ?? "Unknown";
                     activity.UpdatedUtcDate = DateTime.UtcNow;
                     activity.LocalDirty = 1;
@@ -1311,7 +1302,6 @@ namespace VANTAGE.Views
                 sfActivities.View.Refresh();
                 UpdateSummaryPanel();
 
-                // Only show message if records were actually updated
                 if (successCount > 0)
                 {
                     MessageBox.Show($"Set {successCount} record(s) to {percent}%.",
@@ -1325,16 +1315,7 @@ namespace VANTAGE.Views
             }
             finally
             {
-                // Always restore UI state
-                if (useLargeSelectionOverlay)
-                {
-                    mainWindow?.HideLoadingOverlay();
-                }
-                else
-                {
-                    sfActivities.IsEnabled = true;
-                    _viewModel.IsLoading = false;
-                }
+                mainWindow?.HideLoadingOverlay();
             }
         }
         private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)

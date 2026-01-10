@@ -88,9 +88,9 @@
 - UI improvements:
   - Moved Import/Export Settings from File menu to Settings popup (hamburger menu)
   - Settings grouped between Feedback Board and About MILESTONE
-  - Replaced WPF ProgressBar with Syncfusion SfLinearProgressBar (indeterminate marquee animation)
-  - Simplified progress bar to just show animated bar during loading (removed text labels)
-  - Custom Percent Buttons now block UI during bulk updates (threshold-based: >150 uses full overlay, <=150 uses progress bar + disabled grid)
+  - Replaced WPF ProgressBar with Syncfusion SfLinearProgressBar (indeterminate marquee animation) in ProgressView, MainWindow overlay, and SyncDialog overlay
+  - Custom Percent Buttons now show full blocking overlay during bulk updates
+  - Fixed MainWindow reference issue (use Application.Current.Windows.OfType instead of Application.Current.MainWindow which returns VS design adorner)
 
 ### January 9, 2026
 - 3 Decimal Place Precision enforcement:
