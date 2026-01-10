@@ -1487,7 +1487,7 @@ namespace VANTAGE
             }
         }
 
-        private void MenuDeleteSnapshots_Click(object sender, RoutedEventArgs e)
+        private void MenuManageSnapshots_Click(object sender, RoutedEventArgs e)
         {
             // Check Azure connection first
             if (!AzureDbManager.CheckConnection(out string errorMessage))
@@ -1500,12 +1500,12 @@ namespace VANTAGE
                 return;
             }
 
-            var dialog = new Dialogs.DeleteSnapshotsDialog();
+            var dialog = new Dialogs.ManageSnapshotsDialog();
             dialog.Owner = this;
 
             if (dialog.ShowDialog() == true)
             {
-                // Snapshots were deleted - refresh ScheduleView if loaded
+                // Snapshots were deleted or reverted - refresh views if loaded
                 if (ContentArea.Content is Views.ScheduleView scheduleView)
                 {
                     var viewModel = scheduleView.DataContext as ViewModels.ScheduleViewModel;
@@ -1513,6 +1513,10 @@ namespace VANTAGE
                     {
                         _ = viewModel.LoadScheduleDataAsync(viewModel.SelectedWeekEndDate.Value);
                     }
+                }
+                else if (ContentArea.Content is Views.ProgressView progressView)
+                {
+                    _ = progressView.RefreshData();
                 }
             }
         }

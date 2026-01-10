@@ -82,7 +82,7 @@
                             <Separator Background="{StaticResource BorderColor}" Margin="5,2"/>
                             <!-- Other -->
                             <syncfusion:DropDownMenuItem Header="Export Logs" Click="MenuExportLogs_Click"/>
-                            <syncfusion:DropDownMenuItem Header="Delete My Snapshots" Click="MenuDeleteSnapshots_Click"/>
+                            <syncfusion:DropDownMenuItem Header="Manage My Snapshots" Click="MenuManageSnapshots_Click"/>
                         </syncfusion:DropDownMenuGroup>
                     </syncfusion:DropDownButtonAdv>
 
