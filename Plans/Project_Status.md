@@ -88,6 +88,8 @@
 - UI improvements:
   - Moved Import/Export Settings from File menu to Settings popup (hamburger menu)
   - Settings grouped between Feedback Board and About MILESTONE
+  - Replaced WPF ProgressBar with Syncfusion SfLinearProgressBar (indeterminate marquee animation)
+  - Simplified progress bar to just show animated bar during loading (removed text labels)
 
 ### January 9, 2026
 - 3 Decimal Place Precision enforcement:
