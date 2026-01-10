@@ -249,7 +249,7 @@ namespace VANTAGE.Utilities
                 {
                     if (value is double percentValue)
                     {
-                        return percentValue / 100.0; // Convert 75.5 → 0.755
+                        return NumericHelper.RoundToPlaces(percentValue / 100.0);
                     }
                 }
 
@@ -258,8 +258,14 @@ namespace VANTAGE.Utilities
                 {
                     if (value is double displayValue)
                     {
-                        return displayValue / 100.0; // Convert 0-100 back to 0-1
+                        return NumericHelper.RoundToPlaces(displayValue / 100.0);
                     }
+                }
+
+                // Round all other double values to 3 decimal places
+                if (value is double doubleValue)
+                {
+                    return NumericHelper.RoundToPlaces(doubleValue);
                 }
 
                 return value ?? "";

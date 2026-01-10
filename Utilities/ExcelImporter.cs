@@ -190,21 +190,21 @@ namespace VANTAGE.Utilities
                 if (propertyName == "PercentEntry")
                 {
                     double value = cell.GetDouble();
+                    double percentValue;
 
                     if (value >= 0 && value <= 1.0)
                     {
-                        activity.PercentEntry = value * 100.0;
+                        percentValue = value * 100.0;
                     }
-                    // If value is > 1, assume it's already a percentage (0-100)
                     else if (value > 1 && value <= 100)
                     {
-                        activity.PercentEntry = value;
+                        percentValue = value;
                     }
                     else
                     {
-                        // Out of range, set to 0
-                        activity.PercentEntry = 0;
+                        percentValue = 0;
                     }
+                    activity.PercentEntry = NumericHelper.RoundToPlaces(percentValue);
                     return;
                 }
 
@@ -229,7 +229,8 @@ namespace VANTAGE.Utilities
                 }
                 else if (property.PropertyType == typeof(double))
                 {
-                    property.SetValue(activity, cell.GetDouble());
+                    double value = cell.GetDouble();
+                    property.SetValue(activity, NumericHelper.RoundToPlaces(value));
                 }
                 else if (property.PropertyType == typeof(int))
                 {

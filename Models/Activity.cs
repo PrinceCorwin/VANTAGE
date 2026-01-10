@@ -233,11 +233,12 @@ namespace VANTAGE.Models
             get => _budgetMHs;
             set
             {
-                if (Math.Abs(_budgetMHs - value) > 0.0001)
+                double roundedValue = NumericHelper.RoundToPlaces(value);
+                if (Math.Abs(_budgetMHs - roundedValue) > 0.0001)
                 {
-                    _budgetMHs = value;
+                    _budgetMHs = roundedValue;
                     OnPropertyChanged();
-                    if (!_isInitializing)  // Changed from SuppressCalculations
+                    if (!_isInitializing)
                         RecalculatePercentEarned();
                 }
             }
@@ -255,11 +256,12 @@ namespace VANTAGE.Models
             get => _quantity;
             set
             {
-                if (Math.Abs(_quantity - value) > 0.0001)
+                double roundedValue = NumericHelper.RoundToPlaces(value);
+                if (Math.Abs(_quantity - roundedValue) > 0.0001)
                 {
-                    _quantity = value;
+                    _quantity = roundedValue;
                     OnPropertyChanged();
-                    if (!_isInitializing)  // Changed from SuppressCalculations
+                    if (!_isInitializing)
                         UpdatePercCompleteFromEarnedQty();
                 }
             }
@@ -272,9 +274,10 @@ namespace VANTAGE.Models
             get => _earnQtyEntry;
             set
             {
-                if (Math.Abs(_earnQtyEntry - value) > 0.0001)
+                double roundedValue = NumericHelper.RoundToPlaces(value);
+                if (Math.Abs(_earnQtyEntry - roundedValue) > 0.0001)
                 {
-                    _earnQtyEntry = value;
+                    _earnQtyEntry = roundedValue;
                     OnPropertyChanged();
                     if (!_isInitializing)
                         UpdatePercCompleteFromEarnedQty();
@@ -304,13 +307,14 @@ namespace VANTAGE.Models
             set
             {
                 double clampedValue = Math.Max(0, Math.Min(100, value));
-                if (Math.Abs(_percentEntry - clampedValue) > 0.0001)
+                double roundedValue = NumericHelper.RoundToPlaces(clampedValue);
+                if (Math.Abs(_percentEntry - roundedValue) > 0.0001)
                 {
-                    _percentEntry = clampedValue;
+                    _percentEntry = roundedValue;
                     OnPropertyChanged();
                     OnPropertyChanged(nameof(PercentEntry_Display));
                     OnPropertyChanged(nameof(Status));
-                    if (!_isInitializing)  // Changed from SuppressCalculations
+                    if (!_isInitializing)
                         UpdateEarnedQtyFromPercComplete();
                 }
             }
@@ -439,9 +443,10 @@ namespace VANTAGE.Models
             {
                 // Calculate as percentage (0-100)
                 double newPercComplete = (EarnQtyEntry / Quantity) * 100;
-                if (Math.Abs(_percentEntry - newPercComplete) > 0.001)
+                double roundedPercComplete = NumericHelper.RoundToPlaces(newPercComplete);
+                if (Math.Abs(_percentEntry - roundedPercComplete) > 0.001)
                 {
-                    _percentEntry = Math.Round(newPercComplete, 4);
+                    _percentEntry = roundedPercComplete;
                     OnPropertyChanged(nameof(PercentEntry));
                     OnPropertyChanged(nameof(PercentEntry_Display));
                     OnPropertyChanged(nameof(Status));
@@ -460,9 +465,10 @@ namespace VANTAGE.Models
             {
                 // PercentEntry is 0-100, so divide by 100 for calculation
                 double newEarnedQty = (PercentEntry / 100) * Quantity;
-                if (Math.Abs(_earnQtyEntry - newEarnedQty) > 0.001)
+                double roundedEarnedQty = NumericHelper.RoundToPlaces(newEarnedQty);
+                if (Math.Abs(_earnQtyEntry - roundedEarnedQty) > 0.001)
                 {
-                    _earnQtyEntry = Math.Round(newEarnedQty, 4);
+                    _earnQtyEntry = roundedEarnedQty;
                     OnPropertyChanged(nameof(EarnQtyEntry));
                 }
             }

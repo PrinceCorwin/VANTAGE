@@ -2998,6 +2998,17 @@ namespace VANTAGE.Views
 
                 object? currentValue = property.GetValue(editedActivity);
 
+                // Round double values to 3 decimal places
+                if (currentValue is double doubleValue && property.PropertyType == typeof(double))
+                {
+                    double roundedValue = NumericHelper.RoundToPlaces(doubleValue);
+                    if (Math.Abs(doubleValue - roundedValue) > 0.00001)
+                    {
+                        property.SetValue(editedActivity, roundedValue);
+                        currentValue = roundedValue;
+                    }
+                }
+
                 // Compare with original value - only save if changed
                 bool valueChanged = false;
 
