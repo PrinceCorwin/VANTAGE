@@ -1263,11 +1263,24 @@ namespace VANTAGE.Views
                 return;
             }
 
+            // Use full overlay for large selections (>150), simple blocking for smaller
+            bool useLargeSelectionOverlay = selectedActivities.Count > 150;
+            var mainWindow = useLargeSelectionOverlay
+                ? Application.Current.MainWindow as MainWindow
+                : null;
+
             try
             {
                 // Block UI during bulk update to prevent concurrent edits
-                _viewModel.IsLoading = true;
-                sfActivities.IsEnabled = false;
+                if (useLargeSelectionOverlay)
+                {
+                    mainWindow?.ShowLoadingOverlay($"Updating {selectedActivities.Count} records...");
+                }
+                else
+                {
+                    _viewModel.IsLoading = true;
+                    sfActivities.IsEnabled = false;
+                }
 
                 // Filter to only records the current user can edit
                 var editableActivities = selectedActivities.Where(a =>
@@ -1313,8 +1326,15 @@ namespace VANTAGE.Views
             finally
             {
                 // Always restore UI state
-                sfActivities.IsEnabled = true;
-                _viewModel.IsLoading = false;
+                if (useLargeSelectionOverlay)
+                {
+                    mainWindow?.HideLoadingOverlay();
+                }
+                else
+                {
+                    sfActivities.IsEnabled = true;
+                    _viewModel.IsLoading = false;
+                }
             }
         }
         private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)

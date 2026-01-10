@@ -209,7 +209,7 @@ namespace VANTAGE
             this.Close();
         }
 
-        private void ShowLoadingOverlay(string message = "Processing...")
+        public void ShowLoadingOverlay(string message = "Processing...")
         {
             txtLoadingMessage.Text = message;
             txtLoadingProgress.Text = "";
@@ -217,7 +217,7 @@ namespace VANTAGE
             LoadingOverlay.Visibility = Visibility.Visible;
         }
 
-        private void HideLoadingOverlay()
+        public void HideLoadingOverlay()
         {
             LoadingOverlay.Visibility = Visibility.Collapsed;
         }
