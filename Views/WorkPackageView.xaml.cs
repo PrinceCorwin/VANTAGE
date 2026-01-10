@@ -144,14 +144,14 @@ namespace VANTAGE.Views
                 PopulateDropdowns();
 
                 // Load last used output folder from settings (no default - user must set)
-                var lastOutput = SettingsManager.GetUserSetting(App.CurrentUserID, "WorkPackage.LastOutputPath");
+                var lastOutput = SettingsManager.GetUserSetting( "WorkPackage.LastOutputPath");
                 if (!string.IsNullOrEmpty(lastOutput))
                 {
                     txtOutputFolder.Text = lastOutput;
                 }
 
                 // Load last used logo path from settings, or show "(default)" for built-in logo
-                var lastLogo = SettingsManager.GetUserSetting(App.CurrentUserID, "WorkPackage.LastLogoPath");
+                var lastLogo = SettingsManager.GetUserSetting( "WorkPackage.LastLogoPath");
                 if (!string.IsNullOrEmpty(lastLogo) && File.Exists(lastLogo))
                 {
                     txtLogoPath.Text = lastLogo;
@@ -162,7 +162,7 @@ namespace VANTAGE.Views
                 }
 
                 // Restore splitter position
-                var splitterRatio = SettingsManager.GetUserSetting(App.CurrentUserID, "WorkPackage.SplitterRatio");
+                var splitterRatio = SettingsManager.GetUserSetting( "WorkPackage.SplitterRatio");
                 if (!string.IsNullOrEmpty(splitterRatio) && double.TryParse(splitterRatio, out double ratio) && ratio > 0 && ratio < 1)
                 {
                     LeftPanelColumn.Width = new GridLength(ratio, GridUnitType.Star);
@@ -235,7 +235,7 @@ namespace VANTAGE.Views
             cboProject.ItemsSource = _projects;
 
             // Restore last selected project
-            var lastProjectId = SettingsManager.GetUserSetting(App.CurrentUserID, "WorkPackage.LastProjectID");
+            var lastProjectId = SettingsManager.GetUserSetting( "WorkPackage.LastProjectID");
             if (!string.IsNullOrEmpty(lastProjectId) && _projects.Any(p => p.ProjectID == lastProjectId))
             {
                 cboProject.SelectedValue = lastProjectId;
@@ -245,7 +245,7 @@ namespace VANTAGE.Views
             cboWPTemplate.ItemsSource = _wpTemplates;
 
             // Restore last selected WP template, or default to first
-            var lastWPTemplateId = SettingsManager.GetUserSetting(App.CurrentUserID, "WorkPackage.LastWPTemplateID");
+            var lastWPTemplateId = SettingsManager.GetUserSetting( "WorkPackage.LastWPTemplateID");
             if (!string.IsNullOrEmpty(lastWPTemplateId) && _wpTemplates.Any(t => t.WPTemplateID == lastWPTemplateId))
             {
                 cboWPTemplate.SelectedValue = lastWPTemplateId;
@@ -268,7 +268,7 @@ namespace VANTAGE.Views
             cboScheduler.DisplayMemberPath = "Display";
 
             // Restore last selected PKG Manager
-            var lastPKGManager = SettingsManager.GetUserSetting(App.CurrentUserID, "WorkPackage.LastPKGManager");
+            var lastPKGManager = SettingsManager.GetUserSetting( "WorkPackage.LastPKGManager");
             if (!string.IsNullOrEmpty(lastPKGManager))
             {
                 var pkgManagerItem = userItems.FirstOrDefault(u => u.Username == lastPKGManager);
@@ -277,7 +277,7 @@ namespace VANTAGE.Views
             }
 
             // Restore last selected Scheduler
-            var lastScheduler = SettingsManager.GetUserSetting(App.CurrentUserID, "WorkPackage.LastScheduler");
+            var lastScheduler = SettingsManager.GetUserSetting( "WorkPackage.LastScheduler");
             if (!string.IsNullOrEmpty(lastScheduler))
             {
                 var schedulerItem = userItems.FirstOrDefault(u => u.Username == lastScheduler);
@@ -342,7 +342,7 @@ namespace VANTAGE.Views
         {
             if (cboProject.SelectedValue is string projectId)
             {
-                SettingsManager.SetUserSetting(App.CurrentUserID, "WorkPackage.LastProjectID", projectId, "string");
+                SettingsManager.SetUserSetting( "WorkPackage.LastProjectID", projectId, "string");
                 await LoadWorkPackagesAsync(projectId);
             }
         }
@@ -352,7 +352,7 @@ namespace VANTAGE.Views
         {
             if (cboWPTemplate.SelectedValue is string wpTemplateId)
             {
-                SettingsManager.SetUserSetting(App.CurrentUserID, "WorkPackage.LastWPTemplateID", wpTemplateId, "string");
+                SettingsManager.SetUserSetting( "WorkPackage.LastWPTemplateID", wpTemplateId, "string");
             }
         }
 
@@ -361,7 +361,7 @@ namespace VANTAGE.Views
         {
             if (cboPKGManager.SelectedItem is Models.UserItem user)
             {
-                SettingsManager.SetUserSetting(App.CurrentUserID, "WorkPackage.LastPKGManager", user.Username, "string");
+                SettingsManager.SetUserSetting( "WorkPackage.LastPKGManager", user.Username, "string");
             }
         }
 
@@ -370,7 +370,7 @@ namespace VANTAGE.Views
         {
             if (cboScheduler.SelectedItem is Models.UserItem user)
             {
-                SettingsManager.SetUserSetting(App.CurrentUserID, "WorkPackage.LastScheduler", user.Username, "string");
+                SettingsManager.SetUserSetting( "WorkPackage.LastScheduler", user.Username, "string");
             }
         }
 
@@ -460,7 +460,7 @@ namespace VANTAGE.Views
             if (dialog.ShowDialog() == true)
             {
                 txtLogoPath.Text = dialog.FileName;
-                SettingsManager.SetUserSetting(App.CurrentUserID, "WorkPackage.LastLogoPath", dialog.FileName, "string");
+                SettingsManager.SetUserSetting( "WorkPackage.LastLogoPath", dialog.FileName, "string");
             }
         }
 
@@ -471,7 +471,7 @@ namespace VANTAGE.Views
             if (!string.IsNullOrEmpty(selectedPath))
             {
                 txtOutputFolder.Text = selectedPath;
-                SettingsManager.SetUserSetting(App.CurrentUserID, "WorkPackage.LastOutputPath", selectedPath, "string");
+                SettingsManager.SetUserSetting( "WorkPackage.LastOutputPath", selectedPath, "string");
             }
         }
 
@@ -757,7 +757,7 @@ namespace VANTAGE.Views
             if (totalWidth > 0)
             {
                 double leftRatio = LeftPanelColumn.ActualWidth / totalWidth;
-                SettingsManager.SetUserSetting(App.CurrentUserID, "WorkPackage.SplitterRatio", leftRatio.ToString("F4"), "string");
+                SettingsManager.SetUserSetting( "WorkPackage.SplitterRatio", leftRatio.ToString("F4"), "string");
             }
         }
 

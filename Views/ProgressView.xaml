@@ -517,53 +517,56 @@
                     </StackPanel>
 
                     <!-- RIGHT SIDE: Summary stats -->
-                    <StackPanel Grid.Column="2" 
-                                Orientation="Horizontal" 
-                                HorizontalAlignment="Right"
-                                VerticalAlignment="Center">
-
-                        <!-- Budgeted MHs -->
-                        <StackPanel Orientation="Horizontal" Margin="0,0,30,0">
-                            <TextBlock Text="Budgeted MHs:"
-                                       Foreground="{StaticResource TextColorSecondary}"
-                                       FontSize="14"
-                                       VerticalAlignment="Center"/>
-                                        <TextBlock Text="{Binding BudgetedMHs, StringFormat=N2}"
-                                       Foreground="{StaticResource AccentColor}"
-                                       FontSize="14"
-                                       FontWeight="Bold"
-                                       VerticalAlignment="Center"
-                                       Margin="5,0,0,0"/>
-                        </StackPanel>
-
-                        <!-- Earned MHs -->
-                        <StackPanel Orientation="Horizontal" Margin="0,0,30,0">
-                            <TextBlock Text="Earned MHs:"
-                                       Foreground="{StaticResource TextColorSecondary}"
-                                       FontSize="14"
-                                       VerticalAlignment="Center"/>
-                            <TextBlock Text="{Binding EarnedMHs, StringFormat=N2}"
-                                        Foreground="{StaticResource StatusGreen}"
-                                        FontSize="14"
-                                        FontWeight="Bold"
-                                        VerticalAlignment="Center"
-                                        Margin="5,0,0,0"/>
-                        </StackPanel>
-
-                        <!-- Percent Complete -->
+                    <Viewbox Grid.Column="2" 
+                             HorizontalAlignment="Right"
+                             VerticalAlignment="Center"
+                             StretchDirection="DownOnly"
+                             MaxHeight="30">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="Percent Complete:"
-                                       Foreground="{StaticResource TextColorSecondary}"
-                                       FontSize="14"
-                                       VerticalAlignment="Center"/>
-                            <TextBlock Text="{Binding PercentComplete, StringFormat='{}{0:N2}%'}"
-                                       Foreground="{StaticResource StatusInProgress}"
-                                       FontSize="14"
-                                       FontWeight="Bold"
-                                       VerticalAlignment="Center"
-                                       Margin="5,0,0,0"/>
+
+                            <!-- Budget MHs -->
+                            <StackPanel Orientation="Horizontal" Margin="0,0,20,0" ToolTip="Budgeted Man-Hours">
+                                <TextBlock Text="Budget:"
+                                            Foreground="{StaticResource TextColorSecondary}"
+                                            FontSize="14"
+                                            VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding BudgetedMHs, StringFormat=N2}"
+                                           Foreground="{StaticResource AccentColor}"
+                                           FontSize="14"
+                                           FontWeight="Bold"
+                                           VerticalAlignment="Center"
+                                           Margin="5,0,0,0"/>
+                            </StackPanel>
+
+                            <!-- Earned MHs -->
+                            <StackPanel Orientation="Horizontal" Margin="0,0,20,0" ToolTip="Earned Man-Hours">
+                                <TextBlock Text="Earned:"
+                                           Foreground="{StaticResource TextColorSecondary}"
+                                           FontSize="14"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding EarnedMHs, StringFormat=N2}"
+                                           Foreground="{StaticResource StatusGreen}"
+                                           FontSize="14"
+                                           FontWeight="Bold"
+                                           VerticalAlignment="Center"
+                                           Margin="5,0,0,0"/>
+                            </StackPanel>
+
+                            <!-- Percent Complete -->
+                            <StackPanel Orientation="Horizontal" ToolTip="Percent Complete">
+                                <TextBlock Text="% Complete:"
+                                           Foreground="{StaticResource TextColorSecondary}"
+                                           FontSize="14"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding PercentComplete, StringFormat='{}{0:N2}%'}"
+                                           Foreground="{StaticResource StatusInProgress}"
+                                           FontSize="14"
+                                           FontWeight="Bold"
+                                           VerticalAlignment="Center"
+                                           Margin="5,0,0,0"/>
+                            </StackPanel>
                         </StackPanel>
-                    </StackPanel>
+                    </Viewbox>
 
                 </Grid>
             </Border>

@@ -196,13 +196,13 @@ namespace VANTAGE.ViewModels
             {
                 if (App.CurrentUser == null) return;
 
-                string widthStr = SettingsManager.GetUserSetting(App.CurrentUserID, "SidePanel.Width", DefaultWidth.ToString());
+                string widthStr = SettingsManager.GetUserSetting( "SidePanel.Width", DefaultWidth.ToString());
                 if (double.TryParse(widthStr, out double width))
                 {
                     _panelWidth = Math.Max(MinWidth, width);
                 }
 
-                string tabStr = SettingsManager.GetUserSetting(App.CurrentUserID, "SidePanel.ActiveTab", "Help");
+                string tabStr = SettingsManager.GetUserSetting( "SidePanel.ActiveTab", "Help");
                 _activeTab = tabStr == "AI" ? "AI" : "Help";
 
                 // Don't restore IsOpen - always start closed
@@ -219,8 +219,8 @@ namespace VANTAGE.ViewModels
             {
                 if (App.CurrentUser == null) return;
 
-                SettingsManager.SetUserSetting(App.CurrentUserID, "SidePanel.Width", _panelWidth.ToString(), "string");
-                SettingsManager.SetUserSetting(App.CurrentUserID, "SidePanel.ActiveTab", _activeTab, "string");
+                SettingsManager.SetUserSetting( "SidePanel.Width", _panelWidth.ToString(), "string");
+                SettingsManager.SetUserSetting( "SidePanel.ActiveTab", _activeTab, "string");
             }
             catch (Exception ex)
             {

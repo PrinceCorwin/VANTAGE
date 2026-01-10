@@ -113,11 +113,8 @@ namespace VANTAGE.Views
         {
             try
             {
-                if (App.CurrentUserID <= 0)
-                    return;
-
-                var masterHeightStr = SettingsManager.GetUserSetting(App.CurrentUserID, MasterHeightKey);
-                var detailHeightStr = SettingsManager.GetUserSetting(App.CurrentUserID, DetailHeightKey);
+                var masterHeightStr = SettingsManager.GetUserSetting(MasterHeightKey);
+                var detailHeightStr = SettingsManager.GetUserSetting(DetailHeightKey);
 
                 if (string.IsNullOrWhiteSpace(masterHeightStr) || string.IsNullOrWhiteSpace(detailHeightStr))
                     return;
@@ -146,9 +143,6 @@ namespace VANTAGE.Views
                 if (_skipSaveColumnState)
                     return;
 
-                if (App.CurrentUserID <= 0)
-                    return;
-
                 // Get actual rendered heights
                 double masterHeight = MasterGridRow.ActualHeight;
                 double detailHeight = DetailGridRow.ActualHeight;
@@ -156,8 +150,8 @@ namespace VANTAGE.Views
                 // Only save if we have valid heights
                 if (masterHeight > 0 && detailHeight > 0)
                 {
-                    SettingsManager.SetUserSetting(App.CurrentUserID, MasterHeightKey, masterHeight.ToString(), "double");
-                    SettingsManager.SetUserSetting(App.CurrentUserID, DetailHeightKey, detailHeight.ToString(), "double");
+                    SettingsManager.SetUserSetting(MasterHeightKey, masterHeight.ToString(), "double");
+                    SettingsManager.SetUserSetting(DetailHeightKey, detailHeight.ToString(), "double");
                 }
             }
             catch (Exception ex)
@@ -698,7 +692,7 @@ namespace VANTAGE.Views
                 };
 
                 var json = JsonSerializer.Serialize(prefs);
-                SettingsManager.SetUserSetting(App.CurrentUserID, GridPrefsKey, json, "json");
+                SettingsManager.SetUserSetting(GridPrefsKey, json, "json");
             }
             catch (Exception ex)
             {
@@ -878,10 +872,10 @@ namespace VANTAGE.Views
         {
             try
             {
-                if (sfScheduleMaster?.Columns == null || App.CurrentUserID <= 0)
+                if (sfScheduleMaster?.Columns == null)
                     return;
 
-                var raw = SettingsManager.GetUserSetting(App.CurrentUserID, GridPrefsKey);
+                var raw = SettingsManager.GetUserSetting(GridPrefsKey);
 
                 if (string.IsNullOrWhiteSpace(raw))
                     return;
@@ -957,7 +951,7 @@ namespace VANTAGE.Views
                 };
 
                 var json = JsonSerializer.Serialize(prefs);
-                SettingsManager.SetUserSetting(App.CurrentUserID, DetailGridPrefsKey, json, "json");
+                SettingsManager.SetUserSetting(DetailGridPrefsKey, json, "json");
             }
             catch (Exception ex)
             {
@@ -969,10 +963,10 @@ namespace VANTAGE.Views
         {
             try
             {
-                if (sfScheduleDetail?.Columns == null || App.CurrentUserID <= 0)
+                if (sfScheduleDetail?.Columns == null)
                     return;
 
-                var raw = SettingsManager.GetUserSetting(App.CurrentUserID, DetailGridPrefsKey);
+                var raw = SettingsManager.GetUserSetting(DetailGridPrefsKey);
 
                 if (string.IsNullOrWhiteSpace(raw))
                     return;

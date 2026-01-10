@@ -118,15 +118,13 @@ namespace VANTAGE
                 DataType TEXT
             );
 
-            -- UserSettings table (local only)
+            -- UserSettings table (local only - single user per machine)
             CREATE TABLE IF NOT EXISTS UserSettings (
                 UserSettingID INTEGER PRIMARY KEY AUTOINCREMENT,
-                UserID INTEGER NOT NULL,
-                SettingName TEXT NOT NULL,
+                SettingName TEXT NOT NULL UNIQUE,
                 SettingValue TEXT,
                 DataType TEXT,
-                LastModified DATETIME DEFAULT CURRENT_TIMESTAMP,
-                UNIQUE(UserID, SettingName)
+                LastModified DATETIME DEFAULT CURRENT_TIMESTAMP
             );
 
             -- Schedule table (local only - P6 import data)

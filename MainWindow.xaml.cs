@@ -264,7 +264,7 @@ namespace VANTAGE
 
         public void UpdateLastSyncDisplay()
         {
-            var lastSyncString = SettingsManager.GetUserSetting(App.CurrentUserID, "LastSyncUtcDate");
+            var lastSyncString = SettingsManager.GetUserSetting( "LastSyncUtcDate");
 
             if (string.IsNullOrEmpty(lastSyncString))
             {
@@ -1663,7 +1663,7 @@ namespace VANTAGE
         {
             try
             {
-                var settings = SettingsManager.GetAllUserSettings(App.CurrentUserID);
+                var settings = SettingsManager.GetAllUserSettings();
 
                 if (settings.Count == 0)
                 {
@@ -1747,7 +1747,7 @@ namespace VANTAGE
                     return;
 
                 bool replaceAll = (result == MessageBoxResult.Yes);
-                int imported = SettingsManager.ImportUserSettings(App.CurrentUserID, importFile.Settings, replaceAll);
+                int imported = SettingsManager.ImportUserSettings(importFile.Settings, replaceAll);
 
                 // Reload settings in current views
                 if (ContentArea.Content is ProgressView progressView)
@@ -1815,7 +1815,7 @@ namespace VANTAGE
             else
             {
                 // Not currently viewing Progress - try to load from saved settings
-                var json = SettingsManager.GetUserSetting(App.CurrentUserID, "ProgressGrid.PreferencesJson");
+                var json = SettingsManager.GetUserSetting( "ProgressGrid.PreferencesJson");
                 if (!string.IsNullOrWhiteSpace(json))
                 {
                     try
@@ -1839,10 +1839,10 @@ namespace VANTAGE
             else
             {
                 // Not currently viewing Schedule - try to load from saved settings
-                var masterJson = SettingsManager.GetUserSetting(App.CurrentUserID, "ScheduleGrid.PreferencesJson");
-                var detailJson = SettingsManager.GetUserSetting(App.CurrentUserID, "ScheduleDetailGrid.PreferencesJson");
-                var masterHeight = SettingsManager.GetUserSetting(App.CurrentUserID, "ScheduleView_MasterGridHeight");
-                var detailHeight = SettingsManager.GetUserSetting(App.CurrentUserID, "ScheduleView_DetailGridHeight");
+                var masterJson = SettingsManager.GetUserSetting( "ScheduleGrid.PreferencesJson");
+                var detailJson = SettingsManager.GetUserSetting( "ScheduleDetailGrid.PreferencesJson");
+                var masterHeight = SettingsManager.GetUserSetting( "ScheduleView_MasterGridHeight");
+                var detailHeight = SettingsManager.GetUserSetting( "ScheduleView_DetailGridHeight");
 
                 try
                 {
@@ -1899,30 +1899,30 @@ namespace VANTAGE
                 if (layout.ProgressGrid?.Columns?.Count > 0)
                 {
                     var json = System.Text.Json.JsonSerializer.Serialize(layout.ProgressGrid);
-                    SettingsManager.SetUserSetting(App.CurrentUserID, "ProgressGrid.PreferencesJson", json, "json");
+                    SettingsManager.SetUserSetting( "ProgressGrid.PreferencesJson", json, "json");
                 }
 
                 if (layout.ScheduleMasterGrid?.Columns?.Count > 0)
                 {
                     var json = System.Text.Json.JsonSerializer.Serialize(layout.ScheduleMasterGrid);
-                    SettingsManager.SetUserSetting(App.CurrentUserID, "ScheduleGrid.PreferencesJson", json, "json");
+                    SettingsManager.SetUserSetting( "ScheduleGrid.PreferencesJson", json, "json");
                 }
 
                 if (layout.ScheduleDetailGrid?.Columns?.Count > 0)
                 {
                     var json = System.Text.Json.JsonSerializer.Serialize(layout.ScheduleDetailGrid);
-                    SettingsManager.SetUserSetting(App.CurrentUserID, "ScheduleDetailGrid.PreferencesJson", json, "json");
+                    SettingsManager.SetUserSetting( "ScheduleDetailGrid.PreferencesJson", json, "json");
                 }
 
                 if (layout.ScheduleMasterHeight > 0)
                 {
-                    SettingsManager.SetUserSetting(App.CurrentUserID, "ScheduleView_MasterGridHeight",
+                    SettingsManager.SetUserSetting( "ScheduleView_MasterGridHeight",
                         layout.ScheduleMasterHeight.ToString(), "double");
                 }
 
                 if (layout.ScheduleDetailHeight > 0)
                 {
-                    SettingsManager.SetUserSetting(App.CurrentUserID, "ScheduleView_DetailGridHeight",
+                    SettingsManager.SetUserSetting( "ScheduleView_DetailGridHeight",
                         layout.ScheduleDetailHeight.ToString(), "double");
                 }
             }
@@ -1957,7 +1957,7 @@ namespace VANTAGE
 
             foreach (var key in gridSettingKeys)
             {
-                SettingsManager.RemoveUserSetting(App.CurrentUserID, key);
+                SettingsManager.RemoveUserSetting(key);
             }
 
             // Reload module to recreate view with XAML defaults

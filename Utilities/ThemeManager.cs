@@ -11,14 +11,12 @@ namespace VANTAGE.Utilities
         // Current theme name
         public static string CurrentTheme { get; private set; } = "Dark";
 
-        
-        /// Load theme from UserSettings on app startup
-        
-        public static void LoadThemeFromSettings(int userId)
+        // Load theme from UserSettings on app startup
+        public static void LoadThemeFromSettings()
         {
             try
             {
-                string savedTheme = SettingsManager.GetUserSetting(userId, "Theme", "Dark");
+                string savedTheme = SettingsManager.GetUserSetting("Theme", "Dark");
 
                 // Validate theme exists
                 if (Array.Exists(AvailableThemes, t => t.Equals(savedTheme, StringComparison.OrdinalIgnoreCase)))
@@ -28,20 +26,18 @@ namespace VANTAGE.Utilities
                 else
                 {
                     // Invalid theme, default to Dark
-                    SwitchTheme("Dark", saveToSettings: true, userId);
+                    SwitchTheme("Dark", saveToSettings: true);
                 }
             }
             catch (Exception ex)
             {
-                AppLogger.Error(ex, "MainWindow.ApplySavedTheme");
+                AppLogger.Error(ex, "ThemeManager.LoadThemeFromSettings");
                 SwitchTheme("Dark", saveToSettings: false);
             }
         }
 
-        
-        /// Switch to a different theme
-        
-        public static void SwitchTheme(string themeName, bool saveToSettings = true, int? userId = null)
+        // Switch to a different theme
+        public static void SwitchTheme(string themeName, bool saveToSettings = true)
         {
             try
             {
@@ -67,15 +63,14 @@ namespace VANTAGE.Utilities
                 CurrentTheme = themeName;
 
                 // Save to user settings if requested
-                if (saveToSettings && userId.HasValue)
+                if (saveToSettings)
                 {
-                    SettingsManager.SetUserSetting(userId.Value, "Theme", themeName, "string");
+                    SettingsManager.SetUserSetting("Theme", themeName, "string");
                 }
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error switching theme: {ex.Message}");
-                // TODO: Add proper logging (e.g., to file or central log)
             }
         }
 

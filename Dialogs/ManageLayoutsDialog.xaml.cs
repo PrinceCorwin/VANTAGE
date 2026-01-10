@@ -29,7 +29,7 @@ namespace VANTAGE.Dialogs
 
         private void LoadLayoutsList()
         {
-            _layoutNames = SettingsManager.GetGridLayoutNames(App.CurrentUserID);
+            _layoutNames = SettingsManager.GetGridLayoutNames();
             lstLayouts.Items.Clear();
             foreach (var name in _layoutNames)
             {
@@ -68,11 +68,11 @@ namespace VANTAGE.Dialogs
                 return;
 
             // Load and apply the selected layout
-            var layout = SettingsManager.GetGridLayout(App.CurrentUserID, layoutName);
+            var layout = SettingsManager.GetGridLayout(layoutName);
             if (layout != null)
             {
                 _applyLayout(layout);
-                SettingsManager.SetActiveLayoutName(App.CurrentUserID, layoutName);
+                SettingsManager.SetActiveLayoutName(layoutName);
                 LayoutApplied = true;
                 AppliedLayoutName = layoutName;
                 DialogResult = true;
@@ -105,22 +105,22 @@ namespace VANTAGE.Dialogs
             }
 
             // Load old layout, update name, save as new, delete old
-            var layout = SettingsManager.GetGridLayout(App.CurrentUserID, oldName);
+            var layout = SettingsManager.GetGridLayout(oldName);
             if (layout != null)
             {
                 layout.Name = newName;
-                SettingsManager.SaveGridLayout(App.CurrentUserID, layout);
-                SettingsManager.DeleteGridLayout(App.CurrentUserID, oldName);
+                SettingsManager.SaveGridLayout(layout);
+                SettingsManager.DeleteGridLayout(oldName);
 
                 // Update index
                 var index = _layoutNames.IndexOf(oldName);
                 _layoutNames[index] = newName;
-                SettingsManager.SaveGridLayoutNames(App.CurrentUserID, _layoutNames);
+                SettingsManager.SaveGridLayoutNames(_layoutNames);
 
                 // Update active layout if it was renamed
-                if (SettingsManager.GetActiveLayoutName(App.CurrentUserID) == oldName)
+                if (SettingsManager.GetActiveLayoutName() == oldName)
                 {
-                    SettingsManager.SetActiveLayoutName(App.CurrentUserID, newName);
+                    SettingsManager.SetActiveLayoutName(newName);
                 }
 
                 LoadLayoutsList();
@@ -138,12 +138,12 @@ namespace VANTAGE.Dialogs
 
             if (result == MessageBoxResult.Yes)
             {
-                SettingsManager.DeleteGridLayout(App.CurrentUserID, layoutName);
+                SettingsManager.DeleteGridLayout(layoutName);
 
                 // Clear active layout if it was deleted
-                if (SettingsManager.GetActiveLayoutName(App.CurrentUserID) == layoutName)
+                if (SettingsManager.GetActiveLayoutName() == layoutName)
                 {
-                    SettingsManager.SetActiveLayoutName(App.CurrentUserID, string.Empty);
+                    SettingsManager.SetActiveLayoutName(string.Empty);
                 }
 
                 LoadLayoutsList();
@@ -193,10 +193,10 @@ namespace VANTAGE.Dialogs
             layout.Name = layoutName;
 
             // Save
-            SettingsManager.SaveGridLayout(App.CurrentUserID, layout);
+            SettingsManager.SaveGridLayout(layout);
             _layoutNames.Add(layoutName);
-            SettingsManager.SaveGridLayoutNames(App.CurrentUserID, _layoutNames);
-            SettingsManager.SetActiveLayoutName(App.CurrentUserID, layoutName);
+            SettingsManager.SaveGridLayoutNames(_layoutNames);
+            SettingsManager.SetActiveLayoutName(layoutName);
 
             return true;
         }
@@ -219,7 +219,7 @@ namespace VANTAGE.Dialogs
                 return;
 
             // Clear active layout since we're going back to defaults
-            SettingsManager.SetActiveLayoutName(App.CurrentUserID, string.Empty);
+            SettingsManager.SetActiveLayoutName(string.Empty);
 
             _resetToDefault();
             DialogResult = true;

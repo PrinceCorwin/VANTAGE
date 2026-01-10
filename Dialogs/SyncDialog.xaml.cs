@@ -26,7 +26,7 @@ namespace VANTAGE.Dialogs
         private void LoadMyRecordsOnlySetting()
         {
             // Load the previous setting state (default "false" if never set)
-            var settingValue = SettingsManager.GetUserSetting(App.CurrentUser!.UserID, "MyRecordsOnlySync", "false");
+            var settingValue = SettingsManager.GetUserSetting("MyRecordsOnlySync", "false");
             _previousMyRecordsOnlySetting = settingValue.Equals("true", StringComparison.OrdinalIgnoreCase);
             chkMyRecordsOnly.IsChecked = _previousMyRecordsOnlySetting;
         }
@@ -241,7 +241,7 @@ namespace VANTAGE.Dialogs
                 }
 
                 // Save the MyRecordsOnly setting after successful sync
-                SettingsManager.SetUserSetting(App.CurrentUser!.UserID, "MyRecordsOnlySync", myRecordsOnly.ToString().ToLower(), "bool");
+                SettingsManager.SetUserSetting("MyRecordsOnlySync", myRecordsOnly.ToString().ToLower(), "bool");
 
                 stopwatch.Stop();
 

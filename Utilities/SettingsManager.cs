@@ -118,20 +118,16 @@ namespace VANTAGE.Utilities
             }
         }
 
-        
-        /// Get a user-specific setting by name
-        
-        public static string GetUserSetting(int userId, string settingName, string defaultValue = "")
+        // Get a user-specific setting by name
+        public static string GetUserSetting(string settingName, string defaultValue = "")
         {
-
             try
             {
                 using var connection = DatabaseSetup.GetConnection();
                 connection.Open();
 
                 var command = connection.CreateCommand();
-                command.CommandText = "SELECT SettingValue FROM UserSettings WHERE UserID = @userId AND SettingName = @name";
-                command.Parameters.AddWithValue("@userId", userId);
+                command.CommandText = "SELECT SettingValue FROM UserSettings WHERE SettingName = @name";
                 command.Parameters.AddWithValue("@name", settingName);
 
                 var result = command.ExecuteScalar();
@@ -140,17 +136,13 @@ namespace VANTAGE.Utilities
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error getting user setting: {ex.Message}");
-                // TODO: Add proper logging (e.g., to file or central log)
                 return defaultValue;
             }
         }
 
-        
-        /// Set a user-specific setting
-        
-        public static void SetUserSetting(int userId, string settingName, string settingValue, string dataType = "string")
+        // Set a user-specific setting
+        public static void SetUserSetting(string settingName, string settingValue, string dataType = "string")
         {
-
             try
             {
                 using var connection = DatabaseSetup.GetConnection();
@@ -158,11 +150,10 @@ namespace VANTAGE.Utilities
 
                 var command = connection.CreateCommand();
                 command.CommandText = @"
-                    INSERT INTO UserSettings (UserID, SettingName, SettingValue, DataType) 
-                    VALUES (@userId, @name, @value, @type)
-                    ON CONFLICT(UserID, SettingName) 
+                    INSERT INTO UserSettings (SettingName, SettingValue, DataType)
+                    VALUES (@name, @value, @type)
+                    ON CONFLICT(SettingName)
                     DO UPDATE SET SettingValue = @value, DataType = @type";
-                command.Parameters.AddWithValue("@userId", userId);
                 command.Parameters.AddWithValue("@name", settingName);
                 command.Parameters.AddWithValue("@value", settingValue);
                 command.Parameters.AddWithValue("@type", dataType);
@@ -176,7 +167,7 @@ namespace VANTAGE.Utilities
         }
 
         // Remove a user-specific setting by name
-        public static bool RemoveUserSetting(int userId, string settingName)
+        public static bool RemoveUserSetting(string settingName)
         {
             try
             {
@@ -184,8 +175,7 @@ namespace VANTAGE.Utilities
                 connection.Open();
 
                 var command = connection.CreateCommand();
-                command.CommandText = "DELETE FROM UserSettings WHERE UserID = @userId AND SettingName = @name";
-                command.Parameters.AddWithValue("@userId", userId);
+                command.CommandText = "DELETE FROM UserSettings WHERE SettingName = @name";
                 command.Parameters.AddWithValue("@name", settingName);
 
                 int rowsAffected = command.ExecuteNonQuery();
@@ -224,30 +214,33 @@ namespace VANTAGE.Utilities
             }
         }
 
-        
-        /// Initialize default user settings on first login
-        
-        public static void InitializeDefaultUserSettings(int userId)
+        // Initialize default user settings on first login
+        public static void InitializeDefaultUserSettings()
         {
             try
             {
                 // Set default user settings if not already set
-                if (string.IsNullOrEmpty(GetUserSetting(userId, "LastModuleUsed")))
+                if (string.IsNullOrEmpty(GetUserSetting("LastModuleUsed")))
                 {
-                    SetUserSetting(userId, "Theme", "DarkTheme.xaml", "string");
+                    SetUserSetting("Theme", "DarkTheme.xaml", "string");
                 }
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error initializing user settings: {ex.Message}");
-                // TODO: Add proper logging (e.g., to file or central log)
             }
         }
 
-        // Get all settings for a user (for export)
-        public static List<UserSettingExport> GetAllUserSettings(int userId)
+        // Get all settings for export (excludes LastSyncUtcDate to ensure full sync on new machines)
+        public static List<UserSettingExport> GetAllUserSettings()
         {
             var settings = new List<UserSettingExport>();
+
+            // Settings to exclude from export (would cause sync issues on new machines)
+            var excludedSettings = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "LastSyncUtcDate"
+            };
 
             try
             {
@@ -255,15 +248,18 @@ namespace VANTAGE.Utilities
                 connection.Open();
 
                 var command = connection.CreateCommand();
-                command.CommandText = "SELECT SettingName, SettingValue, DataType FROM UserSettings WHERE UserID = @userId";
-                command.Parameters.AddWithValue("@userId", userId);
+                command.CommandText = "SELECT SettingName, SettingValue, DataType FROM UserSettings";
 
                 using var reader = command.ExecuteReader();
                 while (reader.Read())
                 {
+                    var settingName = reader.GetString(0);
+                    if (excludedSettings.Contains(settingName))
+                        continue;
+
                     settings.Add(new UserSettingExport
                     {
-                        Name = reader.GetString(0),
+                        Name = settingName,
                         Value = reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
                         DataType = reader.IsDBNull(2) ? "string" : reader.GetString(2)
                     });
@@ -277,9 +273,8 @@ namespace VANTAGE.Utilities
             return settings;
         }
 
-        // Import settings for a user
-        // replaceAll: true = delete existing settings first; false = merge (update existing, add new)
-        public static int ImportUserSettings(int userId, List<UserSettingExport> settings, bool replaceAll)
+        // Import settings - replaceAll: true = delete existing first; false = merge (update existing, add new)
+        public static int ImportUserSettings(List<UserSettingExport> settings, bool replaceAll)
         {
             int imported = 0;
 
@@ -293,25 +288,22 @@ namespace VANTAGE.Utilities
                 if (replaceAll)
                 {
                     var deleteCmd = connection.CreateCommand();
-                    deleteCmd.CommandText = "DELETE FROM UserSettings WHERE UserID = @userId";
-                    deleteCmd.Parameters.AddWithValue("@userId", userId);
+                    deleteCmd.CommandText = "DELETE FROM UserSettings";
                     deleteCmd.ExecuteNonQuery();
                 }
 
                 var insertCmd = connection.CreateCommand();
                 insertCmd.CommandText = @"
-                    INSERT INTO UserSettings (UserID, SettingName, SettingValue, DataType)
-                    VALUES (@userId, @name, @value, @type)
-                    ON CONFLICT(UserID, SettingName)
+                    INSERT INTO UserSettings (SettingName, SettingValue, DataType)
+                    VALUES (@name, @value, @type)
+                    ON CONFLICT(SettingName)
                     DO UPDATE SET SettingValue = @value, DataType = @type";
-                insertCmd.Parameters.Add("@userId", SqliteType.Integer);
                 insertCmd.Parameters.Add("@name", SqliteType.Text);
                 insertCmd.Parameters.Add("@value", SqliteType.Text);
                 insertCmd.Parameters.Add("@type", SqliteType.Text);
 
                 foreach (var setting in settings)
                 {
-                    insertCmd.Parameters["@userId"].Value = userId;
                     insertCmd.Parameters["@name"].Value = setting.Name;
                     insertCmd.Parameters["@value"].Value = setting.Value;
                     insertCmd.Parameters["@type"].Value = setting.DataType;
@@ -341,11 +333,11 @@ namespace VANTAGE.Utilities
         public const int MaxLayouts = 5;
 
         // Get list of saved layout names
-        public static List<string> GetGridLayoutNames(int userId)
+        public static List<string> GetGridLayoutNames()
         {
             try
             {
-                var json = GetUserSetting(userId, LayoutIndexKey);
+                var json = GetUserSetting(LayoutIndexKey);
                 if (!string.IsNullOrWhiteSpace(json))
                 {
                     return System.Text.Json.JsonSerializer.Deserialize<List<string>>(json) ?? new List<string>();
@@ -359,12 +351,12 @@ namespace VANTAGE.Utilities
         }
 
         // Save layout names index
-        public static void SaveGridLayoutNames(int userId, List<string> names)
+        public static void SaveGridLayoutNames(List<string> names)
         {
             try
             {
                 var json = System.Text.Json.JsonSerializer.Serialize(names);
-                SetUserSetting(userId, LayoutIndexKey, json, "json");
+                SetUserSetting(LayoutIndexKey, json, "json");
             }
             catch (Exception ex)
             {
@@ -373,12 +365,12 @@ namespace VANTAGE.Utilities
         }
 
         // Get a specific layout by name
-        public static GridLayout? GetGridLayout(int userId, string layoutName)
+        public static GridLayout? GetGridLayout(string layoutName)
         {
             try
             {
                 var key = $"{LayoutDataPrefix}{layoutName}{LayoutDataSuffix}";
-                var json = GetUserSetting(userId, key);
+                var json = GetUserSetting(key);
                 if (!string.IsNullOrWhiteSpace(json))
                 {
                     return System.Text.Json.JsonSerializer.Deserialize<GridLayout>(json);
@@ -392,13 +384,13 @@ namespace VANTAGE.Utilities
         }
 
         // Save a layout
-        public static void SaveGridLayout(int userId, GridLayout layout)
+        public static void SaveGridLayout(GridLayout layout)
         {
             try
             {
                 var key = $"{LayoutDataPrefix}{layout.Name}{LayoutDataSuffix}";
                 var json = System.Text.Json.JsonSerializer.Serialize(layout);
-                SetUserSetting(userId, key, json, "json");
+                SetUserSetting(key, json, "json");
             }
             catch (Exception ex)
             {
@@ -407,20 +399,20 @@ namespace VANTAGE.Utilities
         }
 
         // Delete a layout and remove from index
-        public static void DeleteGridLayout(int userId, string layoutName)
+        public static void DeleteGridLayout(string layoutName)
         {
             try
             {
                 // Remove from index
-                var names = GetGridLayoutNames(userId);
+                var names = GetGridLayoutNames();
                 if (names.Remove(layoutName))
                 {
-                    SaveGridLayoutNames(userId, names);
+                    SaveGridLayoutNames(names);
                 }
 
                 // Delete the layout data
                 var key = $"{LayoutDataPrefix}{layoutName}{LayoutDataSuffix}";
-                RemoveUserSetting(userId, key);
+                RemoveUserSetting(key);
             }
             catch (Exception ex)
             {
@@ -429,30 +421,30 @@ namespace VANTAGE.Utilities
         }
 
         // Get the currently active layout name
-        public static string GetActiveLayoutName(int userId)
+        public static string GetActiveLayoutName()
         {
-            return GetUserSetting(userId, ActiveLayoutKey);
+            return GetUserSetting(ActiveLayoutKey);
         }
 
         // Set the currently active layout name
-        public static void SetActiveLayoutName(int userId, string layoutName)
+        public static void SetActiveLayoutName(string layoutName)
         {
-            SetUserSetting(userId, ActiveLayoutKey, layoutName);
+            SetUserSetting(ActiveLayoutKey, layoutName);
         }
 
         // Delete all layout data (for reset)
-        public static void ClearAllGridLayouts(int userId)
+        public static void ClearAllGridLayouts()
         {
             try
             {
-                var names = GetGridLayoutNames(userId);
+                var names = GetGridLayoutNames();
                 foreach (var name in names)
                 {
                     var key = $"{LayoutDataPrefix}{name}{LayoutDataSuffix}";
-                    RemoveUserSetting(userId, key);
+                    RemoveUserSetting(key);
                 }
-                RemoveUserSetting(userId, LayoutIndexKey);
-                RemoveUserSetting(userId, ActiveLayoutKey);
+                RemoveUserSetting(LayoutIndexKey);
+                RemoveUserSetting(ActiveLayoutKey);
             }
             catch (Exception ex)
             {

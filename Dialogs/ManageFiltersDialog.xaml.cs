@@ -31,7 +31,7 @@ namespace VANTAGE.Dialogs
         {
             try
             {
-                var json = SettingsManager.GetUserSetting(App.CurrentUserID, FiltersSettingKey);
+                var json = SettingsManager.GetUserSetting(FiltersSettingKey);
                 if (!string.IsNullOrWhiteSpace(json))
                 {
                     _filters = JsonSerializer.Deserialize<List<UserFilter>>(json) ?? new();
@@ -49,7 +49,7 @@ namespace VANTAGE.Dialogs
             try
             {
                 var json = JsonSerializer.Serialize(_filters);
-                SettingsManager.SetUserSetting(App.CurrentUserID, FiltersSettingKey, json, "json");
+                SettingsManager.SetUserSetting(FiltersSettingKey, json, "json");
             }
             catch (Exception ex)
             {
@@ -361,7 +361,7 @@ namespace VANTAGE.Dialogs
         {
             try
             {
-                var json = SettingsManager.GetUserSetting(App.CurrentUserID, FiltersSettingKey);
+                var json = SettingsManager.GetUserSetting(FiltersSettingKey);
                 if (!string.IsNullOrWhiteSpace(json))
                 {
                     return JsonSerializer.Deserialize<List<UserFilter>>(json) ?? new();

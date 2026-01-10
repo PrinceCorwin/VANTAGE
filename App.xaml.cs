@@ -215,7 +215,7 @@ namespace VANTAGE
                 _splashWindow.UpdateStatus("Loading User Settings...");
                 await Task.Run(() =>
                 {
-                    SettingsManager.InitializeDefaultUserSettings(CurrentUserID);
+                    SettingsManager.InitializeDefaultUserSettings();
                 });
 
                 // Step 6a: Initialize column mappings

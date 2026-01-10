@@ -76,10 +76,6 @@
                             <syncfusion:DropDownMenuItem Header="Export To P6 File" Click="ExportP6File_Click"/>
                             <syncfusion:DropDownMenuItem Header="Clear Local Schedule" Click="MenuClearLocalSchedule_Click"/>
                             <Separator Background="{StaticResource BorderColor}" Margin="5,2"/>
-                            <!-- Settings -->
-                            <syncfusion:DropDownMenuItem Header="Import Settings" Click="MenuImportSettings_Click"/>
-                            <syncfusion:DropDownMenuItem Header="Export Settings" Click="MenuExportSettings_Click"/>
-                            <Separator Background="{StaticResource BorderColor}" Margin="5,2"/>
                             <!-- Other -->
                             <syncfusion:DropDownMenuItem Header="Export Logs" Click="MenuExportLogs_Click"/>
                             <syncfusion:DropDownMenuItem Header="Manage My Snapshots" Click="MenuManageSnapshots_Click"/>
@@ -306,6 +302,25 @@
                                         Click="MenuFeedbackBoard_Click"
                                         Cursor="Hand"
                                         ToolTip="Submit ideas or report bugs"/>
+                                <Separator Background="{StaticResource BorderColor}" Margin="5,2"/>
+                                <Button Content="Import Settings"
+                                        Background="Transparent"
+                                        Foreground="{StaticResource ForegroundColor}"
+                                        BorderThickness="0"
+                                        Padding="12,8"
+                                        HorizontalContentAlignment="Left"
+                                        Click="MenuImportSettings_Click"
+                                        Cursor="Hand"
+                                        ToolTip="Import application settings from file"/>
+                                <Button Content="Export Settings"
+                                        Background="Transparent"
+                                        Foreground="{StaticResource ForegroundColor}"
+                                        BorderThickness="0"
+                                        Padding="12,8"
+                                        HorizontalContentAlignment="Left"
+                                        Click="MenuExportSettings_Click"
+                                        Cursor="Hand"
+                                        ToolTip="Export application settings to file"/>
                                 <Separator Background="{StaticResource BorderColor}" Margin="5,2"/>
                                 <Button Content="About MILESTONE"
                                         Background="Transparent"

@@ -888,14 +888,14 @@ namespace VANTAGE.Views
         private void LoadCustomPercentButtons()
         {
             // Load button 1
-            string value1 = SettingsManager.GetUserSetting(App.CurrentUserID, "CustomPercentButton1");
+            string value1 = SettingsManager.GetUserSetting( "CustomPercentButton1");
             if (!string.IsNullOrEmpty(value1) && int.TryParse(value1, out int percent1))
             {
                 btnSetPercent100.Content = $"{percent1}%";
             }
 
             // Load button 2
-            string value2 = SettingsManager.GetUserSetting(App.CurrentUserID, "CustomPercentButton2");
+            string value2 = SettingsManager.GetUserSetting( "CustomPercentButton2");
             if (!string.IsNullOrEmpty(value2) && int.TryParse(value2, out int percent2))
             {
                 btnSetPercent0.Content = $"{percent2}%";
@@ -940,7 +940,7 @@ namespace VANTAGE.Views
                 };
 
                 var json = JsonSerializer.Serialize(prefs);
-                SettingsManager.SetUserSetting(App.CurrentUserID, GridPrefsKey, json, "json");
+                SettingsManager.SetUserSetting(GridPrefsKey, json, "json");
                 System.Diagnostics.Debug.WriteLine($"SaveColumnState: saved {prefs.Columns.Count} cols, hash={prefs.SchemaHash}, key={GridPrefsKey}\n{json}");
             }
             catch (Exception ex)
@@ -1035,13 +1035,13 @@ namespace VANTAGE.Views
             {
                 System.Diagnostics.Debug.WriteLine("=== LoadColumnState START ===");
 
-                if (sfActivities?.Columns == null || App.CurrentUserID <= 0)
+                if (sfActivities?.Columns == null)
                 {
-                    System.Diagnostics.Debug.WriteLine("LoadColumnState SKIPPED: Grid or UserID invalid");
+                    System.Diagnostics.Debug.WriteLine("LoadColumnState SKIPPED: Grid invalid");
                     return;
                 }
 
-                var raw = SettingsManager.GetUserSetting(App.CurrentUserID, GridPrefsKey);
+                var raw = SettingsManager.GetUserSetting(GridPrefsKey);
                 System.Diagnostics.Debug.WriteLine($"Raw JSON from DB: {(string.IsNullOrWhiteSpace(raw) ? "NULL/EMPTY" : "EXISTS")}");
 
                 if (string.IsNullOrWhiteSpace(raw))
@@ -1188,7 +1188,7 @@ namespace VANTAGE.Views
             // Update button
             button.Content = $"{defaultValue}%";
 
-            SettingsManager.SetUserSetting(App.CurrentUserID,
+            SettingsManager.SetUserSetting(
                 settingKey,
                 defaultValue.ToString(),
                 "int");
@@ -1238,7 +1238,6 @@ namespace VANTAGE.Views
                 button.Content = $"{newPercent}%";
 
                 SettingsManager.SetUserSetting(
-                    App.CurrentUserID,
                     settingKey,
                     newPercent.ToString(),
                     "int"
@@ -2555,7 +2554,6 @@ namespace VANTAGE.Views
 
                     // After successful sync - save the timestamp
                     SettingsManager.SetUserSetting(
-                        App.CurrentUserID,
                         "LastSyncUtcDate",
                         DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"),
                         "text"

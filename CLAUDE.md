@@ -18,6 +18,7 @@ WPF application for Summit Constructors replacing legacy MS Access system. Track
 - Delete/refactor legacy code when no longer relevant
 - After completing a feature: identify improvements, check for dead code, suggest refactoring
 - Add brief intuitive tool tips to all created controls
+- ALWAYS run `dotnet build` after code changes and fix any errors before reporting completion
 
 ## Git Commits
 - Do NOT add "Generated with Claude" or "Co-Authored-By: Claude" to commit messages
