@@ -24,6 +24,7 @@ WPF application for Summit Constructors replacing legacy MS Access system. Track
 - Do NOT add "Generated with Claude" or "Co-Authored-By: Claude" to commit messages
 - Do NOT add AI attribution comments in code
 - Write clear, concise commit messages describing the change
+- ALWAYS update relevant plan and status docs (Project_Status.md, etc.) before committing
 
 ## C# Code Conventions
 

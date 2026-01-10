@@ -1,6 +1,6 @@
 # MILESTONE - Project Status
 
-**Last Updated:** January 9, 2026
+**Last Updated:** January 10, 2026
 
 ## Module Status
 
@@ -75,6 +75,19 @@
 - [ ] Disable Tooltips setting (see DisableTooltips_Plan.md)
 
 ## Recent Completions
+
+### January 10, 2026
+- UserSettings refactored to remove UserID:
+  - Removed UserID column from UserSettings table (single user per machine)
+  - Simplified all SettingsManager methods to not require userId parameter
+  - Removed App.CurrentUserID usage from all settings calls
+  - Updated ThemeManager to use parameter-less signatures
+- Settings export now excludes LastSyncUtcDate:
+  - Ensures full sync on new machines when importing settings
+  - New machine gets fresh sync instead of potentially stale timestamp
+- UI improvements:
+  - Moved Import/Export Settings from File menu to Settings popup (hamburger menu)
+  - Settings grouped between Feedback Board and About MILESTONE
 
 ### January 9, 2026
 - 3 Decimal Place Precision enforcement:
