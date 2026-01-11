@@ -92,6 +92,10 @@ namespace VANTAGE.Views
         private Slider? _gridRowHeightSlider;
         private Slider? _gridFontSizeSlider;
         private TextBox? _gridFooterTextBox;
+        private Grid? _gridColumnEditPanel;
+        private TextBox? _gridColumnEditNameBox;
+        private Syncfusion.Windows.Shared.IntegerTextBox? _gridColumnEditWidthBox;
+        private int _gridColumnEditIndex = -1;
 
         // Form editor controls
         private TextBox? _formTitleBox;
@@ -2134,13 +2138,17 @@ namespace VANTAGE.Views
 
             // Button panel
             var btnPanel = new StackPanel { VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(5, 0, 0, 0) };
-            var btnUp = new Button { Content = "▲", Padding = new Thickness(8, 4, 8, 4), Margin = new Thickness(0, 0, 0, 5), ToolTip = "Move up" };
+            var btnUp = new Button { Content = "▲", Padding = new Thickness(8, 4, 8, 4), Margin = new Thickness(0, 0, 0, 3), ToolTip = "Move up" };
             btnUp.Click += GridColumnMoveUp_Click;
             btnPanel.Children.Add(btnUp);
 
-            var btnDown = new Button { Content = "▼", Padding = new Thickness(8, 4, 8, 4), Margin = new Thickness(0, 0, 0, 5), ToolTip = "Move down" };
+            var btnDown = new Button { Content = "▼", Padding = new Thickness(8, 4, 8, 4), Margin = new Thickness(0, 0, 0, 3), ToolTip = "Move down" };
             btnDown.Click += GridColumnMoveDown_Click;
             btnPanel.Children.Add(btnDown);
+
+            var btnEdit = new Button { Content = "✎", Padding = new Thickness(8, 4, 8, 4), Margin = new Thickness(0, 0, 0, 3), ToolTip = "Edit" };
+            btnEdit.Click += GridColumnEdit_Click;
+            btnPanel.Children.Add(btnEdit);
 
             var btnRemove = new Button { Content = "✕", Padding = new Thickness(8, 4, 8, 4), ToolTip = "Remove" };
             btnRemove.Click += GridColumnRemove_Click;
@@ -2177,6 +2185,55 @@ namespace VANTAGE.Views
             Grid.SetColumn(btnAdd, 2);
             addGrid.Children.Add(btnAdd);
             panel.Children.Add(addGrid);
+
+            // Column edit panel (hidden by default)
+            _gridColumnEditPanel = new Grid { Margin = new Thickness(0, 0, 0, 10), Visibility = Visibility.Collapsed };
+            _gridColumnEditPanel.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            _gridColumnEditPanel.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            _gridColumnEditPanel.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(60) });
+            _gridColumnEditPanel.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+            var colEditLabel = new TextBlock
+            {
+                Text = "Edit:",
+                FontWeight = FontWeights.SemiBold,
+                Foreground = (Brush)FindResource("ForegroundColor"),
+                VerticalAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(0, 0, 10, 0)
+            };
+            Grid.SetColumn(colEditLabel, 0);
+            _gridColumnEditPanel.Children.Add(colEditLabel);
+
+            _gridColumnEditNameBox = new TextBox { Height = 28, ToolTip = "Edit column name", Margin = new Thickness(0, 0, 5, 0) };
+            _gridColumnEditNameBox.KeyDown += (s, e) =>
+            {
+                if (e.Key == System.Windows.Input.Key.Enter) GridColumnSaveEdit_Click(s, e);
+                if (e.Key == System.Windows.Input.Key.Escape) GridColumnHideEditPanel();
+            };
+            Grid.SetColumn(_gridColumnEditNameBox, 1);
+            _gridColumnEditPanel.Children.Add(_gridColumnEditNameBox);
+
+            _gridColumnEditWidthBox = new Syncfusion.Windows.Shared.IntegerTextBox
+            {
+                MinValue = 5,
+                MaxValue = 100,
+                Height = 28,
+                Width = 55,
+                ToolTip = "Width %"
+            };
+            Grid.SetColumn(_gridColumnEditWidthBox, 2);
+            _gridColumnEditPanel.Children.Add(_gridColumnEditWidthBox);
+
+            var colEditBtnPanel = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(5, 0, 0, 0) };
+            var btnColSaveEdit = new Button { Content = "Save", Padding = new Thickness(8, 4, 8, 4), Margin = new Thickness(0, 0, 3, 0), ToolTip = "Save changes" };
+            btnColSaveEdit.Click += GridColumnSaveEdit_Click;
+            colEditBtnPanel.Children.Add(btnColSaveEdit);
+            var btnColCancelEdit = new Button { Content = "Cancel", Padding = new Thickness(8, 4, 8, 4), ToolTip = "Cancel editing" };
+            btnColCancelEdit.Click += (s, e) => GridColumnHideEditPanel();
+            colEditBtnPanel.Children.Add(btnColCancelEdit);
+            Grid.SetColumn(colEditBtnPanel, 3);
+            _gridColumnEditPanel.Children.Add(colEditBtnPanel);
+            panel.Children.Add(_gridColumnEditPanel);
 
             // Row Count
             var rowGrid = new Grid { Margin = new Thickness(0, 0, 0, 15) };
@@ -2333,13 +2390,127 @@ namespace VANTAGE.Views
                     MessageBox.Show("Please enter a column name.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
+
+                int newWidth = (int)(_gridNewColumnWidthBox.Value ?? 20);
+                if (newWidth > 95) newWidth = 95; // Cap to leave room for others
+
+                // Add the new column first
                 _gridColumns.Add(new TemplateColumn
                 {
                     Name = _gridNewColumnNameBox.Text,
-                    WidthPercent = (int)(_gridNewColumnWidthBox.Value ?? 20)
+                    WidthPercent = newWidth
                 });
+
+                // Prorate OTHER columns to fill remaining space (new column stays fixed)
+                ProrateGridColumnsExcept(_gridColumns.Count - 1, newWidth);
+
+                // Refresh the ListBox to show updated percentages
+                _gridColumnsBox!.ItemsSource = null;
+                _gridColumnsBox.ItemsSource = _gridColumns;
+
                 _gridNewColumnNameBox.Clear();
                 _hasUnsavedChanges = true;
+            }
+        }
+
+        // Grid column edit handlers
+        private void GridColumnEdit_Click(object sender, RoutedEventArgs e)
+        {
+            if (_gridColumnsBox?.SelectedIndex >= 0 && _gridColumns != null && _gridColumnEditPanel != null)
+            {
+                _gridColumnEditIndex = _gridColumnsBox.SelectedIndex;
+                var col = _gridColumns[_gridColumnEditIndex];
+                _gridColumnEditNameBox!.Text = col.Name;
+                _gridColumnEditWidthBox!.Value = col.WidthPercent;
+
+                _gridColumnEditPanel.Visibility = Visibility.Visible;
+                _gridColumnEditNameBox.Focus();
+                _gridColumnEditNameBox.SelectAll();
+            }
+        }
+
+        private void GridColumnSaveEdit_Click(object sender, RoutedEventArgs e)
+        {
+            if (_gridColumnEditIndex >= 0 && _gridColumns != null && _gridColumnEditNameBox != null && _gridColumnEditWidthBox != null)
+            {
+                if (string.IsNullOrWhiteSpace(_gridColumnEditNameBox.Text))
+                {
+                    MessageBox.Show("Please enter a column name.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                int editedWidth = (int)(_gridColumnEditWidthBox.Value ?? 20);
+                if (editedWidth > 95) editedWidth = 95; // Cap to leave room for others
+
+                _gridColumns[_gridColumnEditIndex].Name = _gridColumnEditNameBox.Text;
+                _gridColumns[_gridColumnEditIndex].WidthPercent = editedWidth;
+
+                // Prorate OTHER columns to fill remaining space (edited column stays fixed)
+                ProrateGridColumnsExcept(_gridColumnEditIndex, editedWidth);
+
+                // Refresh the ListBox to show updated values
+                _gridColumnsBox!.ItemsSource = null;
+                _gridColumnsBox.ItemsSource = _gridColumns;
+                _gridColumnsBox.SelectedIndex = _gridColumnEditIndex;
+
+                GridColumnHideEditPanel();
+                _hasUnsavedChanges = true;
+            }
+        }
+
+        // Prorate grid columns except the one at fixedIndex, which keeps fixedValue
+        // Other columns are scaled to fill (100 - fixedValue)
+        private void ProrateGridColumnsExcept(int fixedIndex, int fixedValue)
+        {
+            if (_gridColumns == null || _gridColumns.Count <= 1) return;
+
+            int remainingSpace = 100 - fixedValue;
+            if (remainingSpace < 0) remainingSpace = 0;
+
+            // Sum of all OTHER columns (excluding the fixed one)
+            int sumOfOthers = 0;
+            for (int i = 0; i < _gridColumns.Count; i++)
+            {
+                if (i != fixedIndex) sumOfOthers += _gridColumns[i].WidthPercent;
+            }
+
+            if (sumOfOthers == 0) return; // Avoid division by zero
+
+            // Prorate other columns to fill remaining space
+            int runningTotal = 0;
+            int lastOtherIndex = -1;
+
+            // Find the last "other" column index for remainder assignment
+            for (int i = _gridColumns.Count - 1; i >= 0; i--)
+            {
+                if (i != fixedIndex) { lastOtherIndex = i; break; }
+            }
+
+            for (int i = 0; i < _gridColumns.Count; i++)
+            {
+                if (i == fixedIndex) continue; // Skip the fixed column
+
+                if (i == lastOtherIndex)
+                {
+                    // Last other column gets remainder to ensure exact total
+                    _gridColumns[i].WidthPercent = remainingSpace - runningTotal;
+                }
+                else
+                {
+                    int adjusted = (int)Math.Round((_gridColumns[i].WidthPercent / (double)sumOfOthers) * remainingSpace);
+                    if (adjusted < 1) adjusted = 1; // Minimum 1%
+                    _gridColumns[i].WidthPercent = adjusted;
+                    runningTotal += adjusted;
+                }
+            }
+        }
+
+        private void GridColumnHideEditPanel()
+        {
+            if (_gridColumnEditPanel != null)
+            {
+                _gridColumnEditPanel.Visibility = Visibility.Collapsed;
+                _gridColumnEditIndex = -1;
             }
         }
 
@@ -2844,39 +3015,16 @@ namespace VANTAGE.Views
 
                 int newWidth = (int)(_formNewColumnWidthBox.Value ?? 20);
 
-                // Prorate existing columns to make room for the new column
-                int currentTotal = _formColumns.Sum(c => c.WidthPercent);
-                if (currentTotal > 0)
-                {
-                    // Calculate target total after adding new column
-                    int targetExisting = 100 - newWidth;
-                    if (targetExisting < 0) targetExisting = 0;
-
-                    // Prorate each existing column
-                    double ratio = (double)targetExisting / currentTotal;
-                    int runningTotal = 0;
-                    for (int i = 0; i < _formColumns.Count; i++)
-                    {
-                        if (i == _formColumns.Count - 1)
-                        {
-                            // Last column gets remainder to ensure exact total
-                            _formColumns[i].WidthPercent = targetExisting - runningTotal;
-                        }
-                        else
-                        {
-                            int adjusted = (int)Math.Round(_formColumns[i].WidthPercent * ratio);
-                            if (adjusted < 5) adjusted = 5; // Minimum 5%
-                            _formColumns[i].WidthPercent = adjusted;
-                            runningTotal += adjusted;
-                        }
-                    }
-                }
-
+                // Add the new column first
                 _formColumns.Add(new TemplateColumn
                 {
                     Name = _formNewColumnNameBox.Text,
                     WidthPercent = newWidth
                 });
+
+                // Prorate other columns to fill remaining space (new column keeps its input value)
+                int newColumnIndex = _formColumns.Count - 1;
+                ProrateFormColumnsExcept(newColumnIndex, newWidth);
 
                 // Refresh the ListBox to show updated percentages
                 _formColumnsBox!.ItemsSource = null;
@@ -2917,6 +3065,53 @@ namespace VANTAGE.Views
             }
         }
 
+        // Prorate form columns except the one at fixedIndex, which keeps fixedValue
+        // Other columns are scaled to fill (100 - fixedValue)
+        private void ProrateFormColumnsExcept(int fixedIndex, int fixedValue)
+        {
+            if (_formColumns == null || _formColumns.Count <= 1) return;
+
+            int remainingSpace = 100 - fixedValue;
+            if (remainingSpace < 0) remainingSpace = 0;
+
+            // Sum of all OTHER columns (excluding the fixed one)
+            int sumOfOthers = 0;
+            for (int i = 0; i < _formColumns.Count; i++)
+            {
+                if (i != fixedIndex) sumOfOthers += _formColumns[i].WidthPercent;
+            }
+
+            if (sumOfOthers == 0) return; // Avoid division by zero
+
+            // Prorate other columns to fill remaining space
+            int runningTotal = 0;
+            int lastOtherIndex = -1;
+
+            // Find the last "other" column index for remainder assignment
+            for (int i = _formColumns.Count - 1; i >= 0; i--)
+            {
+                if (i != fixedIndex) { lastOtherIndex = i; break; }
+            }
+
+            for (int i = 0; i < _formColumns.Count; i++)
+            {
+                if (i == fixedIndex) continue; // Skip the fixed column
+
+                if (i == lastOtherIndex)
+                {
+                    // Last other column gets remainder to ensure exact total
+                    _formColumns[i].WidthPercent = remainingSpace - runningTotal;
+                }
+                else
+                {
+                    int adjusted = (int)Math.Round((_formColumns[i].WidthPercent / (double)sumOfOthers) * remainingSpace);
+                    if (adjusted < 1) adjusted = 1; // Minimum 1%
+                    _formColumns[i].WidthPercent = adjusted;
+                    runningTotal += adjusted;
+                }
+            }
+        }
+
         private void FormColumnSaveEdit_Click(object sender, RoutedEventArgs e)
         {
             if (_formColumnEditNameBox != null && _formColumnEditWidthBox != null && _formColumns != null &&
@@ -2928,8 +3123,12 @@ namespace VANTAGE.Views
                     return;
                 }
 
+                int newWidth = (int)(_formColumnEditWidthBox.Value ?? 20);
                 _formColumns[_formColumnEditIndex].Name = _formColumnEditNameBox.Text;
-                _formColumns[_formColumnEditIndex].WidthPercent = (int)(_formColumnEditWidthBox.Value ?? 20);
+                _formColumns[_formColumnEditIndex].WidthPercent = newWidth;
+
+                // Prorate other columns to fill remaining space (edited column keeps its input value)
+                ProrateFormColumnsExcept(_formColumnEditIndex, newWidth);
 
                 // Refresh the ListBox to show updated values
                 _formColumnsBox!.ItemsSource = null;

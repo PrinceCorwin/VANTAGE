@@ -1,5 +1,6 @@
 using System;
 using System.Drawing;
+using System.Linq;
 using System.Text.Json;
 using Syncfusion.Pdf;
 using Syncfusion.Pdf.Graphics;
@@ -48,8 +49,14 @@ namespace VANTAGE.Services.PdfRenderers
                 // Calculate row height - scales with font, then applies increase percent
                 float rowHeight = DefaultRowHeight * fontScale * (1 + structure.RowHeightIncreasePercent / 100f);
 
+                // Check if form has any section content (Punchlist has no sections)
+                bool hasContent = structure.Sections.Any(s => s.Items.Count > 0);
+
+                // Column header height: scale with font only for forms without sections (like Punchlist)
+                float columnHeaderHeight = hasContent ? 18f : 18f * fontScale;
+
                 // Draw column headers
-                y = DrawColumnHeaders(graphics, structure, y, adjustedHeaderFont);
+                y = DrawColumnHeaders(graphics, structure, y, adjustedHeaderFont, columnHeaderHeight);
 
                 // Draw sections and their items
                 foreach (var section in structure.Sections)
@@ -69,7 +76,7 @@ namespace VANTAGE.Services.PdfRenderers
                         y = MarginTop;
 
                         // Redraw column headers on new page
-                        y = DrawColumnHeaders(graphics, structure, y, adjustedHeaderFont);
+                        y = DrawColumnHeaders(graphics, structure, y, adjustedHeaderFont, columnHeaderHeight);
                     }
 
                     // Draw section header
@@ -98,9 +105,8 @@ namespace VANTAGE.Services.PdfRenderers
         }
 
         // Draw column headers row
-        private float DrawColumnHeaders(PdfGraphics graphics, FormStructure structure, float y, PdfFont headerFont)
+        private float DrawColumnHeaders(PdfGraphics graphics, FormStructure structure, float y, PdfFont headerFont, float headerHeight)
         {
-            float headerHeight = 18f;
             float x = MarginLeft;
 
             // Draw header background

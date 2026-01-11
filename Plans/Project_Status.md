@@ -84,6 +84,13 @@
   - Separator line between priority and remaining fields
   - All fields alphabetically sorted within their sections
   - WP Name Pattern now persists (saves on focus lost, restores on view load)
+- Work Package Module - Grid editor improvements:
+  - Added Edit button (✎) for columns with edit panel (name + width fields)
+  - Edit panel with Save/Cancel buttons, Enter/Escape keyboard support
+- Work Package Module - Column width prorate fix (Grid and Form editors):
+  - Fixed prorate algorithm: edited/added column keeps its input value
+  - Other columns scale proportionally to fill remaining space (100 - fixedValue)
+  - Prevents negative values and ensures columns always sum to 100%
 
 ### January 10, 2026
 - Work Package Module - Form (Checklist) editor improvements:
