@@ -1,6 +1,6 @@
 # MILESTONE - Project Status
 
-**Last Updated:** January 10, 2026
+**Last Updated:** January 11, 2026
 
 ## Module Status
 
@@ -46,6 +46,7 @@
 ### Medium Priority
 - [x] Review project files for hard coded colors, replace with theme variables
 - [x] Review project file organization and clean up (Phase 1 complete - dialogs moved, files renamed)
+- [ ] Shift+Scroll horizontal scrolling (see ShiftScroll_Horizontal_Implementation_Plan.md)
 - [ ] User-editable header template for WP (allow customizing header layout)
 - [ ] Import/Export WP templates to JSON
 
@@ -75,6 +76,14 @@
 - [ ] Disable Tooltips setting (see DisableTooltips_Plan.md)
 
 ## Recent Completions
+
+### January 11, 2026
+- Work Package Module - Generate tab improvements:
+  - Expanded "+ Field" dropdown with all Activity fields
+  - Priority fields at top: Area, CompType, PhaseCategory, PhaseCode, SchedActNO, SystemNO, UDF2, WorkPackage
+  - Separator line between priority and remaining fields
+  - All fields alphabetically sorted within their sections
+  - WP Name Pattern now persists (saves on focus lost, restores on view load)
 
 ### January 10, 2026
 - Work Package Module - Form (Checklist) editor improvements:

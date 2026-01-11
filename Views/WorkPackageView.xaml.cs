@@ -195,6 +195,13 @@ namespace VANTAGE.Views
                     txtLogoPath.Text = "(default)";
                 }
 
+                // Load last used WP Name Pattern from settings
+                var lastPattern = SettingsManager.GetUserSetting("WorkPackage.WPNamePattern");
+                if (!string.IsNullOrEmpty(lastPattern))
+                {
+                    txtWPNamePattern.Text = lastPattern;
+                }
+
                 // Restore splitter position
                 var splitterRatio = SettingsManager.GetUserSetting( "WorkPackage.SplitterRatio");
                 if (!string.IsNullOrEmpty(splitterRatio) && double.TryParse(splitterRatio, out double ratio) && ratio > 0 && ratio < 1)
@@ -490,25 +497,57 @@ namespace VANTAGE.Views
         private void BtnInsertField_Click(object sender, RoutedEventArgs e)
         {
             var contextMenu = new ContextMenu();
-            var fields = new[] { "WorkPackage", "Area", "SystemNO", "UDF1", "UDF2", "UDF3", "UDF4", "UDF5",
-                "PhaseCode", "CompType", "SchedActNO" };
 
-            foreach (var field in fields)
+            // Priority fields at top (alphabetical)
+            var priorityFields = new[] { "Area", "CompType", "PhaseCategory", "PhaseCode",
+                "SchedActNO", "SystemNO", "UDF2", "WorkPackage" };
+
+            // All other fields (alphabetical)
+            var otherFields = new[] { "Aux1", "Aux2", "Aux3", "ChgOrdNO", "Description", "DwgNO",
+                "EqmtNO", "Estimator", "HtTrace", "InsulType", "LineNumber", "MtrlSpec", "Notes",
+                "PaintCode", "PipeGrade", "PjtSystem", "ProjectID", "RFINO", "RevNO", "ROCStep",
+                "SecondActno", "SecondDwgNO", "Service", "ShopField", "ShtNO", "SubArea", "TagNO",
+                "UDF1", "UDF3", "UDF4", "UDF5", "UDF6", "UDF8", "UDF9", "UDF10", "UDF11", "UDF12",
+                "UDF13", "UDF14", "UDF15", "UDF16", "UDF17", "UDF18", "UDF20", "UOM" };
+
+            // Add priority fields
+            foreach (var field in priorityFields)
             {
-                var menuItem = new MenuItem { Header = field };
-                menuItem.Click += (s, args) =>
-                {
-                    int caretIndex = txtWPNamePattern.CaretIndex;
-                    string token = $"{{{field}}}";
-                    txtWPNamePattern.Text = txtWPNamePattern.Text.Insert(caretIndex, token);
-                    txtWPNamePattern.CaretIndex = caretIndex + token.Length;
-                    txtWPNamePattern.Focus();
-                };
-                contextMenu.Items.Add(menuItem);
+                AddFieldMenuItem(contextMenu, field);
+            }
+
+            // Add separator
+            contextMenu.Items.Add(new Separator());
+
+            // Add remaining fields
+            foreach (var field in otherFields)
+            {
+                AddFieldMenuItem(contextMenu, field);
             }
 
             contextMenu.IsOpen = true;
             contextMenu.PlacementTarget = btnInsertField;
+        }
+
+        // Helper to add a field menu item
+        private void AddFieldMenuItem(ContextMenu menu, string field)
+        {
+            var menuItem = new MenuItem { Header = field };
+            menuItem.Click += (s, args) =>
+            {
+                int caretIndex = txtWPNamePattern.CaretIndex;
+                string token = $"{{{field}}}";
+                txtWPNamePattern.Text = txtWPNamePattern.Text.Insert(caretIndex, token);
+                txtWPNamePattern.CaretIndex = caretIndex + token.Length;
+                txtWPNamePattern.Focus();
+            };
+            menu.Items.Add(menuItem);
+        }
+
+        // Save WP Name Pattern when focus leaves the textbox
+        private void TxtWPNamePattern_LostFocus(object sender, RoutedEventArgs e)
+        {
+            SettingsManager.SetUserSetting("WorkPackage.WPNamePattern", txtWPNamePattern.Text, "string");
         }
 
         // Browse for logo
