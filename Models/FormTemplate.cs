@@ -93,6 +93,9 @@ namespace VANTAGE.Models
         [JsonPropertyName("items")]
         public List<string> Items { get; set; } = new();
 
+        [JsonPropertyName("fontSizeAdjustPercent")]
+        public int FontSizeAdjustPercent { get; set; } = 0;
+
         [JsonPropertyName("footerText")]
         public string? FooterText { get; set; }
     }
@@ -108,6 +111,9 @@ namespace VANTAGE.Models
 
         [JsonPropertyName("rowHeightIncreasePercent")]
         public int RowHeightIncreasePercent { get; set; } = 0;
+
+        [JsonPropertyName("fontSizeAdjustPercent")]
+        public int FontSizeAdjustPercent { get; set; } = 0;
 
         [JsonPropertyName("sections")]
         public List<SectionDefinition> Sections { get; set; } = new();
@@ -130,6 +136,9 @@ namespace VANTAGE.Models
 
         [JsonPropertyName("rowHeightIncreasePercent")]
         public int RowHeightIncreasePercent { get; set; } = 0;
+
+        [JsonPropertyName("fontSizeAdjustPercent")]
+        public int FontSizeAdjustPercent { get; set; } = 0;
 
         [JsonPropertyName("footerText")]
         public string? FooterText { get; set; }

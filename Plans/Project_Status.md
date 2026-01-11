@@ -77,6 +77,15 @@
 ## Recent Completions
 
 ### January 10, 2026
+- Work Package Module - Form (Checklist) editor improvements:
+  - Added Edit buttons (✎) for columns, sections, and section items
+  - Edit panels with Save/Cancel buttons, Enter/Escape keyboard support
+  - Auto-prorate column widths when adding new column (keeps total at 100%)
+- Work Package Module - Font Size Adjust slider:
+  - Added to Form, Grid, and List (TOC) editors
+  - Range: -30% to +50% adjustment
+  - Row height/line height scales proportionally with font size
+  - Footer text remains at base font size for consistency
 - Work Package Module - List (TOC) editor improvements:
   - Added "+ Add Item" dropdown with predefined items (WP Doc Expiration Date, Printed Date, WP Name, Schedule Activity No, Phase Code)
   - Added Blank Line and Line Separator options to dropdown

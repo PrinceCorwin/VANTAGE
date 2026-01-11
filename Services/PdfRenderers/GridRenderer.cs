@@ -13,6 +13,7 @@ namespace VANTAGE.Services.PdfRenderers
     {
         private const float DefaultRowHeight = 22f;
         private const float HeaderHeight = 18f;
+        private const float BaseHeaderFontSize = 9f;
 
         public override PdfDocument Render(string structureJson, TokenContext context, string? logoPath = null)
         {
@@ -36,11 +37,16 @@ namespace VANTAGE.Services.PdfRenderers
 
                 y += 10f;
 
-                // Calculate row height with increase percent
-                float rowHeight = DefaultRowHeight * (1 + structure.RowHeightIncreasePercent / 100f);
+                // Calculate adjusted font size
+                float fontScale = 1 + structure.FontSizeAdjustPercent / 100f;
+                float headerFontSize = BaseHeaderFontSize * fontScale;
+                var adjustedHeaderFont = new PdfStandardFont(PdfFontFamily.Helvetica, headerFontSize, PdfFontStyle.Bold);
+
+                // Calculate row height - scales with font, then applies increase percent
+                float rowHeight = DefaultRowHeight * fontScale * (1 + structure.RowHeightIncreasePercent / 100f);
 
                 // Draw column headers
-                y = DrawColumnHeaders(graphics, structure, y);
+                y = DrawColumnHeaders(graphics, structure, y, adjustedHeaderFont);
 
                 // Calculate how many rows fit on a page
                 float availableHeight = PageHeight - MarginBottom - 50f - y;
@@ -64,7 +70,7 @@ namespace VANTAGE.Services.PdfRenderers
                         y = MarginTop;
 
                         // Redraw column headers on new page
-                        y = DrawColumnHeaders(graphics, structure, y);
+                        y = DrawColumnHeaders(graphics, structure, y, adjustedHeaderFont);
 
                         // Recalculate rows per page
                         availableHeight = PageHeight - MarginBottom - 50f - y;
@@ -93,7 +99,7 @@ namespace VANTAGE.Services.PdfRenderers
         }
 
         // Draw column headers row
-        private float DrawColumnHeaders(PdfGraphics graphics, GridStructure structure, float y)
+        private float DrawColumnHeaders(PdfGraphics graphics, GridStructure structure, float y, PdfFont headerFont)
         {
             float x = MarginLeft;
 
@@ -109,7 +115,7 @@ namespace VANTAGE.Services.PdfRenderers
                 graphics.DrawRectangle(NormalPen, new RectangleF(x, y, colWidth, HeaderHeight));
 
                 // Draw text (centered)
-                var textSize = SmallBoldFont.MeasureString(column.Name);
+                var textSize = headerFont.MeasureString(column.Name);
                 float textX = x + (colWidth - textSize.Width) / 2;
                 float textY = y + (HeaderHeight - textSize.Height) / 2;
 
@@ -119,7 +125,7 @@ namespace VANTAGE.Services.PdfRenderers
                     textX = x + 2f;
                 }
 
-                graphics.DrawString(column.Name, SmallBoldFont, BlackBrush, new PointF(textX, textY));
+                graphics.DrawString(column.Name, headerFont, BlackBrush, new PointF(textX, textY));
 
                 x += colWidth;
             }

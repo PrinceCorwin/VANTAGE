@@ -60,6 +60,7 @@ namespace VANTAGE.Views
         private TextBox? _listNewItemBox;
         private TextBox? _listEditItemBox;
         private TextBox? _listFooterTextBox;
+        private Slider? _listFontSizeSlider;
         private Grid? _listAddPanel;
         private Grid? _listEditPanel;
         private int _listEditIndex = -1;
@@ -89,6 +90,7 @@ namespace VANTAGE.Views
         private Syncfusion.Windows.Shared.IntegerTextBox? _gridNewColumnWidthBox;
         private Syncfusion.Windows.Shared.IntegerTextBox? _gridRowCountBox;
         private Slider? _gridRowHeightSlider;
+        private Slider? _gridFontSizeSlider;
         private TextBox? _gridFooterTextBox;
 
         // Form editor controls
@@ -97,12 +99,23 @@ namespace VANTAGE.Views
         private ObservableCollection<TemplateColumn>? _formColumns;
         private TextBox? _formNewColumnNameBox;
         private Syncfusion.Windows.Shared.IntegerTextBox? _formNewColumnWidthBox;
+        private Grid? _formColumnEditPanel;
+        private TextBox? _formColumnEditNameBox;
+        private Syncfusion.Windows.Shared.IntegerTextBox? _formColumnEditWidthBox;
+        private int _formColumnEditIndex = -1;
         private ListBox? _formSectionsBox;
         private ObservableCollection<SectionDefinition>? _formSections;
         private TextBox? _formNewSectionBox;
+        private Grid? _formSectionEditPanel;
+        private TextBox? _formSectionEditBox;
+        private int _formSectionEditIndex = -1;
         private ListBox? _formSectionItemsBox;
         private TextBox? _formNewItemBox;
+        private Grid? _formItemEditPanel;
+        private TextBox? _formItemEditBox;
+        private int _formItemEditIndex = -1;
         private Slider? _formRowHeightSlider;
+        private Slider? _formFontSizeSlider;
         private TextBox? _formFooterTextBox;
 
         private readonly WorkPackageGenerator _generator = new();
@@ -1816,6 +1829,32 @@ namespace VANTAGE.Views
             _listEditPanel.Children.Add(editBtnPanel);
             panel.Children.Add(_listEditPanel);
 
+            // Font Size Adjust slider
+            var fontLabel = new TextBlock
+            {
+                Text = $"Font Size Adjust: {structure.FontSizeAdjustPercent:+0;-0;0}%",
+                FontWeight = FontWeights.SemiBold,
+                Foreground = (Brush)FindResource("ForegroundColor"),
+                Margin = new Thickness(0, 0, 0, 5)
+            };
+            panel.Children.Add(fontLabel);
+            _listFontSizeSlider = new Slider
+            {
+                Minimum = -30,
+                Maximum = 50,
+                Value = structure.FontSizeAdjustPercent,
+                TickFrequency = 10,
+                IsSnapToTickEnabled = true,
+                Margin = new Thickness(0, 0, 0, 15),
+                ToolTip = "Adjust font size (-30% to +50%)"
+            };
+            _listFontSizeSlider.ValueChanged += (s, e) =>
+            {
+                fontLabel.Text = $"Font Size Adjust: {(int)_listFontSizeSlider.Value:+0;-0;0}%";
+                _hasUnsavedChanges = true;
+            };
+            panel.Children.Add(_listFontSizeSlider);
+
             // Footer Text
             panel.Children.Add(new TextBlock
             {
@@ -1985,6 +2024,7 @@ namespace VANTAGE.Views
             {
                 Title = _listTitleBox?.Text ?? "WORK PACKAGE TABLE OF CONTENTS",
                 Items = _listItems?.ToList() ?? new List<string>(),
+                FontSizeAdjustPercent = (int)(_listFontSizeSlider?.Value ?? 0),
                 FooterText = string.IsNullOrWhiteSpace(_listFooterTextBox?.Text) ? null : _listFooterTextBox.Text
             };
             return JsonSerializer.Serialize(structure);
@@ -2152,6 +2192,31 @@ namespace VANTAGE.Views
             };
             panel.Children.Add(_gridRowHeightSlider);
 
+            // Font Size Adjust slider
+            var fontLabel = new TextBlock
+            {
+                Text = $"Font Size Adjust: {structure.FontSizeAdjustPercent:+0;-0;0}%",
+                FontWeight = FontWeights.SemiBold,
+                Foreground = (Brush)FindResource("ForegroundColor"),
+                Margin = new Thickness(0, 0, 0, 5)
+            };
+            panel.Children.Add(fontLabel);
+            _gridFontSizeSlider = new Slider
+            {
+                Minimum = -30,
+                Maximum = 50,
+                Value = structure.FontSizeAdjustPercent,
+                TickFrequency = 10,
+                IsSnapToTickEnabled = true,
+                Margin = new Thickness(0, 0, 0, 15)
+            };
+            _gridFontSizeSlider.ValueChanged += (s, e) =>
+            {
+                fontLabel.Text = $"Font Size Adjust: {(int)_gridFontSizeSlider.Value:+0;-0;0}%";
+                _hasUnsavedChanges = true;
+            };
+            panel.Children.Add(_gridFontSizeSlider);
+
             // Footer Text
             panel.Children.Add(new TextBlock
             {
@@ -2248,6 +2313,7 @@ namespace VANTAGE.Views
                 Columns = _gridColumns?.ToList() ?? new List<TemplateColumn>(),
                 RowCount = (int)(_gridRowCountBox?.Value ?? 22),
                 RowHeightIncreasePercent = (int)(_gridRowHeightSlider?.Value ?? 0),
+                FontSizeAdjustPercent = (int)(_gridFontSizeSlider?.Value ?? 0),
                 FooterText = string.IsNullOrWhiteSpace(_gridFooterTextBox?.Text) ? null : _gridFooterTextBox.Text
             };
             return JsonSerializer.Serialize(structure);
@@ -2309,6 +2375,9 @@ namespace VANTAGE.Views
             var btnColDown = new Button { Content = "▼", Padding = new Thickness(8, 4, 8, 4), Margin = new Thickness(0, 0, 0, 3), ToolTip = "Move down" };
             btnColDown.Click += FormColumnMoveDown_Click;
             colBtnPanel.Children.Add(btnColDown);
+            var btnColEdit = new Button { Content = "✎", Padding = new Thickness(8, 4, 8, 4), Margin = new Thickness(0, 0, 0, 3), ToolTip = "Edit" };
+            btnColEdit.Click += FormColumnEdit_Click;
+            colBtnPanel.Children.Add(btnColEdit);
             var btnColRemove = new Button { Content = "✕", Padding = new Thickness(8, 4, 8, 4), ToolTip = "Remove" };
             btnColRemove.Click += FormColumnRemove_Click;
             colBtnPanel.Children.Add(btnColRemove);
@@ -2345,6 +2414,55 @@ namespace VANTAGE.Views
             addColGrid.Children.Add(btnAddCol);
             panel.Children.Add(addColGrid);
 
+            // Column edit panel (hidden by default)
+            _formColumnEditPanel = new Grid { Margin = new Thickness(0, 0, 0, 10), Visibility = Visibility.Collapsed };
+            _formColumnEditPanel.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            _formColumnEditPanel.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            _formColumnEditPanel.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(60) });
+            _formColumnEditPanel.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+            var colEditLabel = new TextBlock
+            {
+                Text = "Edit:",
+                FontWeight = FontWeights.SemiBold,
+                Foreground = (Brush)FindResource("ForegroundColor"),
+                VerticalAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(0, 0, 10, 0)
+            };
+            Grid.SetColumn(colEditLabel, 0);
+            _formColumnEditPanel.Children.Add(colEditLabel);
+
+            _formColumnEditNameBox = new TextBox { Height = 28, ToolTip = "Edit column name", Margin = new Thickness(0, 0, 5, 0) };
+            _formColumnEditNameBox.KeyDown += (s, e) =>
+            {
+                if (e.Key == System.Windows.Input.Key.Enter) FormColumnSaveEdit_Click(s, e);
+                if (e.Key == System.Windows.Input.Key.Escape) FormColumnHideEditPanel();
+            };
+            Grid.SetColumn(_formColumnEditNameBox, 1);
+            _formColumnEditPanel.Children.Add(_formColumnEditNameBox);
+
+            _formColumnEditWidthBox = new Syncfusion.Windows.Shared.IntegerTextBox
+            {
+                MinValue = 5,
+                MaxValue = 100,
+                Height = 28,
+                Width = 55,
+                ToolTip = "Width %"
+            };
+            Grid.SetColumn(_formColumnEditWidthBox, 2);
+            _formColumnEditPanel.Children.Add(_formColumnEditWidthBox);
+
+            var colEditBtnPanel = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(5, 0, 0, 0) };
+            var btnColSaveEdit = new Button { Content = "Save", Padding = new Thickness(8, 4, 8, 4), Margin = new Thickness(0, 0, 3, 0), ToolTip = "Save changes" };
+            btnColSaveEdit.Click += FormColumnSaveEdit_Click;
+            colEditBtnPanel.Children.Add(btnColSaveEdit);
+            var btnColCancelEdit = new Button { Content = "Cancel", Padding = new Thickness(8, 4, 8, 4), ToolTip = "Cancel editing" };
+            btnColCancelEdit.Click += (s, e) => FormColumnHideEditPanel();
+            colEditBtnPanel.Children.Add(btnColCancelEdit);
+            Grid.SetColumn(colEditBtnPanel, 3);
+            _formColumnEditPanel.Children.Add(colEditBtnPanel);
+            panel.Children.Add(_formColumnEditPanel);
+
             // Separator
             panel.Children.Add(new Separator { Margin = new Thickness(0, 0, 0, 15) });
 
@@ -2380,6 +2498,9 @@ namespace VANTAGE.Views
             var btnSecDown = new Button { Content = "▼", Padding = new Thickness(8, 4, 8, 4), Margin = new Thickness(0, 0, 0, 3), ToolTip = "Move down" };
             btnSecDown.Click += FormSectionMoveDown_Click;
             secBtnPanel.Children.Add(btnSecDown);
+            var btnSecEdit = new Button { Content = "✎", Padding = new Thickness(8, 4, 8, 4), Margin = new Thickness(0, 0, 0, 3), ToolTip = "Edit" };
+            btnSecEdit.Click += FormSectionEdit_Click;
+            secBtnPanel.Children.Add(btnSecEdit);
             var btnSecRemove = new Button { Content = "✕", Padding = new Thickness(8, 4, 8, 4), ToolTip = "Remove" };
             btnSecRemove.Click += FormSectionRemove_Click;
             secBtnPanel.Children.Add(btnSecRemove);
@@ -2401,6 +2522,43 @@ namespace VANTAGE.Views
             Grid.SetColumn(btnAddSec, 1);
             addSecGrid.Children.Add(btnAddSec);
             panel.Children.Add(addSecGrid);
+
+            // Section edit panel (hidden by default)
+            _formSectionEditPanel = new Grid { Margin = new Thickness(0, 0, 0, 10), Visibility = Visibility.Collapsed };
+            _formSectionEditPanel.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            _formSectionEditPanel.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            _formSectionEditPanel.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+            var secEditLabel = new TextBlock
+            {
+                Text = "Edit:",
+                FontWeight = FontWeights.SemiBold,
+                Foreground = (Brush)FindResource("ForegroundColor"),
+                VerticalAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(0, 0, 10, 0)
+            };
+            Grid.SetColumn(secEditLabel, 0);
+            _formSectionEditPanel.Children.Add(secEditLabel);
+
+            _formSectionEditBox = new TextBox { Height = 28, ToolTip = "Edit section name", Margin = new Thickness(0, 0, 5, 0) };
+            _formSectionEditBox.KeyDown += (s, e) =>
+            {
+                if (e.Key == System.Windows.Input.Key.Enter) FormSectionSaveEdit_Click(s, e);
+                if (e.Key == System.Windows.Input.Key.Escape) FormSectionHideEditPanel();
+            };
+            Grid.SetColumn(_formSectionEditBox, 1);
+            _formSectionEditPanel.Children.Add(_formSectionEditBox);
+
+            var secEditBtnPanel = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(5, 0, 0, 0) };
+            var btnSecSaveEdit = new Button { Content = "Save", Padding = new Thickness(8, 4, 8, 4), Margin = new Thickness(0, 0, 3, 0), ToolTip = "Save changes" };
+            btnSecSaveEdit.Click += FormSectionSaveEdit_Click;
+            secEditBtnPanel.Children.Add(btnSecSaveEdit);
+            var btnSecCancelEdit = new Button { Content = "Cancel", Padding = new Thickness(8, 4, 8, 4), ToolTip = "Cancel editing" };
+            btnSecCancelEdit.Click += (s, e) => FormSectionHideEditPanel();
+            secEditBtnPanel.Children.Add(btnSecCancelEdit);
+            Grid.SetColumn(secEditBtnPanel, 2);
+            _formSectionEditPanel.Children.Add(secEditBtnPanel);
+            panel.Children.Add(_formSectionEditPanel);
 
             // Section Items (shown when section selected)
             panel.Children.Add(new TextBlock
@@ -2434,6 +2592,9 @@ namespace VANTAGE.Views
             var btnItemDown = new Button { Content = "▼", Padding = new Thickness(8, 4, 8, 4), Margin = new Thickness(0, 0, 0, 3), ToolTip = "Move down" };
             btnItemDown.Click += FormItemMoveDown_Click;
             itemBtnPanel.Children.Add(btnItemDown);
+            var btnItemEdit = new Button { Content = "✎", Padding = new Thickness(8, 4, 8, 4), Margin = new Thickness(0, 0, 0, 3), ToolTip = "Edit" };
+            btnItemEdit.Click += FormItemEdit_Click;
+            itemBtnPanel.Children.Add(btnItemEdit);
             var btnItemRemove = new Button { Content = "✕", Padding = new Thickness(8, 4, 8, 4), ToolTip = "Remove" };
             btnItemRemove.Click += FormItemRemove_Click;
             itemBtnPanel.Children.Add(btnItemRemove);
@@ -2455,6 +2616,43 @@ namespace VANTAGE.Views
             Grid.SetColumn(btnAddItem, 1);
             addItemGrid.Children.Add(btnAddItem);
             panel.Children.Add(addItemGrid);
+
+            // Item edit panel (hidden by default)
+            _formItemEditPanel = new Grid { Margin = new Thickness(0, 0, 0, 10), Visibility = Visibility.Collapsed };
+            _formItemEditPanel.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            _formItemEditPanel.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            _formItemEditPanel.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+            var itemEditLabel = new TextBlock
+            {
+                Text = "Edit:",
+                FontWeight = FontWeights.SemiBold,
+                Foreground = (Brush)FindResource("ForegroundColor"),
+                VerticalAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(0, 0, 10, 0)
+            };
+            Grid.SetColumn(itemEditLabel, 0);
+            _formItemEditPanel.Children.Add(itemEditLabel);
+
+            _formItemEditBox = new TextBox { Height = 28, ToolTip = "Edit item text", Margin = new Thickness(0, 0, 5, 0) };
+            _formItemEditBox.KeyDown += (s, e) =>
+            {
+                if (e.Key == System.Windows.Input.Key.Enter) FormItemSaveEdit_Click(s, e);
+                if (e.Key == System.Windows.Input.Key.Escape) FormItemHideEditPanel();
+            };
+            Grid.SetColumn(_formItemEditBox, 1);
+            _formItemEditPanel.Children.Add(_formItemEditBox);
+
+            var itemEditBtnPanel = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(5, 0, 0, 0) };
+            var btnItemSaveEdit = new Button { Content = "Save", Padding = new Thickness(8, 4, 8, 4), Margin = new Thickness(0, 0, 3, 0), ToolTip = "Save changes" };
+            btnItemSaveEdit.Click += FormItemSaveEdit_Click;
+            itemEditBtnPanel.Children.Add(btnItemSaveEdit);
+            var btnItemCancelEdit = new Button { Content = "Cancel", Padding = new Thickness(8, 4, 8, 4), ToolTip = "Cancel editing" };
+            btnItemCancelEdit.Click += (s, e) => FormItemHideEditPanel();
+            itemEditBtnPanel.Children.Add(btnItemCancelEdit);
+            Grid.SetColumn(itemEditBtnPanel, 2);
+            _formItemEditPanel.Children.Add(itemEditBtnPanel);
+            panel.Children.Add(_formItemEditPanel);
 
             // Separator
             panel.Children.Add(new Separator { Margin = new Thickness(0, 0, 0, 15) });
@@ -2499,6 +2697,47 @@ namespace VANTAGE.Views
             Grid.SetColumn(sliderLabel, 1);
             sliderGrid.Children.Add(sliderLabel);
             panel.Children.Add(sliderGrid);
+
+            // Font Size Adjust slider
+            panel.Children.Add(new TextBlock
+            {
+                Text = "Font Size Adjust %",
+                FontWeight = FontWeights.SemiBold,
+                FontSize = 14,
+                Foreground = (Brush)FindResource("ForegroundColor"),
+                Margin = new Thickness(0, 0, 0, 5)
+            });
+            var fontSliderGrid = new Grid { Margin = new Thickness(0, 0, 0, 15) };
+            fontSliderGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            fontSliderGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(50) });
+
+            _formFontSizeSlider = new Slider
+            {
+                Minimum = -30,
+                Maximum = 50,
+                Value = structure.FontSizeAdjustPercent,
+                TickFrequency = 10,
+                IsSnapToTickEnabled = true,
+                ToolTip = "Adjust font size (-30% to +50%)"
+            };
+            _formFontSizeSlider.ValueChanged += (s, e) => _hasUnsavedChanges = true;
+            Grid.SetColumn(_formFontSizeSlider, 0);
+            fontSliderGrid.Children.Add(_formFontSizeSlider);
+
+            var fontSliderLabel = new TextBlock
+            {
+                Foreground = (Brush)FindResource("ForegroundColor"),
+                VerticalAlignment = VerticalAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Right
+            };
+            fontSliderLabel.SetBinding(TextBlock.TextProperty, new Binding("Value")
+            {
+                Source = _formFontSizeSlider,
+                StringFormat = "{0:+0;-0;0}%"
+            });
+            Grid.SetColumn(fontSliderLabel, 1);
+            fontSliderGrid.Children.Add(fontSliderLabel);
+            panel.Children.Add(fontSliderGrid);
 
             // Footer Text
             panel.Children.Add(new TextBlock
@@ -2563,12 +2802,102 @@ namespace VANTAGE.Views
                     MessageBox.Show("Please enter a column name.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
+
+                int newWidth = (int)(_formNewColumnWidthBox.Value ?? 20);
+
+                // Prorate existing columns to make room for the new column
+                int currentTotal = _formColumns.Sum(c => c.WidthPercent);
+                if (currentTotal > 0)
+                {
+                    // Calculate target total after adding new column
+                    int targetExisting = 100 - newWidth;
+                    if (targetExisting < 0) targetExisting = 0;
+
+                    // Prorate each existing column
+                    double ratio = (double)targetExisting / currentTotal;
+                    int runningTotal = 0;
+                    for (int i = 0; i < _formColumns.Count; i++)
+                    {
+                        if (i == _formColumns.Count - 1)
+                        {
+                            // Last column gets remainder to ensure exact total
+                            _formColumns[i].WidthPercent = targetExisting - runningTotal;
+                        }
+                        else
+                        {
+                            int adjusted = (int)Math.Round(_formColumns[i].WidthPercent * ratio);
+                            if (adjusted < 5) adjusted = 5; // Minimum 5%
+                            _formColumns[i].WidthPercent = adjusted;
+                            runningTotal += adjusted;
+                        }
+                    }
+                }
+
                 _formColumns.Add(new TemplateColumn
                 {
                     Name = _formNewColumnNameBox.Text,
-                    WidthPercent = (int)(_formNewColumnWidthBox.Value ?? 20)
+                    WidthPercent = newWidth
                 });
+
+                // Refresh the ListBox to show updated percentages
+                _formColumnsBox!.ItemsSource = null;
+                _formColumnsBox.ItemsSource = _formColumns;
+
                 _formNewColumnNameBox.Clear();
+                _hasUnsavedChanges = true;
+            }
+        }
+
+        // Column edit handlers
+        private void FormColumnEdit_Click(object sender, RoutedEventArgs e)
+        {
+            if (_formColumnsBox?.SelectedIndex >= 0 && _formColumns != null &&
+                _formColumnEditNameBox != null && _formColumnEditWidthBox != null && _formColumnEditPanel != null)
+            {
+                _formColumnEditIndex = _formColumnsBox.SelectedIndex;
+                var col = _formColumns[_formColumnEditIndex];
+                _formColumnEditNameBox.Text = col.Name;
+                _formColumnEditWidthBox.Value = col.WidthPercent;
+
+                _formColumnEditPanel.Visibility = Visibility.Visible;
+                _formColumnEditNameBox.Focus();
+                _formColumnEditNameBox.SelectAll();
+            }
+            else
+            {
+                MessageBox.Show("Please select a column to edit.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
+        private void FormColumnHideEditPanel()
+        {
+            if (_formColumnEditPanel != null)
+            {
+                _formColumnEditPanel.Visibility = Visibility.Collapsed;
+                _formColumnEditIndex = -1;
+            }
+        }
+
+        private void FormColumnSaveEdit_Click(object sender, RoutedEventArgs e)
+        {
+            if (_formColumnEditNameBox != null && _formColumnEditWidthBox != null && _formColumns != null &&
+                _formColumnEditIndex >= 0 && _formColumnEditIndex < _formColumns.Count)
+            {
+                if (string.IsNullOrWhiteSpace(_formColumnEditNameBox.Text))
+                {
+                    MessageBox.Show("Column name cannot be empty.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                _formColumns[_formColumnEditIndex].Name = _formColumnEditNameBox.Text;
+                _formColumns[_formColumnEditIndex].WidthPercent = (int)(_formColumnEditWidthBox.Value ?? 20);
+
+                // Refresh the ListBox to show updated values
+                _formColumnsBox!.ItemsSource = null;
+                _formColumnsBox.ItemsSource = _formColumns;
+                _formColumnsBox.SelectedIndex = _formColumnEditIndex;
+
+                FormColumnHideEditPanel();
                 _hasUnsavedChanges = true;
             }
         }
@@ -2619,6 +2948,58 @@ namespace VANTAGE.Views
                 }
                 _formSections.Add(new SectionDefinition { Name = _formNewSectionBox.Text });
                 _formNewSectionBox.Clear();
+                _hasUnsavedChanges = true;
+            }
+        }
+
+        // Section edit handlers
+        private void FormSectionEdit_Click(object sender, RoutedEventArgs e)
+        {
+            if (_formSectionsBox?.SelectedIndex >= 0 && _formSections != null &&
+                _formSectionEditBox != null && _formSectionEditPanel != null)
+            {
+                _formSectionEditIndex = _formSectionsBox.SelectedIndex;
+                var section = _formSections[_formSectionEditIndex];
+                _formSectionEditBox.Text = section.Name;
+
+                _formSectionEditPanel.Visibility = Visibility.Visible;
+                _formSectionEditBox.Focus();
+                _formSectionEditBox.SelectAll();
+            }
+            else
+            {
+                MessageBox.Show("Please select a section to edit.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
+        private void FormSectionHideEditPanel()
+        {
+            if (_formSectionEditPanel != null)
+            {
+                _formSectionEditPanel.Visibility = Visibility.Collapsed;
+                _formSectionEditIndex = -1;
+            }
+        }
+
+        private void FormSectionSaveEdit_Click(object sender, RoutedEventArgs e)
+        {
+            if (_formSectionEditBox != null && _formSections != null &&
+                _formSectionEditIndex >= 0 && _formSectionEditIndex < _formSections.Count)
+            {
+                if (string.IsNullOrWhiteSpace(_formSectionEditBox.Text))
+                {
+                    MessageBox.Show("Section name cannot be empty.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                _formSections[_formSectionEditIndex].Name = _formSectionEditBox.Text;
+
+                // Refresh the ListBox to show updated value
+                _formSectionsBox!.ItemsSource = null;
+                _formSectionsBox.ItemsSource = _formSections;
+                _formSectionsBox.SelectedIndex = _formSectionEditIndex;
+
+                FormSectionHideEditPanel();
                 _hasUnsavedChanges = true;
             }
         }
@@ -2706,6 +3087,58 @@ namespace VANTAGE.Views
             }
         }
 
+        // Item edit handlers
+        private void FormItemEdit_Click(object sender, RoutedEventArgs e)
+        {
+            if (_formSectionsBox?.SelectedItem is SectionDefinition section &&
+                _formSectionItemsBox?.SelectedIndex >= 0 &&
+                _formItemEditBox != null && _formItemEditPanel != null)
+            {
+                _formItemEditIndex = _formSectionItemsBox.SelectedIndex;
+                _formItemEditBox.Text = section.Items[_formItemEditIndex];
+
+                _formItemEditPanel.Visibility = Visibility.Visible;
+                _formItemEditBox.Focus();
+                _formItemEditBox.SelectAll();
+            }
+            else
+            {
+                MessageBox.Show("Please select an item to edit.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
+        private void FormItemHideEditPanel()
+        {
+            if (_formItemEditPanel != null)
+            {
+                _formItemEditPanel.Visibility = Visibility.Collapsed;
+                _formItemEditIndex = -1;
+            }
+        }
+
+        private void FormItemSaveEdit_Click(object sender, RoutedEventArgs e)
+        {
+            if (_formSectionsBox?.SelectedItem is SectionDefinition section &&
+                _formItemEditBox != null && _formItemEditIndex >= 0 && _formItemEditIndex < section.Items.Count)
+            {
+                if (string.IsNullOrWhiteSpace(_formItemEditBox.Text))
+                {
+                    MessageBox.Show("Item text cannot be empty.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                section.Items[_formItemEditIndex] = _formItemEditBox.Text;
+
+                // Refresh the ListBox to show updated value
+                _formSectionItemsBox!.ItemsSource = null;
+                _formSectionItemsBox.ItemsSource = section.Items;
+                _formSectionItemsBox.SelectedIndex = _formItemEditIndex;
+
+                FormItemHideEditPanel();
+                _hasUnsavedChanges = true;
+            }
+        }
+
         // Get Form structure JSON from editor
         private string GetFormStructureJson()
         {
@@ -2715,6 +3148,7 @@ namespace VANTAGE.Views
                 Columns = _formColumns?.ToList() ?? new List<TemplateColumn>(),
                 Sections = _formSections?.ToList() ?? new List<SectionDefinition>(),
                 RowHeightIncreasePercent = (int)(_formRowHeightSlider?.Value ?? 0),
+                FontSizeAdjustPercent = (int)(_formFontSizeSlider?.Value ?? 0),
                 FooterText = string.IsNullOrWhiteSpace(_formFooterTextBox?.Text) ? null : _formFooterTextBox.Text
             };
             return JsonSerializer.Serialize(structure);

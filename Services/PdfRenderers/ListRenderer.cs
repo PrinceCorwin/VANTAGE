@@ -11,7 +11,8 @@ namespace VANTAGE.Services.PdfRenderers
     // Renderer for List type templates (header + text items + optional footer)
     public class ListRenderer : BaseRenderer
     {
-        private const float LineHeight = 18f;
+        private const float DefaultLineHeight = 18f;
+        private const float BaseBodyFontSize = 10f;
 
         public override PdfDocument Render(string structureJson, TokenContext context, string? logoPath = null)
         {
@@ -35,6 +36,12 @@ namespace VANTAGE.Services.PdfRenderers
 
                 y += 15f; // Add spacing after header
 
+                // Calculate adjusted font size and line height
+                float fontScale = 1 + structure.FontSizeAdjustPercent / 100f;
+                float bodyFontSize = BaseBodyFontSize * fontScale;
+                float lineHeight = DefaultLineHeight * fontScale;
+                var adjustedBodyFont = new PdfStandardFont(PdfFontFamily.Helvetica, bodyFontSize, PdfFontStyle.Regular);
+
                 // Render each item
                 foreach (var item in structure.Items)
                 {
@@ -49,7 +56,7 @@ namespace VANTAGE.Services.PdfRenderers
                     // Empty string creates a blank line (vertical spacing)
                     if (string.IsNullOrEmpty(item))
                     {
-                        y += LineHeight / 2;
+                        y += lineHeight / 2;
                         continue;
                     }
 
@@ -68,8 +75,8 @@ namespace VANTAGE.Services.PdfRenderers
                     string resolvedText = TokenResolver.Resolve(item, context);
 
                     // Draw the text
-                    graphics.DrawString(resolvedText, BodyFont, BlackBrush, new PointF(MarginLeft, y));
-                    y += LineHeight;
+                    graphics.DrawString(resolvedText, adjustedBodyFont, BlackBrush, new PointF(MarginLeft, y));
+                    y += lineHeight;
                 }
 
                 // Render footer if present
