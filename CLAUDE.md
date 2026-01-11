@@ -25,6 +25,7 @@ WPF application for Summit Constructors replacing legacy MS Access system. Track
 - Do NOT add "Generated with Claude" or "Co-Authored-By: Claude" to commit messages
 - Do NOT add AI attribution comments in code
 - Write clear, concise commit messages describing the change
+- Watch for `nul` file in git status - this is a Windows artifact that gets created accidentally. Delete it immediately with `rm -f nul` when spotted.
 
 ### MANDATORY Pre-Commit Checklist
 **STOP. Before running `git commit`, you MUST complete these steps IN ORDER:**
