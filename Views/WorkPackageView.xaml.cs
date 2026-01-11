@@ -58,7 +58,28 @@ namespace VANTAGE.Views
         private ListBox? _listItemsBox;
         private ObservableCollection<string>? _listItems;
         private TextBox? _listNewItemBox;
+        private TextBox? _listEditItemBox;
         private TextBox? _listFooterTextBox;
+        private Grid? _listAddPanel;
+        private Grid? _listEditPanel;
+        private int _listEditIndex = -1;
+
+        // Predefined TOC list items available in Add Item dropdown
+        private static readonly List<(string Label, string Value)> _tocPredefinedItems = new()
+        {
+            ("WP Doc Expiration Date", "WP DOC EXPIRATION DATE: {ExpirationDate}"),
+            ("Printed Date", "PRINTED: {PrintDate}"),
+            ("WP Name", "WP NAME: {WPName}"),
+            ("Schedule Activity No", "SCHEDULE ACTIVITY NO: {ScheduleActivityNo}"),
+            ("Phase Code", "PHASE CODE: {PhaseCode}")
+        };
+
+        // Spacing/separator items (shown after a separator line in dropdown)
+        private static readonly List<(string Label, string Value)> _tocSpacingItems = new()
+        {
+            ("Blank Line", ""),
+            ("Line Separator", "---")
+        };
 
         // Grid editor controls
         private TextBox? _gridTitleBox;
@@ -295,11 +316,40 @@ namespace VANTAGE.Views
             PopulateAddFormMenu();
         }
 
+        // Sort order for built-in form templates
+        private static readonly List<string> _builtInFormOrder = new()
+        {
+            "Cover Sheet - Template",
+            "Table of Contents - Template",
+            "Checklist - Template",
+            "Punchlist - Template",
+            "Signoff Sheet - Template",
+            "Drawing Log - Template",
+            "Drawings - Template"
+        };
+
+        // Sort form templates: built-in in specified order, then user-created alphabetically
+        private List<FormTemplate> GetSortedFormTemplates()
+        {
+            var builtIn = _formTemplates.Where(t => t.IsBuiltIn)
+                .OrderBy(t => {
+                    var idx = _builtInFormOrder.IndexOf(t.TemplateName);
+                    return idx >= 0 ? idx : int.MaxValue;
+                })
+                .ToList();
+
+            var userCreated = _formTemplates.Where(t => !t.IsBuiltIn)
+                .OrderBy(t => t.TemplateName)
+                .ToList();
+
+            return builtIn.Concat(userCreated).ToList();
+        }
+
         // Populate Add Form dropdown menu with form templates
         private void PopulateAddFormMenu()
         {
             menuAddFormGroup.Items.Clear();
-            foreach (var template in _formTemplates)
+            foreach (var template in GetSortedFormTemplates())
             {
                 var menuItem = new DropDownMenuItem
                 {
@@ -332,7 +382,7 @@ namespace VANTAGE.Views
         private void PopulateFormTemplateEditDropdown()
         {
             var items = new List<object> { new { TemplateName = "+ Add New", TemplateID = (string?)null } };
-            items.AddRange(_formTemplates.Cast<object>());
+            items.AddRange(GetSortedFormTemplates().Cast<object>());
             cboFormTemplateEdit.ItemsSource = items;
             cboFormTemplateEdit.DisplayMemberPath = "TemplateName";
         }
@@ -880,14 +930,59 @@ namespace VANTAGE.Views
             }
         }
 
-        // Clone WP template
-        private void BtnCloneWPTemplate_Click(object sender, RoutedEventArgs e)
+        // Clone WP template - creates and saves immediately
+        private async void BtnCloneWPTemplate_Click(object sender, RoutedEventArgs e)
         {
             if (_selectedWPTemplate == null) return;
 
-            txtWPTemplateName.Text = _selectedWPTemplate.WPTemplateName + " (Copy)";
-            _selectedWPTemplate = null; // Make it a new template
-            _hasUnsavedChanges = true;
+            var existingNames = _wpTemplates.Select(t => t.WPTemplateName).ToList();
+            var defaultName = _selectedWPTemplate.WPTemplateName + " (Copy)";
+
+            var dialog = new TemplateNameDialog(defaultName, existingNames, "Enter a name for the cloned template:")
+            {
+                Owner = Window.GetWindow(this)
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                try
+                {
+                    // Create and save the cloned template immediately
+                    var formsJson = _selectedWPTemplate.FormsJson;
+                    var settingsJson = _selectedWPTemplate.DefaultSettings;
+
+                    var template = new WPTemplate
+                    {
+                        WPTemplateID = Guid.NewGuid().ToString(),
+                        WPTemplateName = dialog.TemplateName,
+                        FormsJson = formsJson,
+                        DefaultSettings = settingsJson,
+                        IsBuiltIn = false,
+                        CreatedBy = App.CurrentUser?.Username ?? "Unknown",
+                        CreatedUtc = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ")
+                    };
+                    await TemplateRepository.InsertWPTemplateAsync(template);
+
+                    // Refresh lists and select the new template
+                    _wpTemplates = await TemplateRepository.GetAllWPTemplatesAsync();
+                    PopulateWPTemplateEditDropdown();
+                    cboWPTemplate.ItemsSource = _wpTemplates;
+
+                    var savedTemplate = _wpTemplates.FirstOrDefault(t => t.WPTemplateID == template.WPTemplateID);
+                    if (savedTemplate != null)
+                    {
+                        cboWPTemplateEdit.SelectedItem = savedTemplate;
+                        _selectedWPTemplate = savedTemplate;
+                    }
+
+                    lblStatus.Text = "Template cloned";
+                }
+                catch (Exception ex)
+                {
+                    AppLogger.Error(ex, "WorkPackageView.BtnCloneWPTemplate_Click");
+                    MessageBox.Show($"Error cloning template: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
         }
 
         // Delete WP template
@@ -923,12 +1018,22 @@ namespace VANTAGE.Views
                 return;
             }
 
-            // Check if saving a built-in template
+            // Check if saving a built-in template - prompt for new name
             if (_selectedWPTemplate?.IsBuiltIn == true)
             {
-                var result = MessageBox.Show("This is a built-in template. Save as a new template?",
-                    "Save as New", MessageBoxButton.YesNo, MessageBoxImage.Question);
-                if (result != MessageBoxResult.Yes) return;
+                var existingNames = _wpTemplates.Select(t => t.WPTemplateName).ToList();
+                var defaultName = txtWPTemplateName.Text.Trim();
+                if (!defaultName.EndsWith("(Copy)"))
+                    defaultName += " (Copy)";
+
+                var dialog = new TemplateNameDialog(defaultName, existingNames, "This is a built-in template. Enter a name for the new template:")
+                {
+                    Owner = Window.GetWindow(this)
+                };
+
+                if (dialog.ShowDialog() != true) return;
+
+                txtWPTemplateName.Text = dialog.TemplateName;
                 _selectedWPTemplate = null; // Create new
             }
 
@@ -1104,18 +1209,58 @@ namespace VANTAGE.Views
             }
         }
 
-        // Clone form template
-        private void BtnCloneFormTemplate_Click(object sender, RoutedEventArgs e)
+        // Clone form template - creates and saves immediately
+        private async void BtnCloneFormTemplate_Click(object sender, RoutedEventArgs e)
         {
             if (_selectedFormTemplate == null) return;
 
-            // Preserve clone data for save
-            _clonedFormType = _selectedFormTemplate.TemplateType;
-            _clonedFormStructure = _selectedFormTemplate.StructureJson;
+            var existingNames = _formTemplates.Select(t => t.TemplateName).ToList();
+            var defaultName = _selectedFormTemplate.TemplateName + " (Copy)";
 
-            txtFormTemplateName.Text = _selectedFormTemplate.TemplateName + " (Copy)";
-            _selectedFormTemplate = null; // Make it a new template
-            _hasUnsavedChanges = true;
+            var dialog = new TemplateNameDialog(defaultName, existingNames, "Enter a name for the cloned template:")
+            {
+                Owner = Window.GetWindow(this)
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                try
+                {
+                    // Create and save the cloned template immediately
+                    var template = new FormTemplate
+                    {
+                        TemplateID = Guid.NewGuid().ToString(),
+                        TemplateName = dialog.TemplateName,
+                        TemplateType = _selectedFormTemplate.TemplateType,
+                        StructureJson = _selectedFormTemplate.StructureJson,
+                        IsBuiltIn = false,
+                        CreatedBy = App.CurrentUser?.Username ?? "Unknown",
+                        CreatedUtc = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ")
+                    };
+                    await TemplateRepository.InsertFormTemplateAsync(template);
+
+                    // Refresh lists and select the new template
+                    _formTemplates = await TemplateRepository.GetAllFormTemplatesAsync();
+                    _suppressTypeDialog = true;
+                    PopulateFormTemplateEditDropdown();
+                    _suppressTypeDialog = false;
+                    PopulateAddFormMenu();
+
+                    var savedTemplate = _formTemplates.FirstOrDefault(t => t.TemplateID == template.TemplateID);
+                    if (savedTemplate != null)
+                    {
+                        cboFormTemplateEdit.SelectedItem = savedTemplate;
+                        _selectedFormTemplate = savedTemplate;
+                    }
+
+                    lblStatus.Text = "Template cloned";
+                }
+                catch (Exception ex)
+                {
+                    AppLogger.Error(ex, "WorkPackageView.BtnCloneFormTemplate_Click");
+                    MessageBox.Show($"Error cloning template: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
         }
 
         // Delete form template
@@ -1128,6 +1273,11 @@ namespace VANTAGE.Views
                 MessageBox.Show("Built-in templates cannot be deleted.", "Cannot Delete", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
+
+            var result = MessageBox.Show($"Are you sure you want to delete '{_selectedFormTemplate.TemplateName}'?",
+                "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+            if (result != MessageBoxResult.Yes) return;
 
             var (success, blockingTemplates) = await TemplateRepository.DeleteFormTemplateAsync(_selectedFormTemplate.TemplateID);
 
@@ -1183,12 +1333,23 @@ namespace VANTAGE.Views
             // Get structure JSON from current editor if supported
             string? editorStructureJson = GetStructureJsonFromEditor();
 
-            // Check if saving a built-in template - preserve clone data
+            // Check if saving a built-in template - prompt for new name
             if (_selectedFormTemplate?.IsBuiltIn == true)
             {
-                var result = MessageBox.Show("This is a built-in template. Save as a new template?",
-                    "Save as New", MessageBoxButton.YesNo, MessageBoxImage.Question);
-                if (result != MessageBoxResult.Yes) return;
+                var existingNames = _formTemplates.Select(t => t.TemplateName).ToList();
+                var defaultName = newName;
+                if (!defaultName.EndsWith("(Copy)"))
+                    defaultName += " (Copy)";
+
+                var dialog = new TemplateNameDialog(defaultName, existingNames, "This is a built-in template. Enter a name for the new template:")
+                {
+                    Owner = Window.GetWindow(this)
+                };
+
+                if (dialog.ShowDialog() != true) return;
+
+                newName = dialog.TemplateName;
+                txtFormTemplateName.Text = newName;
 
                 // Preserve data for clone - use editor value if available
                 _clonedFormType = _selectedFormTemplate.TemplateType;
@@ -1473,14 +1634,80 @@ namespace VANTAGE.Views
             _listTitleBox.TextChanged += (s, e) => _hasUnsavedChanges = true;
             panel.Children.Add(_listTitleBox);
 
-            // Items Label
-            panel.Children.Add(new TextBlock
+            // Items header with Add Item dropdown
+            var itemsHeaderGrid = new Grid { Margin = new Thickness(0, 0, 0, 5) };
+            itemsHeaderGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            itemsHeaderGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+            var itemsLabel = new TextBlock
             {
                 Text = "Items (use blank lines for spacing)",
                 FontWeight = FontWeights.SemiBold,
                 Foreground = (Brush)FindResource("ForegroundColor"),
-                Margin = new Thickness(0, 0, 0, 5)
-            });
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            Grid.SetColumn(itemsLabel, 0);
+            itemsHeaderGrid.Children.Add(itemsLabel);
+
+            // Add Item dropdown (Syncfusion DropDownButtonAdv)
+            var addItemDropdown = new DropDownButtonAdv
+            {
+                Label = "+ Add Item",
+                Padding = new Thickness(0),
+                Background = Brushes.Transparent,
+                Foreground = (Brush)FindResource("ForegroundColor"),
+                BorderThickness = new Thickness(0),
+                IconTemplate = null,
+                SmallIcon = null,
+                LargeIcon = null,
+                FontSize = 12,
+                SizeMode = SizeMode.Normal,
+                ToolTip = "Add a predefined item to the list"
+            };
+
+            var menuGroup = new DropDownMenuGroup
+            {
+                Background = (Brush)FindResource("ControlBackground"),
+                Foreground = (Brush)FindResource("ForegroundColor"),
+                BorderBrush = (Brush)FindResource("BorderColor")
+            };
+
+            // Populate dropdown with predefined items
+            foreach (var (label, value) in _tocPredefinedItems)
+            {
+                var menuItem = new DropDownMenuItem
+                {
+                    Header = label,
+                    Tag = value
+                };
+                menuItem.Click += ListItemDropdown_Click;
+                menuGroup.Items.Add(menuItem);
+            }
+
+            // Add separator then spacing items (Blank Line, Line Separator)
+            menuGroup.Items.Add(new Separator());
+            foreach (var (label, value) in _tocSpacingItems)
+            {
+                var menuItem = new DropDownMenuItem
+                {
+                    Header = label,
+                    Tag = value
+                };
+                menuItem.Click += ListItemDropdown_Click;
+                menuGroup.Items.Add(menuItem);
+            }
+
+            // Add separator and "Add New" option for custom text
+            menuGroup.Items.Add(new Separator());
+            var addNewItem = new DropDownMenuItem { Header = "Add New..." };
+            addNewItem.Click += ListItemShowAddPanel_Click;
+            menuGroup.Items.Add(addNewItem);
+
+            addItemDropdown.Content = menuGroup;
+            Grid.SetColumn(addItemDropdown, 1);
+            itemsHeaderGrid.Children.Add(addItemDropdown);
+
+            panel.Children.Add(itemsHeaderGrid);
 
             // Items list with buttons
             var itemsGrid = new Grid { Margin = new Thickness(0, 0, 0, 10) };
@@ -1491,7 +1718,8 @@ namespace VANTAGE.Views
             {
                 Height = 180,
                 ItemsSource = _listItems,
-                ToolTip = "Select an item to move or remove"
+                ToolTip = "Select an item to move or remove",
+                ItemTemplate = CreateBlankLineItemTemplate()
             };
             Grid.SetColumn(_listItemsBox, 0);
             itemsGrid.Children.Add(_listItemsBox);
@@ -1518,24 +1746,75 @@ namespace VANTAGE.Views
             itemsGrid.Children.Add(btnPanel);
             panel.Children.Add(itemsGrid);
 
-            // Add new item row
-            var addGrid = new Grid { Margin = new Thickness(0, 0, 0, 15) };
-            addGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-            addGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            // Add new item panel (hidden by default, shown when "Add New..." clicked)
+            _listAddPanel = new Grid { Margin = new Thickness(0, 0, 0, 10), Visibility = Visibility.Collapsed };
+            _listAddPanel.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            _listAddPanel.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            _listAddPanel.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
-            _listNewItemBox = new TextBox { Height = 28, ToolTip = "Enter new item text" };
+            var addLabel = new TextBlock
+            {
+                Text = "New item:",
+                Foreground = (Brush)FindResource("ForegroundColor"),
+                VerticalAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(0, 0, 5, 0)
+            };
+            _listAddPanel.Children.Add(addLabel);
+
+            _listNewItemBox = new TextBox { Height = 28, ToolTip = "Enter new item text", Margin = new Thickness(0, 0, 5, 0) };
             _listNewItemBox.KeyDown += (s, e) =>
             {
                 if (e.Key == System.Windows.Input.Key.Enter) ListItemAdd_Click(s, e);
+                if (e.Key == System.Windows.Input.Key.Escape) ListItemHideAddPanel();
             };
-            Grid.SetColumn(_listNewItemBox, 0);
-            addGrid.Children.Add(_listNewItemBox);
+            Grid.SetColumn(_listNewItemBox, 1);
+            _listAddPanel.Children.Add(_listNewItemBox);
 
-            var btnAdd = new Button { Content = "+ Add", Padding = new Thickness(8, 4, 8, 4), Margin = new Thickness(5, 0, 0, 0) };
+            var addBtnPanel = new StackPanel { Orientation = Orientation.Horizontal };
+            var btnAdd = new Button { Content = "Add", Padding = new Thickness(8, 4, 8, 4), Margin = new Thickness(0, 0, 5, 0), ToolTip = "Add item to list" };
             btnAdd.Click += ListItemAdd_Click;
-            Grid.SetColumn(btnAdd, 1);
-            addGrid.Children.Add(btnAdd);
-            panel.Children.Add(addGrid);
+            addBtnPanel.Children.Add(btnAdd);
+            var btnCancelAdd = new Button { Content = "Cancel", Padding = new Thickness(8, 4, 8, 4), ToolTip = "Cancel adding" };
+            btnCancelAdd.Click += (s, e) => ListItemHideAddPanel();
+            addBtnPanel.Children.Add(btnCancelAdd);
+            Grid.SetColumn(addBtnPanel, 2);
+            _listAddPanel.Children.Add(addBtnPanel);
+            panel.Children.Add(_listAddPanel);
+
+            // Edit item panel (hidden by default, shown when Edit button clicked)
+            _listEditPanel = new Grid { Margin = new Thickness(0, 0, 0, 10), Visibility = Visibility.Collapsed };
+            _listEditPanel.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            _listEditPanel.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            _listEditPanel.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+            var editLabel = new TextBlock
+            {
+                Text = "Edit item:",
+                Foreground = (Brush)FindResource("ForegroundColor"),
+                VerticalAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(0, 0, 5, 0)
+            };
+            _listEditPanel.Children.Add(editLabel);
+
+            _listEditItemBox = new TextBox { Height = 28, ToolTip = "Edit the selected item", Margin = new Thickness(0, 0, 5, 0) };
+            _listEditItemBox.KeyDown += (s, e) =>
+            {
+                if (e.Key == System.Windows.Input.Key.Enter) ListItemSaveEdit_Click(s, e);
+                if (e.Key == System.Windows.Input.Key.Escape) ListItemHideEditPanel();
+            };
+            Grid.SetColumn(_listEditItemBox, 1);
+            _listEditPanel.Children.Add(_listEditItemBox);
+
+            var editBtnPanel = new StackPanel { Orientation = Orientation.Horizontal };
+            var btnSaveEdit = new Button { Content = "Save", Padding = new Thickness(8, 4, 8, 4), Margin = new Thickness(0, 0, 5, 0), ToolTip = "Save changes" };
+            btnSaveEdit.Click += ListItemSaveEdit_Click;
+            editBtnPanel.Children.Add(btnSaveEdit);
+            var btnCancelEdit = new Button { Content = "Cancel", Padding = new Thickness(8, 4, 8, 4), ToolTip = "Cancel editing" };
+            btnCancelEdit.Click += (s, e) => ListItemHideEditPanel();
+            editBtnPanel.Children.Add(btnCancelEdit);
+            Grid.SetColumn(editBtnPanel, 2);
+            _listEditPanel.Children.Add(editBtnPanel);
+            panel.Children.Add(_listEditPanel);
 
             // Footer Text
             panel.Children.Add(new TextBlock
@@ -1594,14 +1873,57 @@ namespace VANTAGE.Views
 
         private void ListItemEdit_Click(object sender, RoutedEventArgs e)
         {
-            if (_listItemsBox?.SelectedIndex >= 0 && _listItems != null && _listNewItemBox != null)
+            if (_listItemsBox?.SelectedIndex >= 0 && _listItems != null && _listEditItemBox != null && _listEditPanel != null)
             {
-                int idx = _listItemsBox.SelectedIndex;
-                // Copy selected item to the new item box for editing
-                _listNewItemBox.Text = _listItems[idx];
-                _listItems.RemoveAt(idx);
+                _listEditIndex = _listItemsBox.SelectedIndex;
+                _listEditItemBox.Text = _listItems[_listEditIndex];
+                ListItemHideAddPanel();
+                _listEditPanel.Visibility = Visibility.Visible;
+                _listEditItemBox.Focus();
+                _listEditItemBox.SelectAll();
+            }
+        }
+
+        // Show Add panel when "Add New..." clicked from dropdown
+        private void ListItemShowAddPanel_Click(object sender, RoutedEventArgs e)
+        {
+            if (_listAddPanel != null && _listNewItemBox != null)
+            {
+                ListItemHideEditPanel();
+                _listNewItemBox.Clear();
+                _listAddPanel.Visibility = Visibility.Visible;
                 _listNewItemBox.Focus();
+            }
+        }
+
+        // Hide Add panel
+        private void ListItemHideAddPanel()
+        {
+            if (_listAddPanel != null)
+            {
+                _listAddPanel.Visibility = Visibility.Collapsed;
+                _listNewItemBox?.Clear();
+            }
+        }
+
+        // Hide Edit panel
+        private void ListItemHideEditPanel()
+        {
+            if (_listEditPanel != null)
+            {
+                _listEditPanel.Visibility = Visibility.Collapsed;
+                _listEditIndex = -1;
+            }
+        }
+
+        // Save edited item in place
+        private void ListItemSaveEdit_Click(object sender, RoutedEventArgs e)
+        {
+            if (_listEditItemBox != null && _listItems != null && _listEditIndex >= 0 && _listEditIndex < _listItems.Count)
+            {
+                _listItems[_listEditIndex] = _listEditItemBox.Text;
                 _hasUnsavedChanges = true;
+                ListItemHideEditPanel();
             }
         }
 
@@ -1610,9 +1932,50 @@ namespace VANTAGE.Views
             if (_listNewItemBox != null && _listItems != null)
             {
                 _listItems.Add(_listNewItemBox.Text);
-                _listNewItemBox.Clear();
+                _hasUnsavedChanges = true;
+                ListItemHideAddPanel();
+            }
+        }
+
+        // Handle Add Item dropdown menu item click
+        private void ListItemDropdown_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is DropDownMenuItem menuItem && menuItem.Tag is string value && _listItems != null)
+            {
+                _listItems.Add(value);
                 _hasUnsavedChanges = true;
             }
+        }
+
+        // Create DataTemplate for list items that shows "blank line" in italic dimmed text for empty strings
+        private DataTemplate CreateBlankLineItemTemplate()
+        {
+            var template = new DataTemplate();
+
+            var textBlockFactory = new FrameworkElementFactory(typeof(TextBlock));
+            textBlockFactory.SetBinding(TextBlock.TextProperty, new Binding(".")
+            {
+                Converter = new BlankLineDisplayConverter()
+            });
+
+            // Create style with triggers for blank lines
+            var style = new Style(typeof(TextBlock));
+            style.Setters.Add(new Setter(TextBlock.ForegroundProperty, FindResource("ForegroundColor")));
+
+            // Trigger for blank lines: italic and dimmed
+            var blankTrigger = new DataTrigger
+            {
+                Binding = new Binding(".") { Converter = new IsBlankLineConverter() },
+                Value = true
+            };
+            blankTrigger.Setters.Add(new Setter(TextBlock.FontStyleProperty, FontStyles.Italic));
+            blankTrigger.Setters.Add(new Setter(TextBlock.ForegroundProperty, FindResource("TextColorSecondary")));
+            style.Triggers.Add(blankTrigger);
+
+            textBlockFactory.SetValue(TextBlock.StyleProperty, style);
+            template.VisualTree = textBlockFactory;
+
+            return template;
         }
 
         // Get List structure JSON from editor

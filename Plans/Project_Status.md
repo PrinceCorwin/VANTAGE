@@ -77,6 +77,19 @@
 ## Recent Completions
 
 ### January 10, 2026
+- Work Package Module - List (TOC) editor improvements:
+  - Added "+ Add Item" dropdown with predefined items (WP Doc Expiration Date, Printed Date, WP Name, Schedule Activity No, Phase Code)
+  - Added Blank Line and Line Separator options to dropdown
+  - Blank lines display as italic dimmed "blank line" in editor
+  - Line separators display as italic dimmed "line separator" and render as horizontal line in PDF
+  - Reworked Edit/Add workflow: Edit button shows edit field (in-place update), Add New shows separate add field
+  - Both panels hidden by default, appear only when triggered
+- Work Package Module - Template management improvements:
+  - Created TemplateNameDialog for clone/save-as-new operations with duplicate name validation
+  - Clone now saves immediately after naming (no need to click Save)
+  - Save on built-in templates prompts for new name via dialog
+  - Added delete confirmation dialog for form templates (matches WP templates)
+  - Built-in form templates now display in logical order: Cover, TOC, Checklist, Punchlist, Signoff, Drawing Log, Drawings
 - Theme resources refactoring:
   - Added 20+ new color resources to DarkTheme.xaml (action buttons, overlays, errors, warnings, UI elements)
   - Created ThemeHelper utility class for code-behind theme resource access

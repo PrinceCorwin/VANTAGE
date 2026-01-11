@@ -46,10 +46,21 @@ namespace VANTAGE.Services.PdfRenderers
                         y = MarginTop;
                     }
 
-                    // Empty string creates a blank line (separator)
+                    // Empty string creates a blank line (vertical spacing)
                     if (string.IsNullOrEmpty(item))
                     {
                         y += LineHeight / 2;
+                        continue;
+                    }
+
+                    // "---" creates a horizontal line separator
+                    if (item == "---")
+                    {
+                        y += 4f;
+                        var pen = new PdfPen(PdfBrushes.Gray, 0.5f);
+                        float lineWidth = PageWidth - MarginLeft - MarginRight;
+                        graphics.DrawLine(pen, new PointF(MarginLeft, y), new PointF(MarginLeft + lineWidth, y));
+                        y += 8f;
                         continue;
                     }
 
