@@ -17,6 +17,7 @@ namespace VANTAGE.Services
         public string SchedulerFullName { get; set; } = string.Empty;
         public string WPNamePattern { get; set; } = string.Empty;
         public int ExpirationDays { get; set; } = 14;
+        public string OutputFolder { get; set; } = string.Empty;
 
         // Cached values from database (lazy loaded)
         private Dictionary<string, string>? _resolvedTokens;

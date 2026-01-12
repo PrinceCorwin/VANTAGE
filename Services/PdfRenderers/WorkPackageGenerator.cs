@@ -63,6 +63,9 @@ namespace VANTAGE.Services.PdfRenderers
                     context.ExpirationDays = settings.ExpirationDays;
                 }
 
+                // Set output folder in context for renderers that need it (e.g., DrawingsRenderer)
+                context.OutputFolder = outputFolder;
+
                 // Create output folder structure
                 string wpFolder = Path.Combine(outputFolder, context.ProjectID, SanitizeFileName(context.WorkPackage));
                 Directory.CreateDirectory(wpFolder);
@@ -120,6 +123,9 @@ namespace VANTAGE.Services.PdfRenderers
                     doc.Close(true);
                 }
                 mergedDoc.Close(true);
+
+                // Clear any loaded drawing PDFs (they're kept alive during merge)
+                _drawingsRenderer.ClearLoadedDocuments();
 
                 result.Success = true;
                 result.MergedPdfPath = mergedPath;
@@ -269,6 +275,9 @@ namespace VANTAGE.Services.PdfRenderers
                 doc.Save(memStream);
                 doc.Close(true);
                 memStream.Position = 0;
+
+                // Clear any loaded drawing PDFs (if this was a Drawings template)
+                _drawingsRenderer.ClearLoadedDocuments();
 
                 return memStream;
             }

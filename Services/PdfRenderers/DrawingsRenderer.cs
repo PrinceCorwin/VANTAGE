@@ -1,21 +1,33 @@
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
 using Syncfusion.Pdf;
-using Syncfusion.Pdf.Graphics;
+using Syncfusion.Pdf.Parsing;
 using VANTAGE.Models;
+using VANTAGE.Services;
 using VANTAGE.Utilities;
 
 namespace VANTAGE.Services.PdfRenderers
 {
-    // Renderer for Drawings type templates (drawing images from local folder or Procore)
+    // Renderer for Drawings type templates
+    // Imports PDF pages directly into the work package, preserving original page size (typically 11x17)
     public class DrawingsRenderer : BaseRenderer
     {
-        private const float CaptionHeight = 16f;
-        private const float ImagePadding = 10f;
+        // Keep loaded PDF documents alive - Merge creates references, not copies
+        // These must remain open until the final merged document is saved
+        private readonly List<PdfLoadedDocument> _loadedDocuments = new();
+
+        // Clear loaded documents after generation is complete
+        public void ClearLoadedDocuments()
+        {
+            foreach (var doc in _loadedDocuments)
+            {
+                try { doc.Close(true); } catch { }
+            }
+            _loadedDocuments.Clear();
+        }
 
         public override PdfDocument Render(string structureJson, TokenContext context, string? logoPath = null)
         {
@@ -35,31 +47,14 @@ namespace VANTAGE.Services.PdfRenderers
 
                 if (drawingFiles.Count == 0)
                 {
-                    // Render single page with "No drawings found" message
-                    var page = document.Pages.Add();
-                    string title = TokenResolver.Resolve(structure.Title, context);
-                    float y = RenderHeader(page, context, title, logoPath);
-                    y += 30f;
-                    page.Graphics.DrawString("No drawings found", BodyFont, BlackBrush, new PointF(MarginLeft, y));
+                    // Return empty document - no placeholder page needed
+                    // The work package will simply not have a drawings section
+                    AppLogger.Info("No drawing files found for work package", "DrawingsRenderer.Render");
                     return document;
                 }
 
-                // Render drawings based on imagesPerPage setting
-                switch (structure.ImagesPerPage)
-                {
-                    case 1:
-                        RenderOnePerPage(document, structure, context, drawingFiles, logoPath);
-                        break;
-                    case 2:
-                        RenderTwoPerPage(document, structure, context, drawingFiles, logoPath);
-                        break;
-                    case 4:
-                        RenderFourPerPage(document, structure, context, drawingFiles, logoPath);
-                        break;
-                    default:
-                        RenderOnePerPage(document, structure, context, drawingFiles, logoPath);
-                        break;
-                }
+                // Import all PDF pages directly
+                ImportPdfFiles(document, drawingFiles);
             }
             catch (Exception ex)
             {
@@ -69,242 +64,164 @@ namespace VANTAGE.Services.PdfRenderers
             return document;
         }
 
-        // Load drawing files from local folder
+        // Load drawing files from pre-fetched Drawings subfolder
+        // Both Local and Procore fetches in Generate tab copy PDFs to {outputFolder}/Drawings/
         private List<string> LoadDrawingFiles(DrawingsStructure structure, TokenContext context)
         {
             var files = new List<string>();
 
-            if (structure.Source == "Local" && !string.IsNullOrEmpty(structure.FolderPath))
+            // Look for pre-fetched PDFs in the Drawings subfolder of output folder
+            if (string.IsNullOrEmpty(context.OutputFolder))
             {
-                // Resolve tokens in folder path
-                string resolvedPath = TokenResolver.Resolve(structure.FolderPath, context);
+                AppLogger.Warning("Output folder not set - cannot load drawings", "DrawingsRenderer.LoadDrawingFiles");
+                return files;
+            }
 
-                if (Directory.Exists(resolvedPath))
+            var drawingsFolder = Path.Combine(context.OutputFolder, "Drawings");
+            if (!Directory.Exists(drawingsFolder))
+            {
+                AppLogger.Info($"No drawings folder found at {drawingsFolder}. Use Fetch Drawings in Generate tab first.", "DrawingsRenderer.LoadDrawingFiles");
+                return files;
+            }
+
+            // Get DwgNO values for this work package from database
+            var dwgNumbers = GetDwgNumbersForWorkPackage(context.ProjectID, context.WorkPackage);
+            if (dwgNumbers.Count == 0)
+            {
+                AppLogger.Info($"No DwgNO values found for work package {context.WorkPackage}", "DrawingsRenderer.LoadDrawingFiles");
+                return files;
+            }
+
+            // Get all PDF files in the drawings folder
+            var allPdfFiles = Directory.GetFiles(drawingsFolder, "*.pdf", SearchOption.TopDirectoryOnly);
+
+            // Find matching PDF files for each DwgNO
+            var matchedFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var dwgNo in dwgNumbers)
+            {
+                // Try full DwgNO contains match first
+                var matches = allPdfFiles
+                    .Where(f => Path.GetFileNameWithoutExtension(f)
+                        .Contains(dwgNo, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+                // Fallback: try last two segments (e.g., "017004-01" from "LP150-TWSP-017004-01")
+                if (matches.Count == 0)
                 {
-                    // Parse file extensions
-                    var extensions = structure.FileExtensions.Split(',')
-                        .Select(e => e.Trim().TrimStart('*'))
-                        .ToArray();
-
-                    // Get all matching files
-                    foreach (var ext in extensions)
+                    var shortMatch = GetLastTwoSegments(dwgNo);
+                    if (!string.IsNullOrEmpty(shortMatch))
                     {
-                        files.AddRange(Directory.GetFiles(resolvedPath, "*" + ext, SearchOption.TopDirectoryOnly));
+                        matches = allPdfFiles
+                            .Where(f => Path.GetFileNameWithoutExtension(f)
+                                .Contains(shortMatch, StringComparison.OrdinalIgnoreCase))
+                            .ToList();
                     }
-
-                    // Sort by filename
-                    files = files.OrderBy(f => Path.GetFileName(f)).ToList();
                 }
-                else
+
+                foreach (var match in matches)
                 {
-                    AppLogger.Warning($"Drawings folder not found: {resolvedPath}", "DrawingsRenderer.LoadDrawingFiles");
+                    if (matchedFiles.Add(match))
+                    {
+                        files.Add(match);
+                    }
                 }
             }
-            else if (structure.Source == "Procore")
+
+            // Sort files by name for consistent ordering
+            files = files.OrderBy(f => Path.GetFileName(f)).ToList();
+
+            if (files.Count > 0)
             {
-                // Procore integration - to be implemented later
-                AppLogger.Info("Procore drawings source not yet implemented", "DrawingsRenderer.LoadDrawingFiles");
+                AppLogger.Info($"Found {files.Count} drawing PDF(s) for {context.WorkPackage}", "DrawingsRenderer.LoadDrawingFiles");
+            }
+            else
+            {
+                AppLogger.Info($"No matching drawing PDFs found for {context.WorkPackage}. DwgNOs: {string.Join(", ", dwgNumbers)}", "DrawingsRenderer.LoadDrawingFiles");
             }
 
             return files;
         }
 
-        // Render one drawing per page
-        private void RenderOnePerPage(PdfDocument document, DrawingsStructure structure, TokenContext context,
-            List<string> drawingFiles, string? logoPath)
+        // Extract last two hyphen-separated segments from a DwgNO (e.g., "017004-01" from "LP150-TWSP-017004-01")
+        private string? GetLastTwoSegments(string dwgNo)
         {
-            foreach (var filePath in drawingFiles)
+            if (string.IsNullOrEmpty(dwgNo)) return null;
+
+            var parts = dwgNo.Split('-');
+            if (parts.Length >= 2)
             {
-                var page = document.Pages.Add();
-                var graphics = page.Graphics;
-
-                // Render header
-                string title = TokenResolver.Resolve(structure.Title, context);
-                float y = RenderHeader(page, context, title, logoPath);
-                y += ImagePadding;
-
-                // Calculate available space for image
-                float captionSpace = structure.ShowCaptions ? CaptionHeight : 0;
-                float availableWidth = ContentWidth;
-                float availableHeight = PageHeight - y - MarginBottom - captionSpace - ImagePadding;
-
-                // Load and draw the image
-                DrawImageInArea(graphics, filePath, MarginLeft, y, availableWidth, availableHeight,
-                    structure.ShowCaptions);
-
-                // Render footer if present
-                if (!string.IsNullOrEmpty(structure.FooterText))
-                {
-                    RenderFooter(page, TokenResolver.Resolve(structure.FooterText, context));
-                }
+                return $"{parts[^2]}-{parts[^1]}";
             }
+            return null;
         }
 
-        // Render two drawings per page (stacked vertically)
-        private void RenderTwoPerPage(PdfDocument document, DrawingsStructure structure, TokenContext context,
-            List<string> drawingFiles, string? logoPath)
+        // Get distinct DwgNO values for a work package from the database
+        private List<string> GetDwgNumbersForWorkPackage(string projectId, string workPackage)
         {
-            for (int i = 0; i < drawingFiles.Count; i += 2)
-            {
-                var page = document.Pages.Add();
-                var graphics = page.Graphics;
+            var dwgNumbers = new List<string>();
 
-                // Render header
-                string title = TokenResolver.Resolve(structure.Title, context);
-                float y = RenderHeader(page, context, title, logoPath);
-                y += ImagePadding;
-
-                // Calculate available space for each image
-                float captionSpace = structure.ShowCaptions ? CaptionHeight : 0;
-                float totalAvailableHeight = PageHeight - y - MarginBottom - ImagePadding;
-                float imageAreaHeight = (totalAvailableHeight - ImagePadding) / 2 - captionSpace;
-
-                // Draw first image
-                DrawImageInArea(graphics, drawingFiles[i], MarginLeft, y, ContentWidth, imageAreaHeight,
-                    structure.ShowCaptions);
-
-                // Draw second image if exists
-                if (i + 1 < drawingFiles.Count)
-                {
-                    float y2 = y + imageAreaHeight + captionSpace + ImagePadding;
-                    DrawImageInArea(graphics, drawingFiles[i + 1], MarginLeft, y2, ContentWidth, imageAreaHeight,
-                        structure.ShowCaptions);
-                }
-
-                // Render footer if present
-                if (!string.IsNullOrEmpty(structure.FooterText))
-                {
-                    RenderFooter(page, TokenResolver.Resolve(structure.FooterText, context));
-                }
-            }
-        }
-
-        // Render four drawings per page (2x2 grid)
-        private void RenderFourPerPage(PdfDocument document, DrawingsStructure structure, TokenContext context,
-            List<string> drawingFiles, string? logoPath)
-        {
-            for (int i = 0; i < drawingFiles.Count; i += 4)
-            {
-                var page = document.Pages.Add();
-                var graphics = page.Graphics;
-
-                // Render header
-                string title = TokenResolver.Resolve(structure.Title, context);
-                float y = RenderHeader(page, context, title, logoPath);
-                y += ImagePadding;
-
-                // Calculate available space for each image
-                float captionSpace = structure.ShowCaptions ? CaptionHeight : 0;
-                float totalAvailableHeight = PageHeight - y - MarginBottom - ImagePadding;
-                float imageAreaHeight = (totalAvailableHeight - ImagePadding) / 2 - captionSpace;
-                float imageAreaWidth = (ContentWidth - ImagePadding) / 2;
-
-                // Draw images in 2x2 grid
-                float[] xPositions = { MarginLeft, MarginLeft + imageAreaWidth + ImagePadding };
-                float[] yPositions = { y, y + imageAreaHeight + captionSpace + ImagePadding };
-
-                for (int j = 0; j < 4 && i + j < drawingFiles.Count; j++)
-                {
-                    int col = j % 2;
-                    int row = j / 2;
-                    DrawImageInArea(graphics, drawingFiles[i + j], xPositions[col], yPositions[row],
-                        imageAreaWidth, imageAreaHeight, structure.ShowCaptions);
-                }
-
-                // Render footer if present
-                if (!string.IsNullOrEmpty(structure.FooterText))
-                {
-                    RenderFooter(page, TokenResolver.Resolve(structure.FooterText, context));
-                }
-            }
-        }
-
-        // Draw an image scaled to fit within the specified area, with optional caption
-        private void DrawImageInArea(PdfGraphics graphics, string filePath, float x, float y,
-            float maxWidth, float maxHeight, bool showCaption)
-        {
             try
             {
-                PdfImage? image = LoadDrawingImage(filePath);
-                if (image == null)
+                using var connection = DatabaseSetup.GetConnection();
+                connection.Open();
+
+                using var cmd = connection.CreateCommand();
+                cmd.CommandText = @"
+                    SELECT DISTINCT DwgNO
+                    FROM Activities
+                    WHERE ProjectID = @projectId
+                    AND WorkPackage = @workPackage
+                    AND DwgNO IS NOT NULL AND DwgNO != ''
+                    ORDER BY DwgNO";
+
+                cmd.Parameters.AddWithValue("@projectId", projectId);
+                cmd.Parameters.AddWithValue("@workPackage", workPackage);
+
+                using var reader = cmd.ExecuteReader();
+                while (reader.Read())
                 {
-                    // Draw placeholder for missing image
-                    graphics.DrawRectangle(ThinPen, new RectangleF(x, y, maxWidth, maxHeight));
-                    graphics.DrawString($"[Could not load: {Path.GetFileName(filePath)}]",
-                        SmallFont, BlackBrush, new PointF(x + 5, y + 5));
-                    return;
+                    dwgNumbers.Add(reader.GetString(0));
                 }
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "DrawingsRenderer.GetDwgNumbersForWorkPackage");
+            }
 
-                // Calculate scaled dimensions to fit while maintaining aspect ratio
-                float scale = Math.Min(maxWidth / image.Width, maxHeight / image.Height);
-                float drawWidth = image.Width * scale;
-                float drawHeight = image.Height * scale;
+            return dwgNumbers;
+        }
 
-                // Center the image in the available space
-                float imageX = x + (maxWidth - drawWidth) / 2;
-                float imageY = y + (maxHeight - drawHeight) / 2;
-
-                // Draw border around image area
-                graphics.DrawRectangle(ThinPen, new RectangleF(imageX - 1, imageY - 1, drawWidth + 2, drawHeight + 2));
-
-                // Draw the image
-                graphics.DrawImage(image, imageX, imageY, drawWidth, drawHeight);
-
-                // Draw caption if enabled
-                if (showCaption)
+        // Import PDF files directly into the document using Merge
+        // Note: Merge creates references, so source documents must stay open until final save
+        private void ImportPdfFiles(PdfDocument document, List<string> pdfFiles)
+        {
+            foreach (var filePath in pdfFiles)
+            {
+                try
                 {
-                    string caption = Path.GetFileName(filePath);
-                    float captionY = y + maxHeight + 2;
+                    string extension = Path.GetExtension(filePath).ToLowerInvariant();
 
-                    // Truncate caption if too long
-                    var captionSize = SmallFont.MeasureString(caption);
-                    if (captionSize.Width > maxWidth)
+                    if (extension == ".pdf")
                     {
-                        while (captionSize.Width > maxWidth - 10 && caption.Length > 10)
-                        {
-                            caption = caption.Substring(0, caption.Length - 4) + "...";
-                            captionSize = SmallFont.MeasureString(caption);
-                        }
+                        // Load the PDF - DO NOT use 'using' as Merge creates references
+                        var loadedDoc = new PdfLoadedDocument(filePath);
+                        _loadedDocuments.Add(loadedDoc); // Keep alive until generation complete
+                        int pageCount = loadedDoc.Pages.Count;
+
+                        // Merge pages into destination
+                        PdfDocumentBase.Merge(document, loadedDoc);
+
+                        AppLogger.Info($"Merged {pageCount} page(s) from {Path.GetFileName(filePath)}", "DrawingsRenderer.ImportPdfFiles");
                     }
-
-                    // Center caption under image
-                    float captionX = x + (maxWidth - captionSize.Width) / 2;
-                    graphics.DrawString(caption, SmallFont, BlackBrush, new PointF(captionX, captionY));
+                    else
+                    {
+                        AppLogger.Warning($"Skipping non-PDF file: {Path.GetFileName(filePath)} (only PDF files are supported for drawings)", "DrawingsRenderer.ImportPdfFiles");
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                AppLogger.Error(ex, $"DrawingsRenderer.DrawImageInArea({filePath})");
-                graphics.DrawString($"[Error: {Path.GetFileName(filePath)}]", SmallFont, BlackBrush, new PointF(x + 5, y + 5));
-            }
-        }
-
-        // Load a drawing image from file
-        private PdfImage? LoadDrawingImage(string filePath)
-        {
-            try
-            {
-                string extension = Path.GetExtension(filePath).ToLowerInvariant();
-
-                // For PDF files, we'd need to extract pages as images - skip for now
-                if (extension == ".pdf")
+                catch (Exception ex)
                 {
-                    AppLogger.Warning($"PDF drawing files not yet supported: {filePath}", "DrawingsRenderer.LoadDrawingImage");
-                    return null;
+                    AppLogger.Error(ex, $"DrawingsRenderer.ImportPdfFiles({Path.GetFileName(filePath)})");
                 }
-
-                // Load image file
-                if (File.Exists(filePath))
-                {
-                    return new PdfBitmap(filePath);
-                }
-
-                return null;
-            }
-            catch (Exception ex)
-            {
-                AppLogger.Error(ex, $"DrawingsRenderer.LoadDrawingImage({filePath})");
-                return null;
             }
         }
     }

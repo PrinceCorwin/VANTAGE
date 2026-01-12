@@ -594,7 +594,7 @@ namespace VANTAGE
                     ShowCaptions = true,
                     FooterText = null
                 };
-                InsertFormTemplate(connection, drawingsId, "Drawings - Template", TemplateTypes.Drawings,
+                InsertFormTemplate(connection, drawingsId, "Drawings - Placeholder", TemplateTypes.Drawings,
                     JsonSerializer.Serialize(drawingsStructure), createdBy, createdUtc);
 
                 // Built-in WP Template: Summit Standard WP

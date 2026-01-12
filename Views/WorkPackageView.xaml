@@ -165,6 +165,7 @@
                             <ListBox x:Name="lstWorkPackages"
                                      Height="150"
                                      SelectionMode="Multiple"
+                                     SelectionChanged="LstWorkPackages_SelectionChanged"
                                      ToolTip="Select one or more work packages to generate">
                                 <ListBox.ItemTemplate>
                                     <DataTemplate>
@@ -232,6 +233,93 @@
                                 <TextBox x:Name="txtLogoPath" IsReadOnly="True" ToolTip="Leave as (default) to use the built-in Summit logo, or browse to select a custom logo"/>
                                 <Button Grid.Column="1" Content="Browse" Click="BtnBrowseLogo_Click" Padding="8,4" Margin="5,0,0,0"/>
                             </Grid>
+
+                            <!-- Drawings Section -->
+                            <Border BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,15">
+                                <StackPanel>
+                                    <TextBlock Text="Drawings" FontWeight="Bold" Margin="0,0,0,10"/>
+
+                                    <!-- Source Selection -->
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                        <RadioButton x:Name="rbDrawingsLocal"
+                                                     Content="Local Folder"
+                                                     GroupName="DrawingsSource"
+                                                     IsChecked="True"
+                                                     Checked="RbDrawingsSource_Checked"
+                                                     Foreground="{StaticResource ForegroundColor}"
+                                                     Margin="0,0,20,0"/>
+                                        <RadioButton x:Name="rbDrawingsProcore"
+                                                     Content="Procore"
+                                                     GroupName="DrawingsSource"
+                                                     Checked="RbDrawingsSource_Checked"
+                                                     Foreground="{StaticResource ForegroundColor}"/>
+                                    </StackPanel>
+
+                                    <!-- Local Folder Panel -->
+                                    <StackPanel x:Name="pnlDrawingsLocal" Margin="0,0,0,10">
+                                        <TextBlock Text="Folder Path" Margin="0,0,0,5"/>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBox x:Name="txtDrawingsLocalPath"
+                                                     ToolTip="Path to folder containing drawing PDFs. Use {WorkPackage} token for dynamic paths."/>
+                                            <Button Grid.Column="1"
+                                                    Content="Browse"
+                                                    Click="BtnBrowseDrawingsFolder_Click"
+                                                    Padding="8,4"
+                                                    Margin="5,0,0,0"/>
+                                        </Grid>
+                                        <TextBlock Text="Use {WorkPackage} token for dynamic paths"
+                                                   FontSize="11"
+                                                   FontStyle="Italic"
+                                                   Foreground="{StaticResource TextColorSecondary}"
+                                                   Margin="0,3,0,0"/>
+                                    </StackPanel>
+
+                                    <!-- Procore Panel (hidden by default) -->
+                                    <StackPanel x:Name="pnlDrawingsProcore" Visibility="Collapsed" Margin="0,0,0,10">
+                                        <TextBlock Text="Procore drawings will be fetched based on selected work packages"
+                                                   FontStyle="Italic"
+                                                   Foreground="{StaticResource TextColorSecondary}"
+                                                   TextWrapping="Wrap"/>
+                                    </StackPanel>
+
+                                    <!-- DwgNO List -->
+                                    <TextBlock Text="Drawing Numbers (from selected work packages)" Margin="0,5,0,5"/>
+                                    <syncfusion:SfDataGrid x:Name="dgDrawings"
+                                                           Height="120"
+                                                           AutoGenerateColumns="False"
+                                                           AllowEditing="False"
+                                                           AllowSorting="True"
+                                                           SelectionMode="Extended"
+                                                           GridLinesVisibility="Both"
+                                                           HeaderRowHeight="28"
+                                                           RowHeight="24">
+                                        <syncfusion:SfDataGrid.Columns>
+                                            <syncfusion:GridTextColumn HeaderText="Work Package" MappingName="WorkPackage" Width="120"/>
+                                            <syncfusion:GridTextColumn HeaderText="DwgNO" MappingName="DwgNO" Width="100"/>
+                                            <syncfusion:GridTextColumn HeaderText="Status" MappingName="Status" Width="80"/>
+                                        </syncfusion:SfDataGrid.Columns>
+                                    </syncfusion:SfDataGrid>
+                                    <TextBlock x:Name="lblDrawingsCount"
+                                               Text="Select work packages above to see drawings"
+                                               FontSize="11"
+                                               FontStyle="Italic"
+                                               Foreground="{StaticResource TextColorSecondary}"
+                                               Margin="0,3,0,0"/>
+
+                                    <!-- Fetch Button -->
+                                    <Button x:Name="btnFetchDrawings"
+                                            Content="Fetch Drawings"
+                                            Click="BtnFetchDrawings_Click"
+                                            Style="{StaticResource RoundedButtonStyle}"
+                                            HorizontalAlignment="Left"
+                                            Margin="0,10,0,0"
+                                            ToolTip="Fetch drawing PDFs from source to output folder"/>
+                                </StackPanel>
+                            </Border>
 
                             <!-- Output Folder with Generate Button -->
                             <TextBlock Text="Output Folder" FontWeight="Bold" Margin="0,0,0,5"/>

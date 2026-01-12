@@ -153,6 +153,7 @@
                                 <MenuItem Header="Toggle UpdatedBy" Click="ToggleUpdatedBy_Click"/>
                                 <MenuItem Header="Schedule Diagnostics" Click="MenuScheduleDiagnostics_Click"/>
                                 <MenuItem Header="Clear Azure Activities" Click="MenuClearAzureActivities_Click"/>
+                                <MenuItem Header="Test Procore Drawings" Click="MenuTestProcoreDrawings_Click"/>
                             </ContextMenu>
                         </syncfusion:ButtonAdv.ContextMenu>
                     </syncfusion:ButtonAdv>

@@ -203,4 +203,12 @@ namespace VANTAGE.Models
         public const string Grid = "Grid";
         public const string Drawings = "Drawings";
     }
+
+    // Drawing item for the Generate tab DwgNO grid
+    public class DrawingItem
+    {
+        public string WorkPackage { get; set; } = string.Empty;
+        public string DwgNO { get; set; } = string.Empty;
+        public string Status { get; set; } = "Pending";
+    }
 }

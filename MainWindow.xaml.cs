@@ -14,6 +14,7 @@ using VANTAGE.Utilities;
 using VANTAGE.Views;
 using VANTAGE.Interfaces;
 using VANTAGE.ViewModels;
+using MILESTONE.Services.Procore;
 
 namespace VANTAGE
 {
@@ -1471,7 +1472,76 @@ namespace VANTAGE
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+        private async void MenuTestProcoreDrawings_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var authService = new ProcoreAuthService();
+                var apiService = new ProcoreApiService(authService);
 
+                // Check if we need to authenticate
+                var token = await authService.GetAccessTokenAsync();
+                if (string.IsNullOrEmpty(token))
+                {
+                    // Show auth dialog
+                    var authDialog = new ProcoreAuthDialog(authService);
+                    authDialog.Owner = this;
+
+                    if (authDialog.ShowDialog() != true)
+                    {
+                        return; // User cancelled
+                    }
+                }
+
+                // Fetch companies
+                var companies = await apiService.GetCompaniesAsync();
+                if (companies.Count == 0)
+                {
+                    MessageBox.Show("No companies found.", "Procore Test", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                var company = companies[0];
+
+                // Fetch projects
+                var projects = await apiService.GetProjectsAsync(company.Id);
+                if (projects.Count == 0)
+                {
+                    MessageBox.Show($"No projects found for {company.Name}.", "Procore Test", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                var project = projects[0];
+
+                // Fetch drawings
+                var drawings = await apiService.GetDrawingsAsync(project.Id);
+
+                // Build result message
+                var sb = new System.Text.StringBuilder();
+                sb.AppendLine($"Company: {company.Name} (ID: {company.Id})");
+                sb.AppendLine($"Project: {project.DisplayName} (ID: {project.Id})");
+                sb.AppendLine($"Drawings: {drawings.Count}");
+                sb.AppendLine();
+
+                foreach (var dwg in drawings.Take(10))
+                {
+                    sb.AppendLine($"  • {dwg.Number} - {dwg.Title} (Rev {dwg.RevisionNumber})");
+                }
+
+                if (drawings.Count > 10)
+                {
+                    sb.AppendLine($"  ... and {drawings.Count - 10} more");
+                }
+
+                MessageBox.Show(sb.ToString(), "Procore Test - Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                AppLogger.Info($"Procore test successful: {drawings.Count} drawings fetched", "MainWindow.MenuTestProcoreDrawings_Click", App.CurrentUser?.Username);
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "MainWindow.MenuTestProcoreDrawings_Click");
+                MessageBox.Show($"Procore test failed:\n\n{ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
         // === TOOLS DROPDOWN ===
 
         private void BtnTools_Click(object sender, RoutedEventArgs e)

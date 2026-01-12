@@ -22,7 +22,11 @@
 - [ ] Test Grid editor - column add/remove/reorder, row count, saving, preview
 - [ ] Test Form editor - sections/items/columns, saving, preview
 - [ ] Test Type selection dialog - creating new templates of each type
-- [ ] Implement Drawings editor (folder path, images per page, source selection)
+- [x] Implement Drawings section in Generate tab (Local folder fetch working)
+- [ ] Drawings - Fix preview display
+- [ ] Drawings - Fix layout/orientation for 11x17 drawings
+- [ ] Drawings - Implement Procore fetch
+- [ ] **DISCUSS:** Drawings fetch architecture - consider AI-assisted matching (many factors: DwgNO formats, revisions, sheet numbers, naming conventions). May warrant separate Drawings Manager module/dialog where drawings are fetched/organized independently, then WP module simply pulls from that cache.
 
 ### Help Sidebar
 - [ ] Write Getting Started content
@@ -78,6 +82,16 @@
 ## Recent Completions
 
 ### January 11, 2026
+- Work Package Module - Drawings integration (Phase 1):
+  - Added Drawings section to Generate tab with Local Folder / Procore source selector
+  - DwgNO grid auto-populates from selected work packages (queries distinct DwgNO values)
+  - Local folder fetch with smart matching: full DwgNO → fallback to last two segments (e.g., "017004-01")
+  - Copies all matching revisions of each drawing
+  - Captures "Not in DB" files (PDFs in folder not matching any DwgNO)
+  - Renamed "Drawings - Template" to "Drawings - Placeholder" (marks position in WP)
+  - Hidden Drawings from Form Templates edit dropdown (configured via Generate tab now)
+  - DrawingsRenderer merges fetched PDFs into work package at placeholder position
+  - Fixed "Cannot access closed file" error (keep loaded PDFs alive until final save)
 - Work Package Module - Generate tab improvements:
   - Expanded "+ Field" dropdown with all Activity fields
   - Priority fields at top: Area, CompType, PhaseCategory, PhaseCode, SchedActNO, SystemNO, UDF2, WorkPackage
@@ -187,8 +201,8 @@
 
 ## Known Issues
 
-1. **Drawings editor not implemented** - Cannot configure Drawings templates yet (use default or clone)
-2. **Drawings PDF source not supported** - PDF files are skipped (image formats only for now)
+1. **Drawings preview not displaying** - Fetched drawings show in generated PDF but not in previewer
+2. **Drawings layout/orientation** - 11x17 drawings may need rotation or scaling adjustment
 
 ## Test Scenarios Validated
 
