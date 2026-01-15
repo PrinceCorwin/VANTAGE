@@ -1,7 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
 using System.IO;
-using System.Windows.Input;
 using VANTAGE.Utilities;
 
 namespace VANTAGE.ViewModels
@@ -24,6 +23,11 @@ namespace VANTAGE.ViewModels
         private string _currentHelpAnchor;
         private string _currentModuleDisplayName;
         private string _helpHtmlPath = null!;
+
+        // Search fields
+        private string _searchText = string.Empty;
+        private int _matchCount;
+        private int _currentMatchIndex;
 
         // ========================================
         // CONSTRUCTOR
@@ -148,6 +152,86 @@ namespace VANTAGE.ViewModels
         public double SplitterWidth => IsOpen ? 5 : 0;
 
         // ========================================
+        // SEARCH PROPERTIES
+        // ========================================
+        public string SearchText
+        {
+            get => _searchText;
+            set
+            {
+                if (_searchText != value)
+                {
+                    _searchText = value;
+                    OnPropertyChanged(nameof(SearchText));
+                    OnPropertyChanged(nameof(HasSearchText));
+                }
+            }
+        }
+
+        public bool HasSearchText => !string.IsNullOrEmpty(_searchText);
+
+        public int MatchCount
+        {
+            get => _matchCount;
+            set
+            {
+                if (_matchCount != value)
+                {
+                    _matchCount = value;
+                    OnPropertyChanged(nameof(MatchCount));
+                    OnPropertyChanged(nameof(HasMatches));
+                    OnPropertyChanged(nameof(MatchCountDisplay));
+                }
+            }
+        }
+
+        public int CurrentMatchIndex
+        {
+            get => _currentMatchIndex;
+            set
+            {
+                if (_currentMatchIndex != value)
+                {
+                    _currentMatchIndex = value;
+                    OnPropertyChanged(nameof(CurrentMatchIndex));
+                    OnPropertyChanged(nameof(MatchCountDisplay));
+                }
+            }
+        }
+
+        public bool HasMatches => _matchCount > 0;
+
+        public string MatchCountDisplay
+        {
+            get
+            {
+                if (!HasSearchText) return string.Empty;
+                if (_matchCount == 0) return "No results";
+                return $"{_currentMatchIndex} of {_matchCount}";
+            }
+        }
+
+        // ========================================
+        // SEARCH METHODS
+        // ========================================
+        public void ClearSearch()
+        {
+            SearchText = string.Empty;
+            MatchCount = 0;
+            CurrentMatchIndex = 0;
+        }
+
+        public void UpdateMatchInfo(int matchCount, int currentIndex)
+        {
+            _matchCount = matchCount;
+            _currentMatchIndex = currentIndex;
+            OnPropertyChanged(nameof(MatchCount));
+            OnPropertyChanged(nameof(CurrentMatchIndex));
+            OnPropertyChanged(nameof(HasMatches));
+            OnPropertyChanged(nameof(MatchCountDisplay));
+        }
+
+        // ========================================
         // METHODS
         // ========================================
         public void Toggle()
@@ -196,13 +280,13 @@ namespace VANTAGE.ViewModels
             {
                 if (App.CurrentUser == null) return;
 
-                string widthStr = SettingsManager.GetUserSetting( "SidePanel.Width", DefaultWidth.ToString());
+                string widthStr = SettingsManager.GetUserSetting("SidePanel.Width", DefaultWidth.ToString());
                 if (double.TryParse(widthStr, out double width))
                 {
                     _panelWidth = Math.Max(MinWidth, width);
                 }
 
-                string tabStr = SettingsManager.GetUserSetting( "SidePanel.ActiveTab", "Help");
+                string tabStr = SettingsManager.GetUserSetting("SidePanel.ActiveTab", "Help");
                 _activeTab = tabStr == "AI" ? "AI" : "Help";
 
                 // Don't restore IsOpen - always start closed
@@ -219,8 +303,8 @@ namespace VANTAGE.ViewModels
             {
                 if (App.CurrentUser == null) return;
 
-                SettingsManager.SetUserSetting( "SidePanel.Width", _panelWidth.ToString(), "string");
-                SettingsManager.SetUserSetting( "SidePanel.ActiveTab", _activeTab, "string");
+                SettingsManager.SetUserSetting("SidePanel.Width", _panelWidth.ToString(), "string");
+                SettingsManager.SetUserSetting("SidePanel.ActiveTab", _activeTab, "string");
             }
             catch (Exception ex)
             {

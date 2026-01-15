@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Threading;
 using Microsoft.Web.WebView2.Core;
 using VANTAGE.Utilities;
 using VANTAGE.ViewModels;
@@ -12,12 +14,15 @@ namespace VANTAGE.Views
     {
         private SidePanelViewModel? _viewModel;
         private bool _webViewInitialized = false;
+        private DispatcherTimer? _searchDebounceTimer;
+        private CoreWebView2FindOptions? _findOptions;
 
         public SidePanelView()
         {
             InitializeComponent();
             this.Loaded += SidePanelView_Loaded;
             this.DataContextChanged += SidePanelView_DataContextChanged;
+            InitializeSearchDebounce();
         }
 
         private void SidePanelView_Loaded(object sender, RoutedEventArgs e)
@@ -50,6 +55,7 @@ namespace VANTAGE.Views
                     break;
                 case nameof(SidePanelViewModel.CurrentModuleDisplayName):
                     UpdateContextHeader();
+                    ClearSearch();
                     break;
                 case nameof(SidePanelViewModel.HelpNavigationUrl):
                     NavigateToHelp();
@@ -83,6 +89,15 @@ namespace VANTAGE.Views
                 // Set dark background to match app theme
                 webViewHelp.DefaultBackgroundColor = System.Drawing.Color.FromArgb(255, 30, 30, 30);
 
+                // Create reusable find options
+                _findOptions = webViewHelp.CoreWebView2.Environment.CreateFindOptions();
+                _findOptions.SuppressDefaultFindDialog = true;
+                _findOptions.ShouldHighlightAllMatches = true;
+
+                // Subscribe to find events for match count updates
+                webViewHelp.CoreWebView2.Find.MatchCountChanged += Find_MatchCountChanged;
+                webViewHelp.CoreWebView2.Find.ActiveMatchIndexChanged += Find_ActiveMatchIndexChanged;
+
                 _webViewInitialized = true;
                 helpOverlay.Visibility = Visibility.Collapsed;
 
@@ -95,6 +110,31 @@ namespace VANTAGE.Views
             {
                 AppLogger.Error(ex, "SidePanelView.InitializeWebView");
                 txtHelpStatus.Text = "Failed to load help viewer.\nPlease ensure WebView2 Runtime is installed.";
+            }
+        }
+
+        private void Find_MatchCountChanged(object? sender, object e)
+        {
+            if (_viewModel == null || !_webViewInitialized) return;
+
+            int matchCount = (int)webViewHelp.CoreWebView2.Find.MatchCount;
+            int activeIndex = (int)webViewHelp.CoreWebView2.Find.ActiveMatchIndex;
+
+            // ActiveMatchIndex is 0-based, display as 1-based
+            _viewModel.UpdateMatchInfo(matchCount, matchCount > 0 ? activeIndex + 1 : 0);
+            UpdateSearchButtonStates();
+        }
+
+        private void Find_ActiveMatchIndexChanged(object? sender, object e)
+        {
+            if (_viewModel == null || !_webViewInitialized) return;
+
+            int activeIndex = (int)webViewHelp.CoreWebView2.Find.ActiveMatchIndex;
+
+            // ActiveMatchIndex is 0-based, display as 1-based
+            if (activeIndex >= 0)
+            {
+                _viewModel.CurrentMatchIndex = activeIndex + 1;
             }
         }
 
@@ -146,7 +186,6 @@ namespace VANTAGE.Views
         {
             if (_viewModel == null) return;
 
-            // Update Help tab button
             if (_viewModel.IsHelpTabActive)
             {
                 btnHelpTab.Background = (Brush)FindResource("AccentColor");
@@ -159,6 +198,7 @@ namespace VANTAGE.Views
 
                 gridHelpContent.Visibility = Visibility.Visible;
                 gridAiContent.Visibility = Visibility.Collapsed;
+                searchFieldRow.Visibility = Visibility.Visible;
             }
             else
             {
@@ -172,6 +212,7 @@ namespace VANTAGE.Views
 
                 gridHelpContent.Visibility = Visibility.Collapsed;
                 gridAiContent.Visibility = Visibility.Visible;
+                searchFieldRow.Visibility = Visibility.Collapsed;
             }
         }
 
@@ -203,6 +244,169 @@ namespace VANTAGE.Views
             {
                 _viewModel.CurrentHelpAnchor = anchor;
             }
+        }
+
+        // ========================================
+        // SEARCH FUNCTIONALITY
+        // ========================================
+
+        private void InitializeSearchDebounce()
+        {
+            _searchDebounceTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(300)
+            };
+            _searchDebounceTimer.Tick += SearchDebounceTimer_Tick;
+        }
+
+        private void TxtSearch_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            // Reset and start debounce timer
+            _searchDebounceTimer?.Stop();
+            _searchDebounceTimer?.Start();
+        }
+
+        private void SearchDebounceTimer_Tick(object? sender, EventArgs e)
+        {
+            _searchDebounceTimer?.Stop();
+            ExecuteSearch();
+        }
+
+        private void TxtSearch_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                // Stop debounce timer and act immediately
+                _searchDebounceTimer?.Stop();
+
+                if (Keyboard.Modifiers == ModifierKeys.Shift)
+                {
+                    FindPrevious();
+                }
+                else
+                {
+                    // If no search has been done yet, execute search first
+                    if (_viewModel != null && !_viewModel.HasMatches && !string.IsNullOrEmpty(txtSearch.Text))
+                    {
+                        ExecuteSearch();
+                    }
+                    else
+                    {
+                        FindNext();
+                    }
+                }
+                e.Handled = true;
+            }
+            else if (e.Key == Key.Escape)
+            {
+                ClearSearch();
+                e.Handled = true;
+            }
+        }
+
+        private void BtnSearchPrev_Click(object sender, RoutedEventArgs e)
+        {
+            FindPrevious();
+        }
+
+        private void BtnSearchNext_Click(object sender, RoutedEventArgs e)
+        {
+            FindNext();
+        }
+
+        private async void ExecuteSearch()
+        {
+            if (!_webViewInitialized || _viewModel == null || _findOptions == null) return;
+
+            string searchText = txtSearch.Text.Trim();
+            _viewModel.SearchText = searchText;
+
+            if (string.IsNullOrEmpty(searchText))
+            {
+                StopSearch();
+                return;
+            }
+
+            try
+            {
+                // Stop any existing search first
+                webViewHelp.CoreWebView2.Find.Stop();
+
+                // Configure find options
+                _findOptions.FindTerm = searchText;
+                _findOptions.IsCaseSensitive = false;
+                _findOptions.ShouldMatchWord = false;
+
+                // Start the find session
+                await webViewHelp.CoreWebView2.Find.StartAsync(_findOptions);
+
+                // Match count will be updated via MatchCountChanged event
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "SidePanelView.ExecuteSearch");
+                _viewModel.UpdateMatchInfo(0, 0);
+                UpdateSearchButtonStates();
+            }
+        }
+
+        private void FindNext()
+        {
+            if (!_webViewInitialized || _viewModel == null || !_viewModel.HasMatches) return;
+
+            try
+            {
+                webViewHelp.CoreWebView2.Find.FindNext();
+                // Index will be updated via ActiveMatchIndexChanged event
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "SidePanelView.FindNext");
+            }
+        }
+
+        private void FindPrevious()
+        {
+            if (!_webViewInitialized || _viewModel == null || !_viewModel.HasMatches) return;
+
+            try
+            {
+                webViewHelp.CoreWebView2.Find.FindPrevious();
+                // Index will be updated via ActiveMatchIndexChanged event
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "SidePanelView.FindPrevious");
+            }
+        }
+
+        private void StopSearch()
+        {
+            if (!_webViewInitialized) return;
+
+            try
+            {
+                webViewHelp.CoreWebView2.Find.Stop();
+                _viewModel?.ClearSearch();
+                UpdateSearchButtonStates();
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "SidePanelView.StopSearch");
+            }
+        }
+
+        private void ClearSearch()
+        {
+            txtSearch.Text = string.Empty;
+            StopSearch();
+        }
+
+        private void UpdateSearchButtonStates()
+        {
+            bool hasMatches = _viewModel?.HasMatches ?? false;
+            btnSearchPrev.IsEnabled = hasMatches;
+            btnSearchNext.IsEnabled = hasMatches;
         }
     }
 }
