@@ -107,6 +107,7 @@ namespace VANTAGE
         }
         private void MenuHelpSidebar_Click(object sender, RoutedEventArgs e)
         {
+            popupSettings.IsOpen = false;
             // Get context from current view
             string anchor = "getting-started";
             string displayName = "Getting Started";

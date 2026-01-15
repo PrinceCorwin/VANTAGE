@@ -284,16 +284,14 @@
                                 CornerRadius="2"
                                 Padding="0">
                             <StackPanel>
-                                <Button Content="Grid Layouts..."
+                                <Button Content="Help / AI Sidebar   (F1)"
                                         Background="Transparent"
                                         Foreground="{StaticResource ForegroundColor}"
                                         BorderThickness="0"
                                         Padding="12,8"
                                         HorizontalContentAlignment="Left"
-                                        Click="MenuGridLayouts_Click"
-                                        Cursor="Hand"
-                                        ToolTip="Save and apply custom column layouts"/>
-                                <Separator Background="{StaticResource BorderColor}" Margin="5,2"/>
+                                        Click="MenuHelpSidebar_Click"
+                                        Cursor="Hand"/>
                                 <Button Content="Feedback Board"
                                         Background="Transparent"
                                         Foreground="{StaticResource ForegroundColor}"
@@ -322,6 +320,15 @@
                                         Click="MenuExportSettings_Click"
                                         Cursor="Hand"
                                         ToolTip="Export application settings to file"/>
+                                <Button Content="Grid Layouts..."
+                                        Background="Transparent"
+                                        Foreground="{StaticResource ForegroundColor}"
+                                        BorderThickness="0"
+                                        Padding="12,8"
+                                        HorizontalContentAlignment="Left"
+                                        Click="MenuGridLayouts_Click"
+                                        Cursor="Hand"
+                                        ToolTip="Save and apply custom column layouts"/>
                                 <Separator Background="{StaticResource BorderColor}" Margin="5,2"/>
                                 <Button Content="About MILESTONE"
                                         Background="Transparent"
