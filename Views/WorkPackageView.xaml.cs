@@ -95,6 +95,7 @@ namespace VANTAGE.Views
         private TextBox? _gridColumnEditNameBox;
         private Syncfusion.Windows.Shared.IntegerTextBox? _gridColumnEditWidthBox;
         private int _gridColumnEditIndex = -1;
+        private float _gridBaseHeaderFontSize = 9f;  // Preserve template's base font size
 
         // Form editor controls
         private TextBox? _formTitleBox;
@@ -2381,6 +2382,7 @@ namespace VANTAGE.Views
         {
             _currentEditorType = TemplateTypes.Grid;
             _gridColumns = new ObservableCollection<TemplateColumn>(structure.Columns);
+            _gridBaseHeaderFontSize = structure.BaseHeaderFontSize;  // Preserve for save
 
             var panel = new StackPanel { Margin = new Thickness(0, 10, 0, 0) };
 
@@ -2813,6 +2815,7 @@ namespace VANTAGE.Views
                 Columns = _gridColumns?.ToList() ?? new List<TemplateColumn>(),
                 RowCount = (int)(_gridRowCountBox?.Value ?? 22),
                 RowHeightIncreasePercent = (int)(_gridRowHeightSlider?.Value ?? 0),
+                BaseHeaderFontSize = _gridBaseHeaderFontSize,  // Preserve original base font size
                 FontSizeAdjustPercent = (int)(_gridFontSizeSlider?.Value ?? 0),
                 FooterText = string.IsNullOrWhiteSpace(_gridFooterTextBox?.Text) ? null : _gridFooterTextBox.Text
             };

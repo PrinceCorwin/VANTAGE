@@ -13,7 +13,6 @@ namespace VANTAGE.Services.PdfRenderers
     {
         private const float DefaultRowHeight = 22f;
         private const float HeaderHeight = 18f;
-        private const float BaseHeaderFontSize = 9f;
 
         public override PdfDocument Render(string structureJson, TokenContext context, string? logoPath = null)
         {
@@ -31,25 +30,32 @@ namespace VANTAGE.Services.PdfRenderers
                 var page = document.Pages.Add();
                 var graphics = page.Graphics;
 
+                // Resolve footer text once for consistent measurement and rendering
+                string? resolvedFooter = string.IsNullOrEmpty(structure.FooterText)
+                    ? null
+                    : TokenResolver.Resolve(structure.FooterText, context);
+                float footerReserve = GetFooterReservedHeight(resolvedFooter);
+
                 // Render header
                 string title = TokenResolver.Resolve(structure.Title, context);
                 float y = RenderHeader(page, context, title, logoPath);
 
                 y += 10f;
 
-                // Calculate adjusted font size
+                // Calculate adjusted font size (uses template's base font size)
                 float fontScale = 1 + structure.FontSizeAdjustPercent / 100f;
-                float headerFontSize = BaseHeaderFontSize * fontScale;
+                float headerFontSize = structure.BaseHeaderFontSize * fontScale;
                 var adjustedHeaderFont = new PdfStandardFont(PdfFontFamily.Helvetica, headerFontSize, PdfFontStyle.Bold);
 
-                // Calculate row height - scales with font, then applies increase percent
-                float rowHeight = DefaultRowHeight * fontScale * (1 + structure.RowHeightIncreasePercent / 100f);
+                // Calculate row height - scales proportionally with font size ratio
+                float fontRatio = structure.BaseHeaderFontSize / 9f;  // Ratio vs default 9pt
+                float rowHeight = DefaultRowHeight * fontRatio * fontScale * (1 + structure.RowHeightIncreasePercent / 100f);
 
                 // Draw column headers
                 y = DrawColumnHeaders(graphics, structure, y, adjustedHeaderFont);
 
-                // Calculate how many rows fit on a page
-                float availableHeight = PageHeight - MarginBottom - 50f - y;
+                // Calculate how many rows fit on a page (use dynamic footer reserve)
+                float availableHeight = PageHeight - MarginBottom - footerReserve - y;
                 int rowsPerPage = (int)(availableHeight / rowHeight);
                 int rowsDrawn = 0;
 
@@ -60,9 +66,9 @@ namespace VANTAGE.Services.PdfRenderers
                     if (rowsDrawn >= rowsPerPage)
                     {
                         // Render footer on current page if exists
-                        if (!string.IsNullOrEmpty(structure.FooterText))
+                        if (resolvedFooter != null)
                         {
-                            RenderFooter(page, TokenResolver.Resolve(structure.FooterText, context));
+                            RenderFooter(page, resolvedFooter);
                         }
 
                         page = document.Pages.Add();
@@ -73,7 +79,7 @@ namespace VANTAGE.Services.PdfRenderers
                         y = DrawColumnHeaders(graphics, structure, y, adjustedHeaderFont);
 
                         // Recalculate rows per page
-                        availableHeight = PageHeight - MarginBottom - 50f - y;
+                        availableHeight = PageHeight - MarginBottom - footerReserve - y;
                         rowsPerPage = (int)(availableHeight / rowHeight);
                         rowsDrawn = 0;
                     }
@@ -84,10 +90,9 @@ namespace VANTAGE.Services.PdfRenderers
                 }
 
                 // Render footer if present
-                if (!string.IsNullOrEmpty(structure.FooterText))
+                if (resolvedFooter != null)
                 {
-                    string footerText = TokenResolver.Resolve(structure.FooterText, context);
-                    RenderFooter(page, footerText);
+                    RenderFooter(page, resolvedFooter);
                 }
             }
             catch (Exception ex)

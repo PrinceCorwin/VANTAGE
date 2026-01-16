@@ -33,6 +33,12 @@ namespace VANTAGE.Services.PdfRenderers
                 var page = document.Pages.Add();
                 var graphics = page.Graphics;
 
+                // Resolve footer text once for consistent measurement and rendering
+                string? resolvedFooter = string.IsNullOrEmpty(structure.FooterText)
+                    ? null
+                    : TokenResolver.Resolve(structure.FooterText, context);
+                float footerReserve = GetFooterReservedHeight(resolvedFooter);
+
                 // Render header
                 string title = TokenResolver.Resolve(structure.Title, context);
                 float y = RenderHeader(page, context, title, logoPath);
@@ -61,14 +67,14 @@ namespace VANTAGE.Services.PdfRenderers
                 // Draw sections and their items
                 foreach (var section in structure.Sections)
                 {
-                    // Check if we need a new page
+                    // Check if we need a new page (use dynamic footer reserve)
                     float sectionHeight = SectionHeaderHeight + (section.Items.Count * rowHeight);
-                    if (y + sectionHeight > PageHeight - MarginBottom - 50f)
+                    if (y + sectionHeight > PageHeight - MarginBottom - footerReserve)
                     {
                         // Render footer on current page if exists
-                        if (!string.IsNullOrEmpty(structure.FooterText))
+                        if (resolvedFooter != null)
                         {
-                            RenderFooter(page, TokenResolver.Resolve(structure.FooterText, context));
+                            RenderFooter(page, resolvedFooter);
                         }
 
                         page = document.Pages.Add();
@@ -90,10 +96,9 @@ namespace VANTAGE.Services.PdfRenderers
                 }
 
                 // Render footer if present
-                if (!string.IsNullOrEmpty(structure.FooterText))
+                if (resolvedFooter != null)
                 {
-                    string footerText = TokenResolver.Resolve(structure.FooterText, context);
-                    RenderFooter(page, footerText);
+                    RenderFooter(page, resolvedFooter);
                 }
             }
             catch (Exception ex)

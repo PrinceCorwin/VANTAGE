@@ -42,6 +42,10 @@ namespace VANTAGE.Services.PdfRenderers
         protected static readonly PdfPen NormalPen = new PdfPen(Black, 1f);
         protected static readonly PdfPen ThickPen = new PdfPen(Black, 2f);
 
+        // Footer layout constants
+        private const float FooterLineSpacing = 5f;  // Space after separator line
+        private const float FooterMinHeight = 40f;   // Minimum footer text area height
+
         // Path to default logo (embedded resource)
         protected const string DefaultLogoPath = "pack://application:,,,/Images/SummitLogoNoText.jpg";
 
@@ -193,6 +197,30 @@ namespace VANTAGE.Services.PdfRenderers
             }
         }
 
+        // Measure the height needed for footer text when wrapped to content width
+        protected float MeasureFooterHeight(string? footerText)
+        {
+            if (string.IsNullOrEmpty(footerText))
+                return 0f;
+
+            // Measure how tall the text will be when wrapped to content width
+            var layoutArea = new SizeF(ContentWidth, float.MaxValue);
+            var measuredSize = SmallFont.MeasureString(footerText, layoutArea);
+
+            // Return at least minimum height, or measured height if larger
+            return Math.Max(FooterMinHeight, measuredSize.Height + 5f);
+        }
+
+        // Get total space to reserve for footer (line + spacing + text)
+        protected float GetFooterReservedHeight(string? footerText)
+        {
+            if (string.IsNullOrEmpty(footerText))
+                return 0f;
+
+            // Separator line position offset (10f) + line spacing (5f) + text height + bottom padding
+            return 10f + FooterLineSpacing + MeasureFooterHeight(footerText) + 5f;
+        }
+
         // Render footer text at the bottom of the page
         protected void RenderFooter(PdfPage page, string? footerText)
         {
@@ -200,13 +228,17 @@ namespace VANTAGE.Services.PdfRenderers
                 return;
 
             var graphics = page.Graphics;
-            float footerY = PageHeight - MarginBottom - 30f;
+
+            // Calculate footer height and position
+            float textHeight = MeasureFooterHeight(footerText);
+            float totalFooterHeight = 10f + FooterLineSpacing + textHeight;
+            float footerY = PageHeight - MarginBottom - totalFooterHeight;
 
             // Draw separator line
             graphics.DrawLine(ThinPen, MarginLeft, footerY, MarginLeft + ContentWidth, footerY);
-            footerY += 5f;
+            footerY += FooterLineSpacing;
 
-            // Draw footer text (may wrap)
+            // Draw footer text with wrapping
             var format = new PdfStringFormat
             {
                 Alignment = PdfTextAlignment.Left,
@@ -214,7 +246,7 @@ namespace VANTAGE.Services.PdfRenderers
                 WordWrap = PdfWordWrapType.Word
             };
 
-            var footerRect = new RectangleF(MarginLeft, footerY, ContentWidth, 25f);
+            var footerRect = new RectangleF(MarginLeft, footerY, ContentWidth, textHeight);
             graphics.DrawString(footerText, SmallFont, BlackBrush, footerRect, format);
         }
 

@@ -137,6 +137,9 @@ namespace VANTAGE.Models
         [JsonPropertyName("rowHeightIncreasePercent")]
         public int RowHeightIncreasePercent { get; set; } = 0;
 
+        [JsonPropertyName("baseHeaderFontSize")]
+        public float BaseHeaderFontSize { get; set; } = 9f;  // Default 9pt, slider adjusts from this
+
         [JsonPropertyName("fontSizeAdjustPercent")]
         public int FontSizeAdjustPercent { get; set; } = 0;
 

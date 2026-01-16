@@ -492,7 +492,7 @@ namespace VANTAGE
                 InsertFormTemplate(connection, checklistId, "Checklist - Template", TemplateTypes.Form,
                     JsonSerializer.Serialize(checklistStructure), createdBy, createdUtc);
 
-                // 4. Punchlist (Grid type)
+                // 4. Punchlist (Grid type) - smaller base font to fit many columns
                 var punchlistStructure = new GridStructure
                 {
                     Title = "PUNCHLIST",
@@ -511,6 +511,7 @@ namespace VANTAGE
                     },
                     RowCount = 22,
                     RowHeightIncreasePercent = 0,
+                    BaseHeaderFontSize = 6.3f,  // 30% smaller than default 9pt
                     FooterText = null
                 };
                 InsertFormTemplate(connection, punchlistId, "Punchlist - Template", TemplateTypes.Grid,

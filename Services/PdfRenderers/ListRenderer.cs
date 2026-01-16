@@ -30,6 +30,12 @@ namespace VANTAGE.Services.PdfRenderers
                 var page = document.Pages.Add();
                 var graphics = page.Graphics;
 
+                // Resolve footer text once for consistent measurement and rendering
+                string? resolvedFooter = string.IsNullOrEmpty(structure.FooterText)
+                    ? null
+                    : TokenResolver.Resolve(structure.FooterText, context);
+                float footerReserve = GetFooterReservedHeight(resolvedFooter);
+
                 // Render header
                 string title = TokenResolver.Resolve(structure.Title, context);
                 float y = RenderHeader(page, context, title, logoPath);
@@ -45,9 +51,15 @@ namespace VANTAGE.Services.PdfRenderers
                 // Render each item
                 foreach (var item in structure.Items)
                 {
-                    // Check if we need a new page
-                    if (y > PageHeight - MarginBottom - 50f)
+                    // Check if we need a new page (use dynamic footer reserve)
+                    if (y > PageHeight - MarginBottom - footerReserve)
                     {
+                        // Render footer on current page if exists
+                        if (resolvedFooter != null)
+                        {
+                            RenderFooter(page, resolvedFooter);
+                        }
+
                         page = document.Pages.Add();
                         graphics = page.Graphics;
                         y = MarginTop;
@@ -80,10 +92,9 @@ namespace VANTAGE.Services.PdfRenderers
                 }
 
                 // Render footer if present
-                if (!string.IsNullOrEmpty(structure.FooterText))
+                if (resolvedFooter != null)
                 {
-                    string footerText = TokenResolver.Resolve(structure.FooterText, context);
-                    RenderFooter(page, footerText);
+                    RenderFooter(page, resolvedFooter);
                 }
             }
             catch (Exception ex)

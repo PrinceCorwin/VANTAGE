@@ -31,6 +31,12 @@ namespace VANTAGE.Services.PdfRenderers
                 var page = document.Pages.Add();
                 var graphics = page.Graphics;
 
+                // Resolve footer text once for consistent measurement and rendering
+                string? resolvedFooter = string.IsNullOrEmpty(structure.FooterText)
+                    ? null
+                    : TokenResolver.Resolve(structure.FooterText, context);
+                float footerReserve = GetFooterReservedHeight(resolvedFooter);
+
                 // Render header
                 string title = TokenResolver.Resolve(structure.Title, context);
                 float y = RenderHeader(page, context, title, logoPath);
@@ -43,7 +49,7 @@ namespace VANTAGE.Services.PdfRenderers
                 {
                     // Calculate image dimensions based on imageWidthPercent
                     float maxWidth = ContentWidth * (structure.ImageWidthPercent / 100f);
-                    float maxHeight = PageHeight - y - MarginBottom - 60f; // Leave room for footer
+                    float maxHeight = PageHeight - y - MarginBottom - footerReserve - 20f; // Leave room for footer
 
                     // Scale to fit while maintaining aspect ratio
                     float scale = Math.Min(maxWidth / coverImage.Width, maxHeight / coverImage.Height);
@@ -53,18 +59,17 @@ namespace VANTAGE.Services.PdfRenderers
                     // Center horizontally
                     float imageX = MarginLeft + (ContentWidth - drawWidth) / 2;
 
-                    // Center vertically in remaining space
-                    float remainingHeight = PageHeight - y - MarginBottom - 40f;
+                    // Center vertically in remaining space (above footer)
+                    float remainingHeight = PageHeight - y - MarginBottom - footerReserve;
                     float imageY = y + (remainingHeight - drawHeight) / 2;
 
                     graphics.DrawImage(coverImage, imageX, imageY, drawWidth, drawHeight);
                 }
 
                 // Render footer if present
-                if (!string.IsNullOrEmpty(structure.FooterText))
+                if (resolvedFooter != null)
                 {
-                    string footerText = TokenResolver.Resolve(structure.FooterText, context);
-                    RenderFooter(page, footerText);
+                    RenderFooter(page, resolvedFooter);
                 }
             }
             catch (Exception ex)

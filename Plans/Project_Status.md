@@ -22,7 +22,7 @@
 - [ ] Test Grid editor - column add/remove/reorder, row count, saving, preview
 - [ ] Test Form editor - sections/items/columns, saving, preview
 - [ ] Test Type selection dialog - creating new templates of each type
-- [ ] Change Punchlist template default header font size to -30% (current default too large)
+- [x] Change Punchlist template default header font size to -30% (current default too large)
 - [ ] Add Reset Defaults button to form template editors (resets all fields/settings to built-in template values)
 - [x] Implement Drawings section in Generate tab (Local folder fetch working)
 - [ ] Drawings - Fix preview display
@@ -89,6 +89,18 @@
 ## Recent Completions
 
 ### January 16, 2026
+- Work Package PDF - Dynamic footer height:
+  - Footer now auto-sizes based on content (was hardcoded 25pt, too small for long text)
+  - Added MeasureFooterHeight() and GetFooterReservedHeight() to BaseRenderer
+  - All renderers (Form, Grid, Cover, List) now use dynamic footer measurement
+  - Page break logic accounts for actual footer size
+  - Fixes Signoff Sheet footer text being cut off
+- Work Package PDF - Punchlist base font size:
+  - Added BaseHeaderFontSize property to GridStructure (default 9pt)
+  - Punchlist template uses 6.3pt base (30% smaller) to fit many columns
+  - Slider adjustment still works on top of reduced base size
+  - Grid editor preserves BaseHeaderFontSize on save/load
+- Form template names updated: Removed "WORK PACKAGE" prefix from all default templates (now just "Cover Sheet", "Punchlist", etc.)
 - Help Sidebar - Search functionality:
   - Added search field below context header with ˄/˅ navigation buttons and match counter
   - Uses WebView2 Find API (CoreWebView2.Find) with SuppressDefaultFindDialog
