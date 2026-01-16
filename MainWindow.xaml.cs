@@ -12,7 +12,6 @@ using VANTAGE.Dialogs;
 using VANTAGE.Models;
 using VANTAGE.Utilities;
 using VANTAGE.Views;
-using VANTAGE.Interfaces;
 using VANTAGE.ViewModels;
 using MILESTONE.Services.Procore;
 
@@ -82,50 +81,10 @@ namespace VANTAGE
             }
         }
 
-        private void UpdateSidebarContext()
-        {
-            if (!_sidePanelViewModel.IsOpen) return;
-
-            string anchor = "getting-started";
-            string displayName = "Getting Started";
-
-            // Check DataContext first (ViewModels)
-            if (ContentArea.Content is FrameworkElement view && view.DataContext is IHelpAware helpAwareVm)
-            {
-                anchor = helpAwareVm.HelpAnchor;
-                displayName = helpAwareVm.ModuleDisplayName;
-            }
-            // Fallback: check if view itself implements IHelpAware
-            else if (ContentArea.Content is IHelpAware helpAwareView)
-            {
-                anchor = helpAwareView.HelpAnchor;
-                displayName = helpAwareView.ModuleDisplayName;
-            }
-
-            _sidePanelViewModel.CurrentHelpAnchor = anchor;
-            _sidePanelViewModel.CurrentModuleDisplayName = displayName;
-        }
         private void MenuHelpSidebar_Click(object sender, RoutedEventArgs e)
         {
             popupSettings.IsOpen = false;
-            // Get context from current view
-            string anchor = "getting-started";
-            string displayName = "Getting Started";
-
-            // Check DataContext first (ViewModels)
-            if (ContentArea.Content is FrameworkElement view && view.DataContext is IHelpAware helpAwareVm)
-            {
-                anchor = helpAwareVm.HelpAnchor;
-                displayName = helpAwareVm.ModuleDisplayName;
-            }
-            // Fallback: check if view itself implements IHelpAware
-            else if (ContentArea.Content is IHelpAware helpAwareView)
-            {
-                anchor = helpAwareView.HelpAnchor;
-                displayName = helpAwareView.ModuleDisplayName;
-            }
-
-            _sidePanelViewModel.ShowHelp(anchor, displayName);
+            _sidePanelViewModel.ShowHelp();
         }
 
         private void MenuAbout_Click(object sender, RoutedEventArgs e)
@@ -346,7 +305,6 @@ namespace VANTAGE
 
             LoadProgressModule();
             HighlightNavigationButton(btnProgress);
-            UpdateSidebarContext();
         }
 
         private void BtnSchedule_Click(object sender, RoutedEventArgs e)
@@ -365,7 +323,6 @@ namespace VANTAGE
             ContentArea.Content = null;
             var scheduleView = new ScheduleView();
             ContentArea.Content = scheduleView;
-            UpdateSidebarContext();
         }
 
         private void BtnPbook_Click(object sender, RoutedEventArgs e)
@@ -384,7 +341,6 @@ namespace VANTAGE
             ContentArea.Content = null;
             var progressBooksView = new ProgressBooksView();
             ContentArea.Content = progressBooksView;
-            UpdateSidebarContext();
         }
 
         private void BtnWorkPackage_Click(object sender, RoutedEventArgs e)
@@ -403,7 +359,6 @@ namespace VANTAGE
             ContentArea.Content = null;
             var workPackageView = new Views.WorkPackageView();
             ContentArea.Content = workPackageView;
-            UpdateSidebarContext();
         }
 
         private void BtnCreate_Click(object sender, RoutedEventArgs e)

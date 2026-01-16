@@ -20,8 +20,6 @@ namespace VANTAGE.ViewModels
         private bool _isOpen;
         private double _panelWidth;
         private string _activeTab;
-        private string _currentHelpAnchor;
-        private string _currentModuleDisplayName;
         private string _helpHtmlPath = null!;
 
         // Search fields
@@ -37,8 +35,6 @@ namespace VANTAGE.ViewModels
             _isOpen = false;
             _panelWidth = DefaultWidth;
             _activeTab = "Help";
-            _currentHelpAnchor = "getting-started";
-            _currentModuleDisplayName = "Getting Started";
 
             // Build path to help HTML file
             string appDir = AppDomain.CurrentDomain.BaseDirectory;
@@ -103,33 +99,6 @@ namespace VANTAGE.ViewModels
         public bool IsHelpTabActive => ActiveTab == "Help";
         public bool IsAiTabActive => ActiveTab == "AI";
 
-        public string CurrentHelpAnchor
-        {
-            get => _currentHelpAnchor;
-            set
-            {
-                if (_currentHelpAnchor != value)
-                {
-                    _currentHelpAnchor = value;
-                    OnPropertyChanged(nameof(CurrentHelpAnchor));
-                    OnPropertyChanged(nameof(HelpNavigationUrl));
-                }
-            }
-        }
-
-        public string CurrentModuleDisplayName
-        {
-            get => _currentModuleDisplayName;
-            set
-            {
-                if (_currentModuleDisplayName != value)
-                {
-                    _currentModuleDisplayName = value;
-                    OnPropertyChanged(nameof(CurrentModuleDisplayName));
-                }
-            }
-        }
-
         // URL for WebView2 navigation
         public string HelpNavigationUrl
         {
@@ -141,8 +110,8 @@ namespace VANTAGE.ViewModels
                     return "about:blank";
                 }
 
-                string anchor = string.IsNullOrEmpty(_currentHelpAnchor) ? "" : $"#{_currentHelpAnchor}";
-                return $"file:///{_helpHtmlPath.Replace('\\', '/')}{anchor}";
+                // Always open to beginning of help document (no anchor navigation)
+                return $"file:///{_helpHtmlPath.Replace('\\', '/')}";
             }
         }
 
@@ -249,10 +218,8 @@ namespace VANTAGE.ViewModels
             IsOpen = false;
         }
 
-        public void ShowHelp(string anchor, string displayName)
+        public void ShowHelp()
         {
-            CurrentHelpAnchor = anchor;
-            CurrentModuleDisplayName = displayName;
             ActiveTab = "Help";
             Open();
         }

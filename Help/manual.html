@@ -167,16 +167,34 @@
             margin-bottom: 15px;
         }
 
-        .toc ul {
+        .toc > ul {
             list-style: none;
             padding-left: 0;
         }
 
-        .toc li {
-            margin: 8px 0;
+        .toc > ul > li {
+            margin: 12px 0;
         }
 
-        .toc a {
+        .toc > ul > li > a {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .toc ul ul {
+            list-style: none;
+            padding-left: 20px;
+            margin-top: 6px;
+        }
+
+        .toc ul ul li {
+            margin: 4px 0;
+        }
+
+        .toc ul ul a {
+            font-size: 13px;
+            font-weight: 400;
             color: var(--text-secondary);
         }
 
@@ -211,13 +229,57 @@
     <div class="toc">
         <div class="toc-title">Table of Contents</div>
         <ul>
-            <li><a href="#getting-started">1. Getting Started</a></li>
-            <li><a href="#progress-module">2. Progress Module</a></li>
-            <li><a href="#schedule-module">3. Schedule Module</a></li>
-            <li><a href="#work-packages">4. Work Packages</a></li>
-            <li><a href="#progress-books">5. Progress Books</a></li>
-            <li><a href="#administration">6. Administration</a></li>
-            <li><a href="#reference">7. Reference</a></li>
+            <li><a href="#getting-started">1. Getting Started</a>
+                <ul>
+                    <li><a href="#gs-what-is">What is MILESTONE?</a></li>
+                    <li><a href="#gs-before-you-begin">Before You Begin</a></li>
+                </ul>
+            </li>
+            <li><a href="#main-interface">2. Main Interface</a>
+                <ul>
+                    <li><a href="#ui-layout">Layout</a></li>
+                    <li><a href="#ui-navigation">Navigation</a></li>
+                    <li><a href="#ui-menus">Menus</a></li>
+                    <li><a href="#ui-status-bar">Status Bar</a></li>
+                    <li><a href="#ui-help-sidebar">Help Sidebar</a></li>
+                    <li><a href="#ui-shortcuts">Keyboard Shortcuts</a></li>
+                </ul>
+            </li>
+            <li><a href="#progress-module">3. Progress Module</a>
+                <ul>
+                    <li><a href="#prog-overview">Overview</a></li>
+                    <li><a href="#prog-workflow">Typical Workflow</a></li>
+                    <li><a href="#prog-layout">Layout</a></li>
+                    <li><a href="#prog-toolbar">Toolbar</a></li>
+                    <li><a href="#prog-filters">Sidebar Filters</a></li>
+                    <li><a href="#prog-editing">Grid Editing</a></li>
+                    <li><a href="#prog-metadata">Required Metadata Fields</a></li>
+                    <li><a href="#prog-syncing">Syncing Data</a></li>
+                    <li><a href="#prog-layouts">Column Layouts</a></li>
+                    <li><a href="#prog-shortcuts">Keyboard Shortcuts</a></li>
+                </ul>
+            </li>
+            <li><a href="#schedule-module">4. Schedule Module</a>
+                <ul>
+                    <li><a href="#sched-overview">Overview</a></li>
+                    <li><a href="#sched-layout">Layout</a></li>
+                    <li><a href="#sched-colors">Color Coding</a></li>
+                    <li><a href="#sched-toolbar">Toolbar</a></li>
+                    <li><a href="#sched-master-grid">Master Grid Columns</a></li>
+                    <li><a href="#sched-detail-grid">Detail Grid</a></li>
+                    <li><a href="#sched-3wla">Three-Week Lookahead (3WLA)</a></li>
+                    <li><a href="#sched-missed-reasons">Missed Reasons</a></li>
+                    <li><a href="#sched-discrepancies">Discrepancies</a></li>
+                    <li><a href="#sched-p6-import">P6 Import</a></li>
+                    <li><a href="#sched-p6-export">P6 Export</a></li>
+                    <li><a href="#sched-saving">Saving Changes</a></li>
+                    <li><a href="#sched-shortcuts">Keyboard Shortcuts</a></li>
+                </ul>
+            </li>
+            <li><a href="#work-packages">5. Work Packages</a></li>
+            <li><a href="#progress-books">6. Progress Books</a></li>
+            <li><a href="#administration">7. Administration</a></li>
+            <li><a href="#reference">8. Reference</a></li>
         </ul>
     </div>
 
@@ -225,23 +287,113 @@
     <h2 id="getting-started">1. Getting Started</h2>
     <!-- ============================================ -->
 
-    <h3>What is MILESTONE?</h3>
-    <p>MILESTONE is a construction activity tracking and work package generation system designed for field engineers working on industrial construction projects.</p>
+    <h3 id="gs-what-is">What is MILESTONE?</h3>
+    <p>MILESTONE is a construction activity tracking and work package generation system built for Summit Constructors. Field engineers use it to track progress on industrial construction activities (Receiving, Fabrication, Assembly, Connections, etc.) and generate work packages for field crews. The system integrates with P6 Primavera for schedule management.</p>
 
-    <h3>Logging In</h3>
-    <div class="placeholder">Screenshot: Login screen (start-login-screen.png)</div>
-    <p>Enter your username and password, then click <strong>Login</strong>.</p>
-
-    <h3>The Main Interface</h3>
-    <div class="placeholder">Screenshot: Main interface overview (start-main-interface.png)</div>
-    <p>The main window consists of:</p>
+    <h3 id="gs-before-you-begin">Before You Begin</h3>
+    <p>Before using MILESTONE:</p>
     <ul>
-        <li><strong>Toolbar</strong> — Navigation buttons for each module</li>
-        <li><strong>Content Area</strong> — The current module view</li>
-        <li><strong>Status Bar</strong> — Shows current user, sync status, and version</li>
+        <li><strong>Admin setup required</strong> — A system administrator must add your Windows username to the MILESTONE user database</li>
+        <li><strong>No login needed</strong> — MILESTONE automatically detects your Windows username</li>
+        <li><strong>First sync</strong> — On first launch, you'll need to sync with the central Azure database to download project data (or import or create activities if none exist yet for your project). If you import or create new records, they will be assigned to you initially — but you can reassign them if desired.</li>
     </ul>
 
-    <h3>Keyboard Shortcuts</h3>
+    <!-- ============================================ -->
+    <h2 id="main-interface">2. Main Interface</h2>
+    <!-- ============================================ -->
+
+    <h3 id="ui-layout">Layout</h3>
+    <div class="placeholder">Screenshot: Main interface with numbered callouts (start-main-interface.png)</div>
+    <p>The main window has three sections:</p>
+    <ul>
+        <li><strong>Toolbar</strong> — Menus (File, Tools, Admin) on the left, module navigation buttons in the center, settings menu on the right</li>
+        <li><strong>Content Area</strong> — The currently active module</li>
+        <li><strong>Status Bar</strong> — Shows version, your username, and last sync timestamp</li>
+    </ul>
+
+    <h3 id="ui-navigation">Navigation</h3>
+    <div class="placeholder">Screenshot: Toolbar showing module buttons (start-toolbar-detail.png)</div>
+    <p>Four module buttons are displayed in the center of the toolbar. The active module is highlighted with a colored underline.</p>
+    <table>
+        <tr>
+            <th>Module</th>
+            <th>Purpose</th>
+        </tr>
+        <tr>
+            <td><strong>PROGRESS</strong></td>
+            <td>Track daily activity completion and earned values</td>
+        </tr>
+        <tr>
+            <td><strong>SCHEDULE</strong></td>
+            <td>View and manage P6 schedule data</td>
+        </tr>
+        <tr>
+            <td><strong>PROG BOOKS</strong></td>
+            <td>Generate printable progress checklists for field crews</td>
+        </tr>
+        <tr>
+            <td><strong>WORK PKGS</strong></td>
+            <td>Create PDF work packages with forms and drawings</td>
+        </tr>
+    </table>
+
+    <h3 id="ui-menus">Menus</h3>
+    <p>The toolbar contains several menus:</p>
+
+    <h4>File Menu</h4>
+    <ul>
+        <li><strong>Import Activities (Replace)</strong> — Import activities from Excel, replacing all existing local data</li>
+        <li><strong>Import Activities (Combine)</strong> — Import activities from Excel, merging with existing data</li>
+        <li><strong>Export Activities</strong> — Export your activities to an Excel file</li>
+        <li><strong>Export Activities Template</strong> — Download a blank Excel template for activity import</li>
+        <li><strong>Create Activities</strong> — Generate new activities based on project parameters</li>
+        <li><strong>Clear Local Activities</strong> — Delete all local activity data (requires re-sync)</li>
+        <li><strong>Import From P6 File</strong> — Import schedule data from a P6 Primavera export file</li>
+        <li><strong>Export To P6 File</strong> — Export schedule data for import into P6 Primavera</li>
+        <li><strong>Clear Local Schedule</strong> — Delete all local schedule data</li>
+        <li><strong>Export Logs</strong> — Save application logs to a file or email for troubleshooting</li>
+        <li><strong>Manage My Snapshots</strong> — View, delete, or revert to previous weekly snapshots of your data</li>
+    </ul>
+
+    <h4>Tools Menu</h4>
+    <ul>
+        <li><strong>Help / AI Sidebar</strong> — Open the help documentation sidebar (also F1)</li>
+        <li><strong>Prorate MHs</strong> — Distribute budgeted man-hours across filtered activities</li>
+    </ul>
+
+    <h4>Admin Menu (administrators only)</h4>
+    <ul>
+        <li><strong>Toggle User Admin</strong> — Grant or revoke admin privileges for any user</li>
+        <li><strong>Edit Users</strong> — Manage user accounts and permissions</li>
+        <li><strong>Edit Projects</strong> — Configure project settings and metadata</li>
+        <li><strong>Edit Snapshots</strong> — Manage weekly data snapshots across all users</li>
+        <li><strong>Deleted Records UI</strong> — View and restore soft-deleted records</li>
+    </ul>
+
+    <h4>Settings Menu (⋮)</h4>
+    <ul>
+        <li><strong>Help / AI Sidebar</strong> — Open the help documentation sidebar (also F1)</li>
+        <li><strong>Feedback Board</strong> — Submit ideas or report bugs to the development team</li>
+        <li><strong>Import Settings</strong> — Load saved application settings from a file</li>
+        <li><strong>Export Settings</strong> — Save your current settings to a file for backup or transfer</li>
+        <li><strong>Grid Layouts</strong> — Save, load, or manage named column layouts for data grids</li>
+        <li><strong>About MILESTONE</strong> — View version information and credits</li>
+    </ul>
+
+    <h3 id="ui-status-bar">Status Bar</h3>
+    <div class="placeholder">Screenshot: Status bar detail (start-status-bar.png)</div>
+    <p>The status bar at the bottom displays:</p>
+    <ul>
+        <li><strong>Version</strong> — Current MILESTONE version</li>
+        <li><strong>User</strong> — Your Windows username</li>
+        <li><strong>Last Sync</strong> — When you last synced with the central database</li>
+    </ul>
+
+    <h3 id="ui-help-sidebar">Help Sidebar</h3>
+    <div class="placeholder">Screenshot: Help sidebar with search (start-help-sidebar.png)</div>
+    <p>Press <span class="keyboard-shortcut">F1</span> to open the Help sidebar. The sidebar shows context-sensitive help based on your current module. Use the search field to find specific topics.</p>
+
+    <h3 id="ui-shortcuts">Keyboard Shortcuts</h3>
     <table>
         <tr>
             <th>Shortcut</th>
@@ -249,56 +401,673 @@
         </tr>
         <tr>
             <td><span class="keyboard-shortcut">F1</span></td>
-            <td>Open Help / AI Sidebar</td>
+            <td>Open Help sidebar</td>
         </tr>
         <tr>
             <td><span class="keyboard-shortcut">Esc</span></td>
             <td>Close sidebar</td>
         </tr>
+        <tr>
+            <td><span class="keyboard-shortcut">Enter</span></td>
+            <td>Next search match (when searching in Help)</td>
+        </tr>
+        <tr>
+            <td><span class="keyboard-shortcut">Shift+Enter</span></td>
+            <td>Previous search match (when searching in Help)</td>
+        </tr>
     </table>
 
     <!-- ============================================ -->
-    <h2 id="progress-module">2. Progress Module</h2>
+    <h2 id="progress-module">3. Progress Module</h2>
     <!-- ============================================ -->
 
-    <h3>Overview</h3>
-    <p>The Progress Module is where you track construction activity completion. Use this module for daily progress entry and reviewing assigned work.</p>
+    <h3 id="prog-overview">Overview</h3>
+    <p>The Progress Module is where you track construction activity completion. This is the primary workspace for field engineers entering daily progress and reviewing assigned work.</p>
 
     <div class="placeholder">Screenshot: Progress module full view (progress-full-view.png)</div>
 
-    <h3>Toolbar</h3>
+    <h3 id="prog-workflow">Typical Workflow</h3>
+    <p>The standard daily workflow is:</p>
+    <ol>
+        <li><strong>Filter</strong> — Use the sidebar to filter to your records or specific criteria</li>
+        <li><strong>Edit</strong> — Update percent complete and other fields in the grid</li>
+        <li><strong>Sync</strong> — Push your changes to Azure and pull updates from others</li>
+    </ol>
+
+    <h3 id="prog-layout">Layout</h3>
+    <p>The Progress view has three main areas:</p>
+    <ul>
+        <li><strong>Left Sidebar</strong> — Quick filter buttons and controls</li>
+        <li><strong>Main Grid</strong> — Activity data with toolbar above</li>
+        <li><strong>Footer</strong> — Record count and metadata error indicator</li>
+    </ul>
+
+    <h3 id="prog-toolbar">Toolbar</h3>
     <div class="placeholder">Screenshot: Progress toolbar (progress-toolbar.png)</div>
-    <p>Content coming soon...</p>
 
-    <h3>Filtering and Search</h3>
-    <p>Content coming soon...</p>
+    <h4>Left Section — Quick Actions</h4>
+    <table>
+        <tr>
+            <th>Button</th>
+            <th>Action</th>
+        </tr>
+        <tr>
+            <td><strong>REFRESH</strong></td>
+            <td>Reload data from the local database</td>
+        </tr>
+        <tr>
+            <td><strong>100%</strong></td>
+            <td>Set selected records to 100% complete. Right-click to customize the percentage value.</td>
+        </tr>
+        <tr>
+            <td><strong>0%</strong></td>
+            <td>Set selected records to 0% complete. Right-click to customize the percentage value.</td>
+        </tr>
+    </table>
 
-    <h3>Updating Progress</h3>
-    <p>Content coming soon...</p>
+    <div class="note">
+        <div class="note-title">Tip: Custom Percent Buttons</div>
+        <p>Right-click either percent button and select "Custom Percent..." to change it to any value (e.g., 50%, 75%). Your custom values are saved and persist between sessions.</p>
+    </div>
 
-    <h3>Syncing Data</h3>
-    <p>Content coming soon...</p>
+    <h4>Center Section — Sync Controls</h4>
+    <table>
+        <tr>
+            <th>Button</th>
+            <th>Action</th>
+        </tr>
+        <tr>
+            <td><strong>SYNC</strong></td>
+            <td>Push your local changes to Azure and pull updates from other users. Validates metadata before syncing.</td>
+        </tr>
+        <tr>
+            <td><strong>SUBMIT WEEK</strong></td>
+            <td>Submit your weekly progress and create a snapshot. Use this at the end of each reporting period.</td>
+        </tr>
+    </table>
+
+    <h4>Right Section — Summary Panel</h4>
+    <p>Displays real-time totals for the currently filtered records:</p>
+    <ul>
+        <li><strong>Budget</strong> — Total budgeted man-hours</li>
+        <li><strong>Earned</strong> — Total earned man-hours based on percent complete</li>
+        <li><strong>% Complete</strong> — Overall completion percentage (Earned / Budget)</li>
+    </ul>
+
+    <h3 id="prog-filters">Sidebar Filters</h3>
+    <div class="placeholder">Screenshot: Progress sidebar filters (progress-sidebar.png)</div>
+
+    <h4>Progress Filters</h4>
+    <p>These three filters are mutually exclusive — only one can be active at a time:</p>
+    <table>
+        <tr>
+            <th>Filter</th>
+            <th>Shows</th>
+        </tr>
+        <tr>
+            <td><strong>Complete</strong></td>
+            <td>Activities at 100% complete</td>
+        </tr>
+        <tr>
+            <td><strong>In Progress</strong></td>
+            <td>Activities between 1% and 99% complete</td>
+        </tr>
+        <tr>
+            <td><strong>Not Started</strong></td>
+            <td>Activities at 0% complete</td>
+        </tr>
+    </table>
+
+    <h4>Attribute Filters</h4>
+    <p>These filters can be combined with each other and with progress filters:</p>
+    <table>
+        <tr>
+            <th>Filter</th>
+            <th>Shows</th>
+        </tr>
+        <tr>
+            <td><strong>LocalDirty</strong></td>
+            <td>Records with unsaved local changes (not yet synced)</td>
+        </tr>
+        <tr>
+            <td><strong>My Records</strong></td>
+            <td>Only records assigned to your username</td>
+        </tr>
+        <tr>
+            <td><strong>Today</strong></td>
+            <td>Activities scheduled within the three-week lookahead window</td>
+        </tr>
+    </table>
+
+    <h4>User Filters</h4>
+    <p>Click the <strong>USER</strong> dropdown to apply saved custom filters. Select "Manage Filters" to create, edit, or delete your saved filters.</p>
+
+    <h4>Other Sidebar Controls</h4>
+    <ul>
+        <li><strong>Clear Filters</strong> — Remove all active filters and show all records</li>
+        <li><strong>Assign</strong> — Reassign your selected records to a different user (you can only reassign records assigned to you)</li>
+        <li><strong>Columns</strong> — Show or hide grid columns</li>
+    </ul>
+
+    <h4>Column Header Filtering</h4>
+    <p>Each column header has a filter icon that opens Excel-like filtering options:</p>
+    <ul>
+        <li><strong>Text columns</strong> — Filter by specific values, contains, starts with, ends with, etc.</li>
+        <li><strong>Numeric columns</strong> — Filter by equals, greater than, less than, between, etc.</li>
+        <li><strong>Date columns</strong> — Filter by date ranges, before, after, etc.</li>
+        <li><strong>Checkbox list</strong> — Select/deselect specific values to show or hide</li>
+    </ul>
+    <p>Column filters can be combined with sidebar filters for precise data views.</p>
+
+    <h3 id="prog-editing">Grid Editing</h3>
+    <p>You can only edit records assigned to you. Other users' records appear dimmed and are read-only. Double-click any editable cell to enter edit mode. Press <span class="keyboard-shortcut">Enter</span> to save or <span class="keyboard-shortcut">Esc</span> to cancel.</p>
+
+    <h4>Multi-Select Editing</h4>
+    <p>Select multiple rows using <span class="keyboard-shortcut">Ctrl+Click</span> or <span class="keyboard-shortcut">Shift+Click</span>, then use the toolbar percent buttons to update all selected records at once.</p>
+
+    <h4>Date Field Rules</h4>
+    <table>
+        <tr>
+            <th>Field</th>
+            <th>Rules</th>
+        </tr>
+        <tr>
+            <td><strong>SchStart</strong></td>
+            <td>Cannot be a future date. Cannot be after SchFinish. Cannot be cleared if percent is greater than 0. Auto-sets to today when percent changes from 0.</td>
+        </tr>
+        <tr>
+            <td><strong>SchFinish</strong></td>
+            <td>Requires percent to be 100%. Cannot be before SchStart. Auto-sets to today when percent reaches 100%.</td>
+        </tr>
+    </table>
+
+    <h4>Context Menu</h4>
+    <p>Right-click selected rows to access:</p>
+    <ul>
+        <li><strong>Delete Row(s)</strong> — Delete selected records (ownership verified)</li>
+        <li><strong>Copy Row(s)</strong> — Copy to clipboard (visible or all columns)</li>
+        <li><strong>Duplicate Row(s)</strong> — Create copies of selected records</li>
+        <li><strong>Export Selected</strong> — Export selected rows to Excel</li>
+    </ul>
+
+    <h3 id="prog-metadata">Required Metadata Fields</h3>
+    <p>Nine fields are required for sync. Records missing any of these fields will be highlighted in red and cannot be synced until corrected.</p>
+
+    <table>
+        <tr>
+            <th>Field</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td><strong>WorkPackage</strong></td>
+            <td>Work package identifier</td>
+        </tr>
+        <tr>
+            <td><strong>PhaseCode</strong></td>
+            <td>Phase code for the activity</td>
+        </tr>
+        <tr>
+            <td><strong>CompType</strong></td>
+            <td>Component type</td>
+        </tr>
+        <tr>
+            <td><strong>PhaseCategory</strong></td>
+            <td>Phase category grouping</td>
+        </tr>
+        <tr>
+            <td><strong>ProjectID</strong></td>
+            <td>Valid project identifier (must exist in Projects table)</td>
+        </tr>
+        <tr>
+            <td><strong>SchedActNO</strong></td>
+            <td>Schedule activity number</td>
+        </tr>
+        <tr>
+            <td><strong>Description</strong></td>
+            <td>Activity description</td>
+        </tr>
+        <tr>
+            <td><strong>ROCStep</strong></td>
+            <td>Rate of completion step</td>
+        </tr>
+        <tr>
+            <td><strong>UDF18</strong></td>
+            <td>Responsible Party</td>
+        </tr>
+    </table>
+
+    <div class="note">
+        <div class="note-title">Metadata Errors</div>
+        <p>The footer shows a "Metadata Errors: X" button when records have missing required fields. Click it to filter to only those records so you can fix them.</p>
+    </div>
+
+    <h3 id="prog-syncing">Syncing Data</h3>
+
+    <h4>SYNC Button</h4>
+    <p>The SYNC operation:</p>
+    <ol>
+        <li>Checks Azure connection (prompts to retry if offline)</li>
+        <li>Validates all records have required metadata</li>
+        <li>Pushes your local changes (LocalDirty = 1) to Azure</li>
+        <li>Pulls updates from other users</li>
+        <li>Resets LocalDirty flag on synced records</li>
+    </ol>
+
+    <div class="warning">
+        <div class="warning-title">Sync Blocked</div>
+        <p>Sync will not proceed if you have metadata errors. Fix all required fields first, then try again.</p>
+    </div>
+
+    <h4>SUBMIT WEEK Button</h4>
+    <p>Use SUBMIT WEEK at the end of each reporting period to:</p>
+    <ol>
+        <li>Create a snapshot of your current data</li>
+        <li>Archive your progress for the week</li>
+        <li>Enable comparison with previous weeks</li>
+    </ol>
+    <p>If you work on multiple projects, you'll be prompted to select which project to submit.</p>
+
+    <h3 id="prog-layouts">Column Layouts</h3>
+    <p>Your column widths, order, and visibility are automatically saved. To customize:</p>
+    <ul>
+        <li><strong>Resize columns</strong> — Drag the edge of a column header left or right</li>
+        <li><strong>Reorder columns</strong> — Drag a column header to a new position</li>
+        <li><strong>Hide/show columns</strong> — Click the <strong>Columns</strong> button in the sidebar</li>
+    </ul>
+    <p>Use <strong>Settings (⋮) → Grid Layouts</strong> to save named layouts or switch between different column configurations.</p>
+
+    <h3 id="prog-shortcuts">Keyboard Shortcuts</h3>
+    <table>
+        <tr>
+            <th>Shortcut</th>
+            <th>Action</th>
+        </tr>
+        <tr>
+            <td><span class="keyboard-shortcut">Double-click</span></td>
+            <td>Edit cell</td>
+        </tr>
+        <tr>
+            <td><span class="keyboard-shortcut">Enter</span></td>
+            <td>Save edit and move to next row</td>
+        </tr>
+        <tr>
+            <td><span class="keyboard-shortcut">Esc</span></td>
+            <td>Cancel edit</td>
+        </tr>
+        <tr>
+            <td><span class="keyboard-shortcut">Ctrl+Click</span></td>
+            <td>Add/remove row from selection</td>
+        </tr>
+        <tr>
+            <td><span class="keyboard-shortcut">Shift+Click</span></td>
+            <td>Select range of rows</td>
+        </tr>
+        <tr>
+            <td><span class="keyboard-shortcut">Right-click</span></td>
+            <td>Open context menu</td>
+        </tr>
+    </table>
 
     <!-- ============================================ -->
-    <h2 id="schedule-module">3. Schedule Module</h2>
+    <h2 id="schedule-module">4. Schedule Module</h2>
     <!-- ============================================ -->
 
-    <h3>Overview</h3>
-    <p>The Schedule Module provides a three-week lookahead view and integrates with P6 Primavera for schedule tracking.</p>
+    <h3 id="sched-overview">Overview</h3>
+    <p>The Schedule Module compares P6 Primavera schedule data with MILESTONE progress data. Use this module to track schedule variances, forecast upcoming work, and document missed deadlines.</p>
+
+    <div class="note">
+        <div class="note-title">Prerequisites</div>
+        <p>To see data in the Schedule module, you need both of the following for the same week ending date:</p>
+        <ul>
+            <li>P6 schedule data imported via <strong>File → Import From P6 File</strong></li>
+            <li>A progress snapshot created via <strong>SUBMIT WEEK</strong> in the Progress module</li>
+        </ul>
+        <p>If no P6 file has been imported, the header displays "(No schedule loaded)". Without both P6 data and a snapshot for the same week, the grid will be empty.</p>
+    </div>
 
     <div class="placeholder">Screenshot: Schedule module full view (schedule-full-view.png)</div>
 
-    <h3>Three-Week Lookahead</h3>
-    <p>Content coming soon...</p>
+    <h3 id="sched-layout">Layout</h3>
+    <p>The Schedule view uses a master/detail layout:</p>
+    <ul>
+        <li><strong>Master Grid (top)</strong> — P6 schedule activities with MS rollup data</li>
+        <li><strong>Detail Grid (bottom)</strong> — Individual MILESTONE activities linked to the selected schedule row</li>
+    </ul>
+    <p>Click any row in the master grid to see its linked activities in the detail grid below. Edits to percent, dates, and budget hours in the detail grid automatically recalculate the MS rollup values (MS Start, MS Finish, MS %, MS MHs) shown in the master grid.</p>
 
-    <h3>Missed Reasons</h3>
-    <p>Content coming soon...</p>
+    <div class="warning">
+        <div class="warning-title">Snapshot Data Only</div>
+        <p>The Schedule module works with weekly snapshot data, not live activity records. Changes made here update the snapshot for the selected week but do not modify the current activity data in the Progress module.</p>
+    </div>
 
-    <h3>P6 Integration</h3>
-    <p>Content coming soon...</p>
+    <h3 id="sched-colors">Color Coding</h3>
+    <p>The Schedule module uses color highlighting to draw attention to items needing action:</p>
+    <table>
+        <tr>
+            <th>Color</th>
+            <th>Meaning</th>
+            <th>Action Required</th>
+        </tr>
+        <tr>
+            <td style="background-color: #ff6b6b; color: #000; text-align: center;"><strong>Red</strong></td>
+            <td>Required field is empty</td>
+            <td>Enter the required value (Missed Reason or 3WLA date)</td>
+        </tr>
+        <tr>
+            <td style="background-color: #ffd93d; color: #000; text-align: center;"><strong>Yellow</strong></td>
+            <td>Discrepancy between P6 and MS data</td>
+            <td>Optional — review with scheduler if reconciliation needed</td>
+        </tr>
+    </table>
+    <p>The status bar shows a legend: red square = required fields, yellow square = discrepancies.</p>
+
+    <h3 id="sched-toolbar">Toolbar</h3>
+    <div class="placeholder">Screenshot: Schedule toolbar (schedule-toolbar.png)</div>
+
+    <h4>Week Selection</h4>
+    <p>The header displays the current "Week Ending" date. Schedule data is filtered to show snapshots for this week.</p>
+
+    <h4>Filter Buttons</h4>
+    <table>
+        <tr>
+            <th>Filter</th>
+            <th>Shows</th>
+        </tr>
+        <tr>
+            <td><strong>Missed Start</strong></td>
+            <td>Activities where P6 planned start has passed but MS hasn't started (or started late)</td>
+        </tr>
+        <tr>
+            <td><strong>Missed Finish</strong></td>
+            <td>Activities where P6 planned finish has passed but MS hasn't finished (or finished late)</td>
+        </tr>
+        <tr>
+            <td><strong>3WLA</strong></td>
+            <td>Activities in the three-week lookahead window needing forecast dates</td>
+        </tr>
+        <tr>
+            <td><strong>Discrepancies</strong></td>
+            <td>Dropdown with options: Actual Start, Actual Finish, MHs, % Complete</td>
+        </tr>
+        <tr>
+            <td><strong>Required Fields</strong></td>
+            <td>Activities with missing required values (shows count)</td>
+        </tr>
+    </table>
+
+    <h4>Action Buttons</h4>
+    <ul>
+        <li><strong>Refresh</strong> — Reload schedule data and clear all filters</li>
+        <li><strong>Clear Filters</strong> — Remove active filter without reloading data</li>
+        <li><strong>SAVE</strong> — Save pending changes (turns red when unsaved changes exist)</li>
+    </ul>
+
+    <h4>Column Header Filtering</h4>
+    <p>Each column header has a filter icon that opens Excel-like filtering options. Use these to filter by specific values, text patterns, numeric ranges, or date ranges. Column filters work alongside the toolbar filter buttons.</p>
+
+    <h3 id="sched-master-grid">Master Grid Columns</h3>
+
+    <h4>P6 Data (Read-Only)</h4>
+    <p>These columns show data imported from P6 Primavera:</p>
+    <ul>
+        <li><strong>SchedActNO</strong> — P6 activity ID</li>
+        <li><strong>Description</strong> — Activity name</li>
+        <li><strong>WbsId</strong> — Work breakdown structure code</li>
+        <li><strong>P6 Planned Start/Finish</strong> — Original schedule dates</li>
+        <li><strong>P6 Actual Start/Finish</strong> — P6 recorded actuals</li>
+        <li><strong>P6 %</strong> — P6 percent complete</li>
+        <li><strong>P6 MHs</strong> — P6 budget hours</li>
+    </ul>
+
+    <h4>MS Rollups (Calculated)</h4>
+    <p>These columns are calculated from linked MILESTONE activities:</p>
+    <ul>
+        <li><strong>MS Start</strong> — Earliest start date from linked activities</li>
+        <li><strong>MS Finish</strong> — Latest finish date (only if all linked activities are complete)</li>
+        <li><strong>MS %</strong> — Weighted average percent complete</li>
+        <li><strong>MS MHs</strong> — Sum of budget hours from linked activities</li>
+    </ul>
+
+    <h4>Editable Fields</h4>
+    <ul>
+        <li><strong>Missed Start Reason</strong> — Explanation for missed start deadline</li>
+        <li><strong>Missed Finish Reason</strong> — Explanation for missed finish deadline</li>
+        <li><strong>3WLA Start</strong> — Forecast start date</li>
+        <li><strong>3WLA Finish</strong> — Forecast finish date</li>
+    </ul>
+
+    <h3 id="sched-detail-grid">Detail Grid</h3>
+    <p>Click a master row to view its linked MILESTONE activities. The header shows "Activities for: [SchedActNO] - [Description]".</p>
+
+    <h4>Editable Columns</h4>
+    <table>
+        <tr>
+            <th>Column</th>
+            <th>Rules</th>
+        </tr>
+        <tr>
+            <td><strong>% (PercentEntry)</strong></td>
+            <td>0-100. Changing this auto-adjusts Start/Finish dates.</td>
+        </tr>
+        <tr>
+            <td><strong>Budget MHs</strong></td>
+            <td>Editable budget hours for this activity</td>
+        </tr>
+        <tr>
+            <td><strong>Start (SchStart)</strong></td>
+            <td>Required when percent > 0. Cannot be future date.</td>
+        </tr>
+        <tr>
+            <td><strong>Finish (SchFinish)</strong></td>
+            <td>Required when percent = 100. Cannot be before Start.</td>
+        </tr>
+    </table>
+
+    <div class="note">
+        <div class="note-title">Auto-Date Behavior</div>
+        <p>When you change percent from 0 to any value, Start auto-sets to the week ending date. When you set percent to 100, Finish auto-sets to the week ending date.</p>
+    </div>
+
+    <h3 id="sched-3wla">Three-Week Lookahead (3WLA)</h3>
+    <p>The three-week lookahead forecasts which activities will start or finish in the next 21 days. This helps with planning and resource allocation.</p>
+
+    <h4>When 3WLA Dates Are Required</h4>
+    <p>A 3WLA date is required (red highlight) when:</p>
+    <ul>
+        <li>P6 planned date is within 21 days of the week ending date, OR</li>
+        <li>P6 planned date has passed but no actual date exists yet</li>
+    </ul>
+
+    <h4>When 3WLA Dates Are Locked</h4>
+    <p>Once an actual date is recorded in MILESTONE:</p>
+    <ul>
+        <li>3WLA Start becomes read-only when MS has an actual start</li>
+        <li>3WLA Finish becomes read-only when MS has an actual finish</li>
+    </ul>
+
+    <h4>Auto-Clear Behavior</h4>
+    <p>When you record an actual start or finish in the detail grid, the corresponding 3WLA forecast date is automatically cleared (no longer needed).</p>
+
+    <h4>3WLA Workflow</h4>
+    <ol>
+        <li>Click the <strong>3WLA</strong> filter button to see activities needing forecasts</li>
+        <li>Red cells indicate required forecast dates</li>
+        <li>Enter your forecast dates for 3WLA Start and/or 3WLA Finish</li>
+        <li>Click <strong>SAVE</strong> to save your forecasts</li>
+    </ol>
+
+    <h3 id="sched-missed-reasons">Missed Reasons</h3>
+    <p>When a P6 deadline passes and MILESTONE hasn't met it, you must document why.</p>
+
+    <h4>When Missed Start Reason Is Required</h4>
+    <ul>
+        <li>P6 planned start date has passed</li>
+        <li>AND MS either never started OR started after the P6 date</li>
+    </ul>
+
+    <h4>When Missed Finish Reason Is Required</h4>
+    <ul>
+        <li>P6 planned finish date has passed</li>
+        <li>AND MS either never finished OR finished after the P6 date</li>
+    </ul>
+
+    <h4>Auto-Populated Reasons</h4>
+    <p>If MS completed before the P6 date, the system auto-populates:</p>
+    <ul>
+        <li><strong>"Started Early"</strong> — MS started before P6 planned start</li>
+        <li><strong>"Finished Early"</strong> — MS finished before P6 planned finish</li>
+    </ul>
+
+    <h4>Missed Reasons Workflow</h4>
+    <ol>
+        <li>Click <strong>Missed Start</strong> or <strong>Missed Finish</strong> filter</li>
+        <li>Red cells indicate rows needing explanation</li>
+        <li>Enter the reason for the delay</li>
+        <li>Click <strong>SAVE</strong></li>
+    </ol>
+
+    <h3 id="sched-discrepancies">Discrepancies</h3>
+    <p>Yellow highlighting indicates P6 and MS data don't match. Use the Discrepancies dropdown to filter by type:</p>
+    <table>
+        <tr>
+            <th>Discrepancy Type</th>
+            <th>Meaning</th>
+        </tr>
+        <tr>
+            <td><strong>Actual Start</strong></td>
+            <td>P6 and MS have different actual start dates (or one has a date and the other doesn't)</td>
+        </tr>
+        <tr>
+            <td><strong>Actual Finish</strong></td>
+            <td>P6 and MS have different actual finish dates</td>
+        </tr>
+        <tr>
+            <td><strong>MHs</strong></td>
+            <td>MS budget hours differ from P6 by more than 1%</td>
+        </tr>
+        <tr>
+            <td><strong>% Complete</strong></td>
+            <td>P6 percent is higher than MS percent (P6 ahead of reality)</td>
+        </tr>
+    </table>
+
+    <h3 id="sched-p6-import">P6 Import</h3>
+    <p>Import schedule data from a P6 Primavera Excel export.</p>
+
+    <h4>Import Steps</h4>
+    <ol>
+        <li>Export from P6 Primavera to Excel (TASK sheet format)</li>
+        <li>In MILESTONE, go to <strong>File → Import From P6 File</strong></li>
+        <li>Select the Excel file</li>
+        <li>Choose the week ending date for this schedule</li>
+        <li>Click Import</li>
+    </ol>
+
+    <h4>P6 Column Mapping</h4>
+    <table>
+        <tr>
+            <th>P6 Column</th>
+            <th>MILESTONE Field</th>
+        </tr>
+        <tr>
+            <td>task_code</td>
+            <td>SchedActNO</td>
+        </tr>
+        <tr>
+            <td>task_name</td>
+            <td>Description</td>
+        </tr>
+        <tr>
+            <td>wbs_id</td>
+            <td>WbsId</td>
+        </tr>
+        <tr>
+            <td>target_start_date</td>
+            <td>P6_PlannedStart</td>
+        </tr>
+        <tr>
+            <td>target_end_date</td>
+            <td>P6_PlannedFinish</td>
+        </tr>
+        <tr>
+            <td>act_start_date</td>
+            <td>P6_ActualStart</td>
+        </tr>
+        <tr>
+            <td>act_end_date</td>
+            <td>P6_ActualFinish</td>
+        </tr>
+        <tr>
+            <td>complete_pct</td>
+            <td>P6_PercentComplete (converted from 0-1 to 0-100)</td>
+        </tr>
+        <tr>
+            <td>target_work_qty</td>
+            <td>P6_BudgetMHs</td>
+        </tr>
+    </table>
+
+    <div class="warning">
+        <div class="warning-title">Import Replaces Data</div>
+        <p>P6 import replaces all existing schedule data. Your 3WLA forecasts and missed reasons are preserved if the SchedActNO still exists in the new import.</p>
+    </div>
+
+    <h3 id="sched-p6-export">P6 Export</h3>
+    <p>Export MILESTONE data back to P6 format for updating Primavera.</p>
+
+    <h4>Export Steps</h4>
+    <ol>
+        <li>Go to <strong>File → Export To P6 File</strong></li>
+        <li>Choose a save location</li>
+        <li>Select start/finish times (for datetime formatting)</li>
+        <li>Click Export</li>
+    </ol>
+
+    <h4>Exported Data</h4>
+    <p>The export creates an Excel file with:</p>
+    <ul>
+        <li><strong>task_code</strong> — SchedActNO</li>
+        <li><strong>status_code</strong> — Derived from MS percent (Not Started, In Progress, Complete)</li>
+        <li><strong>act_start_date</strong> — MS actual start (if percent > 0)</li>
+        <li><strong>act_end_date</strong> — MS actual finish (if percent = 100)</li>
+        <li><strong>complete_pct</strong> — MS percent complete</li>
+    </ul>
+
+    <h3 id="sched-saving">Saving Changes</h3>
+    <p>The <strong>SAVE</strong> button turns red when you have unsaved changes. Changes that require saving:</p>
+    <ul>
+        <li>Missed Start/Finish Reason edits</li>
+        <li>3WLA Start/Finish date edits</li>
+        <li>Detail grid edits (percent, dates, budget hours)</li>
+    </ul>
+    <p>If you try to leave the Schedule module with unsaved changes, you'll be prompted to save or discard.</p>
+
+    <h3 id="sched-shortcuts">Keyboard Shortcuts</h3>
+    <table>
+        <tr>
+            <th>Shortcut</th>
+            <th>Action</th>
+        </tr>
+        <tr>
+            <td><span class="keyboard-shortcut">Click cell</span></td>
+            <td>Edit cell (single-click activates edit mode)</td>
+        </tr>
+        <tr>
+            <td><span class="keyboard-shortcut">Enter</span></td>
+            <td>Confirm edit</td>
+        </tr>
+        <tr>
+            <td><span class="keyboard-shortcut">Esc</span></td>
+            <td>Cancel edit</td>
+        </tr>
+        <tr>
+            <td><span class="keyboard-shortcut">Click master row</span></td>
+            <td>Load detail grid for that activity</td>
+        </tr>
+    </table>
 
     <!-- ============================================ -->
-    <h2 id="work-packages">4. Work Packages</h2>
+    <h2 id="work-packages">5. Work Packages</h2>
     <!-- ============================================ -->
 
     <h3>Overview</h3>
@@ -319,7 +1088,7 @@
     <p>Content coming soon...</p>
 
     <!-- ============================================ -->
-    <h2 id="progress-books">5. Progress Books</h2>
+    <h2 id="progress-books">6. Progress Books</h2>
     <!-- ============================================ -->
 
     <h3>Overview</h3>
@@ -342,7 +1111,7 @@
     </div>
 
     <!-- ============================================ -->
-    <h2 id="administration">6. Administration</h2>
+    <h2 id="administration">7. Administration</h2>
     <!-- ============================================ -->
 
     <h3>Overview</h3>
@@ -358,7 +1127,7 @@
     <p>Content coming soon...</p>
 
     <!-- ============================================ -->
-    <h2 id="reference">7. Reference</h2>
+    <h2 id="reference">8. Reference</h2>
     <!-- ============================================ -->
 
     <h3>Glossary</h3>

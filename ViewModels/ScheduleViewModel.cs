@@ -7,14 +7,12 @@ using System.Threading.Tasks;
 using VANTAGE.Models;
 using VANTAGE.Repositories;
 using VANTAGE.Utilities;
-using VANTAGE.Interfaces;
-
 namespace VANTAGE.ViewModels
 {
     // Filter types for P6 vs MS discrepancies
     public enum DiscrepancyFilterType { None, Start, Finish, MHs, PercentComplete }
 
-    public class ScheduleViewModel : INotifyPropertyChanged, IHelpAware
+    public class ScheduleViewModel : INotifyPropertyChanged
     {
         private ObservableCollection<ScheduleMasterRow> _masterRows = new ObservableCollection<ScheduleMasterRow>();
         private List<ScheduleMasterRow> _allMasterRows = new List<ScheduleMasterRow>();
@@ -27,10 +25,6 @@ namespace VANTAGE.ViewModels
         private DiscrepancyFilterType _discrepancyFilter = DiscrepancyFilterType.None;
         private string? _selectedSchedActNO;
         private bool _hasUnsavedChanges;
-
-        // IHelpAware implementation
-        public string HelpAnchor => "schedule-module";
-        public string ModuleDisplayName => "Schedule Module";
 
         public bool HasUnsavedChanges
         {

@@ -1,6 +1,6 @@
 # MILESTONE - Project Status
 
-**Last Updated:** January 11, 2026
+**Last Updated:** January 16, 2026
 
 ## Module Status
 
@@ -11,7 +11,7 @@
 | Sync | COMPLETE | Bidirectional sync working |
 | Admin | COMPLETE | User/project/snapshot management |
 | Work Package | IN DEVELOPMENT | PDF generation working; Drawings editor and template editors need testing |
-| Help Sidebar | IN DEVELOPMENT | Infrastructure complete; content writing in progress |
+| Help Sidebar | IN DEVELOPMENT | Infrastructure complete; search implemented; content writing in progress |
 | AI Features | NOT STARTED | Requires ClaudeApiService infrastructure first |
 
 ## Active Development
@@ -22,6 +22,8 @@
 - [ ] Test Grid editor - column add/remove/reorder, row count, saving, preview
 - [ ] Test Form editor - sections/items/columns, saving, preview
 - [ ] Test Type selection dialog - creating new templates of each type
+- [ ] Change Punchlist template default header font size to -30% (current default too large)
+- [ ] Add Reset Defaults button to form template editors (resets all fields/settings to built-in template values)
 - [x] Implement Drawings section in Generate tab (Local folder fetch working)
 - [ ] Drawings - Fix preview display
 - [ ] Drawings - Fix layout/orientation for 11x17 drawings
@@ -29,6 +31,7 @@
 - [ ] **DISCUSS:** Drawings fetch architecture - consider AI-assisted matching (many factors: DwgNO formats, revisions, sheet numbers, naming conventions). May warrant separate Drawings Manager module/dialog where drawings are fetched/organized independently, then WP module simply pulls from that cache.
 
 ### Help Sidebar
+- [x] Implement search functionality (WebView2 Find API with highlight and navigation)
 - [ ] Write Getting Started content
 - [ ] Write Progress Module content
 - [ ] Write Schedule Module content
@@ -45,11 +48,14 @@
 - [ ] Progress Book creation
 - [ ] Theme selection by user - save preference, apply on startup
 - [ ] Add Offline Indicator in status bar - clickable to retry connection
+- [ ] Check startup behavior when user not found - add "Email Admin" option to request being added to Users table
 - [x] Add 'Revert to Snapshot' functionality (via Manage Snapshots dialog)
 
 ### Medium Priority
 - [x] Review project files for hard coded colors, replace with theme variables
 - [x] Review project file organization and clean up (Phase 1 complete - dialogs moved, files renamed)
+- [ ] Rename UDF18 column to RespParty throughout the app (grid headers, code references, database)
+- [ ] Schedule module: Check if user can apply detail grid edits to live activities - explore adding this option if not available
 - [ ] Shift+Scroll horizontal scrolling (see ShiftScroll_Horizontal_Implementation_Plan.md)
 - [ ] User-editable header template for WP (allow customizing header layout)
 - [ ] Import/Export WP templates to JSON
@@ -78,8 +84,37 @@
 ### Shelved
 - [ ] Find-Replace in Schedule Detail Grid
 - [ ] Disable Tooltips setting (see DisableTooltips_Plan.md)
+- [ ] Interactive Help Mode - click UI controls to navigate to documentation (see Sidebar_Help_Plan.md)
 
 ## Recent Completions
+
+### January 16, 2026
+- Help Sidebar - Search functionality:
+  - Added search field below context header with ˄/˅ navigation buttons and match counter
+  - Uses WebView2 Find API (CoreWebView2.Find) with SuppressDefaultFindDialog
+  - Highlights all matches in yellow, scrolls first match into view
+  - 300ms debounce on search input
+  - Enter/Shift+Enter keyboard shortcuts for next/previous
+  - Search clears when navigating to different module
+  - Match counter shows "3 of 12" format
+- Help Manual - Content writing (manual.html):
+  - Restructured to 8 sections (added Main Interface as Section 2)
+  - Rewrote Getting Started: What is MILESTONE, Before You Begin (admin setup, no login, first sync)
+  - Wrote Main Interface: Layout, Navigation, Menus (all items listed), Status Bar, Help Sidebar, Shortcuts
+  - Wrote comprehensive Progress Module (10 subsections): workflow, toolbar, filters, editing, metadata, sync
+  - Wrote comprehensive Schedule Module (13 subsections): 3WLA, missed reasons, P6 import/export, discrepancies
+  - Added nested TOC with anchor links to all subsections
+  - Styled TOC (larger main sections, indented subsections)
+  - Added screenshot placeholders throughout
+- Documentation cleanup:
+  - Merged Interactive_Help_Mode_Plan.md into Sidebar_Help_Plan.md
+  - Deleted Interactive_Help_Mode_Plan.md
+- Help Sidebar - UI simplification:
+  - Removed anchor-based navigation (always opens to beginning now)
+  - Replaced context header with action buttons row: Back to Top | Print PDF | View in Browser
+  - Buttons styled as clickable text (accent color, no borders)
+  - Removed IHelpAware interface and all implementations (no longer needed)
+  - Deleted Interfaces/IHelpAware.cs and empty Interfaces folder
 
 ### January 11, 2026
 - Work Package Module - Drawings integration (Phase 1):

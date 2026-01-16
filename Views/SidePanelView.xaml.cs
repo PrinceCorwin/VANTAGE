@@ -42,7 +42,6 @@ namespace VANTAGE.Views
                 _viewModel = newVm;
                 _viewModel.PropertyChanged += ViewModel_PropertyChanged;
                 UpdateTabVisuals();
-                UpdateContextHeader();
             }
         }
 
@@ -52,10 +51,6 @@ namespace VANTAGE.Views
             {
                 case nameof(SidePanelViewModel.ActiveTab):
                     UpdateTabVisuals();
-                    break;
-                case nameof(SidePanelViewModel.CurrentModuleDisplayName):
-                    UpdateContextHeader();
-                    ClearSearch();
                     break;
                 case nameof(SidePanelViewModel.HelpNavigationUrl):
                     NavigateToHelp();
@@ -216,12 +211,6 @@ namespace VANTAGE.Views
             }
         }
 
-        private void UpdateContextHeader()
-        {
-            if (_viewModel == null) return;
-            txtContextHeader.Text = _viewModel.CurrentModuleDisplayName;
-        }
-
         private void BtnHelpTab_Click(object sender, RoutedEventArgs e)
         {
             _viewModel?.SetActiveTab("Help");
@@ -237,13 +226,23 @@ namespace VANTAGE.Views
             _viewModel?.Close();
         }
 
-        // Public method for external navigation requests
-        public void NavigateToSection(string anchor)
+        // ========================================
+        // ACTION BUTTONS
+        // ========================================
+
+        private void BtnBackToTop_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            if (_viewModel != null && _webViewInitialized)
-            {
-                _viewModel.CurrentHelpAnchor = anchor;
-            }
+            // TODO: Scroll WebView2 to top
+        }
+
+        private void BtnPrintPdf_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            // TODO: Print help content to PDF
+        }
+
+        private void BtnViewInBrowser_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            // TODO: Open help HTML in default browser
         }
 
         // ========================================

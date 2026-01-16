@@ -101,15 +101,16 @@ Help [?]
 
 ## Help Content Structure
 
-| Section | Anchor | Description |
-|---------|--------|-------------|
-| Getting Started | `#getting-started` | Login, main interface, offline/online |
-| Progress Module | `#progress-module` | Activity tracking, filtering, sync |
-| Schedule Module | `#schedule-module` | Three-week lookahead, P6 integration |
-| Work Packages | `#work-packages` | WP creation, forms, drawings, PDF generation |
-| Progress Books | `#progress-books` | Printed checklists for field crews |
-| Administration | `#administration` | User management, project setup |
-| Reference | `#reference` | Keyboard shortcuts, glossary, troubleshooting |
+| # | Section | Anchor | Description |
+|---|---------|--------|-------------|
+| 1 | Getting Started | `#getting-started` | What is MILESTONE, prerequisites |
+| 2 | Main Interface | `#main-interface` | Layout, navigation, menus, status bar, help sidebar |
+| 3 | Progress Module | `#progress-module` | Activity tracking, filtering, editing, sync |
+| 4 | Schedule Module | `#schedule-module` | Three-week lookahead, P6 integration, missed reasons |
+| 5 | Work Packages | `#work-packages` | WP creation, forms, drawings, PDF generation |
+| 6 | Progress Books | `#progress-books` | Printed checklists for field crews |
+| 7 | Administration | `#administration` | User management, project setup |
+| 8 | Reference | `#reference` | Glossary, troubleshooting |
 
 ---
 
@@ -171,27 +172,44 @@ Stored in user preferences JSON:
 
 See detailed content structure in sections below:
 
-### Getting Started
+### 1. Getting Started
 - What is MILESTONE?
-- Logging In
-- The Main Interface (annotated screenshot)
-- Offline vs. Online
+- Before You Begin (admin setup, no login, first sync)
 
-### Progress Module
-- Overview and when to use
-- Toolbar buttons documented
-- Menu items documented
-- Activity grid usage (sorting, filtering, context menu)
-- Common tasks: Import, Assign, Update Progress, Filter, Search, Export, Sync
+### 2. Main Interface
+- Layout (toolbar, content area, status bar)
+- Navigation (module buttons)
+- Menus (File, Tools, Admin, Settings)
+- Status Bar
+- Help Sidebar
+- Keyboard Shortcuts
 
-### Schedule Module
-- Overview and P6 connection
-- Three-week lookahead concept
-- Marking activities complete
-- Recording missed reasons
-- Filtering and syncing with P6
+### 3. Progress Module ✅ WRITTEN
+- Overview, typical workflow, layout
+- Toolbar (percent buttons, sync, submit, summary panel)
+- Sidebar filters (progress, attribute, user, column header)
+- Grid editing (ownership, multi-select, date rules, context menu)
+- Required metadata fields (9 fields listed)
+- Syncing data (SYNC and SUBMIT WEEK workflows)
+- Column layouts
+- Keyboard shortcuts
 
-### Work Packages
+### 4. Schedule Module ✅ WRITTEN (needs refinement)
+- Overview with prerequisites note
+- Layout (master/detail grids, snapshot data warning)
+- Color coding (red = required, yellow = discrepancy)
+- Toolbar (filters, action buttons, column header filtering)
+- Master grid columns (P6 data, MS rollups, editable fields)
+- Detail grid (editable columns, auto-date behavior)
+- Three-Week Lookahead (when required, when locked, workflow)
+- Missed Reasons (when required, auto-populated, workflow)
+- Discrepancies (filter types)
+- P6 Import (steps, column mapping, warning)
+- P6 Export (steps, exported data)
+- Saving changes
+- Keyboard shortcuts
+
+### 5. Work Packages
 - What is a work package
 - Creating new packages
 - Selecting activities and forms
@@ -199,20 +217,19 @@ See detailed content structure in sections below:
 - Generating PDF
 - Using templates
 
-### Progress Books
+### 6. Progress Books
 - What is a progress book
 - Purpose: printed checklists for field crews
 - Creating and customizing
 - Entering progress from completed books
 
-### Administration
+### 7. Administration
 - User management
 - Project setup
 - Database operations
 - Logs
 
-### Reference
-- Keyboard shortcuts table
+### 8. Reference
 - Glossary of terms
 - Troubleshooting / FAQ
 - Getting help
@@ -240,11 +257,64 @@ Each section should include screenshots showing:
 
 ---
 
+## Search Functionality ✅ COMPLETE
+
+**Completed:** January 16, 2026
+
+### Features
+- Search field below tabs, above content
+- WebView2 Find API with yellow highlight on all matches
+- ˄/˅ navigation buttons with match counter ("3 of 12")
+- 300ms debounce on search input
+- Enter/Shift+Enter keyboard shortcuts for next/previous
+- Search clears when switching modules
+
+### Technical Implementation
+```csharp
+// WebView2 Find API (requires v1.0.3405.78+)
+var findOptions = webViewHelp.CoreWebView2.Environment.CreateFindOptions();
+findOptions.FindTerm = searchText;
+findOptions.SuppressDefaultFindDialog = true;
+findOptions.ShouldHighlightAllMatches = true;
+await webViewHelp.CoreWebView2.Find.StartAsync(findOptions);
+```
+
+### Files Modified
+| File | Change |
+|------|--------|
+| `ViewModels/SidePanelViewModel.cs` | Added SearchText, MatchCount, CurrentMatchIndex properties |
+| `Views/SidePanelView.xaml` | Added search row with TextBox, nav buttons, match counter |
+| `Views/SidePanelView.xaml.cs` | Wired up Find API, debounce timer, keyboard shortcuts |
+
+---
+
+## Interactive Help Mode 🔶 SHELVED
+
+**Status:** Shelved as of January 16, 2026
+**Reason:** Search functionality and control tooltips provide sufficient help discovery
+**Resume:** Can be implemented later if users request click-to-navigate help
+
+### Original Concept
+- Toggle button enters Interactive Mode
+- Light blue overlay appears over ContentArea
+- Cursor changes to help cursor (?) over mapped controls
+- Clicking a control navigates help to that control's documentation
+- `HelpMapping.Topic` attached property marks controls with help anchors
+
+### Files That Would Be Created (if resumed)
+| File | Purpose |
+|------|---------|
+| `Utilities/HelpMapping.cs` | Attached property for help topic |
+| `Views/InteractiveHelpOverlay.xaml` | Overlay UserControl |
+| `Views/InteractiveHelpOverlay.xaml.cs` | Hit testing and event logic |
+
+---
+
 ## Future Enhancements
 
-- Search within help documentation
 - Bookmark/favorite sections
 - Print directly from Help panel
+- PDF export of help documentation
 - AI-suggested help topics based on user actions
 
 ---
@@ -270,6 +340,18 @@ Each section should include screenshots showing:
 | ViewModels/ProgressViewModel.cs | Added IHelpAware implementation |
 | ViewModels/ScheduleViewModel.cs | Added IHelpAware implementation |
 | Views/WorkPackageView.xaml.cs | Added IHelpAware implementation |
+
+### January 16, 2026
+- Implemented Help search functionality (WebView2 Find API)
+- Added search field with ˄/˅ navigation buttons and match counter
+- Added 300ms debounce, Enter/Shift+Enter keyboard shortcuts
+- Rewrote Getting Started section (What is MILESTONE, Before You Begin)
+- Added Main Interface as new Section 2 (Layout, Navigation, Menus, Status Bar, Help Sidebar, Shortcuts)
+- Wrote comprehensive Progress Module section (10 subsections with full detail)
+- Wrote comprehensive Schedule Module section (13 subsections with full detail)
+- Added nested TOC with all subsection links and anchor IDs
+- Styled TOC with larger main sections, indented subsections
+- Renumbered all sections (now 8 total)
 
 ### January 7, 2026
 - Added WebView2 NuGet package

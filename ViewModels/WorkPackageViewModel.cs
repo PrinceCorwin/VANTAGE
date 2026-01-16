@@ -5,13 +5,12 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using VANTAGE.Models;
 using VANTAGE.Repositories;
-using VANTAGE.Interfaces;
 
 namespace VANTAGE.ViewModels
 {
     // ViewModel for WorkPackageView - handles data loading and state management
     // Complex editor logic remains in code-behind for now
-    public class WorkPackageViewModel : INotifyPropertyChanged, IHelpAware
+    public class WorkPackageViewModel : INotifyPropertyChanged
     {
         private List<FormTemplate> _formTemplates = new();
         private List<WPTemplate> _wpTemplates = new();
@@ -28,10 +27,6 @@ namespace VANTAGE.ViewModels
         private bool _hasUnsavedChanges;
 
         public event PropertyChangedEventHandler? PropertyChanged;
-
-        // IHelpAware implementation
-        public string HelpAnchor => "work-packages";
-        public string ModuleDisplayName => "Work Packages";
 
         // Data collections
         public List<FormTemplate> FormTemplates

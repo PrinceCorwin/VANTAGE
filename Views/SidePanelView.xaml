@@ -62,17 +62,45 @@
             </Grid>
         </Border>
 
-        <!-- Context Header -->
+        <!-- Action Buttons Row -->
         <Border Grid.Row="1"
                 Background="{StaticResource BackgroundColor}"
                 BorderBrush="{StaticResource BorderColor}"
                 BorderThickness="0,0,0,1"
                 Padding="10,6">
-            <TextBlock x:Name="txtContextHeader"
-                       Text="Getting Started"
-                       FontSize="13"
-                       FontWeight="SemiBold"
-                       Foreground="{StaticResource AccentColor}"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <TextBlock x:Name="btnBackToTop"
+                           Text="Back to Top"
+                           FontSize="12"
+                           Foreground="{StaticResource AccentColor}"
+                           Cursor="Hand"
+                           Margin="0,0,16,0"
+                           MouseLeftButtonUp="BtnBackToTop_Click"
+                           ToolTip="Scroll to top of help content"/>
+                <TextBlock Text="│"
+                           FontSize="12"
+                           Foreground="{StaticResource BorderColor}"
+                           Margin="0,0,16,0"/>
+                <TextBlock x:Name="btnPrintPdf"
+                           Text="Print PDF"
+                           FontSize="12"
+                           Foreground="{StaticResource AccentColor}"
+                           Cursor="Hand"
+                           Margin="0,0,16,0"
+                           MouseLeftButtonUp="BtnPrintPdf_Click"
+                           ToolTip="Print help content to PDF"/>
+                <TextBlock Text="│"
+                           FontSize="12"
+                           Foreground="{StaticResource BorderColor}"
+                           Margin="0,0,16,0"/>
+                <TextBlock x:Name="btnViewInBrowser"
+                           Text="View in Browser"
+                           FontSize="12"
+                           Foreground="{StaticResource AccentColor}"
+                           Cursor="Hand"
+                           MouseLeftButtonUp="BtnViewInBrowser_Click"
+                           ToolTip="Open help in default web browser"/>
+            </StackPanel>
         </Border>
 
         <!-- Search Field (Help tab only) -->

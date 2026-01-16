@@ -19,13 +19,12 @@ using VANTAGE.Repositories;
 using VANTAGE.Services;
 using VANTAGE.Services.PdfRenderers;
 using VANTAGE.Utilities;
-using VANTAGE.Interfaces;
 using VANTAGE.Dialogs;
 using VANTAGE.Converters;
 
 namespace VANTAGE.Views
 {
-    public partial class WorkPackageView : UserControl, IHelpAware
+    public partial class WorkPackageView : UserControl
     {
         private List<FormTemplate> _formTemplates = new();
         private List<WPTemplate> _wpTemplates = new();
@@ -130,10 +129,6 @@ namespace VANTAGE.Views
         private TextBox? _drawingsExtensionsBox;
 
         private readonly WorkPackageGenerator _generator = new();
-
-        // IHelpAware implementation
-        public string HelpAnchor => "work-packages";
-        public string ModuleDisplayName => "Work Packages";
 
         // Gets the default logo path if it exists, otherwise null
         private string? GetDefaultLogoPath()
