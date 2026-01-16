@@ -405,7 +405,7 @@ namespace VANTAGE
                 // 1. Cover Sheet (Cover type)
                 var coverStructure = new CoverStructure
                 {
-                    Title = "WORK PACKAGE COVER SHEET",
+                    Title = "COVER SHEET",
                     ImagePath = null, // null = use default images/CoverPic.png
                     ImageWidthPercent = 80,
                     FooterText = null
@@ -416,7 +416,7 @@ namespace VANTAGE
                 // 2. TOC (List type)
                 var tocStructure = new ListStructure
                 {
-                    Title = "WORK PACKAGE TABLE OF CONTENTS",
+                    Title = "TABLE OF CONTENTS",
                     Items = new List<string>
                     {
                         "WP DOC EXPIRATION DATE: {ExpirationDate}",
@@ -440,7 +440,7 @@ namespace VANTAGE
                 // 3. Checklist (Form type)
                 var checklistStructure = new FormStructure
                 {
-                    Title = "WORK PACKAGE CHECKLIST",
+                    Title = "CHECKLIST",
                     Columns = new List<TemplateColumn>
                     {
                         new TemplateColumn { Name = "ITEM", WidthPercent = 50 },
@@ -495,7 +495,7 @@ namespace VANTAGE
                 // 4. Punchlist (Grid type)
                 var punchlistStructure = new GridStructure
                 {
-                    Title = "WORK PACKAGE PUNCHLIST",
+                    Title = "PUNCHLIST",
                     Columns = new List<TemplateColumn>
                     {
                         new TemplateColumn { Name = "PL NO", WidthPercent = 6 },
@@ -519,7 +519,7 @@ namespace VANTAGE
                 // 5. Signoff Sheet (Form type)
                 var signoffStructure = new FormStructure
                 {
-                    Title = "WORK PACKAGE SIGN-OFF SHEET",
+                    Title = "SIGN-OFF SHEET",
                     Columns = new List<TemplateColumn>
                     {
                         new TemplateColumn { Name = "ITEM", WidthPercent = 50 },
@@ -586,7 +586,7 @@ namespace VANTAGE
                 // 7. Drawings (Drawings type - displays drawing images from local folder)
                 var drawingsStructure = new DrawingsStructure
                 {
-                    Title = "WORK PACKAGE DRAWINGS",
+                    Title = "DRAWINGS",
                     Source = "Local",
                     FolderPath = null, // User must configure folder path
                     FileExtensions = "*.pdf,*.png,*.jpg,*.jpeg,*.tif,*.tiff",

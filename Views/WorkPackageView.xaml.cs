@@ -2355,7 +2355,7 @@ namespace VANTAGE.Views
         {
             var structure = new ListStructure
             {
-                Title = _listTitleBox?.Text ?? "WORK PACKAGE TABLE OF CONTENTS",
+                Title = _listTitleBox?.Text ?? "TABLE OF CONTENTS",
                 Items = _listItems?.ToList() ?? new List<string>(),
                 FontSizeAdjustPercent = (int)(_listFontSizeSlider?.Value ?? 0),
                 FooterText = string.IsNullOrWhiteSpace(_listFooterTextBox?.Text) ? null : _listFooterTextBox.Text
@@ -2368,7 +2368,7 @@ namespace VANTAGE.Views
         {
             var structure = new CoverStructure
             {
-                Title = _coverTitleBox?.Text ?? "WORK PACKAGE COVER SHEET",
+                Title = _coverTitleBox?.Text ?? "COVER SHEET",
                 ImagePath = _coverImagePathBox?.Text == "(default)" ? null : _coverImagePathBox?.Text,
                 ImageWidthPercent = (int)(_coverImageWidthSlider?.Value ?? 80),
                 FooterText = string.IsNullOrWhiteSpace(_coverFooterTextBox?.Text) ? null : _coverFooterTextBox.Text
@@ -2809,7 +2809,7 @@ namespace VANTAGE.Views
         {
             var structure = new GridStructure
             {
-                Title = _gridTitleBox?.Text ?? "WORK PACKAGE GRID",
+                Title = _gridTitleBox?.Text ?? "GRID",
                 Columns = _gridColumns?.ToList() ?? new List<TemplateColumn>(),
                 RowCount = (int)(_gridRowCountBox?.Value ?? 22),
                 RowHeightIncreasePercent = (int)(_gridRowHeightSlider?.Value ?? 0),
@@ -3672,7 +3672,7 @@ namespace VANTAGE.Views
         {
             var structure = new FormStructure
             {
-                Title = _formTitleBox?.Text ?? "WORK PACKAGE FORM",
+                Title = _formTitleBox?.Text ?? "FORM",
                 Columns = _formColumns?.ToList() ?? new List<TemplateColumn>(),
                 Sections = _formSections?.ToList() ?? new List<SectionDefinition>(),
                 RowHeightIncreasePercent = (int)(_formRowHeightSlider?.Value ?? 0),

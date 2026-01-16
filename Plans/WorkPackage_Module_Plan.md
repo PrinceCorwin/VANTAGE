@@ -71,7 +71,7 @@ CREATE TABLE WPTemplates (
 ### Cover Type
 ```json
 {
-  "title": "WORK PACKAGE COVER SHEET",
+  "title": "COVER SHEET",
   "imagePath": null,
   "imageWidthPercent": 80,
   "footerText": null
@@ -81,7 +81,7 @@ CREATE TABLE WPTemplates (
 ### List Type
 ```json
 {
-  "title": "WORK PACKAGE TABLE OF CONTENTS",
+  "title": "TABLE OF CONTENTS",
   "items": [
     "WP DOC EXPIRATION DATE: {ExpirationDate}",
     "PRINTED: {PrintedDate}",
@@ -95,7 +95,7 @@ CREATE TABLE WPTemplates (
 ### Form Type
 ```json
 {
-  "title": "WORK PACKAGE CHECKLIST",
+  "title": "CHECKLIST",
   "columns": [
     {"name": "ITEM", "widthPercent": 50},
     {"name": "DATE", "widthPercent": 12},
@@ -116,7 +116,7 @@ CREATE TABLE WPTemplates (
 ### Grid Type
 ```json
 {
-  "title": "WORK PACKAGE PUNCHLIST",
+  "title": "PUNCHLIST",
   "columns": [
     {"name": "PL NO", "widthPercent": 6},
     {"name": "TAG/LINE/CABLE", "widthPercent": 12},

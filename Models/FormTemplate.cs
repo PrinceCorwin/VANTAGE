@@ -71,7 +71,7 @@ namespace VANTAGE.Models
     public class CoverStructure
     {
         [JsonPropertyName("title")]
-        public string Title { get; set; } = "WORK PACKAGE COVER SHEET";
+        public string Title { get; set; } = "COVER SHEET";
 
         // null = use default images/CoverPic.png; otherwise absolute path to custom image
         [JsonPropertyName("imagePath")]
@@ -88,7 +88,7 @@ namespace VANTAGE.Models
     public class ListStructure
     {
         [JsonPropertyName("title")]
-        public string Title { get; set; } = "WORK PACKAGE TABLE OF CONTENTS";
+        public string Title { get; set; } = "TABLE OF CONTENTS";
 
         [JsonPropertyName("items")]
         public List<string> Items { get; set; } = new();
@@ -104,7 +104,7 @@ namespace VANTAGE.Models
     public class FormStructure
     {
         [JsonPropertyName("title")]
-        public string Title { get; set; } = "WORK PACKAGE FORM";
+        public string Title { get; set; } = "FORM";
 
         [JsonPropertyName("columns")]
         public List<TemplateColumn> Columns { get; set; } = new();
@@ -126,7 +126,7 @@ namespace VANTAGE.Models
     public class GridStructure
     {
         [JsonPropertyName("title")]
-        public string Title { get; set; } = "WORK PACKAGE GRID";
+        public string Title { get; set; } = "GRID";
 
         [JsonPropertyName("columns")]
         public List<TemplateColumn> Columns { get; set; } = new();
@@ -168,7 +168,7 @@ namespace VANTAGE.Models
     public class DrawingsStructure
     {
         [JsonPropertyName("title")]
-        public string Title { get; set; } = "WORK PACKAGE DRAWINGS";
+        public string Title { get; set; } = "DRAWINGS";
 
         // Source type: "Local" for local folder, "Procore" for Procore API (future)
         [JsonPropertyName("source")]
