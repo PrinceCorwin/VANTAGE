@@ -180,6 +180,91 @@ namespace VANTAGE.Utilities
             }
         }
 
+        // Purges log files and database entries older than the specified number of days
+        public static void PurgeOldLogs(int daysToKeep = 30)
+        {
+            var cutoffDate = DateTime.UtcNow.AddDays(-daysToKeep);
+
+            // Purge physical log files based on filename date
+            PurgeOldLogFiles(cutoffDate);
+
+            // Purge database log entries
+            PurgeOldLogEntries(cutoffDate);
+        }
+
+        // Deletes log files older than cutoff date by parsing the filename (app-yyyyMMdd.log)
+        private static void PurgeOldLogFiles(DateTime cutoffDate)
+        {
+            try
+            {
+                if (!_initialized || string.IsNullOrEmpty(_logDir) || !Directory.Exists(_logDir))
+                    return;
+
+                var files = Directory.GetFiles(_logDir, "app-*.log");
+                int purgedCount = 0;
+
+                foreach (var file in files)
+                {
+                    try
+                    {
+                        // Extract date from filename: app-yyyyMMdd.log
+                        string fileName = Path.GetFileNameWithoutExtension(file);
+                        if (fileName.Length >= 12 && fileName.StartsWith("app-"))
+                        {
+                            string dateStr = fileName.Substring(4, 8);
+                            if (DateTime.TryParseExact(dateStr, "yyyyMMdd", null,
+                                System.Globalization.DateTimeStyles.None, out DateTime fileDate))
+                            {
+                                if (fileDate < cutoffDate.Date)
+                                {
+                                    File.Delete(file);
+                                    purgedCount++;
+                                }
+                            }
+                        }
+                    }
+                    catch
+                    {
+                        // Skip files that can't be processed
+                    }
+                }
+
+                if (purgedCount > 0)
+                {
+                    Info($"Purged {purgedCount} log file(s) older than 30 days", "AppLogger.PurgeOldLogFiles");
+                }
+            }
+            catch
+            {
+                // Don't let purge failures affect app startup
+            }
+        }
+
+        // Deletes database log entries older than cutoff date
+        private static void PurgeOldLogEntries(DateTime cutoffDate)
+        {
+            try
+            {
+                using var connection = DatabaseSetup.GetConnection();
+                connection.Open();
+
+                using var cmd = connection.CreateCommand();
+                cmd.CommandText = "DELETE FROM Logs WHERE TimestampUtc < @cutoffDate";
+                cmd.Parameters.AddWithValue("@cutoffDate", cutoffDate.ToString("o"));
+
+                int rowsDeleted = cmd.ExecuteNonQuery();
+
+                if (rowsDeleted > 0)
+                {
+                    Info($"Purged {rowsDeleted} log entries older than 30 days", "AppLogger.PurgeOldLogEntries");
+                }
+            }
+            catch
+            {
+                // Don't let purge failures affect app startup
+            }
+        }
+
         // Get logs from database with optional filters
         public static List<LogEntry> GetLogs(DateTime? fromDate = null, DateTime? toDate = null, LogLevel? minLevel = null)
         {

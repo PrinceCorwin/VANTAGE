@@ -167,7 +167,7 @@ namespace VANTAGE.Utilities
             }
         }
 
-        // Deletes log files older than the specified number of days
+        // Deletes log files older than the specified number of days based on filename date
         public static void PurgeOldLogs(int daysToKeep = 30)
         {
             try
@@ -175,18 +175,40 @@ namespace VANTAGE.Utilities
                 if (!Directory.Exists(LogDirectory))
                     return;
 
-                var cutoffDate = DateTime.Now.AddDays(-daysToKeep);
+                var cutoffDate = DateTime.Now.AddDays(-daysToKeep).Date;
                 var files = Directory.GetFiles(LogDirectory, "ScheduleChanges_*.json");
+                int purgedCount = 0;
 
                 foreach (var file in files)
                 {
-                    var fileInfo = new FileInfo(file);
-                    if (fileInfo.LastWriteTime < cutoffDate)
+                    try
                     {
-                        File.Delete(file);
-                        AppLogger.Info($"Purged old schedule change log: {fileInfo.Name}",
-                            "ScheduleChangeLogger.PurgeOldLogs");
+                        // Extract date from filename: ScheduleChanges_yyyy-MM-dd.json
+                        string fileName = Path.GetFileNameWithoutExtension(file);
+                        if (fileName.Length >= 26 && fileName.StartsWith("ScheduleChanges_"))
+                        {
+                            string dateStr = fileName.Substring(16, 10);
+                            if (DateTime.TryParseExact(dateStr, "yyyy-MM-dd", null,
+                                System.Globalization.DateTimeStyles.None, out DateTime fileDate))
+                            {
+                                if (fileDate < cutoffDate)
+                                {
+                                    File.Delete(file);
+                                    purgedCount++;
+                                }
+                            }
+                        }
                     }
+                    catch
+                    {
+                        // Skip files that can't be processed
+                    }
+                }
+
+                if (purgedCount > 0)
+                {
+                    AppLogger.Info($"Purged {purgedCount} schedule change log(s) older than {daysToKeep} days",
+                        "ScheduleChangeLogger.PurgeOldLogs");
                 }
             }
             catch (Exception ex)
