@@ -166,7 +166,7 @@ namespace VANTAGE.Utilities
             "UDF15",
             "UDF16",
             "UDF17",
-            "UDF18",
+            "RespParty",
             "UniqueID",
             "UDF20",
             "BaseUnit",

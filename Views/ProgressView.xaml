@@ -125,12 +125,12 @@
                 </DataTrigger>
             </Style.Triggers>
         </Style>
-        <Style x:Key="UDF18RequiredStyle" TargetType="syncfusion:GridCell">
+        <Style x:Key="RespPartyRequiredStyle" TargetType="syncfusion:GridCell">
             <Style.Triggers>
-                <DataTrigger Binding="{Binding Path=UDF18}" Value="">
+                <DataTrigger Binding="{Binding Path=RespParty}" Value="">
                     <Setter Property="Background" Value="{StaticResource StatusRedBg}"/>
                 </DataTrigger>
-                <DataTrigger Binding="{Binding Path=UDF18}" Value="{x:Null}">
+                <DataTrigger Binding="{Binding Path=RespParty}" Value="{x:Null}">
                     <Setter Property="Background" Value="{StaticResource StatusRedBg}"/>
                 </DataTrigger>
             </Style.Triggers>
@@ -1450,14 +1450,14 @@
                            AllowFiltering="True"
                            AllowSorting="True" />
 
-                        <syncfusion:GridTextColumn MappingName="UDF18"
-                           HeaderText="UDF18"
+                        <syncfusion:GridTextColumn MappingName="RespParty"
+                           HeaderText="Resp Party"
                            Width="100"
                            IsHidden="False"
                            AllowEditing="True"
                            AllowFiltering="True"
                            AllowSorting="True"
-                           CellStyle="{StaticResource UDF18RequiredStyle}" />
+                           CellStyle="{StaticResource RespPartyRequiredStyle}" />
 
                         <syncfusion:GridTextColumn MappingName="UDF20"
                            HeaderText="UDF20"

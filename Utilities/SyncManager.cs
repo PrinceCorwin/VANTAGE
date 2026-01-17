@@ -94,7 +94,7 @@ namespace VANTAGE.Utilities
                 "UDF15" => activity.UDF15,
                 "UDF16" => activity.UDF16,
                 "UDF17" => activity.UDF17,
-                "UDF18" => activity.UDF18,
+                "RespParty" => activity.RespParty,
                 "UDF20" => activity.UDF20,
                 "UpdatedBy" => activity.UpdatedBy,
                 "UpdatedUtcDate" => activity.UpdatedUtcDate?.ToString("yyyy-MM-dd HH:mm:ss"),
@@ -152,7 +152,7 @@ namespace VANTAGE.Utilities
                     "SecondActno", "SecondDwgNO", "Service", "ShopField", "ShtNO",
                     "SubArea", "PjtSystem", "SystemNO", "TagNO",
                     "UDF1", "UDF2", "UDF3", "UDF4", "UDF5", "UDF6", "UDF7", "UDF8", "UDF9", "UDF10",
-                    "UDF11", "UDF12", "UDF13", "UDF14", "UDF15", "UDF16", "UDF17", "UDF18", "UDF20",
+                    "UDF11", "UDF12", "UDF13", "UDF14", "UDF15", "UDF16", "UDF17", "RespParty", "UDF20",
                     "UpdatedBy", "UpdatedUtcDate", "UOM", "WeekEndDate", "WorkPackage", "XRay"
                 };
 

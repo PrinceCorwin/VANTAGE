@@ -128,7 +128,7 @@ namespace VANTAGE.Models
         public string? UDF15 { get; set; }
         public string? UDF16 { get; set; }
         public string? UDF17 { get; set; }
-        public string? UDF18 { get; set; }
+        public string? RespParty { get; set; }
         public string? UDF20 { get; set; }
 
         // Special UDF Fields (with helper properties)

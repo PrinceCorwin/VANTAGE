@@ -103,7 +103,7 @@ namespace VANTAGE.Models
         public string UDF15 { get; set; } = string.Empty;
         public string UDF16 { get; set; } = string.Empty;
         public string UDF17 { get; set; } = string.Empty;
-        public string UDF18 { get; set; } = string.Empty;
+        public string RespParty { get; set; } = string.Empty;
         public string UDF20 { get; set; } = string.Empty;
         public string UpdatedBy { get; set; } = string.Empty;
         public DateTime UpdatedUtcDate { get; set; }

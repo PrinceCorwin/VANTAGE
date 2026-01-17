@@ -39,6 +39,11 @@ WPF application for Summit Constructors replacing legacy MS Access system. Track
 
 **This is NOT optional. Failure to update status docs before committing is a workflow violation.**
 
+### Status Doc Timing
+- **Do NOT update Project_Status.md or Completed_Work.md until user confirms the work is tested and complete**
+- Making code changes does not mean the work is done - user must test first
+- Only move items to Completed_Work.md after explicit user confirmation that testing passed
+
 ### Plan File Management
 - Plan files in the `Plans/` folder should be deleted once fully implemented
 - Before deleting: ensure Project_Status.md and any related docs are updated
@@ -125,7 +130,7 @@ if (!AzureDbManager.CheckConnection(out string errorMessage))
 - SchStart: cannot be future, cannot be after SchFinish, cannot clear if PercentEntry > 0
 - SchFinish: requires PercentEntry = 100, cannot be before SchStart
 - Metadata errors (9 required fields) block sync operations
-- Required fields: WorkPackage, PhaseCode, CompType, PhaseCategory, ProjectID, SchedActNO, Description, ROCStep, UDF18
+- Required fields: WorkPackage, PhaseCode, CompType, PhaseCategory, ProjectID, SchedActNO, Description, ROCStep, RespParty
 
 ## Performance Rules
 - NO Debug.WriteLine in loops

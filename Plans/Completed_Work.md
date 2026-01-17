@@ -5,6 +5,10 @@ This document tracks completed features and fixes. Items are moved here from Pro
 ---
 
 ### January 17, 2026
+- **UDF18 renamed to RespParty (Responsible Party)** throughout the application:
+  - Models, database layer, views, dialogs, import/export, documentation
+  - Grid column now displays as "Resp Party" with required field styling
+  - Legacy imports still work via ColumnMappings table
 - Work Package template editors tested and validated:
   - Cover editor - editing, saving, preview
   - List editor - item add/remove/reorder, saving, preview

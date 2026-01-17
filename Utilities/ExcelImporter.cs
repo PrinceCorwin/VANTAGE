@@ -311,7 +311,7 @@ namespace VANTAGE.Utilities
                 SchStart, SchFinish, DateTrigger, Notes,
                 UDF1, UDF2, UDF3, UDF4, UDF5, UDF6, UDF7, UDF8, UDF9, UDF10,
                 UDF11, UDF12, UDF13,
-                UDF14, UDF15, UDF16, UDF17, UDF18, UDF20,
+                UDF14, UDF15, UDF16, UDF17, RespParty, UDF20,
                 PipeSize1, PipeSize2,
                 UpdatedUtcDate, LocalDirty
             ) VALUES (
@@ -333,7 +333,7 @@ namespace VANTAGE.Utilities
                 @SchStart, @SchFinish, @DateTrigger, @Notes,
                 @UDF1, @UDF2, @UDF3, @UDF4, @UDF5, @UDF6, @UDF7, @UDF8, @UDF9, @UDF10,
                 @UDF11, @UDF12, @UDF13,
-                @UDF14, @UDF15, @UDF16, @UDF17, @UDF18, @UDF20,
+                @UDF14, @UDF15, @UDF16, @UDF17, @RespParty, @UDF20,
                 @PipeSize1, @PipeSize2,
                 @UpdatedUtcDate, @LocalDirty
             )";
@@ -418,7 +418,7 @@ namespace VANTAGE.Utilities
                 command.Parameters.Add("@UDF15", SqliteType.Text);
                 command.Parameters.Add("@UDF16", SqliteType.Text);
                 command.Parameters.Add("@UDF17", SqliteType.Text);
-                command.Parameters.Add("@UDF18", SqliteType.Text);
+                command.Parameters.Add("@RespParty", SqliteType.Text);
                 command.Parameters.Add("@UDF20", SqliteType.Text);
                 command.Parameters.Add("@PipeSize1", SqliteType.Real);
                 command.Parameters.Add("@PipeSize2", SqliteType.Real);
@@ -538,7 +538,7 @@ namespace VANTAGE.Utilities
                     command.Parameters["@UDF15"].Value = activity.UDF15 ?? "";
                     command.Parameters["@UDF16"].Value = activity.UDF16 ?? "";
                     command.Parameters["@UDF17"].Value = activity.UDF17 ?? "";
-                    command.Parameters["@UDF18"].Value = activity.UDF18 ?? "";
+                    command.Parameters["@RespParty"].Value = activity.RespParty ?? "";
                     command.Parameters["@UDF20"].Value = activity.UDF20 ?? "";
                     command.Parameters["@PipeSize1"].Value = activity.PipeSize1;
                     command.Parameters["@PipeSize2"].Value = activity.PipeSize2;

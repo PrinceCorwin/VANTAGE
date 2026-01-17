@@ -802,7 +802,7 @@ namespace VANTAGE.Views
                 "PaintCode", "PipeGrade", "PjtSystem", "ProjectID", "RFINO", "RevNO", "ROCStep",
                 "SecondActno", "SecondDwgNO", "Service", "ShopField", "ShtNO", "SubArea", "TagNO",
                 "UDF1", "UDF3", "UDF4", "UDF5", "UDF6", "UDF8", "UDF9", "UDF10", "UDF11", "UDF12",
-                "UDF13", "UDF14", "UDF15", "UDF16", "UDF17", "UDF18", "UDF20", "UOM" };
+                "UDF13", "UDF14", "UDF15", "UDF16", "UDF17", "RespParty", "UDF20", "UOM" };
 
             // Add priority fields
             foreach (var field in priorityFields)

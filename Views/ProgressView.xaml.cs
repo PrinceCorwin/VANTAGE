@@ -198,7 +198,7 @@ namespace VANTAGE.Views
                         SchedActNO IS NULL OR SchedActNO = '' OR
                         Description IS NULL OR Description = '' OR
                         ROCStep IS NULL OR ROCStep = '' OR
-                        UDF18 IS NULL OR UDF18 = ''
+                        RespParty IS NULL OR RespParty = ''
                     )";
 
                 await _viewModel.ApplyFilter("MetadataErrors", "IN", errorFilter);
@@ -236,7 +236,7 @@ namespace VANTAGE.Views
                     a.SchedActNO IS NULL OR a.SchedActNO = '' OR
                     a.Description IS NULL OR a.Description = '' OR
                     a.ROCStep IS NULL OR a.ROCStep = '' OR
-                    a.UDF18 IS NULL OR a.UDF18 = ''
+                    a.RespParty IS NULL OR a.RespParty = ''
                   )";
                     cmd.Parameters.AddWithValue("@currentUser", App.CurrentUser?.Username ?? "");
 
@@ -517,7 +517,7 @@ namespace VANTAGE.Views
                             UDF15 = original.UDF15,
                             UDF16 = original.UDF16,
                             UDF17 = original.UDF17,
-                            UDF18 = original.UDF18,
+                            RespParty = original.RespParty,
                             UDF20 = original.UDF20,
                             UOM = original.UOM,
                             WorkPackage = original.WorkPackage,
@@ -538,7 +538,7 @@ namespace VANTAGE.Views
                         ROCBudgetQTY, ROCID, ROCPercent, ROCStep, SchedActNO, SchFinish, SchStart,
                         SecondActno, SecondDwgNO, Service, ShopField, ShtNO, SubArea, PjtSystem,
                         SystemNO, TagNO, UDF1, UDF2, UDF3, UDF4, UDF5, UDF6, UDF7, UDF8, UDF9,
-                        UDF10, UDF11, UDF12, UDF13, UDF14, UDF15, UDF16, UDF17, UDF18, UDF20,
+                        UDF10, UDF11, UDF12, UDF13, UDF14, UDF15, UDF16, UDF17, RespParty, UDF20,
                         UpdatedBy, UpdatedUtcDate, UOM, WeekEndDate, WorkPackage, XRay, SyncVersion
                     ) VALUES (
                         @UniqueID, @ActivityID, @Area, @AssignedTo, @AzureUploadUtcDate, @Aux1, @Aux2, @Aux3,
@@ -551,7 +551,7 @@ namespace VANTAGE.Views
                         @ROCBudgetQTY, @ROCID, @ROCPercent, @ROCStep, @SchedActNO, @SchFinish, @SchStart,
                         @SecondActno, @SecondDwgNO, @Service, @ShopField, @ShtNO, @SubArea, @PjtSystem,
                         @SystemNO, @TagNO, @UDF1, @UDF2, @UDF3, @UDF4, @UDF5, @UDF6, @UDF7, @UDF8, @UDF9,
-                        @UDF10, @UDF11, @UDF12, @UDF13, @UDF14, @UDF15, @UDF16, @UDF17, @UDF18, @UDF20,
+                        @UDF10, @UDF11, @UDF12, @UDF13, @UDF14, @UDF15, @UDF16, @UDF17, @RespParty, @UDF20,
                         @UpdatedBy, @UpdatedUtcDate, @UOM, @WeekEndDate, @WorkPackage, @XRay, @SyncVersion
                     )";
 
@@ -636,7 +636,7 @@ namespace VANTAGE.Views
                         insertCmd.Parameters.AddWithValue("@UDF15", duplicate.UDF15 ?? "");
                         insertCmd.Parameters.AddWithValue("@UDF16", duplicate.UDF16 ?? "");
                         insertCmd.Parameters.AddWithValue("@UDF17", duplicate.UDF17 ?? "");
-                        insertCmd.Parameters.AddWithValue("@UDF18", duplicate.UDF18 ?? "");
+                        insertCmd.Parameters.AddWithValue("@RespParty", duplicate.RespParty ?? "");
                         insertCmd.Parameters.AddWithValue("@UDF20", duplicate.UDF20 ?? "");
                         insertCmd.Parameters.AddWithValue("@UpdatedBy", duplicate.UpdatedBy ?? "");
                         insertCmd.Parameters.AddWithValue("@UpdatedUtcDate", duplicate.UpdatedUtcDate?.ToString("o") ?? DateTime.UtcNow.ToString("o"));
@@ -2300,10 +2300,10 @@ namespace VANTAGE.Views
                             ROCStep, SchedActNO, SchFinish, SchStart, SecondActno, SecondDwgNO,
                             Service, ShopField, ShtNO, SubArea, PjtSystem, SystemNO, TagNO,
                             UDF1, UDF2, UDF3, UDF4, UDF5, UDF6, UDF7, UDF8, UDF9, UDF10,
-                            UDF11, UDF12, UDF13, UDF14, UDF15, UDF16, UDF17, UDF18, UDF20,
+                            UDF11, UDF12, UDF13, UDF14, UDF15, UDF16, UDF17, RespParty, UDF20,
                             UpdatedBy, UpdatedUtcDate, UOM, WorkPackage, XRay, ExportedBy, ExportedDate
                         )
-                        SELECT 
+                        SELECT
                             UniqueID, @weekEndDate, Area, AssignedTo, AzureUploadUtcDate,
                             Aux1, Aux2, Aux3, BaseUnit, BudgetHoursGroup, BudgetHoursROC, BudgetMHs,
                             ChgOrdNO, ClientBudget, ClientCustom3, ClientEquivQty, CompType, CreatedBy,
@@ -2315,7 +2315,7 @@ namespace VANTAGE.Views
                             ROCStep, SchedActNO, SchFinish, SchStart, SecondActno, SecondDwgNO,
                             Service, ShopField, ShtNO, SubArea, PjtSystem, SystemNO, TagNO,
                             UDF1, UDF2, UDF3, UDF4, UDF5, UDF6, UDF7, UDF8, UDF9, UDF10,
-                            UDF11, UDF12, UDF13, UDF14, UDF15, UDF16, UDF17, UDF18, UDF20,
+                            UDF11, UDF12, UDF13, UDF14, UDF15, UDF16, UDF17, RespParty, UDF20,
                             UpdatedBy, UpdatedUtcDate, UOM, WorkPackage, XRay, NULL, NULL
                         FROM Activities a
                         WHERE AssignedTo = @username 
@@ -2486,7 +2486,7 @@ namespace VANTAGE.Views
                     MessageBox.Show(
                         $"Cannot sync. You have {_viewModel.MetadataErrorCount} record(s) with missing required metadata.\n\n" +
                         "Click 'Metadata Errors' button to view and fix these records.\n\n" +
-                        "Required fields: WorkPackage, PhaseCode, CompType, PhaseCategory, ProjectID, SchedActNO, Description, ROCStep, UDF18",
+                        "Required fields: WorkPackage, PhaseCode, CompType, PhaseCategory, ProjectID, SchedActNO, Description, ROCStep, RespParty",
                         "Metadata Errors",
                         MessageBoxButton.OK,
                         MessageBoxImage.Warning);
@@ -3344,7 +3344,7 @@ namespace VANTAGE.Views
                 string.IsNullOrWhiteSpace(a.SchedActNO) ||
                 string.IsNullOrWhiteSpace(a.Description) ||
                 string.IsNullOrWhiteSpace(a.ROCStep) ||
-                string.IsNullOrWhiteSpace(a.UDF18)
+                string.IsNullOrWhiteSpace(a.RespParty)
             ).ToList();
 
             if (recordsWithErrors.Any())
@@ -3352,7 +3352,7 @@ namespace VANTAGE.Views
                 MessageBox.Show(
                     $"Cannot reassign. {recordsWithErrors.Count} selected record(s) have missing required metadata.\n\n" +
                     "Click 'Metadata Errors' button to view and fix these records.\n\n" +
-                    "Required fields: WorkPackage, PhaseCode, CompType, PhaseCategory, ProjectID, SchedActNO, Description, ROCStep, UDF18",
+                    "Required fields: WorkPackage, PhaseCode, CompType, PhaseCategory, ProjectID, SchedActNO, Description, ROCStep, RespParty",
                     "Metadata Errors",
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning);

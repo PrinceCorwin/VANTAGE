@@ -464,7 +464,7 @@ namespace VANTAGE.Dialogs
                             ROCStep, SchedActNO, SchFinish, SchStart, SecondActno, SecondDwgNO,
                             Service, ShopField, ShtNO, SubArea, PjtSystem, SystemNO, TagNO,
                             UDF1, UDF2, UDF3, UDF4, UDF5, UDF6, UDF7, UDF8, UDF9, UDF10,
-                            UDF11, UDF12, UDF13, UDF14, UDF15, UDF16, UDF17, UDF18, UDF20,
+                            UDF11, UDF12, UDF13, UDF14, UDF15, UDF16, UDF17, RespParty, UDF20,
                             UpdatedBy, UpdatedUtcDate, UOM, WorkPackage, XRay
                         )
                         SELECT
@@ -479,7 +479,7 @@ namespace VANTAGE.Dialogs
                             ROCStep, SchedActNO, SchFinish, SchStart, SecondActno, SecondDwgNO,
                             Service, ShopField, ShtNO, SubArea, PjtSystem, SystemNO, TagNO,
                             UDF1, UDF2, UDF3, UDF4, UDF5, UDF6, UDF7, UDF8, UDF9, UDF10,
-                            UDF11, UDF12, UDF13, UDF14, UDF15, UDF16, UDF17, UDF18, UDF20,
+                            UDF11, UDF12, UDF13, UDF14, UDF15, UDF16, UDF17, RespParty, UDF20,
                             @updatedBy, @updatedUtcDate, UOM, WorkPackage, XRay
                         FROM Activities
                         WHERE AssignedTo = @username
@@ -646,7 +646,7 @@ namespace VANTAGE.Dialogs
                         ROCStep, SchedActNO, SchFinish, SchStart, SecondActno, SecondDwgNO,
                         Service, ShopField, ShtNO, SubArea, PjtSystem, SystemNO, TagNO,
                         UDF1, UDF2, UDF3, UDF4, UDF5, UDF6, UDF7, UDF8, UDF9, UDF10,
-                        UDF11, UDF12, UDF13, UDF14, UDF15, UDF16, UDF17, UDF18, UDF20,
+                        UDF11, UDF12, UDF13, UDF14, UDF15, UDF16, UDF17, RespParty, UDF20,
                         UOM, WorkPackage, XRay
                     FROM ProgressSnapshots
                     WHERE AssignedTo = @username
@@ -747,7 +747,7 @@ namespace VANTAGE.Dialogs
                 UDF15 = GetStringOrEmpty(reader, 75),
                 UDF16 = GetStringOrEmpty(reader, 76),
                 UDF17 = GetStringOrEmpty(reader, 77),
-                UDF18 = GetStringOrEmpty(reader, 78),
+                RespParty = GetStringOrEmpty(reader, 78),
                 UDF20 = GetStringOrEmpty(reader, 79),
                 UOM = GetStringOrEmpty(reader, 80),
                 WorkPackage = GetStringOrEmpty(reader, 81),
@@ -950,7 +950,7 @@ namespace VANTAGE.Dialogs
                     UDF15 = @udf15,
                     UDF16 = @udf16,
                     UDF17 = @udf17,
-                    UDF18 = @udf18,
+                    RespParty = @respParty,
                     UDF20 = @udf20,
                     UOM = @uom,
                     WorkPackage = @workPackage,
@@ -1040,7 +1040,7 @@ namespace VANTAGE.Dialogs
             cmd.Parameters.AddWithValue("@udf15", snapshot.UDF15);
             cmd.Parameters.AddWithValue("@udf16", snapshot.UDF16);
             cmd.Parameters.AddWithValue("@udf17", snapshot.UDF17);
-            cmd.Parameters.AddWithValue("@udf18", snapshot.UDF18);
+            cmd.Parameters.AddWithValue("@respParty", snapshot.RespParty);
             cmd.Parameters.AddWithValue("@udf20", snapshot.UDF20);
             cmd.Parameters.AddWithValue("@uom", snapshot.UOM);
             cmd.Parameters.AddWithValue("@workPackage", snapshot.WorkPackage);
@@ -1187,7 +1187,7 @@ namespace VANTAGE.Dialogs
         public string UDF15 { get; set; } = string.Empty;
         public string UDF16 { get; set; } = string.Empty;
         public string UDF17 { get; set; } = string.Empty;
-        public string UDF18 { get; set; } = string.Empty;
+        public string RespParty { get; set; } = string.Empty;
         public string UDF20 { get; set; } = string.Empty;
         public string UOM { get; set; } = string.Empty;
         public string WorkPackage { get; set; } = string.Empty;

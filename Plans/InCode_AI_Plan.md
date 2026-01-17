@@ -140,7 +140,7 @@ CREATE TABLE AiUsageLog (
 
 ## Feature 3: Metadata Consistency Analysis
 
-**Purpose:** Flag inconsistent categorical values (ROCStep, CompType, PhaseCategory, PhaseCode, UDF18) that fragment dashboard aggregations.
+**Purpose:** Flag inconsistent categorical values (ROCStep, CompType, PhaseCategory, PhaseCode, RespParty) that fragment dashboard aggregations.
 
 ### Approach
 - AI analyzes patterns, groups similar values, flags outliers

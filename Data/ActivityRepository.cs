@@ -288,7 +288,7 @@ namespace VANTAGE.Data
                     UDF15 = @UDF15,
                     UDF16 = @UDF16,
                     UDF17 = @UDF17,
-                    UDF18 = @UDF18,
+                    RespParty = @RespParty,
                     UDF20 = @UDF20,
                     UOM = @UOM,
                     UpdatedBy = @UpdatedBy,
@@ -376,7 +376,7 @@ namespace VANTAGE.Data
                     command.Parameters.AddWithValue("@UDF15", activity.UDF15 ?? "");
                     command.Parameters.AddWithValue("@UDF16", activity.UDF16 ?? "");
                     command.Parameters.AddWithValue("@UDF17", activity.UDF17 ?? "");
-                    command.Parameters.AddWithValue("@UDF18", activity.UDF18 ?? "");
+                    command.Parameters.AddWithValue("@RespParty", activity.RespParty ?? "");
                     command.Parameters.AddWithValue("@UDF20", activity.UDF20 ?? "");
                     command.Parameters.AddWithValue("@UOM", activity.UOM ?? "");
                     command.Parameters.AddWithValue("@UpdatedBy", activity.UpdatedBy ?? "");
@@ -734,7 +734,7 @@ namespace VANTAGE.Data
                                  activity.UDF15 = GetStringSafe("UDF15");
                                  activity.UDF16 = GetStringSafe("UDF16");
                                  activity.UDF17 = GetStringSafe("UDF17");
-                                 activity.UDF18 = GetStringSafe("UDF18");
+                                 activity.RespParty = GetStringSafe("RespParty");
                                  activity.UniqueID = GetStringSafe("UniqueID");
                                  activity.UDF20 = GetStringSafe("UDF20");
                                  activity.AssignedTo = GetStringSafe("AssignedTo");
@@ -992,7 +992,7 @@ namespace VANTAGE.Data
                                  activity.UDF15 = GetStringSafe("UDF15");
                                  activity.UDF16 = GetStringSafe("UDF16");
                                  activity.UDF17 = GetStringSafe("UDF17");
-                                 activity.UDF18 = GetStringSafe("UDF18");
+                                 activity.RespParty = GetStringSafe("RespParty");
                                  activity.UniqueID = GetStringSafe("UniqueID");
                                  activity.UDF20 = GetStringSafe("UDF20");
                                  activity.AssignedTo = GetStringSafe("AssignedTo");
@@ -1254,7 +1254,7 @@ namespace VANTAGE.Data
             activity.UDF15 = GetStringOrDefault(reader, "UDF15");
             activity.UDF16 = GetStringOrDefault(reader, "UDF16");
             activity.UDF17 = GetStringOrDefault(reader, "UDF17");
-            activity.UDF18 = GetStringOrDefault(reader, "UDF18");
+            activity.RespParty = GetStringOrDefault(reader, "RespParty");
             activity.UDF20 = GetStringOrDefault(reader, "UDF20");
             activity.UniqueID = GetStringOrDefault(reader, "UniqueID");
             activity.UOM = GetStringOrDefault(reader, "UOM");

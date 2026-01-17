@@ -70,7 +70,7 @@ UDFFourteen = UDF14
 UDFFifteen = UDF15
 UDFSixteen = UDF16
 UDFSeventeen = UDF17
-UDFEighteen = UDF18
+UDFEighteen = RespParty
 UDFNineteen = UniqueID
 UDFTwenty = UDF20
 Val_Base_Unit = BaseUnit
@@ -169,7 +169,7 @@ UDFFourteen = UDF14
 UDFFifteen = UDF15
 UDFSixteen = UDF16
 UDFSeventeen = UDF17
-UDFEighteen = UDF18
+UDFEighteen = RespParty
 UDFNineteen = UniqueID
 UDFTwenty = UDF20
 Val_Base_Unit = BaseUnit
@@ -288,7 +288,7 @@ UDF14
 UDF15
 UDF16
 UDF17
-UDF18
+RespParty
 UDF20
 UpdatedBy
 UpdatedUtcDate
@@ -395,7 +395,7 @@ UDF14
 UDF15
 UDF16
 UDF17
-UDF18
+RespParty
 UDF20
 UOM
 UniqueID
@@ -528,7 +528,7 @@ UDF14 = UDF14
 UDF15 = UDF15
 UDF16 = UDF16
 UDF17 = UDF17
-UDF18 = UDF18
+RespParty = RespParty
 UDF20 = UDF20
 UOM = Val_UOM
 UniqueID = UDF19

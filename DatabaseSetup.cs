@@ -307,7 +307,7 @@ namespace VANTAGE
                 UDF15                 TEXT NOT NULL DEFAULT '',
                 UDF16                 TEXT NOT NULL DEFAULT '',
                 UDF17                 TEXT NOT NULL DEFAULT '',
-                UDF18                 TEXT NOT NULL DEFAULT '',
+                RespParty             TEXT NOT NULL DEFAULT '',
                 UDF2                  TEXT NOT NULL DEFAULT '',
                 UDF20                 TEXT NOT NULL DEFAULT '',
                 UDF3                  TEXT NOT NULL DEFAULT '',

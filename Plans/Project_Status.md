@@ -42,7 +42,6 @@
 
 ### Medium Priority
 - **DISCUSS:** Add PlanStart and PlanFinish fields to Activities (for baseline schedule comparison?)
-- Rename UDF18 column to RespParty throughout the app (grid headers, code references, database)
 - Schedule module: Check if user can apply detail grid edits to live activities - explore adding this option if not available
 - Shift+Scroll horizontal scrolling (see ShiftScroll_Horizontal_Implementation_Plan.md)
 - User-editable header template for WP (allow customizing header layout)
