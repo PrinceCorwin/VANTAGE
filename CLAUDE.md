@@ -35,6 +35,11 @@ WPF application for Summit Constructors replacing legacy MS Access system. Track
 
 **This is NOT optional. Failure to update status docs before committing is a workflow violation.**
 
+### Plan File Management
+- Plan files in the `Plans/` folder should be deleted once fully implemented
+- Before deleting: ensure Project_Status.md and any related docs are updated
+- **ALWAYS ask the user before deleting plan files, even if accept edits is enabled**
+
 ## C# Code Conventions
 
 ### Comments

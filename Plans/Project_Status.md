@@ -59,6 +59,7 @@
 - [ ] Shift+Scroll horizontal scrolling (see ShiftScroll_Horizontal_Implementation_Plan.md)
 - [ ] User-editable header template for WP (allow customizing header layout)
 - [ ] Import/Export WP templates to JSON
+- [ ] Milestone/Legacy Import/Export formats - default to Milestone column names, add Legacy menu items for backward compatibility (see Legacy_Import_Export_Plan.md)
 
 ### Infrastructure / Azure Migration
 - [ ] Execute VMS_ table creation script on company Azure (see MILESTONE_Azure_Migration_Plan.md)
