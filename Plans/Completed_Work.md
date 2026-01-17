@@ -5,6 +5,12 @@ This document tracks completed features and fixes. Items are moved here from Pro
 ---
 
 ### January 17, 2026
+- Work Package template editors tested and validated:
+  - Cover editor - editing, saving, preview
+  - List editor - item add/remove/reorder, saving, preview
+  - Grid editor - column add/remove/reorder, row count, saving, preview
+  - Form editor - sections/items/columns, saving, preview
+  - Type selection dialog - creating new templates of each type
 - Summary stats column selector:
   - Added clickable column name in ProgressView summary stats (replaces static "Budget:" label)
   - Dropdown arrow indicator with context menu showing available numerical columns

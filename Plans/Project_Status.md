@@ -17,45 +17,40 @@
 ## Active Development
 
 ### Work Package Module
-- [ ] Test Cover editor - editing, saving, preview
-- [ ] Test List editor - item add/remove/reorder, saving, preview
-- [ ] Test Grid editor - column add/remove/reorder, row count, saving, preview
-- [ ] Test Form editor - sections/items/columns, saving, preview
-- [ ] Test Type selection dialog - creating new templates of each type
-- [ ] Drawings - Fix preview display
-- [ ] Drawings - Fix layout/orientation for 11x17 drawings
-- [ ] Drawings - Implement Procore fetch
-- [ ] **DISCUSS:** Drawings fetch architecture - consider AI-assisted matching (many factors: DwgNO formats, revisions, sheet numbers, naming conventions). May warrant separate Drawings Manager module/dialog where drawings are fetched/organized independently, then WP module simply pulls from that cache.
+- Drawings - Fix preview display
+- Drawings - Fix layout/orientation for 11x17 drawings
+- Drawings - Implement Procore fetch
+- **DISCUSS:** Drawings fetch architecture - consider AI-assisted matching (many factors: DwgNO formats, revisions, sheet numbers, naming conventions). May warrant separate Drawings Manager module/dialog where drawings are fetched/organized independently, then WP module simply pulls from that cache.
 
 ### Help Sidebar
-- [ ] Write Getting Started content
-- [ ] Write Progress Module content
-- [ ] Write Schedule Module content
-- [ ] Write Work Packages content
-- [ ] Write Progress Books content
-- [ ] Write Administration content
-- [ ] Write Reference content
-- [ ] Capture screenshots (45+ total)
-- [ ] Implement PDF export
+- Write Getting Started content
+- Write Progress Module content
+- Write Schedule Module content
+- Write Work Packages content
+- Write Progress Books content
+- Write Administration content
+- Write Reference content
+- Capture screenshots (45+ total)
+- Implement PDF export
 
 ## Feature Backlog
 
 ### High Priority
-- [ ] Progress Book creation
-- [ ] Theme selection by user - save preference, apply on startup
-- [ ] Add Offline Indicator in status bar - clickable to retry connection
+- Progress Book creation
+- Theme selection by user - save preference, apply on startup
+- Add Offline Indicator in status bar - clickable to retry connection
 
 ### Medium Priority
-- [ ] **DISCUSS:** Add PlanStart and PlanFinish fields to Activities (for baseline schedule comparison?)
-- [ ] Rename UDF18 column to RespParty throughout the app (grid headers, code references, database)
-- [ ] Schedule module: Check if user can apply detail grid edits to live activities - explore adding this option if not available
-- [ ] Shift+Scroll horizontal scrolling (see ShiftScroll_Horizontal_Implementation_Plan.md)
-- [ ] User-editable header template for WP (allow customizing header layout)
-- [ ] Import/Export WP templates to JSON
+- **DISCUSS:** Add PlanStart and PlanFinish fields to Activities (for baseline schedule comparison?)
+- Rename UDF18 column to RespParty throughout the app (grid headers, code references, database)
+- Schedule module: Check if user can apply detail grid edits to live activities - explore adding this option if not available
+- Shift+Scroll horizontal scrolling (see ShiftScroll_Horizontal_Implementation_Plan.md)
+- User-editable header template for WP (allow customizing header layout)
+- Import/Export WP templates to JSON
 
 ### Infrastructure / Azure Migration
-- [ ] Execute VMS_ table creation script on company Azure (see MILESTONE_Azure_Migration_Plan.md)
-- [ ] Legacy Azure Table Save - Admin dialog to upload project snapshots to company Azure dbo_VANTAGE_global_ProgressLog (UPSERT, schema mapping TBD)
+- Execute VMS_ table creation script on company Azure (see MILESTONE_Azure_Migration_Plan.md)
+- Legacy Azure Table Save - Admin dialog to upload project snapshots to company Azure dbo_VANTAGE_global_ProgressLog (UPSERT, schema mapping TBD)
 
 ### AI Features (see InCode_AI_Plan.md)
 | Feature | Status |
@@ -76,12 +71,12 @@
 | Tool Execution | Not Started |
 
 ### Procore Integration (see Procore_Plan.md)
-- [ ] Procore Drawings integration for WP module
+- Procore Drawings integration for WP module
 
 ### Shelved
-- [ ] Find-Replace in Schedule Detail Grid
-- [ ] Disable Tooltips setting (see DisableTooltips_Plan.md)
-- [ ] Interactive Help Mode - click UI controls to navigate to documentation (see Sidebar_Help_Plan.md)
+- Find-Replace in Schedule Detail Grid
+- Disable Tooltips setting (see DisableTooltips_Plan.md)
+- Interactive Help Mode - click UI controls to navigate to documentation (see Sidebar_Help_Plan.md)
 
 ## Known Issues
 

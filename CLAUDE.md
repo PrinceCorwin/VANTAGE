@@ -21,7 +21,9 @@ WPF application for Summit Constructors replacing legacy MS Access system. Track
 - ALWAYS run `dotnet build` after code changes and fix any errors before reporting completion
 
 ## Git Commits
-- ALWAYS get user permission before committing - user needs to test changes first
+- **NEVER commit without explicit user permission** - user needs to test changes first
+  - "Update X" or "Add Y" means make the change, NOT commit it
+  - Wait for explicit "commit" instruction before running git commit
 - ALWAYS push to remote after committing, unless user instructs otherwise
 - Do NOT add "Generated with Claude" or "Co-Authored-By: Claude" to commit messages
 - Do NOT add AI attribution comments in code
