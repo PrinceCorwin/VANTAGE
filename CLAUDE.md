@@ -20,6 +20,12 @@ WPF application for Summit Constructors replacing legacy MS Access system. Track
 - Add brief intuitive tool tips to all created controls
 - ALWAYS run `dotnet build` after code changes and fix any errors before reporting completion
 
+### Help Sidebar Maintenance
+- When features are added, deleted, or modified, update `Help/manual.html` to keep documentation current
+- Add new features to the appropriate section and update the Table of Contents if adding new sections
+- Remove documentation for deleted features
+- Update existing documentation when feature behavior changes
+
 ## Git Commits
 - **NEVER commit without explicit user permission** - user needs to test changes first
   - "Update X" or "Add Y" means make the change, NOT commit it
