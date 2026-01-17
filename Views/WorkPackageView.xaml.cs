@@ -380,10 +380,11 @@ namespace VANTAGE.Views
         }
 
         // Populate Add Form dropdown menu with form templates
+        // Note: Drawings type excluded for v1 (per-WP location architecture needs design)
         private void PopulateAddFormMenu()
         {
             menuAddFormGroup.Items.Clear();
-            foreach (var template in GetSortedFormTemplates())
+            foreach (var template in GetSortedFormTemplates().Where(t => t.TemplateType != TemplateTypes.Drawings))
             {
                 var menuItem = new DropDownMenuItem
                 {
@@ -1214,7 +1215,7 @@ namespace VANTAGE.Views
                 txtWPTemplateName.Text = "";
                 txtExpirationDays.Value = 14;
                 _wpFormsList.Clear();
-                lstWPForms.ItemsSource = _wpFormsList;
+                ApplyWPFormsListFilter();
             }
         }
 
@@ -1235,7 +1236,17 @@ namespace VANTAGE.Views
                 }
             }
 
-            lstWPForms.ItemsSource = _wpFormsList;
+            ApplyWPFormsListFilter();
+        }
+
+        // Apply filter to hide Drawings items from WP forms list display
+        // Note: Drawings hidden for v1 (per-WP location architecture needs design)
+        // The filter hides from display while preserving in _wpFormsList for save operations
+        private void ApplyWPFormsListFilter()
+        {
+            var view = CollectionViewSource.GetDefaultView(_wpFormsList);
+            view.Filter = item => item is FormTemplate ft && ft.TemplateType != TemplateTypes.Drawings;
+            lstWPForms.ItemsSource = view;
         }
 
         // Move form up in list
@@ -3805,14 +3816,35 @@ namespace VANTAGE.Views
         }
 
         // Build and display the Drawings type editor
-        // Note: Drawings are imported directly as PDF pages (no template wrapper)
+        // Note: Drawings are hidden for v1 (per-WP location architecture needs design)
         private void BuildDrawingsEditor(DrawingsStructure structure)
         {
             _currentEditorType = TemplateTypes.Drawings;
 
             var panel = new StackPanel { Margin = new Thickness(0, 10, 0, 0) };
 
-            // Info text explaining how drawings work
+            // Drawings deferred for v1 - show message instead of editor
+            panel.Children.Add(new TextBlock
+            {
+                Text = "Drawings integration is coming in a future release.",
+                TextWrapping = TextWrapping.Wrap,
+                Foreground = (Brush)FindResource("TextColorSecondary"),
+                FontStyle = FontStyles.Italic,
+                Margin = new Thickness(0, 0, 0, 15)
+            });
+            panel.Children.Add(new TextBlock
+            {
+                Text = "The per-work-package drawing location architecture is being redesigned to better support batch generation scenarios.",
+                TextWrapping = TextWrapping.Wrap,
+                Foreground = (Brush)FindResource("TextColorSecondary"),
+                FontSize = 12,
+                Margin = new Thickness(0, 0, 0, 0)
+            });
+            FormEditorContent.Content = panel;
+            return;
+
+            // Original editor code below - kept for reference (will be re-enabled post-v1)
+            #pragma warning disable CS0162 // Unreachable code
             panel.Children.Add(new TextBlock
             {
                 Text = "Drawing PDFs are imported directly into the work package, preserving their original page size (typically 11x17).",
@@ -3934,6 +3966,7 @@ namespace VANTAGE.Views
 
             // Update panel visibility based on current source
             UpdateDrawingsSourcePanels();
+            #pragma warning restore CS0162
         }
 
         // Handle source selection change in Drawings editor

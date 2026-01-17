@@ -33,6 +33,11 @@ namespace VANTAGE.Services.PdfRenderers
         {
             var document = CreateDocument();
 
+            // Drawings deferred for v1 - per-WP location architecture needs design
+            // Return empty document so WP generates without drawings section
+            return document;
+
+            #pragma warning disable CS0162 // Unreachable code (kept for post-v1 re-enablement)
             try
             {
                 var structure = JsonSerializer.Deserialize<DrawingsStructure>(structureJson);
@@ -62,6 +67,7 @@ namespace VANTAGE.Services.PdfRenderers
             }
 
             return document;
+            #pragma warning restore CS0162
         }
 
         // Load drawing files from pre-fetched Drawings subfolder

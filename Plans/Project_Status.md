@@ -2,6 +2,27 @@
 
 **Last Updated:** January 17, 2026
 
+## V1 Testing Scope
+
+### In Scope
+| Feature | Status |
+|---------|--------|
+| Progress Module | Ready for testing |
+| Schedule Module | Ready for testing |
+| Sync | Complete |
+| Admin | Complete |
+| Work Package (PDF generation) | Ready for testing (drawings hidden) |
+| Help Sidebar | Content writing in progress |
+| Progress Book creation | Needs implementation |
+
+### Deferred to Post-V1
+| Feature | Reason |
+|---------|--------|
+| Drawings in Work Packages | Per-WP location architecture needs design |
+| AI Features | Requires ClaudeApiService infrastructure |
+| Theme Selection | Lower priority |
+| Procore Integration | Can develop while users test |
+
 ## Module Status
 
 | Module | Status | Notes |
@@ -10,17 +31,15 @@
 | Schedule | READY FOR TESTING | Core features complete |
 | Sync | COMPLETE | Bidirectional sync working |
 | Admin | COMPLETE | User/project/snapshot management |
-| Work Package | IN DEVELOPMENT | PDF generation working; Drawings editor and template editors need testing |
+| Work Package | READY FOR TESTING | PDF generation working; Drawings deferred to post-v1 |
 | Help Sidebar | IN DEVELOPMENT | Infrastructure complete; search implemented; content writing in progress |
 | AI Features | NOT STARTED | Requires ClaudeApiService infrastructure first |
 
 ## Active Development
 
 ### Work Package Module
-- Drawings - Fix preview display
-- Drawings - Fix layout/orientation for 11x17 drawings
-- Drawings - Implement Procore fetch
-- **DISCUSS:** Drawings fetch architecture - consider AI-assisted matching (many factors: DwgNO formats, revisions, sheet numbers, naming conventions). May warrant separate Drawings Manager module/dialog where drawings are fetched/organized independently, then WP module simply pulls from that cache.
+- Template editors testing
+- PDF preview testing
 
 ### Help Sidebar
 - Write Getting Started content
@@ -37,7 +56,6 @@
 
 ### High Priority
 - Progress Book creation
-- Theme selection by user - save preference, apply on startup
 - Add Offline Indicator in status bar - clickable to retry connection
 
 ### Medium Priority
@@ -68,8 +86,21 @@
 | Tool Definitions | Not Started |
 | Tool Execution | Not Started |
 
-### Procore Integration (see Procore_Plan.md)
-- Procore Drawings integration for WP module
+### Post-V1: Drawings Architecture
+- Design per-WP drawing location system (options: token paths, per-WP config, Drawings Manager)
+- Fix preview display
+- Fix layout/orientation for 11x17 drawings
+- Implement Procore fetch
+- Consider AI-assisted drawing matching (DwgNO formats, revisions, sheet numbers)
+
+**Code disabled for v1 (re-enable when drawings architecture is ready):**
+| File | What to re-enable |
+|------|-------------------|
+| `WorkPackageView.xaml` | Remove `Visibility="Collapsed"` from Drawings section Border (~line 238) |
+| `WorkPackageView.xaml.cs` | Remove `.Where(t => t.TemplateType != TemplateTypes.Drawings)` from `PopulateAddFormMenu()` |
+| `WorkPackageView.xaml.cs` | Remove filter in `ApplyWPFormsListFilter()` method |
+| `WorkPackageView.xaml.cs` | Remove early return in `BuildDrawingsEditor()` and `#pragma warning` directives |
+| `DrawingsRenderer.cs` | Remove early return in `Render()` method and `#pragma warning` directives |
 
 ### Shelved
 - Find-Replace in Schedule Detail Grid
@@ -78,8 +109,7 @@
 
 ## Known Issues
 
-1. **Drawings preview not displaying** - Fetched drawings show in generated PDF but not in previewer
-2. **Drawings layout/orientation** - 11x17 drawings may need rotation or scaling adjustment
+None currently blocking v1 testing.
 
 ## Test Scenarios Validated
 

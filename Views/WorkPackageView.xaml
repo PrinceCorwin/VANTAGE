@@ -234,8 +234,9 @@
                                 <Button Grid.Column="1" Content="Browse" Click="BtnBrowseLogo_Click" Padding="8,4" Margin="5,0,0,0"/>
                             </Grid>
 
-                            <!-- Drawings Section -->
-                            <Border BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,15">
+                            <!-- Drawings Section - Hidden for v1 (per-WP location architecture needs design) -->
+                            <Border BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,15"
+                                    Visibility="Collapsed">
                                 <StackPanel>
                                     <TextBlock Text="Drawings" FontWeight="Bold" Margin="0,0,0,10"/>
 
