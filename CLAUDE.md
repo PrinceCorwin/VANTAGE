@@ -2,7 +2,7 @@
 
 WPF application for Summit Constructors replacing legacy MS Access system. Tracks construction activities (welding, bolt-ups, steel erection) for industrial projects. Integrates with P6 Primavera for schedule import/export.
 
-**See also:** `Project_Status.md` (current status, backlog), `Milestone_Project_plan.md` (architecture), `Schedule_Module_plan.md` (schedule module details), `WorkPackage_Module_Plan.md` (work package module)
+**See also:** `Project_Status.md` (todos, backlog), `Completed_Work.md` (changelog), `Milestone_Project_plan.md` (architecture), `Schedule_Module_plan.md` (schedule module details), `WorkPackage_Module_Plan.md` (work package module)
 
 ## Tech Stack
 - WPF .NET 8, Syncfusion 31.2.12 (FluentDark theme)
@@ -29,9 +29,10 @@ WPF application for Summit Constructors replacing legacy MS Access system. Track
 
 ### MANDATORY Pre-Commit Checklist
 **STOP. Before running `git commit`, you MUST complete these steps IN ORDER:**
-1. Update Project_Status.md - Add completed work to "Recent Completions", mark backlog items as [x] complete
-2. Update any other relevant plan docs if the work relates to a specific feature plan
-3. ONLY THEN proceed with git add and git commit
+1. Update Project_Status.md - Remove completed items from the backlog
+2. Update Completed_Work.md - Add entry describing what was completed (with date header)
+3. Update any other relevant plan docs if the work relates to a specific feature plan
+4. ONLY THEN proceed with git add and git commit
 
 **This is NOT optional. Failure to update status docs before committing is a workflow violation.**
 
