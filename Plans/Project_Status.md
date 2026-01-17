@@ -93,6 +93,10 @@
 ## Recent Completions
 
 ### January 16, 2026
+- Form Template Editor - Column delete prorate fix:
+  - Grid and Form editors now prorate remaining column widths to 100% after column deletion
+  - Matches existing behavior for add/edit operations
+  - Affects Checklist, Punchlist, Signoff, Drawing Log templates
 - Form Template Editor - Reset Defaults button:
   - Added Reset Defaults button for user-created templates (Cover, List, Grid, Form types)
   - Button hidden for built-in templates and Drawings placeholder

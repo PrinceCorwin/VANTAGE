@@ -2751,6 +2751,14 @@ namespace VANTAGE.Views
             if (_gridColumnsBox?.SelectedIndex >= 0 && _gridColumns != null)
             {
                 _gridColumns.RemoveAt(_gridColumnsBox.SelectedIndex);
+
+                // Prorate remaining columns to total 100% (fixedIndex=-1 means scale all)
+                ProrateGridColumnsExcept(-1, 0);
+
+                // Refresh the ListBox to show updated percentages
+                _gridColumnsBox.ItemsSource = null;
+                _gridColumnsBox.ItemsSource = _gridColumns;
+
                 _hasUnsavedChanges = true;
             }
         }
@@ -3374,6 +3382,14 @@ namespace VANTAGE.Views
             if (_formColumnsBox?.SelectedIndex >= 0 && _formColumns != null)
             {
                 _formColumns.RemoveAt(_formColumnsBox.SelectedIndex);
+
+                // Prorate remaining columns to total 100% (fixedIndex=-1 means scale all)
+                ProrateFormColumnsExcept(-1, 0);
+
+                // Refresh the ListBox to show updated percentages
+                _formColumnsBox.ItemsSource = null;
+                _formColumnsBox.ItemsSource = _formColumns;
+
                 _hasUnsavedChanges = true;
             }
         }
