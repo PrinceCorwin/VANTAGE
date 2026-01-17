@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Data;
 using VANTAGE.Data;
@@ -39,6 +42,51 @@ namespace VANTAGE.ViewModels
         }
 
         public string MetadataErrorButtonText => $"Metadata Errors: {_metadataErrorCount}";
+
+        // Summary stats column selection - allows user to choose which column drives Budget/Earned calculations
+        private string _selectedSummaryColumn = "BudgetMHs";
+        public string SelectedSummaryColumn
+        {
+            get => _selectedSummaryColumn;
+            set
+            {
+                if (_selectedSummaryColumn != value)
+                {
+                    _selectedSummaryColumn = value;
+                    OnPropertyChanged(nameof(SelectedSummaryColumn));
+
+                    // Save to UserSettings
+                    SettingsManager.SetUserSetting("SummaryStats.BudgetColumn", value);
+
+                    // Recalculate totals with new column
+                    _ = UpdateTotalsAsync();
+                }
+            }
+        }
+
+        // Available numerical columns for summary stats dropdown
+        public ObservableCollection<string> AvailableSummaryColumns { get; } = new ObservableCollection<string>
+        {
+            "BudgetMHs",
+            "ClientBudget",
+            "Quantity",
+            "BudgetHoursGroup",
+            "BudgetHoursROC",
+            "ROCBudgetQTY",
+            "ClientEquivQty",
+            "BaseUnit"
+        };
+
+        // Load saved summary column preference from UserSettings
+        public void LoadSummaryColumnPreference()
+        {
+            var savedColumn = SettingsManager.GetUserSetting("SummaryStats.BudgetColumn", "BudgetMHs");
+            if (AvailableSummaryColumns.Contains(savedColumn))
+            {
+                _selectedSummaryColumn = savedColumn;
+                OnPropertyChanged(nameof(SelectedSummaryColumn));
+            }
+        }
         private string BuildUnifiedWhereClause()
         {
             var fb = new FilterBuilder();
@@ -433,10 +481,36 @@ namespace VANTAGE.ViewModels
                         return;
                     }
 
-                    // Calculate totals from provided collection
-                    // Use EarnMHsCalc which is already calculated on each Activity
-                    double budgeted = activitiesToCalculate.Sum(a => a.BudgetMHs);
-                    double earned = activitiesToCalculate.Sum(a => a.EarnMHsCalc);
+                    // Get the selected column property via reflection
+                    var columnName = _selectedSummaryColumn;
+                    var property = typeof(Activity).GetProperty(columnName);
+
+                    double budgeted;
+                    double earned;
+
+                    if (property != null)
+                    {
+                        // Calculate budget from selected column
+                        budgeted = activitiesToCalculate.Sum(a =>
+                        {
+                            var value = property.GetValue(a);
+                            return value is double d ? d : 0;
+                        });
+
+                        // Calculate earned as: selectedColumn * PercentEntry / 100
+                        earned = activitiesToCalculate.Sum(a =>
+                        {
+                            var budgetValue = property.GetValue(a);
+                            double budget = budgetValue is double d ? d : 0;
+                            return budget * a.PercentEntry / 100.0;
+                        });
+                    }
+                    else
+                    {
+                        // Fallback to BudgetMHs if property not found
+                        budgeted = activitiesToCalculate.Sum(a => a.BudgetMHs);
+                        earned = activitiesToCalculate.Sum(a => a.EarnMHsCalc);
+                    }
 
                     // Update properties on UI thread
                     System.Windows.Application.Current.Dispatcher.Invoke(() =>
@@ -447,8 +521,7 @@ namespace VANTAGE.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    // TODO: Add proper logging when logging system is implemented
-                    System.Diagnostics.Debug.WriteLine($"Error in UpdateTotalsAsync: {ex.Message}");
+                    AppLogger.Error(ex, "ProgressViewModel.UpdateTotalsAsync");
                 }
             });
         }

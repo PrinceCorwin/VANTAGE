@@ -1,6 +1,6 @@
 # MILESTONE - Project Status
 
-**Last Updated:** January 16, 2026
+**Last Updated:** January 17, 2026
 
 ## Module Status
 
@@ -52,6 +52,8 @@
 - [x] Add 'Revert to Snapshot' functionality (via Manage Snapshots dialog)
 
 ### Medium Priority
+- [ ] **DISCUSS:** Add PlanStart and PlanFinish fields to Activities (for baseline schedule comparison?)
+- [x] Add option to choose which column is used for project summary stats at the top right of ProgressView
 - [x] Review project files for hard coded colors, replace with theme variables
 - [x] Review project file organization and clean up (Phase 1 complete - dialogs moved, files renamed)
 - [ ] Rename UDF18 column to RespParty throughout the app (grid headers, code references, database)
@@ -92,6 +94,15 @@
 - [ ] Interactive Help Mode - click UI controls to navigate to documentation (see Sidebar_Help_Plan.md)
 
 ## Recent Completions
+
+### January 17, 2026
+- Summary stats column selector:
+  - Added clickable column name in ProgressView summary stats (replaces static "Budget:" label)
+  - Dropdown arrow indicator with context menu showing available numerical columns
+  - Available columns: BudgetMHs, ClientBudget, Quantity, BudgetHoursGroup, BudgetHoursROC, ROCBudgetQTY, ClientEquivQty, BaseUnit
+  - Earned calculation dynamically uses selected column: `selectedColumn * PercentEntry / 100`
+  - Selection persists to UserSettings across sessions
+  - Underline on hover indicates interactivity
 
 ### January 16, 2026
 - Legacy Import/Export format support:

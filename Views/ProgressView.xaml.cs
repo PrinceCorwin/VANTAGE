@@ -1469,12 +1469,13 @@ namespace VANTAGE.Views
 
         private async void OnViewLoaded(object sender, RoutedEventArgs e)
         {
-
+            // Load saved summary column preference before loading data
+            _viewModel.LoadSummaryColumnPreference();
 
             await _viewModel.LoadInitialDataAsync();
             UpdateRecordCount();
-            UpdateSummaryPanel(); 
-            await CalculateMetadataErrorCount(); 
+            UpdateSummaryPanel();
+            await CalculateMetadataErrorCount();
         }
 
         private static IEnumerable<T> FindVisualChildren<T>(DependencyObject depObj) where T : DependencyObject
@@ -1563,6 +1564,28 @@ namespace VANTAGE.Views
 
 
 
+
+        // === SUMMARY COLUMN SELECTOR ===
+
+        // Opens the context menu when clicking on the summary column name
+        private void SummaryColumnSelector_Click(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is TextBlock textBlock && textBlock.ContextMenu != null)
+            {
+                textBlock.ContextMenu.PlacementTarget = textBlock;
+                textBlock.ContextMenu.Placement = PlacementMode.Bottom;
+                textBlock.ContextMenu.IsOpen = true;
+            }
+        }
+
+        // Handles selection of a column from the summary column context menu
+        private void SummaryColumnMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            if (e.OriginalSource is MenuItem menuItem && menuItem.Header is string columnName)
+            {
+                _viewModel.SelectedSummaryColumn = columnName;
+            }
+        }
 
         // === FILTER EVENT HANDLERS ===
 

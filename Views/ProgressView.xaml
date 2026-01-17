@@ -524,12 +524,34 @@
                              MaxHeight="30">
                         <StackPanel Orientation="Horizontal">
 
-                            <!-- Budget MHs -->
-                            <StackPanel Orientation="Horizontal" Margin="0,0,20,0" ToolTip="Budgeted Man-Hours">
-                                <TextBlock Text="Budget:"
-                                            Foreground="{StaticResource TextColorSecondary}"
-                                            FontSize="14"
-                                            VerticalAlignment="Center"/>
+                            <!-- Budget column selector and value -->
+                            <StackPanel Orientation="Horizontal" Margin="0,0,20,0" ToolTip="Click to select column for summary calculations">
+                                <TextBlock x:Name="SummaryColumnSelector"
+                                           Text="{Binding SelectedSummaryColumn}"
+                                           Foreground="{StaticResource TextColorSecondary}"
+                                           FontSize="14"
+                                           VerticalAlignment="Center"
+                                           Cursor="Hand"
+                                           MouseLeftButtonUp="SummaryColumnSelector_Click">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Style.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="TextDecorations" Value="Underline"/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                    <TextBlock.ContextMenu>
+                                        <ContextMenu x:Name="SummaryColumnMenu"
+                                                     ItemsSource="{Binding AvailableSummaryColumns}"
+                                                     MenuItem.Click="SummaryColumnMenuItem_Click"/>
+                                    </TextBlock.ContextMenu>
+                                </TextBlock>
+                                <TextBlock Text=" ▾:"
+                                           Foreground="{StaticResource TextColorSecondary}"
+                                           FontSize="14"
+                                           VerticalAlignment="Center"/>
                                 <TextBlock Text="{Binding BudgetedMHs, StringFormat=N2}"
                                            Foreground="{StaticResource AccentColor}"
                                            FontSize="14"
