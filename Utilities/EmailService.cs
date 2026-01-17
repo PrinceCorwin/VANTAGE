@@ -134,6 +134,120 @@ This is an automated message from MILESTONE. Please do not reply to this email."
             }
         }
 
+        // Send access request email to all administrators
+        public static async Task<bool> SendAccessRequestEmailAsync(
+            string windowsUsername,
+            string fullName,
+            string email)
+        {
+            try
+            {
+                // Get admin email addresses from Azure
+                var adminEmails = await AzureDbManager.GetAdminEmailsAsync();
+                if (adminEmails.Count == 0)
+                {
+                    AppLogger.Warning("No admin emails found - cannot send access request",
+                        "EmailService.SendAccessRequestEmailAsync");
+                    return false;
+                }
+
+                var client = GetClient();
+
+                string subject = $"MILESTONE Access Request - {windowsUsername}";
+
+                string htmlBody = $@"
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{ font-family: 'Segoe UI', Arial, sans-serif; color: #333; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+        .header {{ background-color: #0078D7; color: white; padding: 15px 20px; border-radius: 4px 4px 0 0; }}
+        .content {{ background-color: #f5f5f5; padding: 20px; border-radius: 0 0 4px 4px; }}
+        .details {{ margin-top: 15px; }}
+        .detail-row {{ padding: 10px 0; border-bottom: 1px solid #ddd; }}
+        .label {{ font-weight: 600; color: #555; display: inline-block; width: 140px; }}
+        .footer {{ margin-top: 20px; font-size: 12px; color: #888; }}
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <div class='header'>
+            <h2 style='margin: 0;'>MILESTONE Access Request</h2>
+        </div>
+        <div class='content'>
+            <p>A user is requesting access to MILESTONE:</p>
+            <div class='details'>
+                <div class='detail-row'>
+                    <span class='label'>Windows Username:</span> {windowsUsername}
+                </div>
+                <div class='detail-row'>
+                    <span class='label'>Full Name:</span> {fullName}
+                </div>
+                <div class='detail-row'>
+                    <span class='label'>Email:</span> {email}
+                </div>
+                <div class='detail-row'>
+                    <span class='label'>Request Date:</span> {DateTime.Now:MMMM d, yyyy h:mm tt}
+                </div>
+            </div>
+            <p style='margin-top: 20px;'>Please add this user to the Users table in MILESTONE Admin if approved.</p>
+            <div class='footer'>
+                <p>This is an automated message from MILESTONE.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>";
+
+                string plainTextBody = $@"MILESTONE Access Request
+
+A user is requesting access to MILESTONE:
+
+Windows Username: {windowsUsername}
+Full Name: {fullName}
+Email: {email}
+Request Date: {DateTime.Now:MMMM d, yyyy h:mm tt}
+
+Please add this user to the Users table in MILESTONE Admin if approved.
+
+This is an automated message from MILESTONE.";
+
+                // Send to each admin
+                bool allSent = true;
+                foreach (var adminEmail in adminEmails)
+                {
+                    var emailMessage = new EmailMessage(
+                        senderAddress: Credentials.AzureEmailSenderAddress,
+                        recipientAddress: adminEmail,
+                        content: new EmailContent(subject)
+                        {
+                            Html = htmlBody,
+                            PlainText = plainTextBody
+                        });
+
+                    try
+                    {
+                        await client.SendAsync(WaitUntil.Started, emailMessage);
+                        AppLogger.Info($"Access request email sent to admin: {adminEmail}",
+                            "EmailService.SendAccessRequestEmailAsync");
+                    }
+                    catch (Exception ex)
+                    {
+                        AppLogger.Error(ex, $"EmailService.SendAccessRequestEmailAsync - Failed to send to {adminEmail}");
+                        allSent = false;
+                    }
+                }
+
+                return allSent;
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "EmailService.SendAccessRequestEmailAsync");
+                return false;
+            }
+        }
+
         // Generic send email method for future use
         public static async Task<bool> SendEmailAsync(
             string recipientEmail,

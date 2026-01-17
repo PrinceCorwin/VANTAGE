@@ -155,12 +155,20 @@ namespace VANTAGE
                 if (CurrentUser == null)
                 {
                     _splashWindow.Close();
-                    MessageBox.Show(
+
+                    // Show access denied with option to request access
+                    var result = MessageBox.Show(
                         $"User '{windowsUsername}' is not authorized to use MILESTONE.\n\n" +
-                        "Please contact your administrator to be added to the system.",
+                        "Would you like to submit an access request to the administrators?",
                         "Access Denied",
-                        MessageBoxButton.OK,
+                        MessageBoxButton.YesNo,
                         MessageBoxImage.Warning);
+
+                    if (result == MessageBoxResult.Yes)
+                    {
+                        await HandleAccessRequestAsync(windowsUsername, azureOnline);
+                    }
+
                     this.Shutdown();
                     return;
                 }
@@ -285,6 +293,70 @@ namespace VANTAGE
             catch
             {
                 throw;
+            }
+        }
+
+        // Handle access request flow when user is not found
+        private async Task HandleAccessRequestAsync(string windowsUsername, bool azureOnline)
+        {
+            // Check if Azure is available for sending email
+            if (!azureOnline)
+            {
+                MessageBox.Show(
+                    "Cannot submit access request while offline.\n\n" +
+                    "Please check your internet connection and try again later, " +
+                    "or contact your administrator directly.",
+                    "Offline",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                return;
+            }
+
+            // Show access request dialog
+            var dialog = new AccessRequestDialog(windowsUsername);
+            bool? dialogResult = dialog.ShowDialog();
+
+            if (dialogResult != true)
+            {
+                return;
+            }
+
+            // Send the access request email
+            try
+            {
+                bool sent = await EmailService.SendAccessRequestEmailAsync(
+                    dialog.WindowsUsername,
+                    dialog.FullName,
+                    dialog.Email);
+
+                if (sent)
+                {
+                    MessageBox.Show(
+                        "Your access request has been sent to the administrators.\n\n" +
+                        "You will receive a response at the email address you provided.",
+                        "Request Sent",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                }
+                else
+                {
+                    MessageBox.Show(
+                        "Failed to send access request.\n\n" +
+                        "Please contact your administrator directly.",
+                        "Send Failed",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "App.HandleAccessRequestAsync");
+                MessageBox.Show(
+                    $"Error sending access request:\n\n{ex.Message}\n\n" +
+                    "Please contact your administrator directly.",
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
             }
         }
     }

@@ -48,7 +48,7 @@
 - [ ] Progress Book creation
 - [ ] Theme selection by user - save preference, apply on startup
 - [ ] Add Offline Indicator in status bar - clickable to retry connection
-- [ ] User Access Request - add "Request Access" button at startup for unknown users to email admins (see User_Access_Request_Plan.md)
+- [x] User Access Request - add "Request Access" button at startup for unknown users to email admins (see User_Access_Request_Plan.md)
 - [x] Add 'Revert to Snapshot' functionality (via Manage Snapshots dialog)
 
 ### Medium Priority
@@ -93,6 +93,12 @@
 ## Recent Completions
 
 ### January 16, 2026
+- User Access Request feature:
+  - Created AccessRequestDialog with username (read-only), full name, and email fields
+  - Added GetAdminEmailsAsync to AzureDbManager (joins Admins with Users to get emails)
+  - Added SendAccessRequestEmailAsync to EmailService (styled HTML email to all admins)
+  - Modified App.xaml.cs access denied flow to offer "Request Access" option
+  - Handles offline scenario with appropriate message
 - Form Template Editor - Column delete prorate fix:
   - Grid and Form editors now prorate remaining column widths to 100% after column deletion
   - Matches existing behavior for add/edit operations

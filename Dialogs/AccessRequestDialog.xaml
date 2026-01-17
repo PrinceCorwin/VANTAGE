@@ -1,0 +1,127 @@
+<Window x:Class="VANTAGE.Dialogs.AccessRequestDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Request Access"
+        Height="371"
+        Width="420"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource BackgroundColor}"
+        ResizeMode="NoResize"
+        WindowStyle="SingleBorderWindow">
+
+    <Grid Margin="20,20,20,15">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="15"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="10"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="10"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header text -->
+        <TextBlock Grid.Row="0"
+                   Text="Submit a request to be added to MILESTONE. An administrator will review your request."
+                   Foreground="{StaticResource ForegroundColor}"
+                   FontSize="13"
+                   TextWrapping="Wrap"/>
+
+        <!-- Username (read-only) -->
+        <StackPanel Grid.Row="2">
+            <TextBlock Text="Windows Username"
+                       Foreground="{StaticResource TextColorSecondary}"
+                       FontSize="12"
+                       Margin="0,0,0,4"/>
+            <TextBox x:Name="txtUsername"
+                     Height="35"
+                     FontSize="14"
+                     Padding="10,8,10,8"
+                     Background="{StaticResource DarkBackgroundColor}"
+                     Foreground="{StaticResource TextColorSecondary}"
+                     BorderBrush="{StaticResource ControlBorder}"
+                     BorderThickness="1"
+                     VerticalContentAlignment="Center"
+                     IsReadOnly="True"
+                     ToolTip="Your Windows username (auto-detected)"/>
+        </StackPanel>
+
+        <!-- Full Name -->
+        <StackPanel Grid.Row="4">
+            <TextBlock Text="Full Name *"
+                       Foreground="{StaticResource ForegroundColor}"
+                       FontSize="12"
+                       Margin="0,0,0,4"/>
+            <TextBox x:Name="txtFullName"
+                     Height="35"
+                     FontSize="14"
+                     Padding="10,8,10,8"
+                     Background="{StaticResource ControlBackground}"
+                     Foreground="{StaticResource ControlForeground}"
+                     BorderBrush="{StaticResource ControlBorder}"
+                     BorderThickness="1"
+                     VerticalContentAlignment="Center"
+                     MaxLength="100"
+                     ToolTip="Enter your full name"/>
+        </StackPanel>
+
+        <!-- Email -->
+        <StackPanel Grid.Row="6">
+            <TextBlock Text="Email *"
+                       Foreground="{StaticResource ForegroundColor}"
+                       FontSize="12"
+                       Margin="0,0,0,4"/>
+            <TextBox x:Name="txtEmail"
+                     Height="35"
+                     FontSize="14"
+                     Padding="10,8,10,8"
+                     Background="{StaticResource ControlBackground}"
+                     Foreground="{StaticResource ControlForeground}"
+                     BorderBrush="{StaticResource ControlBorder}"
+                     BorderThickness="1"
+                     VerticalContentAlignment="Center"
+                     MaxLength="200"
+                     ToolTip="Enter your email address"/>
+        </StackPanel>
+
+        <!-- Error message -->
+        <TextBlock x:Name="txtError"
+                   Grid.Row="7"
+                   Foreground="{StaticResource ErrorText}"
+                   FontSize="12"
+                   Margin="0,8,0,0"
+                   TextWrapping="Wrap"
+                   Visibility="Collapsed"/>
+
+        <!-- Buttons -->
+        <StackPanel Grid.Row="9"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right">
+            <Button Content="Cancel"
+                    Width="90"
+                    Height="35"
+                    Margin="0,0,10,0"
+                    Background="{StaticResource ControlBackground}"
+                    Foreground="{StaticResource ForegroundColor}"
+                    BorderBrush="{StaticResource ControlBorder}"
+                    BorderThickness="1"
+                    IsCancel="True"
+                    ToolTip="Cancel and close the application"/>
+
+            <Button x:Name="btnSend"
+                    Content="Send Request"
+                    Width="110"
+                    Height="35"
+                    Background="{StaticResource AccentColor}"
+                    Foreground="{StaticResource ForegroundColor}"
+                    BorderBrush="{StaticResource AccentColor}"
+                    BorderThickness="1"
+                    IsDefault="True"
+                    Click="BtnSend_Click"
+                    ToolTip="Send your access request to administrators"/>
+        </StackPanel>
+    </Grid>
+</Window>

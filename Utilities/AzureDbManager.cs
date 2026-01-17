@@ -1,5 +1,6 @@
 ﻿using Microsoft.Data.SqlClient;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace VANTAGE.Utilities
@@ -55,6 +56,46 @@ namespace VANTAGE.Utilities
                 return false;
             }
         }
+
+        // Get email addresses for all administrators (joins Admins with Users table)
+        public static async Task<List<string>> GetAdminEmailsAsync()
+        {
+            var emails = new List<string>();
+
+            try
+            {
+                if (!IsNetworkAvailable())
+                    return emails;
+
+                await using var connection = GetConnection();
+                await connection.OpenAsync();
+
+                await using var cmd = connection.CreateCommand();
+                // Join Admins with Users to get email addresses
+                cmd.CommandText = @"
+                    SELECT DISTINCT u.Email
+                    FROM Admins a
+                    INNER JOIN Users u ON a.Username = u.Username
+                    WHERE u.Email IS NOT NULL AND u.Email <> ''";
+
+                await using var reader = await cmd.ExecuteReaderAsync();
+                while (await reader.ReadAsync())
+                {
+                    var email = reader.GetString(0);
+                    if (!string.IsNullOrWhiteSpace(email))
+                    {
+                        emails.Add(email);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "AzureDbManager.GetAdminEmailsAsync");
+            }
+
+            return emails;
+        }
+
         // Get the Azure connection string
         public static string ConnectionString => _connectionString;
 
