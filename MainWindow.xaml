@@ -109,6 +109,7 @@
                             <syncfusion:DropDownMenuItem Header="Help / AI Sidebar     (F1)" Click="MenuHelpSidebar_Click" ToolTip="Open context-aware help and AI assistant"/>
                             <Separator Background="{StaticResource BorderColor}" Margin="5,2"/>
                             <syncfusion:DropDownMenuItem Header="Prorate MHs" Click="MenuProrateMHs_Click"/>
+                            <syncfusion:DropDownMenuItem Header="Schedule Change Log" Click="MenuScheduleChangeLog_Click" ToolTip="View and apply changes made in the Schedule detail grid"/>
                         </syncfusion:DropDownMenuGroup>
                     </syncfusion:DropDownButtonAdv>
 

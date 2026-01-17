@@ -138,6 +138,9 @@ namespace VANTAGE
                 VANTAGE.Utilities.AppLogger.Initialize();
                 VANTAGE.Utilities.AppLogger.Info("Milestone starting up...", "App.OnStartup");
 
+                // Purge old schedule change logs (older than 30 days)
+                VANTAGE.Utilities.ScheduleChangeLogger.PurgeOldLogs();
+
                 // Step 2: Initialize default app settings
                 _splashWindow.UpdateStatus("Loading Application Settings...");
                 await Task.Run(() =>

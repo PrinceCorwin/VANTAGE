@@ -2250,6 +2250,20 @@ namespace VANTAGE
             dialog.ShowDialog();
         }
 
+        // Opens the Schedule Change Log dialog to view and apply detail grid changes
+        private async void MenuScheduleChangeLog_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new Dialogs.ScheduleChangeLogDialog();
+            dialog.Owner = this;
+            dialog.ShowDialog();
+
+            // Refresh Progress view if changes were applied to Activities
+            if (dialog.ChangesApplied && ContentArea.Content is Views.ProgressView progressView)
+            {
+                await progressView.RefreshData();
+            }
+        }
+
         // MODULE LOADING
 
         private void LoadProgressModule()

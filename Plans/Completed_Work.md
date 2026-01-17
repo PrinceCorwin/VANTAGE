@@ -5,6 +5,16 @@ This document tracks completed features and fixes. Items are moved here from Pro
 ---
 
 ### January 17, 2026
+- **Schedule Change Log feature** - Apply Schedule detail grid edits to live Activities:
+  - New ScheduleChangeLogEntry model and ScheduleChangeLogger utility class
+  - ScheduleChangeLogDialog accessible via Tools → Schedule Change Log
+  - Logs edits to PercentEntry, BudgetMHs, SchStart, SchFinish in detail grid
+  - Dialog shows WeekEndDate, UniqueID, Description, Field, Old/New values with checkboxes
+  - Smart duplicate handling: only applies most recent change per UniqueID+Field
+  - Progress view auto-refreshes after applying changes
+  - Log files stored in %LocalAppData%\VANTAGE\Logs\ScheduleChanges\
+  - Auto-purge of logs older than 30 days on startup
+  - Help sidebar documentation added under Schedule Module section
 - **UDF18 renamed to RespParty (Responsible Party)** throughout the application:
   - Models, database layer, views, dialogs, import/export, documentation
   - Grid column now displays as "Resp Party" with required field styling

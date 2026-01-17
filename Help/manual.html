@@ -273,6 +273,7 @@
                     <li><a href="#sched-p6-import">P6 Import</a></li>
                     <li><a href="#sched-p6-export">P6 Export</a></li>
                     <li><a href="#sched-saving">Saving Changes</a></li>
+                    <li><a href="#sched-change-log">Schedule Change Log</a></li>
                     <li><a href="#sched-shortcuts">Keyboard Shortcuts</a></li>
                 </ul>
             </li>
@@ -359,6 +360,7 @@
     <ul>
         <li><strong>Help / AI Sidebar</strong> — Open the help documentation sidebar (also F1)</li>
         <li><strong>Prorate MHs</strong> — Distribute budgeted man-hours across filtered activities</li>
+        <li><strong>Schedule Change Log</strong> — View and apply changes made in the Schedule detail grid to live Activities</li>
     </ul>
 
     <h4>Admin Menu (administrators only)</h4>
@@ -1041,6 +1043,72 @@
         <li>Detail grid edits (percent, dates, budget hours)</li>
     </ul>
     <p>If you try to leave the Schedule module with unsaved changes, you'll be prompted to save or discard.</p>
+
+    <h3 id="sched-change-log">Schedule Change Log</h3>
+    <p>When you edit values in the Schedule detail grid (percent, budget hours, start/finish dates), those changes are saved to the weekly snapshot but do not automatically update your live Activities in the Progress module. The Schedule Change Log tracks these edits and lets you optionally apply them to your live Activities.</p>
+
+    <h4>Accessing the Change Log</h4>
+    <p>Go to <strong>Tools → Schedule Change Log</strong> to open the dialog.</p>
+
+    <h4>Change Log Contents</h4>
+    <p>The dialog displays all logged changes with the following columns:</p>
+    <table>
+        <tr>
+            <th>Column</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td><strong>Apply (checkbox)</strong></td>
+            <td>Select which changes to apply to live Activities</td>
+        </tr>
+        <tr>
+            <td><strong>Week End Date</strong></td>
+            <td>The week ending date when the change was made</td>
+        </tr>
+        <tr>
+            <td><strong>UniqueID</strong></td>
+            <td>The activity's unique identifier</td>
+        </tr>
+        <tr>
+            <td><strong>Description</strong></td>
+            <td>The activity description for context</td>
+        </tr>
+        <tr>
+            <td><strong>Field</strong></td>
+            <td>Which field was changed (PercentEntry, BudgetMHs, SchStart, SchFinish)</td>
+        </tr>
+        <tr>
+            <td><strong>Old Value</strong></td>
+            <td>The value before your edit</td>
+        </tr>
+        <tr>
+            <td><strong>New Value</strong></td>
+            <td>The value after your edit</td>
+        </tr>
+    </table>
+
+    <h4>Applying Changes</h4>
+    <ol>
+        <li>Check the boxes next to the changes you want to apply</li>
+        <li>Use the header checkbox to select/deselect all</li>
+        <li>Click <strong>Apply Selected</strong></li>
+        <li>Confirm the action in the warning dialog</li>
+    </ol>
+
+    <div class="warning">
+        <div class="warning-title">Caution</div>
+        <p>Applying changes will overwrite the current values in your live Activities. This action cannot be undone. The affected records will be marked as LocalDirty and included in your next sync.</p>
+    </div>
+
+    <h4>Duplicate Changes</h4>
+    <p>If you edited the same field on the same activity multiple times, only the most recent change will be applied. Older duplicate entries are automatically skipped but removed from the log.</p>
+
+    <h4>Automatic Cleanup</h4>
+    <ul>
+        <li>Applied changes are removed from the log after successful application</li>
+        <li>Log files older than 30 days are automatically purged on application startup</li>
+        <li>Log files are stored in <code>%LocalAppData%\VANTAGE\Logs\ScheduleChanges\</code></li>
+    </ul>
 
     <h3 id="sched-shortcuts">Keyboard Shortcuts</h3>
     <table>

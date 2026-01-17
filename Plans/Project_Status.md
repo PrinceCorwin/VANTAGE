@@ -42,7 +42,6 @@
 
 ### Medium Priority
 - **DISCUSS:** Add PlanStart and PlanFinish fields to Activities (for baseline schedule comparison?)
-- Schedule module: Check if user can apply detail grid edits to live activities - explore adding this option if not available
 - Shift+Scroll horizontal scrolling (see ShiftScroll_Horizontal_Implementation_Plan.md)
 - User-editable header template for WP (allow customizing header layout)
 - Import/Export WP templates to JSON
@@ -103,3 +102,4 @@
 - My Records Only sync (toggle on/off, full re-pull on disable)
 - Work Package PDF generation and preview
 - Manage Snapshots: delete multiple weeks, revert to single week with/without backup
+- Schedule Change Log: log detail grid edits, view/apply to Activities, duplicate handling

@@ -24,6 +24,10 @@ namespace VANTAGE.Views
         private DispatcherTimer _resizeSaveTimer = null!;
         private bool _skipSaveColumnState = false;
 
+        // Stores old cell values before editing for change logging
+        private string? _detailEditOldValue;
+        private string? _detailEditColumnName;
+
         public ScheduleView()
         {
             InitializeComponent();
@@ -78,7 +82,8 @@ namespace VANTAGE.Views
 
             // Wire up master grid selection changed
             sfScheduleMaster.SelectionChanged += SfScheduleMaster_SelectionChanged;
-            // Wire up detail grid edit handler
+            // Wire up detail grid edit handlers for change logging
+            sfScheduleDetail.CurrentCellBeginEdit += SfScheduleDetail_CurrentCellBeginEdit;
             sfScheduleDetail.CurrentCellEndEdit += SfScheduleDetail_CurrentCellEndEdit;
             // Detail grid column persistence
             sfScheduleDetail.QueryColumnDragging += (s, e) =>
@@ -257,6 +262,45 @@ namespace VANTAGE.Views
         // ========================================
         // DETAIL GRID EDIT HANDLER
         // ========================================
+
+        // Captures old value before editing for change logging
+        private void SfScheduleDetail_CurrentCellBeginEdit(object? sender, Syncfusion.UI.Xaml.Grid.CurrentCellBeginEditEventArgs e)
+        {
+            try
+            {
+                var snapshot = sfScheduleDetail.CurrentItem as ProgressSnapshot;
+                if (snapshot == null || e.Column == null)
+                    return;
+
+                _detailEditColumnName = e.Column.MappingName;
+
+                // Capture the current value before editing
+                switch (_detailEditColumnName)
+                {
+                    case "PercentEntry":
+                        _detailEditOldValue = snapshot.PercentEntry.ToString();
+                        break;
+                    case "BudgetMHs":
+                        _detailEditOldValue = snapshot.BudgetMHs.ToString();
+                        break;
+                    case "SchStart":
+                        _detailEditOldValue = snapshot.SchStart?.ToString("M/d/yyyy") ?? string.Empty;
+                        break;
+                    case "SchFinish":
+                        _detailEditOldValue = snapshot.SchFinish?.ToString("M/d/yyyy") ?? string.Empty;
+                        break;
+                    default:
+                        _detailEditOldValue = null;
+                        _detailEditColumnName = null;
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "ScheduleView.SfScheduleDetail_CurrentCellBeginEdit");
+            }
+        }
+
         // Public method for MainWindow to call after P6 import
         public async Task RefreshDataAsync(DateTime weekEndDate)
         {
@@ -479,6 +523,37 @@ namespace VANTAGE.Views
                     // Force master grid to refresh and show updated values
                     sfScheduleMaster.View?.Refresh();
                     sfScheduleDetail.View?.Refresh();
+
+                    // Log the change for optional application to Activities
+                    if (_detailEditColumnName == columnName && _detailEditOldValue != null)
+                    {
+                        string newValue = columnName switch
+                        {
+                            "PercentEntry" => editedSnapshot.PercentEntry.ToString(),
+                            "BudgetMHs" => editedSnapshot.BudgetMHs.ToString(),
+                            "SchStart" => editedSnapshot.SchStart?.ToString("M/d/yyyy") ?? string.Empty,
+                            "SchFinish" => editedSnapshot.SchFinish?.ToString("M/d/yyyy") ?? string.Empty,
+                            _ => string.Empty
+                        };
+
+                        // Only log if value actually changed
+                        if (_detailEditOldValue != newValue)
+                        {
+                            ScheduleChangeLogger.LogChange(
+                                weekEndDate.ToString("M/d/yyyy"),
+                                editedSnapshot.UniqueID,
+                                editedSnapshot.SchedActNO,
+                                editedSnapshot.Description ?? string.Empty,
+                                columnName,
+                                _detailEditOldValue,
+                                newValue,
+                                username);
+                        }
+                    }
+
+                    // Clear tracked values
+                    _detailEditOldValue = null;
+                    _detailEditColumnName = null;
 
                     AppLogger.Info($"Detail edit saved: {editedSnapshot.UniqueID} - {columnName}",
                         "ScheduleView.SfScheduleDetail_CurrentCellEndEdit", username);
