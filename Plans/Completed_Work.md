@@ -13,8 +13,11 @@ This document tracks completed features and fixes. Items are moved here from Pro
   - Smart duplicate handling: only applies most recent change per UniqueID+Field
   - Progress view auto-refreshes after applying changes
   - Log files stored in %LocalAppData%\VANTAGE\Logs\ScheduleChanges\
-  - Auto-purge of logs older than 30 days on startup
   - Help sidebar documentation added under Schedule Module section
+- **Auto-purge for all log files** - Cleans up logs older than 30 days on startup:
+  - AppLogger: Purges both physical log files (app-yyyyMMdd.log) and database Logs table entries
+  - ScheduleChangeLogger: Purges schedule change JSON files
+  - Uses filename date parsing (not file system dates) for reliable age detection
 - **UDF18 renamed to RespParty (Responsible Party)** throughout the application:
   - Models, database layer, views, dialogs, import/export, documentation
   - Grid column now displays as "Resp Party" with required field styling
