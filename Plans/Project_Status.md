@@ -59,7 +59,7 @@
 - [ ] Shift+Scroll horizontal scrolling (see ShiftScroll_Horizontal_Implementation_Plan.md)
 - [ ] User-editable header template for WP (allow customizing header layout)
 - [ ] Import/Export WP templates to JSON
-- [ ] Milestone/Legacy Import/Export formats - default to Milestone column names, add Legacy menu items for backward compatibility (see Legacy_Import_Export_Plan.md)
+- [x] Milestone/Legacy Import/Export formats - default to Milestone column names, add Legacy menu items for backward compatibility
 
 ### Infrastructure / Azure Migration
 - [ ] Execute VMS_ table creation script on company Azure (see MILESTONE_Azure_Migration_Plan.md)
@@ -94,6 +94,15 @@
 ## Recent Completions
 
 ### January 16, 2026
+- Legacy Import/Export format support:
+  - Added ExportFormat enum (Legacy, NewVantage) to ExcelExporter
+  - Default format is now NewVantage (property names as headers, percentages as 0-100)
+  - Legacy format uses OldVantage column names and 0-1 percentage decimals
+  - Added Legacy menu items to File menu (Import Replace, Import Combine, Export, Template)
+  - Toggle Legacy I/O Menu button in Settings popup (saves visibility state to UserSettings)
+  - Legacy items hidden by default, appear at bottom of File menu when enabled
+  - Updated ExcelImporter with format-aware column mapping and percentage conversion
+  - File names include "_Legacy" suffix for Legacy format exports
 - User Access Request feature:
   - Created AccessRequestDialog with username (read-only), full name, and email fields
   - Added GetAdminEmailsAsync to AzureDbManager (joins Admins with Users to get emails)

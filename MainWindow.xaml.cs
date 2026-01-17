@@ -36,6 +36,9 @@ namespace VANTAGE
                 // Force taskbar icon refresh (fixes first-run icon not showing)
                 var iconPath = new Uri("pack://application:,,,/images/AppIcon.ico", UriKind.Absolute);
                 this.Icon = BitmapFrame.Create(iconPath);
+
+                // Initialize Legacy I/O menu visibility from settings
+                UpdateLegacyMenuVisibility();
             };
             this.Closing += MainWindow_Closing;
         }
@@ -798,6 +801,209 @@ namespace VANTAGE
         private async void ExcelExportTemplate_Click(object sender, RoutedEventArgs e)
         {
             await ExportHelper.ExportTemplateAsync(this);
+        }
+
+        // Legacy I/O event handlers
+
+        private async void MenuLegacyImportReplace_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var openFileDialog = new Microsoft.Win32.OpenFileDialog
+                {
+                    Title = "Select Legacy Excel File to Import",
+                    Filter = "Excel Files (*.xlsx)|*.xlsx|All Files (*.*)|*.*",
+                    FilterIndex = 1
+                };
+
+                if (openFileDialog.ShowDialog() == true)
+                {
+                    var result = MessageBox.Show(
+                        "This will REPLACE all existing activities with data from the Legacy Excel file.\n\n" +
+                        "Legacy format uses OldVantage column names and 0-1 percentage values.\n\n" +
+                        "Are you sure you want to continue?",
+                        "Confirm Legacy Replace",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Warning);
+
+                    if (result == MessageBoxResult.Yes)
+                    {
+                        ShowLoadingOverlay("Importing Legacy Excel File...");
+
+                        var progress = new Progress<(int current, int total, string message)>(report =>
+                        {
+                            Dispatcher.Invoke(() =>
+                            {
+                                if (report.total > 0)
+                                    UpdateLoadingProgress(report.current, report.total, report.message);
+                                else
+                                    txtLoadingMessage.Text = report.message;
+                            });
+                        });
+
+                        int imported = await ExcelImporter.ImportActivitiesAsync(
+                            openFileDialog.FileName, replaceMode: true, ExportFormat.Legacy, progress);
+
+                        HideLoadingOverlay();
+
+                        MessageBox.Show(
+                            $"Successfully imported {imported} activities from Legacy format.\n\nAll previous data has been replaced.",
+                            "Legacy Import Complete",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Information);
+
+                        if (ContentArea.Content is Views.ProgressView)
+                        {
+                            LoadProgressModule();
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                HideLoadingOverlay();
+                MessageBox.Show($"Error importing Legacy Excel file:\n\n{ex.Message}",
+                    "Import Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private async void MenuLegacyImportCombine_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var openFileDialog = new Microsoft.Win32.OpenFileDialog
+                {
+                    Title = "Select Legacy Excel File to Import",
+                    Filter = "Excel Files (*.xlsx)|*.xlsx|All Files (*.*)|*.*",
+                    FilterIndex = 1
+                };
+
+                if (openFileDialog.ShowDialog() == true)
+                {
+                    ShowLoadingOverlay("Importing Legacy Excel File...");
+
+                    var progress = new Progress<(int current, int total, string message)>(report =>
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            if (report.total > 0)
+                                UpdateLoadingProgress(report.current, report.total, report.message);
+                            else
+                                txtLoadingMessage.Text = report.message;
+                        });
+                    });
+
+                    int imported = await ExcelImporter.ImportActivitiesAsync(
+                        openFileDialog.FileName, replaceMode: false, ExportFormat.Legacy, progress);
+
+                    HideLoadingOverlay();
+
+                    MessageBox.Show(
+                        $"Successfully imported {imported} new activities from Legacy format.\n\nExisting activities were preserved (duplicates skipped).",
+                        "Legacy Import Complete",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+
+                    if (ContentArea.Content is Views.ProgressView)
+                    {
+                        LoadProgressModule();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                HideLoadingOverlay();
+                MessageBox.Show($"Error importing Legacy Excel file:\n\n{ex.Message}",
+                    "Import Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private async void MenuLegacyExportActivities_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var progressView = ContentArea.Content as ProgressView;
+                if (progressView == null)
+                {
+                    MessageBox.Show("Progress module not loaded.", "Export", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                var viewModel = progressView.DataContext as ViewModels.ProgressViewModel;
+                if (viewModel == null)
+                {
+                    MessageBox.Show("Unable to access progress data.", "Export", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                var allActivities = viewModel.Activities?.ToList();
+                if (allActivities == null || allActivities.Count == 0)
+                {
+                    MessageBox.Show("No activities to export.", "Export", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                // Get filtered activities
+                var gridField = progressView.GetType().GetField("sfActivities",
+                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+
+                List<Activity>? filteredActivities = null;
+                bool hasActiveFilters = false;
+
+                if (gridField != null)
+                {
+                    var grid = gridField.GetValue(progressView) as Syncfusion.UI.Xaml.Grid.SfDataGrid;
+                    if (grid?.View != null)
+                    {
+                        filteredActivities = grid.View.Records
+                            .Select(r => r.Data as Activity)
+                            .Where(a => a != null)
+                            .Cast<Activity>()
+                            .ToList();
+
+                        hasActiveFilters = filteredActivities.Count < allActivities.Count;
+                    }
+                }
+
+                if (filteredActivities == null)
+                {
+                    filteredActivities = allActivities;
+                    hasActiveFilters = false;
+                }
+
+                await ExportHelper.ExportActivitiesWithOptionsAsync(
+                    this, allActivities, filteredActivities, hasActiveFilters, ExportFormat.Legacy);
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "Legacy Export Activities Click", App.CurrentUser?.Username ?? "Unknown");
+                MessageBox.Show($"An error occurred: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private async void MenuLegacyExportTemplate_Click(object sender, RoutedEventArgs e)
+        {
+            await ExportHelper.ExportTemplateAsync(this, ExportFormat.Legacy);
+        }
+
+        // Toggle Legacy I/O menu visibility
+        private void MenuToggleLegacyIO_Click(object sender, RoutedEventArgs e)
+        {
+            popupSettings.IsOpen = false;
+            bool currentState = SettingsManager.GetShowLegacyIO();
+            SettingsManager.SetShowLegacyIO(!currentState);
+            UpdateLegacyMenuVisibility();
+        }
+
+        // Update visibility of Legacy I/O menu items based on setting
+        private void UpdateLegacyMenuVisibility()
+        {
+            var visibility = SettingsManager.GetShowLegacyIO() ? Visibility.Visible : Visibility.Collapsed;
+            sepLegacyIO.Visibility = visibility;
+            menuLegacyImportReplace.Visibility = visibility;
+            menuLegacyImportCombine.Visibility = visibility;
+            menuLegacyExport.Visibility = visibility;
+            menuLegacyTemplate.Visibility = visibility;
         }
 
         // === ADMIN DROPDOWN ===

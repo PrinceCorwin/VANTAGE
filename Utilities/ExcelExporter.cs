@@ -5,7 +5,14 @@ using ClosedXML.Excel;
 
 namespace VANTAGE.Utilities
 {
-    // Export activities to Excel using OldVantage column names in exact order
+    // Format options for Excel import/export
+    public enum ExportFormat
+    {
+        Legacy,     // OldVantage column names, percentages as 0-1 decimals
+        NewVantage  // NewVantage/ColumnName, percentages as 0-100
+    }
+
+    // Export activities to Excel - supports both Legacy and NewVantage formats
     public static class ExcelExporter
     {
         // EXACT column order as specified - DO NOT REORDER
@@ -99,72 +106,174 @@ namespace VANTAGE.Utilities
             "VAL_UDF_Three"
         };
 
-        // Export all activities to Excel file
+        // NewVantage column order (database property names) for modern export format
+        private static readonly string[] NewVantageColumnOrder = new[]
+        {
+            "HexNO",
+            "CompType",
+            "PhaseCategory",
+            "ROCStep",
+            "DwgNO",
+            "RevNO",
+            "SecondDwgNO",
+            "ShtNO",
+            "Notes",
+            "SecondActno",
+            "SchStart",
+            "SchFinish",
+            "Status",
+            "Aux1",
+            "Aux2",
+            "Aux3",
+            "Area",
+            "ChgOrdNO",
+            "Description",
+            "EqmtNO",
+            "Estimator",
+            "InsulType",
+            "LineNumber",
+            "MtrlSpec",
+            "PhaseCode",
+            "PaintCode",
+            "PipeGrade",
+            "ProjectID",
+            "RFINO",
+            "SchedActNO",
+            "Service",
+            "ShopField",
+            "SubArea",
+            "PjtSystem",
+            "SystemNO",
+            "TagNO",
+            "HtTrace",
+            "WorkPackage",
+            "XRay",
+            "DateTrigger",
+            "UDF1",
+            "UDF2",
+            "UDF3",
+            "UDF4",
+            "UDF5",
+            "UDF6",
+            "UDF7",
+            "UDF8",
+            "UDF9",
+            "UDF10",
+            "UDF11",
+            "UDF12",
+            "UDF13",
+            "UDF14",
+            "UDF15",
+            "UDF16",
+            "UDF17",
+            "UDF18",
+            "UniqueID",
+            "UDF20",
+            "BaseUnit",
+            "BudgetMHs",
+            "BudgetHoursGroup",
+            "BudgetHoursROC",
+            "EarnedMHsRoc",
+            "EarnMHsCalc",
+            "EarnedQtyCalc",
+            "EarnQtyEntry",
+            "EquivQTY",
+            "EquivUOM",
+            "PercentCompleteCalc",
+            "PercentEntry",
+            "Quantity",
+            "ROCID",
+            "ROCLookupID",
+            "ROCPercent",
+            "ROCBudgetQTY",
+            "PipeSize1",
+            "PipeSize2",
+            "PrevEarnMHs",
+            "PrevEarnQTY",
+            "UpdatedUtcDate",
+            "UOM",
+            "ClientEquivQty",
+            "ClientBudget",
+            "ClientCustom3"
+        };
+
+        // Export all activities to Excel file (defaults to Legacy format for backward compatibility)
         public static void ExportActivities(string filePath, List<Models.Activity> activities)
+        {
+            ExportActivities(filePath, activities, ExportFormat.Legacy);
+        }
+
+        // Export all activities to Excel file with specified format
+        public static void ExportActivities(string filePath, List<Models.Activity> activities, ExportFormat format)
         {
             try
             {
                 using var workbook = new XLWorkbook();
                 var worksheet = workbook.Worksheets.Add("Sheet1");
 
-                // Get column mappings from database (OldVantage -> DbColumnName)
-                var oldVantageToDbMapping = GetOldVantageToDbColumnMapping();
-
-                // Write headers in exact order
-                int colIndex = 1;
-                var columnOrder = new List<(string OldVantageName, string DbColumnName, int ExcelColumn)>();
-
-                foreach (var oldVantageName in ExportColumnOrder)
+                if (format == ExportFormat.NewVantage)
                 {
-                    worksheet.Cell(1, colIndex).Value = oldVantageName;
+                    // NewVantage format: use property names as headers, percentages as 0-100
+                    int colIndex = 1;
+                    var columnOrder = new List<(string PropertyName, int ExcelColumn)>();
 
-                    // Find the database column name for this OldVantage name
-                    if (oldVantageToDbMapping.TryGetValue(oldVantageName, out string? dbColumnName) && dbColumnName != null)
+                    foreach (var propertyName in NewVantageColumnOrder)
                     {
-                        columnOrder.Add((oldVantageName, dbColumnName, colIndex));
+                        worksheet.Cell(1, colIndex).Value = propertyName;
+                        columnOrder.Add((propertyName, colIndex));
+                        colIndex++;
                     }
 
-                    colIndex++;
+                    // Write data rows
+                    int rowIndex = 2;
+                    foreach (var activity in activities)
+                    {
+                        foreach (var col in columnOrder)
+                        {
+                            var value = GetActivityValueNewVantage(activity, col.PropertyName);
+                            WriteCellValue(worksheet, rowIndex, col.ExcelColumn, value);
+                        }
+                        rowIndex++;
+                    }
                 }
-
-                // Write data rows
-                int rowIndex = 2;
-                foreach (var activity in activities)
+                else
                 {
-                    foreach (var col in columnOrder)
-                    {
-                        var value = GetActivityValue(activity, col.DbColumnName);
+                    // Legacy format: OldVantage column names, percentages as 0-1 decimals
+                    var oldVantageToDbMapping = GetOldVantageToDbColumnMapping();
 
-                        // Handle different value types for ClosedXML
-                        if (value == null || value.ToString() == "")
+                    int colIndex = 1;
+                    var columnOrder = new List<(string OldVantageName, string DbColumnName, int ExcelColumn)>();
+
+                    foreach (var oldVantageName in ExportColumnOrder)
+                    {
+                        worksheet.Cell(1, colIndex).Value = oldVantageName;
+
+                        if (oldVantageToDbMapping.TryGetValue(oldVantageName, out string? dbColumnName) && dbColumnName != null)
                         {
-                            worksheet.Cell(rowIndex, col.ExcelColumn).Value = "";
+                            columnOrder.Add((oldVantageName, dbColumnName, colIndex));
                         }
-                        else if (value is double doubleValue)
-                        {
-                            worksheet.Cell(rowIndex, col.ExcelColumn).Value = doubleValue;
-                        }
-                        else if (value is int intValue)
-                        {
-                            worksheet.Cell(rowIndex, col.ExcelColumn).Value = intValue;
-                        }
-                        else if (value is DateTime dateValue)
-                        {
-                            worksheet.Cell(rowIndex, col.ExcelColumn).Value = dateValue;
-                        }
-                        else
-                        {
-                            worksheet.Cell(rowIndex, col.ExcelColumn).Value = value.ToString();
-                        }
+
+                        colIndex++;
                     }
-                    rowIndex++;
+
+                    // Write data rows
+                    int rowIndex = 2;
+                    foreach (var activity in activities)
+                    {
+                        foreach (var col in columnOrder)
+                        {
+                            var value = GetActivityValue(activity, col.DbColumnName);
+                            WriteCellValue(worksheet, rowIndex, col.ExcelColumn, value);
+                        }
+                        rowIndex++;
+                    }
                 }
 
                 // Auto-fit columns
                 worksheet.Columns().AdjustToContents();
 
                 workbook.SaveAs(filePath);
-                System.Diagnostics.Debug.WriteLine($"✓ Exported {activities.Count} activities to {filePath}");
+                System.Diagnostics.Debug.WriteLine($"✓ Exported {activities.Count} activities ({format}) to {filePath}");
             }
             catch (Exception ex)
             {
@@ -173,19 +282,52 @@ namespace VANTAGE.Utilities
             }
         }
 
-        // Export empty template (headers only)
+        // Helper to write cell value with type handling
+        private static void WriteCellValue(IXLWorksheet worksheet, int row, int col, object value)
+        {
+            if (value == null || value.ToString() == "")
+            {
+                worksheet.Cell(row, col).Value = "";
+            }
+            else if (value is double doubleValue)
+            {
+                worksheet.Cell(row, col).Value = doubleValue;
+            }
+            else if (value is int intValue)
+            {
+                worksheet.Cell(row, col).Value = intValue;
+            }
+            else if (value is DateTime dateValue)
+            {
+                worksheet.Cell(row, col).Value = dateValue;
+            }
+            else
+            {
+                worksheet.Cell(row, col).Value = value.ToString();
+            }
+        }
+
+        // Export empty template (headers only) - defaults to Legacy format
         public static void ExportTemplate(string filePath)
+        {
+            ExportTemplate(filePath, ExportFormat.Legacy);
+        }
+
+        // Export empty template (headers only) with specified format
+        public static void ExportTemplate(string filePath, ExportFormat format)
         {
             try
             {
                 using var workbook = new XLWorkbook();
                 var worksheet = workbook.Worksheets.Add("Sheet1");
 
-                // Write headers only in exact order
+                // Write headers only in exact order based on format
                 int colIndex = 1;
-                foreach (var oldVantageName in ExportColumnOrder)
+                var columns = format == ExportFormat.NewVantage ? NewVantageColumnOrder : ExportColumnOrder;
+
+                foreach (var columnName in columns)
                 {
-                    worksheet.Cell(1, colIndex).Value = oldVantageName;
+                    worksheet.Cell(1, colIndex).Value = columnName;
                     colIndex++;
                 }
 
@@ -193,7 +335,7 @@ namespace VANTAGE.Utilities
                 worksheet.Columns().AdjustToContents();
 
                 workbook.SaveAs(filePath);
-                System.Diagnostics.Debug.WriteLine($"✓ Exported template to {filePath}");
+                System.Diagnostics.Debug.WriteLine($"✓ Exported template ({format}) to {filePath}");
             }
             catch (Exception ex)
             {
@@ -263,6 +405,26 @@ namespace VANTAGE.Utilities
                 }
 
                 // Round all other double values to 3 decimal places
+                if (value is double doubleValue)
+                {
+                    return NumericHelper.RoundToPlaces(doubleValue);
+                }
+
+                return value ?? "";
+            }
+
+            return "";
+        }
+
+        // Get activity property value for NewVantage format (no percentage conversion)
+        private static object GetActivityValueNewVantage(Models.Activity activity, string propertyName)
+        {
+            var property = typeof(Models.Activity).GetProperty(propertyName);
+            if (property != null)
+            {
+                var value = property.GetValue(activity);
+
+                // Round all double values to 3 decimal places (but keep percentages as 0-100)
                 if (value is double doubleValue)
                 {
                     return NumericHelper.RoundToPlaces(doubleValue);

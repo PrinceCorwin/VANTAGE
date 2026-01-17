@@ -9,15 +9,15 @@ using VANTAGE.Models;
 namespace VANTAGE.Utilities
 {
     
-    /// Import activities from Excel files with OldVantage column names
-    /// Translates to NewVantage column names for database storage
-    
+    // Import activities from Excel files - supports both Legacy and NewVantage formats
+    // Legacy: OldVantage column names, translates to NewVantage for database
+    // NewVantage: Column names match property names directly
+
     public static class ExcelImporter
     {
-        /// Build column mapping: Excel column number → NewVantage property name
-      /// Translates OldVantage column headers to NewVantage property names
+        // Build column mapping: Excel column number → NewVantage property name
 
-        private static Dictionary<int, string> BuildColumnMap(IXLRow headerRow)
+        private static Dictionary<int, string> BuildColumnMap(IXLRow headerRow, ExportFormat format)
         {
             var columnMap = new Dictionary<int, string>();
 
@@ -37,33 +37,34 @@ namespace VANTAGE.Utilities
             for (int colNum = 1; colNum <= headerRow.LastCellUsed()?.Address.ColumnNumber; colNum++)
             {
                 var cell = headerRow.Cell(colNum);
-                string oldVantageHeader = cell.GetString().Trim();
+                string header = cell.GetString().Trim();
 
-                if (string.IsNullOrEmpty(oldVantageHeader))
+                if (string.IsNullOrEmpty(header))
                     continue;
 
-                string newVantageName = ColumnMapper.GetColumnNameFromOldVantage(oldVantageHeader);
-
+                // For NewVantage format, headers are already property names
+                // For Legacy format, translate OldVantage to NewVantage
+                string propertyName = format == ExportFormat.NewVantage
+                    ? header
+                    : ColumnMapper.GetColumnNameFromOldVantage(header);
 
                 // Skip calculated fields
-                if (calculatedFields.Contains(newVantageName))
+                if (calculatedFields.Contains(propertyName))
                 {
                     continue;
                 }
 
-                columnMap[colNum] = newVantageName;
+                columnMap[colNum] = propertyName;
             }
 
-            System.Diagnostics.Debug.WriteLine($"✓ Mapped {columnMap.Count} columns from Excel");
+            System.Diagnostics.Debug.WriteLine($"✓ Mapped {columnMap.Count} columns from Excel ({format})");
             return columnMap;
         }
 
 
-        /// Read activities from Excel worksheet
+        // Read activities from Excel worksheet
 
-        // STEP 4: Replace ReadActivitiesFromExcel in ExcelImporter.cs
-
-        private static List<Activity> ReadActivitiesFromExcel(IXLWorksheet worksheet, Dictionary<int, string> columnMap)
+        private static List<Activity> ReadActivitiesFromExcel(IXLWorksheet worksheet, Dictionary<int, string> columnMap, ExportFormat format)
         {
             var activities = new List<Activity>();
 
@@ -95,7 +96,7 @@ namespace VANTAGE.Utilities
                     string propertyName = mapping.Value;
 
                     var cell = row.Cell(excelColNum);
-                    SetPropertyValue(activity, propertyName, cell);
+                    SetPropertyValue(activity, propertyName, cell, format);
                 }
 
                 // Handle UniqueID auto-generation if missing
@@ -161,10 +162,9 @@ namespace VANTAGE.Utilities
             return false;
         }
 
-        
-        /// Set Activity property value from Excel cell
-        
-        private static void SetPropertyValue(Activity activity, string propertyName, IXLCell cell)
+        // Set Activity property value from Excel cell
+
+        private static void SetPropertyValue(Activity activity, string propertyName, IXLCell cell, ExportFormat format)
         {
             var property = typeof(Activity).GetProperty(propertyName);
             if (property == null || !property.CanWrite)
@@ -186,23 +186,32 @@ namespace VANTAGE.Utilities
 
             try
             {
-                // Special handling for PercentEntry: convert 0-1 decimal to 0-100 percentage
+                // Special handling for PercentEntry based on format
                 if (propertyName == "PercentEntry")
                 {
                     double value = cell.GetDouble();
                     double percentValue;
 
-                    if (value >= 0 && value <= 1.0)
+                    if (format == ExportFormat.NewVantage)
                     {
-                        percentValue = value * 100.0;
-                    }
-                    else if (value > 1 && value <= 100)
-                    {
+                        // NewVantage: values are already 0-100, use as-is
                         percentValue = value;
                     }
                     else
                     {
-                        percentValue = 0;
+                        // Legacy: convert 0-1 decimal to 0-100 percentage
+                        if (value >= 0 && value <= 1.0)
+                        {
+                            percentValue = value * 100.0;
+                        }
+                        else if (value > 1 && value <= 100)
+                        {
+                            percentValue = value;
+                        }
+                        else
+                        {
+                            percentValue = 0;
+                        }
                     }
                     activity.PercentEntry = NumericHelper.RoundToPlaces(percentValue);
                     return;
@@ -608,19 +617,20 @@ namespace VANTAGE.Utilities
             }
         }
 
-        /// Import activities from Excel file with progress reporting
-
-        /// <param name="filePath">Path to Excel file with OldVantage column names</param>
-        /// <param name="replaceMode">True = replace all existing, False = combine/add</param>
-        /// <param name="progress">Optional progress callback (current, total, message)</param>
-        /// <returns>Number of records imported</returns>
+        // Import activities from Excel file (defaults to Legacy format for backward compatibility)
         public static async Task<int> ImportActivitiesAsync(string filePath, bool replaceMode, IProgress<(int current, int total, string message)>? progress = null)
+        {
+            return await ImportActivitiesAsync(filePath, replaceMode, ExportFormat.Legacy, progress);
+        }
+
+        // Import activities from Excel file with specified format
+        public static async Task<int> ImportActivitiesAsync(string filePath, bool replaceMode, ExportFormat format, IProgress<(int current, int total, string message)>? progress = null)
         {
             return await Task.Run(() =>
             {
                 try
                 {
-                    System.Diagnostics.Debug.WriteLine("Starting import...");
+                    System.Diagnostics.Debug.WriteLine($"Starting import ({format})...");
                     progress?.Report((0, 0, "Opening Excel file..."));
 
                     if (!File.Exists(filePath))
@@ -652,11 +662,10 @@ namespace VANTAGE.Utilities
 
                         progress?.Report((0, 0, "Analyzing Excel structure..."));
                         var headerRow = worksheet.Row(1);
-                        var columnMap = BuildColumnMap(headerRow);
-
+                        var columnMap = BuildColumnMap(headerRow, format);
 
                         progress?.Report((0, 0, "Reading Excel data..."));
-                        var activities = ReadActivitiesFromExcel(worksheet, columnMap);
+                        var activities = ReadActivitiesFromExcel(worksheet, columnMap, format);
 
                         ValidateNoDuplicateUniqueIDs(activities);
 

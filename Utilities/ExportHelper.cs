@@ -7,20 +7,27 @@ using VANTAGE.Models;
 
 namespace VANTAGE.Utilities
 {
-    
-    /// Helper class for exporting activities to Excel with different scenarios
-    
+    // Helper class for exporting activities to Excel with different scenarios
+
     public static class ExportHelper
     {
-        
-        /// Export activities with options dialog (for MainWindow)
-        /// Shows dialog to choose between all records or filtered records
-        
+        // Export activities with options dialog (defaults to NewVantage format)
         public static async Task ExportActivitiesWithOptionsAsync(
             Window owner,
             List<Activity> allActivities,
             List<Activity> filteredActivities,
             bool hasActiveFilters)
+        {
+            await ExportActivitiesWithOptionsAsync(owner, allActivities, filteredActivities, hasActiveFilters, ExportFormat.NewVantage);
+        }
+
+        // Export activities with options dialog and specified format
+        public static async Task ExportActivitiesWithOptionsAsync(
+            Window owner,
+            List<Activity> allActivities,
+            List<Activity> filteredActivities,
+            bool hasActiveFilters,
+            ExportFormat format)
         {
             try
             {
@@ -65,16 +72,17 @@ namespace VANTAGE.Utilities
                     exportType = "All Activities";
                 }
 
-                // Show save file dialog
-                var filePath = ShowSaveFileDialog($"VANTAGE_Export_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx");
+                // Build filename with format indicator
+                string formatSuffix = format == ExportFormat.Legacy ? "_Legacy" : "";
+                var filePath = ShowSaveFileDialog($"VANTAGE_Export{formatSuffix}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx");
                 if (string.IsNullOrEmpty(filePath))
                     return;
 
                 // Export asynchronously
-                await Task.Run(() => ExcelExporter.ExportActivities(filePath, activitiesToExport));
+                await Task.Run(() => ExcelExporter.ExportActivities(filePath, activitiesToExport, format));
 
                 // Log the export
-                LogExport(exportType, activitiesToExport.Count, filePath);
+                LogExport($"{exportType} ({format})", activitiesToExport.Count, filePath);
 
                 // Show success message
                 MessageBox.Show(
@@ -182,24 +190,29 @@ namespace VANTAGE.Utilities
             }
         }
 
-        
-        /// Export template (headers only) without any data
-        
+        // Export template (headers only) - defaults to NewVantage format
         public static async Task ExportTemplateAsync(Window owner)
+        {
+            await ExportTemplateAsync(owner, ExportFormat.NewVantage);
+        }
+
+        // Export template (headers only) with specified format
+        public static async Task ExportTemplateAsync(Window owner, ExportFormat format)
         {
             try
             {
-                // Show save file dialog
-                var filePath = ShowSaveFileDialog($"VANTAGE_Template_{DateTime.Now:yyyyMMdd}.xlsx");
+                // Build filename with format indicator
+                string formatSuffix = format == ExportFormat.Legacy ? "_Legacy" : "";
+                var filePath = ShowSaveFileDialog($"VANTAGE_Template{formatSuffix}_{DateTime.Now:yyyyMMdd}.xlsx");
                 if (string.IsNullOrEmpty(filePath))
                     return;
 
                 // Export template asynchronously
-                await Task.Run(() => ExcelExporter.ExportTemplate(filePath));
+                await Task.Run(() => ExcelExporter.ExportTemplate(filePath, format));
 
                 // Log the export
                 AppLogger.Info(
-                    $"Exported template to {Path.GetFileName(filePath)}",
+                    $"Exported template ({format}) to {Path.GetFileName(filePath)}",
                     "Export Template",
                     App.CurrentUser?.Username ?? "Unknown");
 
