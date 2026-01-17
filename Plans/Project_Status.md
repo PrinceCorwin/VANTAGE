@@ -48,7 +48,7 @@
 - [ ] Progress Book creation
 - [ ] Theme selection by user - save preference, apply on startup
 - [ ] Add Offline Indicator in status bar - clickable to retry connection
-- [ ] Check startup behavior when user not found - add "Email Admin" option to request being added to Users table
+- [ ] User Access Request - add "Request Access" button at startup for unknown users to email admins (see User_Access_Request_Plan.md)
 - [x] Add 'Revert to Snapshot' functionality (via Manage Snapshots dialog)
 
 ### Medium Priority
