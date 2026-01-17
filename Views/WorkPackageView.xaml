@@ -463,10 +463,11 @@
                             <TextBlock Text="Name" FontWeight="Bold" Margin="0,0,0,5"/>
                             <TextBox x:Name="txtFormTemplateName" Margin="0,0,0,10"/>
 
-                            <!-- Clone/Delete Buttons -->
+                            <!-- Clone/Delete/Reset Buttons -->
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
-                                <Button Content="Clone" Click="BtnCloneFormTemplate_Click" Padding="8,4" Margin="0,0,10,0"/>
-                                <Button Content="Delete" Click="BtnDeleteFormTemplate_Click" Padding="8,4"/>
+                                <Button Content="Clone" Click="BtnCloneFormTemplate_Click" Padding="8,4" Margin="0,0,10,0" ToolTip="Create a copy of this template"/>
+                                <Button Content="Delete" Click="BtnDeleteFormTemplate_Click" Padding="8,4" Margin="0,0,10,0" ToolTip="Delete this template"/>
+                                <Button x:Name="btnResetFormTemplateDefaults" Content="Reset Defaults" Click="BtnResetFormTemplateDefaults_Click" Padding="8,4" Visibility="Collapsed" ToolTip="Reset to built-in template defaults"/>
                             </StackPanel>
 
                             <Separator Margin="0,0,0,15"/>

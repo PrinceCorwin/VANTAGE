@@ -93,6 +93,49 @@ namespace VANTAGE.Repositories
             });
         }
 
+        // Get built-in form templates by type (for Reset Defaults feature)
+        public static async Task<List<FormTemplate>> GetBuiltInFormTemplatesByTypeAsync(string templateType)
+        {
+            return await Task.Run(() =>
+            {
+                var templates = new List<FormTemplate>();
+                try
+                {
+                    using var connection = new SqliteConnection($"Data Source={DatabaseSetup.DbPath}");
+                    connection.Open();
+
+                    var cmd = connection.CreateCommand();
+                    cmd.CommandText = @"
+                        SELECT TemplateID, TemplateName, TemplateType, StructureJson,
+                               IsBuiltIn, CreatedBy, CreatedUtc
+                        FROM FormTemplates
+                        WHERE TemplateType = @templateType AND IsBuiltIn = 1
+                        ORDER BY TemplateName";
+                    cmd.Parameters.AddWithValue("@templateType", templateType);
+
+                    using var reader = cmd.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        templates.Add(new FormTemplate
+                        {
+                            TemplateID = reader.GetString(0),
+                            TemplateName = reader.GetString(1),
+                            TemplateType = reader.GetString(2),
+                            StructureJson = reader.GetString(3),
+                            IsBuiltIn = reader.GetInt32(4) == 1,
+                            CreatedBy = reader.GetString(5),
+                            CreatedUtc = reader.GetString(6)
+                        });
+                    }
+                }
+                catch (Exception ex)
+                {
+                    AppLogger.Error(ex, "TemplateRepository.GetBuiltInFormTemplatesByTypeAsync");
+                }
+                return templates;
+            });
+        }
+
         // Insert a new form template
         public static async Task<bool> InsertFormTemplateAsync(FormTemplate template)
         {

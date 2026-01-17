@@ -1446,6 +1446,11 @@ namespace VANTAGE.Views
                 txtFormTemplateName.Text = template.TemplateName;
                 lblFormTemplateType.Text = template.TemplateType;
 
+                // Show Reset Defaults button only for user-created templates (not Drawings type)
+                btnResetFormTemplateDefaults.Visibility = (!template.IsBuiltIn && template.TemplateType != TemplateTypes.Drawings)
+                    ? Visibility.Visible
+                    : Visibility.Collapsed;
+
                 // Load type-specific editor
                 LoadFormTemplateEditor(template);
             }
@@ -1491,6 +1496,11 @@ namespace VANTAGE.Views
                 txtFormTemplateName.Text = newTemplate.TemplateName;
                 lblFormTemplateType.Text = newTemplate.TemplateType;
 
+                // Show Reset Defaults for new user-created templates (not Drawings)
+                btnResetFormTemplateDefaults.Visibility = (newTemplate.TemplateType != TemplateTypes.Drawings)
+                    ? Visibility.Visible
+                    : Visibility.Collapsed;
+
                 // Load the editor for this type
                 LoadFormTemplateEditor(newTemplate);
                 _hasUnsavedChanges = true;
@@ -1507,6 +1517,7 @@ namespace VANTAGE.Views
                     _selectedFormTemplate = null;
                     txtFormTemplateName.Text = "";
                     lblFormTemplateType.Text = "";
+                    btnResetFormTemplateDefaults.Visibility = Visibility.Collapsed;
                     ClearFormEditor();
                 }
             }
@@ -1652,6 +1663,77 @@ namespace VANTAGE.Views
                 }
 
                 lblStatus.Text = "Template deleted";
+            }
+        }
+
+        // Reset form template to built-in defaults
+        private async void BtnResetFormTemplateDefaults_Click(object sender, RoutedEventArgs e)
+        {
+            // Guard: only works for user-created templates
+            if (_selectedFormTemplate == null || _selectedFormTemplate.IsBuiltIn)
+            {
+                return;
+            }
+
+            try
+            {
+                // Get built-in templates of the same type
+                var builtInTemplates = await TemplateRepository.GetBuiltInFormTemplatesByTypeAsync(_selectedFormTemplate.TemplateType);
+
+                if (builtInTemplates.Count == 0)
+                {
+                    MessageBox.Show("No built-in template found for this type.", "Cannot Reset",
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                FormTemplate? sourceTemplate = null;
+
+                if (builtInTemplates.Count == 1)
+                {
+                    // Single built-in, use it directly
+                    sourceTemplate = builtInTemplates[0];
+                }
+                else
+                {
+                    // Multiple built-ins, show selection dialog
+                    var dialog = new ResetTemplateDialog(builtInTemplates)
+                    {
+                        Owner = Window.GetWindow(this)
+                    };
+
+                    if (dialog.ShowDialog() != true || dialog.SelectedTemplate == null)
+                    {
+                        return;
+                    }
+
+                    sourceTemplate = dialog.SelectedTemplate;
+                }
+
+                // Confirm the reset
+                var result = MessageBox.Show(
+                    $"Reset '{_selectedFormTemplate.TemplateName}' to match '{sourceTemplate.TemplateName}' defaults?\n\nThis will replace all current settings.",
+                    "Confirm Reset", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+                if (result != MessageBoxResult.Yes) return;
+
+                // Copy StructureJson from built-in to current template
+                _selectedFormTemplate.StructureJson = sourceTemplate.StructureJson;
+
+                // Save to database
+                await TemplateRepository.UpdateFormTemplateAsync(_selectedFormTemplate);
+
+                // Reload the editor to reflect new values
+                LoadFormTemplateEditor(_selectedFormTemplate);
+
+                _hasUnsavedChanges = false;
+                lblStatus.Text = "Template reset to defaults";
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "WorkPackageView.BtnResetFormTemplateDefaults_Click");
+                MessageBox.Show($"Error resetting template: {ex.Message}", "Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

@@ -23,7 +23,7 @@
 - [ ] Test Form editor - sections/items/columns, saving, preview
 - [ ] Test Type selection dialog - creating new templates of each type
 - [x] Change Punchlist template default header font size to -30% (current default too large)
-- [ ] Add Reset Defaults button to form template editors (resets all fields/settings to built-in template values)
+- [x] Add Reset Defaults button to form template editors (resets all fields/settings to built-in template values)
 - [x] Implement Drawings section in Generate tab (Local folder fetch working)
 - [ ] Drawings - Fix preview display
 - [ ] Drawings - Fix layout/orientation for 11x17 drawings
@@ -60,6 +60,10 @@
 - [ ] User-editable header template for WP (allow customizing header layout)
 - [ ] Import/Export WP templates to JSON
 
+### Infrastructure / Azure Migration
+- [ ] Execute VMS_ table creation script on company Azure (see MILESTONE_Azure_Migration_Plan.md)
+- [ ] Legacy Azure Table Save - Admin dialog to upload project snapshots to company Azure dbo_VANTAGE_global_ProgressLog (UPSERT, schema mapping TBD)
+
 ### AI Features (see InCode_AI_Plan.md)
 | Feature | Status |
 |---------|--------|
@@ -89,6 +93,18 @@
 ## Recent Completions
 
 ### January 16, 2026
+- Form Template Editor - Reset Defaults button:
+  - Added Reset Defaults button for user-created templates (Cover, List, Grid, Form types)
+  - Button hidden for built-in templates and Drawings placeholder
+  - Resets template StructureJson to match a selected built-in template of same type
+  - For types with multiple built-ins (Grid, Form), shows ResetTemplateDialog with ComboBox
+  - For types with single built-in (Cover, List), resets directly with confirmation
+  - Added GetBuiltInFormTemplatesByTypeAsync to TemplateRepository
+  - Created Dialogs/ResetTemplateDialog.xaml for built-in selection
+- Azure Migration Plan updated:
+  - Marked Phase 2 (C# code changes) and Phase 3 (testing) as DEFERRED
+  - Added Rollback Strategy section
+  - Added Future Feature: Legacy Azure Table Save (admin uploads snapshots to dbo_VANTAGE_global_ProgressLog)
 - Work Package PDF - Dynamic footer height:
   - Footer now auto-sizes based on content (was hardcoded 25pt, too small for long text)
   - Added MeasureFooterHeight() and GetFooterReservedHeight() to BaseRenderer
