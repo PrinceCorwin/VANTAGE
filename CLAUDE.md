@@ -31,6 +31,7 @@ WPF application for Summit Constructors replacing legacy MS Access system. Track
   - "Update X" or "Add Y" means make the change, NOT commit it
   - Wait for explicit "commit" instruction before running git commit
 - ALWAYS push to remote after committing, unless user instructs otherwise
+- **ALWAYS commit ALL uncommitted changes** when user says "commit" - don't selectively commit only some files unless user specifies otherwise
 - Do NOT add "Generated with Claude" or "Co-Authored-By: Claude" to commit messages
 - Do NOT add AI attribution comments in code
 - Write clear, concise commit messages describing the change

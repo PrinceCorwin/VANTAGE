@@ -66,7 +66,7 @@
 
 ### Infrastructure / Azure Migration
 - Execute VMS_ table creation script on company Azure (see MILESTONE_Azure_Migration_Plan.md)
-- Legacy Azure Table Save - Admin dialog to upload project snapshots to company Azure dbo_VANTAGE_global_ProgressLog (UPSERT, schema mapping TBD)
+- Progress_Log Azure Upload - Admin dialog to append project snapshots to company Azure dbo_VANTAGE_global_ProgressLog (historical by WeekEndDate, schema mapping TBD)
 
 ### AI Features (see InCode_AI_Plan.md)
 | Feature | Status |
