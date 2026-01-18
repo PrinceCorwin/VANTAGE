@@ -9,12 +9,55 @@ using VANTAGE.Models;
 namespace VANTAGE.Utilities
 {
     
-    // Import activities from Excel files - supports both Legacy and NewVantage formats
-    // Legacy: OldVantage column names, translates to NewVantage for database
-    // NewVantage: Column names match property names directly
+    // Import activities from Excel files - auto-detects Legacy vs NewVantage format
+    // Legacy: OldVantage column names (UDFNineteen, Val_Perc_Complete), percent as 0-1 decimal
+    // NewVantage: Column names match property names (UniqueID, PercentEntry), percent as 0-100
 
     public static class ExcelImporter
     {
+        // Detect file format from header row column names
+        // Returns Legacy if OldVantage columns found, NewVantage if NewVantage columns found
+        private static ExportFormat DetectFormat(IXLRow headerRow)
+        {
+            var headers = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            for (int colNum = 1; colNum <= headerRow.LastCellUsed()?.Address.ColumnNumber; colNum++)
+            {
+                var cell = headerRow.Cell(colNum);
+                string header = cell.GetString().Trim();
+                if (!string.IsNullOrEmpty(header))
+                    headers.Add(header);
+            }
+
+            // Signature columns unique to each format
+            bool hasLegacyColumns = headers.Contains("UDFNineteen") || headers.Contains("Val_Perc_Complete");
+            bool hasNewVantageColumns = headers.Contains("UniqueID") || headers.Contains("PercentEntry");
+
+            if (hasLegacyColumns && !hasNewVantageColumns)
+                return ExportFormat.Legacy;
+
+            if (hasNewVantageColumns && !hasLegacyColumns)
+                return ExportFormat.NewVantage;
+
+            if (hasLegacyColumns && hasNewVantageColumns)
+                throw new InvalidOperationException(
+                    "The Excel file contains both Legacy and NewVantage column names.\n\n" +
+                    "This file format is not supported. Please use a file exported from either " +
+                    "OldVantage or Milestone, but not a mix of both.");
+
+            // Fallback: check for other distinguishing columns
+            if (headers.Contains("Tag_ProjectID"))
+                return ExportFormat.Legacy;
+            if (headers.Contains("ProjectID"))
+                return ExportFormat.NewVantage;
+
+            throw new InvalidOperationException(
+                "Unable to determine the Excel file format.\n\n" +
+                "Expected either:\n" +
+                "• Legacy format with columns like 'UDFNineteen', 'Val_Perc_Complete'\n" +
+                "• NewVantage format with columns like 'UniqueID', 'PercentEntry'\n\n" +
+                "Please ensure the file is a valid activity export.");
+        }
+
         // Build column mapping: Excel column number → NewVantage property name
 
         private static Dictionary<int, string> BuildColumnMap(IXLRow headerRow, ExportFormat format)
@@ -114,19 +157,46 @@ namespace VANTAGE.Utilities
                 // Always clear WeekEndDate on import
                 activity.WeekEndDate = null;
 
-                // Apply auto-date logic based on PercentEntry
-                if (activity.PercentEntry > 0 && activity.SchStart == null)
-                {
-                    activity.SchStart = DateTime.Today;
-                }
-                if (activity.PercentEntry == 100 && activity.SchFinish == null)
-                {
-                    activity.SchFinish = DateTime.Today;
-                }
+                // Clean up date/percent inconsistencies
+                var today = DateTime.Today;
+
+                // Rule 1: PercentEntry = 0 → clear both dates
                 if (activity.PercentEntry == 0)
                 {
                     activity.SchStart = null;
                     activity.SchFinish = null;
+                }
+                else
+                {
+                    // Rule 2: PercentEntry > 0 but no SchStart → set to today
+                    if (activity.SchStart == null)
+                    {
+                        activity.SchStart = today;
+                    }
+                    // Rule 3: SchStart in future → clamp to today
+                    else if (activity.SchStart > today)
+                    {
+                        activity.SchStart = today;
+                    }
+
+                    // Rule 4: PercentEntry < 100 → clear SchFinish
+                    if (activity.PercentEntry < 100)
+                    {
+                        activity.SchFinish = null;
+                    }
+                    else // PercentEntry = 100
+                    {
+                        // Rule 5: PercentEntry = 100 but no SchFinish → set to today
+                        if (activity.SchFinish == null)
+                        {
+                            activity.SchFinish = today;
+                        }
+                        // Rule 6: SchFinish in future → clamp to today
+                        else if (activity.SchFinish > today)
+                        {
+                            activity.SchFinish = today;
+                        }
+                    }
                 }
 
                 activity.ActivityID = 0;
@@ -186,7 +256,7 @@ namespace VANTAGE.Utilities
 
             try
             {
-                // Special handling for PercentEntry based on format
+                // Special handling for PercentEntry based on detected format
                 if (propertyName == "PercentEntry")
                 {
                     double value = cell.GetDouble();
@@ -199,19 +269,9 @@ namespace VANTAGE.Utilities
                     }
                     else
                     {
-                        // Legacy: convert 0-1 decimal to 0-100 percentage
-                        if (value >= 0 && value <= 1.0)
-                        {
-                            percentValue = value * 100.0;
-                        }
-                        else if (value > 1 && value <= 100)
-                        {
-                            percentValue = value;
-                        }
-                        else
-                        {
-                            percentValue = 0;
-                        }
+                        // Legacy: ALWAYS convert 0-1 decimal to 0-100 percentage
+                        // Format is determined by column names, not value ranges
+                        percentValue = value * 100.0;
                     }
                     activity.PercentEntry = NumericHelper.RoundToPlaces(percentValue);
                     return;
@@ -617,26 +677,17 @@ namespace VANTAGE.Utilities
             }
         }
 
-        // Import activities from Excel file (defaults to Legacy format for backward compatibility)
+        // Import activities from Excel file with auto-detected format
         public static async Task<int> ImportActivitiesAsync(string filePath, bool replaceMode, IProgress<(int current, int total, string message)>? progress = null)
-        {
-            return await ImportActivitiesAsync(filePath, replaceMode, ExportFormat.Legacy, progress);
-        }
-
-        // Import activities from Excel file with specified format
-        public static async Task<int> ImportActivitiesAsync(string filePath, bool replaceMode, ExportFormat format, IProgress<(int current, int total, string message)>? progress = null)
         {
             return await Task.Run(() =>
             {
                 try
                 {
-                    System.Diagnostics.Debug.WriteLine($"Starting import ({format})...");
                     progress?.Report((0, 0, "Opening Excel file..."));
 
                     if (!File.Exists(filePath))
                         throw new FileNotFoundException($"Excel file not found: {filePath}");
-
-                    System.Diagnostics.Debug.WriteLine("Opening workbook...");
 
                     IXLWorkbook workbook;
                     try
@@ -660,8 +711,14 @@ namespace VANTAGE.Utilities
                             throw new InvalidOperationException("No worksheets found in the Excel file.");
                         }
 
-                        progress?.Report((0, 0, "Analyzing Excel structure..."));
+                        progress?.Report((0, 0, "Detecting file format..."));
                         var headerRow = worksheet.Row(1);
+
+                        // Auto-detect format from column names
+                        var format = DetectFormat(headerRow);
+                        System.Diagnostics.Debug.WriteLine($"Detected format: {format}");
+
+                        progress?.Report((0, 0, $"Importing {format} format..."));
                         var columnMap = BuildColumnMap(headerRow, format);
 
                         progress?.Report((0, 0, "Reading Excel data..."));

@@ -731,24 +731,24 @@ namespace VANTAGE
 
         private async void ExcelExportActivities_Click(object sender, RoutedEventArgs e)
         {
+            // Get current ProgressView instance
+            var progressView = ContentArea.Content as ProgressView;
+            if (progressView == null)
+            {
+                MessageBox.Show("Progress module not loaded.", "Export", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // Get the ViewModel
+            var viewModel = progressView.DataContext as ViewModels.ProgressViewModel;
+            if (viewModel == null)
+            {
+                MessageBox.Show("Unable to access progress data.", "Export", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
             try
             {
-                // Get current ProgressView instance
-                var progressView = ContentArea.Content as ProgressView;
-                if (progressView == null)
-                {
-                    MessageBox.Show("Progress module not loaded.", "Export", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    return;
-                }
-
-                // Get the ViewModel
-                var viewModel = progressView.DataContext as ViewModels.ProgressViewModel;
-                if (viewModel == null)
-                {
-                    MessageBox.Show("Unable to access progress data.", "Export", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    return;
-                }
-
                 // Get all activities from ViewModel
                 var allActivities = viewModel.Activities?.ToList();
                 if (allActivities == null || allActivities.Count == 0)
@@ -785,6 +785,9 @@ namespace VANTAGE
                     hasActiveFilters = false;
                 }
 
+                // Show progress bar during export
+                viewModel.IsLoading = true;
+
                 await ExportHelper.ExportActivitiesWithOptionsAsync(
                     this,
                     allActivities,
@@ -796,6 +799,10 @@ namespace VANTAGE
                 AppLogger.Error(ex, "Export Activities Click", App.CurrentUser?.Username ?? "Unknown");
                 MessageBox.Show($"An error occurred: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+            finally
+            {
+                viewModel.IsLoading = false;
+            }
         }
 
         private async void ExcelExportTemplate_Click(object sender, RoutedEventArgs e)
@@ -803,139 +810,26 @@ namespace VANTAGE
             await ExportHelper.ExportTemplateAsync(this);
         }
 
-        // Legacy I/O event handlers
-
-        private async void MenuLegacyImportReplace_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                var openFileDialog = new Microsoft.Win32.OpenFileDialog
-                {
-                    Title = "Select Legacy Excel File to Import",
-                    Filter = "Excel Files (*.xlsx)|*.xlsx|All Files (*.*)|*.*",
-                    FilterIndex = 1
-                };
-
-                if (openFileDialog.ShowDialog() == true)
-                {
-                    var result = MessageBox.Show(
-                        "This will REPLACE all existing activities with data from the Legacy Excel file.\n\n" +
-                        "Legacy format uses OldVantage column names and 0-1 percentage values.\n\n" +
-                        "Are you sure you want to continue?",
-                        "Confirm Legacy Replace",
-                        MessageBoxButton.YesNo,
-                        MessageBoxImage.Warning);
-
-                    if (result == MessageBoxResult.Yes)
-                    {
-                        ShowLoadingOverlay("Importing Legacy Excel File...");
-
-                        var progress = new Progress<(int current, int total, string message)>(report =>
-                        {
-                            Dispatcher.Invoke(() =>
-                            {
-                                if (report.total > 0)
-                                    UpdateLoadingProgress(report.current, report.total, report.message);
-                                else
-                                    txtLoadingMessage.Text = report.message;
-                            });
-                        });
-
-                        int imported = await ExcelImporter.ImportActivitiesAsync(
-                            openFileDialog.FileName, replaceMode: true, ExportFormat.Legacy, progress);
-
-                        HideLoadingOverlay();
-
-                        MessageBox.Show(
-                            $"Successfully imported {imported} activities from Legacy format.\n\nAll previous data has been replaced.",
-                            "Legacy Import Complete",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Information);
-
-                        if (ContentArea.Content is Views.ProgressView)
-                        {
-                            LoadProgressModule();
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                HideLoadingOverlay();
-                MessageBox.Show($"Error importing Legacy Excel file:\n\n{ex.Message}",
-                    "Import Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private async void MenuLegacyImportCombine_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                var openFileDialog = new Microsoft.Win32.OpenFileDialog
-                {
-                    Title = "Select Legacy Excel File to Import",
-                    Filter = "Excel Files (*.xlsx)|*.xlsx|All Files (*.*)|*.*",
-                    FilterIndex = 1
-                };
-
-                if (openFileDialog.ShowDialog() == true)
-                {
-                    ShowLoadingOverlay("Importing Legacy Excel File...");
-
-                    var progress = new Progress<(int current, int total, string message)>(report =>
-                    {
-                        Dispatcher.Invoke(() =>
-                        {
-                            if (report.total > 0)
-                                UpdateLoadingProgress(report.current, report.total, report.message);
-                            else
-                                txtLoadingMessage.Text = report.message;
-                        });
-                    });
-
-                    int imported = await ExcelImporter.ImportActivitiesAsync(
-                        openFileDialog.FileName, replaceMode: false, ExportFormat.Legacy, progress);
-
-                    HideLoadingOverlay();
-
-                    MessageBox.Show(
-                        $"Successfully imported {imported} new activities from Legacy format.\n\nExisting activities were preserved (duplicates skipped).",
-                        "Legacy Import Complete",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-
-                    if (ContentArea.Content is Views.ProgressView)
-                    {
-                        LoadProgressModule();
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                HideLoadingOverlay();
-                MessageBox.Show($"Error importing Legacy Excel file:\n\n{ex.Message}",
-                    "Import Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
+        // Legacy Export event handlers (imports are handled by auto-detecting Import Activities buttons)
 
         private async void MenuLegacyExportActivities_Click(object sender, RoutedEventArgs e)
         {
+            var progressView = ContentArea.Content as ProgressView;
+            if (progressView == null)
+            {
+                MessageBox.Show("Progress module not loaded.", "Export", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var viewModel = progressView.DataContext as ViewModels.ProgressViewModel;
+            if (viewModel == null)
+            {
+                MessageBox.Show("Unable to access progress data.", "Export", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
             try
             {
-                var progressView = ContentArea.Content as ProgressView;
-                if (progressView == null)
-                {
-                    MessageBox.Show("Progress module not loaded.", "Export", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    return;
-                }
-
-                var viewModel = progressView.DataContext as ViewModels.ProgressViewModel;
-                if (viewModel == null)
-                {
-                    MessageBox.Show("Unable to access progress data.", "Export", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    return;
-                }
-
                 var allActivities = viewModel.Activities?.ToList();
                 if (allActivities == null || allActivities.Count == 0)
                 {
@@ -971,6 +865,9 @@ namespace VANTAGE
                     hasActiveFilters = false;
                 }
 
+                // Show progress bar during export
+                viewModel.IsLoading = true;
+
                 await ExportHelper.ExportActivitiesWithOptionsAsync(
                     this, allActivities, filteredActivities, hasActiveFilters, ExportFormat.Legacy);
             }
@@ -978,6 +875,10 @@ namespace VANTAGE
             {
                 AppLogger.Error(ex, "Legacy Export Activities Click", App.CurrentUser?.Username ?? "Unknown");
                 MessageBox.Show($"An error occurred: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                viewModel.IsLoading = false;
             }
         }
 
@@ -995,13 +896,11 @@ namespace VANTAGE
             UpdateLegacyMenuVisibility();
         }
 
-        // Update visibility of Legacy I/O menu items based on setting
+        // Update visibility of Legacy Export menu items based on setting
         private void UpdateLegacyMenuVisibility()
         {
             var visibility = SettingsManager.GetShowLegacyIO() ? Visibility.Visible : Visibility.Collapsed;
             sepLegacyIO.Visibility = visibility;
-            menuLegacyImportReplace.Visibility = visibility;
-            menuLegacyImportCombine.Visibility = visibility;
             menuLegacyExport.Visibility = visibility;
             menuLegacyTemplate.Visibility = visibility;
         }

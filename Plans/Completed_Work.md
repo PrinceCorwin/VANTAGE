@@ -4,6 +4,25 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ---
 
+### January 18, 2026
+- **Auto-detecting Activity Import** - Consolidated Legacy and NewVantage imports into single smart import:
+  - Added DetectFormat() method that identifies format by column headers (UDFNineteen/Val_Perc_Complete = Legacy, UniqueID/PercentEntry = NewVantage)
+  - Removed ambiguous threshold-based percent detection (was using 1.5 threshold which caused edge cases)
+  - Legacy format: ALWAYS multiply percent by 100 (strict conversion)
+  - NewVantage format: ALWAYS use percent as-is (strict conversion)
+  - Clear error messages if format cannot be determined or is mixed
+  - Removed Legacy Import buttons from UI (auto-detect handles both formats)
+  - Kept Legacy Export buttons for OldVantage system compatibility
+  - Updated Import Activities tooltips to indicate auto-detection
+- **Activity Import date/percent cleanup** - During import, cleans up date/percent inconsistencies:
+  - PercentEntry = 0 → clears both SchStart and SchFinish
+  - PercentEntry > 0 with no SchStart → sets SchStart to today
+  - SchStart in future → clamps to today
+  - PercentEntry < 100 → clears SchFinish
+  - PercentEntry = 100 with no SchFinish → sets SchFinish to today
+  - SchFinish in future → clamps to today
+- **Export progress indicator** - Shows animated progress bar in bottom-right during Activity exports (both regular and Legacy)
+
 ### January 17, 2026
 - **Schedule Change Log feature** - Apply Schedule detail grid edits to live Activities:
   - New ScheduleChangeLogEntry model and ScheduleChangeLogger utility class

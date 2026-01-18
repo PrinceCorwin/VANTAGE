@@ -1,6 +1,6 @@
 # MILESTONE - Project Status
 
-**Last Updated:** January 17, 2026
+**Last Updated:** January 18, 2026
 
 ## V1 Testing Scope
 
@@ -133,3 +133,4 @@ None currently blocking v1 testing.
 - Work Package PDF generation and preview
 - Manage Snapshots: delete multiple weeks, revert to single week with/without backup
 - Schedule Change Log: log detail grid edits, view/apply to Activities, duplicate handling
+- Activity Import: auto-detects Legacy/Milestone format, date/percent cleanup, strict percent conversion
