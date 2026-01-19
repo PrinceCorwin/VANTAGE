@@ -277,7 +277,17 @@
                     <li><a href="#sched-shortcuts">Keyboard Shortcuts</a></li>
                 </ul>
             </li>
-            <li><a href="#work-packages">5. Work Packages</a></li>
+            <li><a href="#work-packages">5. Work Packages</a>
+                <ul>
+                    <li><a href="#wp-overview">Overview</a></li>
+                    <li><a href="#wp-layout">Layout</a></li>
+                    <li><a href="#wp-generate">Generate Tab</a></li>
+                    <li><a href="#wp-templates">WP Templates Tab</a></li>
+                    <li><a href="#wp-form-templates">Form Templates Tab</a></li>
+                    <li><a href="#wp-tokens">Token System</a></li>
+                    <li><a href="#wp-previewing">Previewing Templates</a></li>
+                </ul>
+            </li>
             <li><a href="#progress-books">6. Progress Books</a></li>
             <li><a href="#administration">7. Administration</a></li>
             <li><a href="#reference">8. Reference</a></li>
@@ -1140,22 +1150,484 @@
     <h2 id="work-packages">5. Work Packages</h2>
     <!-- ============================================ -->
 
-    <h3>Overview</h3>
-    <p>The Work Packages module lets you generate PDF work packages for field crews, including cover sheets, activity lists, forms, and drawings.</p>
+    <h3 id="wp-overview">Overview</h3>
+    <p>The Work Packages module generates professional PDF documents for construction work packages. It combines multiple form templates into a single merged PDF with customizable branding and dynamic content through token replacement.</p>
 
     <div class="placeholder">Screenshot: Work Packages full view (wp-full-view.png)</div>
 
-    <h3>Creating a Work Package</h3>
-    <p>Content coming soon...</p>
+    <p>Key capabilities:</p>
+    <ul>
+        <li><strong>Multi-form composition</strong> — Combine cover sheets, lists, forms, and grids into one document</li>
+        <li><strong>Token replacement</strong> — Dynamic content like project names, dates, and activity data</li>
+        <li><strong>Bulk generation</strong> — Generate PDFs for multiple work packages at once</li>
+        <li><strong>Custom branding</strong> — Use your own logo or the default Summit logo</li>
+        <li><strong>Reusable templates</strong> — Create templates once, use across all projects</li>
+    </ul>
 
-    <h3>Selecting Activities</h3>
-    <p>Content coming soon...</p>
+    <h3 id="wp-layout">Layout</h3>
+    <p>The Work Packages view uses a split-pane design:</p>
+    <ul>
+        <li><strong>Left Panel</strong> — Three tabs for different functions (Generate, WP Templates, Form Templates)</li>
+        <li><strong>Right Panel</strong> — PDF preview of templates</li>
+    </ul>
+    <p>Drag the splitter between panels to resize. Your preference is saved automatically.</p>
 
-    <h3>Template Configuration</h3>
-    <p>Content coming soon...</p>
+    <h3 id="wp-generate">Generate Tab</h3>
+    <p>The Generate tab is where you create work package PDFs.</p>
 
-    <h3>Generating PDFs</h3>
-    <p>Content coming soon...</p>
+    <div class="placeholder">Screenshot: Generate tab (wp-generate-tab.png)</div>
+
+    <h4>Generation Settings</h4>
+    <table>
+        <tr>
+            <th>Field</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td><strong>Project</strong></td>
+            <td>Select the project to load its available work packages (required)</td>
+        </tr>
+        <tr>
+            <td><strong>Work Packages</strong></td>
+            <td>Check one or more work packages to generate. Use "Select All" or "Clear" buttons for convenience.</td>
+        </tr>
+        <tr>
+            <td><strong>WP Template</strong></td>
+            <td>Select which work package template defines the forms to include (required)</td>
+        </tr>
+        <tr>
+            <td><strong>PKG Manager</strong></td>
+            <td>Optional. Select a user to populate the {PKGManager} token in documents.</td>
+        </tr>
+        <tr>
+            <td><strong>Scheduler</strong></td>
+            <td>Optional. Select a user to populate the {Scheduler} token in documents.</td>
+        </tr>
+        <tr>
+            <td><strong>WP Name Pattern</strong></td>
+            <td>Define the output filename pattern using tokens. Example: <code>{WorkPackage}-{Area}</code></td>
+        </tr>
+        <tr>
+            <td><strong>Logo</strong></td>
+            <td>Use "(default)" for the built-in Summit logo, or browse to select a custom logo image</td>
+        </tr>
+        <tr>
+            <td><strong>Output Folder</strong></td>
+            <td>Where generated PDFs will be saved (required)</td>
+        </tr>
+        <tr>
+            <td><strong>Individual PDFs</strong></td>
+            <td>Check to also save each form as a separate PDF in addition to the merged document</td>
+        </tr>
+    </table>
+
+    <div class="note">
+        <div class="note-title">WP Name Pattern</div>
+        <p>Click the "+ Field" button to insert tokens at the cursor position. Common patterns:</p>
+        <ul>
+            <li><code>{WorkPackage}</code> — Just the work package ID</li>
+            <li><code>{WorkPackage}-{Area}</code> — Work package with area suffix</li>
+            <li><code>{Area}-{WorkPackage}-{UDF2}</code> — Custom combination</li>
+        </ul>
+    </div>
+
+    <h4>Generation Workflow</h4>
+    <ol>
+        <li>Select a <strong>Project</strong> to load available work packages</li>
+        <li>Check the <strong>Work Packages</strong> you want to generate</li>
+        <li>Select a <strong>WP Template</strong> that defines which forms to include</li>
+        <li>Optionally set <strong>PKG Manager</strong> and <strong>Scheduler</strong> for token replacement</li>
+        <li>Configure the <strong>WP Name Pattern</strong> for output filenames</li>
+        <li>Confirm or browse for a <strong>Logo</strong></li>
+        <li>Set the <strong>Output Folder</strong></li>
+        <li>Click <strong>GENERATE</strong></li>
+    </ol>
+    <p>The status bar shows progress during generation. When complete, a dialog displays the file paths or any errors encountered.</p>
+
+    <h4>Output Structure</h4>
+    <p>Generated files are organized as:</p>
+    <code>{OutputFolder}/{ProjectID}/{WPName}/</code>
+    <p>Each work package folder contains the merged PDF and optionally individual form PDFs.</p>
+
+    <h3 id="wp-templates">WP Templates Tab</h3>
+    <p>Work Package Templates define which forms are included in a work package and their order.</p>
+
+    <div class="placeholder">Screenshot: WP Templates tab (wp-templates-tab.png)</div>
+
+    <h4>Template Controls</h4>
+    <table>
+        <tr>
+            <th>Control</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td><strong>WP Template dropdown</strong></td>
+            <td>Select a template to edit, or choose "+ Add New" to create one</td>
+        </tr>
+        <tr>
+            <td><strong>Template Name</strong></td>
+            <td>Display name for this template</td>
+        </tr>
+        <tr>
+            <td><strong>Clone</strong></td>
+            <td>Create a copy of the current template</td>
+        </tr>
+        <tr>
+            <td><strong>Delete</strong></td>
+            <td>Remove the template (cannot delete built-in templates)</td>
+        </tr>
+        <tr>
+            <td><strong>Expiration Days</strong></td>
+            <td>Number of days until work package expires (1-365, default 14). Used by {ExpirationDate} token.</td>
+        </tr>
+        <tr>
+            <td><strong>Forms in WP</strong></td>
+            <td>Ordered list of form templates included in this work package</td>
+        </tr>
+        <tr>
+            <td><strong>+ Add Form</strong></td>
+            <td>Dropdown to add form templates to this work package</td>
+        </tr>
+        <tr>
+            <td><strong>▲ / ▼ / ✕</strong></td>
+            <td>Reorder forms or remove them from the template</td>
+        </tr>
+    </table>
+
+    <h4>Creating a WP Template</h4>
+    <ol>
+        <li>Select "+ Add New" from the WP Template dropdown</li>
+        <li>Enter a <strong>Template Name</strong></li>
+        <li>Set <strong>Expiration Days</strong> if different from default</li>
+        <li>Click <strong>+ Add Form</strong> and select forms in the order you want them</li>
+        <li>Use ▲/▼ buttons to reorder if needed</li>
+        <li>Click <strong>Save</strong></li>
+    </ol>
+
+    <div class="note">
+        <div class="note-title">Form Order</div>
+        <p>The order of forms in the list determines the page order in the generated PDF. The first form becomes the first page(s).</p>
+    </div>
+
+    <h3 id="wp-form-templates">Form Templates Tab</h3>
+    <p>Form Templates define individual pages in a work package. Five template types are available:</p>
+
+    <table>
+        <tr>
+            <th>Type</th>
+            <th>Purpose</th>
+        </tr>
+        <tr>
+            <td><strong>Cover</strong></td>
+            <td>Title page with image and optional footer</td>
+        </tr>
+        <tr>
+            <td><strong>List</strong></td>
+            <td>Table of contents or list of items</td>
+        </tr>
+        <tr>
+            <td><strong>Form</strong></td>
+            <td>Structured form with columns and sections</td>
+        </tr>
+        <tr>
+            <td><strong>Grid</strong></td>
+            <td>Empty grid for handwritten data entry</td>
+        </tr>
+        <tr>
+            <td><strong>Drawings</strong></td>
+            <td>Embedded drawing images (coming in future release)</td>
+        </tr>
+    </table>
+
+    <h4>Common Controls</h4>
+    <p>All form types share these controls:</p>
+    <ul>
+        <li><strong>Form Template dropdown</strong> — Select a template to edit or "+ Add New"</li>
+        <li><strong>Template Name</strong> — Display name for this form</li>
+        <li><strong>Clone / Delete</strong> — Copy or remove the template</li>
+        <li><strong>Reset Defaults</strong> — Revert built-in templates to original settings</li>
+        <li><strong>Save</strong> — Save changes to the database</li>
+    </ul>
+
+    <h4>Cover Form</h4>
+    <div class="placeholder">Screenshot: Cover form editor (wp-form-cover.png)</div>
+    <table>
+        <tr>
+            <th>Setting</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td><strong>Title</strong></td>
+            <td>Main title text displayed on the cover (default: "COVER SHEET")</td>
+        </tr>
+        <tr>
+            <td><strong>Cover Image</strong></td>
+            <td>Image displayed below title. Leave empty for default, or browse for custom.</td>
+        </tr>
+        <tr>
+            <td><strong>Image Width %</strong></td>
+            <td>Slider to adjust image size (20-100%, default 80%)</td>
+        </tr>
+        <tr>
+            <td><strong>Footer Text</strong></td>
+            <td>Optional text at bottom of page. Supports tokens like {PrintedDate}.</td>
+        </tr>
+    </table>
+
+    <h4>List Form</h4>
+    <div class="placeholder">Screenshot: List form editor (wp-form-list.png)</div>
+    <table>
+        <tr>
+            <th>Setting</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td><strong>Title</strong></td>
+            <td>Page title (default: "TABLE OF CONTENTS")</td>
+        </tr>
+        <tr>
+            <td><strong>Font Size Adjustment</strong></td>
+            <td>Slider to increase or decrease font size (-20% to +20%)</td>
+        </tr>
+        <tr>
+            <td><strong>Items</strong></td>
+            <td>List of items to display. Use dropdown for predefined items or type custom text.</td>
+        </tr>
+        <tr>
+            <td><strong>Footer Text</strong></td>
+            <td>Optional footer content</td>
+        </tr>
+    </table>
+
+    <p>Predefined list items include:</p>
+    <ul>
+        <li>"WP Doc Expiration Date" → <code>WP DOC EXPIRATION DATE: {ExpirationDate}</code></li>
+        <li>"Printed Date" → <code>PRINTED: {PrintedDate}</code></li>
+        <li>"WP Name" → <code>WP NAME: {WPName}</code></li>
+        <li>"Schedule Activity No" → <code>SCHEDULE ACTIVITY NO: {SchedActNO}</code></li>
+        <li>"Blank Line" — Adds empty space</li>
+        <li>"Line Separator" — Adds a horizontal divider</li>
+    </ul>
+
+    <h4>Form Type</h4>
+    <div class="placeholder">Screenshot: Form editor (wp-form-form.png)</div>
+    <table>
+        <tr>
+            <th>Setting</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td><strong>Title</strong></td>
+            <td>Form title (default: "FORM")</td>
+        </tr>
+        <tr>
+            <td><strong>Columns</strong></td>
+            <td>Define column headers and widths. Add columns with name and percentage width.</td>
+        </tr>
+        <tr>
+            <td><strong>Row Height Adjustment</strong></td>
+            <td>Slider to adjust row height (-20% to +20%)</td>
+        </tr>
+        <tr>
+            <td><strong>Font Size Adjustment</strong></td>
+            <td>Slider to adjust font size (-20% to +20%)</td>
+        </tr>
+        <tr>
+            <td><strong>Sections</strong></td>
+            <td>Organize form into named sections (e.g., "General Info", "Approvals")</td>
+        </tr>
+        <tr>
+            <td><strong>Section Items</strong></td>
+            <td>Add items/fields to each section. Items become table rows.</td>
+        </tr>
+        <tr>
+            <td><strong>Footer Text</strong></td>
+            <td>Optional footer content</td>
+        </tr>
+    </table>
+
+    <h4>Grid Form</h4>
+    <div class="placeholder">Screenshot: Grid form editor (wp-form-grid.png)</div>
+    <table>
+        <tr>
+            <th>Setting</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td><strong>Title</strong></td>
+            <td>Grid title (default: "GRID")</td>
+        </tr>
+        <tr>
+            <td><strong>Columns</strong></td>
+            <td>Define column headers and widths</td>
+        </tr>
+        <tr>
+            <td><strong>Row Count</strong></td>
+            <td>Number of empty rows for data entry (1-365, default 22)</td>
+        </tr>
+        <tr>
+            <td><strong>Row Height Adjustment</strong></td>
+            <td>Slider to adjust row height (-20% to +20%)</td>
+        </tr>
+        <tr>
+            <td><strong>Font Size Adjustment</strong></td>
+            <td>Slider to adjust header font size (-20% to +20%)</td>
+        </tr>
+        <tr>
+            <td><strong>Footer Text</strong></td>
+            <td>Optional footer content</td>
+        </tr>
+    </table>
+
+    <div class="note">
+        <div class="note-title">Grid vs Form</div>
+        <p>Use <strong>Grid</strong> when you need empty rows for handwritten data entry. Use <strong>Form</strong> when you want pre-populated rows with specific items in each cell.</p>
+    </div>
+
+    <h3 id="wp-tokens">Token System</h3>
+    <p>Tokens are placeholders replaced with dynamic values during PDF generation. Use the format <code>{TokenName}</code>.</p>
+
+    <h4>Date and User Tokens</h4>
+    <table>
+        <tr>
+            <th>Token</th>
+            <th>Value</th>
+        </tr>
+        <tr>
+            <td><code>{PrintedDate}</code></td>
+            <td>Current date when PDF is generated (MM/dd/yyyy)</td>
+        </tr>
+        <tr>
+            <td><code>{ExpirationDate}</code></td>
+            <td>Current date plus Expiration Days from WP template</td>
+        </tr>
+        <tr>
+            <td><code>{CurrentDate}</code></td>
+            <td>Current date (MM/dd/yyyy)</td>
+        </tr>
+        <tr>
+            <td><code>{CurrentTime}</code></td>
+            <td>Current time (hh:mm AM/PM)</td>
+        </tr>
+        <tr>
+            <td><code>{CurrentUser}</code></td>
+            <td>Full name of logged-in user</td>
+        </tr>
+        <tr>
+            <td><code>{PKGManager}</code></td>
+            <td>Full name of selected Package Manager</td>
+        </tr>
+        <tr>
+            <td><code>{Scheduler}</code></td>
+            <td>Full name of selected Scheduler</td>
+        </tr>
+    </table>
+
+    <h4>Work Package Tokens</h4>
+    <table>
+        <tr>
+            <th>Token</th>
+            <th>Value</th>
+        </tr>
+        <tr>
+            <td><code>{WorkPackage}</code></td>
+            <td>Work package ID being generated</td>
+        </tr>
+        <tr>
+            <td><code>{WPName}</code></td>
+            <td>Result of WP Name Pattern resolution</td>
+        </tr>
+    </table>
+
+    <h4>Project Tokens</h4>
+    <table>
+        <tr>
+            <th>Token</th>
+            <th>Value</th>
+        </tr>
+        <tr>
+            <td><code>{ProjectName}</code></td>
+            <td>Project description</td>
+        </tr>
+        <tr>
+            <td><code>{Phone}</code></td>
+            <td>Project phone number</td>
+        </tr>
+        <tr>
+            <td><code>{Fax}</code></td>
+            <td>Project fax number</td>
+        </tr>
+        <tr>
+            <td><code>{ProjectManager}</code></td>
+            <td>Project manager name</td>
+        </tr>
+        <tr>
+            <td><code>{SiteManager}</code></td>
+            <td>Site manager name</td>
+        </tr>
+    </table>
+
+    <h4>Activity Tokens</h4>
+    <p>These tokens pull values from activities in the selected work package:</p>
+    <table>
+        <tr>
+            <th>Token</th>
+            <th>Value</th>
+        </tr>
+        <tr>
+            <td><code>{SchedActNO}</code></td>
+            <td>Comma-separated list of distinct schedule activity numbers</td>
+        </tr>
+        <tr>
+            <td><code>{PhaseCode}</code></td>
+            <td>Comma-separated list of distinct phase codes</td>
+        </tr>
+        <tr>
+            <td><code>{Area}</code></td>
+            <td>Area value (first distinct value)</td>
+        </tr>
+        <tr>
+            <td><code>{SystemNO}</code></td>
+            <td>System number</td>
+        </tr>
+        <tr>
+            <td><code>{SubArea}</code></td>
+            <td>Sub-area value</td>
+        </tr>
+        <tr>
+            <td><code>{CompType}</code></td>
+            <td>Component type</td>
+        </tr>
+        <tr>
+            <td><code>{PhaseCategory}</code></td>
+            <td>Phase category</td>
+        </tr>
+        <tr>
+            <td><code>{UDF1}</code> through <code>{UDF10}</code></td>
+            <td>User-defined fields 1-10</td>
+        </tr>
+    </table>
+
+    <div class="note">
+        <div class="note-title">Token Resolution</div>
+        <p>Tokens are case-insensitive. If a token cannot be resolved, it appears as-is in the output (e.g., <code>{UnknownToken}</code>) so you can identify issues.</p>
+    </div>
+
+    <h3 id="wp-previewing">Previewing Templates</h3>
+    <p>The right panel displays a live preview of your templates.</p>
+
+    <h4>To Preview a Template</h4>
+    <ol>
+        <li>Select or edit a template in any tab</li>
+        <li>Click the <strong>Refresh Preview</strong> button</li>
+        <li>The PDF renders using sample data</li>
+    </ol>
+    <p>Use the preview to verify layout, token placement, and formatting before generating actual work packages.</p>
+
+    <div class="warning">
+        <div class="warning-title">Sample Data</div>
+        <p>Preview uses placeholder data for tokens. The actual generated PDFs will contain real project and activity data.</p>
+    </div>
 
     <!-- ============================================ -->
     <h2 id="progress-books">6. Progress Books</h2>

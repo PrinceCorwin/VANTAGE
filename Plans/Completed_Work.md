@@ -5,6 +5,13 @@ This document tracks completed features and fixes. Items are moved here from Pro
 ---
 
 ### January 19, 2026
+- Help Manual - Work Packages section written (manual.html):
+  - Added 7 subsections with TOC links: Overview, Layout, Generate Tab, WP Templates Tab, Form Templates Tab, Token System, Previewing Templates
+  - Documented Generate tab: all settings (Project, Work Packages, WP Template, PKG Manager, Scheduler, WP Name Pattern, Logo, Output Folder), workflow steps, output structure
+  - Documented WP Templates tab: template controls, forms list management, creation workflow
+  - Documented Form Templates tab: all 5 form types (Cover, List, Form, Grid, Drawings) with settings tables
+  - Documented complete token system: date/user tokens, work package tokens, project tokens, activity tokens (including UDF1-10)
+  - Added notes and warnings for key concepts (WP Name Pattern usage, Grid vs Form differences, sample data in preview)
 - Help Sidebar - Action buttons implemented:
   - Back to Top: scrolls WebView2 to top via JavaScript (window.scrollTo)
   - Print PDF: saves help content as PDF via WebView2.PrintToPdfAsync with SaveFileDialog

@@ -42,7 +42,6 @@
 - PDF preview testing
 
 ### Help Sidebar
-- Write Work Packages content
 - Write Progress Books content
 - Write Administration content
 - Write Reference content
