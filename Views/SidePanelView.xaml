@@ -119,39 +119,67 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- Search TextBox -->
-                <TextBox x:Name="txtSearch"
-                         Grid.Column="0"
-                         Padding="6,4"
-                         FontSize="12"
-                         Background="{StaticResource DarkestBackgroundColor}"
-                         Foreground="{StaticResource ForegroundColor}"
-                         BorderBrush="{StaticResource BorderColor}"
-                         BorderThickness="1"
-                         VerticalContentAlignment="Center"
-                         TextChanged="TxtSearch_TextChanged"
-                         KeyDown="TxtSearch_KeyDown">
-                    <TextBox.Style>
-                        <Style TargetType="TextBox">
-                            <Style.Triggers>
-                                <Trigger Property="Text" Value="">
-                                    <Setter Property="Background">
-                                        <Setter.Value>
-                                            <VisualBrush Stretch="None" AlignmentX="Left">
-                                                <VisualBrush.Visual>
-                                                    <TextBlock Text="  Search help..." 
-                                                               Foreground="#666666" 
-                                                               FontSize="12"
-                                                               Margin="4,0,0,0"/>
-                                                </VisualBrush.Visual>
-                                            </VisualBrush>
-                                        </Setter.Value>
-                                    </Setter>
-                                </Trigger>
-                            </Style.Triggers>
-                        </Style>
-                    </TextBox.Style>
-                </TextBox>
+                <!-- Search TextBox with Clear Button -->
+                <Grid Grid.Column="0">
+                    <TextBox x:Name="txtSearch"
+                             Padding="6,4,24,4"
+                             FontSize="12"
+                             Background="{StaticResource DarkestBackgroundColor}"
+                             Foreground="{StaticResource ForegroundColor}"
+                             BorderBrush="{StaticResource BorderColor}"
+                             BorderThickness="1"
+                             VerticalContentAlignment="Center"
+                             TextChanged="TxtSearch_TextChanged"
+                             KeyDown="TxtSearch_KeyDown"/>
+
+                    <!-- Placeholder text -->
+                    <TextBlock x:Name="txtSearchPlaceholder"
+                               Text="Search..."
+                               FontSize="12"
+                               FontStyle="Italic"
+                               Foreground="#666666"
+                               VerticalAlignment="Center"
+                               Margin="8,0,0,0"
+                               IsHitTestVisible="False">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Text, ElementName=txtSearch}" Value="">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+
+                    <!-- Clear button -->
+                    <Button x:Name="btnClearSearch"
+                            Content="✕"
+                            Width="20"
+                            Height="20"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            Margin="0,0,4,0"
+                            Background="Transparent"
+                            Foreground="{StaticResource TextColorSecondary}"
+                            BorderThickness="0"
+                            FontSize="10"
+                            Cursor="Hand"
+                            Click="BtnClearSearch_Click"
+                            ToolTip="Clear search">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Visibility" Value="Visible"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Text, ElementName=txtSearch}" Value="">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </Grid>
 
                 <!-- Previous Match Button -->
                 <Button x:Name="btnSearchPrev"

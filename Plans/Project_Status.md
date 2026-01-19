@@ -1,6 +1,6 @@
 # MILESTONE - Project Status
 
-**Last Updated:** January 18, 2026
+**Last Updated:** January 19, 2026
 
 ## V1 Testing Scope
 
@@ -32,7 +32,7 @@
 | Sync | COMPLETE | Bidirectional sync working |
 | Admin | COMPLETE | User/project/snapshot management |
 | Work Package | READY FOR TESTING | PDF generation working; Drawings deferred to post-v1 |
-| Help Sidebar | IN DEVELOPMENT | Infrastructure complete; search implemented; content writing in progress |
+| Help Sidebar | IN DEVELOPMENT | Search, action buttons complete; content writing in progress |
 | AI Features | NOT STARTED | Requires ClaudeApiService infrastructure first |
 
 ## Active Development
@@ -42,15 +42,11 @@
 - PDF preview testing
 
 ### Help Sidebar
-- Write Getting Started content
-- Write Progress Module content
-- Write Schedule Module content
 - Write Work Packages content
 - Write Progress Books content
 - Write Administration content
 - Write Reference content
 - Capture screenshots (45+ total)
-- Implement PDF export
 
 ## Feature Backlog
 

@@ -4,6 +4,16 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ---
 
+### January 19, 2026
+- Help Sidebar - Action buttons implemented:
+  - Back to Top: scrolls WebView2 to top via JavaScript (window.scrollTo)
+  - Print PDF: saves help content as PDF via WebView2.PrintToPdfAsync with SaveFileDialog
+  - View in Browser: opens manual.html in default browser via Process.Start with UseShellExecute
+- Help Sidebar - Search field improvements:
+  - Added clear button (✕) that appears when text is present
+  - Added italic "Search..." placeholder when field is empty
+  - Clear button clears search and refocuses input field
+
 ### January 18, 2026
 - **Auto-detecting Activity Import** - Consolidated Legacy and NewVantage imports into single smart import:
   - Added DetectFormat() method that identifies format by column headers (UDFNineteen/Val_Perc_Complete = Legacy, UniqueID/PercentEntry = NewVantage)
@@ -118,11 +128,8 @@ This document tracks completed features and fixes. Items are moved here from Pro
   - Added screenshot placeholders throughout
 - Documentation cleanup:
   - Merged Interactive_Help_Mode_Plan.md into Sidebar_Help_Plan.md
-  - Deleted Interactive_Help_Mode_Plan.md
-- Help Sidebar - UI simplification:
-  - Removed anchor-based navigation (always opens to beginning now)
-  - Replaced context header with action buttons row: Back to Top | Print PDF | View in Browser
-  - Buttons styled as clickable text (accent color, no borders)
+  - Deleted separate Interactive_Help_Mode_Plan.md, Sidebar_Help_Status.md
+  - Help navigation simplified: always opens to top of document (removed anchor navigation)
   - Removed IHelpAware interface and all implementations (no longer needed)
   - Deleted Interfaces/IHelpAware.cs and empty Interfaces folder
 

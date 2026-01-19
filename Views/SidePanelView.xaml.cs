@@ -230,19 +230,95 @@ namespace VANTAGE.Views
         // ACTION BUTTONS
         // ========================================
 
-        private void BtnBackToTop_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private async void BtnBackToTop_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            // TODO: Scroll WebView2 to top
+            if (!_webViewInitialized) return;
+
+            try
+            {
+                await webViewHelp.CoreWebView2.ExecuteScriptAsync("window.scrollTo(0, 0);");
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "SidePanelView.BtnBackToTop_Click");
+            }
         }
 
-        private void BtnPrintPdf_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private async void BtnPrintPdf_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            // TODO: Print help content to PDF
+            if (!_webViewInitialized) return;
+
+            try
+            {
+                var saveDialog = new Microsoft.Win32.SaveFileDialog
+                {
+                    Title = "Save Help as PDF",
+                    Filter = "PDF Files (*.pdf)|*.pdf",
+                    FileName = "MILESTONE_User_Manual.pdf",
+                    DefaultExt = ".pdf"
+                };
+
+                if (saveDialog.ShowDialog() == true)
+                {
+                    await webViewHelp.CoreWebView2.PrintToPdfAsync(saveDialog.FileName);
+
+                    // Ask if user wants to open the PDF
+                    var result = MessageBox.Show(
+                        $"PDF saved to:\n{saveDialog.FileName}\n\nOpen now?",
+                        "PDF Saved",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Information);
+
+                    if (result == MessageBoxResult.Yes)
+                    {
+                        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                        {
+                            FileName = saveDialog.FileName,
+                            UseShellExecute = true
+                        });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "SidePanelView.BtnPrintPdf_Click");
+                MessageBox.Show($"Failed to save PDF: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void BtnViewInBrowser_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            // TODO: Open help HTML in default browser
+            try
+            {
+                string helpPath = System.IO.Path.Combine(
+                    AppDomain.CurrentDomain.BaseDirectory,
+                    "Help",
+                    "manual.html");
+
+                if (System.IO.File.Exists(helpPath))
+                {
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = helpPath,
+                        UseShellExecute = true
+                    });
+                }
+                else
+                {
+                    MessageBox.Show("Help file not found.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "SidePanelView.BtnViewInBrowser_Click");
+                MessageBox.Show($"Failed to open browser: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void BtnClearSearch_Click(object sender, RoutedEventArgs e)
+        {
+            ClearSearch();
+            txtSearch.Focus();
         }
 
         // ========================================
