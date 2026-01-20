@@ -1,24 +1,315 @@
-﻿<UserControl x:Class="VANTAGE.Views.ProgressBooksView"
+<UserControl x:Class="VANTAGE.Views.ProgressBooksView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
-             d:DesignHeight="600" d:DesignWidth="1200"
+             d:DesignHeight="700" d:DesignWidth="1200"
              Background="{StaticResource BackgroundColor}">
 
-    <Grid>
-        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-            <TextBlock Text="Progress Books"
-                       FontSize="32"
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="15"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header with title and layout selector -->
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="20"/>
+                <ColumnDefinition Width="200"/>
+                <ColumnDefinition Width="10"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Column="0"
+                       Text="Progress Book Layout Builder"
+                       FontSize="24"
                        FontWeight="Bold"
                        Foreground="{StaticResource AccentColor}"
-                       HorizontalAlignment="Center"
-                       Margin="0,0,0,20"/>
-            <TextBlock Text="This module is under development."
-                       FontSize="16"
-                       Foreground="{StaticResource TextColorSecondary}"
-                       HorizontalAlignment="Center"/>
-        </StackPanel>
+                       VerticalAlignment="Center"/>
+
+            <ComboBox x:Name="cboSavedLayouts"
+                      Grid.Column="2"
+                      Height="30"
+                      VerticalContentAlignment="Center"
+                      ToolTip="Load a saved layout"
+                      SelectionChanged="CboSavedLayouts_SelectionChanged"/>
+
+            <Button x:Name="btnDeleteLayout"
+                    Grid.Column="4"
+                    Content="Delete"
+                    Width="70"
+                    Height="30"
+                    Background="{StaticResource ControlBackground}"
+                    Foreground="{StaticResource StatusRed}"
+                    BorderBrush="{StaticResource ControlBorder}"
+                    ToolTip="Delete the selected layout"
+                    Click="BtnDeleteLayout_Click"
+                    IsEnabled="False"/>
+
+            <StackPanel Grid.Column="6" Orientation="Horizontal">
+                <Button x:Name="btnSaveLayout"
+                        Content="Save Layout"
+                        Width="100"
+                        Height="30"
+                        Margin="0,0,10,0"
+                        Background="{StaticResource ControlBackground}"
+                        Foreground="{StaticResource StatusGreen}"
+                        BorderBrush="{StaticResource ControlBorder}"
+                        ToolTip="Save current layout configuration"
+                        Click="BtnSaveLayout_Click"/>
+                <Button x:Name="btnGenerateBook"
+                        Content="Generate Progress Book"
+                        Width="160"
+                        Height="30"
+                        Background="{StaticResource AccentColor}"
+                        Foreground="White"
+                        BorderBrush="{StaticResource AccentColor}"
+                        FontWeight="SemiBold"
+                        ToolTip="Generate a PDF progress book with this layout"
+                        Click="BtnGenerateBook_Click"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Main content area with two columns -->
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="400"/>
+                <ColumnDefinition Width="20"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Left panel: Configuration -->
+            <Border Grid.Column="0"
+                    Background="{StaticResource ControlBackground}"
+                    BorderBrush="{StaticResource ControlBorder}"
+                    BorderThickness="1"
+                    CornerRadius="4"
+                    Padding="15">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <!-- Layout Name -->
+                        <TextBlock Text="Layout Name"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource ForegroundColor}"
+                                   Margin="0,0,0,5"/>
+                        <TextBox x:Name="txtLayoutName"
+                                 Height="30"
+                                 VerticalContentAlignment="Center"
+                                 Padding="5,0"
+                                 ToolTip="Name for this layout configuration"/>
+
+                        <!-- Paper Size -->
+                        <TextBlock Text="Paper Size"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource ForegroundColor}"
+                                   Margin="0,20,0,5"/>
+                        <StackPanel Orientation="Horizontal">
+                            <RadioButton x:Name="rbLetter"
+                                         Content="Letter (8.5&quot; x 11&quot;)"
+                                         Foreground="{StaticResource ForegroundColor}"
+                                         IsChecked="True"
+                                         Margin="0,0,20,0"
+                                         ToolTip="Standard letter size, landscape orientation"/>
+                            <RadioButton x:Name="rbTabloid"
+                                         Content="Tabloid (11&quot; x 17&quot;)"
+                                         Foreground="{StaticResource ForegroundColor}"
+                                         ToolTip="Larger tabloid size, landscape orientation"/>
+                        </StackPanel>
+
+                        <!-- Font Size -->
+                        <TextBlock Text="Font Size"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource ForegroundColor}"
+                                   Margin="0,20,0,5"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="80"/>
+                            </Grid.ColumnDefinitions>
+                            <Slider x:Name="sliderFontSize"
+                                    Grid.Column="0"
+                                    Minimum="8"
+                                    Maximum="14"
+                                    Value="10"
+                                    TickFrequency="1"
+                                    IsSnapToTickEnabled="True"
+                                    VerticalAlignment="Center"
+                                    ValueChanged="SliderFontSize_ValueChanged"/>
+                            <TextBlock x:Name="txtFontSizeDisplay"
+                                       Grid.Column="1"
+                                       Text="10pt"
+                                       Foreground="{StaticResource ForegroundColor}"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Right"/>
+                        </Grid>
+                        <TextBlock x:Name="txtDescFontNote"
+                                   Text="(DESC column will render at 9pt)"
+                                   FontSize="11"
+                                   Foreground="{StaticResource TextColorSecondary}"
+                                   Margin="0,2,0,0"/>
+
+                        <!-- Main Grouping -->
+                        <TextBlock Text="Main Group By"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource ForegroundColor}"
+                                   Margin="0,20,0,5"/>
+                        <ComboBox x:Name="cboMainGroup"
+                                  Height="30"
+                                  VerticalContentAlignment="Center"
+                                  ToolTip="Primary grouping field for the progress book"/>
+
+                        <TextBlock Text="Sort Within Group"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource ForegroundColor}"
+                                   Margin="0,10,0,5"/>
+                        <ComboBox x:Name="cboMainSort"
+                                  Height="30"
+                                  VerticalContentAlignment="Center"
+                                  ToolTip="How to sort records within each main group"/>
+
+                        <!-- Sub-Groups -->
+                        <Grid Margin="0,20,0,5">
+                            <TextBlock Text="Sub-Groups"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource ForegroundColor}"/>
+                            <Button x:Name="btnAddSubGroup"
+                                    Content="+ Add"
+                                    Width="60"
+                                    Height="24"
+                                    HorizontalAlignment="Right"
+                                    Background="{StaticResource ControlBackground}"
+                                    Foreground="{StaticResource StatusGreen}"
+                                    BorderBrush="{StaticResource ControlBorder}"
+                                    FontSize="11"
+                                    ToolTip="Add a sub-grouping level"
+                                    Click="BtnAddSubGroup_Click"/>
+                        </Grid>
+                        <ListBox x:Name="lstSubGroups"
+                                 MinHeight="60"
+                                 MaxHeight="150"
+                                 Background="{StaticResource BackgroundColor}"
+                                 BorderBrush="{StaticResource ControlBorder}"
+                                 ToolTip="Sub-group levels (groups must be Zone 2 columns)"/>
+                        <TextBlock Text="Sub-groups must use columns from Zone 2"
+                                   FontSize="11"
+                                   Foreground="{StaticResource TextColorSecondary}"
+                                   Margin="0,2,0,0"/>
+
+                        <!-- Zone 2 Columns -->
+                        <Grid Margin="0,20,0,5">
+                            <TextBlock Text="Zone 2 Columns (Flexible)"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource ForegroundColor}"/>
+                            <Button x:Name="btnAddColumn"
+                                    Content="+ Add"
+                                    Width="60"
+                                    Height="24"
+                                    HorizontalAlignment="Right"
+                                    Background="{StaticResource ControlBackground}"
+                                    Foreground="{StaticResource StatusGreen}"
+                                    BorderBrush="{StaticResource ControlBorder}"
+                                    FontSize="11"
+                                    ToolTip="Add a column to Zone 2"
+                                    Click="BtnAddColumn_Click"/>
+                        </Grid>
+                        <ListBox x:Name="lstColumns"
+                                 MinHeight="120"
+                                 MaxHeight="250"
+                                 Background="{StaticResource BackgroundColor}"
+                                 BorderBrush="{StaticResource ControlBorder}"
+                                 AllowDrop="True"
+                                 ToolTip="Drag to reorder columns. ROC and DESC are required."/>
+                        <TextBlock Text="ROC and DESC are required. Widths are relative (prorated)."
+                                   FontSize="11"
+                                   Foreground="{StaticResource TextColorSecondary}"
+                                   Margin="0,2,0,0"/>
+
+                        <!-- Zone Summary -->
+                        <Border Background="{StaticResource BackgroundColor}"
+                                BorderBrush="{StaticResource ControlBorder}"
+                                BorderThickness="1"
+                                CornerRadius="4"
+                                Padding="10"
+                                Margin="0,20,0,0">
+                            <StackPanel>
+                                <TextBlock Text="Layout Zones"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource AccentColor}"
+                                           Margin="0,0,0,8"/>
+                                <TextBlock Text="Zone 1 (5%): UniqueID"
+                                           Foreground="{StaticResource TextColorSecondary}"
+                                           FontSize="12"/>
+                                <TextBlock x:Name="txtZone2Summary"
+                                           Text="Zone 2 (45%): Your columns"
+                                           Foreground="{StaticResource TextColorSecondary}"
+                                           FontSize="12"
+                                           Margin="0,3,0,0"/>
+                                <TextBlock Text="Zone 3 (50%): REM QTY | REM MH | CUR QTY | CUR % | DONE | QTY | %"
+                                           Foreground="{StaticResource TextColorSecondary}"
+                                           FontSize="12"
+                                           TextWrapping="Wrap"
+                                           Margin="0,3,0,0"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+
+            <!-- Right panel: Preview -->
+            <Border Grid.Column="2"
+                    Background="{StaticResource ControlBackground}"
+                    BorderBrush="{StaticResource ControlBorder}"
+                    BorderThickness="1"
+                    CornerRadius="4">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Preview header -->
+                    <Border Grid.Row="0"
+                            Background="{StaticResource BackgroundColor}"
+                            Padding="15,10">
+                        <Grid>
+                            <TextBlock Text="Preview"
+                                       FontWeight="SemiBold"
+                                       FontSize="14"
+                                       Foreground="{StaticResource ForegroundColor}"/>
+                            <Button x:Name="btnRefreshPreview"
+                                    Content="↻ Refresh"
+                                    Width="80"
+                                    Height="26"
+                                    HorizontalAlignment="Right"
+                                    Background="{StaticResource ControlBackground}"
+                                    Foreground="{StaticResource ForegroundColor}"
+                                    BorderBrush="{StaticResource ControlBorder}"
+                                    FontSize="12"
+                                    ToolTip="Regenerate preview with current settings"
+                                    Click="BtnRefreshPreview_Click"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Preview content placeholder -->
+                    <Grid Grid.Row="1" Margin="15">
+                        <TextBlock x:Name="txtPreviewPlaceholder"
+                                   Text="Preview will appear here after generating.&#x0a;&#x0a;Click 'Refresh' to generate a preview with sample data."
+                                   Foreground="{StaticResource TextColorSecondary}"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   TextAlignment="Center"
+                                   FontSize="14"/>
+
+                        <!-- PDF Viewer will be added here in Phase 5 -->
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
     </Grid>
 </UserControl>

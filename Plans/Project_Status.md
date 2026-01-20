@@ -13,7 +13,7 @@
 | Admin | Complete |
 | Work Package (PDF generation) | Ready for testing (drawings hidden) |
 | Help Sidebar | Content writing in progress |
-| Progress Book creation | Needs implementation |
+| Progress Book creation | In development (Phases 1-3 complete) |
 
 ### Deferred to Post-V1
 | Feature | Reason |
@@ -37,6 +37,13 @@
 
 ## Active Development
 
+### Progress Book Module
+- Phases 1-3 complete: Data models, repository, layout builder UI
+- Phase 4 pending: PDF generator
+- Phase 5 pending: Live preview
+- Phase 6 pending: Generate dialog
+- AI Scan phases pending (7-14)
+
 ### Work Package Module
 - Template editors testing
 - PDF preview testing
@@ -50,7 +57,6 @@
 ## Feature Backlog
 
 ### High Priority
-- Progress Book creation
 - Add Offline Indicator in status bar - clickable to retry connection
 
 ### Medium Priority

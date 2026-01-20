@@ -347,6 +347,17 @@ namespace VANTAGE
                 CreatedUtc TEXT NOT NULL
             );
 
+            -- ProgressBookLayouts table (local only - Progress Book layout definitions)
+            CREATE TABLE IF NOT EXISTS ProgressBookLayouts (
+                Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                Name TEXT NOT NULL,
+                ProjectId TEXT NOT NULL,
+                CreatedBy TEXT NOT NULL,
+                CreatedUtc TEXT NOT NULL,
+                UpdatedUtc TEXT NOT NULL,
+                ConfigurationJson TEXT NOT NULL
+            );
+
             -- Indexes for performance
             CREATE INDEX IF NOT EXISTS idx_project ON Activities(ProjectID);
             CREATE INDEX IF NOT EXISTS idx_area ON Activities(Area);
@@ -362,6 +373,8 @@ namespace VANTAGE
             CREATE INDEX IF NOT EXISTS idx_formtemplate_name ON FormTemplates(TemplateName);
             CREATE INDEX IF NOT EXISTS idx_formtemplate_type ON FormTemplates(TemplateType);
             CREATE INDEX IF NOT EXISTS idx_wptemplate_name ON WPTemplates(WPTemplateName);
+            CREATE INDEX IF NOT EXISTS idx_pblayout_projectid ON ProgressBookLayouts(ProjectId);
+            CREATE INDEX IF NOT EXISTS idx_pblayout_name ON ProgressBookLayouts(Name);
         ";
 
                 command.ExecuteNonQuery();

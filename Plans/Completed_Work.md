@@ -5,6 +5,27 @@ This document tracks completed features and fixes. Items are moved here from Pro
 ---
 
 ### January 19, 2026
+- **Progress Book Module - Phases 1-3 complete:**
+  - Phase 1: Created data models in `Models/ProgressBook/`:
+    - PaperSize.cs (Letter/Tabloid enum)
+    - ColumnConfig.cs (Zone 2 column configuration)
+    - SubGroupConfig.cs (sub-group level config)
+    - ProgressBookConfiguration.cs (full layout config, serialized to JSON)
+    - ProgressBookLayout.cs (database entity)
+  - Phase 1: Added ProgressBookLayouts table to DatabaseSetup.cs with indexes
+  - Phase 2: Created ProgressBookLayoutRepository.cs with full CRUD operations
+  - Phase 3: Built Layout Builder UI in ProgressBooksView.xaml:
+    - Layout name input and saved layouts dropdown
+    - Paper size radio buttons (Letter/Tabloid landscape)
+    - Font size slider (8-14pt)
+    - Main group dropdown with starred common fields
+    - Sub-groups section with add/remove
+    - Zone 2 columns list with width inputs and remove buttons
+    - Zone summary panel and preview placeholder
+  - Phase 3: Created SelectFieldDialog.xaml for adding columns
+  - Updated PRD with implementation decisions (Syncfusion PDF, 1 page/call, GlobalSettings limits)
+
+
 - Help Manual - Work Packages section written (manual.html):
   - Added 7 subsections with TOC links: Overview, Layout, Generate Tab, WP Templates Tab, Form Templates Tab, Token System, Previewing Templates
   - Documented Generate tab: all settings (Project, Work Packages, WP Template, PKG Manager, Scheduler, WP Name Pattern, Logo, Output Folder), workflow steps, output structure
