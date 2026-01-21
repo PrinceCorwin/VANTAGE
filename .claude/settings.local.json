@@ -14,7 +14,8 @@
       "Bash(git push)",
       "Bash(dotnet add package:*)",
       "Bash(git push:*)",
-      "Bash(sqlite3:*)"
+      "Bash(sqlite3:*)",
+      "Bash(wc:*)"
     ]
   }
 }

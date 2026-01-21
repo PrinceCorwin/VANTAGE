@@ -3,313 +3,379 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:pdfviewer="clr-namespace:Syncfusion.Windows.PdfViewer;assembly=Syncfusion.PdfViewer.WPF"
+             xmlns:skinManager="clr-namespace:Syncfusion.SfSkinManager;assembly=Syncfusion.SfSkinManager.WPF"
+             skinManager:SfSkinManager.Theme="{skinManager:SkinManagerExtension ThemeName=FluentDark}"
              mc:Ignorable="d"
              d:DesignHeight="700" d:DesignWidth="1200"
              Background="{StaticResource BackgroundColor}">
 
-    <Grid Margin="20">
+    <UserControl.Resources>
+        <!-- Default TextBlock style for visibility on dark background -->
+        <Style TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource ForegroundColor}"/>
+        </Style>
+
+        <!-- Default TextBox style matching Admin dialogs -->
+        <Style TargetType="TextBox">
+            <Setter Property="Height" Value="28"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Background" Value="{StaticResource BackgroundColor}"/>
+            <Setter Property="Foreground" Value="{StaticResource ForegroundColor}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}"/>
+            <Setter Property="Padding" Value="5,3"/>
+        </Style>
+
+        <!-- Rounded Button Style -->
+        <Style x:Key="RoundedButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource ControlBackground}"/>
+            <Setter Property="Foreground" Value="{StaticResource ForegroundColor}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="15,8"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                Padding="{TemplateBinding Padding}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4">
+                            <ContentPresenter Content="{TemplateBinding Content}"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource AccentColor}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource ControlBorder}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Primary Button Style (for Generate button) -->
+        <Style x:Key="PrimaryButtonStyle" TargetType="Button" BasedOn="{StaticResource RoundedButtonStyle}">
+            <Setter Property="Background" Value="{StaticResource AccentColor}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Padding" Value="20,10"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="15"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Header with title and layout selector -->
-        <Grid Grid.Row="0">
+        <!-- Header Bar -->
+        <Border Grid.Row="0" Background="{StaticResource ControlBackground}" Padding="15,10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0"
+                           Text="Progress Books"
+                           FontSize="18"
+                           FontWeight="Bold"
+                           VerticalAlignment="Center"/>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                    <Button x:Name="btnGenerateBook"
+                            Content="GENERATE"
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            ToolTip="Generate a PDF progress book with this layout"
+                            Click="BtnGenerateBook_Click"
+                            MinWidth="120"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Main Content - Split View -->
+        <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="20"/>
-                <ColumnDefinition Width="200"/>
-                <ColumnDefinition Width="10"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition x:Name="LeftPanelColumn" Width="6*" MinWidth="350"/>
+                <ColumnDefinition Width="5"/>
+                <ColumnDefinition x:Name="RightPanelColumn" Width="4*" MinWidth="300"/>
             </Grid.ColumnDefinitions>
 
-            <TextBlock Grid.Column="0"
-                       Text="Progress Book Layout Builder"
-                       FontSize="24"
-                       FontWeight="Bold"
-                       Foreground="{StaticResource AccentColor}"
-                       VerticalAlignment="Center"/>
+            <!-- Left Panel - Configuration -->
+            <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto" Padding="15">
+                <StackPanel>
+                    <!-- Layout Selection -->
+                    <TextBlock Text="Layout" FontWeight="Bold" Margin="0,0,0,5"/>
+                    <ComboBox x:Name="cboSavedLayouts"
+                              ToolTip="Load a saved layout"
+                              SelectionChanged="CboSavedLayouts_SelectionChanged"
+                              Margin="0,0,0,10"/>
 
-            <ComboBox x:Name="cboSavedLayouts"
-                      Grid.Column="2"
-                      Height="30"
-                      VerticalContentAlignment="Center"
-                      ToolTip="Load a saved layout"
-                      SelectionChanged="CboSavedLayouts_SelectionChanged"/>
-
-            <Button x:Name="btnDeleteLayout"
-                    Grid.Column="4"
-                    Content="Delete"
-                    Width="70"
-                    Height="30"
-                    Background="{StaticResource ControlBackground}"
-                    Foreground="{StaticResource StatusRed}"
-                    BorderBrush="{StaticResource ControlBorder}"
-                    ToolTip="Delete the selected layout"
-                    Click="BtnDeleteLayout_Click"
-                    IsEnabled="False"/>
-
-            <StackPanel Grid.Column="6" Orientation="Horizontal">
-                <Button x:Name="btnSaveLayout"
-                        Content="Save Layout"
-                        Width="100"
-                        Height="30"
-                        Margin="0,0,10,0"
-                        Background="{StaticResource ControlBackground}"
-                        Foreground="{StaticResource StatusGreen}"
-                        BorderBrush="{StaticResource ControlBorder}"
-                        ToolTip="Save current layout configuration"
-                        Click="BtnSaveLayout_Click"/>
-                <Button x:Name="btnGenerateBook"
-                        Content="Generate Progress Book"
-                        Width="160"
-                        Height="30"
-                        Background="{StaticResource AccentColor}"
-                        Foreground="White"
-                        BorderBrush="{StaticResource AccentColor}"
-                        FontWeight="SemiBold"
-                        ToolTip="Generate a PDF progress book with this layout"
-                        Click="BtnGenerateBook_Click"/>
-            </StackPanel>
-        </Grid>
-
-        <!-- Main content area with two columns -->
-        <Grid Grid.Row="2">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="400"/>
-                <ColumnDefinition Width="20"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-
-            <!-- Left panel: Configuration -->
-            <Border Grid.Column="0"
-                    Background="{StaticResource ControlBackground}"
-                    BorderBrush="{StaticResource ControlBorder}"
-                    BorderThickness="1"
-                    CornerRadius="4"
-                    Padding="15">
-                <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <StackPanel>
-                        <!-- Layout Name -->
-                        <TextBlock Text="Layout Name"
-                                   FontWeight="SemiBold"
-                                   Foreground="{StaticResource ForegroundColor}"
-                                   Margin="0,0,0,5"/>
-                        <TextBox x:Name="txtLayoutName"
-                                 Height="30"
-                                 VerticalContentAlignment="Center"
-                                 Padding="5,0"
-                                 ToolTip="Name for this layout configuration"/>
-
-                        <!-- Paper Size -->
-                        <TextBlock Text="Paper Size"
-                                   FontWeight="SemiBold"
-                                   Foreground="{StaticResource ForegroundColor}"
-                                   Margin="0,20,0,5"/>
-                        <StackPanel Orientation="Horizontal">
-                            <RadioButton x:Name="rbLetter"
-                                         Content="Letter (8.5&quot; x 11&quot;)"
-                                         Foreground="{StaticResource ForegroundColor}"
-                                         IsChecked="True"
-                                         Margin="0,0,20,0"
-                                         ToolTip="Standard letter size, landscape orientation"/>
-                            <RadioButton x:Name="rbTabloid"
-                                         Content="Tabloid (11&quot; x 17&quot;)"
-                                         Foreground="{StaticResource ForegroundColor}"
-                                         ToolTip="Larger tabloid size, landscape orientation"/>
-                        </StackPanel>
-
-                        <!-- Font Size -->
-                        <TextBlock Text="Font Size"
-                                   FontWeight="SemiBold"
-                                   Foreground="{StaticResource ForegroundColor}"
-                                   Margin="0,20,0,5"/>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="80"/>
-                            </Grid.ColumnDefinitions>
-                            <Slider x:Name="sliderFontSize"
-                                    Grid.Column="0"
-                                    Minimum="8"
-                                    Maximum="14"
-                                    Value="10"
-                                    TickFrequency="1"
-                                    IsSnapToTickEnabled="True"
-                                    VerticalAlignment="Center"
-                                    ValueChanged="SliderFontSize_ValueChanged"/>
-                            <TextBlock x:Name="txtFontSizeDisplay"
-                                       Grid.Column="1"
-                                       Text="10pt"
-                                       Foreground="{StaticResource ForegroundColor}"
-                                       VerticalAlignment="Center"
-                                       HorizontalAlignment="Right"/>
-                        </Grid>
-                        <TextBlock x:Name="txtDescFontNote"
-                                   Text="(DESC column will render at 9pt)"
-                                   FontSize="11"
-                                   Foreground="{StaticResource TextColorSecondary}"
-                                   Margin="0,2,0,0"/>
-
-                        <!-- Main Grouping -->
-                        <TextBlock Text="Main Group By"
-                                   FontWeight="SemiBold"
-                                   Foreground="{StaticResource ForegroundColor}"
-                                   Margin="0,20,0,5"/>
-                        <ComboBox x:Name="cboMainGroup"
-                                  Height="30"
-                                  VerticalContentAlignment="Center"
-                                  ToolTip="Primary grouping field for the progress book"/>
-
-                        <TextBlock Text="Sort Within Group"
-                                   FontWeight="SemiBold"
-                                   Foreground="{StaticResource ForegroundColor}"
-                                   Margin="0,10,0,5"/>
-                        <ComboBox x:Name="cboMainSort"
-                                  Height="30"
-                                  VerticalContentAlignment="Center"
-                                  ToolTip="How to sort records within each main group"/>
-
-                        <!-- Sub-Groups -->
-                        <Grid Margin="0,20,0,5">
-                            <TextBlock Text="Sub-Groups"
-                                       FontWeight="SemiBold"
-                                       Foreground="{StaticResource ForegroundColor}"/>
-                            <Button x:Name="btnAddSubGroup"
-                                    Content="+ Add"
-                                    Width="60"
-                                    Height="24"
-                                    HorizontalAlignment="Right"
-                                    Background="{StaticResource ControlBackground}"
-                                    Foreground="{StaticResource StatusGreen}"
-                                    BorderBrush="{StaticResource ControlBorder}"
-                                    FontSize="11"
-                                    ToolTip="Add a sub-grouping level"
-                                    Click="BtnAddSubGroup_Click"/>
-                        </Grid>
-                        <ListBox x:Name="lstSubGroups"
-                                 MinHeight="60"
-                                 MaxHeight="150"
-                                 Background="{StaticResource BackgroundColor}"
-                                 BorderBrush="{StaticResource ControlBorder}"
-                                 ToolTip="Sub-group levels (groups must be Zone 2 columns)"/>
-                        <TextBlock Text="Sub-groups must use columns from Zone 2"
-                                   FontSize="11"
-                                   Foreground="{StaticResource TextColorSecondary}"
-                                   Margin="0,2,0,0"/>
-
-                        <!-- Zone 2 Columns -->
-                        <Grid Margin="0,20,0,5">
-                            <TextBlock Text="Zone 2 Columns (Flexible)"
-                                       FontWeight="SemiBold"
-                                       Foreground="{StaticResource ForegroundColor}"/>
-                            <Button x:Name="btnAddColumn"
-                                    Content="+ Add"
-                                    Width="60"
-                                    Height="24"
-                                    HorizontalAlignment="Right"
-                                    Background="{StaticResource ControlBackground}"
-                                    Foreground="{StaticResource StatusGreen}"
-                                    BorderBrush="{StaticResource ControlBorder}"
-                                    FontSize="11"
-                                    ToolTip="Add a column to Zone 2"
-                                    Click="BtnAddColumn_Click"/>
-                        </Grid>
-                        <ListBox x:Name="lstColumns"
-                                 MinHeight="120"
-                                 MaxHeight="250"
-                                 Background="{StaticResource BackgroundColor}"
-                                 BorderBrush="{StaticResource ControlBorder}"
-                                 AllowDrop="True"
-                                 ToolTip="Drag to reorder columns. ROC and DESC are required."/>
-                        <TextBlock Text="ROC and DESC are required. Widths are relative (prorated)."
-                                   FontSize="11"
-                                   Foreground="{StaticResource TextColorSecondary}"
-                                   Margin="0,2,0,0"/>
-
-                        <!-- Zone Summary -->
-                        <Border Background="{StaticResource BackgroundColor}"
-                                BorderBrush="{StaticResource ControlBorder}"
-                                BorderThickness="1"
-                                CornerRadius="4"
-                                Padding="10"
-                                Margin="0,20,0,0">
-                            <StackPanel>
-                                <TextBlock Text="Layout Zones"
-                                           FontWeight="SemiBold"
-                                           Foreground="{StaticResource AccentColor}"
-                                           Margin="0,0,0,8"/>
-                                <TextBlock Text="Zone 1 (5%): UniqueID"
-                                           Foreground="{StaticResource TextColorSecondary}"
-                                           FontSize="12"/>
-                                <TextBlock x:Name="txtZone2Summary"
-                                           Text="Zone 2 (45%): Your columns"
-                                           Foreground="{StaticResource TextColorSecondary}"
-                                           FontSize="12"
-                                           Margin="0,3,0,0"/>
-                                <TextBlock Text="Zone 3 (50%): REM QTY | REM MH | CUR QTY | CUR % | DONE | QTY | %"
-                                           Foreground="{StaticResource TextColorSecondary}"
-                                           FontSize="12"
-                                           TextWrapping="Wrap"
-                                           Margin="0,3,0,0"/>
-                            </StackPanel>
-                        </Border>
+                    <!-- Clone/Delete Buttons (directly under Layout dropdown) -->
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                        <Button Content="Clone" Click="BtnCloneLayout_Click" Padding="8,4" Margin="0,0,10,0" ToolTip="Create a copy of this layout"/>
+                        <Button x:Name="btnDeleteLayout" Content="Delete" Click="BtnDeleteLayout_Click" Padding="8,4" ToolTip="Delete this layout"/>
                     </StackPanel>
-                </ScrollViewer>
-            </Border>
 
-            <!-- Right panel: Preview -->
-            <Border Grid.Column="2"
-                    Background="{StaticResource ControlBackground}"
-                    BorderBrush="{StaticResource ControlBorder}"
-                    BorderThickness="1"
-                    CornerRadius="4">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
+                    <!-- Name -->
+                    <TextBlock Text="Name" FontWeight="Bold" Margin="0,0,0,5"/>
+                    <TextBox x:Name="txtLayoutName"
+                             ToolTip="Name for this layout configuration"
+                             Margin="0,0,0,15"/>
 
-                    <!-- Preview header -->
-                    <Border Grid.Row="0"
-                            Background="{StaticResource BackgroundColor}"
-                            Padding="15,10">
-                        <Grid>
-                            <TextBlock Text="Preview"
-                                       FontWeight="SemiBold"
-                                       FontSize="14"
-                                       Foreground="{StaticResource ForegroundColor}"/>
-                            <Button x:Name="btnRefreshPreview"
-                                    Content="↻ Refresh"
-                                    Width="80"
-                                    Height="26"
-                                    HorizontalAlignment="Right"
-                                    Background="{StaticResource ControlBackground}"
-                                    Foreground="{StaticResource ForegroundColor}"
-                                    BorderBrush="{StaticResource ControlBorder}"
-                                    FontSize="12"
-                                    ToolTip="Regenerate preview with current settings"
-                                    Click="BtnRefreshPreview_Click"/>
-                        </Grid>
-                    </Border>
+                    <Separator Margin="0,0,0,15"/>
 
-                    <!-- Preview content placeholder -->
-                    <Grid Grid.Row="1" Margin="15">
+                    <!-- Paper Size -->
+                    <TextBlock Text="Paper Size" FontWeight="Bold" Margin="0,0,0,5"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+                        <RadioButton x:Name="rbLetter"
+                                     Content="Letter (11&quot; x 8.5&quot;)"
+                                     IsChecked="True"
+                                     Foreground="{StaticResource ForegroundColor}"
+                                     Margin="0,0,20,0"
+                                     Checked="PaperSize_Changed"
+                                     ToolTip="Standard letter size, landscape orientation"/>
+                        <RadioButton x:Name="rbTabloid"
+                                     Content="Tabloid (17&quot; x 11&quot;)"
+                                     Foreground="{StaticResource ForegroundColor}"
+                                     Checked="PaperSize_Changed"
+                                     ToolTip="Larger tabloid size, landscape orientation"/>
+                    </StackPanel>
+
+                    <!-- Font Size -->
+                    <TextBlock x:Name="txtFontSizeLabel" Text="Font Size: 10pt" FontWeight="Bold" Margin="0,0,0,5"/>
+                    <Slider x:Name="sliderFontSize"
+                            Minimum="4"
+                            Maximum="10"
+                            Value="6"
+                            TickFrequency="1"
+                            IsSnapToTickEnabled="True"
+                            ValueChanged="SliderFontSize_ValueChanged"
+                            Margin="0,0,0,5"/>
+                    <TextBlock x:Name="txtDescFontNote"
+                               Text="(DESC column renders at 9pt)"
+                               FontSize="11"
+                               Foreground="{StaticResource TextColorSecondary}"
+                               Margin="0,0,0,15"/>
+
+                    <!-- Select Progress Book(s) - Filter -->
+                    <TextBlock Text="Select Progress Book(s)" FontWeight="Bold" Margin="0,0,0,5"/>
+                    <Grid Margin="0,0,0,15">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="10"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="Column" FontSize="11" Foreground="{StaticResource TextColorSecondary}"/>
+                        <TextBlock Grid.Column="2" Text="Value" FontSize="11" Foreground="{StaticResource TextColorSecondary}"/>
+                        <ComboBox x:Name="cboFilterColumn"
+                                  Grid.Row="1"
+                                  ToolTip="Field to filter records by"
+                                  SelectionChanged="FilterColumn_SelectionChanged"/>
+                        <ComboBox x:Name="cboFilterValue"
+                                  Grid.Row="1"
+                                  Grid.Column="2"
+                                  ToolTip="Value to filter - this becomes the Progress Book name in the header"
+                                  SelectionChanged="FilterValue_SelectionChanged"/>
+                    </Grid>
+
+                    <Separator Margin="0,0,0,15"/>
+
+                    <!-- Grouping (groups are auto-sorted alphanumerically) -->
+                    <TextBlock Text="Grouping" FontWeight="Bold" Margin="0,0,0,5"/>
+                    <ItemsControl x:Name="icGroups" Margin="0,0,0,10">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <ComboBox ItemsSource="{Binding AvailableFields}"
+                                              SelectedItem="{Binding GroupField, Mode=TwoWay}"
+                                              ToolTip="Group by this field (sorted alphanumerically)"/>
+                                    <Button Grid.Column="1"
+                                            Content="✕"
+                                            Padding="6,2"
+                                            Margin="5,0,0,0"
+                                            Visibility="{Binding CanDelete, Converter={StaticResource BoolToVisibilityConverter}}"
+                                            Click="BtnRemoveGroup_Click"
+                                            Tag="{Binding Index}"
+                                            ToolTip="Remove this grouping level"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <Button x:Name="btnAddGroup"
+                            Content="+ Add Group"
+                            Click="BtnAddGroup_Click"
+                            Padding="8,4"
+                            HorizontalAlignment="Left"
+                            Margin="0,0,0,15"
+                            ToolTip="Add another grouping level (max 10)"/>
+
+                    <Separator Margin="0,0,0,15"/>
+
+                    <!-- Zone 2 Columns (auto-fit widths) -->
+                    <TextBlock Text="Columns" FontWeight="Bold" Margin="0,0,0,5"/>
+                    <Grid Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <ListBox x:Name="lstColumns"
+                                 Height="180"
+                                 Background="{StaticResource BackgroundColor}"
+                                 BorderBrush="{StaticResource BorderColor}"
+                                 ToolTip="Columns auto-size to fit content. UniqueID, ROC and DESC are required."/>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="10,0,0,0">
+                            <Button Content="▲" Click="BtnMoveColumnUp_Click" Padding="8,4" Margin="0,0,0,5" ToolTip="Move up"/>
+                            <Button Content="▼" Click="BtnMoveColumnDown_Click" Padding="8,4" Margin="0,0,0,5" ToolTip="Move down"/>
+                            <Button Content="✕" Click="BtnRemoveColumn_Click" Padding="8,4" ToolTip="Remove"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Add Column Row -->
+                    <Grid Margin="0,0,0,15">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <ComboBox x:Name="cboAddColumn"
+                                  ToolTip="Select a field to add"/>
+                        <Button Grid.Column="1"
+                                Content="+ Add"
+                                Click="BtnAddColumn_Click"
+                                Padding="8,4"
+                                Margin="5,0,0,0"
+                                ToolTip="Add column to list"/>
+                    </Grid>
+
+                    <Separator Margin="0,0,0,15"/>
+
+                    <!-- Sort (stacking sort like Excel) -->
+                    <TextBlock Text="Sort" FontWeight="Bold" Margin="0,0,0,5"/>
+                    <ItemsControl x:Name="icSortFields" Margin="0,0,0,10">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <ComboBox ItemsSource="{Binding AvailableFields}"
+                                              SelectedItem="{Binding SortField, Mode=TwoWay}"
+                                              ToolTip="Sort by this field (stacks with other sorts like Excel)"/>
+                                    <Button Grid.Column="1"
+                                            Content="✕"
+                                            Padding="6,2"
+                                            Margin="5,0,0,0"
+                                            Visibility="{Binding CanDelete, Converter={StaticResource BoolToVisibilityConverter}}"
+                                            Click="BtnRemoveSort_Click"
+                                            Tag="{Binding Index}"
+                                            ToolTip="Remove this sort level"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <Button x:Name="btnAddSort"
+                            Content="+ Add Sort"
+                            Click="BtnAddSort_Click"
+                            Padding="8,4"
+                            HorizontalAlignment="Left"
+                            Margin="0,0,0,15"
+                            ToolTip="Add another sort level (max 10)"/>
+
+                    <Separator Margin="0,0,0,15"/>
+
+                    <!-- Zone Summary -->
+                    <TextBlock Text="Layout Zones" FontWeight="Bold" Foreground="{StaticResource AccentColor}" Margin="0,0,0,8"/>
+                    <TextBlock x:Name="txtZone2Summary"
+                               Text="Left (auto-fit): Your columns"
+                               FontSize="12"
+                               Foreground="{StaticResource TextColorSecondary}"/>
+                    <TextBlock Text="Right (fixed): REM QTY | REM MH | CUR QTY | CUR % | DONE | QTY | %"
+                               FontSize="12"
+                               Foreground="{StaticResource TextColorSecondary}"
+                               TextWrapping="Wrap"
+                               Margin="0,3,0,15"/>
+
+                    <!-- Save Button -->
+                    <Button x:Name="btnSaveLayout"
+                            Content="Save"
+                            Style="{StaticResource RoundedButtonStyle}"
+                            Click="BtnSaveLayout_Click"
+                            HorizontalAlignment="Right"
+                            MinWidth="100"/>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- GridSplitter -->
+            <GridSplitter Grid.Column="1"
+                          Width="5"
+                          HorizontalAlignment="Stretch"
+                          Background="{StaticResource BorderColor}"
+                          Cursor="SizeWE"
+                          DragCompleted="GridSplitter_DragCompleted"/>
+
+            <!-- Right Panel - Preview -->
+            <Grid Grid.Column="2" Background="{StaticResource ControlBackground}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Preview Header -->
+                <Border Grid.Row="0" Background="{StaticResource BackgroundColor}" Padding="10">
+                    <TextBlock Text="PREVIEW" FontWeight="Bold" VerticalAlignment="Center"/>
+                </Border>
+
+                <!-- Preview Content -->
+                <Grid Grid.Row="1" Margin="5">
+                    <!-- Placeholder shown before preview is generated -->
+                    <Border x:Name="previewPlaceholderBorder"
+                            Background="{StaticResource ControlBackground}"
+                            BorderBrush="{StaticResource BorderColor}"
+                            BorderThickness="1">
                         <TextBlock x:Name="txtPreviewPlaceholder"
-                                   Text="Preview will appear here after generating.&#x0a;&#x0a;Click 'Refresh' to generate a preview with sample data."
-                                   Foreground="{StaticResource TextColorSecondary}"
+                                   Text="PDF Preview Area&#x0a;&#x0a;Click 'Refresh Preview' to generate"
                                    HorizontalAlignment="Center"
                                    VerticalAlignment="Center"
                                    TextAlignment="Center"
-                                   FontSize="14"/>
-
-                        <!-- PDF Viewer will be added here in Phase 5 -->
-                    </Grid>
+                                   Foreground="{StaticResource TextColorSecondary}"
+                                   FontStyle="Italic"/>
+                    </Border>
+                    <!-- PDF Viewer for preview -->
+                    <pdfviewer:PdfViewerControl x:Name="pdfViewer"
+                                                 Visibility="Collapsed"
+                                                 EnableNotificationBar="False"/>
                 </Grid>
-            </Border>
+
+                <!-- Refresh Button -->
+                <Border Grid.Row="2" Background="{StaticResource BackgroundColor}" Padding="10">
+                    <Button x:Name="btnRefreshPreview"
+                            Content="Refresh Preview"
+                            Style="{StaticResource RoundedButtonStyle}"
+                            Click="BtnRefreshPreview_Click"
+                            HorizontalAlignment="Center"/>
+                </Border>
+            </Grid>
         </Grid>
     </Grid>
 </UserControl>

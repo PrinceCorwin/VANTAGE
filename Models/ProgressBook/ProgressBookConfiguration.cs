@@ -9,21 +9,27 @@ namespace VANTAGE.Models.ProgressBook
         [JsonPropertyName("paperSize")]
         public PaperSize PaperSize { get; set; } = PaperSize.Letter;
 
-        // Font size for data rows (8-14pt)
+        // Font size for data rows (4-10pt)
         [JsonPropertyName("fontSize")]
-        public int FontSize { get; set; } = 10;
+        public int FontSize { get; set; } = 6;
 
-        // Main grouping field (e.g., PhaseCode, Area)
-        [JsonPropertyName("mainGroupField")]
-        public string MainGroupField { get; set; } = string.Empty;
+        // Filter field for selecting which records to include (e.g., WorkPackage, Area)
+        [JsonPropertyName("filterField")]
+        public string FilterField { get; set; } = string.Empty;
 
-        // Sort field within main group
-        [JsonPropertyName("mainGroupSortField")]
-        public string MainGroupSortField { get; set; } = string.Empty;
+        // Filter value - the selected progress book identifier (appears in PDF header)
+        [JsonPropertyName("filterValue")]
+        public string FilterValue { get; set; } = string.Empty;
 
-        // Optional sub-group levels
-        [JsonPropertyName("subGroups")]
-        public List<SubGroupConfig> SubGroups { get; set; } = new();
+        // Group fields for organizing data (up to 10 levels)
+        // Groups are always sorted alphanumerically
+        [JsonPropertyName("groups")]
+        public List<string> Groups { get; set; } = new();
+
+        // Sort fields for ordering records within groups (up to 10, stacking like Excel)
+        // "None" values are skipped during sorting
+        [JsonPropertyName("sortFields")]
+        public List<string> SortFields { get; set; } = new();
 
         // Zone 2 columns (flexible middle section)
         // Note: ROC and DESC are always required
@@ -37,13 +43,15 @@ namespace VANTAGE.Models.ProgressBook
             {
                 PaperSize = PaperSize.Letter,
                 FontSize = 10,
-                MainGroupField = "PhaseCode",
-                MainGroupSortField = "Description",
-                SubGroups = new List<SubGroupConfig>(),
+                FilterField = "WorkPackage",
+                FilterValue = string.Empty,
+                Groups = new List<string> { "PhaseCode" },
+                SortFields = new List<string> { "ROCStep" },
                 Columns = new List<ColumnConfig>
                 {
-                    new ColumnConfig { FieldName = "ROC", Width = 15, DisplayOrder = 0 },
-                    new ColumnConfig { FieldName = "Description", Width = 60, DisplayOrder = 1 }
+                    new ColumnConfig { FieldName = "UniqueID", DisplayOrder = 0 },
+                    new ColumnConfig { FieldName = "ROCStep", DisplayOrder = 1 },
+                    new ColumnConfig { FieldName = "Description", DisplayOrder = 2 }
                 }
             };
         }

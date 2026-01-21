@@ -1,10 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
+using System.Windows.Controls.Primitives;
+using VANTAGE.Data;
+using VANTAGE.Dialogs;
 using VANTAGE.Models.ProgressBook;
 using VANTAGE.Services.ProgressBook;
 using VANTAGE.Utilities;
@@ -16,16 +20,37 @@ namespace VANTAGE.Views
         // Currently loaded layout (null = new unsaved layout)
         private ProgressBookLayout? _currentLayout;
 
-        // Observable collections for UI binding
+        // Column data
         private ObservableCollection<ColumnDisplayItem> _columns = new();
-        private ObservableCollection<SubGroupDisplayItem> _subGroups = new();
+
+        // Groups for the ItemsControl (just field names, auto-sorted alphanumerically)
+        private ObservableCollection<GroupItemViewModel> _groups = new();
+
+        // Sort fields for the ItemsControl (stacking sort like Excel)
+        private ObservableCollection<SortItemViewModel> _sortFields = new();
 
         // Available fields for grouping and columns
         private List<string> _allFields = new();
-        private List<string> _commonFields = new() { "PhaseCode", "Area", "UDF2", "TagNO", "Commodity", "SystemNO" };
+        private List<string> _commonFields = new() { "PhaseCode", "Area", "SubArea", "SystemNO", "WorkPackage", "TagNO" };
 
         // Flag to prevent recursive updates
         private bool _isLoading;
+
+        // Track unsaved changes to warn user before switching layouts
+        private bool _hasUnsavedChanges;
+
+        // PDF preview stream (kept alive while viewer displays it)
+        private MemoryStream? _previewStream;
+
+        // Constant for default layout name
+        private const string DefaultLayoutName = "Default Layout";
+
+        // Maximum groups and sorts allowed
+        private const int MaxGroups = 10;
+        private const int MaxSorts = 10;
+
+        // Special value for "None" sort option
+        private const string NoneSortValue = "None";
 
         public ProgressBooksView()
         {
@@ -42,6 +67,7 @@ namespace VANTAGE.Views
                 PopulateDropdowns();
                 await LoadSavedLayoutsAsync();
                 LoadDefaultConfiguration();
+                RestoreSplitterPosition();
             }
             finally
             {
@@ -49,13 +75,34 @@ namespace VANTAGE.Views
             }
         }
 
+        // Restore splitter position from user settings
+        private void RestoreSplitterPosition()
+        {
+            var splitterRatio = SettingsManager.GetUserSetting("ProgressBook.SplitterRatio");
+            if (!string.IsNullOrEmpty(splitterRatio) && double.TryParse(splitterRatio, out double ratio) && ratio > 0 && ratio < 1)
+            {
+                LeftPanelColumn.Width = new GridLength(ratio, GridUnitType.Star);
+                RightPanelColumn.Width = new GridLength(1 - ratio, GridUnitType.Star);
+            }
+        }
+
+        // Save splitter position when drag completes
+        private void GridSplitter_DragCompleted(object sender, DragCompletedEventArgs e)
+        {
+            double totalWidth = LeftPanelColumn.ActualWidth + RightPanelColumn.ActualWidth;
+            if (totalWidth > 0)
+            {
+                double leftRatio = LeftPanelColumn.ActualWidth / totalWidth;
+                SettingsManager.SetUserSetting("ProgressBook.SplitterRatio", leftRatio.ToString("F4"), "string");
+            }
+        }
+
         // Initialize the list of available Activity fields
         private void InitializeFieldLists()
         {
-            // Fields available for grouping and columns (from Activity model)
             _allFields = new List<string>
             {
-                "ActivityID", "Area", "ChgOrdNO", "CompType", "Description", "DwgNO",
+                "Area", "ChgOrdNO", "CompType", "Description", "DwgNO",
                 "EqmtNO", "HtTrace", "InsulType", "LineNumber", "MtrlSpec", "Notes",
                 "PaintCode", "PhaseCategory", "PhaseCode", "PipeGrade", "ProjectID",
                 "RespParty", "RevNO", "RFINO", "ROCStep", "SchedActNO", "SecondDwgNO",
@@ -66,24 +113,41 @@ namespace VANTAGE.Views
             _allFields.Sort();
         }
 
-        // Populate the main group and sort dropdowns
+        // Populate the dropdowns
         private void PopulateDropdowns()
         {
-            // Main group dropdown - common fields first with star, then all others
-            var mainGroupItems = new List<string>();
+            // Filter column dropdown - common fields first with star, then all
+            var filterColumnItems = new List<string>();
             foreach (var field in _commonFields)
             {
-                mainGroupItems.Add($"★ {field}");
+                filterColumnItems.Add($"★ {field}");
             }
-            mainGroupItems.Add("───────────");
-            mainGroupItems.AddRange(_allFields);
+            filterColumnItems.Add("───────────");
+            filterColumnItems.AddRange(_allFields);
 
-            cboMainGroup.ItemsSource = mainGroupItems;
-            cboMainGroup.SelectedIndex = 0; // Default to PhaseCode
+            cboFilterColumn.ItemsSource = filterColumnItems;
+            cboFilterColumn.SelectedIndex = 4; // WorkPackage
 
-            // Sort dropdown - all fields
-            cboMainSort.ItemsSource = _allFields;
-            cboMainSort.SelectedItem = "Description";
+            // Add column dropdown - all fields
+            RefreshAddColumnDropdown();
+        }
+
+        // Refresh the add column dropdown (exclude already added columns)
+        private void RefreshAddColumnDropdown()
+        {
+            var usedFields = _columns.Select(c => c.FieldName).ToHashSet();
+            var available = _allFields.Where(f => !usedFields.Contains(f)).ToList();
+            cboAddColumn.ItemsSource = available;
+            if (available.Count > 0)
+                cboAddColumn.SelectedIndex = 0;
+        }
+
+        // Get the sort field options (None + columns)
+        private List<string> GetSortFieldOptions()
+        {
+            var options = new List<string> { NoneSortValue };
+            options.AddRange(_columns.Select(c => c.FieldName));
+            return options;
         }
 
         // Load saved layouts into the dropdown
@@ -94,35 +158,57 @@ namespace VANTAGE.Views
             var layouts = await ProgressBookLayoutRepository.GetAllForUserAsync(App.CurrentUser.Username);
             var items = new List<LayoutDropdownItem>
             {
-                new LayoutDropdownItem { Id = 0, Name = "(New Layout)" }
+                new LayoutDropdownItem { Id = 0, Name = DefaultLayoutName }
             };
             items.AddRange(layouts.Select(l => new LayoutDropdownItem { Id = l.Id, Name = l.Name }));
 
             cboSavedLayouts.ItemsSource = items;
             cboSavedLayouts.DisplayMemberPath = "Name";
             cboSavedLayouts.SelectedIndex = 0;
+
+            UpdateDeleteButtonState();
         }
 
         // Load default configuration for a new layout
         private void LoadDefaultConfiguration()
         {
             _currentLayout = null;
-            txtLayoutName.Text = string.Empty;
+            txtLayoutName.Text = DefaultLayoutName;
             rbLetter.IsChecked = true;
-            sliderFontSize.Value = 10;
+            sliderFontSize.Value = 6;
 
-            // Default columns: ROC and Description (required)
+            // Default filter: WorkPackage
+            SetFilterColumnSelection("WorkPackage");
+            cboFilterValue.ItemsSource = null;
+            cboFilterValue.SelectedItem = null;
+
+            // Default columns: UniqueID, ROC and Description (required, auto-sized)
             _columns.Clear();
-            _columns.Add(new ColumnDisplayItem { FieldName = "ROCStep", Width = 15, IsRequired = true });
-            _columns.Add(new ColumnDisplayItem { FieldName = "Description", Width = 60, IsRequired = true });
+            _columns.Add(new ColumnDisplayItem { FieldName = "UniqueID", IsRequired = true });
+            _columns.Add(new ColumnDisplayItem { FieldName = "ROCStep", IsRequired = true });
+            _columns.Add(new ColumnDisplayItem { FieldName = "Description", IsRequired = true });
             RefreshColumnsListBox();
 
-            // No sub-groups by default
-            _subGroups.Clear();
-            RefreshSubGroupsListBox();
+            // Default grouping: PhaseCode
+            _groups.Clear();
+            AddGroup("PhaseCode", canDelete: false);
+            RefreshGroups();
 
-            btnDeleteLayout.IsEnabled = false;
+            // Default sort: ROCStep
+            _sortFields.Clear();
+            AddSortField("ROCStep", canDelete: false);
+            RefreshSortFields();
+
+            RefreshAddColumnDropdown();
             UpdateZone2Summary();
+            UpdateDeleteButtonState();
+            UpdateAddGroupButtonState();
+            UpdateAddSortButtonState();
+
+            // Load filter values for default column
+            _ = LoadFilterValuesAsync();
+
+            _hasUnsavedChanges = false;
         }
 
         // Load a saved layout configuration
@@ -136,45 +222,60 @@ namespace VANTAGE.Views
 
                 var config = layout.GetConfiguration();
 
-                // Paper size
                 rbLetter.IsChecked = config.PaperSize == PaperSize.Letter;
                 rbTabloid.IsChecked = config.PaperSize == PaperSize.Tabloid;
-
-                // Font size
                 sliderFontSize.Value = config.FontSize;
 
-                // Main grouping
-                SetMainGroupSelection(config.MainGroupField);
-                cboMainSort.SelectedItem = config.MainGroupSortField;
+                // Load filter settings
+                SetFilterColumnSelection(config.FilterField);
 
-                // Columns
+                // Load columns
                 _columns.Clear();
                 foreach (var col in config.Columns.OrderBy(c => c.DisplayOrder))
                 {
-                    bool isRequired = col.FieldName == "ROCStep" || col.FieldName == "Description";
+                    bool isRequired = col.FieldName == "UniqueID" || col.FieldName == "ROCStep" || col.FieldName == "Description";
                     _columns.Add(new ColumnDisplayItem
                     {
                         FieldName = col.FieldName,
-                        Width = col.Width,
                         IsRequired = isRequired
                     });
                 }
                 RefreshColumnsListBox();
 
-                // Sub-groups
-                _subGroups.Clear();
-                foreach (var sg in config.SubGroups)
+                // Load groups
+                _groups.Clear();
+                for (int i = 0; i < config.Groups.Count; i++)
                 {
-                    _subGroups.Add(new SubGroupDisplayItem
-                    {
-                        GroupField = sg.GroupField,
-                        SortField = sg.SortField
-                    });
+                    AddGroup(config.Groups[i], canDelete: i > 0);
                 }
-                RefreshSubGroupsListBox();
+                if (_groups.Count == 0)
+                {
+                    AddGroup("PhaseCode", canDelete: false);
+                }
+                RefreshGroups();
 
-                btnDeleteLayout.IsEnabled = true;
+                // Load sort fields
+                _sortFields.Clear();
+                for (int i = 0; i < config.SortFields.Count; i++)
+                {
+                    AddSortField(config.SortFields[i], canDelete: i > 0);
+                }
+                if (_sortFields.Count == 0)
+                {
+                    AddSortField("ROCStep", canDelete: false);
+                }
+                RefreshSortFields();
+
+                RefreshAddColumnDropdown();
                 UpdateZone2Summary();
+                UpdateDeleteButtonState();
+                UpdateAddGroupButtonState();
+                UpdateAddSortButtonState();
+
+                // Load filter values then set selected value
+                _ = LoadFilterValuesAsync(config.FilterValue);
+
+                _hasUnsavedChanges = false;
             }
             finally
             {
@@ -182,36 +283,170 @@ namespace VANTAGE.Views
             }
         }
 
-        // Set the main group dropdown to the specified field
-        private void SetMainGroupSelection(string fieldName)
+        // Set the filter column dropdown to the specified field
+        private void SetFilterColumnSelection(string fieldName)
         {
-            // Try to find the starred version first
+            if (string.IsNullOrEmpty(fieldName))
+                fieldName = "WorkPackage";
+
             var starredVersion = $"★ {fieldName}";
-            var items = cboMainGroup.ItemsSource as List<string>;
+            var items = cboFilterColumn.ItemsSource as List<string>;
             if (items != null)
             {
                 var starredIndex = items.IndexOf(starredVersion);
                 if (starredIndex >= 0)
                 {
-                    cboMainGroup.SelectedIndex = starredIndex;
+                    cboFilterColumn.SelectedIndex = starredIndex;
                     return;
                 }
                 var normalIndex = items.IndexOf(fieldName);
                 if (normalIndex >= 0)
                 {
-                    cboMainGroup.SelectedIndex = normalIndex;
+                    cboFilterColumn.SelectedIndex = normalIndex;
                 }
             }
         }
 
-        // Get the currently selected main group field (without the star)
-        private string GetSelectedMainGroupField()
+        // Get the currently selected filter column field (without the star)
+        private string GetSelectedFilterColumn()
         {
-            var selected = cboMainGroup.SelectedItem as string;
+            var selected = cboFilterColumn.SelectedItem as string;
             if (string.IsNullOrEmpty(selected) || selected.StartsWith("──"))
-                return "PhaseCode"; // Default
-
+                return "WorkPackage";
             return selected.Replace("★ ", "");
+        }
+
+        // Load distinct filter values for the selected column
+        private async System.Threading.Tasks.Task LoadFilterValuesAsync(string? selectValue = null)
+        {
+            try
+            {
+                var filterColumn = GetSelectedFilterColumn();
+                var username = App.CurrentUser?.Username ?? "";
+
+                // Query distinct values for this column from user's records
+                var whereClause = $"AssignedTo = '{username}' AND {filterColumn} IS NOT NULL AND {filterColumn} != ''";
+                var (activities, _) = await ActivityRepository.GetAllActivitiesAsync(whereClause);
+
+                // Get distinct values using reflection
+                var distinctValues = activities
+                    .Select(a => GetActivityFieldValue(a, filterColumn))
+                    .Where(v => !string.IsNullOrEmpty(v))
+                    .Distinct()
+                    .OrderBy(v => v)
+                    .ToList();
+
+                cboFilterValue.ItemsSource = distinctValues;
+
+                // Select the specified value or first available
+                if (!string.IsNullOrEmpty(selectValue) && distinctValues.Contains(selectValue))
+                {
+                    cboFilterValue.SelectedItem = selectValue;
+                }
+                else if (distinctValues.Count > 0)
+                {
+                    cboFilterValue.SelectedIndex = 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "ProgressBooksView.LoadFilterValuesAsync");
+            }
+        }
+
+        // Get a field value from an Activity using reflection
+        private string? GetActivityFieldValue(Models.Activity activity, string fieldName)
+        {
+            try
+            {
+                var prop = typeof(Models.Activity).GetProperty(fieldName,
+                    System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.IgnoreCase);
+                return prop?.GetValue(activity)?.ToString();
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        // Add a group to the collection
+        private void AddGroup(string groupField, bool canDelete)
+        {
+            var group = new GroupItemViewModel
+            {
+                Index = _groups.Count,
+                GroupField = groupField,
+                CanDelete = canDelete,
+                AvailableFields = _allFields
+            };
+            group.PropertyChanged += Group_PropertyChanged;
+            _groups.Add(group);
+        }
+
+        // Add a sort field to the collection
+        private void AddSortField(string sortField, bool canDelete)
+        {
+            var sort = new SortItemViewModel
+            {
+                Index = _sortFields.Count,
+                SortField = sortField,
+                CanDelete = canDelete,
+                AvailableFields = GetSortFieldOptions()
+            };
+            sort.PropertyChanged += SortField_PropertyChanged;
+            _sortFields.Add(sort);
+        }
+
+        // Handle changes to group properties
+        private void Group_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (!_isLoading)
+                _hasUnsavedChanges = true;
+        }
+
+        // Handle changes to sort field properties
+        private void SortField_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (!_isLoading)
+                _hasUnsavedChanges = true;
+        }
+
+        // Refresh the groups ItemsControl
+        private void RefreshGroups()
+        {
+            for (int i = 0; i < _groups.Count; i++)
+            {
+                _groups[i].Index = i;
+                _groups[i].CanDelete = i > 0;
+            }
+            icGroups.ItemsSource = null;
+            icGroups.ItemsSource = _groups;
+        }
+
+        // Refresh the sort fields ItemsControl
+        private void RefreshSortFields()
+        {
+            var sortOptions = GetSortFieldOptions();
+            for (int i = 0; i < _sortFields.Count; i++)
+            {
+                _sortFields[i].Index = i;
+                _sortFields[i].CanDelete = i > 0;
+                _sortFields[i].AvailableFields = sortOptions;
+            }
+            icSortFields.ItemsSource = null;
+            icSortFields.ItemsSource = _sortFields;
+        }
+
+        // Update the Add Group button enabled state
+        private void UpdateAddGroupButtonState()
+        {
+            btnAddGroup.IsEnabled = _groups.Count < MaxGroups;
+        }
+
+        // Update the Add Sort button enabled state
+        private void UpdateAddSortButtonState()
+        {
+            btnAddSort.IsEnabled = _sortFields.Count < MaxSorts;
         }
 
         // Build the current configuration from UI controls
@@ -221,235 +456,57 @@ namespace VANTAGE.Views
             {
                 PaperSize = rbLetter.IsChecked == true ? PaperSize.Letter : PaperSize.Tabloid,
                 FontSize = (int)sliderFontSize.Value,
-                MainGroupField = GetSelectedMainGroupField(),
-                MainGroupSortField = cboMainSort.SelectedItem as string ?? "Description"
+                FilterField = GetSelectedFilterColumn(),
+                FilterValue = cboFilterValue.SelectedItem as string ?? string.Empty
             };
 
-            // Columns with order
+            // Add groups
+            foreach (var group in _groups)
+            {
+                config.Groups.Add(group.GroupField);
+            }
+
+            // Add columns
             int order = 0;
             foreach (var col in _columns)
             {
                 config.Columns.Add(new ColumnConfig
                 {
                     FieldName = col.FieldName,
-                    Width = col.Width,
                     DisplayOrder = order++
                 });
             }
 
-            // Sub-groups
-            foreach (var sg in _subGroups)
+            // Add sort fields (skip "None" values)
+            foreach (var sort in _sortFields)
             {
-                config.SubGroups.Add(new SubGroupConfig
-                {
-                    GroupField = sg.GroupField,
-                    SortField = sg.SortField
-                });
+                config.SortFields.Add(sort.SortField);
             }
 
             return config;
         }
 
-        // Refresh the columns ListBox display
+        // Refresh the columns ListBox with simple text items (widths are auto-calculated)
         private void RefreshColumnsListBox()
         {
             lstColumns.Items.Clear();
             foreach (var col in _columns)
             {
-                var item = CreateColumnListItem(col);
-                lstColumns.Items.Add(item);
-            }
-        }
-
-        // Create a ListBox item for a column
-        private Grid CreateColumnListItem(ColumnDisplayItem col)
-        {
-            var grid = new Grid { Tag = col, Height = 32, Margin = new Thickness(0, 2, 0, 2) };
-            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(25) });
-            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(60) });
-            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(60) });
-
-            // Drag handle
-            var dragHandle = new TextBlock
-            {
-                Text = "≡",
-                FontSize = 16,
-                VerticalAlignment = VerticalAlignment.Center,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                Cursor = Cursors.SizeAll,
-                Foreground = (System.Windows.Media.Brush)FindResource("TextColorSecondary")
-            };
-            Grid.SetColumn(dragHandle, 0);
-            grid.Children.Add(dragHandle);
-
-            // Field name
-            var fieldText = new TextBlock
-            {
-                Text = col.FieldName + (col.IsRequired ? " *" : ""),
-                VerticalAlignment = VerticalAlignment.Center,
-                Foreground = (System.Windows.Media.Brush)FindResource("ForegroundColor")
-            };
-            Grid.SetColumn(fieldText, 1);
-            grid.Children.Add(fieldText);
-
-            // Width input
-            var widthBox = new TextBox
-            {
-                Text = col.Width.ToString(),
-                Width = 50,
-                Height = 24,
-                VerticalContentAlignment = VerticalAlignment.Center,
-                HorizontalContentAlignment = HorizontalAlignment.Center,
-                Tag = col
-            };
-            widthBox.LostFocus += WidthBox_LostFocus;
-            Grid.SetColumn(widthBox, 2);
-            grid.Children.Add(widthBox);
-
-            // Remove button (disabled for required columns)
-            if (!col.IsRequired)
-            {
-                var removeBtn = new Button
-                {
-                    Content = "✕",
-                    Width = 24,
-                    Height = 24,
-                    Background = System.Windows.Media.Brushes.Transparent,
-                    Foreground = (System.Windows.Media.Brush)FindResource("StatusRed"),
-                    BorderThickness = new Thickness(0),
-                    Tag = col,
-                    ToolTip = "Remove column"
-                };
-                removeBtn.Click += RemoveColumn_Click;
-                Grid.SetColumn(removeBtn, 3);
-                grid.Children.Add(removeBtn);
+                string display = col.IsRequired
+                    ? $"{col.FieldName} *"
+                    : col.FieldName;
+                lstColumns.Items.Add(display);
             }
 
-            return grid;
-        }
-
-        // Width textbox lost focus - validate and update
-        private void WidthBox_LostFocus(object sender, RoutedEventArgs e)
-        {
-            if (sender is TextBox tb && tb.Tag is ColumnDisplayItem col)
-            {
-                if (int.TryParse(tb.Text, out int width) && width >= 1 && width <= 100)
-                {
-                    col.Width = width;
-                }
-                else
-                {
-                    tb.Text = col.Width.ToString();
-                }
-                UpdateZone2Summary();
-            }
-        }
-
-        // Remove column button click
-        private void RemoveColumn_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is Button btn && btn.Tag is ColumnDisplayItem col)
-            {
-                _columns.Remove(col);
-                RefreshColumnsListBox();
-                UpdateZone2Summary();
-            }
-        }
-
-        // Refresh the sub-groups ListBox display
-        private void RefreshSubGroupsListBox()
-        {
-            lstSubGroups.Items.Clear();
-            foreach (var sg in _subGroups)
-            {
-                var item = CreateSubGroupListItem(sg);
-                lstSubGroups.Items.Add(item);
-            }
-        }
-
-        // Create a ListBox item for a sub-group
-        private Grid CreateSubGroupListItem(SubGroupDisplayItem sg)
-        {
-            var grid = new Grid { Tag = sg, Height = 32, Margin = new Thickness(0, 2, 0, 2) };
-            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(10) });
-            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(30) });
-
-            // Group field dropdown
-            var groupCombo = new ComboBox
-            {
-                ItemsSource = _columns.Select(c => c.FieldName).ToList(),
-                SelectedItem = sg.GroupField,
-                Height = 26,
-                Tag = sg
-            };
-            groupCombo.SelectionChanged += SubGroupCombo_Changed;
-            Grid.SetColumn(groupCombo, 0);
-            grid.Children.Add(groupCombo);
-
-            // Sort field dropdown
-            var sortCombo = new ComboBox
-            {
-                ItemsSource = _columns.Select(c => c.FieldName).ToList(),
-                SelectedItem = sg.SortField,
-                Height = 26,
-                Tag = sg
-            };
-            sortCombo.SelectionChanged += SubGroupSortCombo_Changed;
-            Grid.SetColumn(sortCombo, 2);
-            grid.Children.Add(sortCombo);
-
-            // Remove button
-            var removeBtn = new Button
-            {
-                Content = "✕",
-                Width = 24,
-                Height = 24,
-                Background = System.Windows.Media.Brushes.Transparent,
-                Foreground = (System.Windows.Media.Brush)FindResource("StatusRed"),
-                BorderThickness = new Thickness(0),
-                Tag = sg,
-                ToolTip = "Remove sub-group"
-            };
-            removeBtn.Click += RemoveSubGroup_Click;
-            Grid.SetColumn(removeBtn, 3);
-            grid.Children.Add(removeBtn);
-
-            return grid;
-        }
-
-        private void SubGroupCombo_Changed(object sender, SelectionChangedEventArgs e)
-        {
-            if (sender is ComboBox combo && combo.Tag is SubGroupDisplayItem sg)
-            {
-                sg.GroupField = combo.SelectedItem as string ?? "";
-            }
-        }
-
-        private void SubGroupSortCombo_Changed(object sender, SelectionChangedEventArgs e)
-        {
-            if (sender is ComboBox combo && combo.Tag is SubGroupDisplayItem sg)
-            {
-                sg.SortField = combo.SelectedItem as string ?? "";
-            }
-        }
-
-        private void RemoveSubGroup_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is Button btn && btn.Tag is SubGroupDisplayItem sg)
-            {
-                _subGroups.Remove(sg);
-                RefreshSubGroupsListBox();
-            }
+            // Update sort field options when columns change
+            RefreshSortFields();
         }
 
         // Update the Zone 2 summary text
         private void UpdateZone2Summary()
         {
             var columnNames = string.Join(" | ", _columns.Select(c => c.FieldName));
-            txtZone2Summary.Text = $"Zone 2 (45%): {columnNames}";
+            txtZone2Summary.Text = $"Left (auto-fit): {columnNames}";
         }
 
         // Event Handlers
@@ -457,6 +514,24 @@ namespace VANTAGE.Views
         private async void CboSavedLayouts_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (_isLoading) return;
+
+            if (_hasUnsavedChanges)
+            {
+                var result = MessageBox.Show(
+                    "You have unsaved changes. Discard and switch layouts?",
+                    "Unsaved Changes",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning);
+
+                if (result == MessageBoxResult.No)
+                {
+                    _isLoading = true;
+                    if (e.RemovedItems.Count > 0)
+                        cboSavedLayouts.SelectedItem = e.RemovedItems[0];
+                    _isLoading = false;
+                    return;
+                }
+            }
 
             if (cboSavedLayouts.SelectedItem is LayoutDropdownItem item)
             {
@@ -477,64 +552,207 @@ namespace VANTAGE.Views
 
         private void SliderFontSize_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            if (txtFontSizeDisplay == null) return;
+            if (txtFontSizeLabel == null) return;
 
             int fontSize = (int)sliderFontSize.Value;
-            txtFontSizeDisplay.Text = $"{fontSize}pt";
+            txtFontSizeLabel.Text = $"Font Size: {fontSize}pt";
             if (txtDescFontNote != null)
             {
-                txtDescFontNote.Text = $"(DESC column will render at {fontSize - 1}pt)";
+                txtDescFontNote.Text = $"(DESC column renders at {fontSize - 1}pt)";
+            }
+
+            if (!_isLoading)
+                _hasUnsavedChanges = true;
+        }
+
+        private void PaperSize_Changed(object sender, RoutedEventArgs e)
+        {
+            if (!_isLoading)
+                _hasUnsavedChanges = true;
+        }
+
+        // Filter column selection changed - reload filter values
+        private async void FilterColumn_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_isLoading) return;
+
+            await LoadFilterValuesAsync();
+            _hasUnsavedChanges = true;
+        }
+
+        // Filter value selection changed
+        private void FilterValue_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!_isLoading)
+                _hasUnsavedChanges = true;
+        }
+
+        // Column list actions
+        private void BtnMoveColumnUp_Click(object sender, RoutedEventArgs e)
+        {
+            int index = lstColumns.SelectedIndex;
+            if (index > 0)
+            {
+                var item = _columns[index];
+                _columns.RemoveAt(index);
+                _columns.Insert(index - 1, item);
+                RefreshColumnsListBox();
+                lstColumns.SelectedIndex = index - 1;
+                UpdateZone2Summary();
+                _hasUnsavedChanges = true;
             }
         }
 
-        private void BtnAddSubGroup_Click(object sender, RoutedEventArgs e)
+        private void BtnMoveColumnDown_Click(object sender, RoutedEventArgs e)
         {
-            if (_columns.Count == 0)
+            int index = lstColumns.SelectedIndex;
+            if (index >= 0 && index < _columns.Count - 1)
             {
-                MessageBox.Show("Add columns to Zone 2 first before creating sub-groups.",
-                    "No Columns", MessageBoxButton.OK, MessageBoxImage.Information);
+                var item = _columns[index];
+                _columns.RemoveAt(index);
+                _columns.Insert(index + 1, item);
+                RefreshColumnsListBox();
+                lstColumns.SelectedIndex = index + 1;
+                UpdateZone2Summary();
+                _hasUnsavedChanges = true;
+            }
+        }
+
+        private void BtnRemoveColumn_Click(object sender, RoutedEventArgs e)
+        {
+            int index = lstColumns.SelectedIndex;
+            if (index < 0) return;
+
+            var col = _columns[index];
+            if (col.IsRequired)
+            {
+                MessageBox.Show($"{col.FieldName} is required and cannot be removed.",
+                    "Required Column", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
-            var firstColumn = _columns.First().FieldName;
-            _subGroups.Add(new SubGroupDisplayItem
-            {
-                GroupField = firstColumn,
-                SortField = firstColumn
-            });
-            RefreshSubGroupsListBox();
+            _columns.RemoveAt(index);
+            RefreshColumnsListBox();
+            RefreshAddColumnDropdown();
+            UpdateZone2Summary();
+            _hasUnsavedChanges = true;
         }
 
         private void BtnAddColumn_Click(object sender, RoutedEventArgs e)
         {
-            // Show dialog to select a field
-            var availableFields = _allFields.Where(f =>
-                !_columns.Any(c => c.FieldName == f) &&
-                f != "ROCStep" && f != "Description").ToList();
+            var field = cboAddColumn.SelectedItem as string;
+            if (string.IsNullOrEmpty(field)) return;
 
-            if (availableFields.Count == 0)
+            _columns.Add(new ColumnDisplayItem { FieldName = field, IsRequired = false });
+            RefreshColumnsListBox();
+            RefreshAddColumnDropdown();
+            UpdateZone2Summary();
+            _hasUnsavedChanges = true;
+        }
+
+        // Group actions
+        private void BtnAddGroup_Click(object sender, RoutedEventArgs e)
+        {
+            if (_groups.Count >= MaxGroups)
             {
-                MessageBox.Show("All available fields have been added.",
-                    "No More Fields", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show($"Maximum of {MaxGroups} grouping levels allowed.",
+                    "Limit Reached", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
-            // Simple input dialog - select from list
-            var dialog = new Dialogs.SelectFieldDialog(availableFields);
-            dialog.Owner = Window.GetWindow(this);
-            if (dialog.ShowDialog() == true && !string.IsNullOrEmpty(dialog.SelectedField))
+            AddGroup("PhaseCode", canDelete: true);
+            RefreshGroups();
+            UpdateAddGroupButtonState();
+            _hasUnsavedChanges = true;
+        }
+
+        private void BtnRemoveGroup_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.Tag is int index && index > 0 && index < _groups.Count)
             {
-                _columns.Add(new ColumnDisplayItem
-                {
-                    FieldName = dialog.SelectedField,
-                    Width = 10,
-                    IsRequired = false
-                });
-                RefreshColumnsListBox();
-                UpdateZone2Summary();
+                _groups[index].PropertyChanged -= Group_PropertyChanged;
+                _groups.RemoveAt(index);
+                RefreshGroups();
+                UpdateAddGroupButtonState();
+                _hasUnsavedChanges = true;
             }
         }
 
+        // Sort actions
+        private void BtnAddSort_Click(object sender, RoutedEventArgs e)
+        {
+            if (_sortFields.Count >= MaxSorts)
+            {
+                MessageBox.Show($"Maximum of {MaxSorts} sort levels allowed.",
+                    "Limit Reached", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            AddSortField(NoneSortValue, canDelete: true);
+            RefreshSortFields();
+            UpdateAddSortButtonState();
+            _hasUnsavedChanges = true;
+        }
+
+        private void BtnRemoveSort_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.Tag is int index && index > 0 && index < _sortFields.Count)
+            {
+                _sortFields[index].PropertyChanged -= SortField_PropertyChanged;
+                _sortFields.RemoveAt(index);
+                RefreshSortFields();
+                UpdateAddSortButtonState();
+                _hasUnsavedChanges = true;
+            }
+        }
+
+        // Clone layout - populates name field with "{layout}-Copy", user must save
+        private void BtnCloneLayout_Click(object sender, RoutedEventArgs e)
+        {
+            string currentName = _currentLayout?.Name ?? txtLayoutName.Text.Trim();
+            if (string.IsNullOrEmpty(currentName))
+                currentName = DefaultLayoutName;
+
+            txtLayoutName.Text = $"{currentName}-Copy";
+            txtLayoutName.Focus();
+            txtLayoutName.SelectAll();
+
+            _hasUnsavedChanges = true;
+        }
+
+        // Delete layout - Default Layout cannot be deleted
+        private async void BtnDeleteLayout_Click(object sender, RoutedEventArgs e)
+        {
+            if (_currentLayout == null)
+            {
+                MessageBox.Show("Default Layout cannot be deleted.", "Cannot Delete",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var result = MessageBox.Show($"Delete layout '{_currentLayout.Name}'?",
+                "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                var success = await ProgressBookLayoutRepository.DeleteAsync(_currentLayout.Id);
+                if (success)
+                {
+                    _hasUnsavedChanges = false;
+                    await LoadSavedLayoutsAsync();
+                    LoadDefaultConfiguration();
+                    cboSavedLayouts.SelectedIndex = 0;
+                }
+            }
+        }
+
+        // Update Delete button enabled state based on selected layout
+        private void UpdateDeleteButtonState()
+        {
+            btnDeleteLayout.IsEnabled = _currentLayout != null;
+        }
+
+        // Save layout - blocks "Default Layout" name, warns before overwriting
         private async void BtnSaveLayout_Click(object sender, RoutedEventArgs e)
         {
             var layoutName = txtLayoutName.Text.Trim();
@@ -546,6 +764,15 @@ namespace VANTAGE.Views
                 return;
             }
 
+            if (layoutName.Equals(DefaultLayoutName, StringComparison.OrdinalIgnoreCase))
+            {
+                MessageBox.Show("Cannot save as 'Default Layout'. Please use a different name.",
+                    "Reserved Name", MessageBoxButton.OK, MessageBoxImage.Warning);
+                txtLayoutName.Focus();
+                txtLayoutName.SelectAll();
+                return;
+            }
+
             if (App.CurrentUser == null)
             {
                 MessageBox.Show("Please ensure you are logged in.",
@@ -553,23 +780,30 @@ namespace VANTAGE.Views
                 return;
             }
 
-            // Use "Global" as project context for layouts (user-scoped, not project-scoped)
             string projectId = "Global";
 
             try
             {
                 var config = BuildCurrentConfiguration();
 
-                if (_currentLayout != null)
+                if (_currentLayout != null && _currentLayout.Name.Equals(layoutName, StringComparison.OrdinalIgnoreCase))
                 {
-                    // Update existing layout
-                    _currentLayout.Name = layoutName;
+                    var overwriteResult = MessageBox.Show(
+                        $"Overwrite layout '{layoutName}'?",
+                        "Confirm Overwrite",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Question);
+
+                    if (overwriteResult != MessageBoxResult.Yes)
+                        return;
+
                     _currentLayout.UpdatedUtc = DateTime.UtcNow;
                     _currentLayout.SetConfiguration(config);
 
                     var success = await ProgressBookLayoutRepository.UpdateAsync(_currentLayout);
                     if (success)
                     {
+                        _hasUnsavedChanges = false;
                         await LoadSavedLayoutsAsync();
                         SelectLayoutInDropdown(_currentLayout.Id);
                         MessageBox.Show($"Layout '{layoutName}' updated.", "Saved",
@@ -578,34 +812,54 @@ namespace VANTAGE.Views
                 }
                 else
                 {
-                    // Check for duplicate name
-                    if (await ProgressBookLayoutRepository.LayoutExistsAsync(layoutName, projectId))
+                    var existingLayout = await ProgressBookLayoutRepository.GetByNameAsync(layoutName, projectId);
+                    if (existingLayout != null)
                     {
-                        MessageBox.Show($"A layout named '{layoutName}' already exists.",
-                            "Duplicate Name", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        return;
+                        var overwriteResult = MessageBox.Show(
+                            $"A layout named '{layoutName}' already exists. Overwrite it?",
+                            "Confirm Overwrite",
+                            MessageBoxButton.YesNo,
+                            MessageBoxImage.Warning);
+
+                        if (overwriteResult != MessageBoxResult.Yes)
+                            return;
+
+                        existingLayout.UpdatedUtc = DateTime.UtcNow;
+                        existingLayout.SetConfiguration(config);
+
+                        var success = await ProgressBookLayoutRepository.UpdateAsync(existingLayout);
+                        if (success)
+                        {
+                            _currentLayout = existingLayout;
+                            _hasUnsavedChanges = false;
+                            await LoadSavedLayoutsAsync();
+                            SelectLayoutInDropdown(existingLayout.Id);
+                            MessageBox.Show($"Layout '{layoutName}' updated.", "Saved",
+                                MessageBoxButton.OK, MessageBoxImage.Information);
+                        }
                     }
-
-                    // Create new layout
-                    var newLayout = new ProgressBookLayout
+                    else
                     {
-                        Name = layoutName,
-                        ProjectId = projectId,
-                        CreatedBy = App.CurrentUser.Username,
-                        CreatedUtc = DateTime.UtcNow,
-                        UpdatedUtc = DateTime.UtcNow
-                    };
-                    newLayout.SetConfiguration(config);
+                        var newLayout = new ProgressBookLayout
+                        {
+                            Name = layoutName,
+                            ProjectId = projectId,
+                            CreatedBy = App.CurrentUser.Username,
+                            CreatedUtc = DateTime.UtcNow,
+                            UpdatedUtc = DateTime.UtcNow
+                        };
+                        newLayout.SetConfiguration(config);
 
-                    var newId = await ProgressBookLayoutRepository.InsertAsync(newLayout);
-                    if (newId > 0)
-                    {
-                        _currentLayout = newLayout;
-                        await LoadSavedLayoutsAsync();
-                        SelectLayoutInDropdown(newId);
-                        btnDeleteLayout.IsEnabled = true;
-                        MessageBox.Show($"Layout '{layoutName}' saved.", "Saved",
-                            MessageBoxButton.OK, MessageBoxImage.Information);
+                        var newId = await ProgressBookLayoutRepository.InsertAsync(newLayout);
+                        if (newId > 0)
+                        {
+                            _currentLayout = newLayout;
+                            _hasUnsavedChanges = false;
+                            await LoadSavedLayoutsAsync();
+                            SelectLayoutInDropdown(newId);
+                            MessageBox.Show($"Layout '{layoutName}' saved.", "Saved",
+                                MessageBoxButton.OK, MessageBoxImage.Information);
+                        }
                     }
                 }
             }
@@ -632,57 +886,180 @@ namespace VANTAGE.Views
             }
         }
 
-        private async void BtnDeleteLayout_Click(object sender, RoutedEventArgs e)
+        private async void BtnRefreshPreview_Click(object sender, RoutedEventArgs e)
         {
-            if (_currentLayout == null) return;
-
-            var result = MessageBox.Show($"Delete layout '{_currentLayout.Name}'?",
-                "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Question);
-
-            if (result == MessageBoxResult.Yes)
+            try
             {
-                var success = await ProgressBookLayoutRepository.DeleteAsync(_currentLayout.Id);
-                if (success)
+                btnRefreshPreview.IsEnabled = false;
+                txtPreviewPlaceholder.Text = "Generating preview...";
+
+                var config = BuildCurrentConfiguration();
+
+                // Get filtered data based on filter column/value
+                var username = App.CurrentUser?.Username ?? "";
+                var filterColumn = config.FilterField;
+                var filterValue = config.FilterValue;
+
+                string whereClause;
+                if (!string.IsNullOrEmpty(filterValue))
                 {
-                    await LoadSavedLayoutsAsync();
-                    LoadDefaultConfiguration();
-                    cboSavedLayouts.SelectedIndex = 0;
+                    var escapedValue = filterValue.Replace("'", "''");
+                    whereClause = $"AssignedTo = '{username}' AND {filterColumn} = '{escapedValue}'";
                 }
+                else
+                {
+                    whereClause = $"AssignedTo = '{username}'";
+                }
+
+                var (activities, _) = await ActivityRepository.GetAllActivitiesAsync(whereClause);
+
+                // Take a sample for preview
+                var sampleActivities = activities.Take(100).ToList();
+
+                if (sampleActivities.Count == 0)
+                {
+                    ShowPreviewPlaceholder("No records found for the selected filter.\n\nTry selecting a different value.");
+                    return;
+                }
+
+                string projectId = sampleActivities.FirstOrDefault()?.ProjectID ?? "Unknown";
+                string projectDescription = ProjectCache.GetProjectDescription(projectId);
+
+                // Generate PDF - use filter value as the book name
+                var generator = new ProgressBookPdfGenerator();
+                var bookName = string.IsNullOrEmpty(filterValue) ? "Preview" : filterValue;
+                var pdfDocument = generator.Generate(config, sampleActivities, bookName, projectId, projectDescription);
+
+                _previewStream?.Dispose();
+                _previewStream = new MemoryStream();
+                pdfDocument.Save(_previewStream);
+                pdfDocument.Close(true);
+
+                _previewStream.Position = 0;
+                pdfViewer.Load(_previewStream);
+                pdfViewer.MinimumZoomPercentage = 10;
+                pdfViewer.ZoomMode = Syncfusion.Windows.PdfViewer.ZoomMode.FitWidth;
+
+                pdfViewer.Visibility = Visibility.Visible;
+                previewPlaceholderBorder.Visibility = Visibility.Collapsed;
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "ProgressBooksView.BtnRefreshPreview_Click");
+                ShowPreviewPlaceholder($"Error generating preview:\n\n{ex.Message}");
+            }
+            finally
+            {
+                btnRefreshPreview.IsEnabled = true;
             }
         }
 
-        private void BtnRefreshPreview_Click(object sender, RoutedEventArgs e)
+        private void ShowPreviewPlaceholder(string message)
         {
-            // Phase 5 will implement PDF preview generation
-            MessageBox.Show("Preview generation will be implemented in Phase 5.",
-                "Coming Soon", MessageBoxButton.OK, MessageBoxImage.Information);
+            txtPreviewPlaceholder.Text = message;
+            previewPlaceholderBorder.Visibility = Visibility.Visible;
+            pdfViewer.Visibility = Visibility.Collapsed;
         }
 
         private void BtnGenerateBook_Click(object sender, RoutedEventArgs e)
         {
-            // Phase 6 will implement the generate dialog
-            MessageBox.Show("Progress Book generation will be implemented in Phase 6.",
-                "Coming Soon", MessageBoxButton.OK, MessageBoxImage.Information);
+            try
+            {
+                var config = BuildCurrentConfiguration();
+
+                if (string.IsNullOrEmpty(config.FilterValue))
+                {
+                    MessageBox.Show("Please select a Progress Book value to generate.",
+                        "No Selection", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                var dialog = new GenerateProgressBookDialog(config);
+                dialog.Owner = Window.GetWindow(this);
+                dialog.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "ProgressBooksView.BtnGenerateBook_Click");
+                MessageBox.Show($"Error opening generate dialog: {ex.Message}",
+                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
     }
 
-    // Helper classes for UI binding
+    // Helper classes
+    // Display item for columns list (widths are auto-calculated by PDF generator)
     public class ColumnDisplayItem
     {
         public string FieldName { get; set; } = string.Empty;
-        public int Width { get; set; } = 10;
         public bool IsRequired { get; set; }
-    }
-
-    public class SubGroupDisplayItem
-    {
-        public string GroupField { get; set; } = string.Empty;
-        public string SortField { get; set; } = string.Empty;
     }
 
     public class LayoutDropdownItem
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
+    }
+
+    // ViewModel for Group items in the ItemsControl
+    public class GroupItemViewModel : INotifyPropertyChanged
+    {
+        private string _groupField = string.Empty;
+
+        public int Index { get; set; }
+
+        public string GroupField
+        {
+            get => _groupField;
+            set
+            {
+                if (_groupField != value)
+                {
+                    _groupField = value;
+                    OnPropertyChanged(nameof(GroupField));
+                }
+            }
+        }
+
+        public bool CanDelete { get; set; }
+        public List<string> AvailableFields { get; set; } = new();
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        protected void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+    }
+
+    // ViewModel for Sort items in the ItemsControl
+    public class SortItemViewModel : INotifyPropertyChanged
+    {
+        private string _sortField = string.Empty;
+
+        public int Index { get; set; }
+
+        public string SortField
+        {
+            get => _sortField;
+            set
+            {
+                if (_sortField != value)
+                {
+                    _sortField = value;
+                    OnPropertyChanged(nameof(SortField));
+                }
+            }
+        }
+
+        public bool CanDelete { get; set; }
+        public List<string> AvailableFields { get; set; } = new();
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        protected void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
 }

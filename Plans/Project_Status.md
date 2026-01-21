@@ -1,6 +1,6 @@
 # MILESTONE - Project Status
 
-**Last Updated:** January 19, 2026
+**Last Updated:** January 20, 2026
 
 ## V1 Testing Scope
 
@@ -13,7 +13,7 @@
 | Admin | Complete |
 | Work Package (PDF generation) | Ready for testing (drawings hidden) |
 | Help Sidebar | Content writing in progress |
-| Progress Book creation | In development (Phases 1-3 complete) |
+| Progress Book creation | In development (Phases 1-6 complete) |
 
 ### Deferred to Post-V1
 | Feature | Reason |
@@ -38,10 +38,9 @@
 ## Active Development
 
 ### Progress Book Module
-- Phases 1-3 complete: Data models, repository, layout builder UI
-- Phase 4 pending: PDF generator
-- Phase 5 pending: Live preview
-- Phase 6 pending: Generate dialog
+- Phases 1-6 complete: Data models, repository, layout builder UI, PDF generator, live preview, generate dialog
+- PDF features: Auto-fit column widths, description wrapping, project description in header
+- Layout features: Separate grouping and sorting, up to 10 levels each
 - AI Scan phases pending (7-14)
 
 ### Work Package Module

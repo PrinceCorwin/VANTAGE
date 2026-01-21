@@ -95,82 +95,83 @@ Enable field engineers to print customizable progress books for field workers, t
 
 ### Column Specifications
 
-#### Zone 1 (Locked Left)
-| Column | Width | Editable | Notes |
-|--------|-------|----------|-------|
-| UniqueID | Fixed 5% | No | Always first column |
-
-#### Zone 2 (Flexible Middle)
-| Column | Required | Default Width | Min Width | Notes |
-|--------|----------|---------------|-----------|-------|
-| ROC | Yes | 15 | 5 | Moveable, resizable |
-| DESC | Yes | 60 | 20 | Moveable, resizable, font -1pt |
-| *User columns* | No | 10 | 5 | Moveable, resizable, deletable |
+#### Zone 2 (User Columns - Left Side, Auto-Fit)
+| Column | Required | Notes |
+|--------|----------|-------|
+| UniqueID | Yes | ~19 alphanumeric chars (e.g., `i251009101621125ano`), cannot be deleted |
+| ROC | Yes | Moveable, cannot be deleted |
+| DESC | Yes | Moveable, cannot be deleted, font -1pt, wraps long lines |
+| *User columns* | No | Moveable, deletable |
 
 **Width Calculation:**
-- User enters values 1-100 for each Zone 2 column
-- System calculates prorated percentages: `columnWidth = (userValue / sumOfAllValues) * availableZone2Width`
-- Available Zone 2 width = 100% - Zone1Width - Zone3Width
+- All Zone 2 columns auto-fit based on actual data content
+- System measures longest value in each column plus padding
+- Description column gets remaining width after other columns fit
+- Long descriptions wrap to multiple lines (row height increases)
 
-#### Zone 3 (Locked Right)
+#### Zone 3 (Right Side - Progress Tracking)
 | Column | Width | Format | Notes |
 |--------|-------|--------|-------|
-| REM QTY | Fixed 6% | Decimal | Remaining quantity |
-| REM MH | Fixed 6% | Decimal | Remaining manhours |
-| CUR QTY | Fixed 6% | Decimal | Current completed quantity |
-| CUR % | Fixed 7% | "XX.XX%" | Current percent complete |
-| DONE | Fixed 4% | ☐ checkbox | Empty checkbox for field use |
-| QTY Entry | Fixed 8% | [      ] | Boxed area for handwriting |
-| % Entry | Fixed 8% | [      ] | Boxed area for handwriting |
+| REM QTY | Auto-fit | Decimal | Remaining quantity |
+| REM MH | Auto-fit | Decimal | Remaining manhours |
+| CUR QTY | Auto-fit | Decimal | Current completed quantity |
+| CUR % | Auto-fit | "XX.XX%" | Current percent complete |
+| DONE | Fixed 30pt | ☐ checkbox | Empty checkbox for field use |
+| QTY Entry | Fixed 55pt | [      ] | Boxed area for handwriting |
+| % Entry | Fixed 55pt | [      ] | Boxed area for handwriting |
 
-**Zone 3 Total: ~45% of page width**
+**Note:** Only entry boxes (DONE, QTY, % Entry) have fixed widths. Data columns auto-fit to content.
 
 ### Font Size Slider
 
 | Property | Value |
 |----------|-------|
-| Minimum | 8pt |
-| Maximum | 14pt |
-| Default | 10pt |
+| Minimum | 4pt |
+| Maximum | 10pt |
+| Default | 6pt |
 | Step | 1pt |
 | DESC adjustment | Always (selected - 1)pt |
 
-Display format: "Font Size: [====●=====] 10pt (DESC will render at 9pt)"
+**Font Sizes:**
+- Page header (project info, book title): Static 12pt (not affected by slider)
+- Column headers: Matches slider selection
+- Group headers: Matches slider selection
+- Data rows: Matches slider selection
+- Description column: Slider - 1pt
+
+Display format: "Font Size: [====●=====] 6pt (DESC will render at 5pt)"
 
 ### Grouping Configuration
 
-#### Main Group Field
-- Dropdown populated from full Activities field list
-- Common fields shown first with star icon (★):
-  - ★ PhaseCode
-  - ★ Area
-  - ★ UDF2
-  - ★ Tag
-  - (separator line)
-  - All other fields alphabetically
-- Does NOT need to be included in Zone 2 columns
-- Required - user must select a main group
+Groups are separate from sorting. Groups always sort alphanumerically by their values.
 
-#### Sub-Groups
-- Dropdown limited to columns included in Zone 2
-- User can add multiple sub-groups (no limit, but practical limit ~3-4)
-- Each sub-group has its own "Sort By" dropdown
-- Sort By dropdown limited to Zone 2 columns
-- Sub-groups are optional
+#### Groups Section
+- Up to 10 grouping levels allowed
+- First group is required, additional groups optional
+- Dropdown populated from full Activities field list
+- Groups auto-sort alphanumerically (no sort option per group)
+- Add/remove buttons to manage group levels
+
+#### Sort Section
+- Up to 10 sort levels allowed (stacking like Excel)
+- First sort is required, additional sorts optional
+- Sort options include "None" at top + all Zone 2 columns
+- Sorts apply within the deepest group level
+- Multiple sorts stack (primary, secondary, etc.)
 
 ### PDF Generation
 
 #### Header Section (Every Page)
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────┐
-│ [SUMMIT LOGO]  │  {ProjectID}  │  {ProjectDescription}  │  Progress Book - {Name}│
+│ [SUMMIT LOGO]  │  {ProjectID} - {ProjectDescription}  │  Progress Book: {Name}  │
 └─────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-- Summit logo: Load from embedded resource or configured path
-- ProjectID: From current project context
-- ProjectDescription: From current project context
-- Name: Progress Book name entered by user when generating
+- Summit logo: Load from embedded resource (SummitLogoNoText.jpg)
+- ProjectID and Description: From Projects table (e.g., "24.005 - Fluor Lilly Near Site OSM Modules")
+- Name: Filter value (e.g., WorkPackage value) used when generating
+- Static 12pt font for header text (not affected by font size slider)
 
 #### Column Header Row
 ```
@@ -195,11 +196,12 @@ Display format: "Font Size: [====●=====] 10pt (DESC will render at 9pt)"
 
 #### Data Rows
 ```
-│ 1594   │ 1.REC │ 0.75IN SCH-S40 SM...     │  0.7  │  0.02 │  0.0  │ 0.00% │  ☐   │ [     ] │ [     ] │
+│ i251009101594125ano │ 1.REC │ 0.75IN SCH-S40 SMLS...│  0.7  │  0.02 │  0.0  │ 0.00% │  ☐   │ [     ] │ [     ] │
 ```
 
 - Alternating row shading (light gray / white)
-- DESC column truncated with ellipsis if too long
+- DESC column wraps to multiple lines if content exceeds width (row height increases)
+- Other columns truncate with ellipsis if too long
 - Entry boxes rendered as visible bordered rectangles
 
 #### Page Break Rules
@@ -367,7 +369,7 @@ When user clicks "Generate Progress Book":
 Analyze this construction progress sheet image. Extract all rows that contain handwritten entries in the DONE checkbox, QTY box, or % box.
 
 Document Structure:
-- UniqueID column is on the far left (numeric, 1-5 digits)
+- UniqueID column is on the far left (alphanumeric, ~19 characters, e.g., i251009101621125ano)
 - DONE column has an empty checkbox (☐) - look for checkmarks, X marks, or filled boxes
 - QTY column has a boxed area [...] for handwritten quantity values
 - % column has a boxed area [...] for handwritten percentage values
@@ -383,9 +385,9 @@ For each row with ANY handwritten entry, return:
 
 Return ONLY a JSON array, no other text:
 [
-  {"uniqueId": 1594, "done": true, "qty": null, "pct": null, "confidence": 98, "raw": "checkmark"},
-  {"uniqueId": 1556, "done": false, "qty": 2.5, "pct": null, "confidence": 85, "raw": "2.5"},
-  {"uniqueId": 1621, "done": false, "qty": null, "pct": 50, "confidence": 92, "raw": "50"}
+  {"uniqueId": "i251009101621125ano", "done": true, "qty": null, "pct": null, "confidence": 98, "raw": "checkmark"},
+  {"uniqueId": "i251009101556089ano", "done": false, "qty": 2.5, "pct": null, "confidence": 85, "raw": "2.5"},
+  {"uniqueId": "i251009101621098pno", "done": false, "qty": null, "pct": 50, "confidence": 92, "raw": "50"}
 ]
 
 Rules:
@@ -594,7 +596,7 @@ public enum PaperSize
 ```csharp
 public class ScanExtractionResult
 {
-    public int UniqueId { get; set; }
+    public string UniqueId { get; set; } = null!;  // Alphanumeric, ~19 chars
     public bool? Done { get; set; }
     public decimal? Qty { get; set; }
     public decimal? Pct { get; set; }
@@ -609,7 +611,7 @@ public class ScanExtractionResult
 public class ScanReviewItem : INotifyPropertyChanged
 {
     // From extraction
-    public int ExtractedUniqueId { get; set; }
+    public string ExtractedUniqueId { get; set; } = null!;  // Alphanumeric, ~19 chars
     public bool? ExtractedDone { get; set; }
     public decimal? ExtractedQty { get; set; }
     public decimal? ExtractedPct { get; set; }

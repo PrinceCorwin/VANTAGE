@@ -10,6 +10,7 @@ namespace VANTAGE.Utilities
     public static class ProjectCache
     {
         private static HashSet<string> _validProjectIds = new(StringComparer.OrdinalIgnoreCase);
+        private static Dictionary<string, string> _projectDescriptions = new(StringComparer.OrdinalIgnoreCase);
         private static bool _isLoaded = false;
         private static readonly object _lock = new();
 
@@ -21,6 +22,16 @@ namespace VANTAGE.Utilities
 
             EnsureLoaded();
             return _validProjectIds.Contains(projectId);
+        }
+
+        // Get the description for a ProjectID
+        public static string GetProjectDescription(string? projectId)
+        {
+            if (string.IsNullOrWhiteSpace(projectId))
+                return string.Empty;
+
+            EnsureLoaded();
+            return _projectDescriptions.TryGetValue(projectId, out var desc) ? desc : string.Empty;
         }
 
         // Get count of valid ProjectIDs (for diagnostics)
@@ -40,6 +51,7 @@ namespace VANTAGE.Utilities
             {
                 _isLoaded = false;
                 _validProjectIds.Clear();
+                _projectDescriptions.Clear();
                 LoadFromDatabase();
             }
         }
@@ -61,12 +73,13 @@ namespace VANTAGE.Utilities
             try
             {
                 _validProjectIds.Clear();
+                _projectDescriptions.Clear();
 
                 using var connection = DatabaseSetup.GetConnection();
                 connection.Open();
 
                 var cmd = connection.CreateCommand();
-                cmd.CommandText = "SELECT ProjectID FROM Projects";
+                cmd.CommandText = "SELECT ProjectID, Description FROM Projects";
 
                 using var reader = cmd.ExecuteReader();
                 while (reader.Read())
@@ -75,6 +88,8 @@ namespace VANTAGE.Utilities
                     if (!string.IsNullOrWhiteSpace(projectId))
                     {
                         _validProjectIds.Add(projectId);
+                        string desc = reader.IsDBNull(1) ? string.Empty : reader.GetString(1);
+                        _projectDescriptions[projectId] = desc;
                     }
                 }
 

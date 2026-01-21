@@ -8,7 +8,8 @@ namespace VANTAGE.Models.ProgressBook
         [JsonPropertyName("fieldName")]
         public string FieldName { get; set; } = string.Empty;
 
-        // Width value (1-100) - will be prorated relative to other columns
+        // DEPRECATED: Width is now auto-calculated from content
+        // Kept for backwards compatibility with saved layouts
         [JsonPropertyName("width")]
         public int Width { get; set; } = 10;
 

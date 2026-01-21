@@ -4,6 +4,32 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ---
 
+### January 20, 2026
+- **Progress Book PDF Generator - Auto-fit and layout improvements:**
+  - Replaced percentage-based column widths with auto-fit based on actual content
+  - Zone 2 columns (UniqueID, ROC, DESC, user columns) measure content to determine width
+  - Zone 3 data columns (REM QTY, REM MH, CUR QTY, CUR %) also auto-fit
+  - Only entry boxes (DONE, QTY, % ENTRY) have fixed widths
+  - Description column wraps long lines (row height increases as needed)
+  - Added project description to page header from Projects table (e.g., "24.005 - Fluor Lilly Near Site OSM Modules")
+  - Page header fonts are static 12pt (not affected by font slider)
+  - Column/group headers match font slider setting
+  - Font slider range changed to 4-10pt with default 6pt
+  - Increased cell padding for better readability
+  - UniqueID moved to Zone 2 columns (user can reorder but not delete)
+  - Separated Groups from Sorts: groups auto-sort alphanumerically, sorts stack like Excel
+  - Up to 10 groups and 10 sort levels allowed
+  - Removed SubGroupConfig.cs (no longer needed)
+  - Added GetProjectDescription() to ProjectCache for header lookup
+
+- **Progress Book Layout Builder - Style consistency update:**
+  - Added Syncfusion SfSkinManager with FluentDark theme for proper control theming
+  - Added RoundedButtonStyle and PrimaryButtonStyle matching WorkPackageView exactly
+  - Updated GENERATE, Save, Refresh Preview buttons to use proper styles
+  - Removed explicit Height from ComboBoxes (Syncfusion theme handles sizing)
+  - Added Foreground to RadioButtons for visibility on dark background
+  - GridSplitter persists position to UserSettings
+
 ### January 19, 2026
 - **Progress Book Module - Phases 1-3 complete:**
   - Phase 1: Created data models in `Models/ProgressBook/`:
