@@ -35,10 +35,10 @@ namespace VANTAGE.Services.ProgressBook
         };
 
         // Padding for cell content (space between text and grid lines)
-        private const float ColumnPadding = 8f;
+        private const float ColumnPadding = 4f;
 
         // Row heights
-        private const float HeaderRowHeight = 20f;
+        private const float HeaderRowHeight = 14f; // Smaller for 5pt column headers
         private const float GroupHeaderHeight = 18f;
         private float _dataRowHeight = 16f;
         private float _lineHeight = 10f; // Height of one line of text
@@ -117,26 +117,22 @@ namespace VANTAGE.Services.ProgressBook
 
             if (activities.Count == 0)
             {
-                // Generate empty page with header
+                // Generate empty page with header (page numbers in header now)
                 var page = document.Pages.Add();
-                RenderPageHeader(page);
+                RenderPageHeader(page, 1, 1);
                 RenderColumnHeaders(page, GetHeaderY());
-                RenderPageFooter(page, 1, 1);
                 return document;
             }
 
             // Group and sort activities
             var groupedData = GroupAndSortActivities(activities);
 
-            // Calculate total pages for footer
+            // Calculate total pages for header display
             _totalPages = EstimatePageCount(groupedData);
-            _pageNumber = 0;
+            _pageNumber = 1; // Start at page 1
 
             // Render pages
             RenderPages(document, groupedData);
-
-            // Update total pages now that we know the actual count
-            UpdatePageFooters(document);
 
             return document;
         }
@@ -160,18 +156,16 @@ namespace VANTAGE.Services.ProgressBook
         }
 
         // Initialize fonts based on configuration
-        // Page header fonts are static, column/data fonts use config.FontSize
+        // Page header and column header fonts are static, data fonts use config.FontSize
         private void InitializeFonts()
         {
             int dataFontSize = _config.FontSize;
             int descFontSize = Math.Max(dataFontSize - 1, 4);
 
-            // Static page header fonts - not affected by font size slider
+            // Static fonts - not affected by font size slider
             _titleFont = new PdfStandardFont(PdfFontFamily.Helvetica, 12, PdfFontStyle.Bold);
             _smallFont = new PdfStandardFont(PdfFontFamily.Helvetica, 8, PdfFontStyle.Regular);
-
-            // Column headers and group headers match data font size
-            _headerFont = new PdfStandardFont(PdfFontFamily.Helvetica, dataFontSize, PdfFontStyle.Bold);
+            _headerFont = new PdfStandardFont(PdfFontFamily.Helvetica, 5, PdfFontStyle.Bold); // Column headers fixed at 5pt
             _groupFont = new PdfStandardFont(PdfFontFamily.Helvetica, dataFontSize, PdfFontStyle.Bold);
 
             // Data fonts based on configuration
@@ -467,40 +461,65 @@ namespace VANTAGE.Services.ProgressBook
             return activities;
         }
 
-        // Estimate page count for footer
+        // Calculate exact page count by simulating the rendering logic
         private int EstimatePageCount(List<ActivityGroup> groups)
         {
-            float headerY = GetHeaderY();
-            float availableHeight = _pageHeight - MarginBottom - 30 - headerY;
-            int rowsPerPage = (int)(availableHeight / _dataRowHeight);
+            float y = GetHeaderY() + HeaderRowHeight; // After page header and column headers
+            int pageCount = 1;
+            int activeGroupCount = 0;
 
-            int totalRows = 0;
             foreach (var group in groups)
             {
-                totalRows += CountRowsInGroup(group);
+                SimulateGroup(group, ref y, ref pageCount, ref activeGroupCount);
             }
 
-            return Math.Max(1, (int)Math.Ceiling((double)totalRows / rowsPerPage));
+            return pageCount;
         }
 
-        // Count rows in a group (including headers)
-        private int CountRowsInGroup(ActivityGroup group)
+        // Simulate rendering a group to count page breaks
+        private void SimulateGroup(ActivityGroup group, ref float y, ref int pageCount, ref int activeGroupCount)
         {
-            int count = 1; // Group header
-            count += group.Activities.Count;
-
-            foreach (var subGroup in group.SubGroups)
+            // Check if we need a new page for group header
+            if (y + GroupHeaderHeight + _dataRowHeight > _pageHeight - MarginBottom)
             {
-                count += CountRowsInGroup(subGroup);
+                pageCount++;
+                // After new page: header + column headers + continued group headers
+                y = GetHeaderY() + HeaderRowHeight + (activeGroupCount * GroupHeaderHeight);
             }
 
-            return count;
+            // Group header
+            y += GroupHeaderHeight;
+            activeGroupCount++;
+
+            // Activities
+            foreach (var activity in group.Activities)
+            {
+                float rowHeight = CalculateRowHeight(activity);
+
+                if (y + rowHeight > _pageHeight - MarginBottom)
+                {
+                    pageCount++;
+                    // After new page: header + column headers + continued group headers
+                    y = GetHeaderY() + HeaderRowHeight + (activeGroupCount * GroupHeaderHeight);
+                }
+
+                y += rowHeight;
+            }
+
+            // Sub-groups
+            foreach (var subGroup in group.SubGroups)
+            {
+                SimulateGroup(subGroup, ref y, ref pageCount, ref activeGroupCount);
+            }
+
+            // Remove this group from count when done
+            activeGroupCount--;
         }
 
         // Get Y position after page header
         private float GetHeaderY()
         {
-            return MarginTop + 60; // Logo + project info
+            return MarginTop + 40; // Smaller header: logo (20) + project text + spacing
         }
 
         // Render all pages
@@ -516,13 +535,6 @@ namespace VANTAGE.Services.ProgressBook
             {
                 RenderGroup(document, group, ref currentPage, ref y, ref rowIndex);
             }
-
-            // Render footer on last page
-            if (currentPage != null)
-            {
-                _pageNumber++;
-                RenderPageFooter(currentPage, _pageNumber, _pageNumber);
-            }
         }
 
         // Render a group and its contents
@@ -533,17 +545,17 @@ namespace VANTAGE.Services.ProgressBook
             ref float y,
             ref int rowIndex)
         {
-            // Check if we need a new page
-            if (currentPage == null || y + GroupHeaderHeight + _dataRowHeight > _pageHeight - MarginBottom - 30)
+            // Check if we need a new page (no footer space needed)
+            if (currentPage == null || y + GroupHeaderHeight + _dataRowHeight > _pageHeight - MarginBottom)
             {
+                // Increment page number for new pages (after the first)
                 if (currentPage != null)
                 {
                     _pageNumber++;
-                    RenderPageFooter(currentPage, _pageNumber, _totalPages);
                 }
 
                 currentPage = document.Pages.Add();
-                RenderPageHeader(currentPage);
+                RenderPageHeader(currentPage, _pageNumber, _totalPages);
                 y = GetHeaderY();
                 y = RenderColumnHeaders(currentPage, y);
 
@@ -572,13 +584,12 @@ namespace VANTAGE.Services.ProgressBook
                 // Calculate height needed for this row (may vary due to description wrapping)
                 float rowHeight = CalculateRowHeight(activity);
 
-                if (y + rowHeight > _pageHeight - MarginBottom - 30)
+                if (y + rowHeight > _pageHeight - MarginBottom)
                 {
                     _pageNumber++;
-                    RenderPageFooter(currentPage!, _pageNumber, _totalPages);
 
                     currentPage = document.Pages.Add();
-                    RenderPageHeader(currentPage);
+                    RenderPageHeader(currentPage, _pageNumber, _totalPages);
                     y = GetHeaderY();
                     y = RenderColumnHeaders(currentPage, y);
 
@@ -607,20 +618,24 @@ namespace VANTAGE.Services.ProgressBook
             }
         }
 
-        // Render page header (logo, project info, book name)
-        private void RenderPageHeader(PdfPage page)
+        // Render page header with new layout:
+        // LEFT: Logo (half size) with ProjectID - Description underneath
+        // CENTER: Progress Book: {value}
+        // RIGHT: Date on top, Page x of y underneath
+        private void RenderPageHeader(PdfPage page, int pageNum, int totalPages)
         {
             var graphics = page.Graphics;
             float y = MarginTop;
 
-            // Load and draw logo
+            // LEFT SIDE: Logo (half size) with Project ID - Description underneath
+            float logoHeight = 20f;
+            float logoWidth = 0f;
             try
             {
                 var logo = LoadImage(DefaultLogoPath);
                 if (logo != null)
                 {
-                    float logoHeight = 40f;
-                    float logoWidth = logoHeight * (logo.Width / (float)logo.Height);
+                    logoWidth = logoHeight * (logo.Width / (float)logo.Height);
                     graphics.DrawImage(logo, MarginLeft, y, logoWidth, logoHeight);
                 }
             }
@@ -629,26 +644,29 @@ namespace VANTAGE.Services.ProgressBook
                 AppLogger.Error(ex, "ProgressBookPdfGenerator.RenderPageHeader (logo)");
             }
 
-            // Project ID and Description (center)
+            // Project ID - Description under logo
             string projectText = string.IsNullOrEmpty(_projectDescription)
                 ? _projectId
                 : $"{_projectId} - {_projectDescription}";
+            graphics.DrawString(projectText, _smallFont, BlackBrush, new PointF(MarginLeft, y + logoHeight + 2));
 
-            var projectSize = _titleFont.MeasureString(projectText);
-            float projectX = MarginLeft + (_contentWidth - projectSize.Width) / 2;
-            graphics.DrawString(projectText, _titleFont, BlackBrush, new PointF(projectX, y + 10));
-
-            // Progress Book name (right) - uses static title font
+            // CENTER: Progress Book name
             string bookTitle = $"Progress Book: {_bookName}";
             var bookTitleSize = _titleFont.MeasureString(bookTitle);
-            graphics.DrawString(bookTitle, _titleFont, BlackBrush,
-                new PointF(MarginLeft + _contentWidth - bookTitleSize.Width, y + 10));
+            float centerX = MarginLeft + (_contentWidth - bookTitleSize.Width) / 2;
+            float centerY = y + 6; // Vertically centered in header area
+            graphics.DrawString(bookTitle, _titleFont, BlackBrush, new PointF(centerX, centerY));
 
-            // Date
+            // RIGHT SIDE: Date on first line, Page x of y underneath
             string dateText = DateTime.Now.ToString("MM/dd/yyyy");
             var dateSize = _smallFont.MeasureString(dateText);
             graphics.DrawString(dateText, _smallFont, BlackBrush,
-                new PointF(MarginLeft + _contentWidth - dateSize.Width, y + 30));
+                new PointF(MarginLeft + _contentWidth - dateSize.Width, y));
+
+            string pageText = $"Page {pageNum} of {totalPages}";
+            var pageSize = _smallFont.MeasureString(pageText);
+            graphics.DrawString(pageText, _smallFont, BlackBrush,
+                new PointF(MarginLeft + _contentWidth - pageSize.Width, y + 12));
         }
 
         // Render column headers
@@ -793,25 +811,6 @@ namespace VANTAGE.Services.ProgressBook
             DrawEntryBox(graphics, x, y, _zone3ColumnWidths[6].Width, rowHeight);
 
             return y + rowHeight;
-        }
-
-        // Render page footer with page numbers
-        private void RenderPageFooter(PdfPage page, int pageNum, int totalPages)
-        {
-            var graphics = page.Graphics;
-            float y = _pageHeight - MarginBottom - 15;
-
-            string pageText = $"Page {pageNum} of {totalPages}";
-            var pageSize = _smallFont.MeasureString(pageText);
-            float pageX = MarginLeft + (_contentWidth - pageSize.Width) / 2;
-            graphics.DrawString(pageText, _smallFont, BlackBrush, new PointF(pageX, y));
-        }
-
-        // Update page footers with correct total page count
-        private void UpdatePageFooters(PdfDocument document)
-        {
-            // Page footers are rendered during initial pass
-            // This method can be used for future enhancements if needed
         }
 
         // Helper: Draw centered text in a cell

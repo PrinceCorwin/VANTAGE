@@ -4,7 +4,7 @@
         xmlns:skinManager="clr-namespace:Syncfusion.SfSkinManager;assembly=Syncfusion.SfSkinManager.WPF"
         skinManager:SfSkinManager.Theme="{skinManager:SkinManagerExtension ThemeName=FluentDark}"
         Title="Generate Progress Book"
-        Height="300"
+        Height="340"
         Width="400"
         WindowStartupLocation="CenterOwner"
         Background="{StaticResource BackgroundColor}"

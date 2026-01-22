@@ -4,6 +4,16 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ---
 
+### January 21, 2026
+- **Progress Book PDF - Header redesign and fixes:**
+  - New page header layout: Logo (half size) + project info on left, book title centered, date + page number on right
+  - Removed footer - page numbers now in header (more vertical space for data)
+  - Column headers fixed at 5pt font (not affected by slider)
+  - Column padding halved from 8pt to 4pt
+  - Header row height reduced from 20pt to 14pt
+  - Fixed page numbering off-by-one error (was showing "Page 4 of 3")
+  - Rewrote EstimatePageCount to simulate actual rendering logic for accurate page totals
+
 ### January 20, 2026
 - **Progress Book PDF Generator - Auto-fit and layout improvements:**
   - Replaced percentage-based column widths with auto-fit based on actual content
