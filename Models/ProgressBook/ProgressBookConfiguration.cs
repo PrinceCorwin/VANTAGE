@@ -46,14 +46,14 @@ namespace VANTAGE.Models.ProgressBook
             return new ProgressBookConfiguration
             {
                 PaperSize = PaperSize.Letter,
-                FontSize = 10,
+                FontSize = 8, // Default to 8pt for better OCR/scan accuracy
                 FilterField = "WorkPackage",
                 FilterValue = string.Empty,
                 Groups = new List<string> { "PhaseCode" },
                 SortFields = new List<string> { "ROCStep" },
                 Columns = new List<ColumnConfig>
                 {
-                    new ColumnConfig { FieldName = "UniqueID", DisplayOrder = 0 },
+                    new ColumnConfig { FieldName = "ActivityID", DisplayOrder = 0 }, // Shorter ID for easier scanning
                     new ColumnConfig { FieldName = "ROCStep", DisplayOrder = 1 },
                     new ColumnConfig { FieldName = "Description", DisplayOrder = 2 }
                 }

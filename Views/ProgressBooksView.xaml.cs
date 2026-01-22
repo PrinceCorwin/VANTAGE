@@ -102,13 +102,14 @@ namespace VANTAGE.Views
         {
             _allFields = new List<string>
             {
+                "ActivityID", // Short numeric ID for easy scanning
                 "Area", "ChgOrdNO", "CompType", "Description", "DwgNO",
                 "EqmtNO", "HtTrace", "InsulType", "LineNumber", "MtrlSpec", "Notes",
                 "PaintCode", "PhaseCategory", "PhaseCode", "PipeGrade", "ProjectID",
                 "RespParty", "RevNO", "RFINO", "ROCStep", "SchedActNO", "SecondDwgNO",
                 "Service", "ShopField", "ShtNO", "SubArea", "PjtSystem", "SystemNO",
                 "TagNO", "UDF1", "UDF2", "UDF3", "UDF4", "UDF5", "UDF6", "UDF7",
-                "UDF8", "UDF9", "UDF10", "WorkPackage"
+                "UDF8", "UDF9", "UDF10", "UniqueID", "WorkPackage"
             };
             _allFields.Sort();
         }
@@ -175,16 +176,16 @@ namespace VANTAGE.Views
             _currentLayout = null;
             txtLayoutName.Text = DefaultLayoutName;
             rbLetter.IsChecked = true;
-            sliderFontSize.Value = 6;
+            sliderFontSize.Value = 8; // Default to 8pt for better scan accuracy
 
             // Default filter: WorkPackage
             SetFilterColumnSelection("WorkPackage");
             cboFilterValue.ItemsSource = null;
             cboFilterValue.SelectedItem = null;
 
-            // Default columns: UniqueID, ROC and Description (required, auto-sized)
+            // Default columns: ActivityID (short ID for scanning), ROC and Description
             _columns.Clear();
-            _columns.Add(new ColumnDisplayItem { FieldName = "UniqueID", IsRequired = true });
+            _columns.Add(new ColumnDisplayItem { FieldName = "ActivityID", IsRequired = true });
             _columns.Add(new ColumnDisplayItem { FieldName = "ROCStep", IsRequired = true });
             _columns.Add(new ColumnDisplayItem { FieldName = "Description", IsRequired = true });
             RefreshColumnsListBox();
@@ -233,7 +234,7 @@ namespace VANTAGE.Views
                 _columns.Clear();
                 foreach (var col in config.Columns.OrderBy(c => c.DisplayOrder))
                 {
-                    bool isRequired = col.FieldName == "UniqueID" || col.FieldName == "ROCStep" || col.FieldName == "Description";
+                    bool isRequired = col.FieldName == "ActivityID" || col.FieldName == "UniqueID" || col.FieldName == "ROCStep" || col.FieldName == "Description";
                     _columns.Add(new ColumnDisplayItem
                     {
                         FieldName = col.FieldName,
@@ -552,6 +553,12 @@ namespace VANTAGE.Views
             if (txtDescFontNote != null)
             {
                 txtDescFontNote.Text = $"(DESC column renders at {fontSize - 1}pt)";
+            }
+
+            // Show warning for small font sizes that may affect scan accuracy
+            if (txtFontSizeWarning != null)
+            {
+                txtFontSizeWarning.Visibility = fontSize < 7 ? Visibility.Visible : Visibility.Collapsed;
             }
 
             if (!_isLoading)

@@ -15,46 +15,45 @@ namespace VANTAGE.Services.AI
     {
         private readonly HttpClient _httpClient;
 
-        // Extraction prompt for Claude (from PRD)
-        private const string ExtractionPrompt = @"Analyze this construction progress sheet image. Extract all rows that contain handwritten entries in the DONE checkbox, QTY box, or % box.
+        // Extraction prompt for Claude - focus on accurate OCR
+        private const string ExtractionPrompt = @"This is a construction progress sheet. Extract handwritten progress entries.
 
-Document Structure:
-- UniqueID column is on the far left (alphanumeric, ~19 characters, e.g., i251009101621125ano)
-- DONE column has an empty checkbox (☐) - look for checkmarks, X marks, or filled boxes
-- QTY column has a boxed area [...] for handwritten quantity values
-- % column has a boxed area [...] for handwritten percentage values
-- Only data rows have UniqueIDs - ignore header rows and group summary rows
+COLUMN LAYOUT (left to right on the right side of each row):
+- DONE: LIGHT GREEN checkbox - for X marks meaning ""complete""
+- QTY: LIGHT BLUE box - for handwritten QUANTITY numbers
+- % ENTRY: LIGHT YELLOW box - for handwritten PERCENTAGE numbers
 
-For each row with ANY handwritten entry, return:
-- uniqueId: The exact alphanumeric UniqueID from the leftmost column (CRITICAL - must be precise)
-- done: true if checkbox is marked (checkmark, X, filled), false if empty, null if unclear
-- qty: The handwritten quantity value as a number (null if empty or illegible)
-- pct: The handwritten percentage value as a number WITHOUT % symbol (null if empty or illegible)
-- confidence: Your confidence in this extraction (0-100)
-- raw: Exactly what you see written (for verification)
+CRITICAL: QTY (blue) and % ENTRY (yellow) are DIFFERENT columns!
+- If you see a number in a BLUE box, put it in ""qty""
+- If you see a number in a YELLOW box, put it in ""pct""
+- Do NOT confuse these two columns!
 
-Return ONLY a JSON array, no other text:
-[
-  {""uniqueId"": ""i251009101621125ano"", ""done"": true, ""qty"": null, ""pct"": null, ""confidence"": 98, ""raw"": ""checkmark""},
-  {""uniqueId"": ""i251009101556089ano"", ""done"": false, ""qty"": 2.5, ""pct"": null, ""confidence"": 85, ""raw"": ""2.5""},
-  {""uniqueId"": ""i251009101621098pno"", ""done"": false, ""qty"": null, ""pct"": 50, ""confidence"": 92, ""raw"": ""50""}
-]
+TASK:
+1. Scan each row for handwritten marks in the colored entry boxes
+2. For EACH marked row, read the ID from the leftmost ""ID"" column ON THAT SAME ROW
+3. Note which colored box contains the mark
 
-Rules:
-- ONLY include rows where you see handwriting or marks in DONE, QTY, or % areas
-- Skip rows with no handwritten entries
-- If you see a number near the % box, treat it as percentage
-- If you see a number near the QTY box, treat it as quantity
-- If ""50%"" is written, extract pct as 50 (not 50%)
-- UniqueID must be extracted EXACTLY - this is the database key
-- If UniqueID is unclear, set confidence below 50
-- For ambiguous entries, lower confidence and describe in raw field";
+Return JSON array:
+[{""uniqueId"": ""1139574"", ""done"": true, ""qty"": null, ""pct"": null, ""confidence"": 90, ""raw"": ""X in green DONE box""}]
+[{""uniqueId"": ""1139558"", ""done"": null, ""qty"": 82, ""pct"": null, ""confidence"": 85, ""raw"": ""82 in blue QTY box""}]
+[{""uniqueId"": ""1139560"", ""done"": null, ""qty"": null, ""pct"": 100, ""confidence"": 90, ""raw"": ""100 in yellow % box""}]
+
+- uniqueId: The 7-digit ID from the leftmost column of THE SAME ROW as the mark
+- done: true ONLY if X/checkmark in GREEN box
+- qty: number ONLY if written in BLUE box
+- pct: number ONLY if written in YELLOW box
+- confidence: 0-100
+- raw: describe mark AND which color box it's in
+
+Return ONLY the JSON array.";
 
         public ClaudeVisionService()
         {
             _httpClient = new HttpClient();
             _httpClient.DefaultRequestHeaders.Add("x-api-key", ClaudeApiConfig.ApiKey);
             _httpClient.DefaultRequestHeaders.Add("anthropic-version", ClaudeApiConfig.ApiVersion);
+            // Enable PDF support
+            _httpClient.DefaultRequestHeaders.Add("anthropic-beta", "pdfs-2024-09-25");
         }
 
         // Extract progress entries from an image (byte array)
@@ -124,10 +123,13 @@ Rules:
 
         // Send the actual API request
         private async Task<List<ScanExtractionResult>?> SendRequestAsync(
-            string base64Image,
+            string base64Data,
             string mediaType,
             CancellationToken cancellationToken)
         {
+            // Use "document" type for PDFs, "image" type for images
+            var contentType = mediaType == "application/pdf" ? "document" : "image";
+
             var requestBody = new
             {
                 model = ClaudeApiConfig.Model,
@@ -141,12 +143,12 @@ Rules:
                         {
                             new
                             {
-                                type = "image",
+                                type = contentType,
                                 source = new
                                 {
                                     type = "base64",
                                     media_type = mediaType,
-                                    data = base64Image
+                                    data = base64Data
                                 }
                             },
                             new
@@ -225,6 +227,10 @@ Rules:
         {
             try
             {
+                // Log the raw response for debugging
+                AppLogger.Info($"Claude raw response ({text.Length} chars): {text}",
+                    "ClaudeVisionService.ParseExtractionJson");
+
                 // Claude should return just a JSON array, but clean up any extra text
                 var trimmed = text.Trim();
 
@@ -236,6 +242,17 @@ Rules:
                 {
                     var jsonArray = trimmed.Substring(start, end - start + 1);
                     var results = JsonSerializer.Deserialize<List<ScanExtractionResult>>(jsonArray);
+
+                    // Log extracted UniqueIDs for debugging
+                    if (results != null)
+                    {
+                        foreach (var r in results)
+                        {
+                            AppLogger.Info($"Extracted UniqueId: '{r.UniqueId}' (len={r.UniqueId?.Length}), conf={r.Confidence}",
+                                "ClaudeVisionService.ParseExtractionJson");
+                        }
+                    }
+
                     return results ?? new List<ScanExtractionResult>();
                 }
 

@@ -1,6 +1,6 @@
 # MILESTONE - Project Status
 
-**Last Updated:** January 21, 2026
+**Last Updated:** January 22, 2026
 
 ## V1 Testing Scope
 
@@ -112,7 +112,11 @@
 
 ## Known Issues
 
-None currently blocking v1 testing.
+### AI Progress Scan - Review Grid Selection Bug
+- Checkbox selection in review grid is buggy
+- Items auto-select unexpectedly, user cannot manually select/unselect rows
+- Affects "Apply Selected" functionality - button shows count but selection doesn't work properly
+- **TODO:** Fix SfDataGrid checkbox binding in ProgressScanDialog.xaml
 
 ## Test Scenarios Validated
 

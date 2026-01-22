@@ -50,6 +50,10 @@ namespace VANTAGE.Services.ProgressBook
         private static readonly PdfColor GroupHeaderColor = new PdfColor(230, 230, 230);
         private static readonly PdfColor Black = new PdfColor(0, 0, 0);
         private static readonly PdfColor White = new PdfColor(255, 255, 255);
+        // Entry field colors - distinct colors help AI identify column type
+        private static readonly PdfColor DoneFieldColor = new PdfColor(230, 255, 230);    // Light green for DONE checkbox
+        private static readonly PdfColor QtyFieldColor = new PdfColor(230, 240, 255);     // Light blue for QTY entry
+        private static readonly PdfColor PctFieldColor = new PdfColor(255, 255, 230);     // Light yellow for % Entry
 
         // Brushes
         private static readonly PdfBrush BlackBrush = new PdfSolidBrush(Black);
@@ -57,6 +61,9 @@ namespace VANTAGE.Services.ProgressBook
         private static readonly PdfBrush LightGrayBrush = new PdfSolidBrush(LightGray);
         private static readonly PdfBrush HeaderGrayBrush = new PdfSolidBrush(HeaderGray);
         private static readonly PdfBrush GroupHeaderBrush = new PdfSolidBrush(GroupHeaderColor);
+        private static readonly PdfBrush DoneFieldBrush = new PdfSolidBrush(DoneFieldColor);
+        private static readonly PdfBrush QtyFieldBrush = new PdfSolidBrush(QtyFieldColor);
+        private static readonly PdfBrush PctFieldBrush = new PdfSolidBrush(PctFieldColor);
 
         // Pens
         private static readonly PdfPen ThinPen = new PdfPen(Black, 0.5f);
@@ -797,18 +804,24 @@ namespace VANTAGE.Services.ProgressBook
             graphics.DrawLine(ThinPen, x + _zone3ColumnWidths[3].Width, y, x + _zone3ColumnWidths[3].Width, y + rowHeight);
             x += _zone3ColumnWidths[3].Width;
 
-            // DONE checkbox (empty)
-            DrawCheckbox(graphics, x, y, _zone3ColumnWidths[4].Width, rowHeight);
+            // Only show entry fields for incomplete items (< 100%)
+            bool isComplete = activity.PercentEntry >= 100;
+
+            // DONE checkbox (only for incomplete items)
+            if (!isComplete)
+                DrawCheckbox(graphics, x, y, _zone3ColumnWidths[4].Width, rowHeight);
             graphics.DrawLine(ThinPen, x + _zone3ColumnWidths[4].Width, y, x + _zone3ColumnWidths[4].Width, y + rowHeight);
             x += _zone3ColumnWidths[4].Width;
 
-            // QTY Entry box (empty)
-            DrawEntryBox(graphics, x, y, _zone3ColumnWidths[5].Width, rowHeight);
+            // QTY Entry box (only for incomplete items)
+            if (!isComplete)
+                DrawEntryBox(graphics, x, y, _zone3ColumnWidths[5].Width, rowHeight, QtyFieldBrush);
             graphics.DrawLine(ThinPen, x + _zone3ColumnWidths[5].Width, y, x + _zone3ColumnWidths[5].Width, y + rowHeight);
             x += _zone3ColumnWidths[5].Width;
 
-            // % Entry box (empty)
-            DrawEntryBox(graphics, x, y, _zone3ColumnWidths[6].Width, rowHeight);
+            // % Entry box (only for incomplete items)
+            if (!isComplete)
+                DrawEntryBox(graphics, x, y, _zone3ColumnWidths[6].Width, rowHeight, PctFieldBrush);
 
             return y + rowHeight;
         }
@@ -858,18 +871,20 @@ namespace VANTAGE.Services.ProgressBook
             graphics.DrawString(text, font, BlackBrush, new PointF(textX, textY));
         }
 
-        // Helper: Draw empty checkbox
+        // Helper: Draw empty checkbox (light green fill for DONE column)
         private void DrawCheckbox(PdfGraphics graphics, float x, float y, float width, float height)
         {
             float boxSize = Math.Min(height - 4, 12);
             float boxX = x + (width - boxSize) / 2;
             float boxY = y + (height - boxSize) / 2;
 
+            // Light green fill with border for DONE checkbox
+            graphics.DrawRectangle(DoneFieldBrush, new RectangleF(boxX, boxY, boxSize, boxSize));
             graphics.DrawRectangle(ThinPen, new RectangleF(boxX, boxY, boxSize, boxSize));
         }
 
-        // Helper: Draw entry box for handwriting
-        private void DrawEntryBox(PdfGraphics graphics, float x, float y, float width, float height)
+        // Helper: Draw entry box for handwriting (colored fill, no inner border)
+        private void DrawEntryBox(PdfGraphics graphics, float x, float y, float width, float height, PdfBrush brush)
         {
             float padding = 2;
             float boxWidth = width - padding * 2;
@@ -877,8 +892,8 @@ namespace VANTAGE.Services.ProgressBook
             float boxX = x + padding;
             float boxY = y + padding;
 
-            graphics.DrawRectangle(WhiteBrush, new RectangleF(boxX, boxY, boxWidth, boxHeight));
-            graphics.DrawRectangle(ThinPen, new RectangleF(boxX, boxY, boxWidth, boxHeight));
+            // Colored fill to indicate entry area - no inner border that could interfere with handwriting
+            graphics.DrawRectangle(brush, new RectangleF(boxX, boxY, boxWidth, boxHeight));
         }
 
         // Helper: Calculate row height for an activity (considers description wrapping)
@@ -1027,6 +1042,7 @@ namespace VANTAGE.Services.ProgressBook
                 "WorkPackage" => "WP",
                 "ProjectID" => "PROJ",
                 "UniqueID" => "UID",
+                "ActivityID" => "ID",
                 _ => fieldName.ToUpper()
             };
         }

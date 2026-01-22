@@ -158,15 +158,22 @@
                     <Slider x:Name="sliderFontSize"
                             Minimum="4"
                             Maximum="10"
-                            Value="6"
+                            Value="8"
                             TickFrequency="1"
                             IsSnapToTickEnabled="True"
                             ValueChanged="SliderFontSize_ValueChanged"
+                            ToolTip="Font size for data rows. Larger fonts improve Progress Scan accuracy."
                             Margin="0,0,0,5"/>
                     <TextBlock x:Name="txtDescFontNote"
                                Text="(DESC column renders at 9pt)"
                                FontSize="11"
                                Foreground="{StaticResource TextColorSecondary}"
+                               Margin="0,0,0,3"/>
+                    <TextBlock x:Name="txtFontSizeWarning"
+                               Text="Small font may reduce Progress Scan accuracy"
+                               FontSize="11"
+                               Foreground="{StaticResource StatusYellow}"
+                               Visibility="Collapsed"
                                Margin="0,0,0,15"/>
 
                     <!-- Select Progress Book(s) - Filter -->

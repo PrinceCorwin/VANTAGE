@@ -98,10 +98,10 @@ Enable field engineers to print customizable progress books for field workers, t
 #### Zone 2 (User Columns - Left Side, Auto-Fit)
 | Column | Required | Notes |
 |--------|----------|-------|
-| UniqueID | Yes | ~19 alphanumeric chars (e.g., `i251009101621125ano`), cannot be deleted |
+| ActivityID | Yes (default) | Numeric ID (e.g., `1139574`), shorter than UniqueID for better OCR accuracy |
 | ROC | Yes | Moveable, cannot be deleted |
 | DESC | Yes | Moveable, cannot be deleted, font -1pt, wraps long lines |
-| *User columns* | No | Moveable, deletable |
+| *User columns* | No | Moveable, deletable (UniqueID can be added as optional column) |
 
 **Width Calculation:**
 - All Zone 2 columns auto-fit based on actual data content
@@ -110,17 +110,20 @@ Enable field engineers to print customizable progress books for field workers, t
 - Long descriptions wrap to multiple lines (row height increases)
 
 #### Zone 3 (Right Side - Progress Tracking)
-| Column | Width | Format | Notes |
-|--------|-------|--------|-------|
-| REM QTY | Auto-fit | Decimal | Remaining quantity |
-| REM MH | Auto-fit | Decimal | Remaining manhours |
-| CUR QTY | Auto-fit | Decimal | Current completed quantity |
-| CUR % | Auto-fit | "XX.XX%" | Current percent complete |
-| DONE | Fixed 30pt | ☐ checkbox | Empty checkbox for field use |
-| QTY Entry | Fixed 55pt | [      ] | Boxed area for handwriting |
-| % Entry | Fixed 55pt | [      ] | Boxed area for handwriting |
+| Column | Width | Format | Color | Notes |
+|--------|-------|--------|-------|-------|
+| REM QTY | Auto-fit | Decimal | - | Remaining quantity |
+| REM MH | Auto-fit | Decimal | - | Remaining manhours |
+| CUR QTY | Auto-fit | Decimal | - | Current completed quantity |
+| CUR % | Auto-fit | "XX.XX%" | - | Current percent complete |
+| DONE | Fixed 30pt | ☐ checkbox | Light Green (230,255,230) | Empty checkbox for field use |
+| QTY Entry | Fixed 55pt | [      ] | Light Blue (230,240,255) | Boxed area for handwriting |
+| % Entry | Fixed 55pt | [      ] | Light Yellow (255,255,230) | Boxed area for handwriting |
 
-**Note:** Only entry boxes (DONE, QTY, % Entry) have fixed widths. Data columns auto-fit to content.
+**Notes:**
+- Only entry boxes (DONE, QTY, % Entry) have fixed widths. Data columns auto-fit to content.
+- Entry boxes are COLOR-CODED to help AI distinguish column types during scan.
+- Entry boxes ONLY render for incomplete items (CUR % < 100) - completed rows have empty entry cells.
 
 ### Font Size Slider
 
@@ -772,7 +775,9 @@ MILESTONE/
 | Layout Storage | Local SQLite only | No Azure sync needed for layouts |
 | Zone Widths | 5% / 45% / 50% | Accepted as specified |
 | Record Ownership | Skip unassigned | Only process records assigned to current user |
-| PDF to Image | PdfiumViewer.Native.x86_64.v8-xfa | Proven library for Windows |
+| PDF Processing | Direct to Claude API | Claude natively handles PDFs with better quality than image conversion |
+| ID Column | ActivityID (numeric) | Shorter than UniqueID, better OCR accuracy |
+| Entry Field Colors | Green/Blue/Yellow | Helps AI distinguish DONE/QTY/% columns |
 | API Batch Size | 1 page per call | Most reliable, simplest error handling |
 | Usage Limits | GlobalSettings Azure table | App-wide configurable limits |
 | DONE Checkbox | Always 100% | Marking DONE sets progress to 100% |
@@ -783,11 +788,12 @@ Use **Syncfusion.Pdf.WPF** (already in project):
 - Extend BaseRenderer pattern from `Services/PdfRenderers/`
 - Already licensed and tested
 
-### PDF to Image Conversion
-Use **PdfiumViewer.Native.x86_64.v8-xfa**:
-- Extract pages as images at 200 DPI
-- Windows native binaries
-- Well-tested library
+### PDF Processing
+PDFs are sent directly to Claude API (no image conversion):
+- Claude natively processes PDFs with `"type": "document"` and beta header `pdfs-2024-09-25`
+- Better quality than converting to images
+- No PdfiumViewer dependency required
+- Images (PNG, JPG from phone photos) still supported via `"type": "image"`
 
 ### Claude API Key Storage
 - Store in `Credentials.cs` alongside other API credentials:

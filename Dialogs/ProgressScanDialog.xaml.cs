@@ -211,10 +211,10 @@ namespace VANTAGE.Dialogs
         {
             _reviewItems.Clear();
 
-            // Get all user's activities for matching
+            // Get all user's activities for matching by ActivityID
             var username = App.CurrentUser?.Username ?? "";
             var (activities, _) = await ActivityRepository.GetAllActivitiesAsync($"AssignedTo = '{username}'");
-            var activityDict = activities.ToDictionary(a => a.UniqueID, a => a);
+            var activityDict = activities.ToDictionary(a => a.ActivityID, a => a);
 
             int matchedCount = 0;
             int notFoundCount = 0;
@@ -232,8 +232,9 @@ namespace VANTAGE.Dialogs
                     RawExtraction = extraction.Raw
                 };
 
-                // Try to match to database
-                if (activityDict.TryGetValue(extraction.UniqueId, out var activity))
+                // Try to match to database by ActivityID (parse extracted string to int)
+                if (int.TryParse(extraction.UniqueId, out int activityId) &&
+                    activityDict.TryGetValue(activityId, out var activity))
                 {
                     reviewItem.MatchedRecord = activity;
                     reviewItem.Description = activity.Description;
@@ -352,7 +353,7 @@ namespace VANTAGE.Dialogs
         // Filter changed
         private void FilterChanged(object sender, RoutedEventArgs e)
         {
-            if (sfReviewGrid.View == null) return;
+            if (sfReviewGrid?.View == null) return;
 
             sfReviewGrid.View.Filter = item =>
             {

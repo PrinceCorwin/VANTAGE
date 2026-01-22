@@ -1,115 +1,19 @@
 using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
-using PdfiumViewer;
 using VANTAGE.Utilities;
 
 namespace VANTAGE.Services.AI
 {
-    // Converts PDF pages to PNG images for Claude Vision API processing
+    // Helper for file type detection and media types for Claude Vision API
     public static class PdfToImageConverter
     {
-        private const int DefaultDpi = 200;
-
         // Get the number of pages in a PDF file
+        // Returns 1 as default since Claude processes the entire PDF
         public static int GetPageCount(string pdfPath)
         {
-            try
-            {
-                using var document = PdfDocument.Load(pdfPath);
-                return document.PageCount;
-            }
-            catch (Exception ex)
-            {
-                AppLogger.Error(ex, "PdfToImageConverter.GetPageCount");
-                return 0;
-            }
-        }
-
-        // Convert a single page to a PNG image (returns byte array)
-        // pageIndex is 0-based
-        public static byte[]? ConvertPageToImage(string pdfPath, int pageIndex, int dpi = DefaultDpi)
-        {
-            try
-            {
-                using var document = PdfDocument.Load(pdfPath);
-
-                if (pageIndex < 0 || pageIndex >= document.PageCount)
-                {
-                    AppLogger.Warning($"Invalid page index {pageIndex} for PDF with {document.PageCount} pages",
-                        "PdfToImageConverter.ConvertPageToImage");
-                    return null;
-                }
-
-                // Get page size and calculate image dimensions
-                var pageSize = document.PageSizes[pageIndex];
-                int width = (int)(pageSize.Width * dpi / 72.0);
-                int height = (int)(pageSize.Height * dpi / 72.0);
-
-                // Render the page to an image
-                using var image = document.Render(pageIndex, width, height, dpi, dpi, false);
-
-                // Convert to PNG byte array
-                using var ms = new MemoryStream();
-                image.Save(ms, ImageFormat.Png);
-                return ms.ToArray();
-            }
-            catch (Exception ex)
-            {
-                AppLogger.Error(ex, "PdfToImageConverter.ConvertPageToImage");
-                return null;
-            }
-        }
-
-        // Convert all pages to PNG images
-        public static List<byte[]> ConvertAllPages(string pdfPath, int dpi = DefaultDpi)
-        {
-            var results = new List<byte[]>();
-
-            try
-            {
-                using var document = PdfDocument.Load(pdfPath);
-
-                for (int i = 0; i < document.PageCount; i++)
-                {
-                    var imageBytes = ConvertPageToImageInternal(document, i, dpi);
-                    if (imageBytes != null)
-                    {
-                        results.Add(imageBytes);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                AppLogger.Error(ex, "PdfToImageConverter.ConvertAllPages");
-            }
-
-            return results;
-        }
-
-        // Internal method to convert a page using an already-opened document
-        private static byte[]? ConvertPageToImageInternal(PdfDocument document, int pageIndex, int dpi)
-        {
-            try
-            {
-                var pageSize = document.PageSizes[pageIndex];
-                int width = (int)(pageSize.Width * dpi / 72.0);
-                int height = (int)(pageSize.Height * dpi / 72.0);
-
-                using var image = document.Render(pageIndex, width, height, dpi, dpi, false);
-
-                using var ms = new MemoryStream();
-                image.Save(ms, ImageFormat.Png);
-                return ms.ToArray();
-            }
-            catch (Exception ex)
-            {
-                AppLogger.Error($"Failed to convert page {pageIndex}: {ex.Message}",
-                    "PdfToImageConverter.ConvertPageToImageInternal");
-                return null;
-            }
+            // PDF is sent directly to Claude API which handles multi-page PDFs
+            // Return 1 for UI display purposes
+            return 1;
         }
 
         // Get the media type string for a file based on extension

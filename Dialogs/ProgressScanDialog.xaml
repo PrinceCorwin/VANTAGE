@@ -6,12 +6,12 @@
         skinManager:SfSkinManager.Theme="{skinManager:SkinManagerExtension ThemeName=FluentDark}"
         Title="Scan Progress Sheets"
         Height="600"
-        Width="850"
+        Width="950"
         WindowStartupLocation="CenterOwner"
         Background="{StaticResource BackgroundColor}"
         ResizeMode="CanResize"
         MinHeight="500"
-        MinWidth="700"
+        MinWidth="800"
         WindowStyle="SingleBorderWindow">
 
     <Grid Margin="20">
@@ -323,10 +323,11 @@
                                                        HeaderText="☑"
                                                        Width="40"
                                                        AllowEditing="True"/>
-                        <syncfusion:GridTextColumn MappingName="ShortUniqueId"
+                        <syncfusion:GridTextColumn MappingName="ExtractedUniqueId"
                                                    HeaderText="UniqueID"
-                                                   Width="80"
-                                                   AllowEditing="False"/>
+                                                   Width="155"
+                                                   AllowEditing="False"
+                                                   ToolTipTemplate="{x:Null}"/>
                         <syncfusion:GridTextColumn MappingName="Description"
                                                    HeaderText="Description"
                                                    Width="200"

@@ -4,6 +4,24 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ---
 
+### January 22, 2026
+- **AI Progress Scan - Major accuracy improvements:**
+  - Changed Progress Book format from UniqueID to ActivityID (shorter, easier to OCR)
+  - Added color-coded entry fields for better AI column recognition:
+    - DONE checkbox: Light green (230, 255, 230)
+    - QTY entry: Light blue (230, 240, 255)
+    - % ENTRY: Light yellow (255, 255, 230)
+  - Entry fields only render for incomplete items (CUR % < 100) - reduces visual noise
+  - Default font size increased from 6pt to 8pt with warning below 7pt
+  - Updated AI extraction prompt to reference color-coded columns explicitly
+  - Updated matching logic to use ActivityID (int) instead of UniqueID (string)
+  - Removed PdfiumViewer dependency - PDFs now sent directly to Claude API
+    - Claude handles multi-page PDFs natively with better quality
+    - Removed PdfiumViewer and PdfiumViewer.Native.x86_64.v8-xfa packages
+    - Simplified PdfToImageConverter.cs to just file type detection
+  - Added font size warning display in Progress Books view
+  - Testing confirmed: 7 extracted, 7 matched, accurate QTY vs % column distinction
+
 ### January 21, 2026
 - **AI Progress Scan feature (Phases 4-5):**
   - Created Claude Vision API infrastructure in Services/AI/:

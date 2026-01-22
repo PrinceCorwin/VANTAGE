@@ -123,18 +123,16 @@ namespace VANTAGE.Services.AI
         {
             try
             {
-                // Convert PDF page to image
-                var imageBytes = PdfToImageConverter.ConvertPageToImage(pdfPath, pageIndex);
-                if (imageBytes == null)
-                {
-                    result.FailedPages++;
-                    result.Errors.Add($"{fileName} page {pageIndex + 1}: Failed to convert PDF page to image");
-                    return;
-                }
+                // Send PDF directly to Claude API (not converted to PNG)
+                // Claude can process PDFs natively with better quality
+                var pdfBytes = await File.ReadAllBytesAsync(pdfPath, cancellationToken);
 
-                // Extract data from image
+                AppLogger.Info($"Sending PDF directly to API: {pdfBytes.Length} bytes",
+                    "ProgressScanService.ProcessPdfPageAsync");
+
+                // Extract data from PDF directly
                 var extractions = await _visionService.ExtractFromImageAsync(
-                    imageBytes, "image/png", cancellationToken);
+                    pdfBytes, "application/pdf", cancellationToken);
 
                 if (extractions.Count > 0)
                 {
