@@ -1,6 +1,6 @@
 # MILESTONE - Project Status
 
-**Last Updated:** January 20, 2026
+**Last Updated:** January 21, 2026
 
 ## V1 Testing Scope
 
@@ -13,13 +13,14 @@
 | Admin | Complete |
 | Work Package (PDF generation) | Ready for testing (drawings hidden) |
 | Help Sidebar | Content writing in progress |
-| Progress Book creation | In development (Phases 1-6 complete) |
+| Progress Book creation | Ready for testing |
+| AI Progress Scan | Ready for testing |
 
 ### Deferred to Post-V1
 | Feature | Reason |
 |---------|--------|
 | Drawings in Work Packages | Per-WP location architecture needs design |
-| AI Features | Requires ClaudeApiService infrastructure |
+| AI Features (other than Progress Scan) | Lower priority for V1 |
 | Theme Selection | Lower priority |
 | Procore Integration | Can develop while users test |
 
@@ -33,15 +34,16 @@
 | Admin | COMPLETE | User/project/snapshot management |
 | Work Package | READY FOR TESTING | PDF generation working; Drawings deferred to post-v1 |
 | Help Sidebar | IN DEVELOPMENT | Search, action buttons complete; content writing in progress |
-| AI Features | NOT STARTED | Requires ClaudeApiService infrastructure first |
+| AI Progress Scan | READY FOR TESTING | Claude Vision API integration complete |
+| AI Features (other) | NOT STARTED | Error Assistant, Description Analysis, etc. |
 
 ## Active Development
 
 ### Progress Book Module
 - Phases 1-6 complete: Data models, repository, layout builder UI, PDF generator, live preview, generate dialog
 - PDF features: Auto-fit column widths, description wrapping, project description in header
-- Layout features: Separate grouping and sorting, up to 10 levels each
-- AI Scan phases pending (7-14)
+- Layout features: Separate grouping and sorting, up to 10 levels each, exclude completed option
+- AI Progress Scan complete: Claude Vision API, PDF-to-image, scan dialog with upload/process/review steps
 
 ### Work Package Module
 - Template editors testing
@@ -71,7 +73,8 @@
 ### AI Features (see InCode_AI_Plan.md)
 | Feature | Status |
 |---------|--------|
-| ClaudeApiService infrastructure | Not Started |
+| AI Progress Scan | Complete (V1) |
+| ClaudeApiService infrastructure | Complete (via Progress Scan) |
 | AI Error Assistant | Not Started |
 | AI Description Analysis | Not Started |
 | Metadata Consistency Analysis | Not Started |

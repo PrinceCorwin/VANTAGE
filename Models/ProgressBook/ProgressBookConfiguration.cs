@@ -21,6 +21,10 @@ namespace VANTAGE.Models.ProgressBook
         [JsonPropertyName("filterValue")]
         public string FilterValue { get; set; } = string.Empty;
 
+        // Exclude activities with 100% progress
+        [JsonPropertyName("excludeCompleted")]
+        public bool ExcludeCompleted { get; set; } = false;
+
         // Group fields for organizing data (up to 10 levels)
         // Groups are always sorted alphanumerically
         [JsonPropertyName("groups")]

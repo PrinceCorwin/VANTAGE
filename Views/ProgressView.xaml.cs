@@ -2950,8 +2950,25 @@ namespace VANTAGE.Views
             await CalculateMetadataErrorCount();
 
         }
-        
-        /// Public method to refresh the grid data from the database
+
+        // Open the AI progress scan dialog
+        private async void BtnScanProgress_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new Dialogs.ProgressScanDialog
+            {
+                Owner = Window.GetWindow(this)
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                // Refresh the grid after applying scan results
+                await _viewModel.RefreshAsync();
+                UpdateRecordCount();
+                UpdateSummaryPanel();
+            }
+        }
+
+        // Public method to refresh the grid data from the database
         /// Used by MainWindow after bulk operations like resetting LocalDirty
         
         public async Task RefreshData()

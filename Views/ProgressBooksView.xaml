@@ -193,8 +193,13 @@
                                   ToolTip="Value to filter - this becomes the Progress Book name in the header"
                                   SelectionChanged="FilterValue_SelectionChanged"/>
                     </Grid>
+                    <CheckBox x:Name="chkExcludeCompleted"
+                              Content="Exclude Completed Activities"
+                              Foreground="{StaticResource ForegroundColor}"
+                              Margin="0,10,0,0"
+                              ToolTip="When checked, activities with 100% progress will not be included in the progress book"/>
 
-                    <Separator Margin="0,0,0,15"/>
+                    <Separator Margin="0,15,0,15"/>
 
                     <!-- Grouping (groups are auto-sorted alphanumerically) -->
                     <TextBlock Text="Grouping" FontWeight="Bold" Margin="0,0,0,5"/>
@@ -300,20 +305,6 @@
                             HorizontalAlignment="Left"
                             Margin="0,0,0,15"
                             ToolTip="Add another sort level (max 10)"/>
-
-                    <Separator Margin="0,0,0,15"/>
-
-                    <!-- Zone Summary -->
-                    <TextBlock Text="Layout Zones" FontWeight="Bold" Foreground="{StaticResource AccentColor}" Margin="0,0,0,8"/>
-                    <TextBlock x:Name="txtZone2Summary"
-                               Text="Left (auto-fit): Your columns"
-                               FontSize="12"
-                               Foreground="{StaticResource TextColorSecondary}"/>
-                    <TextBlock Text="Right (fixed): REM QTY | REM MH | CUR QTY | CUR % | DONE | QTY | %"
-                               FontSize="12"
-                               Foreground="{StaticResource TextColorSecondary}"
-                               TextWrapping="Wrap"
-                               Margin="0,3,0,15"/>
 
                     <!-- Save Button -->
                     <Button x:Name="btnSaveLayout"

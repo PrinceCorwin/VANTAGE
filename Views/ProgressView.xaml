@@ -429,6 +429,21 @@
                                 Click="BtnRefresh_Click"
                                 ToolTip="Reload data from local database"/>
 
+                        <Button x:Name="btnScanProgress"
+                                Content="SCAN"
+                                Style="{StaticResource RoundedButtonStyle}"
+                                Width="60"
+                                Margin="5,0"
+                                Background="{StaticResource ControlBackground}"
+                                Foreground="{StaticResource AccentColor}"
+                                BorderBrush="{StaticResource ControlBorder}"
+                                BorderThickness="1"
+                                Padding="5"
+                                FontSize="12"
+                                VerticalContentAlignment="Center"
+                                Click="BtnScanProgress_Click"
+                                ToolTip="Scan progress sheets with AI vision"/>
+
                         <Button x:Name="btnSetPercent100"
                                 Content="100%"
                                 Style="{StaticResource RoundedButtonStyle}"

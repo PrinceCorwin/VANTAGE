@@ -200,8 +200,7 @@ namespace VANTAGE.Views
             RefreshSortFields();
 
             RefreshAddColumnDropdown();
-            UpdateZone2Summary();
-            UpdateDeleteButtonState();
+                        UpdateDeleteButtonState();
             UpdateAddGroupButtonState();
             UpdateAddSortButtonState();
 
@@ -228,6 +227,7 @@ namespace VANTAGE.Views
 
                 // Load filter settings
                 SetFilterColumnSelection(config.FilterField);
+                chkExcludeCompleted.IsChecked = config.ExcludeCompleted;
 
                 // Load columns
                 _columns.Clear();
@@ -267,8 +267,7 @@ namespace VANTAGE.Views
                 RefreshSortFields();
 
                 RefreshAddColumnDropdown();
-                UpdateZone2Summary();
-                UpdateDeleteButtonState();
+                                UpdateDeleteButtonState();
                 UpdateAddGroupButtonState();
                 UpdateAddSortButtonState();
 
@@ -457,7 +456,8 @@ namespace VANTAGE.Views
                 PaperSize = rbLetter.IsChecked == true ? PaperSize.Letter : PaperSize.Tabloid,
                 FontSize = (int)sliderFontSize.Value,
                 FilterField = GetSelectedFilterColumn(),
-                FilterValue = cboFilterValue.SelectedItem as string ?? string.Empty
+                FilterValue = cboFilterValue.SelectedItem as string ?? string.Empty,
+                ExcludeCompleted = chkExcludeCompleted.IsChecked == true
             };
 
             // Add groups
@@ -500,13 +500,6 @@ namespace VANTAGE.Views
 
             // Update sort field options when columns change
             RefreshSortFields();
-        }
-
-        // Update the Zone 2 summary text
-        private void UpdateZone2Summary()
-        {
-            var columnNames = string.Join(" | ", _columns.Select(c => c.FieldName));
-            txtZone2Summary.Text = $"Left (auto-fit): {columnNames}";
         }
 
         // Event Handlers
@@ -598,8 +591,7 @@ namespace VANTAGE.Views
                 _columns.Insert(index - 1, item);
                 RefreshColumnsListBox();
                 lstColumns.SelectedIndex = index - 1;
-                UpdateZone2Summary();
-                _hasUnsavedChanges = true;
+                                _hasUnsavedChanges = true;
             }
         }
 
@@ -613,8 +605,7 @@ namespace VANTAGE.Views
                 _columns.Insert(index + 1, item);
                 RefreshColumnsListBox();
                 lstColumns.SelectedIndex = index + 1;
-                UpdateZone2Summary();
-                _hasUnsavedChanges = true;
+                                _hasUnsavedChanges = true;
             }
         }
 
@@ -634,8 +625,7 @@ namespace VANTAGE.Views
             _columns.RemoveAt(index);
             RefreshColumnsListBox();
             RefreshAddColumnDropdown();
-            UpdateZone2Summary();
-            _hasUnsavedChanges = true;
+                        _hasUnsavedChanges = true;
         }
 
         private void BtnAddColumn_Click(object sender, RoutedEventArgs e)
@@ -646,8 +636,7 @@ namespace VANTAGE.Views
             _columns.Add(new ColumnDisplayItem { FieldName = field, IsRequired = false });
             RefreshColumnsListBox();
             RefreshAddColumnDropdown();
-            UpdateZone2Summary();
-            _hasUnsavedChanges = true;
+                        _hasUnsavedChanges = true;
         }
 
         // Group actions
@@ -909,6 +898,12 @@ namespace VANTAGE.Views
                 else
                 {
                     whereClause = $"AssignedTo = '{username}'";
+                }
+
+                // Add filter for excluding completed activities
+                if (config.ExcludeCompleted)
+                {
+                    whereClause += " AND PercentEntry < 100";
                 }
 
                 var (activities, _) = await ActivityRepository.GetAllActivitiesAsync(whereClause);

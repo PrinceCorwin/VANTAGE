@@ -5,6 +5,33 @@ This document tracks completed features and fixes. Items are moved here from Pro
 ---
 
 ### January 21, 2026
+- **AI Progress Scan feature (Phases 4-5):**
+  - Created Claude Vision API infrastructure in Services/AI/:
+    - ClaudeApiConfig.cs - API configuration (key, version, endpoints)
+    - ClaudeVisionService.cs - Image analysis with retry logic and rate limiting
+    - PdfToImageConverter.cs - PDF-to-PNG conversion using PdfiumViewer at 200 DPI
+    - ProgressScanService.cs - Orchestrates scan workflow with progress reporting
+  - Created AI models in Models/AI/:
+    - ScanExtractionResult.cs - JSON response model for Claude API
+    - ScanReviewItem.cs - Bindable review grid item with INotifyPropertyChanged
+    - ScanProgress.cs - Progress tracking with ScanBatchResult
+  - Created ProgressScanDialog with 3-step workflow:
+    - Step 1: Drag-drop or browse for PDF/PNG/JPG files
+    - Step 2: Processing with progress bar and cancel support
+    - Step 3: Review grid with checkbox selection, filtering, editable New %/QTY columns
+  - Added SCAN button to ProgressView toolbar
+  - Added PdfiumViewer and PdfiumViewer.Native.x86_64.v8-xfa NuGet packages
+
+- **Progress Book - Exclude Completed Activities:**
+  - Added checkbox to filter section in ProgressBooksView.xaml
+  - Added ExcludeCompleted property to ProgressBookConfiguration model
+  - Updated preview and generate queries to filter out 100% progress activities
+  - Persists with layout save/load
+
+- **Progress Book - UI cleanup:**
+  - Removed Layout Zones section from ProgressBooksView (kept Save button)
+  - Removed UpdateZone2Summary method and all calls to it
+
 - **Progress Book PDF - Header redesign and fixes:**
   - New page header layout: Logo (half size) + project info on left, book title centered, date + page number on right
   - Removed footer - page numbers now in header (more vertical space for data)

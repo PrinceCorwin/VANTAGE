@@ -79,6 +79,12 @@ namespace VANTAGE.Dialogs
                     whereClause = $"AssignedTo = '{username}'";
                 }
 
+                // Add filter for excluding completed activities
+                if (_config.ExcludeCompleted)
+                {
+                    whereClause += " AND PercentEntry < 100";
+                }
+
                 var (activities, _) = await ActivityRepository.GetAllActivitiesAsync(whereClause);
                 _activities = activities;
 
