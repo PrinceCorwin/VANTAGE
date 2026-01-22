@@ -15,7 +15,10 @@
       "Bash(dotnet add package:*)",
       "Bash(git push:*)",
       "Bash(sqlite3:*)",
-      "Bash(wc:*)"
+      "Bash(wc:*)",
+      "Bash(xargs cat:*)",
+      "Bash(dotnet remove:*)",
+      "Bash(dotnet list:*)"
     ]
   }
 }
