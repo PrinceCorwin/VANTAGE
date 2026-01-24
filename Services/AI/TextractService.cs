@@ -294,7 +294,6 @@ namespace VANTAGE.Services.AI
             {
                 UniqueId = activityId.ToString(),
                 Pct = pctValue,
-                Done = pctValue >= 100,
                 Confidence = (int)avgConfidence,
                 Raw = $"ID:{idText}, %:{pctText}"
             };

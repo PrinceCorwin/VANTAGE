@@ -512,6 +512,30 @@ namespace VANTAGE.Models
         {
             RecalculatePercentEarned();
         }
+
+        // Call after programmatic changes to progress fields when using reflection
+        // (e.g., Find/Replace uses SetValue which bypasses property setters)
+        public void RecalculateDerivedFields(string changedField)
+        {
+            switch (changedField)
+            {
+                case nameof(PercentEntry):
+                    UpdateEarnedQtyFromPercComplete();
+                    break;
+                case nameof(EarnQtyEntry):
+                    UpdatePercCompleteFromEarnedQty();
+                    break;
+                case nameof(Quantity):
+                    UpdateEarnedQtyFromPercComplete(); // PercentEntry is king
+                    break;
+                case nameof(BudgetMHs):
+                    RecalculatePercentEarned();
+                    break;
+                default:
+                    RecalculatePercentEarned(); // Safe fallback
+                    break;
+            }
+        }
         /// Calculate ClientEquivEarnQTY
         /// Formula: IF(EarnMHsCalc > 0, ROUND((EarnMHsCalc / BudgetMHs) * ClientEquivQty, 3), 0)
 

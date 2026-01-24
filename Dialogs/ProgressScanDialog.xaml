@@ -307,11 +307,13 @@
                                        AllowEditing="True"
                                        EditTrigger="OnTap"
                                        AllowSorting="True"
-                                       SelectionMode="None"
+                                       SelectionMode="Single"
+                                       SelectionUnit="Cell"
                                        NavigationMode="Cell"
                                        GridLinesVisibility="Horizontal"
                                        HeaderRowHeight="30"
-                                       RowHeight="28">
+                                       RowHeight="28"
+                                       CurrentCellEndEdit="SfReviewGrid_CurrentCellEndEdit">
                     <syncfusion:SfDataGrid.HeaderStyle>
                         <Style TargetType="syncfusion:GridHeaderCellControl">
                             <Setter Property="Background" Value="{StaticResource GridHeaderBackground}"/>
@@ -321,11 +323,15 @@
                     <syncfusion:SfDataGrid.Columns>
                         <syncfusion:GridCheckBoxColumn MappingName="IsSelected"
                                                        HeaderText="☑"
-                                                       Width="40"
-                                                       AllowEditing="True"/>
+                                                       Width="40"/>
                         <syncfusion:GridTextColumn MappingName="ExtractedUniqueId"
+                                                   HeaderText="ActID"
+                                                   Width="60"
+                                                   AllowEditing="False"
+                                                   ToolTipTemplate="{x:Null}"/>
+                        <syncfusion:GridTextColumn MappingName="MatchedUniqueId"
                                                    HeaderText="UniqueID"
-                                                   Width="155"
+                                                   Width="140"
                                                    AllowEditing="False"
                                                    ToolTipTemplate="{x:Null}"/>
                         <syncfusion:GridTextColumn MappingName="Description"
@@ -342,14 +348,13 @@
                                                       HeaderText="New %"
                                                       Width="70"
                                                       AllowEditing="True"
-                                                      NumberDecimalDigits="1"/>
-                        <!-- QTY entry deferred to V2 - hidden for now -->
-                        <syncfusion:GridNumericColumn MappingName="NewQty"
-                                                      HeaderText="New QTY"
-                                                      Width="80"
-                                                      AllowEditing="True"
-                                                      NumberDecimalDigits="2"
-                                                      IsHidden="True"/>
+                                                      NumberDecimalDigits="1">
+                            <syncfusion:GridNumericColumn.HeaderTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="New %" ToolTip="Click to edit - correct OCR errors here"/>
+                                </DataTemplate>
+                            </syncfusion:GridNumericColumn.HeaderTemplate>
+                        </syncfusion:GridNumericColumn>
                         <syncfusion:GridNumericColumn MappingName="Confidence"
                                                       HeaderText="Conf"
                                                       Width="55"

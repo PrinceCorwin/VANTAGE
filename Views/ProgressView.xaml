@@ -740,12 +740,21 @@
                     <syncfusion:SfDataGrid.Columns>
 
                         <!-- IDENTITY & KEY FIELDS -->
-                        <syncfusion:GridTextColumn MappingName="UniqueID" 
-                              HeaderText="UniqueID" 
-                              Width="120" 
+                        <syncfusion:GridTextColumn MappingName="UniqueID"
+                              HeaderText="UniqueID"
+                              Width="120"
                               AllowEditing="False"
                               AllowFiltering="True"
                               AllowSorting="True" />
+
+                        <syncfusion:GridNumericColumn MappingName="ActivityID"
+                              HeaderText="ActivityID"
+                              Width="80"
+                              IsHidden="False"
+                              AllowEditing="False"
+                              AllowFiltering="True"
+                              AllowSorting="True"
+                              NumberDecimalDigits="0" />
 
                         <syncfusion:GridTextColumn MappingName="ProjectID" 
                               HeaderText="ProjectID" 

@@ -5,6 +5,34 @@ This document tracks completed features and fixes. Items are moved here from Pro
 ---
 
 ### January 24, 2026
+- **EarnQtyEntry Recalculation Bug Fixed:**
+  - Added `RecalculateDerivedFields(changedField)` method to Activity.cs
+  - Find/Replace now triggers recalculation after programmatic property changes
+  - Progress summary panel updates after Find/Replace completes
+  - Fixes: PercentEntry ↔ EarnQtyEntry sync, Quantity changes, BudgetMHs changes
+
+- **AI Progress Scan - Image Preprocessing for OCR:**
+  - Created ImagePreprocessor.cs with grayscale conversion and 30% contrast enhancement
+  - Integrated preprocessing into ProgressScanService before Textract analysis
+  - Fixes handwritten "100" being misread as "0" by improving image clarity
+
+- **AI Progress Scan - Legacy Code Cleanup:**
+  - Removed Done checkbox concept (legacy - now using % entry for completion)
+  - Removed ExtractedDone, ExtractedQty, CurrentQty, NewQty from ScanReviewItem
+  - Removed Done and Qty from ScanExtractionResult
+  - Cleaned up TextractService to not set Done field
+
+- **AI Progress Scan - Review Grid Fix (Proper Syncfusion Implementation):**
+  - Changed to GridCheckBoxColumn (Syncfusion native) instead of template with WPF CheckBox
+  - Set EditTrigger="OnTap" for single-click editing of all cells
+  - Set SelectionMode="Single" with SelectionUnit="Cell" for proper cell interaction
+  - Both checkboxes and New % cells now editable with single click
+  - CurrentCellEndEdit event updates selection count
+
+- **Progress Grid - Added ActivityID Column:**
+  - Added ActivityID as visible column in ProgressView.xaml (after UniqueID)
+  - Used for AI scan matching (shorter than UniqueID, easier for OCR)
+
 - **AI Progress Scan - AWS Textract Implementation (100% accuracy achieved):**
   - Switched from Claude Vision API to AWS Textract for table extraction
   - Textract provides proper table structure with row/column indices and bounding boxes

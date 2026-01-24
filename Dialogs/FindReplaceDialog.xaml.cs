@@ -112,6 +112,12 @@ namespace VANTAGE.Dialogs
                             object? newValue = ConvertToPropertyType(newTextValue, currentValue.GetType());
                             provider.SetValue(activity, _columnMappingName, newValue);
 
+                            // SetValue bypasses property setters, so trigger recalculation for progress fields
+                            if (_columnMappingName is "PercentEntry" or "EarnQtyEntry" or "Quantity" or "BudgetMHs")
+                            {
+                                activity.RecalculateDerivedFields(_columnMappingName);
+                            }
+
                             // Mark as dirty and update metadata
                             activity.LocalDirty = 1;
                             activity.UpdatedBy = VANTAGE.App.CurrentUser?.Username ?? "Unknown";

@@ -2,17 +2,11 @@ using System.Text.Json.Serialization;
 
 namespace VANTAGE.Models.AI
 {
-    // Represents a single extracted entry from Claude Vision API response
+    // Represents a single extracted entry from Textract
     public class ScanExtractionResult
     {
         [JsonPropertyName("uniqueId")]
         public string UniqueId { get; set; } = null!;
-
-        [JsonPropertyName("done")]
-        public bool? Done { get; set; }
-
-        [JsonPropertyName("qty")]
-        public decimal? Qty { get; set; }
 
         [JsonPropertyName("pct")]
         public decimal? Pct { get; set; }

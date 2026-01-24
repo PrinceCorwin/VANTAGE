@@ -135,12 +135,15 @@ namespace VANTAGE.Services.AI
                     return;
                 }
 
-                AppLogger.Info($"Converted PDF page {pageIndex + 1} to image: {imageBytes.Length} bytes",
+                // Preprocess image for better OCR (grayscale + contrast enhancement)
+                var preprocessed = ImagePreprocessor.PreprocessForOcr(imageBytes);
+
+                AppLogger.Info($"Converted PDF page {pageIndex + 1} to image: {imageBytes.Length} bytes, preprocessed: {preprocessed.Length} bytes",
                     "ProgressScanService.ProcessPdfPageAsync");
 
                 // Extract data from image using Textract
                 var extractions = await _textractService.AnalyzeImageAsync(
-                    imageBytes, cancellationToken);
+                    preprocessed, cancellationToken);
 
                 if (extractions.Count > 0)
                 {
@@ -168,9 +171,12 @@ namespace VANTAGE.Services.AI
                 // Read image file
                 var imageBytes = await File.ReadAllBytesAsync(imagePath, cancellationToken);
 
+                // Preprocess image for better OCR (grayscale + contrast enhancement)
+                var preprocessed = ImagePreprocessor.PreprocessForOcr(imageBytes);
+
                 // Extract data from image using Textract
                 var extractions = await _textractService.AnalyzeImageAsync(
-                    imageBytes, cancellationToken);
+                    preprocessed, cancellationToken);
 
                 if (extractions.Count > 0)
                 {

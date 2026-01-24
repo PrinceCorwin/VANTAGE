@@ -2959,10 +2959,21 @@ namespace VANTAGE.Views
                 Owner = Window.GetWindow(this)
             };
 
-            if (dialog.ShowDialog() == true)
+            if (dialog.ShowDialog() == true && dialog.AppliedUniqueIds.Count > 0)
             {
                 // Refresh the grid after applying scan results
                 await _viewModel.RefreshAsync();
+
+                // Filter to show only the affected records
+                var affectedIds = new HashSet<string>(dialog.AppliedUniqueIds);
+                sfActivities.View.Filter = record =>
+                {
+                    if (record is Activity activity)
+                        return affectedIds.Contains(activity.UniqueID);
+                    return false;
+                };
+                sfActivities.View.RefreshFilter();
+
                 UpdateRecordCount();
                 UpdateSummaryPanel();
             }
@@ -3255,7 +3266,10 @@ namespace VANTAGE.Views
             dialog.Owner = Window.GetWindow(this);
             dialog.SetTargetColumn(sfActivities, columnName, columnHeader);
 
-            dialog.ShowDialog();
+            if (dialog.ShowDialog() == true)
+            {
+                UpdateSummaryPanel();
+            }
         }
         private void sfActivities_GridContextMenuOpening(object sender, Syncfusion.UI.Xaml.Grid.GridContextMenuEventArgs e)
         {

@@ -32,6 +32,9 @@ namespace VANTAGE.Dialogs
         private CancellationTokenSource? _cancellationTokenSource;
         private readonly ProgressScanService _scanService = new();
 
+        // UniqueIDs of records that were updated - used by caller to filter grid
+        public List<string> AppliedUniqueIds { get; } = new();
+
         public ProgressScanDialog()
         {
             InitializeComponent();
@@ -228,8 +231,6 @@ namespace VANTAGE.Dialogs
                 var reviewItem = new ScanReviewItem
                 {
                     ExtractedUniqueId = extraction.UniqueId,
-                    ExtractedDone = extraction.Done,
-                    ExtractedQty = extraction.Qty,
                     ExtractedPct = extraction.Pct,
                     Confidence = extraction.Confidence,
                     RawExtraction = extraction.Raw
@@ -240,37 +241,26 @@ namespace VANTAGE.Dialogs
                     activityDict.TryGetValue(activityId, out var activity))
                 {
                     reviewItem.MatchedRecord = activity;
+                    reviewItem.MatchedUniqueId = activity.UniqueID;  // For debugging
                     reviewItem.Description = activity.Description;
-                    reviewItem.CurrentQty = (decimal)activity.EarnQtyEntry;
                     reviewItem.CurrentPercent = (decimal)activity.PercentEntry;
 
-                    // Set new values from extraction
-                    if (extraction.Done == true)
-                    {
-                        reviewItem.NewPercent = 100;
-                    }
-                    else if (extraction.Pct.HasValue)
+                    // Set new percent from extraction
+                    if (extraction.Pct.HasValue)
                     {
                         reviewItem.NewPercent = extraction.Pct;
-                    }
-
-                    if (extraction.Qty.HasValue)
-                    {
-                        reviewItem.NewQty = extraction.Qty;
                     }
 
                     // Validate
                     ValidateReviewItem(reviewItem);
 
-                    if (reviewItem.Status == ScanMatchStatus.Ready)
+                    if (reviewItem.Status == ScanMatchStatus.Ready || reviewItem.Status == ScanMatchStatus.Warning)
                     {
+                        // Auto-select if confidence is high enough
                         reviewItem.IsSelected = reviewItem.Confidence >= 90;
                         matchedCount++;
-                    }
-                    else if (reviewItem.Status == ScanMatchStatus.Warning)
-                    {
-                        warningCount++;
-                        matchedCount++;
+                        if (reviewItem.Status == ScanMatchStatus.Warning)
+                            warningCount++;
                     }
                 }
                 else
@@ -302,6 +292,22 @@ namespace VANTAGE.Dialogs
         // Validate a review item and set status/message
         private void ValidateReviewItem(ScanReviewItem item)
         {
+            // No percent extracted - can't apply
+            if (!item.NewPercent.HasValue)
+            {
+                item.Status = ScanMatchStatus.Error;
+                item.ValidationMessage = "No % value extracted";
+                return;
+            }
+
+            // Invalid percent
+            if (item.NewPercent > 100)
+            {
+                item.Status = ScanMatchStatus.Error;
+                item.ValidationMessage = "% cannot exceed 100";
+                return;
+            }
+
             var warnings = new List<string>();
 
             // Low confidence
@@ -311,28 +317,9 @@ namespace VANTAGE.Dialogs
             }
 
             // Progress decrease
-            if (item.NewPercent.HasValue && item.CurrentPercent.HasValue &&
-                item.NewPercent < item.CurrentPercent)
+            if (item.CurrentPercent.HasValue && item.NewPercent < item.CurrentPercent)
             {
                 warnings.Add("% decreased");
-            }
-
-            // Invalid percent
-            if (item.NewPercent.HasValue && item.NewPercent > 100)
-            {
-                item.Status = ScanMatchStatus.Error;
-                item.ValidationMessage = "% cannot exceed 100";
-                return;
-            }
-
-            // QTY exceeds total (would need total qty from activity)
-            if (item.MatchedRecord != null && item.NewQty.HasValue)
-            {
-                var totalQty = (decimal)item.MatchedRecord.Quantity;
-                if (totalQty > 0 && item.NewQty > totalQty)
-                {
-                    warnings.Add("QTY exceeds total");
-                }
             }
 
             if (warnings.Count > 0)
@@ -351,6 +338,12 @@ namespace VANTAGE.Dialogs
         private void BtnCancelProcessing_Click(object sender, RoutedEventArgs e)
         {
             _cancellationTokenSource?.Cancel();
+        }
+
+        // Cell edit completed - update selection count when checkbox or NewPercent changes
+        private void SfReviewGrid_CurrentCellEndEdit(object sender, Syncfusion.UI.Xaml.Grid.CurrentCellEndEditEventArgs e)
+        {
+            UpdateSelectionCount();
         }
 
         // Filter changed
@@ -416,7 +409,9 @@ namespace VANTAGE.Dialogs
         // Apply selected updates
         private async void BtnApply_Click(object sender, RoutedEventArgs e)
         {
-            var selectedItems = _reviewItems.Where(i => i.IsSelected && i.MatchedRecord != null).ToList();
+            // Get ALL selected items - user's selection is final
+            var selectedItems = _reviewItems.Where(i => i.IsSelected).ToList();
+
             if (selectedItems.Count == 0)
             {
                 MessageBox.Show("No items selected to apply.", "No Selection", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -433,52 +428,64 @@ namespace VANTAGE.Dialogs
             if (result != MessageBoxResult.Yes) return;
 
             int successCount = 0;
-            int failCount = 0;
+            int skipCount = 0;
+            var skippedReasons = new List<string>();
 
             foreach (var item in selectedItems)
             {
+                // Check for issues and report them
+                if (item.MatchedRecord == null)
+                {
+                    skipCount++;
+                    skippedReasons.Add($"ID {item.ExtractedUniqueId}: No matching record in database");
+                    continue;
+                }
+
+                if (!item.NewPercent.HasValue)
+                {
+                    skipCount++;
+                    skippedReasons.Add($"ID {item.ExtractedUniqueId}: No percent value to apply");
+                    continue;
+                }
+
                 try
                 {
-                    var activity = item.MatchedRecord!;
+                    var activity = item.MatchedRecord;
 
-                    // Determine the new percent
-                    double newPercent;
-                    if (item.NewPercent.HasValue)
-                    {
-                        newPercent = (double)item.NewPercent.Value;
-                    }
-                    else if (item.NewQty.HasValue && activity.Quantity > 0)
-                    {
-                        // Calculate percent from qty
-                        newPercent = ((double)item.NewQty.Value / activity.Quantity) * 100;
-                    }
-                    else
-                    {
-                        continue; // No update to make
-                    }
+                    // Log what we're updating
+                    System.Diagnostics.Debug.WriteLine($"APPLY: ActivityID={activity.ActivityID}, UniqueID={activity.UniqueID}, " +
+                        $"OldPct={activity.PercentEntry}, NewPct={item.NewPercent.Value}");
 
-                    // Update the activity
-                    activity.PercentEntry = newPercent;
+                    // Update the activity (setter triggers EarnQtyEntry recalculation)
+                    activity.PercentEntry = (double)item.NewPercent.Value;
                     activity.UpdatedBy = App.CurrentUser?.Username ?? "Unknown";
                     activity.UpdatedUtcDate = DateTime.UtcNow;
                     activity.LocalDirty = 1;
 
                     await ActivityRepository.UpdateActivityInDatabase(activity);
+                    AppliedUniqueIds.Add(activity.UniqueID);
                     successCount++;
+
+                    System.Diagnostics.Debug.WriteLine($"APPLY SUCCESS: UniqueID={activity.UniqueID} now has Pct={activity.PercentEntry}");
                 }
                 catch (Exception ex)
                 {
                     AppLogger.Error(ex, "ProgressScanDialog.BtnApply_Click");
-                    failCount++;
+                    skippedReasons.Add($"ID {item.ExtractedUniqueId}: Database error - {ex.Message}");
+                    skipCount++;
                 }
             }
 
-            AppLogger.Info($"Progress scan applied: {successCount} records updated",
+            AppLogger.Info($"Progress scan applied: {successCount} records updated, {skipCount} skipped",
                 "ProgressScanDialog.BtnApply_Click", App.CurrentUser?.Username);
 
-            if (failCount > 0)
+            if (skipCount > 0)
             {
-                MessageBox.Show($"Updated {successCount} records.\n{failCount} records failed to update.",
+                string reasons = string.Join("\n", skippedReasons.Take(10)); // Show first 10
+                if (skippedReasons.Count > 10)
+                    reasons += $"\n... and {skippedReasons.Count - 10} more";
+
+                MessageBox.Show($"Updated {successCount} records.\n\n{skipCount} records skipped:\n{reasons}",
                     "Partial Success", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
             else

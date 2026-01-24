@@ -16,33 +16,17 @@ namespace VANTAGE.Models.AI
     {
         // From extraction (read-only after creation)
         public string ExtractedUniqueId { get; set; } = null!;
-        public bool? ExtractedDone { get; set; }
-        public decimal? ExtractedQty { get; set; }
         public decimal? ExtractedPct { get; set; }
         public int Confidence { get; set; }
         public string? RawExtraction { get; set; }
 
         // From database match (read-only)
         public Activity? MatchedRecord { get; set; }
-        public decimal? CurrentQty { get; set; }
+        public string? MatchedUniqueId { get; set; }  // For debugging - shows actual UniqueID we'll update
         public decimal? CurrentPercent { get; set; }
         public string? Description { get; set; }
 
         // User editable fields (with property changed)
-        private decimal? _newQty;
-        public decimal? NewQty
-        {
-            get => _newQty;
-            set
-            {
-                if (_newQty != value)
-                {
-                    _newQty = value;
-                    OnPropertyChanged(nameof(NewQty));
-                }
-            }
-        }
-
         private decimal? _newPercent;
         public decimal? NewPercent
         {

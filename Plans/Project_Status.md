@@ -66,7 +66,7 @@
 - `Services/AI/ProgressScanService.cs` - Scan orchestration
 - `Services/ProgressBook/ProgressBookPdfGenerator.cs` - PDF generation
 
-**Next:** Add QTY entry column back to test accuracy with two entry fields
+**Enhancements:** Image preprocessing (grayscale + contrast) improves handwriting OCR accuracy
 
 ### Work Package Module
 - Template editors testing
@@ -135,12 +135,6 @@
 - Interactive Help Mode - click UI controls to navigate to documentation (see Sidebar_Help_Plan.md)
 
 ## Known Issues
-
-### AI Progress Scan - Review Grid Selection Bug
-- Checkbox selection in review grid is buggy
-- Items auto-select unexpectedly, user cannot manually select/unselect rows
-- Affects "Apply Selected" functionality - button shows count but selection doesn't work properly
-- **TODO:** Fix SfDataGrid checkbox binding in ProgressScanDialog.xaml
 
 ### AI Progress Scan - Accuracy Issues (RESOLVED)
 - ~~PDF scans less accurate than JPEG scans~~ Fixed with AWS Textract
