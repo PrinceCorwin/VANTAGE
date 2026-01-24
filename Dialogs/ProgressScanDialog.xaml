@@ -343,11 +343,13 @@
                                                       Width="70"
                                                       AllowEditing="True"
                                                       NumberDecimalDigits="1"/>
+                        <!-- QTY entry deferred to V2 - hidden for now -->
                         <syncfusion:GridNumericColumn MappingName="NewQty"
                                                       HeaderText="New QTY"
                                                       Width="80"
                                                       AllowEditing="True"
-                                                      NumberDecimalDigits="2"/>
+                                                      NumberDecimalDigits="2"
+                                                      IsHidden="True"/>
                         <syncfusion:GridNumericColumn MappingName="Confidence"
                                                       HeaderText="Conf"
                                                       Width="55"

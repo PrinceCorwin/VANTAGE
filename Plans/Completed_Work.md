@@ -4,6 +4,28 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ---
 
+### January 24, 2026
+- **AI Progress Scan - Architecture changes for accuracy:**
+  - Switched to Claude Opus 4.5 model (`claude-opus-4-5-20251101`) for better vision accuracy
+  - Implemented Tool Use (function calling) for structured output consistency
+    - Defined `report_progress_entry` tool with strict schema
+    - Eliminates JSON parsing variability - same results on repeated scans
+  - Fixed PDF-to-image conversion:
+    - Removed PdfiumViewer (incompatible with .NET 8, caused `FPDF_Release` entry point error)
+    - Added Syncfusion.PdfToImageConverter.WPF package
+    - PDF pages now convert to images before sending to API
+  - Removed color fills from entry boxes (colors weren't helping AI accuracy):
+    - All entry boxes now white background
+    - AI relies on text labels instead of colors
+  - Added text labels to all entry columns for AI identification:
+    - DONE column: "C:" label (C = Complete)
+    - QTY column: "Qty:" label
+    - % ENTRY column: "%:" label
+  - Updated AI prompts to focus on reading text labels, not colors
+  - **Status:** Accuracy still inconsistent between PDF and JPEG scans - testing continues
+
+---
+
 ### January 22, 2026
 - **AI Progress Scan - Major accuracy improvements:**
   - Changed Progress Book format from UniqueID to ActivityID (shorter, easier to OCR)

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using VANTAGE.Models.AI;
@@ -10,54 +11,74 @@ using VANTAGE.Utilities;
 
 namespace VANTAGE.Services.AI
 {
-    // Service for extracting progress data from images using Claude Vision API
+    // Service for extracting progress data from images using Claude Vision API with Tool Use
     public class ClaudeVisionService
     {
         private readonly HttpClient _httpClient;
 
-        // Extraction prompt for Claude - focus on accurate OCR
-        private const string ExtractionPrompt = @"This is a construction progress sheet. Extract handwritten progress entries.
+        // System prompt for the extraction task - single % entry column with adjacent ID
+        private const string SystemPrompt = @"You are analyzing a scanned construction progress sheet. Find handwritten percentage values.
 
-COLUMN LAYOUT (left to right on the right side of each row):
-- DONE: LIGHT GREEN checkbox - for X marks meaning ""complete""
-- QTY: LIGHT BLUE box - for handwritten QUANTITY numbers
-- % ENTRY: LIGHT YELLOW box - for handwritten PERCENTAGE numbers
+DOCUMENT STRUCTURE:
+- Each data row has a % ENTRY box followed by an ID number printed IMMEDIATELY TO THE RIGHT
+- The two rightmost columns are: % ENTRY | ID
+- The % ENTRY column has a white box for handwritten percentages
 
-CRITICAL: QTY (blue) and % ENTRY (yellow) are DIFFERENT columns!
-- If you see a number in a BLUE box, put it in ""qty""
-- If you see a number in a YELLOW box, put it in ""pct""
-- Do NOT confuse these two columns!
+YOUR TASK:
+For each row with handwriting in the % ENTRY box:
+1. Read the handwritten percentage (0-100)
+2. Read the ID number IMMEDIATELY TO THE RIGHT of that entry box
+3. Report both values
 
-TASK:
-1. Scan each row for handwritten marks in the colored entry boxes
-2. For EACH marked row, read the ID from the leftmost ""ID"" column ON THAT SAME ROW
-3. Note which colored box contains the mark
+THE ID IS RIGHT NEXT TO THE ENTRY:
+- Look directly RIGHT of the handwritten entry
+- The ID is the printed number in the column immediately after the % ENTRY box
+- IDs are numeric (e.g., 1139574)
+- Read the ID exactly as printed";
 
-Return JSON array:
-[{""uniqueId"": ""1139574"", ""done"": true, ""qty"": null, ""pct"": null, ""confidence"": 90, ""raw"": ""X in green DONE box""}]
-[{""uniqueId"": ""1139558"", ""done"": null, ""qty"": 82, ""pct"": null, ""confidence"": 85, ""raw"": ""82 in blue QTY box""}]
-[{""uniqueId"": ""1139560"", ""done"": null, ""qty"": null, ""pct"": 100, ""confidence"": 90, ""raw"": ""100 in yellow % box""}]
-
-- uniqueId: The 7-digit ID from the leftmost column of THE SAME ROW as the mark
-- done: true ONLY if X/checkmark in GREEN box
-- qty: number ONLY if written in BLUE box
-- pct: number ONLY if written in YELLOW box
-- confidence: 0-100
-- raw: describe mark AND which color box it's in
-
-Return ONLY the JSON array.";
+        // Tool definition for reporting progress entries - simplified for single % column
+        private static readonly object ProgressEntryTool = new
+        {
+            name = "report_progress_entry",
+            description = "Report a handwritten percentage entry. Call once for each row that has a number written in the % ENTRY box.",
+            input_schema = new
+            {
+                type = "object",
+                properties = new
+                {
+                    activity_id = new
+                    {
+                        type = "string",
+                        description = "The ID printed immediately RIGHT of the entry box. Read exactly as printed."
+                    },
+                    percent = new
+                    {
+                        type = "integer",
+                        description = "The percentage value written in the entry box (0-100). 100 means complete."
+                    },
+                    confidence = new
+                    {
+                        type = "integer",
+                        description = "Confidence 0-100. Lower if handwriting is unclear."
+                    },
+                    observation = new
+                    {
+                        type = "string",
+                        description = "What you see: e.g., '100 written in % box', '50 in entry area', 'faint 75'"
+                    }
+                },
+                required = new[] { "activity_id", "percent", "confidence", "observation" }
+            }
+        };
 
         public ClaudeVisionService()
         {
             _httpClient = new HttpClient();
             _httpClient.DefaultRequestHeaders.Add("x-api-key", ClaudeApiConfig.ApiKey);
             _httpClient.DefaultRequestHeaders.Add("anthropic-version", ClaudeApiConfig.ApiVersion);
-            // Enable PDF support
-            _httpClient.DefaultRequestHeaders.Add("anthropic-beta", "pdfs-2024-09-25");
         }
 
-        // Extract progress entries from an image (byte array)
-        // Returns empty list on failure (never throws)
+        // Extract progress entries from an image using tool calling
         public async Task<List<ScanExtractionResult>> ExtractFromImageAsync(
             byte[] imageData,
             string mediaType,
@@ -67,8 +88,7 @@ Return ONLY the JSON array.";
             return await ExtractFromBase64Async(base64Image, mediaType, cancellationToken);
         }
 
-        // Extract progress entries from a base64 encoded image
-        // Returns empty list on failure (never throws)
+        // Extract progress entries using tool calling for structured output
         public async Task<List<ScanExtractionResult>> ExtractFromBase64Async(
             string base64Image,
             string mediaType,
@@ -81,7 +101,7 @@ Return ONLY the JSON array.";
             {
                 try
                 {
-                    var result = await SendRequestAsync(base64Image, mediaType, cancellationToken);
+                    var result = await SendToolRequestAsync(base64Image, mediaType, cancellationToken);
                     if (result != null)
                     {
                         return result;
@@ -121,19 +141,19 @@ Return ONLY the JSON array.";
             return new List<ScanExtractionResult>();
         }
 
-        // Send the actual API request
-        private async Task<List<ScanExtractionResult>?> SendRequestAsync(
+        // Send request with tool use for structured extraction
+        private async Task<List<ScanExtractionResult>?> SendToolRequestAsync(
             string base64Data,
             string mediaType,
             CancellationToken cancellationToken)
         {
-            // Use "document" type for PDFs, "image" type for images
-            var contentType = mediaType == "application/pdf" ? "document" : "image";
-
             var requestBody = new
             {
                 model = ClaudeApiConfig.Model,
                 max_tokens = ClaudeApiConfig.MaxTokens,
+                system = SystemPrompt,
+                tools = new[] { ProgressEntryTool },
+                tool_choice = new { type = "any" },
                 messages = new[]
                 {
                     new
@@ -143,7 +163,7 @@ Return ONLY the JSON array.";
                         {
                             new
                             {
-                                type = contentType,
+                                type = "image",
                                 source = new
                                 {
                                     type = "base64",
@@ -154,15 +174,22 @@ Return ONLY the JSON array.";
                             new
                             {
                                 type = "text",
-                                text = ExtractionPrompt
+                                text = "Find handwritten percentages in the '% ENTRY' boxes (white boxes with '%' label). For each entry, read the ID printed immediately to the RIGHT of that entry box. Report the ID and percentage."
                             }
                         }
                     }
                 }
             };
 
-            var jsonContent = JsonSerializer.Serialize(requestBody);
+            var jsonOptions = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+            };
+            var jsonContent = JsonSerializer.Serialize(requestBody, jsonOptions);
             var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+            AppLogger.Info($"Sending tool use request to Claude API", "ClaudeVisionService.SendToolRequestAsync");
 
             var response = await _httpClient.PostAsync(ClaudeApiConfig.Endpoint, content, cancellationToken);
 
@@ -170,9 +197,9 @@ Return ONLY the JSON array.";
             if ((int)response.StatusCode == 429)
             {
                 AppLogger.Warning("Rate limited by API, waiting before retry",
-                    "ClaudeVisionService.SendRequestAsync");
+                    "ClaudeVisionService.SendToolRequestAsync");
                 await Task.Delay(ClaudeApiConfig.RateLimitDelayMs, cancellationToken);
-                return null; // Will trigger retry
+                return null;
             }
 
             var responseJson = await response.Content.ReadAsStringAsync(cancellationToken);
@@ -180,98 +207,103 @@ Return ONLY the JSON array.";
             if (!response.IsSuccessStatusCode)
             {
                 AppLogger.Error($"API error {response.StatusCode}: {responseJson}",
-                    "ClaudeVisionService.SendRequestAsync");
+                    "ClaudeVisionService.SendToolRequestAsync");
                 return null;
             }
 
-            return ParseApiResponse(responseJson);
+            return ParseToolResponse(responseJson);
         }
 
-        // Parse the API response and extract the JSON array from content
-        private List<ScanExtractionResult> ParseApiResponse(string responseJson)
+        // Parse tool use response and extract results from tool calls
+        private List<ScanExtractionResult> ParseToolResponse(string responseJson)
         {
+            var results = new List<ScanExtractionResult>();
+
             try
             {
-                // Parse the Claude API response structure
+                AppLogger.Info($"Parsing tool response ({responseJson.Length} chars)",
+                    "ClaudeVisionService.ParseToolResponse");
+
                 using var doc = JsonDocument.Parse(responseJson);
                 var root = doc.RootElement;
 
-                // Navigate to content[0].text
-                if (root.TryGetProperty("content", out var contentArray) &&
-                    contentArray.GetArrayLength() > 0)
+                if (!root.TryGetProperty("content", out var contentArray))
                 {
-                    var firstContent = contentArray[0];
-                    if (firstContent.TryGetProperty("text", out var textElement))
+                    AppLogger.Warning("No content in response", "ClaudeVisionService.ParseToolResponse");
+                    return results;
+                }
+
+                // Iterate through content blocks looking for tool_use
+                foreach (var contentBlock in contentArray.EnumerateArray())
+                {
+                    if (!contentBlock.TryGetProperty("type", out var typeElement))
+                        continue;
+
+                    var blockType = typeElement.GetString();
+
+                    if (blockType == "tool_use")
                     {
-                        var extractedText = textElement.GetString();
-                        if (!string.IsNullOrEmpty(extractedText))
+                        var extraction = ParseToolUseBlock(contentBlock);
+                        if (extraction != null)
                         {
-                            return ParseExtractionJson(extractedText);
+                            results.Add(extraction);
+                            AppLogger.Info($"Tool call: ID={extraction.UniqueId}, Pct={extraction.Pct}, Done={extraction.Done}",
+                                "ClaudeVisionService.ParseToolResponse");
                         }
                     }
                 }
 
-                AppLogger.Warning("Unexpected API response structure",
-                    "ClaudeVisionService.ParseApiResponse");
-                return new List<ScanExtractionResult>();
+                AppLogger.Info($"Extracted {results.Count} entries from tool calls",
+                    "ClaudeVisionService.ParseToolResponse");
             }
             catch (Exception ex)
             {
-                AppLogger.Error(ex, "ClaudeVisionService.ParseApiResponse");
-                return new List<ScanExtractionResult>();
+                AppLogger.Error(ex, "ClaudeVisionService.ParseToolResponse");
             }
+
+            return results;
         }
 
-        // Parse the extraction JSON array from Claude's text response
-        private List<ScanExtractionResult> ParseExtractionJson(string text)
+        // Parse a single tool_use block into a ScanExtractionResult
+        // Simplified for single % column - just activity_id and percent
+        private ScanExtractionResult? ParseToolUseBlock(JsonElement toolUseBlock)
         {
             try
             {
-                // Log the raw response for debugging
-                AppLogger.Info($"Claude raw response ({text.Length} chars): {text}",
-                    "ClaudeVisionService.ParseExtractionJson");
+                if (!toolUseBlock.TryGetProperty("input", out var input))
+                    return null;
 
-                // Claude should return just a JSON array, but clean up any extra text
-                var trimmed = text.Trim();
+                var activityId = input.TryGetProperty("activity_id", out var idEl) ? idEl.GetString() : null;
+                var percent = input.TryGetProperty("percent", out var pctEl) ? pctEl.GetInt32() : (int?)null;
+                var confidence = input.TryGetProperty("confidence", out var confEl) ? confEl.GetInt32() : 0;
+                var observation = input.TryGetProperty("observation", out var obsEl) ? obsEl.GetString() : null;
 
-                // Find the JSON array bounds
-                int start = trimmed.IndexOf('[');
-                int end = trimmed.LastIndexOf(']');
+                if (string.IsNullOrEmpty(activityId) || percent == null)
+                    return null;
 
-                if (start >= 0 && end > start)
+                var result = new ScanExtractionResult
                 {
-                    var jsonArray = trimmed.Substring(start, end - start + 1);
-                    var results = JsonSerializer.Deserialize<List<ScanExtractionResult>>(jsonArray);
+                    UniqueId = activityId,
+                    Pct = percent.Value,
+                    Done = percent.Value >= 100,  // 100 or more = done
+                    Confidence = confidence,
+                    Raw = observation
+                };
 
-                    // Log extracted UniqueIDs for debugging
-                    if (results != null)
-                    {
-                        foreach (var r in results)
-                        {
-                            AppLogger.Info($"Extracted UniqueId: '{r.UniqueId}' (len={r.UniqueId?.Length}), conf={r.Confidence}",
-                                "ClaudeVisionService.ParseExtractionJson");
-                        }
-                    }
+                AppLogger.Info($"Extracted: ID={activityId}, Percent={percent}, Confidence={confidence}",
+                    "ClaudeVisionService.ParseToolUseBlock");
 
-                    return results ?? new List<ScanExtractionResult>();
-                }
-
-                AppLogger.Warning($"No JSON array found in response: {text.Substring(0, Math.Min(100, text.Length))}",
-                    "ClaudeVisionService.ParseExtractionJson");
-                return new List<ScanExtractionResult>();
+                return result;
             }
-            catch (JsonException ex)
+            catch (Exception ex)
             {
-                AppLogger.Error($"Failed to parse extraction JSON: {ex.Message}",
-                    "ClaudeVisionService.ParseExtractionJson");
-                return new List<ScanExtractionResult>();
+                AppLogger.Error(ex, "ClaudeVisionService.ParseToolUseBlock");
+                return null;
             }
         }
 
-        // Determine if an exception is retryable
         private static bool IsRetryable(HttpRequestException ex)
         {
-            // Network errors, server errors (5xx) are retryable
             return ex.StatusCode == null ||
                    (int)ex.StatusCode.Value >= 500 ||
                    (int)ex.StatusCode.Value == 429;

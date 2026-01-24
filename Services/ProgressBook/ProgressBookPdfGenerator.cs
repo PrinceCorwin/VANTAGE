@@ -25,14 +25,14 @@ namespace VANTAGE.Services.ProgressBook
         private const float MarginBottom = 36f;
         private float _contentWidth;
 
-        // Zone 3 column names - data columns auto-fit, entry boxes are fixed
+        // Zone 3 column names - data columns auto-fit, entry box is fixed, ID is auto-fit
         private static readonly string[] Zone3DataColumns = { "REM QTY", "REM MH", "CUR QTY", "CUR %" };
         private static readonly (string Name, float WidthPts)[] Zone3EntryColumns = new[]
         {
-            ("DONE", 30f),      // Small checkbox
-            ("QTY", 55f),       // Entry box for handwriting
-            ("% ENTRY", 55f)    // Entry box for handwriting
+            ("% ENTRY", 50f)    // Entry box for percentage (100 = done)
         };
+        // ID column width calculated from data (auto-fit)
+        private float _idColumnWidth;
 
         // Padding for cell content (space between text and grid lines)
         private const float ColumnPadding = 4f;
@@ -50,10 +50,6 @@ namespace VANTAGE.Services.ProgressBook
         private static readonly PdfColor GroupHeaderColor = new PdfColor(230, 230, 230);
         private static readonly PdfColor Black = new PdfColor(0, 0, 0);
         private static readonly PdfColor White = new PdfColor(255, 255, 255);
-        // Entry field colors - distinct colors help AI identify column type
-        private static readonly PdfColor DoneFieldColor = new PdfColor(230, 255, 230);    // Light green for DONE checkbox
-        private static readonly PdfColor QtyFieldColor = new PdfColor(230, 240, 255);     // Light blue for QTY entry
-        private static readonly PdfColor PctFieldColor = new PdfColor(255, 255, 230);     // Light yellow for % Entry
 
         // Brushes
         private static readonly PdfBrush BlackBrush = new PdfSolidBrush(Black);
@@ -61,9 +57,6 @@ namespace VANTAGE.Services.ProgressBook
         private static readonly PdfBrush LightGrayBrush = new PdfSolidBrush(LightGray);
         private static readonly PdfBrush HeaderGrayBrush = new PdfSolidBrush(HeaderGray);
         private static readonly PdfBrush GroupHeaderBrush = new PdfSolidBrush(GroupHeaderColor);
-        private static readonly PdfBrush DoneFieldBrush = new PdfSolidBrush(DoneFieldColor);
-        private static readonly PdfBrush QtyFieldBrush = new PdfSolidBrush(QtyFieldColor);
-        private static readonly PdfBrush PctFieldBrush = new PdfSolidBrush(PctFieldColor);
 
         // Pens
         private static readonly PdfPen ThinPen = new PdfPen(Black, 0.5f);
@@ -209,14 +202,21 @@ namespace VANTAGE.Services.ProgressBook
                 zone3EntryWidth += col.WidthPts;
             }
 
-            float totalZone3Width = zone3DataWidth + zone3EntryWidth;
+            // Calculate auto-fit width for trailing ID column (ActivityID for AI scan matching)
+            _idColumnWidth = MeasureIdColumnWidth();
+            _zone3ColumnWidths.Add(("ID", _idColumnWidth));
+
+            float totalZone3Width = zone3DataWidth + zone3EntryWidth + _idColumnWidth;
 
             // Zone 2 width = total width minus Zone 3
             _zone2Width = _contentWidth - totalZone3Width;
 
             // Calculate Zone 2 column widths by measuring actual content
+            // Skip ActivityID - it's shown in Zone 3 (right of % entry) for AI scan matching
             _zone2ColumnWidths.Clear();
-            var columns = _config.Columns.OrderBy(c => c.DisplayOrder).ToList();
+            var columns = _config.Columns
+                .Where(c => !c.FieldName.Equals("ActivityID", StringComparison.OrdinalIgnoreCase))
+                .OrderBy(c => c.DisplayOrder).ToList();
 
             // Measure each column (except Description which gets remainder)
             float totalMeasured = 0;
@@ -264,6 +264,26 @@ namespace VANTAGE.Services.ProgressBook
                     "CUR %" => activity.PercentEntry.ToString("N2") + "%",
                     _ => ""
                 };
+                float dataWidth = _dataFont.MeasureString(value).Width + (ColumnPadding * 2);
+                if (dataWidth > maxDataWidth)
+                    maxDataWidth = dataWidth;
+            }
+
+            return Math.Max(headerWidth, maxDataWidth);
+        }
+
+        // Measure the ID column width from ActivityID values (for AI scan matching column)
+        private float MeasureIdColumnWidth()
+        {
+            float headerWidth = _headerFont.MeasureString("ID").Width + (ColumnPadding * 2);
+
+            if (_activities.Count == 0)
+                return headerWidth;
+
+            float maxDataWidth = 0;
+            foreach (var activity in _activities)
+            {
+                string value = activity.ActivityID.ToString();
                 float dataWidth = _dataFont.MeasureString(value).Width + (ColumnPadding * 2);
                 if (dataWidth > maxDataWidth)
                     maxDataWidth = dataWidth;
@@ -807,21 +827,15 @@ namespace VANTAGE.Services.ProgressBook
             // Only show entry fields for incomplete items (< 100%)
             bool isComplete = activity.PercentEntry >= 100;
 
-            // DONE checkbox (only for incomplete items)
+            // % Entry box
             if (!isComplete)
-                DrawCheckbox(graphics, x, y, _zone3ColumnWidths[4].Width, rowHeight);
+                DrawEntryBox(graphics, x, y, _zone3ColumnWidths[4].Width, rowHeight, WhiteBrush, "%");
             graphics.DrawLine(ThinPen, x + _zone3ColumnWidths[4].Width, y, x + _zone3ColumnWidths[4].Width, y + rowHeight);
             x += _zone3ColumnWidths[4].Width;
 
-            // QTY Entry box (only for incomplete items)
+            // ID column (ActivityID for AI scan matching - right of entry box)
             if (!isComplete)
-                DrawEntryBox(graphics, x, y, _zone3ColumnWidths[5].Width, rowHeight, QtyFieldBrush);
-            graphics.DrawLine(ThinPen, x + _zone3ColumnWidths[5].Width, y, x + _zone3ColumnWidths[5].Width, y + rowHeight);
-            x += _zone3ColumnWidths[5].Width;
-
-            // % Entry box (only for incomplete items)
-            if (!isComplete)
-                DrawEntryBox(graphics, x, y, _zone3ColumnWidths[6].Width, rowHeight, PctFieldBrush);
+                DrawLeftText(graphics, activity.ActivityID.ToString(), _dataFont, x, y, _zone3ColumnWidths[5].Width, rowHeight);
 
             return y + rowHeight;
         }
@@ -871,29 +885,31 @@ namespace VANTAGE.Services.ProgressBook
             graphics.DrawString(text, font, BlackBrush, new PointF(textX, textY));
         }
 
-        // Helper: Draw empty checkbox (light green fill for DONE column)
-        private void DrawCheckbox(PdfGraphics graphics, float x, float y, float width, float height)
-        {
-            float boxSize = Math.Min(height - 4, 12);
-            float boxX = x + (width - boxSize) / 2;
-            float boxY = y + (height - boxSize) / 2;
-
-            // Light green fill with border for DONE checkbox
-            graphics.DrawRectangle(DoneFieldBrush, new RectangleF(boxX, boxY, boxSize, boxSize));
-            graphics.DrawRectangle(ThinPen, new RectangleF(boxX, boxY, boxSize, boxSize));
-        }
-
-        // Helper: Draw entry box for handwriting (colored fill, no inner border)
-        private void DrawEntryBox(PdfGraphics graphics, float x, float y, float width, float height, PdfBrush brush)
+        // Helper: Draw entry box for handwriting (white fill with label to the left)
+        private void DrawEntryBox(PdfGraphics graphics, float x, float y, float width, float height, PdfBrush brush, string? label = null)
         {
             float padding = 2;
-            float boxWidth = width - padding * 2;
+            float labelWidth = 0;
+
+            // Draw label to the left of the entry box (not inside, so handwriting won't cover it)
+            if (!string.IsNullOrEmpty(label))
+            {
+                var labelFont = new PdfStandardFont(PdfFontFamily.Helvetica, 8, PdfFontStyle.Bold);
+                var labelSize = labelFont.MeasureString(label);
+                labelWidth = labelSize.Width + 4;
+                float labelY = y + (height - labelSize.Height) / 2;
+                graphics.DrawString(label, labelFont, BlackBrush, x + 2, labelY);
+            }
+
+            // Entry box fills remaining width after label
+            float boxX = x + labelWidth + padding;
+            float boxWidth = width - labelWidth - padding * 2;
             float boxHeight = height - padding * 2;
-            float boxX = x + padding;
             float boxY = y + padding;
 
-            // Colored fill to indicate entry area - no inner border that could interfere with handwriting
+            // White fill with border for handwriting area
             graphics.DrawRectangle(brush, new RectangleF(boxX, boxY, boxWidth, boxHeight));
+            graphics.DrawRectangle(ThinPen, new RectangleF(boxX, boxY, boxWidth, boxHeight));
         }
 
         // Helper: Calculate row height for an activity (considers description wrapping)

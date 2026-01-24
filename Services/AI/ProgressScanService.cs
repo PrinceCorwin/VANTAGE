@@ -113,7 +113,7 @@ namespace VANTAGE.Services.AI
             return result;
         }
 
-        // Process a single page from a PDF
+        // Process a single page from a PDF by converting to image
         private async Task ProcessPdfPageAsync(
             string pdfPath,
             int pageIndex,
@@ -123,16 +123,23 @@ namespace VANTAGE.Services.AI
         {
             try
             {
-                // Send PDF directly to Claude API (not converted to PNG)
-                // Claude can process PDFs natively with better quality
-                var pdfBytes = await File.ReadAllBytesAsync(pdfPath, cancellationToken);
+                // Convert PDF page to PNG image using PdfiumViewer
+                // This removes any OCR text layer and forces pure visual analysis
+                var imageBytes = PdfToImageConverter.ConvertPageToImage(pdfPath, pageIndex);
 
-                AppLogger.Info($"Sending PDF directly to API: {pdfBytes.Length} bytes",
+                if (imageBytes == null)
+                {
+                    result.FailedPages++;
+                    result.Errors.Add($"{fileName} page {pageIndex + 1}: Failed to convert to image");
+                    return;
+                }
+
+                AppLogger.Info($"Converted PDF page {pageIndex + 1} to image: {imageBytes.Length} bytes",
                     "ProgressScanService.ProcessPdfPageAsync");
 
-                // Extract data from PDF directly
+                // Extract data from image
                 var extractions = await _visionService.ExtractFromImageAsync(
-                    pdfBytes, "application/pdf", cancellationToken);
+                    imageBytes, "image/png", cancellationToken);
 
                 if (extractions.Count > 0)
                 {

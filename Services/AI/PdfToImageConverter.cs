@@ -1,19 +1,116 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using Syncfusion.Windows.PdfViewer;
 using VANTAGE.Utilities;
 
 namespace VANTAGE.Services.AI
 {
-    // Helper for file type detection and media types for Claude Vision API
+    // Converts PDF pages to PNG images for Claude Vision API processing
     public static class PdfToImageConverter
     {
         // Get the number of pages in a PDF file
-        // Returns 1 as default since Claude processes the entire PDF
         public static int GetPageCount(string pdfPath)
         {
-            // PDF is sent directly to Claude API which handles multi-page PDFs
-            // Return 1 for UI display purposes
-            return 1;
+            try
+            {
+                using var converter = new Syncfusion.PdfToImageConverter.PdfToImageConverter();
+                using var fileStream = new FileStream(pdfPath, FileMode.Open, FileAccess.Read);
+                converter.Load(fileStream);
+                return converter.PageCount;
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "PdfToImageConverter.GetPageCount");
+                return 0;
+            }
+        }
+
+        // Convert a single page to a PNG image (returns byte array)
+        // pageIndex is 0-based, higher DPI improves AI handwriting recognition
+        public static byte[]? ConvertPageToImage(string pdfPath, int pageIndex, int dpi = 300)
+        {
+            try
+            {
+                using var converter = new Syncfusion.PdfToImageConverter.PdfToImageConverter();
+                using var fileStream = new FileStream(pdfPath, FileMode.Open, FileAccess.Read);
+                converter.Load(fileStream);
+
+                AppLogger.Info($"PDF loaded: {converter.PageCount} pages", "PdfToImageConverter.ConvertPageToImage");
+
+                if (pageIndex < 0 || pageIndex >= converter.PageCount)
+                {
+                    AppLogger.Warning($"Invalid page index {pageIndex} for PDF with {converter.PageCount} pages",
+                        "PdfToImageConverter.ConvertPageToImage");
+                    return null;
+                }
+
+                // Convert page to image
+                using var imageStream = converter.Convert(pageIndex, false, false);
+
+                if (imageStream == null)
+                {
+                    AppLogger.Error("Convert returned null stream", "PdfToImageConverter.ConvertPageToImage");
+                    return null;
+                }
+
+                // Reset stream position if seekable
+                if (imageStream.CanSeek)
+                    imageStream.Position = 0;
+
+                using var ms = new MemoryStream();
+                imageStream.CopyTo(ms);
+
+                if (ms.Length == 0)
+                {
+                    AppLogger.Error("Converted image has 0 bytes", "PdfToImageConverter.ConvertPageToImage");
+                    return null;
+                }
+
+                AppLogger.Info($"Converted PDF page {pageIndex + 1} to image: {ms.Length} bytes",
+                    "PdfToImageConverter.ConvertPageToImage");
+
+                return ms.ToArray();
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "PdfToImageConverter.ConvertPageToImage");
+                return null;
+            }
+        }
+
+        // Convert all pages to PNG images
+        public static List<byte[]> ConvertAllPages(string pdfPath, int dpi = 300)
+        {
+            var results = new List<byte[]>();
+
+            try
+            {
+                using var converter = new Syncfusion.PdfToImageConverter.PdfToImageConverter();
+                using var fileStream = new FileStream(pdfPath, FileMode.Open, FileAccess.Read);
+                converter.Load(fileStream);
+
+                for (int i = 0; i < converter.PageCount; i++)
+                {
+                    using var imageStream = converter.Convert(i, false, false);
+                    if (imageStream != null)
+                    {
+                        if (imageStream.CanSeek)
+                            imageStream.Position = 0;
+
+                        using var ms = new MemoryStream();
+                        imageStream.CopyTo(ms);
+                        if (ms.Length > 0)
+                            results.Add(ms.ToArray());
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "PdfToImageConverter.ConvertAllPages");
+            }
+
+            return results;
         }
 
         // Get the media type string for a file based on extension

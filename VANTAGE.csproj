@@ -46,6 +46,7 @@
 		<PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="9.0.10" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
 		<PackageReference Include="SharpVectors.Wpf" Version="1.8.5" />
+		<PackageReference Include="Syncfusion.PdfToImageConverter.WPF" Version="32.1.24" />
 		<PackageReference Include="Syncfusion.SfProgressBar.WPF" Version="32.1.24" />
 		<PackageReference Include="System.Drawing.Common" Version="10.0.1" />
 		<PackageReference Include="Syncfusion.Pdf.WPF" Version="32.1.24" />
