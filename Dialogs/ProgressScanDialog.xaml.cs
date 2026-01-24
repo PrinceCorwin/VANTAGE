@@ -40,6 +40,9 @@ namespace VANTAGE.Dialogs
 
             // Subscribe to review item changes to update selection count
             _reviewItems.CollectionChanged += (s, e) => UpdateSelectionCount();
+
+            // Dispose service when window closes
+            Closed += (s, e) => _scanService.Dispose();
         }
 
         // Drag and drop handlers

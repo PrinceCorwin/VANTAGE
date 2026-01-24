@@ -159,6 +159,7 @@ if (!AzureDbManager.CheckConnection(out string errorMessage))
 - Quick patches - proper solutions only
 - DATETIME types for dates - always TEXT
 - Assuming Azure tables match local schema exactly (Azure has IsDeleted, Admins table)
+- **Modifying `Credentials.cs`** - this file is gitignored and shared across branches; only modify when explicitly instructed
 
 ## Key Files
 | File | Purpose |

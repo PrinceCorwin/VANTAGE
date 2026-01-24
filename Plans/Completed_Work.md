@@ -5,7 +5,21 @@ This document tracks completed features and fixes. Items are moved here from Pro
 ---
 
 ### January 24, 2026
-- **AI Progress Scan - Architecture changes for accuracy:**
+- **AI Progress Scan - AWS Textract Implementation (100% accuracy achieved):**
+  - Switched from Claude Vision API to AWS Textract for table extraction
+  - Textract provides proper table structure with row/column indices and bounding boxes
+  - Created TextractService.cs - AWS API wrapper with retry logic
+  - Updated ProgressScanService.cs to use Textract instead of Claude Vision
+  - Removed ClaudeVisionService.cs and ClaudeApiConfig.cs
+  - PDF layout redesigned:
+    - ID (ActivityID) moved to first column (Zone 1) - protected from accidental marks
+    - Data columns: MHs (BudgetMHs), QTY (Quantity), REM MH, CUR % (removed REM QTY, CUR QTY)
+    - Single % ENTRY box at far right - natural stopping point for field hands
+    - Writing "100" = done (eliminated checkbox entirely)
+  - Testing: 100% accuracy on 2 PDF scans and 1 JPEG scan
+  - Added CLAUDE.md instruction: never modify Credentials.cs without explicit permission
+
+- **AI Progress Scan - Architecture changes for accuracy (earlier):**
   - Switched to Claude Opus 4.5 model (`claude-opus-4-5-20251101`) for better vision accuracy
   - Implemented Tool Use (function calling) for structured output consistency
     - Defined `report_progress_entry` tool with strict schema

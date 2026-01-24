@@ -8,14 +8,15 @@ using VANTAGE.Utilities;
 
 namespace VANTAGE.Services.AI
 {
-    // Orchestrates the progress sheet scan workflow
-    public class ProgressScanService
+    // Orchestrates the progress sheet scan workflow using AWS Textract
+    public class ProgressScanService : IDisposable
     {
-        private readonly ClaudeVisionService _visionService;
+        private readonly TextractService _textractService;
+        private bool _disposed;
 
         public ProgressScanService()
         {
-            _visionService = new ClaudeVisionService();
+            _textractService = new TextractService();
         }
 
         // Process multiple files (PDFs and/or images) and extract progress data
@@ -137,9 +138,9 @@ namespace VANTAGE.Services.AI
                 AppLogger.Info($"Converted PDF page {pageIndex + 1} to image: {imageBytes.Length} bytes",
                     "ProgressScanService.ProcessPdfPageAsync");
 
-                // Extract data from image
-                var extractions = await _visionService.ExtractFromImageAsync(
-                    imageBytes, "image/png", cancellationToken);
+                // Extract data from image using Textract
+                var extractions = await _textractService.AnalyzeImageAsync(
+                    imageBytes, cancellationToken);
 
                 if (extractions.Count > 0)
                 {
@@ -166,11 +167,10 @@ namespace VANTAGE.Services.AI
             {
                 // Read image file
                 var imageBytes = await File.ReadAllBytesAsync(imagePath, cancellationToken);
-                var mediaType = PdfToImageConverter.GetMediaType(imagePath);
 
-                // Extract data from image
-                var extractions = await _visionService.ExtractFromImageAsync(
-                    imageBytes, mediaType, cancellationToken);
+                // Extract data from image using Textract
+                var extractions = await _textractService.AnalyzeImageAsync(
+                    imageBytes, cancellationToken);
 
                 if (extractions.Count > 0)
                 {
@@ -202,6 +202,15 @@ namespace VANTAGE.Services.AI
                 }
             }
             return total;
+        }
+
+        public void Dispose()
+        {
+            if (!_disposed)
+            {
+                _textractService?.Dispose();
+                _disposed = true;
+            }
         }
     }
 }

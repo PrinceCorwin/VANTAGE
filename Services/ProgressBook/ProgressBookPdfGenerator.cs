@@ -25,14 +25,15 @@ namespace VANTAGE.Services.ProgressBook
         private const float MarginBottom = 36f;
         private float _contentWidth;
 
-        // Zone 3 column names - data columns auto-fit, entry box is fixed, ID is auto-fit
-        private static readonly string[] Zone3DataColumns = { "REM QTY", "REM MH", "CUR QTY", "CUR %" };
+        // Zone 1: ID column (ActivityID) - always first, auto-fit width
+        private float _zone1IdWidth;
+
+        // Zone 3 column names - data columns auto-fit, entry box is fixed
+        private static readonly string[] Zone3DataColumns = { "MHs", "QTY", "REM MH", "CUR %" };
         private static readonly (string Name, float WidthPts)[] Zone3EntryColumns = new[]
         {
             ("% ENTRY", 50f)    // Entry box for percentage (100 = done)
         };
-        // ID column width calculated from data (auto-fit)
-        private float _idColumnWidth;
 
         // Padding for cell content (space between text and grid lines)
         private const float ColumnPadding = 4f;
@@ -178,11 +179,15 @@ namespace VANTAGE.Services.ProgressBook
         }
 
         // Calculate auto-fit column widths based on actual data content
-        // ALL columns except entry boxes (DONE, QTY, % ENTRY) fit to content
-        // Description gets remaining space
+        // Zone 1: ID column (ActivityID) - always first
+        // Zone 2: User columns - Description gets remaining space
+        // Zone 3: Data columns (auto-fit) + entry box (fixed)
         private void CalculateAutoFitColumnWidths()
         {
-            // Calculate Zone 3 widths - data columns auto-fit, entry boxes are fixed
+            // Zone 1: Calculate ID column width (ActivityID - always first column)
+            _zone1IdWidth = MeasureIdColumnWidth();
+
+            // Calculate Zone 3 widths - data columns auto-fit, entry box is fixed
             _zone3ColumnWidths.Clear();
             float zone3DataWidth = 0;
             float zone3EntryWidth = 0;
@@ -195,21 +200,17 @@ namespace VANTAGE.Services.ProgressBook
                 zone3DataWidth += width;
             }
 
-            // Add fixed entry columns
+            // Add fixed entry column (% ENTRY at far right)
             foreach (var col in Zone3EntryColumns)
             {
                 _zone3ColumnWidths.Add((col.Name, col.WidthPts));
                 zone3EntryWidth += col.WidthPts;
             }
 
-            // Calculate auto-fit width for trailing ID column (ActivityID for AI scan matching)
-            _idColumnWidth = MeasureIdColumnWidth();
-            _zone3ColumnWidths.Add(("ID", _idColumnWidth));
+            float totalZone3Width = zone3DataWidth + zone3EntryWidth;
 
-            float totalZone3Width = zone3DataWidth + zone3EntryWidth + _idColumnWidth;
-
-            // Zone 2 width = total width minus Zone 3
-            _zone2Width = _contentWidth - totalZone3Width;
+            // Zone 2 width = total width minus Zone 1 and Zone 3
+            _zone2Width = _contentWidth - _zone1IdWidth - totalZone3Width;
 
             // Calculate Zone 2 column widths by measuring actual content
             // Skip ActivityID - it's shown in Zone 3 (right of % entry) for AI scan matching
@@ -258,9 +259,9 @@ namespace VANTAGE.Services.ProgressBook
             {
                 string value = columnName switch
                 {
-                    "REM QTY" => (activity.Quantity - activity.EarnQtyEntry).ToString("N2"),
+                    "MHs" => activity.BudgetMHs.ToString("N2"),
+                    "QTY" => activity.Quantity.ToString("N2"),
                     "REM MH" => (activity.BudgetMHs - activity.EarnMHsCalc).ToString("N2"),
-                    "CUR QTY" => activity.EarnQtyEntry.ToString("N2"),
                     "CUR %" => activity.PercentEntry.ToString("N2") + "%",
                     _ => ""
                 };
@@ -706,7 +707,12 @@ namespace VANTAGE.Services.ProgressBook
             graphics.DrawRectangle(HeaderGrayBrush, new RectangleF(x, y, _contentWidth, HeaderRowHeight));
             graphics.DrawRectangle(NormalPen, new RectangleF(x, y, _contentWidth, HeaderRowHeight));
 
-            // Zone 2: User columns (includes UniqueID)
+            // Zone 1: ID column (ActivityID - always first)
+            DrawCenteredText(graphics, "ID", _headerFont, x, y, _zone1IdWidth, HeaderRowHeight);
+            graphics.DrawLine(ThinPen, x + _zone1IdWidth, y, x + _zone1IdWidth, y + HeaderRowHeight);
+            x += _zone1IdWidth;
+
+            // Zone 2: User columns
             foreach (var col in _zone2ColumnWidths)
             {
                 string displayName = GetColumnDisplayName(col.FieldName);
@@ -715,7 +721,7 @@ namespace VANTAGE.Services.ProgressBook
                 x += col.Width;
             }
 
-            // Zone 3: Fixed columns
+            // Zone 3: Data columns + entry box
             foreach (var col in _zone3ColumnWidths)
             {
                 DrawCenteredText(graphics, col.Name, _headerFont, x, y, col.Width, HeaderRowHeight);
@@ -782,7 +788,12 @@ namespace VANTAGE.Services.ProgressBook
             // Row border
             graphics.DrawRectangle(ThinPen, new RectangleF(x, y, _contentWidth, rowHeight));
 
-            // Zone 2: User columns (includes UniqueID)
+            // Zone 1: ID column (ActivityID - always first)
+            DrawLeftText(graphics, activity.ActivityID.ToString(), _dataFont, x, y, _zone1IdWidth, rowHeight);
+            graphics.DrawLine(ThinPen, x + _zone1IdWidth, y, x + _zone1IdWidth, y + rowHeight);
+            x += _zone1IdWidth;
+
+            // Zone 2: User columns
             foreach (var col in _zone2ColumnWidths)
             {
                 string value = GetFieldValue(activity, col.FieldName) ?? "";
@@ -801,21 +812,20 @@ namespace VANTAGE.Services.ProgressBook
                 x += col.Width;
             }
 
-            // Zone 3: Fixed columns
-            // REM QTY
-            double remQty = activity.Quantity - activity.EarnQtyEntry;
-            DrawRightText(graphics, remQty.ToString("N2"), _dataFont, x, y, _zone3ColumnWidths[0].Width, rowHeight);
+            // Zone 3: Data columns
+            // MHs (BudgetMHs)
+            DrawRightText(graphics, activity.BudgetMHs.ToString("N2"), _dataFont, x, y, _zone3ColumnWidths[0].Width, rowHeight);
             graphics.DrawLine(ThinPen, x + _zone3ColumnWidths[0].Width, y, x + _zone3ColumnWidths[0].Width, y + rowHeight);
             x += _zone3ColumnWidths[0].Width;
 
-            // REM MH
-            double remMH = activity.BudgetMHs - activity.EarnMHsCalc;
-            DrawRightText(graphics, remMH.ToString("N2"), _dataFont, x, y, _zone3ColumnWidths[1].Width, rowHeight);
+            // QTY (Quantity)
+            DrawRightText(graphics, activity.Quantity.ToString("N2"), _dataFont, x, y, _zone3ColumnWidths[1].Width, rowHeight);
             graphics.DrawLine(ThinPen, x + _zone3ColumnWidths[1].Width, y, x + _zone3ColumnWidths[1].Width, y + rowHeight);
             x += _zone3ColumnWidths[1].Width;
 
-            // CUR QTY
-            DrawRightText(graphics, activity.EarnQtyEntry.ToString("N2"), _dataFont, x, y, _zone3ColumnWidths[2].Width, rowHeight);
+            // REM MH
+            double remMH = activity.BudgetMHs - activity.EarnMHsCalc;
+            DrawRightText(graphics, remMH.ToString("N2"), _dataFont, x, y, _zone3ColumnWidths[2].Width, rowHeight);
             graphics.DrawLine(ThinPen, x + _zone3ColumnWidths[2].Width, y, x + _zone3ColumnWidths[2].Width, y + rowHeight);
             x += _zone3ColumnWidths[2].Width;
 
@@ -824,18 +834,12 @@ namespace VANTAGE.Services.ProgressBook
             graphics.DrawLine(ThinPen, x + _zone3ColumnWidths[3].Width, y, x + _zone3ColumnWidths[3].Width, y + rowHeight);
             x += _zone3ColumnWidths[3].Width;
 
-            // Only show entry fields for incomplete items (< 100%)
+            // Only show entry box for incomplete items (< 100%)
             bool isComplete = activity.PercentEntry >= 100;
 
-            // % Entry box
+            // % Entry box (far right - natural stopping point for field hands)
             if (!isComplete)
                 DrawEntryBox(graphics, x, y, _zone3ColumnWidths[4].Width, rowHeight, WhiteBrush, "%");
-            graphics.DrawLine(ThinPen, x + _zone3ColumnWidths[4].Width, y, x + _zone3ColumnWidths[4].Width, y + rowHeight);
-            x += _zone3ColumnWidths[4].Width;
-
-            // ID column (ActivityID for AI scan matching - right of entry box)
-            if (!isComplete)
-                DrawLeftText(graphics, activity.ActivityID.ToString(), _dataFont, x, y, _zone3ColumnWidths[5].Width, rowHeight);
 
             return y + rowHeight;
         }

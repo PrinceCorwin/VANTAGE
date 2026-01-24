@@ -14,7 +14,7 @@
 | Work Package (PDF generation) | Ready for testing (drawings hidden) |
 | Help Sidebar | Content writing in progress |
 | Progress Book creation | Ready for testing |
-| AI Progress Scan | In development - accuracy improvements needed |
+| AI Progress Scan | Complete - AWS Textract, 100% accuracy |
 
 ### Deferred to Post-V1
 | Feature | Reason |
@@ -34,7 +34,7 @@
 | Admin | COMPLETE | User/project/snapshot management |
 | Work Package | READY FOR TESTING | PDF generation working; Drawings deferred to post-v1 |
 | Help Sidebar | IN DEVELOPMENT | Search, action buttons complete; content writing in progress |
-| AI Progress Scan | IN DEVELOPMENT | Accuracy improvements in progress - see Active Development |
+| AI Progress Scan | COMPLETE | AWS Textract implementation - 100% accuracy |
 | AI Features (other) | NOT STARTED | Error Assistant, Description Analysis, etc. |
 
 ## Active Development
@@ -44,43 +44,29 @@
 - PDF features: Auto-fit column widths, description wrapping, project description in header
 - Layout features: Separate grouping and sorting, up to 10 levels each, exclude completed option
 
-### AI Progress Scan - Accuracy Improvements (IN PROGRESS)
+### AI Progress Scan - AWS Textract Implementation (COMPLETE)
 
 **Current State:**
-- Using Claude Opus 4.5 model with Tool Use (function calling) for structured output
-- PDF-to-image conversion working via Syncfusion.PdfToImageConverter.WPF
-- Removed color fills from entry boxes - now relying on text labels only
-- Entry boxes have "Qty:" and "%:" labels to help AI distinguish columns
-- DONE checkbox has no label currently
+- Switched from Claude Vision API to AWS Textract for table extraction
+- 100% accuracy achieved on PDF and JPEG scans
+- Simplified PDF layout: ID first, single % ENTRY column at far right
 
-**Problem:**
-- JPEG scans give better accuracy than PDF scans
-- Checkmarks are sometimes missed (small X marks in small boxes)
-- Inconsistent detection between PDF and JPEG of same document
-
-**Technical Changes Made:**
-- Switched from PdfiumViewer (incompatible with .NET 8) to Syncfusion.PdfToImageConverter.WPF
-- Removed all color fills from entry columns (colors weren't helping AI, just humans)
-- Added "Qty:" and "%:" labels to entry boxes
-- Updated AI prompt to focus on reading text labels, not colors
-
-**Next Steps:**
-1. ~~Add "C:" label to DONE checkbox (C = Complete) to help AI identify it~~ DONE
-2. Test accuracy with new "C:" label on checkbox
-3. Consider requiring image scans (JPEG/PNG) instead of PDF for better accuracy
-4. May need to increase checkbox size if still missing marks
-
-**To Test:**
-- Generate a new Progress Book PDF (will have C:, Qty:, %: labels in all entry boxes)
-- Print it, fill in entries by hand, scan it (try both PDF and JPEG)
-- Run AI Progress Scan and compare accuracy
+**PDF Layout:**
+```
+| ID | [user cols] | MHs | QTY | REM MH | CUR % | % ENTRY |
+```
+- ID (ActivityID) as first column - protected from accidental marks
+- Data columns: MHs (BudgetMHs), QTY (Quantity), REM MH, CUR %
+- % ENTRY box at far right - natural stopping point for field hands
+- Writing "100" = done (no checkbox needed)
 
 **Key Files:**
-- `Services/AI/ClaudeVisionService.cs` - AI prompt and tool definitions
+- `Services/AI/TextractService.cs` - AWS Textract API wrapper
 - `Services/AI/PdfToImageConverter.cs` - PDF to image conversion (Syncfusion)
 - `Services/AI/ProgressScanService.cs` - Scan orchestration
-- `Services/ProgressBook/ProgressBookPdfGenerator.cs` - PDF generation with entry boxes
-- `Credentials.cs` - Model set to `claude-opus-4-5-20251101`
+- `Services/ProgressBook/ProgressBookPdfGenerator.cs` - PDF generation
+
+**Next:** Add QTY entry column back to test accuracy with two entry fields
 
 ### Work Package Module
 - Template editors testing
@@ -110,7 +96,7 @@
 ### AI Features (see InCode_AI_Plan.md)
 | Feature | Status |
 |---------|--------|
-| AI Progress Scan | In Progress - Accuracy improvements needed (see Active Development section above) |
+| AI Progress Scan | Complete - AWS Textract, 100% accuracy |
 | AI Scan pre-filter | Not Started - Local image analysis to detect marks before calling Claude API (skip blank pages, reduce API cost) |
 | ClaudeApiService infrastructure | Complete (via Progress Scan) |
 | AI Error Assistant | Not Started |
@@ -156,10 +142,10 @@
 - Affects "Apply Selected" functionality - button shows count but selection doesn't work properly
 - **TODO:** Fix SfDataGrid checkbox binding in ProgressScanDialog.xaml
 
-### AI Progress Scan - Accuracy Issues
-- PDF scans less accurate than JPEG scans (same document)
-- Checkmarks sometimes missed (small X marks in small checkbox boxes)
-- Consider requiring JPEG/PNG instead of PDF uploads for V1
+### AI Progress Scan - Accuracy Issues (RESOLVED)
+- ~~PDF scans less accurate than JPEG scans~~ Fixed with AWS Textract
+- ~~Checkmarks sometimes missed~~ Removed checkbox, use % entry instead
+- Now achieving 100% accuracy on both PDF and JPEG scans
 
 ## Test Scenarios Validated
 
