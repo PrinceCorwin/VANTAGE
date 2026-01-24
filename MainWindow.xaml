@@ -160,6 +160,7 @@
                                 <MenuItem Header="Schedule Diagnostics" Click="MenuScheduleDiagnostics_Click"/>
                                 <MenuItem Header="Clear Azure Activities" Click="MenuClearAzureActivities_Click"/>
                                 <MenuItem Header="Test Procore Drawings" Click="MenuTestProcoreDrawings_Click"/>
+                                <MenuItem Header="Test AWS Textract" Click="MenuTestTextract_Click"/>
                             </ContextMenu>
                         </syncfusion:ButtonAdv.ContextMenu>
                     </syncfusion:ButtonAdv>
@@ -344,6 +345,7 @@
                                         Click="MenuToggleLegacyIO_Click"
                                         Cursor="Hand"
                                         ToolTip="Show/hide Legacy format import/export menu items in the File menu"/>
+
                                 <Separator Background="{StaticResource BorderColor}" Margin="5,2"/>
                                 <Button Content="About MILESTONE"
                                         Background="Transparent"

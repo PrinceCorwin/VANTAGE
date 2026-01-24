@@ -1,5 +1,7 @@
-﻿using Syncfusion.Windows.Shared;
+﻿using MILESTONE.Services.Procore;
+using Syncfusion.Windows.Shared;
 using System;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Windows;
@@ -11,9 +13,9 @@ using VANTAGE.Data;
 using VANTAGE.Dialogs;
 using VANTAGE.Models;
 using VANTAGE.Utilities;
-using VANTAGE.Views;
 using VANTAGE.ViewModels;
-using MILESTONE.Services.Procore;
+using VANTAGE.Views;
+
 
 namespace VANTAGE
 {
@@ -1210,7 +1212,53 @@ namespace VANTAGE
             btnTest.ContextMenu.PlacementTarget = btnTest;
             btnTest.ContextMenu.IsOpen = true;
         }
+        private async void MenuTestTextract_Click(object sender, RoutedEventArgs e)
+        {
+            popupSettings.IsOpen = false;
 
+            try
+            {
+                Mouse.OverrideCursor = Cursors.Wait;
+
+                using var client = new Amazon.Textract.AmazonTextractClient(
+                    Credentials.AwsAccessKey,
+                    Credentials.AwsSecretKey,
+                    Amazon.RegionEndpoint.GetBySystemName(Credentials.AwsRegion));
+
+                // Test with a 1x1 pixel PNG (minimal API call)
+                var testImage = Convert.FromBase64String(
+                    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==");
+
+                var response = await client.DetectDocumentTextAsync(
+                    new Amazon.Textract.Model.DetectDocumentTextRequest
+                    {
+                        Document = new Amazon.Textract.Model.Document
+                        {
+                            Bytes = new MemoryStream(testImage)
+                        }
+                    });
+
+                Mouse.OverrideCursor = null;
+
+                MessageBox.Show(
+                    $"AWS Textract connection successful!\n\nRegion: {Credentials.AwsRegion}\nAPI responded with {response.Blocks?.Count ?? 0} blocks.",
+                    "Success",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                Mouse.OverrideCursor = null;
+
+                MessageBox.Show(
+                    $"AWS Textract connection failed:\n\n{ex.Message}",
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+
+                AppLogger.Error(ex, "MainWindow.MenuTestTextract_Click");
+            }
+        }
         // TEST MENU HANDLERS
         private void MenuToggleAdmin_Click(object sender, RoutedEventArgs e)
         {

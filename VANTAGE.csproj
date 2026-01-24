@@ -26,6 +26,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<PackageReference Include="AWSSDK.Textract" Version="4.0.3.12" />
 		<PackageReference Include="Azure.Communication.Email" Version="1.1.0" />
 		<PackageReference Include="Azure.Data.Tables" Version="12.11.0" />
 		<PackageReference Include="Azure.Identity" Version="1.17.1" />
