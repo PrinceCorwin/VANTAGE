@@ -18,7 +18,8 @@
       "Bash(wc:*)",
       "Bash(xargs cat:*)",
       "Bash(dotnet remove:*)",
-      "Bash(dotnet list:*)"
+      "Bash(dotnet list:*)",
+      "Bash(git checkout:*)"
     ]
   }
 }
