@@ -14,6 +14,9 @@ This document tracks completed features and fixes. Items are moved here from Pro
   - Added BudgetMHs column to results grid (shows "NOT FOUND" if ActivityID not matched)
   - Added Select All button, renamed buttons to "Select Ready" and "Clear"
   - Removed Raw debug column
+  - Widened dialog (1050x600), increased column widths for Cur %, New %, Conf
+  - Added column resizing (AllowResizingColumns)
+  - Added persistence for dialog size and column widths to UserSettings
 
 ---
 

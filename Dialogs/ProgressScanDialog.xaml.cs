@@ -35,6 +35,11 @@ namespace VANTAGE.Dialogs
         // UniqueIDs of records that were updated - used by caller to filter grid
         public List<string> AppliedUniqueIds { get; } = new();
 
+        // Settings keys for persistence
+        private const string SettingDialogWidth = "ProgressScanDialog.Width";
+        private const string SettingDialogHeight = "ProgressScanDialog.Height";
+        private const string SettingColumnWidths = "ProgressScanDialog.ColumnWidths";
+
         public ProgressScanDialog()
         {
             InitializeComponent();
@@ -47,8 +52,75 @@ namespace VANTAGE.Dialogs
             // Wire up rescan slider value changed handler
             sliderRescanContrast.ValueChanged += SliderRescanContrast_ValueChanged;
 
-            // Dispose service when window closes
-            Closed += (s, e) => _scanService.Dispose();
+            // Load saved settings and save on close
+            Loaded += (s, e) => LoadDialogSettings();
+            Closed += (s, e) =>
+            {
+                SaveDialogSettings();
+                _scanService.Dispose();
+            };
+        }
+
+        // Load dialog size and column widths from user settings
+        private void LoadDialogSettings()
+        {
+            try
+            {
+                // Load dialog size
+                var widthStr = SettingsManager.GetUserSetting(SettingDialogWidth);
+                var heightStr = SettingsManager.GetUserSetting(SettingDialogHeight);
+
+                if (double.TryParse(widthStr, out double width) && width >= MinWidth)
+                    Width = width;
+                if (double.TryParse(heightStr, out double height) && height >= MinHeight)
+                    Height = height;
+
+                // Load column widths (format: "col1:width1,col2:width2,...")
+                var columnWidthsStr = SettingsManager.GetUserSetting(SettingColumnWidths);
+                if (!string.IsNullOrEmpty(columnWidthsStr))
+                {
+                    var widthDict = columnWidthsStr.Split(',')
+                        .Select(s => s.Split(':'))
+                        .Where(parts => parts.Length == 2)
+                        .ToDictionary(parts => parts[0], parts => double.TryParse(parts[1], out var w) ? w : 0);
+
+                    foreach (var column in sfReviewGrid.Columns)
+                    {
+                        if (widthDict.TryGetValue(column.MappingName, out double colWidth) && colWidth > 0)
+                        {
+                            column.Width = colWidth;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "ProgressScanDialog.LoadDialogSettings");
+            }
+        }
+
+        // Save dialog size and column widths to user settings
+        private void SaveDialogSettings()
+        {
+            try
+            {
+                // Save dialog size (only if not minimized)
+                if (WindowState == WindowState.Normal)
+                {
+                    SettingsManager.SetUserSetting(SettingDialogWidth, Width.ToString("F0"));
+                    SettingsManager.SetUserSetting(SettingDialogHeight, Height.ToString("F0"));
+                }
+
+                // Save column widths
+                var columnWidths = sfReviewGrid.Columns
+                    .Select(c => $"{c.MappingName}:{c.ActualWidth:F0}")
+                    .ToArray();
+                SettingsManager.SetUserSetting(SettingColumnWidths, string.Join(",", columnWidths));
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "ProgressScanDialog.SaveDialogSettings");
+            }
         }
 
         // Update rescan contrast display when slider changes

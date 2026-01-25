@@ -6,12 +6,12 @@
         skinManager:SfSkinManager.Theme="{skinManager:SkinManagerExtension ThemeName=FluentDark}"
         Title="Scan Progress Sheets"
         Height="600"
-        Width="950"
+        Width="1050"
         WindowStartupLocation="CenterOwner"
         Background="{StaticResource BackgroundColor}"
         ResizeMode="CanResize"
         MinHeight="500"
-        MinWidth="800"
+        MinWidth="900"
         WindowStyle="SingleBorderWindow">
 
     <Grid Margin="20">
@@ -308,6 +308,7 @@
                                        EditTrigger="OnTap"
                                        AllowSorting="True"
                                        AllowFiltering="True"
+                                       AllowResizingColumns="True"
                                        SelectionMode="Single"
                                        SelectionUnit="Cell"
                                        NavigationMode="Cell"
@@ -348,12 +349,12 @@
                                                    ToolTipTemplate="{x:Null}"/>
                         <syncfusion:GridNumericColumn MappingName="CurrentPercent"
                                                       HeaderText="Cur %"
-                                                      Width="70"
+                                                      Width="75"
                                                       AllowEditing="False"
                                                       NumberDecimalDigits="1"/>
                         <syncfusion:GridNumericColumn MappingName="NewPercent"
                                                       HeaderText="New %"
-                                                      Width="70"
+                                                      Width="75"
                                                       AllowEditing="True"
                                                       NumberDecimalDigits="1">
                             <syncfusion:GridNumericColumn.HeaderTemplate>
@@ -364,7 +365,7 @@
                         </syncfusion:GridNumericColumn>
                         <syncfusion:GridNumericColumn MappingName="Confidence"
                                                       HeaderText="Conf"
-                                                      Width="55"
+                                                      Width="65"
                                                       AllowEditing="False"/>
                         <syncfusion:GridTextColumn MappingName="ValidationMessage"
                                                    HeaderText="Status"
