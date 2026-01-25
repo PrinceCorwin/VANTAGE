@@ -700,28 +700,6 @@
                                 </MenuItem.Icon>
                             </MenuItem>
 
-                            <!-- Placeholder 4 -->
-                            <MenuItem Header="Placeholder 1"
-                                      Click="PlaceHolder1_Click"
-                                      Background="{StaticResource ControlBackground}"
-                                      Foreground="{StaticResource ForegroundColor}"
-                                      IsEnabled="False">
-                                <MenuItem.Icon>
-                                    <TextBlock Text="⭐" FontSize="14"/>
-                                </MenuItem.Icon>
-                            </MenuItem>
-
-                            <!-- Placeholder 5 -->
-                            <MenuItem Header="Placeholder 2"
-                                      Click="Placeholder2_Click"
-                                      Background="{StaticResource ControlBackground}"
-                                      Foreground="{StaticResource ForegroundColor}"
-                                      IsEnabled="False">
-                                <MenuItem.Icon>
-                                    <TextBlock Text="🕒" FontSize="14"/>
-                                </MenuItem.Icon>
-                            </MenuItem>
-
                         </ContextMenu>
                     </syncfusion:SfDataGrid.RecordContextMenu>
                     <syncfusion:SfDataGrid.HeaderContextMenu>

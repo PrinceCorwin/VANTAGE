@@ -19,7 +19,19 @@
       "Bash(xargs cat:*)",
       "Bash(dotnet remove:*)",
       "Bash(dotnet list:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "WebFetch(domain:help.syncfusion.com)",
+      "Bash(done)",
+      "Bash(grep:*)",
+      "Bash(for f in Views/SidePanelView.xaml.cs Dialogs/*.xaml.cs)",
+      "Bash(do wc -l \"$f\")",
+      "Bash(find:*)",
+      "Bash(for method in \"IsTextNumeric\" \"OnPropertyChanged\" \"ConvertToPropertyType\")",
+      "Bash(do echo \"=== Checking $method ===\")",
+      "Bash(for method in \"PromptForLayoutName\" \"PromptForFilterName\" \"IsValidEmail\")",
+      "Bash(do echo \"=== $method ===\")",
+      "Bash(for method in \"ShowDeleteConfirmation\" \"GetStringOrEmpty\" \"GetNullableString\" \"GetDoubleOrZero\" \"GetIntOrZero\" \"BuildRestoreUpdateSql\" \"AddRestoreParameters\" \"ShowRevertResultsDialog\")",
+      "Bash(for method in \"ApplyFilters\" \"ClearForm\" \"UpdateSelectionSummary\" \"AddConditionRow\" \"LoadFilterIntoEditor\" \"RefreshFilterList\" \"SaveFiltersToSettings\" \"LoadFilters\")"
     ]
   }
 }

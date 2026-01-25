@@ -179,7 +179,7 @@ namespace VANTAGE
 
                 CurrentUserID = CurrentUser.UserID;
 
-                // Step 4b: Check admin status from Azure (only if online)
+                // Check admin status from Azure (only if online)
                 if (azureOnline)
                 {
                     CurrentUser.IsAdmin = await Task.Run(() => AzureDbManager.IsUserAdmin(CurrentUser.Username));
@@ -190,40 +190,7 @@ namespace VANTAGE
                     CurrentUser.IsAdmin = false;
                 }
 
-                //// Step 5: Check if user has completed profile
-                //if (string.IsNullOrEmpty(CurrentUser.FullName) || string.IsNullOrEmpty(CurrentUser.Email))
-                //{
-                //    // Hide splash to show setup window
-                //    _splashWindow.Hide();
-
-                //    FirstRunSetupWindow setupWindow = new FirstRunSetupWindow(CurrentUser);
-                //    bool? result = setupWindow.ShowDialog();
-
-                //    if (result != true)
-                //    {
-                //        _splashWindow.Close();
-                //        MessageBox.Show("Profile setup is required to use MILESTONE.", "Setup Required", MessageBoxButton.OK, MessageBoxImage.Warning);
-                //        this.Shutdown();
-                //        return;
-                //    }
-
-                //    // Show splash again
-                //    _splashWindow.Show();
-                //    _splashWindow.UpdateStatus("Saving User Profile...");
-
-                //    var refreshedUser = await Task.Run(() => GetUserByID(CurrentUserID));
-                //    if (refreshedUser != null)
-                //    {
-                //        CurrentUser = refreshedUser;
-                //        // Re-check admin status after refresh
-                //        if (azureOnline)
-                //        {
-                //            CurrentUser.IsAdmin = await Task.Run(() => AzureDbManager.IsUserAdmin(CurrentUser.Username));
-                //        }
-                //    }
-                //}
-
-                // Step 6: Initialize user settings
+                // Initialize user settings
                 _splashWindow.UpdateStatus("Loading User Settings...");
                 await Task.Run(() =>
                 {

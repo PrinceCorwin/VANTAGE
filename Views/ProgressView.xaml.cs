@@ -706,17 +706,6 @@ namespace VANTAGE.Views
             }
         }
 
-        private void PlaceHolder1_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("coming soon!",
-                "Not Yet Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
-        private void Placeholder2_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("coming soon!",
-                "Not Yet Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
         public class GridPreferences
         {
             public int Version { get; set; } = 1;
