@@ -727,12 +727,31 @@
                         <ContextMenu Background="{StaticResource ControlBackground}"
                                      Foreground="{StaticResource ForegroundColor}"
                                      BorderBrush="{StaticResource ControlBorder}">
-                            <MenuItem Header="Find &amp; Replace in this column..." 
+                            <MenuItem Header="Find &amp; Replace in this column..."
                                       Click="MenuFindReplaceColumn_Click"
                                       Background="{StaticResource ControlBackground}"
                                       Foreground="{StaticResource ForegroundColor}">
                                 <MenuItem.Icon>
                                     <TextBlock Text="🔍" FontSize="14"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <Separator Background="{StaticResource ControlBorder}"/>
+                            <MenuItem Header="Copy Column w/ Header"
+                                      Click="MenuCopyColumnWithHeader_Click"
+                                      Background="{StaticResource ControlBackground}"
+                                      Foreground="{StaticResource ForegroundColor}"
+                                      ToolTip="Copy all visible values in this column with header">
+                                <MenuItem.Icon>
+                                    <TextBlock Text="📋" FontSize="14"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="Copy Column w/o Header"
+                                      Click="MenuCopyColumnWithoutHeader_Click"
+                                      Background="{StaticResource ControlBackground}"
+                                      Foreground="{StaticResource ForegroundColor}"
+                                      ToolTip="Copy all visible values in this column without header">
+                                <MenuItem.Icon>
+                                    <TextBlock Text="📄" FontSize="14"/>
                                 </MenuItem.Icon>
                             </MenuItem>
                         </ContextMenu>

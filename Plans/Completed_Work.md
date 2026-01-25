@@ -5,6 +5,23 @@ This document tracks completed features and fixes. Items are moved here from Pro
 ---
 
 ### January 25, 2026
+- **Progress Grid - Multi-Cell Copy (Ctrl+C):**
+  - Select multiple cells with Ctrl+Click or Shift+Click, press Ctrl+C
+  - Copies in Excel-compatible format (tab-separated columns, newline-separated rows)
+  - Pastes correctly into Excel cells
+  - Uses PreviewKeyDown intercept to capture Ctrl+C before edit control
+
+- **Progress Grid - Column Header Copy Options:**
+  - Right-click any column header for new copy options
+  - "Copy Column w/ Header" - copies header + all visible row values
+  - "Copy Column w/o Header" - copies only visible row values
+  - Works on read-only columns (Find & Replace hidden for read-only, copy options visible)
+
+- **Help Manual - Copying Data Documentation:**
+  - Added Ctrl+C to keyboard shortcuts table
+  - Added new "Copying Data" section with multi-cell copy, column copy, and row copy docs
+  - Updated Table of Contents
+
 - **AI Progress Scan - OCR Improvements and UI Enhancements:**
   - Removed grayscale preprocessing (images are already B&W)
   - Changed default contrast from 1.3 to 1.2, slider range 1.0-2.0

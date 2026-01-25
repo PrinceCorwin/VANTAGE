@@ -752,6 +752,7 @@ namespace VANTAGE.Views
             sfActivities.CurrentCellBeginEdit += SfActivities_CurrentCellBeginEdit;
             sfActivities.GridCopyContent += SfActivities_GridCopyContent;
             sfActivities.GridPasteContent += SfActivities_GridPasteContent;
+            sfActivities.PreviewKeyDown += SfActivities_PreviewKeyDown;
             // VM
             _viewModel = new ProgressViewModel();
             this.DataContext = _viewModel;
@@ -834,18 +835,192 @@ namespace VANTAGE.Views
             }
         }
 
-        // Handle copy to ensure only cell value is copied when in single-cell context
+        // Intercept Ctrl+C for multi-cell copy before edit control captures it
+        private void SfActivities_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            // Only intercept Ctrl+C
+            if (e.Key == Key.C && Keyboard.Modifiers == ModifierKeys.Control)
+            {
+                var selectedCells = sfActivities.GetSelectedCells();
+
+                // Only handle multi-cell selection - let single cell use default behavior
+                if (selectedCells != null && selectedCells.Count > 1)
+                {
+                    e.Handled = true; // Prevent default behavior
+                    CopySelectedCellsToClipboard(selectedCells);
+                }
+            }
+        }
+
+        // Copy selected cells as tab-separated Excel-compatible format
+        private void CopySelectedCellsToClipboard(IList<GridCellInfo> selectedCells)
+        {
+            try
+            {
+                // Group cells by row and organize by column
+                var cellsByRow = selectedCells
+                    .GroupBy(c => c.RowData)
+                    .OrderBy(g => sfActivities.View?.Records.IndexOf(
+                        sfActivities.View.Records.FirstOrDefault(r => r.Data == g.Key)))
+                    .ToList();
+
+                // Get all unique columns in selection, ordered by display index
+                var columnsInSelection = selectedCells
+                    .Select(c => c.Column)
+                    .Distinct()
+                    .OrderBy(col => sfActivities.Columns.IndexOf(col))
+                    .ToList();
+
+                var sb = new StringBuilder();
+
+                foreach (var rowGroup in cellsByRow)
+                {
+                    var activity = rowGroup.Key as Activity;
+                    if (activity == null) continue;
+
+                    var rowValues = new List<string>();
+
+                    foreach (var column in columnsInSelection)
+                    {
+                        // Check if this cell is in the selection for this row
+                        var cellInRow = rowGroup.FirstOrDefault(c => c.Column == column);
+                        if (cellInRow != null)
+                        {
+                            var property = typeof(Activity).GetProperty(column.MappingName);
+                            if (property != null)
+                            {
+                                var value = property.GetValue(activity);
+                                if (value == null)
+                                {
+                                    rowValues.Add(string.Empty);
+                                }
+                                else if (value is DateTime dt)
+                                {
+                                    rowValues.Add(dt.ToString("yyyy-MM-dd"));
+                                }
+                                else
+                                {
+                                    rowValues.Add(value.ToString() ?? string.Empty);
+                                }
+                            }
+                            else
+                            {
+                                rowValues.Add(string.Empty);
+                            }
+                        }
+                        else
+                        {
+                            // Cell not in selection for this row - add empty placeholder
+                            rowValues.Add(string.Empty);
+                        }
+                    }
+
+                    sb.AppendLine(string.Join("\t", rowValues));
+                }
+
+                // Copy to clipboard (trim trailing newline)
+                var result = sb.ToString().TrimEnd('\r', '\n');
+                Clipboard.SetText(result);
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "CopySelectedCellsToClipboard", App.CurrentUser?.Username ?? "Unknown");
+            }
+        }
+
+        // Handle copy - multi-cell selection copies as tab-separated Excel-compatible format (fallback)
         private void SfActivities_GridCopyContent(object? sender, GridCopyPasteEventArgs e)
         {
-            // Get the current cell
-            var currentCell = sfActivities.SelectionController.CurrentCellManager.CurrentCell;
-            if (currentCell == null)
-                return;
-
-            // If not in edit mode, enter edit mode so copy gets just the cell value
-            if (!currentCell.IsEditing)
+            try
             {
-                sfActivities.SelectionController.CurrentCellManager.BeginEdit();
+                var selectedCells = sfActivities.GetSelectedCells();
+
+                // If multiple cells selected, format as Excel-compatible grid
+                if (selectedCells != null && selectedCells.Count > 1)
+                {
+                    e.Handled = true; // Prevent default copy behavior
+
+                    // Group cells by row and organize by column
+                    var cellsByRow = selectedCells
+                        .GroupBy(c => c.RowData)
+                        .OrderBy(g => sfActivities.View?.Records.IndexOf(
+                            sfActivities.View.Records.FirstOrDefault(r => r.Data == g.Key)))
+                        .ToList();
+
+                    // Get all unique columns in selection, ordered by display index
+                    var columnsInSelection = selectedCells
+                        .Select(c => c.Column)
+                        .Distinct()
+                        .OrderBy(col => sfActivities.Columns.IndexOf(col))
+                        .ToList();
+
+                    var sb = new StringBuilder();
+
+                    foreach (var rowGroup in cellsByRow)
+                    {
+                        var activity = rowGroup.Key as Activity;
+                        if (activity == null) continue;
+
+                        var rowValues = new List<string>();
+
+                        foreach (var column in columnsInSelection)
+                        {
+                            // Check if this cell is in the selection for this row
+                            var cellInRow = rowGroup.FirstOrDefault(c => c.Column == column);
+                            if (cellInRow != null)
+                            {
+                                var property = typeof(Activity).GetProperty(column.MappingName);
+                                if (property != null)
+                                {
+                                    var value = property.GetValue(activity);
+                                    if (value == null)
+                                    {
+                                        rowValues.Add(string.Empty);
+                                    }
+                                    else if (value is DateTime dt)
+                                    {
+                                        rowValues.Add(dt.ToString("yyyy-MM-dd"));
+                                    }
+                                    else
+                                    {
+                                        rowValues.Add(value.ToString() ?? string.Empty);
+                                    }
+                                }
+                                else
+                                {
+                                    rowValues.Add(string.Empty);
+                                }
+                            }
+                            else
+                            {
+                                // Cell not in selection for this row - add empty placeholder
+                                rowValues.Add(string.Empty);
+                            }
+                        }
+
+                        sb.AppendLine(string.Join("\t", rowValues));
+                    }
+
+                    // Copy to clipboard (trim trailing newline)
+                    var result = sb.ToString().TrimEnd('\r', '\n');
+                    Clipboard.SetText(result);
+
+                    return;
+                }
+
+                // Single cell - use default behavior (enter edit mode)
+                var currentCell = sfActivities.SelectionController.CurrentCellManager.CurrentCell;
+                if (currentCell == null)
+                    return;
+
+                if (!currentCell.IsEditing)
+                {
+                    sfActivities.SelectionController.CurrentCellManager.BeginEdit();
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "SfActivities_GridCopyContent", App.CurrentUser?.Username ?? "Unknown");
             }
         }
         private void SfActivities_FilterChanged(object? sender, Syncfusion.UI.Xaml.Grid.GridFilterEventArgs e)
@@ -3271,6 +3446,99 @@ namespace VANTAGE.Views
                 UpdateSummaryPanel();
             }
         }
+
+        // Copy column values with header - copies header + all visible row values for the column
+        private void MenuCopyColumnWithHeader_Click(object sender, RoutedEventArgs e)
+        {
+            CopyColumnValues(sender, includeHeader: true);
+        }
+
+        // Copy column values without header - copies only visible row values for the column
+        private void MenuCopyColumnWithoutHeader_Click(object sender, RoutedEventArgs e)
+        {
+            CopyColumnValues(sender, includeHeader: false);
+        }
+
+        // Helper method to copy column values
+        private void CopyColumnValues(object sender, bool includeHeader)
+        {
+            try
+            {
+                var menuItem = sender as MenuItem;
+                if (menuItem == null) return;
+
+                var contextMenuInfo = menuItem.DataContext as Syncfusion.UI.Xaml.Grid.GridColumnContextMenuInfo;
+                if (contextMenuInfo == null)
+                {
+                    MessageBox.Show("Could not determine which column was clicked.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                var column = contextMenuInfo.Column;
+                string columnName = column.MappingName;
+                string columnHeader = column.HeaderText;
+
+                // Get visible records from the grid's filtered view
+                var visibleRecords = sfActivities.View?.Records
+                    .Select(r => r.Data as Activity)
+                    .Where(a => a != null)
+                    .ToList();
+
+                if (visibleRecords == null || visibleRecords.Count == 0)
+                {
+                    MessageBox.Show("No visible records to copy.", "No Data", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                var sb = new StringBuilder();
+
+                // Add header if requested
+                if (includeHeader)
+                {
+                    sb.AppendLine(columnHeader);
+                }
+
+                // Get the property for reflection
+                var property = typeof(Activity).GetProperty(columnName);
+                if (property == null)
+                {
+                    MessageBox.Show($"Column '{columnName}' not found on Activity.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                // Add each visible row's value
+                foreach (var activity in visibleRecords)
+                {
+                    var value = property.GetValue(activity);
+                    if (value == null)
+                    {
+                        sb.AppendLine(string.Empty);
+                    }
+                    else if (value is DateTime dt)
+                    {
+                        sb.AppendLine(dt.ToString("yyyy-MM-dd"));
+                    }
+                    else
+                    {
+                        sb.AppendLine(value.ToString());
+                    }
+                }
+
+                // Copy to clipboard (remove trailing newline for cleaner paste)
+                var result = sb.ToString().TrimEnd('\r', '\n');
+                Clipboard.SetText(result);
+
+                var headerText = includeHeader ? "with header" : "without header";
+                AppLogger.Info($"Copied column '{columnHeader}' ({visibleRecords.Count} values, {headerText})",
+                    "CopyColumn", App.CurrentUser?.Username ?? "Unknown");
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "CopyColumnValues", App.CurrentUser?.Username ?? "Unknown");
+                MessageBox.Show($"Copy failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
         private void sfActivities_GridContextMenuOpening(object sender, Syncfusion.UI.Xaml.Grid.GridContextMenuEventArgs e)
         {
             // Only show RecordContextMenu when right-clicking row header
@@ -3282,18 +3550,29 @@ namespace VANTAGE.Views
                     e.Handled = true;
                 }
             }
-            // Check if this is a column header and if it's read-only
+            // For column headers, show menu but hide Find & Replace for read-only columns
             else if (e.ContextMenuType == Syncfusion.UI.Xaml.Grid.ContextMenuType.Header)
             {
                 var columnIndex = sfActivities.ResolveToGridVisibleColumnIndex(e.RowColumnIndex.ColumnIndex);
                 if (columnIndex >= 0 && columnIndex < sfActivities.Columns.Count)
                 {
                     var column = sfActivities.Columns[columnIndex];
+                    bool isReadOnly = VANTAGE.Utilities.ColumnPermissions.IsReadOnly(column.MappingName);
 
-                    // If column is read-only, cancel the context menu
-                    if (VANTAGE.Utilities.ColumnPermissions.IsReadOnly(column.MappingName))
+                    // Find the Find & Replace menu item and separator, hide them for read-only columns
+                    if (e.ContextMenu?.Items != null)
                     {
-                        e.Handled = true; // Cancel the entire context menu for read-only columns
+                        foreach (var item in e.ContextMenu.Items)
+                        {
+                            if (item is MenuItem menuItem && menuItem.Header?.ToString()?.Contains("Find") == true)
+                            {
+                                menuItem.Visibility = isReadOnly ? Visibility.Collapsed : Visibility.Visible;
+                            }
+                            else if (item is Separator separator)
+                            {
+                                separator.Visibility = isReadOnly ? Visibility.Collapsed : Visibility.Visible;
+                            }
+                        }
                     }
                 }
             }
