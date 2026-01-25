@@ -835,10 +835,10 @@ namespace VANTAGE.Views
             }
         }
 
-        // Intercept Ctrl+C for multi-cell copy before edit control captures it
+        // Intercept Ctrl+C and Ctrl+V for multi-cell copy/paste before edit control captures it
         private void SfActivities_PreviewKeyDown(object sender, KeyEventArgs e)
         {
-            // Only intercept Ctrl+C
+            // Handle Ctrl+C for multi-cell copy
             if (e.Key == Key.C && Keyboard.Modifiers == ModifierKeys.Control)
             {
                 var selectedCells = sfActivities.GetSelectedCells();
@@ -846,8 +846,21 @@ namespace VANTAGE.Views
                 // Only handle multi-cell selection - let single cell use default behavior
                 if (selectedCells != null && selectedCells.Count > 1)
                 {
-                    e.Handled = true; // Prevent default behavior
+                    e.Handled = true;
                     CopySelectedCellsToClipboard(selectedCells);
+                }
+            }
+            // Handle Ctrl+V for multi-cell paste
+            else if (e.Key == Key.V && Keyboard.Modifiers == ModifierKeys.Control)
+            {
+                var selectedCells = sfActivities.GetSelectedCells();
+                var clipboardValues = GetClipboardFirstColumn();
+
+                // Handle multi-row clipboard (even with single cell selected)
+                if (clipboardValues != null && clipboardValues.Count > 0 && selectedCells != null && selectedCells.Count > 0)
+                {
+                    e.Handled = true;
+                    PasteToSelectedCells(selectedCells, clipboardValues);
                 }
             }
         }
@@ -925,6 +938,288 @@ namespace VANTAGE.Views
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "CopySelectedCellsToClipboard", App.CurrentUser?.Username ?? "Unknown");
+            }
+        }
+
+        // Extract first column from clipboard (handles multi-column clipboard data)
+        private List<string>? GetClipboardFirstColumn()
+        {
+            try
+            {
+                if (!Clipboard.ContainsText())
+                    return null;
+
+                var text = Clipboard.GetText();
+                if (string.IsNullOrWhiteSpace(text))
+                    return null;
+
+                // Split by newlines, extract first column from each row
+                var rows = text.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+                var values = new List<string>();
+
+                foreach (var row in rows)
+                {
+                    if (string.IsNullOrEmpty(row))
+                        continue;
+
+                    // Split by tab to get columns, take first column only
+                    var columns = row.Split('\t');
+                    values.Add(columns[0]);
+                }
+
+                return values.Count > 0 ? values : null;
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "GetClipboardFirstColumn", App.CurrentUser?.Username ?? "Unknown");
+                return null;
+            }
+        }
+
+        // Paste clipboard values to selected cells
+        private void PasteToSelectedCells(IList<GridCellInfo> selectedCells, List<string> clipboardValues)
+        {
+            try
+            {
+                // Find leftmost column from selection
+                var leftmostColumn = selectedCells
+                    .Select(c => c.Column)
+                    .Distinct()
+                    .OrderBy(col => sfActivities.Columns.IndexOf(col))
+                    .FirstOrDefault();
+
+                if (leftmostColumn == null)
+                    return;
+
+                string columnName = leftmostColumn.MappingName;
+                string columnHeader = leftmostColumn.HeaderText;
+
+                // Validate: column must be editable
+                if (VANTAGE.Utilities.ColumnPermissions.IsReadOnly(columnName))
+                {
+                    MessageBox.Show($"Cannot paste to '{columnHeader}' - this column is read-only.",
+                        "Paste Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                // Determine target cells
+                List<(Activity activity, int viewIndex)> targetCells;
+
+                // Filter selection to leftmost column only
+                var cellsInLeftmostColumn = selectedCells
+                    .Where(c => c.Column == leftmostColumn)
+                    .ToList();
+
+                if (cellsInLeftmostColumn.Count == 1 && clipboardValues.Count > 1)
+                {
+                    // Single cell selected + multi-row clipboard: paste downward
+                    var startCell = cellsInLeftmostColumn[0];
+                    var startActivity = startCell.RowData as Activity;
+                    if (startActivity == null) return;
+
+                    // Find starting row index in View
+                    var startIndex = sfActivities.View?.Records
+                        .Select((r, i) => new { Record = r, Index = i })
+                        .FirstOrDefault(x => x.Record.Data == startActivity)?.Index ?? -1;
+
+                    if (startIndex < 0) return;
+
+                    // Get rows from starting point downward
+                    targetCells = new List<(Activity, int)>();
+                    var records = sfActivities.View?.Records;
+                    if (records == null) return;
+
+                    for (int i = 0; i < clipboardValues.Count && (startIndex + i) < records.Count; i++)
+                    {
+                        var activity = records[startIndex + i].Data as Activity;
+                        if (activity != null)
+                        {
+                            targetCells.Add((activity, startIndex + i));
+                        }
+                    }
+                }
+                else
+                {
+                    // Multiple cells selected: use selected cells in leftmost column
+                    targetCells = cellsInLeftmostColumn
+                        .Select(c => (activity: c.RowData as Activity,
+                            viewIndex: sfActivities.View?.Records
+                                .Select((r, i) => new { Record = r, Index = i })
+                                .FirstOrDefault(x => x.Record.Data == c.RowData)?.Index ?? -1))
+                        .Where(x => x.activity != null && x.viewIndex >= 0)
+                        .OrderBy(x => x.viewIndex)
+                        .ToList()!;
+                }
+
+                if (targetCells.Count == 0)
+                    return;
+
+                // Validate: user must own ALL affected records
+                var currentUser = App.CurrentUser?.Username;
+                var nonOwnedRecords = targetCells
+                    .Where(t => !string.Equals(t.activity.AssignedTo, currentUser, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+                if (nonOwnedRecords.Count > 0)
+                {
+                    MessageBox.Show("Cannot paste - rows owned by other users would be affected.\n\nSelect only your own rows or change the copied content.",
+                        "Paste Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                // Get property for the target column
+                var property = typeof(Activity).GetProperty(columnName);
+                if (property == null)
+                {
+                    MessageBox.Show($"Column '{columnName}' not found.", "Paste Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                // Paste values
+                int pasteCount = Math.Min(clipboardValues.Count, targetCells.Count);
+                var modifiedActivities = new List<Activity>();
+
+                for (int i = 0; i < pasteCount; i++)
+                {
+                    var activity = targetCells[i].activity;
+                    var clipboardValue = clipboardValues[i];
+
+                    // Try to convert and set value
+                    if (!TrySetPropertyValue(activity, property, columnName, clipboardValue, out string? errorMessage))
+                    {
+                        MessageBox.Show(errorMessage ?? $"Invalid value '{clipboardValue}' for column '{columnHeader}'.",
+                            "Paste Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
+                    }
+
+                    // Mark as modified
+                    activity.LocalDirty = 1;
+                    activity.UpdatedBy = currentUser ?? "Unknown";
+                    activity.UpdatedUtcDate = DateTime.UtcNow;
+                    modifiedActivities.Add(activity);
+                }
+
+                // Save all modified activities to database
+                foreach (var activity in modifiedActivities)
+                {
+                    _ = ActivityRepository.UpdateActivityInDatabase(activity);
+                }
+
+                // Refresh grid
+                sfActivities.View?.Refresh();
+                UpdateSummaryPanel();
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "PasteToSelectedCells", App.CurrentUser?.Username ?? "Unknown");
+                MessageBox.Show($"Paste failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        // Try to set a property value with type conversion, returns false if conversion fails
+        private bool TrySetPropertyValue(Activity activity, PropertyInfo property, string columnName, string value, out string? errorMessage)
+        {
+            errorMessage = null;
+
+            try
+            {
+                var propertyType = Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType;
+
+                // Handle PercentEntry special case for auto-dates
+                double? oldPercent = null;
+                if (columnName == "PercentEntry")
+                {
+                    oldPercent = activity.PercentEntry;
+                }
+
+                object? convertedValue = null;
+
+                if (propertyType == typeof(double))
+                {
+                    if (double.TryParse(value, out double dblVal))
+                    {
+                        convertedValue = NumericHelper.RoundToPlaces(dblVal);
+                    }
+                    else if (string.IsNullOrWhiteSpace(value))
+                    {
+                        convertedValue = 0.0;
+                    }
+                    else
+                    {
+                        errorMessage = $"Invalid number '{value}' for column '{columnName}'.";
+                        return false;
+                    }
+                }
+                else if (propertyType == typeof(int))
+                {
+                    if (int.TryParse(value, out int intVal))
+                    {
+                        convertedValue = intVal;
+                    }
+                    else if (string.IsNullOrWhiteSpace(value))
+                    {
+                        convertedValue = 0;
+                    }
+                    else
+                    {
+                        errorMessage = $"Invalid integer '{value}' for column '{columnName}'.";
+                        return false;
+                    }
+                }
+                else if (propertyType == typeof(DateTime))
+                {
+                    if (DateTime.TryParse(value, out DateTime dtVal))
+                    {
+                        convertedValue = dtVal;
+                    }
+                    else if (string.IsNullOrWhiteSpace(value))
+                    {
+                        convertedValue = null;
+                    }
+                    else
+                    {
+                        errorMessage = $"Invalid date '{value}' for column '{columnName}'.";
+                        return false;
+                    }
+                }
+                else if (propertyType == typeof(string))
+                {
+                    convertedValue = value;
+                }
+                else
+                {
+                    // Try generic conversion
+                    convertedValue = Convert.ChangeType(value, propertyType);
+                }
+
+                // Set the property value
+                property.SetValue(activity, convertedValue);
+
+                // Handle auto-dates for PercentEntry
+                if (columnName == "PercentEntry" && convertedValue is double newPercent)
+                {
+                    // Auto-set SchStart when starting work (going from 0 to > 0)
+                    if (oldPercent == 0 && newPercent > 0 && activity.SchStart == null)
+                    {
+                        activity.SchStart = DateTime.Today;
+                    }
+
+                    // Auto-set SchFinish when completing (setting to 100)
+                    if (newPercent == 100 && activity.SchFinish == null)
+                    {
+                        activity.SchFinish = DateTime.Today;
+                    }
+
+                    // Recalculate derived fields
+                    activity.RecalculateDerivedFields("PercentEntry");
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                errorMessage = $"Failed to set value: {ex.Message}";
+                return false;
             }
         }
 

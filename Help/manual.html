@@ -730,6 +730,10 @@
             <td>Copy selected cells (Excel-compatible format)</td>
         </tr>
         <tr>
+            <td><span class="keyboard-shortcut">Ctrl+V</span></td>
+            <td>Paste to selected cells (single column)</td>
+        </tr>
+        <tr>
             <td><span class="keyboard-shortcut">Right-click</span></td>
             <td>Open context menu</td>
         </tr>
@@ -755,6 +759,28 @@
         <li><strong>Copy (Visible Columns)</strong> — Copies selected rows with only visible columns</li>
         <li><strong>Copy (All Columns)</strong> — Copies selected rows with all Activity properties</li>
     </ul>
+
+    <h4>Multi-Cell Paste (Ctrl+V)</h4>
+    <p>Paste values from the clipboard into selected cells. Values are pasted into the leftmost selected column only.</p>
+
+    <p><strong>How it works:</strong></p>
+    <ul>
+        <li><strong>Single cell selected</strong> — Pastes downward from that cell (one value per row)</li>
+        <li><strong>Multiple cells selected</strong> — Pastes into the leftmost column of the selection</li>
+        <li><strong>Multi-column clipboard</strong> — Only the first column of clipboard data is used</li>
+    </ul>
+
+    <p><strong>Validation rules (paste is blocked if any fail):</strong></p>
+    <ul>
+        <li>Target column must be editable (not read-only or calculated)</li>
+        <li>You must own all affected records (AssignedTo must match your username)</li>
+        <li>Values must be valid for the column type (numbers, dates, etc.)</li>
+    </ul>
+
+    <div class="note">
+        <div class="note-title">Auto-Date Behavior</div>
+        <p>When pasting to PercentEntry, dates are auto-set just like manual edits: SchStart is set when going from 0% to any value, and SchFinish is set when reaching 100%.</p>
+    </div>
 
     <!-- ============================================ -->
     <h2 id="schedule-module">4. Schedule Module</h2>

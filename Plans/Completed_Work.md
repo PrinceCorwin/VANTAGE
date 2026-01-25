@@ -11,6 +11,15 @@ This document tracks completed features and fixes. Items are moved here from Pro
   - Pastes correctly into Excel cells
   - Uses PreviewKeyDown intercept to capture Ctrl+C before edit control
 
+- **Progress Grid - Multi-Cell Paste (Ctrl+V):**
+  - Single cell + multi-row clipboard: pastes downward from selected cell
+  - Multi-cell selection: pastes to leftmost column only
+  - Multi-column clipboard: uses first column only
+  - Validates: editable column, user ownership, valid value types
+  - Auto-dates for PercentEntry (SchStart/SchFinish auto-set)
+  - Type conversion with clear error messages for mismatches
+  - Marks LocalDirty, saves to database, refreshes grid
+
 - **Progress Grid - Column Header Copy Options:**
   - Right-click any column header for new copy options
   - "Copy Column w/ Header" - copies header + all visible row values
