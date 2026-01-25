@@ -307,6 +307,7 @@
                                        AllowEditing="True"
                                        EditTrigger="OnTap"
                                        AllowSorting="True"
+                                       AllowFiltering="True"
                                        SelectionMode="Single"
                                        SelectionUnit="Cell"
                                        NavigationMode="Cell"
@@ -323,10 +324,11 @@
                     <syncfusion:SfDataGrid.Columns>
                         <syncfusion:GridCheckBoxColumn MappingName="IsSelected"
                                                        HeaderText="☑"
-                                                       Width="40"/>
+                                                       Width="40"
+                                                       AllowFiltering="False"/>
                         <syncfusion:GridTextColumn MappingName="ExtractedUniqueId"
                                                    HeaderText="ActID"
-                                                   Width="60"
+                                                   Width="70"
                                                    AllowEditing="False"
                                                    ToolTipTemplate="{x:Null}"/>
                         <syncfusion:GridTextColumn MappingName="MatchedUniqueId"
@@ -339,6 +341,11 @@
                                                    Width="200"
                                                    AllowEditing="False"
                                                    TextTrimming="CharacterEllipsis"/>
+                        <syncfusion:GridTextColumn MappingName="BudgetMHs"
+                                                   HeaderText="MHs"
+                                                   Width="70"
+                                                   AllowEditing="False"
+                                                   ToolTipTemplate="{x:Null}"/>
                         <syncfusion:GridNumericColumn MappingName="CurrentPercent"
                                                       HeaderText="Cur %"
                                                       Width="70"
@@ -374,27 +381,74 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- Left: Selection actions -->
+                <!-- Left: Selection actions and rescan -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal">
-                    <Button Content="Select All Ready"
+                    <Button Content="Select All"
+                            Padding="10,6"
+                            Click="BtnSelectAll_Click"
+                            Background="Transparent"
+                            Foreground="{StaticResource AccentColor}"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            ToolTip="Select all visible items"/>
+                    <Button Content="Select Ready"
                             Padding="10,6"
                             Click="BtnSelectAllReady_Click"
                             Background="Transparent"
                             Foreground="{StaticResource AccentColor}"
                             BorderThickness="0"
-                            Cursor="Hand"/>
-                    <Button Content="Clear Selection"
+                            Cursor="Hand"
+                            ToolTip="Select Ready items and Warnings with confidence >= 70%"/>
+                    <Button Content="Clear"
                             Padding="10,6"
                             Click="BtnClearSelection_Click"
                             Background="Transparent"
                             Foreground="{StaticResource TextColorSecondary}"
                             BorderThickness="0"
-                            Cursor="Hand"/>
+                            Cursor="Hand"
+                            ToolTip="Clear all selections"/>
                     <TextBlock x:Name="txtSelectedCount"
                                Text="Selected: 0"
                                Foreground="{StaticResource TextColorSecondary}"
                                VerticalAlignment="Center"
                                Margin="20,0,0,0"/>
+
+                    <!-- Rescan controls -->
+                    <Border BorderBrush="{StaticResource ControlBorder}"
+                            BorderThickness="1,0,0,0"
+                            Margin="20,0,0,0"
+                            Padding="15,0,0,0">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Contrast:"
+                                       Foreground="{StaticResource TextColorSecondary}"
+                                       VerticalAlignment="Center"
+                                       ToolTip="Adjust only if scan returned incorrect values"/>
+                            <Slider x:Name="sliderRescanContrast"
+                                    Width="100"
+                                    Minimum="1"
+                                    Maximum="2"
+                                    Value="1.2"
+                                    TickFrequency="0.1"
+                                    IsSnapToTickEnabled="True"
+                                    Margin="8,0,0,0"
+                                    VerticalAlignment="Center"
+                                    ToolTip="Adjust only if scan returned incorrect values"/>
+                            <TextBlock x:Name="txtRescanContrastValue"
+                                       Text="1.2"
+                                       Width="30"
+                                       Foreground="{StaticResource ForegroundColor}"
+                                       Margin="4,0,0,0"
+                                       VerticalAlignment="Center"/>
+                            <Button Content="Rescan"
+                                    Padding="10,4"
+                                    Margin="10,0,0,0"
+                                    Click="BtnRescan_Click"
+                                    Background="{StaticResource ControlBackground}"
+                                    Foreground="{StaticResource AccentColor}"
+                                    BorderBrush="{StaticResource AccentColor}"
+                                    ToolTip="Re-process files with new contrast setting"/>
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
 
                 <!-- Right: Main buttons -->

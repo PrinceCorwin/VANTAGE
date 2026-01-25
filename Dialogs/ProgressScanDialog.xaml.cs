@@ -44,8 +44,18 @@ namespace VANTAGE.Dialogs
             // Subscribe to review item changes to update selection count
             _reviewItems.CollectionChanged += (s, e) => UpdateSelectionCount();
 
+            // Wire up rescan slider value changed handler
+            sliderRescanContrast.ValueChanged += SliderRescanContrast_ValueChanged;
+
             // Dispose service when window closes
             Closed += (s, e) => _scanService.Dispose();
+        }
+
+        // Update rescan contrast display when slider changes
+        private void SliderRescanContrast_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (txtRescanContrastValue != null)
+                txtRescanContrastValue.Text = e.NewValue.ToString("F1");
         }
 
         // Drag and drop handlers
@@ -232,8 +242,7 @@ namespace VANTAGE.Dialogs
                 {
                     ExtractedUniqueId = extraction.UniqueId,
                     ExtractedPct = extraction.Pct,
-                    Confidence = extraction.Confidence,
-                    RawExtraction = extraction.Raw
+                    Confidence = extraction.Confidence
                 };
 
                 // Try to match to database by ActivityID (parse extracted string to int)
@@ -241,9 +250,10 @@ namespace VANTAGE.Dialogs
                     activityDict.TryGetValue(activityId, out var activity))
                 {
                     reviewItem.MatchedRecord = activity;
-                    reviewItem.MatchedUniqueId = activity.UniqueID;  // For debugging
+                    reviewItem.MatchedUniqueId = activity.UniqueID;
                     reviewItem.Description = activity.Description;
                     reviewItem.CurrentPercent = (decimal)activity.PercentEntry;
+                    reviewItem.BudgetMHs = activity.BudgetMHs.ToString("N2");
 
                     // Set new percent from extraction
                     if (extraction.Pct.HasValue)
@@ -268,6 +278,7 @@ namespace VANTAGE.Dialogs
                     reviewItem.Status = ScanMatchStatus.NotFound;
                     reviewItem.ValidationMessage = "Not found in your records";
                     reviewItem.Description = "(not found)";
+                    reviewItem.BudgetMHs = "NOT FOUND";
                     notFoundCount++;
                 }
 
@@ -366,6 +377,17 @@ namespace VANTAGE.Dialogs
             sfReviewGrid.View.RefreshFilter();
         }
 
+        // Select all items
+        private void BtnSelectAll_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (var item in _reviewItems)
+            {
+                item.IsSelected = true;
+            }
+            sfReviewGrid.View?.RefreshFilter();
+            UpdateSelectionCount();
+        }
+
         // Select all ready items
         private void BtnSelectAllReady_Click(object sender, RoutedEventArgs e)
         {
@@ -404,6 +426,55 @@ namespace VANTAGE.Dialogs
             _reviewItems.Clear();
             panelReview.Visibility = Visibility.Collapsed;
             panelUpload.Visibility = Visibility.Visible;
+        }
+
+        // Rescan with new contrast setting
+        private async void BtnRescan_Click(object sender, RoutedEventArgs e)
+        {
+            // Update contrast from rescan slider
+            _scanService.ContrastFactor = (float)sliderRescanContrast.Value;
+
+            // Clear current results and switch to processing panel
+            _reviewItems.Clear();
+            panelReview.Visibility = Visibility.Collapsed;
+            panelProcessing.Visibility = Visibility.Visible;
+
+            // Re-run processing with same files
+            _cancellationTokenSource = new CancellationTokenSource();
+            var filePaths = _files.Select(f => f.FilePath).ToList();
+
+            var progress = new Progress<ScanProgress>(p =>
+            {
+                progressBar.Progress = p.ProgressPercent;
+                txtProcessingStatus.Text = $"Processing page {p.CurrentPage} of {p.TotalPages}...";
+                txtExtractedCount.Text = $"Extracted: {p.ExtractedCount} entries";
+            });
+
+            try
+            {
+                var result = await _scanService.ProcessFilesAsync(
+                    filePaths, progress, _cancellationTokenSource.Token);
+
+                if (_cancellationTokenSource.Token.IsCancellationRequested)
+                {
+                    // User cancelled - go back to review
+                    panelProcessing.Visibility = Visibility.Collapsed;
+                    panelReview.Visibility = Visibility.Visible;
+                    return;
+                }
+
+                // Process results and show review
+                await ProcessResultsAsync(result);
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "ProgressScanDialog.BtnRescan_Click");
+                MessageBox.Show($"Error during rescan: {ex.Message}",
+                    "Processing Error", MessageBoxButton.OK, MessageBoxImage.Error);
+
+                panelProcessing.Visibility = Visibility.Collapsed;
+                panelReview.Visibility = Visibility.Visible;
+            }
         }
 
         // Apply selected updates

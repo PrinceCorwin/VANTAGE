@@ -25,6 +25,7 @@ namespace VANTAGE.Models.AI
         public string? MatchedUniqueId { get; set; }  // For debugging - shows actual UniqueID we'll update
         public decimal? CurrentPercent { get; set; }
         public string? Description { get; set; }
+        public string? BudgetMHs { get; set; }  // Budget MHs or "NOT FOUND" if ActivityID not in database
 
         // User editable fields (with property changed)
         private decimal? _newPercent;

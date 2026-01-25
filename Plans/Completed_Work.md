@@ -4,6 +4,19 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ---
 
+### January 25, 2026
+- **AI Progress Scan - OCR Improvements and UI Enhancements:**
+  - Removed grayscale preprocessing (images are already B&W)
+  - Changed default contrast from 1.3 to 1.2, slider range 1.0-2.0
+  - Moved contrast slider from upload panel to results panel only (with Rescan button)
+  - Added "00" → "100" OCR heuristic to handle missed leading 1 in handwritten entries
+  - Added column header filtering (AllowFiltering) to results grid
+  - Added BudgetMHs column to results grid (shows "NOT FOUND" if ActivityID not matched)
+  - Added Select All button, renamed buttons to "Select Ready" and "Clear"
+  - Removed Raw debug column
+
+---
+
 ### January 24, 2026
 - **EarnQtyEntry Recalculation Bug Fixed:**
   - Added `RecalculateDerivedFields(changedField)` method to Activity.cs

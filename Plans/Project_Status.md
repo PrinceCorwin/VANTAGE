@@ -1,6 +1,6 @@
 # MILESTONE - Project Status
 
-**Last Updated:** January 24, 2026
+**Last Updated:** January 25, 2026
 
 ## V1 Testing Scope
 
@@ -66,7 +66,10 @@
 - `Services/AI/ProgressScanService.cs` - Scan orchestration
 - `Services/ProgressBook/ProgressBookPdfGenerator.cs` - PDF generation
 
-**Enhancements:** Image preprocessing (grayscale + contrast) improves handwriting OCR accuracy
+**Enhancements:**
+- Image preprocessing with contrast adjustment (slider in results dialog, default 1.2)
+- OCR heuristic: "00" auto-converts to "100" (handles missed leading 1)
+- Results grid: column filtering, BudgetMHs column, Select All/Select Ready/Clear buttons
 
 ### Work Package Module
 - Template editors testing

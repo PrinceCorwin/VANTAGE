@@ -339,7 +339,7 @@ namespace VANTAGE.Services.AI
             // Remove % symbol and whitespace
             text = text.Replace("%", "").Trim();
 
-            // Common OCR corrections
+            // Common OCR corrections for letters that look like digits
             text = text.Replace("O", "0")   // O vs 0
                        .Replace("o", "0")
                        .Replace("l", "1")   // l vs 1
@@ -350,6 +350,15 @@ namespace VANTAGE.Services.AI
             // Extract digits and decimal point only
             var cleaned = new string(text.Where(c => char.IsDigit(c) || c == '.').ToArray());
 
+            // Heuristic: "00" is likely "100" with a missed leading 1
+            // Nobody writes "00%" - they'd write "0" for zero percent
+            if (cleaned == "00")
+            {
+                AppLogger.Info("ParsePercentage: converted '00' to '100' (likely missed leading 1)",
+                    "TextractService.ParsePercentage");
+                cleaned = "100";
+            }
+
             if (decimal.TryParse(cleaned, out decimal value))
             {
                 // Validate range (0-100)
@@ -357,6 +366,8 @@ namespace VANTAGE.Services.AI
                 {
                     return value;
                 }
+                AppLogger.Warning($"ParsePercentage: value {value} outside 0-100 range",
+                    "TextractService.ParsePercentage");
             }
 
             return null;

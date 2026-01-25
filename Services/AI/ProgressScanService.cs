@@ -14,6 +14,9 @@ namespace VANTAGE.Services.AI
         private readonly TextractService _textractService;
         private bool _disposed;
 
+        // Contrast factor for image preprocessing (1.0 = no change, 2.0 = max)
+        public float ContrastFactor { get; set; } = 1.2f;
+
         public ProgressScanService()
         {
             _textractService = new TextractService();
@@ -135,8 +138,8 @@ namespace VANTAGE.Services.AI
                     return;
                 }
 
-                // Preprocess image for better OCR (grayscale + contrast enhancement)
-                var preprocessed = ImagePreprocessor.PreprocessForOcr(imageBytes);
+                // Preprocess image for better OCR (contrast enhancement)
+                var preprocessed = ImagePreprocessor.PreprocessForOcr(imageBytes, ContrastFactor);
 
                 AppLogger.Info($"Converted PDF page {pageIndex + 1} to image: {imageBytes.Length} bytes, preprocessed: {preprocessed.Length} bytes",
                     "ProgressScanService.ProcessPdfPageAsync");
@@ -171,8 +174,8 @@ namespace VANTAGE.Services.AI
                 // Read image file
                 var imageBytes = await File.ReadAllBytesAsync(imagePath, cancellationToken);
 
-                // Preprocess image for better OCR (grayscale + contrast enhancement)
-                var preprocessed = ImagePreprocessor.PreprocessForOcr(imageBytes);
+                // Preprocess image for better OCR (contrast enhancement)
+                var preprocessed = ImagePreprocessor.PreprocessForOcr(imageBytes, ContrastFactor);
 
                 // Extract data from image using Textract
                 var extractions = await _textractService.AnalyzeImageAsync(
