@@ -273,11 +273,9 @@ namespace VANTAGE.Utilities
                 worksheet.Columns().AdjustToContents();
 
                 workbook.SaveAs(filePath);
-                System.Diagnostics.Debug.WriteLine($"✓ Exported {activities.Count} activities ({format}) to {filePath}");
             }
-            catch (Exception ex)
+            catch
             {
-                System.Diagnostics.Debug.WriteLine($"✗ Export error: {ex.Message}");
                 throw;
             }
         }
@@ -335,11 +333,9 @@ namespace VANTAGE.Utilities
                 worksheet.Columns().AdjustToContents();
 
                 workbook.SaveAs(filePath);
-                System.Diagnostics.Debug.WriteLine($"✓ Exported template ({format}) to {filePath}");
             }
-            catch (Exception ex)
+            catch
             {
-                System.Diagnostics.Debug.WriteLine($"✗ Template export error: {ex.Message}");
                 throw;
             }
         }

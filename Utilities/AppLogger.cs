@@ -320,9 +320,8 @@ namespace VANTAGE.Utilities
                     });
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                System.Diagnostics.Debug.WriteLine($"GetLogs error: {ex.Message}");
             }
 
             return logs;

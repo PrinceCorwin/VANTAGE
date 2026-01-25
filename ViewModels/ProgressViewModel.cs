@@ -613,10 +613,8 @@ namespace VANTAGE.ViewModels
 
                 await RebuildAndReloadAsync();
             }
-            catch (Exception ex)
+            catch
             {
-                // TODO: Add proper logging when logging system is implemented
-                System.Diagnostics.Debug.WriteLine($"✗ Error applying My Records filter: {ex.Message}");
             }
             finally
             {

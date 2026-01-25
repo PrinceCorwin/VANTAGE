@@ -80,10 +80,8 @@ namespace VANTAGE.Utilities
                 var result = command.ExecuteScalar();
                 return result != null ? result.ToString() ?? defaultValue : defaultValue;
             }
-            catch (Exception ex)
+            catch
             {
-                System.Diagnostics.Debug.WriteLine($"Error getting app setting: {ex.Message}");
-                // TODO: Add proper logging (e.g., to file or central log)
                 return defaultValue;
             }
         }
@@ -111,10 +109,8 @@ namespace VANTAGE.Utilities
 
                 command.ExecuteNonQuery();
             }
-            catch (Exception ex)
+            catch
             {
-                System.Diagnostics.Debug.WriteLine($"Error setting app setting: {ex.Message}");
-                // TODO: Add proper logging (e.g., to file or central log)
             }
         }
 
@@ -133,9 +129,8 @@ namespace VANTAGE.Utilities
                 var result = command.ExecuteScalar();
                 return result != null ? result.ToString() ?? defaultValue : defaultValue;
             }
-            catch (Exception ex)
+            catch
             {
-                System.Diagnostics.Debug.WriteLine($"Error getting user setting: {ex.Message}");
                 return defaultValue;
             }
         }
@@ -160,9 +155,8 @@ namespace VANTAGE.Utilities
 
                 command.ExecuteNonQuery();
             }
-            catch (Exception ex)
+            catch
             {
-                System.Diagnostics.Debug.WriteLine($"Error setting user setting: {ex.Message}");
             }
         }
 
@@ -219,10 +213,8 @@ namespace VANTAGE.Utilities
                     SetAppSetting("WindowHeight", "1080", "int");
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                System.Diagnostics.Debug.WriteLine($"Error initializing app settings: {ex.Message}");
-                // TODO: Add proper logging (e.g., to file or central log)
             }
         }
 
@@ -237,9 +229,8 @@ namespace VANTAGE.Utilities
                     SetUserSetting("Theme", "DarkTheme.xaml", "string");
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                System.Diagnostics.Debug.WriteLine($"Error initializing user settings: {ex.Message}");
             }
         }
 

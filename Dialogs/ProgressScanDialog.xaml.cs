@@ -595,10 +595,6 @@ namespace VANTAGE.Dialogs
                 {
                     var activity = item.MatchedRecord;
 
-                    // Log what we're updating
-                    System.Diagnostics.Debug.WriteLine($"APPLY: ActivityID={activity.ActivityID}, UniqueID={activity.UniqueID}, " +
-                        $"OldPct={activity.PercentEntry}, NewPct={item.NewPercent.Value}");
-
                     // Update the activity (setter triggers EarnQtyEntry recalculation)
                     activity.PercentEntry = (double)item.NewPercent.Value;
                     activity.UpdatedBy = App.CurrentUser?.Username ?? "Unknown";
@@ -608,8 +604,6 @@ namespace VANTAGE.Dialogs
                     await ActivityRepository.UpdateActivityInDatabase(activity);
                     AppliedUniqueIds.Add(activity.UniqueID);
                     successCount++;
-
-                    System.Diagnostics.Debug.WriteLine($"APPLY SUCCESS: UniqueID={activity.UniqueID} now has Pct={activity.PercentEntry}");
                 }
                 catch (Exception ex)
                 {

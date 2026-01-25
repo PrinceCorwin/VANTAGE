@@ -1326,7 +1326,6 @@ namespace VANTAGE.Views
             {
                 var filteredCount = sfActivities.View.Records.Count;
                 _viewModel.FilteredCount = filteredCount;
-                System.Diagnostics.Debug.WriteLine($">>> Syncfusion filter changed: {filteredCount} records");
                 UpdateRecordCount(); // Ensure UI label updates
                 UpdateSummaryPanel(); // <-- update summary panel on filter change
             }
@@ -1383,16 +1382,10 @@ namespace VANTAGE.Views
             try
             {
                 if (_skipSaveColumnState)
-                {
-                    System.Diagnostics.Debug.WriteLine("SaveColumnState: SKIPPED (reset in progress)");
                     return;
-                }
 
                 if (sfActivities?.Columns == null || sfActivities.Columns.Count == 0)
-                {
-                    System.Diagnostics.Debug.WriteLine("SaveColumnState: no columns to save.");
                     return;
-                }
 
                 var prefs = new GridPreferences
                 {
@@ -1411,11 +1404,9 @@ namespace VANTAGE.Views
 
                 var json = JsonSerializer.Serialize(prefs);
                 SettingsManager.SetUserSetting(GridPrefsKey, json, "json");
-                System.Diagnostics.Debug.WriteLine($"SaveColumnState: saved {prefs.Columns.Count} cols, hash={prefs.SchemaHash}, key={GridPrefsKey}\n{json}");
             }
-            catch (Exception ex)
+            catch
             {
-                System.Diagnostics.Debug.WriteLine($"SaveColumnState error: {ex}");
             }
         }
 
@@ -1458,10 +1449,7 @@ namespace VANTAGE.Views
                 // Validate schema hash
                 var currentHash = ComputeSchemaHash(sfActivities);
                 if (!string.Equals(prefs.SchemaHash, currentHash, StringComparison.Ordinal))
-                {
-                    System.Diagnostics.Debug.WriteLine($"ApplyGridPreferences: schema mismatch (saved {prefs.SchemaHash} vs current {currentHash}). Skipped.");
                     return;
-                }
 
                 var byName = sfActivities.Columns.ToDictionary(c => c.MappingName, c => c);
 
@@ -1491,11 +1479,9 @@ namespace VANTAGE.Views
                         col.Width = Math.Max(MinWidth, p.Width);
 
                 sfActivities.UpdateLayout();
-                System.Diagnostics.Debug.WriteLine($"ApplyGridPreferences: applied {prefs.Columns.Count} columns");
             }
-            catch (Exception ex)
+            catch
             {
-                System.Diagnostics.Debug.WriteLine($"ApplyGridPreferences error: {ex}");
             }
         }
 
@@ -1503,48 +1489,32 @@ namespace VANTAGE.Views
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine("=== LoadColumnState START ===");
-
                 if (sfActivities?.Columns == null)
-                {
-                    System.Diagnostics.Debug.WriteLine("LoadColumnState SKIPPED: Grid invalid");
                     return;
-                }
 
                 var raw = SettingsManager.GetUserSetting(GridPrefsKey);
-                System.Diagnostics.Debug.WriteLine($"Raw JSON from DB: {(string.IsNullOrWhiteSpace(raw) ? "NULL/EMPTY" : "EXISTS")}");
-
                 if (string.IsNullOrWhiteSpace(raw))
-                {
-                    System.Diagnostics.Debug.WriteLine("No grid prefs found; using XAML defaults.");
                     return;
-                }
 
                 GridPreferences? prefs = null;
                 try { prefs = JsonSerializer.Deserialize<GridPreferences>(raw); }
-                catch { System.Diagnostics.Debug.WriteLine("LoadColumnState: invalid JSON (using XAML defaults)."); }
+                catch { }
 
                 if (prefs == null)
-                {
-                    System.Diagnostics.Debug.WriteLine("LoadColumnState: invalid JSON (using XAML defaults).");
                     return;
-                }
 
                 var currentHash = ComputeSchemaHash(sfActivities);
                 if (!string.Equals(prefs.SchemaHash, currentHash, StringComparison.Ordinal))
-                {
-                    System.Diagnostics.Debug.WriteLine($"LoadColumnState: schema mismatch (saved {prefs.SchemaHash} vs current {currentHash}). Defaults kept.");
                     return;
-                }
 
                 var byName = sfActivities.Columns.ToDictionary(c => c.MappingName, c => c);
 
-                //1) Visibility first
+                // Visibility first
                 foreach (var p in prefs.Columns)
                     if (byName.TryGetValue(p.Name, out var col))
                         col.IsHidden = p.IsHidden;
 
-                //2) Order (move columns to target positions)
+                // Order (move columns to target positions)
                 var orderedPrefs = prefs.Columns.OrderBy(x => x.OrderIndex).ToList();
                 for (int target = 0; target < orderedPrefs.Count; target++)
                 {
@@ -1558,19 +1528,16 @@ namespace VANTAGE.Views
                     }
                 }
 
-                //3) Width last (guard against tiny widths)
+                // Width last (guard against tiny widths)
                 const double MinWidth = 40.0;
                 foreach (var p in prefs.Columns)
                     if (byName.TryGetValue(p.Name, out var col))
                         col.Width = Math.Max(MinWidth, p.Width);
 
-                sfActivities.UpdateLayout(); // Force layout update
-/*                InitializeColumnVisibility();*/ // Sync sidebar checkboxes
-                System.Diagnostics.Debug.WriteLine($"LoadColumnState: applied {prefs.Columns.Count} cols, key={GridPrefsKey}");
+                sfActivities.UpdateLayout();
             }
-            catch (Exception ex)
+            catch
             {
-                System.Diagnostics.Debug.WriteLine($"LoadColumnState error: {ex}");
             }
         }
 
@@ -1878,7 +1845,6 @@ namespace VANTAGE.Views
 
             if (hasActiveFilter && sfActivities?.View?.Records != null)
             {
-                System.Diagnostics.Debug.WriteLine($"About to loop through {sfActivities.View.Records.Count} records");
                 // Filter is active - extract filtered activities
                 recordsToSum = new List<Activity>();
 
@@ -1896,8 +1862,6 @@ namespace VANTAGE.Views
                         }
                     }
                 }
-
-                System.Diagnostics.Debug.WriteLine($"UpdateSummaryPanel: Extracted {recordsToSum.Count} filtered activities");
             }
             else if (_viewModel?.Activities != null && _viewModel.Activities.Count > 0)
             {
@@ -1909,25 +1873,7 @@ namespace VANTAGE.Views
                 // No records at all
                 recordsToSum = new List<Activity>();
             }
-            // Debug: Check what we're actually summing
-            System.Diagnostics.Debug.WriteLine($"UpdateSummaryPanel: About to sum {recordsToSum.Count} activities");
-            if (recordsToSum.Any())
-            {
-                double testBudget = recordsToSum.Sum(a => a.BudgetMHs);
-                double testEarned = recordsToSum.Sum(a => a.EarnMHsCalc);
-                System.Diagnostics.Debug.WriteLine($"  Test sum: Budget={testBudget:N2}, Earned={testEarned:N2}");
-            }
-            System.Diagnostics.Debug.WriteLine($"=== UpdateSummaryPanel ===");
-            System.Diagnostics.Debug.WriteLine($"recordsToSum.Count = {recordsToSum.Count}");
-            if (recordsToSum.Any())
-            {
-                var first = recordsToSum[0];
-                System.Diagnostics.Debug.WriteLine($"First record: PercentEntry={first.PercentEntry}, BudgetMHs={first.BudgetMHs}, EarnMHsCalc={first.EarnMHsCalc}");
 
-                double testBudget = recordsToSum.Sum(a => a.BudgetMHs);
-                double testEarned = recordsToSum.Sum(a => a.EarnMHsCalc);
-                System.Diagnostics.Debug.WriteLine($"Sum: Budget={testBudget:N2}, Earned={testEarned:N2}");
-            }
             // Call ViewModel method to update bound properties
             if (_viewModel != null)
             {
@@ -3696,7 +3642,6 @@ namespace VANTAGE.Views
                 if (success)
                 {
                     UpdateSummaryPanel();
-                    System.Diagnostics.Debug.WriteLine($"✓ Auto-saved: ActivityID={editedActivity.ActivityID}, Column={columnName}, UpdatedBy={editedActivity.UpdatedBy}");
                 }
                 else
                 {
@@ -3709,7 +3654,6 @@ namespace VANTAGE.Views
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"✗ Error in auto-save: {ex.Message}");
                 AppLogger.Error(ex, "sfActivities_CurrentCellEndEdit", App.CurrentUser?.Username ?? "Unknown");
                 MessageBox.Show(
                     $"Error saving changes: {ex.Message}",

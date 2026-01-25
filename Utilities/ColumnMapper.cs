@@ -51,9 +51,8 @@ namespace VANTAGE.Utilities
 
                 _isLoaded = true;
             }
-            catch (Exception ex)
+            catch
             {
-                System.Diagnostics.Debug.WriteLine($"✗ Error loading column mappings: {ex.Message}");
                 // Initialize empty to prevent repeated failures
                 _mappings = new Dictionary<string, (string?, string?)>();
                 _oldToNewMapping = new Dictionary<string, string>();

@@ -552,16 +552,11 @@ namespace VANTAGE.Data
                          // Calculate offset
                          int offset = pageNumber * pageSize;
 
-                         System.Diagnostics.Debug.WriteLine($"PAGING DEBUG -> pageNumber={pageNumber}, pageSize={pageSize}, offset={offset}");
-
                          // NEW: Query using NewVantage column names
                          var command = connection.CreateCommand();
                          command.CommandText = $@"SELECT * FROM Activities {whereSQL} ORDER BY UniqueID LIMIT @pageSize OFFSET @offset";
                          command.Parameters.AddWithValue("@pageSize", pageSize);
                          command.Parameters.AddWithValue("@offset", offset);
-                         System.Diagnostics.Debug.WriteLine(
-                                $"SQL PAGE SELECT -> LIMIT {pageSize} OFFSET {offset} | WHERE='{whereSQL.Replace("\n", " ").Replace("\r", "")}'"
-                                 );
 
                          var activities = new List<Activity>();
 
@@ -649,12 +644,6 @@ namespace VANTAGE.Data
                                  {
                                      return 0;
                                  }
-                             }
-                             // ADD THESE 5 LINES HERE:
-                             if (activities.Count == 0)
-                             {
-                                 double rawPercent = GetDoubleSafe("PercentEntry");
-                                 System.Diagnostics.Debug.WriteLine($"Raw DB value for PercentEntry: {rawPercent}");
                              }
                              // NEW: Read using NewVantage column names
                              var activity = new Activity();
@@ -777,10 +766,6 @@ namespace VANTAGE.Data
                                  activity.ClientBudget = GetDoubleSafe("ClientBudget");
                                  activity.ClientCustom3 = GetDoubleSafe("ClientCustom3");
                              };
-                             if (activities.Count == 0) // Only first record
-                             {
-                                 System.Diagnostics.Debug.WriteLine($"DB Load - PercentEntry={activity.PercentEntry}, BudgetMHs={activity.BudgetMHs}, EarnMHsCalc={activity.EarnMHsCalc}");
-                             }
                              activity.EndInit();
                              //activity.SuppressCalculations = false;
                              activities.Add(activity);
@@ -916,12 +901,6 @@ namespace VANTAGE.Data
                                      return 0;
                                  }
                              }
-                             // ADD THESE 5 LINES HERE:
-                             if (activities.Count == 0)
-                             {
-                                 double rawPercent = GetDoubleSafe("PercentEntry");
-                                 System.Diagnostics.Debug.WriteLine($"Raw DB value for PercentEntry: {rawPercent}");
-                             }
                              // Build activity object (EXACT same structure as GetPageAsync)
                              var activity = new Activity();
                              activity.BeginInit();
@@ -1035,10 +1014,6 @@ namespace VANTAGE.Data
                                  activity.ClientBudget = GetDoubleSafe("ClientBudget");
                                  activity.ClientCustom3 = GetDoubleSafe("ClientCustom3");
                              };
-                             if (activities.Count == 0) // Only first record
-                             {
-                                 System.Diagnostics.Debug.WriteLine($"DB Load - PercentEntry={activity.PercentEntry}, BudgetMHs={activity.BudgetMHs}, EarnMHsCalc={activity.EarnMHsCalc}");
-                             }
                              activity.EndInit();
                              //activity.SuppressCalculations = false;
                              activities.Add(activity);
@@ -1047,9 +1022,8 @@ namespace VANTAGE.Data
                          // Return tuple with both activities and totalCount
                          return (activities, (int)totalCount);
                      }
-                     catch (Exception ex)
+                     catch
                      {
-                         System.Diagnostics.Debug.WriteLine($"✗ Error loading all activities: {ex.Message}");
                          throw;
                      }
                  });
@@ -1384,9 +1358,6 @@ namespace VANTAGE.Data
                  command.CommandText = "UPDATE Activities SET LocalDirty = 0";
 
                  int rowsAffected = command.ExecuteNonQuery();
-
-                 System.Diagnostics.Debug.WriteLine($"✓ Reset LocalDirty to 0 for {rowsAffected:N0} records");
-
                  return rowsAffected;
              });
         }
@@ -1407,9 +1378,6 @@ namespace VANTAGE.Data
            command.Parameters.AddWithValue("@UpdatedBy", updatedBy);
 
            int rowsAffected = command.ExecuteNonQuery();
-
-           System.Diagnostics.Debug.WriteLine($"✓ Set UpdatedBy to '{updatedBy}' for {rowsAffected:N0} records");
-
            return rowsAffected;
        });
         }

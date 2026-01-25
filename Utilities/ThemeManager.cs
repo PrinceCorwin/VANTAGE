@@ -68,9 +68,8 @@ namespace VANTAGE.Utilities
                     SettingsManager.SetUserSetting("Theme", themeName, "string");
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                System.Diagnostics.Debug.WriteLine($"Error switching theme: {ex.Message}");
             }
         }
 

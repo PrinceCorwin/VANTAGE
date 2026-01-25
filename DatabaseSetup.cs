@@ -79,7 +79,6 @@ namespace VANTAGE
                     if (value is bool boolValue)
                     {
                         value = boolValue ? 1 : 0;
-                        AppLogger.Info($"Converted bool {boolValue} to {value} for column {columnNames[i]}", "CopyTableDataFromAzure");
                     }
                     insertCmd.Parameters.AddWithValue("@" + columnNames[i], value ?? DBNull.Value);
                 }

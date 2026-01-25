@@ -263,9 +263,8 @@ namespace VANTAGE.Utilities
                 action,
                 App.CurrentUser?.Username ?? "Unknown");
             }
-            catch (Exception ex)
+            catch
             {
-                System.Diagnostics.Debug.WriteLine($"Failed to log export: {ex.Message}");
                 // Don't throw - logging failure shouldn't break export
             }
         }

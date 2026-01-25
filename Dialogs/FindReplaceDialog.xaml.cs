@@ -128,10 +128,9 @@ namespace VANTAGE.Dialogs
 
                             replaceCount++;
                         }
-                        catch (System.Exception conversionEx)
+                        catch
                         {
                             // Skip this value if conversion fails
-                            System.Diagnostics.Debug.WriteLine($"Failed to convert '{newTextValue}' to {currentValue.GetType()}: {conversionEx.Message}");
                         }
                     }
                 }

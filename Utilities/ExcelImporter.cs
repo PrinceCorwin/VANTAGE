@@ -100,7 +100,6 @@ namespace VANTAGE.Utilities
                 columnMap[colNum] = propertyName;
             }
 
-            System.Diagnostics.Debug.WriteLine($"✓ Mapped {columnMap.Count} columns from Excel ({format})");
             return columnMap;
         }
 
@@ -206,7 +205,6 @@ namespace VANTAGE.Utilities
                 activities.Add(activity);
             }
 
-            System.Diagnostics.Debug.WriteLine($"✓ Read {activities.Count} activities from Excel");
             return activities;
         }
 
@@ -310,9 +308,8 @@ namespace VANTAGE.Utilities
                     property.SetValue(activity, cell.GetDateTime());
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                System.Diagnostics.Debug.WriteLine($"  Warning: Failed to set {propertyName} = {cell.Value}: {ex.Message}");
                 // Set default value on error
                 if (property.PropertyType == typeof(string))
                     property.SetValue(activity, "");
@@ -612,7 +609,6 @@ namespace VANTAGE.Utilities
                     // Progress indicator
                     if (imported % 1000 == 0)
                     {
-                        System.Diagnostics.Debug.WriteLine($"  Inserted {imported} records...");
                         progress?.Report((imported, activities.Count, $"Importing records..."));
                     }
                 }
@@ -716,8 +712,6 @@ namespace VANTAGE.Utilities
 
                         // Auto-detect format from column names
                         var format = DetectFormat(headerRow);
-                        System.Diagnostics.Debug.WriteLine($"Detected format: {format}");
-
                         progress?.Report((0, 0, $"Importing {format} format..."));
                         var columnMap = BuildColumnMap(headerRow, format);
 
@@ -733,9 +727,8 @@ namespace VANTAGE.Utilities
                         return imported;
                     }
                 }
-                catch (Exception ex)
+                catch
                 {
-                    System.Diagnostics.Debug.WriteLine($"✗ Import error: {ex.Message}");
                     throw;
                 }
             });
