@@ -621,6 +621,7 @@
                     AllowResizingColumns="True"
                     AllowSorting="True"
                     AllowFiltering="True"
+                    LiveDataUpdateMode="AllowSummaryUpdate"
                     SelectionMode="Extended"
                     SelectionUnit="Any"
                     ColumnSizer="Auto"

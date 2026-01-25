@@ -5,6 +5,12 @@ This document tracks completed features and fixes. Items are moved here from Pro
 ---
 
 ### January 25, 2026
+- **Progress Grid - Table Summary Row:**
+  - Added summary row at bottom of grid showing Sum totals for numeric columns
+  - Columns: Quantity, EarnQtyEntry, BudgetMHs, EarnMHsCalc, ClientBudget
+  - Auto-updates when values change or filters applied (uses Syncfusion LiveDataUpdateMode)
+  - Summary row stays frozen when scrolling vertically
+
 - **Progress Grid - Multi-Cell Copy (Ctrl+C):**
   - Select multiple cells with Ctrl+Click or Shift+Click, press Ctrl+C
   - Copies in Excel-compatible format (tab-separated columns, newline-separated rows)

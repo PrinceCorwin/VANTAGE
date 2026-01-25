@@ -1942,6 +1942,9 @@ namespace VANTAGE.Views
             // Load saved summary column preference before loading data
             _viewModel.LoadSummaryColumnPreference();
 
+            // Configure table summary row at bottom of grid
+            GridSummaryHelper.AddProgressTableSummary(sfActivities);
+
             await _viewModel.LoadInitialDataAsync();
             UpdateRecordCount();
             UpdateSummaryPanel();
