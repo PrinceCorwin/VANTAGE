@@ -59,14 +59,18 @@ namespace VANTAGE.Utilities
         }
 
         // Build column mapping: Excel column number → NewVantage property name
+        // Also returns list of columns that couldn't be mapped to Activity properties
 
-        private static Dictionary<int, string> BuildColumnMap(IXLRow headerRow, ExportFormat format)
+        private static (Dictionary<int, string> columnMap, List<string> unmappedColumns) BuildColumnMap(IXLRow headerRow, ExportFormat format)
         {
             var columnMap = new Dictionary<int, string>();
+            var unmappedColumns = new List<string>();
 
             // Calculated fields to skip (app will recalculate these)
+            // Includes both NewVantage names and OldVantage names for Legacy import
             var calculatedFields = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
+                // NewVantage names
                 "Status",
                 "EarnMHsCalc",
                 "EarnedQtyCalc",
@@ -74,7 +78,13 @@ namespace VANTAGE.Utilities
                 "ROCLookupID",
                 "ClientEquivEarnQTY",
                 "WeekEndDate",
-                "ProgDate"
+                "ProgDate",
+                // OldVantage names (for Legacy import)
+                "Sch_Status",
+                "Val_EarnedHours_Ind",
+                "Val_Earn_Qty",
+                "Val_Percent_Earned",
+                "LookUP_ROC_ID"
             };
 
             for (int colNum = 1; colNum <= headerRow.LastCellUsed()?.Address.ColumnNumber; colNum++)
@@ -93,14 +103,20 @@ namespace VANTAGE.Utilities
 
                 // Skip calculated fields
                 if (calculatedFields.Contains(propertyName))
+                    continue;
+
+                // Check if property exists on Activity class
+                var property = typeof(Activity).GetProperty(propertyName);
+                if (property == null || !property.CanWrite)
                 {
+                    unmappedColumns.Add(header);
                     continue;
                 }
 
                 columnMap[colNum] = propertyName;
             }
 
-            return columnMap;
+            return (columnMap, unmappedColumns);
         }
 
 
@@ -713,7 +729,19 @@ namespace VANTAGE.Utilities
                         // Auto-detect format from column names
                         var format = DetectFormat(headerRow);
                         progress?.Report((0, 0, $"Importing {format} format..."));
-                        var columnMap = BuildColumnMap(headerRow, format);
+                        var (columnMap, unmappedColumns) = BuildColumnMap(headerRow, format);
+
+                        // Abort import if unrecognized columns found
+                        if (unmappedColumns.Any())
+                        {
+                            string error = "Import aborted. The following columns were not recognized:\n\n" +
+                                           string.Join("\n", unmappedColumns.Take(10).Select(c => $"  • {c}"));
+                            if (unmappedColumns.Count > 10)
+                                error += $"\n  ... and {unmappedColumns.Count - 10} more";
+                            error += "\n\nThis may indicate a corrupted or incompatible file format.";
+
+                            throw new InvalidOperationException(error);
+                        }
 
                         progress?.Report((0, 0, "Reading Excel data..."));
                         var activities = ReadActivitiesFromExcel(worksheet, columnMap, format);

@@ -192,3 +192,4 @@ if (!AzureDbManager.CheckConnection(out string errorMessage))
 - State what to do and why
 - Challenge assumptions if there's a better approach
 - Present code one block at a time, wait for confirmation
+- When in plan mode, do NOT call ExitPlanMode until user explicitly agrees to the plan

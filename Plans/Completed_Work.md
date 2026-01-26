@@ -4,6 +4,20 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ---
 
+### January 26, 2026
+- **Excel Import/Export - LineNumber Column Fix:**
+  - Fixed typo in ExcelExporter.cs: `Tag_LineNumber` → `Tag_LineNo` (line 43)
+  - Legacy exports now correctly map LineNumber data to the Tag_LineNo column
+  - Updated MILESTONE_Column_Reference.md: corrected all LineNO references to LineNumber
+
+- **Excel Import - Unmapped Column Detection:**
+  - Import now detects columns that don't map to Activity properties
+  - Aborts with clear error listing unrecognized columns (prevents silent data loss)
+  - Added OldVantage names for calculated fields to skip list (Sch_Status, Val_EarnedHours_Ind, etc.)
+  - Previously, unmapped columns were silently ignored causing data loss without warning
+
+---
+
 ### January 25, 2026
 - **Progress Grid - Grouping Feature:**
   - Added AllowGrouping and ShowGroupDropArea to ProgressView grid

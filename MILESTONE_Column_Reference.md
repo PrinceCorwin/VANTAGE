@@ -35,7 +35,7 @@ Tag_Descriptions = Description
 Tag_EqmtNo = EqmtNO
 Tag_Estimator = Estimator
 Tag_Insulation_Typ = InsulType
-Tag_LineNo = LineNO
+Tag_LineNo = LineNumber
 Tag_Matl_Spec = MtrlSpec
 Tag_Phase Code = PhaseCode
 Tag_Paint_Code = PaintCode
@@ -134,7 +134,7 @@ Tag_Descriptions = Description
 Tag_EqmtNo = EqmtNO
 Tag_Estimator = Estimator
 Tag_Insulation_Typ = InsulType
-Tag_LineNo = LineNO
+Tag_LineNo = LineNumber
 Tag_Matl_Spec = MtrlSpec
 Tag_Phase Code = PhaseCode
 Tag_Paint_Code = PaintCode
@@ -237,7 +237,7 @@ Estimator
 HexNO
 HtTrace
 InsulType
-LineNO
+LineNumber
 LocalDirty
 MtrlSpec
 Notes
@@ -340,7 +340,7 @@ Estimator
 HexNO
 HtTrace
 InsulType
-LineNO
+LineNumber
 LocalDirty
 MtrlSpec
 Notes
@@ -481,7 +481,7 @@ Estimator = Tag_Estimator
 HexNO = HexNO
 HtTrace = Tag_Tracing
 InsulType = Tag_Insulation_Typ
-LineNO = Tag_LineNo
+LineNumber = Tag_LineNo
 MtrlSpec = Tag_Matl_Spec
 Notes = Notes_Comments
 PaintCode = Tag_Paint_Code
