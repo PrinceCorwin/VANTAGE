@@ -31,7 +31,7 @@ WPF application for Summit Constructors replacing legacy MS Access system. Track
   - "Update X" or "Add Y" means make the change, NOT commit it
   - Wait for explicit "commit" instruction before running git commit
 - ALWAYS push to remote after committing, unless user instructs otherwise
-- **ALWAYS commit ALL uncommitted changes** when user says "commit" - don't selectively commit only some files unless user specifies otherwise
+- **ALWAYS commit ALL uncommitted changes** when user says "commit" - use `git add -A` to stage everything. NEVER selectively choose files. The ONLY exception is if user explicitly says "commit only X" or "don't commit Y"
 - Do NOT add "Generated with Claude" or "Co-Authored-By: Claude" to commit messages
 - Do NOT add AI attribution comments in code
 - Write clear, concise commit messages describing the change
@@ -39,8 +39,8 @@ WPF application for Summit Constructors replacing legacy MS Access system. Track
 
 ### MANDATORY Pre-Commit Checklist
 **STOP. Before running `git commit`, you MUST complete these steps IN ORDER:**
-1. Update Project_Status.md - Remove completed items from the backlog
-2. Update Completed_Work.md - Add entry describing what was completed (with date header)
+1. Update C:\Users\steve\source\repos\PrinceCorwin\VANTAGE\Plans\Project_Status.md - Remove completed items from the backlog
+2. Update C:\Users\steve\source\repos\PrinceCorwin\VANTAGE\Plans\Completed_Work.md - Add entry describing what was completed (with date header)
 3. Update any other relevant plan docs if the work relates to a specific feature plan
 4. ONLY THEN proceed with git add and git commit
 

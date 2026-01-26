@@ -1593,6 +1593,24 @@ namespace VANTAGE.Views
                 return;
             }
 
+            // Confirmation dialog before bulk update
+            int selectedCount = sfActivities.SelectedItems.Count;
+            if (selectedCount == 0)
+            {
+                MessageBox.Show("Please select one or more records.",
+                    "No Selection", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var result = MessageBox.Show(
+                $"Update {selectedCount:N0} selected record(s) to {percent}%?",
+                "Confirm Bulk Update",
+                MessageBoxButton.OKCancel,
+                MessageBoxImage.Question);
+
+            if (result != MessageBoxResult.OK)
+                return;
+
             await SetSelectedRecordsPercent(percent);
         }
 

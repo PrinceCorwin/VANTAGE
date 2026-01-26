@@ -300,7 +300,14 @@
                 </ul>
             </li>
             <li><a href="#administration">7. Administration</a></li>
-            <li><a href="#reference">8. Reference</a></li>
+            <li><a href="#reference">8. Reference</a>
+                <ul>
+                    <li><a href="#ref-column-mappings">Column Mappings</a></li>
+                    <li><a href="#ref-glossary">Glossary</a></li>
+                    <li><a href="#ref-troubleshooting">Troubleshooting</a></li>
+                    <li><a href="#ref-getting-help">Getting Help</a></li>
+                </ul>
+            </li>
         </ul>
     </div>
 
@@ -2006,7 +2013,121 @@
     <h2 id="reference">8. Reference</h2>
     <!-- ============================================ -->
 
-    <h3>Glossary</h3>
+    <h3 id="ref-column-mappings">Column Mappings</h3>
+    <p>MILESTONE uses three different column naming conventions across different parts of the system:</p>
+    <ul>
+        <li><strong>Milestone</strong> - Internal names used in the application (e.g., <code>ProjectID</code>, <code>PercentEntry</code>)</li>
+        <li><strong>OldVantage</strong> - Legacy names used in Excel import/export (e.g., <code>Tag_ProjectID</code>, <code>Val_Perc_Complete</code>)</li>
+        <li><strong>Azure</strong> - Names used in the central database sync</li>
+    </ul>
+    <p>"Not Used" indicates the column does not exist in that system.</p>
+
+    <table>
+        <tr>
+            <th>Milestone (App)</th>
+            <th>OldVantage (Excel)</th>
+            <th>Azure (Sync)</th>
+        </tr>
+        <tr><td>ActivityID</td><td>Not Used</td><td>Not Used</td></tr>
+        <tr><td>Area</td><td>Tag_Area</td><td>Tag_Area</td></tr>
+        <tr><td>AssignedTo</td><td>Not Used</td><td>Not Used</td></tr>
+        <tr><td>Aux1</td><td>Tag_Aux1</td><td>Tag_Aux1</td></tr>
+        <tr><td>Aux2</td><td>Tag_Aux2</td><td>Tag_Aux2</td></tr>
+        <tr><td>Aux3</td><td>Tag_Aux3</td><td>Tag_Aux3</td></tr>
+        <tr><td>AzureUploadUtcDate</td><td>Not Used</td><td>Timestamp</td></tr>
+        <tr><td>BaseUnit</td><td>Val_Base_Unit</td><td>Val_Base_Unit</td></tr>
+        <tr><td>BudgetHoursGroup</td><td>Val_BudgetedHours_Group</td><td>Val_BudgetedHours_Group</td></tr>
+        <tr><td>BudgetHoursROC</td><td>Val_BudgetedHours_ROC</td><td>Val_BudgetedHours_ROC</td></tr>
+        <tr><td>BudgetMHs</td><td>Val_BudgetedHours_Ind</td><td>Val_BudgetedHours_Ind</td></tr>
+        <tr><td>ChgOrdNO</td><td>Tag_CONo</td><td>Tag_CONo</td></tr>
+        <tr><td>ClientBudget</td><td>VAL_UDF_Two</td><td>VAL_UDF_Two</td></tr>
+        <tr><td>ClientCustom3</td><td>VAL_UDF_Three</td><td>VAL_UDF_Three</td></tr>
+        <tr><td>ClientEquivEarnQTY</td><td>Not Used</td><td>VAL_Client_Earned_EQ-QTY</td></tr>
+        <tr><td>ClientEquivQty</td><td>VAL_Client_EQ-QTY_BDG</td><td>Val_Client_Eq_Qty_Bdg</td></tr>
+        <tr><td>CompType</td><td>Catg_ComponentType</td><td>Catg_ComponentType</td></tr>
+        <tr><td>CreatedBy</td><td>Not Used</td><td>Not Used</td></tr>
+        <tr><td>DateTrigger</td><td>Trg_DateTrigger</td><td>Not Used</td></tr>
+        <tr><td>Description</td><td>Tag_Descriptions</td><td>Tag_Descriptions</td></tr>
+        <tr><td>DwgNO</td><td>Dwg_PrimeDrawingNO</td><td>Dwg_PrimeDrawingNO</td></tr>
+        <tr><td>EarnMHsCalc</td><td>Val_EarnedHours_Ind</td><td>Val_EarnedHours_Ind</td></tr>
+        <tr><td>EarnQtyEntry</td><td>Val_EarnedQty</td><td>Val_EarnedQty</td></tr>
+        <tr><td>EarnedMHsRoc</td><td>Val_EarnedHours_ROC</td><td>Not Used</td></tr>
+        <tr><td>EarnedQtyCalc</td><td>Val_Earn_Qty</td><td>Not Used</td></tr>
+        <tr><td>EqmtNO</td><td>Tag_EqmtNo</td><td>Tag_EqmtNo</td></tr>
+        <tr><td>EquivQTY</td><td>Val_EQ-QTY</td><td>Val_EQ-QTY</td></tr>
+        <tr><td>EquivUOM</td><td>Val_EQ_UOM</td><td>Val_EQ_UOM</td></tr>
+        <tr><td>Estimator</td><td>Tag_Estimator</td><td>Tag_Estimator</td></tr>
+        <tr><td>HexNO</td><td>HexNO</td><td>HexNO</td></tr>
+        <tr><td>HtTrace</td><td>Tag_Tracing</td><td>Tag_Tracing</td></tr>
+        <tr><td>InsulType</td><td>Tag_Insulation_Typ</td><td>Tag_Insulation_Typ</td></tr>
+        <tr><td>LineNumber</td><td>Tag_LineNo</td><td>Tag_LineNo</td></tr>
+        <tr><td>LocalDirty</td><td>Not Used</td><td>Not Used</td></tr>
+        <tr><td>MtrlSpec</td><td>Tag_Matl_Spec</td><td>Tag_Matl_Spec</td></tr>
+        <tr><td>Notes</td><td>Notes_Comments</td><td>Notes_Comments</td></tr>
+        <tr><td>PaintCode</td><td>Tag_Paint_Code</td><td>Tag_Paint_Code</td></tr>
+        <tr><td>PercentCompleteCalc</td><td>Val_Percent_Earned</td><td>Not Used</td></tr>
+        <tr><td>PercentEntry</td><td>Val_Perc_Complete</td><td>Val_Perc_Complete</td></tr>
+        <tr><td>PhaseCategory</td><td>Catg_PhaseCategory</td><td>Catg_PhaseCategory</td></tr>
+        <tr><td>PhaseCode</td><td>Tag_Phase Code</td><td>Tag_PhaseCode</td></tr>
+        <tr><td>PipeGrade</td><td>Tag_Pipe_Grade</td><td>Tag_Pipe_Grade</td></tr>
+        <tr><td>PipeSize1</td><td>Val_Pipe_Size1</td><td>Val_Pipe_Size1</td></tr>
+        <tr><td>PipeSize2</td><td>Val_Pipe_Size2</td><td>Val_Pipe_Size2</td></tr>
+        <tr><td>PjtSystem</td><td>Tag_System</td><td>Tag_System</td></tr>
+        <tr><td>PrevEarnMHs</td><td>Val_Prev_Earned_Hours</td><td>Not Used</td></tr>
+        <tr><td>PrevEarnQTY</td><td>Val_Prev_Earned_Qty</td><td>Not Used</td></tr>
+        <tr><td>ProgDate</td><td>Not Used</td><td>Val_ProgDate</td></tr>
+        <tr><td>ProjectID</td><td>Tag_ProjectID</td><td>Tag_ProjectID</td></tr>
+        <tr><td>Quantity</td><td>Val_Quantity</td><td>Val_Quantity</td></tr>
+        <tr><td>RespParty</td><td>UDFEighteen</td><td>RespParty</td></tr>
+        <tr><td>RevNO</td><td>Dwg_RevisionNo</td><td>Dwg_RevisionNo</td></tr>
+        <tr><td>RFINO</td><td>Tag_RFINo</td><td>Tag_RFINo</td></tr>
+        <tr><td>ROCBudgetQTY</td><td>Val_ROC_BudgetQty</td><td>Val_ROC_BudgetQty</td></tr>
+        <tr><td>ROCID</td><td>Tag_ROC_ID</td><td>Not Used</td></tr>
+        <tr><td>ROCLookupID</td><td>LookUP_ROC_ID</td><td>Not Used</td></tr>
+        <tr><td>ROCPercent</td><td>Val_ROC_Perc</td><td>Not Used</td></tr>
+        <tr><td>ROCStep</td><td>Catg_ROC_Step</td><td>Catg_ROC_Step</td></tr>
+        <tr><td>SchedActNO</td><td>Tag_Sch_ActNo</td><td>Tag_Sch_ActNo</td></tr>
+        <tr><td>SchFinish</td><td>Sch_Finish</td><td>Sch_Finish</td></tr>
+        <tr><td>SchStart</td><td>Sch_Start</td><td>Sch_Start</td></tr>
+        <tr><td>SecondActno</td><td>Sch_Actno</td><td>Sch_Actno</td></tr>
+        <tr><td>SecondDwgNO</td><td>Dwg_SecondaryDrawingNO</td><td>Dwg_SecondaryDrawingNO</td></tr>
+        <tr><td>Service</td><td>Tag_Service</td><td>Tag_Service</td></tr>
+        <tr><td>ShopField</td><td>Tag_ShopField</td><td>Tag_ShopField</td></tr>
+        <tr><td>ShtNO</td><td>Dwg_ShtNo</td><td>Dwg_ShtNo</td></tr>
+        <tr><td>Status</td><td>Sch_Status</td><td>Sch_Status</td></tr>
+        <tr><td>SubArea</td><td>Tag_SubArea</td><td>Tag_SubArea</td></tr>
+        <tr><td>SyncVersion</td><td>Not Used</td><td>Not Used</td></tr>
+        <tr><td>SystemNO</td><td>Tag_SystemNo</td><td>Tag_SystemNo</td></tr>
+        <tr><td>TagNO</td><td>Tag_TagNo</td><td>Tag_TagNo</td></tr>
+        <tr><td>UDF1</td><td>UDFOne</td><td>UDF1</td></tr>
+        <tr><td>UDF2</td><td>UDFTwo</td><td>UDF2</td></tr>
+        <tr><td>UDF3</td><td>UDFThree</td><td>UDF3</td></tr>
+        <tr><td>UDF4</td><td>UDFFour</td><td>UDF4</td></tr>
+        <tr><td>UDF5</td><td>UDFFive</td><td>UDF5</td></tr>
+        <tr><td>UDF6</td><td>UDFSix</td><td>UDF6</td></tr>
+        <tr><td>UDF7</td><td>UDFSeven</td><td>UDF7</td></tr>
+        <tr><td>UDF8</td><td>UDFEight</td><td>UDF8</td></tr>
+        <tr><td>UDF9</td><td>UDFNine</td><td>UDF9</td></tr>
+        <tr><td>UDF10</td><td>UDFTen</td><td>UDF10</td></tr>
+        <tr><td>UDF11</td><td>UDFEleven</td><td>UDF11</td></tr>
+        <tr><td>UDF12</td><td>UDFTwelve</td><td>UDF12</td></tr>
+        <tr><td>UDF13</td><td>UDFThirteen</td><td>UDF13</td></tr>
+        <tr><td>UDF14</td><td>UDFFourteen</td><td>UDF14</td></tr>
+        <tr><td>UDF15</td><td>UDFFifteen</td><td>UDF15</td></tr>
+        <tr><td>UDF16</td><td>UDFSixteen</td><td>UDF16</td></tr>
+        <tr><td>UDF17</td><td>UDFSeventeen</td><td>UDF17</td></tr>
+        <tr><td>UDF20</td><td>UDFTwenty</td><td>UDF20</td></tr>
+        <tr><td>UniqueID</td><td>UDFNineteen</td><td>UDF19</td></tr>
+        <tr><td>UOM</td><td>Val_UOM</td><td>Val_UOM</td></tr>
+        <tr><td>UpdatedBy</td><td>Not Used</td><td>Not Used</td></tr>
+        <tr><td>UpdatedUtcDate</td><td>Not Used</td><td>Not Used</td></tr>
+        <tr><td>WeekEndDate</td><td>Val_TimeStamp</td><td>Val_TimeStamp</td></tr>
+        <tr><td>WorkPackage</td><td>Tag_WorkPackage</td><td>Tag_WorkPackage</td></tr>
+        <tr><td>XRay</td><td>Tag_XRAY</td><td>Tag_XRAY</td></tr>
+        <tr><td>Not Used</td><td>Not Used</td><td>UserID</td></tr>
+    </table>
+
+    <h3 id="ref-glossary">Glossary</h3>
     <table>
         <tr>
             <th>Term</th>
@@ -2042,10 +2163,10 @@
         </tr>
     </table>
 
-    <h3>Troubleshooting</h3>
+    <h3 id="ref-troubleshooting">Troubleshooting</h3>
     <p>Content coming soon...</p>
 
-    <h3>Getting Help</h3>
+    <h3 id="ref-getting-help">Getting Help</h3>
     <p>Press <span class="keyboard-shortcut">F1</span> at any time to open the Help sidebar. Use the <strong>AI Assistant</strong> tab (coming soon) for interactive help.</p>
 
 </body>
