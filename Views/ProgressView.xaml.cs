@@ -3885,6 +3885,35 @@ namespace VANTAGE.Views
             }
         }
 
+        // Ctrl+ScrollWheel for horizontal scrolling
+        private void SfActivities_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if (Keyboard.Modifiers == ModifierKeys.Control)
+            {
+                var scrollViewer = FindVisualChild<ScrollViewer>(sfActivities);
+                if (scrollViewer != null)
+                {
+                    scrollViewer.ScrollToHorizontalOffset(scrollViewer.HorizontalOffset - e.Delta);
+                    e.Handled = true;
+                }
+            }
+        }
+
+        // Helper to find a child of a specific type in the visual tree
+        private static T? FindVisualChild<T>(DependencyObject parent) where T : DependencyObject
+        {
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+            {
+                var child = VisualTreeHelper.GetChild(parent, i);
+                if (child is T typedChild)
+                    return typedChild;
+                var result = FindVisualChild<T>(child);
+                if (result != null)
+                    return result;
+            }
+            return null;
+        }
+
         private void sfActivities_GridContextMenuOpening(object sender, Syncfusion.UI.Xaml.Grid.GridContextMenuEventArgs e)
         {
             // Only show RecordContextMenu when right-clicking row header

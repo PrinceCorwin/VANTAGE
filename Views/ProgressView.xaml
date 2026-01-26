@@ -695,7 +695,8 @@
                     GridContextMenuOpening="sfActivities_GridContextMenuOpening"
                     CurrentCellEndEdit="sfActivities_CurrentCellEndEdit"
                     SelectionChanged="sfActivities_SelectionChanged"
-                    CurrentCellBeginEdit="SfActivities_CurrentCellBeginEdit">
+                    CurrentCellBeginEdit="SfActivities_CurrentCellBeginEdit"
+                    PreviewMouseWheel="SfActivities_PreviewMouseWheel">
                     <syncfusion:SfDataGrid.Resources>
                         <Style TargetType="syncfusion:GridHeaderCellControl">
                             <Setter Property="Background" Value="{StaticResource GridHeaderBackground}"/>

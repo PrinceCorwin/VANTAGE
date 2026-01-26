@@ -5,6 +5,10 @@ This document tracks completed features and fixes. Items are moved here from Pro
 ---
 
 ### January 26, 2026
+- **Progress Grid - Ctrl+ScrollWheel Horizontal Scrolling:**
+  - Hold Ctrl and use mouse scroll wheel to scroll the grid horizontally
+  - Standard Windows behavior for wide grids with many columns
+
 - **Excel Import/Export - LineNumber Column Fix:**
   - Fixed typo in ExcelExporter.cs: `Tag_LineNumber` → `Tag_LineNo` (line 43)
   - Legacy exports now correctly map LineNumber data to the Tag_LineNo column
