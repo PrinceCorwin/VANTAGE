@@ -133,6 +133,50 @@
 | `WorkPackageView.xaml.cs` | Remove early return in `BuildDrawingsEditor()` and `#pragma warning` directives |
 | `DrawingsRenderer.cs` | Remove early return in `Render()` method and `#pragma warning` directives |
 
+### Syncfusion Features to Evaluate (see Plans/Syncfusion_Features_Reference.md)
+
+**UX Improvements:**
+| Feature | Description |
+|---------|-------------|
+| Filter Row | Persistent filter row at grid top for quick text filtering |
+| Column Chooser | Built-in UI for show/hide columns (vs current Columns button) |
+| Stacked Headers | Multi-row headers to group related columns (e.g., "Dates" spanning SchStart/SchFinish) |
+| IEditableObject Rollback | ESC key reverts cell edits automatically |
+
+**Data Features:**
+| Feature | Description |
+|---------|-------------|
+| Custom Aggregates | Weighted progress calculation (EarnedMH/BudgetMH) in table summaries |
+| Row Drag & Drop | Reorder activities within filtered view for prioritization |
+| Checkbox Selection | Bulk select for multi-record operations |
+
+**Export/Print:**
+| Feature | Description |
+|---------|-------------|
+| ExportToPdf | Generate progress reports directly from grid with formatting |
+| Printing | Direct print capability with headers on each page |
+
+**Visualization (New Capabilities):**
+| Feature | Description |
+|---------|-------------|
+| Column/Stacked Chart | Daily/weekly activity completion counts, productivity trends |
+| S-Curve (Line/Area Chart) | Planned vs actual progress over time |
+| Pie/Doughnut Chart | Distribution by WorkPackage, PhaseCode, or RespParty |
+| Gantt Chart | Visual schedule with dependencies (complements P6 import) |
+| Radial Gauge | Dashboard widget for overall project % complete |
+| Bullet Graph | Performance vs target KPIs per work package |
+
+**Layout:**
+| Feature | Description |
+|---------|-------------|
+| Docking Manager | Visual Studio-like docking for flexible panel layouts |
+
+**Schedule Module Specific:**
+| Feature | Description |
+|---------|-------------|
+| TreeGrid (SfTreeGrid) | Hierarchical WBS display with parent/child relationships |
+| Critical Path Highlighting | Auto-highlight critical path activities |
+
 ### Shelved
 - Find-Replace in Schedule Detail Grid
 - Disable Tooltips setting (see DisableTooltips_Plan.md)

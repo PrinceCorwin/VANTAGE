@@ -252,6 +252,7 @@
                     <li><a href="#prog-layout">Layout</a></li>
                     <li><a href="#prog-toolbar">Toolbar</a></li>
                     <li><a href="#prog-filters">Sidebar Filters</a></li>
+                    <li><a href="#prog-grouping">Grid Grouping</a></li>
                     <li><a href="#prog-editing">Grid Editing</a></li>
                     <li><a href="#prog-metadata">Required Metadata Fields</a></li>
                     <li><a href="#prog-syncing">Syncing Data</a></li>
@@ -592,6 +593,62 @@
         <li><strong>Checkbox list</strong> — Select/deselect specific values to show or hide</li>
     </ul>
     <p>Column filters can be combined with sidebar filters for precise data views.</p>
+
+    <h3 id="prog-grouping">Grid Grouping</h3>
+    <p>Group rows by column values to organize activities into collapsible sections. This helps you focus on specific work packages, responsible parties, or other categories.</p>
+
+    <h4>Using the Group Drop Area</h4>
+    <p>A Group Drop Area appears at the top of the grid. To group your data:</p>
+    <ol>
+        <li><strong>Add grouping</strong> — Drag any column header into the Group Drop Area</li>
+        <li><strong>Multi-level grouping</strong> — Drag additional columns to create nested groups</li>
+        <li><strong>Remove grouping</strong> — Drag the column chip out of the drop area, or click its X button</li>
+        <li><strong>Reorder groups</strong> — Drag chips within the drop area to change grouping priority</li>
+    </ol>
+
+    <h4>Working with Groups</h4>
+    <ul>
+        <li><strong>Expand/Collapse</strong> — Click the arrow (▶/▼) next to any group header</li>
+        <li><strong>Group count</strong> — Each group header shows the number of activities it contains</li>
+        <li><strong>Filtering + Grouping</strong> — Groups respect active filters, showing only matching records</li>
+    </ul>
+
+    <h4>Useful Grouping Columns</h4>
+    <table>
+        <tr>
+            <th>Column</th>
+            <th>Use Case</th>
+        </tr>
+        <tr>
+            <td><strong>WorkPackage</strong></td>
+            <td>See all activities within each work package</td>
+        </tr>
+        <tr>
+            <td><strong>RespParty</strong></td>
+            <td>View activities by responsible party/crew</td>
+        </tr>
+        <tr>
+            <td><strong>PhaseCode</strong></td>
+            <td>Organize by project phase</td>
+        </tr>
+        <tr>
+            <td><strong>ROCStep</strong></td>
+            <td>Group by workflow step</td>
+        </tr>
+        <tr>
+            <td><strong>AssignedTo</strong></td>
+            <td>See who owns which activities</td>
+        </tr>
+    </table>
+
+    <h4>Frozen Columns</h4>
+    <p>Keep important columns visible while scrolling horizontally by freezing them in place. Frozen columns stay pinned on the left side of the grid.</p>
+    <ul>
+        <li><strong>Freeze columns</strong> — Right-click any column header and select "Freeze Columns to Here". That column and all columns to its left will be frozen.</li>
+        <li><strong>Unfreeze</strong> — Right-click any column header and select "Unfreeze All Columns".</li>
+        <li><strong>Choose which columns</strong> — Drag columns to reorder them, placing the ones you want frozen on the left side of the grid before freezing.</li>
+    </ul>
+    <p>Your frozen column setting is saved and restored automatically.</p>
 
     <h3 id="prog-editing">Grid Editing</h3>
     <p>You can only edit records assigned to you. Other users' records appear dimmed and are read-only. Double-click any editable cell to enter edit mode. Press <span class="keyboard-shortcut">Enter</span> to save or <span class="keyboard-shortcut">Esc</span> to cancel.</p>

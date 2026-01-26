@@ -32,6 +32,7 @@ namespace VANTAGE.Views
         private ProgressViewModel _viewModel;
         // one key per grid/view
         private const string GridPrefsKey = "ProgressGrid.PreferencesJson";
+        private const string FrozenColumnsKey = "ProgressGrid.FrozenColumnCount";
         private bool _skipSaveColumnState = false;
         private ProgressViewModel ViewModel
         {
@@ -767,6 +768,9 @@ namespace VANTAGE.Views
                 Dispatcher.BeginInvoke(new Action(() =>
                 {
                     LoadColumnState();
+                    LoadFrozenColumnCount();
+                    // Disable auto column sizing after initial load for performance
+                    sfActivities.ColumnSizer = Syncfusion.UI.Xaml.Grid.GridLengthUnitType.None;
                     sfActivities.Opacity = 1; // Show grid after state is loaded
                 }),
                 System.Windows.Threading.DispatcherPriority.ContextIdle);
@@ -1530,9 +1534,22 @@ namespace VANTAGE.Views
             }
         }
 
-
-
-
+        // Load frozen column count from user settings
+        private void LoadFrozenColumnCount()
+        {
+            try
+            {
+                var setting = SettingsManager.GetUserSetting(FrozenColumnsKey);
+                if (!string.IsNullOrEmpty(setting) && int.TryParse(setting, out int count) && count > 0)
+                {
+                    sfActivities.FrozenColumnCount = count;
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "ProgressView.LoadFrozenColumnCount");
+            }
+        }
 
         /// Left-click: Set selected records to button's percent value
 
@@ -3767,6 +3784,50 @@ namespace VANTAGE.Views
             {
                 AppLogger.Error(ex, "CopyColumnValues", App.CurrentUser?.Username ?? "Unknown");
                 MessageBox.Show($"Copy failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        // Freeze columns from the left edge up to and including the clicked column
+        private void MenuFreezeColumnsToHere_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var menuItem = sender as MenuItem;
+                if (menuItem == null) return;
+
+                var contextMenuInfo = menuItem.DataContext as Syncfusion.UI.Xaml.Grid.GridColumnContextMenuInfo;
+                if (contextMenuInfo == null) return;
+
+                var column = contextMenuInfo.Column;
+
+                // Get the visual index of the column (position as displayed)
+                int visualIndex = sfActivities.Columns.IndexOf(column);
+                if (visualIndex < 0) return;
+
+                // Freeze from left edge to this column (inclusive)
+                int freezeCount = visualIndex + 1;
+                sfActivities.FrozenColumnCount = freezeCount;
+
+                // Persist the setting
+                SettingsManager.SetUserSetting(FrozenColumnsKey, freezeCount.ToString(), "int");
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "ProgressView.MenuFreezeColumnsToHere_Click");
+            }
+        }
+
+        // Remove all frozen columns
+        private void MenuUnfreezeAllColumns_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                sfActivities.FrozenColumnCount = 0;
+                SettingsManager.SetUserSetting(FrozenColumnsKey, "0", "int");
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "ProgressView.MenuUnfreezeAllColumns_Click");
             }
         }
 

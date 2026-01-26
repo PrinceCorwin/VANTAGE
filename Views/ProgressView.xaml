@@ -43,8 +43,15 @@
             </Setter>
         </Style>
         <styles:RecordOwnershipRowStyleSelector x:Key="RowStyleSelector" />
+
+        <!-- Base cell style to force consistent border thickness across all columns -->
+        <Style TargetType="syncfusion:GridCell">
+            <Setter Property="BorderThickness" Value="0,0,0.5,0.5"/>
+            <Setter Property="Padding" Value="4,0,4,0"/>
+        </Style>
+
         <!-- Style for empty/null required fields with red border -->
-        <Style x:Key="CompTypeRequiredStyle" TargetType="syncfusion:GridCell">
+        <Style x:Key="CompTypeRequiredStyle" TargetType="syncfusion:GridCell" BasedOn="{StaticResource {x:Type syncfusion:GridCell}}">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=CompType}" Value="">
                     <Setter Property="Background" Value="{StaticResource StatusRedBg}"/>
@@ -55,7 +62,7 @@
             </Style.Triggers>
         </Style>
 
-        <Style x:Key="PhaseCategoryRequiredStyle" TargetType="syncfusion:GridCell">
+        <Style x:Key="PhaseCategoryRequiredStyle" TargetType="syncfusion:GridCell" BasedOn="{StaticResource {x:Type syncfusion:GridCell}}">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=PhaseCategory}" Value="">
                     <Setter Property="Background" Value="{StaticResource StatusRedBg}"/>
@@ -66,7 +73,7 @@
             </Style.Triggers>
         </Style>
 
-        <Style x:Key="ProjectIDRequiredStyle" TargetType="syncfusion:GridCell">
+        <Style x:Key="ProjectIDRequiredStyle" TargetType="syncfusion:GridCell" BasedOn="{StaticResource {x:Type syncfusion:GridCell}}">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=HasInvalidProjectID}" Value="True">
                     <Setter Property="Background" Value="{StaticResource StatusRedBg}"/>
@@ -74,7 +81,7 @@
             </Style.Triggers>
         </Style>
 
-        <Style x:Key="WorkPackageRequiredStyle" TargetType="syncfusion:GridCell">
+        <Style x:Key="WorkPackageRequiredStyle" TargetType="syncfusion:GridCell" BasedOn="{StaticResource {x:Type syncfusion:GridCell}}">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=WorkPackage}" Value="">
                     <Setter Property="Background" Value="{StaticResource StatusRedBg}"/>
@@ -85,7 +92,7 @@
             </Style.Triggers>
         </Style>
 
-        <Style x:Key="PhaseCodeRequiredStyle" TargetType="syncfusion:GridCell">
+        <Style x:Key="PhaseCodeRequiredStyle" TargetType="syncfusion:GridCell" BasedOn="{StaticResource {x:Type syncfusion:GridCell}}">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=PhaseCode}" Value="">
                     <Setter Property="Background" Value="{StaticResource StatusRedBg}"/>
@@ -95,7 +102,7 @@
                 </DataTrigger>
             </Style.Triggers>
         </Style>
-        <Style x:Key="ROCStepRequiredStyle" TargetType="syncfusion:GridCell">
+        <Style x:Key="ROCStepRequiredStyle" TargetType="syncfusion:GridCell" BasedOn="{StaticResource {x:Type syncfusion:GridCell}}">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=ROCStep}" Value="">
                     <Setter Property="Background" Value="{StaticResource StatusRedBg}"/>
@@ -105,7 +112,7 @@
                 </DataTrigger>
             </Style.Triggers>
         </Style>
-        <Style x:Key="DescRequiredStyle" TargetType="syncfusion:GridCell">
+        <Style x:Key="DescRequiredStyle" TargetType="syncfusion:GridCell" BasedOn="{StaticResource {x:Type syncfusion:GridCell}}">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=Description}" Value="">
                     <Setter Property="Background" Value="{StaticResource StatusRedBg}"/>
@@ -115,7 +122,7 @@
                 </DataTrigger>
             </Style.Triggers>
         </Style>
-        <Style x:Key="SchedActNoRequiredStyle" TargetType="syncfusion:GridCell">
+        <Style x:Key="SchedActNoRequiredStyle" TargetType="syncfusion:GridCell" BasedOn="{StaticResource {x:Type syncfusion:GridCell}}">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=SchedActNO}" Value="">
                     <Setter Property="Background" Value="{StaticResource StatusRedBg}"/>
@@ -125,7 +132,7 @@
                 </DataTrigger>
             </Style.Triggers>
         </Style>
-        <Style x:Key="RespPartyRequiredStyle" TargetType="syncfusion:GridCell">
+        <Style x:Key="RespPartyRequiredStyle" TargetType="syncfusion:GridCell" BasedOn="{StaticResource {x:Type syncfusion:GridCell}}">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=RespParty}" Value="">
                     <Setter Property="Background" Value="{StaticResource StatusRedBg}"/>
@@ -614,6 +621,11 @@
                     BorderThickness="0">
                 <syncfusion:SfDataGrid x:Name="sfActivities"
                     AutoGenerateColumns="False"
+                    UseLayoutRounding="True"
+                    SnapsToDevicePixels="True"
+                    UseDrawing="Default"
+                    AllowGrouping="True"
+                    ShowGroupDropArea="True"
                     AllowEditing="True"
                     EditTrigger="OnTap"
                     AddNewRowPosition="None"
@@ -638,12 +650,18 @@
                     CurrentCellEndEdit="sfActivities_CurrentCellEndEdit"
                     SelectionChanged="sfActivities_SelectionChanged"
                     CurrentCellBeginEdit="SfActivities_CurrentCellBeginEdit">
-                    <syncfusion:SfDataGrid.HeaderStyle>
+                    <syncfusion:SfDataGrid.Resources>
                         <Style TargetType="syncfusion:GridHeaderCellControl">
                             <Setter Property="Background" Value="{StaticResource GridHeaderBackground}"/>
                             <Setter Property="Foreground" Value="{StaticResource TextColorSecondary}"/>
+                            <Setter Property="BorderThickness" Value="0,0,0.5,0.5"/>
+                            <Setter Property="Padding" Value="4,0,4,0"/>
                         </Style>
-                    </syncfusion:SfDataGrid.HeaderStyle>
+                        <Style TargetType="syncfusion:GridCell">
+                            <Setter Property="BorderThickness" Value="0,0,0.5,0.5"/>
+                            <Setter Property="Padding" Value="4,0,4,0"/>
+                        </Style>
+                    </syncfusion:SfDataGrid.Resources>
 
                     <syncfusion:SfDataGrid.RecordContextMenu>
                         <ContextMenu
@@ -733,20 +751,39 @@
                                     <TextBlock Text="📄" FontSize="14"/>
                                 </MenuItem.Icon>
                             </MenuItem>
+                            <Separator Background="{StaticResource ControlBorder}"/>
+                            <MenuItem Header="Freeze Columns to Here"
+                                      Click="MenuFreezeColumnsToHere_Click"
+                                      Background="{StaticResource ControlBackground}"
+                                      Foreground="{StaticResource ForegroundColor}"
+                                      ToolTip="Freeze this column and all columns to its left">
+                                <MenuItem.Icon>
+                                    <TextBlock Text="📌" FontSize="14"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="Unfreeze All Columns"
+                                      Click="MenuUnfreezeAllColumns_Click"
+                                      Background="{StaticResource ControlBackground}"
+                                      Foreground="{StaticResource ForegroundColor}"
+                                      ToolTip="Remove all frozen columns">
+                                <MenuItem.Icon>
+                                    <TextBlock Text="📍" FontSize="14"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
                         </ContextMenu>
                     </syncfusion:SfDataGrid.HeaderContextMenu>
                     <syncfusion:SfDataGrid.Columns>
 
                         <!-- IDENTITY & KEY FIELDS -->
                         <syncfusion:GridTextColumn MappingName="UniqueID"
-                              HeaderText="UniqueID"
+                              HeaderText="UniqueID" Padding="4,0,4,0"
                               Width="120"
                               AllowEditing="False"
                               AllowFiltering="True"
                               AllowSorting="True" />
 
                         <syncfusion:GridNumericColumn MappingName="ActivityID"
-                              HeaderText="ActivityID"
+                              HeaderText="ActivityID" Padding="4,0,4,0"
                               Width="80"
                               IsHidden="False"
                               AllowEditing="False"
@@ -754,124 +791,140 @@
                               AllowSorting="True"
                               NumberDecimalDigits="0" />
 
-                        <syncfusion:GridTextColumn MappingName="ProjectID" 
-                              HeaderText="ProjectID" 
+                        <syncfusion:GridTextColumn MappingName="ProjectID"
+                              HeaderText="ProjectID"
+                              Padding="4,0,4,0"
                               Width="100"
                               AllowEditing="True"
                               AllowFiltering="True"
                               AllowSorting="True" 
                               CellStyle="{StaticResource ProjectIDRequiredStyle}"/>
 
-                        <syncfusion:GridTextColumn MappingName="AssignedTo" 
-                              HeaderText="AssignedTo" 
+                        <syncfusion:GridTextColumn MappingName="AssignedTo"
+                              HeaderText="AssignedTo"
+                              Padding="4,0,4,0"
                               Width="120"
                               AllowEditing="False"
                               AllowFiltering="True"
                               AllowSorting="True" />
                         
-                        <syncfusion:GridTextColumn MappingName="CompType" 
-                              HeaderText="CompType" 
+                        <syncfusion:GridTextColumn MappingName="CompType"
+                              HeaderText="CompType"
+                              Padding="4,0,4,0"
                               Width="120"
                               AllowEditing="True"
                               AllowFiltering="True"
                               AllowSorting="True" 
                               CellStyle="{StaticResource CompTypeRequiredStyle}" />
 
-                        <syncfusion:GridTextColumn MappingName="PhaseCategory" 
-                              HeaderText="PhaseCategory" 
+                        <syncfusion:GridTextColumn MappingName="PhaseCategory"
+                              HeaderText="PhaseCategory"
+                              Padding="4,0,4,0"
                               Width="120"
                               AllowEditing="True"
                               AllowFiltering="True"
                               AllowSorting="True"
                               CellStyle="{StaticResource PhaseCategoryRequiredStyle}" />
 
-                        <syncfusion:GridTextColumn MappingName="ROCStep" 
-                              HeaderText="ROCStep" 
+                        <syncfusion:GridTextColumn MappingName="ROCStep"
+                              HeaderText="ROCStep"
+                              Padding="4,0,4,0"
                               Width="100"
                               AllowEditing="True"
                               AllowFiltering="True"
                               AllowSorting="True" 
                               CellStyle="{StaticResource ROCStepRequiredStyle}"/>
 
-                        <syncfusion:GridTextColumn MappingName="Description" 
-                              HeaderText="Description" 
+                        <syncfusion:GridTextColumn MappingName="Description"
+                              HeaderText="Description"
+                              Padding="4,0,4,0"
                               Width="250"
                               AllowEditing="True"
                               AllowFiltering="True"
                               AllowSorting="True" 
                               CellStyle="{StaticResource DescRequiredStyle}"/>
 
-                        <syncfusion:GridNumericColumn MappingName="EarnQtyEntry" 
-                                 HeaderText="EarnQtyEntry" 
+                        <syncfusion:GridNumericColumn MappingName="EarnQtyEntry"
+                                 HeaderText="EarnQtyEntry"
+                                 Padding="4,0,4,0"
                                  Width="100"
                                  AllowEditing="True"
                                  AllowFiltering="True"
                                  AllowSorting="True"
                                  NumberDecimalDigits="2" />
 
-                        <syncfusion:GridTextColumn MappingName="Quantity" 
-                                 HeaderText="Quantity" 
+                        <syncfusion:GridTextColumn MappingName="Quantity"
+                                 HeaderText="Quantity"
+                                 Padding="4,0,4,0"
                                  Width="100"
                                  AllowEditing="True"
                                  AllowFiltering="True"
                                  AllowSorting="True"/>
 
-                        <syncfusion:GridNumericColumn MappingName="EarnedQtyCalc" 
-                                 HeaderText="EarnedQtyCalc" 
+                        <syncfusion:GridNumericColumn MappingName="EarnedQtyCalc"
+                                 HeaderText="EarnedQtyCalc"
+                                 Padding="4,0,4,0"
                                  Width="100"
                                  AllowEditing="False"
                                  AllowFiltering="True"
                                  AllowSorting="True"
                                  NumberDecimalDigits="3" />
 
-                        <syncfusion:GridTextColumn MappingName="PercentEntry" 
-                                 HeaderText="PercentEntry" 
+                        <syncfusion:GridTextColumn MappingName="PercentEntry"
+                                 HeaderText="PercentEntry"
+                                 Padding="4,0,4,0"
                                  Width="100"
                                  AllowEditing="True"
                                  AllowFiltering="True"
                                  AllowSorting="True"/>
 
-                        <syncfusion:GridNumericColumn MappingName="PercentCompleteCalc" 
-                                 HeaderText="PercentCompleteCalc" 
+                        <syncfusion:GridNumericColumn MappingName="PercentCompleteCalc"
+                                 HeaderText="PercentCompleteCalc"
+                                 Padding="4,0,4,0"
                                  Width="100"
                                  AllowEditing="False"
                                  AllowFiltering="True"
                                  AllowSorting="True"
                                  NumberDecimalDigits="2" />
 
-                        <syncfusion:GridTextColumn MappingName="BudgetMHs" 
-                                 HeaderText="BudgetMHs" 
+                        <syncfusion:GridTextColumn MappingName="BudgetMHs"
+                                 HeaderText="BudgetMHs"
+                                 Padding="4,0,4,0"
                                  Width="100"
                                  AllowEditing="True"
                                  AllowFiltering="True"
                                  AllowSorting="True"/>
 
-                        <syncfusion:GridNumericColumn MappingName="EarnMHsCalc" 
-                                 HeaderText="EarnMHsCalc" 
+                        <syncfusion:GridNumericColumn MappingName="EarnMHsCalc"
+                                 HeaderText="EarnMHsCalc"
+                                 Padding="4,0,4,0"
                                  Width="100"
                                  AllowEditing="False"
                                  AllowFiltering="True"
                                  AllowSorting="True"
                                  NumberDecimalDigits="3" />
 
-                        <syncfusion:GridTextColumn MappingName="WorkPackage" 
-                              HeaderText="WorkPackage" 
+                        <syncfusion:GridTextColumn MappingName="WorkPackage"
+                              HeaderText="WorkPackage"
+                              Padding="4,0,4,0"
                               Width="120"
                               AllowEditing="True"
                               AllowFiltering="True"
                               AllowSorting="True" 
                               CellStyle="{StaticResource WorkPackageRequiredStyle}"/>
 
-                        <syncfusion:GridTextColumn MappingName="PhaseCode" 
-                              HeaderText="PhaseCode" 
+                        <syncfusion:GridTextColumn MappingName="PhaseCode"
+                              HeaderText="PhaseCode"
+                              Padding="4,0,4,0"
                               Width="100"
                               AllowEditing="True"
                               AllowFiltering="True"
                               AllowSorting="True" 
                               CellStyle="{StaticResource PhaseCodeRequiredStyle}"/>
 
-                        <syncfusion:GridTextColumn MappingName="SchedActNO" 
-                              HeaderText="SchedActNO" 
+                        <syncfusion:GridTextColumn MappingName="SchedActNO"
+                              HeaderText="SchedActNO"
+                              Padding="4,0,4,0"
                               Width="100"
                               AllowEditing="True"
                               AllowFiltering="True"
@@ -879,8 +932,9 @@
                               CellStyle="{StaticResource SchedActNoRequiredStyle}"/>
 
                         <!-- DRAWING FIELDS -->
-                        <syncfusion:GridTextColumn MappingName="DwgNO" 
-                              HeaderText="DwgNO" 
+                        <syncfusion:GridTextColumn MappingName="DwgNO"
+                              HeaderText="DwgNO"
+                              Padding="4,0,4,0"
                               Width="120"
                               AllowEditing="True"
                               AllowFiltering="True"
@@ -890,7 +944,7 @@
                         <!-- All original properties preserved -->
 
                         <syncfusion:GridTextColumn MappingName="Area"
-                           HeaderText="Area"
+                           HeaderText="Area" Padding="4,0,4,0"
                            Width="80"
                            IsHidden="True"
                            AllowEditing="True"
@@ -898,7 +952,7 @@
                            AllowSorting="True" />
 
                         <syncfusion:GridTextColumn MappingName="Aux1"
-                           HeaderText="Aux1"
+                           HeaderText="Aux1" Padding="4,0,4,0"
                            Width="100"
                            IsHidden="True"
                            AllowEditing="True"
@@ -906,7 +960,7 @@
                            AllowSorting="True" />
 
                         <syncfusion:GridTextColumn MappingName="Aux2"
-                           HeaderText="Aux2"
+                           HeaderText="Aux2" Padding="4,0,4,0"
                            Width="100"
                            IsHidden="True"
                            AllowEditing="True"
@@ -914,7 +968,7 @@
                            AllowSorting="True" />
 
                         <syncfusion:GridTextColumn MappingName="Aux3"
-                           HeaderText="Aux3"
+                           HeaderText="Aux3" Padding="4,0,4,0"
                            Width="100"
                            IsHidden="True"
                            AllowEditing="True"
@@ -922,7 +976,7 @@
                            AllowSorting="True" />
 
                         <syncfusion:GridDateTimeColumn MappingName="AzureUploadUtcDate"
-                               HeaderText="AzureUploadUtcDate"
+                               HeaderText="AzureUploadUtcDate" Padding="4,0,4,0"
                                Width="120"
                                IsHidden="True"
                                AllowEditing="False"
@@ -931,7 +985,7 @@
                                Pattern="ShortDate" />
 
                         <syncfusion:GridNumericColumn MappingName="BaseUnit"
-                              HeaderText="BaseUnit"
+                              HeaderText="BaseUnit" Padding="4,0,4,0"
                               Width="100"
                               IsHidden="True"
                               AllowEditing="True"
@@ -940,7 +994,7 @@
                               NumberDecimalDigits="2" />
 
                         <syncfusion:GridNumericColumn MappingName="BudgetHoursGroup"
-                              HeaderText="BudgetHoursGroup"
+                              HeaderText="BudgetHoursGroup" Padding="4,0,4,0"
                               Width="120"
                               IsHidden="True"
                               AllowEditing="True"
@@ -949,7 +1003,7 @@
                               NumberDecimalDigits="2" />
 
                         <syncfusion:GridNumericColumn MappingName="BudgetHoursROC"
-                              HeaderText="BudgetHoursROC"
+                              HeaderText="BudgetHoursROC" Padding="4,0,4,0"
                               Width="120"
                               IsHidden="True"
                               AllowEditing="True"
@@ -958,7 +1012,7 @@
                               NumberDecimalDigits="2" />
 
                         <syncfusion:GridTextColumn MappingName="ChgOrdNO"
-                           HeaderText="ChgOrdNO"
+                           HeaderText="ChgOrdNO" Padding="4,0,4,0"
                            Width="80"
                            IsHidden="True"
                            AllowEditing="True"
@@ -966,7 +1020,7 @@
                            AllowSorting="True" />
 
                         <syncfusion:GridTextColumn MappingName="ClientBudget"
-                              HeaderText="ClientBudget"
+                              HeaderText="ClientBudget" Padding="4,0,4,0"
                               Width="120"
                               IsHidden="True"
                               AllowEditing="True"
@@ -974,7 +1028,7 @@
                               AllowSorting="True"/>
 
                         <syncfusion:GridNumericColumn MappingName="ClientCustom3"
-                              HeaderText="ClientCustom3"
+                              HeaderText="ClientCustom3" Padding="4,0,4,0"
                               Width="120"
                               IsHidden="True"
                               AllowEditing="True"
@@ -983,7 +1037,7 @@
                               NumberDecimalDigits="2" />
 
                         <syncfusion:GridTextColumn MappingName="ClientEquivEarnQTY"
-                           HeaderText="ClientEquivEarnQTY"
+                           HeaderText="ClientEquivEarnQTY" Padding="4,0,4,0"
                            Width="150"
                            IsHidden="True"
                            AllowEditing="True"
@@ -991,7 +1045,7 @@
                            AllowSorting="True" />
 
                         <syncfusion:GridNumericColumn MappingName="ClientEquivQty"
-                              HeaderText="ClientEquivQty"
+                              HeaderText="ClientEquivQty" Padding="4,0,4,0"
                               Width="120"
                               IsHidden="True"
                               AllowEditing="True"
@@ -1000,7 +1054,7 @@
                               NumberDecimalDigits="2" />
 
                         <syncfusion:GridTextColumn MappingName="CreatedBy"
-                           HeaderText="CreatedBy"
+                           HeaderText="CreatedBy" Padding="4,0,4,0"
                            Width="120"
                            IsHidden="True"
                            AllowEditing="False"
@@ -1008,7 +1062,7 @@
                            AllowSorting="True" />
 
                         <syncfusion:GridNumericColumn MappingName="DateTrigger"
-                              HeaderText="DateTrigger"
+                              HeaderText="DateTrigger" Padding="4,0,4,0"
                               Width="100"
                               IsHidden="True"
                               AllowEditing="True"
@@ -1017,7 +1071,7 @@
                               NumberDecimalDigits="0" />
 
                         <syncfusion:GridNumericColumn MappingName="EarnedMHsRoc"
-                              HeaderText="EarnedMHsRoc"
+                              HeaderText="EarnedMHsRoc" Padding="4,0,4,0"
                               Width="120"
                               IsHidden="True"
                               AllowEditing="True"
@@ -1026,7 +1080,7 @@
                               NumberDecimalDigits="2" />
 
                         <syncfusion:GridTextColumn MappingName="EqmtNO"
-                           HeaderText="EqmtNO"
+                           HeaderText="EqmtNO" Padding="4,0,4,0"
                            Width="120"
                            IsHidden="True"
                            AllowEditing="True"
@@ -1034,7 +1088,7 @@
                            AllowSorting="True" />
 
                         <syncfusion:GridTextColumn MappingName="EquivQTY"
-                           HeaderText="EquivQTY"
+                           HeaderText="EquivQTY" Padding="4,0,4,0"
                            Width="100"
                            IsHidden="True"
                            AllowEditing="True"
@@ -1042,7 +1096,7 @@
                            AllowSorting="True" />
 
                         <syncfusion:GridTextColumn MappingName="EquivUOM"
-                           HeaderText="EquivUOM"
+                           HeaderText="EquivUOM" Padding="4,0,4,0"
                            Width="100"
                            IsHidden="True"
                            AllowEditing="True"
@@ -1050,7 +1104,7 @@
                            AllowSorting="True" />
 
                         <syncfusion:GridTextColumn MappingName="Estimator"
-                           HeaderText="Estimator"
+                           HeaderText="Estimator" Padding="4,0,4,0"
                            Width="120"
                            IsHidden="True"
                            AllowEditing="True"
@@ -1058,7 +1112,7 @@
                            AllowSorting="True" />
 
                         <syncfusion:GridNumericColumn MappingName="HexNO"
-                              HeaderText="HexNO"
+                              HeaderText="HexNO" Padding="4,0,4,0"
                               Width="80"
                               IsHidden="True"
                               AllowEditing="True"
@@ -1067,7 +1121,7 @@
                               NumberDecimalDigits="0" />
 
                         <syncfusion:GridTextColumn MappingName="HtTrace"
-                           HeaderText="HtTrace"
+                           HeaderText="HtTrace" Padding="4,0,4,0"
                            Width="100"
                            IsHidden="True"
                            AllowEditing="True"
@@ -1075,7 +1129,7 @@
                            AllowSorting="True" />
 
                         <syncfusion:GridTextColumn MappingName="InsulType"
-                           HeaderText="InsulType"
+                           HeaderText="InsulType" Padding="4,0,4,0"
                            Width="120"
                            IsHidden="True"
                            AllowEditing="True"
@@ -1083,7 +1137,7 @@
                            AllowSorting="True" />
 
                         <syncfusion:GridTextColumn MappingName="LineNumber"
-                           HeaderText="LineNumber"
+                           HeaderText="LineNumber" Padding="4,0,4,0"
                            Width="100"
                            IsHidden="True"
                            AllowEditing="True"
@@ -1091,7 +1145,7 @@
                            AllowSorting="True" />
 
                         <syncfusion:GridNumericColumn MappingName="LocalDirty"
-                              HeaderText="LocalDirty"
+                              HeaderText="LocalDirty" Padding="4,0,4,0"
                               Width="100"
                               IsHidden="False"
                               AllowEditing="False"
@@ -1100,7 +1154,7 @@
                               NumberDecimalDigits="0" />
 
                         <syncfusion:GridTextColumn MappingName="MtrlSpec"
-                           HeaderText="MtrlSpec"
+                           HeaderText="MtrlSpec" Padding="4,0,4,0"
                            Width="120"
                            IsHidden="True"
                            AllowEditing="True"
@@ -1108,14 +1162,14 @@
                            AllowSorting="True" />
 
                         <syncfusion:GridTextColumn MappingName="Notes"
-                           HeaderText="Notes"
+                           HeaderText="Notes" Padding="4,0,4,0"
                            Width="200"
                            AllowEditing="True"
                            AllowFiltering="True"
                            AllowSorting="True" />
 
                         <syncfusion:GridTextColumn MappingName="PaintCode"
-                           HeaderText="PaintCode"
+                           HeaderText="PaintCode" Padding="4,0,4,0"
                            Width="100"
                            IsHidden="True"
                            AllowEditing="True"
@@ -1123,7 +1177,7 @@
                            AllowSorting="True" />
 
                         <syncfusion:GridTextColumn MappingName="PipeGrade"
-                           HeaderText="PipeGrade"
+                           HeaderText="PipeGrade" Padding="4,0,4,0"
                            Width="100"
                            IsHidden="True"
                            AllowEditing="True"
@@ -1131,7 +1185,7 @@
                            AllowSorting="True" />
 
                         <syncfusion:GridNumericColumn MappingName="PipeSize1"
-                              HeaderText="PipeSize1"
+                              HeaderText="PipeSize1" Padding="4,0,4,0"
                               Width="100"
                               IsHidden="True"
                               AllowEditing="True"
@@ -1140,7 +1194,7 @@
                               NumberDecimalDigits="2" />
 
                         <syncfusion:GridNumericColumn MappingName="PipeSize2"
-                              HeaderText="PipeSize2"
+                              HeaderText="PipeSize2" Padding="4,0,4,0"
                               Width="100"
                               IsHidden="True"
                               AllowEditing="True"
@@ -1149,7 +1203,7 @@
                               NumberDecimalDigits="2" />
 
                         <syncfusion:GridTextColumn MappingName="PjtSystem"
-                           HeaderText="PjtSystem"
+                           HeaderText="PjtSystem" Padding="4,0,4,0"
                            Width="100"
                            IsHidden="True"
                            AllowEditing="True"
@@ -1157,7 +1211,7 @@
                            AllowSorting="True" />
 
                         <syncfusion:GridNumericColumn MappingName="PrevEarnMHs"
-                              HeaderText="PrevEarnMHs"
+                              HeaderText="PrevEarnMHs" Padding="4,0,4,0"
                               Width="120"
                               IsHidden="True"
                               AllowEditing="True"
@@ -1166,7 +1220,7 @@
                               NumberDecimalDigits="2" />
 
                         <syncfusion:GridNumericColumn MappingName="PrevEarnQTY"
-                              HeaderText="PrevEarnQTY"
+                              HeaderText="PrevEarnQTY" Padding="4,0,4,0"
                               Width="120"
                               IsHidden="True"
                               AllowEditing="True"
@@ -1175,7 +1229,7 @@
                               NumberDecimalDigits="2" />
 
                         <syncfusion:GridTextColumn MappingName="ProgDate"
-                           HeaderText="ProgDate"
+                           HeaderText="ProgDate" Padding="4,0,4,0"
                            Width="150"
                            IsHidden="True"
                            AllowEditing="False"
@@ -1184,7 +1238,7 @@
                            DisplayBinding="{Binding ProgDate, StringFormat='{}{0:MM/dd/yyyy hh:mm tt}'}" />
 
                         <syncfusion:GridTextColumn MappingName="RevNO"
-                           HeaderText="RevNO"
+                           HeaderText="RevNO" Padding="4,0,4,0"
                            Width="80"
                            IsHidden="True"
                            AllowEditing="True"
@@ -1192,7 +1246,7 @@
                            AllowSorting="True" />
 
                         <syncfusion:GridTextColumn MappingName="RFINO"
-                           HeaderText="RFINO"
+                           HeaderText="RFINO" Padding="4,0,4,0"
                            Width="80"
                            IsHidden="True"
                            AllowEditing="True"
@@ -1200,7 +1254,7 @@
                            AllowSorting="True" />
 
                         <syncfusion:GridNumericColumn MappingName="ROCBudgetQTY"
-                              HeaderText="ROCBudgetQTY"
+                              HeaderText="ROCBudgetQTY" Padding="4,0,4,0"
                               Width="120"
                               IsHidden="True"
                               AllowEditing="True"
@@ -1209,7 +1263,7 @@
                               NumberDecimalDigits="2" />
 
                         <syncfusion:GridNumericColumn MappingName="ROCID"
-                              HeaderText="ROCID"
+                              HeaderText="ROCID" Padding="4,0,4,0"
                               Width="80"
                               IsHidden="True"
                               AllowEditing="True"
@@ -1218,7 +1272,7 @@
                               NumberDecimalDigits="0" />
 
                         <syncfusion:GridTextColumn MappingName="ROCLookupID"
-                           HeaderText="ROCLookupID"
+                           HeaderText="ROCLookupID" Padding="4,0,4,0"
                            Width="150"
                            IsHidden="True"
                            AllowEditing="False"
@@ -1226,7 +1280,7 @@
                            AllowSorting="True" />
 
                         <syncfusion:GridNumericColumn MappingName="ROCPercent"
-                              HeaderText="ROCPercent"
+                              HeaderText="ROCPercent" Padding="4,0,4,0"
                               Width="100"
                               IsHidden="True"
                               AllowEditing="True"
@@ -1235,7 +1289,7 @@
                               NumberDecimalDigits="2" />
 
                         <syncfusion:GridDateTimeColumn MappingName="SchFinish"
-                            HeaderText="SchFinish"
+                            HeaderText="SchFinish" Padding="4,0,4,0"
                             Width="100"
                             IsHidden="False"
                             AllowEditing="True"
@@ -1246,7 +1300,7 @@
                             Pattern="ShortDate" />
 
                         <syncfusion:GridDateTimeColumn MappingName="SchStart"
-                           HeaderText="SchStart"
+                           HeaderText="SchStart" Padding="4,0,4,0"
                            Width="100"
                            IsHidden="False"
                            AllowEditing="True"
@@ -1257,7 +1311,7 @@
                            Pattern="ShortDate" />
 
                         <syncfusion:GridTextColumn MappingName="SecondActno"
-                           HeaderText="SecondActno"
+                           HeaderText="SecondActno" Padding="4,0,4,0"
                            Width="100"
                            IsHidden="True"
                            AllowEditing="True"
@@ -1265,7 +1319,7 @@
                            AllowSorting="True" />
 
                         <syncfusion:GridTextColumn MappingName="SecondDwgNO"
-                           HeaderText="SecondDwgNO"
+                           HeaderText="SecondDwgNO" Padding="4,0,4,0"
                            Width="120"
                            IsHidden="True"
                            AllowEditing="True"
@@ -1273,7 +1327,7 @@
                            AllowSorting="True" />
 
                         <syncfusion:GridTextColumn MappingName="Service"
-                           HeaderText="Service"
+                           HeaderText="Service" Padding="4,0,4,0"
                            Width="120"
                            IsHidden="True"
                            AllowEditing="True"
@@ -1281,7 +1335,7 @@
                            AllowSorting="True" />
 
                         <syncfusion:GridTextColumn MappingName="ShopField"
-                           HeaderText="ShopField"
+                           HeaderText="ShopField" Padding="4,0,4,0"
                            Width="100"
                            IsHidden="True"
                            AllowEditing="True"
@@ -1289,7 +1343,7 @@
                            AllowSorting="True" />
 
                         <syncfusion:GridTextColumn MappingName="ShtNO"
-                           HeaderText="ShtNO"
+                           HeaderText="ShtNO" Padding="4,0,4,0"
                            Width="80"
                            IsHidden="True"
                            AllowEditing="True"
@@ -1297,14 +1351,14 @@
                            AllowSorting="True" />
 
                         <syncfusion:GridTextColumn MappingName="Status"
-                           HeaderText="Status"
+                           HeaderText="Status" Padding="4,0,4,0"
                            Width="100"
                            AllowEditing="False"
                            AllowFiltering="True"
                            AllowSorting="True" />
 
                         <syncfusion:GridTextColumn MappingName="SubArea"
-                           HeaderText="SubArea"
+                           HeaderText="SubArea" Padding="4,0,4,0"
                            Width="80"
                            IsHidden="True"
                            AllowEditing="True"
@@ -1312,7 +1366,7 @@
                            AllowSorting="True" />
 
                         <syncfusion:GridTextColumn MappingName="SyncVersion"
-                           HeaderText="Sync Version"
+                           HeaderText="Sync Version" Padding="4,0,4,0"
                            Width="120"
                            DisplayBinding="{Binding SyncVersion}"
                            IsHidden="False"
@@ -1321,7 +1375,7 @@
                            TextAlignment="Right" />
 
                         <syncfusion:GridTextColumn MappingName="SystemNO"
-                           HeaderText="SystemNO"
+                           HeaderText="SystemNO" Padding="4,0,4,0"
                            Width="100"
                            IsHidden="True"
                            AllowEditing="True"
@@ -1329,7 +1383,7 @@
                            AllowSorting="True" />
 
                         <syncfusion:GridTextColumn MappingName="TagNO"
-                           HeaderText="TagNO"
+                           HeaderText="TagNO" Padding="4,0,4,0"
                            Width="120"
                            IsHidden="True"
                            AllowEditing="True"
@@ -1337,7 +1391,7 @@
                            AllowSorting="True" />
 
                         <syncfusion:GridTextColumn MappingName="UDF1"
-                           HeaderText="UDF1"
+                           HeaderText="UDF1" Padding="4,0,4,0"
                            Width="100"
                            IsHidden="False"
                            AllowEditing="True"
@@ -1345,7 +1399,7 @@
                            AllowSorting="True" />
 
                         <syncfusion:GridTextColumn MappingName="UDF2"
-                           HeaderText="UDF2"
+                           HeaderText="UDF2" Padding="4,0,4,0"
                            Width="100"
                            IsHidden="False"
                            AllowEditing="True"
@@ -1353,7 +1407,7 @@
                            AllowSorting="True" />
 
                         <syncfusion:GridTextColumn MappingName="UDF3"
-                           HeaderText="UDF3"
+                           HeaderText="UDF3" Padding="4,0,4,0"
                            Width="100"
                            IsHidden="True"
                            AllowEditing="True"
@@ -1361,7 +1415,7 @@
                            AllowSorting="True" />
 
                         <syncfusion:GridTextColumn MappingName="UDF4"
-                           HeaderText="UDF4"
+                           HeaderText="UDF4" Padding="4,0,4,0"
                            Width="100"
                            IsHidden="True"
                            AllowEditing="True"
@@ -1369,7 +1423,7 @@
                            AllowSorting="True" />
 
                         <syncfusion:GridTextColumn MappingName="UDF5"
-                           HeaderText="UDF5"
+                           HeaderText="UDF5" Padding="4,0,4,0"
                            Width="100"
                            IsHidden="True"
                            AllowEditing="True"
@@ -1377,7 +1431,7 @@
                            AllowSorting="True" />
 
                         <syncfusion:GridTextColumn MappingName="UDF6"
-                           HeaderText="UDF6"
+                           HeaderText="UDF6" Padding="4,0,4,0"
                            Width="100"
                            IsHidden="False"
                            AllowEditing="True"
@@ -1385,7 +1439,7 @@
                            AllowSorting="True" />
 
                         <syncfusion:GridTextColumn MappingName="UDF7"
-                           HeaderText="UDF7"
+                           HeaderText="UDF7" Padding="4,0,4,0"
                            Width="100"
                            IsHidden="True"
                            AllowEditing="True"
@@ -1393,7 +1447,7 @@
                            AllowSorting="True" />
 
                         <syncfusion:GridTextColumn MappingName="UDF8"
-                           HeaderText="UDF8"
+                           HeaderText="UDF8" Padding="4,0,4,0"
                            Width="100"
                            IsHidden="True"
                            AllowEditing="True"
@@ -1401,7 +1455,7 @@
                            AllowSorting="True" />
 
                         <syncfusion:GridTextColumn MappingName="UDF9"
-                           HeaderText="UDF9"
+                           HeaderText="UDF9" Padding="4,0,4,0"
                            Width="100"
                            IsHidden="True"
                            AllowEditing="True"
@@ -1409,7 +1463,7 @@
                            AllowSorting="True" />
 
                         <syncfusion:GridTextColumn MappingName="UDF10"
-                           HeaderText="UDF10"
+                           HeaderText="UDF10" Padding="4,0,4,0"
                            Width="100"
                            IsHidden="True"
                            AllowEditing="True"
@@ -1417,7 +1471,7 @@
                            AllowSorting="True" />
 
                         <syncfusion:GridTextColumn MappingName="UDF11"
-                           HeaderText="UDF11"
+                           HeaderText="UDF11" Padding="4,0,4,0"
                            Width="100"
                            IsHidden="True"
                            AllowEditing="True"
@@ -1425,7 +1479,7 @@
                            AllowSorting="True" />
 
                         <syncfusion:GridTextColumn MappingName="UDF12"
-                           HeaderText="UDF12"
+                           HeaderText="UDF12" Padding="4,0,4,0"
                            Width="100"
                            IsHidden="True"
                            AllowEditing="True"
@@ -1433,7 +1487,7 @@
                            AllowSorting="True" />
 
                         <syncfusion:GridTextColumn MappingName="UDF13"
-                           HeaderText="UDF13"
+                           HeaderText="UDF13" Padding="4,0,4,0"
                            Width="100"
                            IsHidden="True"
                            AllowEditing="True"
@@ -1441,7 +1495,7 @@
                            AllowSorting="True" />
 
                         <syncfusion:GridTextColumn MappingName="UDF14"
-                           HeaderText="UDF14"
+                           HeaderText="UDF14" Padding="4,0,4,0"
                            Width="100"
                            IsHidden="True"
                            AllowEditing="True"
@@ -1449,7 +1503,7 @@
                            AllowSorting="True" />
 
                         <syncfusion:GridTextColumn MappingName="UDF15"
-                           HeaderText="UDF15"
+                           HeaderText="UDF15" Padding="4,0,4,0"
                            Width="100"
                            IsHidden="True"
                            AllowEditing="True"
@@ -1457,7 +1511,7 @@
                            AllowSorting="True" />
 
                         <syncfusion:GridTextColumn MappingName="UDF16"
-                           HeaderText="UDF16"
+                           HeaderText="UDF16" Padding="4,0,4,0"
                            Width="100"
                            IsHidden="True"
                            AllowEditing="True"
@@ -1465,7 +1519,7 @@
                            AllowSorting="True" />
 
                         <syncfusion:GridTextColumn MappingName="UDF17"
-                           HeaderText="UDF17"
+                           HeaderText="UDF17" Padding="4,0,4,0"
                            Width="100"
                            IsHidden="True"
                            AllowEditing="True"
@@ -1473,7 +1527,7 @@
                            AllowSorting="True" />
 
                         <syncfusion:GridTextColumn MappingName="RespParty"
-                           HeaderText="Resp Party"
+                           HeaderText="Resp Party" Padding="4,0,4,0"
                            Width="100"
                            IsHidden="False"
                            AllowEditing="True"
@@ -1482,7 +1536,7 @@
                            CellStyle="{StaticResource RespPartyRequiredStyle}" />
 
                         <syncfusion:GridTextColumn MappingName="UDF20"
-                           HeaderText="UDF20"
+                           HeaderText="UDF20" Padding="4,0,4,0"
                            Width="100"
                            IsHidden="True"
                            AllowEditing="True"
@@ -1490,14 +1544,14 @@
                            AllowSorting="True" />
 
                         <syncfusion:GridTextColumn MappingName="UOM"
-                           HeaderText="UOM"
+                           HeaderText="UOM" Padding="4,0,4,0"
                            Width="80"
                            AllowEditing="True"
                            AllowFiltering="True"
                            AllowSorting="True" />
 
                         <syncfusion:GridTextColumn MappingName="UpdatedBy"
-                           HeaderText="UpdatedBy"
+                           HeaderText="UpdatedBy" Padding="4,0,4,0"
                            Width="120"
                            IsHidden="False"
                            AllowEditing="False"
@@ -1505,7 +1559,7 @@
                            AllowSorting="True" />
 
                         <syncfusion:GridTextColumn MappingName="UpdatedUtcDateDisplay"
-                           HeaderText="UpdatedUtcDate"
+                           HeaderText="UpdatedUtcDate" Padding="4,0,4,0"
                            Width="160"
                            IsHidden="True"
                            AllowEditing="False"
@@ -1513,7 +1567,7 @@
                            AllowSorting="True" />
 
                         <syncfusion:GridDateTimeColumn MappingName="WeekEndDate"
-                               HeaderText="WeekEndDate"
+                               HeaderText="WeekEndDate" Padding="4,0,4,0"
                                Width="120"
                                IsHidden="True"
                                AllowEditing="False"
@@ -1522,7 +1576,7 @@
                                Pattern="ShortDate" />
 
                         <syncfusion:GridNumericColumn MappingName="XRay"
-                              HeaderText="XRay"
+                              HeaderText="XRay" Padding="4,0,4,0"
                               Width="80"
                               IsHidden="True"
                               AllowEditing="True"

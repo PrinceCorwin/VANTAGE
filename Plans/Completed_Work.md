@@ -5,6 +5,25 @@ This document tracks completed features and fixes. Items are moved here from Pro
 ---
 
 ### January 25, 2026
+- **Progress Grid - Grouping Feature:**
+  - Added AllowGrouping and ShowGroupDropArea to ProgressView grid
+  - Users can drag column headers to Group Drop Area to group rows by value
+  - Multi-level grouping supported (drag multiple columns)
+  - Expand/collapse groups with arrow icons
+  - Right-click menu: "Freeze Columns to Here" and "Unfreeze All Columns"
+  - Frozen column count persists in UserSettings
+  - Documentation added to Help manual
+
+- **Progress Grid - Visual Improvements:**
+  - Fixed inconsistent cell border widths across column types
+  - Added explicit BorderThickness (0.5px) via SfDataGrid.Resources style
+  - Added cell padding (4px left/right) to all 92 columns for better readability
+  - Added UseLayoutRounding and SnapsToDevicePixels for pixel-perfect rendering
+
+- **Progress Grid - Performance Optimizations:**
+  - Added UseDrawing="Default" for faster cell rendering (GDI+ vs TextBlock)
+  - Added ColumnSizer optimization: auto-size on first load, then disable for performance
+
 - **Progress Grid - Table Summary Row:**
   - Added summary row at bottom of grid showing Sum totals for numeric columns
   - Columns: Quantity, EarnQtyEntry, BudgetMHs, EarnMHsCalc, ClientBudget
