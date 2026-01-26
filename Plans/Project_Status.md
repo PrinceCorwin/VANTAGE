@@ -133,27 +133,9 @@
 | `WorkPackageView.xaml.cs` | Remove early return in `BuildDrawingsEditor()` and `#pragma warning` directives |
 | `DrawingsRenderer.cs` | Remove early return in `Render()` method and `#pragma warning` directives |
 
-### Syncfusion Features to Evaluate (see Plans/Syncfusion_Features_Reference.md)
+### Syncfusion Features to Evaluate
 
-**UX Improvements:**
-| Feature | Description | Status |
-|---------|-------------|--------|
-| Column Chooser | Built-in UI for show/hide columns (vs current Columns button) | Not Started |
-| Stacked Headers | Multi-row headers to group related columns (e.g., "Dates" spanning SchStart/SchFinish) | Not Started |
-| IEditableObject Rollback | ESC key reverts cell edits automatically | Already works |
-| Filter Row | Persistent filter row at grid top | Not needed - Global Search implemented instead |
-
-**Data Features:**
-| Feature | Description |
-|---------|-------------|
-| Custom Aggregates | Weighted progress calculation (EarnedMH/BudgetMH) in table summaries |
-| Row Drag & Drop | Reorder activities within filtered view for prioritization |
-| Checkbox Selection | Bulk select for multi-record operations |
-
-**Export/Print:**
-Attempted but removed due to Syncfusion printing issues (null reference errors, slow performance with large datasets). Users can use Progress Books for PDF generation.
-
-**Visualization (New Capabilities):**
+**Dashboard Module (Post-V1):**
 | Feature | Description |
 |---------|-------------|
 | Column/Stacked Chart | Daily/weekly activity completion counts, productivity trends |
@@ -163,16 +145,24 @@ Attempted but removed due to Syncfusion printing issues (null reference errors, 
 | Radial Gauge | Dashboard widget for overall project % complete |
 | Bullet Graph | Performance vs target KPIs per work package |
 
-**Layout:**
+**V2:**
 | Feature | Description |
 |---------|-------------|
-| Docking Manager | Visual Studio-like docking for flexible panel layouts |
+| Docking Manager | Visual Studio-like docking for flexible panel/toolbar layouts |
 
-**Schedule Module Specific:**
+**Schedule Module:**
 | Feature | Description |
 |---------|-------------|
 | TreeGrid (SfTreeGrid) | Hierarchical WBS display with parent/child relationships |
-| Critical Path Highlighting | Auto-highlight critical path activities |
+| Critical Path Highlighting | Auto-highlight critical path activities (P6 provides float data) |
+
+**Evaluated and Removed:**
+- Column Chooser - current checkbox popup is more intuitive
+- Stacked Headers - adds complexity without benefit
+- Custom Aggregates - Summary Panel already shows weighted progress
+- Row Drag & Drop - conflicts with P6 sync and data model
+- Checkbox Selection - Ctrl+Click multi-select is sufficient
+- Export/Print - Syncfusion printing issues; use Progress Books instead
 
 ### Shelved
 - Find-Replace in Schedule Detail Grid
