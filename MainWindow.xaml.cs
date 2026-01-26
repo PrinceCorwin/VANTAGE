@@ -2218,6 +2218,7 @@ namespace VANTAGE
             var progressView = new Views.ProgressView();
             ContentArea.Content = progressView;
         }
+
         // Check if current view has unsaved changes
         private bool CanLeaveCurrentView()
         {

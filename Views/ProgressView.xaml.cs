@@ -29,6 +29,7 @@ namespace VANTAGE.Views
         private const int ColumnUniqueValueDisplayLimit = 1000; // configurable
         private Dictionary<string, Syncfusion.UI.Xaml.Grid.GridColumn> _columnMap = new Dictionary<string, Syncfusion.UI.Xaml.Grid.GridColumn>();
         private UserFilter? _activeUserFilter;
+        private string _globalSearchText = string.Empty;
         private ProgressViewModel _viewModel;
         // one key per grid/view
         private const string GridPrefsKey = "ProgressGrid.PreferencesJson";
@@ -2120,42 +2121,8 @@ namespace VANTAGE.Views
                 // Highlight button border
                 btnUserFilters.BorderBrush = (Brush)Application.Current.Resources["AccentColor"];
 
-                // Build and apply the filter using Syncfusion's View.Filter
-                sfActivities.View.Filter = record =>
-                {
-                    if (record is not Activity activity)
-                        return true;
-
-                    bool? result = null;
-
-                    foreach (var condition in filter.Conditions)
-                    {
-                        bool conditionResult = EvaluateCondition(activity, condition);
-
-                        if (result == null)
-                        {
-                            result = conditionResult;
-                        }
-                        else
-                        {
-                            if (condition.LogicOperator == "OR")
-                            {
-                                result = result.Value || conditionResult;
-                            }
-                            else // AND
-                            {
-                                result = result.Value && conditionResult;
-                            }
-                        }
-                    }
-
-                    return result ?? true;
-                };
-
-                sfActivities.View.RefreshFilter();
-                _viewModel.FilteredCount = sfActivities.View.Records.Count;
-                UpdateRecordCount();
-                UpdateSummaryPanel();
+                // Apply combined filter (includes global search + user filter)
+                ApplyCombinedViewFilter();
             }
             catch (Exception ex)
             {
@@ -2253,13 +2220,8 @@ namespace VANTAGE.Views
             txtUserFilterName.Text = "USER";
             btnUserFilters.BorderBrush = (Brush)Application.Current.Resources["ControlBorder"];
 
-            // Clear the View.Filter (but keep column filters)
-            sfActivities.View.Filter = null;
-            sfActivities.View.RefreshFilter();
-
-            _viewModel.FilteredCount = sfActivities.View.Records.Count;
-            UpdateRecordCount();
-            UpdateSummaryPanel();
+            // Re-apply combined filter (keeps global search and Today filter if active)
+            ApplyCombinedViewFilter();
         }
 
         private void ManageFilters_Click(object sender, RoutedEventArgs e)
@@ -3273,16 +3235,6 @@ namespace VANTAGE.Views
                 // Enable the Today filter
                 _viewModel.TodayFilterActive = true;
 
-                // Apply custom filter predicate
-                sfActivities.View.Filter = (obj) =>
-                {
-                    if (obj is Activity activity)
-                    {
-                        return _viewModel.PassesTodayFilter(activity);
-                    }
-                    return false;
-                };
-
                 // Update button visuals - active
                 btnFilterToday.BorderBrush = (Brush)Application.Current.Resources["AccentColor"];
             }
@@ -3291,24 +3243,23 @@ namespace VANTAGE.Views
                 // Disable the Today filter
                 _viewModel.TodayFilterActive = false;
 
-                // Remove custom filter
-                sfActivities.View.Filter = null;
-
                 // Update button visuals - inactive
                 btnFilterToday.BorderBrush = (Brush)Application.Current.Resources["ControlBorder"];
             }
 
-            sfActivities.View.RefreshFilter();
-            _viewModel.FilteredCount = sfActivities.View.Records.Count;
-            UpdateRecordCount();
-            UpdateSummaryPanel();
+            // Apply combined filter (includes global search, Today filter, and user filter)
+            ApplyCombinedViewFilter();
         }
 
         private async void BtnClearFilters_Click(object sender, RoutedEventArgs e)
         {
             await _viewModel.ClearAllFiltersAsync();
 
-            // Clear custom View filter (Today filter)
+            // Clear global search
+            _globalSearchText = string.Empty;
+            txtGlobalSearch.Text = string.Empty;
+
+            // Clear custom View filter
             sfActivities.View.Filter = null;
 
             // Clear all column filters using Syncfusion's built-in method
@@ -3334,6 +3285,91 @@ namespace VANTAGE.Views
             UpdateRecordCount();
             UpdateSummaryPanel();
         }
+
+        // Global Search handlers
+        private void TxtGlobalSearch_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            _globalSearchText = txtGlobalSearch.Text.Trim();
+            btnClearSearch.Visibility = string.IsNullOrEmpty(_globalSearchText) ? Visibility.Collapsed : Visibility.Visible;
+            ApplyCombinedViewFilter();
+        }
+
+        private void BtnClearSearch_Click(object sender, RoutedEventArgs e)
+        {
+            txtGlobalSearch.Text = string.Empty;
+            // TextChanged handler will clear the filter
+        }
+
+        // Checks if an activity matches the global search text across commonly searched fields
+        private bool PassesGlobalSearch(Activity activity)
+        {
+            if (string.IsNullOrEmpty(_globalSearchText))
+                return true;
+
+            // Search across commonly used fields
+            return activity.ActivityID.ToString().Contains(_globalSearchText, StringComparison.OrdinalIgnoreCase)
+                || (activity.Description?.Contains(_globalSearchText, StringComparison.OrdinalIgnoreCase) == true)
+                || (activity.WorkPackage?.Contains(_globalSearchText, StringComparison.OrdinalIgnoreCase) == true)
+                || (activity.PhaseCode?.Contains(_globalSearchText, StringComparison.OrdinalIgnoreCase) == true)
+                || (activity.CompType?.Contains(_globalSearchText, StringComparison.OrdinalIgnoreCase) == true)
+                || (activity.Area?.Contains(_globalSearchText, StringComparison.OrdinalIgnoreCase) == true)
+                || (activity.RespParty?.Contains(_globalSearchText, StringComparison.OrdinalIgnoreCase) == true)
+                || (activity.AssignedTo?.Contains(_globalSearchText, StringComparison.OrdinalIgnoreCase) == true)
+                || (activity.Notes?.Contains(_globalSearchText, StringComparison.OrdinalIgnoreCase) == true)
+                || (activity.TagNO?.Contains(_globalSearchText, StringComparison.OrdinalIgnoreCase) == true)
+                || (activity.UniqueID?.Contains(_globalSearchText, StringComparison.OrdinalIgnoreCase) == true)
+                || (activity.DwgNO?.Contains(_globalSearchText, StringComparison.OrdinalIgnoreCase) == true)
+                || (activity.LineNumber?.Contains(_globalSearchText, StringComparison.OrdinalIgnoreCase) == true)
+                || (activity.SchedActNO?.Contains(_globalSearchText, StringComparison.OrdinalIgnoreCase) == true);
+        }
+
+        // Applies combined View.Filter that includes global search and any active custom filters
+        private void ApplyCombinedViewFilter()
+        {
+            // Build combined filter predicate
+            sfActivities.View.Filter = record =>
+            {
+                if (record is not Activity activity)
+                    return true;
+
+                // Check global search first
+                if (!PassesGlobalSearch(activity))
+                    return false;
+
+                // Check Today filter
+                if (_viewModel.TodayFilterActive)
+                {
+                    if (!_viewModel.PassesTodayFilter(activity))
+                        return false;
+                }
+
+                // Check active user-defined filter
+                if (_activeUserFilter != null)
+                {
+                    bool? result = null;
+                    foreach (var condition in _activeUserFilter.Conditions)
+                    {
+                        bool conditionResult = EvaluateCondition(activity, condition);
+                        if (result == null)
+                            result = conditionResult;
+                        else if (condition.LogicOperator == "OR")
+                            result = result.Value || conditionResult;
+                        else
+                            result = result.Value && conditionResult;
+                    }
+                    if (result == false)
+                        return false;
+                }
+
+                return true;
+            };
+
+            sfActivities.View.RefreshFilter();
+            _viewModel.FilteredCount = sfActivities.View.Records.Count;
+            UpdateRecordCount();
+            UpdateSummaryPanel();
+        }
+
         // Helper method: Get all users from database
         private List<User> GetAllUsers()
         {

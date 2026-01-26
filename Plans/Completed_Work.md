@@ -69,6 +69,14 @@ This document tracks completed features and fixes. Items are moved here from Pro
   - Added column resizing (AllowResizingColumns)
   - Added persistence for dialog size and column widths to UserSettings
 
+- **Progress Grid - Global Search:**
+  - Added pill-shaped search box in toolbar (left of REFRESH button)
+  - Searches across commonly-used columns: ActivityID, Description, WorkPackage, PhaseCode, CompType, Area, RespParty, AssignedTo, Notes, TagNO, UniqueID, DwgNO, LineNumber, SchedActNO
+  - Case-insensitive, filters on each keystroke
+  - X button clears search
+  - Combines with existing filters (Today, User Defined, column filters)
+  - Clear Filters button also clears search text
+
 ---
 
 ### January 24, 2026

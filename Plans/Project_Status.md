@@ -136,12 +136,12 @@
 ### Syncfusion Features to Evaluate (see Plans/Syncfusion_Features_Reference.md)
 
 **UX Improvements:**
-| Feature | Description |
-|---------|-------------|
-| Filter Row | Persistent filter row at grid top for quick text filtering |
-| Column Chooser | Built-in UI for show/hide columns (vs current Columns button) |
-| Stacked Headers | Multi-row headers to group related columns (e.g., "Dates" spanning SchStart/SchFinish) |
-| IEditableObject Rollback | ESC key reverts cell edits automatically |
+| Feature | Description | Status |
+|---------|-------------|--------|
+| Column Chooser | Built-in UI for show/hide columns (vs current Columns button) | Not Started |
+| Stacked Headers | Multi-row headers to group related columns (e.g., "Dates" spanning SchStart/SchFinish) | Not Started |
+| IEditableObject Rollback | ESC key reverts cell edits automatically | Already works |
+| Filter Row | Persistent filter row at grid top | Not needed - Global Search implemented instead |
 
 **Data Features:**
 | Feature | Description |
@@ -151,10 +151,7 @@
 | Checkbox Selection | Bulk select for multi-record operations |
 
 **Export/Print:**
-| Feature | Description |
-|---------|-------------|
-| ExportToPdf | Generate progress reports directly from grid with formatting |
-| Printing | Direct print capability with headers on each page |
+Attempted but removed due to Syncfusion printing issues (null reference errors, slow performance with large datasets). Users can use Progress Books for PDF generation.
 
 **Visualization (New Capabilities):**
 | Feature | Description |

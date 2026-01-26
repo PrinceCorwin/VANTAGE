@@ -416,10 +416,56 @@
                     </Grid.ColumnDefinitions>
 
                     <!-- LEFT SIDE: Refresh and Custom Percent Buttons -->
-                    <StackPanel Grid.Column="0" 
-                                Orientation="Horizontal" 
+                    <StackPanel Grid.Column="0"
+                                Orientation="Horizontal"
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Center">
+
+                        <!-- Global Search Box -->
+                        <Border Background="{StaticResource ControlBackground}"
+                                BorderBrush="{StaticResource ControlBorder}"
+                                BorderThickness="1"
+                                CornerRadius="15"
+                                Margin="15,0,5,0"
+                                Padding="4,2">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0"
+                                           Text="🔍"
+                                           FontSize="12"
+                                           VerticalAlignment="Center"
+                                           Margin="4,0,4,0"
+                                           Foreground="{StaticResource TextColorSecondary}"/>
+                                <TextBox x:Name="txtGlobalSearch"
+                                         Grid.Column="1"
+                                         Width="140"
+                                         Background="Transparent"
+                                         BorderThickness="0"
+                                         Foreground="{StaticResource ForegroundColor}"
+                                         CaretBrush="{StaticResource ForegroundColor}"
+                                         VerticalContentAlignment="Center"
+                                         FontSize="12"
+                                         TextChanged="TxtGlobalSearch_TextChanged"
+                                         ToolTip="Search all columns"/>
+                                <Button x:Name="btnClearSearch"
+                                        Grid.Column="2"
+                                        Content="✕"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        Foreground="{StaticResource TextColorSecondary}"
+                                        FontSize="10"
+                                        Padding="4,0"
+                                        VerticalAlignment="Center"
+                                        Cursor="Hand"
+                                        Visibility="Collapsed"
+                                        Click="BtnClearSearch_Click"
+                                        ToolTip="Clear search"/>
+                            </Grid>
+                        </Border>
 
                         <Button x:Name="btnRefresh"
                                 Content="REFRESH"

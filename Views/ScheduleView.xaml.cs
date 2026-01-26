@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
+using Syncfusion.UI.Xaml.Grid;
 using VANTAGE.Models;
 using VANTAGE.Repositories;
 using VANTAGE.Utilities;
