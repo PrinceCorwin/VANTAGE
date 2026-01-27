@@ -19,6 +19,7 @@ namespace VANTAGE.Models.AI
         public decimal? ExtractedPct { get; set; }
         public int Confidence { get; set; }
         public string? RawExtraction { get; set; }
+        public string? OcrWarning { get; set; }  // Warning from OCR substitution (e.g., '0' ? '10')
 
         // From database match (read-only)
         public Activity? MatchedRecord { get; set; }

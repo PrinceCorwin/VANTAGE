@@ -314,9 +314,9 @@ namespace VANTAGE.Dialogs
                 {
                     ExtractedUniqueId = extraction.UniqueId,
                     ExtractedPct = extraction.Pct,
-                    Confidence = extraction.Confidence
+                    Confidence = extraction.Confidence,
+                    OcrWarning = extraction.Warning
                 };
-
                 // Try to match to database by ActivityID (parse extracted string to int)
                 if (int.TryParse(extraction.UniqueId, out int activityId) &&
                     activityDict.TryGetValue(activityId, out var activity))
@@ -326,16 +326,13 @@ namespace VANTAGE.Dialogs
                     reviewItem.Description = activity.Description;
                     reviewItem.CurrentPercent = (decimal)activity.PercentEntry;
                     reviewItem.BudgetMHs = activity.BudgetMHs.ToString("N2");
-
                     // Set new percent from extraction
                     if (extraction.Pct.HasValue)
                     {
                         reviewItem.NewPercent = extraction.Pct;
                     }
-
                     // Validate
                     ValidateReviewItem(reviewItem);
-
                     if (reviewItem.Status == ScanMatchStatus.Ready || reviewItem.Status == ScanMatchStatus.Warning)
                     {
                         // Auto-select if confidence is high enough
@@ -353,7 +350,6 @@ namespace VANTAGE.Dialogs
                     reviewItem.BudgetMHs = "NOT FOUND";
                     notFoundCount++;
                 }
-
                 _reviewItems.Add(reviewItem);
             }
 
@@ -392,6 +388,12 @@ namespace VANTAGE.Dialogs
             }
 
             var warnings = new List<string>();
+
+            // OCR substitution warning (e.g., '0' → '10' or '00' → '100')
+            if (!string.IsNullOrEmpty(item.OcrWarning))
+            {
+                warnings.Add(item.OcrWarning);
+            }
 
             // Low confidence
             if (item.Confidence < 70)

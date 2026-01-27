@@ -274,6 +274,10 @@ namespace VANTAGE.Services.AI
             string pctText = GetCellText(pctCell, blockMap).Trim();
             float pctConfidence = pctCell.Confidence ?? 0f;
 
+            // Log raw value before any processing
+            AppLogger.Info($"Raw pctText for ActivityID {activityId}: '{pctText}' (confidence: {pctConfidence:F1}%)",
+                "TextractService.ParseDataRow");
+
             // Skip empty entry boxes
             if (string.IsNullOrWhiteSpace(pctText))
             {
@@ -281,7 +285,7 @@ namespace VANTAGE.Services.AI
             }
 
             // Parse percentage value
-            decimal? pctValue = ParsePercentage(pctText);
+            var (pctValue, ocrWarning) = ParsePercentage(pctText);
             if (pctValue == null)
             {
                 return null;
@@ -295,7 +299,8 @@ namespace VANTAGE.Services.AI
                 UniqueId = activityId.ToString(),
                 Pct = pctValue,
                 Confidence = (int)avgConfidence,
-                Raw = $"ID:{idText}, %:{pctText}"
+                Raw = $"ID:{idText}, %:{pctText}",
+                Warning = ocrWarning
             };
         }
 
@@ -332,9 +337,12 @@ namespace VANTAGE.Services.AI
         }
 
         // Parse a percentage value from text with OCR error correction
-        private decimal? ParsePercentage(string text)
+        // Returns (value, warning) tuple - warning is set when substitution was applied
+        private (decimal? Value, string? Warning) ParsePercentage(string text)
         {
-            if (string.IsNullOrWhiteSpace(text)) return null;
+            if (string.IsNullOrWhiteSpace(text)) return (null, null);
+
+            string? warning = null;
 
             // Remove % symbol and whitespace
             text = text.Replace("%", "").Trim();
@@ -350,6 +358,16 @@ namespace VANTAGE.Services.AI
             // Extract digits and decimal point only
             var cleaned = new string(text.Where(c => char.IsDigit(c) || c == '.').ToArray());
 
+            // Heuristic: lone "0" is likely "10" with a missed leading 1
+            // Field workers leave blank for 0%, they don't write "0"
+            if (cleaned == "0")
+            {
+                AppLogger.Info("ParsePercentage: converted '0' to '10' (likely missed leading 1)",
+                    "TextractService.ParsePercentage");
+                cleaned = "10";
+                warning = "OCR read '0' as '10' - verify";
+            }
+
             // Heuristic: "00" is likely "100" with a missed leading 1
             // Nobody writes "00%" - they'd write "0" for zero percent
             if (cleaned == "00")
@@ -357,6 +375,7 @@ namespace VANTAGE.Services.AI
                 AppLogger.Info("ParsePercentage: converted '00' to '100' (likely missed leading 1)",
                     "TextractService.ParsePercentage");
                 cleaned = "100";
+                warning = "OCR read '00' as '100' - verify";
             }
 
             if (decimal.TryParse(cleaned, out decimal value))
@@ -364,13 +383,13 @@ namespace VANTAGE.Services.AI
                 // Validate range (0-100)
                 if (value >= 0 && value <= 100)
                 {
-                    return value;
+                    return (value, warning);
                 }
                 AppLogger.Warning($"ParsePercentage: value {value} outside 0-100 range",
                     "TextractService.ParsePercentage");
             }
 
-            return null;
+            return (null, null);
         }
 
         public void Dispose()

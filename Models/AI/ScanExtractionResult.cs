@@ -1,4 +1,4 @@
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace VANTAGE.Models.AI
 {
@@ -16,5 +16,8 @@ namespace VANTAGE.Models.AI
 
         [JsonPropertyName("raw")]
         public string? Raw { get; set; }
+
+        // Warning message when OCR substitution was applied (e.g., '0' → '10')
+        public string? Warning { get; set; }
     }
 }
