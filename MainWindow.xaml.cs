@@ -24,6 +24,8 @@ namespace VANTAGE
         public MainWindow()
         {
             InitializeComponent();
+            // Enable horizontal scroll wheel support (MX Master, etc.)
+            HorizontalScrollBehavior.EnableForWindow(this);
 
             InitializeSidePanel();
 
