@@ -87,6 +87,14 @@ namespace VANTAGE.Utilities
                 "LookUP_ROC_ID"
             };
 
+            // Columns to ignore during import (exist in legacy exports but not yet in Milestone)
+            // TODO V2: Add ClientEarnedEquivQty column to Activities table and ColumnMappings
+            var ignoredColumns = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "VAL_Client_Earned_EQ-QTY",  // Legacy OldVantage column - not used yet
+                "ClientEarnedEquivQty"       // Potential NewVantage name for future use
+            };
+
             for (int colNum = 1; colNum <= headerRow.LastCellUsed()?.Address.ColumnNumber; colNum++)
             {
                 var cell = headerRow.Cell(colNum);
@@ -103,6 +111,10 @@ namespace VANTAGE.Utilities
 
                 // Skip calculated fields
                 if (calculatedFields.Contains(propertyName))
+                    continue;
+
+                // Skip ignored columns (exist in legacy but not yet in Milestone)
+                if (ignoredColumns.Contains(header) || ignoredColumns.Contains(propertyName))
                     continue;
 
                 // Check if property exists on Activity class

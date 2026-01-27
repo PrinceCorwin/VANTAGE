@@ -107,7 +107,7 @@ namespace VANTAGE.Diagnostics
                             COUNT(DISTINCT WeekEndDate) as UniqueWeekEndDates,
                             COUNT(DISTINCT ProjectID) as UniqueProjectIDs,
                             COUNT(DISTINCT SchedActNO) as UniqueSchedActNOs
-                        FROM ProgressSnapshots";
+                        FROM VMS_ProgressSnapshots";
 
                     using (var snapReader = snapCmd.ExecuteReader())
                     {
@@ -122,7 +122,7 @@ namespace VANTAGE.Diagnostics
 
                     // Query 2: Distinct WeekEndDates
                     var datesCmd = azureConn.CreateCommand();
-                    datesCmd.CommandText = "SELECT DISTINCT WeekEndDate FROM ProgressSnapshots ORDER BY WeekEndDate";
+                    datesCmd.CommandText = "SELECT DISTINCT WeekEndDate FROM VMS_ProgressSnapshots ORDER BY WeekEndDate";
                     var weekEndDates = new List<string>();
                     using (var datesReader = datesCmd.ExecuteReader())
                     {
@@ -144,7 +144,7 @@ namespace VANTAGE.Diagnostics
 
                     // Query 3: Distinct ProjectIDs
                     var projectsCmd = azureConn.CreateCommand();
-                    projectsCmd.CommandText = "SELECT DISTINCT ProjectID FROM ProgressSnapshots ORDER BY ProjectID";
+                    projectsCmd.CommandText = "SELECT DISTINCT ProjectID FROM VMS_ProgressSnapshots ORDER BY ProjectID";
                     var projectIds = new List<string>();
                     using (var projectsReader = projectsCmd.ExecuteReader())
                     {
@@ -162,7 +162,7 @@ namespace VANTAGE.Diagnostics
 
                     // Query 4: Sample SchedActNOs
                     var actnoCmd = azureConn.CreateCommand();
-                    actnoCmd.CommandText = "SELECT TOP 5 SchedActNO FROM ProgressSnapshots WHERE SchedActNO IS NOT NULL AND SchedActNO != ''";
+                    actnoCmd.CommandText = "SELECT TOP 5 SchedActNO FROM VMS_ProgressSnapshots WHERE SchedActNO IS NOT NULL AND SchedActNO != ''";
                     var sampleActNos = new List<string>();
                     using (var actnoReader = actnoCmd.ExecuteReader())
                     {
@@ -234,7 +234,7 @@ namespace VANTAGE.Diagnostics
                             var checkCmd = azureConn2.CreateCommand();
                             checkCmd.CommandText = $@"
                                 SELECT COUNT(*) 
-                                FROM ProgressSnapshots 
+                                FROM VMS_ProgressSnapshots 
                                 WHERE WeekEndDate = @weekEndDate
                                   AND ProjectID IN ({string.Join(",", projectIds.Select((p, i) => $"@p{i}"))})
                                   AND SchedActNO IS NOT NULL 

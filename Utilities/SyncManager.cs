@@ -190,7 +190,7 @@ namespace VANTAGE.Utilities
                 var checkCmd = azureConn.CreateCommand();
                 checkCmd.CommandText = @"
                     SELECT a.[UniqueID] 
-                    FROM Activities a 
+                    FROM VMS_Activities a 
                     INNER JOIN #SyncBatch s ON a.[UniqueID] = s.[UniqueID]";
 
                 using (var reader = checkCmd.ExecuteReader())
@@ -221,7 +221,7 @@ namespace VANTAGE.Utilities
                     var ownerCheckCmd = azureConn.CreateCommand();
                     ownerCheckCmd.CommandText = @"
                         SELECT a.[UniqueID], a.[AssignedTo], a.[IsDeleted] 
-                        FROM Activities a 
+                        FROM VMS_Activities a 
                         INNER JOIN #SyncBatch s ON a.[UniqueID] = s.[UniqueID]";
 
                     using (var ownerReader = ownerCheckCmd.ExecuteReader())
@@ -298,7 +298,7 @@ namespace VANTAGE.Utilities
                         updateFromStagingCmd.CommandText = $@"
                     UPDATE a
                     SET {setClause}
-                    FROM Activities a
+                    FROM VMS_Activities a
                     INNER JOIN #UpdateStaging s ON a.[UniqueID] = s.[UniqueID]";
                         int updatedCount = updateFromStagingCmd.ExecuteNonQuery();
 
@@ -316,7 +316,7 @@ namespace VANTAGE.Utilities
                 {
                     // Disable the trigger for bulk insert performance
                     var disableTriggerCmd = azureConn.CreateCommand();
-                    disableTriggerCmd.CommandText = "DISABLE TRIGGER TR_Activities_SyncVersion ON Activities";
+                    disableTriggerCmd.CommandText = "DISABLE TRIGGER TR_VMS_Activities_SyncVersion ON VMS_Activities";
                     disableTriggerCmd.ExecuteNonQuery();
 
                     try
@@ -337,8 +337,8 @@ namespace VANTAGE.Utilities
                         long startVersion;
                         var reserveCmd = azureConn.CreateCommand();
                         reserveCmd.CommandText = @"
-                    UPDATE GlobalSyncVersion 
-                    SET CurrentVersion = CurrentVersion + @count 
+                    UPDATE VMS_GlobalSyncVersion
+                    SET CurrentVersion = CurrentVersion + @count
                     OUTPUT INSERTED.CurrentVersion - @count + 1";
                         reserveCmd.Parameters.AddWithValue("@count", toInsert.Count);
                         startVersion = Convert.ToInt64(reserveCmd.ExecuteScalar());
@@ -366,7 +366,7 @@ namespace VANTAGE.Utilities
                         // Bulk insert
                         using (var bulkCopy = new SqlBulkCopy(azureConn))
                         {
-                            bulkCopy.DestinationTableName = "Activities";
+                            bulkCopy.DestinationTableName = "VMS_Activities";
                             bulkCopy.BatchSize = 5000;
                             bulkCopy.BulkCopyTimeout = 120;
 
@@ -389,7 +389,7 @@ namespace VANTAGE.Utilities
                     {
                         // Re-enable the trigger
                         var enableTriggerCmd = azureConn.CreateCommand();
-                        enableTriggerCmd.CommandText = "ENABLE TRIGGER TR_Activities_SyncVersion ON Activities";
+                        enableTriggerCmd.CommandText = "ENABLE TRIGGER TR_VMS_Activities_SyncVersion ON VMS_Activities";
                         enableTriggerCmd.ExecuteNonQuery();
                     }
                 }
@@ -426,7 +426,7 @@ namespace VANTAGE.Utilities
                     var getVersionsCmd = azureConn.CreateCommand();
                     getVersionsCmd.CommandText = @"
                 SELECT a.[UniqueID], a.[SyncVersion], a.[ActivityID] 
-                FROM Activities a 
+                FROM VMS_Activities a 
                 INNER JOIN #SyncBatch s ON a.[UniqueID] = s.[UniqueID]";
 
                     using (var versionReader = getVersionsCmd.ExecuteReader())
@@ -523,7 +523,7 @@ namespace VANTAGE.Utilities
                         // Force-pull using JOIN
                         var forcePullCmd = azureConn.CreateCommand();
                         forcePullCmd.CommandText = @"
-                    SELECT a.* FROM Activities a 
+                    SELECT a.* FROM VMS_Activities a 
                     INNER JOIN #SyncBatch s ON a.[UniqueID] = s.[UniqueID]";
 
                         using var reader = forcePullCmd.ExecuteReader();
@@ -637,8 +637,8 @@ namespace VANTAGE.Utilities
 
                     // Build query with optional owner filter
                     var sql = @"
-                            SELECT * FROM Activities 
-                            WHERE [ProjectID] = @projectId 
+                            SELECT * FROM VMS_Activities
+                            WHERE [ProjectID] = @projectId
                               AND [SyncVersion] > @lastVersion";
 
                     if (!string.IsNullOrEmpty(ownerFilter))
@@ -755,7 +755,7 @@ namespace VANTAGE.Utilities
 
                     // Update LastPulledSyncVersion to Azure's max for this project
                     var maxVersionCmd = azureConn.CreateCommand();
-                    maxVersionCmd.CommandText = "SELECT ISNULL(MAX(SyncVersion), 0) FROM Activities WHERE [ProjectID] = @projectId";
+                    maxVersionCmd.CommandText = "SELECT ISNULL(MAX(SyncVersion), 0) FROM VMS_Activities WHERE [ProjectID] = @projectId";
                     maxVersionCmd.Parameters.AddWithValue("@projectId", projectId);
                     long azureMaxVersion = Convert.ToInt64(maxVersionCmd.ExecuteScalar());
 

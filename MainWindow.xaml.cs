@@ -958,7 +958,7 @@ namespace VANTAGE
                 using var azureConn = AzureDbManager.GetConnection();
                 azureConn.Open();
                 var adminCmd = azureConn.CreateCommand();
-                adminCmd.CommandText = "SELECT Username FROM Admins";
+                adminCmd.CommandText = "SELECT Username FROM VMS_Admins";
                 using var adminReader = adminCmd.ExecuteReader();
                 while (adminReader.Read())
                 {
@@ -1037,7 +1037,7 @@ namespace VANTAGE
                             if (isCurrentlyAdmin)
                             {
                                 // Remove from Admins table
-                                toggleCmd.CommandText = "DELETE FROM Admins WHERE Username = @username";
+                                toggleCmd.CommandText = "DELETE FROM VMS_Admins WHERE Username = @username";
                                 toggleCmd.Parameters.AddWithValue("@username", selectedUser.Username);
                                 toggleCmd.ExecuteNonQuery();
                                 MessageBox.Show($"Admin revoked from {selectedUser.Username}", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -1045,7 +1045,7 @@ namespace VANTAGE
                             else
                             {
                                 // Add to Admins table
-                                toggleCmd.CommandText = "INSERT INTO Admins (Username, FullName) VALUES (@username, @fullname)";
+                                toggleCmd.CommandText = "INSERT INTO VMS_Admins (Username, FullName) VALUES (@username, @fullname)";
                                 toggleCmd.Parameters.AddWithValue("@username", selectedUser.Username);
                                 toggleCmd.Parameters.AddWithValue("@fullname", selectedUser.FullName);
                                 toggleCmd.ExecuteNonQuery();
@@ -1283,7 +1283,7 @@ namespace VANTAGE
 
                 // Check if current user is admin
                 var checkCmd = azureConn.CreateCommand();
-                checkCmd.CommandText = "SELECT COUNT(*) FROM Admins WHERE Username = @username";
+                checkCmd.CommandText = "SELECT COUNT(*) FROM VMS_Admins WHERE Username = @username";
                 checkCmd.Parameters.AddWithValue("@username", App.CurrentUser.Username);
                 bool isAdmin = Convert.ToInt32(checkCmd.ExecuteScalar()) > 0;
 
@@ -1291,7 +1291,7 @@ namespace VANTAGE
                 {
                     // Remove from Admins
                     var deleteCmd = azureConn.CreateCommand();
-                    deleteCmd.CommandText = "DELETE FROM Admins WHERE Username = @username";
+                    deleteCmd.CommandText = "DELETE FROM VMS_Admins WHERE Username = @username";
                     deleteCmd.Parameters.AddWithValue("@username", App.CurrentUser.Username);
                     deleteCmd.ExecuteNonQuery();
 
@@ -1303,7 +1303,7 @@ namespace VANTAGE
                 {
                     // Add to Admins
                     var insertCmd = azureConn.CreateCommand();
-                    insertCmd.CommandText = "INSERT INTO Admins (Username, FullName) VALUES (@username, @fullname)";
+                    insertCmd.CommandText = "INSERT INTO VMS_Admins (Username, FullName) VALUES (@username, @fullname)";
                     insertCmd.Parameters.AddWithValue("@username", App.CurrentUser.Username);
                     insertCmd.Parameters.AddWithValue("@fullname", App.CurrentUser.FullName ?? "");
                     insertCmd.ExecuteNonQuery();
@@ -1523,7 +1523,7 @@ namespace VANTAGE
 
                     // Get count first
                     using var countCmd = azureConn.CreateCommand();
-                    countCmd.CommandText = "SELECT COUNT(*) FROM Activities";
+                    countCmd.CommandText = "SELECT COUNT(*) FROM VMS_Activities";
                     countCmd.CommandTimeout = 120;
                     totalCount = Convert.ToInt32(countCmd.ExecuteScalar() ?? 0);
 
@@ -1532,7 +1532,7 @@ namespace VANTAGE
                     do
                     {
                         using var deleteCmd = azureConn.CreateCommand();
-                        deleteCmd.CommandText = $"DELETE TOP ({batchSize}) FROM Activities";
+                        deleteCmd.CommandText = $"DELETE TOP ({batchSize}) FROM VMS_Activities";
                         deleteCmd.CommandTimeout = 300;
                         batchDeleted = deleteCmd.ExecuteNonQuery();
                         deletedCount += batchDeleted;

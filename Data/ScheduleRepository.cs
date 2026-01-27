@@ -186,21 +186,21 @@ namespace VANTAGE.Repositories
                 // Calculate weighted average directly in SQL (stays in 0-100 scale)
                 // MS_ActualFinish only populated if ALL activities have a finish date
                 cmd.CommandText = $@"
-            SELECT 
+            SELECT
                 SchedActNO,
                 MIN(SchStart) as MS_ActualStart,
-                CASE 
-                    WHEN COUNT(*) = COUNT(SchFinish) 
+                CASE
+                    WHEN COUNT(*) = COUNT(SchFinish)
                     THEN MAX(SchFinish)
-                    ELSE NULL 
+                    ELSE NULL
                 END as MS_ActualFinish,
-                CASE 
-                    WHEN SUM(BudgetMHs) > 0 
+                CASE
+                    WHEN SUM(BudgetMHs) > 0
                     THEN SUM(BudgetMHs * PercentEntry) / SUM(BudgetMHs)
-                    ELSE 0 
+                    ELSE 0
                 END as MS_PercentComplete,
                 SUM(BudgetMHs) as MS_BudgetMHs
-            FROM ProgressSnapshots
+            FROM VMS_ProgressSnapshots
             WHERE WeekEndDate = @weekEndDate
               AND ProjectID IN ({projectIdList})
               AND AssignedTo = @username
@@ -274,7 +274,7 @@ namespace VANTAGE.Repositories
                         var azureCmd = azureConn.CreateCommand();
                         azureCmd.CommandText = $@"
                     SELECT DISTINCT SchedActNO
-                    FROM ProgressSnapshots
+                    FROM VMS_ProgressSnapshots
                     WHERE WeekEndDate = @weekEndDate
                       AND ProjectID IN ({projectIdList})
                       AND AssignedTo = @username";
@@ -365,11 +365,11 @@ namespace VANTAGE.Repositories
 
                     var azureCmd = azureConn.CreateCommand();
                     azureCmd.CommandText = $@"
-                SELECT DISTINCT SchedActNO 
-                FROM ProgressSnapshots 
-                WHERE WeekEndDate = @weekEndDate 
+                SELECT DISTINCT SchedActNO
+                FROM VMS_ProgressSnapshots
+                WHERE WeekEndDate = @weekEndDate
                   AND ProjectID IN ({projectIdList})
-                  AND SchedActNO IS NOT NULL 
+                  AND SchedActNO IS NOT NULL
                   AND SchedActNO <> ''";
                     azureCmd.Parameters.AddWithValue("@weekEndDate", weekEndDate.ToString("yyyy-MM-dd"));
 
@@ -583,11 +583,11 @@ namespace VANTAGE.Repositories
 
                 var cmd = azureConn.CreateCommand();
                 cmd.CommandText = $@"
-            SELECT DISTINCT SchedActNO 
-            FROM ProgressSnapshots 
-            WHERE WeekEndDate = @weekEndDate 
+            SELECT DISTINCT SchedActNO
+            FROM VMS_ProgressSnapshots
+            WHERE WeekEndDate = @weekEndDate
               AND ProjectID IN ({projectIdList})
-              AND SchedActNO IS NOT NULL 
+              AND SchedActNO IS NOT NULL
               AND SchedActNO <> ''";
                 cmd.Parameters.AddWithValue("@weekEndDate", weekEndDate.ToString("yyyy-MM-dd"));
 
@@ -875,11 +875,11 @@ namespace VANTAGE.Repositories
 
                     var cmd = azureConn.CreateCommand();
                     cmd.CommandText = $@"
-                            SELECT 
-                                UniqueID, WeekEndDate, SchedActNO, Description, 
+                            SELECT
+                                UniqueID, WeekEndDate, SchedActNO, Description,
                                 PercentEntry, BudgetMHs, SchStart, SchFinish,
                                 AssignedTo, ProjectID, UpdatedBy, UpdatedUtcDate
-                            FROM ProgressSnapshots
+                            FROM VMS_ProgressSnapshots
                             WHERE SchedActNO = @schedActNO
                               AND WeekEndDate = @weekEndDate
                               AND ProjectID IN ({projectIdList})

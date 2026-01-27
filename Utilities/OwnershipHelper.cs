@@ -80,7 +80,7 @@ namespace VANTAGE.Utilities
                 checkCmd.CommandText = @"
                     SELECT DISTINCT s.SchedActNO, a.AssignedTo
                     FROM #SchedCheck s
-                    INNER JOIN Activities a ON a.SchedActNO = s.SchedActNO
+                    INNER JOIN VMS_Activities a ON a.SchedActNO = s.SchedActNO
                     WHERE a.ProjectID = @projectId
                       AND a.AssignedTo != @username
                       AND a.AssignedTo IS NOT NULL
@@ -182,7 +182,7 @@ namespace VANTAGE.Utilities
                     // Delete existing records on Azure for these UniqueIDs
                     var deleteCmd = azureConn.CreateCommand();
                     deleteCmd.CommandText = @"
-                        DELETE FROM Activities 
+                        DELETE FROM VMS_Activities
                         WHERE UniqueID IN (SELECT UniqueID FROM #ReassignBatch)";
                     deleteCmd.ExecuteNonQuery();
 

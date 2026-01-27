@@ -87,7 +87,7 @@ namespace VANTAGE.Views
                 foreach (var activity in selected)
                 {
                     var checkCmd = azureConn.CreateCommand();
-                    checkCmd.CommandText = "SELECT AssignedTo FROM Activities WHERE UniqueID = @id";
+                    checkCmd.CommandText = "SELECT AssignedTo FROM VMS_Activities WHERE UniqueID = @id";
                     checkCmd.Parameters.AddWithValue("@id", activity.UniqueID);
                     var azureOwner = checkCmd.ExecuteScalar()?.ToString();
 
@@ -144,10 +144,10 @@ namespace VANTAGE.Views
                 // Set IsDeleted=1 in Azure (SyncVersion auto-increments via trigger)
                 var deleteAzureCmd = azureConn.CreateCommand();
                 deleteAzureCmd.CommandText = $@"
-                        UPDATE Activities 
-                        SET IsDeleted = 1, 
-                            UpdatedBy = @user, 
-                            UpdatedUtcDate = @date 
+                        UPDATE VMS_Activities
+                        SET IsDeleted = 1,
+                            UpdatedBy = @user,
+                            UpdatedUtcDate = @date
                         WHERE UniqueID IN ({uniqueIdList})";
                 deleteAzureCmd.Parameters.AddWithValue("@user", currentUser?.Username ?? "Unknown");
                 deleteAzureCmd.Parameters.AddWithValue("@date", DateTime.UtcNow.ToString("o"));
@@ -2502,10 +2502,10 @@ namespace VANTAGE.Views
 
                     var checkCmd = azureConn.CreateCommand();
                     checkCmd.CommandText = @"
-                SELECT TOP 1 ExportedBy 
-                FROM ProgressSnapshots 
-                WHERE AssignedTo = @username 
-                  AND ProjectID = @projectId 
+                SELECT TOP 1 ExportedBy
+                FROM VMS_ProgressSnapshots
+                WHERE AssignedTo = @username
+                  AND ProjectID = @projectId
                   AND WeekEndDate = @weekEndDate";
                     checkCmd.Parameters.AddWithValue("@username", App.CurrentUser!.Username);
                     checkCmd.Parameters.AddWithValue("@projectId", selectedProject);
@@ -2553,10 +2553,10 @@ namespace VANTAGE.Views
 
                         var countCmd = azureConn.CreateCommand();
                         countCmd.CommandText = @"
-                    SELECT COUNT(*) 
-                    FROM ProgressSnapshots 
-                    WHERE AssignedTo = @username 
-                      AND ProjectID = @projectId 
+                    SELECT COUNT(*)
+                    FROM VMS_ProgressSnapshots
+                    WHERE AssignedTo = @username
+                      AND ProjectID = @projectId
                       AND WeekEndDate = @weekEndDate";
                         countCmd.Parameters.AddWithValue("@username", App.CurrentUser!.Username);
                         countCmd.Parameters.AddWithValue("@projectId", selectedProject);
@@ -2616,9 +2616,9 @@ namespace VANTAGE.Views
 
                             var deleteCmd = deleteConn.CreateCommand();
                             deleteCmd.CommandText = @"
-                        DELETE FROM ProgressSnapshots 
-                        WHERE AssignedTo = @username 
-                          AND ProjectID = @projectId 
+                        DELETE FROM VMS_ProgressSnapshots
+                        WHERE AssignedTo = @username
+                          AND ProjectID = @projectId
                           AND WeekEndDate = @weekEndDate";
                             deleteCmd.Parameters.AddWithValue("@username", currentUser);
                             deleteCmd.Parameters.AddWithValue("@projectId", selectedProject);
@@ -2639,9 +2639,9 @@ namespace VANTAGE.Views
                             var conflictCheck = azureConn.CreateCommand();
                             conflictCheck.CommandText = @"
                         SELECT ps.AssignedTo as OriginalSubmitter, COUNT(*) as RecordCount
-                        FROM Activities a
-                        INNER JOIN ProgressSnapshots ps ON ps.UniqueID = a.UniqueID AND ps.WeekEndDate = @weekEndDate
-                        WHERE a.AssignedTo = @username 
+                        FROM VMS_Activities a
+                        INNER JOIN VMS_ProgressSnapshots ps ON ps.UniqueID = a.UniqueID AND ps.WeekEndDate = @weekEndDate
+                        WHERE a.AssignedTo = @username
                           AND a.ProjectID = @projectId
                           AND a.IsDeleted = 0
                           AND ps.AssignedTo <> @username
@@ -2693,7 +2693,7 @@ namespace VANTAGE.Views
 
                             var insertCmd = azureConn.CreateCommand();
                             insertCmd.CommandText = @"
-                        INSERT INTO ProgressSnapshots (
+                        INSERT INTO VMS_ProgressSnapshots (
                             UniqueID, WeekEndDate, Area, AssignedTo, AzureUploadUtcDate,
                             Aux1, Aux2, Aux3, BaseUnit, BudgetHoursGroup, BudgetHoursROC, BudgetMHs,
                             ChgOrdNO, ClientBudget, ClientCustom3, ClientEquivQty, CompType, CreatedBy,
@@ -2722,13 +2722,13 @@ namespace VANTAGE.Views
                             UDF1, UDF2, UDF3, UDF4, UDF5, UDF6, UDF7, UDF8, UDF9, UDF10,
                             UDF11, UDF12, UDF13, UDF14, UDF15, UDF16, UDF17, RespParty, UDF20,
                             UpdatedBy, UpdatedUtcDate, UOM, WorkPackage, XRay, NULL, NULL
-                        FROM Activities a
-                        WHERE AssignedTo = @username 
+                        FROM VMS_Activities a
+                        WHERE AssignedTo = @username
                           AND ProjectID = @projectId
                           AND IsDeleted = 0
                           AND NOT EXISTS (
-                              SELECT 1 FROM ProgressSnapshots ps 
-                              WHERE ps.UniqueID = a.UniqueID 
+                              SELECT 1 FROM VMS_ProgressSnapshots ps
+                              WHERE ps.UniqueID = a.UniqueID
                                 AND ps.WeekEndDate = @weekEndDate
                           )";
                             insertCmd.Parameters.AddWithValue("@weekEndDate", weekEndDateStr);
@@ -2743,7 +2743,7 @@ namespace VANTAGE.Views
 
                             var purgeCmd = azureConn.CreateCommand();
                             purgeCmd.CommandText = @"
-                                DELETE FROM ProgressSnapshots 
+                                DELETE FROM VMS_ProgressSnapshots
                                 WHERE WeekEndDate < @cutoffDate";
                             purgeCmd.Parameters.AddWithValue("@cutoffDate", DateTime.Now.AddDays(-28).ToString("yyyy-MM-dd"));
 
@@ -4298,8 +4298,8 @@ namespace VANTAGE.Views
                         var ownershipMap = new Dictionary<string, string>();
                         var ownerQuery = azureConn.CreateCommand();
                         ownerQuery.CommandText = @"
-            SELECT a.UniqueID, a.AssignedTo 
-            FROM Activities a
+            SELECT a.UniqueID, a.AssignedTo
+            FROM VMS_Activities a
             INNER JOIN #CheckOwnership c ON a.UniqueID = c.UniqueID";
 
                         using (var reader = ownerQuery.ExecuteReader())
@@ -4376,11 +4376,11 @@ namespace VANTAGE.Views
                         var updateCmd = azureConn.CreateCommand();
                         updateCmd.CommandText = @"
             UPDATE a
-            SET AssignedTo = @newOwner, 
-                UpdatedBy = @updatedBy, 
+            SET AssignedTo = @newOwner,
+                UpdatedBy = @updatedBy,
                 UpdatedUtcDate = @updatedDate,
                 SyncVersion = SyncVersion + 1
-            FROM Activities a
+            FROM VMS_Activities a
             INNER JOIN #UpdateBatch b ON a.UniqueID = b.UniqueID";
                         updateCmd.Parameters.AddWithValue("@newOwner", selectedUser);
                         updateCmd.Parameters.AddWithValue("@updatedBy", currentUser);

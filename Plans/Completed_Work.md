@@ -5,6 +5,18 @@ This document tracks completed features and fixes. Items are moved here from Pro
 ---
 
 ### January 26, 2026
+- **Azure Migration to Company Server (summitpc.database.windows.net):**
+  - Migrated from personal Azure subscription to Summit Constructors company Azure
+  - Created 12 VMS_ prefixed tables on company Azure (VMS_Activities, VMS_Users, VMS_Projects, etc.)
+  - Created TR_VMS_Activities_SyncVersion trigger for auto-increment SyncVersion
+  - Migrated data for 5 reference tables: Users, Projects, Admins, ColumnMappings, Managers
+  - Left 7 tables empty for fresh start: Activities, ProgressSnapshots, Schedule, GlobalSyncVersion, Feedback, InMilestoneNotInP6, InP6NotInMilestone
+  - Updated 19 C# files with VMS_ table name prefixes for all Azure queries
+  - DatabaseSetup.MirrorTablesFromAzure() now maps Azure VMS_* tables to local unprefixed tables
+  - Updated Credentials.cs to use company Azure connection string
+  - Added VAL_Client_Earned_EQ-QTY to import ignored columns (V2 data model item)
+  - All tests passed: sync, import, admin dialogs, deleted records restore
+
 - **Progress Grid - Ctrl+ScrollWheel Horizontal Scrolling:**
   - Hold Ctrl and use mouse scroll wheel to scroll the grid horizontally
   - Standard Windows behavior for wide grids with many columns

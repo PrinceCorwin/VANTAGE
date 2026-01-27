@@ -41,7 +41,7 @@ namespace VANTAGE.Dialogs
                     azureConn.Open();
 
                     var cmd = azureConn.CreateCommand();
-                    cmd.CommandText = "SELECT UserID, Username, FullName, Email FROM Users ORDER BY Username";
+                    cmd.CommandText = "SELECT UserID, Username, FullName, Email FROM VMS_Users ORDER BY Username";
 
                     using var reader = cmd.ExecuteReader();
                     while (reader.Read())
@@ -155,7 +155,7 @@ namespace VANTAGE.Dialogs
 
                         var cmd = azureConn.CreateCommand();
                         cmd.CommandText = @"
-                            INSERT INTO Users (Username, FullName, Email)
+                            INSERT INTO VMS_Users (Username, FullName, Email)
                             OUTPUT INSERTED.UserID
                             VALUES (@username, @fullName, @email)";
                         cmd.Parameters.AddWithValue("@username", username);
@@ -191,7 +191,7 @@ namespace VANTAGE.Dialogs
 
                         var cmd = azureConn.CreateCommand();
                         cmd.CommandText = @"
-                            UPDATE Users 
+                            UPDATE VMS_Users
                             SET FullName = @fullName, Email = @email
                             WHERE UserID = @userId";
                         cmd.Parameters.AddWithValue("@fullName", string.IsNullOrEmpty(fullName) ? DBNull.Value : fullName);
@@ -269,13 +269,13 @@ namespace VANTAGE.Dialogs
                     azureConn.Open();
 
                     var cmd = azureConn.CreateCommand();
-                    cmd.CommandText = "DELETE FROM Users WHERE UserID = @userId";
+                    cmd.CommandText = "DELETE FROM VMS_Users WHERE UserID = @userId";
                     cmd.Parameters.AddWithValue("@userId", userId);
                     cmd.ExecuteNonQuery();
 
                     // Also remove from Admins table if present
                     var adminCmd = azureConn.CreateCommand();
-                    adminCmd.CommandText = "DELETE FROM Admins WHERE Username = @username";
+                    adminCmd.CommandText = "DELETE FROM VMS_Admins WHERE Username = @username";
                     adminCmd.Parameters.AddWithValue("@username", username);
                     adminCmd.ExecuteNonQuery();
                 });

@@ -44,7 +44,7 @@ namespace VANTAGE.Utilities
                 connection.Open();
 
                 var cmd = connection.CreateCommand();
-                cmd.CommandText = "SELECT COUNT(*) FROM Admins WHERE Username = @username";
+                cmd.CommandText = "SELECT COUNT(*) FROM VMS_Admins WHERE Username = @username";
                 cmd.Parameters.AddWithValue("@username", username);
 
                 int count = Convert.ToInt32(cmd.ExecuteScalar());
@@ -74,8 +74,8 @@ namespace VANTAGE.Utilities
                 // Join Admins with Users to get email addresses
                 cmd.CommandText = @"
                     SELECT DISTINCT u.Email
-                    FROM Admins a
-                    INNER JOIN Users u ON a.Username = u.Username
+                    FROM VMS_Admins a
+                    INNER JOIN VMS_Users u ON a.Username = u.Username
                     WHERE u.Email IS NOT NULL AND u.Email <> ''";
 
                 await using var reader = await cmd.ExecuteReaderAsync();
@@ -130,7 +130,7 @@ namespace VANTAGE.Utilities
                 cmd.ExecuteScalar();
 
                 // Verify Activities table exists
-                cmd.CommandText = "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'Activities'";
+                cmd.CommandText = "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'VMS_Activities'";
                 var tableExists = Convert.ToInt32(cmd.ExecuteScalar()) > 0;
 
                 if (!tableExists)
@@ -252,8 +252,8 @@ namespace VANTAGE.Utilities
                 using var cmd = connection.CreateCommand();
                 cmd.Transaction = transaction;
                 cmd.CommandText = @"
-                    UPDATE GlobalSyncVersion SET CurrentVersion = CurrentVersion + 1;
-                    SELECT CurrentVersion FROM GlobalSyncVersion;";
+                    UPDATE VMS_GlobalSyncVersion SET CurrentVersion = CurrentVersion + 1;
+                    SELECT CurrentVersion FROM VMS_GlobalSyncVersion;";
 
                 long newVersion = Convert.ToInt64(cmd.ExecuteScalar());
 
@@ -275,7 +275,7 @@ namespace VANTAGE.Utilities
             connection.Open();
 
             using var cmd = connection.CreateCommand();
-            cmd.CommandText = "SELECT CurrentVersion FROM GlobalSyncVersion";
+            cmd.CommandText = "SELECT CurrentVersion FROM VMS_GlobalSyncVersion";
 
             var result = cmd.ExecuteScalar();
             return result != null ? Convert.ToInt64(result) : 0;

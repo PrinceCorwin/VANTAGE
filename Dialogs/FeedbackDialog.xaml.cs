@@ -51,7 +51,7 @@ namespace VANTAGE.Dialogs
 
                     var cmd = azureConn.CreateCommand();
                     cmd.CommandText = @"
-                        DELETE FROM Feedback
+                        DELETE FROM VMS_Feedback
                         WHERE IsDeleted = 1
                           AND UpdatedUtcDate < DATEADD(day, -30, GETUTCDATE())";
 
@@ -90,11 +90,11 @@ namespace VANTAGE.Dialogs
                     cmd.CommandText = includeDeleted
                         ? @"SELECT Id, Type, Title, Description, Status,
                                    CreatedBy, CreatedUtcDate, UpdatedBy, UpdatedUtcDate, IsDeleted
-                            FROM Feedback
+                            FROM VMS_Feedback
                             ORDER BY Id DESC"
                         : @"SELECT Id, Type, Title, Description, Status,
                                    CreatedBy, CreatedUtcDate, UpdatedBy, UpdatedUtcDate, IsDeleted
-                            FROM Feedback
+                            FROM VMS_Feedback
                             WHERE IsDeleted = 0
                             ORDER BY Id DESC";
 
@@ -299,7 +299,7 @@ namespace VANTAGE.Dialogs
 
                         var cmd = azureConn.CreateCommand();
                         cmd.CommandText = @"
-                            INSERT INTO Feedback (Type, Title, Description, Status, CreatedBy, CreatedUtcDate)
+                            INSERT INTO VMS_Feedback (Type, Title, Description, Status, CreatedBy, CreatedUtcDate)
                             OUTPUT INSERTED.Id
                             VALUES (@type, @title, @description, @status, @createdBy, @createdUtcDate)";
                         cmd.Parameters.AddWithValue("@type", type);
@@ -344,7 +344,7 @@ namespace VANTAGE.Dialogs
 
                         var cmd = azureConn.CreateCommand();
                         cmd.CommandText = @"
-                            UPDATE Feedback
+                            UPDATE VMS_Feedback
                             SET Type = @type, Title = @title, Description = @description, Status = @status,
                                 UpdatedBy = @updatedBy, UpdatedUtcDate = @updatedUtcDate
                             WHERE Id = @id";
@@ -594,14 +594,14 @@ namespace VANTAGE.Dialogs
                     if (isPermanentDelete)
                     {
                         // Permanent delete - remove from database
-                        cmd.CommandText = "DELETE FROM Feedback WHERE Id = @id";
+                        cmd.CommandText = "DELETE FROM VMS_Feedback WHERE Id = @id";
                         cmd.Parameters.AddWithValue("@id", feedbackId);
                     }
                     else
                     {
                         // Soft delete - mark as deleted with timestamp
                         cmd.CommandText = @"
-                            UPDATE Feedback
+                            UPDATE VMS_Feedback
                             SET IsDeleted = 1, UpdatedBy = @updatedBy, UpdatedUtcDate = @updatedUtcDate
                             WHERE Id = @id";
                         cmd.Parameters.AddWithValue("@id", feedbackId);

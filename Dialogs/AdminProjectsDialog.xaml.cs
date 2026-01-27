@@ -46,7 +46,7 @@ namespace VANTAGE.Dialogs
                                ClientStreetAddress, ClientCity, ClientState, ClientZipCode,
                                ProjectStreetAddress, ProjectCity, ProjectState, ProjectZipCode,
                                ProjectManager, SiteManager, OM, SM, EN, PM, Phone, Fax
-                        FROM Projects
+                        FROM VMS_Projects
                         ORDER BY ProjectID";
 
                     using var reader = cmd.ExecuteReader();
@@ -231,7 +231,7 @@ namespace VANTAGE.Dialogs
 
                         var cmd = azureConn.CreateCommand();
                         cmd.CommandText = @"
-                            INSERT INTO Projects (ProjectID, Description, ClientName,
+                            INSERT INTO VMS_Projects (ProjectID, Description, ClientName,
                                 ClientStreetAddress, ClientCity, ClientState, ClientZipCode,
                                 ProjectStreetAddress, ProjectCity, ProjectState, ProjectZipCode,
                                 ProjectManager, SiteManager, OM, SM, EN, PM, Phone, Fax)
@@ -263,7 +263,7 @@ namespace VANTAGE.Dialogs
 
                         var cmd = azureConn.CreateCommand();
                         cmd.CommandText = @"
-                            UPDATE Projects SET
+                            UPDATE VMS_Projects SET
                                 Description = @description,
                                 ClientName = @clientName,
                                 Phone = @phone,
@@ -382,7 +382,7 @@ namespace VANTAGE.Dialogs
                     azureConn.Open();
 
                     var cmd = azureConn.CreateCommand();
-                    cmd.CommandText = "DELETE FROM Projects WHERE ProjectID = @projectId";
+                    cmd.CommandText = "DELETE FROM VMS_Projects WHERE ProjectID = @projectId";
                     cmd.Parameters.AddWithValue("@projectId", projectId);
                     cmd.ExecuteNonQuery();
                 });

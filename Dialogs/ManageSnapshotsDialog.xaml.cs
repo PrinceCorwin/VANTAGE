@@ -56,7 +56,7 @@ namespace VANTAGE.Dialogs
                     var cmd = azureConn.CreateCommand();
                     cmd.CommandText = @"
                         SELECT WeekEndDate, COUNT(*) as SnapshotCount
-                        FROM ProgressSnapshots
+                        FROM VMS_ProgressSnapshots
                         WHERE AssignedTo = @username
                         GROUP BY WeekEndDate
                         ORDER BY WeekEndDate DESC";
@@ -167,7 +167,7 @@ namespace VANTAGE.Dialogs
                     {
                         var cmd = azureConn.CreateCommand();
                         cmd.CommandText = @"
-                            DELETE FROM ProgressSnapshots
+                            DELETE FROM VMS_ProgressSnapshots
                             WHERE AssignedTo = @username
                               AND WeekEndDate = @weekEndDate";
                         cmd.Parameters.AddWithValue("@username", App.CurrentUser!.Username);
@@ -452,7 +452,7 @@ namespace VANTAGE.Dialogs
                     // Insert current Activities as backup snapshots
                     var cmd = azureConn.CreateCommand();
                     cmd.CommandText = @"
-                        INSERT INTO ProgressSnapshots (
+                        INSERT INTO VMS_ProgressSnapshots (
                             UniqueID, WeekEndDate, Area, AssignedTo, AzureUploadUtcDate,
                             Aux1, Aux2, Aux3, BaseUnit, BudgetHoursGroup, BudgetHoursROC, BudgetMHs,
                             ChgOrdNO, ClientBudget, ClientCustom3, ClientEquivQty, CompType, CreatedBy,
@@ -481,12 +481,12 @@ namespace VANTAGE.Dialogs
                             UDF1, UDF2, UDF3, UDF4, UDF5, UDF6, UDF7, UDF8, UDF9, UDF10,
                             UDF11, UDF12, UDF13, UDF14, UDF15, UDF16, UDF17, RespParty, UDF20,
                             @updatedBy, @updatedUtcDate, UOM, WorkPackage, XRay
-                        FROM Activities
+                        FROM VMS_Activities
                         WHERE AssignedTo = @username
                           AND IsDeleted = 0
                           AND NOT EXISTS (
-                              SELECT 1 FROM ProgressSnapshots ps
-                              WHERE ps.UniqueID = Activities.UniqueID
+                              SELECT 1 FROM VMS_ProgressSnapshots ps
+                              WHERE ps.UniqueID = VMS_Activities.UniqueID
                                 AND ps.WeekEndDate = @weekEndDate
                           )";
 
@@ -648,7 +648,7 @@ namespace VANTAGE.Dialogs
                         UDF1, UDF2, UDF3, UDF4, UDF5, UDF6, UDF7, UDF8, UDF9, UDF10,
                         UDF11, UDF12, UDF13, UDF14, UDF15, UDF16, UDF17, RespParty, UDF20,
                         UOM, WorkPackage, XRay
-                    FROM ProgressSnapshots
+                    FROM VMS_ProgressSnapshots
                     WHERE AssignedTo = @username
                       AND WeekEndDate = @weekEndDate";
                 cmd.Parameters.AddWithValue("@username", username);

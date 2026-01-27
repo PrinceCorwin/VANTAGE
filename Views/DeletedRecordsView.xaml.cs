@@ -46,7 +46,7 @@ namespace VANTAGE.Views
                 connection.Open();
 
                 var cmd = connection.CreateCommand();
-                cmd.CommandText = "SELECT DISTINCT ProjectID FROM Activities WHERE IsDeleted = 1 ORDER BY ProjectID";
+                cmd.CommandText = "SELECT DISTINCT ProjectID FROM VMS_Activities WHERE IsDeleted = 1 ORDER BY ProjectID";
 
                 _projects = new List<ProjectSelection>();
                 using var reader = cmd.ExecuteReader();
@@ -115,8 +115,8 @@ namespace VANTAGE.Views
                     var projectParams = string.Join(",", selectedProjects.Select((p, i) => $"@p{i}"));
                     var cmd = connection.CreateCommand();
                     cmd.CommandText = $@"
-                SELECT * FROM Activities 
-                WHERE IsDeleted = 1 
+                SELECT * FROM VMS_Activities
+                WHERE IsDeleted = 1
                   AND ProjectID IN ({projectParams})
                 ORDER BY UpdatedUtcDate DESC";
 
@@ -256,10 +256,10 @@ namespace VANTAGE.Views
 
                     var cmd = connection.CreateCommand();
                     cmd.CommandText = $@"
-                UPDATE Activities 
-                SET IsDeleted = 0, 
-                    UpdatedBy = @user, 
-                    UpdatedUtcDate = @date 
+                UPDATE VMS_Activities
+                SET IsDeleted = 0,
+                    UpdatedBy = @user,
+                    UpdatedUtcDate = @date
                 WHERE UniqueID IN ({uniqueIdParams})";
 
                     cmd.Parameters.AddWithValue("@user", username);
@@ -344,8 +344,8 @@ namespace VANTAGE.Views
 
                     var cmd = connection.CreateCommand();
                     cmd.CommandText = $@"
-                DELETE FROM Activities 
-                WHERE UniqueID IN ({uniqueIdParams}) 
+                DELETE FROM VMS_Activities
+                WHERE UniqueID IN ({uniqueIdParams})
                   AND IsDeleted = 1";
 
                     for (int i = 0; i < uniqueIds.Count; i++)

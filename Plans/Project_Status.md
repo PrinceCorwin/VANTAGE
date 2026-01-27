@@ -1,6 +1,6 @@
 # MILESTONE - Project Status
 
-**Last Updated:** January 25, 2026
+**Last Updated:** January 26, 2026
 
 ## V1 Testing Scope
 
@@ -93,8 +93,10 @@
 - User-editable header template for WP (allow customizing header layout)
 - Import/Export WP templates to JSON
 
+### V2 Data Model
+- Add ClientEarnedEquivQty column to Activities table, Azure VMS_Activities, and ColumnMappings (maps to OldVantage `VAL_Client_Earned_EQ-QTY`) - currently ignored during import
+
 ### Infrastructure / Azure Migration
-- Execute VMS_ table creation script on company Azure (see MILESTONE_Azure_Migration_Plan.md)
 - Progress_Log Azure Upload - Admin dialog to append project snapshots to company Azure dbo_VANTAGE_global_ProgressLog (historical by WeekEndDate, schema mapping TBD)
 
 ### AI Features (see InCode_AI_Plan.md)

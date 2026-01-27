@@ -23,12 +23,19 @@ namespace VANTAGE
                 azureConn.Open();
                 localConn.Open();
 
-                // Tables to mirror from Azure
-                string[] metadataTables = { "Users", "Projects", "ColumnMappings", "Managers", "Feedback" };
-
-                foreach (string tableName in metadataTables)
+                // Tables to mirror from Azure (Azure name -> Local name)
+                var tableMappings = new Dictionary<string, string>
                 {
-                    CopyTableDataFromAzure(azureConn, localConn, tableName);
+                    { "VMS_Users", "Users" },
+                    { "VMS_Projects", "Projects" },
+                    { "VMS_ColumnMappings", "ColumnMappings" },
+                    { "VMS_Managers", "Managers" },
+                    { "VMS_Feedback", "Feedback" }
+                };
+
+                foreach (var mapping in tableMappings)
+                {
+                    CopyTableDataFromAzure(azureConn, localConn, mapping.Key, mapping.Value);
                 }
 
                 AppLogger.Info("Mirrored tables from Azure database", "DatabaseSetup.MirrorTablesFromAzure");
@@ -41,16 +48,16 @@ namespace VANTAGE
         }
 
         // Copy table data from Azure SQL to Local SQLite
-        private static void CopyTableDataFromAzure(SqlConnection azureConn, SqliteConnection localConn, string tableName)
+        private static void CopyTableDataFromAzure(SqlConnection azureConn, SqliteConnection localConn, string azureTableName, string localTableName)
         {
             // Clear existing data in local table
             var deleteCmd = localConn.CreateCommand();
-            deleteCmd.CommandText = $"DELETE FROM {tableName}";
+            deleteCmd.CommandText = $"DELETE FROM {localTableName}";
             deleteCmd.ExecuteNonQuery();
 
             // Get all data from Azure
             var selectCmd = azureConn.CreateCommand();
-            selectCmd.CommandText = $"SELECT * FROM {tableName}";
+            selectCmd.CommandText = $"SELECT * FROM {azureTableName}";
 
             using var reader = selectCmd.ExecuteReader();
 
@@ -63,7 +70,7 @@ namespace VANTAGE
 
             string columns = string.Join(", ", columnNames);
             string parameters = string.Join(", ", columnNames.Select(c => "@" + c));
-            string insertSql = $"INSERT INTO {tableName} ({columns}) VALUES ({parameters})";
+            string insertSql = $"INSERT INTO {localTableName} ({columns}) VALUES ({parameters})";
 
             // Copy each row
             int rowCount = 0;
@@ -87,7 +94,7 @@ namespace VANTAGE
                 rowCount++;
             }
 
-            AppLogger.Info($"Copied {rowCount} rows to {tableName}", "DatabaseSetup.CopyTableDataFromAzure");
+            AppLogger.Info($"Copied {rowCount} rows from {azureTableName} to {localTableName}", "DatabaseSetup.CopyTableDataFromAzure");
         }
         public static void InitializeDatabase()
         {

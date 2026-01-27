@@ -41,7 +41,7 @@ namespace VANTAGE.Dialogs
                     var cmd = azureConn.CreateCommand();
                     cmd.CommandText = @"
                         SELECT AssignedTo, ProjectID, WeekEndDate, COUNT(*) as SnapshotCount
-                        FROM ProgressSnapshots
+                        FROM VMS_ProgressSnapshots
                         GROUP BY AssignedTo, ProjectID, WeekEndDate
                         ORDER BY AssignedTo, ProjectID, WeekEndDate DESC";
 
@@ -179,7 +179,7 @@ namespace VANTAGE.Dialogs
                     {
                         var cmd = azureConn.CreateCommand();
                         cmd.CommandText = @"
-                            DELETE FROM ProgressSnapshots
+                            DELETE FROM VMS_ProgressSnapshots
                             WHERE AssignedTo = @username
                               AND ProjectID = @projectId
                               AND WeekEndDate = @weekEndDate";
@@ -250,7 +250,7 @@ namespace VANTAGE.Dialogs
                     azureConn.Open();
 
                     var cmd = azureConn.CreateCommand();
-                    cmd.CommandText = "DELETE FROM ProgressSnapshots";
+                    cmd.CommandText = "DELETE FROM VMS_ProgressSnapshots";
                     return cmd.ExecuteNonQuery();
                 });
 
