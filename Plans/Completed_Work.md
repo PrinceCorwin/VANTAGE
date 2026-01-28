@@ -4,6 +4,15 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ---
 
+### January 28, 2026
+- **Admin Snapshots Dialog - Loading Overlay:**
+  - Added Syncfusion SfBusyIndicator overlay during upload and delete operations
+  - Shows animated double-circle spinner with contextual status message
+  - Messages: "Uploading X snapshot(s) to Progress Log...", "Deleting X snapshot(s)...", "Deleting all X snapshot(s)..."
+  - Semi-transparent dark overlay covers entire dialog during operations
+
+---
+
 ### January 27, 2026
 - **AWS Textract Migration to Company Account:**
   - Migrated AWS Textract service from personal AWS account to Summit Constructors company AWS account

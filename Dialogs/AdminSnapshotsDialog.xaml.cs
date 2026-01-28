@@ -168,11 +168,12 @@ namespace VANTAGE.Dialogs
             if (confirmResult != MessageBoxResult.Yes)
                 return;
 
-            // Disable buttons during upload
+            // Disable buttons and show loading overlay
             btnUploadToProgressLog.IsEnabled = false;
             btnDelete.IsEnabled = false;
             btnDeleteAll.IsEnabled = false;
             btnCancel.IsEnabled = false;
+            ShowOperationLoading($"Uploading {totalSnapshots} snapshot(s) to Progress Log...");
 
             try
             {
@@ -198,6 +199,7 @@ namespace VANTAGE.Dialogs
             }
             finally
             {
+                HideOperationLoading();
                 btnCancel.IsEnabled = true;
                 UpdateSelectionSummary();
             }
@@ -444,6 +446,7 @@ namespace VANTAGE.Dialogs
             btnDelete.IsEnabled = false;
             btnDeleteAll.IsEnabled = false;
             btnCancel.IsEnabled = false;
+            ShowOperationLoading($"Deleting {totalSnapshots} snapshot(s)...");
 
             try
             {
@@ -494,6 +497,7 @@ namespace VANTAGE.Dialogs
             }
             finally
             {
+                HideOperationLoading();
                 btnCancel.IsEnabled = true;
             }
         }
@@ -520,6 +524,7 @@ namespace VANTAGE.Dialogs
             btnDelete.IsEnabled = false;
             btnDeleteAll.IsEnabled = false;
             btnCancel.IsEnabled = false;
+            ShowOperationLoading($"Deleting all {totalSnapshots} snapshot(s)...");
 
             try
             {
@@ -555,8 +560,22 @@ namespace VANTAGE.Dialogs
             }
             finally
             {
+                HideOperationLoading();
                 btnCancel.IsEnabled = true;
             }
+        }
+
+        // Shows the loading overlay with a custom message
+        private void ShowOperationLoading(string message)
+        {
+            txtOperationStatus.Text = message;
+            pnlOperationLoading.Visibility = Visibility.Visible;
+        }
+
+        // Hides the loading overlay
+        private void HideOperationLoading()
+        {
+            pnlOperationLoading.Visibility = Visibility.Collapsed;
         }
 
         private void BtnCancel_Click(object sender, RoutedEventArgs e)
