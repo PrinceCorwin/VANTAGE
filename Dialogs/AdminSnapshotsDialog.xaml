@@ -120,9 +120,21 @@
         </DockPanel>
 
         <!-- Buttons -->
-        <StackPanel Grid.Row="5" 
-                    Orientation="Horizontal" 
+        <StackPanel Grid.Row="5"
+                    Orientation="Horizontal"
                     HorizontalAlignment="Right">
+            <Button x:Name="btnUploadToProgressLog"
+                    Content="Upload to Progress Log"
+                    Width="160"
+                    Height="35"
+                    Margin="0,0,10,0"
+                    Background="{StaticResource ControlBackground}"
+                    Foreground="{StaticResource ForegroundColor}"
+                    BorderBrush="{StaticResource ControlBorder}"
+                    BorderThickness="1"
+                    IsEnabled="False"
+                    ToolTip="Upload selected snapshots to VANTAGE_global_ProgressLog on Azure"
+                    Click="BtnUploadToProgressLog_Click"/>
             <Button x:Name="btnDeleteAll"
                     Content="Delete ALL Snapshots"
                     Width="150"

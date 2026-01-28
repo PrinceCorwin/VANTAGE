@@ -2715,7 +2715,7 @@ namespace VANTAGE.Views
                             DateTrigger, Description, DwgNO, EarnQtyEntry, EarnedMHsRoc, EqmtNO,
                             EquivQTY, EquivUOM, Estimator, HexNO, HtTrace, InsulType, LineNumber,
                             MtrlSpec, Notes, PaintCode, PercentEntry, PhaseCategory, PhaseCode,
-                            PipeGrade, PipeSize1, PipeSize2, PrevEarnMHs, PrevEarnQTY, ProgDate,
+                            PipeGrade, PipeSize1, PipeSize2, PrevEarnMHs, PrevEarnQTY, @progDate,
                             ProjectID, Quantity, RevNO, RFINO, ROCBudgetQTY, ROCID, ROCPercent,
                             ROCStep, SchedActNO, SchFinish, SchStart, SecondActno, SecondDwgNO,
                             Service, ShopField, ShtNO, SubArea, PjtSystem, SystemNO, TagNO,
@@ -2734,6 +2734,7 @@ namespace VANTAGE.Views
                             insertCmd.Parameters.AddWithValue("@weekEndDate", weekEndDateStr);
                             insertCmd.Parameters.AddWithValue("@username", currentUser);
                             insertCmd.Parameters.AddWithValue("@projectId", selectedProject);
+                            insertCmd.Parameters.AddWithValue("@progDate", progDateStr);
 
                             int snapshots = insertCmd.ExecuteNonQuery();
 

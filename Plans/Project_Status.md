@@ -1,6 +1,6 @@
 # MILESTONE - Project Status
 
-**Last Updated:** January 26, 2026
+**Last Updated:** January 27, 2026
 
 ## V1 Testing Scope
 
@@ -97,7 +97,7 @@
 - Add ClientEarnedEquivQty column to Activities table, Azure VMS_Activities, and ColumnMappings (maps to OldVantage `VAL_Client_Earned_EQ-QTY`) - currently ignored during import
 
 ### Infrastructure / Azure Migration
-- Progress_Log Azure Upload - Admin dialog to append project snapshots to company Azure dbo_VANTAGE_global_ProgressLog (historical by WeekEndDate, schema mapping TBD)
+- Progress Log Management Dialog - Admin dialog to view/delete uploads from VANTAGE_global_ProgressLog by Timestamp and Val_TimeStamp combinations
 
 ### AI Features (see InCode_AI_Plan.md)
 | Feature | Status |

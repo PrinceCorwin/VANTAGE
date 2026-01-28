@@ -135,10 +135,10 @@ namespace VANTAGE.Utilities
                 azureConn.Open();
                 localConn.Open();
 
-                // Columns to sync to Azure
+                // Columns to sync to Azure (AzureUploadUtcDate excluded - pull-only field set by admin)
                 var syncColumns = new List<string>
                 {
-                    "Area", "AssignedTo", "AzureUploadUtcDate", "Aux1", "Aux2", "Aux3",
+                    "Area", "AssignedTo", "Aux1", "Aux2", "Aux3",
                     "BaseUnit", "BudgetHoursGroup", "BudgetHoursROC", "BudgetMHs",
                     "ChgOrdNO", "ClientBudget", "ClientCustom3", "ClientEquivQty",
                     "CompType", "CreatedBy", "DateTrigger", "Description", "DwgNO",

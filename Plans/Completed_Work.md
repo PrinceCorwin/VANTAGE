@@ -4,6 +4,35 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ---
 
+### January 27, 2026
+- **AWS Textract Migration to Company Account:**
+  - Migrated AWS Textract service from personal AWS account to Summit Constructors company AWS account
+  - Updated Credentials.cs with company AWS credentials
+
+- **Progress Log Upload Feature (Admin > Manage Snapshots):**
+  - Added "Upload to Progress Log" button to AdminSnapshotsDialog
+  - Uploads selected snapshot groups to VANTAGE_global_ProgressLog table on Azure
+  - Uses VMS_ColumnMappings table for dynamic column mapping (ColumnName → AzureName)
+  - Calculates fields at upload time: Status (from PercentEntry), EarnMHsCalc (BudgetMHs × PercentEntry / 100), ClientEquivEarnQTY
+  - Sets UserID to current admin username, Timestamp to upload time (same for all records in batch)
+  - Updates AzureUploadUtcDate on VMS_Activities for uploaded records (pull-only field)
+  - SqlBulkCopy for efficient bulk transfer
+
+- **AzureUploadUtcDate Pull-Only Field:**
+  - Removed AzureUploadUtcDate from SyncManager push columns
+  - Admin sets value on Azure during upload, users receive on pull but cannot overwrite
+  - Allows users to see when their activities were last uploaded to Progress Log
+
+- **ProgDate Bug Fix in Snapshot Creation:**
+  - Fixed ProgressView.xaml.cs snapshot INSERT to use @progDate parameter instead of copying NULL from Activities
+  - ProgDate now correctly captures submission timestamp in snapshots
+
+- **AssignedTo Import Fix:**
+  - Changed ExcelImporter to always set AssignedTo to currentUser during import
+  - Prevents erroneous file values from assigning records to invalid or other users
+
+---
+
 ### January 26, 2026
 - **Azure Migration to Company Server (summitpc.database.windows.net):**
   - Migrated from personal Azure subscription to Summit Constructors company Azure

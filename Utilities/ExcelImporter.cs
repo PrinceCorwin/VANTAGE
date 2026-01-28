@@ -552,9 +552,7 @@ namespace VANTAGE.Utilities
                     command.Parameters["@PhaseCategory"].Value = activity.PhaseCategory ?? "";
                     command.Parameters["@ROCStep"].Value = activity.ROCStep ?? "";
                     string importingUser = App.CurrentUser?.Username ?? Environment.UserName;
-                    command.Parameters["@AssignedTo"].Value = string.IsNullOrWhiteSpace(activity.AssignedTo)
-                        ? importingUser
-                        : activity.AssignedTo;
+                    command.Parameters["@AssignedTo"].Value = importingUser;
                     string currentUser = App.CurrentUser?.Username ?? Environment.UserName;
                     command.Parameters["@CreatedBy"].Value = currentUser;
                     command.Parameters["@UpdatedBy"].Value = currentUser;
