@@ -5,6 +5,12 @@ This document tracks completed features and fixes. Items are moved here from Pro
 ---
 
 ### January 28, 2026
+- **Schedule Grid - Horizontal Scrolling:**
+  - Added Ctrl+ScrollWheel horizontal scrolling to schedule master grid (matching Progress grid)
+  - Added native horizontal scroll wheel (tilt wheel) support for mice like Logitech MX Master
+  - Direct WM_MOUSEHWHEEL hook on ScheduleView for reliable tilt wheel handling
+  - Improved HorizontalScrollBehavior to find ScrollViewers with actual horizontal content
+
 - **Admin Snapshots Dialog - Loading Overlay:**
   - Added Syncfusion SfBusyIndicator overlay during upload and delete operations
   - Shows animated double-circle spinner with contextual status message

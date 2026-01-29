@@ -32,7 +32,8 @@
       "Bash(do echo \"=== $method ===\")",
       "Bash(for method in \"ShowDeleteConfirmation\" \"GetStringOrEmpty\" \"GetNullableString\" \"GetDoubleOrZero\" \"GetIntOrZero\" \"BuildRestoreUpdateSql\" \"AddRestoreParameters\" \"ShowRevertResultsDialog\")",
       "Bash(for method in \"ApplyFilters\" \"ClearForm\" \"UpdateSelectionSummary\" \"AddConditionRow\" \"LoadFilterIntoEditor\" \"RefreshFilterList\" \"SaveFiltersToSettings\" \"LoadFilters\")",
-      "WebFetch(domain:www.syncfusion.com)"
+      "WebFetch(domain:www.syncfusion.com)",
+      "Bash(findstr:*)"
     ]
   }
 }

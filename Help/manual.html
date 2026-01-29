@@ -299,7 +299,16 @@
                     <li><a href="#pb-applying">Applying Scanned Progress</a></li>
                 </ul>
             </li>
-            <li><a href="#administration">7. Administration</a></li>
+            <li><a href="#administration">7. Administration</a>
+                <ul>
+                    <li><a href="#admin-overview">Overview</a></li>
+                    <li><a href="#admin-user-management">User Management</a></li>
+                    <li><a href="#admin-project-setup">Project Setup</a></li>
+                    <li><a href="#admin-snapshots">Snapshot Management</a></li>
+                    <li><a href="#admin-upload-progress-log">Upload to Progress Log</a></li>
+                    <li><a href="#admin-sync">Database Sync</a></li>
+                </ul>
+            </li>
             <li><a href="#reference">8. Reference</a>
                 <ul>
                     <li><a href="#ref-column-mappings">Column Mappings</a></li>
@@ -397,7 +406,7 @@
         <li><strong>Toggle User Admin</strong> — Grant or revoke admin privileges for any user</li>
         <li><strong>Edit Users</strong> — Manage user accounts and permissions</li>
         <li><strong>Edit Projects</strong> — Configure project settings and metadata</li>
-        <li><strong>Edit Snapshots</strong> — Manage weekly data snapshots across all users</li>
+        <li><strong>Edit Snapshots</strong> — Manage weekly data snapshots across all users, upload to Progress Log</li>
         <li><strong>Deleted Records UI</strong> — View and restore soft-deleted records</li>
     </ul>
 
@@ -1997,17 +2006,74 @@
     <h2 id="administration">7. Administration</h2>
     <!-- ============================================ -->
 
-    <h3>Overview</h3>
-    <p>Administration features are available to users with admin privileges.</p>
+    <h3 id="admin-overview">Overview</h3>
+    <p>Administration features are available to users with admin privileges. Access admin tools from the <strong>Admin</strong> menu in the toolbar. Admins can also use <strong>Toggle User Admin</strong> to grant or revoke admin privileges for other users.</p>
 
-    <h3>User Management</h3>
-    <p>Content coming soon...</p>
+    <h3 id="admin-user-management">User Management (Admin > Edit Users)</h3>
+    <p>Manage user accounts in the system. The dialog displays all users in a list on the left, with a detail form on the right for editing.</p>
+    <ul>
+        <li><strong>Add User</strong> — Enter a username (required), full name, and email, then click Add. Usernames must be unique and cannot be changed after creation.</li>
+        <li><strong>Edit User</strong> — Select a user from the list to populate the form. Update their full name or email and click Save Changes.</li>
+        <li><strong>Delete User</strong> — Removes the user account. You cannot delete your own account. The user's activities and snapshots are preserved. If the user was an admin, their admin status is also removed.</li>
+    </ul>
 
-    <h3>Project Setup</h3>
-    <p>Content coming soon...</p>
+    <h3 id="admin-project-setup">Project Setup (Admin > Edit Projects)</h3>
+    <p>Manage construction projects and their associated metadata. The dialog shows a scrollable grid of all projects with a detail form below for editing.</p>
+    <ul>
+        <li><strong>Add Project</strong> — Enter a ProjectID (required, must be unique) and fill in project details, then click Add. ProjectID cannot be changed after creation.</li>
+        <li><strong>Edit Project</strong> — Select a project from the grid to populate the form. Update details and click Save Changes.</li>
+        <li><strong>Delete Project</strong> — Removes the project. A warning is shown about potential references from existing activities.</li>
+    </ul>
+    <p>Project details include:</p>
+    <ul>
+        <li><strong>Basic Info</strong> — ProjectID, Description</li>
+        <li><strong>Client Info</strong> — Client Name, Phone, Fax, Address</li>
+        <li><strong>Project Site</strong> — Street Address, City, State, Zip</li>
+        <li><strong>Management</strong> — Project Manager, Site Manager</li>
+        <li><strong>Flags</strong> — OM, SM, EN, PM checkboxes for marking project features</li>
+    </ul>
 
-    <h3>Database Sync</h3>
-    <p>Content coming soon...</p>
+    <h3 id="admin-snapshots">Snapshot Management (Admin > Edit Snapshots)</h3>
+    <p>The Admin Snapshots dialog allows administrators to view, delete, and upload weekly progress snapshots. Snapshots are grouped by User, Project, and Week End Date.</p>
+
+    <h4>Selecting Snapshots</h4>
+    <ul>
+        <li>Use the checkboxes to select individual snapshot groups</li>
+        <li><strong>Select All / Select None</strong> buttons for bulk selection</li>
+        <li>The selection summary at the bottom shows how many groups and snapshots are selected</li>
+    </ul>
+
+    <h4>Deleting Snapshots</h4>
+    <ul>
+        <li><strong>Delete Selected</strong> — Removes the selected snapshot groups from Azure</li>
+        <li><strong>Delete ALL Snapshots</strong> — Removes every snapshot for all users (requires typing "DELETE" to confirm)</li>
+    </ul>
+
+    <h4 id="admin-upload-progress-log">Upload to Progress Log</h4>
+    <p>Uploads selected snapshots to the <code>VANTAGE_global_ProgressLog</code> table on Azure for company-wide historical tracking.</p>
+    <ul>
+        <li>Select one or more snapshot groups, then click <strong>Upload to Progress Log</strong></li>
+        <li>Column mapping is driven by the <code>VMS_ColumnMappings</code> table (Milestone column names are mapped to their Azure/ProgressLog equivalents)</li>
+        <li>Calculated fields are computed at upload time:
+            <ul>
+                <li><strong>Status</strong> — "Not Started" (0%), "In Progress" (1-99%), or "Complete" (100%) based on PercentEntry</li>
+                <li><strong>EarnMHsCalc</strong> — BudgetMHs x PercentEntry / 100</li>
+                <li><strong>ClientEquivEarnQTY</strong> — (PercentEntry / 100) x ClientEquivQty</li>
+            </ul>
+        </li>
+        <li><strong>UserID</strong> is set to the admin performing the upload</li>
+        <li><strong>Timestamp</strong> is set to the upload time (identical for all records in a batch)</li>
+        <li>After upload, <strong>AzureUploadUtcDate</strong> is updated on VMS_Activities for all uploaded records so users can see when their data was last uploaded</li>
+    </ul>
+
+    <h3 id="admin-sync">Database Sync</h3>
+    <p>All users sync their local data with the central Azure database using the <strong>SYNC</strong> button in the Progress module (see <a href="#prog-syncing">Syncing Data</a>). Key points for administrators:</p>
+    <ul>
+        <li><strong>Azure is the source of truth</strong> — Local SQLite databases are caches that can be deleted and re-synced at any time</li>
+        <li><strong>Ownership</strong> — Users can only edit activities assigned to them. Admins bypass ownership checks and can edit any record.</li>
+        <li><strong>Pull-only fields</strong> — Some fields (e.g., AzureUploadUtcDate) are set by admins on Azure and received by users on pull, but never overwritten by user push operations</li>
+        <li><strong>Clear Local Activities</strong> — Available from the Settings menu to wipe and re-download all local data from Azure</li>
+    </ul>
 
     <!-- ============================================ -->
     <h2 id="reference">8. Reference</h2>

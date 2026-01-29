@@ -4,8 +4,12 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Interop;
+using System.Windows.Media;
 using System.Windows.Threading;
 using Syncfusion.UI.Xaml.Grid;
 using VANTAGE.Models;
@@ -37,6 +41,9 @@ namespace VANTAGE.Views
             DataContext = _viewModel;
 
             Loaded += ScheduleView_Loaded;
+
+            // Hook native horizontal scroll wheel for this view
+            Loaded += (_, __) => AttachHorizontalScrollHook();
 
             // Load column state and splitter position after view is loaded
             Loaded += (_, __) =>
@@ -226,6 +233,7 @@ namespace VANTAGE.Views
         }
         private void ScheduleView_Unloaded(object sender, RoutedEventArgs e)
         {
+            DetachHorizontalScrollHook();
             SaveColumnState();
             SaveDetailColumnState();
             SaveSplitterState();
@@ -1211,6 +1219,92 @@ namespace VANTAGE.Views
             }
 
             txtStatus.Text = "All filters cleared";
+        }
+
+        // ========================================
+        // HORIZONTAL SCROLLING
+        // ========================================
+
+        private const int WM_MOUSEHWHEEL = 0x020E;
+        private HwndSource? _hwndSource;
+
+        [DllImport("user32.dll")]
+        private static extern bool GetCursorPos(out POINT lpPoint);
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct POINT { public int X; public int Y; }
+
+        // Hook into parent window to handle native horizontal scroll wheel (tilt wheel)
+        private void AttachHorizontalScrollHook()
+        {
+            var window = Window.GetWindow(this);
+            if (window == null) return;
+
+            _hwndSource = HwndSource.FromHwnd(new WindowInteropHelper(window).Handle);
+            _hwndSource?.AddHook(WndProc);
+        }
+
+        private void DetachHorizontalScrollHook()
+        {
+            _hwndSource?.RemoveHook(WndProc);
+            _hwndSource = null;
+        }
+
+        // Handle WM_MOUSEHWHEEL for the schedule master grid
+        private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+        {
+            if (msg == WM_MOUSEHWHEEL)
+            {
+                int delta = (short)((wParam.ToInt64() >> 16) & 0xFFFF);
+                double scrollAmount = delta > 0 ? 60 : -60;
+
+                // Check if cursor is over the master grid
+                if (GetCursorPos(out POINT screenPt))
+                {
+                    var gridPoint = sfScheduleMaster.PointFromScreen(new Point(screenPt.X, screenPt.Y));
+                    var gridBounds = new Rect(0, 0, sfScheduleMaster.ActualWidth, sfScheduleMaster.ActualHeight);
+
+                    if (gridBounds.Contains(gridPoint))
+                    {
+                        var scrollViewer = FindVisualChild<ScrollViewer>(sfScheduleMaster);
+                        if (scrollViewer != null)
+                        {
+                            scrollViewer.ScrollToHorizontalOffset(scrollViewer.HorizontalOffset + scrollAmount);
+                            handled = true;
+                        }
+                    }
+                }
+            }
+            return IntPtr.Zero;
+        }
+
+        // Ctrl+ScrollWheel for horizontal scrolling
+        private void SfScheduleMaster_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if (Keyboard.Modifiers == ModifierKeys.Control)
+            {
+                var scrollViewer = FindVisualChild<ScrollViewer>(sfScheduleMaster);
+                if (scrollViewer != null)
+                {
+                    scrollViewer.ScrollToHorizontalOffset(scrollViewer.HorizontalOffset - e.Delta);
+                    e.Handled = true;
+                }
+            }
+        }
+
+        // Helper to find a child of a specific type in the visual tree
+        private static T? FindVisualChild<T>(DependencyObject parent) where T : DependencyObject
+        {
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+            {
+                var child = VisualTreeHelper.GetChild(parent, i);
+                if (child is T typedChild)
+                    return typedChild;
+                var result = FindVisualChild<T>(child);
+                if (result != null)
+                    return result;
+            }
+            return null;
         }
 
         // ========================================

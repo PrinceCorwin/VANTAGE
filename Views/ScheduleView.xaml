@@ -372,7 +372,8 @@
                           AllowDraggingColumns="True"
                           ShowRowHeader="True"
                           RowHeaderWidth="30"
-                          CurrentCellBeginEdit="SfScheduleMaster_CurrentCellBeginEdit">
+                          CurrentCellBeginEdit="SfScheduleMaster_CurrentCellBeginEdit"
+                          PreviewMouseWheel="SfScheduleMaster_PreviewMouseWheel">
 
                 <syncfusion:SfDataGrid.Columns>
 

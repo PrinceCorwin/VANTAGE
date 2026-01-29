@@ -68,13 +68,16 @@ namespace VANTAGE.Utilities
             if (hitResult?.VisualHit == null)
                 return false;
 
+            double scrollAmount = delta > 0 ? -60 : 60;
+
             // First, try to find SfDataGrid (most common case in MILESTONE)
             var dataGrid = FindParent<SfDataGrid>(hitResult.VisualHit);
             if (dataGrid != null)
             {
-                // SfDataGrid has its own scroll methods
-                double scrollAmount = delta > 0 ? -60 : 60;
-                var scrollViewer = FindChild<ScrollViewer>(dataGrid);
+                // Find a ScrollViewer that actually has horizontal content to scroll
+                // SfDataGrid has multiple internal ScrollViewers; the first one found
+                // by DFS may not be the one controlling horizontal content scrolling
+                var scrollViewer = FindHorizontalScrollViewer(dataGrid);
                 if (scrollViewer != null)
                 {
                     scrollViewer.ScrollToHorizontalOffset(scrollViewer.HorizontalOffset + scrollAmount);
@@ -82,11 +85,10 @@ namespace VANTAGE.Utilities
                 }
             }
 
-            // Fall back to finding any ScrollViewer
+            // Fall back to finding any ScrollViewer in the parent chain
             var sv = FindParent<ScrollViewer>(hitResult.VisualHit);
             if (sv != null && sv.HorizontalScrollBarVisibility != ScrollBarVisibility.Disabled)
             {
-                double scrollAmount = delta > 0 ? -60 : 60;
                 sv.ScrollToHorizontalOffset(sv.HorizontalOffset + scrollAmount);
                 return true;
             }
@@ -106,7 +108,8 @@ namespace VANTAGE.Utilities
             return null;
         }
 
-        private static T? FindChild<T>(DependencyObject parent) where T : DependencyObject
+        // Find a ScrollViewer that has horizontal scrollable content
+        private static ScrollViewer? FindHorizontalScrollViewer(DependencyObject parent)
         {
             if (parent == null)
                 return null;
@@ -114,10 +117,10 @@ namespace VANTAGE.Utilities
             for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
             {
                 var child = VisualTreeHelper.GetChild(parent, i);
-                if (child is T found)
-                    return found;
+                if (child is ScrollViewer sv && sv.ScrollableWidth > 0)
+                    return sv;
 
-                var result = FindChild<T>(child);
+                var result = FindHorizontalScrollViewer(child);
                 if (result != null)
                     return result;
             }
