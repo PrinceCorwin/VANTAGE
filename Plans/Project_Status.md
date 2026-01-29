@@ -88,7 +88,6 @@
 
 ### Medium Priority
 - **DISCUSS:** Add PlanStart and PlanFinish fields to Activities (for baseline schedule comparison?)
-- Shift+Scroll horizontal scrolling (see ShiftScroll_Horizontal_Implementation_Plan.md)
 - Table Summary V2: Settings dialog to choose which columns to summarize and aggregate types (Sum/Avg/Count)
 - User-editable header template for WP (allow customizing header layout)
 - Import/Export WP templates to JSON
