@@ -689,5 +689,49 @@ namespace VANTAGE
             DbPath = defaultPath;
             return defaultPath;
         }
+
+        // Ensure indexes exist on Azure tables for query performance
+        public static void EnsureAzureIndexes()
+        {
+            try
+            {
+                var sw = System.Diagnostics.Stopwatch.StartNew();
+                AppLogger.Info("Checking Azure indexes...", "DatabaseSetup.EnsureAzureIndexes");
+
+                using var conn = AzureDbManager.GetConnection();
+                conn.Open();
+
+                using var cmd = conn.CreateCommand();
+                cmd.CommandTimeout = 0; // index creation on large tables can take time
+                cmd.CommandText = @"
+                    IF NOT EXISTS (SELECT 1 FROM sys.indexes
+                                   WHERE name = 'IX_ProgressLog_Delete_Lookup'
+                                   AND object_id = OBJECT_ID('VANTAGE_global_ProgressLog'))
+                    BEGIN
+                        CREATE NONCLUSTERED INDEX IX_ProgressLog_Delete_Lookup
+                        ON VANTAGE_global_ProgressLog (Tag_ProjectID, UDF18, [Timestamp], Val_TimeStamp);
+                        SELECT 1; -- index was created
+                    END
+                    ELSE
+                        SELECT 0; -- index already existed
+                ";
+                var result = Convert.ToInt32(cmd.ExecuteScalar() ?? 0);
+                sw.Stop();
+
+                string elapsed = sw.Elapsed.TotalSeconds < 60
+                    ? $"{sw.Elapsed.TotalSeconds:F1}s"
+                    : $"{sw.Elapsed.TotalMinutes:F1}m";
+
+                if (result == 1)
+                    AppLogger.Info($"Created IX_ProgressLog_Delete_Lookup index in {elapsed}", "DatabaseSetup.EnsureAzureIndexes");
+                else
+                    AppLogger.Info($"Azure indexes verified ({elapsed})", "DatabaseSetup.EnsureAzureIndexes");
+            }
+            catch (Exception ex)
+            {
+                // Non-fatal - app works without the index, just slower deletes
+                AppLogger.Error(ex, "DatabaseSetup.EnsureAzureIndexes");
+            }
+        }
     }
 }

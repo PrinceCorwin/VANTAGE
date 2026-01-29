@@ -84,7 +84,6 @@
 ## Feature Backlog
 
 ### High Priority
-- Progress Log Management - Needs full end-to-end retest; explore server-side INSERT...SELECT optimization for upload performance
 - Find-Replace in Schedule Detail Grid
 
 ### Medium Priority

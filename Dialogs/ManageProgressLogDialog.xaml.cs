@@ -150,6 +150,7 @@ namespace VANTAGE.Dialogs
 
             try
             {
+                var overallSw = System.Diagnostics.Stopwatch.StartNew();
                 var result = await System.Threading.Tasks.Task.Run(() =>
                 {
                     int totalDeleted = 0;
@@ -164,6 +165,7 @@ namespace VANTAGE.Dialogs
                         {
                             // Delete from ProgressLog first
                             using var deleteCmd = conn.CreateCommand();
+                            deleteCmd.CommandTimeout = 0; // no timeout - table is large
                             deleteCmd.CommandText = @"
                                 DELETE FROM VANTAGE_global_ProgressLog
                                 WHERE Tag_ProjectID = @projectId
@@ -172,10 +174,14 @@ namespace VANTAGE.Dialogs
                                   AND Val_TimeStamp = @weekEndDate";
                             deleteCmd.Parameters.AddWithValue("@projectId", upload.ProjectID);
                             deleteCmd.Parameters.AddWithValue("@respParty", upload.RespParty);
-                            deleteCmd.Parameters.AddWithValue("@uploadUtcDate", upload.UploadUtcDate);
-                            deleteCmd.Parameters.AddWithValue("@weekEndDate", upload.WeekEndDate);
+                            deleteCmd.Parameters.AddWithValue("@uploadUtcDate", DateTime.Parse(upload.UploadUtcDate));
+                            deleteCmd.Parameters.AddWithValue("@weekEndDate", DateTime.Parse(upload.WeekEndDate));
+                            var sw = System.Diagnostics.Stopwatch.StartNew();
                             int deleted = deleteCmd.ExecuteNonQuery();
+                            sw.Stop();
                             totalDeleted += deleted;
+                            AppLogger.Info($"Deleted {deleted} ProgressLog records for {upload.ProjectID}/{upload.RespParty} in {sw.Elapsed.TotalSeconds:F1}s",
+                                "ManageProgressLogDialog.BtnDelete_Click", "System");
 
                             // Then delete tracking record
                             using var trackCmd = conn.CreateCommand();
@@ -193,9 +199,14 @@ namespace VANTAGE.Dialogs
                     return (totalDeleted, failedBatches);
                 });
 
+                overallSw.Stop();
+                string elapsed = overallSw.Elapsed.TotalSeconds < 60
+                    ? $"{overallSw.Elapsed.TotalSeconds:F1}s"
+                    : $"{overallSw.Elapsed.TotalMinutes:F1}m";
+
                 string currentUser = App.CurrentUser?.Username ?? "Unknown";
                 AppLogger.Info(
-                    $"Admin deleted {result.totalDeleted} ProgressLog records from {selected.Count} batch(es)",
+                    $"Admin deleted {result.totalDeleted} ProgressLog records from {selected.Count} batch(es) in {elapsed}",
                     "ManageProgressLogDialog.BtnDelete_Click",
                     currentUser);
 
@@ -203,13 +214,13 @@ namespace VANTAGE.Dialogs
                 {
                     string failList = string.Join("\n", result.failedBatches);
                     MessageBox.Show(
-                        $"Deleted {result.totalDeleted} record(s), but {result.failedBatches.Count} batch(es) failed:\n\n{failList}",
+                        $"Deleted {result.totalDeleted} record(s), but {result.failedBatches.Count} batch(es) failed:\n\n{failList}\n\nElapsed: {elapsed}",
                         "Partial Delete", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
                 else
                 {
                     MessageBox.Show(
-                        $"Successfully deleted {result.totalDeleted} record(s) from {selected.Count} batch(es).",
+                        $"Successfully deleted {result.totalDeleted} record(s) from {selected.Count} batch(es).\n\nElapsed: {elapsed}",
                         "Delete Complete", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
 

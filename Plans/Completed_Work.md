@@ -4,6 +4,19 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ---
 
+### January 29, 2026
+- **Progress Log Performance Optimization:**
+  - Added Azure index (`IX_ProgressLog_Delete_Lookup`) on ProgressLog delete filter columns with auto-creation at app startup
+  - Fixed parameter type mismatch (string vs datetime) that prevented index usage on delete operations
+  - Delete performance: 18 min → 17 sec for 57K records
+  - Replaced client-side SqlBulkCopy upload with server-side INSERT...SELECT (data never leaves Azure)
+  - Upload performance: 157 sec → 37 sec for 57K records
+  - Fixed PercentEntry conversion (0-100 → 0-1 decimal) for Val_Perc_Complete column
+  - Added explicit system column exclusion list to prevent internal fields from reaching ProgressLog
+  - Added elapsed time display to delete result messages and per-batch logging
+  - Replaced batched AzureUploadUtcDate UPDATE (570 calls) with single server-side UPDATE
+  - Renamed Admin menu "Edit Snapshots" → "Manage Snapshots"
+
 ### January 28, 2026
 - **Progress Log Management Dialog & Upload Tracking (WIP - needs retest):**
   - Created `VMS_ProgressLogUploads` Azure tracking table for upload batch management

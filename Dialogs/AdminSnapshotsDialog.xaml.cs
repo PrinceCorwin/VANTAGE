@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
 using System.Linq;
 using System.Windows;
 using Microsoft.Data.SqlClient;
@@ -262,7 +261,6 @@ namespace VANTAGE.Dialogs
         private int UploadSnapshotsToProgressLog(List<SnapshotGroupItem> selectedGroups, string currentUser)
         {
             var uploadTimestamp = DateTime.Now;
-            var uploadedUniqueIds = new HashSet<string>();
 
             using var azureConn = AzureDbManager.GetConnection();
             azureConn.Open();
@@ -278,149 +276,14 @@ namespace VANTAGE.Dialogs
                 using var reader = mappingCmd.ExecuteReader();
                 while (reader.Read())
                 {
-                    string colName = reader.GetString(0);
-                    string azureName = reader.GetString(1);
-                    if (!columnMappings.ContainsKey(colName))
+                    string colName = reader.GetString(0).Trim();
+                    string azureName = reader.GetString(1).Trim();
+                    if (colName.Length > 0 && azureName.Length > 0 && !columnMappings.ContainsKey(colName))
                         columnMappings[colName] = azureName;
                 }
             }
 
-            // Build WHERE clause for selected groups
-            var whereClauses = new List<string>();
-            var parameters = new List<SqlParameter>();
-            int paramIndex = 0;
-            foreach (var group in selectedGroups)
-            {
-                whereClauses.Add($"(AssignedTo = @u{paramIndex} AND ProjectID = @p{paramIndex} AND WeekEndDate = @w{paramIndex})");
-                parameters.Add(new SqlParameter($"@u{paramIndex}", group.Username));
-                parameters.Add(new SqlParameter($"@p{paramIndex}", group.ProjectID));
-                parameters.Add(new SqlParameter($"@w{paramIndex}", group.WeekEndDateStr));
-                paramIndex++;
-            }
-
-            // Query snapshots
-            using var snapshotCmd = azureConn.CreateCommand();
-            snapshotCmd.CommandText = $@"
-                SELECT *
-                FROM VMS_ProgressSnapshots
-                WHERE {string.Join(" OR ", whereClauses)}";
-            snapshotCmd.Parameters.AddRange(parameters.ToArray());
-
-            // Create DataTable for bulk copy with Azure column names
-            var dataTable = new DataTable();
-
-            // Add all mapped columns to the DataTable
-            foreach (var mapping in columnMappings.Values.Distinct())
-            {
-                dataTable.Columns.Add(mapping, typeof(string));
-            }
-
-            // Ensure calculated columns exist
-            if (!dataTable.Columns.Contains("Sch_Status"))
-                dataTable.Columns.Add("Sch_Status", typeof(string));
-            if (!dataTable.Columns.Contains("Val_EarnedHours_Ind"))
-                dataTable.Columns.Add("Val_EarnedHours_Ind", typeof(string));
-            if (!dataTable.Columns.Contains("Val_Client_Earned_EQ-QTY"))
-                dataTable.Columns.Add("Val_Client_Earned_EQ-QTY", typeof(string));
-            if (!dataTable.Columns.Contains("UserID"))
-                dataTable.Columns.Add("UserID", typeof(string));
-            if (!dataTable.Columns.Contains("Timestamp"))
-                dataTable.Columns.Add("Timestamp", typeof(string));
-
-            using (var reader = snapshotCmd.ExecuteReader())
-            {
-                // Get column ordinals for snapshot table
-                var snapshotColumns = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-                for (int i = 0; i < reader.FieldCount; i++)
-                {
-                    snapshotColumns[reader.GetName(i)] = i;
-                }
-
-                while (reader.Read())
-                {
-                    var row = dataTable.NewRow();
-
-                    // Track UniqueID for updating AzureUploadUtcDate on Activities
-                    if (snapshotColumns.ContainsKey("UniqueID"))
-                    {
-                        string uniqueId = reader.GetString(snapshotColumns["UniqueID"]);
-                        uploadedUniqueIds.Add(uniqueId);
-                    }
-
-                    // Get values needed for calculated fields
-                    double percentEntry = 0;
-                    double budgetMHs = 0;
-                    double clientEquivQty = 0;
-
-                    if (snapshotColumns.ContainsKey("PercentEntry"))
-                    {
-                        var val = reader.GetValue(snapshotColumns["PercentEntry"]);
-                        if (val != DBNull.Value)
-                            percentEntry = Convert.ToDouble(val);
-                    }
-                    if (snapshotColumns.ContainsKey("BudgetMHs"))
-                    {
-                        var val = reader.GetValue(snapshotColumns["BudgetMHs"]);
-                        if (val != DBNull.Value)
-                            budgetMHs = Convert.ToDouble(val);
-                    }
-                    if (snapshotColumns.ContainsKey("ClientEquivQty"))
-                    {
-                        var val = reader.GetValue(snapshotColumns["ClientEquivQty"]);
-                        if (val != DBNull.Value)
-                            clientEquivQty = Convert.ToDouble(val);
-                    }
-
-                    // Map snapshot columns to Azure columns
-                    foreach (var mapping in columnMappings)
-                    {
-                        string snapshotCol = mapping.Key;
-                        string azureCol = mapping.Value;
-
-                        if (snapshotColumns.ContainsKey(snapshotCol))
-                        {
-                            var value = reader.GetValue(snapshotColumns[snapshotCol]);
-                            if (value != DBNull.Value)
-                                row[azureCol] = value.ToString();
-                            else
-                                row[azureCol] = DBNull.Value;
-                        }
-                    }
-
-                    // Set calculated fields
-                    // Status: "Not Started", "In Progress", or "Complete" based on PercentEntry
-                    string status = percentEntry == 0 ? "Not Started"
-                                  : percentEntry >= 100 ? "Complete"
-                                  : "In Progress";
-                    row["Sch_Status"] = status;
-
-                    // EarnMHsCalc: BudgetMHs × PercentEntry / 100
-                    double earnMHsCalc = NumericHelper.RoundToPlaces(budgetMHs * percentEntry / 100);
-                    row["Val_EarnedHours_Ind"] = earnMHsCalc.ToString();
-
-                    // ClientEquivEarnQTY: (PercentEntry / 100) × ClientEquivQty (0 if BudgetMHs is 0)
-                    double clientEquivEarnQty = budgetMHs > 0 && percentEntry > 0
-                        ? NumericHelper.RoundToPlaces((percentEntry / 100) * clientEquivQty)
-                        : 0;
-                    row["Val_Client_Earned_EQ-QTY"] = clientEquivEarnQty.ToString();
-
-                    // Set UserID to current admin
-                    row["UserID"] = currentUser;
-
-                    // Set Timestamp to upload time (same for all records in this batch)
-                    row["Timestamp"] = uploadTimestamp.ToString("M/d/yyyy h:mm:ss tt");
-
-                    dataTable.Rows.Add(row);
-                }
-            }
-
-            if (dataTable.Rows.Count == 0)
-            {
-                return 0;
-            }
-
-            // Query ProgressLog column max lengths and truncate values to fit
-            // SqlBulkCopy is strict about length; old VANTAGE silently truncated
+            // Load ProgressLog column max lengths for string truncation in SQL
             var columnMaxLengths = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             using (var schemaCmd = azureConn.CreateCommand())
             {
@@ -439,32 +302,99 @@ namespace VANTAGE.Dialogs
                 }
             }
 
-            foreach (DataRow row in dataTable.Rows)
+            // Build WHERE clause for selected groups
+            var whereClauses = new List<string>();
+            var insertCmd = azureConn.CreateCommand();
+            int paramIndex = 0;
+            foreach (var group in selectedGroups)
             {
-                foreach (DataColumn col in dataTable.Columns)
-                {
-                    if (row[col] is string val && columnMaxLengths.TryGetValue(col.ColumnName, out int maxLen))
-                    {
-                        if (maxLen > 0 && val.Length > maxLen)
-                            row[col] = val.Substring(0, maxLen);
-                    }
-                }
+                whereClauses.Add($"(AssignedTo = @u{paramIndex} AND ProjectID = @p{paramIndex} AND WeekEndDate = @w{paramIndex})");
+                insertCmd.Parameters.AddWithValue($"@u{paramIndex}", group.Username);
+                insertCmd.Parameters.AddWithValue($"@p{paramIndex}", group.ProjectID);
+                insertCmd.Parameters.AddWithValue($"@w{paramIndex}", group.WeekEndDateStr);
+                paramIndex++;
+            }
+            string whereClause = string.Join(" OR ", whereClauses);
+
+            // Get actual columns in VMS_ProgressSnapshots so we only map columns that exist
+            var snapshotColumnSet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            using (var colCmd = azureConn.CreateCommand())
+            {
+                colCmd.CommandText = @"
+                    SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+                    WHERE TABLE_NAME = 'VMS_ProgressSnapshots'";
+                using var colReader = colCmd.ExecuteReader();
+                while (colReader.Read())
+                    snapshotColumnSet.Add(colReader.GetString(0));
             }
 
-            // Bulk copy to VANTAGE_global_ProgressLog
-            using (var bulkCopy = new SqlBulkCopy(azureConn))
+            // System columns that should never be sent to ProgressLog
+            var excludedColumns = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
-                bulkCopy.DestinationTableName = "VANTAGE_global_ProgressLog";
-                bulkCopy.BulkCopyTimeout = 120;
+                "ActivityID", "UniqueID", "LocalDirty", "SyncVersion",
+                "ExportedBy", "ExportedDate", "UpdatedBy", "UpdatedUtcDate",
+                "CreatedBy", "CreatedDate", "AzureUploadUtcDate", "IsDeleted"
+            };
 
-                // Map DataTable columns to destination columns
-                foreach (DataColumn col in dataTable.Columns)
+            // Build dynamic INSERT...SELECT - data stays server-side, no client round-trip
+            var insertCols = new List<string>();
+            var selectExprs = new List<string>();
+
+            foreach (var mapping in columnMappings)
+            {
+                string snapshotCol = mapping.Key;
+                string azureCol = mapping.Value;
+
+                // Skip system/internal columns and columns not in the snapshot table
+                if (excludedColumns.Contains(snapshotCol) || !snapshotColumnSet.Contains(snapshotCol))
+                    continue;
+
+                insertCols.Add($"[{azureCol}]");
+
+                // PercentEntry is 0-100 in Milestone but ProgressLog expects 0-1 decimal
+                if (snapshotCol.Equals("PercentEntry", StringComparison.OrdinalIgnoreCase))
                 {
-                    bulkCopy.ColumnMappings.Add(col.ColumnName, col.ColumnName);
+                    selectExprs.Add("ISNULL([PercentEntry], 0) / 100.0");
                 }
-
-                bulkCopy.WriteToServer(dataTable);
+                // Apply LEFT() truncation for nvarchar columns with known max lengths
+                else if (columnMaxLengths.TryGetValue(azureCol, out int maxLen) && maxLen > 0)
+                    selectExprs.Add($"LEFT(CAST([{snapshotCol}] AS NVARCHAR(MAX)), {maxLen})");
+                else
+                    selectExprs.Add($"[{snapshotCol}]");
             }
+
+            // Add calculated columns
+            insertCols.Add("[Sch_Status]");
+            selectExprs.Add("CASE WHEN ISNULL(PercentEntry, 0) = 0 THEN 'Not Started' WHEN PercentEntry >= 100 THEN 'Complete' ELSE 'In Progress' END");
+
+            insertCols.Add("[Val_EarnedHours_Ind]");
+            selectExprs.Add("CAST(ROUND(ISNULL(BudgetMHs, 0) * ISNULL(PercentEntry, 0) / 100.0, 3) AS NVARCHAR(50))");
+
+            insertCols.Add("[Val_Client_Earned_EQ-QTY]");
+            selectExprs.Add("CASE WHEN ISNULL(BudgetMHs, 0) > 0 AND ISNULL(PercentEntry, 0) > 0 THEN CAST(ROUND((ISNULL(PercentEntry, 0) / 100.0) * ISNULL(ClientEquivQty, 0), 3) AS NVARCHAR(50)) ELSE '0' END");
+
+            insertCols.Add("[UserID]");
+            selectExprs.Add("@userId");
+            insertCmd.Parameters.AddWithValue("@userId", currentUser);
+
+            insertCols.Add("[Timestamp]");
+            selectExprs.Add("@uploadTimestamp");
+            insertCmd.Parameters.AddWithValue("@uploadTimestamp", uploadTimestamp);
+
+            insertCmd.CommandTimeout = 0;
+            string sql = $@"
+                INSERT INTO VANTAGE_global_ProgressLog ({string.Join(", ", insertCols)})
+                SELECT {string.Join(", ", selectExprs)}
+                FROM VMS_ProgressSnapshots
+                WHERE {whereClause}";
+            insertCmd.CommandText = sql;
+            AppLogger.Info($"ProgressLog INSERT...SELECT: {insertCols.Count} columns", "AdminSnapshotsDialog.UploadSnapshotsToProgressLog");
+
+            int insertedCount = insertCmd.ExecuteNonQuery();
+            insertCmd.Dispose();
+
+            if (insertedCount == 0)
+                return 0;
 
             // Insert tracking records into VMS_ProgressLogUploads
             // One row per unique RespParty within each selected snapshot group
@@ -523,34 +453,35 @@ namespace VANTAGE.Dialogs
             }
 
             // Update AzureUploadUtcDate on VMS_Activities for uploaded records
-            // This is a pull-only field - users receive it but never overwrite it
-            if (uploadedUniqueIds.Count > 0)
+            // Server-side update using same WHERE clause - no client-side ID tracking needed
+            using (var updateCmd = azureConn.CreateCommand())
             {
-                const int batchSize = 100;
-                var uniqueIdList = uploadedUniqueIds.ToList();
-                for (int i = 0; i < uniqueIdList.Count; i += batchSize)
+                updateCmd.CommandTimeout = 0;
+
+                // Rebuild parameters for the subquery
+                int upIdx = 0;
+                var updateWhereClauses = new List<string>();
+                foreach (var group in selectedGroups)
                 {
-                    var batch = uniqueIdList.Skip(i).Take(batchSize).ToList();
-                    using var updateCmd = azureConn.CreateCommand();
-
-                    var idParams = new List<string>();
-                    for (int j = 0; j < batch.Count; j++)
-                    {
-                        idParams.Add($"@id{j}");
-                        updateCmd.Parameters.AddWithValue($"@id{j}", batch[j]);
-                    }
-
-                    updateCmd.CommandText = $@"
-                        UPDATE VMS_Activities
-                        SET AzureUploadUtcDate = @uploadDate
-                        WHERE UniqueID IN ({string.Join(",", idParams)})";
-                    updateCmd.Parameters.AddWithValue("@uploadDate", uploadTimestamp);
-
-                    updateCmd.ExecuteNonQuery();
+                    updateWhereClauses.Add($"(AssignedTo = @uu{upIdx} AND ProjectID = @up{upIdx} AND WeekEndDate = @uw{upIdx})");
+                    updateCmd.Parameters.AddWithValue($"@uu{upIdx}", group.Username);
+                    updateCmd.Parameters.AddWithValue($"@up{upIdx}", group.ProjectID);
+                    updateCmd.Parameters.AddWithValue($"@uw{upIdx}", group.WeekEndDateStr);
+                    upIdx++;
                 }
+
+                updateCmd.CommandText = $@"
+                    UPDATE VMS_Activities
+                    SET AzureUploadUtcDate = @uploadDate
+                    WHERE UniqueID IN (
+                        SELECT UniqueID FROM VMS_ProgressSnapshots
+                        WHERE {string.Join(" OR ", updateWhereClauses)}
+                    )";
+                updateCmd.Parameters.AddWithValue("@uploadDate", uploadTimestamp);
+                updateCmd.ExecuteNonQuery();
             }
 
-            return dataTable.Rows.Count;
+            return insertedCount;
         }
 
         private async void BtnDelete_Click(object sender, RoutedEventArgs e)

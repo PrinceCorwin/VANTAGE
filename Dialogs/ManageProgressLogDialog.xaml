@@ -30,7 +30,7 @@
                        FontWeight="SemiBold"
                        FontSize="16"
                        Foreground="{StaticResource ForegroundColor}"/>
-            <TextBlock Text="View and delete batches uploaded to VANTAGE_global_ProgressLog. Only uploads tracked from this point forward are shown."
+            <TextBlock Text="View and delete batches uploaded to VANTAGE_global_ProgressLog since Feb 2026"
                        Foreground="{StaticResource ForegroundColor}"
                        Opacity="0.6"
                        FontSize="12"

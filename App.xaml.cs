@@ -122,6 +122,10 @@ namespace VANTAGE
                         });
                         AppLogger.Info("Successfully mirrored reference tables from Azure database", "App.OnStartup");
                         ProjectCache.Reload();
+
+                        // Ensure Azure indexes exist (awaited so it completes before app opens)
+                        _splashWindow.UpdateStatus("Verifying Azure indexes...");
+                        await Task.Run(() => DatabaseSetup.EnsureAzureIndexes());
                     }
                     catch (Exception mirrorEx)
                     {

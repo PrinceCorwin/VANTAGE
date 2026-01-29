@@ -4,7 +4,7 @@
         xmlns:skinManager="clr-namespace:Syncfusion.SfSkinManager;assembly=Syncfusion.SfSkinManager.WPF"
         xmlns:busy="clr-namespace:Syncfusion.Windows.Controls.Notification;assembly=Syncfusion.SfBusyIndicator.WPF"
         skinManager:SfSkinManager.Theme="{skinManager:SkinManagerExtension ThemeName=FluentDark}"
-        Title="Admin: Edit Snapshots Table"
+        Title="Admin: Manage Snapshots Table"
         Height="550"
         Width="700"
         WindowStartupLocation="CenterOwner"
