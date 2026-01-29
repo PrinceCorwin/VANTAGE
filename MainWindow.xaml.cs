@@ -1155,6 +1155,31 @@ namespace VANTAGE
             }
         }
 
+        // Open the Manage Progress Log dialog
+        private void MenuManageProgressLog_Click(object sender, RoutedEventArgs e)
+        {
+            if (App.CurrentUser == null || !App.CurrentUser.IsAdmin)
+            {
+                MessageBox.Show("You do not have admin privileges.", "Access Denied",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (!AzureDbManager.CheckConnection(out string errorMessage))
+            {
+                MessageBox.Show(
+                    $"Cannot connect to Azure database:\n\n{errorMessage}\n\nThis feature requires an active connection.",
+                    "Connection Required",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+                return;
+            }
+
+            var dialog = new Dialogs.ManageProgressLogDialog();
+            dialog.Owner = this;
+            dialog.ShowDialog();
+        }
+
         private void MenuEditUsers_Click(object sender, RoutedEventArgs e)
         {
             // Check admin status

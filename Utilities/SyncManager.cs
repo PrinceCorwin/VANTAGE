@@ -75,6 +75,7 @@ namespace VANTAGE.Utilities
                 "ShtNO" => activity.ShtNO,
                 "SubArea" => activity.SubArea,
                 "PjtSystem" => activity.PjtSystem,
+                "PjtSystemNo" => activity.PjtSystemNo,
                 "SystemNO" => activity.SystemNO,
                 "TagNO" => activity.TagNO,
                 "UDF1" => activity.UDF1,
@@ -150,7 +151,7 @@ namespace VANTAGE.Utilities
                     "Quantity", "RevNO", "RFINO", "ROCBudgetQTY", "ROCID",
                     "ROCPercent", "ROCStep", "SchedActNO", "SchFinish", "SchStart",
                     "SecondActno", "SecondDwgNO", "Service", "ShopField", "ShtNO",
-                    "SubArea", "PjtSystem", "SystemNO", "TagNO",
+                    "SubArea", "PjtSystem", "PjtSystemNo", "SystemNO", "TagNO",
                     "UDF1", "UDF2", "UDF3", "UDF4", "UDF5", "UDF6", "UDF7", "UDF8", "UDF9", "UDF10",
                     "UDF11", "UDF12", "UDF13", "UDF14", "UDF15", "UDF16", "UDF17", "RespParty", "UDF20",
                     "UpdatedBy", "UpdatedUtcDate", "UOM", "WeekEndDate", "WorkPackage", "XRay"

@@ -800,7 +800,7 @@ namespace VANTAGE.Views
             // All other fields (alphabetical)
             var otherFields = new[] { "Aux1", "Aux2", "Aux3", "ChgOrdNO", "Description", "DwgNO",
                 "EqmtNO", "Estimator", "HtTrace", "InsulType", "LineNumber", "MtrlSpec", "Notes",
-                "PaintCode", "PipeGrade", "PjtSystem", "ProjectID", "RFINO", "RevNO", "ROCStep",
+                "PaintCode", "PipeGrade", "PjtSystem", "PjtSystemNo", "ProjectID", "RFINO", "RevNO", "ROCStep",
                 "SecondActno", "SecondDwgNO", "Service", "ShopField", "ShtNO", "SubArea", "TagNO",
                 "UDF1", "UDF3", "UDF4", "UDF5", "UDF6", "UDF8", "UDF9", "UDF10", "UDF11", "UDF12",
                 "UDF13", "UDF14", "UDF15", "UDF16", "UDF17", "RespParty", "UDF20", "UOM" };

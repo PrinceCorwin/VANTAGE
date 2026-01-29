@@ -107,7 +107,7 @@ namespace VANTAGE.Views
                 "EqmtNO", "HtTrace", "InsulType", "LineNumber", "MtrlSpec", "Notes",
                 "PaintCode", "PhaseCategory", "PhaseCode", "PipeGrade", "ProjectID",
                 "RespParty", "RevNO", "RFINO", "ROCStep", "SchedActNO", "SecondDwgNO",
-                "Service", "ShopField", "ShtNO", "SubArea", "PjtSystem", "SystemNO",
+                "Service", "ShopField", "ShtNO", "SubArea", "PjtSystem", "PjtSystemNo", "SystemNO",
                 "TagNO", "UDF1", "UDF2", "UDF3", "UDF4", "UDF5", "UDF6", "UDF7",
                 "UDF8", "UDF9", "UDF10", "UniqueID", "WorkPackage"
             };

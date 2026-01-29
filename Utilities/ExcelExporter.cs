@@ -143,6 +143,7 @@ namespace VANTAGE.Utilities
             "ShopField",
             "SubArea",
             "PjtSystem",
+            "PjtSystemNo",
             "SystemNO",
             "TagNO",
             "HtTrace",

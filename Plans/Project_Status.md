@@ -1,6 +1,6 @@
 # MILESTONE - Project Status
 
-**Last Updated:** January 27, 2026
+**Last Updated:** January 28, 2026
 
 ## V1 Testing Scope
 
@@ -84,7 +84,8 @@
 ## Feature Backlog
 
 ### High Priority
-- Add Offline Indicator in status bar - clickable to retry connection
+- Progress Log Management - Needs full end-to-end retest; explore server-side INSERT...SELECT optimization for upload performance
+- Find-Replace in Schedule Detail Grid
 
 ### Medium Priority
 - **DISCUSS:** Add PlanStart and PlanFinish fields to Activities (for baseline schedule comparison?)
@@ -94,9 +95,6 @@
 
 ### V2 Data Model
 - Add ClientEarnedEquivQty column to Activities table, Azure VMS_Activities, and ColumnMappings (maps to OldVantage `VAL_Client_Earned_EQ-QTY`) - currently ignored during import
-
-### Infrastructure / Azure Migration
-- Progress Log Management Dialog - Admin dialog to view/delete uploads from VANTAGE_global_ProgressLog by Timestamp and Val_TimeStamp combinations
 
 ### AI Features (see InCode_AI_Plan.md)
 | Feature | Status |
@@ -166,7 +164,7 @@
 - Export/Print - Syncfusion printing issues; use Progress Books instead
 
 ### Shelved
-- Find-Replace in Schedule Detail Grid
+- Offline Indicator in status bar - clickable to retry connection
 - Disable Tooltips setting (see DisableTooltips_Plan.md)
 - Interactive Help Mode - click UI controls to navigate to documentation (see Sidebar_Help_Plan.md)
 

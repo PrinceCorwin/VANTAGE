@@ -302,6 +302,7 @@ namespace VANTAGE
                 ShtNO                 TEXT NOT NULL DEFAULT '',
                 SubArea               TEXT NOT NULL DEFAULT '',
                 PjtSystem             TEXT NOT NULL DEFAULT '',
+                PjtSystemNo           TEXT NOT NULL DEFAULT '',
                 SystemNO              TEXT NOT NULL DEFAULT '',
                 TagNO                 TEXT NOT NULL DEFAULT '',
                 UDF1                  TEXT NOT NULL DEFAULT '',

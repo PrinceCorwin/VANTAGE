@@ -80,6 +80,7 @@ namespace VANTAGE.Models
         public string? Area { get; set; }
         public string? SubArea { get; set; }
         public string? PjtSystem { get; set; }
+        public string? PjtSystemNo { get; set; }
         public string? SystemNO { get; set; }
         public string? ProjectID { get; set; }
         public string? WorkPackage { get; set; }

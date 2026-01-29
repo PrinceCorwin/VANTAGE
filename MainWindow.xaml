@@ -132,6 +132,7 @@
                             <syncfusion:DropDownMenuItem Header="Edit Users" Click="MenuEditUsers_Click"/>
                             <syncfusion:DropDownMenuItem Header="Edit Projects" Click="MenuEditProjects_Click"/>
                             <syncfusion:DropDownMenuItem Header="Edit Snapshots" Click="MenuEditSnapshots_Click"/>
+                            <syncfusion:DropDownMenuItem Header="Manage Progress Log" Click="MenuManageProgressLog_Click"/>
                             <Separator Background="{StaticResource BorderColor}" Margin="5,2"/>
                             <syncfusion:DropDownMenuItem Header="Deleted Records UI" Click="DeletedRecordsUi_Click"/>
                         </syncfusion:DropDownMenuGroup>

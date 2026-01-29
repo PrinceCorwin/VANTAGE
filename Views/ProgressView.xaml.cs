@@ -500,6 +500,7 @@ namespace VANTAGE.Views
                             ShtNO = original.ShtNO,
                             SubArea = original.SubArea,
                             PjtSystem = original.PjtSystem,
+                            PjtSystemNo = original.PjtSystemNo,
                             SystemNO = original.SystemNO,
                             TagNO = original.TagNO,
                             UDF1 = original.UDF1,
@@ -538,7 +539,7 @@ namespace VANTAGE.Views
                         PercentEntry, PhaseCategory, PhaseCode, PipeGrade, PipeSize1, PipeSize2,
                         PrevEarnMHs, PrevEarnQTY, ProgDate, ProjectID, Quantity, RevNO, RFINO,
                         ROCBudgetQTY, ROCID, ROCPercent, ROCStep, SchedActNO, SchFinish, SchStart,
-                        SecondActno, SecondDwgNO, Service, ShopField, ShtNO, SubArea, PjtSystem,
+                        SecondActno, SecondDwgNO, Service, ShopField, ShtNO, SubArea, PjtSystem, PjtSystemNo,
                         SystemNO, TagNO, UDF1, UDF2, UDF3, UDF4, UDF5, UDF6, UDF7, UDF8, UDF9,
                         UDF10, UDF11, UDF12, UDF13, UDF14, UDF15, UDF16, UDF17, RespParty, UDF20,
                         UpdatedBy, UpdatedUtcDate, UOM, WeekEndDate, WorkPackage, XRay, SyncVersion
@@ -551,7 +552,7 @@ namespace VANTAGE.Views
                         @PercentEntry, @PhaseCategory, @PhaseCode, @PipeGrade, @PipeSize1, @PipeSize2,
                         @PrevEarnMHs, @PrevEarnQTY, @ProgDate, @ProjectID, @Quantity, @RevNO, @RFINO,
                         @ROCBudgetQTY, @ROCID, @ROCPercent, @ROCStep, @SchedActNO, @SchFinish, @SchStart,
-                        @SecondActno, @SecondDwgNO, @Service, @ShopField, @ShtNO, @SubArea, @PjtSystem,
+                        @SecondActno, @SecondDwgNO, @Service, @ShopField, @ShtNO, @SubArea, @PjtSystem, @PjtSystemNo,
                         @SystemNO, @TagNO, @UDF1, @UDF2, @UDF3, @UDF4, @UDF5, @UDF6, @UDF7, @UDF8, @UDF9,
                         @UDF10, @UDF11, @UDF12, @UDF13, @UDF14, @UDF15, @UDF16, @UDF17, @RespParty, @UDF20,
                         @UpdatedBy, @UpdatedUtcDate, @UOM, @WeekEndDate, @WorkPackage, @XRay, @SyncVersion
@@ -619,6 +620,7 @@ namespace VANTAGE.Views
                         insertCmd.Parameters.AddWithValue("@ShtNO", duplicate.ShtNO ?? "");
                         insertCmd.Parameters.AddWithValue("@SubArea", duplicate.SubArea ?? "");
                         insertCmd.Parameters.AddWithValue("@PjtSystem", duplicate.PjtSystem ?? "");
+                        insertCmd.Parameters.AddWithValue("@PjtSystemNo", duplicate.PjtSystemNo ?? "");
                         insertCmd.Parameters.AddWithValue("@SystemNO", duplicate.SystemNO ?? "");
                         insertCmd.Parameters.AddWithValue("@TagNO", duplicate.TagNO ?? "");
                         insertCmd.Parameters.AddWithValue("@UDF1", duplicate.UDF1 ?? "");
@@ -2703,7 +2705,7 @@ namespace VANTAGE.Views
                             PipeGrade, PipeSize1, PipeSize2, PrevEarnMHs, PrevEarnQTY, ProgDate,
                             ProjectID, Quantity, RevNO, RFINO, ROCBudgetQTY, ROCID, ROCPercent,
                             ROCStep, SchedActNO, SchFinish, SchStart, SecondActno, SecondDwgNO,
-                            Service, ShopField, ShtNO, SubArea, PjtSystem, SystemNO, TagNO,
+                            Service, ShopField, ShtNO, SubArea, PjtSystem, PjtSystemNo, SystemNO, TagNO,
                             UDF1, UDF2, UDF3, UDF4, UDF5, UDF6, UDF7, UDF8, UDF9, UDF10,
                             UDF11, UDF12, UDF13, UDF14, UDF15, UDF16, UDF17, RespParty, UDF20,
                             UpdatedBy, UpdatedUtcDate, UOM, WorkPackage, XRay, ExportedBy, ExportedDate
@@ -2718,7 +2720,7 @@ namespace VANTAGE.Views
                             PipeGrade, PipeSize1, PipeSize2, PrevEarnMHs, PrevEarnQTY, @progDate,
                             ProjectID, Quantity, RevNO, RFINO, ROCBudgetQTY, ROCID, ROCPercent,
                             ROCStep, SchedActNO, SchFinish, SchStart, SecondActno, SecondDwgNO,
-                            Service, ShopField, ShtNO, SubArea, PjtSystem, SystemNO, TagNO,
+                            Service, ShopField, ShtNO, SubArea, PjtSystem, PjtSystemNo, SystemNO, TagNO,
                             UDF1, UDF2, UDF3, UDF4, UDF5, UDF6, UDF7, UDF8, UDF9, UDF10,
                             UDF11, UDF12, UDF13, UDF14, UDF15, UDF16, UDF17, RespParty, UDF20,
                             UpdatedBy, UpdatedUtcDate, UOM, WorkPackage, XRay, NULL, NULL

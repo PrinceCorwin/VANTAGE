@@ -1,0 +1,178 @@
+<Window x:Class="VANTAGE.Dialogs.ManageProgressLogDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:skinManager="clr-namespace:Syncfusion.SfSkinManager;assembly=Syncfusion.SfSkinManager.WPF"
+        xmlns:busy="clr-namespace:Syncfusion.Windows.Controls.Notification;assembly=Syncfusion.SfBusyIndicator.WPF"
+        skinManager:SfSkinManager.Theme="{skinManager:SkinManagerExtension ThemeName=FluentDark}"
+        Title="Admin: Manage Progress Log Uploads"
+        Height="550"
+        Width="850"
+        WindowStartupLocation="CenterOwner"
+        Background="{StaticResource BackgroundColor}"
+        ResizeMode="CanResize"
+        MinHeight="400"
+        MinWidth="650"
+        WindowStyle="SingleBorderWindow">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="15"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="15"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0">
+            <TextBlock Text="Manage Progress Log Uploads"
+                       FontWeight="SemiBold"
+                       FontSize="16"
+                       Foreground="{StaticResource ForegroundColor}"/>
+            <TextBlock Text="View and delete batches uploaded to VANTAGE_global_ProgressLog. Only uploads tracked from this point forward are shown."
+                       Foreground="{StaticResource ForegroundColor}"
+                       Opacity="0.6"
+                       FontSize="12"
+                       Margin="0,5,0,0"/>
+        </StackPanel>
+
+        <!-- Uploads List -->
+        <Border Grid.Row="2"
+                Background="{StaticResource ControlBackground}"
+                BorderBrush="{StaticResource BorderColor}"
+                BorderThickness="1"
+                CornerRadius="4">
+            <Grid>
+                <ListView x:Name="lvUploads"
+                          Background="Transparent"
+                          BorderThickness="0"
+                          Foreground="{StaticResource ForegroundColor}"
+                          SelectionMode="Extended">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Width="30">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                                  VerticalAlignment="Center"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Header="Username" Width="100" DisplayMemberBinding="{Binding Username}"/>
+                            <GridViewColumn Header="Project ID" Width="120" DisplayMemberBinding="{Binding ProjectID}"/>
+                            <GridViewColumn Header="Resp Party" Width="120" DisplayMemberBinding="{Binding RespParty}"/>
+                            <GridViewColumn Header="Week Ending" Width="110" DisplayMemberBinding="{Binding WeekEndDateDisplay}"/>
+                            <GridViewColumn Header="Uploaded" Width="140" DisplayMemberBinding="{Binding UploadUtcDateDisplay}"/>
+                            <GridViewColumn Header="Records" Width="70" DisplayMemberBinding="{Binding RecordCount}"/>
+                            <GridViewColumn Header="Uploaded By" Width="100" DisplayMemberBinding="{Binding UploadedBy}"/>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+
+                <!-- No Uploads Message -->
+                <TextBlock x:Name="txtNoUploads"
+                           Text="No upload records found."
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Foreground="{StaticResource ForegroundColor}"
+                           Opacity="0.6"
+                           Visibility="Collapsed"/>
+
+                <!-- Loading State -->
+                <StackPanel x:Name="pnlLoading"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Visibility="Collapsed">
+                    <TextBlock Text="Loading upload records..."
+                               Foreground="{StaticResource ForegroundColor}"
+                               Opacity="0.6"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Selection Summary and Select All -->
+        <DockPanel Grid.Row="3" Margin="0,10,0,0">
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                <Button x:Name="btnSelectAll"
+                        Content="Select All"
+                        Width="80"
+                        Height="28"
+                        Margin="0,0,10,0"
+                        Background="{StaticResource ControlBackground}"
+                        Foreground="{StaticResource ForegroundColor}"
+                        BorderBrush="{StaticResource ControlBorder}"
+                        BorderThickness="1"
+                        ToolTip="Select all upload batches"
+                        Click="BtnSelectAll_Click"/>
+                <Button x:Name="btnSelectNone"
+                        Content="Select None"
+                        Width="80"
+                        Height="28"
+                        Background="{StaticResource ControlBackground}"
+                        Foreground="{StaticResource ForegroundColor}"
+                        BorderBrush="{StaticResource ControlBorder}"
+                        BorderThickness="1"
+                        ToolTip="Deselect all upload batches"
+                        Click="BtnSelectNone_Click"/>
+            </StackPanel>
+            <TextBlock x:Name="txtSelectionSummary"
+                       Text="0 batch(es) selected (0 records)"
+                       Foreground="{StaticResource ForegroundColor}"
+                       Opacity="0.7"
+                       FontSize="12"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right"/>
+        </DockPanel>
+
+        <!-- Buttons -->
+        <StackPanel Grid.Row="5"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right">
+            <Button x:Name="btnCancel"
+                    Content="Close"
+                    Width="100"
+                    Height="35"
+                    Margin="0,0,10,0"
+                    Background="{StaticResource ControlBackground}"
+                    Foreground="{StaticResource ForegroundColor}"
+                    BorderBrush="{StaticResource ControlBorder}"
+                    BorderThickness="1"
+                    ToolTip="Close this dialog"
+                    Click="BtnCancel_Click"/>
+            <Button x:Name="btnDelete"
+                    Content="Delete Selected"
+                    Width="120"
+                    Height="35"
+                    Background="{StaticResource ButtonDangerBackground}"
+                    Foreground="{StaticResource ForegroundColor}"
+                    BorderBrush="{StaticResource ButtonDangerBorder}"
+                    BorderThickness="1"
+                    IsEnabled="False"
+                    ToolTip="Delete selected batches from VANTAGE_global_ProgressLog"
+                    Click="BtnDelete_Click"/>
+        </StackPanel>
+
+        <!-- Loading Overlay for operations -->
+        <Border x:Name="pnlOperationLoading"
+                Grid.Row="0"
+                Grid.RowSpan="6"
+                Background="#CC1E1E1E"
+                Visibility="Collapsed">
+            <StackPanel HorizontalAlignment="Center"
+                        VerticalAlignment="Center">
+                <busy:SfBusyIndicator IsBusy="True"
+                                      AnimationType="DoubleCircle"
+                                      Foreground="{StaticResource ForegroundColor}"
+                                      Width="60"
+                                      Height="60"/>
+                <TextBlock x:Name="txtOperationStatus"
+                           Text="Processing..."
+                           Foreground="{StaticResource ForegroundColor}"
+                           FontSize="14"
+                           HorizontalAlignment="Center"
+                           Margin="0,15,0,0"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

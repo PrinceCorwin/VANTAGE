@@ -5,6 +5,22 @@ This document tracks completed features and fixes. Items are moved here from Pro
 ---
 
 ### January 28, 2026
+- **Progress Log Management Dialog & Upload Tracking (WIP - needs retest):**
+  - Created `VMS_ProgressLogUploads` Azure tracking table for upload batch management
+  - Added duplicate warning before uploading if records for same ProjectID/WeekEndDate already exist
+  - Inserts one tracking record per unique RespParty after each upload batch
+  - Created ManageProgressLogDialog (Admin menu) to view and delete tracked upload batches
+  - Delete removes matching records from VANTAGE_global_ProgressLog then tracking table
+  - Added ProgressLog column truncation to match old VANTAGE silent truncation behavior
+  - Changed upload Timestamp format to `M/d/yyyy h:mm:ss tt` (local time, matching old VANTAGE)
+  - Added Stopwatch timing to upload success message
+  - Updated Help sidebar with new dialog documentation
+
+- **PjtSystemNo Field (New Activity Column):**
+  - Added PjtSystemNo property across models, repository, sync, import/export, views, and snapshot dialogs
+  - Maps to OldVantage `Tag_SystemNo` column (separate from existing PjtSystem/Tag_System)
+  - Added new row in VMS_ColumnMappings for the mapping
+
 - **Schedule Grid - Horizontal Scrolling:**
   - Added Ctrl+ScrollWheel horizontal scrolling to schedule master grid (matching Progress grid)
   - Added native horizontal scroll wheel (tilt wheel) support for mice like Logitech MX Master

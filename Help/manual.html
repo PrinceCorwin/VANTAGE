@@ -306,6 +306,7 @@
                     <li><a href="#admin-project-setup">Project Setup</a></li>
                     <li><a href="#admin-snapshots">Snapshot Management</a></li>
                     <li><a href="#admin-upload-progress-log">Upload to Progress Log</a></li>
+                    <li><a href="#admin-progress-log">Manage Progress Log</a></li>
                     <li><a href="#admin-sync">Database Sync</a></li>
                 </ul>
             </li>
@@ -407,6 +408,7 @@
         <li><strong>Edit Users</strong> — Manage user accounts and permissions</li>
         <li><strong>Edit Projects</strong> — Configure project settings and metadata</li>
         <li><strong>Edit Snapshots</strong> — Manage weekly data snapshots across all users, upload to Progress Log</li>
+        <li><strong>Manage Progress Log</strong> — View and delete batches previously uploaded to the Progress Log</li>
         <li><strong>Deleted Records UI</strong> — View and restore soft-deleted records</li>
     </ul>
 
@@ -2064,6 +2066,27 @@
         <li><strong>UserID</strong> is set to the admin performing the upload</li>
         <li><strong>Timestamp</strong> is set to the upload time (identical for all records in a batch)</li>
         <li>After upload, <strong>AzureUploadUtcDate</strong> is updated on VMS_Activities for all uploaded records so users can see when their data was last uploaded</li>
+        <li>If records for the same Project/Week have already been uploaded, a <strong>duplicate warning</strong> is shown before proceeding</li>
+        <li>Each upload is tracked in <code>VMS_ProgressLogUploads</code> so it can be found and deleted later via <strong>Manage Progress Log</strong></li>
+    </ul>
+
+    <h3 id="admin-progress-log">Manage Progress Log (Admin > Manage Progress Log)</h3>
+    <p>This dialog displays all tracked upload batches that have been sent to <code>VANTAGE_global_ProgressLog</code>. Only uploads made after this feature was added are tracked.</p>
+
+    <h4>Viewing Uploads</h4>
+    <ul>
+        <li>Each row represents a batch of records uploaded for a specific <strong>Username / Project / Resp Party / Week Ending</strong> combination</li>
+        <li>The <strong>Uploaded</strong> column shows when the batch was sent to the Progress Log</li>
+        <li>The <strong>Records</strong> column shows how many records were in that batch</li>
+        <li>The <strong>Uploaded By</strong> column shows which admin performed the upload</li>
+    </ul>
+
+    <h4>Deleting Upload Batches</h4>
+    <ul>
+        <li>Select one or more batches using the checkboxes, then click <strong>Delete Selected</strong></li>
+        <li>This permanently removes the matching records from <code>VANTAGE_global_ProgressLog</code> on Azure</li>
+        <li>Records are matched by Project ID, Resp Party, Week End Date, and Upload Timestamp</li>
+        <li>Use this when progress data needs to be corrected and re-uploaded for a given week</li>
     </ul>
 
     <h3 id="admin-sync">Database Sync</h3>

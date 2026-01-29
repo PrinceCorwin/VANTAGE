@@ -462,7 +462,7 @@ namespace VANTAGE.Dialogs
                             PipeGrade, PipeSize1, PipeSize2, PrevEarnMHs, PrevEarnQTY, ProgDate,
                             ProjectID, Quantity, RevNO, RFINO, ROCBudgetQTY, ROCID, ROCPercent,
                             ROCStep, SchedActNO, SchFinish, SchStart, SecondActno, SecondDwgNO,
-                            Service, ShopField, ShtNO, SubArea, PjtSystem, SystemNO, TagNO,
+                            Service, ShopField, ShtNO, SubArea, PjtSystem, PjtSystemNo, SystemNO, TagNO,
                             UDF1, UDF2, UDF3, UDF4, UDF5, UDF6, UDF7, UDF8, UDF9, UDF10,
                             UDF11, UDF12, UDF13, UDF14, UDF15, UDF16, UDF17, RespParty, UDF20,
                             UpdatedBy, UpdatedUtcDate, UOM, WorkPackage, XRay
@@ -477,7 +477,7 @@ namespace VANTAGE.Dialogs
                             PipeGrade, PipeSize1, PipeSize2, PrevEarnMHs, PrevEarnQTY, ProgDate,
                             ProjectID, Quantity, RevNO, RFINO, ROCBudgetQTY, ROCID, ROCPercent,
                             ROCStep, SchedActNO, SchFinish, SchStart, SecondActno, SecondDwgNO,
-                            Service, ShopField, ShtNO, SubArea, PjtSystem, SystemNO, TagNO,
+                            Service, ShopField, ShtNO, SubArea, PjtSystem, PjtSystemNo, SystemNO, TagNO,
                             UDF1, UDF2, UDF3, UDF4, UDF5, UDF6, UDF7, UDF8, UDF9, UDF10,
                             UDF11, UDF12, UDF13, UDF14, UDF15, UDF16, UDF17, RespParty, UDF20,
                             @updatedBy, @updatedUtcDate, UOM, WorkPackage, XRay
@@ -644,7 +644,7 @@ namespace VANTAGE.Dialogs
                         PipeGrade, PipeSize1, PipeSize2, PrevEarnMHs, PrevEarnQTY, ProgDate,
                         ProjectID, Quantity, RevNO, RFINO, ROCBudgetQTY, ROCID, ROCPercent,
                         ROCStep, SchedActNO, SchFinish, SchStart, SecondActno, SecondDwgNO,
-                        Service, ShopField, ShtNO, SubArea, PjtSystem, SystemNO, TagNO,
+                        Service, ShopField, ShtNO, SubArea, PjtSystem, PjtSystemNo, SystemNO, TagNO,
                         UDF1, UDF2, UDF3, UDF4, UDF5, UDF6, UDF7, UDF8, UDF9, UDF10,
                         UDF11, UDF12, UDF13, UDF14, UDF15, UDF16, UDF17, RespParty, UDF20,
                         UOM, WorkPackage, XRay
@@ -728,30 +728,31 @@ namespace VANTAGE.Dialogs
                 ShtNO = GetStringOrEmpty(reader, 56),
                 SubArea = GetStringOrEmpty(reader, 57),
                 PjtSystem = GetStringOrEmpty(reader, 58),
-                SystemNO = GetStringOrEmpty(reader, 59),
-                TagNO = GetStringOrEmpty(reader, 60),
-                UDF1 = GetStringOrEmpty(reader, 61),
-                UDF2 = GetStringOrEmpty(reader, 62),
-                UDF3 = GetStringOrEmpty(reader, 63),
-                UDF4 = GetStringOrEmpty(reader, 64),
-                UDF5 = GetStringOrEmpty(reader, 65),
-                UDF6 = GetStringOrEmpty(reader, 66),
-                UDF7 = GetStringOrEmpty(reader, 67),
-                UDF8 = GetStringOrEmpty(reader, 68),
-                UDF9 = GetStringOrEmpty(reader, 69),
-                UDF10 = GetStringOrEmpty(reader, 70),
-                UDF11 = GetStringOrEmpty(reader, 71),
-                UDF12 = GetStringOrEmpty(reader, 72),
-                UDF13 = GetStringOrEmpty(reader, 73),
-                UDF14 = GetStringOrEmpty(reader, 74),
-                UDF15 = GetStringOrEmpty(reader, 75),
-                UDF16 = GetStringOrEmpty(reader, 76),
-                UDF17 = GetStringOrEmpty(reader, 77),
-                RespParty = GetStringOrEmpty(reader, 78),
-                UDF20 = GetStringOrEmpty(reader, 79),
-                UOM = GetStringOrEmpty(reader, 80),
-                WorkPackage = GetStringOrEmpty(reader, 81),
-                XRay = GetStringOrEmpty(reader, 82)
+                PjtSystemNo = GetStringOrEmpty(reader, 59),
+                SystemNO = GetStringOrEmpty(reader, 60),
+                TagNO = GetStringOrEmpty(reader, 61),
+                UDF1 = GetStringOrEmpty(reader, 62),
+                UDF2 = GetStringOrEmpty(reader, 63),
+                UDF3 = GetStringOrEmpty(reader, 64),
+                UDF4 = GetStringOrEmpty(reader, 65),
+                UDF5 = GetStringOrEmpty(reader, 66),
+                UDF6 = GetStringOrEmpty(reader, 67),
+                UDF7 = GetStringOrEmpty(reader, 68),
+                UDF8 = GetStringOrEmpty(reader, 69),
+                UDF9 = GetStringOrEmpty(reader, 70),
+                UDF10 = GetStringOrEmpty(reader, 71),
+                UDF11 = GetStringOrEmpty(reader, 72),
+                UDF12 = GetStringOrEmpty(reader, 73),
+                UDF13 = GetStringOrEmpty(reader, 74),
+                UDF14 = GetStringOrEmpty(reader, 75),
+                UDF15 = GetStringOrEmpty(reader, 76),
+                UDF16 = GetStringOrEmpty(reader, 77),
+                UDF17 = GetStringOrEmpty(reader, 78),
+                RespParty = GetStringOrEmpty(reader, 79),
+                UDF20 = GetStringOrEmpty(reader, 80),
+                UOM = GetStringOrEmpty(reader, 81),
+                WorkPackage = GetStringOrEmpty(reader, 82),
+                XRay = GetStringOrEmpty(reader, 83)
             };
         }
 
@@ -931,6 +932,7 @@ namespace VANTAGE.Dialogs
                     ShtNO = @shtNO,
                     SubArea = @subArea,
                     PjtSystem = @pjtSystem,
+                    PjtSystemNo = @pjtSystemNo,
                     SystemNO = @systemNO,
                     TagNO = @tagNO,
                     UDF1 = @udf1,
@@ -1021,6 +1023,7 @@ namespace VANTAGE.Dialogs
             cmd.Parameters.AddWithValue("@shtNO", snapshot.ShtNO);
             cmd.Parameters.AddWithValue("@subArea", snapshot.SubArea);
             cmd.Parameters.AddWithValue("@pjtSystem", snapshot.PjtSystem);
+            cmd.Parameters.AddWithValue("@pjtSystemNo", snapshot.PjtSystemNo);
             cmd.Parameters.AddWithValue("@systemNO", snapshot.SystemNO);
             cmd.Parameters.AddWithValue("@tagNO", snapshot.TagNO);
             cmd.Parameters.AddWithValue("@udf1", snapshot.UDF1);
@@ -1168,6 +1171,7 @@ namespace VANTAGE.Dialogs
         public string ShtNO { get; set; } = string.Empty;
         public string SubArea { get; set; } = string.Empty;
         public string PjtSystem { get; set; } = string.Empty;
+        public string PjtSystemNo { get; set; } = string.Empty;
         public string SystemNO { get; set; } = string.Empty;
         public string TagNO { get; set; } = string.Empty;
         public string UDF1 { get; set; } = string.Empty;

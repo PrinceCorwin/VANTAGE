@@ -157,6 +157,56 @@ namespace VANTAGE.Dialogs
             int totalSnapshots = selectedGroups.Sum(g => g.SnapshotCount);
             string currentUser = App.CurrentUser?.Username ?? Environment.UserName;
 
+            // Check for existing uploads (duplicate warning)
+            try
+            {
+                var duplicateWarnings = await System.Threading.Tasks.Task.Run(() =>
+                {
+                    var warnings = new List<string>();
+                    using var conn = AzureDbManager.GetConnection();
+                    conn.Open();
+
+                    foreach (var group in selectedGroups)
+                    {
+                        using var checkCmd = conn.CreateCommand();
+                        checkCmd.CommandText = @"
+                            SELECT COUNT(*), MAX(UploadUtcDate)
+                            FROM VMS_ProgressLogUploads
+                            WHERE ProjectID = @projectId
+                              AND WeekEndDate = @weekEndDate";
+                        checkCmd.Parameters.AddWithValue("@projectId", group.ProjectID);
+                        checkCmd.Parameters.AddWithValue("@weekEndDate", group.WeekEndDateStr);
+
+                        using var reader = checkCmd.ExecuteReader();
+                        if (reader.Read() && reader.GetInt32(0) > 0)
+                        {
+                            string lastUpload = reader.IsDBNull(1) ? "unknown" : reader.GetString(1);
+                            warnings.Add($"  {group.ProjectID} / {group.WeekEndDateDisplay} (last uploaded: {lastUpload})");
+                        }
+                    }
+                    return warnings;
+                });
+
+                if (duplicateWarnings.Count > 0)
+                {
+                    string warningList = string.Join("\n", duplicateWarnings);
+                    var dupResult = MessageBox.Show(
+                        $"The following groups have already been uploaded to the Progress Log:\n\n{warningList}\n\n" +
+                        "Uploading again will create duplicate records in the Progress Log. Continue?",
+                        "Duplicate Upload Warning",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Warning);
+
+                    if (dupResult != MessageBoxResult.Yes)
+                        return;
+                }
+            }
+            catch (Exception ex)
+            {
+                // Don't block upload if duplicate check fails
+                AppLogger.Error(ex, "AdminSnapshotsDialog.BtnUploadToProgressLog_Click.DuplicateCheck");
+            }
+
             // Confirm upload
             var confirmResult = MessageBox.Show(
                 $"Upload {totalSnapshots} snapshot(s) to VANTAGE_global_ProgressLog?\n\n" +
@@ -177,11 +227,14 @@ namespace VANTAGE.Dialogs
 
             try
             {
+                var stopwatch = System.Diagnostics.Stopwatch.StartNew();
                 int uploadedCount = await System.Threading.Tasks.Task.Run(() =>
                     UploadSnapshotsToProgressLog(selectedGroups, currentUser));
+                stopwatch.Stop();
 
                 MessageBox.Show(
-                    $"Successfully uploaded {uploadedCount} snapshot(s) to Progress Log.",
+                    $"Successfully uploaded {uploadedCount} snapshot(s) to Progress Log.\n\n" +
+                    $"Elapsed: {stopwatch.Elapsed.TotalSeconds:F1} seconds",
                     "Upload Complete",
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
@@ -208,7 +261,7 @@ namespace VANTAGE.Dialogs
         // Performs the actual upload to VANTAGE_global_ProgressLog
         private int UploadSnapshotsToProgressLog(List<SnapshotGroupItem> selectedGroups, string currentUser)
         {
-            var uploadTimestamp = DateTime.UtcNow;
+            var uploadTimestamp = DateTime.Now;
             var uploadedUniqueIds = new HashSet<string>();
 
             using var azureConn = AzureDbManager.GetConnection();
@@ -267,8 +320,8 @@ namespace VANTAGE.Dialogs
                 dataTable.Columns.Add("Sch_Status", typeof(string));
             if (!dataTable.Columns.Contains("Val_EarnedHours_Ind"))
                 dataTable.Columns.Add("Val_EarnedHours_Ind", typeof(string));
-            if (!dataTable.Columns.Contains("VAL_Client_Earned_EQ-QTY"))
-                dataTable.Columns.Add("VAL_Client_Earned_EQ-QTY", typeof(string));
+            if (!dataTable.Columns.Contains("Val_Client_Earned_EQ-QTY"))
+                dataTable.Columns.Add("Val_Client_Earned_EQ-QTY", typeof(string));
             if (!dataTable.Columns.Contains("UserID"))
                 dataTable.Columns.Add("UserID", typeof(string));
             if (!dataTable.Columns.Contains("Timestamp"))
@@ -349,13 +402,13 @@ namespace VANTAGE.Dialogs
                     double clientEquivEarnQty = budgetMHs > 0 && percentEntry > 0
                         ? NumericHelper.RoundToPlaces((percentEntry / 100) * clientEquivQty)
                         : 0;
-                    row["VAL_Client_Earned_EQ-QTY"] = clientEquivEarnQty.ToString();
+                    row["Val_Client_Earned_EQ-QTY"] = clientEquivEarnQty.ToString();
 
                     // Set UserID to current admin
                     row["UserID"] = currentUser;
 
                     // Set Timestamp to upload time (same for all records in this batch)
-                    row["Timestamp"] = uploadTimestamp.ToString("yyyy-MM-dd HH:mm:ss");
+                    row["Timestamp"] = uploadTimestamp.ToString("M/d/yyyy h:mm:ss tt");
 
                     dataTable.Rows.Add(row);
                 }
@@ -364,6 +417,38 @@ namespace VANTAGE.Dialogs
             if (dataTable.Rows.Count == 0)
             {
                 return 0;
+            }
+
+            // Query ProgressLog column max lengths and truncate values to fit
+            // SqlBulkCopy is strict about length; old VANTAGE silently truncated
+            var columnMaxLengths = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            using (var schemaCmd = azureConn.CreateCommand())
+            {
+                schemaCmd.CommandText = @"
+                    SELECT COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH
+                    FROM INFORMATION_SCHEMA.COLUMNS
+                    WHERE TABLE_NAME = 'VANTAGE_global_ProgressLog'
+                      AND DATA_TYPE IN ('nvarchar', 'varchar')
+                      AND CHARACTER_MAXIMUM_LENGTH IS NOT NULL";
+                using var schemaReader = schemaCmd.ExecuteReader();
+                while (schemaReader.Read())
+                {
+                    string colName = schemaReader.GetString(0);
+                    int maxLen = schemaReader.GetInt32(1);
+                    columnMaxLengths[colName] = maxLen;
+                }
+            }
+
+            foreach (DataRow row in dataTable.Rows)
+            {
+                foreach (DataColumn col in dataTable.Columns)
+                {
+                    if (row[col] is string val && columnMaxLengths.TryGetValue(col.ColumnName, out int maxLen))
+                    {
+                        if (maxLen > 0 && val.Length > maxLen)
+                            row[col] = val.Substring(0, maxLen);
+                    }
+                }
             }
 
             // Bulk copy to VANTAGE_global_ProgressLog
@@ -379,6 +464,62 @@ namespace VANTAGE.Dialogs
                 }
 
                 bulkCopy.WriteToServer(dataTable);
+            }
+
+            // Insert tracking records into VMS_ProgressLogUploads
+            // One row per unique RespParty within each selected snapshot group
+            try
+            {
+                string uploadUtcDateStr = uploadTimestamp.ToString("M/d/yyyy h:mm:ss tt");
+
+                foreach (var group in selectedGroups)
+                {
+                    // Query distinct RespParty values and counts for this group's snapshots
+                    using var respCmd = azureConn.CreateCommand();
+                    respCmd.CommandText = @"
+                        SELECT RespParty, COUNT(*) as RecordCount
+                        FROM VMS_ProgressSnapshots
+                        WHERE AssignedTo = @username
+                          AND ProjectID = @projectId
+                          AND WeekEndDate = @weekEndDate
+                        GROUP BY RespParty";
+                    respCmd.Parameters.AddWithValue("@username", group.Username);
+                    respCmd.Parameters.AddWithValue("@projectId", group.ProjectID);
+                    respCmd.Parameters.AddWithValue("@weekEndDate", group.WeekEndDateStr);
+
+                    using var respReader = respCmd.ExecuteReader();
+                    var respGroups = new List<(string RespParty, int Count)>();
+                    while (respReader.Read())
+                    {
+                        string respParty = respReader.IsDBNull(0) ? "" : respReader.GetString(0);
+                        int count = respReader.GetInt32(1);
+                        respGroups.Add((respParty, count));
+                    }
+                    respReader.Close();
+
+                    foreach (var (respParty, count) in respGroups)
+                    {
+                        using var trackCmd = azureConn.CreateCommand();
+                        trackCmd.CommandText = @"
+                            INSERT INTO VMS_ProgressLogUploads
+                                (ProjectID, RespParty, WeekEndDate, UploadUtcDate, RecordCount, Username, UploadedBy)
+                            VALUES
+                                (@projectId, @respParty, @weekEndDate, @uploadUtcDate, @recordCount, @username, @uploadedBy)";
+                        trackCmd.Parameters.AddWithValue("@projectId", group.ProjectID);
+                        trackCmd.Parameters.AddWithValue("@respParty", respParty);
+                        trackCmd.Parameters.AddWithValue("@weekEndDate", group.WeekEndDateStr);
+                        trackCmd.Parameters.AddWithValue("@uploadUtcDate", uploadUtcDateStr);
+                        trackCmd.Parameters.AddWithValue("@recordCount", count);
+                        trackCmd.Parameters.AddWithValue("@username", group.Username);
+                        trackCmd.Parameters.AddWithValue("@uploadedBy", currentUser);
+                        trackCmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Don't fail the upload if tracking insert fails
+                AppLogger.Error(ex, "AdminSnapshotsDialog.UploadSnapshotsToProgressLog.TrackingInsert");
             }
 
             // Update AzureUploadUtcDate on VMS_Activities for uploaded records
