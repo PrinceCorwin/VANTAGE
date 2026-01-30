@@ -889,31 +889,22 @@ namespace VANTAGE.Services.ProgressBook
             graphics.DrawString(text, font, BlackBrush, new PointF(textX, textY));
         }
 
-        // Helper: Draw entry box for handwriting (white fill with label to the left)
+        // Helper: Draw entry box for handwriting (white fill, no inner border - grid lines define boundaries)
         private void DrawEntryBox(PdfGraphics graphics, float x, float y, float width, float height, PdfBrush brush, string? label = null)
         {
             float padding = 2;
-            float labelWidth = 0;
 
-            // Draw label to the left of the entry box (not inside, so handwriting won't cover it)
+            // White fill for the entire cell area (provides contrast for handwriting)
+            graphics.DrawRectangle(brush, new RectangleF(x + padding, y + padding, width - padding * 2, height - padding * 2));
+
+            // Draw % label in the left side of the cell
             if (!string.IsNullOrEmpty(label))
             {
                 var labelFont = new PdfStandardFont(PdfFontFamily.Helvetica, 8, PdfFontStyle.Bold);
                 var labelSize = labelFont.MeasureString(label);
-                labelWidth = labelSize.Width + 4;
                 float labelY = y + (height - labelSize.Height) / 2;
-                graphics.DrawString(label, labelFont, BlackBrush, x + 2, labelY);
+                graphics.DrawString(label, labelFont, BlackBrush, x + 3, labelY);
             }
-
-            // Entry box fills remaining width after label
-            float boxX = x + labelWidth + padding;
-            float boxWidth = width - labelWidth - padding * 2;
-            float boxHeight = height - padding * 2;
-            float boxY = y + padding;
-
-            // White fill with border for handwriting area
-            graphics.DrawRectangle(brush, new RectangleF(boxX, boxY, boxWidth, boxHeight));
-            graphics.DrawRectangle(ThinPen, new RectangleF(boxX, boxY, boxWidth, boxHeight));
         }
 
         // Helper: Calculate row height for an activity (considers description wrapping)

@@ -46,27 +46,52 @@ namespace VANTAGE.Dialogs
                         GROUP BY AssignedTo, ProjectID, WeekEndDate
                         ORDER BY AssignedTo, ProjectID, WeekEndDate DESC";
 
-                    using var reader = cmd.ExecuteReader();
-                    while (reader.Read())
+                    using (var reader = cmd.ExecuteReader())
                     {
-                        string username = reader.IsDBNull(0) ? "(Unknown)" : reader.GetString(0);
-                        string projectId = reader.IsDBNull(1) ? "(Unknown)" : reader.GetString(1);
-                        string weekEndDateStr = reader.GetString(2);
-                        int count = reader.GetInt32(3);
-
-                        if (DateTime.TryParse(weekEndDateStr, out DateTime weekEndDate))
+                        while (reader.Read())
                         {
-                            var item = new SnapshotGroupItem
+                            string username = reader.IsDBNull(0) ? "(Unknown)" : reader.GetString(0);
+                            string projectId = reader.IsDBNull(1) ? "(Unknown)" : reader.GetString(1);
+                            string weekEndDateStr = reader.GetString(2);
+                            int count = reader.GetInt32(3);
+
+                            if (DateTime.TryParse(weekEndDateStr, out DateTime weekEndDate))
                             {
-                                Username = username,
-                                ProjectID = projectId,
-                                WeekEndDate = weekEndDate,
-                                WeekEndDateStr = weekEndDateStr,
-                                SnapshotCount = count
-                            };
-                            item.PropertyChanged += GroupItem_PropertyChanged;
-                            groupList.Add(item);
+                                var item = new SnapshotGroupItem
+                                {
+                                    Username = username,
+                                    ProjectID = projectId,
+                                    WeekEndDate = weekEndDate,
+                                    WeekEndDateStr = weekEndDateStr,
+                                    SnapshotCount = count
+                                };
+                                item.PropertyChanged += GroupItem_PropertyChanged;
+                                groupList.Add(item);
+                            }
                         }
+                    }
+
+                    // Check which groups have been uploaded to ProgressLog
+                    // Key on Username + ProjectID + WeekEndDate to match group granularity
+                    var uploadedSet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                    using (var uploadCmd = azureConn.CreateCommand())
+                    {
+                        uploadCmd.CommandText = @"
+                            SELECT DISTINCT Username, ProjectID, WeekEndDate
+                            FROM VMS_ProgressLogUploads";
+                        using var uploadReader = uploadCmd.ExecuteReader();
+                        while (uploadReader.Read())
+                        {
+                            string user = uploadReader.IsDBNull(0) ? "" : uploadReader.GetString(0);
+                            string pid = uploadReader.IsDBNull(1) ? "" : uploadReader.GetString(1);
+                            string wed = uploadReader.IsDBNull(2) ? "" : uploadReader.GetString(2);
+                            uploadedSet.Add($"{user}|{pid}|{wed}");
+                        }
+                    }
+
+                    foreach (var item in groupList)
+                    {
+                        item.IsUploaded = uploadedSet.Contains($"{item.Username}|{item.ProjectID}|{item.WeekEndDateStr}");
                     }
 
                     return groupList;
@@ -237,6 +262,11 @@ namespace VANTAGE.Dialogs
                     "Upload Complete",
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
+
+                // Mark uploaded groups in the UI
+                foreach (var group in selectedGroups)
+                    group.IsUploaded = true;
+                lvSnapshots.Items.Refresh();
 
                 AppLogger.Info(
                     $"Admin uploaded {uploadedCount} snapshots to ProgressLog",
@@ -764,6 +794,8 @@ namespace VANTAGE.Dialogs
                 }
             }
         }
+
+        public bool IsUploaded { get; set; }
 
         public string WeekEndDateDisplay => WeekEndDate.ToString("MM/dd/yyyy");
 

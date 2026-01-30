@@ -618,7 +618,7 @@ namespace VANTAGE.Repositories
 
                     var azureCmd = azureConn.CreateCommand();
                     azureCmd.CommandText = @"
-                UPDATE ProgressSnapshots 
+                UPDATE VMS_ProgressSnapshots
                 SET PercentEntry = @percentEntry,
                     BudgetMHs = @budgetMHs,
                     SchStart = @schStart,

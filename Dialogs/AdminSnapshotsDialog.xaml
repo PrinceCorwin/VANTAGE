@@ -63,6 +63,7 @@
                             <GridViewColumn Header="Project ID" Width="100" DisplayMemberBinding="{Binding ProjectID}"/>
                             <GridViewColumn Header="Week Ending" Width="120" DisplayMemberBinding="{Binding WeekEndDateDisplay}"/>
                             <GridViewColumn Header="Count" Width="70" DisplayMemberBinding="{Binding SnapshotCount}"/>
+                            <GridViewColumn Header="Uploaded" Width="75" DisplayMemberBinding="{Binding IsUploaded}"/>
                         </GridView>
                     </ListView.View>
                 </ListView>
