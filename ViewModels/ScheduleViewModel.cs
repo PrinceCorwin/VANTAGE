@@ -26,6 +26,17 @@ namespace VANTAGE.ViewModels
         private string? _selectedSchedActNO;
         private bool _hasUnsavedChanges;
 
+        // Syncfusion SfDataGrid temporarily sets ViewModel as GridCell DataContext during cell recycling.
+        // These satisfy CellStyle DataTrigger bindings without error; actual values come from ScheduleMasterRow.
+        public bool IsMissedStartReasonRequired => false;
+        public bool IsMissedFinishReasonRequired => false;
+        public bool IsThreeWeekStartRequired => false;
+        public bool IsThreeWeekFinishRequired => false;
+        public bool HasStartVariance => false;
+        public bool HasFinishVariance => false;
+        public bool HasBudgetMHsVariance => false;
+        public bool HasPercentCompleteVariance => false;
+
         public bool HasUnsavedChanges
         {
             get => _hasUnsavedChanges;

@@ -95,6 +95,9 @@
 ### V2 Data Model
 - Add ClientEarnedEquivQty column to Activities table, Azure VMS_Activities, and ColumnMappings (maps to OldVantage `VAL_Client_Earned_EQ-QTY`) - currently ignored during import
 
+### V2 Architecture Revisit
+- **Schedule CellStyle DataTrigger binding approach** -- The Schedule master grid uses `CellStyle` with `DataTrigger` bindings on 8 columns (MissedStartReason, MissedFinishReason, 3WLA Start/Finish, MS Start/Finish, MS %/MHs) to conditionally color cells red/yellow. These bindings reference bool properties on `ScheduleMasterRow` (e.g., `IsMissedStartReasonRequired`, `HasStartVariance`). Syncfusion's SfDataGrid cell recycling temporarily sets the GridCell DataContext to `ScheduleViewModel` instead of the row data, causing WPF Error 40 binding failures. Current fix: 8 dummy `=> false` properties on `ScheduleViewModel` (line ~30) so the binding resolves without error during the transient state. Proper fix would be replacing the simple `{Binding Path=PropName}` DataTrigger bindings with `MultiBinding` + `IMultiValueConverter` that type-checks the DataContext, preserving PropertyChanged reactivity. See `ScheduleView.xaml` lines 83-145 (styles) and `ScheduleViewModel.cs` dummy properties block.
+
 ### AI Features (see InCode_AI_Plan.md)
 | Feature | Status |
 |---------|--------|

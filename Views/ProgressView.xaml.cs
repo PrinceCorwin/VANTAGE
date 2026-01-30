@@ -4424,57 +4424,50 @@ namespace VANTAGE.Views
                     busyDialog.UpdateStatus("Sending notification...");
                     bool emailSent = false;
 
-                    // Only send email if assigning to someone else (not self)
-                    if (selectedUser != currentUser)
+                    // Get recipient's email and full name from Users table
+                    string? recipientEmail = null;
+                    string recipientName = selectedUser;
+
+                    using (var localConn = DatabaseSetup.GetConnection())
                     {
-                        // Get recipient's email and full name from Users table
-                        string? recipientEmail = null;
-                        string recipientName = selectedUser;
+                        localConn.Open();
+                        var userCmd = localConn.CreateCommand();
+                        userCmd.CommandText = "SELECT Email, FullName FROM Users WHERE Username = @username";
+                        userCmd.Parameters.AddWithValue("@username", selectedUser);
 
-                        using (var localConn = DatabaseSetup.GetConnection())
+                        using var reader = userCmd.ExecuteReader();
+                        if (reader.Read())
                         {
-                            localConn.Open();
-                            var userCmd = localConn.CreateCommand();
-                            userCmd.CommandText = "SELECT Email, FullName FROM Users WHERE Username = @username";
-                            userCmd.Parameters.AddWithValue("@username", selectedUser);
-
-                            using var reader = userCmd.ExecuteReader();
-                            if (reader.Read())
-                            {
-                                recipientEmail = reader.IsDBNull(0) ? null : reader.GetString(0);
-                                string fullName = reader.IsDBNull(1) ? "" : reader.GetString(1);
-                                if (!string.IsNullOrWhiteSpace(fullName))
-                                    recipientName = fullName;
-                            }
+                            recipientEmail = reader.IsDBNull(0) ? null : reader.GetString(0);
+                            string fullName = reader.IsDBNull(1) ? "" : reader.GetString(1);
+                            if (!string.IsNullOrWhiteSpace(fullName))
+                                recipientName = fullName;
                         }
+                    }
 
-                        if (!string.IsNullOrWhiteSpace(recipientEmail))
-                        {
-                            // Get project IDs from assigned records
-                            var projectIds = allowedActivities
-                                .Select(a => a.ProjectID)
-                                .Where(p => !string.IsNullOrWhiteSpace(p))
-                                .Distinct()
-                                .ToList()!;
+                    if (!string.IsNullOrWhiteSpace(recipientEmail))
+                    {
+                        // Get project IDs from assigned records
+                        var projectIds = allowedActivities
+                            .Select(a => a.ProjectID)
+                            .Where(p => !string.IsNullOrWhiteSpace(p))
+                            .Distinct()
+                            .ToList()!;
 
-                            emailSent = await EmailService.SendAssignmentNotificationAsync(
-                                recipientEmail,
-                                recipientName,
-                                currentUser,
-                                updatedCount,
-                                projectIds!);
-                        }
+                        emailSent = await EmailService.SendAssignmentNotificationAsync(
+                            recipientEmail,
+                            recipientName,
+                            currentUser,
+                            updatedCount,
+                            projectIds!);
                     }
 
                     busyDialog.Close();
 
                     string successMessage = $"Successfully reassigned {updatedCount} record(s) to {selectedUser}.";
-                    if (selectedUser != currentUser)
-                    {
-                        successMessage += emailSent
-                            ? "\n\nEmail notification sent."
-                            : "\n\nEmail notification could not be sent.";
-                    }
+                    successMessage += emailSent
+                        ? "\n\nEmail notification sent."
+                        : "\n\nEmail notification could not be sent.";
 
                     MessageBox.Show(
                         successMessage,

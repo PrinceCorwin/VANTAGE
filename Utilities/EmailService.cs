@@ -46,7 +46,7 @@ namespace VANTAGE.Utilities
                     ? string.Join(", ", projectIds.Distinct())
                     : "Unknown";
 
-                string subject = $"MILESTONE: {recordCount} record(s) assigned to you";
+                string subject = $"VANTAGE: MS: {recordCount} record(s) assigned to you";
 
                 string htmlBody = $@"
 <!DOCTYPE html>
@@ -67,11 +67,11 @@ namespace VANTAGE.Utilities
 <body>
     <div class='container'>
         <div class='header'>
-            <h2 style='margin: 0;'>MILESTONE Assignment Notification</h2>
+            <h2 style='margin: 0;'>VANTAGE: MS Assignment Notification</h2>
         </div>
         <div class='content'>
             <p>Hello {recipientName},</p>
-            <p>You have been assigned new records in MILESTONE:</p>
+            <p>You have been assigned new records in VANTAGE: MS:</p>
             <p class='highlight'>{recordCount} record(s)</p>
             <div class='details'>
                 <div class='detail-row'>
@@ -84,28 +84,28 @@ namespace VANTAGE.Utilities
                     <span class='label'>Date:</span> {DateTime.Now:MMMM d, yyyy h:mm tt}
                 </div>
             </div>
-            <p style='margin-top: 20px;'>Please open MILESTONE and SYNC now to see your records.</p>
+            <p style='margin-top: 20px;'>Please open VANTAGE: MS and SYNC now to see your records.</p>
             <div class='footer'>
-                <p>This is an automated message from MILESTONE. Please do not reply to this email.</p>
+                <p>This is an automated message from VANTAGE: MS. Please do not reply to this email.</p>
             </div>
         </div>
     </div>
 </body>
 </html>";
 
-                string plainTextBody = $@"MILESTONE Assignment Notification
+                string plainTextBody = $@"VANTAGE: MS Assignment Notification
 
 Hello {recipientName},
 
-You have been assigned {recordCount} record(s) in MILESTONE.
+You have been assigned {recordCount} record(s) in VANTAGE: MS.
 
 Assigned by: {assignedByUsername}
 Project(s): {projectList}
 Date: {DateTime.Now:MMMM d, yyyy h:mm tt}
 
-Please open MILESTONE and SYNC now to see your records.
+Please open VANTAGE: MS and SYNC now to see your records.
 
-This is an automated message from MILESTONE. Please do not reply to this email.";
+This is an automated message from VANTAGE: MS. Please do not reply to this email.";
 
                 var emailMessage = new EmailMessage(
                     senderAddress: Credentials.AzureEmailSenderAddress,
@@ -153,7 +153,7 @@ This is an automated message from MILESTONE. Please do not reply to this email."
 
                 var client = GetClient();
 
-                string subject = $"MILESTONE Access Request - {windowsUsername}";
+                string subject = $"VANTAGE: MS Access Request - {windowsUsername}";
 
                 string htmlBody = $@"
 <!DOCTYPE html>
@@ -173,10 +173,10 @@ This is an automated message from MILESTONE. Please do not reply to this email."
 <body>
     <div class='container'>
         <div class='header'>
-            <h2 style='margin: 0;'>MILESTONE Access Request</h2>
+            <h2 style='margin: 0;'>VANTAGE: MS Access Request</h2>
         </div>
         <div class='content'>
-            <p>A user is requesting access to MILESTONE:</p>
+            <p>A user is requesting access to VANTAGE: MS:</p>
             <div class='details'>
                 <div class='detail-row'>
                     <span class='label'>Windows Username:</span> {windowsUsername}
@@ -191,27 +191,27 @@ This is an automated message from MILESTONE. Please do not reply to this email."
                     <span class='label'>Request Date:</span> {DateTime.Now:MMMM d, yyyy h:mm tt}
                 </div>
             </div>
-            <p style='margin-top: 20px;'>Please add this user to the Users table in MILESTONE Admin if approved.</p>
+            <p style='margin-top: 20px;'>Please add this user to the Users table in VANTAGE: MS Admin if approved.</p>
             <div class='footer'>
-                <p>This is an automated message from MILESTONE.</p>
+                <p>This is an automated message from VANTAGE: MS.</p>
             </div>
         </div>
     </div>
 </body>
 </html>";
 
-                string plainTextBody = $@"MILESTONE Access Request
+                string plainTextBody = $@"VANTAGE: MS Access Request
 
-A user is requesting access to MILESTONE:
+A user is requesting access to VANTAGE: MS:
 
 Windows Username: {windowsUsername}
 Full Name: {fullName}
 Email: {email}
 Request Date: {DateTime.Now:MMMM d, yyyy h:mm tt}
 
-Please add this user to the Users table in MILESTONE Admin if approved.
+Please add this user to the Users table in VANTAGE: MS Admin if approved.
 
-This is an automated message from MILESTONE.";
+This is an automated message from VANTAGE: MS.";
 
                 // Send to each admin
                 bool allSent = true;

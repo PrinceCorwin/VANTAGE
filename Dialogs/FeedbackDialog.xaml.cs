@@ -427,7 +427,7 @@ namespace VANTAGE.Dialogs
                 }
 
                 string typeLabel = feedback.Type == "Bug" ? "Bug Report" : "Idea";
-                string subject = $"MILESTONE Feedback: New {typeLabel} Submitted";
+                string subject = $"VANTAGE: MS Feedback: New {typeLabel} Submitted";
                 string htmlBody = $@"
 <!DOCTYPE html>
 <html>
@@ -462,7 +462,7 @@ namespace VANTAGE.Dialogs
                 {(string.IsNullOrEmpty(feedback.Description) ? "(none)" : System.Net.WebUtility.HtmlEncode(feedback.Description).Replace("\n", "<br/>"))}
             </div>
             <div class='footer'>
-                <p>Open MILESTONE and go to Tools > Feedback Board to review and update the status.</p>
+                <p>Open VANTAGE: MS and go to Tools > Feedback Board to review and update the status.</p>
             </div>
         </div>
     </div>

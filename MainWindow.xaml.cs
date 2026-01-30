@@ -934,16 +934,17 @@ namespace VANTAGE
                 localConn.Open();
 
                 var command = localConn.CreateCommand();
-                command.CommandText = "SELECT UserID, Username, FullName FROM Users ORDER BY Username";
+                command.CommandText = "SELECT UserID, Username, FullName, Email FROM Users ORDER BY Username";
 
-                var users = new System.Collections.Generic.List<(int UserID, string Username, string FullName)>();
+                var users = new System.Collections.Generic.List<(int UserID, string Username, string FullName, string Email)>();
                 using var reader = command.ExecuteReader();
                 while (reader.Read())
                 {
                     users.Add((
                         reader.GetInt32(0),
                         reader.GetString(1),
-                        reader.IsDBNull(2) ? "" : reader.GetString(2)
+                        reader.IsDBNull(2) ? "" : reader.GetString(2),
+                        reader.IsDBNull(3) ? "" : reader.GetString(3)
                     ));
                 }
                 reader.Close();
@@ -1036,12 +1037,14 @@ namespace VANTAGE
                         {
                             var toggleCmd = azureConn.CreateCommand();
 
+                            string action;
                             if (isCurrentlyAdmin)
                             {
                                 // Remove from Admins table
                                 toggleCmd.CommandText = "DELETE FROM VMS_Admins WHERE Username = @username";
                                 toggleCmd.Parameters.AddWithValue("@username", selectedUser.Username);
                                 toggleCmd.ExecuteNonQuery();
+                                action = "revoked";
                                 MessageBox.Show($"Admin revoked from {selectedUser.Username}", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
                             }
                             else
@@ -1051,7 +1054,57 @@ namespace VANTAGE
                                 toggleCmd.Parameters.AddWithValue("@username", selectedUser.Username);
                                 toggleCmd.Parameters.AddWithValue("@fullname", selectedUser.FullName);
                                 toggleCmd.ExecuteNonQuery();
+                                action = "granted";
                                 MessageBox.Show($"Admin granted to {selectedUser.Username}", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                            }
+
+                            // Send email notification to the target user
+                            if (!string.IsNullOrWhiteSpace(selectedUser.Email))
+                            {
+                                string recipientName = !string.IsNullOrWhiteSpace(selectedUser.FullName) ? selectedUser.FullName : selectedUser.Username;
+                                string changedBy = App.CurrentUser?.Username ?? "Unknown";
+                                string emailSubject = $"VANTAGE: MS - Admin privileges {action}";
+                                string emailHtml = $@"
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{ font-family: 'Segoe UI', Arial, sans-serif; color: #333; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+        .header {{ background-color: #0078D7; color: white; padding: 15px 20px; border-radius: 4px 4px 0 0; }}
+        .content {{ background-color: #f5f5f5; padding: 20px; border-radius: 0 0 4px 4px; }}
+        .highlight {{ font-size: 20px; font-weight: bold; color: {(action == "granted" ? "#2E7D32" : "#C62828")}; }}
+        .details {{ margin-top: 15px; }}
+        .detail-row {{ padding: 8px 0; border-bottom: 1px solid #ddd; }}
+        .label {{ font-weight: 600; color: #555; }}
+        .footer {{ margin-top: 20px; font-size: 12px; color: #888; }}
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <div class='header'>
+            <h2 style='margin: 0;'>VANTAGE: MS Admin Status Change</h2>
+        </div>
+        <div class='content'>
+            <p>Hello {System.Net.WebUtility.HtmlEncode(recipientName)},</p>
+            <p class='highlight'>Admin privileges {action}</p>
+            <div class='details'>
+                <div class='detail-row'>
+                    <span class='label'>Changed by:</span> {System.Net.WebUtility.HtmlEncode(changedBy)}
+                </div>
+                <div class='detail-row'>
+                    <span class='label'>Date:</span> {DateTime.Now:MMMM d, yyyy h:mm tt}
+                </div>
+            </div>
+            <p style='margin-top: 20px;'>{(action == "granted" ? "You now have access to admin features. Restart VANTAGE: MS to see the Admin menu." : "Your admin access has been removed. The change will take effect next time you open VANTAGE: MS.")}</p>
+            <div class='footer'>
+                <p>This is an automated message from VANTAGE: MS. Please do not reply to this email.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>";
+                                _ = EmailService.SendEmailAsync(selectedUser.Email, emailSubject, emailHtml);
                             }
 
                             // If the selected user is the current user, update UI
