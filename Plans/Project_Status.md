@@ -75,17 +75,44 @@
 - Template editors testing
 - PDF preview testing
 
-### Help Sidebar
-- Write Progress Books content
-- Write Administration content
-- Write Reference content
-- Capture screenshots (45+ total)
+### Help Sidebar — In Progress
+Active work on `Help/manual.html`. Current state of each section:
+
+**Completed sections (content written, screenshots placeholders converted to `<img>` tags):**
+- 1. Getting Started
+- 2. Main Interface
+- 3. Progress Module (toolbar split into 3 section screenshots, sidebar filters documented, filter manager documented, SCAN button added)
+- 4. Schedule Module (filter buttons, discrepancies, 3WLA, missed reasons all documented)
+
+**Needs work:**
+- 5. Progress Books — **Needs thorough redo.** Some instructions are vague or incorrect (e.g., references to wrong toolbar locations, workflow steps may not match current UI). Review every instruction against the actual app behavior. The SCAN button is on the Progress toolbar, not Progress Books toolbar.
+- 6. Work Packages — Content written and detailed (tokens, form types, templates). Removed `wp-full-view.png` since Generate tab is the default view. Looks complete pending screenshot review.
+- 7. Administration — Content needs writing
+- 8. Reference — Content needs writing
+- Troubleshooting section — Still says "Content coming soon..."
+
+**Screenshots status:**
+- 15 screenshots saved to `Help/` folder (set Build Action to Content / Copy if newer in VS Properties for each)
+- Screenshots not yet captured: `wp-templates-tab.png`, `wp-form-cover.png`, `wp-form-list.png`, `wp-form-form.png`, `wp-form-grid.png`
+- WebView2 uses virtual host mapping (`https://help.local/manual.html`) for image loading — see `SidePanelView.xaml.cs`
+- VS sometimes re-adds PNGs as `<Resource Include>` — always set to Content / Copy if newer
+
+**Other manual changes made this session:**
+- Renamed "Help / AI Sidebar" → "Help Sidebar" everywhere (menu items and manual)
+- Removed glossary section and TOC entry
+- Added note about accessing Help Sidebar via F1 or settings menu
+- Added note about active filters showing highlighted border
+- Updated Today filter description (SchStart/SchFinish == today)
+- Updated Budget dropdown description
+- Updated Discrepancies description (VANTAGE vs P6 values)
+- Swapped Progress Books (now section 5) and Work Packages (now section 6)
 
 ## Feature Backlog
 
 ### High Priority
 - V1 production packaging (self-contained publish, initial ZIP distribution, credentials strategy)
 - Set up GitHub Release with update manifest for auto-update testing
+- Clear Filters button: remove persistent highlighted border; only show it when any filter is active (sidebar filters, column header filters, or Scan dialog Apply); remove border after clicking Clear Filters
 
 ### Medium Priority
 - **DISCUSS:** Add PlanStart and PlanFinish fields to Activities (for baseline schedule comparison?)

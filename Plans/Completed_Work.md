@@ -4,6 +4,35 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ---
 
+### January 30, 2026 (Session 2)
+- **Help Sidebar polish and content updates:**
+  - Renamed "Help / AI Sidebar" → "Help Sidebar" in MainWindow.xaml menu items (2 locations)
+  - Removed glossary section and TOC entry from manual.html
+  - Converted all 17 screenshot `<div class="placeholder">` tags to `<img>` tags
+  - Added WebView2 virtual host mapping in SidePanelView.xaml.cs (`help.local` → Help folder) to enable local image loading
+  - Changed SidePanelViewModel.cs help URL from `file:///` to `https://help.local/manual.html`
+  - Added `<None Update="Help\*.png">` to VANTAGE.csproj for screenshot copy-to-output
+  - Added Help Sidebar access note (F1 and settings menu)
+  - Added active filter highlighted border note to Sidebar Filters section
+  - Split Progress toolbar into 3 section screenshots (left/center/right)
+  - Added SCAN button to toolbar left section documentation
+  - Added filter manager documentation with screenshot and step-by-step instructions
+  - Updated Budget description (clickable dropdown for column selection)
+  - Updated Discrepancies description (VANTAGE vs P6 Schedule values)
+  - Swapped Progress Books (section 5) and Work Packages (section 6)
+  - Removed redundant `wp-full-view.png` (Generate tab is default view)
+  - Fixed SCAN button references (on Progress toolbar, not Progress Books toolbar)
+- **User filter save bug fix:**
+  - Fixed ManageFiltersDialog.xaml.cs: changed save condition from `if (_isNewFilter)` to `if (_isNewFilter || _currentFilter == null)` to handle users typing directly without clicking New
+  - Fixed save-then-select to use `lstFilters.SelectedIndex` instead of `lstFilters.SelectedItem`
+  - Added ListBoxItem style to ManageFiltersDialog.xaml for FluentDark theme foreground visibility
+  - Fixed empty catch block in SettingsManager.SetUserSetting to log errors
+- **Today filter change:**
+  - Changed PassesTodayFilter in ProgressViewModel.cs from 3WLA-based logic to simple SchStart/SchFinish == today check
+  - Updated help manual description to match
+- **Schedule Required Fields button:**
+  - Changed from red text (`StatusRed` foreground) to red background (`StatusRedBg`) with standard foreground for better visibility on dark theme
+
 ### January 30, 2026
 - **Auto-update mechanism:**
   - Created UpdateService (checks manifest.json on startup, downloads ZIP, verifies SHA-256 hash)

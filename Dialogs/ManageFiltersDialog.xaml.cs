@@ -321,7 +321,6 @@ namespace VANTAGE.Dialogs
                     }
                 }
             }
-
             if (conditions.Count == 0)
             {
                 MessageBox.Show("Please add at least one valid condition.", "No Conditions",
@@ -329,13 +328,13 @@ namespace VANTAGE.Dialogs
                 return;
             }
 
-            // Save filter
-            if (_isNewFilter)
+            // Save filter (treat as new if no current filter is set)
+            if (_isNewFilter || _currentFilter == null)
             {
                 _currentFilter = new UserFilter { Name = filterName, Conditions = conditions };
                 _filters.Add(_currentFilter);
             }
-            else if (_currentFilter != null)
+            else
             {
                 _currentFilter.Name = filterName;
                 _currentFilter.Conditions = conditions;
@@ -345,8 +344,10 @@ namespace VANTAGE.Dialogs
             RefreshFilterList();
             _isNewFilter = false;
 
-            // Select the saved filter
-            lstFilters.SelectedItem = filterName;
+            // Select the saved filter by index
+            var savedIndex = _filters.FindIndex(f => f.Name.Equals(filterName, StringComparison.OrdinalIgnoreCase));
+            if (savedIndex >= 0)
+                lstFilters.SelectedIndex = savedIndex;
 
             MessageBox.Show("Filter saved.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
         }

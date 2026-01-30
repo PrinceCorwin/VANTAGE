@@ -155,8 +155,9 @@ namespace VANTAGE.Utilities
 
                 command.ExecuteNonQuery();
             }
-            catch
+            catch (Exception ex)
             {
+                AppLogger.Error(ex, "SettingsManager.SetUserSetting");
             }
         }
 

@@ -39,7 +39,14 @@
                      Background="{StaticResource ControlBackground}"
                      Foreground="{StaticResource ForegroundColor}"
                      BorderBrush="{StaticResource ControlBorder}"
-                     SelectionChanged="LstFilters_SelectionChanged"/>
+                     SelectionChanged="LstFilters_SelectionChanged">
+                <ListBox.ItemContainerStyle>
+                    <Style TargetType="ListBoxItem">
+                        <Setter Property="Foreground" Value="{StaticResource ForegroundColor}"/>
+                        <Setter Property="Padding" Value="6,4"/>
+                    </Style>
+                </ListBox.ItemContainerStyle>
+            </ListBox>
 
             <StackPanel Grid.Row="4" Orientation="Horizontal">
                 <Button x:Name="btnNewFilter"

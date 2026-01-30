@@ -104,7 +104,7 @@
                             Background="{StaticResource ControlBackground}"
                             Foreground="{StaticResource ForegroundColor}"
                             BorderBrush="{StaticResource BorderColor}">
-                            <syncfusion:DropDownMenuItem Header="Help / AI Sidebar     (F1)" Click="MenuHelpSidebar_Click" ToolTip="Open context-aware help and AI assistant"/>
+                            <syncfusion:DropDownMenuItem Header="Help Sidebar     (F1)" Click="MenuHelpSidebar_Click" ToolTip="Open the help sidebar"/>
                             <Separator Background="{StaticResource BorderColor}" Margin="5,2"/>
                             <syncfusion:DropDownMenuItem Header="Prorate MHs" Click="MenuProrateMHs_Click"/>
                             <syncfusion:DropDownMenuItem Header="Schedule Change Log" Click="MenuScheduleChangeLog_Click" ToolTip="View and apply changes made in the Schedule detail grid"/>
@@ -292,7 +292,7 @@
                                 CornerRadius="2"
                                 Padding="0">
                             <StackPanel>
-                                <Button Content="Help / AI Sidebar   (F1)"
+                                <Button Content="Help Sidebar   (F1)"
                                         Background="Transparent"
                                         Foreground="{StaticResource ForegroundColor}"
                                         BorderThickness="0"

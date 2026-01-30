@@ -280,7 +280,16 @@
                     <li><a href="#sched-shortcuts">Keyboard Shortcuts</a></li>
                 </ul>
             </li>
-            <li><a href="#work-packages">5. Work Packages</a>
+            <li><a href="#progress-books">5. Progress Books</a>
+                <ul>
+                    <li><a href="#pb-overview">Overview</a></li>
+                    <li><a href="#pb-generating">Generating Progress Books</a></li>
+                    <li><a href="#pb-ai-scan">AI Progress Scan</a></li>
+                    <li><a href="#pb-scan-results">Scan Results Dialog</a></li>
+                    <li><a href="#pb-applying">Applying Scanned Progress</a></li>
+                </ul>
+            </li>
+            <li><a href="#work-packages">6. Work Packages</a>
                 <ul>
                     <li><a href="#wp-overview">Overview</a></li>
                     <li><a href="#wp-layout">Layout</a></li>
@@ -289,15 +298,6 @@
                     <li><a href="#wp-form-templates">Form Templates Tab</a></li>
                     <li><a href="#wp-tokens">Token System</a></li>
                     <li><a href="#wp-previewing">Previewing Templates</a></li>
-                </ul>
-            </li>
-            <li><a href="#progress-books">6. Progress Books</a>
-                <ul>
-                    <li><a href="#pb-overview">Overview</a></li>
-                    <li><a href="#pb-generating">Generating Progress Books</a></li>
-                    <li><a href="#pb-ai-scan">AI Progress Scan</a></li>
-                    <li><a href="#pb-scan-results">Scan Results Dialog</a></li>
-                    <li><a href="#pb-applying">Applying Scanned Progress</a></li>
                 </ul>
             </li>
             <li><a href="#administration">7. Administration</a>
@@ -314,7 +314,7 @@
             <li><a href="#reference">8. Reference</a>
                 <ul>
                     <li><a href="#ref-column-mappings">Column Mappings</a></li>
-                    <li><a href="#ref-glossary">Glossary</a></li>
+
                     <li><a href="#ref-troubleshooting">Troubleshooting</a></li>
                     <li><a href="#ref-getting-help">Getting Help</a></li>
                 </ul>
@@ -350,7 +350,7 @@
     <!-- ============================================ -->
 
     <h3 id="ui-layout">Layout</h3>
-    <div class="placeholder">Screenshot: Main interface with numbered callouts (start-main-interface.png)</div>
+    <img src="start-main-interface.png" alt="Main interface" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
     <p>The main window has three sections:</p>
     <ul>
         <li><strong>Toolbar</strong> — Menus (File, Tools, Admin) on the left, module navigation buttons in the center, settings menu on the right</li>
@@ -359,7 +359,7 @@
     </ul>
 
     <h3 id="ui-navigation">Navigation</h3>
-    <div class="placeholder">Screenshot: Toolbar showing module buttons (start-toolbar-detail.png)</div>
+    <img src="start-toolbar-detail.png" alt="Toolbar module buttons" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
     <p>Four module buttons are displayed in the center of the toolbar. The active module is highlighted with a colored underline.</p>
     <table>
         <tr>
@@ -406,7 +406,7 @@
 
     <h4>Tools Menu</h4>
     <ul>
-        <li><strong>Help / AI Sidebar</strong> — Open the help documentation sidebar (also F1)</li>
+        <li><strong>Help Sidebar</strong> — Open the help documentation sidebar (also F1)</li>
         <li><strong>Prorate MHs</strong> — Distribute budgeted man-hours across filtered activities</li>
         <li><strong>Schedule Change Log</strong> — View and apply changes made in the Schedule detail grid to live Activities</li>
     </ul>
@@ -423,7 +423,7 @@
 
     <h4>Settings Menu (⋮)</h4>
     <ul>
-        <li><strong>Help / AI Sidebar</strong> — Open the help documentation sidebar (also F1)</li>
+        <li><strong>Help Sidebar</strong> — Open the help documentation sidebar (also F1)</li>
         <li><strong>Feedback Board</strong> — Submit ideas or report bugs to the development team</li>
         <li><strong>Import Settings</strong> — Load saved application settings from a file</li>
         <li><strong>Export Settings</strong> — Save your current settings to a file for backup or transfer</li>
@@ -432,7 +432,8 @@
     </ul>
 
     <h3 id="ui-status-bar">Status Bar</h3>
-    <div class="placeholder">Screenshot: Status bar detail (start-status-bar.png)</div>
+    <img src="start-status-bar-left.png" alt="Status bar left" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <img src="start-status-bar-right.png" alt="Status bar right" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
     <p>The status bar at the bottom displays:</p>
     <ul>
         <li><strong>Version</strong> — Current MILESTONE version</li>
@@ -441,8 +442,8 @@
     </ul>
 
     <h3 id="ui-help-sidebar">Help Sidebar</h3>
-    <div class="placeholder">Screenshot: Help sidebar with search (start-help-sidebar.png)</div>
-    <p>Press <span class="keyboard-shortcut">F1</span> to open the Help sidebar. The sidebar shows context-sensitive help based on your current module. Use the search field to find specific topics.</p>
+    <img src="start-help-sidebar.png" alt="Help sidebar" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <p>Open the Help sidebar by pressing <span class="keyboard-shortcut">F1</span> or from the <strong>⋮</strong> settings menu in the top right corner. The sidebar shows context-sensitive help based on your current module. Use the search field to find specific topics.</p>
 
     <h3 id="ui-shortcuts">Keyboard Shortcuts</h3>
     <table>
@@ -475,7 +476,7 @@
     <h3 id="prog-overview">Overview</h3>
     <p>The Progress Module is where you track construction activity completion. This is the primary workspace for field engineers entering daily progress and reviewing assigned work.</p>
 
-    <div class="placeholder">Screenshot: Progress module full view (progress-full-view.png)</div>
+    <img src="progress-full-view.png" alt="Progress module" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
 
     <h3 id="prog-workflow">Typical Workflow</h3>
     <p>The standard daily workflow is:</p>
@@ -505,9 +506,9 @@
     <p>The summary row updates automatically when you edit values or apply filters, showing totals for the currently visible records only.</p>
 
     <h3 id="prog-toolbar">Toolbar</h3>
-    <div class="placeholder">Screenshot: Progress toolbar (progress-toolbar.png)</div>
 
     <h4>Left Section — Quick Actions</h4>
+    <img src="progress-toolbar-left.png" alt="Progress toolbar left section" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
     <table>
         <tr>
             <th>Control</th>
@@ -520,6 +521,10 @@
         <tr>
             <td><strong>REFRESH</strong></td>
             <td>Reload data from the local database</td>
+        </tr>
+        <tr>
+            <td><strong>SCAN</strong></td>
+            <td>Open the AI Progress Scan dialog to import handwritten progress percentages from scanned progress books. See <a href="#pb-ai-scan">AI Progress Scan</a> for details.</td>
         </tr>
         <tr>
             <td><strong>100%</strong></td>
@@ -537,6 +542,7 @@
     </div>
 
     <h4>Center Section — Sync Controls</h4>
+    <img src="progress-toolbar-center.png" alt="Progress toolbar center section" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
     <table>
         <tr>
             <th>Button</th>
@@ -553,15 +559,17 @@
     </table>
 
     <h4>Right Section — Summary Panel</h4>
+    <img src="progress-toolbar-right.png" alt="Progress toolbar right section" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
     <p>Displays real-time totals for the currently filtered records:</p>
     <ul>
-        <li><strong>Budget</strong> — Total budgeted man-hours</li>
-        <li><strong>Earned</strong> — Total earned man-hours based on percent complete</li>
+        <li><strong>Budget</strong> — Click the column name to choose which field to use as the budget total. Options include BudgetMHs (default), Quantity, ClientBudget, and others. Your selection persists between sessions.</li>
+        <li><strong>Earned</strong> — Calculated as the selected budget column multiplied by each activity's percent complete</li>
         <li><strong>% Complete</strong> — Overall completion percentage (Earned / Budget)</li>
     </ul>
 
     <h3 id="prog-filters">Sidebar Filters</h3>
-    <div class="placeholder">Screenshot: Progress sidebar filters (progress-sidebar.png)</div>
+    <img src="progress-sidebar.png" alt="Progress sidebar filters" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <p>Active filters display a highlighted border so you can easily see which filters are currently applied.</p>
 
     <h4>Progress Filters</h4>
     <p>These three filters are mutually exclusive — only one can be active at a time:</p>
@@ -601,12 +609,22 @@
         </tr>
         <tr>
             <td><strong>Today</strong></td>
-            <td>Activities scheduled within the three-week lookahead window</td>
+            <td>Activities with a start date (SchStart) or finish date (SchFinish) of today</td>
         </tr>
     </table>
 
     <h4>User Filters</h4>
-    <p>Click the <strong>USER</strong> dropdown to apply saved custom filters. Select "Manage Filters" to create, edit, or delete your saved filters.</p>
+    <p>Click the <strong>USER</strong> dropdown to apply saved custom filters. Select <strong>Manage Filters</strong> to open the filter manager dialog.</p>
+    <img src="progress-manage-filters.png" alt="Manage Filters dialog" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <p><strong>Creating a filter:</strong></p>
+    <ol>
+        <li>Click <strong>New</strong> to start a new filter</li>
+        <li>Enter a name for the filter</li>
+        <li>Select a <strong>Column</strong>, <strong>Criteria</strong> (Contains, Equals, Starts With, etc.), and <strong>Value</strong> for each condition</li>
+        <li>Click <strong>+ Add Condition</strong> to add more conditions (up to 5), connected by AND/OR logic</li>
+        <li>Click <strong>Save</strong> to save the filter</li>
+    </ol>
+    <p>Saved filters appear in the list on the left. Click a filter name to edit it, or use the <strong>Delete</strong> button to remove it. Saved filters are available in the <strong>USER</strong> dropdown on the sidebar for quick access.</p>
 
     <h4>Other Sidebar Controls</h4>
     <ul>
@@ -898,7 +916,7 @@
         <p>If no P6 file has been imported, the header displays "(No schedule loaded)". Without both P6 data and a snapshot for the same week, the grid will be empty.</p>
     </div>
 
-    <div class="placeholder">Screenshot: Schedule module full view (schedule-full-view.png)</div>
+    <img src="schedule-full-view.png" alt="Schedule module" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
 
     <h3 id="sched-layout">Layout</h3>
     <p>The Schedule view uses a master/detail layout:</p>
@@ -935,7 +953,7 @@
     <p>The status bar shows a legend: red square = required fields, yellow square = discrepancies.</p>
 
     <h3 id="sched-toolbar">Toolbar</h3>
-    <div class="placeholder">Screenshot: Schedule toolbar (schedule-toolbar.png)</div>
+    <img src="schedule-toolbar.png" alt="Schedule toolbar" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
 
     <h4>Week Selection</h4>
     <p>The header displays the current "Week Ending" date. Schedule data is filtered to show snapshots for this week.</p>
@@ -960,7 +978,7 @@
         </tr>
         <tr>
             <td><strong>Discrepancies</strong></td>
-            <td>Dropdown with options: Actual Start, Actual Finish, MHs, % Complete</td>
+            <td>Dropdown that filters to activities where VANTAGE and P6 Schedule values don't match. Options: Actual Start, Actual Finish, MHs, % Complete</td>
         </tr>
         <tr>
             <td><strong>Required Fields</strong></td>
@@ -1306,13 +1324,236 @@
     </table>
 
     <!-- ============================================ -->
-    <h2 id="work-packages">5. Work Packages</h2>
+    <h2 id="progress-books">5. Progress Books</h2>
+    <!-- ============================================ -->
+
+    <h3 id="pb-overview">Overview</h3>
+    <p>Progress Books are printable checklists showing activities grouped by Area, Module, or Drawing. Field crews use these to mark completed progress percentages by hand, which can then be scanned and automatically applied to MILESTONE using the AI Progress Scan feature.</p>
+
+    <img src="pb-full-view.png" alt="Progress Books view" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+
+    <p>The Progress Books workflow:</p>
+    <ol>
+        <li><strong>Generate</strong> — Create printable progress books for field crews</li>
+        <li><strong>Distribute</strong> — Print and give to field crews for the work area</li>
+        <li><strong>Collect</strong> — Retrieve completed books with handwritten progress percentages</li>
+        <li><strong>Scan</strong> — Use the SCAN button on the Progress module toolbar to extract the percentages from scanned images using AI Progress Scan</li>
+        <li><strong>Apply</strong> — Review and apply the scanned values to your activities</li>
+    </ol>
+
+    <h3 id="pb-generating">Generating Progress Books</h3>
+    <p>To create a progress book:</p>
+    <ol>
+        <li>Navigate to the <strong>PROG BOOKS</strong> module</li>
+        <li>Select a <strong>Project</strong> from the dropdown</li>
+        <li>Choose your grouping method (Area, Module, or Drawing)</li>
+        <li>Select which groups to include</li>
+        <li>Click <strong>Generate</strong> to create the PDF</li>
+    </ol>
+
+    <p>The generated PDF contains:</p>
+    <ul>
+        <li><strong>Activity ID</strong> — The unique identifier for each activity</li>
+        <li><strong>Description</strong> — Activity description for field reference</li>
+        <li><strong>Current %</strong> — The current percent complete in MILESTONE</li>
+        <li><strong>New %</strong> — Blank column for handwritten progress updates</li>
+    </ul>
+
+    <div class="note">
+        <div class="note-title">Print Quality</div>
+        <p>For best AI scanning results, print progress books on white paper with good contrast. Black and white printing works well.</p>
+    </div>
+
+    <h3 id="pb-ai-scan">AI Progress Scan</h3>
+    <p>The AI Progress Scan feature uses AWS Textract to automatically read handwritten progress percentages from scanned progress books. This eliminates manual data entry and reduces transcription errors.</p>
+
+    <h4>Starting a Scan</h4>
+    <ol>
+        <li>Click the <strong>SCAN</strong> button on the Progress module toolbar</li>
+        <li>In the dialog, click <strong>Select Files</strong> to choose scanned images</li>
+        <li>Supported formats: PDF, JPEG, PNG</li>
+        <li>You can select multiple files at once</li>
+        <li>Click <strong>Start Processing</strong> to begin the scan</li>
+    </ol>
+
+    <h4>File Requirements</h4>
+    <table>
+        <tr>
+            <th>Requirement</th>
+            <th>Recommendation</th>
+        </tr>
+        <tr>
+            <td><strong>Format</strong></td>
+            <td>PDF (best), JPEG, or PNG</td>
+        </tr>
+        <tr>
+            <td><strong>Resolution</strong></td>
+            <td>300 DPI or higher for best accuracy</td>
+        </tr>
+        <tr>
+            <td><strong>Orientation</strong></td>
+            <td>Pages should be upright (not rotated)</td>
+        </tr>
+        <tr>
+            <td><strong>Handwriting</strong></td>
+            <td>Clear, legible numbers in the "New %" column</td>
+        </tr>
+    </table>
+
+    <h4>Processing Status</h4>
+    <p>During processing, the dialog shows:</p>
+    <ul>
+        <li>Progress bar with percentage complete</li>
+        <li>Current page being processed</li>
+        <li>Count of extracted entries</li>
+    </ul>
+    <p>You can click <strong>Cancel</strong> to stop processing at any time.</p>
+
+    <h3 id="pb-scan-results">Scan Results Dialog</h3>
+    <p>After processing completes, the results dialog displays all extracted entries for review.</p>
+
+    <h4>Results Grid Columns</h4>
+    <table>
+        <tr>
+            <th>Column</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td><strong>Apply (checkbox)</strong></td>
+            <td>Select which entries to apply to your activities</td>
+        </tr>
+        <tr>
+            <td><strong>Activity ID</strong></td>
+            <td>The extracted activity identifier</td>
+        </tr>
+        <tr>
+            <td><strong>Description</strong></td>
+            <td>Activity description (looked up from database)</td>
+        </tr>
+        <tr>
+            <td><strong>Current %</strong></td>
+            <td>Current percent complete in MILESTONE</td>
+        </tr>
+        <tr>
+            <td><strong>New %</strong></td>
+            <td>The scanned percentage value (editable)</td>
+        </tr>
+        <tr>
+            <td><strong>Budget MHs</strong></td>
+            <td>Budget man-hours for the activity, or "NOT FOUND" if the Activity ID isn't in the database</td>
+        </tr>
+        <tr>
+            <td><strong>Confidence</strong></td>
+            <td>AI confidence level (percentage)</td>
+        </tr>
+        <tr>
+            <td><strong>Status</strong></td>
+            <td>Ready, Warning, or Error indicator</td>
+        </tr>
+    </table>
+
+    <h4>Status Indicators</h4>
+    <table>
+        <tr>
+            <th>Status</th>
+            <th>Meaning</th>
+            <th>Action</th>
+        </tr>
+        <tr>
+            <td><strong>Ready</strong></td>
+            <td>Entry matched an activity and is ready to apply</td>
+            <td>Review and apply</td>
+        </tr>
+        <tr>
+            <td><strong>Warning</strong></td>
+            <td>Low confidence or potential issue (e.g., new % is lower than current %)</td>
+            <td>Verify the scanned value is correct</td>
+        </tr>
+        <tr>
+            <td><strong>Error</strong></td>
+            <td>Activity ID not found or invalid percentage</td>
+            <td>Cannot apply — manually enter in Progress module</td>
+        </tr>
+    </table>
+
+    <h4>Selection Buttons</h4>
+    <ul>
+        <li><strong>Select All</strong> — Check all entries regardless of status</li>
+        <li><strong>Select Ready</strong> — Check only entries with "Ready" status</li>
+        <li><strong>Clear Selection</strong> — Uncheck all entries</li>
+    </ul>
+
+    <h4>Contrast Adjustment</h4>
+    <p>If scan results show incorrect values, you can adjust the image contrast and rescan:</p>
+    <ol>
+        <li>Use the <strong>Contrast</strong> slider (range 1.0 to 2.0)</li>
+        <li>Higher values increase contrast for faint handwriting</li>
+        <li>Click <strong>Rescan</strong> to reprocess files with the new setting</li>
+    </ol>
+
+    <div class="note">
+        <div class="note-title">When to Adjust Contrast</div>
+        <p>Only adjust contrast if the scan returns incorrect values. The default setting (1.2) works well for most scanned documents. Increase contrast if handwriting is faint or the scan is light.</p>
+    </div>
+
+    <h4>Filtering Results</h4>
+    <p>Each column header has a filter icon for Excel-like filtering. Use these to:</p>
+    <ul>
+        <li>Show only "Warning" status entries that need review</li>
+        <li>Filter to specific Activity IDs</li>
+        <li>Find entries with low confidence scores</li>
+    </ul>
+
+    <h4>Editing Values</h4>
+    <p>You can manually edit the <strong>New %</strong> column if the scanned value is incorrect:</p>
+    <ol>
+        <li>Double-click the cell to enter edit mode</li>
+        <li>Type the correct percentage value</li>
+        <li>Press Enter to confirm</li>
+    </ol>
+
+    <h3 id="pb-applying">Applying Scanned Progress</h3>
+    <p>Once you've reviewed the scan results:</p>
+    <ol>
+        <li>Use the selection buttons or checkboxes to select entries to apply</li>
+        <li>Verify that selected entries have correct New % values</li>
+        <li>Click <strong>Apply Selected</strong></li>
+        <li>Confirm the action in the dialog</li>
+    </ol>
+
+    <p>Applied changes:</p>
+    <ul>
+        <li>Update the PercentEntry field for each selected activity</li>
+        <li>Auto-set SchStart date if changing from 0% (sets to today)</li>
+        <li>Auto-set SchFinish date if changing to 100% (sets to today)</li>
+        <li>Mark records as LocalDirty for sync</li>
+    </ul>
+
+    <div class="warning">
+        <div class="warning-title">Review Before Applying</div>
+        <p>Always verify the scanned values before applying. Pay special attention to entries with "Warning" status or low confidence scores. Applied changes cannot be automatically undone.</p>
+    </div>
+
+    <h4>After Applying</h4>
+    <p>After applying scanned progress:</p>
+    <ul>
+        <li>The dialog shows a summary of applied changes</li>
+        <li>Switch to the <strong>PROGRESS</strong> module to review updated records</li>
+        <li>Use the "LocalDirty" filter to see modified records</li>
+        <li>Click <strong>SYNC</strong> to push changes to Azure</li>
+    </ul>
+
+    <div class="note">
+        <div class="note-title">OCR Corrections</div>
+        <p>The AI scan automatically corrects common OCR errors such as "O" being read as "0". If a "00" is detected, it's automatically interpreted as "100" since no one would write "00%" for progress.</p>
+    </div>
+
+    <!-- ============================================ -->
+    <h2 id="work-packages">6. Work Packages</h2>
     <!-- ============================================ -->
 
     <h3 id="wp-overview">Overview</h3>
     <p>The Work Packages module generates professional PDF documents for construction work packages. It combines multiple form templates into a single merged PDF with customizable branding and dynamic content through token replacement.</p>
-
-    <div class="placeholder">Screenshot: Work Packages full view (wp-full-view.png)</div>
 
     <p>Key capabilities:</p>
     <ul>
@@ -1334,7 +1575,7 @@
     <h3 id="wp-generate">Generate Tab</h3>
     <p>The Generate tab is where you create work package PDFs.</p>
 
-    <div class="placeholder">Screenshot: Generate tab (wp-generate-tab.png)</div>
+    <img src="wp-generate-tab.png" alt="Generate tab" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
 
     <h4>Generation Settings</h4>
     <table>
@@ -1411,7 +1652,7 @@
     <h3 id="wp-templates">WP Templates Tab</h3>
     <p>Work Package Templates define which forms are included in a work package and their order.</p>
 
-    <div class="placeholder">Screenshot: WP Templates tab (wp-templates-tab.png)</div>
+    <img src="wp-templates-tab.png" alt="WP Templates tab" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
 
     <h4>Template Controls</h4>
     <table>
@@ -1509,7 +1750,7 @@
     </ul>
 
     <h4>Cover Form</h4>
-    <div class="placeholder">Screenshot: Cover form editor (wp-form-cover.png)</div>
+    <img src="wp-form-cover.png" alt="Cover form editor" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
     <table>
         <tr>
             <th>Setting</th>
@@ -1534,7 +1775,7 @@
     </table>
 
     <h4>List Form</h4>
-    <div class="placeholder">Screenshot: List form editor (wp-form-list.png)</div>
+    <img src="wp-form-list.png" alt="List form editor" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
     <table>
         <tr>
             <th>Setting</th>
@@ -1569,7 +1810,7 @@
     </ul>
 
     <h4>Form Type</h4>
-    <div class="placeholder">Screenshot: Form editor (wp-form-form.png)</div>
+    <img src="wp-form-form.png" alt="Form editor" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
     <table>
         <tr>
             <th>Setting</th>
@@ -1606,7 +1847,7 @@
     </table>
 
     <h4>Grid Form</h4>
-    <div class="placeholder">Screenshot: Grid form editor (wp-form-grid.png)</div>
+    <img src="wp-form-grid.png" alt="Grid form editor" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
     <table>
         <tr>
             <th>Setting</th>
@@ -1786,231 +2027,6 @@
     <div class="warning">
         <div class="warning-title">Sample Data</div>
         <p>Preview uses placeholder data for tokens. The actual generated PDFs will contain real project and activity data.</p>
-    </div>
-
-    <!-- ============================================ -->
-    <h2 id="progress-books">6. Progress Books</h2>
-    <!-- ============================================ -->
-
-    <h3 id="pb-overview">Overview</h3>
-    <p>Progress Books are printable checklists showing activities grouped by Area, Module, or Drawing. Field crews use these to mark completed progress percentages by hand, which can then be scanned and automatically applied to MILESTONE using the AI Progress Scan feature.</p>
-
-    <div class="placeholder">Screenshot: Progress Books full view (pb-full-view.png)</div>
-
-    <p>The Progress Books workflow:</p>
-    <ol>
-        <li><strong>Generate</strong> — Create printable progress books for field crews</li>
-        <li><strong>Distribute</strong> — Print and give to field crews for the work area</li>
-        <li><strong>Collect</strong> — Retrieve completed books with handwritten progress percentages</li>
-        <li><strong>Scan</strong> — Use AI Progress Scan to extract the percentages from scanned images</li>
-        <li><strong>Apply</strong> — Review and apply the scanned values to your activities</li>
-    </ol>
-
-    <h3 id="pb-generating">Generating Progress Books</h3>
-    <p>To create a progress book:</p>
-    <ol>
-        <li>Navigate to the <strong>PROG BOOKS</strong> module</li>
-        <li>Select a <strong>Project</strong> from the dropdown</li>
-        <li>Choose your grouping method (Area, Module, or Drawing)</li>
-        <li>Select which groups to include</li>
-        <li>Click <strong>Generate</strong> to create the PDF</li>
-    </ol>
-
-    <p>The generated PDF contains:</p>
-    <ul>
-        <li><strong>Activity ID</strong> — The unique identifier for each activity</li>
-        <li><strong>Description</strong> — Activity description for field reference</li>
-        <li><strong>Current %</strong> — The current percent complete in MILESTONE</li>
-        <li><strong>New %</strong> — Blank column for handwritten progress updates</li>
-    </ul>
-
-    <div class="note">
-        <div class="note-title">Print Quality</div>
-        <p>For best AI scanning results, print progress books on white paper with good contrast. Black and white printing works well.</p>
-    </div>
-
-    <h3 id="pb-ai-scan">AI Progress Scan</h3>
-    <p>The AI Progress Scan feature uses AWS Textract to automatically read handwritten progress percentages from scanned progress books. This eliminates manual data entry and reduces transcription errors.</p>
-
-    <h4>Starting a Scan</h4>
-    <ol>
-        <li>Click the <strong>AI Scan</strong> button in the Progress Books toolbar</li>
-        <li>In the dialog, click <strong>Select Files</strong> to choose scanned images</li>
-        <li>Supported formats: PDF, JPEG, PNG</li>
-        <li>You can select multiple files at once</li>
-        <li>Click <strong>Start Processing</strong> to begin the scan</li>
-    </ol>
-
-    <h4>File Requirements</h4>
-    <table>
-        <tr>
-            <th>Requirement</th>
-            <th>Recommendation</th>
-        </tr>
-        <tr>
-            <td><strong>Format</strong></td>
-            <td>PDF (best), JPEG, or PNG</td>
-        </tr>
-        <tr>
-            <td><strong>Resolution</strong></td>
-            <td>300 DPI or higher for best accuracy</td>
-        </tr>
-        <tr>
-            <td><strong>Orientation</strong></td>
-            <td>Pages should be upright (not rotated)</td>
-        </tr>
-        <tr>
-            <td><strong>Handwriting</strong></td>
-            <td>Clear, legible numbers in the "New %" column</td>
-        </tr>
-    </table>
-
-    <h4>Processing Status</h4>
-    <p>During processing, the dialog shows:</p>
-    <ul>
-        <li>Progress bar with percentage complete</li>
-        <li>Current page being processed</li>
-        <li>Count of extracted entries</li>
-    </ul>
-    <p>You can click <strong>Cancel</strong> to stop processing at any time.</p>
-
-    <h3 id="pb-scan-results">Scan Results Dialog</h3>
-    <p>After processing completes, the results dialog displays all extracted entries for review.</p>
-
-    <h4>Results Grid Columns</h4>
-    <table>
-        <tr>
-            <th>Column</th>
-            <th>Description</th>
-        </tr>
-        <tr>
-            <td><strong>Apply (checkbox)</strong></td>
-            <td>Select which entries to apply to your activities</td>
-        </tr>
-        <tr>
-            <td><strong>Activity ID</strong></td>
-            <td>The extracted activity identifier</td>
-        </tr>
-        <tr>
-            <td><strong>Description</strong></td>
-            <td>Activity description (looked up from database)</td>
-        </tr>
-        <tr>
-            <td><strong>Current %</strong></td>
-            <td>Current percent complete in MILESTONE</td>
-        </tr>
-        <tr>
-            <td><strong>New %</strong></td>
-            <td>The scanned percentage value (editable)</td>
-        </tr>
-        <tr>
-            <td><strong>Budget MHs</strong></td>
-            <td>Budget man-hours for the activity, or "NOT FOUND" if the Activity ID isn't in the database</td>
-        </tr>
-        <tr>
-            <td><strong>Confidence</strong></td>
-            <td>AI confidence level (percentage)</td>
-        </tr>
-        <tr>
-            <td><strong>Status</strong></td>
-            <td>Ready, Warning, or Error indicator</td>
-        </tr>
-    </table>
-
-    <h4>Status Indicators</h4>
-    <table>
-        <tr>
-            <th>Status</th>
-            <th>Meaning</th>
-            <th>Action</th>
-        </tr>
-        <tr>
-            <td><strong>Ready</strong></td>
-            <td>Entry matched an activity and is ready to apply</td>
-            <td>Review and apply</td>
-        </tr>
-        <tr>
-            <td><strong>Warning</strong></td>
-            <td>Low confidence or potential issue (e.g., new % is lower than current %)</td>
-            <td>Verify the scanned value is correct</td>
-        </tr>
-        <tr>
-            <td><strong>Error</strong></td>
-            <td>Activity ID not found or invalid percentage</td>
-            <td>Cannot apply — manually enter in Progress module</td>
-        </tr>
-    </table>
-
-    <h4>Selection Buttons</h4>
-    <ul>
-        <li><strong>Select All</strong> — Check all entries regardless of status</li>
-        <li><strong>Select Ready</strong> — Check only entries with "Ready" status</li>
-        <li><strong>Clear Selection</strong> — Uncheck all entries</li>
-    </ul>
-
-    <h4>Contrast Adjustment</h4>
-    <p>If scan results show incorrect values, you can adjust the image contrast and rescan:</p>
-    <ol>
-        <li>Use the <strong>Contrast</strong> slider (range 1.0 to 2.0)</li>
-        <li>Higher values increase contrast for faint handwriting</li>
-        <li>Click <strong>Rescan</strong> to reprocess files with the new setting</li>
-    </ol>
-
-    <div class="note">
-        <div class="note-title">When to Adjust Contrast</div>
-        <p>Only adjust contrast if the scan returns incorrect values. The default setting (1.2) works well for most scanned documents. Increase contrast if handwriting is faint or the scan is light.</p>
-    </div>
-
-    <h4>Filtering Results</h4>
-    <p>Each column header has a filter icon for Excel-like filtering. Use these to:</p>
-    <ul>
-        <li>Show only "Warning" status entries that need review</li>
-        <li>Filter to specific Activity IDs</li>
-        <li>Find entries with low confidence scores</li>
-    </ul>
-
-    <h4>Editing Values</h4>
-    <p>You can manually edit the <strong>New %</strong> column if the scanned value is incorrect:</p>
-    <ol>
-        <li>Double-click the cell to enter edit mode</li>
-        <li>Type the correct percentage value</li>
-        <li>Press Enter to confirm</li>
-    </ol>
-
-    <h3 id="pb-applying">Applying Scanned Progress</h3>
-    <p>Once you've reviewed the scan results:</p>
-    <ol>
-        <li>Use the selection buttons or checkboxes to select entries to apply</li>
-        <li>Verify that selected entries have correct New % values</li>
-        <li>Click <strong>Apply Selected</strong></li>
-        <li>Confirm the action in the dialog</li>
-    </ol>
-
-    <p>Applied changes:</p>
-    <ul>
-        <li>Update the PercentEntry field for each selected activity</li>
-        <li>Auto-set SchStart date if changing from 0% (sets to today)</li>
-        <li>Auto-set SchFinish date if changing to 100% (sets to today)</li>
-        <li>Mark records as LocalDirty for sync</li>
-    </ul>
-
-    <div class="warning">
-        <div class="warning-title">Review Before Applying</div>
-        <p>Always verify the scanned values before applying. Pay special attention to entries with "Warning" status or low confidence scores. Applied changes cannot be automatically undone.</p>
-    </div>
-
-    <h4>After Applying</h4>
-    <p>After applying scanned progress:</p>
-    <ul>
-        <li>The dialog shows a summary of applied changes</li>
-        <li>Switch to the <strong>PROGRESS</strong> module to review updated records</li>
-        <li>Use the "LocalDirty" filter to see modified records</li>
-        <li>Click <strong>SYNC</strong> to push changes to Azure</li>
-    </ul>
-
-    <div class="note">
-        <div class="note-title">OCR Corrections</div>
-        <p>The AI scan automatically corrects common OCR errors such as "O" being read as "0". If a "00" is detected, it's automatically interpreted as "100" since no one would write "00%" for progress.</p>
     </div>
 
     <!-- ============================================ -->
@@ -2225,47 +2241,11 @@
         <tr><td>Not Used</td><td>Not Used</td><td>UserID</td></tr>
     </table>
 
-    <h3 id="ref-glossary">Glossary</h3>
-    <table>
-        <tr>
-            <th>Term</th>
-            <th>Definition</th>
-        </tr>
-        <tr>
-            <td>Activity</td>
-            <td>A single trackable unit of work (e.g., weld, bolt-up, cable pull)</td>
-        </tr>
-        <tr>
-            <td>FE</td>
-            <td>Field Engineer</td>
-        </tr>
-        <tr>
-            <td>Lookahead</td>
-            <td>A rolling schedule view showing upcoming work</td>
-        </tr>
-        <tr>
-            <td>P6</td>
-            <td>Primavera P6 scheduling software</td>
-        </tr>
-        <tr>
-            <td>ROC</td>
-            <td>Rate of Completion</td>
-        </tr>
-        <tr>
-            <td>Sync</td>
-            <td>Upload/download data to central database</td>
-        </tr>
-        <tr>
-            <td>Work Package</td>
-            <td>A bundle of documents for a specific scope of work</td>
-        </tr>
-    </table>
-
     <h3 id="ref-troubleshooting">Troubleshooting</h3>
     <p>Content coming soon...</p>
 
     <h3 id="ref-getting-help">Getting Help</h3>
-    <p>Press <span class="keyboard-shortcut">F1</span> at any time to open the Help sidebar. Use the <strong>AI Assistant</strong> tab (coming soon) for interactive help.</p>
+    <p>Press <span class="keyboard-shortcut">F1</span> at any time to open the Help sidebar. Use the search field to find specific topics, or browse by section.</p>
 
 </body>
 </html>

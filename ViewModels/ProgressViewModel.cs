@@ -196,32 +196,16 @@ namespace VANTAGE.ViewModels
             });
         }
 
+        // Show activities that have a start or finish date of today
         public bool PassesTodayFilter(Activity activity)
         {
             DateTime today = DateTime.Today;
 
-            // Criteria 1: In progress (started but not finished)
-            if (activity.PercentEntry > 0 && activity.PercentEntry < 100)
-            {
+            if (activity.SchStart.HasValue && activity.SchStart.Value.Date == today)
                 return true;
-            }
 
-            // Get 3WLA dates for this activity
-            var key = (activity.SchedActNO ?? "", activity.ProjectID ?? "");
-            _threeWeekDates.TryGetValue(key, out var threeWeekDates);
-
-            // Criteria 2: Not started but should have (3WLA start <= today)
-            if (activity.PercentEntry == 0 && threeWeekDates.Start.HasValue && threeWeekDates.Start.Value.Date <= today)
-            {
+            if (activity.SchFinish.HasValue && activity.SchFinish.Value.Date == today)
                 return true;
-            }
-
-            // Criteria 3: Anomaly - not started, no 3WLA start, but 3WLA finish <= today
-            if (activity.PercentEntry == 0 && !threeWeekDates.Start.HasValue &&
-                threeWeekDates.Finish.HasValue && threeWeekDates.Finish.Value.Date <= today)
-            {
-                return true;
-            }
 
             return false;
         }

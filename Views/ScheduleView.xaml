@@ -225,7 +225,8 @@
                              Content="{Binding RequiredFieldsButtonText}"
                              IsChecked="{Binding FilterRequiredFields, Mode=TwoWay}"
                              Style="{StaticResource FilterToggleButtonStyle}"
-                             Foreground="{StaticResource StatusRed}"
+                             Background="{StaticResource StatusRedBg}"
+                             Foreground="{StaticResource ForegroundColor}"
                              Width="130"
                              Margin="0,0,20,0"
                              ToolTip="Show activities missing required field values"/>

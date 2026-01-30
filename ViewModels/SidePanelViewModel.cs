@@ -110,8 +110,8 @@ namespace VANTAGE.ViewModels
                     return "about:blank";
                 }
 
-                // Always open to beginning of help document (no anchor navigation)
-                return $"file:///{_helpHtmlPath.Replace('\\', '/')}";
+                // Use virtual host mapping so images load correctly
+                return "https://help.local/manual.html";
             }
         }
 
