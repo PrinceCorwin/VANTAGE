@@ -1,6 +1,6 @@
 # MILESTONE - Project Status
 
-**Last Updated:** January 28, 2026
+**Last Updated:** January 30, 2026
 
 ## V1 Testing Scope
 
@@ -84,7 +84,9 @@
 ## Feature Backlog
 
 ### High Priority
-- Find-Replace in Schedule Detail Grid
+- Add "Select All" to grid right-click context menu - adds all filtered rows to current selection
+- Plan for V1 production packaging (installer, credentials strategy - hardcode vs config vs other)
+- Plan for auto-update mechanism in production app
 
 ### Medium Priority
 - **DISCUSS:** Add PlanStart and PlanFinish fields to Activities (for baseline schedule comparison?)
@@ -166,6 +168,7 @@
 - Export/Print - Syncfusion printing issues; use Progress Books instead
 
 ### Shelved
+- Find-Replace in Schedule Detail Grid - deferred to V2; may need redesign of main/detail grid interaction
 - Offline Indicator in status bar - clickable to retry connection
 - Disable Tooltips setting (see DisableTooltips_Plan.md)
 - Interactive Help Mode - click UI controls to navigate to documentation (see Sidebar_Help_Plan.md)

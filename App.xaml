@@ -4,7 +4,7 @@
              xmlns:local="clr-namespace:VANTAGE"
              xmlns:converters="clr-namespace:VANTAGE.Converters"
              xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
-             ShutdownMode="OnExplicitShutdown">
+             ShutdownMode="OnMainWindowClose">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>

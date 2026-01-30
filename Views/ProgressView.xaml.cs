@@ -3917,6 +3917,20 @@ namespace VANTAGE.Views
             return null;
         }
 
+        // Selects all rows currently visible in the filtered view
+        private void SelectAllFilteredRows()
+        {
+            var records = sfActivities.View?.Records;
+            if (records == null || records.Count == 0) return;
+
+            sfActivities.SelectAll();
+        }
+
+        private void MenuSelectAll_Click(object sender, RoutedEventArgs e)
+        {
+            SelectAllFilteredRows();
+        }
+
         private void sfActivities_GridContextMenuOpening(object sender, Syncfusion.UI.Xaml.Grid.GridContextMenuEventArgs e)
         {
             // Only show RecordContextMenu when right-clicking row header

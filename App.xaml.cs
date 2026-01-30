@@ -212,6 +212,7 @@ namespace VANTAGE
                 try
                 {
                     MainWindow mainWindow = new MainWindow();
+                    Application.Current.MainWindow = mainWindow;
                     mainWindow.Show();
 
                     // Close splash screen

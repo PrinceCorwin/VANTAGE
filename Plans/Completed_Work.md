@@ -4,6 +4,13 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ---
 
+### January 30, 2026
+- **Select All context menu and app shutdown fix:**
+  - Added "Select All" item to Progress grid right-click context menu (selects all filtered rows)
+  - Fixed app not terminating on close: changed ShutdownMode from OnExplicitShutdown to OnMainWindowClose, set Application.Current.MainWindow before closing splash screen
+  - Moved Find-Replace in Schedule Detail Grid to Shelved (deferred to V2)
+  - Added backlog items: V1 production packaging plan, auto-update plan
+
 ### January 29, 2026
 - **Progress Log Performance Optimization:**
   - Added Azure index (`IX_ProgressLog_Delete_Lookup`) on ProgressLog delete filter columns with auto-creation at app startup

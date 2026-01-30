@@ -716,6 +716,19 @@
                              Foreground="{StaticResource ForegroundColor}"
                              BorderBrush="{StaticResource ControlBorder}">
 
+                            <!-- Select All Filtered Rows -->
+                            <MenuItem Header="Select All"
+                                      Click="MenuSelectAll_Click"
+                                      ToolTip="Select all filtered rows (Ctrl+A)"
+                                      Background="{StaticResource ControlBackground}"
+                                      Foreground="{StaticResource ForegroundColor}">
+                                <MenuItem.Icon>
+                                    <TextBlock Text="☑" FontSize="14"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+
+                            <Separator/>
+
                             <!-- Delete Row(s) -->
                             <MenuItem Header="Delete Row(s)"
                                       Click="DeleteSelectedActivities_Click"
