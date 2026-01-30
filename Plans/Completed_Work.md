@@ -5,6 +5,14 @@ This document tracks completed features and fixes. Items are moved here from Pro
 ---
 
 ### January 30, 2026
+- **Auto-update mechanism:**
+  - Created UpdateService (checks manifest.json on startup, downloads ZIP, verifies SHA-256 hash)
+  - Created VANTAGE.Updater console app (waits for main app exit, extracts ZIP, relaunches)
+  - Integrated update check into App.xaml.cs startup (before DB init, after splash)
+  - Host-agnostic: works with GitHub raw URLs now, switch to Azure Blob later by changing one URL
+  - Graceful failure: if offline or update server unreachable, app starts normally
+  - Created publish-update.ps1 script for building and packaging releases
+  - Added auto-update documentation to Help sidebar
 - **Select All context menu and app shutdown fix:**
   - Added "Select All" item to Progress grid right-click context menu (selects all filtered rows)
   - Fixed app not terminating on close: changed ShutdownMode from OnExplicitShutdown to OnMainWindowClose, set Application.Current.MainWindow before closing splash screen

@@ -74,4 +74,33 @@
 		<Folder Include="Documents\" />
 		<Folder Include="Help\" />
 	</ItemGroup>
+
+	<!-- Exclude VANTAGE.Updater subdirectory from this project's compilation -->
+	<ItemGroup>
+		<Compile Remove="VANTAGE.Updater\**" />
+		<None Remove="VANTAGE.Updater\**" />
+		<EmbeddedResource Remove="VANTAGE.Updater\**" />
+		<Content Remove="VANTAGE.Updater\**" />
+	</ItemGroup>
+
+	<!-- Build dependency: ensure updater builds before main app -->
+	<ItemGroup>
+		<ProjectReference Include="VANTAGE.Updater\VANTAGE.Updater.csproj">
+			<ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+			<Private>false</Private>
+		</ProjectReference>
+	</ItemGroup>
+
+	<!-- Copy updater exe to output after build -->
+	<Target Name="CopyUpdater" AfterTargets="Build">
+		<ItemGroup>
+			<UpdaterFiles Include="$(MSBuildProjectDirectory)\VANTAGE.Updater\bin\$(Configuration)\net8.0-windows\VANTAGE.Updater.exe"
+						  Condition="Exists('$(MSBuildProjectDirectory)\VANTAGE.Updater\bin\$(Configuration)\net8.0-windows\VANTAGE.Updater.exe')" />
+			<UpdaterFiles Include="$(MSBuildProjectDirectory)\VANTAGE.Updater\bin\$(Configuration)\net8.0-windows\VANTAGE.Updater.dll"
+						  Condition="Exists('$(MSBuildProjectDirectory)\VANTAGE.Updater\bin\$(Configuration)\net8.0-windows\VANTAGE.Updater.dll')" />
+			<UpdaterFiles Include="$(MSBuildProjectDirectory)\VANTAGE.Updater\bin\$(Configuration)\net8.0-windows\VANTAGE.Updater.runtimeconfig.json"
+						  Condition="Exists('$(MSBuildProjectDirectory)\VANTAGE.Updater\bin\$(Configuration)\net8.0-windows\VANTAGE.Updater.runtimeconfig.json')" />
+		</ItemGroup>
+		<Copy SourceFiles="@(UpdaterFiles)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />
+	</Target>
 </Project>

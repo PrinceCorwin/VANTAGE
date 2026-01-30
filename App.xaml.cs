@@ -56,6 +56,13 @@ namespace VANTAGE
                     _splashWindow.Show();
                 }
 
+                // Step 0: Check for updates before anything else
+                _splashWindow.UpdateStatus("Checking for updates...");
+                bool updateInitiated = await UpdateService.CheckAndApplyUpdateAsync(
+                    status => _splashWindow?.UpdateStatus(status),
+                    () => Application.Current.Shutdown());
+                if (updateInitiated) return;
+
                 // Step 1: Initialize database
                 _splashWindow.UpdateStatus("Initializing Database...");
                 await Task.Run(() =>

@@ -84,9 +84,8 @@
 ## Feature Backlog
 
 ### High Priority
-- Add "Select All" to grid right-click context menu - adds all filtered rows to current selection
-- Plan for V1 production packaging (installer, credentials strategy - hardcode vs config vs other)
-- Plan for auto-update mechanism in production app
+- V1 production packaging (self-contained publish, initial ZIP distribution, credentials strategy)
+- Set up GitHub Release with update manifest for auto-update testing
 
 ### Medium Priority
 - **DISCUSS:** Add PlanStart and PlanFinish fields to Activities (for baseline schedule comparison?)
