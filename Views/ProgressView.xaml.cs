@@ -4054,29 +4054,38 @@ namespace VANTAGE.Views
 
             if (selectedByProjectAndActNO.Any())
             {
-                var splitActNOs = new List<(string ProjectID, string SchedActNO, int Selected, int Total)>();
+                var validatingDialog = new Dialogs.BusyDialog(Window.GetWindow(this), "Validating selected records...");
+                validatingDialog.Show();
 
-                using var connection = DatabaseSetup.GetConnection();
-                connection.Open();
-
-                foreach (var kvp in selectedByProjectAndActNO)
+                var splitActNOs = await Task.Run(() =>
                 {
-                    var countCmd = connection.CreateCommand();
-                    countCmd.CommandText = @"
-            SELECT COUNT(*) FROM Activities 
-            WHERE ProjectID = @projectId 
-              AND SchedActNO = @schedActNO";
-                    countCmd.Parameters.AddWithValue("@projectId", kvp.Key.Item1);
-                    countCmd.Parameters.AddWithValue("@schedActNO", kvp.Key.Item2);
-                    var totalCount = Convert.ToInt32(countCmd.ExecuteScalar() ?? 0);
+                    var splits = new List<(string ProjectID, string SchedActNO, int Selected, int Total)>();
 
-                    if (totalCount > kvp.Value)
+                    using var connection = DatabaseSetup.GetConnection();
+                    connection.Open();
+
+                    foreach (var kvp in selectedByProjectAndActNO)
                     {
-                        splitActNOs.Add((kvp.Key.Item1, kvp.Key.Item2, kvp.Value, totalCount));
-                    }
-                }
+                        var countCmd = connection.CreateCommand();
+                        countCmd.CommandText = @"
+            SELECT COUNT(*) FROM Activities
+            WHERE ProjectID = @projectId
+              AND SchedActNO = @schedActNO";
+                        countCmd.Parameters.AddWithValue("@projectId", kvp.Key.Item1);
+                        countCmd.Parameters.AddWithValue("@schedActNO", kvp.Key.Item2);
+                        var totalCount = Convert.ToInt32(countCmd.ExecuteScalar() ?? 0);
 
-                connection.Close();
+                        if (totalCount > kvp.Value)
+                        {
+                            splits.Add((kvp.Key.Item1, kvp.Key.Item2, kvp.Value, totalCount));
+                        }
+                    }
+
+                    connection.Close();
+                    return splits;
+                });
+
+                validatingDialog.Close();
 
                 if (splitActNOs.Any())
                 {
@@ -4151,20 +4160,18 @@ namespace VANTAGE.Views
                 return;
             }
 
-            // Check connection to Azure with retry option
+            // Check connection to Azure and load users
+            var connectDialog = new Dialogs.BusyDialog(Window.GetWindow(this), "Checking Azure connection...");
+            connectDialog.Show();
+
             bool isConnected = false;
             while (!isConnected)
             {
-                var connectDialog = new Dialogs.BusyDialog(Window.GetWindow(this), "Checking Azure connection...");
-                connectDialog.Show();
-
                 var (connected, connError) = await Task.Run(() =>
                 {
                     bool result = AzureDbManager.CheckConnection(out string err);
                     return (result, err);
                 });
-
-                connectDialog.Close();
 
                 if (connected)
                 {
@@ -4172,6 +4179,8 @@ namespace VANTAGE.Views
                 }
                 else
                 {
+                    connectDialog.Close();
+
                     var retryResult = MessageBox.Show(
                         $"Cannot connect to Azure database.\n\n{connError}\n\nWould you like to retry?",
                         "Connection Failed",
@@ -4180,11 +4189,16 @@ namespace VANTAGE.Views
 
                     if (retryResult != MessageBoxResult.Yes)
                         return;
+
+                    connectDialog = new Dialogs.BusyDialog(Window.GetWindow(this), "Checking Azure connection...");
+                    connectDialog.Show();
                 }
             }
 
             // Get list of all users for dropdown
-            var allUsers = GetAllUsers().Select(u => u.Username).ToList();
+            connectDialog.UpdateStatus("Loading users...");
+            var allUsers = await Task.Run(() => GetAllUsers().Select(u => u.Username).ToList());
+            connectDialog.Close();
             if (!allUsers.Any())
             {
                 MessageBox.Show("No users found in the database.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
