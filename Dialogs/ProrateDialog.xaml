@@ -4,7 +4,7 @@
         xmlns:skinManager="clr-namespace:Syncfusion.SfSkinManager;assembly=Syncfusion.SfSkinManager.WPF"
         skinManager:SfSkinManager.Theme="{skinManager:SkinManagerExtension ThemeName=FluentDark}"
         Title="Prorate Budget MHs"
-        Height="480"
+        Height="520"
         Width="400"
         WindowStartupLocation="CenterOwner"
         Background="{StaticResource BackgroundColor}"

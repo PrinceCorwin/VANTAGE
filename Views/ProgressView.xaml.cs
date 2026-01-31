@@ -20,6 +20,8 @@ using VANTAGE.Utilities;
 using VANTAGE.ViewModels;
 using System.Windows.Threading;
 using Microsoft.Data.SqlClient;
+using System.Runtime.InteropServices;
+using System.Windows.Interop;
 using VANTAGE.Dialogs;
 
 namespace VANTAGE.Views
@@ -27,6 +29,8 @@ namespace VANTAGE.Views
     public partial class ProgressView : UserControl
     {
         private const int ColumnUniqueValueDisplayLimit = 1000; // configurable
+        private const int WM_MOUSEHWHEEL = 0x020E;
+        private HwndSource? _hwndSource;
         private Dictionary<string, Syncfusion.UI.Xaml.Grid.GridColumn> _columnMap = new Dictionary<string, Syncfusion.UI.Xaml.Grid.GridColumn>();
         private UserFilter? _activeUserFilter;
         private string _globalSearchText = string.Empty;
@@ -779,8 +783,15 @@ namespace VANTAGE.Views
                 System.Windows.Threading.DispatcherPriority.ContextIdle);
             };
 
+            // Hook native horizontal scroll wheel for tilt/side wheel
+            this.Loaded += (_, __) => AttachHorizontalScrollHook();
+
             // Save when view closes
-            this.Unloaded += (_, __) => SaveColumnState();
+            this.Unloaded += (_, __) =>
+            {
+                DetachHorizontalScrollHook();
+                SaveColumnState();
+            };
 
             sfActivities.QueryColumnDragging += (s, e) =>
             {
@@ -3886,6 +3897,54 @@ namespace VANTAGE.Views
             {
                 AppLogger.Error(ex, "ProgressView.MenuUnfreezeAllColumns_Click");
             }
+        }
+
+        [DllImport("user32.dll")]
+        private static extern bool GetCursorPos(out POINT lpPoint);
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct POINT { public int X; public int Y; }
+
+        // Hook into parent window to handle native horizontal scroll wheel (tilt wheel)
+        private void AttachHorizontalScrollHook()
+        {
+            var window = Window.GetWindow(this);
+            if (window == null) return;
+            _hwndSource = HwndSource.FromHwnd(new WindowInteropHelper(window).Handle);
+            _hwndSource?.AddHook(WndProc);
+        }
+
+        private void DetachHorizontalScrollHook()
+        {
+            _hwndSource?.RemoveHook(WndProc);
+            _hwndSource = null;
+        }
+
+        // Handle WM_MOUSEHWHEEL for the activities grid
+        private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+        {
+            if (msg == WM_MOUSEHWHEEL)
+            {
+                int delta = (short)((wParam.ToInt64() >> 16) & 0xFFFF);
+                double scrollAmount = delta > 0 ? 60 : -60;
+
+                if (GetCursorPos(out POINT screenPt))
+                {
+                    var gridPoint = sfActivities.PointFromScreen(new Point(screenPt.X, screenPt.Y));
+                    var gridBounds = new Rect(0, 0, sfActivities.ActualWidth, sfActivities.ActualHeight);
+
+                    if (gridBounds.Contains(gridPoint))
+                    {
+                        var scrollViewer = FindVisualChild<ScrollViewer>(sfActivities);
+                        if (scrollViewer != null)
+                        {
+                            scrollViewer.ScrollToHorizontalOffset(scrollViewer.HorizontalOffset + scrollAmount);
+                            handled = true;
+                        }
+                    }
+                }
+            }
+            return IntPtr.Zero;
         }
 
         // Ctrl+ScrollWheel for horizontal scrolling

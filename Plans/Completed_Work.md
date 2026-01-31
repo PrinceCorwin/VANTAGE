@@ -4,6 +4,16 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ---
 
+### January 31, 2026
+- **Progress grid horizontal tilt wheel fix:**
+  - Added native WM_MOUSEHWHEEL hook to ProgressView (matching existing ScheduleView implementation)
+  - Side/tilt scroll wheel now scrolls ProgressView grid in correct direction (down = right)
+  - Hooks attached on Loaded, detached on Unloaded for proper cleanup
+- **ProrateDialog height increase:**
+  - Increased dialog height from 480 to 520 for better content fit
+
+---
+
 ### January 30, 2026 (Session 2)
 - **Help Sidebar polish and content updates:**
   - Renamed "Help / AI Sidebar" → "Help Sidebar" in MainWindow.xaml menu items (2 locations)
