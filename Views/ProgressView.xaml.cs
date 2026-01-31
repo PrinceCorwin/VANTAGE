@@ -33,6 +33,7 @@ namespace VANTAGE.Views
         private HwndSource? _hwndSource;
         private Dictionary<string, Syncfusion.UI.Xaml.Grid.GridColumn> _columnMap = new Dictionary<string, Syncfusion.UI.Xaml.Grid.GridColumn>();
         private UserFilter? _activeUserFilter;
+        private bool _scanResultsFilterActive;
         private string _globalSearchText = string.Empty;
         private ProgressViewModel _viewModel;
         // one key per grid/view
@@ -1335,6 +1336,7 @@ namespace VANTAGE.Views
                 _viewModel.FilteredCount = filteredCount;
                 UpdateRecordCount(); // Ensure UI label updates
                 UpdateSummaryPanel(); // <-- update summary panel on filter change
+                UpdateClearFiltersBorder();
             }
         }
         private readonly DispatcherTimer _resizeSaveTimer;
@@ -2077,6 +2079,7 @@ namespace VANTAGE.Views
             _viewModel.FilteredCount = sfActivities.View.Records.Count;
             UpdateRecordCount();
             UpdateSummaryPanel();
+            UpdateClearFiltersBorder();
         }
 
         private void BtnUserFilters_Click(object sender, RoutedEventArgs e)
@@ -3139,6 +3142,7 @@ namespace VANTAGE.Views
             _viewModel.FilteredCount = sfActivities.View.Records.Count;
             UpdateRecordCount();
             UpdateSummaryPanel();
+            UpdateClearFiltersBorder();
         }
         private void btnFilterInProgress_Click(object sender, RoutedEventArgs e)
         {
@@ -3183,6 +3187,7 @@ namespace VANTAGE.Views
             _viewModel.FilteredCount = sfActivities.View.Records.Count;
             UpdateRecordCount();
             UpdateSummaryPanel();
+            UpdateClearFiltersBorder();
         }
 
         private void BtnFilterNotStarted_Click(object sender, RoutedEventArgs e)
@@ -3220,6 +3225,7 @@ namespace VANTAGE.Views
             _viewModel.FilteredCount = sfActivities.View.Records.Count;
             UpdateRecordCount();
             UpdateSummaryPanel();
+            UpdateClearFiltersBorder();
         }
 
         private void BtnFilterMyRecords_Click(object sender, RoutedEventArgs e)
@@ -3253,6 +3259,7 @@ namespace VANTAGE.Views
             _viewModel.FilteredCount = sfActivities.View.Records.Count;
             UpdateRecordCount();
             UpdateSummaryPanel();
+            UpdateClearFiltersBorder();
         }
 
         private async void BtnFilterToday_Click(object sender, RoutedEventArgs e)
@@ -3293,6 +3300,7 @@ namespace VANTAGE.Views
 
             // Clear custom View filter
             sfActivities.View.Filter = null;
+            _scanResultsFilterActive = false;
 
             // Clear all column filters using Syncfusion's built-in method
             sfActivities.ClearFilters();
@@ -3316,6 +3324,46 @@ namespace VANTAGE.Views
             _viewModel.FilteredCount = sfActivities.View.Records.Count;
             UpdateRecordCount();
             UpdateSummaryPanel();
+            UpdateClearFiltersBorder();
+        }
+
+        // Highlights Clear Filters border green when any filter is active
+        private void UpdateClearFiltersBorder()
+        {
+            bool hasFilter = false;
+
+            // Check Syncfusion column filters (sidebar buttons + column header filters)
+            if (sfActivities?.Columns != null)
+            {
+                foreach (var col in sfActivities.Columns)
+                {
+                    if (col.FilterPredicates.Count > 0)
+                    {
+                        hasFilter = true;
+                        break;
+                    }
+                }
+            }
+
+            // Check global search
+            if (!hasFilter && !string.IsNullOrEmpty(_globalSearchText))
+                hasFilter = true;
+
+            // Check Today filter
+            if (!hasFilter && _viewModel?.TodayFilterActive == true)
+                hasFilter = true;
+
+            // Check user-defined filter
+            if (!hasFilter && _activeUserFilter != null)
+                hasFilter = true;
+
+            // Check scan results filter
+            if (!hasFilter && _scanResultsFilterActive)
+                hasFilter = true;
+
+            btnClearFilters.BorderBrush = hasFilter
+                ? (Brush)Application.Current.Resources["StatusGreen"]
+                : (Brush)Application.Current.Resources["ControlBorder"];
         }
 
         // Global Search handlers
@@ -3400,6 +3448,7 @@ namespace VANTAGE.Views
             _viewModel.FilteredCount = sfActivities.View.Records.Count;
             UpdateRecordCount();
             UpdateSummaryPanel();
+            UpdateClearFiltersBorder();
         }
 
         // Helper method: Get all users from database
@@ -3458,6 +3507,7 @@ namespace VANTAGE.Views
                 await _viewModel.RefreshAsync();
 
                 // Filter to show only the affected records
+                _scanResultsFilterActive = true;
                 var affectedIds = new HashSet<string>(dialog.AppliedUniqueIds);
                 sfActivities.View.Filter = record =>
                 {
@@ -3469,6 +3519,7 @@ namespace VANTAGE.Views
 
                 UpdateRecordCount();
                 UpdateSummaryPanel();
+                UpdateClearFiltersBorder();
             }
         }
 

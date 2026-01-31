@@ -5,6 +5,7 @@ This document tracks completed features and fixes. Items are moved here from Pro
 ---
 
 ### January 31, 2026
+- **Clear Filters button:** Green border now only appears when filters are active (covers all 9 filter types: sidebar buttons, column headers, global search, Today, user-defined, scan results). Border resets to default after clearing filters.
 - **Help manual updates:**
   - Renamed all standalone "MILESTONE" references to "VANTAGE: Milestone" (22 instances, kept format/column-naming labels as-is)
   - Changed "Summit Constructors" to "Summit Industrial"

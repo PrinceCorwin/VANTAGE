@@ -329,7 +329,7 @@
                             Margin="0,0,0,0"
                             Background="{StaticResource ControlBackground}"
                             Foreground="{StaticResource ForegroundColor}"
-                            BorderBrush="{StaticResource StatusGreen}"
+                            BorderBrush="{StaticResource ControlBorder}"
                             BorderThickness="1"
                             HorizontalContentAlignment="Center"
                             Padding="10,0"

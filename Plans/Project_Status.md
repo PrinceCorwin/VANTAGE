@@ -83,17 +83,16 @@ Active work on `Help/manual.html`. Current state of each section:
 - 2. Main Interface
 - 3. Progress Module (toolbar split into 3 section screenshots, sidebar filters documented, filter manager documented, SCAN button added)
 - 4. Schedule Module (filter buttons, discrepancies, 3WLA, missed reasons all documented)
+- 5. Progress Books (editor section rewritten, screenshot placeholders added)
+- 6. Work Packages (tokens, form types, templates, editor docs, screenshot placeholders added)
 
 **Needs work:**
-- 5. Progress Books — **Needs thorough redo.** Some instructions are vague or incorrect (e.g., references to wrong toolbar locations, workflow steps may not match current UI). Review every instruction against the actual app behavior. The SCAN button is on the Progress toolbar, not Progress Books toolbar.
-- 6. Work Packages — Content written and detailed (tokens, form types, templates). Removed `wp-full-view.png` since Generate tab is the default view. Looks complete pending screenshot review.
 - 7. Administration — Content needs writing
 - 8. Reference — Content needs writing
 - Troubleshooting section — Still says "Content coming soon..."
 
 **Screenshots status:**
-- 15 screenshots saved to `Help/` folder (set Build Action to Content / Copy if newer in VS Properties for each)
-- Screenshots not yet captured: `wp-templates-tab.png`, `wp-form-cover.png`, `wp-form-list.png`, `wp-form-form.png`, `wp-form-grid.png`
+- 20 screenshots saved to `Help/` folder (set Build Action to Content / Copy if newer in VS Properties for each)
 - WebView2 uses virtual host mapping (`https://help.local/manual.html`) for image loading — see `SidePanelView.xaml.cs`
 - VS sometimes re-adds PNGs as `<Resource Include>` — always set to Content / Copy if newer
 
@@ -112,7 +111,6 @@ Active work on `Help/manual.html`. Current state of each section:
 ### High Priority
 - V1 production packaging (self-contained publish, initial ZIP distribution, credentials strategy)
 - Set up GitHub Release with update manifest for auto-update testing
-- Clear Filters button: remove persistent highlighted border; only show it when any filter is active (sidebar filters, column header filters, or Scan dialog Apply); remove border after clicking Clear Filters
 - Implement Import/Export template buttons (WP Templates tab) — buttons exist but are not yet functional
 - Document Import/Export template functionality in Help manual after implementation
 
