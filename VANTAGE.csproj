@@ -17,15 +17,31 @@
 		<Description>Construction Progress Tracking Application</Description>
 	</PropertyGroup>
 	<ItemGroup>
+	  <None Remove="Help\pb-editor-bottom.png" />
+	  <None Remove="Help\pb-editor-top.png" />
+	  <None Remove="Help\pb-scan-dialog.png" />
+	  <None Remove="Help\pb-scan-results.png" />
 	  <None Remove="Help\progress-full-view.png" />
 	  <None Remove="Help\progress-manage-filters.png" />
 	  <None Remove="Help\progress-sidebar.png" />
 	  <None Remove="Help\progress-toolbar-center.png" />
 	  <None Remove="Help\progress-toolbar-right.png" />
 	  <None Remove="Help\schedule-full-view.png" />
+	  <None Remove="Help\schedule-toolbar.png" />
 	  <None Remove="Help\start-help-sidebar.png" />
 	  <None Remove="Help\start-main-interface.png" />
 	  <None Remove="Help\start-toolbar-detail.png" />
+	  <None Remove="Help\wp-form-cover.png" />
+	  <None Remove="Help\wp-form-form-bottom.png" />
+	  <None Remove="Help\wp-form-form-top.png" />
+	  <None Remove="Help\wp-form-grid-bottom.png" />
+	  <None Remove="Help\wp-form-grid-top.png" />
+	  <None Remove="Help\wp-form-list.png" />
+	  <None Remove="Help\wp-form-templates-tab.png" />
+	  <None Remove="Help\wp-form-type-dialog.png" />
+	  <None Remove="Help\wp-generate-tab.png" />
+	  <None Remove="Help\wp-preview-panel.png" />
+	  <None Remove="Help\wp-templates-tab.png" />
 	  <None Remove="nul" />
 	</ItemGroup>
 	<ItemGroup>
@@ -94,7 +110,19 @@
 		<Content Remove="VANTAGE.Updater\**" />
 	</ItemGroup>
 	<ItemGroup>
+	  <Content Include="Help\pb-editor-bottom.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Help\pb-editor-top.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
 	  <Content Include="Help\pb-full-view.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Help\pb-scan-dialog.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Help\pb-scan-results.png">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
 	  <Content Include="Help\progress-full-view.png">
@@ -118,6 +146,9 @@
 	  <Content Include="Help\schedule-full-view.png">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
+	  <Content Include="Help\schedule-toolbar.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
 	  <Content Include="Help\start-help-sidebar.png">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
@@ -131,6 +162,39 @@
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
 	  <Content Include="Help\start-status-bar-right.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Help\wp-form-cover.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Help\wp-form-form-bottom.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Help\wp-form-form-top.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Help\wp-form-grid-bottom.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Help\wp-form-grid-top.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Help\wp-form-list.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Help\wp-form-templates-tab.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Help\wp-form-type-dialog.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Help\wp-generate-tab.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Help\wp-preview-panel.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Help\wp-templates-tab.png">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
 	</ItemGroup>

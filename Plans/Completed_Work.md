@@ -5,6 +5,13 @@ This document tracks completed features and fixes. Items are moved here from Pro
 ---
 
 ### January 31, 2026
+- **Help manual updates:**
+  - Renamed all standalone "MILESTONE" references to "VANTAGE: Milestone" (22 instances, kept format/column-naming labels as-is)
+  - Changed "Summit Constructors" to "Summit Industrial"
+  - Rewrote app description: "developed by" instead of "built for", added feature highlights (rules of credit, unit rates, 3WLA, AI scan, P6 integration)
+  - Rewrote Progress Books editor section with thorough documentation of all controls (layout, paper size, font size, filter, grouping, columns, sort, preview)
+  - Added Form Templates tab overview with initial empty state screenshot placeholder, type selection dialog placeholder, and built-in templates table
+  - Added screenshot placeholders throughout: pb-editor (top/bottom), pb-preview, pb-scan-dialog, pb-scan-results, wp-form-templates-tab, wp-form-type-dialog, wp-form-cover, wp-form-list, wp-form-form (top/bottom), wp-form-grid (top/bottom), wp-preview-panel
 - **Progress grid horizontal tilt wheel fix:**
   - Added native WM_MOUSEHWHEEL hook to ProgressView (matching existing ScheduleView implementation)
   - Side/tilt scroll wheel now scrolls ProgressView grid in correct direction (down = right)

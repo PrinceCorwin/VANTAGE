@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MILESTONE User Manual</title>
+    <title>VANTAGE: Milestone User Manual</title>
     <style>
         :root {
             --bg-color: #1e1e1e;
@@ -223,7 +223,7 @@
 </head>
 <body>
 
-    <h1>MILESTONE User Manual</h1>
+    <h1>VANTAGE: Milestone User Manual</h1>
     <p>Construction Project Management System</p>
 
     <div class="toc">
@@ -231,7 +231,7 @@
         <ul>
             <li><a href="#getting-started">1. Getting Started</a>
                 <ul>
-                    <li><a href="#gs-what-is">What is MILESTONE?</a></li>
+                    <li><a href="#gs-what-is">What is VANTAGE: Milestone?</a></li>
                     <li><a href="#gs-before-you-begin">Before You Begin</a></li>
                     <li><a href="#gs-auto-updates">Automatic Updates</a></li>
                 </ul>
@@ -283,7 +283,7 @@
             <li><a href="#progress-books">5. Progress Books</a>
                 <ul>
                     <li><a href="#pb-overview">Overview</a></li>
-                    <li><a href="#pb-generating">Generating Progress Books</a></li>
+                    <li><a href="#pb-generating">Progress Book Editor</a></li>
                     <li><a href="#pb-ai-scan">AI Progress Scan</a></li>
                     <li><a href="#pb-scan-results">Scan Results Dialog</a></li>
                     <li><a href="#pb-applying">Applying Scanned Progress</a></li>
@@ -326,19 +326,19 @@
     <h2 id="getting-started">1. Getting Started</h2>
     <!-- ============================================ -->
 
-    <h3 id="gs-what-is">What is MILESTONE?</h3>
-    <p>MILESTONE is a construction activity tracking and work package generation system built for Summit Constructors. Field engineers use it to track progress on industrial construction activities (Receiving, Fabrication, Assembly, Connections, etc.) and generate work packages for field crews. The system integrates with P6 Primavera for schedule management.</p>
+    <h3 id="gs-what-is">What is VANTAGE: Milestone?</h3>
+    <p>VANTAGE: Milestone is a construction activity tracking and work package generation system developed by Summit Industrial. It enables field engineers to track progress on industrial construction activities (Receiving, Fabrication, Assembly, Connections, etc.) and generate work packages for field crews. Features include rules of credit tracking, unit rate management, Three Week Look Ahead reporting, automated progress capture from handwritten field reports, and P6 Primavera integration for schedule management.</p>
 
     <h3 id="gs-before-you-begin">Before You Begin</h3>
-    <p>Before using MILESTONE:</p>
+    <p>Before using VANTAGE: Milestone:</p>
     <ul>
-        <li><strong>Admin setup required</strong> — A system administrator must add your Windows username to the MILESTONE user database</li>
-        <li><strong>No login needed</strong> — MILESTONE automatically detects your Windows username</li>
+        <li><strong>Admin setup required</strong> — A system administrator must add your Windows username to the VANTAGE: Milestone user database</li>
+        <li><strong>No login needed</strong> — VANTAGE: Milestone automatically detects your Windows username</li>
         <li><strong>First sync</strong> — On first launch, you'll need to sync with the central Azure database to download project data (or import or create activities if none exist yet for your project). If you import or create new records, they will be assigned to you initially — but you can reassign them if desired.</li>
     </ul>
 
     <h3 id="gs-auto-updates">Automatic Updates</h3>
-    <p>MILESTONE checks for updates each time it starts. If a newer version is available, the update is downloaded and installed automatically before the application opens. During this process, you'll see status messages on the splash screen.</p>
+    <p>VANTAGE: Milestone checks for updates each time it starts. If a newer version is available, the update is downloaded and installed automatically before the application opens. During this process, you'll see status messages on the splash screen.</p>
     <ul>
         <li><strong>Internet required</strong> — If the update server is unreachable (no internet connection), the check is skipped and the app starts normally with the current version.</li>
         <li><strong>No action needed</strong> — Updates are fully automatic. The app will briefly close and reopen with the new version.</li>
@@ -428,7 +428,7 @@
         <li><strong>Import Settings</strong> — Load saved application settings from a file</li>
         <li><strong>Export Settings</strong> — Save your current settings to a file for backup or transfer</li>
         <li><strong>Grid Layouts</strong> — Save, load, or manage named column layouts for data grids</li>
-        <li><strong>About MILESTONE</strong> — View version information and credits</li>
+        <li><strong>About VANTAGE: Milestone</strong> — View version information and credits</li>
     </ul>
 
     <h3 id="ui-status-bar">Status Bar</h3>
@@ -436,7 +436,7 @@
     <img src="start-status-bar-right.png" alt="Status bar right" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
     <p>The status bar at the bottom displays:</p>
     <ul>
-        <li><strong>Version</strong> — Current MILESTONE version</li>
+        <li><strong>Version</strong> — Current VANTAGE: Milestone version</li>
         <li><strong>User</strong> — Your Windows username</li>
         <li><strong>Last Sync</strong> — When you last synced with the central database</li>
     </ul>
@@ -857,7 +857,7 @@
     </table>
 
     <h3 id="prog-copying">Copying Data</h3>
-    <p>MILESTONE provides multiple ways to copy grid data for use in Excel or other applications:</p>
+    <p>VANTAGE: Milestone provides multiple ways to copy grid data for use in Excel or other applications:</p>
 
     <h4>Multi-Cell Copy (Ctrl+C)</h4>
     <p>Select multiple cells using <span class="keyboard-shortcut">Ctrl+Click</span> or <span class="keyboard-shortcut">Shift+Click</span>, then press <span class="keyboard-shortcut">Ctrl+C</span>. The data is copied in Excel-compatible format (tab-separated columns, newline-separated rows) and pastes directly into Excel cells.</p>
@@ -904,7 +904,7 @@
     <!-- ============================================ -->
 
     <h3 id="sched-overview">Overview</h3>
-    <p>The Schedule Module compares P6 Primavera schedule data with MILESTONE progress data. Use this module to track schedule variances, forecast upcoming work, and document missed deadlines.</p>
+    <p>The Schedule Module compares P6 Primavera schedule data with VANTAGE: Milestone progress data. Use this module to track schedule variances, forecast upcoming work, and document missed deadlines.</p>
 
     <div class="note">
         <div class="note-title">Prerequisites</div>
@@ -922,7 +922,7 @@
     <p>The Schedule view uses a master/detail layout:</p>
     <ul>
         <li><strong>Master Grid (top)</strong> — P6 schedule activities with MS rollup data</li>
-        <li><strong>Detail Grid (bottom)</strong> — Individual MILESTONE activities linked to the selected schedule row</li>
+        <li><strong>Detail Grid (bottom)</strong> — Individual VANTAGE: Milestone activities linked to the selected schedule row</li>
     </ul>
     <p>Click any row in the master grid to see its linked activities in the detail grid below. Edits to percent, dates, and budget hours in the detail grid automatically recalculate the MS rollup values (MS Start, MS Finish, MS %, MS MHs) shown in the master grid.</p>
 
@@ -1011,7 +1011,7 @@
     </ul>
 
     <h4>MS Rollups (Calculated)</h4>
-    <p>These columns are calculated from linked MILESTONE activities:</p>
+    <p>These columns are calculated from linked VANTAGE: Milestone activities:</p>
     <ul>
         <li><strong>MS Start</strong> — Earliest start date from linked activities</li>
         <li><strong>MS Finish</strong> — Latest finish date (only if all linked activities are complete)</li>
@@ -1028,7 +1028,7 @@
     </ul>
 
     <h3 id="sched-detail-grid">Detail Grid</h3>
-    <p>Click a master row to view its linked MILESTONE activities. The header shows "Activities for: [SchedActNO] - [Description]".</p>
+    <p>Click a master row to view its linked VANTAGE: Milestone activities. The header shows "Activities for: [SchedActNO] - [Description]".</p>
 
     <h4>Editable Columns</h4>
     <table>
@@ -1070,7 +1070,7 @@
     </ul>
 
     <h4>When 3WLA Dates Are Locked</h4>
-    <p>Once an actual date is recorded in MILESTONE:</p>
+    <p>Once an actual date is recorded in VANTAGE: Milestone:</p>
     <ul>
         <li>3WLA Start becomes read-only when MS has an actual start</li>
         <li>3WLA Finish becomes read-only when MS has an actual finish</li>
@@ -1088,7 +1088,7 @@
     </ol>
 
     <h3 id="sched-missed-reasons">Missed Reasons</h3>
-    <p>When a P6 deadline passes and MILESTONE hasn't met it, you must document why.</p>
+    <p>When a P6 deadline passes and VANTAGE: Milestone hasn't met it, you must document why.</p>
 
     <h4>When Missed Start Reason Is Required</h4>
     <ul>
@@ -1148,7 +1148,7 @@
     <h4>Import Steps</h4>
     <ol>
         <li>Export from P6 Primavera to Excel (TASK sheet format)</li>
-        <li>In MILESTONE, go to <strong>File → Import From P6 File</strong></li>
+        <li>In VANTAGE: Milestone, go to <strong>File → Import From P6 File</strong></li>
         <li>Select the Excel file</li>
         <li>Choose the week ending date for this schedule</li>
         <li>Click Import</li>
@@ -1204,7 +1204,7 @@
     </div>
 
     <h3 id="sched-p6-export">P6 Export</h3>
-    <p>Export MILESTONE data back to P6 format for updating Primavera.</p>
+    <p>Export VANTAGE: Milestone data back to P6 format for updating Primavera.</p>
 
     <h4>Export Steps</h4>
     <ol>
@@ -1328,7 +1328,7 @@
     <!-- ============================================ -->
 
     <h3 id="pb-overview">Overview</h3>
-    <p>Progress Books are printable checklists showing activities grouped by Area, Module, or Drawing. Field crews use these to mark completed progress percentages by hand, which can then be scanned and automatically applied to MILESTONE using the AI Progress Scan feature.</p>
+    <p>Progress Books are printable checklists showing activities grouped by user-selected columns (e.g., Area, Module, or Drawing). Field crews use these to mark completed progress percentages by hand, which can then be scanned and automatically applied to VANTAGE: Milestone using the AI Progress Scan feature.</p>
 
     <img src="pb-full-view.png" alt="Progress Books view" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
 
@@ -1341,22 +1341,86 @@
         <li><strong>Apply</strong> — Review and apply the scanned values to your activities</li>
     </ol>
 
-    <h3 id="pb-generating">Generating Progress Books</h3>
-    <p>To create a progress book:</p>
-    <ol>
-        <li>Navigate to the <strong>PROG BOOKS</strong> module</li>
-        <li>Select a <strong>Project</strong> from the dropdown</li>
-        <li>Choose your grouping method (Area, Module, or Drawing)</li>
-        <li>Select which groups to include</li>
-        <li>Click <strong>Generate</strong> to create the PDF</li>
-    </ol>
+    <h3 id="pb-generating">Progress Book Editor</h3>
+    <img src="pb-editor-top.png" alt="Progress Book editor - top" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <img src="pb-editor-bottom.png" alt="Progress Book editor - bottom" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <p>The editor is split into a configuration panel on the left and a PDF preview panel on the right. Configure the layout settings below, then click <strong>GENERATE</strong> in the top-right corner to create the PDF.</p>
 
-    <p>The generated PDF contains:</p>
+    <h4>Layout</h4>
+    <p>Layouts save all your editor settings so you can quickly regenerate books with the same configuration.</p>
     <ul>
-        <li><strong>Activity ID</strong> — The unique identifier for each activity</li>
-        <li><strong>Description</strong> — Activity description for field reference</li>
-        <li><strong>Current %</strong> — The current percent complete in MILESTONE</li>
-        <li><strong>New %</strong> — Blank column for handwritten progress updates</li>
+        <li><strong>Layout dropdown</strong> — Select a previously saved layout to load its settings, or start fresh with the default</li>
+        <li><strong>Name</strong> — Give the layout a descriptive name (e.g., "Mod CB101-C")</li>
+        <li><strong>Clone</strong> — Create a copy of the current layout under a new name</li>
+        <li><strong>Delete</strong> — Remove the selected saved layout</li>
+        <li><strong>Save</strong> — Save the current settings to the layout name (at the bottom of the editor)</li>
+    </ul>
+
+    <h4>Paper Size</h4>
+    <ul>
+        <li><strong>Letter (11" x 8.5")</strong> — Standard letter size, landscape orientation (default)</li>
+        <li><strong>Tabloid (17" x 11")</strong> — Larger format, landscape orientation. Use for books with many columns.</li>
+    </ul>
+
+    <h4>Font Size</h4>
+    <ul>
+        <li><strong>Slider (4pt - 10pt)</strong> — Controls font size for data rows. Default is 8pt.</li>
+        <li>The Description column always renders at 9pt regardless of the slider setting</li>
+        <li>A warning appears when font size is below 7pt — smaller fonts may reduce AI Progress Scan accuracy</li>
+    </ul>
+    <div class="note">
+        <div class="note-title">Scan Accuracy</div>
+        <p>Larger fonts produce better results with AI Progress Scan. A font size of 8pt or higher is recommended if you plan to scan the completed books.</p>
+    </div>
+
+    <h4>Select Progress Book(s)</h4>
+    <p>This filter determines which of your assigned activities are included in the book.</p>
+    <ul>
+        <li><strong>Column</strong> — Choose the activity field to filter by (e.g., WorkPackage, Area, CompType). Commonly used fields are starred at the top of the dropdown.</li>
+        <li><strong>Value</strong> — Select a value to filter on. This dropdown is populated with distinct values from your assigned activities for the selected column. The selected value also appears as the progress book name in the PDF page header.</li>
+        <li><strong>Exclude Completed Activities</strong> — When checked, activities at 100% progress are omitted from the book</li>
+    </ul>
+
+    <h4>Grouping</h4>
+    <p>Group activities into sections within the book. Each group creates a header row in the PDF and groups are sorted alphanumerically.</p>
+    <ul>
+        <li>Select a field from the dropdown to group by (e.g., PhaseCode, Area, CompType)</li>
+        <li><strong>+ Add Group</strong> — Add another grouping level (up to 10). Groups nest in order — the first group is the outermost level.</li>
+        <li><strong>✕</strong> — Remove a grouping level. The first group cannot be removed.</li>
+    </ul>
+
+    <h4>Columns</h4>
+    <p>Configure which activity fields appear as columns in the PDF. Columns auto-size to fit their content.</p>
+    <ul>
+        <li><strong>Required columns</strong> (cannot be removed): ActivityID, UniqueID, ROCStep, Description</li>
+        <li><strong>▲ / ▼</strong> — Reorder columns up or down</li>
+        <li><strong>✕</strong> — Remove a column</li>
+        <li><strong>Add column dropdown + Add button</strong> — Select a field and click + Add to include it</li>
+    </ul>
+
+    <h4>Sort</h4>
+    <p>Sort activities within each group. Sorts stack like Excel — the first sort is the primary sort, the second breaks ties, and so on.</p>
+    <ul>
+        <li>Select a field from the dropdown to sort by</li>
+        <li><strong>+ Add Sort</strong> — Add another sort level (up to 10)</li>
+        <li><strong>✕</strong> — Remove a sort level. The first sort cannot be removed.</li>
+    </ul>
+
+    <h4>Preview Panel</h4>
+    <img src="pb-preview.png" alt="Progress Book preview panel" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <p>The right side of the editor shows a live PDF preview of the progress book.</p>
+    <ul>
+        <li><strong>Refresh Preview</strong> — Click to render a preview using sample data from your current settings</li>
+        <li>Drag the splitter between the editor and preview panels to resize — the position is saved between sessions</li>
+    </ul>
+
+    <h4>Generating the PDF</h4>
+    <p>Click the <strong>GENERATE</strong> button in the top-right header bar. A file save dialog opens to choose the output location. The generated PDF contains:</p>
+    <ul>
+        <li><strong>Page header</strong> — Project name, progress book name (from the filter value), and page numbers</li>
+        <li><strong>Group headers</strong> — Section dividers for each grouping level</li>
+        <li><strong>Activity rows</strong> — One row per activity with your configured columns</li>
+        <li><strong>% ENTRY column</strong> — Blank column at the far right for handwritten progress updates</li>
     </ul>
 
     <div class="note">
@@ -1368,6 +1432,7 @@
     <p>The AI Progress Scan feature uses AWS Textract to automatically read handwritten progress percentages from scanned progress books. This eliminates manual data entry and reduces transcription errors.</p>
 
     <h4>Starting a Scan</h4>
+    <img src="progress-toolbar-left.png" alt="Progress toolbar showing SCAN button" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
     <ol>
         <li>Click the <strong>SCAN</strong> button on the Progress module toolbar</li>
         <li>In the dialog, click <strong>Select Files</strong> to choose scanned images</li>
@@ -1375,6 +1440,7 @@
         <li>You can select multiple files at once</li>
         <li>Click <strong>Start Processing</strong> to begin the scan</li>
     </ol>
+    <img src="pb-scan-dialog.png" alt="AI Progress Scan dialog" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
 
     <h4>File Requirements</h4>
     <table>
@@ -1410,6 +1476,7 @@
     <p>You can click <strong>Cancel</strong> to stop processing at any time.</p>
 
     <h3 id="pb-scan-results">Scan Results Dialog</h3>
+    <img src="pb-scan-results.png" alt="Scan results dialog" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
     <p>After processing completes, the results dialog displays all extracted entries for review.</p>
 
     <h4>Results Grid Columns</h4>
@@ -1432,7 +1499,7 @@
         </tr>
         <tr>
             <td><strong>Current %</strong></td>
-            <td>Current percent complete in MILESTONE</td>
+            <td>Current percent complete in VANTAGE: Milestone</td>
         </tr>
         <tr>
             <td><strong>New %</strong></td>
@@ -1710,7 +1777,67 @@
     </div>
 
     <h3 id="wp-form-templates">Form Templates Tab</h3>
-    <p>Form Templates define individual pages in a work package. Five template types are available:</p>
+    <p>Form Templates define individual pages in a work package. Each template produces one type of PDF page. Select the <strong>Form Templates</strong> tab to manage them.</p>
+
+    <img src="wp-form-templates-tab.png" alt="Form Templates tab initial view" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+
+    <p>When you first open this tab, the editor area is empty. Use the <strong>Form Template</strong> dropdown to select an existing template to view or edit, or choose <strong>"+ Add New"</strong> to create one from scratch.</p>
+
+    <h4>Creating a New Template</h4>
+    <p>Selecting "+ Add New" from the dropdown opens a type selection dialog:</p>
+
+    <img src="wp-form-type-dialog.png" alt="Template type selection dialog" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+
+    <p>Choose one of the four template types. A new template is created with default settings and the editor loads for that type. You can also <strong>Clone</strong> any existing template to use it as a starting point.</p>
+
+    <h4>Built-in Templates</h4>
+    <p>VANTAGE includes seven premade templates that cover a typical work package. These are read-only by default — to customize one, clone it or use <strong>Reset Defaults</strong> to revert your changes.</p>
+
+    <table>
+        <tr>
+            <th>Template Name</th>
+            <th>Type</th>
+            <th>Purpose</th>
+        </tr>
+        <tr>
+            <td>Cover Sheet</td>
+            <td>Cover</td>
+            <td>Title page with company logo and footer</td>
+        </tr>
+        <tr>
+            <td>Table of Contents</td>
+            <td>List</td>
+            <td>Lists the forms included in the work package</td>
+        </tr>
+        <tr>
+            <td>Checklist</td>
+            <td>Form</td>
+            <td>Structured checklist with sections for materials, safety, quality, and signoffs</td>
+        </tr>
+        <tr>
+            <td>Punchlist</td>
+            <td>Grid</td>
+            <td>Empty grid for tracking punch items (smaller font to fit many columns)</td>
+        </tr>
+        <tr>
+            <td>Signoff Sheet</td>
+            <td>Form</td>
+            <td>Walkdown and acceptance form with signature lines and dates</td>
+        </tr>
+        <tr>
+            <td>Drawing Log</td>
+            <td>Grid</td>
+            <td>Grid for listing drawing numbers, revisions, and descriptions</td>
+        </tr>
+        <tr>
+            <td>Drawings - Placeholder</td>
+            <td>Drawings</td>
+            <td>Marks where drawing images will be inserted (coming in future release)</td>
+        </tr>
+    </table>
+
+    <h4>Template Types</h4>
+    <p>There are four editable template types, each with its own editor layout:</p>
 
     <table>
         <tr>
@@ -1732,10 +1859,6 @@
         <tr>
             <td><strong>Grid</strong></td>
             <td>Empty grid for handwritten data entry</td>
-        </tr>
-        <tr>
-            <td><strong>Drawings</strong></td>
-            <td>Embedded drawing images (coming in future release)</td>
         </tr>
     </table>
 
@@ -1810,7 +1933,8 @@
     </ul>
 
     <h4>Form Type</h4>
-    <img src="wp-form-form.png" alt="Form editor" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <img src="wp-form-form-top.png" alt="Form editor - top" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <img src="wp-form-form-bottom.png" alt="Form editor - bottom" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
     <table>
         <tr>
             <th>Setting</th>
@@ -1847,7 +1971,8 @@
     </table>
 
     <h4>Grid Form</h4>
-    <img src="wp-form-grid.png" alt="Grid form editor" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <img src="wp-form-grid-top.png" alt="Grid form editor - top" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <img src="wp-form-grid-bottom.png" alt="Grid form editor - bottom" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
     <table>
         <tr>
             <th>Setting</th>
@@ -2016,6 +2141,8 @@
     <h3 id="wp-previewing">Previewing Templates</h3>
     <p>The right panel displays a live preview of your templates.</p>
 
+    <img src="wp-preview-panel.png" alt="Template preview panel" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+
     <h4>To Preview a Template</h4>
     <ol>
         <li>Select or edit a template in any tab</li>
@@ -2060,7 +2187,7 @@
         <li><strong>Flags</strong> — OM, SM, EN, PM checkboxes for marking project features</li>
     </ul>
 
-    <h3 id="admin-snapshots">Snapshot Management (Admin > Edit Snapshots)</h3>
+    <h3 id="admin-snapshots">Snapshot Management (Admin > Manage Snapshots)</h3>
     <p>The Admin Snapshots dialog allows administrators to view, delete, and upload weekly progress snapshots. Snapshots are grouped by User, Project, and Week End Date.</p>
 
     <h4>Selecting Snapshots</h4>
@@ -2128,7 +2255,7 @@
     <!-- ============================================ -->
 
     <h3 id="ref-column-mappings">Column Mappings</h3>
-    <p>MILESTONE uses three different column naming conventions across different parts of the system:</p>
+    <p>VANTAGE: Milestone uses three different column naming conventions across different parts of the system:</p>
     <ul>
         <li><strong>Milestone</strong> - Internal names used in the application (e.g., <code>ProjectID</code>, <code>PercentEntry</code>)</li>
         <li><strong>OldVantage</strong> - Legacy names used in Excel import/export (e.g., <code>Tag_ProjectID</code>, <code>Val_Perc_Complete</code>)</li>
