@@ -113,6 +113,8 @@ Active work on `Help/manual.html`. Current state of each section:
 - V1 production packaging (self-contained publish, initial ZIP distribution, credentials strategy)
 - Set up GitHub Release with update manifest for auto-update testing
 - Clear Filters button: remove persistent highlighted border; only show it when any filter is active (sidebar filters, column header filters, or Scan dialog Apply); remove border after clicking Clear Filters
+- Implement Import/Export template buttons (WP Templates tab) — buttons exist but are not yet functional
+- Document Import/Export template functionality in Help manual after implementation
 
 ### Medium Priority
 - **DISCUSS:** Add PlanStart and PlanFinish fields to Activities (for baseline schedule comparison?)

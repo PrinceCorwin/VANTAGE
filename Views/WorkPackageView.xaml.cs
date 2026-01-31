@@ -68,9 +68,9 @@ namespace VANTAGE.Views
         private static readonly List<(string Label, string Value)> _tocPredefinedItems = new()
         {
             ("WP Doc Expiration Date", "WP DOC EXPIRATION DATE: {ExpirationDate}"),
-            ("Printed Date", "PRINTED: {PrintDate}"),
+            ("Printed Date", "PRINTED: {PrintedDate}"),
             ("WP Name", "WP NAME: {WPName}"),
-            ("Schedule Activity No", "SCHEDULE ACTIVITY NO: {ScheduleActivityNo}"),
+            ("Schedule Activity No", "SCHEDULE ACTIVITY NO: {SchedActNO}"),
             ("Phase Code", "PHASE CODE: {PhaseCode}")
         };
 

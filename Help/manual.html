@@ -1627,7 +1627,7 @@
         <li><strong>Multi-form composition</strong> — Combine cover sheets, lists, forms, and grids into one document</li>
         <li><strong>Token replacement</strong> — Dynamic content like project names, dates, and activity data</li>
         <li><strong>Bulk generation</strong> — Generate PDFs for multiple work packages at once</li>
-        <li><strong>Custom branding</strong> — Use your own logo or the default Summit logo</li>
+        <li><strong>Custom branding</strong> — Use your own logo or the default company logo</li>
         <li><strong>Reusable templates</strong> — Create templates once, use across all projects</li>
     </ul>
 
@@ -1656,7 +1656,7 @@
         </tr>
         <tr>
             <td><strong>Work Packages</strong></td>
-            <td>Check one or more work packages to generate. Use "Select All" or "Clear" buttons for convenience.</td>
+            <td>Check one or more work packages to generate. Use the <strong>Select All</strong> and <strong>Clear</strong> buttons above the list for convenience.</td>
         </tr>
         <tr>
             <td><strong>WP Template</strong></td>
@@ -1676,7 +1676,7 @@
         </tr>
         <tr>
             <td><strong>Logo</strong></td>
-            <td>Use "(default)" for the built-in Summit logo, or browse to select a custom logo image</td>
+            <td>Use "(default)" for the built-in company logo, or browse to select a custom logo image</td>
         </tr>
         <tr>
             <td><strong>Output Folder</strong></td>
@@ -1690,12 +1690,18 @@
 
     <div class="note">
         <div class="note-title">WP Name Pattern</div>
-        <p>Click the "+ Field" button to insert tokens at the cursor position. Common patterns:</p>
+        <p>Click the <strong>+ Field</strong> button to insert tokens at the cursor position. The dropdown shows commonly used fields at the top (Area, CompType, PhaseCategory, PhaseCode, SchedActNO, SystemNO, UDF2, WorkPackage), followed by all remaining activity fields alphabetically. You can also type plain text alongside tokens. Examples:</p>
         <ul>
             <li><code>{WorkPackage}</code> — Just the work package ID</li>
             <li><code>{WorkPackage}-{Area}</code> — Work package with area suffix</li>
             <li><code>{Area}-{WorkPackage}-{UDF2}</code> — Custom combination</li>
+            <li><code>Pipe Installation for Mod {UDF2}</code> — Descriptive text with a token</li>
         </ul>
+    </div>
+
+    <div class="note">
+        <div class="note-title">Settings Persistence</div>
+        <p>All Generate tab settings (Project, WP Template, PKG Manager, Scheduler, WP Name Pattern, Logo, Output Folder) are saved automatically and restored when you return to the Work Packages module.</p>
     </div>
 
     <h4>Generation Workflow</h4>
@@ -1753,7 +1759,7 @@
         </tr>
         <tr>
             <td><strong>+ Add Form</strong></td>
-            <td>Dropdown to add form templates to this work package</td>
+            <td>Dropdown menu listing all available form templates. Click one to add it to the work package.</td>
         </tr>
         <tr>
             <td><strong>▲ / ▼ / ✕</strong></td>
@@ -1868,7 +1874,7 @@
         <li><strong>Form Template dropdown</strong> — Select a template to edit or "+ Add New"</li>
         <li><strong>Template Name</strong> — Display name for this form</li>
         <li><strong>Clone / Delete</strong> — Copy or remove the template</li>
-        <li><strong>Reset Defaults</strong> — Revert built-in templates to original settings</li>
+        <li><strong>Reset Defaults</strong> — Reset a template's structure back to a built-in default. Appears on user-created templates that were cloned from built-in templates.</li>
         <li><strong>Save</strong> — Save changes to the database</li>
     </ul>
 
@@ -1914,7 +1920,7 @@
         </tr>
         <tr>
             <td><strong>Items</strong></td>
-            <td>List of items to display. Use dropdown for predefined items or type custom text.</td>
+            <td>List of text items displayed on the page. Each item becomes a row.</td>
         </tr>
         <tr>
             <td><strong>Footer Text</strong></td>
@@ -1922,14 +1928,26 @@
         </tr>
     </table>
 
-    <p>Predefined list items include:</p>
+    <h5>Managing List Items</h5>
+    <ul>
+        <li><strong>+ Add Item</strong> dropdown — Choose from predefined items, spacing items, or "Add New..." for custom text</li>
+        <li><strong>✎ (Edit)</strong> — Click the pencil icon on an item to edit its text in place</li>
+        <li><strong>▲ / ▼</strong> — Reorder items up or down</li>
+        <li><strong>✕</strong> — Remove an item</li>
+    </ul>
+
+    <p>Predefined items (inserted with tokens that resolve during generation):</p>
     <ul>
         <li>"WP Doc Expiration Date" → <code>WP DOC EXPIRATION DATE: {ExpirationDate}</code></li>
         <li>"Printed Date" → <code>PRINTED: {PrintedDate}</code></li>
         <li>"WP Name" → <code>WP NAME: {WPName}</code></li>
         <li>"Schedule Activity No" → <code>SCHEDULE ACTIVITY NO: {SchedActNO}</code></li>
-        <li>"Blank Line" — Adds empty space</li>
-        <li>"Line Separator" — Adds a horizontal divider</li>
+        <li>"Phase Code" → <code>PHASE CODE: {PhaseCode}</code></li>
+    </ul>
+    <p>Spacing items:</p>
+    <ul>
+        <li>"Blank Line" — Adds empty vertical space</li>
+        <li>"Line Separator" — Adds a horizontal divider line</li>
     </ul>
 
     <h4>Form Type</h4>
@@ -1946,29 +1964,43 @@
         </tr>
         <tr>
             <td><strong>Columns</strong></td>
-            <td>Define column headers and widths. Add columns with name and percentage width.</td>
+            <td>Define column headers and percentage widths (must total 100%). See column management below.</td>
         </tr>
         <tr>
             <td><strong>Row Height Adjustment</strong></td>
-            <td>Slider to adjust row height (-20% to +20%)</td>
+            <td>Slider to adjust row height (-30% to +50%)</td>
         </tr>
         <tr>
             <td><strong>Font Size Adjustment</strong></td>
-            <td>Slider to adjust font size (-20% to +20%)</td>
+            <td>Slider to adjust font size (-30% to +50%)</td>
         </tr>
         <tr>
             <td><strong>Sections</strong></td>
-            <td>Organize form into named sections (e.g., "General Info", "Approvals")</td>
-        </tr>
-        <tr>
-            <td><strong>Section Items</strong></td>
-            <td>Add items/fields to each section. Items become table rows.</td>
+            <td>Named groups that organize form items (e.g., "General Info", "Approvals"). See section management below.</td>
         </tr>
         <tr>
             <td><strong>Footer Text</strong></td>
-            <td>Optional footer content</td>
+            <td>Optional footer content. Supports tokens.</td>
         </tr>
     </table>
+
+    <h5>Managing Columns</h5>
+    <ul>
+        <li>Enter a column name and width percentage, then click <strong>+ Add</strong></li>
+        <li>Widths automatically prorate to total 100% when adding or removing columns</li>
+        <li><strong>✎ (Edit)</strong> — Click the pencil icon to edit a column's name or width</li>
+        <li><strong>▲ / ▼</strong> — Reorder columns</li>
+        <li><strong>✕</strong> — Remove a column (remaining columns re-prorate)</li>
+    </ul>
+
+    <h5>Managing Sections and Items</h5>
+    <ul>
+        <li><strong>+ Add Section</strong> — Create a new named section. The section name appears as a header row in the PDF.</li>
+        <li><strong>+ Add Item</strong> — Add an item to the selected section. Items become labeled rows in the PDF.</li>
+        <li><strong>✎ (Edit)</strong> — Edit section names or item text</li>
+        <li><strong>▲ / ▼</strong> — Reorder sections or items within a section</li>
+        <li><strong>✕</strong> — Remove a section or item</li>
+    </ul>
 
     <h4>Grid Form</h4>
     <img src="wp-form-grid-top.png" alt="Grid form editor - top" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
@@ -1984,7 +2016,7 @@
         </tr>
         <tr>
             <td><strong>Columns</strong></td>
-            <td>Define column headers and widths</td>
+            <td>Define column headers and percentage widths (must total 100%). Add with name + width, edit with ✎, reorder with ▲/▼, remove with ✕. Widths auto-prorate when columns are added or removed.</td>
         </tr>
         <tr>
             <td><strong>Row Count</strong></td>
@@ -2139,17 +2171,17 @@
     </div>
 
     <h3 id="wp-previewing">Previewing Templates</h3>
-    <p>The right panel displays a live preview of your templates.</p>
+    <p>The right panel displays a live preview of your templates. A context label at the top shows what is being previewed. The panel shows placeholder text until you click <strong>Refresh Preview</strong>.</p>
 
     <img src="wp-preview-panel.png" alt="Template preview panel" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
 
     <h4>To Preview a Template</h4>
     <ol>
         <li>Select or edit a template in any tab</li>
-        <li>Click the <strong>Refresh Preview</strong> button</li>
-        <li>The PDF renders using sample data</li>
+        <li>Click the <strong>Refresh Preview</strong> button at the bottom of the preview panel</li>
+        <li>The PDF renders using sample data so you can verify layout and token placement</li>
     </ol>
-    <p>Use the preview to verify layout, token placement, and formatting before generating actual work packages.</p>
+    <p>The preview is available from all three tabs — Generate, WP Templates, and Form Templates. Use it to verify layout, token placement, and formatting before generating actual work packages.</p>
 
     <div class="warning">
         <div class="warning-title">Sample Data</div>
