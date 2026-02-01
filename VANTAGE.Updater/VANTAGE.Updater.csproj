@@ -8,11 +8,9 @@
     <RootNamespace>VANTAGE.Updater</RootNamespace>
   </PropertyGroup>
 
-  <!-- Publish as self-contained single-file (no .NET runtime needed, no loose DLLs) -->
-  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-    <SelfContained>true</SelfContained>
-    <PublishSingleFile>true</PublishSingleFile>
+  <!-- Self-contained single-file publish flags are supplied by Scripts\publish-update.ps1 -->
+  <!-- (not set in csproj to avoid NETSDK1151 when main app references updater in Release builds) -->
+  <PropertyGroup>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
   </PropertyGroup>
 </Project>

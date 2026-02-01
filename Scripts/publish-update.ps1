@@ -76,11 +76,12 @@ Write-Host ""
 
 # Step 1: Update version in csproj
 Write-Host "[1/8] Updating version in VANTAGE.csproj..." -ForegroundColor Yellow
-$csproj = Get-Content "$RepoRoot\VANTAGE.csproj" -Raw
+$csprojPath = "$RepoRoot\VANTAGE.csproj"
+$csproj = [System.IO.File]::ReadAllText($csprojPath)
 $csproj = $csproj -replace '<Version>[^<]+</Version>', "<Version>$Version</Version>"
 $csproj = $csproj -replace '<AssemblyVersion>[^<]+</AssemblyVersion>', "<AssemblyVersion>$Version.0</AssemblyVersion>"
 $csproj = $csproj -replace '<FileVersion>[^<]+</FileVersion>', "<FileVersion>$Version.0</FileVersion>"
-Set-Content "$RepoRoot\VANTAGE.csproj" $csproj -NoNewline
+[System.IO.File]::WriteAllText($csprojPath, $csproj, [System.Text.UTF8Encoding]::new($true))
 
 # Step 2: Encrypt config file
 Write-Host "[2/8] Encrypting appsettings.json..." -ForegroundColor Yellow
