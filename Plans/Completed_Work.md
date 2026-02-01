@@ -9,6 +9,8 @@ This document tracks completed features and fixes. Items are moved here from Pro
 - **Light theme polish:** Toolbar, grid headers, Sync/Submit buttons, and Required Fields button keep dark backgrounds in both themes with correct foreground colors. Hover states adjusted for light theme visibility.
 - **Theme resource architecture:** Renamed resources to universal, role-based names (`ToolbarForeground`, `GridHeaderForeground`, `ActionButtonForeground`, `ToolbarButtonStyle`) to support future themes beyond Dark/Light. Each theme independently defines colors for its palette.
 - **Fixed theme persistence bug:** `InitializeDefaultUserSettings()` was resetting Theme to "Dark" on every startup because its guard checked a setting that was never written. Fixed to check Theme setting directly.
+- **Custom grid filter icons:** Replaced Syncfusion's built-in FilterToggleButton template with custom stroke-based funnel icons. Syncfusion's internal filter icon colors are resolved from compiled BAML and cannot be overridden via any resource dictionary approach. Custom template uses theme-aware `FilterIconColor`/`FilterIconActiveColor` Color resources, outline-only rendering, and VisualStateManager for filtered/unfiltered state transitions.
+- **Required Fields button hover fix:** Created `ActionFilterToggleStyle` so the button's light foreground switches to dark on hover (WPF local values override style triggers, requiring a dedicated style).
 
 ---
 

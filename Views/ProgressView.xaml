@@ -704,6 +704,43 @@
                             <Setter Property="BorderThickness" Value="0,0,0.5,0.5"/>
                             <Setter Property="Padding" Value="4,0,4,0"/>
                         </Style>
+                        <Style TargetType="syncfusion:FilterToggleButton">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="syncfusion:FilterToggleButton">
+                                        <Grid SnapsToDevicePixels="True" Background="Transparent">
+                                            <VisualStateManager.VisualStateGroups>
+                                                <VisualStateGroup x:Name="FilterStates">
+                                                    <VisualState x:Name="Filtered">
+                                                        <Storyboard>
+                                                            <ColorAnimation Storyboard.TargetName="IconStroke"
+                                                                            Storyboard.TargetProperty="Color"
+                                                                            To="{StaticResource FilterIconActiveColor}"
+                                                                            Duration="0:0:0.3"/>
+                                                        </Storyboard>
+                                                    </VisualState>
+                                                    <VisualState x:Name="UnFiltered">
+                                                        <Storyboard>
+                                                            <ColorAnimation Storyboard.TargetName="IconStroke"
+                                                                            Storyboard.TargetProperty="Color"
+                                                                            To="{StaticResource FilterIconColor}"
+                                                                            Duration="0:0:0.3"/>
+                                                        </Storyboard>
+                                                    </VisualState>
+                                                </VisualStateGroup>
+                                            </VisualStateManager.VisualStateGroups>
+                                            <Path Data="M 1,2 L 11,2 L 7,6 L 7,10 L 5,10 L 5,6 Z"
+                                                  Stretch="Uniform" Width="10" Height="10"
+                                                  StrokeThickness="1.2" Fill="Transparent" Margin="3">
+                                                <Path.Stroke>
+                                                    <SolidColorBrush x:Name="IconStroke" Color="{StaticResource FilterIconColor}"/>
+                                                </Path.Stroke>
+                                            </Path>
+                                        </Grid>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
                         <Style TargetType="syncfusion:GridCell">
                             <Setter Property="BorderThickness" Value="0,0,0.5,0.5"/>
                             <Setter Property="Padding" Value="4,0,4,0"/>

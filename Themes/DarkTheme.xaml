@@ -91,6 +91,8 @@
 
     <!-- === GRID HEADER COLORS === -->
     <SolidColorBrush x:Key="GridHeaderForeground" Color="#FFB0B0B0"/>
+    <Color x:Key="FilterIconColor">#FF808080</Color>
+    <Color x:Key="FilterIconActiveColor">#FFFF4444</Color>
 
     <!-- === ACTION BUTTON COLORS === -->
     <SolidColorBrush x:Key="ActionButtonForeground" Color="#E8EAED"/>

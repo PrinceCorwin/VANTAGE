@@ -52,6 +52,7 @@
    - **Color palette:** BackgroundColor, DarkBackgroundColor, DarkestBackgroundColor, ForegroundColor, TextColorSecondary, AccentColor, BorderColor, DisabledColor
    - **Window:** WindowBackground, ControlBackground, ControlBackgroundGreen, ControlBackgroundRed, ControlForeground, ControlBorder, ControlHoverBackground, ControlPressedBackground
    - **DataGrid:** GridHeaderBackground
+   - **Filter icons:** FilterIconColor (Color), FilterIconActiveColor (Color) — see filter icon section below
    - **Status:** StatusGreen, StatusYellow, StatusYellowBg, StatusRed, StatusRedBg, StatusInProgress, StatusNotStarted
    - **Toolbar:** ToolbarBackground, ToolbarForeground, ToolbarHoverBackground, ToolbarHoverForeground
    - **Grid headers:** GridHeaderForeground
@@ -99,6 +100,15 @@
 - **`SettingsManager.cs` guard bug (fixed).** `InitializeDefaultUserSettings()` had a guard checking `GetUserSetting("LastModuleUsed")` which was never written anywhere, so it re-initialized Theme to "Dark" on every startup. Fixed to check `GetUserSetting("Theme")` instead. Don't reintroduce this pattern.
 
 - **Syncfusion MSControl dictionaries.** Each Syncfusion theme has 4 MSControl dictionaries (Button, Window, StatusBar, TabControl) that must be swapped along with the app theme dictionary. `ThemeManager.ApplyTheme()` handles this by matching URI patterns containing `MSControl` and the Syncfusion theme name.
+
+- **Grid filter icons use a custom template, not Syncfusion's.** The Syncfusion `FilterToggleButton` template resolves its icon colors from internal compiled BAML that cannot be overridden via resource dictionaries, `Application.Current.Resources`, or `SfDataGrid.Resources` — SfSkinManager injects its own styles at a scope that overrides all of these. The solution: a custom `FilterToggleButton` style with a full `ControlTemplate` override is defined in each grid's `SfDataGrid.Resources` (ScheduleView master+detail, ProgressView, ProgressScanDialog). The template provides:
+  - Our own funnel Path geometry: `M 1,2 L 11,2 L 7,6 L 7,10 L 5,10 L 5,6 Z`
+  - `Stroke`-based rendering (outline only, `Fill="Transparent"`)
+  - `VisualStateManager` with `FilterStates` group (`Filtered`/`UnFiltered` states) — Syncfusion's control code triggers these state transitions
+  - `FilterIconColor` (Color resource from theme) for the default stroke, `FilterIconActiveColor` for active filter stroke (red)
+  - `Background="Transparent"` on the Grid wrapper for hit testing (clickable area)
+  - No `PART_FilterToggleButtonIndicator` name on the Path — intentionally omitted so Syncfusion code can't override our path data
+  - When adding a new theme, set `FilterIconColor` to a color that's visible on the `GridHeaderBackground` (dark headers need light icon, light headers need dark icon). `FilterIconActiveColor` should be a high-contrast red/accent to indicate active filtering.
 
 ### Progress Book Module
 - Phases 1-6 complete: Data models, repository, layout builder UI, PDF generator, live preview, generate dialog

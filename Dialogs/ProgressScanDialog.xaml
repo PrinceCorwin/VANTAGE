@@ -314,12 +314,49 @@
                                        HeaderRowHeight="30"
                                        RowHeight="28"
                                        CurrentCellEndEdit="SfReviewGrid_CurrentCellEndEdit">
-                    <syncfusion:SfDataGrid.HeaderStyle>
+                    <syncfusion:SfDataGrid.Resources>
                         <Style TargetType="syncfusion:GridHeaderCellControl">
                             <Setter Property="Background" Value="{StaticResource GridHeaderBackground}"/>
                             <Setter Property="Foreground" Value="{StaticResource TextColorSecondary}"/>
                         </Style>
-                    </syncfusion:SfDataGrid.HeaderStyle>
+                        <Style TargetType="syncfusion:FilterToggleButton">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="syncfusion:FilterToggleButton">
+                                        <Grid SnapsToDevicePixels="True" Background="Transparent">
+                                            <VisualStateManager.VisualStateGroups>
+                                                <VisualStateGroup x:Name="FilterStates">
+                                                    <VisualState x:Name="Filtered">
+                                                        <Storyboard>
+                                                            <ColorAnimation Storyboard.TargetName="IconStroke"
+                                                                            Storyboard.TargetProperty="Color"
+                                                                            To="{StaticResource FilterIconActiveColor}"
+                                                                            Duration="0:0:0.3"/>
+                                                        </Storyboard>
+                                                    </VisualState>
+                                                    <VisualState x:Name="UnFiltered">
+                                                        <Storyboard>
+                                                            <ColorAnimation Storyboard.TargetName="IconStroke"
+                                                                            Storyboard.TargetProperty="Color"
+                                                                            To="{StaticResource FilterIconColor}"
+                                                                            Duration="0:0:0.3"/>
+                                                        </Storyboard>
+                                                    </VisualState>
+                                                </VisualStateGroup>
+                                            </VisualStateManager.VisualStateGroups>
+                                            <Path Data="M 1,2 L 11,2 L 7,6 L 7,10 L 5,10 L 5,6 Z"
+                                                  Stretch="Uniform" Width="10" Height="10"
+                                                  StrokeThickness="1.2" Fill="Transparent" Margin="3">
+                                                <Path.Stroke>
+                                                    <SolidColorBrush x:Name="IconStroke" Color="{StaticResource FilterIconColor}"/>
+                                                </Path.Stroke>
+                                            </Path>
+                                        </Grid>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </syncfusion:SfDataGrid.Resources>
                     <syncfusion:SfDataGrid.Columns>
                         <syncfusion:GridCheckBoxColumn MappingName="IsSelected"
                                                        HeaderText="☑"
