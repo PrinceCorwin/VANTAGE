@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -41,6 +42,12 @@ namespace VANTAGE.Views
 
             _viewModel = new ScheduleViewModel();
             DataContext = _viewModel;
+
+            // Update Clear Filters border when toggle button filters change via binding
+            _viewModel.PropertyChanged += ViewModel_PropertyChanged;
+
+            // Update Clear Filters border when column header filters change
+            sfScheduleMaster.FilterChanged += SfScheduleMaster_FilterChanged;
 
             Loaded += ScheduleView_Loaded;
 
@@ -1162,6 +1169,7 @@ namespace VANTAGE.Views
         {
             _viewModel.DiscrepancyFilter = DiscrepancyFilterType.None;
             txtStatus.Text = "Filter cleared";
+            UpdateClearFiltersBorder();
         }
 
         // Filter by Actual Start variance (P6 vs MS)
@@ -1173,6 +1181,7 @@ namespace VANTAGE.Views
             txtStatus.Text = _viewModel.DiscrepancyFilter == DiscrepancyFilterType.Start
                 ? "Filtered: Actual Start discrepancies"
                 : "Filter cleared";
+            UpdateClearFiltersBorder();
         }
 
         // Filter by Actual Finish variance (P6 vs MS)
@@ -1184,6 +1193,7 @@ namespace VANTAGE.Views
             txtStatus.Text = _viewModel.DiscrepancyFilter == DiscrepancyFilterType.Finish
                 ? "Filtered: Actual Finish discrepancies"
                 : "Filter cleared";
+            UpdateClearFiltersBorder();
         }
 
         // Filter by BudgetMHs variance (P6 vs MS)
@@ -1195,6 +1205,7 @@ namespace VANTAGE.Views
             txtStatus.Text = _viewModel.DiscrepancyFilter == DiscrepancyFilterType.MHs
                 ? "Filtered: MHs discrepancies"
                 : "Filter cleared";
+            UpdateClearFiltersBorder();
         }
 
         // Filter by PercentComplete variance (P6 vs MS)
@@ -1206,6 +1217,7 @@ namespace VANTAGE.Views
             txtStatus.Text = _viewModel.DiscrepancyFilter == DiscrepancyFilterType.PercentComplete
                 ? "Filtered: % Complete discrepancies"
                 : "Filter cleared";
+            UpdateClearFiltersBorder();
         }
 
         // Clear all filters (button and header filters)
@@ -1221,6 +1233,50 @@ namespace VANTAGE.Views
             }
 
             txtStatus.Text = "All filters cleared";
+            UpdateClearFiltersBorder();
+        }
+
+        // Highlights Clear Filters border when any filter is active
+        private void UpdateClearFiltersBorder()
+        {
+            bool hasFilter = _viewModel.FilterMissedStart
+                || _viewModel.FilterMissedFinish
+                || _viewModel.Filter3WLA
+                || _viewModel.FilterRequiredFields
+                || _viewModel.DiscrepancyFilter != DiscrepancyFilterType.None;
+
+            // Check column header filters on master grid
+            if (!hasFilter && sfScheduleMaster?.Columns != null)
+            {
+                foreach (var col in sfScheduleMaster.Columns)
+                {
+                    if (col.FilterPredicates.Count > 0)
+                    {
+                        hasFilter = true;
+                        break;
+                    }
+                }
+            }
+
+            btnClearFilters.BorderBrush = hasFilter
+                ? (Brush)Application.Current.Resources["ActiveFilterBorderColor"]
+                : (Brush)Application.Current.Resources["ControlBorder"];
+        }
+
+        // Handle column header filter changes on master grid
+        private void SfScheduleMaster_FilterChanged(object? sender, GridFilterEventArgs e)
+        {
+            UpdateClearFiltersBorder();
+        }
+
+        // Handle toggle button filter changes via ViewModel binding
+        private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName is "FilterMissedStart" or "FilterMissedFinish"
+                or "Filter3WLA" or "FilterRequiredFields" or "DiscrepancyFilter")
+            {
+                UpdateClearFiltersBorder();
+            }
         }
 
         // ========================================

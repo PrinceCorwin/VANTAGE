@@ -3362,7 +3362,7 @@ namespace VANTAGE.Views
                 hasFilter = true;
 
             btnClearFilters.BorderBrush = hasFilter
-                ? (Brush)Application.Current.Resources["StatusGreen"]
+                ? (Brush)Application.Current.Resources["ActiveFilterBorderColor"]
                 : (Brush)Application.Current.Resources["ControlBorder"];
         }
 

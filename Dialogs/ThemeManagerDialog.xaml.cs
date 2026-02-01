@@ -17,6 +17,8 @@ namespace VANTAGE.Dialogs
             // Set initial radio button state based on saved theme
             if (ThemeManager.CurrentTheme == "Light")
                 rbLight.IsChecked = true;
+            else if (ThemeManager.CurrentTheme == "Orchid")
+                rbOrchid.IsChecked = true;
             else
                 rbDark.IsChecked = true;
 
@@ -28,7 +30,8 @@ namespace VANTAGE.Dialogs
         {
             if (!_initialized) return;
 
-            string selectedTheme = rbLight.IsChecked == true ? "Light" : "Dark";
+            string selectedTheme = rbOrchid.IsChecked == true ? "Orchid"
+                : rbLight.IsChecked == true ? "Light" : "Dark";
 
             // Only save if the theme actually changed
             if (selectedTheme != ThemeManager.CurrentTheme)

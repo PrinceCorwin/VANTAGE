@@ -5,6 +5,9 @@ This document tracks completed features and fixes. Items are moved here from Pro
 ---
 
 ### February 1, 2026
+- **Orchid theme:** Added third theme — a light-based feminine theme with deep purple (#7B1FA2) primary and bright pink (#E040FB) accent. Lavender-tinted backgrounds, purple grid headers, and purple-branded toolbar. Uses Syncfusion FluentLight as base.
+- **ActiveFilterBorderColor resource:** New theme-aware resource for Clear Filters button border highlight. Green in Dark/Light themes, pink accent in Orchid. Replaces hardcoded StatusGreen reference.
+- **Schedule view Clear Filters border:** Ported filter-active border indicator from ProgressView to ScheduleView. Highlights when any filter is active (toggle buttons, discrepancy dropdown, column header filters). Wired via PropertyChanged and FilterChanged events.
 - **Multi-theme support:** Added Theme Manager dialog (Settings > Theme...) with Dark and Light themes. Theme applies on app restart. Includes Syncfusion FluentDark/FluentLight switching, per-theme resource dictionaries, and UserSettings persistence.
 - **Light theme polish:** Toolbar, grid headers, Sync/Submit buttons, and Required Fields button keep dark backgrounds in both themes with correct foreground colors. Hover states adjusted for light theme visibility.
 - **Theme resource architecture:** Renamed resources to universal, role-based names (`ToolbarForeground`, `GridHeaderForeground`, `ActionButtonForeground`, `ToolbarButtonStyle`) to support future themes beyond Dark/Light. Each theme independently defines colors for its palette.

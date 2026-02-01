@@ -42,7 +42,7 @@
 
 ### Multi-Theme System (branch: multi-themes)
 
-**Current state:** Dark and Light themes implemented and working. Architecture supports adding more themes.
+**Current state:** Dark, Light, and Orchid themes implemented and working. Architecture supports adding more themes.
 
 **How to add a new theme (e.g. "Warm", "Ocean", "HighContrast"):**
 
@@ -54,6 +54,7 @@
    - **DataGrid:** GridHeaderBackground
    - **Filter icons:** FilterIconColor (Color), FilterIconActiveColor (Color) — see filter icon section below
    - **Status:** StatusGreen, StatusYellow, StatusYellowBg, StatusRed, StatusRedBg, StatusInProgress, StatusNotStarted
+   - **Active filter border:** ActiveFilterBorderColor
    - **Toolbar:** ToolbarBackground, ToolbarForeground, ToolbarHoverBackground, ToolbarHoverForeground
    - **Grid headers:** GridHeaderForeground
    - **Action buttons:** ActionButtonForeground
@@ -71,7 +72,7 @@
    // In ThemeMap: "DisplayName" → "SyncfusionThemeName"
    { "Warm", "FluentDark" }  // or "FluentLight" depending on base
    // In AvailableThemes array:
-   public static readonly string[] AvailableThemes = { "Dark", "Light", "Warm" };
+   public static readonly string[] AvailableThemes = { "Dark", "Light", "Orchid" };
    ```
    The `ApplyTheme()` method handles swapping by URI pattern matching — it finds and removes the current theme dictionary (`/Themes/*.xaml`) and Syncfusion MSControl dictionaries, then adds the new ones. No changes needed to the swap logic itself.
 

@@ -38,6 +38,9 @@
     <SolidColorBrush x:Key="StatusInProgress" Color="#FF3498DB"/>
     <SolidColorBrush x:Key="StatusNotStarted" Color="#FF95A5A6"/>
 
+    <!-- === ACTIVE FILTER BORDER === -->
+    <SolidColorBrush x:Key="ActiveFilterBorderColor" Color="#FF27AE60"/>
+
     <!-- === TOOLBAR COLORS === -->
     <SolidColorBrush x:Key="ToolbarBackground" Color="#FFEAEAEA"/>
 

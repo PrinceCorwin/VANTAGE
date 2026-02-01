@@ -7,98 +7,98 @@
     <sys:Double xmlns:sys="clr-namespace:System;assembly=mscorlib" x:Key="FontSizeNormal">14</sys:Double>
 
     <!-- === COLOR PALETTE === -->
-    <SolidColorBrush x:Key="BackgroundColor" Color="#FF1E1E1E"/>
-    <SolidColorBrush x:Key="DarkBackgroundColor" Color="#000000EF"/>
-    <SolidColorBrush x:Key="DarkestBackgroundColor" Color="#161616"/>
-    <SolidColorBrush x:Key="ForegroundColor" Color="#E8EAED"/>
-    <SolidColorBrush x:Key="TextColorSecondary" Color="#FFB0B0B0"/>
-    <SolidColorBrush x:Key="AccentColor" Color="#FF0078D7"/>
-    <SolidColorBrush x:Key="BorderColor" Color="black"/>
-    <SolidColorBrush x:Key="DisabledColor" Color="#FF6A6A6A"/>
+    <SolidColorBrush x:Key="BackgroundColor" Color="#FFF6F0FA"/>
+    <SolidColorBrush x:Key="DarkBackgroundColor" Color="#FFE8DCF0"/>
+    <SolidColorBrush x:Key="DarkestBackgroundColor" Color="#FF2D1B36"/>
+    <SolidColorBrush x:Key="ForegroundColor" Color="#FF2D1B36"/>
+    <SolidColorBrush x:Key="TextColorSecondary" Color="#FF7B6B8A"/>
+    <SolidColorBrush x:Key="AccentColor" Color="#FFE040FB"/>
+    <SolidColorBrush x:Key="BorderColor" Color="#FFD4C4E0"/>
+    <SolidColorBrush x:Key="DisabledColor" Color="#FFBCAFC8"/>
 
     <!-- === WINDOW ELEMENTS === -->
-    <SolidColorBrush x:Key="WindowBackground" Color="#FF1C1C1C"/>
-    <SolidColorBrush x:Key="ControlBackground" Color="#FF2A2A2A"/>
-    <SolidColorBrush x:Key="ControlBackgroundGreen" Color="#012a00"/>
-    <SolidColorBrush x:Key="ControlBackgroundRed" Color="#2a0000"/>
-    <SolidColorBrush x:Key="ControlForeground" Color="#E8EAED"/>
-    <SolidColorBrush x:Key="ControlBorder" Color="#FF3A3A3A"/>
-    <SolidColorBrush x:Key="ControlHoverBackground" Color="#FF333333"/>
-    <SolidColorBrush x:Key="ControlPressedBackground" Color="#FF2A2A2C"/>
+    <SolidColorBrush x:Key="WindowBackground" Color="#FFFBF7FD"/>
+    <SolidColorBrush x:Key="ControlBackground" Color="#FFFFFFFF"/>
+    <SolidColorBrush x:Key="ControlBackgroundGreen" Color="#FF1B3D1B"/>
+    <SolidColorBrush x:Key="ControlBackgroundRed" Color="#FF3D1B1B"/>
+    <SolidColorBrush x:Key="ControlForeground" Color="#FF2D1B36"/>
+    <SolidColorBrush x:Key="ControlBorder" Color="#FFD4C4E0"/>
+    <SolidColorBrush x:Key="ControlHoverBackground" Color="#FFEDE4F5"/>
+    <SolidColorBrush x:Key="ControlPressedBackground" Color="#FFD4C4E0"/>
 
     <!-- === DATAGRID COLORS === -->
-    <SolidColorBrush x:Key="GridHeaderBackground" Color="#002234"/>
+    <SolidColorBrush x:Key="GridHeaderBackground" Color="#FF4A148C"/>
 
     <!-- === STATUS COLORS === -->
     <SolidColorBrush x:Key="StatusGreen" Color="#FF27AE60"/>
-    <SolidColorBrush x:Key="StatusYellow" Color="#5b4b26"/>
-    <SolidColorBrush x:Key="StatusYellowBg" Color="#5b4b26"/>
-    <SolidColorBrush x:Key="StatusRed" Color="#b63434"/>
-    <SolidColorBrush x:Key="StatusRedBg" Color="#5b2626"/>
-    <SolidColorBrush x:Key="StatusInProgress" Color="#FF3498DB"/>
+    <SolidColorBrush x:Key="StatusYellow" Color="#FF8B7D26"/>
+    <SolidColorBrush x:Key="StatusYellowBg" Color="#FFF5F0D0"/>
+    <SolidColorBrush x:Key="StatusRed" Color="#FFB63434"/>
+    <SolidColorBrush x:Key="StatusRedBg" Color="#FFFDE8E8"/>
+    <SolidColorBrush x:Key="StatusInProgress" Color="#FF7B1FA2"/>
     <SolidColorBrush x:Key="StatusNotStarted" Color="#FF95A5A6"/>
 
     <!-- === ACTIVE FILTER BORDER === -->
-    <SolidColorBrush x:Key="ActiveFilterBorderColor" Color="#FF27AE60"/>
+    <SolidColorBrush x:Key="ActiveFilterBorderColor" Color="#FFE040FB"/>
 
     <!-- === TOOLBAR COLORS === -->
-    <SolidColorBrush x:Key="ToolbarBackground" Color="#FF252525"/>
+    <SolidColorBrush x:Key="ToolbarBackground" Color="#FFEDE4F5"/>
 
     <!-- === STATUSBAR COLORS === -->
-    <SolidColorBrush x:Key="StatusBarBackground" Color="#FF1C1C1C"/>
-    <SolidColorBrush x:Key="StatusBarForeground" Color="#FFB0B0B0"/>
+    <SolidColorBrush x:Key="StatusBarBackground" Color="#FFF0E8F5"/>
+    <SolidColorBrush x:Key="StatusBarForeground" Color="#FF5A3D6E"/>
 
     <!-- === NON-OWNED RECORDS COLORS === -->
-    <SolidColorBrush x:Key="NotOwnedRowBackground" Color="#000723"/>
-    <SolidColorBrush x:Key="NotOwnedRowForeground" Color="#336e9c"/>
+    <SolidColorBrush x:Key="NotOwnedRowBackground" Color="#FFF3E8FF"/>
+    <SolidColorBrush x:Key="NotOwnedRowForeground" Color="#FF7B5FA0"/>
 
     <!-- === ACTION BUTTON COLORS === -->
     <!-- Green buttons: Add, Submit, Save, Restore -->
-    <SolidColorBrush x:Key="ButtonSuccessBackground" Color="#2D7D46"/>
-    <SolidColorBrush x:Key="ButtonSuccessBorder" Color="#2D7D46"/>
-    <SolidColorBrush x:Key="ButtonSuccessHover" Color="#359954"/>
+    <SolidColorBrush x:Key="ButtonSuccessBackground" Color="#FF2D7D46"/>
+    <SolidColorBrush x:Key="ButtonSuccessBorder" Color="#FF2D7D46"/>
+    <SolidColorBrush x:Key="ButtonSuccessHover" Color="#FF359954"/>
 
     <!-- Red buttons: Delete, Remove, Destructive actions -->
-    <SolidColorBrush x:Key="ButtonDangerBackground" Color="#B33A3A"/>
-    <SolidColorBrush x:Key="ButtonDangerBorder" Color="#B33A3A"/>
-    <SolidColorBrush x:Key="ButtonDangerHover" Color="#CC4444"/>
+    <SolidColorBrush x:Key="ButtonDangerBackground" Color="#FFB33A3A"/>
+    <SolidColorBrush x:Key="ButtonDangerBorder" Color="#FFB33A3A"/>
+    <SolidColorBrush x:Key="ButtonDangerHover" Color="#FFCC4444"/>
 
-    <!-- Blue buttons: Primary actions -->
-    <SolidColorBrush x:Key="ButtonPrimaryBackground" Color="#0078D7"/>
-    <SolidColorBrush x:Key="ButtonPrimaryBorder" Color="#0078D7"/>
-    <SolidColorBrush x:Key="ButtonPrimaryHover" Color="#1A8BE0"/>
+    <!-- Purple buttons: Primary actions -->
+    <SolidColorBrush x:Key="ButtonPrimaryBackground" Color="#FF7B1FA2"/>
+    <SolidColorBrush x:Key="ButtonPrimaryBorder" Color="#FF7B1FA2"/>
+    <SolidColorBrush x:Key="ButtonPrimaryHover" Color="#FF9C27B0"/>
 
     <!-- === OVERLAY COLORS === -->
-    <SolidColorBrush x:Key="OverlayBackground" Color="#DD000000"/>
-    <SolidColorBrush x:Key="OverlayText" Color="White"/>
-    <SolidColorBrush x:Key="OverlayTextSecondary" Color="#CCCCCC"/>
+    <SolidColorBrush x:Key="OverlayBackground" Color="#AAFFFFFF"/>
+    <SolidColorBrush x:Key="OverlayText" Color="#FF2D1B36"/>
+    <SolidColorBrush x:Key="OverlayTextSecondary" Color="#FF7B6B8A"/>
     <!-- Note: TrackColor on SfLinearProgressBar doesn't accept resource binding -->
 
     <!-- === ERROR/WARNING COLORS === -->
     <SolidColorBrush x:Key="ErrorText" Color="#FFE74C3C"/>
-    <SolidColorBrush x:Key="WarningText" Color="#FFFFC107"/>
+    <SolidColorBrush x:Key="WarningText" Color="#FFD4A017"/>
     <SolidColorBrush x:Key="WarningHighlight" Color="#FFFF6B6B"/>
     <SolidColorBrush x:Key="WarningHighlightBackground" Color="#44FF6B6B"/>
 
     <!-- === UI ELEMENT COLORS === -->
-    <SolidColorBrush x:Key="SidebarBackground" Color="#FF252526"/>
-    <SolidColorBrush x:Key="SidebarBorder" Color="#FF3F3F46"/>
-    <SolidColorBrush x:Key="DividerColor" Color="#FF3F3F46"/>
-    <SolidColorBrush x:Key="SplitterDots" Color="#666666"/>
-    <SolidColorBrush x:Key="DisabledText" Color="#FF888888"/>
+    <SolidColorBrush x:Key="SidebarBackground" Color="#FFF3EDF7"/>
+    <SolidColorBrush x:Key="SidebarBorder" Color="#FFD4C4E0"/>
+    <SolidColorBrush x:Key="DividerColor" Color="#FFD4C4E0"/>
+    <SolidColorBrush x:Key="SplitterDots" Color="#FFBCAFC8"/>
+    <SolidColorBrush x:Key="DisabledText" Color="#FFBCAFC8"/>
 
     <!-- === TOOLBAR BUTTON COLORS === -->
     <SolidColorBrush x:Key="ToolbarForeground" Color="#E8EAED"/>
-    <SolidColorBrush x:Key="ToolbarHoverBackground" Color="#FF333333"/>
-    <SolidColorBrush x:Key="ToolbarHoverForeground" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="ToolbarHoverBackground" Color="#FF5C1780"/>
+    <SolidColorBrush x:Key="ToolbarHoverForeground" Color="#FFFFFFFF"/>
 
     <!-- === GRID HEADER COLORS === -->
-    <SolidColorBrush x:Key="GridHeaderForeground" Color="#FFB0B0B0"/>
-    <Color x:Key="FilterIconColor">#FF808080</Color>
+    <SolidColorBrush x:Key="GridHeaderForeground" Color="#FFE0D0F0"/>
+    <Color x:Key="FilterIconColor">#FFD0C0E0</Color>
     <Color x:Key="FilterIconActiveColor">#FFFF4444</Color>
 
     <!-- === ACTION BUTTON COLORS === -->
-    <SolidColorBrush x:Key="ActionButtonForeground" Color="#E8EAED"/>
+    <SolidColorBrush x:Key="ActionButtonForeground" Color="#FFE8EAED"/>
 
     <!-- ========================================= -->
     <!-- === DEFAULT BUTTON STYLE === -->
