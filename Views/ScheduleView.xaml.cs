@@ -11,6 +11,7 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Threading;
+using Syncfusion.SfSkinManager;
 using Syncfusion.UI.Xaml.Grid;
 using VANTAGE.Models;
 using VANTAGE.Repositories;
@@ -36,6 +37,7 @@ namespace VANTAGE.Views
         public ScheduleView()
         {
             InitializeComponent();
+            SfSkinManager.SetTheme(this, new Theme(ThemeManager.GetSyncfusionThemeName()));
 
             _viewModel = new ScheduleViewModel();
             DataContext = _viewModel;

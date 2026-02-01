@@ -11,6 +11,7 @@ using VANTAGE.Data;
 using VANTAGE.Dialogs;
 using VANTAGE.Models.ProgressBook;
 using VANTAGE.Services.ProgressBook;
+using Syncfusion.SfSkinManager;
 using VANTAGE.Utilities;
 
 namespace VANTAGE.Views
@@ -55,6 +56,7 @@ namespace VANTAGE.Views
         public ProgressBooksView()
         {
             InitializeComponent();
+            SfSkinManager.SetTheme(this, new Theme(ThemeManager.GetSyncfusionThemeName()));
             Loaded += ProgressBooksView_Loaded;
         }
 

@@ -78,6 +78,7 @@
 		<PackageReference Include="SharpVectors.Wpf" Version="1.8.5" />
 		<PackageReference Include="Syncfusion.PdfToImageConverter.WPF" Version="32.1.25" />
 		<PackageReference Include="Syncfusion.SfProgressBar.WPF" Version="32.1.25" />
+		<PackageReference Include="Syncfusion.Themes.FluentLight.WPF" Version="32.1.25" />
 		<PackageReference Include="System.Drawing.Common" Version="10.0.1" />
 		<PackageReference Include="Syncfusion.Pdf.WPF" Version="32.1.25" />
 		<PackageReference Include="Syncfusion.PdfViewer.WPF" Version="32.1.25" />
@@ -93,7 +94,6 @@
 	<ItemGroup>
 		<Resource Include="Images\AppIcon.ico" />
 		<Resource Include="Images\CoverPic.png" />
-		<Resource Include="Images\MilestoneLogoPngTransparentBG2.png" />
 		<Resource Include="Images\SummitLogoNoText.jpg" />
 		<Resource Include="Images\SummitS-Full Summit Peak Logo.jpg" />
 	</ItemGroup>

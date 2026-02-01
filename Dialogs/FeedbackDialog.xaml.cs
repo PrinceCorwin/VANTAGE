@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using Syncfusion.SfSkinManager;
 using VANTAGE.Utilities;
 
 namespace VANTAGE.Dialogs
@@ -19,6 +20,7 @@ namespace VANTAGE.Dialogs
         public FeedbackDialog()
         {
             InitializeComponent();
+            SfSkinManager.SetTheme(this, new Theme(ThemeManager.GetSyncfusionThemeName()));
             _isAdmin = AzureDbManager.IsUserAdmin(App.CurrentUser?.Username ?? "");
 
             // Enable admin features

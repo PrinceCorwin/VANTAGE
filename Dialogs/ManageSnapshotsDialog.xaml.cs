@@ -10,6 +10,7 @@ using System.Windows.Media;
 using Microsoft.Data.SqlClient;
 using Microsoft.Data.Sqlite;
 using VANTAGE.Data;
+using Syncfusion.SfSkinManager;
 using VANTAGE.Utilities;
 using VANTAGE.Views;
 
@@ -22,6 +23,7 @@ namespace VANTAGE.Dialogs
         public ManageSnapshotsDialog()
         {
             InitializeComponent();
+            SfSkinManager.SetTheme(this, new Theme(ThemeManager.GetSyncfusionThemeName()));
             Loaded += ManageSnapshotsDialog_Loaded;
         }
 
@@ -337,7 +339,7 @@ namespace VANTAGE.Dialogs
             };
 
             Syncfusion.SfSkinManager.SfSkinManager.SetTheme(dialog,
-                new Syncfusion.SfSkinManager.Theme("FluentDark"));
+                new Syncfusion.SfSkinManager.Theme(ThemeManager.GetSyncfusionThemeName()));
 
             var grid = new Grid { Margin = new Thickness(20) };
             grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });

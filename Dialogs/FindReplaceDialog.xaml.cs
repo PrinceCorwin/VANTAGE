@@ -1,6 +1,8 @@
 ﻿using System.Windows;
 using System.Linq;
+using Syncfusion.SfSkinManager;
 using VANTAGE.Models;
+using VANTAGE.Utilities;
 using VANTAGE;
 
 namespace VANTAGE.Dialogs
@@ -13,6 +15,7 @@ namespace VANTAGE.Dialogs
         public FindReplaceDialog()
         {
             InitializeComponent();
+            SfSkinManager.SetTheme(this, new Theme(ThemeManager.GetSyncfusionThemeName()));
         }
         
         public void SetTargetColumn(Syncfusion.UI.Xaml.Grid.SfDataGrid dataGrid, string columnMappingName, string columnHeaderText)

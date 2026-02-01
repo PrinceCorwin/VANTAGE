@@ -4,6 +4,14 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ---
 
+### February 1, 2026
+- **Multi-theme support:** Added Theme Manager dialog (Settings > Theme...) with Dark and Light themes. Theme applies on app restart. Includes Syncfusion FluentDark/FluentLight switching, per-theme resource dictionaries, and UserSettings persistence.
+- **Light theme polish:** Toolbar, grid headers, Sync/Submit buttons, and Required Fields button keep dark backgrounds in both themes with correct foreground colors. Hover states adjusted for light theme visibility.
+- **Theme resource architecture:** Renamed resources to universal, role-based names (`ToolbarForeground`, `GridHeaderForeground`, `ActionButtonForeground`, `ToolbarButtonStyle`) to support future themes beyond Dark/Light. Each theme independently defines colors for its palette.
+- **Fixed theme persistence bug:** `InitializeDefaultUserSettings()` was resetting Theme to "Dark" on every startup because its guard checked a setting that was never written. Fixed to check Theme setting directly.
+
+---
+
 ### January 31, 2026
 - **Import/Export WP templates:** Export all user-created form and WP templates to JSON with index-based form references. Import with automatic ID remapping, name conflict handling (" (Imported)" suffix), and UI refresh. Documented in Help manual.
 - **Updated app icon and logo**

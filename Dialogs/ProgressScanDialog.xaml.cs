@@ -12,6 +12,7 @@ using VANTAGE.Data;
 using VANTAGE.Models;
 using VANTAGE.Models.AI;
 using VANTAGE.Services.AI;
+using Syncfusion.SfSkinManager;
 using VANTAGE.Utilities;
 
 namespace VANTAGE.Dialogs
@@ -43,6 +44,7 @@ namespace VANTAGE.Dialogs
         public ProgressScanDialog()
         {
             InitializeComponent();
+            SfSkinManager.SetTheme(this, new Theme(ThemeManager.GetSyncfusionThemeName()));
             lstFiles.ItemsSource = _files;
             sfReviewGrid.ItemsSource = _reviewItems;
 

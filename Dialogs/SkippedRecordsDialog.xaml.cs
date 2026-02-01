@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Windows;
+using Syncfusion.SfSkinManager;
+using VANTAGE.Utilities;
 
 namespace VANTAGE.Dialogs
 {
@@ -11,6 +13,7 @@ namespace VANTAGE.Dialogs
         public SkippedRecordsDialog(List<SkippedRecordItem> records)
         {
             InitializeComponent();
+            SfSkinManager.SetTheme(this, new Theme(ThemeManager.GetSyncfusionThemeName()));
             _records = records;
 
             lvSkippedRecords.ItemsSource = _records;

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Windows;
 using Microsoft.Data.SqlClient;
 using VANTAGE.Data;
+using Syncfusion.SfSkinManager;
 using VANTAGE.Utilities;
 
 namespace VANTAGE.Dialogs
@@ -16,6 +17,7 @@ namespace VANTAGE.Dialogs
         public AdminSnapshotsDialog()
         {
             InitializeComponent();
+            SfSkinManager.SetTheme(this, new Theme(ThemeManager.GetSyncfusionThemeName()));
             Loaded += AdminSnapshotsDialog_Loaded;
         }
 

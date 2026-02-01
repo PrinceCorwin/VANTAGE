@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using VANTAGE.Models;
+using Syncfusion.SfSkinManager;
 using VANTAGE.Utilities;
 
 namespace VANTAGE.Dialogs
@@ -22,6 +23,7 @@ namespace VANTAGE.Dialogs
         public ManageFiltersDialog(List<string> availableColumns)
         {
             InitializeComponent();
+            SfSkinManager.SetTheme(this, new Theme(ThemeManager.GetSyncfusionThemeName()));
             _availableColumns = availableColumns.OrderBy(c => c).ToList();
             LoadFilters();
             RefreshFilterList();

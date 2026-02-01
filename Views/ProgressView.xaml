@@ -559,7 +559,7 @@
                                 Width="80"
                                 Margin="10,0"
                                 Background="{StaticResource ControlBackgroundGreen}"
-                                Foreground="{StaticResource ForegroundColor}"
+                                Foreground="{StaticResource ActionButtonForeground}"
                                 BorderBrush="{StaticResource TextColorSecondary}"
                                 BorderThickness="2"
                                 Padding="5"
@@ -574,7 +574,7 @@
                                 Width="150"
                                 Margin="10,0"
                                 Background="{StaticResource ControlBackgroundRed}"
-                                Foreground="{StaticResource ForegroundColor}"
+                                Foreground="{StaticResource ActionButtonForeground}"
                                 BorderBrush="{StaticResource TextColorSecondary}"
                                 BorderThickness="2"
                                 Padding="5"
@@ -700,7 +700,7 @@
                     <syncfusion:SfDataGrid.Resources>
                         <Style TargetType="syncfusion:GridHeaderCellControl">
                             <Setter Property="Background" Value="{StaticResource GridHeaderBackground}"/>
-                            <Setter Property="Foreground" Value="{StaticResource TextColorSecondary}"/>
+                            <Setter Property="Foreground" Value="{StaticResource GridHeaderForeground}"/>
                             <Setter Property="BorderThickness" Value="0,0,0.5,0.5"/>
                             <Setter Property="Padding" Value="4,0,4,0"/>
                         </Style>

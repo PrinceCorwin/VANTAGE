@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using Syncfusion.SfSkinManager;
+using VANTAGE.Utilities;
 
 namespace VANTAGE.Dialogs
 {
@@ -16,7 +17,7 @@ namespace VANTAGE.Dialogs
         public TemplateNameDialog(string defaultName, List<string> existingNames, string? promptText = null)
         {
             InitializeComponent();
-            SfSkinManager.SetTheme(this, new Theme("FluentDark"));
+            SfSkinManager.SetTheme(this, new Theme(ThemeManager.GetSyncfusionThemeName()));
 
             _existingNames = existingNames ?? new List<string>();
             txtName.Text = defaultName;

@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using VANTAGE.Data;
+using Syncfusion.SfSkinManager;
 using VANTAGE.Utilities;
 
 namespace VANTAGE.Dialogs
@@ -15,6 +16,7 @@ namespace VANTAGE.Dialogs
         public ManageProgressLogDialog()
         {
             InitializeComponent();
+            SfSkinManager.SetTheme(this, new Theme(ThemeManager.GetSyncfusionThemeName()));
             Loaded += ManageProgressLogDialog_Loaded;
         }
 

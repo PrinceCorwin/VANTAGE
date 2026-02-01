@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Windows;
 using Microsoft.Data.Sqlite;
+using Syncfusion.SfSkinManager;
 using VANTAGE.Utilities;
 
 namespace VANTAGE.Dialogs
@@ -20,6 +21,7 @@ namespace VANTAGE.Dialogs
         public P6ImportDialog(string filePath)
         {
             InitializeComponent();
+            SfSkinManager.SetTheme(this, new Theme(ThemeManager.GetSyncfusionThemeName()));
 
             txtFileName.Text = Path.GetFileName(filePath);
 

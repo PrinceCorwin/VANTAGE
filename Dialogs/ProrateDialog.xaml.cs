@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows;
 using VANTAGE.Data;
 using VANTAGE.Models;
+using Syncfusion.SfSkinManager;
 using VANTAGE.Utilities;
 
 namespace VANTAGE.Dialogs
@@ -22,6 +23,7 @@ namespace VANTAGE.Dialogs
         public ProrateDialog(List<Activity> filteredActivities, Action refreshCallback)
         {
             InitializeComponent();
+            SfSkinManager.SetTheme(this, new Theme(ThemeManager.GetSyncfusionThemeName()));
             _allFilteredActivities = filteredActivities;
             _refreshCallback = refreshCallback;
             Loaded += (s, e) => { _isLoaded = true; UpdatePreview(); };

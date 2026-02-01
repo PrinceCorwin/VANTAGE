@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Windows;
+using Syncfusion.SfSkinManager;
+using VANTAGE.Utilities;
 
 namespace VANTAGE.Dialogs
 {
@@ -11,6 +13,7 @@ namespace VANTAGE.Dialogs
         public P6ExportDialog(DateTime weekEndDate, int rowCount)
         {
             InitializeComponent();
+            SfSkinManager.SetTheme(this, new Theme(ThemeManager.GetSyncfusionThemeName()));
 
             // Display info
             txtWeekEndDate.Text = weekEndDate.ToString("yyyy-MM-dd");

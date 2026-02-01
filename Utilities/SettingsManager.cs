@@ -208,7 +208,7 @@ namespace VANTAGE.Utilities
                 // Set default theme settings if not already set
                 if (string.IsNullOrEmpty(GetAppSetting("Theme")))
                 {
-                    SetAppSetting("Theme", "DarkTheme.xaml", "string");
+                    SetAppSetting("Theme", "Dark", "string");
                     SetAppSetting("ToolbarLocation", "Top", "string");
                     SetAppSetting("WindowWidth", "1920", "int");
                     SetAppSetting("WindowHeight", "1080", "int");
@@ -224,10 +224,10 @@ namespace VANTAGE.Utilities
         {
             try
             {
-                // Set default user settings if not already set
-                if (string.IsNullOrEmpty(GetUserSetting("LastModuleUsed")))
+                // Only set default theme if no theme setting exists yet
+                if (string.IsNullOrEmpty(GetUserSetting("Theme")))
                 {
-                    SetUserSetting("Theme", "DarkTheme.xaml", "string");
+                    SetUserSetting("Theme", "Dark", "string");
                 }
             }
             catch

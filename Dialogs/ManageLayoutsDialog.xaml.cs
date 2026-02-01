@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using VANTAGE.Models;
+using Syncfusion.SfSkinManager;
 using VANTAGE.Utilities;
 
 namespace VANTAGE.Dialogs
@@ -21,6 +22,7 @@ namespace VANTAGE.Dialogs
         public ManageLayoutsDialog(Func<GridLayout> getCurrentLayout, Action<GridLayout> applyLayout, Action resetToDefault)
         {
             InitializeComponent();
+            SfSkinManager.SetTheme(this, new Theme(ThemeManager.GetSyncfusionThemeName()));
             _getCurrentLayout = getCurrentLayout;
             _applyLayout = applyLayout;
             _resetToDefault = resetToDefault;
@@ -242,7 +244,7 @@ namespace VANTAGE.Dialogs
             };
 
             Syncfusion.SfSkinManager.SfSkinManager.SetTheme(dialog,
-                new Syncfusion.SfSkinManager.Theme("FluentDark"));
+                new Syncfusion.SfSkinManager.Theme(ThemeManager.GetSyncfusionThemeName()));
 
             var grid = new Grid { Margin = new Thickness(15) };
             grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });

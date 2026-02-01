@@ -743,8 +743,8 @@ namespace VANTAGE.Views
         public ProgressView()
         {
             InitializeComponent();
-            // Apply FluentDark theme to grid
-            Syncfusion.SfSkinManager.SfSkinManager.SetTheme(sfActivities, new Syncfusion.SfSkinManager.Theme("FluentDark"));
+            // Apply Syncfusion theme to grid
+            Syncfusion.SfSkinManager.SfSkinManager.SetTheme(sfActivities, new Syncfusion.SfSkinManager.Theme(ThemeManager.GetSyncfusionThemeName()));
             // Hook into Syncfusion's filter changed event
             sfActivities.FilterChanged += SfActivities_FilterChanged;
             sfActivities.CurrentCellBeginEdit += SfActivities_CurrentCellBeginEdit;

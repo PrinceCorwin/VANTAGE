@@ -2,8 +2,6 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
-             xmlns:skinManager="clr-namespace:Syncfusion.SfSkinManager;assembly=Syncfusion.SfSkinManager.WPF"
-             skinManager:SfSkinManager.Theme="{skinManager:SkinManagerExtension ThemeName=FluentDark}"
              Background="{StaticResource BackgroundColor}">
 
     <UserControl.Resources>
@@ -34,6 +32,48 @@
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="border" Property="Background" Value="{StaticResource ControlHoverBackground}"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource AccentColor}"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource AccentColor}"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource ControlPressedBackground}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Filter toggle for buttons with colored backgrounds (Required Fields) -->
+        <Style x:Key="ActionFilterToggleStyle" TargetType="ToggleButton">
+            <Setter Property="Background" Value="{StaticResource StatusRedBg}"/>
+            <Setter Property="Foreground" Value="{StaticResource ActionButtonForeground}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource ControlBorder}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="3">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                            Margin="5,0"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource ControlHoverBackground}"/>
+                                <Setter Property="Foreground" Value="{StaticResource ForegroundColor}"/>
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
                                 <Setter TargetName="border" Property="Background" Value="{StaticResource AccentColor}"/>
@@ -224,9 +264,7 @@
                 <ToggleButton x:Name="btnFilterRequiredFields"
                              Content="{Binding RequiredFieldsButtonText}"
                              IsChecked="{Binding FilterRequiredFields, Mode=TwoWay}"
-                             Style="{StaticResource FilterToggleButtonStyle}"
-                             Background="{StaticResource StatusRedBg}"
-                             Foreground="{StaticResource ForegroundColor}"
+                             Style="{StaticResource ActionFilterToggleStyle}"
                              Width="130"
                              Margin="0,0,20,0"
                              ToolTip="Show activities missing required field values"/>
@@ -375,6 +413,15 @@
                           RowHeaderWidth="30"
                           CurrentCellBeginEdit="SfScheduleMaster_CurrentCellBeginEdit"
                           PreviewMouseWheel="SfScheduleMaster_PreviewMouseWheel">
+
+                <syncfusion:SfDataGrid.Resources>
+                    <Style TargetType="syncfusion:GridHeaderCellControl">
+                        <Setter Property="Background" Value="{StaticResource GridHeaderBackground}"/>
+                        <Setter Property="Foreground" Value="{StaticResource GridHeaderForeground}"/>
+                        <Setter Property="BorderThickness" Value="0,0,0.5,0.5"/>
+                        <Setter Property="Padding" Value="4,0,4,0"/>
+                    </Style>
+                </syncfusion:SfDataGrid.Resources>
 
                 <syncfusion:SfDataGrid.Columns>
 
@@ -531,6 +578,15 @@
                                   AllowDraggingColumns="True"
                                   ShowRowHeader="True"
                                   RowHeaderWidth="25">
+
+                        <syncfusion:SfDataGrid.Resources>
+                            <Style TargetType="syncfusion:GridHeaderCellControl">
+                                <Setter Property="Background" Value="{StaticResource GridHeaderBackground}"/>
+                                <Setter Property="Foreground" Value="{StaticResource GridHeaderForeground}"/>
+                                <Setter Property="BorderThickness" Value="0,0,0.5,0.5"/>
+                                <Setter Property="Padding" Value="4,0,4,0"/>
+                            </Style>
+                        </syncfusion:SfDataGrid.Resources>
 
                         <syncfusion:SfDataGrid.Columns>
                             <syncfusion:GridTextColumn MappingName="UniqueID" 

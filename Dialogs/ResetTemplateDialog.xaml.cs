@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Windows;
 using Syncfusion.SfSkinManager;
 using VANTAGE.Models;
+using VANTAGE.Utilities;
 
 namespace VANTAGE.Dialogs
 {
@@ -13,7 +14,7 @@ namespace VANTAGE.Dialogs
         public ResetTemplateDialog(List<FormTemplate> builtInTemplates, string? promptText = null)
         {
             InitializeComponent();
-            SfSkinManager.SetTheme(this, new Theme("FluentDark"));
+            SfSkinManager.SetTheme(this, new Theme(ThemeManager.GetSyncfusionThemeName()));
 
             cboTemplates.ItemsSource = builtInTemplates;
 

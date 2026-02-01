@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using VANTAGE.Data;
 using VANTAGE.Models;
+using Syncfusion.SfSkinManager;
 using VANTAGE.Utilities;
 
 namespace VANTAGE.Views
@@ -19,6 +20,7 @@ namespace VANTAGE.Views
         public DeletedRecordsView()
         {
             InitializeComponent();
+            SfSkinManager.SetTheme(this, new Theme(ThemeManager.GetSyncfusionThemeName()));
             LoadProjectsFromAzure();
         }
 

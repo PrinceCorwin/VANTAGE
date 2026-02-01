@@ -7,6 +7,7 @@ using System.Windows.Controls;
 using Microsoft.Data.Sqlite;
 using VANTAGE.Data;
 using VANTAGE.Models;
+using Syncfusion.SfSkinManager;
 using VANTAGE.Utilities;
 
 namespace VANTAGE.Dialogs
@@ -22,6 +23,7 @@ namespace VANTAGE.Dialogs
         public ScheduleChangeLogDialog()
         {
             InitializeComponent();
+            SfSkinManager.SetTheme(this, new Theme(ThemeManager.GetSyncfusionThemeName()));
             Loaded += ScheduleChangeLogDialog_Loaded;
         }
 

@@ -269,18 +269,18 @@ namespace VANTAGE
         // TOOLBAR BUTTON HANDLERS
         private void HighlightNavigationButton(Syncfusion.Windows.Tools.Controls.ButtonAdv activeButton)
         {
-            // Reset both navigation buttons
+            // Reset all navigation buttons to toolbar foreground
             borderProgress.Background = System.Windows.Media.Brushes.Transparent;
-            btnProgress.Foreground = (System.Windows.Media.Brush)FindResource("ForegroundColor");
+            btnProgress.Foreground = (System.Windows.Media.Brush)FindResource("ToolbarForeground");
 
             borderSchedule.Background = System.Windows.Media.Brushes.Transparent;
-            btnSchedule.Foreground = (System.Windows.Media.Brush)FindResource("ForegroundColor");
+            btnSchedule.Foreground = (System.Windows.Media.Brush)FindResource("ToolbarForeground");
 
             ProgBookBorder.Background = System.Windows.Media.Brushes.Transparent;
-            btnPbook.Foreground = (System.Windows.Media.Brush)FindResource("ForegroundColor");
+            btnPbook.Foreground = (System.Windows.Media.Brush)FindResource("ToolbarForeground");
 
             WorkPackageBorder.Background = System.Windows.Media.Brushes.Transparent;
-            btnWorkPackage.Foreground = (System.Windows.Media.Brush)FindResource("ForegroundColor");
+            btnWorkPackage.Foreground = (System.Windows.Media.Brush)FindResource("ToolbarForeground");
 
             // Highlight active button
             if (activeButton == btnProgress)
@@ -2054,6 +2054,14 @@ namespace VANTAGE
                 getCurrentLayout: GatherCurrentLayout,
                 applyLayout: ApplyLayout,
                 resetToDefault: ResetGridLayoutsToDefault);
+            dialog.Owner = this;
+            dialog.ShowDialog();
+        }
+
+        private void MenuTheme_Click(object sender, RoutedEventArgs e)
+        {
+            popupSettings.IsOpen = false;
+            var dialog = new ThemeManagerDialog();
             dialog.Owner = this;
             dialog.ShowDialog();
         }

@@ -18,6 +18,7 @@ using VANTAGE.Models;
 using VANTAGE.Repositories;
 using VANTAGE.Services;
 using VANTAGE.Services.PdfRenderers;
+using Syncfusion.SfSkinManager;
 using VANTAGE.Utilities;
 using VANTAGE.Dialogs;
 using VANTAGE.Converters;
@@ -159,6 +160,7 @@ namespace VANTAGE.Views
         public WorkPackageView()
         {
             InitializeComponent();
+            SfSkinManager.SetTheme(this, new Theme(ThemeManager.GetSyncfusionThemeName()));
             Loaded += WorkPackageView_Loaded;
         }
 
@@ -2283,7 +2285,7 @@ namespace VANTAGE.Views
                 SmallIcon = null,
                 LargeIcon = null,
                 FontSize = 12,
-                SizeMode = SizeMode.Normal,
+                SizeMode = Syncfusion.Windows.Tools.Controls.SizeMode.Normal,
                 ToolTip = "Add a predefined item to the list"
             };
 

@@ -22,7 +22,7 @@ namespace VANTAGE.Dialogs
         public GenerateProgressBookDialog(ProgressBookConfiguration config)
         {
             InitializeComponent();
-            SfSkinManager.SetTheme(this, new Theme("FluentDark"));
+            SfSkinManager.SetTheme(this, new Theme(ThemeManager.GetSyncfusionThemeName()));
 
             _config = config;
 

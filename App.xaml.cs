@@ -208,6 +208,10 @@ namespace VANTAGE
                     SettingsManager.InitializeDefaultUserSettings();
                 });
 
+                // Apply user's saved theme (before MainWindow is created)
+                _splashWindow.UpdateStatus("Applying theme...");
+                ThemeManager.LoadThemeFromSettings();
+
                 // Step 6a: Initialize column mappings
                 await Task.Run(() =>
                 {

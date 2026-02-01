@@ -2,6 +2,7 @@ using System;
 using System.Text.RegularExpressions;
 using System.Windows;
 using Syncfusion.SfSkinManager;
+using VANTAGE.Utilities;
 
 namespace VANTAGE.Dialogs
 {
@@ -15,7 +16,7 @@ namespace VANTAGE.Dialogs
         public AccessRequestDialog(string windowsUsername)
         {
             InitializeComponent();
-            SfSkinManager.SetTheme(this, new Theme("FluentDark"));
+            SfSkinManager.SetTheme(this, new Theme(ThemeManager.GetSyncfusionThemeName()));
 
             WindowsUsername = windowsUsername;
             txtUsername.Text = windowsUsername;

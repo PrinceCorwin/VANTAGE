@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using MILESTONE.Services.Procore;
+using Syncfusion.SfSkinManager;
 using VANTAGE.Utilities;
 
 namespace VANTAGE.Dialogs;
@@ -13,6 +14,7 @@ public partial class ProcoreAuthDialog : Window
     public ProcoreAuthDialog(ProcoreAuthService authService)
     {
         InitializeComponent();
+        SfSkinManager.SetTheme(this, new Theme(ThemeManager.GetSyncfusionThemeName()));
         _authService = authService;
     }
 
