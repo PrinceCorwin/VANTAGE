@@ -12,7 +12,10 @@ obj/
 .idea/
 *.sln.DotSettings
 
-# Connection String (don't sync)
+# Credentials: plaintext config (dev only, never commit)
+**/appsettings.json
+
+# Legacy credentials file (replaced by CredentialService + appsettings.enc)
 **/Credentials.cs
 
 # Local database (don't sync)

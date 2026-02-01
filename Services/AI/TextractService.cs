@@ -30,12 +30,12 @@ namespace VANTAGE.Services.AI
         {
             var config = new AmazonTextractConfig
             {
-                RegionEndpoint = RegionEndpoint.GetBySystemName(Credentials.AwsRegion)
+                RegionEndpoint = RegionEndpoint.GetBySystemName(CredentialService.AwsRegion)
             };
 
             _client = new AmazonTextractClient(
-                Credentials.AwsAccessKey,
-                Credentials.AwsSecretKey,
+                CredentialService.AwsAccessKey,
+                CredentialService.AwsSecretKey,
                 config);
         }
 

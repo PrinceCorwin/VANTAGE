@@ -1301,9 +1301,9 @@ namespace VANTAGE
                 Mouse.OverrideCursor = Cursors.Wait;
 
                 using var client = new Amazon.Textract.AmazonTextractClient(
-                    Credentials.AwsAccessKey,
-                    Credentials.AwsSecretKey,
-                    Amazon.RegionEndpoint.GetBySystemName(Credentials.AwsRegion));
+                    CredentialService.AwsAccessKey,
+                    CredentialService.AwsSecretKey,
+                    Amazon.RegionEndpoint.GetBySystemName(CredentialService.AwsRegion));
 
                 // Test with a 1x1 pixel PNG (minimal API call)
                 var testImage = Convert.FromBase64String(
@@ -1321,7 +1321,7 @@ namespace VANTAGE
                 Mouse.OverrideCursor = null;
 
                 MessageBox.Show(
-                    $"AWS Textract connection successful!\n\nRegion: {Credentials.AwsRegion}\nAPI responded with {response.Blocks?.Count ?? 0} blocks.",
+                    $"AWS Textract connection successful!\n\nRegion: {CredentialService.AwsRegion}\nAPI responded with {response.Blocks?.Count ?? 0} blocks.",
                     "Success",
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);

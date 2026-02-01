@@ -203,6 +203,17 @@
 	  </Content>
 	</ItemGroup>
 
+	<!-- Config files: appsettings.json for dev, appsettings.enc for production -->
+	<ItemGroup>
+		<None Update="appsettings.json" Condition="Exists('appsettings.json')">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="appsettings.enc" Condition="Exists('appsettings.enc')">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</None>
+	</ItemGroup>
+
 	<!-- Build dependency: ensure updater builds before main app -->
 	<ItemGroup>
 		<ProjectReference Include="VANTAGE.Updater\VANTAGE.Updater.csproj">

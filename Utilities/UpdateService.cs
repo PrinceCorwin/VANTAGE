@@ -113,7 +113,7 @@ namespace VANTAGE.Utilities
         {
             try
             {
-                string manifestUrl = $"{Credentials.UpdateBaseUrl}/manifest.json";
+                string manifestUrl = $"{CredentialService.UpdateBaseUrl}/manifest.json";
                 string json = await _httpClient.GetStringAsync(manifestUrl);
                 return JsonSerializer.Deserialize<UpdateManifest>(json);
             }

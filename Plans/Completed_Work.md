@@ -5,6 +5,7 @@ This document tracks completed features and fixes. Items are moved here from Pro
 ---
 
 ### February 1, 2026
+- **Credential migration (Workstream 1):** Replaced compiled `Credentials.cs` with runtime-loaded config system. New `CredentialService.cs` reads plaintext `appsettings.json` in dev or AES-256 encrypted `appsettings.enc` in production. Created `AppConfig.cs` model, migrated 31 references across 7 files, added encryption function to `publish-update.ps1` (now 8 steps), updated `.gitignore` and csproj. Full plan in `Packaging_Credentials_Installer_Plan.md`.
 - **Orchid theme:** Added third theme — a light-based feminine theme with deep purple (#7B1FA2) primary and bright pink (#E040FB) accent. Lavender-tinted backgrounds, purple grid headers, and purple-branded toolbar. Uses Syncfusion FluentLight as base.
 - **ActiveFilterBorderColor resource:** New theme-aware resource for Clear Filters button border highlight. Green in Dark/Light themes, pink accent in Orchid. Replaces hardcoded StatusGreen reference.
 - **Schedule view Clear Filters border:** Ported filter-active border indicator from ProgressView to ScheduleView. Highlights when any filter is active (toggle buttons, discrepancy dropdown, column header filters). Wired via PropertyChanged and FilterChanged events.

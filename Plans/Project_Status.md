@@ -171,8 +171,8 @@ All V1 sections of `Help/manual.html` are written. Screenshots configured with c
 ## Feature Backlog
 
 ### High Priority
-- V1 production packaging (self-contained publish, initial ZIP distribution, credentials strategy)
-- Set up GitHub Release with update manifest for auto-update testing
+- V1 production packaging: self-contained publish, Azure Blob hosting, installer app (see Packaging_Credentials_Installer_Plan.md — Workstreams 2 & 3)
+- ~~Credentials strategy~~ Complete — migrated to encrypted config file (Workstream 1)
 
 
 ### Medium Priority

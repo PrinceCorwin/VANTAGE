@@ -89,7 +89,7 @@ public class ProcoreApiService
                 return null;
             }
 
-            var baseUrl = Credentials.ActiveProcoreApiUrl;
+            var baseUrl = CredentialService.ActiveProcoreApiUrl;
             var request = new HttpRequestMessage(HttpMethod.Get, $"{baseUrl}{endpoint}");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 

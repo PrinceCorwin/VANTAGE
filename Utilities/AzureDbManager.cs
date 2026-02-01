@@ -9,17 +9,17 @@ namespace VANTAGE.Utilities
     // Replaces the SQLite Central database on Google Drive
     public static class AzureDbManager
     {
-        // Connection string built from Credentials.cs (gitignored)
+        // Connection string built from encrypted config (appsettings.json or appsettings.enc)
         private static readonly string _connectionString = BuildConnectionString();
 
         private static string BuildConnectionString()
         {
             var builder = new SqlConnectionStringBuilder
             {
-                DataSource = Credentials.AzureServer,
-                InitialCatalog = Credentials.AzureDatabase,
-                UserID = Credentials.AzureUserId,
-                Password = Credentials.AzurePassword,
+                DataSource = CredentialService.AzureServer,
+                InitialCatalog = CredentialService.AzureDatabase,
+                UserID = CredentialService.AzureUserId,
+                Password = CredentialService.AzurePassword,
                 Encrypt = true,
                 TrustServerCertificate = false,
                 ConnectTimeout = 30,

@@ -56,9 +56,9 @@ public class ProcoreAuthService
     // Opens browser for user to authenticate with Procore
     public void OpenBrowserForAuth()
     {
-        var clientId = Credentials.ActiveProcoreClientId;
-        var authUrl = Credentials.ActiveProcoreAuthUrl;
-        var redirectUri = Uri.EscapeDataString(Credentials.ProcoreRedirectUri);
+        var clientId = CredentialService.ActiveProcoreClientId;
+        var authUrl = CredentialService.ActiveProcoreAuthUrl;
+        var redirectUri = Uri.EscapeDataString(CredentialService.ProcoreRedirectUri);
 
         var url = $"{authUrl}/authorize?response_type=code&client_id={clientId}&redirect_uri={redirectUri}";
 
@@ -75,15 +75,15 @@ public class ProcoreAuthService
     {
         try
         {
-            var tokenUrl = $"{Credentials.ActiveProcoreAuthUrl}/token";
+            var tokenUrl = $"{CredentialService.ActiveProcoreAuthUrl}/token";
 
             var content = new FormUrlEncodedContent(new Dictionary<string, string>
             {
                 ["grant_type"] = "authorization_code",
                 ["code"] = authorizationCode.Trim(),
-                ["client_id"] = Credentials.ActiveProcoreClientId,
-                ["client_secret"] = Credentials.ActiveProcoreClientSecret,
-                ["redirect_uri"] = Credentials.ProcoreRedirectUri
+                ["client_id"] = CredentialService.ActiveProcoreClientId,
+                ["client_secret"] = CredentialService.ActiveProcoreClientSecret,
+                ["redirect_uri"] = CredentialService.ProcoreRedirectUri
             });
 
             var response = await _httpClient.PostAsync(tokenUrl, content);
@@ -123,14 +123,14 @@ public class ProcoreAuthService
 
         try
         {
-            var tokenUrl = $"{Credentials.ActiveProcoreAuthUrl}/token";
+            var tokenUrl = $"{CredentialService.ActiveProcoreAuthUrl}/token";
 
             var content = new FormUrlEncodedContent(new Dictionary<string, string>
             {
                 ["grant_type"] = "refresh_token",
-                ["client_id"] = Credentials.ActiveProcoreClientId,
-                ["client_secret"] = Credentials.ActiveProcoreClientSecret,
-                ["redirect_uri"] = Credentials.ProcoreRedirectUri,
+                ["client_id"] = CredentialService.ActiveProcoreClientId,
+                ["client_secret"] = CredentialService.ActiveProcoreClientSecret,
+                ["redirect_uri"] = CredentialService.ProcoreRedirectUri,
                 ["refresh_token"] = _currentToken.RefreshToken
             });
 

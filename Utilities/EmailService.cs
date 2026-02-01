@@ -17,7 +17,7 @@ namespace VANTAGE.Utilities
         {
             if (_client == null)
             {
-                _client = new EmailClient(Credentials.AzureEmailConnectionString);
+                _client = new EmailClient(CredentialService.AzureEmailConnectionString);
             }
             return _client;
         }
@@ -108,7 +108,7 @@ Please open VANTAGE: MS and SYNC now to see your records.
 This is an automated message from VANTAGE: MS. Please do not reply to this email.";
 
                 var emailMessage = new EmailMessage(
-                    senderAddress: Credentials.AzureEmailSenderAddress,
+                    senderAddress: CredentialService.AzureEmailSenderAddress,
                     recipientAddress: recipientEmail,
                     content: new EmailContent(subject)
                     {
@@ -218,7 +218,7 @@ This is an automated message from VANTAGE: MS.";
                 foreach (var adminEmail in adminEmails)
                 {
                     var emailMessage = new EmailMessage(
-                        senderAddress: Credentials.AzureEmailSenderAddress,
+                        senderAddress: CredentialService.AzureEmailSenderAddress,
                         recipientAddress: adminEmail,
                         content: new EmailContent(subject)
                         {
@@ -273,7 +273,7 @@ This is an automated message from VANTAGE: MS.";
                 }
 
                 var emailMessage = new EmailMessage(
-                    senderAddress: Credentials.AzureEmailSenderAddress,
+                    senderAddress: CredentialService.AzureEmailSenderAddress,
                     recipientAddress: recipientEmail,
                     content: content);
 
@@ -311,7 +311,7 @@ This is an automated message from VANTAGE: MS.";
                 var client = GetClient();
 
                 var emailMessage = new EmailMessage(
-                    senderAddress: Credentials.AzureEmailSenderAddress,
+                    senderAddress: CredentialService.AzureEmailSenderAddress,
                     recipientAddress: recipientEmail,
                     content: new EmailContent(subject) { Html = htmlBody });
 
