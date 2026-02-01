@@ -3,7 +3,11 @@
 **Created:** February 1, 2026
 **Branch:** `update-pack-cred`
 
-Three workstreams, implemented in order. Each workstream is tested before starting the next.
+Four workstreams. Status as of February 1, 2026:
+- **Workstream 1:** COMPLETE — credential migration tested and working
+- **Workstream 2:** CODE COMPLETE — self-contained publish config written, not yet run
+- **Workstream 3:** CODE COMPLETE — installer app builds and shows UI, not yet tested with a real download
+- **Workstream 4:** NOT STARTED — first publish and end-to-end validation
 
 ---
 
@@ -202,6 +206,59 @@ Add `VANTAGE.Installer` to `VANTAGE.sln`. No ProjectReference to the main app �
 ### Workstream 3 Files
 **Created:** VANTAGE.Installer\VANTAGE.Installer.csproj, App.xaml, App.xaml.cs, MainWindow.xaml, MainWindow.xaml.cs, InstallerService.cs, Scripts\publish-installer.ps1
 **Modified:** VANTAGE.sln
+
+---
+
+## Workstream 4: First Publish & End-to-End Test
+
+This workstream validates everything built in Workstreams 1-3 by doing a real publish and install cycle.
+
+**Update hosting:** GitHub (for now). Switch to Azure Blob later by changing one URL in `appsettings.json`.
+
+### 4A: First publish
+1. Run `.\Scripts\publish-update.ps1 -Version "26.1.1"` from PowerShell in repo root
+2. Verify it completes: encrypts config, builds self-contained, creates ZIP, shows hash
+3. Note the ZIP file size — expect ~150-200 MB for self-contained
+
+### 4B: Create GitHub Release
+1. Go to `https://github.com/PrinceCorwin/VANTAGE/releases/new`
+2. Tag: `v26.1.1`, Target: `update-pack-cred` branch (or `main` after merge)
+3. Title: `VANTAGE: Milestone v26.1.1`
+4. Attach the `VANTAGE-26.1.1.zip` file
+5. Publish the release
+6. Copy the direct download URL for the ZIP asset (right-click the file link → Copy link address)
+
+### 4C: Populate manifest
+1. Open `updates/manifest.json`
+2. Set `downloadUrl` to the GitHub Release ZIP URL from step 4B
+3. Set `sha256` to the hash from step 4A
+4. Set `zipSizeBytes` to the size from step 4A
+5. Commit and push to the branch (or main)
+
+### 4D: Build the installer
+1. Run `.\Scripts\publish-installer.ps1`
+2. Produces `VANTAGE-Setup.exe` in repo root
+
+### 4E: Test full install cycle
+1. Clean out `%LOCALAPPDATA%\VANTAGE\App\` if it exists (or test on another machine)
+2. Run `VANTAGE-Setup.exe`
+3. Click "VANTAGE: Milestone" — should download, extract, create shortcut
+4. Launch from the desktop shortcut — app should start normally
+5. Verify Azure SQL connection, sync, all features work from the installed location
+
+### 4F: Test auto-update
+1. Bump version: run `publish-update.ps1 -Version "26.1.2"`
+2. Create another GitHub Release `v26.1.2`, attach ZIP
+3. Update `manifest.json` with new URL/hash/size, commit and push
+4. Launch the installed app — it should detect the update on startup, download, and restart with the new version
+
+### 4G: Troubleshooting checklist
+- **Publish fails:** Check that `appsettings.json` exists in repo root
+- **ZIP too large:** Self-contained is expected to be large; this is the trade-off for no .NET runtime dependency
+- **Installer can't download:** Check that the manifest URL resolves (`https://raw.githubusercontent.com/PrinceCorwin/VANTAGE/main/updates/manifest.json`) and `downloadUrl` is a valid GitHub Release asset URL
+- **App crashes after install:** Check if `appsettings.enc` is in the install directory — if missing, the app can't load credentials
+- **Update not detected:** Compare version in `manifest.json` against the installed app's assembly version (only Major.Minor.Build are compared)
+- **SmartScreen blocks exe:** Right-click → Properties → Unblock, or click "More info" → "Run anyway"
 
 ---
 
