@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Azure Database Connection Error"
         Icon="pack://application:,,,/images/AppIcon.ico"
-        Height="280"
+        Height="370"
         Width="500"
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize"
@@ -14,29 +14,30 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <!-- Error Icon and Title -->
         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,15">
-            <TextBlock Text="⚠" 
-                       FontSize="32" 
-                       Foreground="Orange" 
+            <TextBlock Text="⚠"
+                       FontSize="32"
+                       Foreground="Orange"
                        VerticalAlignment="Center"
                        Margin="0,0,15,0"/>
-            <TextBlock Text="Cannot connect to Azure database" 
-                       FontSize="16" 
+            <TextBlock Text="Cannot connect to Azure database"
+                       FontSize="16"
                        FontWeight="Bold"
                        Foreground="{StaticResource ForegroundColor}"
                        VerticalAlignment="Center"/>
         </StackPanel>
 
         <!-- Error Message -->
-        <Border Grid.Row="1" 
+        <Border Grid.Row="1"
                 Background="{StaticResource ControlBackground}"
                 BorderBrush="{StaticResource BorderColor}"
                 BorderThickness="1"
                 Padding="15"
-                Margin="0,0,0,20">
+                Margin="0,0,0,10">
             <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <TextBlock x:Name="txtErrorMessage"
                            TextWrapping="Wrap"
@@ -45,9 +46,45 @@
             </ScrollViewer>
         </Border>
 
+        <!-- IP Address Section -->
+        <StackPanel Grid.Row="2" Margin="0,0,0,15">
+            <TextBlock Text="If this is your first time connecting on this network, provide your IP address to your administrator to request firewall access."
+                       TextWrapping="Wrap"
+                       Foreground="{StaticResource TextColorSecondary}"
+                       FontSize="11"
+                       Margin="0,0,0,6"/>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Your public IP:"
+                           Foreground="{StaticResource ForegroundColor}"
+                           FontSize="12"
+                           VerticalAlignment="Center"
+                           Margin="0,0,8,0"/>
+                <TextBlock x:Name="txtPublicIp"
+                           Text="Detecting..."
+                           FontFamily="Consolas"
+                           FontSize="13"
+                           FontWeight="SemiBold"
+                           Foreground="{StaticResource AccentColor}"
+                           VerticalAlignment="Center"
+                           Margin="0,0,10,0"/>
+                <Button x:Name="btnCopyIp"
+                        Content="COPY"
+                        Width="60"
+                        Height="24"
+                        FontSize="10"
+                        IsEnabled="False"
+                        ToolTip="Copy IP address to clipboard"
+                        Background="{StaticResource ControlBackground}"
+                        Foreground="{StaticResource ForegroundColor}"
+                        BorderBrush="{StaticResource BorderColor}"
+                        BorderThickness="1"
+                        Click="BtnCopyIp_Click"/>
+            </StackPanel>
+        </StackPanel>
+
         <!-- Buttons -->
-        <StackPanel Grid.Row="2" 
-                    Orientation="Horizontal" 
+        <StackPanel Grid.Row="3"
+                    Orientation="Horizontal"
                     HorizontalAlignment="Right">
             <Button x:Name="btnRetry"
                     Content="RETRY"

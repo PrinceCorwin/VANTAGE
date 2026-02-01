@@ -20,7 +20,7 @@ namespace VANTAGE.ViewModels
         private bool _isOpen;
         private double _panelWidth;
         private string _activeTab;
-        private string _helpHtmlPath = null!;
+        private readonly string _helpHtmlPath = null!;
 
         // Search fields
         private string _searchText = string.Empty;
@@ -56,7 +56,6 @@ namespace VANTAGE.ViewModels
                 {
                     _isOpen = value;
                     OnPropertyChanged(nameof(IsOpen));
-                    OnPropertyChanged(nameof(ContentColumnWidth));
                     OnPropertyChanged(nameof(SidebarColumnWidth));
                     OnPropertyChanged(nameof(SplitterWidth));
                     SaveUserPreferences();
@@ -116,7 +115,7 @@ namespace VANTAGE.ViewModels
         }
 
         // Grid column widths for MainWindow binding
-        public string ContentColumnWidth => "*";
+        public static string ContentColumnWidth => "*";
         public string SidebarColumnWidth => IsOpen ? PanelWidth.ToString() : "0";
         public double SplitterWidth => IsOpen ? 5 : 0;
 

@@ -2432,7 +2432,19 @@
     </table>
 
     <h3 id="ref-troubleshooting">Troubleshooting</h3>
-    <p>Content coming soon...</p>
+
+    <p><strong>Cannot connect to Azure database</strong></p>
+    <p>If the connection error dialog appears on startup, your network may not be whitelisted in the Azure firewall. The dialog will detect and display your public IP address. Click <strong>COPY</strong> to copy it to your clipboard, then email your administrator and ask them to add your IP to the Azure SQL firewall rules. Once whitelisted, click <strong>RETRY</strong> to connect. You can also click <strong>WORK OFFLINE</strong> to use the app with your local data until the issue is resolved.</p>
+
+    <p><strong>Windows SmartScreen blocks the application</strong></p>
+    <p>When running VANTAGE for the first time, Windows SmartScreen may display a warning because the application is not digitally signed. To proceed:</p>
+    <ul>
+        <li>Click <strong>More info</strong> in the SmartScreen dialog, then click <strong>Run anyway</strong></li>
+        <li>Alternatively, right-click the exe file, select <strong>Properties</strong>, check <strong>Unblock</strong> at the bottom, and click OK</li>
+    </ul>
+
+    <p><strong>Application won't start after an update</strong></p>
+    <p>If the app fails to launch after an auto-update, the encrypted configuration file may be missing. Check that <code>appsettings.enc</code> exists in your install directory (<code>%LOCALAPPDATA%\VANTAGE\App\</code>). If it is missing, re-run the installer to perform a fresh install.</p>
 
     <h3 id="ref-getting-help">Getting Help</h3>
     <p>Press <span class="keyboard-shortcut">F1</span> at any time to open the Help sidebar. Use the search field to find specific topics, or browse by section.</p>

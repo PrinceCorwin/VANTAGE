@@ -5,6 +5,10 @@ This document tracks completed features and fixes. Items are moved here from Pro
 ---
 
 ### February 1, 2026
+- **Connection error IP display:** Enhanced ConnectionRetryDialog to detect and display user's public IP address when Azure connection fails. Uses api.ipify.org with 5-second timeout. COPY button puts IP on clipboard so user can email admin for firewall whitelisting. Graceful fallback ("Could not detect") when no internet.
+- **Help Troubleshooting section:** Populated the placeholder with three entries — Azure firewall/IP whitelisting, SmartScreen unblocking, and post-update appsettings.enc check.
+- **SidePanelViewModel cleanup:** Made `_helpHtmlPath` readonly, `ContentColumnWidth` static, removed dead PropertyChanged notification.
+- **Publishing Guide:** Created `Plans/Publishing_Guide.md` — step-by-step reference for publishing updates and building the installer.
 - **First publish (Workstream 4 step 1):** Ran `publish-update.ps1 -Version "26.1.1"` — produced 142 MB self-contained ZIP. Fixed two bugs discovered during publish: (1) `publish-update.ps1` used `Set-Content` which stripped UTF-8 BOM and corrupted `©` in csproj — switched to `[System.IO.File]::WriteAllText()` with explicit UTF-8 BOM encoding. (2) Updater csproj had `SelfContained=true` in Release condition causing NETSDK1151 error when main app references updater — moved self-contained flags to be command-line-only via publish script.
 - **Installer app (Workstream 3):** Created `VANTAGE.Installer` WPF project — branded dark window with Summit logo, "VANTAGE: Milestone" install button, disabled "REQit" button. Downloads manifest from update URL, downloads ZIP with progress, verifies SHA-256, extracts to `%LOCALAPPDATA%\VANTAGE\App\`, creates desktop shortcut via COM Shell. Publishes as self-contained single-file exe. Added `publish-installer.ps1` script.
 - **Self-contained publish config (Workstream 2):** Updated `VANTAGE.Updater.csproj` for self-contained single-file publish. Changed `publish-update.ps1` to use `--self-contained true` for both main app and updater. Users won't need .NET runtime installed.

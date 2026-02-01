@@ -23,7 +23,7 @@
 | AI Features (other than Progress Scan) | Lower priority for V1 |
 | ~~Theme Selection~~ | Implemented (multi-themes branch) |
 | Procore Integration | Can develop while users test |
-| Help Troubleshooting section | Populate after V1 users report real issues |
+| ~~Help Troubleshooting section~~ | Implemented — Azure firewall, SmartScreen, post-update |
 
 ## Module Status
 
