@@ -111,14 +111,12 @@ Active work on `Help/manual.html`. Current state of each section:
 ### High Priority
 - V1 production packaging (self-contained publish, initial ZIP distribution, credentials strategy)
 - Set up GitHub Release with update manifest for auto-update testing
-- Implement Import/Export template buttons (WP Templates tab) — buttons exist but are not yet functional
-- Document Import/Export template functionality in Help manual after implementation
+
 
 ### Medium Priority
 - **DISCUSS:** Add PlanStart and PlanFinish fields to Activities (for baseline schedule comparison?)
 - Table Summary V2: Settings dialog to choose which columns to summarize and aggregate types (Sum/Avg/Count)
 - User-editable header template for WP (allow customizing header layout)
-- Import/Export WP templates to JSON
 
 ### V2 Data Model
 - Add ClientEarnedEquivQty column to Activities table, Azure VMS_Activities, and ColumnMappings (maps to OldVantage `VAL_Client_Earned_EQ-QTY`) - currently ignored during import

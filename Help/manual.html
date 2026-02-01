@@ -296,6 +296,7 @@
                     <li><a href="#wp-generate">Generate Tab</a></li>
                     <li><a href="#wp-templates">WP Templates Tab</a></li>
                     <li><a href="#wp-form-templates">Form Templates Tab</a></li>
+                    <li><a href="#wp-import-export">Import/Export Templates</a></li>
                     <li><a href="#wp-tokens">Token System</a></li>
                     <li><a href="#wp-previewing">Previewing Templates</a></li>
                 </ul>
@@ -2040,6 +2041,35 @@
         <div class="note-title">Grid vs Form</div>
         <p>Use <strong>Grid</strong> when you need empty rows for handwritten data entry. Use <strong>Form</strong> when you want pre-populated rows with specific items in each cell.</p>
     </div>
+
+    <h3 id="wp-import-export">Import/Export Templates</h3>
+    <p>The <strong>Import</strong> and <strong>Export</strong> buttons in the Work Packages header bar let you share templates between machines or back them up before a database reset.</p>
+
+    <h4>Exporting</h4>
+    <ol>
+        <li>Click <strong>Export</strong> in the top-right corner of the Work Packages view</li>
+        <li>Choose a location and filename (defaults to <code>VANTAGE_Templates.json</code>)</li>
+        <li>All user-created WP templates and form templates are saved to the file</li>
+    </ol>
+
+    <div class="note">
+        <div class="note-title">Built-in Templates</div>
+        <p>Built-in templates are not included in the export because they are already present on every VANTAGE installation.</p>
+    </div>
+
+    <h4>Importing</h4>
+    <ol>
+        <li>Click <strong>Import</strong> in the top-right corner of the Work Packages view</li>
+        <li>Select a previously exported <code>.json</code> file</li>
+        <li>Templates are added to your database and appear in the dropdowns immediately</li>
+    </ol>
+
+    <p>On import:</p>
+    <ul>
+        <li>Each template receives a new unique ID — importing the same file twice creates separate copies</li>
+        <li>If a template name already exists, <strong>" (Imported)"</strong> is appended to avoid confusion</li>
+        <li>WP templates retain their form references — imported WP templates point to the correct imported form templates</li>
+    </ul>
 
     <h3 id="wp-tokens">Token System</h3>
     <p>Tokens are placeholders replaced with dynamic values during PDF generation. Use the format <code>{TokenName}</code>.</p>

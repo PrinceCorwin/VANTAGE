@@ -42,6 +42,7 @@
 	  <None Remove="Help\wp-generate-tab.png" />
 	  <None Remove="Help\wp-preview-panel.png" />
 	  <None Remove="Help\wp-templates-tab.png" />
+	  <None Remove="Images\MilestoneLogoPngTransparentBG.png" />
 	  <None Remove="nul" />
 	</ItemGroup>
 	<ItemGroup>
@@ -92,7 +93,7 @@
 	<ItemGroup>
 		<Resource Include="Images\AppIcon.ico" />
 		<Resource Include="Images\CoverPic.png" />
-		<Resource Include="Images\MilestoneLogoPngTransparentBG.png" />
+		<Resource Include="Images\MilestoneLogoPngTransparentBG2.png" />
 		<Resource Include="Images\SummitLogoNoText.jpg" />
 		<Resource Include="Images\SummitS-Full Summit Peak Logo.jpg" />
 	</ItemGroup>
@@ -195,6 +196,9 @@
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
 	  <Content Include="Help\wp-templates-tab.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Images\MilestoneLogoPngTransparentBG.png">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
 	</ItemGroup>

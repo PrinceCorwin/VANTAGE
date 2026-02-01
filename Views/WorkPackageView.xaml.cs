@@ -1866,7 +1866,89 @@ namespace VANTAGE.Views
             }
         }
 
-        // Import templates
+        // Export all user-created templates to JSON
+        private async void BtnExport_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var allForms = await TemplateRepository.GetAllFormTemplatesAsync();
+                var allWPs = await TemplateRepository.GetAllWPTemplatesAsync();
+
+                // Only export user-created templates (built-ins exist on every install)
+                var userForms = allForms.Where(f => !f.IsBuiltIn).ToList();
+                var userWPs = allWPs.Where(w => !w.IsBuiltIn).ToList();
+
+                if (userForms.Count == 0 && userWPs.Count == 0)
+                {
+                    MessageBox.Show("No user-created templates to export. Built-in templates are already available on every installation.",
+                        "Nothing to Export", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                // Build formTemplateId → index map
+                var formIdToIndex = new Dictionary<string, int>();
+                for (int i = 0; i < userForms.Count; i++)
+                    formIdToIndex[userForms[i].TemplateID] = i;
+
+                // Build export structure
+                var formEntries = userForms.Select((f, i) => new Dictionary<string, object>
+                {
+                    ["index"] = i,
+                    ["templateName"] = f.TemplateName,
+                    ["templateType"] = f.TemplateType,
+                    ["structureJson"] = f.StructureJson
+                }).ToList();
+
+                var wpEntries = new List<Dictionary<string, object>>();
+                foreach (var wp in userWPs)
+                {
+                    // Convert FormsJson GUIDs to indices
+                    var formRefs = JsonSerializer.Deserialize<List<FormReference>>(wp.FormsJson) ?? new();
+                    var indices = formRefs
+                        .Where(r => formIdToIndex.ContainsKey(r.FormTemplateId))
+                        .Select(r => formIdToIndex[r.FormTemplateId])
+                        .ToList();
+
+                    wpEntries.Add(new Dictionary<string, object>
+                    {
+                        ["wpTemplateName"] = wp.WPTemplateName,
+                        ["formIndices"] = indices,
+                        ["defaultSettings"] = wp.DefaultSettings
+                    });
+                }
+
+                var exportData = new Dictionary<string, object>
+                {
+                    ["version"] = 1,
+                    ["exportedUtc"] = DateTime.UtcNow.ToString("o"),
+                    ["formTemplates"] = formEntries,
+                    ["wpTemplates"] = wpEntries
+                };
+
+                var jsonOptions = new JsonSerializerOptions { WriteIndented = true };
+                var json = JsonSerializer.Serialize(exportData, jsonOptions);
+
+                var dialog = new SaveFileDialog
+                {
+                    Filter = "JSON Files|*.json",
+                    Title = "Export Templates",
+                    FileName = "VANTAGE_Templates.json"
+                };
+
+                if (dialog.ShowDialog() != true) return;
+
+                await File.WriteAllTextAsync(dialog.FileName, json);
+                MessageBox.Show($"Exported {userForms.Count} form template(s) and {userWPs.Count} WP template(s).",
+                    "Export Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "WorkPackageView.BtnExport_Click");
+                MessageBox.Show($"Error exporting templates: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        // Import templates from JSON file
         private async void BtnImport_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new OpenFileDialog
@@ -1880,21 +1962,121 @@ namespace VANTAGE.Views
             try
             {
                 var json = await File.ReadAllTextAsync(dialog.FileName);
-                // TODO: Parse and import templates
-                MessageBox.Show("Import functionality coming soon.", "Import", MessageBoxButton.OK, MessageBoxImage.Information);
+                using var doc = JsonDocument.Parse(json);
+                var root = doc.RootElement;
+
+                // Validate version
+                if (!root.TryGetProperty("version", out var versionEl) || versionEl.GetInt32() != 1)
+                {
+                    MessageBox.Show("Unrecognized template file format.", "Import Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                // Get existing template names for conflict detection
+                var existingForms = await TemplateRepository.GetAllFormTemplatesAsync();
+                var existingWPs = await TemplateRepository.GetAllWPTemplatesAsync();
+                var existingFormNames = new HashSet<string>(existingForms.Select(f => f.TemplateName), StringComparer.OrdinalIgnoreCase);
+                var existingWPNames = new HashSet<string>(existingWPs.Select(w => w.WPTemplateName), StringComparer.OrdinalIgnoreCase);
+
+                // Import form templates and build index → new ID map
+                var indexToNewId = new Dictionary<int, string>();
+                int formCount = 0;
+
+                if (root.TryGetProperty("formTemplates", out var formsEl))
+                {
+                    foreach (var formEl in formsEl.EnumerateArray())
+                    {
+                        int index = formEl.GetProperty("index").GetInt32();
+                        string name = formEl.GetProperty("templateName").GetString() ?? "Unnamed";
+                        string type = formEl.GetProperty("templateType").GetString() ?? "Form";
+                        string structureJson = formEl.GetProperty("structureJson").GetString() ?? "{}";
+
+                        // Handle name conflicts
+                        if (existingFormNames.Contains(name))
+                            name += " (Imported)";
+
+                        var newId = Guid.NewGuid().ToString();
+                        var template = new FormTemplate
+                        {
+                            TemplateID = newId,
+                            TemplateName = name,
+                            TemplateType = type,
+                            StructureJson = structureJson,
+                            IsBuiltIn = false,
+                            CreatedBy = App.CurrentUser?.Username ?? "Unknown",
+                            CreatedUtc = DateTime.UtcNow.ToString("o")
+                        };
+
+                        if (await TemplateRepository.InsertFormTemplateAsync(template))
+                        {
+                            indexToNewId[index] = newId;
+                            formCount++;
+                        }
+                    }
+                }
+
+                // Import WP templates with remapped form references
+                int wpCount = 0;
+
+                if (root.TryGetProperty("wpTemplates", out var wpsEl))
+                {
+                    foreach (var wpEl in wpsEl.EnumerateArray())
+                    {
+                        string name = wpEl.GetProperty("wpTemplateName").GetString() ?? "Unnamed";
+                        string defaultSettings = wpEl.GetProperty("defaultSettings").GetString() ?? "{\"expirationDays\":14}";
+
+                        // Remap form indices to new GUIDs
+                        var formRefs = new List<FormReference>();
+                        if (wpEl.TryGetProperty("formIndices", out var indicesEl))
+                        {
+                            foreach (var idxEl in indicesEl.EnumerateArray())
+                            {
+                                int idx = idxEl.GetInt32();
+                                if (indexToNewId.TryGetValue(idx, out var newFormId))
+                                    formRefs.Add(new FormReference { FormTemplateId = newFormId });
+                            }
+                        }
+
+                        // Handle name conflicts
+                        if (existingWPNames.Contains(name))
+                            name += " (Imported)";
+
+                        var template = new WPTemplate
+                        {
+                            WPTemplateID = Guid.NewGuid().ToString(),
+                            WPTemplateName = name,
+                            FormsJson = JsonSerializer.Serialize(formRefs),
+                            DefaultSettings = defaultSettings,
+                            IsBuiltIn = false,
+                            CreatedBy = App.CurrentUser?.Username ?? "Unknown",
+                            CreatedUtc = DateTime.UtcNow.ToString("o")
+                        };
+
+                        if (await TemplateRepository.InsertWPTemplateAsync(template))
+                            wpCount++;
+                    }
+                }
+
+                // Refresh template lists in the UI
+                _formTemplates = await TemplateRepository.GetAllFormTemplatesAsync();
+                _wpTemplates = await TemplateRepository.GetAllWPTemplatesAsync();
+                PopulateWPTemplateEditDropdown();
+                _suppressTypeDialog = true;
+                PopulateFormTemplateEditDropdown();
+                _suppressTypeDialog = false;
+
+                MessageBox.Show($"Imported {formCount} form template(s) and {wpCount} WP template(s).",
+                    "Import Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (JsonException)
+            {
+                MessageBox.Show("The selected file is not a valid template JSON file.", "Import Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "WorkPackageView.BtnImport_Click");
                 MessageBox.Show($"Error importing templates: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
-        }
-
-        // Export templates
-        private void BtnExport_Click(object sender, RoutedEventArgs e)
-        {
-            // TODO: Show export dialog
-            MessageBox.Show("Export functionality coming soon.", "Export", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         // Check for unsaved changes before leaving

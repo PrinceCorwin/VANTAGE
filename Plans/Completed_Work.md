@@ -5,6 +5,8 @@ This document tracks completed features and fixes. Items are moved here from Pro
 ---
 
 ### January 31, 2026
+- **Import/Export WP templates:** Export all user-created form and WP templates to JSON with index-based form references. Import with automatic ID remapping, name conflict handling (" (Imported)" suffix), and UI refresh. Documented in Help manual.
+- **Updated app icon and logo**
 - **Clear Filters button:** Green border now only appears when filters are active (covers all 9 filter types: sidebar buttons, column headers, global search, Today, user-defined, scan results). Border resets to default after clearing filters.
 - **Help manual updates:**
   - Renamed all standalone "MILESTONE" references to "VANTAGE: Milestone" (22 instances, kept format/column-naming labels as-is)
