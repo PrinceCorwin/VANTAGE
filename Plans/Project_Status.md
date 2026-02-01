@@ -171,8 +171,10 @@ All V1 sections of `Help/manual.html` are written. Screenshots configured with c
 ## Feature Backlog
 
 ### High Priority
-- V1 production packaging: self-contained publish, Azure Blob hosting, installer app (see Packaging_Credentials_Installer_Plan.md — Workstreams 2 & 3)
+- V1 production packaging: first publish to GitHub Releases, test full install → update cycle (see Packaging_Credentials_Installer_Plan.md)
 - ~~Credentials strategy~~ Complete — migrated to encrypted config file (Workstream 1)
+- ~~Self-contained publish config~~ Complete — main app + updater (Workstream 2)
+- ~~Installer app~~ Complete — branded WPF installer with desktop shortcut (Workstream 3)
 
 
 ### Medium Priority

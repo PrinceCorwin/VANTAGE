@@ -1,0 +1,154 @@
+<Window x:Class="VANTAGE.Installer.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Summit Industrial — Software Suite"
+        Width="520" Height="440"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize"
+        Background="#1e1e2e">
+    <Window.Resources>
+        <!-- Card button style -->
+        <Style x:Key="CardButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#2d2d44"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#3d3d5c"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6"
+                                Padding="16,12">
+                            <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#3a3a5a"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#6C63FF"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#4a4a6a"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Background" Value="#252538"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#2d2d44"/>
+                                <Setter Property="Foreground" Value="#666680"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="30,20,30,20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="20"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="12"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header: Summit logo and title -->
+        <StackPanel Grid.Row="0" HorizontalAlignment="Center">
+            <Image Source="/Images/SummitLogoNoText.jpg"
+                   Width="80" Height="80"
+                   RenderOptions.BitmapScalingMode="HighQuality"
+                   Margin="0,0,0,10"/>
+            <TextBlock Text="Summit Industrial Constructors"
+                       Foreground="#ccccdd"
+                       FontSize="18" FontWeight="SemiBold"
+                       HorizontalAlignment="Center"/>
+            <TextBlock Text="Software Suite"
+                       Foreground="#8888aa"
+                       FontSize="13"
+                       HorizontalAlignment="Center"
+                       Margin="0,2,0,0"/>
+        </StackPanel>
+
+        <!-- VANTAGE: Milestone button -->
+        <Button Grid.Row="2"
+                Style="{StaticResource CardButtonStyle}"
+                Click="InstallMilestone_Click"
+                x:Name="btnMilestone">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="50"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Image Grid.Column="0"
+                       Source="/Images/MilestoneLogoPngTransparentBG.png"
+                       Width="40" Height="40"
+                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="8,0,0,0">
+                    <TextBlock Text="VANTAGE: Milestone"
+                               Foreground="White"
+                               FontSize="15" FontWeight="SemiBold"/>
+                    <TextBlock Text="Construction Progress Tracking"
+                               Foreground="#8888aa"
+                               FontSize="12"
+                               Margin="0,2,0,0"/>
+                </StackPanel>
+                <TextBlock Grid.Column="2"
+                           Text="Install"
+                           Foreground="#6C63FF"
+                           FontSize="13" FontWeight="SemiBold"
+                           VerticalAlignment="Center"
+                           Margin="10,0,0,0"/>
+            </Grid>
+        </Button>
+
+        <!-- REQit button (disabled) -->
+        <Button Grid.Row="4"
+                Style="{StaticResource CardButtonStyle}"
+                IsEnabled="False"
+                ToolTip="Coming soon">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="50"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Border Grid.Column="0"
+                        Width="40" Height="40"
+                        Background="#333350"
+                        CornerRadius="4">
+                    <TextBlock Text="R"
+                               Foreground="#555570"
+                               FontSize="22" FontWeight="Bold"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"/>
+                </Border>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="8,0,0,0">
+                    <TextBlock Text="REQit"
+                               FontSize="15" FontWeight="SemiBold"/>
+                    <TextBlock Text="Coming Soon"
+                               FontSize="12"
+                               Margin="0,2,0,0"/>
+                </StackPanel>
+            </Grid>
+        </Button>
+
+        <!-- Progress area -->
+        <StackPanel Grid.Row="6" x:Name="progressPanel" Visibility="Collapsed">
+            <ProgressBar x:Name="progressBar"
+                         Height="6"
+                         Minimum="0" Maximum="100"
+                         Foreground="#6C63FF"
+                         Background="#2d2d44"
+                         BorderThickness="0"/>
+            <TextBlock x:Name="statusText"
+                       Foreground="#8888aa"
+                       FontSize="12"
+                       Margin="0,6,0,0"/>
+        </StackPanel>
+    </Grid>
+</Window>

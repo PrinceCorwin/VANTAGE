@@ -92,14 +92,14 @@ if (-not (Test-Path $plaintextConfig)) {
 Encrypt-ConfigFile -InputPath $plaintextConfig -OutputPath $encryptedConfig
 Write-Host "  Encrypted to appsettings.enc" -ForegroundColor Gray
 
-# Step 3: Build the updater
+# Step 3: Build the updater (self-contained single-file)
 Write-Host "[3/8] Publishing VANTAGE.Updater..." -ForegroundColor Yellow
-dotnet publish "$RepoRoot\VANTAGE.Updater\VANTAGE.Updater.csproj" -c Release -r win-x64 --self-contained false
+dotnet publish "$RepoRoot\VANTAGE.Updater\VANTAGE.Updater.csproj" -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true
 if ($LASTEXITCODE -ne 0) { throw "Updater publish failed" }
 
-# Step 4: Build the main app
+# Step 4: Build the main app (self-contained, not single-file due to Syncfusion)
 Write-Host "[4/8] Publishing VANTAGE..." -ForegroundColor Yellow
-dotnet publish "$RepoRoot\VANTAGE.csproj" -c Release -r win-x64 --self-contained false
+dotnet publish "$RepoRoot\VANTAGE.csproj" -c Release -r win-x64 --self-contained true
 if ($LASTEXITCODE -ne 0) { throw "Main app publish failed" }
 
 # Step 5: Copy updater into publish output

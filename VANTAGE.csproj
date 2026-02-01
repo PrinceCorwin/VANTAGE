@@ -110,6 +110,17 @@
 		<EmbeddedResource Remove="VANTAGE.Updater\**" />
 		<Content Remove="VANTAGE.Updater\**" />
 	</ItemGroup>
+
+	<!-- Exclude VANTAGE.Installer subdirectory from this project's compilation -->
+	<ItemGroup>
+		<Compile Remove="VANTAGE.Installer\**" />
+		<None Remove="VANTAGE.Installer\**" />
+		<EmbeddedResource Remove="VANTAGE.Installer\**" />
+		<Content Remove="VANTAGE.Installer\**" />
+		<Page Remove="VANTAGE.Installer\**" />
+		<ApplicationDefinition Remove="VANTAGE.Installer\**" />
+		<Resource Remove="VANTAGE.Installer\**" />
+	</ItemGroup>
 	<ItemGroup>
 	  <Content Include="Help\pb-editor-bottom.png">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

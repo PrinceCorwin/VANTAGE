@@ -5,6 +5,8 @@ This document tracks completed features and fixes. Items are moved here from Pro
 ---
 
 ### February 1, 2026
+- **Installer app (Workstream 3):** Created `VANTAGE.Installer` WPF project — branded dark window with Summit logo, "VANTAGE: Milestone" install button, disabled "REQit" button. Downloads manifest from update URL, downloads ZIP with progress, verifies SHA-256, extracts to `%LOCALAPPDATA%\VANTAGE\App\`, creates desktop shortcut via COM Shell. Publishes as self-contained single-file exe. Added `publish-installer.ps1` script.
+- **Self-contained publish config (Workstream 2):** Updated `VANTAGE.Updater.csproj` for self-contained single-file publish. Changed `publish-update.ps1` to use `--self-contained true` for both main app and updater. Users won't need .NET runtime installed.
 - **Credential migration (Workstream 1):** Replaced compiled `Credentials.cs` with runtime-loaded config system. New `CredentialService.cs` reads plaintext `appsettings.json` in dev or AES-256 encrypted `appsettings.enc` in production. Created `AppConfig.cs` model, migrated 31 references across 7 files, added encryption function to `publish-update.ps1` (now 8 steps), updated `.gitignore` and csproj. Full plan in `Packaging_Credentials_Installer_Plan.md`.
 - **Orchid theme:** Added third theme — a light-based feminine theme with deep purple (#7B1FA2) primary and bright pink (#E040FB) accent. Lavender-tinted backgrounds, purple grid headers, and purple-branded toolbar. Uses Syncfusion FluentLight as base.
 - **ActiveFilterBorderColor resource:** New theme-aware resource for Clear Filters button border highlight. Green in Dark/Light themes, pink accent in Orchid. Replaces hardcoded StatusGreen reference.
