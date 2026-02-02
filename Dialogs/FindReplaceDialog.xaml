@@ -4,7 +4,7 @@
         xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
         Title="Find and Replace"
         Width="500"
-        Height="320"
+        Height="343"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
         Background="{DynamicResource ContentBackground}">
@@ -72,6 +72,7 @@
             <StackPanel Grid.Column="1" VerticalAlignment="Top">
                 <syncfusion:ButtonAdv x:Name="btnReplaceAll"
                                       Label="Replace All"
+                                      SmallIcon="{x:Null}"
                                       Width="120"
                                       Height="34"
                                       Margin="0,0,0,10"
@@ -80,6 +81,7 @@
                                       Click="BtnReplaceAll_Click"/>
                 <syncfusion:ButtonAdv x:Name="btnClose"
                                       Label="Close"
+                                      SmallIcon="{x:Null}"
                                       Width="120"
                                       Height="34"
                                       Background="{DynamicResource ContentBackground}"

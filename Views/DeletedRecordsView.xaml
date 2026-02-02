@@ -94,11 +94,10 @@
                     <!-- Refresh Button -->
                     <syncfusion:ButtonAdv x:Name="btnRefresh"
                                          Label="REFRESH"
-                                         Height="45"
+                                         SmallIcon="{x:Null}"
+                                         Height="42"
                                          Margin="0,0,0,8"
-                                         SizeMode="Large"
-                                         IconHeight="20"
-                                         IconWidth="20"
+                                         SizeMode="Normal"
                                          Background="{StaticResource ButtonPrimaryBackground}"
                                          Foreground="{StaticResource OverlayText}"
                                          Click="BtnRefresh_Click">
@@ -109,6 +108,7 @@
                     <!-- Restore Button -->
                     <syncfusion:ButtonAdv x:Name="btnRestore"
                                          Label="RESTORE"
+                                         SmallIcon="{x:Null}"
                                          Height="42"
                                          Margin="0,0,0,0"
                                          SizeMode="Normal"
@@ -128,6 +128,7 @@
                     <!-- Purge Button -->
                     <syncfusion:ButtonAdv x:Name="btnPurge"
                                          Label="PURGE"
+                                         SmallIcon="{x:Null}"
                                          Height="42"
                                          Margin="0,0,0,6"
                                          SizeMode="Normal"
@@ -142,6 +143,7 @@
                     <!-- Export Button -->
                     <syncfusion:ButtonAdv x:Name="btnExport"
                                          Label="EXPORT TO EXCEL"
+                                         SmallIcon="{x:Null}"
                                          Height="42"
                                          SizeMode="Normal"
                                          Background="{StaticResource SidebarBorder}"

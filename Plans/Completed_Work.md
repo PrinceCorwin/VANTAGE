@@ -10,6 +10,7 @@ This document tracks completed features and fixes. Items are moved here from Pro
 - **Optimize DIY summary panel:** Cached `PropertyInfo` lookup in ProgressViewModel (resolved once on column change, not per-calculation). Replaced reflection-based record extraction in `UpdateSummaryPanel` with direct `RecordEntry` casting. Added 200ms debounce timer for filter-triggered summary updates; cell edits and initial load remain immediate.
 - **Cache Progress view for instant navigation:** `MainWindow.LoadProgressModule()` now caches the ProgressView instance and reuses it on subsequent navigations instead of recreating the view and reloading all data from SQLite. First load unchanged; every navigation after is instant. Force-reloads on Excel import and Reset Grid Layouts. Added `_dataLoaded` guard in `OnViewLoaded` to prevent redundant data loads.
 - **Optimize Find & Replace:** Replaced per-record database writes with single-transaction batch update. Added `BulkUpdateColumnAsync` to ActivityRepository — opens one connection, prepares one UPDATE statement, executes per record within a single transaction (only changed column + metadata, not all 88 columns). Added BusyDialog spinner during operation. Handles derived field recalculation for progress columns.
+- **Remove ButtonAdv default icons:** Set `SmallIcon="{x:Null}"` on ButtonAdv controls in FindReplaceDialog and DeletedRecordsView to remove Syncfusion's default icon. Normalized Refresh button in DeletedRecordsView from `SizeMode="Large"` to `Normal` to match other buttons.
 
 ---
 
