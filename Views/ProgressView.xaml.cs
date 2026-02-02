@@ -3144,7 +3144,7 @@ namespace VANTAGE.Views
                     Content = columnName,
                     IsChecked = !column.IsHidden,
                     Margin = new Thickness(5, 2, 5, 2),
-                    Foreground = System.Windows.Media.Brushes.White,
+                    Foreground = (System.Windows.Media.Brush)FindResource("ForegroundColor"),
                     Tag = column
                 };
 

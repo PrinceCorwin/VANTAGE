@@ -514,16 +514,16 @@
                                               Width="250"
                                               AllowEditing="False"/>
 
-                    <syncfusion:GridDateTimeColumn MappingName="P6_PlannedStart" 
-                                                  HeaderText="P6 Planned Start" 
+                    <syncfusion:GridDateTimeColumn MappingName="P6_Start"
+                                                  HeaderText="P6 Start"
                                                   Width="130"
-                                                  DisplayBinding="{Binding P6_PlannedStart, StringFormat='yyyy-MM-dd'}"
+                                                  DisplayBinding="{Binding P6_Start, StringFormat='yyyy-MM-dd'}"
                                                   AllowEditing="False"/>
 
-                    <syncfusion:GridDateTimeColumn MappingName="P6_PlannedFinish" 
-                                                  HeaderText="P6 Planned Finish" 
+                    <syncfusion:GridDateTimeColumn MappingName="P6_Finish"
+                                                  HeaderText="P6 Finish"
                                                   Width="130"
-                                                  DisplayBinding="{Binding P6_PlannedFinish, StringFormat='yyyy-MM-dd'}"
+                                                  DisplayBinding="{Binding P6_Finish, StringFormat='yyyy-MM-dd'}"
                                                   AllowEditing="False"/>
 
                     <syncfusion:GridDateTimeColumn MappingName="P6_ActualStart" 

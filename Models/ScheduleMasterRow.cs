@@ -14,8 +14,8 @@ namespace VANTAGE.Models
         public string SchedActNO { get; set; } = string.Empty;
         public string WbsId { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
-        public DateTime? P6_PlannedStart { get; set; }
-        public DateTime? P6_PlannedFinish { get; set; }
+        public DateTime? P6_Start { get; set; }
+        public DateTime? P6_Finish { get; set; }
         public DateTime? P6_ActualStart { get; set; }
         public DateTime? P6_ActualFinish { get; set; }
         public double P6_PercentComplete { get; set; }
@@ -240,21 +240,21 @@ namespace VANTAGE.Models
         {
             get
             {
-                // Missed Start = P6 planned start has passed but MS hasn't started (or started late)
+                // Missed Start = P6 schedule start has passed but MS hasn't started (or started late)
                 if (string.IsNullOrWhiteSpace(MissedStartReason) == false)
                     return false; // Already has reason
 
-                if (!P6_PlannedStart.HasValue)
-                    return false; // No planned start to miss
+                if (!P6_Start.HasValue)
+                    return false; // No P6 start to miss
 
-                if (P6_PlannedStart.Value.Date > WeekEndDate.Date)
-                    return false; // Planned start is still in the future
+                if (P6_Start.Value.Date > WeekEndDate.Date)
+                    return false; // P6 start is still in the future
 
-                // Planned start has passed - check if MS started on time
+                // P6 start has passed - check if MS started on time
                 if (!MS_ActualStart.HasValue)
                     return true; // Never started - needs explanation
 
-                return MS_ActualStart.Value.Date > P6_PlannedStart.Value.Date; // Started late - needs explanation
+                return MS_ActualStart.Value.Date > P6_Start.Value.Date; // Started late - needs explanation
             }
         }
 
@@ -262,21 +262,21 @@ namespace VANTAGE.Models
         {
             get
             {
-                // Missed Finish = P6 planned finish has passed but MS hasn't finished (or finished late)
+                // Missed Finish = P6 schedule finish has passed but MS hasn't finished (or finished late)
                 if (string.IsNullOrWhiteSpace(MissedFinishReason) == false)
                     return false; // Already has reason
 
-                if (!P6_PlannedFinish.HasValue)
-                    return false; // No planned finish to miss
+                if (!P6_Finish.HasValue)
+                    return false; // No P6 finish to miss
 
-                if (P6_PlannedFinish.Value.Date > WeekEndDate.Date)
-                    return false; // Planned finish is still in the future
+                if (P6_Finish.Value.Date > WeekEndDate.Date)
+                    return false; // P6 finish is still in the future
 
-                // Planned finish has passed - check if MS finished on time
+                // P6 finish has passed - check if MS finished on time
                 if (!MS_ActualFinish.HasValue)
                     return true; // Never finished - needs explanation
 
-                return MS_ActualFinish.Value.Date > P6_PlannedFinish.Value.Date; // Finished late - needs explanation
+                return MS_ActualFinish.Value.Date > P6_Finish.Value.Date; // Finished late - needs explanation
             }
         }
 
@@ -290,16 +290,16 @@ namespace VANTAGE.Models
                 if (MS_ActualStart.HasValue)
                     return false; // Already started - no forecast needed
 
-                if (!P6_PlannedStart.HasValue)
-                    return false; // No planned start
+                if (!P6_Start.HasValue)
+                    return false; // No P6 start date
 
-                var daysUntilStart = (P6_PlannedStart.Value.Date - WeekEndDate.Date).TotalDays;
+                var daysUntilStart = (P6_Start.Value.Date - WeekEndDate.Date).TotalDays;
 
                 // Future: within 21 days
                 if (daysUntilStart >= 0 && daysUntilStart <= 21)
                     return true;
 
-                // Past-due: planned start has passed AND MS hasn't started yet
+                // Past-due: P6 start has passed AND MS hasn't started yet
                 if (daysUntilStart < 0 && !MS_ActualStart.HasValue)
                     return true;
 
@@ -317,16 +317,16 @@ namespace VANTAGE.Models
                 if (MS_ActualFinish.HasValue)
                     return false; // Already finished - no forecast needed
 
-                if (!P6_PlannedFinish.HasValue)
-                    return false; // No planned finish
+                if (!P6_Finish.HasValue)
+                    return false; // No P6 finish date
 
-                var daysUntilFinish = (P6_PlannedFinish.Value.Date - WeekEndDate.Date).TotalDays;
+                var daysUntilFinish = (P6_Finish.Value.Date - WeekEndDate.Date).TotalDays;
 
                 // Future: within 21 days
                 if (daysUntilFinish >= 0 && daysUntilFinish <= 21)
                     return true;
 
-                // Past-due: planned finish has passed AND MS hasn't finished yet
+                // Past-due: P6 finish has passed AND MS hasn't finished yet
                 if (daysUntilFinish < 0 && !MS_ActualFinish.HasValue)
                     return true;
 

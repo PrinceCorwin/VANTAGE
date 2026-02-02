@@ -101,11 +101,11 @@ namespace VANTAGE
         {
             var version = Assembly.GetExecutingAssembly().GetName().Version;
             MessageBox.Show(
-                $"MILESTONE\n\n" +
+                $"Vantage: Milestone\n\n" +
                 $"Version: {version?.Major}.{version?.Minor}.{version?.Build}\n\n" +
                 $"Construction Project Management System\n\n" +
-                $"© {DateTime.Now.Year} Summit Constructors",
-                "About MILESTONE",
+                $"© {DateTime.Now.Year} Summit Industrial",
+                "About Vantage: Milestone",
                 MessageBoxButton.OK,
                 MessageBoxImage.Information);
         }

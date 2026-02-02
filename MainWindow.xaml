@@ -327,7 +327,7 @@
                                         ToolTip="Show/hide Legacy format import/export menu items in the File menu"/>
 
                                 <Separator Background="{StaticResource BorderColor}" Margin="5,2"/>
-                                <Button Content="About MILESTONE"
+                                <Button Content="About Vantage: Milestone"
                                         Background="Transparent"
                                         Foreground="{StaticResource ForegroundColor}"
                                         BorderThickness="0"

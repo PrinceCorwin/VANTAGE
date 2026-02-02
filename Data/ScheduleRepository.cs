@@ -42,7 +42,7 @@ namespace VANTAGE.Repositories
                     var scheduleCmd = connection.CreateCommand();
                     scheduleCmd.CommandText = $@"
                 SELECT SchedActNO, WbsId, Description,
-                    P6_PlannedStart, P6_PlannedFinish, P6_ActualStart, P6_ActualFinish,
+                    P6_Start, P6_Finish, P6_ActualStart, P6_ActualFinish,
                     P6_PercentComplete, P6_BudgetMHs,
                     MissedStartReason, MissedFinishReason
                 FROM Schedule
@@ -65,8 +65,8 @@ namespace VANTAGE.Repositories
                                 SchedActNO = schedActNo,
                                 WbsId = reader.GetString(1),
                                 Description = reader.GetString(2),
-                                P6_PlannedStart = reader.IsDBNull(3) ? null : DateTime.Parse(reader.GetString(3)),
-                                P6_PlannedFinish = reader.IsDBNull(4) ? null : DateTime.Parse(reader.GetString(4)),
+                                P6_Start = reader.IsDBNull(3) ? null : DateTime.Parse(reader.GetString(3)),
+                                P6_Finish = reader.IsDBNull(4) ? null : DateTime.Parse(reader.GetString(4)),
                                 P6_ActualStart = reader.IsDBNull(5) ? null : DateTime.Parse(reader.GetString(5)),
                                 P6_ActualFinish = reader.IsDBNull(6) ? null : DateTime.Parse(reader.GetString(6)),
                                 P6_PercentComplete = reader.GetDouble(7),
@@ -136,20 +136,20 @@ namespace VANTAGE.Repositories
                     // Step 5: Apply default MissedReasons based on MS rollups (only if fields are empty)
                     foreach (var row in masterRows)
                     {
-                        // Default MissedStartReason to "Started Early" if MS started before planned
+                        // Default MissedStartReason to "Started Early" if MS started before P6 schedule date
                         if (string.IsNullOrEmpty(row.MissedStartReason) &&
                             row.MS_ActualStart != null &&
-                            row.P6_PlannedStart != null &&
-                            row.MS_ActualStart.Value.Date < row.P6_PlannedStart.Value.Date)
+                            row.P6_Start != null &&
+                            row.MS_ActualStart.Value.Date < row.P6_Start.Value.Date)
                         {
                             row.MissedStartReason = "Started Early";
                         }
 
-                        // Default MissedFinishReason to "Finished Early" if MS finished before planned
+                        // Default MissedFinishReason to "Finished Early" if MS finished before P6 schedule date
                         if (string.IsNullOrEmpty(row.MissedFinishReason) &&
                             row.MS_ActualFinish != null &&
-                            row.P6_PlannedFinish != null &&
-                            row.MS_ActualFinish.Value.Date < row.P6_PlannedFinish.Value.Date)
+                            row.P6_Finish != null &&
+                            row.MS_ActualFinish.Value.Date < row.P6_Finish.Value.Date)
                         {
                             row.MissedFinishReason = "Finished Early";
                         }

@@ -7,7 +7,7 @@
 
 ## Summary
 
-This document details the plan to migrate MILESTONE's Azure SQL database from Steve's personal Azure subscription to the company Azure server (Summit Constructors). This migration will enable employee testing and eventual production deployment.
+This document details the plan to migrate MILESTONE's Azure SQL database from Steve's personal Azure subscription to the company Azure server (Summit Industrial). This migration will enable employee testing and eventual production deployment.
 
 ---
 

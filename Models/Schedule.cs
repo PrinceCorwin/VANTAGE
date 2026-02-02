@@ -24,8 +24,8 @@ namespace VANTAGE.Models
         // P6 IMPORTED FIELDS (FROM P6 file)
         // ========================================
 
-        public DateTime? P6_PlannedStart { get; set; }
-        public DateTime? P6_PlannedFinish { get; set; }
+        public DateTime? P6_Start { get; set; }
+        public DateTime? P6_Finish { get; set; }
         public DateTime? P6_ActualStart { get; set; }
         public DateTime? P6_ActualFinish { get; set; }
         public double P6_PercentComplete { get; set; }

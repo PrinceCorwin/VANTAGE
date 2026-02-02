@@ -385,8 +385,8 @@ namespace VANTAGE.ViewModels
                 if (masterRow.MissedStartReason == "Started Early")
                 {
                     bool stillStartedEarly = masterRow.MS_ActualStart != null &&
-                                             masterRow.P6_PlannedStart != null &&
-                                             masterRow.MS_ActualStart.Value.Date < masterRow.P6_PlannedStart.Value.Date;
+                                             masterRow.P6_Start != null &&
+                                             masterRow.MS_ActualStart.Value.Date < masterRow.P6_Start.Value.Date;
                     if (!stillStartedEarly)
                     {
                         masterRow.MissedStartReason = null;
@@ -397,8 +397,8 @@ namespace VANTAGE.ViewModels
                 if (masterRow.MissedFinishReason == "Finished Early")
                 {
                     bool stillFinishedEarly = masterRow.MS_ActualFinish != null &&
-                                              masterRow.P6_PlannedFinish != null &&
-                                              masterRow.MS_ActualFinish.Value.Date < masterRow.P6_PlannedFinish.Value.Date;
+                                              masterRow.P6_Finish != null &&
+                                              masterRow.MS_ActualFinish.Value.Date < masterRow.P6_Finish.Value.Date;
                     if (!stillFinishedEarly)
                     {
                         masterRow.MissedFinishReason = null;

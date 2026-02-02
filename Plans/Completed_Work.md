@@ -4,7 +4,14 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ---
 
-### February 2, 2026
+### February 2, 2026 (Session 2)
+- **ManageProgressLogDialog — remove RespParty granularity:** Rolled up upload batches from per-RespParty rows to per-(Username, ProjectID, WeekEndDate, UploadUtcDate) groups. Query now uses GROUP BY with SUM(RecordCount). Delete removes all RespParty records for a batch at once instead of individually. Removed RespParty column from dialog grid, UploadID and RespParty from model class. Rationale: snapshots are always created as a unit across all RespParty values, so there's no use case for deleting only one RespParty's records.
+- **Summit Constructors → Summit Industrial:** Renamed company name in About dialog (MainWindow.xaml.cs), CLAUDE.md, and plan docs. Historical changelog entries in Completed_Work.md left as-is.
+- **Column visibility checkbox foreground fix:** Changed checkbox text in BtnColumnVisibility_Click (ProgressView) from hardcoded `Brushes.White` to `FindResource("ForegroundColor")`. Fixes invisible text on Light and Orchid themes.
+- **About dialog renamed:** Menu item and dialog changed from "About MILESTONE" to "About Vantage: Milestone". Dialog body header also updated.
+- **Schedule module — replace P6 baseline dates with current schedule dates:** Renamed `P6_PlannedStart`/`P6_PlannedFinish` to `P6_Start`/`P6_Finish` across 9 source files. Changed P6 import mapping from `target_start_date`/`target_end_date` (baseline) to `start_date`/`end_date` (current schedule). The 3WLA requirement logic and missed start/finish reason logic now evaluate against the current P6 schedule dates instead of stale baseline dates. Grid columns renamed from "P6 Planned Start/Finish" to "P6 Start/Finish". Updated DB schema (Schedule table), models, repository, view model, report exporter, importer, XAML, and help manual. **NOTE:** Local SQLite DB must be deleted and P6 data re-imported after this change (Schedule table schema changed).
+
+### February 2, 2026 (Session 1)
 - **Snapshot save — immediate spinner:** Moved BusyDialog creation to right after WE date selection (before Azure validation queries). Shows status updates through each phase: "Validating...", "Checking ownership...", "Checking for existing snapshots...". Hides/shows around MessageBox prompts.
 - **Snapshot save — date auto-fix:** Changed future date validation from hard block to Yes/No dialog offering to set offending SchStart/SchFinish dates to the selected WE date. Fixes Monday import → Sunday snapshot scenario.
 - **Snapshot save — conditional NOT EXISTS:** Optimized INSERT query to only include NOT EXISTS subquery when other users have conflicting snapshots (`skipped > 0`). Eliminates per-row existence check for the common case.

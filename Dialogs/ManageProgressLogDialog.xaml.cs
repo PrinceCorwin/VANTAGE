@@ -42,24 +42,23 @@ namespace VANTAGE.Dialogs
 
                     using var cmd = conn.CreateCommand();
                     cmd.CommandText = @"
-                        SELECT UploadID, ProjectID, RespParty, WeekEndDate,
-                               UploadUtcDate, RecordCount, Username, UploadedBy
+                        SELECT Username, ProjectID, WeekEndDate, UploadUtcDate,
+                               SUM(RecordCount) as RecordCount, UploadedBy
                         FROM VMS_ProgressLogUploads
-                        ORDER BY UploadUtcDate DESC, ProjectID, RespParty";
+                        GROUP BY Username, ProjectID, WeekEndDate, UploadUtcDate, UploadedBy
+                        ORDER BY UploadUtcDate DESC, ProjectID";
 
                     using var reader = cmd.ExecuteReader();
                     while (reader.Read())
                     {
                         var item = new ProgressLogUploadItem
                         {
-                            UploadID = reader.GetInt32(0),
+                            Username = reader.IsDBNull(0) ? "" : reader.GetString(0),
                             ProjectID = reader.IsDBNull(1) ? "" : reader.GetString(1),
-                            RespParty = reader.IsDBNull(2) ? "" : reader.GetString(2),
-                            WeekEndDate = reader.IsDBNull(3) ? "" : reader.GetString(3),
-                            UploadUtcDate = reader.IsDBNull(4) ? "" : reader.GetString(4),
-                            RecordCount = reader.GetInt32(5),
-                            Username = reader.IsDBNull(6) ? "" : reader.GetString(6),
-                            UploadedBy = reader.IsDBNull(7) ? "" : reader.GetString(7)
+                            WeekEndDate = reader.IsDBNull(2) ? "" : reader.GetString(2),
+                            UploadUtcDate = reader.IsDBNull(3) ? "" : reader.GetString(3),
+                            RecordCount = reader.GetInt32(4),
+                            UploadedBy = reader.IsDBNull(5) ? "" : reader.GetString(5)
                         };
                         item.PropertyChanged += UploadItem_PropertyChanged;
                         list.Add(item);
@@ -133,7 +132,7 @@ namespace VANTAGE.Dialogs
 
             int totalRecords = selected.Sum(u => u.RecordCount);
             string summary = string.Join("\n", selected.Select(u =>
-                $"  {u.Username} / {u.ProjectID} / {u.RespParty} / {u.WeekEndDateDisplay} ({u.RecordCount} records)"));
+                $"  {u.Username} / {u.ProjectID} / {u.WeekEndDateDisplay} ({u.RecordCount} records)"));
 
             var confirmResult = MessageBox.Show(
                 $"Delete {selected.Count} upload batch(es) ({totalRecords} total records) from the Progress Log?\n\n{summary}\n\n" +
@@ -165,35 +164,41 @@ namespace VANTAGE.Dialogs
                     {
                         try
                         {
-                            // Delete from ProgressLog first
+                            // Delete from ProgressLog first (all RespParty records for this batch)
                             using var deleteCmd = conn.CreateCommand();
                             deleteCmd.CommandTimeout = 0; // no timeout - table is large
                             deleteCmd.CommandText = @"
                                 DELETE FROM VANTAGE_global_ProgressLog
                                 WHERE Tag_ProjectID = @projectId
-                                  AND UDF18 = @respParty
                                   AND [Timestamp] = @uploadUtcDate
                                   AND Val_TimeStamp = @weekEndDate";
                             deleteCmd.Parameters.AddWithValue("@projectId", upload.ProjectID);
-                            deleteCmd.Parameters.AddWithValue("@respParty", upload.RespParty);
                             deleteCmd.Parameters.AddWithValue("@uploadUtcDate", DateTime.Parse(upload.UploadUtcDate));
                             deleteCmd.Parameters.AddWithValue("@weekEndDate", DateTime.Parse(upload.WeekEndDate));
                             var sw = System.Diagnostics.Stopwatch.StartNew();
                             int deleted = deleteCmd.ExecuteNonQuery();
                             sw.Stop();
                             totalDeleted += deleted;
-                            AppLogger.Info($"Deleted {deleted} ProgressLog records for {upload.ProjectID}/{upload.RespParty} in {sw.Elapsed.TotalSeconds:F1}s",
+                            AppLogger.Info($"Deleted {deleted} ProgressLog records for {upload.Username}/{upload.ProjectID}/{upload.WeekEndDateDisplay} in {sw.Elapsed.TotalSeconds:F1}s",
                                 "ManageProgressLogDialog.BtnDelete_Click", "System");
 
-                            // Then delete tracking record
+                            // Then delete all tracking records for this group
                             using var trackCmd = conn.CreateCommand();
-                            trackCmd.CommandText = "DELETE FROM VMS_ProgressLogUploads WHERE UploadID = @uploadId";
-                            trackCmd.Parameters.AddWithValue("@uploadId", upload.UploadID);
+                            trackCmd.CommandText = @"
+                                DELETE FROM VMS_ProgressLogUploads
+                                WHERE Username = @username
+                                  AND ProjectID = @projectId
+                                  AND WeekEndDate = @weekEndDate
+                                  AND UploadUtcDate = @uploadUtcDate";
+                            trackCmd.Parameters.AddWithValue("@username", upload.Username);
+                            trackCmd.Parameters.AddWithValue("@projectId", upload.ProjectID);
+                            trackCmd.Parameters.AddWithValue("@weekEndDate", upload.WeekEndDate);
+                            trackCmd.Parameters.AddWithValue("@uploadUtcDate", upload.UploadUtcDate);
                             trackCmd.ExecuteNonQuery();
                         }
                         catch (Exception ex)
                         {
-                            failedBatches.Add($"{upload.ProjectID}/{upload.RespParty}: {ex.Message}");
+                            failedBatches.Add($"{upload.Username}/{upload.ProjectID}/{upload.WeekEndDateDisplay}: {ex.Message}");
                             AppLogger.Error(ex, "ManageProgressLogDialog.BtnDelete_Click");
                         }
                     }
@@ -263,9 +268,7 @@ namespace VANTAGE.Dialogs
     // Model for progress log upload tracking record
     public class ProgressLogUploadItem : INotifyPropertyChanged
     {
-        public int UploadID { get; set; }
         public string ProjectID { get; set; } = string.Empty;
-        public string RespParty { get; set; } = string.Empty;
         public string WeekEndDate { get; set; } = string.Empty;
         public string UploadUtcDate { get; set; } = string.Empty;
         public int RecordCount { get; set; }

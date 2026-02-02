@@ -59,8 +59,7 @@
                             </GridViewColumn>
                             <GridViewColumn Header="Username" Width="100" DisplayMemberBinding="{Binding Username}"/>
                             <GridViewColumn Header="Project ID" Width="120" DisplayMemberBinding="{Binding ProjectID}"/>
-                            <GridViewColumn Header="Resp Party" Width="120" DisplayMemberBinding="{Binding RespParty}"/>
-                            <GridViewColumn Header="Week Ending" Width="110" DisplayMemberBinding="{Binding WeekEndDateDisplay}"/>
+<GridViewColumn Header="Week Ending" Width="110" DisplayMemberBinding="{Binding WeekEndDateDisplay}"/>
                             <GridViewColumn Header="Uploaded" Width="140" DisplayMemberBinding="{Binding UploadUtcDateDisplay}"/>
                             <GridViewColumn Header="Records" Width="70" DisplayMemberBinding="{Binding RecordCount}"/>
                             <GridViewColumn Header="Uploaded By" Width="100" DisplayMemberBinding="{Binding UploadedBy}"/>

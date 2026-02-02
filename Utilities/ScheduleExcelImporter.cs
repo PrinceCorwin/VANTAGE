@@ -21,8 +21,8 @@ namespace VANTAGE.Utilities
             { "task_code", "SchedActNO" },
             { "wbs_id", "WbsId" },
             { "task_name", "Description" },
-            { "target_start_date", "P6_PlannedStart" },
-            { "target_end_date", "P6_PlannedFinish" },
+            { "start_date", "P6_Start" },
+            { "end_date", "P6_Finish" },
             { "act_start_date", "P6_ActualStart" },
             { "act_end_date", "P6_ActualFinish" },
             { "complete_pct", "P6_PercentComplete" },
@@ -202,18 +202,18 @@ namespace VANTAGE.Utilities
                         schedule.Description = cell.GetString();
                         break;
 
-                    case "P6_PlannedStart":
+                    case "P6_Start":
                         if (cell.DataType == ClosedXML.Excel.XLDataType.DateTime)
-                            schedule.P6_PlannedStart = cell.GetDateTime();
+                            schedule.P6_Start = cell.GetDateTime();
                         else if (DateTime.TryParse(cell.GetString(), out var dt1))
-                            schedule.P6_PlannedStart = dt1;
+                            schedule.P6_Start = dt1;
                         break;
 
-                    case "P6_PlannedFinish":
+                    case "P6_Finish":
                         if (cell.DataType == ClosedXML.Excel.XLDataType.DateTime)
-                            schedule.P6_PlannedFinish = cell.GetDateTime();
+                            schedule.P6_Finish = cell.GetDateTime();
                         else if (DateTime.TryParse(cell.GetString(), out var dt2))
-                            schedule.P6_PlannedFinish = dt2;
+                            schedule.P6_Finish = dt2;
                         break;
 
                     case "P6_ActualStart":
@@ -338,7 +338,7 @@ namespace VANTAGE.Utilities
                 insertScheduleCmd.CommandText = @"
                 INSERT INTO Schedule (
                     SchedActNO, WeekEndDate, WbsId, Description,
-                    P6_PlannedStart, P6_PlannedFinish, P6_ActualStart, P6_ActualFinish,
+                    P6_Start, P6_Finish, P6_ActualStart, P6_ActualFinish,
                     P6_PercentComplete, P6_BudgetMHs,
                     MissedStartReason, MissedFinishReason,
                     UpdatedBy, UpdatedUtcDate
@@ -357,8 +357,8 @@ namespace VANTAGE.Utilities
                     insertScheduleCmd.Parameters.AddWithValue("@weekEndDate", weekEndDate.ToString("yyyy-MM-dd"));
                     insertScheduleCmd.Parameters.AddWithValue("@wbsId", schedule.WbsId);
                     insertScheduleCmd.Parameters.AddWithValue("@description", schedule.Description);
-                    insertScheduleCmd.Parameters.AddWithValue("@plannedStart", schedule.P6_PlannedStart?.ToString("yyyy-MM-dd") ?? (object)DBNull.Value);
-                    insertScheduleCmd.Parameters.AddWithValue("@plannedFinish", schedule.P6_PlannedFinish?.ToString("yyyy-MM-dd") ?? (object)DBNull.Value);
+                    insertScheduleCmd.Parameters.AddWithValue("@plannedStart", schedule.P6_Start?.ToString("yyyy-MM-dd") ?? (object)DBNull.Value);
+                    insertScheduleCmd.Parameters.AddWithValue("@plannedFinish", schedule.P6_Finish?.ToString("yyyy-MM-dd") ?? (object)DBNull.Value);
                     insertScheduleCmd.Parameters.AddWithValue("@actualStart", schedule.P6_ActualStart?.ToString("yyyy-MM-dd") ?? (object)DBNull.Value);
                     insertScheduleCmd.Parameters.AddWithValue("@actualFinish", schedule.P6_ActualFinish?.ToString("yyyy-MM-dd") ?? (object)DBNull.Value);
                     insertScheduleCmd.Parameters.AddWithValue("@percentComplete", schedule.P6_PercentComplete);

@@ -178,7 +178,7 @@ public static string AzureServer => UseCompanyAzure ? AzureCompanyServer : Azure
 
 **After:**
 ```csharp
-// Company Azure (Summit Constructors)
+// Company Azure (Summit Industrial)
 public const string AzureServer = "summitpc.database.windows.net";
 public const string AzureDatabase = "projectcontrols";
 public const string AzureUserId = "csurles";

@@ -54,7 +54,7 @@ namespace VANTAGE.Utilities
             "SchedActNO", "NotInP6", "NotInMS", "Description", "MS_%",
             "MS_ActualStart", "MS_ActualFinish", "P6_ActualStart", "P6_ActualFinish", "Actual_Mismatch",
             "MS_BudgetMHs", "P6_BudgetMHs", "MH_Mismatch",
-            "P6_PlannedStart", "P6_PlannedFinish", "ThreeWeekStart", "ThreeWeekFinish",
+            "P6_Start", "P6_Finish", "ThreeWeekStart", "ThreeWeekFinish",
             "MissedStartReason", "MissedFinishReason", "Changed"
 };
 
@@ -78,8 +78,8 @@ namespace VANTAGE.Utilities
             {
                 bool actualMismatch = HasActualMismatch(masterRow);
                 bool mhMismatch = HasMHMismatch(masterRow);
-                bool changed = IsDateChanged(masterRow.ThreeWeekStart, masterRow.P6_PlannedStart) ||
-                               IsDateChanged(masterRow.ThreeWeekFinish, masterRow.P6_PlannedFinish);
+                bool changed = IsDateChanged(masterRow.ThreeWeekStart, masterRow.P6_Start) ||
+                               IsDateChanged(masterRow.ThreeWeekFinish, masterRow.P6_Finish);
 
                 sheet.Cell(row, 1).Value = masterRow.SchedActNO ?? string.Empty;
                 sheet.Cell(row, 2).Value = "False";
@@ -94,8 +94,8 @@ namespace VANTAGE.Utilities
                 sheet.Cell(row, 11).Value = Math.Round(masterRow.MS_BudgetMHs, 2);
                 sheet.Cell(row, 12).Value = Math.Round(masterRow.P6_BudgetMHs, 2);
                 sheet.Cell(row, 13).Value = mhMismatch ? "True" : "False";
-                sheet.Cell(row, 14).Value = FormatDate(masterRow.P6_PlannedStart);
-                sheet.Cell(row, 15).Value = FormatDate(masterRow.P6_PlannedFinish);
+                sheet.Cell(row, 14).Value = FormatDate(masterRow.P6_Start);
+                sheet.Cell(row, 15).Value = FormatDate(masterRow.P6_Finish);
                 sheet.Cell(row, 16).Value = FormatDate(masterRow.ThreeWeekStart);
                 sheet.Cell(row, 17).Value = FormatDate(masterRow.ThreeWeekFinish);
                 sheet.Cell(row, 18).Value = masterRow.MissedStartReason ?? string.Empty;
