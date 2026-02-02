@@ -474,6 +474,97 @@ namespace VANTAGE.Data
         }
 
 
+        // Bulk update a single column for multiple activities in one transaction
+        // Each record can have a different value (for partial string replacements)
+        // Optional derivedColumns handles recalculated fields (e.g. EarnMHsCalc when BudgetMHs changes)
+        public static async Task<int> BulkUpdateColumnAsync(
+            string columnName,
+            List<(string UniqueID, object? NewValue)> updates,
+            string updatedBy,
+            Dictionary<string, List<(string UniqueID, object? Value)>>? derivedColumns = null)
+        {
+            if (updates == null || updates.Count == 0)
+                return 0;
+
+            return await Task.Run(() =>
+            {
+                using var connection = DatabaseSetup.GetConnection();
+                connection.Open();
+                using var transaction = connection.BeginTransaction();
+
+                try
+                {
+                    int totalAffected = 0;
+                    var updatedDate = DateTime.UtcNow.ToString("o");
+
+                    // Build SET clause: target column + any derived columns + metadata
+                    var setClauses = new List<string> { $"{columnName} = @newValue" };
+                    var derivedColNames = derivedColumns?.Keys.ToList() ?? new List<string>();
+                    foreach (var col in derivedColNames)
+                    {
+                        setClauses.Add($"{col} = @derived_{col}");
+                    }
+                    setClauses.Add("UpdatedBy = @updatedBy");
+                    setClauses.Add("UpdatedUtcDate = @updatedDate");
+                    setClauses.Add("LocalDirty = 1");
+
+                    string sql = $"UPDATE Activities SET {string.Join(", ", setClauses)} WHERE UniqueID = @uniqueId";
+
+                    // Build lookup for derived values by UniqueID
+                    var derivedLookups = new Dictionary<string, Dictionary<string, object?>>();
+                    if (derivedColumns != null)
+                    {
+                        foreach (var (col, values) in derivedColumns)
+                        {
+                            derivedLookups[col] = values.ToDictionary(v => v.UniqueID, v => v.Value);
+                        }
+                    }
+
+                    // Prepare and reuse command for each record
+                    var cmd = connection.CreateCommand();
+                    cmd.Transaction = transaction;
+                    cmd.CommandText = sql;
+                    cmd.Parameters.Add(new Microsoft.Data.Sqlite.SqliteParameter("@newValue", DBNull.Value));
+                    cmd.Parameters.Add(new Microsoft.Data.Sqlite.SqliteParameter("@updatedBy", updatedBy));
+                    cmd.Parameters.Add(new Microsoft.Data.Sqlite.SqliteParameter("@updatedDate", updatedDate));
+                    cmd.Parameters.Add(new Microsoft.Data.Sqlite.SqliteParameter("@uniqueId", ""));
+                    foreach (var col in derivedColNames)
+                    {
+                        cmd.Parameters.Add(new Microsoft.Data.Sqlite.SqliteParameter($"@derived_{col}", DBNull.Value));
+                    }
+                    cmd.Prepare();
+
+                    foreach (var (uniqueId, newValue) in updates)
+                    {
+                        cmd.Parameters["@newValue"].Value = newValue ?? DBNull.Value;
+                        cmd.Parameters["@uniqueId"].Value = uniqueId;
+
+                        foreach (var col in derivedColNames)
+                        {
+                            if (derivedLookups[col].TryGetValue(uniqueId, out var derivedVal))
+                                cmd.Parameters[$"@derived_{col}"].Value = derivedVal ?? DBNull.Value;
+                            else
+                                cmd.Parameters[$"@derived_{col}"].Value = DBNull.Value;
+                        }
+
+                        totalAffected += cmd.ExecuteNonQuery();
+                    }
+
+                    transaction.Commit();
+
+                    AppLogger.Info($"Bulk updated {columnName} for {totalAffected} records",
+                        "ActivityRepository.BulkUpdateColumnAsync", updatedBy);
+
+                    return totalAffected;
+                }
+                catch
+                {
+                    transaction.Rollback();
+                    throw;
+                }
+            });
+        }
+
         /// Get list of valid usernames from Users table
 
         private static HashSet<string> GetValidUsernames()
