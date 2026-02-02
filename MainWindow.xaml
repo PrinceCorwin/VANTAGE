@@ -138,34 +138,6 @@
                         </syncfusion:DropDownMenuGroup>
                     </syncfusion:DropDownButtonAdv>
 
-                    <syncfusion:ButtonAdv x:Name="btnTest"
-                          Label="TEST ▼"
-                          Padding="0"
-                          Margin="5,0"
-                          Background="Transparent"
-                          Foreground="{StaticResource ToolbarForeground}"
-                          BorderThickness="0"
-                          IconTemplate="{x:Null}"
-                          SmallIcon="{x:Null}"
-                          LargeIcon="{x:Null}"
-                          FontSize="12"
-                          Click="BtnTest_Click">
-                        <syncfusion:ButtonAdv.ContextMenu>
-                            <ContextMenu x:Name="menuTest"
-                                         Background="{StaticResource ControlBackground}"
-                                         Foreground="{StaticResource ForegroundColor}"
-                                         BorderBrush="{StaticResource BorderColor}">
-                                <MenuItem Header="Toggle Admin Status" Click="MenuToggleAdmin_Click"/>
-                                <MenuItem Header="Reset LocalDirty (All Records)" Click="MenuResetLocalDirty_Click"/>
-                                <MenuItem Header="Toggle UpdatedBy" Click="ToggleUpdatedBy_Click"/>
-                                <MenuItem Header="Schedule Diagnostics" Click="MenuScheduleDiagnostics_Click"/>
-                                <MenuItem Header="Clear Azure Activities" Click="MenuClearAzureActivities_Click"/>
-                                <MenuItem Header="Test Procore Drawings" Click="MenuTestProcoreDrawings_Click"/>
-                                <MenuItem Header="Test AWS Textract" Click="MenuTestTextract_Click"/>
-                            </ContextMenu>
-                        </syncfusion:ButtonAdv.ContextMenu>
-                    </syncfusion:ButtonAdv>
-
                 </StackPanel>
                 <!-- COLUMN 2: NAVIGATION BUTTONS -->
 

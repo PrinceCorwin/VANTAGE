@@ -1348,43 +1348,5 @@ namespace VANTAGE.Data
               });
         }
 
-        
-        /// TEST ONLY: Reset LocalDirty to 0 for all activities
-        /// Used to verify that cell edits properly set LocalDirty = 1
-        
-        public static async Task<int> ResetAllLocalDirtyAsync()
-        {
-            return await Task.Run(() =>
-             {
-                 using var connection = DatabaseSetup.GetConnection();
-                 connection.Open();
-
-                 var command = connection.CreateCommand();
-                 command.CommandText = "UPDATE Activities SET LocalDirty = 0";
-
-                 int rowsAffected = command.ExecuteNonQuery();
-                 return rowsAffected;
-             });
-        }
-
-        
-        /// TEST ONLY: Set UpdatedBy to a specific value for all activities
-        /// Used to verify that cell edits properly update UpdatedBy
-        
-        public static async Task<int> SetAllUpdatedByAsync(string updatedBy)
-        {
-            return await Task.Run(() =>
-       {
-           using var connection = DatabaseSetup.GetConnection();
-           connection.Open();
-
-           var command = connection.CreateCommand();
-           command.CommandText = "UPDATE Activities SET UpdatedBy = @UpdatedBy";
-           command.Parameters.AddWithValue("@UpdatedBy", updatedBy);
-
-           int rowsAffected = command.ExecuteNonQuery();
-           return rowsAffected;
-       });
-        }
     }
 }

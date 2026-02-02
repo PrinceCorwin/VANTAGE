@@ -5,6 +5,7 @@ This document tracks completed features and fixes. Items are moved here from Pro
 ---
 
 ### February 1, 2026
+- **Remove test menu (v26.1.3):** Removed TEST button and all 7 menu items from MainWindow toolbar (Toggle Admin, Reset LocalDirty, Toggle UpdatedBy, Schedule Diagnostics, Clear Azure Activities, Test Procore Drawings, Test AWS Textract). Removed test-only `ResetAllLocalDirtyAsync` and `SetAllUpdatedByAsync` from ActivityRepository. Kept Procore services and ScheduleDiagnostic as feature/utility code.
 - **Connection error IP display:** Enhanced ConnectionRetryDialog to detect and display user's public IP address when Azure connection fails. Uses api.ipify.org with 5-second timeout. COPY button puts IP on clipboard so user can email admin for firewall whitelisting. Graceful fallback ("Could not detect") when no internet.
 - **Help Troubleshooting section:** Populated the placeholder with three entries — Azure firewall/IP whitelisting, SmartScreen unblocking, and post-update appsettings.enc check.
 - **SidePanelViewModel cleanup:** Made `_helpHtmlPath` readonly, `ContentColumnWidth` static, removed dead PropertyChanged notification.
