@@ -78,12 +78,11 @@ Example output:
 5. **Description:** Brief release notes (what changed)
 6. Drag and drop the ZIP file (`VANTAGE-26.1.2.zip`) into the assets area
 7. Click **Publish release**
-8. After publishing, right-click the ZIP file link → **Copy link address**
-
-The URL will look like:
-```
-https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.2/VANTAGE-26.1.2.zip
-```
+8. The download URL always follows this pattern — just type it manually:
+   ```
+   https://github.com/PrinceCorwin/VANTAGE/releases/download/v{VERSION}/VANTAGE-{VERSION}.zip
+   ```
+   **Do not right-click and copy the link from the browser** — some browsers (Edge) insert encoded characters like `%2C` that will break the URL.
 
 ### Step 5: Update the Manifest
 

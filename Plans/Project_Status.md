@@ -171,10 +171,10 @@ All V1 sections of `Help/manual.html` are written. Screenshots configured with c
 ## Feature Backlog
 
 ### High Priority
-- **NEXT:** First publish & end-to-end test (Workstream 4 in `Packaging_Credentials_Installer_Plan.md`). Run publish script, create GitHub Release, populate manifest, build installer exe, test full install → update cycle. Branch: `update-pack-cred`.
+- ~~First publish & end-to-end test (Workstream 4)~~ Complete — v26.1.1 install + v26.1.2 auto-update validated
 - ~~Credentials strategy~~ Complete — migrated to encrypted config file (Workstream 1)
-- ~~Self-contained publish config~~ Code complete, untested — main app + updater (Workstream 2)
-- ~~Installer app~~ Code complete, untested with real download — branded WPF installer with desktop shortcut (Workstream 3)
+- ~~Self-contained publish config~~ Complete — tested via v26.1.1 and v26.1.2 publishes (Workstream 2)
+- ~~Installer app~~ Complete — tested full install cycle (Workstream 3)
 
 
 ### Medium Priority
