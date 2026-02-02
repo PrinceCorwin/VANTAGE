@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.1.1",
-  "releaseDate": "2026-02-01T15:40:29Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.1/VANTAGE-26.1.1.zip",
-  "zipSizeBytes": 149027550,
-  "sha256": "07F37B9ABA0DA555E5EE79D51A295FDBBFE9E861C00A174D5730356F41E4A64E",
-  "releaseNotes": "Initial release"
+  "currentVersion": "26.1.2",
+  "releaseDate": "2026-02-01T18:11:11Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.2/VANTAGE-26.1.2.zip",
+  "zipSizeBytes": 149028413,
+  "sha256": "70D4EB2A5AA296E56FE0B57CF0C57C6C71CA0987B771914583BD70527318781F",
+  "releaseNotes": "Update Test"
 }

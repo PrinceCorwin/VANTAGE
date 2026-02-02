@@ -8,6 +8,10 @@
 - .NET 8 SDK installed
 - `appsettings.json` in repo root (plaintext credentials — gitignored)
 - GitHub account with push access to PrinceCorwin/VANTAGE
+- PowerShell execution policy must allow local scripts. If you get "running scripts is disabled on this system", run once:
+  ```powershell
+  Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+  ```
 
 ## First-Time Setup (Already Done)
 
