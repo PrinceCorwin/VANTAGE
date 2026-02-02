@@ -46,6 +46,9 @@ namespace VANTAGE
             };
             this.Closing += MainWindow_Closing;
         }
+        // Cached view instance to avoid full data reload on every navigation
+        private Views.ProgressView? _cachedProgressView;
+
         private SidePanelViewModel _sidePanelViewModel = null!;
         // ========================================
         // SIDE PANEL / HELP
@@ -636,7 +639,7 @@ namespace VANTAGE
                         // Refresh the view if we're on Progress module
                         if (ContentArea.Content is Views.ProgressView)
                         {
-                            LoadProgressModule();
+                            LoadProgressModule(forceReload: true);
                         }
                     }
                 }
@@ -702,7 +705,7 @@ namespace VANTAGE
                     // Refresh the view if we're on Progress module
                     if (ContentArea.Content is Views.ProgressView)
                     {
-                        LoadProgressModule();
+                        LoadProgressModule(forceReload: true);
                     }
                 }
             }
@@ -1766,7 +1769,7 @@ namespace VANTAGE
             // Reload module to recreate view with XAML defaults
             if (ContentArea.Content is ProgressView)
             {
-                LoadProgressModule();
+                LoadProgressModule(forceReload: true);
             }
             else if (ContentArea.Content is ScheduleView)
             {
@@ -1840,10 +1843,14 @@ namespace VANTAGE
 
         // MODULE LOADING
 
-        private void LoadProgressModule()
+        // Loads the Progress module, reusing the cached instance unless forceReload is true
+        private void LoadProgressModule(bool forceReload = false)
         {
-            var progressView = new Views.ProgressView();
-            ContentArea.Content = progressView;
+            if (forceReload || _cachedProgressView == null)
+            {
+                _cachedProgressView = new Views.ProgressView();
+            }
+            ContentArea.Content = _cachedProgressView;
         }
 
         // Check if current view has unsaved changes

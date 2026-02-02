@@ -453,6 +453,7 @@ namespace VANTAGE.Dialogs
 
                     // Insert current Activities as backup snapshots
                     var cmd = azureConn.CreateCommand();
+                    cmd.CommandTimeout = 0;
                     cmd.CommandText = @"
                         INSERT INTO VMS_ProgressSnapshots (
                             UniqueID, WeekEndDate, Area, AssignedTo, AzureUploadUtcDate,

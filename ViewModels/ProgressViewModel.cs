@@ -45,6 +45,7 @@ namespace VANTAGE.ViewModels
 
         // Summary stats column selection - allows user to choose which column drives Budget/Earned calculations
         private string _selectedSummaryColumn = "BudgetMHs";
+        private PropertyInfo? _cachedSummaryProperty = typeof(Activity).GetProperty("BudgetMHs");
         public string SelectedSummaryColumn
         {
             get => _selectedSummaryColumn;
@@ -53,6 +54,7 @@ namespace VANTAGE.ViewModels
                 if (_selectedSummaryColumn != value)
                 {
                     _selectedSummaryColumn = value;
+                    _cachedSummaryProperty = typeof(Activity).GetProperty(value);
                     OnPropertyChanged(nameof(SelectedSummaryColumn));
 
                     // Save to UserSettings
@@ -84,6 +86,7 @@ namespace VANTAGE.ViewModels
             if (AvailableSummaryColumns.Contains(savedColumn))
             {
                 _selectedSummaryColumn = savedColumn;
+                _cachedSummaryProperty = typeof(Activity).GetProperty(savedColumn);
                 OnPropertyChanged(nameof(SelectedSummaryColumn));
             }
         }
@@ -465,9 +468,8 @@ namespace VANTAGE.ViewModels
                         return;
                     }
 
-                    // Get the selected column property via reflection
-                    var columnName = _selectedSummaryColumn;
-                    var property = typeof(Activity).GetProperty(columnName);
+                    // Use cached PropertyInfo (resolved when column selection changes)
+                    var property = _cachedSummaryProperty;
 
                     double budgeted;
                     double earned;

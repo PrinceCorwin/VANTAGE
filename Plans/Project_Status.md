@@ -1,6 +1,6 @@
 # MILESTONE - Project Status
 
-**Last Updated:** February 1, 2026
+**Last Updated:** February 2, 2026
 
 ## V1 Testing Scope
 
@@ -179,7 +179,7 @@ All V1 sections of `Help/manual.html` are written. Screenshots configured with c
 
 ### Medium Priority
 - **DISCUSS:** Add PlanStart and PlanFinish fields to Activities (for baseline schedule comparison?)
-- Table Summary V2: Settings dialog to choose which columns to summarize and aggregate types (Sum/Avg/Count)
+- ~~Table Summary V2: Settings dialog to choose which columns to summarize and aggregate types (Sum/Avg/Count)~~ Removed grid column summaries (too slow); DIY summary panel sufficient
 - User-editable header template for WP (allow customizing header layout)
 
 ### V2 Data Model

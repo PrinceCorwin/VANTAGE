@@ -4,6 +4,14 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ---
 
+### February 2, 2026
+- **Snapshot timeout fix:** Added `CommandTimeout = 0` (unlimited) to all snapshot SQL commands — insert, delete, and purge in ProgressView, and backup insert in ManageSnapshotsDialog. Matches existing pattern in AdminSnapshotsDialog. Fixes "Execution Timeout Expired" errors on large snapshot submissions.
+- **Remove grid column summaries:** Removed Syncfusion `TableSummaryRow` from Progress grid (too slow on large datasets). Deleted `GridSummaryHelper.cs` and `PRD_TableSummaryRow.md`. DIY summary panel in toolbar provides the same information.
+- **Optimize DIY summary panel:** Cached `PropertyInfo` lookup in ProgressViewModel (resolved once on column change, not per-calculation). Replaced reflection-based record extraction in `UpdateSummaryPanel` with direct `RecordEntry` casting. Added 200ms debounce timer for filter-triggered summary updates; cell edits and initial load remain immediate.
+- **Cache Progress view for instant navigation:** `MainWindow.LoadProgressModule()` now caches the ProgressView instance and reuses it on subsequent navigations instead of recreating the view and reloading all data from SQLite. First load unchanged; every navigation after is instant. Force-reloads on Excel import and Reset Grid Layouts. Added `_dataLoaded` guard in `OnViewLoaded` to prevent redundant data loads.
+
+---
+
 ### February 1, 2026
 - **Remove test menu (v26.1.3):** Removed TEST button and all 7 menu items from MainWindow toolbar (Toggle Admin, Reset LocalDirty, Toggle UpdatedBy, Schedule Diagnostics, Clear Azure Activities, Test Procore Drawings, Test AWS Textract). Removed test-only `ResetAllLocalDirtyAsync` and `SetAllUpdatedByAsync` from ActivityRepository. Kept Procore services and ScheduleDiagnostic as feature/utility code.
 - **Connection error IP display:** Enhanced ConnectionRetryDialog to detect and display user's public IP address when Azure connection fails. Uses api.ipify.org with 5-second timeout. COPY button puts IP on clipboard so user can email admin for firewall whitelisting. Graceful fallback ("Could not detect") when no internet.

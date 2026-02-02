@@ -1,4 +1,5 @@
 ﻿using Microsoft.Data.Sqlite;
+using Syncfusion.Data;
 using Syncfusion.UI.Xaml.Grid;
 using Syncfusion.Windows.Tools.Controls;
 using System.Collections.Generic;
@@ -40,6 +41,9 @@ namespace VANTAGE.Views
         private const string GridPrefsKey = "ProgressGrid.PreferencesJson";
         private const string FrozenColumnsKey = "ProgressGrid.FrozenColumnCount";
         private bool _skipSaveColumnState = false;
+
+        // Debounce timer for summary panel updates during rapid filter changes
+        private DispatcherTimer? _summaryDebounce;
         private ProgressViewModel ViewModel
         {
             get
@@ -211,7 +215,7 @@ namespace VANTAGE.Views
                 await _viewModel.ApplyFilter("MetadataErrors", "IN", errorFilter);
 
                 UpdateRecordCount();
-                UpdateSummaryPanel();
+                DebouncedUpdateSummary();
             }
             catch (Exception ex)
             {
@@ -1335,7 +1339,7 @@ namespace VANTAGE.Views
                 var filteredCount = sfActivities.View.Records.Count;
                 _viewModel.FilteredCount = filteredCount;
                 UpdateRecordCount(); // Ensure UI label updates
-                UpdateSummaryPanel(); // <-- update summary panel on filter change
+                DebouncedUpdateSummary(); // debounced for rapid filter changes
                 UpdateClearFiltersBorder();
             }
         }
@@ -1870,6 +1874,23 @@ namespace VANTAGE.Views
             UpdateSummaryPanel();
         }
 
+        // Debounced wrapper - coalesces rapid filter changes into a single update
+        private void DebouncedUpdateSummary()
+        {
+            if (_summaryDebounce == null)
+            {
+                _summaryDebounce = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(200) };
+                _summaryDebounce.Tick += (s, e) =>
+                {
+                    _summaryDebounce.Stop();
+                    UpdateSummaryPanel();
+                };
+            }
+
+            _summaryDebounce.Stop();
+            _summaryDebounce.Start();
+        }
+
         // Update summary totals based on currently visible (filtered) records
         private async void UpdateSummaryPanel()
         {
@@ -1885,22 +1906,13 @@ namespace VANTAGE.Views
 
             if (hasActiveFilter && sfActivities?.View?.Records != null)
             {
-                // Filter is active - extract filtered activities
+                // Filter is active - extract filtered activities via direct cast
                 recordsToSum = new List<Activity>();
 
                 foreach (var record in sfActivities.View.Records)
                 {
-                    // Syncfusion wraps records in RecordEntry - extract the Data property
-                    var recordType = record.GetType();
-                    var dataProperty = recordType.GetProperty("Data");
-                    if (dataProperty != null)
-                    {
-                        var activity = dataProperty.GetValue(record) as Activity;
-                        if (activity != null)
-                        {
-                            recordsToSum.Add(activity);
-                        }
-                    }
+                    if (record is RecordEntry entry && entry.Data is Activity activity)
+                        recordsToSum.Add(activity);
                 }
             }
             else if (_viewModel?.Activities != null && _viewModel.Activities.Count > 0)
@@ -1923,18 +1935,22 @@ namespace VANTAGE.Views
 
         /// Auto-save when user finishes editing a cell
 
+        private bool _dataLoaded = false;
+
         private async void OnViewLoaded(object sender, RoutedEventArgs e)
         {
+            // Skip reload if data is already in memory (cached view re-navigation)
+            if (_dataLoaded) return;
+
             // Load saved summary column preference before loading data
             _viewModel.LoadSummaryColumnPreference();
-
-            // Configure table summary row at bottom of grid
-            GridSummaryHelper.AddProgressTableSummary(sfActivities);
 
             await _viewModel.LoadInitialDataAsync();
             UpdateRecordCount();
             UpdateSummaryPanel();
             await CalculateMetadataErrorCount();
+
+            _dataLoaded = true;
         }
 
         private static IEnumerable<T> FindVisualChildren<T>(DependencyObject depObj) where T : DependencyObject
@@ -2078,7 +2094,7 @@ namespace VANTAGE.Views
             sfActivities.View.RefreshFilter();
             _viewModel.FilteredCount = sfActivities.View.Records.Count;
             UpdateRecordCount();
-            UpdateSummaryPanel();
+            DebouncedUpdateSummary();
             UpdateClearFiltersBorder();
         }
 
@@ -2631,6 +2647,7 @@ namespace VANTAGE.Views
                             deleteConn.Open();
 
                             var deleteCmd = deleteConn.CreateCommand();
+                            deleteCmd.CommandTimeout = 0;
                             deleteCmd.CommandText = @"
                         DELETE FROM VMS_ProgressSnapshots
                         WHERE AssignedTo = @username
@@ -2708,6 +2725,7 @@ namespace VANTAGE.Views
                             reporter.Report("Creating snapshots...");
 
                             var insertCmd = azureConn.CreateCommand();
+                            insertCmd.CommandTimeout = 0;
                             insertCmd.CommandText = @"
                         INSERT INTO VMS_ProgressSnapshots (
                             UniqueID, WeekEndDate, Area, AssignedTo, AzureUploadUtcDate,
@@ -2759,6 +2777,7 @@ namespace VANTAGE.Views
                             reporter.Report("Cleaning up old snapshots...");
 
                             var purgeCmd = azureConn.CreateCommand();
+                            purgeCmd.CommandTimeout = 0;
                             purgeCmd.CommandText = @"
                                 DELETE FROM VMS_ProgressSnapshots
                                 WHERE WeekEndDate < @cutoffDate";
@@ -3141,7 +3160,7 @@ namespace VANTAGE.Views
             sfActivities.View.RefreshFilter();
             _viewModel.FilteredCount = sfActivities.View.Records.Count;
             UpdateRecordCount();
-            UpdateSummaryPanel();
+            DebouncedUpdateSummary();
             UpdateClearFiltersBorder();
         }
         private void btnFilterInProgress_Click(object sender, RoutedEventArgs e)
@@ -3186,7 +3205,7 @@ namespace VANTAGE.Views
             sfActivities.View.RefreshFilter();
             _viewModel.FilteredCount = sfActivities.View.Records.Count;
             UpdateRecordCount();
-            UpdateSummaryPanel();
+            DebouncedUpdateSummary();
             UpdateClearFiltersBorder();
         }
 
@@ -3224,7 +3243,7 @@ namespace VANTAGE.Views
             sfActivities.View.RefreshFilter();
             _viewModel.FilteredCount = sfActivities.View.Records.Count;
             UpdateRecordCount();
-            UpdateSummaryPanel();
+            DebouncedUpdateSummary();
             UpdateClearFiltersBorder();
         }
 
@@ -3258,7 +3277,7 @@ namespace VANTAGE.Views
             sfActivities.View.RefreshFilter();
             _viewModel.FilteredCount = sfActivities.View.Records.Count;
             UpdateRecordCount();
-            UpdateSummaryPanel();
+            DebouncedUpdateSummary();
             UpdateClearFiltersBorder();
         }
 
@@ -3323,7 +3342,7 @@ namespace VANTAGE.Views
 
             _viewModel.FilteredCount = sfActivities.View.Records.Count;
             UpdateRecordCount();
-            UpdateSummaryPanel();
+            DebouncedUpdateSummary();
             UpdateClearFiltersBorder();
         }
 
@@ -3447,7 +3466,7 @@ namespace VANTAGE.Views
             sfActivities.View.RefreshFilter();
             _viewModel.FilteredCount = sfActivities.View.Records.Count;
             UpdateRecordCount();
-            UpdateSummaryPanel();
+            DebouncedUpdateSummary();
             UpdateClearFiltersBorder();
         }
 
@@ -3488,7 +3507,7 @@ namespace VANTAGE.Views
         {
             await _viewModel.RefreshAsync();
             UpdateRecordCount();
-            UpdateSummaryPanel(); // Update summary panel after refresh
+            DebouncedUpdateSummary();
             await CalculateMetadataErrorCount();
 
         }
@@ -3518,7 +3537,7 @@ namespace VANTAGE.Views
                 sfActivities.View.RefreshFilter();
 
                 UpdateRecordCount();
-                UpdateSummaryPanel();
+                DebouncedUpdateSummary();
                 UpdateClearFiltersBorder();
             }
         }
@@ -3530,7 +3549,7 @@ namespace VANTAGE.Views
         {
             await _viewModel.RefreshAsync();
             UpdateRecordCount();
-            UpdateSummaryPanel();
+            DebouncedUpdateSummary();
         }
 
         // Capture original value when cell edit begins
