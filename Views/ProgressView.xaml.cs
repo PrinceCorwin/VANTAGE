@@ -2293,6 +2293,7 @@ namespace VANTAGE.Views
         }
         private async void BtnSubmit_Click(object sender, RoutedEventArgs e)
         {
+            Dialogs.BusyDialog? busyDialog = null;
             try
             {
                 // Step 1: Check Azure connection with retry option
@@ -2458,6 +2459,10 @@ namespace VANTAGE.Views
                 var selectedWeekEndDate = datePicker.SelectedDate.Value;
                 var weekEndDateStr = selectedWeekEndDate.ToString("yyyy-MM-dd");
 
+                // Show busy indicator immediately so user sees feedback
+                busyDialog = new Dialogs.BusyDialog(Window.GetWindow(this), "Validating...");
+                busyDialog.Show();
+
                 // Check for dates that are after the selected WeekEndDate
                 var futureStartDates = _viewModel.Activities
                     .Where(a => a.AssignedTo == App.CurrentUser?.Username &&
@@ -2475,51 +2480,89 @@ namespace VANTAGE.Views
 
                 if (futureStartDates.Any() || futureFinishDates.Any())
                 {
-                    int totalCount = futureStartDates.Count + futureFinishDates.Count;
-                    string message = $"Cannot submit progress for week ending {selectedWeekEndDate:MM/dd/yyyy}.\n\n";
+                    string message = $"Some records have dates after the selected week ending {selectedWeekEndDate:MM/dd/yyyy}:\n\n";
 
                     if (futureStartDates.Any())
                         message += $"• {futureStartDates.Count} activity(s) have Start dates after the selected week\n";
                     if (futureFinishDates.Any())
                         message += $"• {futureFinishDates.Count} activity(s) have Finish dates after the selected week\n";
 
-                    message += "\nPlease fix these dates before submitting, or select a later week end date.";
+                    message += $"\nWould you like to set these dates to {selectedWeekEndDate:MM/dd/yyyy} and continue?";
 
-                    MessageBox.Show(message, "Invalid Dates", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    return;
+                    busyDialog.Hide();
+                    var dateFixResult = MessageBox.Show(message, "Adjust Dates?",
+                        MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+                    if (dateFixResult != MessageBoxResult.Yes)
+                    {
+                        busyDialog.Close();
+                        return;
+                    }
+
+                    busyDialog.Show();
+                    busyDialog.UpdateStatus("Adjusting dates...");
+
+                    // Update the offending dates to the selected WE date
+                    foreach (var activity in futureStartDates)
+                    {
+                        activity.SchStart = selectedWeekEndDate;
+                        activity.UpdatedBy = App.CurrentUser?.Username ?? "Unknown";
+                        activity.UpdatedUtcDate = DateTime.UtcNow;
+                        activity.LocalDirty = 1;
+                        await ActivityRepository.UpdateActivityInDatabase(activity);
+                    }
+                    foreach (var activity in futureFinishDates)
+                    {
+                        // SchStart may have already been fixed above, only update SchFinish
+                        activity.SchFinish = selectedWeekEndDate;
+                        activity.UpdatedBy = App.CurrentUser?.Username ?? "Unknown";
+                        activity.UpdatedUtcDate = DateTime.UtcNow;
+                        activity.LocalDirty = 1;
+                        await ActivityRepository.UpdateActivityInDatabase(activity);
+                    }
+
+                    AppLogger.Info($"Adjusted {futureStartDates.Count} SchStart and {futureFinishDates.Count} SchFinish dates to {weekEndDateStr}",
+                        "ProgressView.BtnSubmit_Click", App.CurrentUser?.Username);
                 }
                 // Step 5: Check for split SchedActNO ownership
+                busyDialog.UpdateStatus("Checking ownership...");
                 var splitOwnershipIssues = await OwnershipHelper.CheckSplitOwnershipAsync(
                     selectedProject, App.CurrentUser!.Username);
 
                 if (splitOwnershipIssues.Any())
                 {
+                    busyDialog.Hide();
                     var message = OwnershipHelper.BuildSplitOwnershipMessage(splitOwnershipIssues);
                     var result = MessageBox.Show(message, "Split Ownership Detected", MessageBoxButton.YesNo, MessageBoxImage.Warning);
 
                     if (result != MessageBoxResult.Yes)
+                    {
+                        busyDialog.Close();
                         return;
+                    }
 
-                    var reassignDialog = new Dialogs.BusyDialog(Window.GetWindow(this), "Reassigning records...");
-                    reassignDialog.Show();
+                    busyDialog.UpdateStatus("Reassigning records...");
+                    busyDialog.Show();
 
                     try
                     {
-                        var reassignProgress = new Progress<string>(status => reassignDialog.UpdateStatus(status));
+                        var reassignProgress = new Progress<string>(status => busyDialog.UpdateStatus(status));
                         var totalReassigned = await OwnershipHelper.ResolveSplitOwnershipAsync(
                             selectedProject, App.CurrentUser!.Username, splitOwnershipIssues, reassignProgress);
 
-                        reassignDialog.Close();
+                        busyDialog.Hide();
 
                         MessageBox.Show(
                             $"Reassigned {totalReassigned} records to their respective owners.\n\nContinuing with submit...",
                             "Records Reassigned",
                             MessageBoxButton.OK,
                             MessageBoxImage.Information);
+
+                        busyDialog.Show();
                     }
                     catch (Exception ex)
                     {
-                        reassignDialog.Close();
+                        busyDialog.Close();
                         AppLogger.Error(ex, "ProgressView.BtnSubmit_Click.Reassign");
                         MessageBox.Show($"Error reassigning records: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                         return;
@@ -2527,6 +2570,7 @@ namespace VANTAGE.Views
                 }
 
                 // Step 6: Check for existing snapshots on Azure
+                busyDialog.UpdateStatus("Checking for existing snapshots...");
                 var existingExportedBy = await Task.Run(() =>
                 {
                     using var azureConn = AzureDbManager.GetConnection();
@@ -2554,6 +2598,7 @@ namespace VANTAGE.Views
 
                     if (!exportedByUser.Equals(App.CurrentUser!.Username, StringComparison.OrdinalIgnoreCase))
                     {
+                        busyDialog.Close();
                         MessageBox.Show(
                             $"Progress for week ending {weekEndDateStr} has already been exported by {exportedByUser}.\n\n" +
                             "You cannot overwrite snapshots exported by another user.",
@@ -2563,6 +2608,7 @@ namespace VANTAGE.Views
                         return;
                     }
 
+                    busyDialog.Hide();
                     var overwriteResult = MessageBox.Show(
                         $"You already exported progress for week ending {weekEndDateStr}.\n\n" +
                         "Do you want to overwrite with current progress?\n\n" +
@@ -2572,8 +2618,12 @@ namespace VANTAGE.Views
                         MessageBoxImage.Warning);
 
                     if (overwriteResult != MessageBoxResult.Yes)
+                    {
+                        busyDialog.Close();
                         return;
+                    }
 
+                    busyDialog.Show();
                     needsDelete = true;
                 }
                 else
@@ -2599,6 +2649,7 @@ namespace VANTAGE.Views
 
                     if (existingCount > 0)
                     {
+                        busyDialog.Hide();
                         var overwriteResult = MessageBox.Show(
                             $"You already have {existingCount} snapshots for week ending {weekEndDateStr}.\n\n" +
                             "Do you want to overwrite them with current progress?",
@@ -2607,20 +2658,23 @@ namespace VANTAGE.Views
                             MessageBoxImage.Question);
 
                         if (overwriteResult != MessageBoxResult.Yes)
+                        {
+                            busyDialog.Close();
                             return;
+                        }
 
+                        busyDialog.Show();
                         needsDelete = true;
                     }
                 }
 
-                // Step 7: Show busy dialog - user is committed
-                var busyDialog = new Dialogs.BusyDialog(Window.GetWindow(this), "Starting...");
-                busyDialog.Show();
-
+                // Step 7: Continue with submission
+                busyDialog.UpdateStatus("Starting...");
                 var progress = new Progress<string>(status => busyDialog.UpdateStatus(status));
                 var currentUser = App.CurrentUser!.Username;
                 var progDateStr = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
                 var ownerWindow = Window.GetWindow(this);
+                var stopwatch = System.Diagnostics.Stopwatch.StartNew();
 
                 try
                 {
@@ -2628,15 +2682,31 @@ namespace VANTAGE.Views
                     {
                         var reporter = (IProgress<string>)progress;
 
-                        // Step 8: Force sync to ensure Azure has latest local changes
-                        reporter.Report("Syncing data...");
-                        var pushResult = await SyncManager.PushRecordsAsync(new List<string> { selectedProject });
-                        if (!string.IsNullOrEmpty(pushResult.ErrorMessage))
-                            return (false, $"Sync failed during push:\n\n{pushResult.ErrorMessage}", 0, 0);
+                        // Step 8: Check for unsaved local changes
+                        reporter.Report("Checking for unsaved changes...");
+                        int dirtyCount = 0;
+                        using (var localConn = DatabaseSetup.GetConnection())
+                        {
+                            localConn.Open();
+                            var dirtyCmd = localConn.CreateCommand();
+                            dirtyCmd.CommandText = @"
+                                SELECT COUNT(*) FROM Activities
+                                WHERE AssignedTo = @username
+                                  AND ProjectID = @projectId
+                                  AND LocalDirty = 1";
+                            dirtyCmd.Parameters.AddWithValue("@username", currentUser);
+                            dirtyCmd.Parameters.AddWithValue("@projectId", selectedProject);
+                            dirtyCount = Convert.ToInt32(dirtyCmd.ExecuteScalar() ?? 0);
+                        }
 
-                        var pullResult = await SyncManager.PullRecordsAsync(new List<string> { selectedProject });
-                        if (!string.IsNullOrEmpty(pullResult.ErrorMessage))
-                            return (false, $"Sync failed during pull:\n\n{pullResult.ErrorMessage}", 0, 0);
+                        if (dirtyCount > 0)
+                        {
+                            // Push unsaved changes so the snapshot captures them
+                            reporter.Report($"Pushing {dirtyCount:N0} unsaved changes...");
+                            var pushResult = await SyncManager.PushRecordsAsync(new List<string> { selectedProject });
+                            if (!string.IsNullOrEmpty(pushResult.ErrorMessage))
+                                return (false, $"Sync failed during push:\n\n{pushResult.ErrorMessage}", 0, 0);
+                        }
 
                         // Step 9: Delete existing snapshots if needed
                         if (needsDelete)
@@ -2724,9 +2794,18 @@ namespace VANTAGE.Views
                             // Step 11: Copy Activities from Azure to ProgressSnapshots (skip existing)
                             reporter.Report("Creating snapshots...");
 
+                            // Only use NOT EXISTS when other users have snapshots for our records
+                            string notExistsClause = skipped > 0
+                                ? @"AND NOT EXISTS (
+                              SELECT 1 FROM VMS_ProgressSnapshots ps
+                              WHERE ps.UniqueID = a.UniqueID
+                                AND ps.WeekEndDate = @weekEndDate
+                          )"
+                                : "";
+
                             var insertCmd = azureConn.CreateCommand();
                             insertCmd.CommandTimeout = 0;
-                            insertCmd.CommandText = @"
+                            insertCmd.CommandText = $@"
                         INSERT INTO VMS_ProgressSnapshots (
                             UniqueID, WeekEndDate, Area, AssignedTo, AzureUploadUtcDate,
                             Aux1, Aux2, Aux3, BaseUnit, BudgetHoursGroup, BudgetHoursROC, BudgetMHs,
@@ -2760,11 +2839,7 @@ namespace VANTAGE.Views
                         WHERE AssignedTo = @username
                           AND ProjectID = @projectId
                           AND IsDeleted = 0
-                          AND NOT EXISTS (
-                              SELECT 1 FROM VMS_ProgressSnapshots ps
-                              WHERE ps.UniqueID = a.UniqueID
-                                AND ps.WeekEndDate = @weekEndDate
-                          )";
+                          {notExistsClause}";
                             insertCmd.Parameters.AddWithValue("@weekEndDate", weekEndDateStr);
                             insertCmd.Parameters.AddWithValue("@username", currentUser);
                             insertCmd.Parameters.AddWithValue("@projectId", selectedProject);
@@ -2811,10 +2886,6 @@ namespace VANTAGE.Views
                                 updateLocalCmd.ExecuteNonQuery();
                             }
 
-                            // Step 13: Push WeekEndDate changes to Azure
-                            reporter.Report("Syncing changes...");
-                            await SyncManager.PushRecordsAsync(new List<string> { selectedProject });
-
                             return (true, string.Empty, snapshots, skipped);
                         }
                     });
@@ -2835,23 +2906,13 @@ namespace VANTAGE.Views
 
                     busyDialog.Close();
 
+                    stopwatch.Stop();
+                    var msg = $"Successfully submitted {snapshotCount:N0} activities for week ending {weekEndDateStr}.";
+                    msg += $"\n\nElapsed: {stopwatch.Elapsed.TotalSeconds:F1} seconds";
                     if (skippedCount > 0)
-                    {
-                        MessageBox.Show(
-                            $"Submitted {snapshotCount} activities for week ending {weekEndDateStr}.\n\n" +
-                            $"{skippedCount} records were skipped because they were already submitted by another user.",
-                            "Progress Submitted",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Information);
-                    }
-                    else
-                    {
-                        MessageBox.Show(
-                            $"Successfully submitted {snapshotCount} activities for week ending {weekEndDateStr}.",
-                            "Progress Submitted",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Information);
-                    }
+                        msg += $"\n\n{skippedCount:N0} records were skipped because they were already submitted by another user.";
+
+                    MessageBox.Show(msg, "Progress Submitted", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 catch
                 {
@@ -2861,6 +2922,7 @@ namespace VANTAGE.Views
             }
             catch (Exception ex)
             {
+                busyDialog?.Close();
                 AppLogger.Error(ex, "ProgressView.BtnSubmit_Click", App.CurrentUser?.Username);
 
                 string userMessage;

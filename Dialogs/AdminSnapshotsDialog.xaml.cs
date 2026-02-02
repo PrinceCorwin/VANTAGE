@@ -42,6 +42,7 @@ namespace VANTAGE.Dialogs
                     azureConn.Open();
 
                     var cmd = azureConn.CreateCommand();
+                    cmd.CommandTimeout = 120;
                     cmd.CommandText = @"
                         SELECT AssignedTo, ProjectID, WeekEndDate, COUNT(*) as SnapshotCount
                         FROM VMS_ProgressSnapshots
@@ -78,6 +79,7 @@ namespace VANTAGE.Dialogs
                     var uploadedSet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                     using (var uploadCmd = azureConn.CreateCommand())
                     {
+                        uploadCmd.CommandTimeout = 120;
                         uploadCmd.CommandText = @"
                             SELECT DISTINCT Username, ProjectID, WeekEndDate
                             FROM VMS_ProgressLogUploads";
@@ -564,6 +566,7 @@ namespace VANTAGE.Dialogs
                     foreach (var group in selectedGroups)
                     {
                         var cmd = azureConn.CreateCommand();
+                        cmd.CommandTimeout = 0;
                         cmd.CommandText = @"
                             DELETE FROM VMS_ProgressSnapshots
                             WHERE AssignedTo = @username
@@ -638,6 +641,7 @@ namespace VANTAGE.Dialogs
                     azureConn.Open();
 
                     var cmd = azureConn.CreateCommand();
+                    cmd.CommandTimeout = 0;
                     cmd.CommandText = "DELETE FROM VMS_ProgressSnapshots";
                     return cmd.ExecuteNonQuery();
                 });

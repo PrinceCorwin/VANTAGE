@@ -289,5 +289,7 @@ All V1 sections of `Help/manual.html` are written. Screenshots configured with c
 - My Records Only sync (toggle on/off, full re-pull on disable)
 - Work Package PDF generation and preview
 - Manage Snapshots: delete multiple weeks, revert to single week with/without backup
+- Manage Snapshots: grouping by ProjectID + WeekEndDate + ProgDate, delete spinner
 - Schedule Change Log: log detail grid edits, view/apply to Activities, duplicate handling
 - Activity Import: auto-detects Legacy/Milestone format, date/percent cleanup, strict percent conversion
+- Snapshot save: immediate spinner, date auto-fix, conditional NOT EXISTS, sync optimization, elapsed timer

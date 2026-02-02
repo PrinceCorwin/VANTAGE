@@ -5,6 +5,14 @@ This document tracks completed features and fixes. Items are moved here from Pro
 ---
 
 ### February 2, 2026
+- **Snapshot save — immediate spinner:** Moved BusyDialog creation to right after WE date selection (before Azure validation queries). Shows status updates through each phase: "Validating...", "Checking ownership...", "Checking for existing snapshots...". Hides/shows around MessageBox prompts.
+- **Snapshot save — date auto-fix:** Changed future date validation from hard block to Yes/No dialog offering to set offending SchStart/SchFinish dates to the selected WE date. Fixes Monday import → Sunday snapshot scenario.
+- **Snapshot save — conditional NOT EXISTS:** Optimized INSERT query to only include NOT EXISTS subquery when other users have conflicting snapshots (`skipped > 0`). Eliminates per-row existence check for the common case.
+- **Snapshot save — sync optimization:** Replaced unconditional push+pull with LocalDirty count check — only pushes if dirty records exist. Removed post-snapshot pull and final push (LocalDirty=1 will sync on next regular push).
+- **Snapshot save — elapsed timer:** Added Stopwatch showing total elapsed seconds in completion message. Simplified completion message with N0 number formatting.
+- **Snapshot timeout fixes:** Added `CommandTimeout = 120` to load queries in AdminSnapshotsDialog and ManageSnapshotsDialog. Added `CommandTimeout = 0` (unlimited) to all delete commands in both dialogs.
+- **ManageSnapshotsDialog — group by project/date/submission:** Changed snapshot grouping from WeekEndDate-only to ProjectID + WeekEndDate + ProgDate. Display shows "ProjectID | WE date | Submitted datetime". Delete and revert operations filter by all three fields. Widened dialog from 500×450 to 600×500.
+- **ManageSnapshotsDialog — delete spinner:** Added BusyDialog to delete operation showing "Deleting snapshots..." while Azure DELETE executes.
 - **Snapshot timeout fix:** Added `CommandTimeout = 0` (unlimited) to all snapshot SQL commands — insert, delete, and purge in ProgressView, and backup insert in ManageSnapshotsDialog. Matches existing pattern in AdminSnapshotsDialog. Fixes "Execution Timeout Expired" errors on large snapshot submissions.
 - **Remove grid column summaries:** Removed Syncfusion `TableSummaryRow` from Progress grid (too slow on large datasets). Deleted `GridSummaryHelper.cs` and `PRD_TableSummaryRow.md`. DIY summary panel in toolbar provides the same information.
 - **Optimize DIY summary panel:** Cached `PropertyInfo` lookup in ProgressViewModel (resolved once on column change, not per-calculation). Replaced reflection-based record extraction in `UpdateSummaryPanel` with direct `RecordEntry` casting. Added 200ms debounce timer for filter-triggered summary updates; cell edits and initial load remain immediate.

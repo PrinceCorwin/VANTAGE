@@ -56,26 +56,31 @@ namespace VANTAGE.Dialogs
                     azureConn.Open();
 
                     var cmd = azureConn.CreateCommand();
+                    cmd.CommandTimeout = 120;
                     cmd.CommandText = @"
-                        SELECT WeekEndDate, COUNT(*) as SnapshotCount
+                        SELECT ProjectID, WeekEndDate, ProgDate, COUNT(*) as SnapshotCount
                         FROM VMS_ProgressSnapshots
                         WHERE AssignedTo = @username
-                        GROUP BY WeekEndDate
-                        ORDER BY WeekEndDate DESC";
+                        GROUP BY ProjectID, WeekEndDate, ProgDate
+                        ORDER BY ProgDate DESC, ProjectID";
                     cmd.Parameters.AddWithValue("@username", App.CurrentUser!.Username);
 
                     using var reader = cmd.ExecuteReader();
                     while (reader.Read())
                     {
-                        string weekEndDateStr = reader.GetString(0);
-                        int count = reader.GetInt32(1);
+                        string projectId = reader.IsDBNull(0) ? "(Unknown)" : reader.GetString(0);
+                        string weekEndDateStr = reader.IsDBNull(1) ? "" : reader.GetString(1);
+                        string progDate = reader.IsDBNull(2) ? "" : reader.GetString(2);
+                        int count = reader.GetInt32(3);
 
                         if (DateTime.TryParse(weekEndDateStr, out DateTime weekEndDate))
                         {
                             var item = new SnapshotWeekItem
                             {
+                                ProjectID = projectId,
                                 WeekEndDate = weekEndDate,
                                 WeekEndDateStr = weekEndDateStr,
+                                ProgDate = progDate,
                                 SnapshotCount = count
                             };
                             item.PropertyChanged += WeekItem_PropertyChanged;
@@ -124,7 +129,7 @@ namespace VANTAGE.Dialogs
             int weekCount = selectedWeeks.Count;
             int snapshotCount = selectedWeeks.Sum(w => w.SnapshotCount);
 
-            txtSelectionSummary.Text = $"{weekCount} week(s) selected ({snapshotCount:N0} snapshots)";
+            txtSelectionSummary.Text = $"{weekCount} group(s) selected ({snapshotCount:N0} snapshots)";
             btnDelete.IsEnabled = weekCount > 0;    // 1 or more weeks selected
             btnRevert.IsEnabled = weekCount == 1;   // exactly 1 week selected
         }
@@ -141,7 +146,7 @@ namespace VANTAGE.Dialogs
             }
 
             int totalSnapshots = selectedWeeks.Sum(w => w.SnapshotCount);
-            string weekList = string.Join("\n", selectedWeeks.Select(w => $"  - {w.WeekEndDateDisplay} ({w.SnapshotCount} snapshots)"));
+            string weekList = string.Join("\n", selectedWeeks.Select(w => $"  - {w.DisplayText} ({w.SnapshotCount:N0} records)"));
 
             var confirmResult = MessageBox.Show(
                 $"Are you sure you want to delete {totalSnapshots} snapshot(s) from the following weeks?\n\n{weekList}\n\nThis action cannot be undone.",
@@ -156,6 +161,9 @@ namespace VANTAGE.Dialogs
             btnRevert.IsEnabled = false;
             btnCancel.IsEnabled = false;
 
+            var busyDialog = new BusyDialog(this, "Deleting snapshots...");
+            busyDialog.Show();
+
             try
             {
                 int deletedTotal = await System.Threading.Tasks.Task.Run(() =>
@@ -168,18 +176,25 @@ namespace VANTAGE.Dialogs
                     foreach (var week in selectedWeeks)
                     {
                         var cmd = azureConn.CreateCommand();
+                        cmd.CommandTimeout = 0;
                         cmd.CommandText = @"
                             DELETE FROM VMS_ProgressSnapshots
                             WHERE AssignedTo = @username
-                              AND WeekEndDate = @weekEndDate";
+                              AND ProjectID = @projectId
+                              AND WeekEndDate = @weekEndDate
+                              AND ProgDate = @progDate";
                         cmd.Parameters.AddWithValue("@username", App.CurrentUser!.Username);
+                        cmd.Parameters.AddWithValue("@projectId", week.ProjectID);
                         cmd.Parameters.AddWithValue("@weekEndDate", week.WeekEndDateStr);
+                        cmd.Parameters.AddWithValue("@progDate", week.ProgDate);
 
                         deleted += cmd.ExecuteNonQuery();
                     }
 
                     return deleted;
                 });
+
+                busyDialog.Close();
 
                 AppLogger.Info(
                     $"Deleted {deletedTotal} snapshots from {selectedWeeks.Count} week(s)",
@@ -197,6 +212,7 @@ namespace VANTAGE.Dialogs
             }
             catch (Exception ex)
             {
+                busyDialog.Close();
                 AppLogger.Error(ex, "ManageSnapshotsDialog.BtnDelete_Click");
                 MessageBox.Show($"Error deleting snapshots:\n{ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
@@ -288,7 +304,7 @@ namespace VANTAGE.Dialogs
 
                 // Execute revert
                 busyDialog.UpdateStatus("Loading snapshot data...");
-                var revertResult = await ExecuteRevertAsync(selectedWeek.WeekEndDateStr, currentUser,
+                var revertResult = await ExecuteRevertAsync(selectedWeek, currentUser,
                     status => Dispatcher.Invoke(() => busyDialog.UpdateStatus(status)));
 
                 if (!revertResult.Success)
@@ -550,7 +566,7 @@ namespace VANTAGE.Dialogs
         }
 
         // Executes the revert operation
-        private async Task<RevertResult> ExecuteRevertAsync(string weekEndDate, string username, Action<string> updateStatus)
+        private async Task<RevertResult> ExecuteRevertAsync(SnapshotWeekItem selectedWeek, string username, Action<string> updateStatus)
         {
             var result = new RevertResult();
 
@@ -558,7 +574,7 @@ namespace VANTAGE.Dialogs
             {
                 // Load snapshot records from Azure
                 updateStatus("Loading snapshot records from Azure...");
-                var snapshots = await LoadSnapshotsFromAzureAsync(weekEndDate, username);
+                var snapshots = await LoadSnapshotsFromAzureAsync(selectedWeek, username);
 
                 if (snapshots.Count == 0)
                 {
@@ -613,7 +629,7 @@ namespace VANTAGE.Dialogs
                 result.Success = true;
 
                 AppLogger.Info(
-                    $"Reverted to snapshot {weekEndDate}: {restored} restored, {result.SkippedRecords.Count} skipped",
+                    $"Reverted to snapshot {selectedWeek.ProjectID}/{selectedWeek.WeekEndDateStr}: {restored} restored, {result.SkippedRecords.Count} skipped",
                     "ManageSnapshotsDialog.ExecuteRevertAsync", username);
             }
             catch (Exception ex)
@@ -626,7 +642,7 @@ namespace VANTAGE.Dialogs
         }
 
         // Loads snapshot data from Azure
-        private async Task<List<SnapshotData>> LoadSnapshotsFromAzureAsync(string weekEndDate, string username)
+        private async Task<List<SnapshotData>> LoadSnapshotsFromAzureAsync(SnapshotWeekItem selectedWeek, string username)
         {
             return await Task.Run(() =>
             {
@@ -636,6 +652,7 @@ namespace VANTAGE.Dialogs
                 azureConn.Open();
 
                 var cmd = azureConn.CreateCommand();
+                cmd.CommandTimeout = 120;
                 cmd.CommandText = @"
                     SELECT
                         UniqueID, Area, AzureUploadUtcDate,
@@ -653,9 +670,13 @@ namespace VANTAGE.Dialogs
                         UOM, WorkPackage, XRay
                     FROM VMS_ProgressSnapshots
                     WHERE AssignedTo = @username
-                      AND WeekEndDate = @weekEndDate";
+                      AND ProjectID = @projectId
+                      AND WeekEndDate = @weekEndDate
+                      AND ProgDate = @progDate";
                 cmd.Parameters.AddWithValue("@username", username);
-                cmd.Parameters.AddWithValue("@weekEndDate", weekEndDate);
+                cmd.Parameters.AddWithValue("@projectId", selectedWeek.ProjectID);
+                cmd.Parameters.AddWithValue("@weekEndDate", selectedWeek.WeekEndDateStr);
+                cmd.Parameters.AddWithValue("@progDate", selectedWeek.ProgDate);
 
                 using var reader = cmd.ExecuteReader();
                 while (reader.Read())
@@ -1203,11 +1224,13 @@ namespace VANTAGE.Dialogs
 
     #endregion
 
-    // Model for week selection
+    // Model for snapshot group selection
     public class SnapshotWeekItem : INotifyPropertyChanged
     {
+        public string ProjectID { get; set; } = string.Empty;
         public DateTime WeekEndDate { get; set; }
         public string WeekEndDateStr { get; set; } = string.Empty;
+        public string ProgDate { get; set; } = string.Empty;
         public int SnapshotCount { get; set; }
 
         private bool _isSelected;
@@ -1224,8 +1247,17 @@ namespace VANTAGE.Dialogs
             }
         }
 
-        public string WeekEndDateDisplay => $"Week ending {WeekEndDate:MM/dd/yyyy}";
-        public string SnapshotCountDisplay => $"({SnapshotCount} snapshots)";
+        public string DisplayText
+        {
+            get
+            {
+                string submitted = DateTime.TryParse(ProgDate, out var dt)
+                    ? dt.ToString("MM/dd/yyyy h:mm tt")
+                    : ProgDate;
+                return $"{ProjectID}  |  WE {WeekEndDate:MM/dd/yyyy}  |  Submitted {submitted}";
+            }
+        }
+        public string SnapshotCountDisplay => $"({SnapshotCount:N0} records)";
 
         public event PropertyChangedEventHandler? PropertyChanged;
         protected void OnPropertyChanged(string? propertyName = null)
