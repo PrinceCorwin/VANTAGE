@@ -4,6 +4,10 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ---
 
+### February 2, 2026 (Session 3)
+- **Fix Schedule save only persisting filtered rows:** `btnSave_Click` and `SaveChangesAsync` were passing `_viewModel.MasterRows` (filtered collection) to `SaveAllScheduleRowsAsync`. When any toggle filter was active (Required Fields, Missed Start, etc.), only visible rows were saved — edits to MissedFinishReason, ThreeWeekStart, ThreeWeekFinish on non-visible rows were lost on restart. Changed both save paths to use `_viewModel.GetAllMasterRows()` (unfiltered list). Also updated empty-check guards to use the unfiltered list so saving isn't blocked when a filter shows zero rows.
+- **Add P6_% and %_Mismatch columns to 3WLA Excel report:** Added P6_% column (from `P6_PercentComplete`) to the right of MS_% and %_Mismatch column (True/False, red highlight when True) to the right of P6_%. Mismatch threshold is >0.5 difference. Both new columns use the same `#FCD5B4` light orange header fill as MS_%. All subsequent column indices shifted by +2 (20→22 columns) across master rows, P6 Not In MS rows, and MS Not In P6 rows.
+
 ### February 2, 2026 (Session 2)
 - **ManageProgressLogDialog — remove RespParty granularity:** Rolled up upload batches from per-RespParty rows to per-(Username, ProjectID, WeekEndDate, UploadUtcDate) groups. Query now uses GROUP BY with SUM(RecordCount). Delete removes all RespParty records for a batch at once instead of individually. Removed RespParty column from dialog grid, UploadID and RespParty from model class. Rationale: snapshots are always created as a unit across all RespParty values, so there's no use case for deleting only one RespParty's records.
 - **Summit Constructors → Summit Industrial:** Renamed company name in About dialog (MainWindow.xaml.cs), CLAUDE.md, and plan docs. Historical changelog entries in Completed_Work.md left as-is.

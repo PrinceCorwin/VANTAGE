@@ -48,10 +48,10 @@ namespace VANTAGE.Utilities
             var sheet = workbook.Worksheets.Add("3WLA");
             var redFill = XLColor.FromHtml("#FFC7CE");
 
-            // Headers (20 columns)
+            // Headers (22 columns)
             var headers = new[]
             {
-            "SchedActNO", "NotInP6", "NotInMS", "Description", "MS_%",
+            "SchedActNO", "NotInP6", "NotInMS", "Description", "MS_%", "P6_%", "%_Mismatch",
             "MS_ActualStart", "MS_ActualFinish", "P6_ActualStart", "P6_ActualFinish", "Actual_Mismatch",
             "MS_BudgetMHs", "P6_BudgetMHs", "MH_Mismatch",
             "P6_Start", "P6_Finish", "ThreeWeekStart", "ThreeWeekFinish",
@@ -66,16 +66,17 @@ namespace VANTAGE.Utilities
 
             // Apply header colors by group
             sheet.Range(1, 1, 1, 3).Style.Fill.BackgroundColor = XLColor.FromHtml("#D9D9D9");   // Identity/Flags
-            sheet.Range(1, 4, 1, 5).Style.Fill.BackgroundColor = XLColor.FromHtml("#FCD5B4");   // Basic Info
-            sheet.Range(1, 6, 1, 10).Style.Fill.BackgroundColor = XLColor.FromHtml("#BDD7EE");  // Actuals
-            sheet.Range(1, 11, 1, 13).Style.Fill.BackgroundColor = XLColor.FromHtml("#C6EFCE"); // MHs
-            sheet.Range(1, 14, 1, 20).Style.Fill.BackgroundColor = XLColor.FromHtml("#FFEB9C"); // 3WLA/Planning
+            sheet.Range(1, 4, 1, 7).Style.Fill.BackgroundColor = XLColor.FromHtml("#FCD5B4");   // Basic Info + Percent
+            sheet.Range(1, 8, 1, 12).Style.Fill.BackgroundColor = XLColor.FromHtml("#BDD7EE");  // Actuals
+            sheet.Range(1, 13, 1, 15).Style.Fill.BackgroundColor = XLColor.FromHtml("#C6EFCE"); // MHs
+            sheet.Range(1, 16, 1, 22).Style.Fill.BackgroundColor = XLColor.FromHtml("#FFEB9C"); // 3WLA/Planning
 
             int row = 2;
 
             // 1. Write masterRows (InMS = 1)
             foreach (var masterRow in masterRows.OrderBy(r => r.SchedActNO))
             {
+                bool pctMismatch = HasPercentMismatch(masterRow);
                 bool actualMismatch = HasActualMismatch(masterRow);
                 bool mhMismatch = HasMHMismatch(masterRow);
                 bool changed = IsDateChanged(masterRow.ThreeWeekStart, masterRow.P6_Start) ||
@@ -86,26 +87,29 @@ namespace VANTAGE.Utilities
                 sheet.Cell(row, 3).Value = "False";
                 sheet.Cell(row, 4).Value = masterRow.Description ?? string.Empty;
                 sheet.Cell(row, 5).Value = masterRow.MS_PercentComplete;
-                sheet.Cell(row, 6).Value = FormatDate(masterRow.MS_ActualStart);
-                sheet.Cell(row, 7).Value = FormatDate(masterRow.MS_ActualFinish);
-                sheet.Cell(row, 8).Value = FormatDate(masterRow.P6_ActualStart);
-                sheet.Cell(row, 9).Value = FormatDate(masterRow.P6_ActualFinish);
-                sheet.Cell(row, 10).Value = actualMismatch ? "True" : "False";
-                sheet.Cell(row, 11).Value = Math.Round(masterRow.MS_BudgetMHs, 2);
-                sheet.Cell(row, 12).Value = Math.Round(masterRow.P6_BudgetMHs, 2);
-                sheet.Cell(row, 13).Value = mhMismatch ? "True" : "False";
-                sheet.Cell(row, 14).Value = FormatDate(masterRow.P6_Start);
-                sheet.Cell(row, 15).Value = FormatDate(masterRow.P6_Finish);
-                sheet.Cell(row, 16).Value = FormatDate(masterRow.ThreeWeekStart);
-                sheet.Cell(row, 17).Value = FormatDate(masterRow.ThreeWeekFinish);
-                sheet.Cell(row, 18).Value = masterRow.MissedStartReason ?? string.Empty;
-                sheet.Cell(row, 19).Value = masterRow.MissedFinishReason ?? string.Empty;
-                sheet.Cell(row, 20).Value = changed ? "True" : "False";
+                sheet.Cell(row, 6).Value = masterRow.P6_PercentComplete;
+                sheet.Cell(row, 7).Value = pctMismatch ? "True" : "False";
+                sheet.Cell(row, 8).Value = FormatDate(masterRow.MS_ActualStart);
+                sheet.Cell(row, 9).Value = FormatDate(masterRow.MS_ActualFinish);
+                sheet.Cell(row, 10).Value = FormatDate(masterRow.P6_ActualStart);
+                sheet.Cell(row, 11).Value = FormatDate(masterRow.P6_ActualFinish);
+                sheet.Cell(row, 12).Value = actualMismatch ? "True" : "False";
+                sheet.Cell(row, 13).Value = Math.Round(masterRow.MS_BudgetMHs, 2);
+                sheet.Cell(row, 14).Value = Math.Round(masterRow.P6_BudgetMHs, 2);
+                sheet.Cell(row, 15).Value = mhMismatch ? "True" : "False";
+                sheet.Cell(row, 16).Value = FormatDate(masterRow.P6_Start);
+                sheet.Cell(row, 17).Value = FormatDate(masterRow.P6_Finish);
+                sheet.Cell(row, 18).Value = FormatDate(masterRow.ThreeWeekStart);
+                sheet.Cell(row, 19).Value = FormatDate(masterRow.ThreeWeekFinish);
+                sheet.Cell(row, 20).Value = masterRow.MissedStartReason ?? string.Empty;
+                sheet.Cell(row, 21).Value = masterRow.MissedFinishReason ?? string.Empty;
+                sheet.Cell(row, 22).Value = changed ? "True" : "False";
 
                 // Apply red fill only where True
-                if (actualMismatch) sheet.Cell(row, 10).Style.Fill.BackgroundColor = redFill;
-                if (mhMismatch) sheet.Cell(row, 13).Style.Fill.BackgroundColor = redFill;
-                if (changed) sheet.Cell(row, 20).Style.Fill.BackgroundColor = redFill;
+                if (pctMismatch) sheet.Cell(row, 7).Style.Fill.BackgroundColor = redFill;
+                if (actualMismatch) sheet.Cell(row, 12).Style.Fill.BackgroundColor = redFill;
+                if (mhMismatch) sheet.Cell(row, 15).Style.Fill.BackgroundColor = redFill;
+                if (changed) sheet.Cell(row, 22).Style.Fill.BackgroundColor = redFill;
 
                 row++;
             }
@@ -118,9 +122,10 @@ namespace VANTAGE.Utilities
                 sheet.Cell(row, 3).Value = "True";
                 sheet.Cell(row, 3).Style.Fill.BackgroundColor = redFill;
                 sheet.Cell(row, 4).Value = p6Row.Description;
-                sheet.Cell(row, 10).Value = "False";
-                sheet.Cell(row, 13).Value = "False";
-                sheet.Cell(row, 20).Value = "False";
+                sheet.Cell(row, 7).Value = "False";
+                sheet.Cell(row, 12).Value = "False";
+                sheet.Cell(row, 15).Value = "False";
+                sheet.Cell(row, 22).Value = "False";
 
                 row++;
             }
@@ -132,9 +137,10 @@ namespace VANTAGE.Utilities
                 sheet.Cell(row, 2).Value = "True";
                 sheet.Cell(row, 2).Style.Fill.BackgroundColor = redFill;
                 sheet.Cell(row, 3).Value = "False";
-                sheet.Cell(row, 10).Value = "False";
-                sheet.Cell(row, 13).Value = "False";
-                sheet.Cell(row, 20).Value = "False";
+                sheet.Cell(row, 7).Value = "False";
+                sheet.Cell(row, 12).Value = "False";
+                sheet.Cell(row, 15).Value = "False";
+                sheet.Cell(row, 22).Value = "False";
 
                 row++;
             }
@@ -182,6 +188,11 @@ namespace VANTAGE.Utilities
 
             return startMismatch || finishMismatch;
         }
+        private static bool HasPercentMismatch(ScheduleMasterRow row)
+        {
+            return Math.Abs(row.MS_PercentComplete - row.P6_PercentComplete) > 0.5;
+        }
+
         private static bool HasMHMismatch(ScheduleMasterRow row)
         {
             return Math.Abs(row.MS_BudgetMHs - row.P6_BudgetMHs) > 0.01;

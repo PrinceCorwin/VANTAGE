@@ -645,7 +645,8 @@ namespace VANTAGE.Views
         {
             try
             {
-                if (_viewModel.MasterRows == null || _viewModel.MasterRows.Count == 0)
+                var allRows = _viewModel.GetAllMasterRows();
+                if (allRows == null || allRows.Count == 0)
                 {
                     MessageBox.Show("No data to save.", "Save", MessageBoxButton.OK, MessageBoxImage.Information);
                     return;
@@ -655,7 +656,7 @@ namespace VANTAGE.Views
                 txtStatus.Text = "Saving...";
 
                 string username = App.CurrentUser?.Username ?? "Unknown";
-                int savedCount = await ScheduleRepository.SaveAllScheduleRowsAsync(_viewModel.MasterRows, username);
+                int savedCount = await ScheduleRepository.SaveAllScheduleRowsAsync(_viewModel.GetAllMasterRows(), username);
 
                 txtStatus.Text = $"Saved {savedCount} rows";
                 AppLogger.Info($"Saved {savedCount} schedule rows", "ScheduleView.btnSave_Click", username);
@@ -711,14 +712,15 @@ namespace VANTAGE.Views
         {
             try
             {
-                if (_viewModel.MasterRows == null || _viewModel.MasterRows.Count == 0)
+                var allRows = _viewModel.GetAllMasterRows();
+                if (allRows == null || allRows.Count == 0)
                     return;
 
                 btnSave.IsEnabled = false;
                 txtStatus.Text = "Saving...";
 
                 string username = App.CurrentUser?.Username ?? "Unknown";
-                int savedCount = await ScheduleRepository.SaveAllScheduleRowsAsync(_viewModel.MasterRows, username);
+                int savedCount = await ScheduleRepository.SaveAllScheduleRowsAsync(_viewModel.GetAllMasterRows(), username);
 
                 txtStatus.Text = $"Saved {savedCount} rows";
                 AppLogger.Info($"Saved {savedCount} schedule rows", "ScheduleView.SaveChanges", username);
