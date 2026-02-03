@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.1.5",
-  "releaseDate": "2026-02-02T19:43:56Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.5/VANTAGE-26.1.5.zip",
-  "zipSizeBytes": 149025906,
-  "sha256": "EE80C8B13A2DAEC418E4A6C6690DAE269CF17CD1B92588A35188A4E842F546CA",
-  "releaseNotes": "Fix Required Fields count not updating after past 3WLA date rejection"
+  "currentVersion": "26.1.6",
+  "releaseDate": "2026-02-03T11:28:05Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.6/VANTAGE-26.1.6.zip",
+  "zipSizeBytes": 149030723,
+  "sha256": "EE010EF5C8256875D9C7AEF49F397F355972C504288D0E82E13176E63D715670",
+  "releaseNotes": "P6 import: flexible column header matching"
 }
