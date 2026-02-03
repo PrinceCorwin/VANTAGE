@@ -218,12 +218,13 @@ namespace VANTAGE.Views
                                     "If the activity started or finished before this date, edit the detail activities below to set actual start/finish dates.",
                                     "Invalid Date", MessageBoxButton.OK, MessageBoxImage.Warning);
 
-                                // Revert to null
+                                // Revert to null and update required fields count
                                 if (columnName == "ThreeWeekStart")
                                     row.ThreeWeekStart = null;
                                 else
                                     row.ThreeWeekFinish = null;
 
+                                _viewModel.UpdateRequiredFieldsCount();
                                 return;
                             }
                         }

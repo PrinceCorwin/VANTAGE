@@ -4,6 +4,9 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ---
 
+### February 2, 2026 (Session 4)
+- **Fix Required Fields count not updating after past 3WLA date rejection:** When a 3WLA date was rejected (earlier than WeekEndDate) and reverted to null, the Required Fields badge didn't update to reflect the newly blank field. Added `UpdateRequiredFieldsCount()` call after reverting the date.
+
 ### February 2, 2026 (Session 3)
 - **Fix Schedule save only persisting filtered rows:** `btnSave_Click` and `SaveChangesAsync` were passing `_viewModel.MasterRows` (filtered collection) to `SaveAllScheduleRowsAsync`. When any toggle filter was active (Required Fields, Missed Start, etc.), only visible rows were saved — edits to MissedFinishReason, ThreeWeekStart, ThreeWeekFinish on non-visible rows were lost on restart. Changed both save paths to use `_viewModel.GetAllMasterRows()` (unfiltered list). Also updated empty-check guards to use the unfiltered list so saving isn't blocked when a filter shows zero rows.
 - **Add P6_% and %_Mismatch columns to 3WLA Excel report:** Added P6_% column (from `P6_PercentComplete`) to the right of MS_% and %_Mismatch column (True/False, red highlight when True) to the right of P6_%. Mismatch threshold is >0.5 difference. Both new columns use the same `#FCD5B4` light orange header fill as MS_%. All subsequent column indices shifted by +2 (20→22 columns) across master rows, P6 Not In MS rows, and MS Not In P6 rows.
