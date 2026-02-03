@@ -1,74 +1,101 @@
-# VANTAGE: MILESTONE
+# VANTAGE: Milestone
 
-VANTAGE: MILESTONE is a comprehensive construction project management and progress tracking application built with WPF (Windows Presentation Foundation) and .NET 8. Designed for field engineers and project managers in industrial construction (pharmaceutical, microchip, data center facilities), MILESTONE provides powerful tools for tracking construction activities, managing schedules with P6 Primavera integration, generating work package documents, and enabling multi-user collaboration. The application features a modern Syncfusion FluentDark interface, bidirectional cloud synchronization, and is architected for upcoming AI-powered analytics.
+Construction progress tracking and project management application built with WPF and .NET 8. Designed for field engineers and project managers in industrial construction (pharmaceutical, microchip, data center facilities). Replaces the legacy MS Access/VBA system (OldVantage) used by Summit Industrial.
+
+VANTAGE: Milestone provides activity tracking, P6 Primavera schedule integration, AI-powered progress scanning, PDF work package generation, and multi-user cloud synchronization.
 
 ---
 
-## ✨ Current Features
+## Current Features
 
-### 📊 Progress Tracking Module
-- Real-time activity monitoring with Syncfusion SfDataGrid (90+ columns, 200k+ record virtualization)
+### Progress Tracking Module
+- Activity monitoring with Syncfusion SfDataGrid (90+ columns, 200k+ record virtualization)
 - Earned value management with automatic calculations (EarnMHs, PercentComplete, EarnedQty)
 - Bidirectional updates between percent complete and earned quantities
-- Advanced filtering: user-defined multi-condition filters (AND/OR logic), saved filter presets
+- User-defined multi-condition filters (AND/OR logic) with saved presets
 - Multiple named grid layouts (save up to 5, apply/rename/delete, reset to defaults)
-- Excel import/export with legacy OldVantage compatibility
+- Find & Replace with batch database writes
+- Excel import/export with OldVantage compatibility
 - Prorate BudgetMHs across filtered activities with proportional distribution
-- Activity assignment with email notifications
-- "Today" filter for three-week lookahead activities
+- Activity assignment with email notifications via Azure Communication Services
+- DIY summary panel with weighted progress calculations
 
-### 📅 Schedule Module
-- **P6 Primavera Integration:** Import/export schedules, bidirectional sync
-- **Discrepancy Detection:** Filter by Actual Start, Actual Finish, MHs, or % Complete variances
-- **MS Rollups:** Automatic MIN(start), MAX(finish), weighted % average calculations
-- **Three-Week Lookahead (3WLA):** Forecasting and schedule tracking
-- **Visual Variance Highlighting:** Yellow highlighting when P6 progress exceeds MILESTONE
-- Master/detail grid layout with Clear Filters functionality
-- Missed reason tracking for schedule accountability
+### Schedule Module
+- **P6 Primavera Integration:** Import current schedule dates, export 3WLA updates
+- **Discrepancy Detection:** Filter by Actual Start, Actual Finish, MHs, or % Complete variances between P6 and VANTAGE: Milestone
+- **MS Rollups:** Automatic MIN(start), MAX(finish), weighted % average from detail ProgressSnapshots
+- **Three-Week Lookahead (3WLA):** Forecast dates for activities starting/finishing within 21 days
+- **3WLA Excel Report:** Export with mismatch highlighting (Actuals, MHs, % Complete, date changes)
+- **Required Fields Tracking:** Count and filter for missing MissedReasons and 3WLA dates
+- **Visual Variance Highlighting:** Red/yellow conditional formatting for missed deadlines and variances
+- Master/detail grid layout with editable detail ProgressSnapshots
+- Schedule Change Log for tracking detail grid edits
 
-### 📦 Work Package Module *(In Development)*
-- PDF generation for construction work packages (replaces legacy MS Access VBA system)
-- Four template types: Cover (image), List (TOC), Form (checklist), Grid (empty rows)
+### Progress Books
+- Custom PDF report generation from ProgressSnapshot data
+- Layout builder with separate grouping (up to 10 levels) and sorting (up to 10 levels)
+- Auto-fit column widths, description wrapping, project description in header
+- Exclude completed activities option
+- Live preview during configuration
+
+### AI Progress Scan
+- AWS Textract-based table extraction from scanned progress sheets
+- 100% accuracy on both PDF and JPEG scans
+- Simplified scan layout: ID first, single % ENTRY column at far right
+- Image preprocessing with adjustable contrast (slider, default 1.2)
+- OCR heuristic: "00" auto-converts to "100" for missed leading digits
+- Results grid with filtering, Select All/Select Ready/Clear buttons
+
+### Work Package Module
+- PDF generation for construction work packages
+- Five template types: Cover (image), List (TOC), Form (checklist/signoff), Grid (punchlist), Drawings
 - Token-based dynamic content binding ({WorkPackage}, {ProjectName}, {PrintedDate}, etc.)
 - Customizable templates with clone-to-edit workflow
 - Built-in templates: Cover Sheet, TOC, Checklist, Punchlist, Signoff Sheet, DWG Log
-- Syncfusion PDF rendering with multi-form merge into single package
+- Multi-form merge into single PDF package
 - Live PDF preview panel
+- Drawings deferred to post-V1 (per-WP location architecture needs design)
 
-### 🔄 Synchronization System
+### Synchronization
 - **Hybrid Architecture:** Local SQLite for offline work + Azure SQL Server as central authority
-- **SyncVersion-Based Tracking:** Reliable multi-user sync without clock drift issues
-- **Conflict Resolution:** Ownership-based editing, Azure always wins on conflicts
-- **Performance:** 5k records sync in ~6 seconds
+- **SyncVersion-Based Tracking:** Monotonic integers, no clock drift issues
+- **Conflict Resolution:** Ownership-based editing, Azure always wins
+- **Performance:** 5k records sync in ~6 seconds via SqlBulkCopy
 - Soft delete propagation with restore capability
+- My Records Only mode (toggle on/off, full re-pull on disable)
 
-### 👥 User Management & Administration
+### Administration
 - Windows authentication integration
 - Role-based access control with admin privileges (Azure Admins table)
-- User-specific settings and personalized grid layouts
-- Admin tools: Manage users, projects, snapshots, deleted records
+- Manage Users, Projects, Snapshots, Deleted Records dialogs
+- Snapshot management: delete multiple weeks, revert with/without backup, grouped by Project + WeekEnd + Submission
 - Feedback Board with Ideas/Bug Reports and admin moderation
+- Activity Import with auto-detection of Legacy/Milestone format
 
-### 🎨 Modern User Interface
-- Syncfusion FluentDark themed interface
-- Responsive toolbar-based module navigation
-- Context-aware tooltips throughout all views and dialogs
-- Real-time status bar with user info and system status
-- Chromeless window design
+### Help Sidebar
+- Integrated help panel accessible via F1 or Settings menu
+- WebView2 rendering with virtual host mapping
+- 8 sections: Getting Started, Main Interface, Progress, Schedule, Progress Books, Work Packages, Administration, Reference
+- 20 screenshots with context-specific navigation
 
-### 🛠️ Tools & Utilities
+### Multi-Theme System
+- Three themes: Dark (default), Light, Orchid
+- Applied on restart via ThemeManager
+- Syncfusion SfSkinManager integration across all 22+ dialogs/views
+- Architecture supports adding new themes (role-based resource naming)
+
+### Tools & Utilities
 - Export logs with optional email attachment
 - Export/Import UserSettings for PC migration
-- Clear Local Activities / Clear Local Schedule tools
+- Clear Local Activities / Clear Local Schedule
 - Cell copy/paste (Ctrl+C/Ctrl+V) in grids
+- Auto-update mechanism with branded installer
 
 ---
 
-## 🚀 Planned Features
+## Planned Features
 
-### 🤖 AI Integration *(High Priority)*
-Five AI-powered features planned using Anthropic Claude API:
-
+### AI Features (Post-V1)
 | Feature | Purpose |
 |---------|---------|
 | **AI Error Assistant** | Translate technical errors into plain English with suggested fixes |
@@ -76,142 +103,103 @@ Five AI-powered features planned using Anthropic Claude API:
 | **Metadata Consistency Analysis** | Flag outliers, suggest corrections, ensure data quality |
 | **AI MissedReason Assistant** | Standardize missed reason entries with category suggestions |
 | **AI Schedule Analysis** | Flag relationship violations, sequence errors, progress anomalies |
+| **AI Sidebar Chat** | Conversational interface with tool-based data access |
 
-*Expected daily cost at full usage: $0.20-0.50/day*
-
-### 🏗️ Procore Integration *(Pending)*
+### Procore Integration (Post-V1)
 - OAuth 2.0 authentication with token management
-- Fetch construction drawings for DWG Log forms
+- Fetch construction drawings for Work Package DWG Log
 - Production and sandbox environment support
 
-### 📈 Analysis & Reporting *(Future)*
-- Interactive dashboards with real-time visualization
-- Earned Value Analysis (EVA) with SPI/CPI metrics
-- Progress S-curves and trend analysis
-- Resource utilization and productivity metrics
-- Export visualizations to PDF and image formats
-
-### 📱 Enhanced Collaboration *(Future Consideration)*
-- Potential Blazor migration for cloud-first architecture
-- Mobile capabilities for field updates
-- Real-time collaborative editing
+### Dashboard Module (Post-V1)
+- Column/stacked charts for activity completion trends
+- S-curve for planned vs actual progress
+- Pie/doughnut charts for distribution by WorkPackage, PhaseCode, RespParty
+- Radial gauge for overall project % complete
 
 ---
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 | Component | Technology |
 |-----------|------------|
 | **Framework** | .NET 8.0 (Windows) |
-| **UI** | WPF with Syncfusion 31.2.12 (FluentDark theme) |
+| **UI** | WPF with Syncfusion 31.2.12 |
+| **Themes** | FluentDark, FluentLight (Dark, Light, Orchid) |
 | **Local Database** | SQLite |
-| **Cloud Database** | Azure SQL Server (mile-wip-server-stecor / MILESTONE-WIP-DB) |
-| **Architecture** | MVVM pattern with async/await |
-| **Data Export** | ClosedXML for Excel, Syncfusion.Pdf for PDF generation |
-| **Cloud Services** | Azure SQL, planned Azure Blob for PDF archival |
-| **AI Services** | Anthropic Claude API *(planned)* |
+| **Cloud Database** | Azure SQL Server |
+| **Architecture** | MVVM with async/await |
+| **Excel** | ClosedXML |
+| **PDF** | Syncfusion.Pdf |
+| **AI/OCR** | AWS Textract |
+| **Email** | Azure Communication Services |
+| **Help** | WebView2 |
 
 ---
 
-## 📋 Requirements
+## Requirements
 
 - Windows 10/11
 - .NET 8.0 Runtime
 - Visual Studio 2022 (for development)
 - Syncfusion License (community or commercial)
 - Azure SQL Server access (for multi-user sync)
+- AWS credentials (for AI Progress Scan)
 
 ---
 
-## 🚦 Getting Started
+## Getting Started
 
 1. Clone the repository
-2. Open `MILESTONE.sln` in Visual Studio 2022
+2. Open `VANTAGE.sln` in Visual Studio 2022
 3. Restore NuGet packages
-4. Configure Azure connection string in `AzureDbManager.cs`
-5. Build and run the solution
+4. Configure `Credentials.cs` (gitignored) with Azure and AWS connection strings
+5. Build and run
 6. On first run, the application will:
    - Check Azure connectivity
    - Initialize the local SQLite database
-   - Validate user authorization against Users table
-   - Set up user profile with Windows authentication
+   - Mirror reference tables from Azure (Users, Projects, ColumnMappings)
+   - Validate user authorization via Windows authentication
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ```
-MILESTONE/
-├── Models/              # Data models (Activity, User, Project, Templates)
-├── Views/               # XAML views and code-behind
-├── ViewModels/          # MVVM view models
-├── Data/                # Repositories and data access
+VANTAGE/
+├── Data/                 # Repositories and database access
 │   ├── ActivityRepository.cs
 │   ├── ScheduleRepository.cs
 │   ├── TemplateRepository.cs
 │   └── AzureDbManager.cs
-├── Services/            # Business logic services
-│   ├── SyncManager.cs
-│   ├── TokenResolver.cs
-│   └── WorkPackageGenerator.cs
-├── Utilities/           # Helper classes
-│   ├── AppLogger.cs
-│   ├── ColumnMapper.cs
-│   ├── FilterBuilder.cs
-│   └── UserHelper.cs
-├── Controls/            # Custom WPF controls
-├── Themes/              # Syncfusion FluentDark theme resources
-├── PDF/                 # PDF renderers (Cover, List, Form, Grid)
-└── Plans/               # Development documentation
+├── Dialogs/              # Modal dialogs (20+)
+├── Help/                 # manual.html + screenshots
+├── Models/               # Data models
+├── Plans/                # Development documentation
+├── Services/
+│   ├── AI/              # TextractService, ProgressScanService
+│   ├── ProgressBook/    # Progress Book PDF generation
+│   └── PdfRenderers/    # Work Package PDF renderers
+├── Themes/              # DarkTheme.xaml, LightTheme.xaml, OrchidTheme.xaml
+├── Utilities/           # Helpers, exporters, importers
+├── ViewModels/          # MVVM view models
+├── Views/               # Main module views
+├── VANTAGE.Installer/   # Branded installer
+└── VANTAGE.Updater/     # Auto-update mechanism
 ```
 
 ---
 
-## 🎯 Key Modules
+## Module Status
 
-| Module | Status | Description |
-|--------|--------|-------------|
-| **PROGRESS** | ✅ Ready for Testing | Activity tracking, earned value, Excel import/export |
-| **SCHEDULE** | ✅ Ready for Testing | P6 integration, 3WLA, discrepancy detection |
-| **SYNC** | ✅ Complete | Bidirectional Azure synchronization |
-| **ADMIN** | ✅ Complete | User, project, snapshot management |
-| **WORK PKGS** | 🔄 In Development | PDF work package generation |
-| **AI** | 📋 Planned | Claude API integration for analytics |
-
----
-
-## ⚡ Performance Targets
-
-| Metric | Target |
-|--------|--------|
-| Sync 5k records | ~6 seconds |
-| Grid virtualization | 200k+ records |
-| MS rollup calculation | <3 seconds for 200 activities |
-
----
-
-## 📝 Development Notes
-
-- **One change at a time:** Test before proceeding
-- **No quick fixes:** Proper architectural solutions preferred
-- **Nullable reference types:** Enabled throughout project
-- **Logging:** AppLogger with Info/Error/Warning levels
-- **Local database:** Can be deleted and re-synced from Azure at any time
-
----
-
-## 📜 License
-
-*License information to be added*
-
----
-
-## 👥 Contributing
-
-*Contribution guidelines to be added*
-
----
-
-## 📧 Contact
-
-*Contact information to be added*
+| Module | Status | Notes |
+|--------|--------|-------|
+| **Progress** | Ready for Testing | Core features complete |
+| **Schedule** | Ready for Testing | P6 import/export, 3WLA, discrepancies |
+| **Sync** | Complete | Bidirectional Azure sync |
+| **Admin** | Complete | Users, projects, snapshots, feedback |
+| **Work Packages** | Ready for Testing | PDF generation; drawings deferred |
+| **Progress Books** | Ready for Testing | Custom PDF reports with layout builder |
+| **AI Progress Scan** | Complete | AWS Textract, 100% accuracy |
+| **Help Sidebar** | Complete | 8-section manual with screenshots |
+| **Themes** | Complete | Dark, Light, Orchid |
+| **Installer/Updater** | Complete | Auto-update validated |

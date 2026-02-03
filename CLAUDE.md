@@ -1,6 +1,12 @@
-# MILESTONE - Construction Progress Tracking
+# VANTAGE: Milestone - Construction Progress Tracking
 
-WPF application for Summit Industrial replacing legacy MS Access system. Tracks construction activities (welding, bolt-ups, steel erection) for industrial projects. Integrates with P6 Primavera for schedule import/export.
+WPF application for Summit Industrial replacing the legacy MS Access system ("OldVantage"). Tracks construction activities (welding, bolt-ups, steel erection) for industrial projects. Integrates with P6 Primavera for schedule import/export.
+
+## Naming Conventions
+- **Official name:** VANTAGE: Milestone (use this in UI, docs, README)
+- **Casual references:** Vantage, VMS, newVantage — all refer to this application
+- **Legacy system:** OldVantage — the predecessor MS Access/VBA application
+- Do NOT refer to the app as just "Milestone" or "MILESTONE" in new code, UI text, or documentation
 
 **See also:** `Project_Status.md` (todos, backlog), `Completed_Work.md` (changelog), `Milestone_Project_plan.md` (architecture), `Schedule_Module_plan.md` (schedule module details), `WorkPackage_Module_Plan.md` (work package module)
 

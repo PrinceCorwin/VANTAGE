@@ -204,6 +204,31 @@ namespace VANTAGE.Views
                 if (columnName == "MissedStartReason" || columnName == "MissedFinishReason" ||
                     columnName == "ThreeWeekStart" || columnName == "ThreeWeekFinish")
                 {
+                    // Block 3WLA dates earlier than the week ending date
+                    if (columnName == "ThreeWeekStart" || columnName == "ThreeWeekFinish")
+                    {
+                        var row = sfScheduleMaster.CurrentItem as ScheduleMasterRow;
+                        if (row != null)
+                        {
+                            DateTime? dateValue = columnName == "ThreeWeekStart" ? row.ThreeWeekStart : row.ThreeWeekFinish;
+                            if (dateValue.HasValue && dateValue.Value.Date < row.WeekEndDate.Date)
+                            {
+                                MessageBox.Show(
+                                    $"3WLA dates cannot be earlier than the week ending date ({row.WeekEndDate:M/d/yyyy}).\n\n" +
+                                    "If the activity started or finished before this date, edit the detail activities below to set actual start/finish dates.",
+                                    "Invalid Date", MessageBoxButton.OK, MessageBoxImage.Warning);
+
+                                // Revert to null
+                                if (columnName == "ThreeWeekStart")
+                                    row.ThreeWeekStart = null;
+                                else
+                                    row.ThreeWeekFinish = null;
+
+                                return;
+                            }
+                        }
+                    }
+
                     _viewModel.HasUnsavedChanges = true;
                     _viewModel.UpdateRequiredFieldsCount();
                 }
