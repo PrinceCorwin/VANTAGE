@@ -293,3 +293,4 @@ All V1 sections of `Help/manual.html` are written. Screenshots configured with c
 - Schedule Change Log: log detail grid edits, view/apply to Activities, duplicate handling
 - Activity Import: auto-detects Legacy/Milestone format, date/percent cleanup, strict percent conversion
 - Snapshot save: immediate spinner, date auto-fix, conditional NOT EXISTS, sync optimization, elapsed timer
+- GitHub 2FA enabled — verified push access still works
