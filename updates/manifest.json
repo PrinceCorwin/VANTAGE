@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.1.3",
-  "releaseDate": "2026-02-01T19:03:58Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.3/VANTAGE-26.1.3.zip",
-  "zipSizeBytes": 149022302,
-  "sha256": "4751438912CDFAE4673705504DDB023069FA155570693B5BEB753D0AC043050A",
-  "releaseNotes": "Remove test menu"
+  "currentVersion": "26.1.4",
+  "releaseDate": "2026-02-02T19:26:37Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.4/VANTAGE-26.1.4.zip",
+  "zipSizeBytes": 149025905,
+  "sha256": "470180BED38D6C89A95F7D20B64F9423EB3EA99B2BE58210C37FF52C43BBF6DB",
+  "releaseNotes": "3WLA report improvements, schedule save fix, past date validation"
 }
