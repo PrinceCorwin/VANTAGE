@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.1.4",
-  "releaseDate": "2026-02-02T19:26:37Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.4/VANTAGE-26.1.4.zip",
-  "zipSizeBytes": 149025905,
-  "sha256": "470180BED38D6C89A95F7D20B64F9423EB3EA99B2BE58210C37FF52C43BBF6DB",
-  "releaseNotes": "3WLA report improvements, schedule save fix, past date validation"
+  "currentVersion": "26.1.5",
+  "releaseDate": "2026-02-02T19:43:56Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.5/VANTAGE-26.1.5.zip",
+  "zipSizeBytes": 149025906,
+  "sha256": "EE80C8B13A2DAEC418E4A6C6690DAE269CF17CD1B92588A35188A4E842F546CA",
+  "releaseNotes": "Fix Required Fields count not updating after past 3WLA date rejection"
 }
