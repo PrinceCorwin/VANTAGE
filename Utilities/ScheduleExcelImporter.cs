@@ -15,19 +15,37 @@ namespace VANTAGE.Utilities
     // Data starts at row 3
     public static class ScheduleExcelImporter
     {
-        // P6 column names to MILESTONE field mapping
-        private static readonly Dictionary<string, string> P6ColumnMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        // Primary headers (row 1) - technical field names that vary by P6 configuration
+        private static readonly Dictionary<string, string> PrimaryHeaderMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             { "task_code", "SchedActNO" },
             { "wbs_id", "WbsId" },
             { "task_name", "Description" },
             { "start_date", "P6_Start" },
+            { "target_start_date", "P6_Start" },
             { "end_date", "P6_Finish" },
+            { "target_end_date", "P6_Finish" },
             { "act_start_date", "P6_ActualStart" },
             { "act_end_date", "P6_ActualFinish" },
             { "complete_pct", "P6_PercentComplete" },
             { "target_work_qty", "P6_BudgetMHs" },
-            { "status_code", "StatusCode" } // Read but not stored
+            { "status_code", "StatusCode" }
+        };
+
+        // Secondary headers (row 2) - display names, more consistent across P6 exports
+        // Normalized by stripping (*) prefix and unit suffixes like (h), (%), (d)
+        private static readonly Dictionary<string, string> SecondaryHeaderMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "Activity ID", "SchedActNO" },
+            { "WBS Code", "WbsId" },
+            { "Activity Name", "Description" },
+            { "Start", "P6_Start" },
+            { "Finish", "P6_Finish" },
+            { "Actual Start", "P6_ActualStart" },
+            { "Actual Finish", "P6_ActualFinish" },
+            { "Activity % Complete", "P6_PercentComplete" },
+            { "Budgeted Labor Units", "P6_BudgetMHs" },
+            { "Activity Status", "StatusCode" }
         };
 
         // Import P6 schedule file
@@ -67,9 +85,8 @@ namespace VANTAGE.Utilities
 
                         progress?.Report("Analyzing P6 structure...");
 
-                        // Row 1 = field names, Row 2 = descriptions, Data starts Row 3
-                        var headerRow = worksheet.Row(1);
-                        var columnMap = BuildP6ColumnMap(headerRow);
+                        // Try secondary headers (row 2) first, fall back to primary (row 1)
+                        var columnMap = BuildP6ColumnMap(worksheet);
 
                         progress?.Report("Reading P6 data...");
                         var scheduleRows = ReadScheduleFromP6(worksheet, columnMap, weekEndDate);
@@ -95,32 +112,64 @@ namespace VANTAGE.Utilities
             });
         }
 
-        // Build column mapping from P6 header row (row 1)
-        private static Dictionary<int, string> BuildP6ColumnMap(IXLRow headerRow)
+        // Build column mapping - try secondary headers (row 2) first, fall back to primary (row 1)
+        private static Dictionary<int, string> BuildP6ColumnMap(IXLWorksheet worksheet)
+        {
+            var primaryRow = worksheet.Row(1);
+            var secondaryRow = worksheet.Row(2);
+            int lastCol = primaryRow.LastCellUsed()?.Address.ColumnNumber ?? 0;
+
+            // Try secondary headers first (more consistent across P6 exports)
+            var columnMap = MapFromRow(secondaryRow, lastCol, SecondaryHeaderMap, normalizeHeader: true);
+
+            // Fall back to primary headers if secondary didn't find enough
+            if (columnMap.Count < 9)
+                columnMap = MapFromRow(primaryRow, lastCol, PrimaryHeaderMap, normalizeHeader: false);
+
+            if (columnMap.Count < 9)
+                throw new InvalidOperationException($"P6 file is missing required columns. Found {columnMap.Count} of 10 expected columns.");
+
+            return columnMap;
+        }
+
+        // Map columns from a header row using the provided lookup dictionary
+        private static Dictionary<int, string> MapFromRow(
+            IXLRow row,
+            int lastCol,
+            Dictionary<string, string> headerMap,
+            bool normalizeHeader)
         {
             var columnMap = new Dictionary<int, string>();
 
-            for (int colNum = 1; colNum <= headerRow.LastCellUsed()?.Address.ColumnNumber; colNum++)
+            for (int colNum = 1; colNum <= lastCol; colNum++)
             {
-                var cell = headerRow.Cell(colNum);
-                string p6ColumnName = cell.GetString().Trim();
-
-                if (string.IsNullOrEmpty(p6ColumnName))
+                string headerText = row.Cell(colNum).GetString().Trim();
+                if (string.IsNullOrEmpty(headerText))
                     continue;
 
-                // Check if this P6 column is one we care about
-                if (P6ColumnMap.TryGetValue(p6ColumnName, out string? milestoneField))
-                {
-                    columnMap[colNum] = milestoneField;
-                }
-            }
+                if (normalizeHeader)
+                    headerText = NormalizeSecondaryHeader(headerText);
 
-            if (columnMap.Count < 9) // We need at least 9 columns (status_code is optional)
-            {
-                throw new InvalidOperationException($"P6 file is missing required columns. Found {columnMap.Count} of 10 expected columns.");
+                if (headerMap.TryGetValue(headerText, out string? fieldName))
+                    columnMap[colNum] = fieldName;
             }
 
             return columnMap;
+        }
+
+        // Strip (*) prefix and unit/format suffixes from secondary headers
+        // Example: "(*)Budgeted Labor Units(h)" -> "Budgeted Labor Units"
+        private static string NormalizeSecondaryHeader(string header)
+        {
+            if (header.StartsWith("(*)"))
+                header = header.Substring(3);
+
+            // Remove trailing parenthetical suffixes like (h), (%), (d)
+            int parenIndex = header.LastIndexOf('(');
+            if (parenIndex > 0 && header.EndsWith(")"))
+                header = header.Substring(0, parenIndex);
+
+            return header.Trim();
         }
 
         // Read schedule data from P6 worksheet (data starts row 3)
