@@ -233,6 +233,28 @@
                                  VerticalAlignment="Bottom"
                                  Background="Transparent"/>
                     </Grid>
+                    <Grid>
+                        <syncfusion:ButtonAdv x:Name="btnAnalysis"
+                                             Label="ANALYSIS"
+                                             Padding="15,0"
+                                             Margin="5,0"
+                                             Background="Transparent"
+                                             Foreground="{StaticResource ToolbarForeground}"
+                                             BorderThickness="0"
+                                             IconTemplate="{x:Null}"
+                                             SmallIcon="{x:Null}"
+                                             LargeIcon="{x:Null}"
+                                             FontSize="12"
+                                             FontWeight="Bold"
+                                             Click="BtnAnalysis_Click"
+                                             ToolTip="View project analytics and dashboards"/>
+                        <Border x:Name="AnalysisBorder"
+                                 Width="100"
+                                 Height="3"
+                                 HorizontalAlignment="Stretch"
+                                 VerticalAlignment="Bottom"
+                                 Background="Transparent"/>
+                    </Grid>
                 </StackPanel>
                 
                 <!-- COLUMN 3: WINDOW CONTROLS (RIGHT) -->

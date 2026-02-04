@@ -267,6 +267,9 @@ namespace VANTAGE
             WorkPackageBorder.Background = System.Windows.Media.Brushes.Transparent;
             btnWorkPackage.Foreground = (System.Windows.Media.Brush)FindResource("ToolbarForeground");
 
+            AnalysisBorder.Background = System.Windows.Media.Brushes.Transparent;
+            btnAnalysis.Foreground = (System.Windows.Media.Brush)FindResource("ToolbarForeground");
+
             // Highlight active button
             if (activeButton == btnProgress)
             {
@@ -287,6 +290,11 @@ namespace VANTAGE
             {
                 WorkPackageBorder.Background = (System.Windows.Media.Brush)FindResource("AccentColor");
                 btnWorkPackage.Foreground = (System.Windows.Media.Brush)FindResource("AccentColor");
+            }
+            else if (activeButton == btnAnalysis)
+            {
+                AnalysisBorder.Background = (System.Windows.Media.Brush)FindResource("AccentColor");
+                btnAnalysis.Foreground = (System.Windows.Media.Brush)FindResource("AccentColor");
             }
         }
 
@@ -351,6 +359,24 @@ namespace VANTAGE
             ContentArea.Content = null;
             var workPackageView = new Views.WorkPackageView();
             ContentArea.Content = workPackageView;
+        }
+
+        private void BtnAnalysis_Click(object sender, RoutedEventArgs e)
+        {
+            // Already on Analysis? No need to check
+            if (ContentArea.Content is Views.AnalysisView)
+            {
+                HighlightNavigationButton(btnAnalysis);
+                return;
+            }
+
+            if (!CanLeaveCurrentView())
+                return;
+
+            HighlightNavigationButton(btnAnalysis);
+            ContentArea.Content = null;
+            var analysisView = new Views.AnalysisView();
+            ContentArea.Content = analysisView;
         }
 
         private void BtnCreate_Click(object sender, RoutedEventArgs e)

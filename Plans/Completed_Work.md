@@ -5,6 +5,14 @@ This document tracks completed features and fixes. Items are moved here from Pro
 ---
 
 ### February 4, 2026
+- **ANALYSIS module — initial implementation:** Added new ANALYSIS nav button to the right of WORK PKGS with 4×2 resizable grid layout using GridSplitters. Section (2,2) contains an aggregated metrics grid with:
+  - Group By dropdown: priority fields (AssignedTo, CompType, DwgNO, PhaseCategory, PhaseCode, PjtSystem, SchedActNO, Service, SubArea, WorkPackage) first, then all other text fields alphabetically
+  - Current User / All Users radio buttons
+  - Projects multi-select dropdown (from local Activities data)
+  - SfDataGrid with columns: GroupValue (dynamic header), BudgetMHs, EarnedMHs, Quantity, QtyEarned, % Complete
+  - Conditional cell coloring on % Complete: red (0-25%), orange (>25-50%), yellow (>50-75%), green (>75-100%) using theme-aware color resources (AnalysisRedBg/OrangeBg/YellowBg/GreenBg)
+  - Grid columns are sortable, filterable, resizable, and reorderable
+  - All settings persist to UserSettings: group field, user filter, selected projects, GridSplitter positions
 - **Remove Toggle Legacy I/O Menu setting:** Removed the settings menu button that toggled visibility of Legacy Export items. Legacy Export Activities and Legacy Export Template menu items are now always visible in the File menu. Cleaned up associated code from MainWindow, SettingsManager, and help manual.
 - **Rename LocalDirty filter button to "Unsynced":** Changed the filter button text from "LocalDirty" (internal field name) to "Unsynced" (user-friendly). Updated help manual filter table and AI Progress Scan workflow documentation.
 - **Other users' records text color — disabled grey:** Changed `NotOwnedRowForeground` color in Light and Orchid themes from bluish/purple (#4A6D8C, #7B5FA0) to standard disabled grey (#888888). Makes other users' read-only records more visually distinct from editable records.

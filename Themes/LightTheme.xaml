@@ -78,6 +78,12 @@
     <SolidColorBrush x:Key="ErrorText" Color="#FFE74C3C"/>
     <SolidColorBrush x:Key="WarningText" Color="#FFD4A017"/>
     <SolidColorBrush x:Key="WarningHighlight" Color="#FFFF6B6B"/>
+
+    <!-- === ANALYSIS MODULE COLORS (% Complete ranges) === -->
+    <SolidColorBrush x:Key="AnalysisRedBg" Color="#FFDC3545"/>       <!-- 0-25% -->
+    <SolidColorBrush x:Key="AnalysisOrangeBg" Color="#FFFD7E14"/>    <!-- >25-50% -->
+    <SolidColorBrush x:Key="AnalysisYellowBg" Color="#FFFFC107"/>    <!-- >50-75% -->
+    <SolidColorBrush x:Key="AnalysisGreenBg" Color="#FF28A745"/>     <!-- >75-100% -->
     <SolidColorBrush x:Key="WarningHighlightBackground" Color="#44FF6B6B"/>
 
     <!-- === UI ELEMENT COLORS === -->

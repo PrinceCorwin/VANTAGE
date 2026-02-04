@@ -31,6 +31,7 @@
 |--------|--------|-------|
 | Progress | READY FOR TESTING | Core features complete |
 | Schedule | READY FOR TESTING | Core features complete |
+| Analysis | IN PROGRESS | Initial 4×2 grid layout with summary metrics in section (2,2) |
 | Sync | COMPLETE | Bidirectional sync working |
 | Admin | COMPLETE | User/project/snapshot management |
 | Work Package | READY FOR TESTING | PDF generation working; Drawings deferred to post-v1 |

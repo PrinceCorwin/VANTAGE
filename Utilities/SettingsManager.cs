@@ -443,5 +443,51 @@ namespace VANTAGE.Utilities
                 AppLogger.Error(ex, "SettingsManager.ClearAllGridLayouts");
             }
         }
+
+        // === ANALYSIS VIEW SETTINGS ===
+
+        // Group By field selection (default: PhaseCode)
+        public static string GetAnalysisGroupField()
+        {
+            return GetUserSetting("AnalysisGroupField", "PhaseCode");
+        }
+
+        public static void SetAnalysisGroupField(string field)
+        {
+            SetUserSetting("AnalysisGroupField", field, "string");
+        }
+
+        // Current User Only toggle (default: true)
+        public static bool GetAnalysisCurrentUserOnly()
+        {
+            return GetUserSetting("AnalysisCurrentUserOnly", "true").Equals("true", StringComparison.OrdinalIgnoreCase);
+        }
+
+        public static void SetAnalysisCurrentUserOnly(bool value)
+        {
+            SetUserSetting("AnalysisCurrentUserOnly", value.ToString().ToLower(), "bool");
+        }
+
+        // Selected projects (comma-separated list of ProjectIDs)
+        public static string GetAnalysisSelectedProjects()
+        {
+            return GetUserSetting("AnalysisSelectedProjects", "");
+        }
+
+        public static void SetAnalysisSelectedProjects(string csv)
+        {
+            SetUserSetting("AnalysisSelectedProjects", csv, "string");
+        }
+
+        // Grid layout (JSON with column widths and row heights)
+        public static string GetAnalysisGridLayout()
+        {
+            return GetUserSetting("AnalysisGridLayout", "");
+        }
+
+        public static void SetAnalysisGridLayout(string json)
+        {
+            SetUserSetting("AnalysisGridLayout", json, "json");
+        }
     }
 }
