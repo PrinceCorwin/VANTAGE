@@ -189,18 +189,6 @@ namespace VANTAGE.Utilities
             }
         }
 
-        // Legacy I/O visibility setting - controls whether Legacy import/export menu items are shown
-        public static bool GetShowLegacyIO()
-        {
-            var value = GetUserSetting("ShowLegacyIO", "true");
-            return value.Equals("true", StringComparison.OrdinalIgnoreCase);
-        }
-
-        public static void SetShowLegacyIO(bool show)
-        {
-            SetUserSetting("ShowLegacyIO", show.ToString().ToLower(), "bool");
-        }
-
         public static void InitializeDefaultAppSettings()
         {
             try

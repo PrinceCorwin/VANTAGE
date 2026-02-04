@@ -80,10 +80,10 @@
                             <!-- Other -->
                             <syncfusion:DropDownMenuItem Header="Export Logs" Click="MenuExportLogs_Click"/>
                             <syncfusion:DropDownMenuItem Header="Manage My Snapshots" Click="MenuManageSnapshots_Click"/>
-                            <!-- Legacy Export section (visible when ShowLegacyIO setting is true) -->
-                            <Separator x:Name="sepLegacyIO" Background="{StaticResource BorderColor}" Margin="5,2"/>
-                            <syncfusion:DropDownMenuItem x:Name="menuLegacyExport" Header="Legacy Export Activities" Click="MenuLegacyExportActivities_Click" ToolTip="Export to OldVantage format (percentages as 0-1 decimals)"/>
-                            <syncfusion:DropDownMenuItem x:Name="menuLegacyTemplate" Header="Legacy Export Template" Click="MenuLegacyExportTemplate_Click" ToolTip="Export empty template with OldVantage column headers"/>
+                            <!-- Legacy Export section -->
+                            <Separator Background="{StaticResource BorderColor}" Margin="5,2"/>
+                            <syncfusion:DropDownMenuItem Header="Legacy Export Activities" Click="MenuLegacyExportActivities_Click" ToolTip="Export to OldVantage format (percentages as 0-1 decimals)"/>
+                            <syncfusion:DropDownMenuItem Header="Legacy Export Template" Click="MenuLegacyExportTemplate_Click" ToolTip="Export empty template with OldVantage column headers"/>
                         </syncfusion:DropDownMenuGroup>
                     </syncfusion:DropDownButtonAdv>
 
@@ -316,15 +316,6 @@
                                         Click="MenuTheme_Click"
                                         Cursor="Hand"
                                         ToolTip="Choose between Dark and Light application themes"/>
-                                <Button Content="Toggle Legacy I/O Menu"
-                                        Background="Transparent"
-                                        Foreground="{StaticResource ForegroundColor}"
-                                        BorderThickness="0"
-                                        Padding="12,8"
-                                        HorizontalContentAlignment="Left"
-                                        Click="MenuToggleLegacyIO_Click"
-                                        Cursor="Hand"
-                                        ToolTip="Show/hide Legacy format import/export menu items in the File menu"/>
 
                                 <Separator Background="{StaticResource BorderColor}" Margin="5,2"/>
                                 <Button Content="About Vantage: Milestone"

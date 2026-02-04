@@ -4,6 +4,13 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ---
 
+### February 4, 2026
+- **Remove Toggle Legacy I/O Menu setting:** Removed the settings menu button that toggled visibility of Legacy Export items. Legacy Export Activities and Legacy Export Template menu items are now always visible in the File menu. Cleaned up associated code from MainWindow, SettingsManager, and help manual.
+- **Rename LocalDirty filter button to "Unsynced":** Changed the filter button text from "LocalDirty" (internal field name) to "Unsynced" (user-friendly). Updated help manual filter table and AI Progress Scan workflow documentation.
+- **Other users' records text color — disabled grey:** Changed `NotOwnedRowForeground` color in Light and Orchid themes from bluish/purple (#4A6D8C, #7B5FA0) to standard disabled grey (#888888). Makes other users' read-only records more visually distinct from editable records.
+
+---
+
 ### February 3, 2026
 - **P6 import: flexible column header matching:** Added support for secondary headers (row 2 display names like "Activity ID", "Start", "Finish") with fallback to primary headers (row 1 technical field names). Secondary headers are normalized by stripping `(*)` prefix and unit suffixes like `(h)`, `(%)`, `(d)`. Also added support for both `start_date`/`end_date` and `target_start_date`/`target_end_date` column name variants in primary headers. Fixes import failures when P6 exports use different column naming conventions.
 

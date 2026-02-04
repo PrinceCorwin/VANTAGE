@@ -40,9 +40,6 @@ namespace VANTAGE
                 // Force taskbar icon refresh (fixes first-run icon not showing)
                 var iconPath = new Uri("pack://application:,,,/images/AppIcon.ico", UriKind.Absolute);
                 this.Icon = BitmapFrame.Create(iconPath);
-
-                // Initialize Legacy I/O menu visibility from settings
-                UpdateLegacyMenuVisibility();
             };
             this.Closing += MainWindow_Closing;
         }
@@ -877,24 +874,6 @@ namespace VANTAGE
         private async void MenuLegacyExportTemplate_Click(object sender, RoutedEventArgs e)
         {
             await ExportHelper.ExportTemplateAsync(this, ExportFormat.Legacy);
-        }
-
-        // Toggle Legacy I/O menu visibility
-        private void MenuToggleLegacyIO_Click(object sender, RoutedEventArgs e)
-        {
-            popupSettings.IsOpen = false;
-            bool currentState = SettingsManager.GetShowLegacyIO();
-            SettingsManager.SetShowLegacyIO(!currentState);
-            UpdateLegacyMenuVisibility();
-        }
-
-        // Update visibility of Legacy Export menu items based on setting
-        private void UpdateLegacyMenuVisibility()
-        {
-            var visibility = SettingsManager.GetShowLegacyIO() ? Visibility.Visible : Visibility.Collapsed;
-            sepLegacyIO.Visibility = visibility;
-            menuLegacyExport.Visibility = visibility;
-            menuLegacyTemplate.Visibility = visibility;
         }
 
         // === ADMIN DROPDOWN ===
