@@ -219,6 +219,12 @@ namespace VANTAGE.Views
             }
         }
 
+        // Save layout when any splitter is dragged
+        private void GridSplitter_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
+        {
+            SaveGridLayout();
+        }
+
         // Load summary data grouped by selected field
         private void LoadSummaryData()
         {
