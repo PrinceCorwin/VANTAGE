@@ -23,194 +23,253 @@
             <Setter Property="Background" Value="{Binding PercentComplete, Converter={StaticResource PercentToColorConverter}}"/>
         </Style>
 
-        <!-- GridSplitter styles -->
+        <!-- GridSplitter styles - thin modern look with centered grip -->
         <Style x:Key="VerticalGridSplitterStyle" TargetType="GridSplitter">
-            <Setter Property="Background" Value="{StaticResource ControlBorder}"/>
-            <Setter Property="Width" Value="6"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Width" Value="8"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="VerticalAlignment" Value="Stretch"/>
             <Setter Property="Cursor" Value="SizeWE"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="GridSplitter">
+                        <Grid Background="Transparent">
+                            <!-- Thin vertical line -->
+                            <Rectangle Width="1" Fill="#40808080" HorizontalAlignment="Center"/>
+                            <!-- Centered grip dots -->
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Vertical">
+                                <Ellipse Width="3" Height="3" Fill="#60808080" Margin="0,1"/>
+                                <Ellipse Width="3" Height="3" Fill="#60808080" Margin="0,1"/>
+                                <Ellipse Width="3" Height="3" Fill="#60808080" Margin="0,1"/>
+                            </StackPanel>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
         <Style x:Key="HorizontalGridSplitterStyle" TargetType="GridSplitter">
-            <Setter Property="Background" Value="{StaticResource ControlBorder}"/>
-            <Setter Property="Height" Value="6"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Height" Value="8"/>
             <Setter Property="HorizontalAlignment" Value="Stretch"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="Cursor" Value="SizeNS"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="GridSplitter">
+                        <Grid Background="Transparent">
+                            <!-- Thin horizontal line -->
+                            <Rectangle Height="1" Fill="#40808080" VerticalAlignment="Center"/>
+                            <!-- Centered grip dots -->
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal">
+                                <Ellipse Width="3" Height="3" Fill="#60808080" Margin="1,0"/>
+                                <Ellipse Width="3" Height="3" Fill="#60808080" Margin="1,0"/>
+                                <Ellipse Width="3" Height="3" Fill="#60808080" Margin="1,0"/>
+                            </StackPanel>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
         <!-- Section border style -->
         <Style x:Key="SectionBorderStyle" TargetType="Border">
-            <Setter Property="BorderBrush" Value="{StaticResource ControlBorder}"/>
-            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Background" Value="{StaticResource BackgroundColor}"/>
-            <Setter Property="Margin" Value="2"/>
+            <Setter Property="Margin" Value="4"/>
         </Style>
     </UserControl.Resources>
 
-    <!-- Main 4x2 Grid with splitters -->
+    <!-- Main Grid with independent row grids -->
     <Grid x:Name="mainGrid">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition x:Name="col0" Width="*"/>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition x:Name="col1" Width="*"/>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition x:Name="col2" Width="*"/>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition x:Name="col3" Width="*"/>
-        </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition x:Name="row0" Height="*"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition x:Name="row1" Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Vertical GridSplitters -->
-        <GridSplitter Grid.Column="1" Grid.RowSpan="3"
-                      Style="{StaticResource VerticalGridSplitterStyle}"
-                      ToolTip="Drag to resize columns"/>
-        <GridSplitter Grid.Column="3" Grid.RowSpan="3"
-                      Style="{StaticResource VerticalGridSplitterStyle}"
-                      ToolTip="Drag to resize columns"/>
-        <GridSplitter Grid.Column="5" Grid.RowSpan="3"
-                      Style="{StaticResource VerticalGridSplitterStyle}"
-                      ToolTip="Drag to resize columns"/>
+        <!-- Top Row Grid - independent column sizing -->
+        <Grid x:Name="topRowGrid" Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition x:Name="topCol0" Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition x:Name="topCol1" Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition x:Name="topCol2" Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition x:Name="topCol3" Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Top Row Vertical GridSplitters -->
+            <GridSplitter Grid.Column="1"
+                          Style="{StaticResource VerticalGridSplitterStyle}"
+                          ToolTip="Drag to resize columns"/>
+            <GridSplitter Grid.Column="3"
+                          Style="{StaticResource VerticalGridSplitterStyle}"
+                          ToolTip="Drag to resize columns"/>
+            <GridSplitter Grid.Column="5"
+                          Style="{StaticResource VerticalGridSplitterStyle}"
+                          ToolTip="Drag to resize columns"/>
+
+            <!-- Section (1,1) -->
+            <Border Grid.Column="0" Style="{StaticResource SectionBorderStyle}">
+                <TextBlock Text="Section 1,1" Opacity="0.3" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+
+            <!-- Section (1,2) -->
+            <Border Grid.Column="2" Style="{StaticResource SectionBorderStyle}">
+                <TextBlock Text="Section 1,2" Opacity="0.3" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+
+            <!-- Section (1,3) -->
+            <Border Grid.Column="4" Style="{StaticResource SectionBorderStyle}">
+                <TextBlock Text="Section 1,3" Opacity="0.3" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+
+            <!-- Section (1,4) -->
+            <Border Grid.Column="6" Style="{StaticResource SectionBorderStyle}">
+                <TextBlock Text="Section 1,4" Opacity="0.3" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+        </Grid>
 
         <!-- Horizontal GridSplitter -->
-        <GridSplitter Grid.Row="1" Grid.ColumnSpan="7"
+        <GridSplitter Grid.Row="1"
                       Style="{StaticResource HorizontalGridSplitterStyle}"
                       ToolTip="Drag to resize rows"/>
 
-        <!-- Section (1,1) - Row 0, Col 0 -->
-        <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource SectionBorderStyle}">
-            <TextBlock Text="Section 1,1" Opacity="0.3" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-        </Border>
+        <!-- Bottom Row Grid - independent column sizing -->
+        <Grid x:Name="bottomRowGrid" Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition x:Name="bottomCol0" Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition x:Name="bottomCol1" Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition x:Name="bottomCol2" Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition x:Name="bottomCol3" Width="*"/>
+            </Grid.ColumnDefinitions>
 
-        <!-- Section (1,2) - Row 0, Col 2 -->
-        <Border Grid.Row="0" Grid.Column="2" Style="{StaticResource SectionBorderStyle}">
-            <TextBlock Text="Section 1,2" Opacity="0.3" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-        </Border>
+            <!-- Bottom Row Vertical GridSplitters -->
+            <GridSplitter Grid.Column="1"
+                          Style="{StaticResource VerticalGridSplitterStyle}"
+                          ToolTip="Drag to resize columns"/>
+            <GridSplitter Grid.Column="3"
+                          Style="{StaticResource VerticalGridSplitterStyle}"
+                          ToolTip="Drag to resize columns"/>
+            <GridSplitter Grid.Column="5"
+                          Style="{StaticResource VerticalGridSplitterStyle}"
+                          ToolTip="Drag to resize columns"/>
 
-        <!-- Section (1,3) - Row 0, Col 4 -->
-        <Border Grid.Row="0" Grid.Column="4" Style="{StaticResource SectionBorderStyle}">
-            <TextBlock Text="Section 1,3" Opacity="0.3" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-        </Border>
+            <!-- Section (2,1) -->
+            <Border Grid.Column="0" Style="{StaticResource SectionBorderStyle}">
+                <TextBlock Text="Section 2,1" Opacity="0.3" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
 
-        <!-- Section (1,4) - Row 0, Col 6 -->
-        <Border Grid.Row="0" Grid.Column="6" Style="{StaticResource SectionBorderStyle}">
-            <TextBlock Text="Section 1,4" Opacity="0.3" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-        </Border>
+            <!-- Section (2,2) - SUMMARY GRID VISUAL -->
+            <Border Grid.Column="2" Style="{StaticResource SectionBorderStyle}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
 
-        <!-- Section (2,1) - Row 2, Col 0 -->
-        <Border Grid.Row="2" Grid.Column="0" Style="{StaticResource SectionBorderStyle}">
-            <TextBlock Text="Section 2,1" Opacity="0.3" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-        </Border>
+                    <!-- Filter Controls -->
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="8" VerticalAlignment="Center">
+                        <!-- Group By -->
+                        <TextBlock Text="Group By:" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <ComboBox x:Name="cmbGroupBy"
+                                  MinWidth="120"
+                                  SelectionChanged="CmbGroupBy_SelectionChanged"
+                                  ToolTip="Select field to group activities by"/>
 
-        <!-- Section (2,2) - Row 2, Col 2 - SUMMARY GRID VISUAL -->
-        <Border Grid.Row="2" Grid.Column="2" Style="{StaticResource SectionBorderStyle}">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
+                        <Rectangle Width="1" Fill="{StaticResource ControlBorder}" Margin="12,2"/>
 
-                <!-- Filter Controls -->
-                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="8" VerticalAlignment="Center">
-                    <!-- Group By -->
-                    <TextBlock Text="Group By:" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                    <ComboBox x:Name="cmbGroupBy"
-                              MinWidth="120"
-                              SelectionChanged="CmbGroupBy_SelectionChanged"
-                              ToolTip="Select field to group activities by"/>
+                        <!-- User Filter -->
+                        <RadioButton x:Name="rbCurrentUser" Content="My Records"
+                                     VerticalAlignment="Center" Margin="8,0"
+                                     Foreground="{StaticResource ForegroundColor}"
+                                     Checked="UserFilter_Changed"
+                                     ToolTip="Show only records assigned to you"/>
+                        <RadioButton x:Name="rbAllUsers" Content="All Users"
+                                     VerticalAlignment="Center" Margin="8,0"
+                                     Foreground="{StaticResource ForegroundColor}"
+                                     Checked="UserFilter_Changed"
+                                     ToolTip="Show records from all users"/>
 
-                    <Rectangle Width="1" Fill="{StaticResource ControlBorder}" Margin="12,2"/>
+                        <Rectangle Width="1" Fill="{StaticResource ControlBorder}" Margin="12,2"/>
 
-                    <!-- User Filter -->
-                    <RadioButton x:Name="rbCurrentUser" Content="My Records"
-                                 VerticalAlignment="Center" Margin="8,0"
-                                 Foreground="{StaticResource ForegroundColor}"
-                                 Checked="UserFilter_Changed"
-                                 ToolTip="Show only records assigned to you"/>
-                    <RadioButton x:Name="rbAllUsers" Content="All Users"
-                                 VerticalAlignment="Center" Margin="8,0"
-                                 Foreground="{StaticResource ForegroundColor}"
-                                 Checked="UserFilter_Changed"
-                                 ToolTip="Show records from all users"/>
+                        <!-- Project Filter (multi-select) -->
+                        <TextBlock Text="Projects:" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <syncfusion:ComboBoxAdv x:Name="cmbProjects"
+                                                MinWidth="90"
+                                                AllowMultiSelect="True"
+                                                EnableOKCancel="False"
+                                                SelectionChanged="CmbProjects_SelectionChanged"
+                                                ToolTip="Select projects to include in analysis"/>
+                    </StackPanel>
 
-                    <Rectangle Width="1" Fill="{StaticResource ControlBorder}" Margin="12,2"/>
+                    <!-- Summary Grid -->
+                    <syncfusion:SfDataGrid x:Name="summaryGrid" Grid.Row="1"
+                                           AutoGenerateColumns="False"
+                                           AllowSorting="True"
+                                           AllowFiltering="True"
+                                           AllowDraggingColumns="True"
+                                           AllowResizingColumns="True"
+                                           IsReadOnly="True"
+                                           SelectionMode="Single"
+                                           NavigationMode="Row"
+                                           ColumnSizer="Star"
+                                           HeaderRowHeight="32"
+                                           RowHeight="28"
+                                           GridLinesVisibility="Both"
+                                           HeaderLinesVisibility="Both">
+                        <syncfusion:SfDataGrid.Columns>
+                            <syncfusion:GridTextColumn x:Name="colGroupValue"
+                                                       MappingName="GroupValue"
+                                                       HeaderText="Group"
+                                                       AllowFiltering="True"
+                                                       AllowSorting="True"
+                                                       Width="150"/>
+                            <syncfusion:GridNumericColumn MappingName="BudgetMHs"
+                                                          HeaderText="BudgetMHs"
+                                                          NumberDecimalDigits="1"
+                                                          AllowFiltering="True"
+                                                          AllowSorting="True"/>
+                            <syncfusion:GridNumericColumn MappingName="EarnedMHs"
+                                                          HeaderText="EarnedMHs"
+                                                          NumberDecimalDigits="1"
+                                                          AllowFiltering="True"
+                                                          AllowSorting="True"/>
+                            <syncfusion:GridNumericColumn MappingName="Quantity"
+                                                          HeaderText="Quantity"
+                                                          NumberDecimalDigits="1"
+                                                          AllowFiltering="True"
+                                                          AllowSorting="True"/>
+                            <syncfusion:GridNumericColumn MappingName="QtyEarned"
+                                                          HeaderText="QtyEarned"
+                                                          NumberDecimalDigits="1"
+                                                          AllowFiltering="True"
+                                                          AllowSorting="True"/>
+                            <syncfusion:GridNumericColumn MappingName="PercentComplete"
+                                                          HeaderText="% Complete"
+                                                          NumberDecimalDigits="1"
+                                                          AllowFiltering="True"
+                                                          AllowSorting="True"
+                                                          CellStyle="{StaticResource PercentColorStyle}"/>
+                        </syncfusion:SfDataGrid.Columns>
+                    </syncfusion:SfDataGrid>
+                </Grid>
+            </Border>
 
-                    <!-- Project Filter (multi-select) -->
-                    <TextBlock Text="Projects:" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                    <syncfusion:ComboBoxAdv x:Name="cmbProjects"
-                                            MinWidth="150"
-                                            AllowMultiSelect="True"
-                                            EnableOKCancel="False"
-                                            SelectionChanged="CmbProjects_SelectionChanged"
-                                            ToolTip="Select projects to include in analysis"/>
-                </StackPanel>
+            <!-- Section (2,3) -->
+            <Border Grid.Column="4" Style="{StaticResource SectionBorderStyle}">
+                <TextBlock Text="Section 2,3" Opacity="0.3" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
 
-                <!-- Summary Grid -->
-                <syncfusion:SfDataGrid x:Name="summaryGrid" Grid.Row="1"
-                                       AutoGenerateColumns="False"
-                                       AllowSorting="True"
-                                       AllowFiltering="True"
-                                       AllowDraggingColumns="True"
-                                       AllowResizingColumns="True"
-                                       IsReadOnly="True"
-                                       SelectionMode="Single"
-                                       NavigationMode="Row"
-                                       ColumnSizer="Star"
-                                       HeaderRowHeight="32"
-                                       RowHeight="28"
-                                       GridLinesVisibility="Both"
-                                       HeaderLinesVisibility="Both">
-                    <syncfusion:SfDataGrid.Columns>
-                        <syncfusion:GridTextColumn x:Name="colGroupValue"
-                                                   MappingName="GroupValue"
-                                                   HeaderText="Group"
-                                                   AllowFiltering="True"
-                                                   AllowSorting="True"
-                                                   Width="150"/>
-                        <syncfusion:GridNumericColumn MappingName="BudgetMHs"
-                                                      HeaderText="BudgetMHs"
-                                                      NumberDecimalDigits="1"
-                                                      AllowFiltering="True"
-                                                      AllowSorting="True"/>
-                        <syncfusion:GridNumericColumn MappingName="EarnedMHs"
-                                                      HeaderText="EarnedMHs"
-                                                      NumberDecimalDigits="1"
-                                                      AllowFiltering="True"
-                                                      AllowSorting="True"/>
-                        <syncfusion:GridNumericColumn MappingName="Quantity"
-                                                      HeaderText="Quantity"
-                                                      NumberDecimalDigits="1"
-                                                      AllowFiltering="True"
-                                                      AllowSorting="True"/>
-                        <syncfusion:GridNumericColumn MappingName="QtyEarned"
-                                                      HeaderText="QtyEarned"
-                                                      NumberDecimalDigits="1"
-                                                      AllowFiltering="True"
-                                                      AllowSorting="True"/>
-                        <syncfusion:GridNumericColumn MappingName="PercentComplete"
-                                                      HeaderText="% Complete"
-                                                      NumberDecimalDigits="1"
-                                                      AllowFiltering="True"
-                                                      AllowSorting="True"
-                                                      CellStyle="{StaticResource PercentColorStyle}"/>
-                    </syncfusion:SfDataGrid.Columns>
-                </syncfusion:SfDataGrid>
-            </Grid>
-        </Border>
-
-        <!-- Section (2,3) - Row 2, Col 4 -->
-        <Border Grid.Row="2" Grid.Column="4" Style="{StaticResource SectionBorderStyle}">
-            <TextBlock Text="Section 2,3" Opacity="0.3" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-        </Border>
-
-        <!-- Section (2,4) - Row 2, Col 6 -->
-        <Border Grid.Row="2" Grid.Column="6" Style="{StaticResource SectionBorderStyle}">
-            <TextBlock Text="Section 2,4" Opacity="0.3" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-        </Border>
+            <!-- Section (2,4) -->
+            <Border Grid.Column="6" Style="{StaticResource SectionBorderStyle}">
+                <TextBlock Text="Section 2,4" Opacity="0.3" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+        </Grid>
     </Grid>
 </UserControl>

@@ -5,6 +5,7 @@ This document tracks completed features and fixes. Items are moved here from Pro
 ---
 
 ### February 4, 2026
+- **ANALYSIS module — independent row splitters and UI polish:** Restructured the 4×2 grid so each row has independent column splitters (dragging a vertical splitter in the top row no longer affects the bottom row). Updated GridSplitter styles to modern thin look with centered grip dots. Removed section borders for cleaner appearance. Reduced Projects combobox width by 40%.
 - **ANALYSIS module — initial implementation:** Added new ANALYSIS nav button to the right of WORK PKGS with 4×2 resizable grid layout using GridSplitters. Section (2,2) contains an aggregated metrics grid with:
   - Group By dropdown: priority fields (AssignedTo, CompType, DwgNO, PhaseCategory, PhaseCode, PjtSystem, SchedActNO, Service, SubArea, WorkPackage) first, then all other text fields alphabetically
   - Current User / All Users radio buttons

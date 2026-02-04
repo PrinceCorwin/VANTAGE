@@ -166,10 +166,17 @@ namespace VANTAGE.Views
             {
                 var layout = new
                 {
-                    Col0 = col0.Width.Value,
-                    Col1 = col1.Width.Value,
-                    Col2 = col2.Width.Value,
-                    Col3 = col3.Width.Value,
+                    // Top row columns
+                    TopCol0 = topCol0.Width.Value,
+                    TopCol1 = topCol1.Width.Value,
+                    TopCol2 = topCol2.Width.Value,
+                    TopCol3 = topCol3.Width.Value,
+                    // Bottom row columns
+                    BottomCol0 = bottomCol0.Width.Value,
+                    BottomCol1 = bottomCol1.Width.Value,
+                    BottomCol2 = bottomCol2.Width.Value,
+                    BottomCol3 = bottomCol3.Width.Value,
+                    // Row heights
                     Row0 = row0.Height.Value,
                     Row1 = row1.Height.Value
                 };
@@ -192,10 +199,17 @@ namespace VANTAGE.Views
                 using var doc = JsonDocument.Parse(json);
                 var root = doc.RootElement;
 
-                if (root.TryGetProperty("Col0", out var c0)) col0.Width = new GridLength(c0.GetDouble(), GridUnitType.Star);
-                if (root.TryGetProperty("Col1", out var c1)) col1.Width = new GridLength(c1.GetDouble(), GridUnitType.Star);
-                if (root.TryGetProperty("Col2", out var c2)) col2.Width = new GridLength(c2.GetDouble(), GridUnitType.Star);
-                if (root.TryGetProperty("Col3", out var c3)) col3.Width = new GridLength(c3.GetDouble(), GridUnitType.Star);
+                // Top row columns
+                if (root.TryGetProperty("TopCol0", out var tc0)) topCol0.Width = new GridLength(tc0.GetDouble(), GridUnitType.Star);
+                if (root.TryGetProperty("TopCol1", out var tc1)) topCol1.Width = new GridLength(tc1.GetDouble(), GridUnitType.Star);
+                if (root.TryGetProperty("TopCol2", out var tc2)) topCol2.Width = new GridLength(tc2.GetDouble(), GridUnitType.Star);
+                if (root.TryGetProperty("TopCol3", out var tc3)) topCol3.Width = new GridLength(tc3.GetDouble(), GridUnitType.Star);
+                // Bottom row columns
+                if (root.TryGetProperty("BottomCol0", out var bc0)) bottomCol0.Width = new GridLength(bc0.GetDouble(), GridUnitType.Star);
+                if (root.TryGetProperty("BottomCol1", out var bc1)) bottomCol1.Width = new GridLength(bc1.GetDouble(), GridUnitType.Star);
+                if (root.TryGetProperty("BottomCol2", out var bc2)) bottomCol2.Width = new GridLength(bc2.GetDouble(), GridUnitType.Star);
+                if (root.TryGetProperty("BottomCol3", out var bc3)) bottomCol3.Width = new GridLength(bc3.GetDouble(), GridUnitType.Star);
+                // Row heights
                 if (root.TryGetProperty("Row0", out var r0)) row0.Height = new GridLength(r0.GetDouble(), GridUnitType.Star);
                 if (root.TryGetProperty("Row1", out var r1)) row1.Height = new GridLength(r1.GetDouble(), GridUnitType.Star);
             }
