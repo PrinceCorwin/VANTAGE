@@ -280,7 +280,14 @@
                     <li><a href="#sched-shortcuts">Keyboard Shortcuts</a></li>
                 </ul>
             </li>
-            <li><a href="#progress-books">5. Progress Books</a>
+            <li><a href="#analysis-module">5. Analysis Module</a>
+                <ul>
+                    <li><a href="#analysis-overview">Overview</a></li>
+                    <li><a href="#analysis-layout">Layout</a></li>
+                    <li><a href="#analysis-summary-grid">Summary Grid</a></li>
+                </ul>
+            </li>
+            <li><a href="#progress-books">6. Progress Books</a>
                 <ul>
                     <li><a href="#pb-overview">Overview</a></li>
                     <li><a href="#pb-generating">Progress Book Editor</a></li>
@@ -289,7 +296,7 @@
                     <li><a href="#pb-applying">Applying Scanned Progress</a></li>
                 </ul>
             </li>
-            <li><a href="#work-packages">6. Work Packages</a>
+            <li><a href="#work-packages">7. Work Packages</a>
                 <ul>
                     <li><a href="#wp-overview">Overview</a></li>
                     <li><a href="#wp-layout">Layout</a></li>
@@ -301,7 +308,7 @@
                     <li><a href="#wp-previewing">Previewing Templates</a></li>
                 </ul>
             </li>
-            <li><a href="#administration">7. Administration</a>
+            <li><a href="#administration">8. Administration</a>
                 <ul>
                     <li><a href="#admin-overview">Overview</a></li>
                     <li><a href="#admin-user-management">User Management</a></li>
@@ -312,7 +319,7 @@
                     <li><a href="#admin-sync">Database Sync</a></li>
                 </ul>
             </li>
-            <li><a href="#reference">8. Reference</a>
+            <li><a href="#reference">9. Reference</a>
                 <ul>
                     <li><a href="#ref-column-mappings">Column Mappings</a></li>
 
@@ -1330,7 +1337,84 @@
     </table>
 
     <!-- ============================================ -->
-    <h2 id="progress-books">5. Progress Books</h2>
+    <h2 id="analysis-module">5. Analysis Module</h2>
+    <!-- ============================================ -->
+
+    <h3 id="analysis-overview">Overview</h3>
+    <p>The Analysis module provides data visualization and aggregation tools for exploring your progress data. Use this module to analyze metrics grouped by different fields and filter by project or user.</p>
+
+    <div class="note">
+        <div class="note-title">In Development</div>
+        <p>The Analysis module is actively being developed. Currently, section (2,2) contains a summary grid for aggregated metrics. Additional analysis tools will be added in future releases.</p>
+    </div>
+
+    <h3 id="analysis-layout">Layout</h3>
+    <p>The Analysis view uses a 4×2 resizable grid layout with independent splitters for each row:</p>
+    <ul>
+        <li><strong>Vertical splitters</strong> — Drag to resize columns within a row. Top and bottom rows resize independently.</li>
+        <li><strong>Horizontal splitter</strong> — Drag to resize the height ratio between the top and bottom rows.</li>
+    </ul>
+    <p>All splitter positions are saved automatically and restored when you return to the Analysis module.</p>
+
+    <h3 id="analysis-summary-grid">Summary Grid</h3>
+    <p>The summary grid in section (2,2) displays aggregated metrics from your Activities data, grouped by a selected field.</p>
+
+    <h4>Filter Controls</h4>
+    <table>
+        <tr>
+            <th>Control</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td><strong>Group By</strong></td>
+            <td>Select a field to group activities by. Priority fields (AssignedTo, CompType, WorkPackage, etc.) appear first, followed by all other text fields alphabetically.</td>
+        </tr>
+        <tr>
+            <td><strong>My Records / All Users</strong></td>
+            <td>Filter to show only your assigned activities or all users' activities.</td>
+        </tr>
+        <tr>
+            <td><strong>Projects</strong></td>
+            <td>Multi-select dropdown to filter by one or more projects.</td>
+        </tr>
+    </table>
+
+    <h4>Grid Columns</h4>
+    <table>
+        <tr>
+            <th>Column</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td><strong>Group</strong></td>
+            <td>The value of the selected Group By field (header changes to match the selected field)</td>
+        </tr>
+        <tr>
+            <td><strong>BudgetMHs</strong></td>
+            <td>Sum of budgeted man-hours for the group</td>
+        </tr>
+        <tr>
+            <td><strong>EarnedMHs</strong></td>
+            <td>Sum of earned man-hours for the group</td>
+        </tr>
+        <tr>
+            <td><strong>Quantity</strong></td>
+            <td>Sum of quantity for the group</td>
+        </tr>
+        <tr>
+            <td><strong>QtyEarned</strong></td>
+            <td>Sum of earned quantity for the group</td>
+        </tr>
+        <tr>
+            <td><strong>% Complete</strong></td>
+            <td>Weighted percent complete (EarnedMHs / BudgetMHs × 100). Color-coded: red (0-25%), orange (26-50%), yellow (51-75%), green (76-100%).</td>
+        </tr>
+    </table>
+
+    <p>The grid supports sorting, filtering, column resizing, and column reordering. All settings are saved automatically.</p>
+
+    <!-- ============================================ -->
+    <h2 id="progress-books">6. Progress Books</h2>
     <!-- ============================================ -->
 
     <h3 id="pb-overview">Overview</h3>
@@ -1622,7 +1706,7 @@
     </div>
 
     <!-- ============================================ -->
-    <h2 id="work-packages">6. Work Packages</h2>
+    <h2 id="work-packages">7. Work Packages</h2>
     <!-- ============================================ -->
 
     <h3 id="wp-overview">Overview</h3>
@@ -2224,7 +2308,7 @@
     </div>
 
     <!-- ============================================ -->
-    <h2 id="administration">7. Administration</h2>
+    <h2 id="administration">8. Administration</h2>
     <!-- ============================================ -->
 
     <h3 id="admin-overview">Overview</h3>
@@ -2318,7 +2402,7 @@
     </ul>
 
     <!-- ============================================ -->
-    <h2 id="reference">8. Reference</h2>
+    <h2 id="reference">9. Reference</h2>
     <!-- ============================================ -->
 
     <h3 id="ref-column-mappings">Column Mappings</h3>

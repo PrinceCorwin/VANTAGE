@@ -5,6 +5,7 @@ This document tracks completed features and fixes. Items are moved here from Pro
 ---
 
 ### February 4, 2026
+- **Help manual — Analysis module documentation:** Added section 5 for Analysis module with overview, layout description, and summary grid documentation. Renumbered subsequent sections (Progress Books→6, Work Packages→7, Administration→8, Reference→9).
 - **ANALYSIS module — summaryGrid styling:** Added theme-aware header styling (GridHeaderBackground, GridHeaderForeground) and custom filter icon template matching ProgressView (FilterIconColor/FilterIconActiveColor). Grid splitter positions now save immediately on drag via DragCompleted event.
 - **ANALYSIS module — independent row splitters and UI polish:** Restructured the 4×2 grid so each row has independent column splitters (dragging a vertical splitter in the top row no longer affects the bottom row). Updated GridSplitter styles to modern thin look with centered grip dots. Removed section borders for cleaner appearance. Reduced Projects combobox width by 40%.
 - **ANALYSIS module — initial implementation:** Added new ANALYSIS nav button to the right of WORK PKGS with 4×2 resizable grid layout using GridSplitters. Section (2,2) contains an aggregated metrics grid with:
