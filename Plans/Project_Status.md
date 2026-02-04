@@ -1,6 +1,6 @@
 # MILESTONE - Project Status
 
-**Last Updated:** February 3, 2026
+**Last Updated:** February 4, 2026
 
 ## V1 Testing Scope
 
@@ -171,11 +171,11 @@ All V1 sections of `Help/manual.html` are written. Screenshots configured with c
 ## Feature Backlog
 
 ### High Priority
+- **TEST:** Schedule Change Log clears on P6 import — verify log files are deleted when importing a new P6 schedule
 - ~~First publish & end-to-end test (Workstream 4)~~ Complete — v26.1.1 install + v26.1.2 auto-update validated
 - ~~Credentials strategy~~ Complete — migrated to encrypted config file (Workstream 1)
 - ~~Self-contained publish config~~ Complete — tested via v26.1.1 and v26.1.2 publishes (Workstream 2)
 - ~~Installer app~~ Complete — tested full install cycle (Workstream 3)
-
 
 ### Medium Priority
 - ~~**DISCUSS:** Add PlanStart and PlanFinish fields to Activities~~ Addressed — Schedule module now imports P6 current schedule dates (start_date/end_date) instead of baseline target dates

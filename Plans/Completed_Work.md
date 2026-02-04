@@ -8,6 +8,7 @@ This document tracks completed features and fixes. Items are moved here from Pro
 - **Remove Toggle Legacy I/O Menu setting:** Removed the settings menu button that toggled visibility of Legacy Export items. Legacy Export Activities and Legacy Export Template menu items are now always visible in the File menu. Cleaned up associated code from MainWindow, SettingsManager, and help manual.
 - **Rename LocalDirty filter button to "Unsynced":** Changed the filter button text from "LocalDirty" (internal field name) to "Unsynced" (user-friendly). Updated help manual filter table and AI Progress Scan workflow documentation.
 - **Other users' records text color — disabled grey:** Changed `NotOwnedRowForeground` color in Light and Orchid themes from bluish/purple (#4A6D8C, #7B5FA0) to standard disabled grey (#888888). Makes other users' read-only records more visually distinct from editable records.
+- **Schedule Change Log clears on P6 import (pending test):** Added `ScheduleChangeLogger.ClearAll()` method and call it when importing a P6 schedule. Prevents stale change log entries from referencing activities that no longer exist after a new schedule import. Updated help manual.
 
 ---
 

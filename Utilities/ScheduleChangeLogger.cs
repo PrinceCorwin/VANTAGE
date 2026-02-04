@@ -234,6 +234,39 @@ namespace VANTAGE.Utilities
             }
         }
 
+        // Deletes all change log files (called when importing new P6 schedule)
+        public static void ClearAll()
+        {
+            try
+            {
+                if (!Directory.Exists(LogDirectory))
+                    return;
+
+                var files = Directory.GetFiles(LogDirectory, "ScheduleChanges_*.json");
+                foreach (var file in files)
+                {
+                    try
+                    {
+                        File.Delete(file);
+                    }
+                    catch
+                    {
+                        // Skip files that can't be deleted
+                    }
+                }
+
+                if (files.Length > 0)
+                {
+                    AppLogger.Info($"Cleared {files.Length} schedule change log file(s)",
+                        "ScheduleChangeLogger.ClearAll");
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "ScheduleChangeLogger.ClearAll");
+            }
+        }
+
         private static void EnsureDirectoryExists()
         {
             if (!Directory.Exists(LogDirectory))

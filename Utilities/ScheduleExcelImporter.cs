@@ -382,6 +382,9 @@ namespace VANTAGE.Utilities
                 deleteMappingsCmd.CommandText = "DELETE FROM ScheduleProjectMappings";
                 deleteMappingsCmd.ExecuteNonQuery();
 
+                // Clear schedule change log (old entries reference activities that no longer exist)
+                ScheduleChangeLogger.ClearAll();
+
                 // Insert Schedule rows (InMS always 0 - column is obsolete but kept for schema compatibility)
                 var insertScheduleCmd = connection.CreateCommand();
                 insertScheduleCmd.CommandText = @"
