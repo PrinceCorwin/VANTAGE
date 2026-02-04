@@ -62,6 +62,29 @@ WPF application for Summit Industrial replacing the legacy MS Access system ("Ol
 - Before deleting: ensure Project_Status.md and any related docs are updated
 - **ALWAYS ask the user before deleting plan files, even if accept edits is enabled**
 
+## Publishing Updates
+Updates are distributed via GitHub Releases. The auto-updater checks `updates/manifest.json` for new versions.
+
+### Release Process
+1. Bump version in `VANTAGE.csproj` (Version, AssemblyVersion, FileVersion)
+2. Run: `powershell -ExecutionPolicy Bypass -File "Scripts\publish-update.ps1" -Version "X.Y.Z"`
+3. Script outputs: ZIP path, size, and SHA-256 hash
+4. Create GitHub Release at `https://github.com/PrinceCorwin/VANTAGE/releases`
+   - Tag: `vX.Y.Z`
+   - Title: Brief description of main changes (e.g., "Analysis module UI polish")
+   - Upload the ZIP file
+5. Update `updates/manifest.json` with:
+   - `currentVersion`: the new version
+   - `downloadUrl`: `https://github.com/PrinceCorwin/VANTAGE/releases/download/vX.Y.Z/VANTAGE-X.Y.Z.zip`
+   - `zipSizeBytes`: from script output
+   - `sha256`: from script output
+   - `releaseNotes`: brief description
+6. Commit and push the manifest update
+
+### GitHub Release Title Convention
+Use a brief description of the main changes (not the version number as the title).
+Examples: "P6 import: flexible column header matching", "Analysis module UI polish"
+
 ## C# Code Conventions
 
 ### Comments

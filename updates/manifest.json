@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.1.6",
-  "releaseDate": "2026-02-03T11:28:05Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.6/VANTAGE-26.1.6.zip",
-  "zipSizeBytes": 149030723,
-  "sha256": "EE010EF5C8256875D9C7AEF49F397F355972C504288D0E82E13176E63D715670",
-  "releaseNotes": "P6 import: flexible column header matching"
+  "currentVersion": "26.1.7",
+  "releaseDate": "2026-02-04T16:07:52Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.7/VANTAGE-26.1.7.zip",
+  "zipSizeBytes": 149042679,
+  "sha256": "DED1D409B994CC7D9FBE495B6FDCBA451FB60FFB8E23CB7990020748DF3B809B",
+  "releaseNotes": "Analysis module: independent row splitters, modern UI styling, help documentation"
 }

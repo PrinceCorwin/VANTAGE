@@ -42,7 +42,8 @@
       "Bash(dotnet sln:*)",
       "Bash(powershell:*)",
       "Bash(dotnet --list-runtimes:*)",
-      "Bash(dotnet run)"
+      "Bash(dotnet run)",
+      "Bash(dotnet publish:*)"
     ]
   }
 }
