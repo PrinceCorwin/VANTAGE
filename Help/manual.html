@@ -2374,21 +2374,32 @@
     </ul>
 
     <h3 id="admin-progress-log">Manage Progress Log (Admin > Manage Progress Log)</h3>
-    <p>This dialog displays all tracked upload batches that have been sent to <code>VANTAGE_global_ProgressLog</code>. Only uploads made after this feature was added are tracked.</p>
+    <p>This dialog displays all tracked upload batches that have been sent to <code>VANTAGE_global_ProgressLog</code>. The grid supports filtering and sorting on all columns.</p>
 
     <h4>Viewing Uploads</h4>
     <ul>
-        <li>Each row represents a batch of records uploaded for a specific <strong>Username / Project / Resp Party / Week Ending</strong> combination</li>
+        <li>Each row represents a batch of records uploaded for a specific <strong>Username / Project / Week Ending</strong> combination</li>
         <li>The <strong>Uploaded</strong> column shows when the batch was sent to the Progress Log</li>
         <li>The <strong>Records</strong> column shows how many records were in that batch</li>
-        <li>The <strong>Uploaded By</strong> column shows which admin performed the upload</li>
+        <li>The <strong>Uploaded By</strong> column shows the original uploader (may differ from Username for legacy imports)</li>
+        <li>Use <strong>Select All</strong> / <strong>Select None</strong> buttons for bulk selection</li>
+    </ul>
+
+    <h4>Importing Legacy Uploads (REFRESH)</h4>
+    <ul>
+        <li>The <strong>REFRESH</strong> dropdown scans <code>VANTAGE_global_ProgressLog</code> for uploads not yet tracked in this dialog</li>
+        <li>Choose a time range: <strong>Last 7 days</strong>, <strong>Last 30 days</strong>, or <strong>All time</strong></li>
+        <li>A confirmation dialog appears before scanning begins</li>
+        <li>New batches found are added to the tracking table so they can be managed (viewed/deleted) from this dialog</li>
+        <li>For imported batches: <strong>Username</strong> = admin who ran REFRESH, <strong>Uploaded By</strong> = original uploader from OldVantage</li>
+        <li>Completion message shows how many new batches were imported and elapsed time</li>
     </ul>
 
     <h4>Deleting Upload Batches</h4>
     <ul>
         <li>Select one or more batches using the checkboxes, then click <strong>Delete Selected</strong></li>
-        <li>This permanently removes the matching records from <code>VANTAGE_global_ProgressLog</code> on Azure</li>
-        <li>Records are matched by Project ID, Resp Party, Week End Date, and Upload Timestamp</li>
+        <li>A confirmation dialog requires typing <strong>DELETE</strong> to proceed (prevents accidental deletion)</li>
+        <li>This permanently removes the matching records from both <code>VANTAGE_global_ProgressLog</code> and the tracking table</li>
         <li>Use this when progress data needs to be corrected and re-uploaded for a given week</li>
     </ul>
 
