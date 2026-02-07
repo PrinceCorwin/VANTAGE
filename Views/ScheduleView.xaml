@@ -120,7 +120,9 @@
         </Style>
 
         <!-- Required field styles (red background when field needs attention) -->
-        <Style x:Key="MissedStartReasonRequiredStyle" TargetType="syncfusion:GridCell">
+        <!-- Both ScheduleMasterRow and ScheduleViewModel implement IScheduleCellIndicators -->
+        <!-- ViewModel returns false for all; this handles Syncfusion cell recycling without Error 40 -->
+        <Style x:Key="MissedStartReasonRequiredStyle" TargetType="syncfusion:GridCell" BasedOn="{StaticResource {x:Type syncfusion:GridCell}}">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=IsMissedStartReasonRequired}" Value="True">
                     <Setter Property="Background" Value="{StaticResource StatusRedBg}"/>
@@ -128,7 +130,7 @@
             </Style.Triggers>
         </Style>
 
-        <Style x:Key="MissedFinishReasonRequiredStyle" TargetType="syncfusion:GridCell">
+        <Style x:Key="MissedFinishReasonRequiredStyle" TargetType="syncfusion:GridCell" BasedOn="{StaticResource {x:Type syncfusion:GridCell}}">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=IsMissedFinishReasonRequired}" Value="True">
                     <Setter Property="Background" Value="{StaticResource StatusRedBg}"/>
@@ -136,7 +138,7 @@
             </Style.Triggers>
         </Style>
 
-        <Style x:Key="ThreeWeekStartRequiredStyle" TargetType="syncfusion:GridCell">
+        <Style x:Key="ThreeWeekStartRequiredStyle" TargetType="syncfusion:GridCell" BasedOn="{StaticResource {x:Type syncfusion:GridCell}}">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=IsThreeWeekStartRequired}" Value="True">
                     <Setter Property="Background" Value="{StaticResource StatusRedBg}"/>
@@ -144,7 +146,7 @@
             </Style.Triggers>
         </Style>
 
-        <Style x:Key="ThreeWeekFinishRequiredStyle" TargetType="syncfusion:GridCell">
+        <Style x:Key="ThreeWeekFinishRequiredStyle" TargetType="syncfusion:GridCell" BasedOn="{StaticResource {x:Type syncfusion:GridCell}}">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=IsThreeWeekFinishRequired}" Value="True">
                     <Setter Property="Background" Value="{StaticResource StatusRedBg}"/>
@@ -152,7 +154,7 @@
             </Style.Triggers>
         </Style>
 
-        <Style x:Key="MSStartVarianceStyle" TargetType="syncfusion:GridCell">
+        <Style x:Key="MSStartVarianceStyle" TargetType="syncfusion:GridCell" BasedOn="{StaticResource {x:Type syncfusion:GridCell}}">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=HasStartVariance}" Value="True">
                     <Setter Property="Background" Value="{StaticResource StatusYellowBg}"/>
@@ -160,7 +162,7 @@
             </Style.Triggers>
         </Style>
 
-        <Style x:Key="MSFinishVarianceStyle" TargetType="syncfusion:GridCell">
+        <Style x:Key="MSFinishVarianceStyle" TargetType="syncfusion:GridCell" BasedOn="{StaticResource {x:Type syncfusion:GridCell}}">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=HasFinishVariance}" Value="True">
                     <Setter Property="Background" Value="{StaticResource StatusYellowBg}"/>
@@ -168,7 +170,7 @@
             </Style.Triggers>
         </Style>
 
-        <Style x:Key="MSBudgetMHsVarianceStyle" TargetType="syncfusion:GridCell">
+        <Style x:Key="MSBudgetMHsVarianceStyle" TargetType="syncfusion:GridCell" BasedOn="{StaticResource {x:Type syncfusion:GridCell}}">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=HasBudgetMHsVariance}" Value="True">
                     <Setter Property="Background" Value="{StaticResource StatusYellowBg}"/>
@@ -176,7 +178,7 @@
             </Style.Triggers>
         </Style>
 
-        <Style x:Key="MSPercentCompleteVarianceStyle" TargetType="syncfusion:GridCell">
+        <Style x:Key="MSPercentCompleteVarianceStyle" TargetType="syncfusion:GridCell" BasedOn="{StaticResource {x:Type syncfusion:GridCell}}">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=HasPercentCompleteVariance}" Value="True">
                     <Setter Property="Background" Value="{StaticResource StatusYellowBg}"/>

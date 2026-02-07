@@ -43,7 +43,8 @@
       "Bash(powershell:*)",
       "Bash(dotnet --list-runtimes:*)",
       "Bash(dotnet run)",
-      "Bash(dotnet publish:*)"
+      "Bash(dotnet publish:*)",
+      "Bash(dotnet clean:*)"
     ]
   }
 }

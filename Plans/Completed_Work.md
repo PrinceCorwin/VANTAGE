@@ -4,6 +4,17 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ---
 
+## Unreleased
+
+### February 6, 2026
+- **Schedule cell indicator interface:** Created `IScheduleCellIndicators` interface to document the contract for cell styling properties (`IsMissedStartReasonRequired`, `HasStartVariance`, etc.). Both `ScheduleMasterRow` and `ScheduleViewModel` implement it — ViewModel returns false for all (handles Syncfusion cell recycling), Row returns computed values. Added `BasedOn` to 8 cell styles matching ProgressView pattern. Tested MultiBinding approach but it breaks PropertyChanged reactivity.
+- **Project plan doc updates:** Updated `Milestone_Project_plan.md` with current modules (Analysis, Progress Books, Help Sidebar, Theme System), publishing/credentials architecture, and Schedule module features. Renamed to "VANTAGE: Milestone".
+- **Completed_Work.md versioning:** Added version markers to track changes since last published release. Unreleased section for pending changes, version headers (e.g., `## v26.1.7`) mark release boundaries.
+
+---
+
+## v26.1.7
+
 ### February 4, 2026
 - **Help manual — Analysis module documentation:** Added section 5 for Analysis module with overview, layout description, and summary grid documentation. Renumbered subsequent sections (Progress Books→6, Work Packages→7, Administration→8, Reference→9).
 - **ANALYSIS module — summaryGrid styling:** Added theme-aware header styling (GridHeaderBackground, GridHeaderForeground) and custom filter icon template matching ProgressView (FilterIconColor/FilterIconActiveColor). Grid splitter positions now save immediately on drag via DragCompleted event.

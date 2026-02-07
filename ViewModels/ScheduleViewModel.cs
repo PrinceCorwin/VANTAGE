@@ -12,7 +12,7 @@ namespace VANTAGE.ViewModels
     // Filter types for P6 vs MS discrepancies
     public enum DiscrepancyFilterType { None, Start, Finish, MHs, PercentComplete }
 
-    public class ScheduleViewModel : INotifyPropertyChanged
+    public class ScheduleViewModel : INotifyPropertyChanged, IScheduleCellIndicators
     {
         private ObservableCollection<ScheduleMasterRow> _masterRows = new ObservableCollection<ScheduleMasterRow>();
         private List<ScheduleMasterRow> _allMasterRows = new List<ScheduleMasterRow>();
@@ -26,8 +26,7 @@ namespace VANTAGE.ViewModels
         private string? _selectedSchedActNO;
         private bool _hasUnsavedChanges;
 
-        // Syncfusion SfDataGrid temporarily sets ViewModel as GridCell DataContext during cell recycling.
-        // These satisfy CellStyle DataTrigger bindings without error; actual values come from ScheduleMasterRow.
+        // IScheduleCellIndicators - always false on ViewModel (only meaningful on ScheduleMasterRow)
         public bool IsMissedStartReasonRequired => false;
         public bool IsMissedFinishReasonRequired => false;
         public bool IsThreeWeekStartRequired => false;

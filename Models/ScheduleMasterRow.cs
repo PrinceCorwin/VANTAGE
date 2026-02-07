@@ -5,7 +5,7 @@ using System.ComponentModel;
 namespace VANTAGE.Models
 {
     // ViewModel row combining P6 data + MS rollups for Schedule Module master grid
-    public class ScheduleMasterRow : INotifyPropertyChanged
+    public class ScheduleMasterRow : INotifyPropertyChanged, IScheduleCellIndicators
     {
         // ========================================
         // P6 DATA (from Schedule table)

@@ -1,4 +1,4 @@
-# MILESTONE - Project Architecture
+# VANTAGE: Milestone - Project Architecture
 
 ## Overview
 WPF application replacing legacy MS Access VBA system (OldVantage) for tracking construction activities on industrial projects. Each record represents field actions like welding, bolt-ups, or steel erection.
@@ -15,6 +15,8 @@ WPF application replacing legacy MS Access VBA system (OldVantage) for tracking 
 - **Local SQLite:** Fast queries, offline capability
 - **Azure SQL:** Central authority, multi-user collaboration
 - **Sync:** Bidirectional with SyncVersion-based change tracking
+- **Publishing:** Self-contained exe with auto-update via GitHub Releases (manifest.json + ZIP)
+- **Credentials:** AES-256 encrypted config file (appsettings.enc) loaded at runtime
 
 ## Data Model
 
@@ -79,17 +81,28 @@ Frozen copy of Activity at weekly submission time.
 - Prorate BudgetMHs across filtered activities (proportional distribution)
 
 ### Schedule Module
-- P6 Primavera import/export
-- Compare P6 schedule vs MILESTONE actuals
+- P6 Primavera import/export (uses current schedule dates, not baseline)
+- Compare P6 schedule vs Vantage actuals
 - Discrepancy filters: Actual Start, Actual Finish, MHs, % Complete (dropdown with clear option)
 - MS Rollups: MIN(start), MAX(finish when all complete), weighted % average
-- Three-Week Lookahead (3WLA) forecasting
+- Three-Week Lookahead (3WLA) forecasting with required field indicators
+- Missed Start/Finish reason tracking with auto-fill for early completions
+- Schedule Change Log: tracks detail grid edits, view/apply changes to Activities
 - Master/detail grid layout with Clear Filters button
 
-### Admin System
-- Azure Admins table (single source of truth)
-- Manage users, projects, snapshots
-- View/restore/purge deleted records
+### Analysis Module
+- 4×2 resizable grid layout with independent row/column splitters
+- Summary metrics grid with Group By dropdown, user filter, project multi-select
+- Aggregated columns: BudgetMHs, EarnedMHs, Quantity, QtyEarned, % Complete
+- Conditional cell coloring on % Complete (red/orange/yellow/green thresholds)
+- All settings persist to UserSettings
+
+### Progress Books Module
+- PDF generation for field progress tracking sheets
+- Layout builder: grouping (up to 10 levels), sorting, column selection
+- Paper size and font size options, exclude completed filter
+- AI Progress Scan: AWS Textract table extraction from scanned PDFs/images
+- Scan results grid with filtering, contrast adjustment, batch apply to Activities
 
 ### Work Package Module
 - PDF generation for construction work packages (replaces legacy MS Access VBA)
@@ -97,7 +110,23 @@ Frozen copy of Activity at weekly submission time.
 - Token-based content binding ({WorkPackage}, {ProjectName}, {PrintedDate}, etc.)
 - Customizable templates stored in local SQLite (FormTemplates, WPTemplates tables)
 - Syncfusion.Pdf for PDF generation, merge individual forms into single package
-- See `WorkPackage_Module_Plan.md` and `WorkPackage_Status.md` for details
+- See `WorkPackage_Module_Plan.md` for details
+
+### Admin System
+- Azure Admins table (single source of truth)
+- Manage users, projects, snapshots
+- View/restore/purge deleted records
+
+### Help Sidebar
+- WebView2-based HTML manual with virtual host mapping
+- Collapsible sidebar panel, search functionality
+- Context-aware (future: link UI elements to help sections)
+
+### Theme System
+- Three themes: Dark (default), Light, Orchid
+- Theme Manager dialog (Settings > Theme...)
+- StaticResource bindings, theme applied on restart
+- Syncfusion SfSkinManager integration (FluentDark/FluentLight base themes)
 
 ## Performance Targets
 - Sync 5k records: ~6 seconds
