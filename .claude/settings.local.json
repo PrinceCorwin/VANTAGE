@@ -44,7 +44,8 @@
       "Bash(dotnet --list-runtimes:*)",
       "Bash(dotnet run)",
       "Bash(dotnet publish:*)",
-      "Bash(dotnet clean:*)"
+      "Bash(dotnet clean:*)",
+      "Bash(gh release create:*)"
     ]
   }
 }

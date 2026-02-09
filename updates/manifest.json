@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.1.7",
-  "releaseDate": "2026-02-04T16:07:52Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.7/VANTAGE-26.1.7.zip",
-  "zipSizeBytes": 149042679,
-  "sha256": "DED1D409B994CC7D9FBE495B6FDCBA451FB60FFB8E23CB7990020748DF3B809B",
-  "releaseNotes": "Analysis module: independent row splitters, modern UI styling, help documentation"
+  "currentVersion": "26.1.8",
+  "releaseDate": "2026-02-09T16:20:56Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.8/VANTAGE-26.1.8.zip",
+  "zipSizeBytes": 149049337,
+  "sha256": "40AA946B9EAAF44999AD18F6B1B9700FA903070BD39132490FB7BE0EB817BDAF",
+  "releaseNotes": "Fix ManageProgressLogDialog checkbox selection and delete operation"
 }
