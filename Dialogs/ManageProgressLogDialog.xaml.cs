@@ -327,13 +327,14 @@ namespace VANTAGE.Dialogs
                         try
                         {
                             // Delete from ProgressLog first
+                            // Use tolerance-based comparison since tracking table stores dates as strings without milliseconds
                             using var deleteCmd = conn.CreateCommand();
                             deleteCmd.CommandTimeout = 0;
                             deleteCmd.CommandText = @"
                                 DELETE FROM VANTAGE_global_ProgressLog
                                 WHERE Tag_ProjectID = @projectId
-                                  AND [Timestamp] = @uploadUtcDate
-                                  AND Val_TimeStamp = @weekEndDate";
+                                  AND ABS(DATEDIFF(second, [Timestamp], @uploadUtcDate)) < 2
+                                  AND CAST(Val_TimeStamp AS DATE) = CAST(@weekEndDate AS DATE)";
                             deleteCmd.Parameters.AddWithValue("@projectId", upload.ProjectID);
                             deleteCmd.Parameters.AddWithValue("@uploadUtcDate", DateTime.Parse(upload.UploadUtcDate));
                             deleteCmd.Parameters.AddWithValue("@weekEndDate", DateTime.Parse(upload.WeekEndDate));

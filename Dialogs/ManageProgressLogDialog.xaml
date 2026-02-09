@@ -45,6 +45,7 @@
             <Grid>
                 <syncfusion:SfDataGrid x:Name="sfUploads"
                                        AutoGenerateColumns="False"
+                                       AllowEditing="True"
                                        AllowFiltering="True"
                                        AllowSorting="True"
                                        AllowResizingColumns="True"
@@ -64,23 +65,29 @@
                                                        AllowSorting="False"/>
                         <syncfusion:GridTextColumn MappingName="Username"
                                                    HeaderText="Username"
-                                                   Width="110"/>
+                                                   Width="110"
+                                                   AllowEditing="False"/>
                         <syncfusion:GridTextColumn MappingName="ProjectID"
                                                    HeaderText="Project ID"
-                                                   Width="130"/>
+                                                   Width="130"
+                                                   AllowEditing="False"/>
                         <syncfusion:GridTextColumn MappingName="WeekEndDateDisplay"
                                                    HeaderText="Week Ending"
-                                                   Width="110"/>
+                                                   Width="110"
+                                                   AllowEditing="False"/>
                         <syncfusion:GridTextColumn MappingName="UploadUtcDateDisplay"
                                                    HeaderText="Uploaded"
-                                                   Width="150"/>
+                                                   Width="150"
+                                                   AllowEditing="False"/>
                         <syncfusion:GridNumericColumn MappingName="RecordCount"
                                                       HeaderText="Records"
                                                       Width="80"
-                                                      NumberDecimalDigits="0"/>
+                                                      NumberDecimalDigits="0"
+                                                      AllowEditing="False"/>
                         <syncfusion:GridTextColumn MappingName="UploadedBy"
                                                    HeaderText="Uploaded By"
-                                                   Width="110"/>
+                                                   Width="110"
+                                                   AllowEditing="False"/>
                     </syncfusion:SfDataGrid.Columns>
                 </syncfusion:SfDataGrid>
 

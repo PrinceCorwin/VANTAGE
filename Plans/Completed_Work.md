@@ -6,6 +6,9 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### February 9, 2026
+- **ManageProgressLogDialog bug fixes:** Fixed checkbox selection not working (added `AllowEditing="True"` to SfDataGrid, `AllowEditing="False"` to text columns). Fixed delete operation returning 0 records by using tolerance-based datetime comparison (2-second tolerance for timestamp, date-only comparison for week ending). Increased ConfirmDeleteDialog height from 220 to 260 to prevent text overlap with input field.
+
 ### February 6, 2026
 - **ManageProgressLogDialog enhancements:** Replaced ListView with SfDataGrid for filter/sort capabilities on all columns. Added REFRESH dropdown button (7 days / 30 days / All time) to scan `VANTAGE_global_ProgressLog` and import legacy upload batches not yet tracked. Added ConfirmDeleteDialog requiring user to type "DELETE" before batch deletion proceeds. Confirmation dialogs added before REFRESH operations. Fixed datetime format mismatches in duplicate detection (uses 2-second tolerance). Unlimited query timeout for large table scans.
 - **Schedule cell indicator interface:** Created `IScheduleCellIndicators` interface to document the contract for cell styling properties (`IsMissedStartReasonRequired`, `HasStartVariance`, etc.). Both `ScheduleMasterRow` and `ScheduleViewModel` implement it — ViewModel returns false for all (handles Syncfusion cell recycling), Row returns computed values. Added `BasedOn` to 8 cell styles matching ProgressView pattern. Tested MultiBinding approach but it breaks PropertyChanged reactivity.
