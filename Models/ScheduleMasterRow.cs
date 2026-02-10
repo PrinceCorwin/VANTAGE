@@ -254,6 +254,10 @@ namespace VANTAGE.Models
                 if (!MS_ActualStart.HasValue)
                     return true; // Never started - needs explanation
 
+                // If actualized more than 7 days ago, don't require reason (old news)
+                if (MS_ActualStart.Value.Date < WeekEndDate.Date.AddDays(-7))
+                    return false;
+
                 return MS_ActualStart.Value.Date > P6_Start.Value.Date; // Started late - needs explanation
             }
         }
@@ -275,6 +279,10 @@ namespace VANTAGE.Models
                 // P6 finish has passed - check if MS finished on time
                 if (!MS_ActualFinish.HasValue)
                     return true; // Never finished - needs explanation
+
+                // If actualized more than 7 days ago, don't require reason (old news)
+                if (MS_ActualFinish.Value.Date < WeekEndDate.Date.AddDays(-7))
+                    return false;
 
                 return MS_ActualFinish.Value.Date > P6_Finish.Value.Date; // Finished late - needs explanation
             }

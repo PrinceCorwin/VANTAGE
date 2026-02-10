@@ -159,12 +159,18 @@ namespace VANTAGE
                 PRIMARY KEY (WeekEndDate, ProjectID)
             );
 
-            -- ThreeWeekLookahead table (local only - user forecasts that persist across P6 imports)
+            -- ThreeWeekLookahead table (local only - user forecasts and missed reasons that persist across P6 imports)
             CREATE TABLE IF NOT EXISTS ThreeWeekLookahead (
                 SchedActNO            TEXT NOT NULL,
                 ProjectID             TEXT NOT NULL,
                 ThreeWeekStart        TEXT,
                 ThreeWeekFinish       TEXT,
+                MissedStartReason     TEXT,
+                MissedFinishReason    TEXT,
+                P6_Start              TEXT,
+                P6_Finish             TEXT,
+                MS_Start              TEXT,
+                MS_Finish             TEXT,
                 PRIMARY KEY (SchedActNO, ProjectID)
             );
 
@@ -386,6 +392,9 @@ namespace VANTAGE
 
                 command.ExecuteNonQuery();
 
+                // Migrate ThreeWeekLookahead table (add new columns if missing)
+                MigrateThreeWeekLookaheadTable(connection);
+
                 // Seed built-in templates if not present
                 SeedBuiltInTemplates(connection);
             }
@@ -393,6 +402,51 @@ namespace VANTAGE
             {
                 VANTAGE.Utilities.AppLogger.Error(ex, "DatabaseSetup.InitializeDatabase");
                 throw;
+            }
+        }
+
+        // Add new columns to ThreeWeekLookahead table if they don't exist (migration for existing databases)
+        private static void MigrateThreeWeekLookaheadTable(SqliteConnection connection)
+        {
+            try
+            {
+                // Get existing columns
+                var existingColumns = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                var pragmaCmd = connection.CreateCommand();
+                pragmaCmd.CommandText = "PRAGMA table_info(ThreeWeekLookahead)";
+                using (var reader = pragmaCmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        existingColumns.Add(reader.GetString(1)); // Column name is at index 1
+                    }
+                }
+
+                // Columns to add if missing
+                var newColumns = new[]
+                {
+                    ("MissedStartReason", "TEXT"),
+                    ("MissedFinishReason", "TEXT"),
+                    ("P6_Start", "TEXT"),
+                    ("P6_Finish", "TEXT"),
+                    ("MS_Start", "TEXT"),
+                    ("MS_Finish", "TEXT")
+                };
+
+                foreach (var (columnName, columnType) in newColumns)
+                {
+                    if (!existingColumns.Contains(columnName))
+                    {
+                        var alterCmd = connection.CreateCommand();
+                        alterCmd.CommandText = $"ALTER TABLE ThreeWeekLookahead ADD COLUMN {columnName} {columnType}";
+                        alterCmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                VANTAGE.Utilities.AppLogger.Error(ex, "DatabaseSetup.MigrateThreeWeekLookaheadTable");
+                // Don't throw - migration failure shouldn't block app startup
             }
         }
 

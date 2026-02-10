@@ -329,7 +329,7 @@ namespace VANTAGE.Utilities
 
                 var purgeOrphanCmd = connection.CreateCommand();
                 purgeOrphanCmd.CommandText = $@"
-            DELETE FROM ThreeWeekLookahead 
+            DELETE FROM ThreeWeekLookahead
             WHERE ProjectID IN ({projectIdList})
               AND SchedActNO NOT IN ({actNoList})";
                 int orphansPurged = purgeOrphanCmd.ExecuteNonQuery();
@@ -344,7 +344,7 @@ namespace VANTAGE.Utilities
                 // Clear stale 3WLA dates (dates in the past of selected WeekEndDate)
                 var clearStaleStartCmd = connection.CreateCommand();
                 clearStaleStartCmd.CommandText = @"
-            UPDATE ThreeWeekLookahead 
+            UPDATE ThreeWeekLookahead
             SET ThreeWeekStart = NULL
             WHERE ThreeWeekStart IS NOT NULL AND ThreeWeekStart < @weekEndDate";
                 clearStaleStartCmd.Parameters.AddWithValue("@weekEndDate", weekEndDate.ToString("yyyy-MM-dd"));
@@ -352,7 +352,7 @@ namespace VANTAGE.Utilities
 
                 var clearStaleFinishCmd = connection.CreateCommand();
                 clearStaleFinishCmd.CommandText = @"
-            UPDATE ThreeWeekLookahead 
+            UPDATE ThreeWeekLookahead
             SET ThreeWeekFinish = NULL
             WHERE ThreeWeekFinish IS NOT NULL AND ThreeWeekFinish < @weekEndDate";
                 clearStaleFinishCmd.Parameters.AddWithValue("@weekEndDate", weekEndDate.ToString("yyyy-MM-dd"));
@@ -365,11 +365,12 @@ namespace VANTAGE.Utilities
                         App.CurrentUser?.Username);
                 }
 
-                // Delete rows where both dates are now NULL (no longer useful)
+                // Delete rows where all fields are NULL (no longer useful)
                 var deleteEmptyCmd = connection.CreateCommand();
                 deleteEmptyCmd.CommandText = @"
-            DELETE FROM ThreeWeekLookahead 
-            WHERE ThreeWeekStart IS NULL AND ThreeWeekFinish IS NULL";
+            DELETE FROM ThreeWeekLookahead
+            WHERE ThreeWeekStart IS NULL AND ThreeWeekFinish IS NULL
+              AND MissedStartReason IS NULL AND MissedFinishReason IS NULL";
                 deleteEmptyCmd.ExecuteNonQuery();
 
                 // Clear ALL existing Schedule data

@@ -46,7 +46,8 @@
       "Bash(dotnet publish:*)",
       "Bash(dotnet clean:*)",
       "Bash(gh release create:*)",
-      "Bash(git rebase:*)"
+      "Bash(git rebase:*)",
+      "Skill(speedup)"
     ]
   }
 }
