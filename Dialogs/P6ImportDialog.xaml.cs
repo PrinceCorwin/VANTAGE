@@ -5,8 +5,9 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Windows;
-using Microsoft.Data.Sqlite;
+using Microsoft.Data.SqlClient;
 using Syncfusion.SfSkinManager;
+using VANTAGE.Data;
 using VANTAGE.Utilities;
 
 namespace VANTAGE.Dialogs
@@ -29,8 +30,10 @@ namespace VANTAGE.Dialogs
             SelectedWeekEndDate = GetPreviousSunday();
             dpWeekEndDate.SelectedDate = SelectedWeekEndDate;
 
-            LoadUserProjects();
             lvProjects.ItemsSource = _projects;
+
+            // Load projects asynchronously after dialog is shown
+            Loaded += async (s, e) => await LoadUserProjectsAsync();
         }
 
         // Get previous Sunday from today
@@ -42,52 +45,90 @@ namespace VANTAGE.Dialogs
             return today.AddDays(-daysToSubtract);
         }
 
-        // Load projects assigned to current user
-        private void LoadUserProjects()
+        // Load projects from user's submitted snapshots in Azure
+        private async System.Threading.Tasks.Task LoadUserProjectsAsync()
         {
             try
             {
                 if (App.CurrentUser == null)
                 {
-                    AppLogger.Warning("No current user - cannot load projects", "P6ImportDialog.LoadUserProjects");
+                    AppLogger.Warning("No current user - cannot load projects", "P6ImportDialog.LoadUserProjectsAsync");
                     return;
                 }
 
-                using var connection = new SqliteConnection($"Data Source={DatabaseSetup.DbPath}");
-                connection.Open();
+                // Show loading state
+                txtLoading.Visibility = Visibility.Visible;
+                lvProjects.Visibility = Visibility.Collapsed;
+                btnImport.IsEnabled = false;
 
-                // Get distinct ProjectIDs assigned to current user, join with Projects table for names
-                var cmd = connection.CreateCommand();
-                cmd.CommandText = @"
-                    SELECT DISTINCT 
-                        a.ProjectID,
-                        COALESCE(p.Description, a.ProjectID) as ProjectName
-                    FROM Activities a
-                    LEFT JOIN Projects p ON a.ProjectID = p.ProjectID
-                    WHERE a.AssignedTo = @username
-                    ORDER BY a.ProjectID";
-                cmd.Parameters.AddWithValue("@username", App.CurrentUser.Username);
-
-                using var reader = cmd.ExecuteReader();
-                while (reader.Read())
+                var projectList = await System.Threading.Tasks.Task.Run(() =>
                 {
-                    string projectId = reader.GetString(0);
-                    string projectName = reader.GetString(1);
+                    var results = new List<(string ProjectID, string ProjectName)>();
 
+                    // Check Azure connection first
+                    if (!AzureDbManager.CheckConnection(out string connError))
+                    {
+                        throw new Exception($"Cannot connect to Azure: {connError}");
+                    }
+
+                    using var connection = AzureDbManager.GetConnection();
+                    connection.Open();
+
+                    // Get distinct ProjectIDs from user's snapshots, join with Projects table for names
+                    var cmd = connection.CreateCommand();
+                    cmd.CommandText = @"
+                        SELECT DISTINCT
+                            ps.ProjectID,
+                            COALESCE(p.Description, ps.ProjectID) as ProjectName
+                        FROM VMS_ProgressSnapshots ps
+                        LEFT JOIN VMS_Projects p ON ps.ProjectID = p.ProjectID
+                        WHERE ps.AssignedTo = @username
+                        ORDER BY ps.ProjectID";
+                    cmd.Parameters.AddWithValue("@username", App.CurrentUser.Username);
+
+                    using var reader = cmd.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        results.Add((reader.GetString(0), reader.GetString(1)));
+                    }
+
+                    return results;
+                });
+
+                // Update UI on main thread
+                txtLoading.Visibility = Visibility.Collapsed;
+                lvProjects.Visibility = Visibility.Visible;
+
+                foreach (var (projectId, projectName) in projectList)
+                {
                     _projects.Add(new ProjectSelectionItem
                     {
                         ProjectID = projectId,
                         ProjectName = projectName,
-                        IsSelected = false // User must explicitly select
+                        IsSelected = false
                     });
                 }
 
-                AppLogger.Info($"Loaded {_projects.Count} projects for P6 import dialog", "P6ImportDialog.LoadUserProjects");
+                // Show message if no snapshots exist
+                if (_projects.Count == 0)
+                {
+                    txtNoSnapshots.Visibility = Visibility.Visible;
+                    txtNoSnapshots.Text = "No submitted snapshots found. You must Submit Week in Progress module first.";
+                }
+                else
+                {
+                    btnImport.IsEnabled = true;
+                }
+
+                AppLogger.Info($"Loaded {_projects.Count} projects from snapshots for P6 import dialog", "P6ImportDialog.LoadUserProjectsAsync");
             }
             catch (Exception ex)
             {
-                AppLogger.Error(ex, "P6ImportDialog.LoadUserProjects");
-                MessageBox.Show($"Error loading projects: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                txtLoading.Visibility = Visibility.Collapsed;
+                lvProjects.Visibility = Visibility.Visible;
+                txtError.Text = ex.Message;
+                txtError.Visibility = Visibility.Visible;
+                AppLogger.Error(ex, "P6ImportDialog.LoadUserProjectsAsync");
             }
         }
 
