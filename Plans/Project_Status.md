@@ -172,9 +172,14 @@ All V1 sections of `Help/manual.html` are written. Screenshots configured with c
 ## Feature Backlog
 
 ### High Priority
+
+**NEXT THREE ITEMS TO COMPLETE:**
+1. **FEATURE:** Persist MissedStartReason/MissedFinishReason during P6 import — Currently these values are lost when importing a new P6 file (Schedule table is deleted and recreated). Should preserve MissedReasons for activities where neither the P6 dates nor the MS dates have changed since the previous import
+2. **CHANGE:** SchStart/SchFinish auto-date behavior — Instead of auto-populating SchStart when percent > 0 and SchFinish when percent = 100, mark these fields as required metadata (red cell background like other metadata errors). User must manually select the date. This gives users control over actual start/finish dates rather than defaulting to today.
+3. **PLAN:** Rename MS Start/Finish to V-Start/V-Finish — Rename columns throughout the app to reflect "Vantage" branding. Affects: Schedule main grid (MS Start, MS Finish columns), Schedule detail grid (Start, Finish columns), Progress grid (SchStart, SchFinish columns). Requires deep planning due to cascading impact on: import/export/upload methods, ColumnMappings table and mapping logic, Help manual mappings section, any UI labels or tooltips referencing these fields
+
+**OTHER HIGH PRIORITY:**
 - **TEST:** Schedule Change Log clears on P6 import — verify log files are deleted when importing a new P6 schedule
-- **PLAN:** Rename MS Start/Finish to V-Start/V-Finish — Rename columns throughout the app to reflect "Vantage" branding. Affects: Schedule main grid (MS Start, MS Finish columns), Schedule detail grid (Start, Finish columns), Progress grid (SchStart, SchFinish columns). Requires deep planning due to cascading impact on: import/export/upload methods, ColumnMappings table and mapping logic, Help manual mappings section, any UI labels or tooltips referencing these fields
-- **FEATURE:** Persist MissedStartReason/MissedFinishReason during P6 import — Currently these values are lost when importing a new P6 file (Schedule table is deleted and recreated). Should preserve MissedReasons for activities where neither the P6 dates nor the MS dates have changed since the previous import
 - ~~First publish & end-to-end test (Workstream 4)~~ Complete — v26.1.1 install + v26.1.2 auto-update validated
 - ~~Credentials strategy~~ Complete — migrated to encrypted config file (Workstream 1)
 - ~~Self-contained publish config~~ Complete — tested via v26.1.1 and v26.1.2 publishes (Workstream 2)

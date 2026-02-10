@@ -739,6 +739,28 @@
         <li><strong>Export Selected</strong> — Export selected rows to Excel</li>
     </ul>
 
+    <h4>Find & Replace</h4>
+    <p>Right-click any column header and select <strong>Find and Replace</strong> to open the Find & Replace dialog for that column.</p>
+
+    <p><strong>Standard Mode:</strong> Enter text in "Find what" and "Replace with" fields. Options include:</p>
+    <ul>
+        <li><strong>Match case</strong> — Case-sensitive matching</li>
+        <li><strong>Match entire cell contents</strong> — Only replace if the entire cell value matches (default on)</li>
+    </ul>
+
+    <p><strong>Special Modes:</strong> Use checkboxes at the top of the dialog for bulk operations:</p>
+    <ul>
+        <li><strong>Replace ALL cells in column</strong> — Replace every cell value in the column with the replacement text (confirmation required)</li>
+        <li><strong>Replace BLANK cells in column</strong> — Replace only empty, null, or whitespace-only cells</li>
+    </ul>
+    <p>These modes are mutually exclusive and disable the "Find what" field when checked.</p>
+
+    <p><strong>Buttons:</strong></p>
+    <ul>
+        <li><strong>Count</strong> — Show how many cells match without making changes</li>
+        <li><strong>Replace All</strong> — Replace all matching cells</li>
+    </ul>
+
     <h3 id="prog-metadata">Required Metadata Fields</h3>
     <p>Nine fields are required for sync. Records missing any of these fields will be highlighted in red and cannot be synced until corrected.</p>
 
@@ -815,6 +837,8 @@
         <li>Enable comparison with previous weeks</li>
     </ol>
     <p>If you work on multiple projects, you'll be prompted to select which project to submit.</p>
+
+    <p><strong>Conflict Handling:</strong> If another user has already submitted a snapshot containing records with the same UniqueID for the selected week, those records are automatically skipped (not overwritten). You'll see a message showing how many records were skipped. You can optionally export the skipped records to Excel to see which records were affected and who originally submitted them.</p>
 
     <h3 id="prog-layouts">Column Layouts</h3>
     <p>Your column widths, order, and visibility are automatically saved. To customize:</p>
@@ -1163,8 +1187,14 @@
         <li>In VANTAGE: Milestone, go to <strong>File → Import From P6 File</strong></li>
         <li>Select the Excel file</li>
         <li>Choose the week ending date for this schedule</li>
+        <li>Select which projects this schedule covers (the project list shows only projects for which you have submitted snapshots)</li>
         <li>Click Import</li>
     </ol>
+
+    <div class="note">
+        <div class="note-title">Project List</div>
+        <p>The project selection list is populated from your submitted snapshots. If a project doesn't appear, you need to Submit Week for that project in the Progress module first.</p>
+    </div>
 
     <h4>P6 Column Mapping</h4>
     <table>

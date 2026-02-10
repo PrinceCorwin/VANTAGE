@@ -47,7 +47,10 @@ WPF application for Summit Industrial replacing the legacy MS Access system ("Ol
 **STOP. Before running `git commit`, you MUST complete these steps IN ORDER:**
 1. Update C:\Users\steve\source\repos\PrinceCorwin\VANTAGE\Plans\Project_Status.md - Remove completed items from the backlog
 2. Update C:\Users\steve\source\repos\PrinceCorwin\VANTAGE\Plans\Completed_Work.md - Add entry describing what was completed (with date header)
-3. Update Help/manual.html if the work affects any user-facing functionality (add/update/remove sections, update TOC links)
+3. **HELP MANUAL CHECK (frequently missed!):**
+   - Ask: "Did this work change anything a user would see or interact with?"
+   - If YES: Update Help/manual.html (add/update/remove sections, update TOC if needed)
+   - If NO: Confirm why not (e.g., "internal refactor only, no UI change")
 4. Update any other relevant plan docs if the work relates to a specific feature plan
 5. ONLY THEN proceed with git add and git commit
 
