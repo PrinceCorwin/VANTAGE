@@ -27,11 +27,62 @@ namespace VANTAGE.Dialogs
             txtColumnName.Text = $"Column: {columnHeaderText}";
         }
 
-        private async void BtnReplaceAll_Click(object sender, RoutedEventArgs e)
+        // Enable/disable controls based on Replace All Cells checkbox
+        private void ChkReplaceAllCells_Changed(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrEmpty(txtFind.Text))
+            bool replaceAll = chkReplaceAllCells.IsChecked == true;
+
+            // Mutually exclusive with Find Blanks
+            if (replaceAll && chkFindBlanks.IsChecked == true)
             {
-                MessageBox.Show("Please enter text to find.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                chkFindBlanks.IsChecked = false;
+            }
+
+            UpdateFindControlsState();
+        }
+
+        // Enable/disable Find textbox based on Find blanks checkbox
+        private void ChkFindBlanks_Changed(object sender, RoutedEventArgs e)
+        {
+            bool findBlanks = chkFindBlanks.IsChecked == true;
+
+            // Mutually exclusive with Replace All Cells
+            if (findBlanks && chkReplaceAllCells.IsChecked == true)
+            {
+                chkReplaceAllCells.IsChecked = false;
+            }
+
+            UpdateFindControlsState();
+        }
+
+        // Update control states based on checkbox selections
+        private void UpdateFindControlsState()
+        {
+            bool replaceAll = chkReplaceAllCells.IsChecked == true;
+            bool findBlanks = chkFindBlanks.IsChecked == true;
+            bool disableFindControls = replaceAll || findBlanks;
+
+            // Disable find-related controls when either mode is active
+            txtFind.IsEnabled = !disableFindControls;
+            lblFindWhat.Opacity = disableFindControls ? 0.5 : 1.0;
+            chkMatchCase.IsEnabled = !disableFindControls;
+            chkWholeCell.IsEnabled = !disableFindControls;
+            btnCount.IsEnabled = !replaceAll; // Count still works for Find Blanks
+
+            if (disableFindControls)
+            {
+                txtFind.Text = string.Empty;
+            }
+        }
+
+        // Count - count matches without replacing
+        private void BtnCount_Click(object sender, RoutedEventArgs e)
+        {
+            bool findBlanks = chkFindBlanks.IsChecked == true;
+
+            if (!findBlanks && string.IsNullOrEmpty(txtFind.Text))
+            {
+                MessageBox.Show("Please enter text to find, or check 'Find blanks' to find empty cells.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -42,12 +93,108 @@ namespace VANTAGE.Dialogs
             }
 
             string findText = txtFind.Text;
+            bool matchCase = chkMatchCase.IsChecked == true;
+            bool wholeCell = chkWholeCell.IsChecked == true;
+
+            var allActivities = _dataGrid.View.Records.Select(r => r.Data).Cast<Activity>().ToList();
+            var editableActivities = allActivities.Where(a =>
+                App.CurrentUser!.IsAdmin ||
+                string.Equals(a.AssignedTo, App.CurrentUser?.Username, System.StringComparison.OrdinalIgnoreCase)
+            ).ToList();
+
+            var provider = _dataGrid.View.GetPropertyAccessProvider();
+            int matchCount = 0;
+            int nonEditableMatches = 0;
+
+            foreach (var activity in allActivities)
+            {
+                var currentValue = provider.GetValue(activity, _columnMappingName);
+                string currentText = currentValue?.ToString() ?? string.Empty;
+
+                bool isMatch;
+                if (findBlanks)
+                {
+                    isMatch = currentValue == null || string.IsNullOrWhiteSpace(currentText);
+                }
+                else
+                {
+                    if (currentValue == null)
+                        continue;
+
+                    if (wholeCell)
+                    {
+                        isMatch = matchCase
+                            ? currentText == findText
+                            : currentText.Equals(findText, System.StringComparison.OrdinalIgnoreCase);
+                    }
+                    else
+                    {
+                        isMatch = matchCase
+                            ? currentText.Contains(findText)
+                            : currentText.IndexOf(findText, System.StringComparison.OrdinalIgnoreCase) >= 0;
+                    }
+                }
+
+                if (isMatch)
+                {
+                    matchCount++;
+                    if (!editableActivities.Contains(activity))
+                        nonEditableMatches++;
+                }
+            }
+
+            string searchDesc = findBlanks ? "blank cells" : $"'{findText}'";
+            string message = $"Found {matchCount:N0} match(es) for {searchDesc} in column '{_columnMappingName}'.";
+
+            if (nonEditableMatches > 0)
+                message += $"\n\n{nonEditableMatches:N0} of these are in records not owned by you (cannot be replaced).";
+
+            int editableMatches = matchCount - nonEditableMatches;
+            if (editableMatches > 0)
+                message += $"\n\n{editableMatches:N0} can be replaced.";
+
+            MessageBox.Show(message, "Find Results", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private async void BtnReplaceAll_Click(object sender, RoutedEventArgs e)
+        {
+            bool replaceAllCells = chkReplaceAllCells.IsChecked == true;
+            bool findBlanks = chkFindBlanks.IsChecked == true;
+
+            if (!replaceAllCells && !findBlanks && string.IsNullOrEmpty(txtFind.Text))
+            {
+                MessageBox.Show("Please enter text to find, check 'Find blanks', or check 'Replace ALL cells'.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (_dataGrid == null || string.IsNullOrEmpty(_columnMappingName))
+            {
+                MessageBox.Show("No column selected.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            // Confirm Replace All Cells operation
+            if (replaceAllCells)
+            {
+                var confirmResult = MessageBox.Show(
+                    $"This will replace ALL values in column '{_columnMappingName}' with '{txtReplace.Text}'.\n\n" +
+                    "This cannot be undone. Continue?",
+                    "Confirm Replace All",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning);
+
+                if (confirmResult != MessageBoxResult.Yes)
+                    return;
+            }
+
+            string findText = txtFind.Text;
             string replaceText = txtReplace.Text ?? string.Empty;
             bool matchCase = chkMatchCase.IsChecked == true;
             bool wholeCell = chkWholeCell.IsChecked == true;
 
             // Show busy dialog
-            var busyDialog = new BusyDialog(this, "Finding matches...");
+            string busyMessage = replaceAllCells ? "Replacing all values..." : "Finding matches...";
+            var busyDialog = new BusyDialog(this, busyMessage);
             busyDialog.Show();
             btnReplaceAll.IsEnabled = false;
 
@@ -82,30 +229,45 @@ namespace VANTAGE.Dialogs
                 foreach (var activity in editableActivities)
                 {
                     var currentValue = provider.GetValue(activity, _columnMappingName);
-                    if (currentValue == null)
-                        continue;
-
-                    string currentText = currentValue.ToString() ?? string.Empty;
+                    string currentText = currentValue?.ToString() ?? string.Empty;
 
                     bool isMatch;
-                    if (wholeCell)
+                    if (replaceAllCells)
                     {
-                        isMatch = matchCase
-                            ? currentText == findText
-                            : currentText.Equals(findText, System.StringComparison.OrdinalIgnoreCase);
+                        // Replace All Cells mode - every cell is a match
+                        isMatch = true;
+                    }
+                    else if (findBlanks)
+                    {
+                        // Match if value is null, empty, or whitespace-only
+                        isMatch = currentValue == null || string.IsNullOrWhiteSpace(currentText);
                     }
                     else
                     {
-                        isMatch = matchCase
-                            ? currentText.Contains(findText)
-                            : currentText.IndexOf(findText, System.StringComparison.OrdinalIgnoreCase) >= 0;
+                        // Skip null values when not finding blanks
+                        if (currentValue == null)
+                            continue;
+
+                        if (wholeCell)
+                        {
+                            isMatch = matchCase
+                                ? currentText == findText
+                                : currentText.Equals(findText, System.StringComparison.OrdinalIgnoreCase);
+                        }
+                        else
+                        {
+                            isMatch = matchCase
+                                ? currentText.Contains(findText)
+                                : currentText.IndexOf(findText, System.StringComparison.OrdinalIgnoreCase) >= 0;
+                        }
                     }
 
                     if (!isMatch) continue;
 
                     matchCount++;
 
-                    string newTextValue = wholeCell
+                    // When finding blanks, always replace entire cell
+                    string newTextValue = findBlanks || wholeCell
                         ? replaceText
                         : matchCase
                             ? currentText.Replace(findText, replaceText)
@@ -117,7 +279,9 @@ namespace VANTAGE.Dialogs
 
                     try
                     {
-                        object? newValue = ConvertToPropertyType(newTextValue, currentValue.GetType());
+                        // Get property type from Activity class (currentValue may be null when finding blanks)
+                        var propertyType = currentValue?.GetType() ?? typeof(Activity).GetProperty(_columnMappingName)?.PropertyType ?? typeof(string);
+                        object? newValue = ConvertToPropertyType(newTextValue, propertyType);
 
                         // Update in-memory object
                         provider.SetValue(activity, _columnMappingName, newValue);

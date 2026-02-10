@@ -7,6 +7,7 @@ This document tracks completed features and fixes. Items are moved here from Pro
 ## Unreleased
 
 ### February 10, 2026
+- **Find/Replace dialog enhancements:** Added three modes for replacing values: (1) normal text find/replace, (2) "Replace BLANK cells in column" checkbox to target empty/null/whitespace cells, (3) "Replace ALL cells in column" checkbox to replace every cell value. Checkboxes are mutually exclusive and disable the Find textbox when checked. Added "Count" button to show match counts without replacing. Replace ALL shows confirmation dialog before proceeding.
 - **Fix ProgressView not refreshing after Clear Local Activities from other modules:** When user cleared local activities while on a different module (Schedule, Work Package, etc.), the cached ProgressView still showed stale records upon navigation. Fixed by invalidating `_cachedProgressView` in the else branch of `MenuClearLocalActivities_Click` so next navigation creates a fresh view.
 
 ### February 9, 2026

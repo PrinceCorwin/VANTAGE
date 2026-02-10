@@ -4,12 +4,13 @@
         xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
         Title="Find and Replace"
         Width="500"
-        Height="343"
+        Height="420"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
         Background="{DynamicResource ContentBackground}">
     <Grid Margin="20">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -27,30 +28,48 @@
                    Foreground="{DynamicResource PrimaryForeground}"
                    Margin="0,0,0,15"/>
 
+        <!-- Mode Checkboxes - mutually exclusive -->
+        <StackPanel Grid.Row="1" Margin="0,0,0,10">
+            <CheckBox x:Name="chkReplaceAllCells"
+                      Content="Replace ALL cells in column"
+                      Foreground="{DynamicResource ContentForeground}"
+                      Margin="0,0,0,8"
+                      ToolTip="Replace every cell value in this column with the replacement text"
+                      Checked="ChkReplaceAllCells_Changed"
+                      Unchecked="ChkReplaceAllCells_Changed"/>
+            <CheckBox x:Name="chkFindBlanks"
+                      Content="Replace BLANK cells in column"
+                      Foreground="{DynamicResource ContentForeground}"
+                      ToolTip="Replace cells that are empty, null, or whitespace-only"
+                      Checked="ChkFindBlanks_Changed"
+                      Unchecked="ChkFindBlanks_Changed"/>
+        </StackPanel>
+
         <!-- Find What -->
-        <TextBlock Grid.Row="1"
+        <TextBlock Grid.Row="2"
+                   x:Name="lblFindWhat"
                    Text="Find what:"
                    Foreground="{DynamicResource ContentForeground}"
                    Margin="0,0,0,5"/>
-        <syncfusion:SfTextBoxExt Grid.Row="2"
+        <syncfusion:SfTextBoxExt Grid.Row="3"
                                  x:Name="txtFind"
                                  Height="32"
                                  Margin="0,0,0,12"
                                  Watermark="Enter text to find..."/>
 
         <!-- Replace With -->
-        <TextBlock Grid.Row="3"
+        <TextBlock Grid.Row="4"
                    Text="Replace with:"
                    Foreground="{DynamicResource ContentForeground}"
                    Margin="0,0,0,5"/>
-        <syncfusion:SfTextBoxExt Grid.Row="4"
+        <syncfusion:SfTextBoxExt Grid.Row="5"
                                  x:Name="txtReplace"
                                  Height="32"
                                  Margin="0,0,0,15"
                                  Watermark="Enter replacement text..."/>
 
         <!-- Options and Buttons -->
-        <Grid Grid.Row="5">
+        <Grid Grid.Row="6">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
@@ -70,6 +89,16 @@
 
             <!-- Buttons -->
             <StackPanel Grid.Column="1" VerticalAlignment="Top">
+                <syncfusion:ButtonAdv x:Name="btnCount"
+                                      Label="Count"
+                                      SmallIcon="{x:Null}"
+                                      Width="120"
+                                      Height="34"
+                                      Margin="0,0,0,10"
+                                      ToolTip="Count matching cells without replacing"
+                                      Background="{DynamicResource ContentBackground}"
+                                      Foreground="{DynamicResource ContentForeground}"
+                                      Click="BtnCount_Click"/>
                 <syncfusion:ButtonAdv x:Name="btnReplaceAll"
                                       Label="Replace All"
                                       SmallIcon="{x:Null}"
