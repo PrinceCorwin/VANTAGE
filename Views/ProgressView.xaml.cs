@@ -2678,8 +2678,9 @@ namespace VANTAGE.Views
 
                 try
                 {
-                    var (success, submitError, snapshotCount, skippedCount) = await Task.Run(async () =>
+                    var (success, submitError, snapshotCount, skippedCount, skippedRecords) = await Task.Run(async () =>
                     {
+                        var skippedList = new List<(string UniqueID, string SchedActNO, string Description)>();
                         var reporter = (IProgress<string>)progress;
 
                         // Step 8: Check for unsaved local changes
@@ -2705,7 +2706,7 @@ namespace VANTAGE.Views
                             reporter.Report($"Pushing {dirtyCount:N0} unsaved changes...");
                             var pushResult = await SyncManager.PushRecordsAsync(new List<string> { selectedProject });
                             if (!string.IsNullOrEmpty(pushResult.ErrorMessage))
-                                return (false, $"Sync failed during push:\n\n{pushResult.ErrorMessage}", 0, 0);
+                                return (false, $"Sync failed during push:\n\n{pushResult.ErrorMessage}", 0, 0, skippedList);
                         }
 
                         // Step 9: Delete existing snapshots if needed
@@ -2731,14 +2732,25 @@ namespace VANTAGE.Views
                             AppLogger.Info($"Deleted {deletedCount} existing snapshots for overwrite", "ProgressView.BtnSubmit_Click", currentUser);
                         }
 
-                        // Step 10: Check for records already submitted by other users
+                        // Step 10: Check for existing snapshots (submitted by other users or different projects)
                         reporter.Report("Checking for conflicts...");
 
-                        int skipped = 0;
                         using (var azureConn = AzureDbManager.GetConnection())
                         {
                             azureConn.Open();
 
+                            // Count total records user should submit
+                            var countCmd = azureConn.CreateCommand();
+                            countCmd.CommandText = @"
+                        SELECT COUNT(*) FROM VMS_Activities
+                        WHERE AssignedTo = @username
+                          AND ProjectID = @projectId
+                          AND IsDeleted = 0";
+                            countCmd.Parameters.AddWithValue("@username", currentUser);
+                            countCmd.Parameters.AddWithValue("@projectId", selectedProject);
+                            int expectedCount = Convert.ToInt32(countCmd.ExecuteScalar() ?? 0);
+
+                            // Check for conflicts - records already in snapshots by other users
                             var conflictCheck = azureConn.CreateCommand();
                             conflictCheck.CommandText = @"
                         SELECT ps.AssignedTo as OriginalSubmitter, COUNT(*) as RecordCount
@@ -2764,17 +2776,17 @@ namespace VANTAGE.Views
 
                             if (conflicts.Any())
                             {
-                                skipped = conflicts.Sum(c => c.Count);
+                                int conflictCount = conflicts.Sum(c => c.Count);
                                 var conflictDetails = string.Join("\n", conflicts.Select(c => $"  • {c.Count} records by {c.User}"));
 
                                 bool proceed = false;
                                 System.Windows.Application.Current.Dispatcher.Invoke(() =>
                                 {
-                                    busyDialog.Hide();  // Hide the busy dialog
+                                    busyDialog.Hide();
 
                                     var result = MessageBox.Show(
                                         ownerWindow,
-                                        $"{skipped} of your assigned records were already submitted for this week by other users:\n\n" +
+                                        $"{conflictCount} of your assigned records were already submitted for this week by other users:\n\n" +
                                         $"{conflictDetails}\n\n" +
                                         $"These records will be SKIPPED. Do you want to submit the remaining records?\n\n" +
                                         $"(You may need to coordinate with the users above if this is unexpected.)",
@@ -2784,24 +2796,53 @@ namespace VANTAGE.Views
                                     proceed = (result == MessageBoxResult.Yes);
 
                                     if (proceed)
-                                        busyDialog.Show();  // Show it again only if continuing
+                                        busyDialog.Show();
                                 });
 
                                 if (!proceed)
-                                    return (false, "Cancelled by user", 0, 0);
+                                    return (false, "Cancelled by user", 0, 0, skippedList);
                             }
 
-                            // Step 11: Copy Activities from Azure to ProgressSnapshots (skip existing)
+                            // Step 11: Query for pre-existing snapshots BEFORE insert (these will be skipped)
+                            reporter.Report("Checking for existing snapshots...");
+
+                            var preExistingQuery = azureConn.CreateCommand();
+                            preExistingQuery.CommandText = @"
+                            SELECT a.UniqueID, a.SchedActNO, a.Description, ps.AssignedTo as SubmittedBy, ps.ProjectID as SnapshotProject
+                            FROM VMS_Activities a
+                            INNER JOIN VMS_ProgressSnapshots ps ON ps.UniqueID = a.UniqueID AND ps.WeekEndDate = @weekEndDate
+                            WHERE a.AssignedTo = @username
+                              AND a.ProjectID = @projectId
+                              AND a.IsDeleted = 0";
+                            preExistingQuery.Parameters.AddWithValue("@username", currentUser);
+                            preExistingQuery.Parameters.AddWithValue("@projectId", selectedProject);
+                            preExistingQuery.Parameters.AddWithValue("@weekEndDate", weekEndDateStr);
+
+                            using (var preExistingReader = preExistingQuery.ExecuteReader())
+                            {
+                                while (preExistingReader.Read())
+                                {
+                                    string submittedBy = preExistingReader.IsDBNull(3) ? "" : preExistingReader.GetString(3);
+                                    string snapshotProject = preExistingReader.IsDBNull(4) ? "" : preExistingReader.GetString(4);
+
+                                    skippedList.Add((
+                                        preExistingReader.GetString(0),
+                                        preExistingReader.IsDBNull(1) ? "" : preExistingReader.GetString(1),
+                                        $"{(preExistingReader.IsDBNull(2) ? "" : preExistingReader.GetString(2))} [Submitted by: {submittedBy}, Project: {snapshotProject}]"
+                                    ));
+                                }
+                            }
+
+                            // Step 12: Copy Activities from Azure to ProgressSnapshots (skip existing)
                             reporter.Report("Creating snapshots...");
 
-                            // Only use NOT EXISTS when other users have snapshots for our records
-                            string notExistsClause = skipped > 0
-                                ? @"AND NOT EXISTS (
+                            // Always use NOT EXISTS to safely skip records that already exist
+                            // (could be submitted by other users, under different project, or edge cases)
+                            string notExistsClause = @"AND NOT EXISTS (
                               SELECT 1 FROM VMS_ProgressSnapshots ps
                               WHERE ps.UniqueID = a.UniqueID
                                 AND ps.WeekEndDate = @weekEndDate
-                          )"
-                                : "";
+                          )";
 
                             var insertCmd = azureConn.CreateCommand();
                             insertCmd.CommandTimeout = 0;
@@ -2847,6 +2888,9 @@ namespace VANTAGE.Views
 
                             int snapshots = insertCmd.ExecuteNonQuery();
 
+                            // Skipped count is the number of pre-existing snapshots we found
+                            int skipped = skippedList.Count;
+
                             AppLogger.Info($"Created {snapshots} snapshots for week ending {weekEndDateStr} ({skipped} skipped)", "ProgressView.BtnSubmit_Click", currentUser);
                             // Step 13: Purge old snapshots (older than 4 weeks from today)
                             reporter.Report("Cleaning up old snapshots...");
@@ -2886,7 +2930,7 @@ namespace VANTAGE.Views
                                 updateLocalCmd.ExecuteNonQuery();
                             }
 
-                            return (true, string.Empty, snapshots, skipped);
+                            return (true, string.Empty, snapshots, skipped, skippedList);
                         }
                     });
 
@@ -2909,10 +2953,27 @@ namespace VANTAGE.Views
                     stopwatch.Stop();
                     var msg = $"Successfully submitted {snapshotCount:N0} activities for week ending {weekEndDateStr}.";
                     msg += $"\n\nElapsed: {stopwatch.Elapsed.TotalSeconds:F1} seconds";
-                    if (skippedCount > 0)
-                        msg += $"\n\n{skippedCount:N0} records were skipped because they were already submitted by another user.";
 
-                    MessageBox.Show(msg, "Progress Submitted", MessageBoxButton.OK, MessageBoxImage.Information);
+                    if (skippedCount > 0 && skippedRecords.Count > 0)
+                    {
+                        msg += $"\n\n{skippedCount:N0} records were skipped (already existed in snapshots).";
+                        msg += "\n\nWould you like to export the skipped records to Excel?";
+
+                        var exportResult = MessageBox.Show(msg, "Progress Submitted", MessageBoxButton.YesNo, MessageBoxImage.Information);
+                        if (exportResult == MessageBoxResult.Yes)
+                        {
+                            ExportSkippedRecordsToExcel(skippedRecords, weekEndDateStr);
+                        }
+                    }
+                    else if (skippedCount > 0)
+                    {
+                        msg += $"\n\n{skippedCount:N0} records were skipped (already existed in snapshots).";
+                        MessageBox.Show(msg, "Progress Submitted", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                    else
+                    {
+                        MessageBox.Show(msg, "Progress Submitted", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
                 }
                 catch
                 {
@@ -2945,6 +3006,60 @@ namespace VANTAGE.Views
             }
         }
 
+        // Export skipped snapshot records to Excel
+        private void ExportSkippedRecordsToExcel(List<(string UniqueID, string SchedActNO, string Description)> skippedRecords, string weekEndDate)
+        {
+            try
+            {
+                var saveDialog = new Microsoft.Win32.SaveFileDialog
+                {
+                    Filter = "Excel Files (*.xlsx)|*.xlsx",
+                    FileName = $"SkippedRecords_{weekEndDate.Replace("-", "")}.xlsx",
+                    Title = "Export Skipped Records"
+                };
+
+                if (saveDialog.ShowDialog() != true)
+                    return;
+
+                using var workbook = new ClosedXML.Excel.XLWorkbook();
+                var worksheet = workbook.Worksheets.Add("Skipped Records");
+
+                // Headers
+                worksheet.Cell(1, 1).Value = "UniqueID";
+                worksheet.Cell(1, 2).Value = "SchedActNO";
+                worksheet.Cell(1, 3).Value = "Description";
+                worksheet.Cell(1, 4).Value = "WeekEndDate";
+
+                // Style headers
+                var headerRange = worksheet.Range(1, 1, 1, 4);
+                headerRange.Style.Font.Bold = true;
+                headerRange.Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightGray;
+
+                // Data rows
+                for (int i = 0; i < skippedRecords.Count; i++)
+                {
+                    var record = skippedRecords[i];
+                    worksheet.Cell(i + 2, 1).Value = record.UniqueID;
+                    worksheet.Cell(i + 2, 2).Value = record.SchedActNO;
+                    worksheet.Cell(i + 2, 3).Value = record.Description;
+                    worksheet.Cell(i + 2, 4).Value = weekEndDate;
+                }
+
+                // Auto-fit columns
+                worksheet.Columns().AdjustToContents();
+
+                workbook.SaveAs(saveDialog.FileName);
+
+                MessageBox.Show($"Exported {skippedRecords.Count} skipped records to:\n\n{saveDialog.FileName}",
+                    "Export Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "ProgressView.ExportSkippedRecordsToExcel");
+                MessageBox.Show($"Error exporting skipped records:\n\n{ex.Message}",
+                    "Export Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
 
         private async void BtnSync_Click(object sender, RoutedEventArgs e)
         {
