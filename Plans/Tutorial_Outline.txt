@@ -1,0 +1,190 @@
+VANTAGE: Milestone - User Tutorial Outline
+Teams Meeting Session
+=============================================
+
+Target Audience: OldVantage users migrating to the new system
+Prerequisite: App is already installed and initial sync completed
+
+Estimated Total Time: ~90 minutes (adjust based on Q&A)
+
+=============================================
+
+1. ORIENTATION & WHAT'S NEW (~5 min)
+=============================================
+   - Quick tour of the main interface layout
+     - Module navigation bar: Progress, Schedule, Prog Books, Work Pkgs, Analysis
+     - Status bar: version, current user, last sync time
+   - Key differences from OldVantage
+     - Cloud-synced via Azure (no more shared Access database)
+     - Real-time multi-user support
+     - Auto-updating app (updates delivered automatically)
+
+
+2. PROGRESS MODULE - THE GRID (~15 min)
+=============================================
+   a. Grid Basics
+      - Scrolling, resizing columns, reordering columns
+      - Frozen columns (right-click header to freeze)
+      - Row numbers in the row header
+      - Summary row at the bottom (totals for Quantity, BudgetMHs, etc.)
+
+   b. Sorting & Grouping
+      - Click column header to sort
+      - Drag columns to the Group Drop Area for multi-level grouping
+      - Collapse/expand groups
+
+   c. Filtering
+      - Global search bar (searches across all common columns)
+      - Column header filters (Excel-style: text, numeric, date, checkbox)
+      - Sidebar quick filters: Complete, In Progress, Not Started
+      - Sidebar attribute filters: Unsynced, My Records, Today
+      - User-defined filters (up to 5 conditions with AND/OR logic)
+        - Creating, editing, and deleting saved filters via Manage Filters
+
+   d. Column Layouts
+      - Column visibility (Columns button in sidebar)
+      - Saving named layouts via Settings menu > Grid Layouts
+      - Switching between layouts
+
+   e. Summary Panel
+      - Click budget field label to change which column drives the totals
+      - Earned value and percent complete calculations
+
+
+3. PROGRESS MODULE - EDITING & PROGRESSING RECORDS (~15 min)
+=============================================
+   a. Editing Cells
+      - Double-click to edit, Enter to save, Esc to cancel
+      - Required metadata fields (9 fields highlighted red if missing)
+      - Date auto-logic: SchStart auto-sets on first progress, SchFinish auto-sets at 100%
+
+   b. Progressing Records
+      - Select rows, then use 100% or 0% toolbar buttons
+      - Right-click the percent buttons for a custom percent value
+      - Multi-select editing (Ctrl+Click, Shift+Click)
+
+   c. Copy & Paste
+      - Ctrl+C / Ctrl+V for cells (with validation)
+      - Right-click context menu: Copy rows (visible or all columns)
+      - Column header right-click: Copy column with/without header
+
+   d. Other Row Operations
+      - Right-click context menu: Delete, Duplicate, Export Selected to Excel
+      - Assign button: reassign selected records to a different user
+
+
+4. IMPORTING & EXPORTING ACTIVITIES (~10 min)
+=============================================
+   - File > Import Activities (Replace vs. Combine - when to use each)
+   - File > Export Activities (Milestone format)
+   - File > Export Activities Template (blank template for creating new data)
+   - Legacy Export options (for anyone still interfacing with OldVantage)
+   - Create Activities feature (generating new activities from project parameters)
+   - Skipped Records dialog (what happens when import encounters issues)
+
+
+5. SYNCING & SNAPSHOTS (~10 min)
+=============================================
+   a. Sync
+      - SYNC button: pushes local changes to Azure, pulls others' changes
+      - Metadata errors must be resolved before sync (required fields)
+      - Unsynced filter to review pending changes before syncing
+      - Connection handling if Azure is unreachable
+
+   b. Weekly Snapshots
+      - SUBMIT WEEK button: archives current progress as a weekly snapshot
+      - Multi-project selection during submission
+      - Manage My Snapshots: viewing, deleting, or reverting to a previous week
+
+   c. Workflow Recap
+      - Daily: Edit records > Sync
+      - Weekly: Review > Sync > Submit Week
+
+
+6. SCHEDULE MODULE (~10 min)
+=============================================
+   a. Layout Overview
+      - Master grid (top): P6 schedule data with MS rollup values
+      - Detail grid (bottom): linked VANTAGE activities for selected schedule row
+      - Click a master row to see its linked activities below
+
+   b. P6 Import
+      - File > Import From P6 File
+      - Selecting the Excel file, choosing week ending date, picking projects
+      - Column mapping is automatic (task_code, start_date, etc.)
+
+   c. P6 Export
+      - File > Export To P6 File
+      - What gets exported: task_code, status, actual dates, percent complete
+
+   d. Editing in the Detail Grid
+      - Updating percent, budget MHs, start/finish dates
+      - Changes reflect in master grid rollup values
+      - SAVE button (turns red when unsaved changes exist)
+
+   e. Quick Filters
+      - Missed Start / Missed Finish / 3WLA / Discrepancies / Required Fields
+      - Brief explanation of what each filter surfaces
+
+   f. Schedule Change Log
+      - Tools > Schedule Change Log
+      - Reviewing logged changes and applying selected changes to live Activities
+
+
+7. PROGRESS BOOKS (~5 min)
+=============================================
+   - Purpose: generate printable PDF checklists for field crews
+   - Layout selection and configuration
+      - Clone and delete layouts
+      - Paper size: Letter vs. Tabloid
+   - Column selection
+   - GENERATE button to produce the PDF
+   - AI Progress Scan
+      - Scanning handwritten percentages from completed field books
+      - Reviewing scan results before applying to records
+
+
+8. WORK PACKAGES (~5 min)
+=============================================
+   - Purpose: create PDF work packages with forms and drawings
+   - Template system
+      - WP Templates tab: manage work package templates
+      - Form Templates tab: manage form definitions
+      - Import/Export templates (JSON)
+   - Generate tab
+      - Select project and template
+      - Configure and generate PDF
+   - Token system: dynamic field replacement in generated documents
+
+
+9. TOOLS & SETTINGS (~10 min)
+=============================================
+   a. Tools Menu
+      - Help Sidebar (F1) - searchable context-sensitive help
+      - Prorate MHs - distributing budgeted hours across filtered activities
+      - Schedule Change Log (covered in Schedule section)
+
+   b. Settings Menu (three-dot icon)
+      - Grid Layouts (save/load named layouts)
+      - Theme selection: Dark, Light, Orchid
+      - Import/Export Settings (transfer settings between machines)
+      - Feedback Board: submitting ideas and bug reports
+      - About VANTAGE: Milestone
+
+   c. Keyboard Shortcuts Recap
+      - F1: Help
+      - Double-click: Edit cell
+      - Enter/Esc: Save/Cancel
+      - Ctrl+C/V: Copy/Paste
+      - Ctrl+Click: Multi-select
+      - Shift+Click: Range select
+      - Right-click: Context menu
+
+
+10. Q&A AND WRAP-UP (~5 min)
+=============================================
+   - Open floor for questions
+   - Remind users about:
+     - Help sidebar (F1) is always available
+     - Feedback Board for reporting issues or suggesting features
+     - App updates automatically - no manual installs needed

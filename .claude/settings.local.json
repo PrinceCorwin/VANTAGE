@@ -45,7 +45,8 @@
       "Bash(dotnet run)",
       "Bash(dotnet publish:*)",
       "Bash(dotnet clean:*)",
-      "Bash(gh release create:*)"
+      "Bash(gh release create:*)",
+      "Bash(git rebase:*)"
     ]
   }
 }
