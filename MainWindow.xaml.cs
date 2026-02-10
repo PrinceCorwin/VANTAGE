@@ -1361,10 +1361,15 @@ namespace VANTAGE
 
                 AppLogger.Info($"Cleared {deletedCount} local activities", "MainWindow.MenuClearLocalActivities_Click", App.CurrentUser?.Username);
 
-                // Clear the grid if ProgressView is loaded
+                // Clear the grid if ProgressView is loaded, otherwise invalidate cache
                 if (ContentArea.Content is Views.ProgressView progressView)
                 {
                     await progressView.RefreshData();
+                }
+                else
+                {
+                    // Invalidate cached view so next navigation creates fresh instance
+                    _cachedProgressView = null;
                 }
 
                 MessageBox.Show(

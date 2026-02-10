@@ -6,6 +6,9 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### February 10, 2026
+- **Fix ProgressView not refreshing after Clear Local Activities from other modules:** When user cleared local activities while on a different module (Schedule, Work Package, etc.), the cached ProgressView still showed stale records upon navigation. Fixed by invalidating `_cachedProgressView` in the else branch of `MenuClearLocalActivities_Click` so next navigation creates a fresh view.
+
 ### February 9, 2026
 - **ManageProgressLogDialog bug fixes:** Fixed checkbox selection not working (added `AllowEditing="True"` to SfDataGrid, `AllowEditing="False"` to text columns). Fixed delete operation returning 0 records by using tolerance-based datetime comparison (2-second tolerance for timestamp, date-only comparison for week ending). Increased ConfirmDeleteDialog height from 220 to 260 to prevent text overlap with input field.
 - **User tutorial outline:** Created `Plans/Tutorial_Outline.txt` with structured ~90-minute Teams meeting outline covering all modules (Progress, Schedule, Progress Books, Work Packages), grid operations, syncing, snapshots, Tools/Settings menus, and keyboard shortcuts. Tailored for OldVantage migrators.
