@@ -35,6 +35,7 @@ namespace VANTAGE.Views
         private Dictionary<string, Syncfusion.UI.Xaml.Grid.GridColumn> _columnMap = new Dictionary<string, Syncfusion.UI.Xaml.Grid.GridColumn>();
         private UserFilter? _activeUserFilter;
         private bool _scanResultsFilterActive;
+        private bool _metadataErrorsFilterActive;
         private string _globalSearchText = string.Empty;
         private ProgressViewModel _viewModel;
         // one key per grid/view
@@ -216,8 +217,10 @@ namespace VANTAGE.Views
 
                 await _viewModel.ApplyFilter("MetadataErrors", "IN", errorFilter);
 
+                _metadataErrorsFilterActive = true;
                 UpdateRecordCount();
                 DebouncedUpdateSummary();
+                UpdateClearFiltersBorder();
             }
             catch (Exception ex)
             {
@@ -878,6 +881,29 @@ namespace VANTAGE.Views
                     e.Handled = true;
                     PasteToSelectedCells(selectedCells, clipboardValues);
                 }
+            }
+            // Handle Delete/Backspace to clear cell when not in edit mode
+            else if ((e.Key == Key.Delete || e.Key == Key.Back) && Keyboard.Modifiers == ModifierKeys.None)
+            {
+                var currentCell = sfActivities.SelectionController.CurrentCellManager.CurrentCell;
+                if (currentCell == null || currentCell.IsEditing)
+                    return; // Let default behavior handle if in edit mode
+
+                var activity = sfActivities.SelectedItem as Activity;
+                if (activity == null)
+                    return;
+
+                // Check ownership
+                bool canEdit = string.Equals(activity.AssignedTo, App.CurrentUser?.Username, StringComparison.OrdinalIgnoreCase);
+                if (!canEdit)
+                    return;
+
+                // Get column info
+                if (sfActivities.CurrentColumn == null)
+                    return;
+
+                e.Handled = true;
+                _ = ClearCurrentCellAsync(activity, sfActivities.CurrentColumn.MappingName);
             }
         }
 
@@ -3503,6 +3529,7 @@ namespace VANTAGE.Views
             // Clear custom View filter
             sfActivities.View.Filter = null;
             _scanResultsFilterActive = false;
+            _metadataErrorsFilterActive = false;
 
             // Clear all column filters using Syncfusion's built-in method
             sfActivities.ClearFilters();
@@ -3561,6 +3588,10 @@ namespace VANTAGE.Views
 
             // Check scan results filter
             if (!hasFilter && _scanResultsFilterActive)
+                hasFilter = true;
+
+            // Check metadata errors filter
+            if (!hasFilter && _metadataErrorsFilterActive)
                 hasFilter = true;
 
             btnClearFilters.BorderBrush = hasFilter
@@ -3975,6 +4006,53 @@ namespace VANTAGE.Views
             }
         }
 
+        // Clear cell value when Delete/Backspace pressed outside edit mode
+        private async Task ClearCurrentCellAsync(Activity activity, string columnName)
+        {
+            try
+            {
+                var property = GetCachedProperty(columnName);
+                if (property == null || !property.CanWrite)
+                    return;
+
+                // Determine appropriate empty value based on type
+                object? emptyValue = null;
+                var propType = Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType;
+
+                if (propType == typeof(string))
+                    emptyValue = null;
+                else if (propType == typeof(double))
+                    emptyValue = 0.0;
+                else if (propType == typeof(int))
+                    emptyValue = 0;
+                else if (propType == typeof(DateTime))
+                    emptyValue = null;
+                else
+                    return; // Don't clear unknown types
+
+                // Set the value
+                property.SetValue(activity, emptyValue);
+
+                // Mark dirty and save
+                activity.UpdatedBy = App.CurrentUser?.Username ?? "Unknown";
+                activity.UpdatedUtcDate = DateTime.UtcNow;
+                activity.LocalDirty = 1;
+
+                bool success = await ActivityRepository.UpdateActivityInDatabase(activity);
+
+                if (success)
+                {
+                    sfActivities.View?.Refresh();
+                    UpdateSummaryPanel();
+                    await CalculateMetadataErrorCount();
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "ProgressView.ClearCurrentCellAsync", App.CurrentUser?.Username ?? "Unknown");
+            }
+        }
+
         private void MenuFindReplaceColumn_Click(object sender, RoutedEventArgs e)
         {
             var menuItem = sender as MenuItem;
@@ -3999,6 +4077,7 @@ namespace VANTAGE.Views
             if (dialog.ShowDialog() == true)
             {
                 UpdateSummaryPanel();
+                _ = CalculateMetadataErrorCount();
             }
         }
 

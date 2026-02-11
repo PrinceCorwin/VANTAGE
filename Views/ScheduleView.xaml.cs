@@ -1239,11 +1239,7 @@ namespace VANTAGE.Views
             _viewModel.ClearAllFilters();
 
             // Clear column header filters on master grid
-            if (sfScheduleMaster?.View != null)
-            {
-                sfScheduleMaster.View.Filter = null;
-                sfScheduleMaster.View.RefreshFilter();
-            }
+            sfScheduleMaster?.ClearFilters();
 
             txtStatus.Text = "All filters cleared";
             UpdateClearFiltersBorder();
