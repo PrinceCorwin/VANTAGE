@@ -218,10 +218,10 @@ namespace VANTAGE.ViewModels
         {
             DateTime today = DateTime.Today;
 
-            if (activity.SchStart.HasValue && activity.SchStart.Value.Date == today)
+            if (activity.ActStart.HasValue && activity.ActStart.Value.Date == today)
                 return true;
 
-            if (activity.SchFinish.HasValue && activity.SchFinish.Value.Date == today)
+            if (activity.ActFin.HasValue && activity.ActFin.Value.Date == today)
                 return true;
 
             return false;
@@ -360,7 +360,7 @@ namespace VANTAGE.ViewModels
             // Date columns
             var dateColumns = new System.Collections.Generic.HashSet<string>(System.StringComparer.OrdinalIgnoreCase)
             {
-                "SchStart", "SchFinish", "ProgDate", "WeekEndDate", "AzureUploadUtcDate"
+                "ActStart", "ActFin", "ProgDate", "WeekEndDate", "AzureUploadUtcDate"
             };
             if (dateColumns.Contains(dbColumnName))
             {

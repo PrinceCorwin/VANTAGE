@@ -190,31 +190,31 @@ namespace VANTAGE.Utilities
                 // Rule 1: PercentEntry = 0 → clear both dates
                 if (activity.PercentEntry == 0)
                 {
-                    activity.SchStart = null;
-                    activity.SchFinish = null;
+                    activity.ActStart = null;
+                    activity.ActFin = null;
                 }
                 else
                 {
-                    // Rule 2: SchStart in future → clamp to today
-                    if (activity.SchStart != null && activity.SchStart > today)
+                    // Rule 2: ActStart in future → clamp to today
+                    if (activity.ActStart != null && activity.ActStart > today)
                     {
-                        activity.SchStart = today;
+                        activity.ActStart = today;
                     }
-                    // Note: No auto-set of SchStart - user must enter manually (will show as metadata error)
+                    // Note: No auto-set of ActStart - user must enter manually (will show as metadata error)
 
-                    // Rule 3: PercentEntry < 100 → clear SchFinish
+                    // Rule 3: PercentEntry < 100 → clear ActFin
                     if (activity.PercentEntry < 100)
                     {
-                        activity.SchFinish = null;
+                        activity.ActFin = null;
                     }
                     else // PercentEntry = 100
                     {
-                        // Rule 4: SchFinish in future → clamp to today
-                        if (activity.SchFinish != null && activity.SchFinish > today)
+                        // Rule 4: ActFin in future → clamp to today
+                        if (activity.ActFin != null && activity.ActFin > today)
                         {
-                            activity.SchFinish = today;
+                            activity.ActFin = today;
                         }
-                        // Note: No auto-set of SchFinish - user must enter manually (will show as metadata error)
+                        // Note: No auto-set of ActFin - user must enter manually (will show as metadata error)
                     }
                 }
 
@@ -295,8 +295,8 @@ namespace VANTAGE.Utilities
                     return;
                 }
 
-                // NEW: Handle SchStart and SchFinish separately
-                if (propertyName == "SchStart" || propertyName == "SchFinish")
+                // NEW: Handle ActStart and ActFin separately
+                if (propertyName == "ActStart" || propertyName == "ActFin")
                 {
                     if (cell.DataType == ClosedXML.Excel.XLDataType.DateTime)
                         property.SetValue(activity, cell.GetDateTime());
@@ -385,7 +385,7 @@ namespace VANTAGE.Utilities
                 EquivQTY, EquivUOM,
                 ClientEquivQty, ClientBudget, ClientCustom3,
                 PrevEarnMHs, PrevEarnQTY,
-                SchStart, SchFinish, DateTrigger, Notes,
+                ActStart, ActFin, DateTrigger, Notes,
                 UDF1, UDF2, UDF3, UDF4, UDF5, UDF6, UDF7, UDF8, UDF9, UDF10,
                 UDF11, UDF12, UDF13,
                 UDF14, UDF15, UDF16, UDF17, RespParty, UDF20,
@@ -407,7 +407,7 @@ namespace VANTAGE.Utilities
                 @EquivQTY, @EquivUOM,
                 @ClientEquivQty, @ClientBudget, @ClientCustom3,
                 @PrevEarnMHs, @PrevEarnQTY,
-                @SchStart, @SchFinish, @DateTrigger, @Notes,
+                @ActStart, @ActFin, @DateTrigger, @Notes,
                 @UDF1, @UDF2, @UDF3, @UDF4, @UDF5, @UDF6, @UDF7, @UDF8, @UDF9, @UDF10,
                 @UDF11, @UDF12, @UDF13,
                 @UDF14, @UDF15, @UDF16, @UDF17, @RespParty, @UDF20,
@@ -475,8 +475,8 @@ namespace VANTAGE.Utilities
                 command.Parameters.Add("@ClientCustom3", SqliteType.Real);
                 command.Parameters.Add("@PrevEarnMHs", SqliteType.Real);
                 command.Parameters.Add("@PrevEarnQTY", SqliteType.Real);
-                command.Parameters.Add("@SchStart", SqliteType.Text);
-                command.Parameters.Add("@SchFinish", SqliteType.Text);
+                command.Parameters.Add("@ActStart", SqliteType.Text);
+                command.Parameters.Add("@ActFin", SqliteType.Text);
                 command.Parameters.Add("@DateTrigger", SqliteType.Integer);
                 command.Parameters.Add("@Notes", SqliteType.Text);
                 command.Parameters.Add("@UDF1", SqliteType.Text);
@@ -594,8 +594,8 @@ namespace VANTAGE.Utilities
                     command.Parameters["@ClientCustom3"].Value = activity.ClientCustom3;
                     command.Parameters["@PrevEarnMHs"].Value = activity.PrevEarnMHs;
                     command.Parameters["@PrevEarnQTY"].Value = activity.PrevEarnQTY;
-                    command.Parameters["@SchStart"].Value = activity.SchStart?.ToString("yyyy-MM-dd") ?? "";
-                    command.Parameters["@SchFinish"].Value = activity.SchFinish?.ToString("yyyy-MM-dd") ?? "";
+                    command.Parameters["@ActStart"].Value = activity.ActStart?.ToString("yyyy-MM-dd") ?? "";
+                    command.Parameters["@ActFin"].Value = activity.ActFin?.ToString("yyyy-MM-dd") ?? "";
                     command.Parameters["@DateTrigger"].Value = activity.DateTrigger;
                     command.Parameters["@Notes"].Value = activity.Notes ?? "";
                     command.Parameters["@UDF1"].Value = activity.UDF1 ?? "";

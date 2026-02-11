@@ -52,7 +52,7 @@ namespace VANTAGE.Utilities
             var headers = new[]
             {
             "SchedActNO", "NotInP6", "NotInMS", "Description", "MS_%", "P6_%", "%_Mismatch",
-            "MS_ActualStart", "MS_ActualFinish", "P6_ActualStart", "P6_ActualFinish", "Actual_Mismatch",
+            "V_Start", "V_Finish", "P6_ActualStart", "P6_ActualFinish", "Actual_Mismatch",
             "MS_BudgetMHs", "P6_BudgetMHs", "MH_Mismatch",
             "P6_Start", "P6_Finish", "ThreeWeekStart", "ThreeWeekFinish",
             "MissedStartReason", "MissedFinishReason", "Changed"
@@ -89,8 +89,8 @@ namespace VANTAGE.Utilities
                 sheet.Cell(row, 5).Value = masterRow.MS_PercentComplete;
                 sheet.Cell(row, 6).Value = masterRow.P6_PercentComplete;
                 sheet.Cell(row, 7).Value = pctMismatch ? "True" : "False";
-                sheet.Cell(row, 8).Value = FormatDate(masterRow.MS_ActualStart);
-                sheet.Cell(row, 9).Value = FormatDate(masterRow.MS_ActualFinish);
+                sheet.Cell(row, 8).Value = FormatDate(masterRow.V_Start);
+                sheet.Cell(row, 9).Value = FormatDate(masterRow.V_Finish);
                 sheet.Cell(row, 10).Value = FormatDate(masterRow.P6_ActualStart);
                 sheet.Cell(row, 11).Value = FormatDate(masterRow.P6_ActualFinish);
                 sheet.Cell(row, 12).Value = actualMismatch ? "True" : "False";
@@ -168,22 +168,22 @@ namespace VANTAGE.Utilities
         {
             // Start mismatch
             bool startMismatch = false;
-            if (row.MS_ActualStart == null && row.P6_ActualStart != null)
+            if (row.V_Start == null && row.P6_ActualStart != null)
                 startMismatch = true;
-            else if (row.MS_ActualStart != null && row.P6_ActualStart == null)
+            else if (row.V_Start != null && row.P6_ActualStart == null)
                 startMismatch = true;
-            else if (row.MS_ActualStart != null && row.P6_ActualStart != null &&
-                     row.MS_ActualStart.Value.Date != row.P6_ActualStart.Value.Date)
+            else if (row.V_Start != null && row.P6_ActualStart != null &&
+                     row.V_Start.Value.Date != row.P6_ActualStart.Value.Date)
                 startMismatch = true;
 
             // Finish mismatch
             bool finishMismatch = false;
-            if (row.MS_ActualFinish == null && row.P6_ActualFinish != null)
+            if (row.V_Finish == null && row.P6_ActualFinish != null)
                 finishMismatch = true;
-            else if (row.MS_ActualFinish != null && row.P6_ActualFinish == null)
+            else if (row.V_Finish != null && row.P6_ActualFinish == null)
                 finishMismatch = true;
-            else if (row.MS_ActualFinish != null && row.P6_ActualFinish != null &&
-                     row.MS_ActualFinish.Value.Date != row.P6_ActualFinish.Value.Date)
+            else if (row.V_Finish != null && row.P6_ActualFinish != null &&
+                     row.V_Finish.Value.Date != row.P6_ActualFinish.Value.Date)
                 finishMismatch = true;
 
             return startMismatch || finishMismatch;

@@ -480,7 +480,7 @@ namespace VANTAGE.Dialogs
                             MtrlSpec, Notes, PaintCode, PercentEntry, PhaseCategory, PhaseCode,
                             PipeGrade, PipeSize1, PipeSize2, PrevEarnMHs, PrevEarnQTY, ProgDate,
                             ProjectID, Quantity, RevNO, RFINO, ROCBudgetQTY, ROCID, ROCPercent,
-                            ROCStep, SchedActNO, SchFinish, SchStart, SecondActno, SecondDwgNO,
+                            ROCStep, SchedActNO, ActFin, ActStart, SecondActno, SecondDwgNO,
                             Service, ShopField, ShtNO, SubArea, PjtSystem, PjtSystemNo, SystemNO, TagNO,
                             UDF1, UDF2, UDF3, UDF4, UDF5, UDF6, UDF7, UDF8, UDF9, UDF10,
                             UDF11, UDF12, UDF13, UDF14, UDF15, UDF16, UDF17, RespParty, UDF20,
@@ -495,7 +495,7 @@ namespace VANTAGE.Dialogs
                             MtrlSpec, Notes, PaintCode, PercentEntry, PhaseCategory, PhaseCode,
                             PipeGrade, PipeSize1, PipeSize2, PrevEarnMHs, PrevEarnQTY, ProgDate,
                             ProjectID, Quantity, RevNO, RFINO, ROCBudgetQTY, ROCID, ROCPercent,
-                            ROCStep, SchedActNO, SchFinish, SchStart, SecondActno, SecondDwgNO,
+                            ROCStep, SchedActNO, ActFin, ActStart, SecondActno, SecondDwgNO,
                             Service, ShopField, ShtNO, SubArea, PjtSystem, PjtSystemNo, SystemNO, TagNO,
                             UDF1, UDF2, UDF3, UDF4, UDF5, UDF6, UDF7, UDF8, UDF9, UDF10,
                             UDF11, UDF12, UDF13, UDF14, UDF15, UDF16, UDF17, RespParty, UDF20,
@@ -663,7 +663,7 @@ namespace VANTAGE.Dialogs
                         MtrlSpec, Notes, PaintCode, PercentEntry, PhaseCategory, PhaseCode,
                         PipeGrade, PipeSize1, PipeSize2, PrevEarnMHs, PrevEarnQTY, ProgDate,
                         ProjectID, Quantity, RevNO, RFINO, ROCBudgetQTY, ROCID, ROCPercent,
-                        ROCStep, SchedActNO, SchFinish, SchStart, SecondActno, SecondDwgNO,
+                        ROCStep, SchedActNO, ActFin, ActStart, SecondActno, SecondDwgNO,
                         Service, ShopField, ShtNO, SubArea, PjtSystem, PjtSystemNo, SystemNO, TagNO,
                         UDF1, UDF2, UDF3, UDF4, UDF5, UDF6, UDF7, UDF8, UDF9, UDF10,
                         UDF11, UDF12, UDF13, UDF14, UDF15, UDF16, UDF17, RespParty, UDF20,
@@ -743,8 +743,8 @@ namespace VANTAGE.Dialogs
                 ROCPercent = GetDoubleOrZero(reader, 47),
                 ROCStep = GetStringOrEmpty(reader, 48),
                 SchedActNO = GetStringOrEmpty(reader, 49),
-                SchFinish = GetNullableString(reader, 50),
-                SchStart = GetNullableString(reader, 51),
+                ActFin = GetNullableString(reader, 50),
+                ActStart = GetNullableString(reader, 51),
                 SecondActno = GetStringOrEmpty(reader, 52),
                 SecondDwgNO = GetStringOrEmpty(reader, 53),
                 Service = GetStringOrEmpty(reader, 54),
@@ -947,8 +947,8 @@ namespace VANTAGE.Dialogs
                     ROCPercent = @rocPercent,
                     ROCStep = @rocStep,
                     SchedActNO = @schedActNO,
-                    SchFinish = @schFinish,
-                    SchStart = @schStart,
+                    ActFin = @schFinish,
+                    ActStart = @schStart,
                     SecondActno = @secondActno,
                     SecondDwgNO = @secondDwgNO,
                     Service = @service,
@@ -1038,8 +1038,8 @@ namespace VANTAGE.Dialogs
             cmd.Parameters.AddWithValue("@rocPercent", snapshot.ROCPercent);
             cmd.Parameters.AddWithValue("@rocStep", snapshot.ROCStep);
             cmd.Parameters.AddWithValue("@schedActNO", snapshot.SchedActNO);
-            cmd.Parameters.AddWithValue("@schFinish", snapshot.SchFinish ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@schStart", snapshot.SchStart ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@schFinish", snapshot.ActFin ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@schStart", snapshot.ActStart ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("@secondActno", snapshot.SecondActno);
             cmd.Parameters.AddWithValue("@secondDwgNO", snapshot.SecondDwgNO);
             cmd.Parameters.AddWithValue("@service", snapshot.Service);
@@ -1186,8 +1186,8 @@ namespace VANTAGE.Dialogs
         public double ROCPercent { get; set; }
         public string ROCStep { get; set; } = string.Empty;
         public string SchedActNO { get; set; } = string.Empty;
-        public string? SchFinish { get; set; }
-        public string? SchStart { get; set; }
+        public string? ActFin { get; set; }
+        public string? ActStart { get; set; }
         public string SecondActno { get; set; } = string.Empty;
         public string SecondDwgNO { get; set; } = string.Empty;
         public string Service { get; set; } = string.Empty;

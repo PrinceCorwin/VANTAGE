@@ -25,16 +25,16 @@ namespace VANTAGE.Models
         // MS ROLLUPS (calculated from ProgressSnapshots)
         // ========================================
 
-        private DateTime? _msActualStart;
-        public DateTime? MS_ActualStart
+        private DateTime? _vStart;
+        public DateTime? V_Start
         {
-            get => _msActualStart;
+            get => _vStart;
             set
             {
-                if (_msActualStart != value)
+                if (_vStart != value)
                 {
-                    _msActualStart = value;
-                    OnPropertyChanged(nameof(MS_ActualStart));
+                    _vStart = value;
+                    OnPropertyChanged(nameof(V_Start));
                     OnPropertyChanged(nameof(HasStartVariance));
                     OnPropertyChanged(nameof(IsMissedStartReasonRequired));
                     OnPropertyChanged(nameof(IsThreeWeekStartEditable));
@@ -43,16 +43,16 @@ namespace VANTAGE.Models
             }
         }
 
-        private DateTime? _msActualFinish;
-        public DateTime? MS_ActualFinish
+        private DateTime? _vFinish;
+        public DateTime? V_Finish
         {
-            get => _msActualFinish;
+            get => _vFinish;
             set
             {
-                if (_msActualFinish != value)
+                if (_vFinish != value)
                 {
-                    _msActualFinish = value;
-                    OnPropertyChanged(nameof(MS_ActualFinish));
+                    _vFinish = value;
+                    OnPropertyChanged(nameof(V_Finish));
                     OnPropertyChanged(nameof(HasFinishVariance));
                     OnPropertyChanged(nameof(IsMissedFinishReasonRequired));
                     OnPropertyChanged(nameof(IsThreeWeekFinishEditable));
@@ -169,13 +169,13 @@ namespace VANTAGE.Models
         {
             get
             {
-                if (!P6_ActualStart.HasValue && !MS_ActualStart.HasValue)
+                if (!P6_ActualStart.HasValue && !V_Start.HasValue)
                     return false;
 
-                if (P6_ActualStart.HasValue != MS_ActualStart.HasValue)
+                if (P6_ActualStart.HasValue != V_Start.HasValue)
                     return true;
 
-                return P6_ActualStart!.Value.Date != MS_ActualStart!.Value.Date;
+                return P6_ActualStart!.Value.Date != V_Start!.Value.Date;
             }
         }
 
@@ -183,13 +183,13 @@ namespace VANTAGE.Models
         {
             get
             {
-                if (!P6_ActualFinish.HasValue && !MS_ActualFinish.HasValue)
+                if (!P6_ActualFinish.HasValue && !V_Finish.HasValue)
                     return false;
 
-                if (P6_ActualFinish.HasValue != MS_ActualFinish.HasValue)
+                if (P6_ActualFinish.HasValue != V_Finish.HasValue)
                     return true;
 
-                return P6_ActualFinish!.Value.Date != MS_ActualFinish!.Value.Date;
+                return P6_ActualFinish!.Value.Date != V_Finish!.Value.Date;
             }
         }
 
@@ -225,12 +225,12 @@ namespace VANTAGE.Models
         // ========================================
 
         // ThreeWeekStart is only editable when there's no actual start (forecasting)
-        // When MS_ActualStart exists, the field shows the actual and is read-only
-        public bool IsThreeWeekStartEditable => MS_ActualStart == null;
+        // When V_Start exists, the field shows the actual and is read-only
+        public bool IsThreeWeekStartEditable => V_Start == null;
 
         // ThreeWeekFinish is only editable when there's no actual finish (forecasting)
-        // When MS_ActualFinish exists, the field shows the actual and is read-only
-        public bool IsThreeWeekFinishEditable => MS_ActualFinish == null;
+        // When V_Finish exists, the field shows the actual and is read-only
+        public bool IsThreeWeekFinishEditable => V_Finish == null;
 
         // ========================================
         // REQUIRED FIELD INDICATORS (for conditional formatting)
@@ -251,14 +251,14 @@ namespace VANTAGE.Models
                     return false; // P6 start is still in the future
 
                 // P6 start has passed - check if MS started on time
-                if (!MS_ActualStart.HasValue)
+                if (!V_Start.HasValue)
                     return true; // Never started - needs explanation
 
                 // If actualized more than 7 days ago, don't require reason (old news)
-                if (MS_ActualStart.Value.Date < WeekEndDate.Date.AddDays(-7))
+                if (V_Start.Value.Date < WeekEndDate.Date.AddDays(-7))
                     return false;
 
-                return MS_ActualStart.Value.Date > P6_Start.Value.Date; // Started late - needs explanation
+                return V_Start.Value.Date > P6_Start.Value.Date; // Started late - needs explanation
             }
         }
 
@@ -277,14 +277,14 @@ namespace VANTAGE.Models
                     return false; // P6 finish is still in the future
 
                 // P6 finish has passed - check if MS finished on time
-                if (!MS_ActualFinish.HasValue)
+                if (!V_Finish.HasValue)
                     return true; // Never finished - needs explanation
 
                 // If actualized more than 7 days ago, don't require reason (old news)
-                if (MS_ActualFinish.Value.Date < WeekEndDate.Date.AddDays(-7))
+                if (V_Finish.Value.Date < WeekEndDate.Date.AddDays(-7))
                     return false;
 
-                return MS_ActualFinish.Value.Date > P6_Finish.Value.Date; // Finished late - needs explanation
+                return V_Finish.Value.Date > P6_Finish.Value.Date; // Finished late - needs explanation
             }
         }
 
@@ -295,7 +295,7 @@ namespace VANTAGE.Models
                 if (ThreeWeekStart.HasValue)
                     return false; // Already has 3WLA date
 
-                if (MS_ActualStart.HasValue)
+                if (V_Start.HasValue)
                     return false; // Already started - no forecast needed
 
                 if (!P6_Start.HasValue)
@@ -308,7 +308,7 @@ namespace VANTAGE.Models
                     return true;
 
                 // Past-due: P6 start has passed AND MS hasn't started yet
-                if (daysUntilStart < 0 && !MS_ActualStart.HasValue)
+                if (daysUntilStart < 0 && !V_Start.HasValue)
                     return true;
 
                 return false;
@@ -322,7 +322,7 @@ namespace VANTAGE.Models
                 if (ThreeWeekFinish.HasValue)
                     return false; // Already has 3WLA date
 
-                if (MS_ActualFinish.HasValue)
+                if (V_Finish.HasValue)
                     return false; // Already finished - no forecast needed
 
                 if (!P6_Finish.HasValue)
@@ -335,7 +335,7 @@ namespace VANTAGE.Models
                     return true;
 
                 // Past-due: P6 finish has passed AND MS hasn't finished yet
-                if (daysUntilFinish < 0 && !MS_ActualFinish.HasValue)
+                if (daysUntilFinish < 0 && !V_Finish.HasValue)
                     return true;
 
                 return false;

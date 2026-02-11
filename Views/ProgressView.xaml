@@ -144,17 +144,17 @@
         </Style>
 
         <!-- Conditional required date styles (depend on PercentEntry value) -->
-        <Style x:Key="SchStartRequiredStyle" TargetType="syncfusion:GridCell" BasedOn="{StaticResource {x:Type syncfusion:GridCell}}">
+        <Style x:Key="ActStartRequiredStyle" TargetType="syncfusion:GridCell" BasedOn="{StaticResource {x:Type syncfusion:GridCell}}">
             <Style.Triggers>
-                <DataTrigger Binding="{Binding Path=HasMissingSchStart}" Value="True">
+                <DataTrigger Binding="{Binding Path=HasMissingActStart}" Value="True">
                     <Setter Property="Background" Value="{StaticResource StatusRedBg}"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
 
-        <Style x:Key="SchFinishRequiredStyle" TargetType="syncfusion:GridCell" BasedOn="{StaticResource {x:Type syncfusion:GridCell}}">
+        <Style x:Key="ActFinRequiredStyle" TargetType="syncfusion:GridCell" BasedOn="{StaticResource {x:Type syncfusion:GridCell}}">
             <Style.Triggers>
-                <DataTrigger Binding="{Binding Path=HasMissingSchFinish}" Value="True">
+                <DataTrigger Binding="{Binding Path=HasMissingActFin}" Value="True">
                     <Setter Property="Background" Value="{StaticResource StatusRedBg}"/>
                 </DataTrigger>
             </Style.Triggers>
@@ -1402,7 +1402,7 @@
                               AllowSorting="True"
                               NumberDecimalDigits="2" />
 
-                        <syncfusion:GridDateTimeColumn MappingName="SchFinish"
+                        <syncfusion:GridDateTimeColumn MappingName="ActFin"
                             HeaderText="ActFin" Padding="4,0,4,0"
                             Width="100"
                             IsHidden="False"
@@ -1412,9 +1412,9 @@
                             AllowNullValue="True"
                             NullText=""
                             Pattern="ShortDate"
-                            CellStyle="{StaticResource SchFinishRequiredStyle}" />
+                            CellStyle="{StaticResource ActFinRequiredStyle}" />
 
-                        <syncfusion:GridDateTimeColumn MappingName="SchStart"
+                        <syncfusion:GridDateTimeColumn MappingName="ActStart"
                            HeaderText="ActStart" Padding="4,0,4,0"
                            Width="100"
                            IsHidden="False"
@@ -1424,7 +1424,7 @@
                            AllowNullValue="True"
                            NullText=""
                            Pattern="ShortDate"
-                           CellStyle="{StaticResource SchStartRequiredStyle}" />
+                           CellStyle="{StaticResource ActStartRequiredStyle}" />
 
                         <syncfusion:GridTextColumn MappingName="SecondActno"
                            HeaderText="SecondActno" Padding="4,0,4,0"

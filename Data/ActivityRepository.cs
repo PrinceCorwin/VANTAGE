@@ -262,8 +262,8 @@ namespace VANTAGE.Data
                     ROCPercent = @ROCPercent,
                     ROCStep = @ROCStep,
                     SchedActNO = @SchedActNO,
-                    SchFinish = @SchFinish,
-                    SchStart = @SchStart,
+                    ActFin = @ActFin,
+                    ActStart = @ActStart,
                     SecondActno = @SecondActno,
                     SecondDwgNO = @SecondDwgNO,
                     Service = @Service,
@@ -351,8 +351,8 @@ namespace VANTAGE.Data
                     command.Parameters.AddWithValue("@ROCPercent", NumericHelper.RoundToPlaces(activity.ROCPercent));
                     command.Parameters.AddWithValue("@ROCStep", activity.ROCStep ?? "");
                     command.Parameters.AddWithValue("@SchedActNO", activity.SchedActNO ?? "");
-                    command.Parameters.AddWithValue("@SchFinish", activity.SchFinish?.ToString("yyyy-MM-dd") ?? "");
-                    command.Parameters.AddWithValue("@SchStart", activity.SchStart?.ToString("yyyy-MM-dd") ?? "");
+                    command.Parameters.AddWithValue("@ActFin", activity.ActFin?.ToString("yyyy-MM-dd") ?? "");
+                    command.Parameters.AddWithValue("@ActStart", activity.ActStart?.ToString("yyyy-MM-dd") ?? "");
                     command.Parameters.AddWithValue("@SecondActno", activity.SecondActno ?? "");
                     command.Parameters.AddWithValue("@SecondDwgNO", activity.SecondDwgNO ?? "");
                     command.Parameters.AddWithValue("@Service", activity.Service ?? "");
@@ -761,8 +761,8 @@ namespace VANTAGE.Data
 
                                  // Schedule
                                  activity.SecondActno = GetStringSafe("SecondActno");
-                                 activity.SchStart = GetDateTimeSafe("SchStart");
-                                 activity.SchFinish = GetDateTimeSafe("SchFinish");
+                                 activity.ActStart = GetDateTimeSafe("ActStart");
+                                 activity.ActFin = GetDateTimeSafe("ActFin");
                                  activity.WeekEndDate = GetDateTimeSafe("WeekEndDate");
                                  activity.ProgDate = GetDateTimeFullSafe("ProgDate");
 
@@ -1003,8 +1003,8 @@ namespace VANTAGE.Data
                                  activity.HexNO = GetIntSafe("HexNO");
 
                                  // Schedule dates
-                                 activity.SchStart = GetDateTimeSafe("SchStart");
-                                 activity.SchFinish = GetDateTimeSafe("SchFinish");
+                                 activity.ActStart = GetDateTimeSafe("ActStart");
+                                 activity.ActFin = GetDateTimeSafe("ActFin");
                                  activity.ProgDate = GetDateTimeSafe("ProgDate");
                                  activity.WeekEndDate = GetDateTimeSafe("WeekEndDate");
                                  activity.AzureUploadUtcDate = GetDateTimeSafe("AzureUploadUtcDate");
@@ -1295,8 +1295,8 @@ namespace VANTAGE.Data
             activity.ROCPercent = GetDoubleOrDefault(reader, "ROCPercent");
             activity.ROCStep = GetStringOrDefault(reader, "ROCStep");
             activity.SchedActNO = GetStringOrDefault(reader, "SchedActNO");
-            activity.SchFinish = GetDateTimeOrNull(reader, "SchFinish");
-            activity.SchStart = GetDateTimeOrNull(reader, "SchStart");
+            activity.ActFin = GetDateTimeOrNull(reader, "ActFin");
+            activity.ActStart = GetDateTimeOrNull(reader, "ActStart");
             activity.SecondActno = GetStringOrDefault(reader, "SecondActno");
             activity.SecondDwgNO = GetStringOrDefault(reader, "SecondDwgNO");
             activity.Service = GetStringOrDefault(reader, "Service");

@@ -220,8 +220,8 @@ namespace VANTAGE.Dialogs
                             newValue = string.IsNullOrEmpty(change.NewValue) ? 0.0 :
                                 double.TryParse(change.NewValue, out double mhs) ? mhs : 0.0;
                             break;
-                        case "SchStart":
-                        case "SchFinish":
+                        case "ActStart":
+                        case "ActFin":
                             // Dates are stored as TEXT
                             newValue = string.IsNullOrEmpty(change.NewValue) ? DBNull.Value : change.NewValue;
                             break;

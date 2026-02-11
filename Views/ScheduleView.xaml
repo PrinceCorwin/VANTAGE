@@ -186,22 +186,6 @@
             </Style.Triggers>
         </Style>
 
-        <!-- Conditional required date styles for detail grid (depend on PercentEntry value) -->
-        <Style x:Key="SchStartRequiredStyle" TargetType="syncfusion:GridCell" BasedOn="{StaticResource {x:Type syncfusion:GridCell}}">
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding Path=HasMissingSchStart}" Value="True">
-                    <Setter Property="Background" Value="{StaticResource StatusRedBg}"/>
-                </DataTrigger>
-            </Style.Triggers>
-        </Style>
-
-        <Style x:Key="SchFinishRequiredStyle" TargetType="syncfusion:GridCell" BasedOn="{StaticResource {x:Type syncfusion:GridCell}}">
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding Path=HasMissingSchFinish}" Value="True">
-                    <Setter Property="Background" Value="{StaticResource StatusRedBg}"/>
-                </DataTrigger>
-            </Style.Triggers>
-        </Style>
     </UserControl.Resources>
 
     <Grid>
@@ -514,17 +498,17 @@
                                                   NullText=""
                                                   Pattern="ShortDate"
                                                   CellStyle="{StaticResource ThreeWeekFinishRequiredStyle}"/>
-                    <syncfusion:GridDateTimeColumn MappingName="MS_ActualStart" 
+                    <syncfusion:GridDateTimeColumn MappingName="V_Start" 
                                                   HeaderText="V-Start" 
                                                   Width="110"
-                                                  DisplayBinding="{Binding MS_ActualStart, StringFormat='yyyy-MM-dd'}"
+                                                  DisplayBinding="{Binding V_Start, StringFormat='yyyy-MM-dd'}"
                                                   AllowEditing="False"
                                                   CellStyle="{StaticResource MSStartVarianceStyle}"/>
 
-                    <syncfusion:GridDateTimeColumn MappingName="MS_ActualFinish" 
+                    <syncfusion:GridDateTimeColumn MappingName="V_Finish" 
                                                   HeaderText="V-Finish" 
                                                   Width="110"
-                                                  DisplayBinding="{Binding MS_ActualFinish, StringFormat='yyyy-MM-dd'}"
+                                                  DisplayBinding="{Binding V_Finish, StringFormat='yyyy-MM-dd'}"
                                                   AllowEditing="False"
                                                   CellStyle="{StaticResource MSFinishVarianceStyle}"/>
 
@@ -708,23 +692,21 @@
                                                          NumberDecimalDigits="1"
                                                          AllowEditing="True"/>
 
-                            <syncfusion:GridDateTimeColumn MappingName="SchStart"
+                            <syncfusion:GridDateTimeColumn MappingName="ActStart"
                                                           HeaderText="ActStart"
                                                           Width="110"
                                                           AllowEditing="True"
                                                           AllowNullValue="True"
                                                           NullText=""
-                                                          Pattern="ShortDate"
-                                                          CellStyle="{StaticResource SchStartRequiredStyle}"/>
+                                                          Pattern="ShortDate"/>
 
-                            <syncfusion:GridDateTimeColumn MappingName="SchFinish"
+                            <syncfusion:GridDateTimeColumn MappingName="ActFin"
                                                           HeaderText="ActFin"
                                                           Width="110"
                                                           AllowEditing="True"
                                                           AllowNullValue="True"
                                                           NullText=""
-                                                          Pattern="ShortDate"
-                                                          CellStyle="{StaticResource SchFinishRequiredStyle}"/>
+                                                          Pattern="ShortDate"/>
 
                             <syncfusion:GridTextColumn MappingName="AssignedTo" 
                                                       HeaderText="Assigned To" 

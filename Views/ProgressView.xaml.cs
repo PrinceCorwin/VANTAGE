@@ -211,8 +211,8 @@ namespace VANTAGE.Views
                         Description IS NULL OR Description = '' OR
                         ROCStep IS NULL OR ROCStep = '' OR
                         RespParty IS NULL OR RespParty = '' OR
-                        (PercentEntry > 0 AND (SchStart IS NULL OR SchStart = '')) OR
-                        (PercentEntry >= 100 AND (SchFinish IS NULL OR SchFinish = ''))
+                        (PercentEntry > 0 AND (ActStart IS NULL OR ActStart = '')) OR
+                        (PercentEntry >= 100 AND (ActFin IS NULL OR ActFin = ''))
                     )";
 
                 await _viewModel.ApplyFilter("MetadataErrors", "IN", errorFilter);
@@ -253,8 +253,8 @@ namespace VANTAGE.Views
                     a.Description IS NULL OR a.Description = '' OR
                     a.ROCStep IS NULL OR a.ROCStep = '' OR
                     a.RespParty IS NULL OR a.RespParty = '' OR
-                    (a.PercentEntry > 0 AND (a.SchStart IS NULL OR a.SchStart = '')) OR
-                    (a.PercentEntry >= 100 AND (a.SchFinish IS NULL OR a.SchFinish = ''))
+                    (a.PercentEntry > 0 AND (a.ActStart IS NULL OR a.ActStart = '')) OR
+                    (a.PercentEntry >= 100 AND (a.ActFin IS NULL OR a.ActFin = ''))
                   )";
                     cmd.Parameters.AddWithValue("@currentUser", App.CurrentUser?.Username ?? "");
 
@@ -461,8 +461,8 @@ namespace VANTAGE.Views
                             WeekEndDate = null,
                             ProgDate = null,
                             AzureUploadUtcDate = null,
-                            SchStart = null,
-                            SchFinish = null,
+                            ActStart = null,
+                            ActFin = null,
                             Area = original.Area,
                             Aux1 = original.Aux1,
                             Aux2 = original.Aux2,
@@ -554,7 +554,7 @@ namespace VANTAGE.Views
                         HexNO, HtTrace, InsulType, LineNumber, LocalDirty, MtrlSpec, Notes, PaintCode,
                         PercentEntry, PhaseCategory, PhaseCode, PipeGrade, PipeSize1, PipeSize2,
                         PrevEarnMHs, PrevEarnQTY, ProgDate, ProjectID, Quantity, RevNO, RFINO,
-                        ROCBudgetQTY, ROCID, ROCPercent, ROCStep, SchedActNO, SchFinish, SchStart,
+                        ROCBudgetQTY, ROCID, ROCPercent, ROCStep, SchedActNO, ActFin, ActStart,
                         SecondActno, SecondDwgNO, Service, ShopField, ShtNO, SubArea, PjtSystem, PjtSystemNo,
                         SystemNO, TagNO, UDF1, UDF2, UDF3, UDF4, UDF5, UDF6, UDF7, UDF8, UDF9,
                         UDF10, UDF11, UDF12, UDF13, UDF14, UDF15, UDF16, UDF17, RespParty, UDF20,
@@ -567,7 +567,7 @@ namespace VANTAGE.Views
                         @HexNO, @HtTrace, @InsulType, @LineNumber, @LocalDirty, @MtrlSpec, @Notes, @PaintCode,
                         @PercentEntry, @PhaseCategory, @PhaseCode, @PipeGrade, @PipeSize1, @PipeSize2,
                         @PrevEarnMHs, @PrevEarnQTY, @ProgDate, @ProjectID, @Quantity, @RevNO, @RFINO,
-                        @ROCBudgetQTY, @ROCID, @ROCPercent, @ROCStep, @SchedActNO, @SchFinish, @SchStart,
+                        @ROCBudgetQTY, @ROCID, @ROCPercent, @ROCStep, @SchedActNO, @ActFin, @ActStart,
                         @SecondActno, @SecondDwgNO, @Service, @ShopField, @ShtNO, @SubArea, @PjtSystem, @PjtSystemNo,
                         @SystemNO, @TagNO, @UDF1, @UDF2, @UDF3, @UDF4, @UDF5, @UDF6, @UDF7, @UDF8, @UDF9,
                         @UDF10, @UDF11, @UDF12, @UDF13, @UDF14, @UDF15, @UDF16, @UDF17, @RespParty, @UDF20,
@@ -627,8 +627,8 @@ namespace VANTAGE.Views
                         insertCmd.Parameters.AddWithValue("@ROCPercent", duplicate.ROCPercent);
                         insertCmd.Parameters.AddWithValue("@ROCStep", duplicate.ROCStep ?? "");
                         insertCmd.Parameters.AddWithValue("@SchedActNO", duplicate.SchedActNO ?? "");
-                        insertCmd.Parameters.AddWithValue("@SchFinish", duplicate.SchFinish?.ToString("yyyy-MM-dd HH:mm:ss") ?? "");
-                        insertCmd.Parameters.AddWithValue("@SchStart", duplicate.SchStart?.ToString("yyyy-MM-dd HH:mm:ss") ?? "");
+                        insertCmd.Parameters.AddWithValue("@ActFin", duplicate.ActFin?.ToString("yyyy-MM-dd HH:mm:ss") ?? "");
+                        insertCmd.Parameters.AddWithValue("@ActStart", duplicate.ActStart?.ToString("yyyy-MM-dd HH:mm:ss") ?? "");
                         insertCmd.Parameters.AddWithValue("@SecondActno", duplicate.SecondActno ?? "");
                         insertCmd.Parameters.AddWithValue("@SecondDwgNO", duplicate.SecondDwgNO ?? "");
                         insertCmd.Parameters.AddWithValue("@Service", duplicate.Service ?? "");
@@ -1243,13 +1243,13 @@ namespace VANTAGE.Views
                     // 0% → clear both dates
                     if (newPercent == 0)
                     {
-                        activity.SchStart = null;
-                        activity.SchFinish = null;
+                        activity.ActStart = null;
+                        activity.ActFin = null;
                     }
-                    // <100% → clear SchFinish
+                    // <100% → clear ActFin
                     else if (newPercent < 100)
                     {
-                        activity.SchFinish = null;
+                        activity.ActFin = null;
                     }
                     // Note: No auto-set of dates - user must enter ActStart/ActFin manually
 
@@ -2498,15 +2498,15 @@ namespace VANTAGE.Views
                 var futureStartDates = _viewModel.Activities
                     .Where(a => a.AssignedTo == App.CurrentUser?.Username &&
                                 a.ProjectID == selectedProject &&
-                                a.SchStart != null &&
-                                a.SchStart.Value.Date > selectedWeekEndDate.Date)
+                                a.ActStart != null &&
+                                a.ActStart.Value.Date > selectedWeekEndDate.Date)
                     .ToList();
 
                 var futureFinishDates = _viewModel.Activities
                     .Where(a => a.AssignedTo == App.CurrentUser?.Username &&
                                 a.ProjectID == selectedProject &&
-                                a.SchFinish != null &&
-                                a.SchFinish.Value.Date > selectedWeekEndDate.Date)
+                                a.ActFin != null &&
+                                a.ActFin.Value.Date > selectedWeekEndDate.Date)
                     .ToList();
 
                 if (futureStartDates.Any() || futureFinishDates.Any())
@@ -2536,7 +2536,7 @@ namespace VANTAGE.Views
                     // Update the offending dates to the selected WE date
                     foreach (var activity in futureStartDates)
                     {
-                        activity.SchStart = selectedWeekEndDate;
+                        activity.ActStart = selectedWeekEndDate;
                         activity.UpdatedBy = App.CurrentUser?.Username ?? "Unknown";
                         activity.UpdatedUtcDate = DateTime.UtcNow;
                         activity.LocalDirty = 1;
@@ -2544,15 +2544,15 @@ namespace VANTAGE.Views
                     }
                     foreach (var activity in futureFinishDates)
                     {
-                        // SchStart may have already been fixed above, only update SchFinish
-                        activity.SchFinish = selectedWeekEndDate;
+                        // ActStart may have already been fixed above, only update ActFin
+                        activity.ActFin = selectedWeekEndDate;
                         activity.UpdatedBy = App.CurrentUser?.Username ?? "Unknown";
                         activity.UpdatedUtcDate = DateTime.UtcNow;
                         activity.LocalDirty = 1;
                         await ActivityRepository.UpdateActivityInDatabase(activity);
                     }
 
-                    AppLogger.Info($"Adjusted {futureStartDates.Count} SchStart and {futureFinishDates.Count} SchFinish dates to {weekEndDateStr}",
+                    AppLogger.Info($"Adjusted {futureStartDates.Count} ActStart and {futureFinishDates.Count} ActFin dates to {weekEndDateStr}",
                         "ProgressView.BtnSubmit_Click", App.CurrentUser?.Username);
                 }
                 // Step 5: Check for split SchedActNO ownership
@@ -2887,7 +2887,7 @@ namespace VANTAGE.Views
                             MtrlSpec, Notes, PaintCode, PercentEntry, PhaseCategory, PhaseCode,
                             PipeGrade, PipeSize1, PipeSize2, PrevEarnMHs, PrevEarnQTY, ProgDate,
                             ProjectID, Quantity, RevNO, RFINO, ROCBudgetQTY, ROCID, ROCPercent,
-                            ROCStep, SchedActNO, SchFinish, SchStart, SecondActno, SecondDwgNO,
+                            ROCStep, SchedActNO, ActFin, ActStart, SecondActno, SecondDwgNO,
                             Service, ShopField, ShtNO, SubArea, PjtSystem, PjtSystemNo, SystemNO, TagNO,
                             UDF1, UDF2, UDF3, UDF4, UDF5, UDF6, UDF7, UDF8, UDF9, UDF10,
                             UDF11, UDF12, UDF13, UDF14, UDF15, UDF16, UDF17, RespParty, UDF20,
@@ -2902,7 +2902,7 @@ namespace VANTAGE.Views
                             MtrlSpec, Notes, PaintCode, PercentEntry, PhaseCategory, PhaseCode,
                             PipeGrade, PipeSize1, PipeSize2, PrevEarnMHs, PrevEarnQTY, @progDate,
                             ProjectID, Quantity, RevNO, RFINO, ROCBudgetQTY, ROCID, ROCPercent,
-                            ROCStep, SchedActNO, SchFinish, SchStart, SecondActno, SecondDwgNO,
+                            ROCStep, SchedActNO, ActFin, ActStart, SecondActno, SecondDwgNO,
                             Service, ShopField, ShtNO, SubArea, PjtSystem, PjtSystemNo, SystemNO, TagNO,
                             UDF1, UDF2, UDF3, UDF4, UDF5, UDF6, UDF7, UDF8, UDF9, UDF10,
                             UDF11, UDF12, UDF13, UDF14, UDF15, UDF16, UDF17, RespParty, UDF20,
@@ -3884,92 +3884,92 @@ namespace VANTAGE.Views
                     // 0% → clear both dates
                     if (newPercent == 0)
                     {
-                        editedActivity.SchStart = null;
-                        editedActivity.SchFinish = null;
+                        editedActivity.ActStart = null;
+                        editedActivity.ActFin = null;
                     }
-                    // <100% → clear SchFinish (user must re-enter when reaching 100)
+                    // <100% → clear ActFin (user must re-enter when reaching 100)
                     else if (newPercent < 100)
                     {
-                        editedActivity.SchFinish = null;
+                        editedActivity.ActFin = null;
                     }
                     // Note: No auto-set of dates - user must enter ActStart/ActFin manually
                 }
-                else if (columnName == "SchStart")
+                else if (columnName == "ActStart")
                 {
                     // Can't set start if percent is 0
-                    if (editedActivity.SchStart != null && editedActivity.PercentEntry == 0)
+                    if (editedActivity.ActStart != null && editedActivity.PercentEntry == 0)
                     {
                         MessageBox.Show("Cannot set Start date when % Complete is 0.\n\nSet % Complete to greater than 0 first.",
                             "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        editedActivity.SchStart = null;
+                        editedActivity.ActStart = null;
                         sfActivities.View?.Refresh();
                         return;
                     }
 
                     // Can't set start in the future
-                    if (editedActivity.SchStart != null && editedActivity.SchStart.Value.Date > DateTime.Today)
+                    if (editedActivity.ActStart != null && editedActivity.ActStart.Value.Date > DateTime.Today)
                     {
                         MessageBox.Show("Start date cannot be in the future.",
                             "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        editedActivity.SchStart = DateTime.Today;
+                        editedActivity.ActStart = DateTime.Today;
                         sfActivities.View?.Refresh();
                     }
                     // Can't set start after finish
-                    if (editedActivity.SchStart != null && editedActivity.SchFinish != null &&
-                        editedActivity.SchStart.Value.Date > editedActivity.SchFinish.Value.Date)
+                    if (editedActivity.ActStart != null && editedActivity.ActFin != null &&
+                        editedActivity.ActStart.Value.Date > editedActivity.ActFin.Value.Date)
                     {
                         MessageBox.Show("Start date cannot be after Finish date.\n\nFinish date has been updated to match Start date.",
                             "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        editedActivity.SchFinish = editedActivity.SchStart;
+                        editedActivity.ActFin = editedActivity.ActStart;
                         sfActivities.View?.Refresh();
                     }
                     // Can't clear start if percent > 0
-                    if (editedActivity.SchStart == null && editedActivity.PercentEntry > 0)
+                    if (editedActivity.ActStart == null && editedActivity.PercentEntry > 0)
                     {
                         MessageBox.Show("Cannot clear Start date when % Complete is greater than 0.\n\nSet % Complete to 0 first.",
                             "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        editedActivity.SchStart = DateTime.Today;
+                        editedActivity.ActStart = DateTime.Today;
                         sfActivities.View?.Refresh();
                         return;
                     }
                 }
-                else if (columnName == "SchFinish")
+                else if (columnName == "ActFin")
                 {
                     // Can't set finish if percent < 100
-                    if (editedActivity.SchFinish != null && editedActivity.PercentEntry < 100)
+                    if (editedActivity.ActFin != null && editedActivity.PercentEntry < 100)
                     {
                         MessageBox.Show("Cannot set Finish date when % Complete is less than 100.\n\nSet % Complete to 100 first.",
                             "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        editedActivity.SchFinish = null;
+                        editedActivity.ActFin = null;
                         sfActivities.View?.Refresh();
                         return;
                     }
 
                     // Can't set finish in the future
-                    if (editedActivity.SchFinish != null && editedActivity.SchFinish.Value.Date > DateTime.Today)
+                    if (editedActivity.ActFin != null && editedActivity.ActFin.Value.Date > DateTime.Today)
                     {
                         MessageBox.Show("Finish date cannot be in the future.",
                             "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        editedActivity.SchFinish = DateTime.Today;
+                        editedActivity.ActFin = DateTime.Today;
                         sfActivities.View?.Refresh();
                     }
 
                     // Can't set finish before start
-                    if (editedActivity.SchFinish != null && editedActivity.SchStart != null &&
-                        editedActivity.SchFinish.Value.Date < editedActivity.SchStart.Value.Date)
+                    if (editedActivity.ActFin != null && editedActivity.ActStart != null &&
+                        editedActivity.ActFin.Value.Date < editedActivity.ActStart.Value.Date)
                     {
                         MessageBox.Show("Finish date cannot be before Start date.",
                             "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        editedActivity.SchFinish = editedActivity.SchStart;
+                        editedActivity.ActFin = editedActivity.ActStart;
                         sfActivities.View?.Refresh();
                     }
 
                     // Can't clear finish if percent is 100
-                    if (editedActivity.SchFinish == null && editedActivity.PercentEntry >= 100)
+                    if (editedActivity.ActFin == null && editedActivity.PercentEntry >= 100)
                     {
                         MessageBox.Show("Cannot clear Finish date when % Complete is 100.\n\nSet % Complete to less than 100 first.",
                             "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        editedActivity.SchFinish = DateTime.Today;
+                        editedActivity.ActFin = DateTime.Today;
                         sfActivities.View?.Refresh();
                         return;
                     }
@@ -4424,8 +4424,8 @@ namespace VANTAGE.Views
                 string.IsNullOrWhiteSpace(a.Description) ||
                 string.IsNullOrWhiteSpace(a.ROCStep) ||
                 string.IsNullOrWhiteSpace(a.RespParty) ||
-                a.HasMissingSchStart ||
-                a.HasMissingSchFinish
+                a.HasMissingActStart ||
+                a.HasMissingActFin
             ).ToList();
 
             if (recordsWithErrors.Any())

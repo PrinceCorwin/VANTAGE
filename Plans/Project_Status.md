@@ -174,6 +174,8 @@ All V1 sections of `Help/manual.html` are written. Screenshots configured with c
 ### High Priority
 
 **OTHER HIGH PRIORITY:**
+- **Windows Add/Remove Programs integration** — Register app during install so it appears in Settings > Apps with proper uninstall support. Currently installs to `%LocalAppData%\VANTAGE\App\` with desktop shortcut only; no registry entries or uninstaller.
+- **Schema version tracking system** — Store SchemaVersion in AppSettings, run numbered migrations sequentially on startup. Enables safe schema changes across updates without data loss. Current approach is ad-hoc column checks; version system is cleaner for frequent changes.
 - ~~First publish & end-to-end test (Workstream 4)~~ Complete — v26.1.1 install + v26.1.2 auto-update validated
 - ~~Credentials strategy~~ Complete — migrated to encrypted config file (Workstream 1)
 - ~~Self-contained publish config~~ Complete — tested via v26.1.1 and v26.1.2 publishes (Workstream 2)
@@ -265,6 +267,11 @@ All V1 sections of `Help/manual.html` are written. Screenshots configured with c
 - Interactive Help Mode - click UI controls to navigate to documentation (see Sidebar_Help_Plan.md)
 
 ## Known Issues
+
+### Schedule Module - Required Fields Count Not Updating
+- After pasting a value into a field (navigated to via arrow keys), the required fields error count doesn't recalculate
+- Export to P6 menu item stays disabled because it thinks there are still errors
+- Workaround: Navigate away from Schedule module and back to refresh the count
 
 ### AI Progress Scan - Accuracy Issues (RESOLVED)
 - ~~PDF scans less accurate than JPEG scans~~ Fixed with AWS Textract

@@ -327,11 +327,11 @@ namespace VANTAGE.Views
                     case "BudgetMHs":
                         _detailEditOldValue = snapshot.BudgetMHs.ToString();
                         break;
-                    case "SchStart":
-                        _detailEditOldValue = snapshot.SchStart?.ToString("M/d/yyyy") ?? string.Empty;
+                    case "ActStart":
+                        _detailEditOldValue = snapshot.ActStart?.ToString("M/d/yyyy") ?? string.Empty;
                         break;
-                    case "SchFinish":
-                        _detailEditOldValue = snapshot.SchFinish?.ToString("M/d/yyyy") ?? string.Empty;
+                    case "ActFin":
+                        _detailEditOldValue = snapshot.ActFin?.ToString("M/d/yyyy") ?? string.Empty;
                         break;
                     default:
                         _detailEditOldValue = null;
@@ -383,7 +383,7 @@ namespace VANTAGE.Views
 
                 // Only process editable columns
                 if (columnName != "PercentEntry" && columnName != "BudgetMHs" &&
-                    columnName != "SchStart" && columnName != "SchFinish")
+                    columnName != "ActStart" && columnName != "ActFin")
                     return;
 
                 string username = App.CurrentUser?.Username ?? "Unknown";
@@ -395,88 +395,88 @@ namespace VANTAGE.Views
                     if (editedSnapshot.PercentEntry == 0)
                     {
                         // 0% = not started - clear both dates
-                        editedSnapshot.SchStart = null;
-                        editedSnapshot.SchFinish = null;
+                        editedSnapshot.ActStart = null;
+                        editedSnapshot.ActFin = null;
                     }
                     else if (editedSnapshot.PercentEntry < 100)
                     {
-                        // <100% → clear SchFinish (user must re-enter when reaching 100)
-                        editedSnapshot.SchFinish = null;
+                        // <100% → clear ActFin (user must re-enter when reaching 100)
+                        editedSnapshot.ActFin = null;
                     }
                     // Note: No auto-set of dates - user must enter ActStart/ActFin manually
                 }
 
-                // Handle SchStart changes - validate
-                if (columnName == "SchStart")
+                // Handle ActStart changes - validate
+                if (columnName == "ActStart")
                 {
                     // Can't set start if percent is 0
-                    if (editedSnapshot.SchStart != null && editedSnapshot.PercentEntry == 0)
+                    if (editedSnapshot.ActStart != null && editedSnapshot.PercentEntry == 0)
                     {
                         MessageBox.Show("Cannot set Start date when % Complete is 0.\n\nSet % Complete first.",
                             "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        editedSnapshot.SchStart = null;
+                        editedSnapshot.ActStart = null;
                         sfScheduleDetail.View?.Refresh();
                         return;
                     }
 
                     // Can't set start in the future
-                    if (editedSnapshot.SchStart != null && editedSnapshot.SchStart.Value.Date > weekEndDate.Date)
+                    if (editedSnapshot.ActStart != null && editedSnapshot.ActStart.Value.Date > weekEndDate.Date)
                     {
                         MessageBox.Show($"Start date cannot be after Week End Date ({weekEndDate:M/d/yyyy}).\n\nActual dates must be in the past.",
                             "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        editedSnapshot.SchStart = weekEndDate;
+                        editedSnapshot.ActStart = weekEndDate;
                         sfScheduleDetail.View?.Refresh();
                     }
 
                     // Can't clear start if percent > 0
-                    if (editedSnapshot.SchStart == null && editedSnapshot.PercentEntry > 0)
+                    if (editedSnapshot.ActStart == null && editedSnapshot.PercentEntry > 0)
                     {
                         MessageBox.Show("Cannot clear Start date when % Complete is greater than 0.\n\nSet % Complete to 0 first.",
                             "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        editedSnapshot.SchStart = weekEndDate;
+                        editedSnapshot.ActStart = weekEndDate;
                         sfScheduleDetail.View?.Refresh();
                         return;
                     }
                 }
 
-                // Handle SchFinish changes - validate
-                if (columnName == "SchFinish")
+                // Handle ActFin changes - validate
+                if (columnName == "ActFin")
                 {
                     // Can't set finish if percent is not 100
-                    if (editedSnapshot.SchFinish != null && editedSnapshot.PercentEntry < 100)
+                    if (editedSnapshot.ActFin != null && editedSnapshot.PercentEntry < 100)
                     {
                         MessageBox.Show("Cannot set Finish date when % Complete is less than 100.\n\nSet % Complete to 100 first.",
                             "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        editedSnapshot.SchFinish = null;
+                        editedSnapshot.ActFin = null;
                         sfScheduleDetail.View?.Refresh();
                         return;
                     }
 
                     // Can't set finish in the future
-                    if (editedSnapshot.SchFinish != null && editedSnapshot.SchFinish.Value.Date > weekEndDate.Date)
+                    if (editedSnapshot.ActFin != null && editedSnapshot.ActFin.Value.Date > weekEndDate.Date)
                     {
                         MessageBox.Show($"Finish date cannot be after Week End Date ({weekEndDate:M/d/yyyy}).\n\nActual dates must be in the past.",
                             "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        editedSnapshot.SchFinish = weekEndDate;
+                        editedSnapshot.ActFin = weekEndDate;
                         sfScheduleDetail.View?.Refresh();
                     }
 
                     // Can't set finish before start
-                    if (editedSnapshot.SchFinish != null && editedSnapshot.SchStart != null &&
-                        editedSnapshot.SchFinish.Value.Date < editedSnapshot.SchStart.Value.Date)
+                    if (editedSnapshot.ActFin != null && editedSnapshot.ActStart != null &&
+                        editedSnapshot.ActFin.Value.Date < editedSnapshot.ActStart.Value.Date)
                     {
                         MessageBox.Show("Finish date cannot be before Start date.",
                             "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        editedSnapshot.SchFinish = editedSnapshot.SchStart;
+                        editedSnapshot.ActFin = editedSnapshot.ActStart;
                         sfScheduleDetail.View?.Refresh();
                     }
 
                     // Can't clear finish if percent is 100
-                    if (editedSnapshot.SchFinish == null && editedSnapshot.PercentEntry >= 100)
+                    if (editedSnapshot.ActFin == null && editedSnapshot.PercentEntry >= 100)
                     {
                         MessageBox.Show("Cannot clear Finish date when % Complete is 100.\n\nSet % Complete to less than 100 first.",
                             "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        editedSnapshot.SchFinish = weekEndDate;
+                        editedSnapshot.ActFin = weekEndDate;
                         sfScheduleDetail.View?.Refresh();
                         return;
                     }
@@ -498,16 +498,16 @@ namespace VANTAGE.Views
                     {
                         // Capture current state before recalculation
                         var masterRow = _viewModel.MasterRows?.FirstOrDefault(r => r.SchedActNO == editedSnapshot.SchedActNO);
-                        DateTime? previousMSStart = masterRow?.MS_ActualStart;
-                        DateTime? previousMSFinish = masterRow?.MS_ActualFinish;
+                        DateTime? previousMSStart = masterRow?.V_Start;
+                        DateTime? previousMSFinish = masterRow?.V_Finish;
 
                         await _viewModel.RecalculateMSRollupsAsync(editedSnapshot.SchedActNO);
 
                         // Check if actuals were created (changed from null to non-null)
                         if (masterRow != null)
                         {
-                            bool startCreated = previousMSStart == null && masterRow.MS_ActualStart != null;
-                            bool finishCreated = previousMSFinish == null && masterRow.MS_ActualFinish != null;
+                            bool startCreated = previousMSStart == null && masterRow.V_Start != null;
+                            bool finishCreated = previousMSFinish == null && masterRow.V_Finish != null;
 
                             if (startCreated || finishCreated)
                             {
@@ -560,8 +560,8 @@ namespace VANTAGE.Views
                         {
                             "PercentEntry" => editedSnapshot.PercentEntry.ToString(),
                             "BudgetMHs" => editedSnapshot.BudgetMHs.ToString(),
-                            "SchStart" => editedSnapshot.SchStart?.ToString("M/d/yyyy") ?? string.Empty,
-                            "SchFinish" => editedSnapshot.SchFinish?.ToString("M/d/yyyy") ?? string.Empty,
+                            "ActStart" => editedSnapshot.ActStart?.ToString("M/d/yyyy") ?? string.Empty,
+                            "ActFin" => editedSnapshot.ActFin?.ToString("M/d/yyyy") ?? string.Empty,
                             _ => string.Empty
                         };
 

@@ -346,22 +346,22 @@ namespace VANTAGE.ViewModels
                 // Recalculate from current DetailActivities (already updated in memory)
                 if (DetailActivities.Count > 0)
                 {
-                    // MS_ActualStart = MIN(SchStart) where SchStart is not null
+                    // V_Start = MIN(ActStart) where ActStart is not null
                     var starts = DetailActivities
-                        .Where(d => d.SchStart.HasValue)
-                        .Select(d => d.SchStart!.Value)
+                        .Where(d => d.ActStart.HasValue)
+                        .Select(d => d.ActStart!.Value)
                         .ToList();
-                    masterRow.MS_ActualStart = starts.Any() ? starts.Min() : (DateTime?)null;
+                    masterRow.V_Start = starts.Any() ? starts.Min() : (DateTime?)null;
 
-                    // MS_ActualFinish = MAX(SchFinish) only if ALL activities have SchFinish
-                    var allHaveFinish = DetailActivities.All(d => d.SchFinish.HasValue);
+                    // V_Finish = MAX(ActFin) only if ALL activities have ActFin
+                    var allHaveFinish = DetailActivities.All(d => d.ActFin.HasValue);
                     if (allHaveFinish && DetailActivities.Count > 0)
                     {
-                        masterRow.MS_ActualFinish = DetailActivities.Max(d => d.SchFinish!.Value);
+                        masterRow.V_Finish = DetailActivities.Max(d => d.ActFin!.Value);
                     }
                     else
                     {
-                        masterRow.MS_ActualFinish = null;
+                        masterRow.V_Finish = null;
                     }
 
                     // MS_PercentComplete = weighted average (BudgetMHs * PercentEntry) / SUM(BudgetMHs)
@@ -383,9 +383,9 @@ namespace VANTAGE.ViewModels
                 // Clear "Started Early" if no longer valid
                 if (masterRow.MissedStartReason == "Started Early")
                 {
-                    bool stillStartedEarly = masterRow.MS_ActualStart != null &&
+                    bool stillStartedEarly = masterRow.V_Start != null &&
                                              masterRow.P6_Start != null &&
-                                             masterRow.MS_ActualStart.Value.Date < masterRow.P6_Start.Value.Date;
+                                             masterRow.V_Start.Value.Date < masterRow.P6_Start.Value.Date;
                     if (!stillStartedEarly)
                     {
                         masterRow.MissedStartReason = null;
@@ -395,9 +395,9 @@ namespace VANTAGE.ViewModels
                 // Clear "Finished Early" if no longer valid
                 if (masterRow.MissedFinishReason == "Finished Early")
                 {
-                    bool stillFinishedEarly = masterRow.MS_ActualFinish != null &&
+                    bool stillFinishedEarly = masterRow.V_Finish != null &&
                                               masterRow.P6_Finish != null &&
-                                              masterRow.MS_ActualFinish.Value.Date < masterRow.P6_Finish.Value.Date;
+                                              masterRow.V_Finish.Value.Date < masterRow.P6_Finish.Value.Date;
                     if (!stillFinishedEarly)
                     {
                         masterRow.MissedFinishReason = null;
@@ -407,8 +407,8 @@ namespace VANTAGE.ViewModels
                 // Update the displayed row if it exists (might be filtered out)
                 if (displayedRow != null && displayedRow != masterRow)
                 {
-                    displayedRow.MS_ActualStart = masterRow.MS_ActualStart;
-                    displayedRow.MS_ActualFinish = masterRow.MS_ActualFinish;
+                    displayedRow.V_Start = masterRow.V_Start;
+                    displayedRow.V_Finish = masterRow.V_Finish;
                     displayedRow.MS_PercentComplete = masterRow.MS_PercentComplete;
                     displayedRow.MS_BudgetMHs = masterRow.MS_BudgetMHs;
                     displayedRow.MissedStartReason = masterRow.MissedStartReason;

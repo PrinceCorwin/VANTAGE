@@ -299,8 +299,8 @@ namespace VANTAGE
                 ROCPercent            REAL NOT NULL DEFAULT 0,
                 ROCStep               TEXT NOT NULL DEFAULT '',
                 SchedActNO            TEXT NOT NULL DEFAULT '',
-                SchFinish             TEXT,
-                SchStart              TEXT,
+                ActFin                TEXT,
+                ActStart              TEXT,
                 SecondActno           TEXT NOT NULL DEFAULT '',
                 SecondDwgNO           TEXT NOT NULL DEFAULT '',
                 Service               TEXT NOT NULL DEFAULT '',
@@ -395,6 +395,12 @@ namespace VANTAGE
                 // Migrate ThreeWeekLookahead table (add new columns if missing)
                 MigrateThreeWeekLookaheadTable(connection);
 
+                // Migrate Activities table (rename SchStart/SchFinish to ActStart/ActFin)
+                MigrateActivitiesTableColumnRename(connection);
+
+                // Migrate ColumnMappings data (update property names SchStart/SchFinish to ActStart/ActFin)
+                MigrateColumnMappingsData(connection);
+
                 // Seed built-in templates if not present
                 SeedBuiltInTemplates(connection);
             }
@@ -446,6 +452,74 @@ namespace VANTAGE
             catch (Exception ex)
             {
                 VANTAGE.Utilities.AppLogger.Error(ex, "DatabaseSetup.MigrateThreeWeekLookaheadTable");
+                // Don't throw - migration failure shouldn't block app startup
+            }
+        }
+
+        // Rename SchStart/SchFinish to ActStart/ActFin in Activities table (migration for existing databases)
+        private static void MigrateActivitiesTableColumnRename(SqliteConnection connection)
+        {
+            try
+            {
+                // Check if old columns exist (SchStart/SchFinish) - if so, rename them
+                var existingColumns = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                var pragmaCmd = connection.CreateCommand();
+                pragmaCmd.CommandText = "PRAGMA table_info(Activities)";
+                using (var reader = pragmaCmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        existingColumns.Add(reader.GetString(1));
+                    }
+                }
+
+                // Rename SchStart → ActStart if old column exists and new doesn't
+                if (existingColumns.Contains("SchStart") && !existingColumns.Contains("ActStart"))
+                {
+                    var renameCmd = connection.CreateCommand();
+                    renameCmd.CommandText = "ALTER TABLE Activities RENAME COLUMN SchStart TO ActStart";
+                    renameCmd.ExecuteNonQuery();
+                }
+
+                // Rename SchFinish → ActFin if old column exists and new doesn't
+                if (existingColumns.Contains("SchFinish") && !existingColumns.Contains("ActFin"))
+                {
+                    var renameCmd = connection.CreateCommand();
+                    renameCmd.CommandText = "ALTER TABLE Activities RENAME COLUMN SchFinish TO ActFin";
+                    renameCmd.ExecuteNonQuery();
+                }
+            }
+            catch (Exception ex)
+            {
+                VANTAGE.Utilities.AppLogger.Error(ex, "DatabaseSetup.MigrateActivitiesTableColumnRename");
+                // Don't throw - migration failure shouldn't block app startup
+            }
+        }
+
+        // Update ColumnMappings data to use new property names (ActStart/ActFin instead of SchStart/SchFinish)
+        private static void MigrateColumnMappingsData(SqliteConnection connection)
+        {
+            try
+            {
+                // Update Sch_Start mapping to point to ActStart instead of SchStart
+                var updateStartCmd = connection.CreateCommand();
+                updateStartCmd.CommandText = @"
+                    UPDATE ColumnMappings
+                    SET ColumnName = 'ActStart'
+                    WHERE OldVantageName = 'Sch_Start' AND ColumnName = 'SchStart'";
+                updateStartCmd.ExecuteNonQuery();
+
+                // Update Sch_Finish mapping to point to ActFin instead of SchFinish
+                var updateFinishCmd = connection.CreateCommand();
+                updateFinishCmd.CommandText = @"
+                    UPDATE ColumnMappings
+                    SET ColumnName = 'ActFin'
+                    WHERE OldVantageName = 'Sch_Finish' AND ColumnName = 'SchFinish'";
+                updateFinishCmd.ExecuteNonQuery();
+            }
+            catch (Exception ex)
+            {
+                VANTAGE.Utilities.AppLogger.Error(ex, "DatabaseSetup.MigrateColumnMappingsData");
                 // Don't throw - migration failure shouldn't block app startup
             }
         }

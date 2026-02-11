@@ -91,18 +91,18 @@ namespace VANTAGE.Utilities
                 // task_name = Description
                 sheet.Cell(dataRow, 4).Value = row.Description ?? string.Empty;
 
-                // act_start_date = MS_ActualStart (only if activity has started)
-                if (row.MS_ActualStart.HasValue && row.MS_PercentComplete > 0)
+                // act_start_date = V_Start (only if activity has started)
+                if (row.V_Start.HasValue && row.MS_PercentComplete > 0)
                 {
-                    var startDateTime = row.MS_ActualStart.Value.Date.Add(startTime);
+                    var startDateTime = row.V_Start.Value.Date.Add(startTime);
                     sheet.Cell(dataRow, 5).Value = startDateTime;
                     sheet.Cell(dataRow, 5).Style.DateFormat.Format = "M/d/yyyy HH:mm";
                 }
 
-                // act_end_date = MS_ActualFinish (only if activity is complete)
-                if (row.MS_ActualFinish.HasValue && row.MS_PercentComplete >= 100)
+                // act_end_date = V_Finish (only if activity is complete)
+                if (row.V_Finish.HasValue && row.MS_PercentComplete >= 100)
                 {
-                    var finishDateTime = row.MS_ActualFinish.Value.Date.Add(finishTime);
+                    var finishDateTime = row.V_Finish.Value.Date.Add(finishTime);
                     sheet.Cell(dataRow, 6).Value = finishDateTime;
                     sheet.Cell(dataRow, 6).Style.DateFormat.Format = "M/d/yyyy HH:mm";
                 }

@@ -75,8 +75,8 @@ namespace VANTAGE.Models
         public double ROCPercent { get; set; }
         public string ROCStep { get; set; } = string.Empty;
         public string SchedActNO { get; set; } = string.Empty;
-        public DateTime? SchFinish { get; set; }
-        public DateTime? SchStart { get; set; }
+        public DateTime? ActFin { get; set; }
+        public DateTime? ActStart { get; set; }
         public string SecondActno { get; set; } = string.Empty;
         public string SecondDwgNO { get; set; } = string.Empty;
         public string Service { get; set; } = string.Empty;
@@ -112,10 +112,10 @@ namespace VANTAGE.Models
         public string WorkPackage { get; set; } = string.Empty;
         public double XRay { get; set; }
 
-        // Returns true if SchStart is required but missing (percent > 0 needs a start date)
-        public bool HasMissingSchStart => PercentEntry > 0 && SchStart == null;
+        // Returns true if ActStart is required but missing (percent > 0 needs a start date)
+        public bool HasMissingActStart => PercentEntry > 0 && ActStart == null;
 
-        // Returns true if SchFinish is required but missing (percent = 100 needs a finish date)
-        public bool HasMissingSchFinish => PercentEntry >= 100 && SchFinish == null;
+        // Returns true if ActFin is required but missing (percent = 100 needs a finish date)
+        public bool HasMissingActFin => PercentEntry >= 100 && ActFin == null;
     }
 }

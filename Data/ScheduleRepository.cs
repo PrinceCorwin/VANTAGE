@@ -79,8 +79,8 @@ namespace VANTAGE.Repositories
                             // Apply MS rollups from dictionary
                             if (rollupDict.TryGetValue(schedActNo, out var rollup))
                             {
-                                masterRow.MS_ActualStart = rollup.Start;
-                                masterRow.MS_ActualFinish = rollup.Finish;
+                                masterRow.V_Start = rollup.Start;
+                                masterRow.V_Finish = rollup.Finish;
                                 masterRow.MS_PercentComplete = rollup.Percent;
                                 masterRow.MS_BudgetMHs = rollup.MHs;
                             }
@@ -145,7 +145,7 @@ namespace VANTAGE.Repositories
                         {
                             // 3WLA Start: only apply if no actual AND not stale
                             if (stored.ThreeWeekStart.HasValue &&
-                                row.MS_ActualStart == null &&
+                                row.V_Start == null &&
                                 stored.ThreeWeekStart.Value.Date >= weekEndDate.Date)
                             {
                                 row.ThreeWeekStart = stored.ThreeWeekStart;
@@ -153,7 +153,7 @@ namespace VANTAGE.Repositories
 
                             // 3WLA Finish: only apply if no actual AND not stale
                             if (stored.ThreeWeekFinish.HasValue &&
-                                row.MS_ActualFinish == null &&
+                                row.V_Finish == null &&
                                 stored.ThreeWeekFinish.Value.Date >= weekEndDate.Date)
                             {
                                 row.ThreeWeekFinish = stored.ThreeWeekFinish;
@@ -161,7 +161,7 @@ namespace VANTAGE.Repositories
 
                             // MissedStartReason: only apply if P6 and MS dates match what was stored
                             string? currentP6Start = row.P6_Start?.ToString("yyyy-MM-dd");
-                            string? currentMSStart = row.MS_ActualStart?.ToString("yyyy-MM-dd");
+                            string? currentMSStart = row.V_Start?.ToString("yyyy-MM-dd");
                             if (!string.IsNullOrEmpty(stored.MissedStartReason) &&
                                 stored.StoredP6Start == currentP6Start &&
                                 stored.StoredMSStart == currentMSStart)
@@ -171,7 +171,7 @@ namespace VANTAGE.Repositories
 
                             // MissedFinishReason: only apply if P6 and MS dates match what was stored
                             string? currentP6Finish = row.P6_Finish?.ToString("yyyy-MM-dd");
-                            string? currentMSFinish = row.MS_ActualFinish?.ToString("yyyy-MM-dd");
+                            string? currentMSFinish = row.V_Finish?.ToString("yyyy-MM-dd");
                             if (!string.IsNullOrEmpty(stored.MissedFinishReason) &&
                                 stored.StoredP6Finish == currentP6Finish &&
                                 stored.StoredMSFinish == currentMSFinish)
@@ -186,18 +186,18 @@ namespace VANTAGE.Repositories
                     {
                         // Default MissedStartReason to "Started Early" if MS started before P6 schedule date
                         if (string.IsNullOrEmpty(row.MissedStartReason) &&
-                            row.MS_ActualStart != null &&
+                            row.V_Start != null &&
                             row.P6_Start != null &&
-                            row.MS_ActualStart.Value.Date < row.P6_Start.Value.Date)
+                            row.V_Start.Value.Date < row.P6_Start.Value.Date)
                         {
                             row.MissedStartReason = "Started Early";
                         }
 
                         // Default MissedFinishReason to "Finished Early" if MS finished before P6 schedule date
                         if (string.IsNullOrEmpty(row.MissedFinishReason) &&
-                            row.MS_ActualFinish != null &&
+                            row.V_Finish != null &&
                             row.P6_Finish != null &&
-                            row.MS_ActualFinish.Value.Date < row.P6_Finish.Value.Date)
+                            row.V_Finish.Value.Date < row.P6_Finish.Value.Date)
                         {
                             row.MissedFinishReason = "Finished Early";
                         }
@@ -232,16 +232,16 @@ namespace VANTAGE.Repositories
 
                 // ONE query to calculate rollups for ALL SchedActNOs
                 // Calculate weighted average directly in SQL (stays in 0-100 scale)
-                // MS_ActualFinish only populated if ALL activities have a finish date
+                // V_Finish only populated if ALL activities have a finish date
                 cmd.CommandText = $@"
             SELECT
                 SchedActNO,
-                MIN(SchStart) as MS_ActualStart,
+                MIN(ActStart) as V_Start,
                 CASE
-                    WHEN COUNT(*) = COUNT(SchFinish)
-                    THEN MAX(SchFinish)
+                    WHEN COUNT(*) = COUNT(ActFin)
+                    THEN MAX(ActFin)
                     ELSE NULL
-                END as MS_ActualFinish,
+                END as V_Finish,
                 CASE
                     WHEN SUM(BudgetMHs) > 0
                     THEN SUM(BudgetMHs * PercentEntry) / SUM(BudgetMHs)
@@ -262,7 +262,7 @@ namespace VANTAGE.Repositories
                 {
                     string schedActNo = reader.GetString(0);
 
-                    // SchStart and SchFinish are stored as TEXT (VARCHAR) in Azure, not DATETIME
+                    // ActStart and ActFin are stored as TEXT (VARCHAR) in Azure, not DATETIME
                     DateTime? msStart = null;
                     if (!reader.IsDBNull(1))
                     {
@@ -669,8 +669,8 @@ namespace VANTAGE.Repositories
                 UPDATE VMS_ProgressSnapshots
                 SET PercentEntry = @percentEntry,
                     BudgetMHs = @budgetMHs,
-                    SchStart = @schStart,
-                    SchFinish = @schFinish,
+                    ActStart = @schStart,
+                    ActFin = @schFinish,
                     UpdatedBy = @updatedBy,
                     UpdatedUtcDate = @updatedUtcDate
                 WHERE UniqueID = @uniqueId
@@ -679,9 +679,9 @@ namespace VANTAGE.Repositories
                     azureCmd.Parameters.AddWithValue("@percentEntry", snapshot.PercentEntry);
                     azureCmd.Parameters.AddWithValue("@budgetMHs", snapshot.BudgetMHs);
                     azureCmd.Parameters.AddWithValue("@schStart",
-                        snapshot.SchStart?.ToString("yyyy-MM-dd HH:mm:ss") ?? (object)DBNull.Value);
+                        snapshot.ActStart?.ToString("yyyy-MM-dd HH:mm:ss") ?? (object)DBNull.Value);
                     azureCmd.Parameters.AddWithValue("@schFinish",
-                        snapshot.SchFinish?.ToString("yyyy-MM-dd HH:mm:ss") ?? (object)DBNull.Value);
+                        snapshot.ActFin?.ToString("yyyy-MM-dd HH:mm:ss") ?? (object)DBNull.Value);
                     azureCmd.Parameters.AddWithValue("@updatedBy", username);
                     azureCmd.Parameters.AddWithValue("@updatedUtcDate", DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"));
                     azureCmd.Parameters.AddWithValue("@uniqueId", snapshot.UniqueID);
@@ -869,9 +869,9 @@ namespace VANTAGE.Repositories
                             threeWeekCmd.Parameters.AddWithValue("@p6Finish",
                                 row.P6_Finish?.ToString("yyyy-MM-dd") ?? (object)DBNull.Value);
                             threeWeekCmd.Parameters.AddWithValue("@msStart",
-                                row.MS_ActualStart?.ToString("yyyy-MM-dd") ?? (object)DBNull.Value);
+                                row.V_Start?.ToString("yyyy-MM-dd") ?? (object)DBNull.Value);
                             threeWeekCmd.Parameters.AddWithValue("@msFinish",
-                                row.MS_ActualFinish?.ToString("yyyy-MM-dd") ?? (object)DBNull.Value);
+                                row.V_Finish?.ToString("yyyy-MM-dd") ?? (object)DBNull.Value);
                             threeWeekCmd.ExecuteNonQuery();
                         }
                         else
@@ -952,7 +952,7 @@ namespace VANTAGE.Repositories
                     cmd.CommandText = $@"
                             SELECT
                                 UniqueID, WeekEndDate, SchedActNO, Description,
-                                PercentEntry, BudgetMHs, SchStart, SchFinish,
+                                PercentEntry, BudgetMHs, ActStart, ActFin,
                                 AssignedTo, ProjectID, UpdatedBy, UpdatedUtcDate
                             FROM VMS_ProgressSnapshots
                             WHERE SchedActNO = @schedActNO
@@ -982,19 +982,19 @@ namespace VANTAGE.Repositories
                             UpdatedUtcDate = reader.IsDBNull(11) ? DateTime.MinValue : DateTime.Parse(reader.GetString(11))
                         };
 
-                        // SchStart and SchFinish are stored as TEXT
+                        // ActStart and ActFin are stored as TEXT
                         if (!reader.IsDBNull(6))
                         {
                             string startStr = reader.GetString(6);
                             if (DateTime.TryParse(startStr, out DateTime parsedStart))
-                                snapshot.SchStart = parsedStart;
+                                snapshot.ActStart = parsedStart;
                         }
 
                         if (!reader.IsDBNull(7))
                         {
                             string finishStr = reader.GetString(7);
                             if (DateTime.TryParse(finishStr, out DateTime parsedFinish))
-                                snapshot.SchFinish = parsedFinish;
+                                snapshot.ActFin = parsedFinish;
                         }
 
                         snapshots.Add(snapshot);
