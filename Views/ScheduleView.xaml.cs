@@ -122,6 +122,12 @@ namespace VANTAGE.Views
             // Wire up master grid edit handler for tracking unsaved changes
             sfScheduleMaster.CurrentCellEndEdit += SfScheduleMaster_CurrentCellEndEdit;
 
+            // Wire up paste handler for master grid (required fields)
+            sfScheduleMaster.GridPasteContent += SfScheduleMaster_GridPasteContent;
+
+            // Wire up Delete/Backspace to clear cell in master grid
+            sfScheduleMaster.PreviewKeyDown += SfScheduleMaster_PreviewKeyDown;
+
             // Wire up copy/paste handlers for detail grid
             sfScheduleDetail.GridCopyContent += SfScheduleDetail_GridCopyContent;
             sfScheduleDetail.GridPasteContent += SfScheduleDetail_GridPasteContent;
@@ -237,6 +243,86 @@ namespace VANTAGE.Views
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "ScheduleView.SfScheduleMaster_CurrentCellEndEdit");
+            }
+        }
+
+        // Handles paste in master grid - ensures CurrentCellEndEdit fires to update required fields count
+        private void SfScheduleMaster_GridPasteContent(object? sender, Syncfusion.UI.Xaml.Grid.GridCopyPasteEventArgs e)
+        {
+            var currentCell = sfScheduleMaster.SelectionController.CurrentCellManager.CurrentCell;
+            if (currentCell == null)
+                return;
+
+            // Enter edit mode so paste triggers normal edit flow
+            if (!currentCell.IsEditing)
+            {
+                sfScheduleMaster.SelectionController.CurrentCellManager.BeginEdit();
+            }
+
+            // Queue EndEdit after paste completes to ensure CurrentCellEndEdit fires
+            Dispatcher.BeginInvoke(DispatcherPriority.Input, () =>
+            {
+                sfScheduleMaster.SelectionController.CurrentCellManager.EndEdit();
+            });
+        }
+
+        // Handle Delete/Backspace to clear cell when not in edit mode
+        private void SfScheduleMaster_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if ((e.Key == Key.Delete || e.Key == Key.Back) && Keyboard.Modifiers == ModifierKeys.None)
+            {
+                var currentCell = sfScheduleMaster.SelectionController.CurrentCellManager.CurrentCell;
+                if (currentCell == null || currentCell.IsEditing)
+                    return;
+
+                var row = sfScheduleMaster.SelectedItem as ScheduleMasterRow;
+                if (row == null)
+                    return;
+
+                if (sfScheduleMaster.CurrentColumn == null)
+                    return;
+
+                string columnName = sfScheduleMaster.CurrentColumn.MappingName;
+
+                // Only allow clearing editable columns
+                if (columnName != "MissedStartReason" && columnName != "MissedFinishReason" &&
+                    columnName != "ThreeWeekStart" && columnName != "ThreeWeekFinish")
+                    return;
+
+                // Check if 3WLA columns are editable (not locked by actuals)
+                if (columnName == "ThreeWeekStart" && !row.IsThreeWeekStartEditable)
+                {
+                    txtStatus.Text = "3WLA Start is locked (actual start exists)";
+                    return;
+                }
+                if (columnName == "ThreeWeekFinish" && !row.IsThreeWeekFinishEditable)
+                {
+                    txtStatus.Text = "3WLA Finish is locked (actual finish exists)";
+                    return;
+                }
+
+                e.Handled = true;
+
+                // Clear the value
+                switch (columnName)
+                {
+                    case "MissedStartReason":
+                        row.MissedStartReason = null;
+                        break;
+                    case "MissedFinishReason":
+                        row.MissedFinishReason = null;
+                        break;
+                    case "ThreeWeekStart":
+                        row.ThreeWeekStart = null;
+                        break;
+                    case "ThreeWeekFinish":
+                        row.ThreeWeekFinish = null;
+                        break;
+                }
+
+                _viewModel.HasUnsavedChanges = true;
+                _viewModel.UpdateRequiredFieldsCount();
+                sfScheduleMaster.View?.Refresh();
             }
         }
 

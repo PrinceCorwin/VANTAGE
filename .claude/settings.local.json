@@ -47,7 +47,9 @@
       "Bash(dotnet clean:*)",
       "Bash(gh release create:*)",
       "Bash(git rebase:*)",
-      "Skill(speedup)"
+      "Skill(speedup)",
+      "Bash(git pull:*)",
+      "Bash(git branch:*)"
     ]
   }
 }

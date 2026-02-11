@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using VANTAGE.Models;
 using VANTAGE.Repositories;
@@ -25,6 +26,7 @@ namespace VANTAGE.ViewModels
         private DiscrepancyFilterType _discrepancyFilter = DiscrepancyFilterType.None;
         private string? _selectedSchedActNO;
         private bool _hasUnsavedChanges;
+        private CancellationTokenSource? _detailLoadCts;
 
         // IScheduleCellIndicators - always false on ViewModel (only meaningful on ScheduleMasterRow)
         public bool IsMissedStartReasonRequired => false;
@@ -303,6 +305,11 @@ namespace VANTAGE.ViewModels
 
         public async Task LoadDetailActivitiesAsync(string schedActNO)
         {
+            // Cancel any in-progress load
+            _detailLoadCts?.Cancel();
+            _detailLoadCts = new CancellationTokenSource();
+            var token = _detailLoadCts.Token;
+
             try
             {
                 if (string.IsNullOrEmpty(schedActNO) || !SelectedWeekEndDate.HasValue)
@@ -317,10 +324,18 @@ namespace VANTAGE.ViewModels
                     schedActNO,
                     SelectedWeekEndDate.Value);
 
+                // Check if cancelled before updating UI
+                if (token.IsCancellationRequested)
+                    return;
+
                 DetailActivities = new ObservableCollection<ProgressSnapshot>(snapshots);
 
                 AppLogger.Info($"Loaded {snapshots.Count} detail activities for {schedActNO}",
                     "ScheduleViewModel.LoadDetailActivitiesAsync");
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected when cancelled - ignore
             }
             catch (Exception ex)
             {

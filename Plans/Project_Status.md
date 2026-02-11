@@ -91,7 +91,7 @@
 
 - **SfSkinManager calls are in code-behind, not XAML.** All 22 dialog/view code-behinds call `SfSkinManager.SetTheme(this, new Theme(ThemeManager.GetSyncfusionThemeName()))` in their constructors. The XAML `SkinManagerExtension` attributes were removed because they're compile-time constants that can't read a runtime setting.
 
-- **Resource naming is role-based, not appearance-based.** Names like `ToolbarForeground`, `GridHeaderForeground`, `ActionButtonForeground` describe *where* the color is used, not *what* it looks like. A pink theme would set `ToolbarForeground` to whatever works on a pink toolbar. Do NOT name resources after their color (e.g. "LightText", "DarkSurface").
+- **Resource naming is usually role-based, not appearance-based.** Names like `ToolbarForeground`, `GridHeaderForeground`, `ActionButtonForeground` describe *where* the color is used, not *what* it looks like. A pink theme would set `ToolbarForeground` to whatever works on a pink toolbar.
 
 - **`ToolbarButtonStyle`** is a named Button style in the theme for Settings/Minimize/Maximize buttons. It has its own hover triggers using `ToolbarHoverBackground`/`ToolbarHoverForeground` because the default Button style's hover uses `ControlHoverBackground` which doesn't work on the always-dark toolbar in the Light theme.
 
@@ -267,11 +267,6 @@ All V1 sections of `Help/manual.html` are written. Screenshots configured with c
 - Interactive Help Mode - click UI controls to navigate to documentation (see Sidebar_Help_Plan.md)
 
 ## Known Issues
-
-### Schedule Module - Required Fields Count Not Updating
-- After pasting a value into a field (navigated to via arrow keys), the required fields error count doesn't recalculate
-- Export to P6 menu item stays disabled because it thinks there are still errors
-- Workaround: Navigate away from Schedule module and back to refresh the count
 
 ### AI Progress Scan - Accuracy Issues (RESOLVED)
 - ~~PDF scans less accurate than JPEG scans~~ Fixed with AWS Textract
