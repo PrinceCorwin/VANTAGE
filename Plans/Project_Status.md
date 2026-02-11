@@ -21,7 +21,7 @@
 |---------|--------|
 | Drawings in Work Packages | Per-WP location architecture needs design |
 | AI Features (other than Progress Scan) | Lower priority for V1 |
-| ~~Theme Selection~~ | Implemented (multi-themes branch) |
+| ~~Theme Selection~~ | Implemented |
 | Procore Integration | Can develop while users test |
 | ~~Help Troubleshooting section~~ | Implemented — Azure firewall, SmartScreen, post-update |
 
@@ -40,6 +40,77 @@
 | AI Features (other) | NOT STARTED | Error Assistant, Description Analysis, etc. |
 
 ## Active Development
+
+### Multi-Theme System
+
+**Current state:** Dark, Light, and Orchid themes implemented and working. Architecture supports adding more themes.
+
+**How to add a new theme (e.g. "Warm", "Ocean", "HighContrast"):**
+
+1. **Add Syncfusion theme NuGet** — Each theme needs a matching Syncfusion base theme. Currently using `Syncfusion.Themes.FluentDark.WPF` and `Syncfusion.Themes.FluentLight.WPF`. New themes should use one of these as a base (FluentDark for dark themes, FluentLight for light themes). Add the package to `VANTAGE.csproj` if not already present.
+
+2. **Create `Themes/NewTheme.xaml`** — Copy `DarkTheme.xaml` or `LightTheme.xaml` as a starting point. All themes must define the exact same set of resource keys. Current keys (as of Feb 2026):
+   - **Color palette:** BackgroundColor, DarkBackgroundColor, DarkestBackgroundColor, ForegroundColor, TextColorSecondary, AccentColor, BorderColor, DisabledColor
+   - **Window:** WindowBackground, ControlBackground, ControlBackgroundGreen, ControlBackgroundRed, ControlForeground, ControlBorder, ControlHoverBackground, ControlPressedBackground
+   - **DataGrid:** GridHeaderBackground
+   - **Filter icons:** FilterIconColor (Color), FilterIconActiveColor (Color) — see filter icon section below
+   - **Status:** StatusGreen, StatusYellow, StatusYellowBg, StatusRed, StatusRedBg, StatusInProgress, StatusNotStarted
+   - **Active filter border:** ActiveFilterBorderColor
+   - **Toolbar:** ToolbarBackground, ToolbarForeground, ToolbarHoverBackground, ToolbarHoverForeground
+   - **Grid headers:** GridHeaderForeground
+   - **Action buttons:** ActionButtonForeground
+   - **StatusBar:** StatusBarBackground, StatusBarForeground
+   - **Non-owned rows:** NotOwnedRowBackground, NotOwnedRowForeground
+   - **Action buttons (bg):** ButtonSuccessBackground/Border/Hover, ButtonDangerBackground/Border/Hover, ButtonPrimaryBackground/Border/Hover
+   - **Overlay:** OverlayBackground, OverlayText, OverlayTextSecondary
+   - **Error/Warning:** ErrorText, WarningText, WarningHighlight, WarningHighlightBackground
+   - **UI elements:** SidebarBackground, SidebarBorder, DividerColor, SplitterDots, DisabledText
+   - **Font:** FontFamilyPrimary, FontSizeNormal
+   - **Styles:** Default Button style (implicit, no key), ToolbarButtonStyle (x:Key)
+
+3. **Register in `ThemeManager.cs`** — Add entry to both dictionaries:
+   ```csharp
+   // In ThemeMap: "DisplayName" → "SyncfusionThemeName"
+   { "Warm", "FluentDark" }  // or "FluentLight" depending on base
+   // In AvailableThemes array:
+   public static readonly string[] AvailableThemes = { "Dark", "Light", "Orchid" };
+   ```
+   The `ApplyTheme()` method handles swapping by URI pattern matching — it finds and removes the current theme dictionary (`/Themes/*.xaml`) and Syncfusion MSControl dictionaries, then adds the new ones. No changes needed to the swap logic itself.
+
+4. **Update ThemeManagerDialog** — Add a RadioButton for the new theme in `Dialogs/ThemeManagerDialog.xaml` and wire up the selection in `ThemeManagerDialog.xaml.cs`.
+
+5. **Update Help manual** — Update the Theme... entry in `Help/manual.html`.
+
+**Key architecture decisions and pitfalls to avoid:**
+
+- **StaticResource, not DynamicResource.** All XAML files use `StaticResource` bindings. This works because the theme dictionary is swapped *before* any windows are created during `App.xaml.cs` startup. Do NOT convert to DynamicResource — there are 1,000+ references and it would be a massive change for no benefit.
+
+- **Theme is applied on restart, not live.** `ThemeManager.SaveTheme()` saves to UserSettings. `ThemeManager.LoadThemeFromSettings()` runs once at startup before `new MainWindow()`. The ThemeManagerDialog tells users "Theme will be applied when the application restarts."
+
+- **App.xaml declares FluentDark + DarkTheme.xaml as defaults.** These are the compile-time defaults in the XAML. `ThemeManager.LoadThemeFromSettings()` swaps them only if the saved setting is not "Dark".
+
+- **SfSkinManager calls are in code-behind, not XAML.** All 22 dialog/view code-behinds call `SfSkinManager.SetTheme(this, new Theme(ThemeManager.GetSyncfusionThemeName()))` in their constructors. The XAML `SkinManagerExtension` attributes were removed because they're compile-time constants that can't read a runtime setting.
+
+- **Resource naming is role-based, not appearance-based.** Names like `ToolbarForeground`, `GridHeaderForeground`, `ActionButtonForeground` describe *where* the color is used, not *what* it looks like. A pink theme would set `ToolbarForeground` to whatever works on a pink toolbar. Do NOT name resources after their color (e.g. "LightText", "DarkSurface").
+
+- **`ToolbarButtonStyle`** is a named Button style in the theme for Settings/Minimize/Maximize buttons. It has its own hover triggers using `ToolbarHoverBackground`/`ToolbarHoverForeground` because the default Button style's hover uses `ControlHoverBackground` which doesn't work on the always-dark toolbar in the Light theme.
+
+- **`ActionFilterToggleStyle`** in `ScheduleView.xaml` resources — The Required Fields toggle button has a dark background (`StatusRedBg`) with light text (`ActionButtonForeground`). It needs its own style because WPF local values override style/template triggers, so the hover foreground can't be changed by the shared `FilterToggleButtonStyle`. This style has `ForegroundColor` on hover so text is readable on the light hover background.
+
+- **Nav button foreground in code-behind.** `MainWindow.xaml.cs` `HighlightNavigationButton()` resets inactive nav buttons to `FindResource("ToolbarForeground")`. The active button gets `AccentColor`. This was a bug — it originally used `ForegroundColor` which is dark in light theme, making inactive nav buttons invisible on the dark toolbar.
+
+- **`SettingsManager.cs` guard bug (fixed).** `InitializeDefaultUserSettings()` had a guard checking `GetUserSetting("LastModuleUsed")` which was never written anywhere, so it re-initialized Theme to "Dark" on every startup. Fixed to check `GetUserSetting("Theme")` instead. Don't reintroduce this pattern.
+
+- **Syncfusion MSControl dictionaries.** Each Syncfusion theme has 4 MSControl dictionaries (Button, Window, StatusBar, TabControl) that must be swapped along with the app theme dictionary. `ThemeManager.ApplyTheme()` handles this by matching URI patterns containing `MSControl` and the Syncfusion theme name.
+
+- **Grid filter icons use a custom template, not Syncfusion's.** The Syncfusion `FilterToggleButton` template resolves its icon colors from internal compiled BAML that cannot be overridden via resource dictionaries, `Application.Current.Resources`, or `SfDataGrid.Resources` — SfSkinManager injects its own styles at a scope that overrides all of these. The solution: a custom `FilterToggleButton` style with a full `ControlTemplate` override is defined in each grid's `SfDataGrid.Resources` (ScheduleView master+detail, ProgressView, ProgressScanDialog). The template provides:
+  - Our own funnel Path geometry: `M 1,2 L 11,2 L 7,6 L 7,10 L 5,10 L 5,6 Z`
+  - `Stroke`-based rendering (outline only, `Fill="Transparent"`)
+  - `VisualStateManager` with `FilterStates` group (`Filtered`/`UnFiltered` states) — Syncfusion's control code triggers these state transitions
+  - `FilterIconColor` (Color resource from theme) for the default stroke, `FilterIconActiveColor` for active filter stroke (red)
+  - `Background="Transparent"` on the Grid wrapper for hit testing (clickable area)
+  - No `PART_FilterToggleButtonIndicator` name on the Path — intentionally omitted so Syncfusion code can't override our path data
+  - When adding a new theme, set `FilterIconColor` to a color that's visible on the `GridHeaderBackground` (dark headers need light icon, light headers need dark icon). `FilterIconActiveColor` should be a high-contrast red/accent to indicate active filtering.
 
 ### Progress Book Module
 - Phases 1-6 complete: Data models, repository, layout builder UI, PDF generator, live preview, generate dialog
