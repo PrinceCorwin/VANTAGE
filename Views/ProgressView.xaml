@@ -1386,7 +1386,7 @@
                               NumberDecimalDigits="2" />
 
                         <syncfusion:GridDateTimeColumn MappingName="SchFinish"
-                            HeaderText="SchFinish" Padding="4,0,4,0"
+                            HeaderText="ActFin" Padding="4,0,4,0"
                             Width="100"
                             IsHidden="False"
                             AllowEditing="True"
@@ -1397,7 +1397,7 @@
                             Pattern="ShortDate" />
 
                         <syncfusion:GridDateTimeColumn MappingName="SchStart"
-                           HeaderText="SchStart" Padding="4,0,4,0"
+                           HeaderText="ActStart" Padding="4,0,4,0"
                            Width="100"
                            IsHidden="False"
                            AllowEditing="True"

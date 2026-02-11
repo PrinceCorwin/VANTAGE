@@ -957,7 +957,7 @@
         <li><strong>Master Grid (top)</strong> — P6 schedule activities with MS rollup data</li>
         <li><strong>Detail Grid (bottom)</strong> — Individual VANTAGE: Milestone activities linked to the selected schedule row</li>
     </ul>
-    <p>Click any row in the master grid to see its linked activities in the detail grid below. Edits to percent, dates, and budget hours in the detail grid automatically recalculate the MS rollup values (MS Start, MS Finish, MS %, MS MHs) shown in the master grid.</p>
+    <p>Click any row in the master grid to see its linked activities in the detail grid below. Edits to percent, dates, and budget hours in the detail grid automatically recalculate the rollup values (V-Start, V-Finish, MS %, MS MHs) shown in the master grid.</p>
 
     <div class="warning">
         <div class="warning-title">Snapshot Data Only</div>
@@ -1045,8 +1045,8 @@
     <h4>MS Rollups (Calculated)</h4>
     <p>These columns are calculated from linked VANTAGE: Milestone activities:</p>
     <ul>
-        <li><strong>MS Start</strong> — Earliest start date from linked activities</li>
-        <li><strong>MS Finish</strong> — Latest finish date (only if all linked activities are complete)</li>
+        <li><strong>V-Start</strong> — Earliest start date from linked activities</li>
+        <li><strong>V-Finish</strong> — Latest finish date (only if all linked activities are complete)</li>
         <li><strong>MS %</strong> — Weighted average percent complete</li>
         <li><strong>MS MHs</strong> — Sum of budget hours from linked activities</li>
     </ul>
@@ -1077,11 +1077,11 @@
             <td>Editable budget hours for this activity</td>
         </tr>
         <tr>
-            <td><strong>Start (SchStart)</strong></td>
+            <td><strong>ActStart (SchStart)</strong></td>
             <td>Required when percent > 0. Cannot be future date.</td>
         </tr>
         <tr>
-            <td><strong>Finish (SchFinish)</strong></td>
+            <td><strong>ActFin (SchFinish)</strong></td>
             <td>Required when percent = 100. Cannot be before Start.</td>
         </tr>
     </table>

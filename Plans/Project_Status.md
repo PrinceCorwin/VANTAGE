@@ -1,6 +1,6 @@
 # MILESTONE - Project Status
 
-**Last Updated:** February 10, 2026
+**Last Updated:** February 11, 2026
 
 ## V1 Testing Scope
 
@@ -175,8 +175,6 @@ All V1 sections of `Help/manual.html` are written. Screenshots configured with c
 
 **NEXT ITEMS TO COMPLETE:**
 1. **CHANGE:** SchStart/SchFinish auto-date behavior — Instead of auto-populating SchStart when percent > 0 and SchFinish when percent = 100, mark these fields as required metadata (red cell background like other metadata errors). User must manually select the date. This gives users control over actual start/finish dates rather than defaulting to today.
-2. **UI:** Rename MS Start/Finish column headers to V-Start/V-Finish — Display name change only (no data model changes). Affects: Schedule main grid, Schedule detail grid, Progress grid column headers. Update Help manual column references.
-3. **UI:** Rename P6 Start/Finish column headers to P6 Plan Strt/P6 Plan Fin — Display name change only. Update Help manual column references.
 
 **OTHER HIGH PRIORITY:**
 - ~~First publish & end-to-end test (Workstream 4)~~ Complete — v26.1.1 install + v26.1.2 auto-update validated

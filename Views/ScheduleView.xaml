@@ -498,14 +498,14 @@
                                                   Pattern="ShortDate"
                                                   CellStyle="{StaticResource ThreeWeekFinishRequiredStyle}"/>
                     <syncfusion:GridDateTimeColumn MappingName="MS_ActualStart" 
-                                                  HeaderText="MS Start" 
+                                                  HeaderText="V-Start" 
                                                   Width="110"
                                                   DisplayBinding="{Binding MS_ActualStart, StringFormat='yyyy-MM-dd'}"
                                                   AllowEditing="False"
                                                   CellStyle="{StaticResource MSStartVarianceStyle}"/>
 
                     <syncfusion:GridDateTimeColumn MappingName="MS_ActualFinish" 
-                                                  HeaderText="MS Finish" 
+                                                  HeaderText="V-Finish" 
                                                   Width="110"
                                                   DisplayBinding="{Binding MS_ActualFinish, StringFormat='yyyy-MM-dd'}"
                                                   AllowEditing="False"
@@ -517,13 +517,13 @@
                                               AllowEditing="False"/>
 
                     <syncfusion:GridDateTimeColumn MappingName="P6_Start"
-                                                  HeaderText="P6 Start"
+                                                  HeaderText="P6 Plan Strt"
                                                   Width="130"
                                                   DisplayBinding="{Binding P6_Start, StringFormat='yyyy-MM-dd'}"
                                                   AllowEditing="False"/>
 
                     <syncfusion:GridDateTimeColumn MappingName="P6_Finish"
-                                                  HeaderText="P6 Finish"
+                                                  HeaderText="P6 Plan Fin"
                                                   Width="130"
                                                   DisplayBinding="{Binding P6_Finish, StringFormat='yyyy-MM-dd'}"
                                                   AllowEditing="False"/>
@@ -692,7 +692,7 @@
                                                          AllowEditing="True"/>
 
                             <syncfusion:GridDateTimeColumn MappingName="SchStart" 
-                                                          HeaderText="Start" 
+                                                          HeaderText="ActStart" 
                                                           Width="110"
                                                           AllowEditing="True"
                                                           AllowNullValue="True"
@@ -700,7 +700,7 @@
                                                           Pattern="ShortDate"/>
 
                             <syncfusion:GridDateTimeColumn MappingName="SchFinish" 
-                                                          HeaderText="Finish" 
+                                                          HeaderText="ActFin" 
                                                           Width="110"
                                                           AllowEditing="True"
                                                           AllowNullValue="True"

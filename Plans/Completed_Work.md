@@ -6,6 +6,9 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### February 11, 2026
+- **Rename date column headers for clarity:** Changed Schedule master grid columns: MS Start/Finish → V-Start/V-Finish, P6 Start/Finish → P6 Plan Strt/P6 Plan Fin. Changed Schedule detail grid columns: Start/Finish → ActStart/ActFin. Changed Progress grid columns: SchStart/SchFinish → ActStart/ActFin. Updated Help manual references.
+
 ### February 10, 2026
 - **Persist MissedReasons and 3WLA dates across P6 imports:** MissedStartReason, MissedFinishReason, ThreeWeekStart, and ThreeWeekFinish values now persist across P6 imports. Stored in ThreeWeekLookahead table with comparison dates (P6_Start, P6_Finish, MS_Start, MS_Finish) to detect when underlying dates change. MissedReasons only apply if stored P6/MS dates still match current values (date changes invalidate old reasons). 3WLA dates only apply if no actual MS date exists and the 3WLA date is not stale (>= WeekEndDate). Added database migration for existing installations.
 - **7-day rule for MissedReasons:** Don't require MissedStartReason/MissedFinishReason for activities that actualized more than 7 days before the WeekEndDate. This prevents legacy data from triggering required field warnings for long-completed activities.
