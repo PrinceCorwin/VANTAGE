@@ -7,6 +7,7 @@ This document tracks completed features and fixes. Items are moved here from Pro
 ## Unreleased
 
 ### February 11, 2026
+- **ActStart/ActFin required metadata validation:** Removed auto-set behavior for ActStart (SchStart) and ActFin (SchFinish) fields. Instead of auto-populating dates when percent changes, these fields are now conditionally required metadata: ActStart is required when % > 0, ActFin is required when % = 100. Missing dates show red cell backgrounds (same as other metadata errors) and block sync/submit operations. Auto-clear behavior preserved: dates clear when percent returns to 0. Fixed metadata error counter not updating after cell edits. Fixed grid flash when clicking Metadata Errors button (was caused by double reload). Updated Activity/ProgressSnapshot models with HasMissingSchStart/HasMissingSchFinish properties. Updated ExcelImporter, ProgressView, ScheduleView, and Help manual.
 - **Rename date column headers for clarity:** Changed Schedule master grid columns: MS Start/Finish → V-Start/V-Finish, P6 Start/Finish → P6 Plan Strt/P6 Plan Fin. Changed Schedule detail grid columns: Start/Finish → ActStart/ActFin. Changed Progress grid columns: SchStart/SchFinish → ActStart/ActFin. Updated Help manual references.
 
 ### February 10, 2026

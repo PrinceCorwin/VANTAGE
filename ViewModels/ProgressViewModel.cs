@@ -156,6 +156,20 @@ namespace VANTAGE.ViewModels
             }
         }
 
+        // Clear all filter state without triggering a reload
+        // Used when immediately applying a new filter to avoid double-reload flash
+        public void ClearFiltersWithoutReload()
+        {
+            _activeFilters.Clear();
+            _myRecordsActive = false;
+            _myRecordsUser = null;
+            _todayFilterActive = false;
+            _searchText = "";
+            OnPropertyChanged(nameof(SearchText));
+            OnPropertyChanged(nameof(ActiveFilterColumns));
+            OnPropertyChanged(nameof(TodayFilterActive));
+        }
+
         // ========================================
         // TODAY FILTER
         // ========================================

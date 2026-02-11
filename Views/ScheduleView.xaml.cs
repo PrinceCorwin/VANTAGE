@@ -389,7 +389,7 @@ namespace VANTAGE.Views
                 string username = App.CurrentUser?.Username ?? "Unknown";
                 DateTime weekEndDate = _viewModel.SelectedWeekEndDate ?? DateTime.Today;
 
-                // Handle PercentEntry changes - auto-adjust dates
+                // Handle PercentEntry changes - clear dates as needed
                 if (columnName == "PercentEntry")
                 {
                     if (editedSnapshot.PercentEntry == 0)
@@ -398,27 +398,12 @@ namespace VANTAGE.Views
                         editedSnapshot.SchStart = null;
                         editedSnapshot.SchFinish = null;
                     }
-                    else if (editedSnapshot.PercentEntry > 0 && editedSnapshot.PercentEntry < 100)
+                    else if (editedSnapshot.PercentEntry < 100)
                     {
-                        // In progress - needs start, no finish
-                        if (editedSnapshot.SchStart == null)
-                        {
-                            editedSnapshot.SchStart = weekEndDate;
-                        }
+                        // <100% → clear SchFinish (user must re-enter when reaching 100)
                         editedSnapshot.SchFinish = null;
                     }
-                    else if (editedSnapshot.PercentEntry >= 100)
-                    {
-                        // Complete - needs both start and finish
-                        if (editedSnapshot.SchStart == null)
-                        {
-                            editedSnapshot.SchStart = weekEndDate;
-                        }
-                        if (editedSnapshot.SchFinish == null)
-                        {
-                            editedSnapshot.SchFinish = weekEndDate;
-                        }
-                    }
+                    // Note: No auto-set of dates - user must enter ActStart/ActFin manually
                 }
 
                 // Handle SchStart changes - validate

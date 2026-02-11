@@ -195,34 +195,26 @@ namespace VANTAGE.Utilities
                 }
                 else
                 {
-                    // Rule 2: PercentEntry > 0 but no SchStart → set to today
-                    if (activity.SchStart == null)
+                    // Rule 2: SchStart in future → clamp to today
+                    if (activity.SchStart != null && activity.SchStart > today)
                     {
                         activity.SchStart = today;
                     }
-                    // Rule 3: SchStart in future → clamp to today
-                    else if (activity.SchStart > today)
-                    {
-                        activity.SchStart = today;
-                    }
+                    // Note: No auto-set of SchStart - user must enter manually (will show as metadata error)
 
-                    // Rule 4: PercentEntry < 100 → clear SchFinish
+                    // Rule 3: PercentEntry < 100 → clear SchFinish
                     if (activity.PercentEntry < 100)
                     {
                         activity.SchFinish = null;
                     }
                     else // PercentEntry = 100
                     {
-                        // Rule 5: PercentEntry = 100 but no SchFinish → set to today
-                        if (activity.SchFinish == null)
+                        // Rule 4: SchFinish in future → clamp to today
+                        if (activity.SchFinish != null && activity.SchFinish > today)
                         {
                             activity.SchFinish = today;
                         }
-                        // Rule 6: SchFinish in future → clamp to today
-                        else if (activity.SchFinish > today)
-                        {
-                            activity.SchFinish = today;
-                        }
+                        // Note: No auto-set of SchFinish - user must enter manually (will show as metadata error)
                     }
                 }
 

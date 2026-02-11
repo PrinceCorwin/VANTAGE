@@ -721,12 +721,12 @@
             <th>Rules</th>
         </tr>
         <tr>
-            <td><strong>SchStart</strong></td>
-            <td>Cannot be a future date. Cannot be after SchFinish. Cannot be cleared if percent is greater than 0. Auto-sets to today when percent changes from 0.</td>
+            <td><strong>ActStart (SchStart)</strong></td>
+            <td>Required when percent is greater than 0 (shows red if missing). Cannot be a future date. Cannot be after ActFin. Cannot be cleared if percent is greater than 0.</td>
         </tr>
         <tr>
-            <td><strong>SchFinish</strong></td>
-            <td>Requires percent to be 100%. Cannot be before SchStart. Auto-sets to today when percent reaches 100%.</td>
+            <td><strong>ActFin (SchFinish)</strong></td>
+            <td>Required when percent equals 100% (shows red if missing). Cannot be a future date. Cannot be before ActStart. Cannot be cleared if percent is 100%.</td>
         </tr>
     </table>
 
@@ -928,8 +928,8 @@
     </ul>
 
     <div class="note">
-        <div class="note-title">Auto-Date Behavior</div>
-        <p>When pasting to PercentEntry, dates are auto-set just like manual edits: SchStart is set when going from 0% to any value, and SchFinish is set when reaching 100%.</p>
+        <div class="note-title">Required Date Fields</div>
+        <p>When PercentEntry is greater than 0, ActStart is required. When PercentEntry equals 100%, ActFin is also required. Missing required dates show red cell backgrounds and must be filled before syncing.</p>
     </div>
 
     <!-- ============================================ -->
@@ -1087,8 +1087,8 @@
     </table>
 
     <div class="note">
-        <div class="note-title">Auto-Date Behavior</div>
-        <p>When you change percent from 0 to any value, Start auto-sets to the week ending date. When you set percent to 100, Finish auto-sets to the week ending date.</p>
+        <div class="note-title">Required Date Fields</div>
+        <p>When percent is greater than 0, ActStart is required and shows red if missing. When percent equals 100%, ActFin is also required. You must manually enter these dates.</p>
     </div>
 
     <h3 id="sched-3wla">Three-Week Lookahead (3WLA)</h3>
@@ -1711,9 +1711,8 @@
     <p>Applied changes:</p>
     <ul>
         <li>Update the PercentEntry field for each selected activity</li>
-        <li>Auto-set SchStart date if changing from 0% (sets to today)</li>
-        <li>Auto-set SchFinish date if changing to 100% (sets to today)</li>
         <li>Mark records as LocalDirty for sync</li>
+        <li>Note: ActStart is required when % > 0, ActFin is required when % = 100 — enter dates manually after applying</li>
     </ul>
 
     <div class="warning">

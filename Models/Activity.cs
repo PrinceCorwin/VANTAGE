@@ -74,6 +74,12 @@ namespace VANTAGE.Models
             }
         }
 
+        // Returns true if SchStart is required but missing (percent > 0 needs a start date)
+        public bool HasMissingSchStart => PercentEntry > 0 && SchStart == null;
+
+        // Returns true if SchFinish is required but missing (percent = 100 needs a finish date)
+        public bool HasMissingSchFinish => PercentEntry >= 100 && SchFinish == null;
+
         // Tags - Core Fields
         public string? TagNO { get; set; }
         public string? Description { get; set; }

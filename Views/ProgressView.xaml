@@ -143,6 +143,23 @@
             </Style.Triggers>
         </Style>
 
+        <!-- Conditional required date styles (depend on PercentEntry value) -->
+        <Style x:Key="SchStartRequiredStyle" TargetType="syncfusion:GridCell" BasedOn="{StaticResource {x:Type syncfusion:GridCell}}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=HasMissingSchStart}" Value="True">
+                    <Setter Property="Background" Value="{StaticResource StatusRedBg}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="SchFinishRequiredStyle" TargetType="syncfusion:GridCell" BasedOn="{StaticResource {x:Type syncfusion:GridCell}}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=HasMissingSchFinish}" Value="True">
+                    <Setter Property="Background" Value="{StaticResource StatusRedBg}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
     </UserControl.Resources>
 
     <Grid>
@@ -1394,7 +1411,8 @@
                             AllowSorting="True"
                             AllowNullValue="True"
                             NullText=""
-                            Pattern="ShortDate" />
+                            Pattern="ShortDate"
+                            CellStyle="{StaticResource SchFinishRequiredStyle}" />
 
                         <syncfusion:GridDateTimeColumn MappingName="SchStart"
                            HeaderText="ActStart" Padding="4,0,4,0"
@@ -1405,7 +1423,8 @@
                            AllowSorting="True"
                            AllowNullValue="True"
                            NullText=""
-                           Pattern="ShortDate" />
+                           Pattern="ShortDate"
+                           CellStyle="{StaticResource SchStartRequiredStyle}" />
 
                         <syncfusion:GridTextColumn MappingName="SecondActno"
                            HeaderText="SecondActno" Padding="4,0,4,0"

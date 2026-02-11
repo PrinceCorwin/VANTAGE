@@ -111,5 +111,11 @@ namespace VANTAGE.Models
         public string UOM { get; set; } = string.Empty;
         public string WorkPackage { get; set; } = string.Empty;
         public double XRay { get; set; }
+
+        // Returns true if SchStart is required but missing (percent > 0 needs a start date)
+        public bool HasMissingSchStart => PercentEntry > 0 && SchStart == null;
+
+        // Returns true if SchFinish is required but missing (percent = 100 needs a finish date)
+        public bool HasMissingSchFinish => PercentEntry >= 100 && SchFinish == null;
     }
 }

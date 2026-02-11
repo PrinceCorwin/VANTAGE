@@ -195,8 +195,8 @@ namespace VANTAGE.Views
         {
             try
             {
-                // Clear all existing filters first
-                await _viewModel.ClearAllFiltersAsync();
+                // Clear filter state without reload to avoid flash (ApplyFilter will reload)
+                _viewModel.ClearFiltersWithoutReload();
 
                 // Apply metadata error filter - records missing required fields
                 var errorFilter = @"(
@@ -209,7 +209,9 @@ namespace VANTAGE.Views
                         SchedActNO IS NULL OR SchedActNO = '' OR
                         Description IS NULL OR Description = '' OR
                         ROCStep IS NULL OR ROCStep = '' OR
-                        RespParty IS NULL OR RespParty = ''
+                        RespParty IS NULL OR RespParty = '' OR
+                        (PercentEntry > 0 AND (SchStart IS NULL OR SchStart = '')) OR
+                        (PercentEntry >= 100 AND (SchFinish IS NULL OR SchFinish = ''))
                     )";
 
                 await _viewModel.ApplyFilter("MetadataErrors", "IN", errorFilter);
@@ -247,7 +249,9 @@ namespace VANTAGE.Views
                     a.SchedActNO IS NULL OR a.SchedActNO = '' OR
                     a.Description IS NULL OR a.Description = '' OR
                     a.ROCStep IS NULL OR a.ROCStep = '' OR
-                    a.RespParty IS NULL OR a.RespParty = ''
+                    a.RespParty IS NULL OR a.RespParty = '' OR
+                    (a.PercentEntry > 0 AND (a.SchStart IS NULL OR a.SchStart = '')) OR
+                    (a.PercentEntry >= 100 AND (a.SchFinish IS NULL OR a.SchFinish = ''))
                   )";
                     cmd.Parameters.AddWithValue("@currentUser", App.CurrentUser?.Username ?? "");
 
@@ -1207,20 +1211,21 @@ namespace VANTAGE.Views
                 // Set the property value
                 property.SetValue(activity, convertedValue);
 
-                // Handle auto-dates for PercentEntry
+                // Handle date clearing for PercentEntry changes
                 if (columnName == "PercentEntry" && convertedValue is double newPercent)
                 {
-                    // Auto-set SchStart when starting work (going from 0 to > 0)
-                    if (oldPercent == 0 && newPercent > 0 && activity.SchStart == null)
+                    // 0% → clear both dates
+                    if (newPercent == 0)
                     {
-                        activity.SchStart = DateTime.Today;
+                        activity.SchStart = null;
+                        activity.SchFinish = null;
                     }
-
-                    // Auto-set SchFinish when completing (setting to 100)
-                    if (newPercent == 100 && activity.SchFinish == null)
+                    // <100% → clear SchFinish
+                    else if (newPercent < 100)
                     {
-                        activity.SchFinish = DateTime.Today;
+                        activity.SchFinish = null;
                     }
+                    // Note: No auto-set of dates - user must enter ActStart/ActFin manually
 
                     // Recalculate derived fields
                     activity.RecalculateDerivedFields("PercentEntry");
@@ -3104,7 +3109,8 @@ namespace VANTAGE.Views
                     MessageBox.Show(
                         $"Cannot sync. You have {_viewModel.MetadataErrorCount} record(s) with missing required metadata.\n\n" +
                         "Click 'Metadata Errors' button to view and fix these records.\n\n" +
-                        "Required fields: WorkPackage, PhaseCode, CompType, PhaseCategory, ProjectID, SchedActNO, Description, ROCStep, RespParty",
+                        "Required fields: WorkPackage, PhaseCode, CompType, PhaseCategory, ProjectID, SchedActNO, Description, ROCStep, RespParty\n" +
+                        "Conditional: ActStart (when % > 0), ActFin (when % = 100)",
                         "Metadata Errors",
                         MessageBoxButton.OK,
                         MessageBoxImage.Warning);
@@ -3842,7 +3848,6 @@ namespace VANTAGE.Views
                 }
                 if (columnName == "PercentEntry")
                 {
-                    double oldPercent = (_originalCellValue as double?) ?? 0;
                     double newPercent = (currentValue as double?) ?? 0;
 
                     // 0% → clear both dates
@@ -3851,27 +3856,12 @@ namespace VANTAGE.Views
                         editedActivity.SchStart = null;
                         editedActivity.SchFinish = null;
                     }
-                    // >0 and <100 → set SchStart if null, clear SchFinish
-                    else if (newPercent > 0 && newPercent < 100)
+                    // <100% → clear SchFinish (user must re-enter when reaching 100)
+                    else if (newPercent < 100)
                     {
-                        if (editedActivity.SchStart == null)
-                        {
-                            editedActivity.SchStart = DateTime.Today;
-                        }
                         editedActivity.SchFinish = null;
                     }
-                    // 100% → set both dates if null
-                    else if (newPercent >= 100)
-                    {
-                        if (editedActivity.SchStart == null)
-                        {
-                            editedActivity.SchStart = DateTime.Today;
-                        }
-                        if (editedActivity.SchFinish == null)
-                        {
-                            editedActivity.SchFinish = DateTime.Today;
-                        }
-                    }
+                    // Note: No auto-set of dates - user must enter ActStart/ActFin manually
                 }
                 else if (columnName == "SchStart")
                 {
@@ -3963,6 +3953,7 @@ namespace VANTAGE.Views
                 if (success)
                 {
                     UpdateSummaryPanel();
+                    await CalculateMetadataErrorCount();
                 }
                 else
                 {
@@ -3983,6 +3974,7 @@ namespace VANTAGE.Views
                     MessageBoxImage.Error);
             }
         }
+
         private void MenuFindReplaceColumn_Click(object sender, RoutedEventArgs e)
         {
             var menuItem = sender as MenuItem;
@@ -4352,7 +4344,9 @@ namespace VANTAGE.Views
                 string.IsNullOrWhiteSpace(a.SchedActNO) ||
                 string.IsNullOrWhiteSpace(a.Description) ||
                 string.IsNullOrWhiteSpace(a.ROCStep) ||
-                string.IsNullOrWhiteSpace(a.RespParty)
+                string.IsNullOrWhiteSpace(a.RespParty) ||
+                a.HasMissingSchStart ||
+                a.HasMissingSchFinish
             ).ToList();
 
             if (recordsWithErrors.Any())
@@ -4360,7 +4354,8 @@ namespace VANTAGE.Views
                 MessageBox.Show(
                     $"Cannot reassign. {recordsWithErrors.Count} selected record(s) have missing required metadata.\n\n" +
                     "Click 'Metadata Errors' button to view and fix these records.\n\n" +
-                    "Required fields: WorkPackage, PhaseCode, CompType, PhaseCategory, ProjectID, SchedActNO, Description, ROCStep, RespParty",
+                    "Required fields: WorkPackage, PhaseCode, CompType, PhaseCategory, ProjectID, SchedActNO, Description, ROCStep, RespParty\n" +
+                    "Conditional: ActStart (when % > 0), ActFin (when % = 100)",
                     "Metadata Errors",
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning);
