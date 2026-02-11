@@ -461,7 +461,13 @@ namespace VANTAGE.ViewModels
 
                 if (AvailableWeekEndDates.Count > 0)
                 {
+                    // Setting SelectedWeekEndDate triggers LoadScheduleDataAsync which manages IsLoading
                     SelectedWeekEndDate = AvailableWeekEndDates[0];
+                }
+                else
+                {
+                    // No data to load - clear loading state
+                    IsLoading = false;
                 }
 
                 AppLogger.Info($"Loaded {AvailableWeekEndDates.Count} available week ending dates",
@@ -470,9 +476,6 @@ namespace VANTAGE.ViewModels
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "ScheduleViewModel.InitializeAsync");
-            }
-            finally
-            {
                 IsLoading = false;
             }
         }
