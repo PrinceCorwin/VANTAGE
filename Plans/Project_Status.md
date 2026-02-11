@@ -175,7 +175,7 @@ All V1 sections of `Help/manual.html` are written. Screenshots configured with c
 
 **OTHER HIGH PRIORITY:**
 - **Windows Add/Remove Programs integration** — Register app during install so it appears in Settings > Apps with proper uninstall support. Currently installs to `%LocalAppData%\VANTAGE\App\` with desktop shortcut only; no registry entries or uninstaller.
-- **Schema version tracking system** — Store SchemaVersion in AppSettings, run numbered migrations sequentially on startup. Enables safe schema changes across updates without data loss. Current approach is ad-hoc column checks; version system is cleaner for frequent changes.
+- ~~**Schema version tracking system**~~ Complete — `SchemaMigrator.cs` stores SchemaVersion in AppSettings, runs numbered migrations sequentially on startup. Existing ad-hoc migrations ported to v1/v2/v3. Failed migrations offer recovery dialog (delete local DB and re-sync from Azure).
 - ~~First publish & end-to-end test (Workstream 4)~~ Complete — v26.1.1 install + v26.1.2 auto-update validated
 - ~~Credentials strategy~~ Complete — migrated to encrypted config file (Workstream 1)
 - ~~Self-contained publish config~~ Complete — tested via v26.1.1 and v26.1.2 publishes (Workstream 2)

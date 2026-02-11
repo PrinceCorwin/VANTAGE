@@ -63,12 +63,59 @@ namespace VANTAGE
                     () => Application.Current.Shutdown());
                 if (updateInitiated) return;
 
-                // Step 1: Initialize database
+                // Step 1: Initialize database and run migrations
                 _splashWindow.UpdateStatus("Initializing Database...");
-                await Task.Run(() =>
+                try
                 {
-                    DatabaseSetup.InitializeDatabase();
-                });
+                    await Task.Run(() =>
+                    {
+                        DatabaseSetup.InitializeDatabase(status =>
+                        {
+                            // Update splash from background thread
+                            _splashWindow?.Dispatcher.Invoke(() => _splashWindow?.UpdateStatus(status));
+                        });
+                    });
+                }
+                catch (MigrationException ex)
+                {
+                    _splashWindow?.Close();
+
+                    var result = MessageBox.Show(
+                        $"Database migration failed during upgrade to version {ex.FailedVersion}.\n\n" +
+                        $"Error: {ex.InnerException?.Message}\n\n" +
+                        "Options:\n" +
+                        "- YES: Delete local database and sync fresh from Azure\n" +
+                        "- NO: Exit application (database may be unusable)\n\n" +
+                        "Your work is safely stored in Azure. Deleting the local database " +
+                        "will re-download all data on next startup.",
+                        "Database Migration Error",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Error);
+
+                    if (result == MessageBoxResult.Yes)
+                    {
+                        // Delete local database and restart
+                        try
+                        {
+                            System.IO.File.Delete(DatabaseSetup.DbPath);
+                            AppLogger.Info("User chose to delete local database after migration failure", "App.OnStartup");
+                        }
+                        catch (Exception deleteEx)
+                        {
+                            AppLogger.Error(deleteEx, "App.OnStartup - Failed to delete local database");
+                        }
+
+                        // Restart the app
+                        var exePath = System.Diagnostics.Process.GetCurrentProcess().MainModule?.FileName;
+                        if (!string.IsNullOrEmpty(exePath))
+                        {
+                            System.Diagnostics.Process.Start(exePath);
+                        }
+                    }
+
+                    this.Shutdown();
+                    return;
+                }
 
                 // Check connection to Azure before attempting to mirror tables
                 _splashWindow.UpdateStatus("Connecting to Azure Database...");
