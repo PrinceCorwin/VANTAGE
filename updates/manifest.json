@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.1.13",
-  "releaseDate": "2026-02-12T09:01:18Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.13/VANTAGE-26.1.13.zip",
-  "zipSizeBytes": 149081635,
-  "sha256": "56A1B3AA54F3A425B0BCE581AA75FDD097A4B5296B64AABF9A166155E3B7910D",
-  "releaseNotes": "Help manual fixes for outdated column name references"
+  "currentVersion": "26.1.14",
+  "releaseDate": "2026-02-12T14:52:39Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.14/VANTAGE-26.1.14.zip",
+  "zipSizeBytes": 149083606,
+  "sha256": "A5C94F2F1FEA61A7EEF0FDE03D12C476A705A3509DFC57662F01F4FD0E4E8B79",
+  "releaseNotes": "Submit Week snapshots from local data — faster submits, supports historical backups"
 }
