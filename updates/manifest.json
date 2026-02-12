@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.1.10",
-  "releaseDate": "2026-02-11T21:01:16Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.10/VANTAGE-26.1.10.zip",
-  "zipSizeBytes": 149081254,
-  "sha256": "74E7E4ED395946EC89B0EAC976F24954D698E0593664B58C5FD0E069D1F0AF0C",
-  "releaseNotes": "Add See Release Notes dialog with auto-show after updates"
+  "currentVersion": "26.1.11",
+  "releaseDate": "2026-02-11T21:07:44Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.11/VANTAGE-26.1.11.zip",
+  "zipSizeBytes": 149081380,
+  "sha256": "DE6B279DE0C503A7A633F006202737890E0286D47032B18D35A7217E6E48C911",
+  "releaseNotes": "Fix release notes dialog opening behind splash screen"
 }
