@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.1.12",
-  "releaseDate": "2026-02-11T21:15:48Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.12/VANTAGE-26.1.12.zip",
-  "zipSizeBytes": 149081545,
-  "sha256": "55CECE46E3ED93C709D41EAA96D3736035E82DAC7B449C3D81F6ECB02021F3C9",
-  "releaseNotes": "Updated release notes with complete version history"
+  "currentVersion": "26.1.13",
+  "releaseDate": "2026-02-12T09:01:18Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.13/VANTAGE-26.1.13.zip",
+  "zipSizeBytes": 149081635,
+  "sha256": "56A1B3AA54F3A425B0BCE581AA75FDD097A4B5296B64AABF9A166155E3B7910D",
+  "releaseNotes": "Help manual fixes for outdated column name references"
 }

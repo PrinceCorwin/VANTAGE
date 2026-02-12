@@ -1,6 +1,13 @@
 {
   "releases": [
     {
+      "version": "26.1.13",
+      "date": "2026-02-12",
+      "highlights": [
+        "Help manual fixes for outdated column name references"
+      ]
+    },
+    {
       "version": "26.1.12",
       "date": "2026-02-11",
       "highlights": [
