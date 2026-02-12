@@ -287,6 +287,9 @@ namespace VANTAGE
 
                     mainWindow.Activate();
                     mainWindow.Focus();
+
+                    // Auto-show release notes after an update (must be after splash closes)
+                    mainWindow.ShowReleaseNotesIfVersionChanged();
                 }
                 catch (Exception mainWindowEx)
                 {

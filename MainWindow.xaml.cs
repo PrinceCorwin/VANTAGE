@@ -40,9 +40,6 @@ namespace VANTAGE
                 // Force taskbar icon refresh (fixes first-run icon not showing)
                 var iconPath = new Uri("pack://application:,,,/images/AppIcon.ico", UriKind.Absolute);
                 this.Icon = BitmapFrame.Create(iconPath);
-
-                // Auto-show release notes after an update
-                ShowReleaseNotesIfVersionChanged();
             };
             this.Closing += MainWindow_Closing;
         }
@@ -119,7 +116,7 @@ namespace VANTAGE
         }
 
         // Show release notes automatically if the app version changed since last launch
-        private void ShowReleaseNotesIfVersionChanged()
+        public void ShowReleaseNotesIfVersionChanged()
         {
             try
             {
