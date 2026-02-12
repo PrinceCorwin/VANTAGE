@@ -1,6 +1,13 @@
 {
   "releases": [
     {
+      "version": "26.1.14",
+      "date": "2026-02-12",
+      "highlights": [
+        "Submit Week now snapshots from local data — faster submits, supports historical backups"
+      ]
+    },
+    {
       "version": "26.1.13",
       "date": "2026-02-12",
       "highlights": [

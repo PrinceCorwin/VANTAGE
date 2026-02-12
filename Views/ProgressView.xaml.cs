@@ -2555,52 +2555,7 @@ namespace VANTAGE.Views
                     AppLogger.Info($"Adjusted {futureStartDates.Count} ActStart and {futureFinishDates.Count} ActFin dates to {weekEndDateStr}",
                         "ProgressView.BtnSubmit_Click", App.CurrentUser?.Username);
                 }
-                // Step 5: Check for split SchedActNO ownership
-                busyDialog.UpdateStatus("Checking ownership...");
-                var splitOwnershipIssues = await OwnershipHelper.CheckSplitOwnershipAsync(
-                    selectedProject, App.CurrentUser!.Username);
-
-                if (splitOwnershipIssues.Any())
-                {
-                    busyDialog.Hide();
-                    var message = OwnershipHelper.BuildSplitOwnershipMessage(splitOwnershipIssues);
-                    var result = MessageBox.Show(message, "Split Ownership Detected", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-
-                    if (result != MessageBoxResult.Yes)
-                    {
-                        busyDialog.Close();
-                        return;
-                    }
-
-                    busyDialog.UpdateStatus("Reassigning records...");
-                    busyDialog.Show();
-
-                    try
-                    {
-                        var reassignProgress = new Progress<string>(status => busyDialog.UpdateStatus(status));
-                        var totalReassigned = await OwnershipHelper.ResolveSplitOwnershipAsync(
-                            selectedProject, App.CurrentUser!.Username, splitOwnershipIssues, reassignProgress);
-
-                        busyDialog.Hide();
-
-                        MessageBox.Show(
-                            $"Reassigned {totalReassigned} records to their respective owners.\n\nContinuing with submit...",
-                            "Records Reassigned",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Information);
-
-                        busyDialog.Show();
-                    }
-                    catch (Exception ex)
-                    {
-                        busyDialog.Close();
-                        AppLogger.Error(ex, "ProgressView.BtnSubmit_Click.Reassign");
-                        MessageBox.Show($"Error reassigning records: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                        return;
-                    }
-                }
-
-                // Step 6: Check for existing snapshots on Azure
+                // Step 5: Check for existing snapshots on Azure
                 busyDialog.UpdateStatus("Checking for existing snapshots...");
                 var existingExportedBy = await Task.Run(() =>
                 {
@@ -2714,33 +2669,7 @@ namespace VANTAGE.Views
                         var skippedList = new List<(string UniqueID, string SchedActNO, string Description)>();
                         var reporter = (IProgress<string>)progress;
 
-                        // Step 8: Check for unsaved local changes
-                        reporter.Report("Checking for unsaved changes...");
-                        int dirtyCount = 0;
-                        using (var localConn = DatabaseSetup.GetConnection())
-                        {
-                            localConn.Open();
-                            var dirtyCmd = localConn.CreateCommand();
-                            dirtyCmd.CommandText = @"
-                                SELECT COUNT(*) FROM Activities
-                                WHERE AssignedTo = @username
-                                  AND ProjectID = @projectId
-                                  AND LocalDirty = 1";
-                            dirtyCmd.Parameters.AddWithValue("@username", currentUser);
-                            dirtyCmd.Parameters.AddWithValue("@projectId", selectedProject);
-                            dirtyCount = Convert.ToInt32(dirtyCmd.ExecuteScalar() ?? 0);
-                        }
-
-                        if (dirtyCount > 0)
-                        {
-                            // Push unsaved changes so the snapshot captures them
-                            reporter.Report($"Pushing {dirtyCount:N0} unsaved changes...");
-                            var pushResult = await SyncManager.PushRecordsAsync(new List<string> { selectedProject });
-                            if (!string.IsNullOrEmpty(pushResult.ErrorMessage))
-                                return (false, $"Sync failed during push:\n\n{pushResult.ErrorMessage}", 0, 0, skippedList);
-                        }
-
-                        // Step 9: Delete existing snapshots if needed
+                        // Step 6: Delete existing snapshots if needed
                         if (needsDelete)
                         {
                             reporter.Report("Deleting existing snapshots...");
@@ -2763,170 +2692,360 @@ namespace VANTAGE.Views
                             AppLogger.Info($"Deleted {deletedCount} existing snapshots for overwrite", "ProgressView.BtnSubmit_Click", currentUser);
                         }
 
-                        // Step 10: Check for existing snapshots (submitted by other users or different projects)
-                        reporter.Report("Checking for conflicts...");
+                        // Step 7: Read local activities and check for existing snapshots
+                        reporter.Report("Reading local activities...");
+
+                        // Read local activities for this user/project
+                        var localActivities = new System.Data.DataTable();
+                        using (var localConn = DatabaseSetup.GetConnection())
+                        {
+                            localConn.Open();
+                            var selectCmd = localConn.CreateCommand();
+                            selectCmd.CommandText = @"
+                                SELECT UniqueID, Area, AssignedTo, AzureUploadUtcDate,
+                                    Aux1, Aux2, Aux3, BaseUnit, BudgetHoursGroup, BudgetHoursROC, BudgetMHs,
+                                    ChgOrdNO, ClientBudget, ClientCustom3, ClientEquivQty, CompType, CreatedBy,
+                                    DateTrigger, Description, DwgNO, EarnQtyEntry, EarnedMHsRoc, EqmtNO,
+                                    EquivQTY, EquivUOM, Estimator, HexNO, HtTrace, InsulType, LineNumber,
+                                    MtrlSpec, Notes, PaintCode, PercentEntry, PhaseCategory, PhaseCode,
+                                    PipeGrade, PipeSize1, PipeSize2, PrevEarnMHs, PrevEarnQTY,
+                                    ProjectID, Quantity, RevNO, RFINO, ROCBudgetQTY, ROCID, ROCPercent,
+                                    ROCStep, SchedActNO, ActFin, ActStart, SecondActno, SecondDwgNO,
+                                    Service, ShopField, ShtNO, SubArea, PjtSystem, PjtSystemNo, SystemNO, TagNO,
+                                    UDF1, UDF2, UDF3, UDF4, UDF5, UDF6, UDF7, UDF8, UDF9, UDF10,
+                                    UDF11, UDF12, UDF13, UDF14, UDF15, UDF16, UDF17, RespParty, UDF20,
+                                    UpdatedBy, UpdatedUtcDate, UOM, WorkPackage, XRay
+                                FROM Activities
+                                WHERE AssignedTo = @username
+                                  AND ProjectID = @projectId";
+                            selectCmd.Parameters.AddWithValue("@username", currentUser);
+                            selectCmd.Parameters.AddWithValue("@projectId", selectedProject);
+
+                            // Manually fill DataTable from SQLite reader
+                            using var reader = selectCmd.ExecuteReader();
+                            localActivities.Load(reader);
+                        }
+
+                        if (localActivities.Rows.Count == 0)
+                        {
+                            return (false, "No local activities found for this user/project.", 0, 0, skippedList);
+                        }
+
+                        reporter.Report("Checking for existing snapshots...");
+
+                        // Get existing snapshot UniqueIDs for this week from Azure
+                        var existingSnapshotIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                        var snapshotOwners = new Dictionary<string, (string SubmittedBy, string SnapshotProject)>(StringComparer.OrdinalIgnoreCase);
 
                         using (var azureConn = AzureDbManager.GetConnection())
                         {
                             azureConn.Open();
 
-                            // Count total records user should submit
-                            var countCmd = azureConn.CreateCommand();
-                            countCmd.CommandText = @"
-                        SELECT COUNT(*) FROM VMS_Activities
-                        WHERE AssignedTo = @username
-                          AND ProjectID = @projectId
-                          AND IsDeleted = 0";
-                            countCmd.Parameters.AddWithValue("@username", currentUser);
-                            countCmd.Parameters.AddWithValue("@projectId", selectedProject);
-                            int expectedCount = Convert.ToInt32(countCmd.ExecuteScalar() ?? 0);
+                            var existingCmd = azureConn.CreateCommand();
+                            existingCmd.CommandText = @"
+                                SELECT UniqueID, AssignedTo, ProjectID
+                                FROM VMS_ProgressSnapshots
+                                WHERE WeekEndDate = @weekEndDate";
+                            existingCmd.Parameters.AddWithValue("@weekEndDate", weekEndDateStr);
 
-                            // Check for conflicts - records already in snapshots by other users
-                            var conflictCheck = azureConn.CreateCommand();
-                            conflictCheck.CommandText = @"
-                        SELECT ps.AssignedTo as OriginalSubmitter, COUNT(*) as RecordCount
-                        FROM VMS_Activities a
-                        INNER JOIN VMS_ProgressSnapshots ps ON ps.UniqueID = a.UniqueID AND ps.WeekEndDate = @weekEndDate
-                        WHERE a.AssignedTo = @username
-                          AND a.ProjectID = @projectId
-                          AND a.IsDeleted = 0
-                          AND ps.AssignedTo <> @username
-                        GROUP BY ps.AssignedTo";
-                            conflictCheck.Parameters.AddWithValue("@weekEndDate", weekEndDateStr);
-                            conflictCheck.Parameters.AddWithValue("@username", currentUser);
-                            conflictCheck.Parameters.AddWithValue("@projectId", selectedProject);
-
-                            var conflicts = new List<(string User, int Count)>();
-                            using (var conflictReader = conflictCheck.ExecuteReader())
+                            using var reader = existingCmd.ExecuteReader();
+                            while (reader.Read())
                             {
-                                while (conflictReader.Read())
-                                {
-                                    conflicts.Add((conflictReader.GetString(0), conflictReader.GetInt32(1)));
-                                }
+                                string uniqueId = reader.GetString(0);
+                                existingSnapshotIds.Add(uniqueId);
+                                snapshotOwners[uniqueId] = (
+                                    reader.IsDBNull(1) ? "" : reader.GetString(1),
+                                    reader.IsDBNull(2) ? "" : reader.GetString(2)
+                                );
                             }
+                        }
 
-                            if (conflicts.Any())
+                        // Build list of activities to insert (skip existing) and track skipped
+                        var activitiesToInsert = new List<System.Data.DataRow>();
+                        foreach (System.Data.DataRow row in localActivities.Rows)
+                        {
+                            string uniqueId = row["UniqueID"].ToString()!;
+                            if (existingSnapshotIds.Contains(uniqueId))
                             {
-                                int conflictCount = conflicts.Sum(c => c.Count);
-                                var conflictDetails = string.Join("\n", conflicts.Select(c => $"  • {c.Count} records by {c.User}"));
-
-                                bool proceed = false;
-                                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                                // Track skipped record
+                                if (snapshotOwners.TryGetValue(uniqueId, out var owner))
                                 {
-                                    busyDialog.Hide();
-
-                                    var result = MessageBox.Show(
-                                        ownerWindow,
-                                        $"{conflictCount} of your assigned records were already submitted for this week by other users:\n\n" +
-                                        $"{conflictDetails}\n\n" +
-                                        $"These records will be SKIPPED. Do you want to submit the remaining records?\n\n" +
-                                        $"(You may need to coordinate with the users above if this is unexpected.)",
-                                        "Records Already Submitted",
-                                        MessageBoxButton.YesNo,
-                                        MessageBoxImage.Warning);
-                                    proceed = (result == MessageBoxResult.Yes);
-
-                                    if (proceed)
-                                        busyDialog.Show();
-                                });
-
-                                if (!proceed)
-                                    return (false, "Cancelled by user", 0, 0, skippedList);
-                            }
-
-                            // Step 11: Query for pre-existing snapshots BEFORE insert (these will be skipped)
-                            reporter.Report("Checking for existing snapshots...");
-
-                            var preExistingQuery = azureConn.CreateCommand();
-                            preExistingQuery.CommandText = @"
-                            SELECT a.UniqueID, a.SchedActNO, a.Description, ps.AssignedTo as SubmittedBy, ps.ProjectID as SnapshotProject
-                            FROM VMS_Activities a
-                            INNER JOIN VMS_ProgressSnapshots ps ON ps.UniqueID = a.UniqueID AND ps.WeekEndDate = @weekEndDate
-                            WHERE a.AssignedTo = @username
-                              AND a.ProjectID = @projectId
-                              AND a.IsDeleted = 0";
-                            preExistingQuery.Parameters.AddWithValue("@username", currentUser);
-                            preExistingQuery.Parameters.AddWithValue("@projectId", selectedProject);
-                            preExistingQuery.Parameters.AddWithValue("@weekEndDate", weekEndDateStr);
-
-                            using (var preExistingReader = preExistingQuery.ExecuteReader())
-                            {
-                                while (preExistingReader.Read())
-                                {
-                                    string submittedBy = preExistingReader.IsDBNull(3) ? "" : preExistingReader.GetString(3);
-                                    string snapshotProject = preExistingReader.IsDBNull(4) ? "" : preExistingReader.GetString(4);
-
                                     skippedList.Add((
-                                        preExistingReader.GetString(0),
-                                        preExistingReader.IsDBNull(1) ? "" : preExistingReader.GetString(1),
-                                        $"{(preExistingReader.IsDBNull(2) ? "" : preExistingReader.GetString(2))} [Submitted by: {submittedBy}, Project: {snapshotProject}]"
+                                        uniqueId,
+                                        row["SchedActNO"]?.ToString() ?? "",
+                                        $"{row["Description"]?.ToString() ?? ""} [Submitted by: {owner.SubmittedBy}, Project: {owner.SnapshotProject}]"
                                     ));
                                 }
                             }
+                            else
+                            {
+                                activitiesToInsert.Add(row);
+                            }
+                        }
 
-                            // Step 12: Copy Activities from Azure to ProgressSnapshots (skip existing)
-                            reporter.Report("Creating snapshots...");
+                        // Check for conflicts - records submitted by OTHER users
+                        var conflicts = skippedList
+                            .Where(s => !string.IsNullOrEmpty(s.Description) &&
+                                       s.Description.Contains("Submitted by:") &&
+                                       !s.Description.Contains($"Submitted by: {currentUser},", StringComparison.OrdinalIgnoreCase))
+                            .GroupBy(s => {
+                                var match = System.Text.RegularExpressions.Regex.Match(s.Description, @"Submitted by: ([^,]+),");
+                                return match.Success ? match.Groups[1].Value : "Unknown";
+                            })
+                            .Select(g => (User: g.Key, Count: g.Count()))
+                            .ToList();
 
-                            // Always use NOT EXISTS to safely skip records that already exist
-                            // (could be submitted by other users, under different project, or edge cases)
-                            string notExistsClause = @"AND NOT EXISTS (
-                              SELECT 1 FROM VMS_ProgressSnapshots ps
-                              WHERE ps.UniqueID = a.UniqueID
-                                AND ps.WeekEndDate = @weekEndDate
-                          )";
+                        if (conflicts.Any())
+                        {
+                            int conflictCount = conflicts.Sum(c => c.Count);
+                            var conflictDetails = string.Join("\n", conflicts.Select(c => $"  • {c.Count} records by {c.User}"));
 
-                            var insertCmd = azureConn.CreateCommand();
-                            insertCmd.CommandTimeout = 0;
-                            insertCmd.CommandText = $@"
-                        INSERT INTO VMS_ProgressSnapshots (
-                            UniqueID, WeekEndDate, Area, AssignedTo, AzureUploadUtcDate,
-                            Aux1, Aux2, Aux3, BaseUnit, BudgetHoursGroup, BudgetHoursROC, BudgetMHs,
-                            ChgOrdNO, ClientBudget, ClientCustom3, ClientEquivQty, CompType, CreatedBy,
-                            DateTrigger, Description, DwgNO, EarnQtyEntry, EarnedMHsRoc, EqmtNO,
-                            EquivQTY, EquivUOM, Estimator, HexNO, HtTrace, InsulType, LineNumber,
-                            MtrlSpec, Notes, PaintCode, PercentEntry, PhaseCategory, PhaseCode,
-                            PipeGrade, PipeSize1, PipeSize2, PrevEarnMHs, PrevEarnQTY, ProgDate,
-                            ProjectID, Quantity, RevNO, RFINO, ROCBudgetQTY, ROCID, ROCPercent,
-                            ROCStep, SchedActNO, ActFin, ActStart, SecondActno, SecondDwgNO,
-                            Service, ShopField, ShtNO, SubArea, PjtSystem, PjtSystemNo, SystemNO, TagNO,
-                            UDF1, UDF2, UDF3, UDF4, UDF5, UDF6, UDF7, UDF8, UDF9, UDF10,
-                            UDF11, UDF12, UDF13, UDF14, UDF15, UDF16, UDF17, RespParty, UDF20,
-                            UpdatedBy, UpdatedUtcDate, UOM, WorkPackage, XRay, ExportedBy, ExportedDate
-                        )
-                        SELECT
-                            UniqueID, @weekEndDate, Area, AssignedTo, AzureUploadUtcDate,
-                            Aux1, Aux2, Aux3, BaseUnit, BudgetHoursGroup, BudgetHoursROC, BudgetMHs,
-                            ChgOrdNO, ClientBudget, ClientCustom3, ClientEquivQty, CompType, CreatedBy,
-                            DateTrigger, Description, DwgNO, EarnQtyEntry, EarnedMHsRoc, EqmtNO,
-                            EquivQTY, EquivUOM, Estimator, HexNO, HtTrace, InsulType, LineNumber,
-                            MtrlSpec, Notes, PaintCode, PercentEntry, PhaseCategory, PhaseCode,
-                            PipeGrade, PipeSize1, PipeSize2, PrevEarnMHs, PrevEarnQTY, @progDate,
-                            ProjectID, Quantity, RevNO, RFINO, ROCBudgetQTY, ROCID, ROCPercent,
-                            ROCStep, SchedActNO, ActFin, ActStart, SecondActno, SecondDwgNO,
-                            Service, ShopField, ShtNO, SubArea, PjtSystem, PjtSystemNo, SystemNO, TagNO,
-                            UDF1, UDF2, UDF3, UDF4, UDF5, UDF6, UDF7, UDF8, UDF9, UDF10,
-                            UDF11, UDF12, UDF13, UDF14, UDF15, UDF16, UDF17, RespParty, UDF20,
-                            UpdatedBy, UpdatedUtcDate, UOM, WorkPackage, XRay, NULL, NULL
-                        FROM VMS_Activities a
-                        WHERE AssignedTo = @username
-                          AND ProjectID = @projectId
-                          AND IsDeleted = 0
-                          {notExistsClause}";
-                            insertCmd.Parameters.AddWithValue("@weekEndDate", weekEndDateStr);
-                            insertCmd.Parameters.AddWithValue("@username", currentUser);
-                            insertCmd.Parameters.AddWithValue("@projectId", selectedProject);
-                            insertCmd.Parameters.AddWithValue("@progDate", progDateStr);
+                            bool proceed = false;
+                            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                            {
+                                busyDialog.Hide();
 
-                            int snapshots = insertCmd.ExecuteNonQuery();
+                                var result = MessageBox.Show(
+                                    ownerWindow,
+                                    $"{conflictCount} of your assigned records were already submitted for this week by other users:\n\n" +
+                                    $"{conflictDetails}\n\n" +
+                                    $"These records will be SKIPPED. Do you want to submit the remaining records?\n\n" +
+                                    $"(You may need to coordinate with the users above if this is unexpected.)",
+                                    "Records Already Submitted",
+                                    MessageBoxButton.YesNo,
+                                    MessageBoxImage.Warning);
+                                proceed = (result == MessageBoxResult.Yes);
 
-                            // Skipped count is the number of pre-existing snapshots we found
-                            int skipped = skippedList.Count;
+                                if (proceed)
+                                    busyDialog.Show();
+                            });
 
-                            AppLogger.Info($"Created {snapshots} snapshots for week ending {weekEndDateStr} ({skipped} skipped)", "ProgressView.BtnSubmit_Click", currentUser);
-                            // Step 13: Purge old snapshots (older than 4 weeks from today)
-                            reporter.Report("Cleaning up old snapshots...");
+                            if (!proceed)
+                                return (false, "Cancelled by user", 0, 0, skippedList);
+                        }
 
-                            var purgeCmd = azureConn.CreateCommand();
+                        // Step 8: Insert snapshots from local data
+                        reporter.Report("Creating snapshots...");
+                        int snapshots = 0;
+
+                        if (activitiesToInsert.Count > 0)
+                        {
+                            using var azureConn = AzureDbManager.GetConnection();
+                            azureConn.Open();
+
+                            // Build and execute bulk insert using SqlBulkCopy
+                            var snapshotTable = new System.Data.DataTable();
+                            snapshotTable.Columns.Add("UniqueID", typeof(string));
+                            snapshotTable.Columns.Add("WeekEndDate", typeof(string));
+                            snapshotTable.Columns.Add("Area", typeof(string));
+                            snapshotTable.Columns.Add("AssignedTo", typeof(string));
+                            snapshotTable.Columns.Add("AzureUploadUtcDate", typeof(string));
+                            snapshotTable.Columns.Add("Aux1", typeof(string));
+                            snapshotTable.Columns.Add("Aux2", typeof(string));
+                            snapshotTable.Columns.Add("Aux3", typeof(string));
+                            snapshotTable.Columns.Add("BaseUnit", typeof(double));
+                            snapshotTable.Columns.Add("BudgetHoursGroup", typeof(double));
+                            snapshotTable.Columns.Add("BudgetHoursROC", typeof(double));
+                            snapshotTable.Columns.Add("BudgetMHs", typeof(double));
+                            snapshotTable.Columns.Add("ChgOrdNO", typeof(string));
+                            snapshotTable.Columns.Add("ClientBudget", typeof(double));
+                            snapshotTable.Columns.Add("ClientCustom3", typeof(double));
+                            snapshotTable.Columns.Add("ClientEquivQty", typeof(double));
+                            snapshotTable.Columns.Add("CompType", typeof(string));
+                            snapshotTable.Columns.Add("CreatedBy", typeof(string));
+                            snapshotTable.Columns.Add("DateTrigger", typeof(int));
+                            snapshotTable.Columns.Add("Description", typeof(string));
+                            snapshotTable.Columns.Add("DwgNO", typeof(string));
+                            snapshotTable.Columns.Add("EarnQtyEntry", typeof(double));
+                            snapshotTable.Columns.Add("EarnedMHsRoc", typeof(double));
+                            snapshotTable.Columns.Add("EqmtNO", typeof(string));
+                            snapshotTable.Columns.Add("EquivQTY", typeof(string));
+                            snapshotTable.Columns.Add("EquivUOM", typeof(string));
+                            snapshotTable.Columns.Add("Estimator", typeof(string));
+                            snapshotTable.Columns.Add("HexNO", typeof(int));
+                            snapshotTable.Columns.Add("HtTrace", typeof(string));
+                            snapshotTable.Columns.Add("InsulType", typeof(string));
+                            snapshotTable.Columns.Add("LineNumber", typeof(string));
+                            snapshotTable.Columns.Add("MtrlSpec", typeof(string));
+                            snapshotTable.Columns.Add("Notes", typeof(string));
+                            snapshotTable.Columns.Add("PaintCode", typeof(string));
+                            snapshotTable.Columns.Add("PercentEntry", typeof(double));
+                            snapshotTable.Columns.Add("PhaseCategory", typeof(string));
+                            snapshotTable.Columns.Add("PhaseCode", typeof(string));
+                            snapshotTable.Columns.Add("PipeGrade", typeof(string));
+                            snapshotTable.Columns.Add("PipeSize1", typeof(double));
+                            snapshotTable.Columns.Add("PipeSize2", typeof(double));
+                            snapshotTable.Columns.Add("PrevEarnMHs", typeof(double));
+                            snapshotTable.Columns.Add("PrevEarnQTY", typeof(double));
+                            snapshotTable.Columns.Add("ProgDate", typeof(string));
+                            snapshotTable.Columns.Add("ProjectID", typeof(string));
+                            snapshotTable.Columns.Add("Quantity", typeof(double));
+                            snapshotTable.Columns.Add("RevNO", typeof(string));
+                            snapshotTable.Columns.Add("RFINO", typeof(string));
+                            snapshotTable.Columns.Add("ROCBudgetQTY", typeof(double));
+                            snapshotTable.Columns.Add("ROCID", typeof(double));
+                            snapshotTable.Columns.Add("ROCPercent", typeof(double));
+                            snapshotTable.Columns.Add("ROCStep", typeof(string));
+                            snapshotTable.Columns.Add("SchedActNO", typeof(string));
+                            snapshotTable.Columns.Add("ActFin", typeof(string));
+                            snapshotTable.Columns.Add("ActStart", typeof(string));
+                            snapshotTable.Columns.Add("SecondActno", typeof(string));
+                            snapshotTable.Columns.Add("SecondDwgNO", typeof(string));
+                            snapshotTable.Columns.Add("Service", typeof(string));
+                            snapshotTable.Columns.Add("ShopField", typeof(string));
+                            snapshotTable.Columns.Add("ShtNO", typeof(string));
+                            snapshotTable.Columns.Add("SubArea", typeof(string));
+                            snapshotTable.Columns.Add("PjtSystem", typeof(string));
+                            snapshotTable.Columns.Add("PjtSystemNo", typeof(string));
+                            snapshotTable.Columns.Add("SystemNO", typeof(string));
+                            snapshotTable.Columns.Add("TagNO", typeof(string));
+                            snapshotTable.Columns.Add("UDF1", typeof(string));
+                            snapshotTable.Columns.Add("UDF2", typeof(string));
+                            snapshotTable.Columns.Add("UDF3", typeof(string));
+                            snapshotTable.Columns.Add("UDF4", typeof(string));
+                            snapshotTable.Columns.Add("UDF5", typeof(string));
+                            snapshotTable.Columns.Add("UDF6", typeof(string));
+                            snapshotTable.Columns.Add("UDF7", typeof(string));
+                            snapshotTable.Columns.Add("UDF8", typeof(string));
+                            snapshotTable.Columns.Add("UDF9", typeof(string));
+                            snapshotTable.Columns.Add("UDF10", typeof(string));
+                            snapshotTable.Columns.Add("UDF11", typeof(string));
+                            snapshotTable.Columns.Add("UDF12", typeof(string));
+                            snapshotTable.Columns.Add("UDF13", typeof(string));
+                            snapshotTable.Columns.Add("UDF14", typeof(string));
+                            snapshotTable.Columns.Add("UDF15", typeof(string));
+                            snapshotTable.Columns.Add("UDF16", typeof(string));
+                            snapshotTable.Columns.Add("UDF17", typeof(string));
+                            snapshotTable.Columns.Add("RespParty", typeof(string));
+                            snapshotTable.Columns.Add("UDF20", typeof(string));
+                            snapshotTable.Columns.Add("UpdatedBy", typeof(string));
+                            snapshotTable.Columns.Add("UpdatedUtcDate", typeof(string));
+                            snapshotTable.Columns.Add("UOM", typeof(string));
+                            snapshotTable.Columns.Add("WorkPackage", typeof(string));
+                            snapshotTable.Columns.Add("XRay", typeof(double));
+                            snapshotTable.Columns.Add("ExportedBy", typeof(string));
+                            snapshotTable.Columns.Add("ExportedDate", typeof(string));
+
+                            foreach (var row in activitiesToInsert)
+                            {
+                                var newRow = snapshotTable.NewRow();
+                                newRow["UniqueID"] = row["UniqueID"];
+                                newRow["WeekEndDate"] = weekEndDateStr;
+                                newRow["Area"] = row["Area"];
+                                newRow["AssignedTo"] = row["AssignedTo"];
+                                newRow["AzureUploadUtcDate"] = row["AzureUploadUtcDate"] ?? DBNull.Value;
+                                newRow["Aux1"] = row["Aux1"];
+                                newRow["Aux2"] = row["Aux2"];
+                                newRow["Aux3"] = row["Aux3"];
+                                newRow["BaseUnit"] = Convert.ToDouble(row["BaseUnit"]);
+                                newRow["BudgetHoursGroup"] = Convert.ToDouble(row["BudgetHoursGroup"]);
+                                newRow["BudgetHoursROC"] = Convert.ToDouble(row["BudgetHoursROC"]);
+                                newRow["BudgetMHs"] = Convert.ToDouble(row["BudgetMHs"]);
+                                newRow["ChgOrdNO"] = row["ChgOrdNO"];
+                                newRow["ClientBudget"] = Convert.ToDouble(row["ClientBudget"]);
+                                newRow["ClientCustom3"] = Convert.ToDouble(row["ClientCustom3"]);
+                                newRow["ClientEquivQty"] = Convert.ToDouble(row["ClientEquivQty"]);
+                                newRow["CompType"] = row["CompType"];
+                                newRow["CreatedBy"] = row["CreatedBy"];
+                                newRow["DateTrigger"] = Convert.ToInt32(row["DateTrigger"]);
+                                newRow["Description"] = row["Description"];
+                                newRow["DwgNO"] = row["DwgNO"];
+                                newRow["EarnQtyEntry"] = Convert.ToDouble(row["EarnQtyEntry"]);
+                                newRow["EarnedMHsRoc"] = Convert.ToDouble(row["EarnedMHsRoc"]);
+                                newRow["EqmtNO"] = row["EqmtNO"];
+                                newRow["EquivQTY"] = row["EquivQTY"];
+                                newRow["EquivUOM"] = row["EquivUOM"];
+                                newRow["Estimator"] = row["Estimator"];
+                                newRow["HexNO"] = Convert.ToInt32(row["HexNO"]);
+                                newRow["HtTrace"] = row["HtTrace"];
+                                newRow["InsulType"] = row["InsulType"];
+                                newRow["LineNumber"] = row["LineNumber"];
+                                newRow["MtrlSpec"] = row["MtrlSpec"];
+                                newRow["Notes"] = row["Notes"];
+                                newRow["PaintCode"] = row["PaintCode"];
+                                newRow["PercentEntry"] = Convert.ToDouble(row["PercentEntry"]);
+                                newRow["PhaseCategory"] = row["PhaseCategory"];
+                                newRow["PhaseCode"] = row["PhaseCode"];
+                                newRow["PipeGrade"] = row["PipeGrade"];
+                                newRow["PipeSize1"] = Convert.ToDouble(row["PipeSize1"]);
+                                newRow["PipeSize2"] = Convert.ToDouble(row["PipeSize2"]);
+                                newRow["PrevEarnMHs"] = Convert.ToDouble(row["PrevEarnMHs"]);
+                                newRow["PrevEarnQTY"] = Convert.ToDouble(row["PrevEarnQTY"]);
+                                newRow["ProgDate"] = progDateStr;
+                                newRow["ProjectID"] = row["ProjectID"];
+                                newRow["Quantity"] = Convert.ToDouble(row["Quantity"]);
+                                newRow["RevNO"] = row["RevNO"];
+                                newRow["RFINO"] = row["RFINO"];
+                                newRow["ROCBudgetQTY"] = Convert.ToDouble(row["ROCBudgetQTY"]);
+                                newRow["ROCID"] = Convert.ToDouble(row["ROCID"]);
+                                newRow["ROCPercent"] = Convert.ToDouble(row["ROCPercent"]);
+                                newRow["ROCStep"] = row["ROCStep"];
+                                newRow["SchedActNO"] = row["SchedActNO"];
+                                newRow["ActFin"] = row["ActFin"] ?? DBNull.Value;
+                                newRow["ActStart"] = row["ActStart"] ?? DBNull.Value;
+                                newRow["SecondActno"] = row["SecondActno"];
+                                newRow["SecondDwgNO"] = row["SecondDwgNO"];
+                                newRow["Service"] = row["Service"];
+                                newRow["ShopField"] = row["ShopField"];
+                                newRow["ShtNO"] = row["ShtNO"];
+                                newRow["SubArea"] = row["SubArea"];
+                                newRow["PjtSystem"] = row["PjtSystem"];
+                                newRow["PjtSystemNo"] = row["PjtSystemNo"];
+                                newRow["SystemNO"] = row["SystemNO"];
+                                newRow["TagNO"] = row["TagNO"];
+                                newRow["UDF1"] = row["UDF1"];
+                                newRow["UDF2"] = row["UDF2"];
+                                newRow["UDF3"] = row["UDF3"];
+                                newRow["UDF4"] = row["UDF4"];
+                                newRow["UDF5"] = row["UDF5"];
+                                newRow["UDF6"] = row["UDF6"];
+                                newRow["UDF7"] = row["UDF7"];
+                                newRow["UDF8"] = row["UDF8"];
+                                newRow["UDF9"] = row["UDF9"];
+                                newRow["UDF10"] = row["UDF10"];
+                                newRow["UDF11"] = row["UDF11"];
+                                newRow["UDF12"] = row["UDF12"];
+                                newRow["UDF13"] = row["UDF13"];
+                                newRow["UDF14"] = row["UDF14"];
+                                newRow["UDF15"] = row["UDF15"];
+                                newRow["UDF16"] = row["UDF16"];
+                                newRow["UDF17"] = row["UDF17"];
+                                newRow["RespParty"] = row["RespParty"];
+                                newRow["UDF20"] = row["UDF20"];
+                                newRow["UpdatedBy"] = row["UpdatedBy"];
+                                newRow["UpdatedUtcDate"] = row["UpdatedUtcDate"];
+                                newRow["UOM"] = row["UOM"];
+                                newRow["WorkPackage"] = row["WorkPackage"];
+                                newRow["XRay"] = Convert.ToDouble(row["XRay"]);
+                                newRow["ExportedBy"] = DBNull.Value;
+                                newRow["ExportedDate"] = DBNull.Value;
+                                snapshotTable.Rows.Add(newRow);
+                            }
+
+                            using var bulkCopy = new Microsoft.Data.SqlClient.SqlBulkCopy(azureConn);
+                            bulkCopy.DestinationTableName = "VMS_ProgressSnapshots";
+                            bulkCopy.BulkCopyTimeout = 0;
+
+                            // Map columns
+                            foreach (System.Data.DataColumn col in snapshotTable.Columns)
+                            {
+                                bulkCopy.ColumnMappings.Add(col.ColumnName, col.ColumnName);
+                            }
+
+                            bulkCopy.WriteToServer(snapshotTable);
+                            snapshots = snapshotTable.Rows.Count;
+                        }
+
+                        int skipped = skippedList.Count;
+                        AppLogger.Info($"Created {snapshots} snapshots for week ending {weekEndDateStr} ({skipped} skipped)", "ProgressView.BtnSubmit_Click", currentUser);
+
+                        // Step 9: Purge old snapshots (older than 4 weeks from today)
+                        reporter.Report("Cleaning up old snapshots...");
+
+                        using (var purgeConn = AzureDbManager.GetConnection())
+                        {
+                            purgeConn.Open();
+                            var purgeCmd = purgeConn.CreateCommand();
                             purgeCmd.CommandTimeout = 0;
                             purgeCmd.CommandText = @"
                                 DELETE FROM VMS_ProgressSnapshots
@@ -2940,29 +3059,30 @@ namespace VANTAGE.Views
                                 AppLogger.Info($"Purged {purgedCount} old snapshots (before {DateTime.Now.AddDays(-28):yyyy-MM-dd})",
                                     "ProgressView.BtnSubmit_Click", currentUser);
                             }
-                            // Step 12: Update local Activities.WeekEndDate and ProgDate
-                            reporter.Report("Updating local records...");
-
-                            using (var localConn = DatabaseSetup.GetConnection())
-                            {
-                                localConn.Open();
-                                var updateLocalCmd = localConn.CreateCommand();
-                                updateLocalCmd.CommandText = @"
-                            UPDATE Activities 
-                            SET WeekEndDate = @weekEndDate,
-                                ProgDate = @progDate,
-                                LocalDirty = 1
-                            WHERE AssignedTo = @username 
-                              AND ProjectID = @projectId";
-                                updateLocalCmd.Parameters.AddWithValue("@weekEndDate", weekEndDateStr);
-                                updateLocalCmd.Parameters.AddWithValue("@progDate", progDateStr);
-                                updateLocalCmd.Parameters.AddWithValue("@username", currentUser);
-                                updateLocalCmd.Parameters.AddWithValue("@projectId", selectedProject);
-                                updateLocalCmd.ExecuteNonQuery();
-                            }
-
-                            return (true, string.Empty, snapshots, skipped, skippedList);
                         }
+
+                        // Step 10: Update local Activities.WeekEndDate and ProgDate
+                        reporter.Report("Updating local records...");
+
+                        using (var localConn = DatabaseSetup.GetConnection())
+                        {
+                            localConn.Open();
+                            var updateLocalCmd = localConn.CreateCommand();
+                            updateLocalCmd.CommandText = @"
+                                UPDATE Activities
+                                SET WeekEndDate = @weekEndDate,
+                                    ProgDate = @progDate,
+                                    LocalDirty = 1
+                                WHERE AssignedTo = @username
+                                  AND ProjectID = @projectId";
+                            updateLocalCmd.Parameters.AddWithValue("@weekEndDate", weekEndDateStr);
+                            updateLocalCmd.Parameters.AddWithValue("@progDate", progDateStr);
+                            updateLocalCmd.Parameters.AddWithValue("@username", currentUser);
+                            updateLocalCmd.Parameters.AddWithValue("@projectId", selectedProject);
+                            updateLocalCmd.ExecuteNonQuery();
+                        }
+
+                        return (true, string.Empty, snapshots, skipped, skippedList);
                     });
 
                     if (!success)
@@ -2975,7 +3095,7 @@ namespace VANTAGE.Views
                         return;
                     }
 
-                    // Step 14: Refresh grid
+                    // Step 11: Refresh grid
                     busyDialog.UpdateStatus("Refreshing...");
                     await RefreshData();
 

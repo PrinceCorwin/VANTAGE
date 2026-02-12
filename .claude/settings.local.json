@@ -50,7 +50,8 @@
       "Skill(speedup)",
       "Bash(git pull:*)",
       "Bash(git branch:*)",
-      "Bash(git check-ignore:*)"
+      "Bash(git check-ignore:*)",
+      "Bash(where gh:*)"
     ]
   }
 }
