@@ -7,7 +7,7 @@ using VANTAGE.Dialogs;
 
 namespace VANTAGE.Utilities
 {
-    // Handles the --uninstall flow: confirm with user, remove files/registry/shortcut
+    // Handles the --uninstall flow with a multi-page wizard dialog
     static class UninstallService
     {
         private const string RegistryKeyPath = @"Software\Microsoft\Windows\CurrentVersion\Uninstall\VANTAGE";
@@ -15,61 +15,40 @@ namespace VANTAGE.Utilities
         // Entry point called from App.xaml.cs when --uninstall is detected
         public static void RunUninstall()
         {
-            // Load theme so the dialog renders correctly
             ThemeManager.LoadThemeFromSettings();
 
             var dialog = new UninstallDialog();
-            bool? result = dialog.ShowDialog();
+            dialog.ShowDialog();
 
-            if (result != true)
+            if (!dialog.UninstallCompleted)
             {
                 Application.Current.Shutdown();
                 return;
             }
 
-            bool keepData = dialog.KeepData;
+            // Launch self-delete batch script before shutting down
             string installDir = AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar);
             string vantageDataDir = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "VANTAGE");
-
-            RemoveShortcuts();
-            RemoveRegistryEntries();
-
-            if (!keepData)
-                DeleteLocalData(vantageDataDir);
-
-            // Self-delete via batch script (exe can't delete itself while running)
-            LaunchSelfDeleteScript(installDir, vantageDataDir, keepData);
+            LaunchSelfDeleteScript(installDir, vantageDataDir, dialog.KeepData);
             Application.Current.Shutdown();
         }
 
-        private static void RemoveShortcuts()
+        // Remove desktop and Start Menu shortcuts
+        public static void RemoveShortcuts()
         {
-            // Desktop shortcut
-            try
-            {
-                string desktopShortcut = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
-                    "VANTAGE Milestone.lnk");
-                if (File.Exists(desktopShortcut))
-                    File.Delete(desktopShortcut);
-            }
-            catch { }
+            TryDeleteFile(Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
+                "VANTAGE Milestone.lnk"));
 
-            // Start Menu shortcut
-            try
-            {
-                string startMenuShortcut = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.StartMenu),
-                    "Programs", "VANTAGE Milestone.lnk");
-                if (File.Exists(startMenuShortcut))
-                    File.Delete(startMenuShortcut);
-            }
-            catch { }
+            TryDeleteFile(Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.StartMenu),
+                "Programs", "VANTAGE Milestone.lnk"));
         }
 
-        private static void RemoveRegistryEntries()
+        // Remove Add/Remove Programs registry entries
+        public static void RemoveRegistryEntries()
         {
             try
             {
@@ -79,7 +58,7 @@ namespace VANTAGE.Utilities
         }
 
         // Delete database, logs, and settings in %LocalAppData%\VANTAGE (outside the App folder)
-        private static void DeleteLocalData(string vantageDataDir)
+        public static void DeleteLocalData(string vantageDataDir)
         {
             try
             {
@@ -122,6 +101,11 @@ namespace VANTAGE.Utilities
                 WindowStyle = ProcessWindowStyle.Hidden,
                 UseShellExecute = true
             });
+        }
+
+        private static void TryDeleteFile(string path)
+        {
+            try { if (File.Exists(path)) File.Delete(path); } catch { }
         }
     }
 }

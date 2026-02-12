@@ -21,6 +21,7 @@ namespace VANTAGE.Installer
             key.SetValue("Publisher", "Summit Industrial");
             key.SetValue("InstallLocation", installDir);
             key.SetValue("UninstallString", $"\"{exePath}\" --uninstall");
+            key.SetValue("QuietUninstallString", $"\"{exePath}\" --uninstall");
             key.SetValue("DisplayIcon", $"{exePath},0");
             key.SetValue("InstallDate", DateTime.Now.ToString("yyyyMMdd"));
             key.SetValue("NoModify", 1, RegistryValueKind.DWord);

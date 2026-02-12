@@ -1,8 +1,8 @@
 {
   "currentVersion": "26.1.9",
-  "releaseDate": "2026-02-11T19:31:46Z",
+  "releaseDate": "2026-02-11T19:59:28Z",
   "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.9/VANTAGE-26.1.9.zip",
-  "zipSizeBytes": 149073652,
-  "sha256": "FEF8DAD533B7889ACF72033279B0744541CF9C9B8EF151FD3147ED3E7B81C059",
+  "zipSizeBytes": 149076493,
+  "sha256": "2435175BF71E6EE60E5055661C98BB422B7FD047797064F711D4D37D5D8A1DB0",
   "releaseNotes": "Add Windows Add/Remove Programs integration with uninstaller"
 }
