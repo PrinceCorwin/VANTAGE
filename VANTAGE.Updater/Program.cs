@@ -35,11 +35,31 @@ class Program
             ExtractUpdate(config.ZipPath, config.TargetDir);
             Console.WriteLine("Update extracted successfully.");
 
+            // Update version in Add/Remove Programs registry
+            string exePath = Path.Combine(config.TargetDir, config.ExeName);
+            try
+            {
+                var versionInfo = System.Diagnostics.FileVersionInfo.GetVersionInfo(exePath);
+                string? version = versionInfo.ProductVersion ?? versionInfo.FileVersion;
+                if (!string.IsNullOrEmpty(version))
+                {
+                    // Trim to major.minor.build (strip .0 revision if present)
+                    var parts = version.Split('.');
+                    if (parts.Length >= 3)
+                        version = $"{parts[0]}.{parts[1]}.{parts[2]}";
+                    RegistryHelper.UpdateVersionInRegistry(version);
+                    Console.WriteLine($"  Updated registry version to {version}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"  Warning: Could not update registry version: {ex.Message}");
+            }
+
             // Clean up the temp ZIP
             TryDelete(config.ZipPath);
 
             // Relaunch the app
-            string exePath = Path.Combine(config.TargetDir, config.ExeName);
             Console.WriteLine($"Launching {exePath}...");
             Process.Start(new ProcessStartInfo(exePath) { UseShellExecute = true });
 

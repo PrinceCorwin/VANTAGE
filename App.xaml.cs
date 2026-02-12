@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Windows;
 using VANTAGE.Data;
 using VANTAGE.Dialogs;
@@ -24,6 +25,13 @@ namespace VANTAGE
 
             // Register Syncfusion license FIRST (before any UI components or database setup)
             Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("Ngo9BigBOggjGyl/VkR+XU9Ff1RDX3xKf0x/TGpQb19xflBPallYVBYiSV9jS3hTd0VnWXhbcHFQQWhfVE91XQ==");
+
+            // Handle --uninstall before any other initialization
+            if (Environment.GetCommandLineArgs().Any(a => a.Equals("--uninstall", StringComparison.OrdinalIgnoreCase)))
+            {
+                UninstallService.RunUninstall();
+                return;
+            }
 
             // Start async initialization
             InitializeApplicationAsync();

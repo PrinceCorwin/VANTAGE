@@ -108,8 +108,12 @@ namespace VANTAGE.Installer
                 TryDelete(zipPath);
 
                 // Create desktop shortcut
-                progress.Report((95, "Creating shortcut..."));
+                progress.Report((93, "Creating shortcut..."));
                 CreateDesktopShortcut();
+
+                // Register in Windows Add/Remove Programs
+                progress.Report((97, "Registering application..."));
+                RegistryHelper.WriteInstallRegistry(InstallDir, ExePath, manifest.CurrentVersion);
 
                 progress.Report((100, "Installation complete!"));
                 return true;

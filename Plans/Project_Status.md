@@ -21,9 +21,7 @@
 |---------|--------|
 | Drawings in Work Packages | Per-WP location architecture needs design |
 | AI Features (other than Progress Scan) | Lower priority for V1 |
-| ~~Theme Selection~~ | Implemented |
 | Procore Integration | Can develop while users test |
-| ~~Help Troubleshooting section~~ | Implemented — Azure firewall, SmartScreen, post-update |
 
 ## Module Status
 
@@ -31,7 +29,7 @@
 |--------|--------|-------|
 | Progress | READY FOR TESTING | Core features complete |
 | Schedule | READY FOR TESTING | Core features complete |
-| Analysis | IN PROGRESS | Initial 4×2 grid layout with summary metrics in section (2,2) |
+| Analysis | IN PROGRESS | Initial 4x2 grid layout with summary metrics in section (2,2) |
 | Sync | COMPLETE | Bidirectional sync working |
 | Admin | COMPLETE | User/project/snapshot management |
 | Work Package | READY FOR TESTING | PDF generation working; Drawings deferred to post-v1 |
@@ -70,7 +68,7 @@
 
 3. **Register in `ThemeManager.cs`** — Add entry to both dictionaries:
    ```csharp
-   // In ThemeMap: "DisplayName" → "SyncfusionThemeName"
+   // In ThemeMap: "DisplayName" -> "SyncfusionThemeName"
    { "Warm", "FluentDark" }  // or "FluentLight" depending on base
    // In AvailableThemes array:
    public static readonly string[] AvailableThemes = { "Dark", "Light", "Orchid" };
@@ -117,88 +115,40 @@
 - PDF features: Auto-fit column widths, description wrapping, project description in header
 - Layout features: Separate grouping and sorting, up to 10 levels each, exclude completed option
 
-### AI Progress Scan - AWS Textract Implementation (COMPLETE)
-
-**Current State:**
-- Switched from Claude Vision API to AWS Textract for table extraction
-- 100% accuracy achieved on PDF and JPEG scans
-- Simplified PDF layout: ID first, single % ENTRY column at far right
-
-**PDF Layout:**
-```
-| ID | [user cols] | MHs | QTY | REM MH | CUR % | % ENTRY |
-```
-- ID (ActivityID) as first column - protected from accidental marks
-- Data columns: MHs (BudgetMHs), QTY (Quantity), REM MH, CUR %
-- % ENTRY box at far right - natural stopping point for field hands
-- Writing "100" = done (no checkbox needed)
-
-**Key Files:**
-- `Services/AI/TextractService.cs` - AWS Textract API wrapper
-- `Services/AI/PdfToImageConverter.cs` - PDF to image conversion (Syncfusion)
-- `Services/AI/ProgressScanService.cs` - Scan orchestration
-- `Services/ProgressBook/ProgressBookPdfGenerator.cs` - PDF generation
-
-**Enhancements:**
-- Image preprocessing with contrast adjustment (slider in results dialog, default 1.2)
+### AI Progress Scan (COMPLETE)
+- AWS Textract for table extraction, 100% accuracy on PDF and JPEG scans
+- PDF layout: `| ID | [user cols] | MHs | QTY | REM MH | CUR % | % ENTRY |`
+- Image preprocessing with contrast adjustment (slider, default 1.2)
 - OCR heuristic: "00" auto-converts to "100" (handles missed leading 1)
-- Results grid: column filtering, BudgetMHs column, Select All/Select Ready/Clear buttons
+- Key files: `TextractService.cs`, `PdfToImageConverter.cs`, `ProgressScanService.cs`, `ProgressBookPdfGenerator.cs`
 
 ### Work Package Module
 - Template editors testing
 - PDF preview testing
 
-### Help Sidebar — Complete for V1
-All V1 sections of `Help/manual.html` are written. Screenshots configured with correct Build Action.
-
-**Completed sections:**
-- 1. Getting Started
-- 2. Main Interface
-- 3. Progress Module
-- 4. Schedule Module
-- 5. Progress Books
-- 6. Work Packages
-- 7. Administration
-- 8. Reference
-
-**Deferred to post-V1:**
-- Troubleshooting section — will populate after initial users report real issues
-
-**Screenshots:**
-- 20 screenshots in `Help/` folder, Build Action set to Content / Copy if newer
-- WebView2 uses virtual host mapping (`https://help.local/manual.html`) — see `SidePanelView.xaml.cs`
+### Help Sidebar (Complete for V1)
+- All 8 sections written (Getting Started, Main Interface, Progress, Schedule, Progress Books, Work Packages, Administration, Reference)
+- 20 screenshots, Build Action: Content / Copy if newer
+- WebView2 virtual host mapping (`https://help.local/manual.html`) — see `SidePanelView.xaml.cs`
 - VS sometimes re-adds PNGs as `<Resource Include>` — always verify Content / Copy if newer
+- Troubleshooting section deferred to post-V1
 
 ## Feature Backlog
 
 ### High Priority
-
-**OTHER HIGH PRIORITY:**
-- **Windows Add/Remove Programs integration** — Register app during install so it appears in Settings > Apps with proper uninstall support. Currently installs to `%LocalAppData%\VANTAGE\App\` with desktop shortcut only; no registry entries or uninstaller.
-- ~~**Schema version tracking system**~~ Complete — `SchemaMigrator.cs` stores SchemaVersion in AppSettings, runs numbered migrations sequentially on startup. Existing ad-hoc migrations ported to v1/v2/v3. Failed migrations offer recovery dialog (delete local DB and re-sync from Azure).
-- ~~First publish & end-to-end test (Workstream 4)~~ Complete — v26.1.1 install + v26.1.2 auto-update validated
-- ~~Credentials strategy~~ Complete — migrated to encrypted config file (Workstream 1)
-- ~~Self-contained publish config~~ Complete — tested via v26.1.1 and v26.1.2 publishes (Workstream 2)
-- ~~Installer app~~ Complete — tested full install cycle (Workstream 3)
+- (no items)
 
 ### Medium Priority
 - **Enhanced ThemeManagerDialog** — Show screenshots of ProgressView in each theme (Dark, Light, Orchid) so users can preview before selecting; keep current "restart required" behavior with StaticResource bindings
-- ~~**DISCUSS:** Add PlanStart and PlanFinish fields to Activities~~ Addressed — Schedule module now imports P6 current schedule dates (start_date/end_date) instead of baseline target dates
-- ~~Table Summary V2: Settings dialog to choose which columns to summarize and aggregate types (Sum/Avg/Count)~~ Removed grid column summaries (too slow); DIY summary panel sufficient
-- User-editable header template for WP (allow customizing header layout)
+- **User-editable header template for WP** — Allow customizing header layout
 
 ### V2 Data Model
 - Add ClientEarnedEquivQty column to Activities table, Azure VMS_Activities, and ColumnMappings (maps to OldVantage `VAL_Client_Earned_EQ-QTY`) - currently ignored during import
 
-### V2 Architecture Revisit
-- ~~**Schedule CellStyle DataTrigger binding approach**~~ Resolved — Tested MultiBinding + IMultiValueConverter approach but it breaks PropertyChanged reactivity (cells don't update when data changes). The duplicate properties approach is actually correct; now documented via `IScheduleCellIndicators` interface that both `ScheduleMasterRow` and `ScheduleViewModel` implement. Interface makes the contract explicit: ViewModel returns false for all 8 indicators (safe default during cell recycling), Row returns computed values.
-
 ### AI Features (see InCode_AI_Plan.md)
 | Feature | Status |
 |---------|--------|
-| AI Progress Scan | Complete - AWS Textract, 100% accuracy |
-| AI Scan pre-filter | Not Started - Local image analysis to detect marks before calling Claude API (skip blank pages, reduce API cost) |
-| ClaudeApiService infrastructure | Complete (via Progress Scan) |
+| AI Scan pre-filter | Not Started - Local image analysis to detect marks before calling API (skip blank pages, reduce cost) |
 | AI Error Assistant | Not Started |
 | AI Description Analysis | Not Started |
 | Metadata Consistency Analysis | Not Started |
@@ -252,26 +202,11 @@ All V1 sections of `Help/manual.html` are written. Screenshots configured with c
 | TreeGrid (SfTreeGrid) | Hierarchical WBS display with parent/child relationships |
 | Critical Path Highlighting | Auto-highlight critical path activities (P6 provides float data) |
 
-**Evaluated and Removed:**
-- Column Chooser - current checkbox popup is more intuitive
-- Stacked Headers - adds complexity without benefit
-- Custom Aggregates - Summary Panel already shows weighted progress
-- Row Drag & Drop - conflicts with P6 sync and data model
-- Checkbox Selection - Ctrl+Click multi-select is sufficient
-- Export/Print - Syncfusion printing issues; use Progress Books instead
-
 ### Shelved
 - Find-Replace in Schedule Detail Grid - deferred to V2; may need redesign of main/detail grid interaction
 - Offline Indicator in status bar - clickable to retry connection
 - Disable Tooltips setting (see DisableTooltips_Plan.md)
 - Interactive Help Mode - click UI controls to navigate to documentation (see Sidebar_Help_Plan.md)
-
-## Known Issues
-
-### AI Progress Scan - Accuracy Issues (RESOLVED)
-- ~~PDF scans less accurate than JPEG scans~~ Fixed with AWS Textract
-- ~~Checkmarks sometimes missed~~ Removed checkbox, use % entry instead
-- Now achieving 100% accuracy on both PDF and JPEG scans
 
 ## Test Scenarios Validated
 
