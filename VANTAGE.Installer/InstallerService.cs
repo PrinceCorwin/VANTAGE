@@ -107,9 +107,16 @@ namespace VANTAGE.Installer
                 ZipFile.ExtractToDirectory(zipPath, InstallDir, overwriteFiles: true);
                 TryDelete(zipPath);
 
-                // Create desktop shortcut
-                progress.Report((93, "Creating shortcut..."));
-                CreateDesktopShortcut();
+                // Create shortcuts (desktop + Start Menu for Windows Search integration)
+                progress.Report((93, "Creating shortcuts..."));
+                string desktopShortcut = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
+                    "VANTAGE Milestone.lnk");
+                string startMenuShortcut = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.StartMenu),
+                    "Programs", "VANTAGE Milestone.lnk");
+                CreateShortcut(desktopShortcut);
+                CreateShortcut(startMenuShortcut);
 
                 // Register in Windows Add/Remove Programs
                 progress.Report((97, "Registering application..."));
@@ -220,13 +227,9 @@ namespace VANTAGE.Installer
             return string.Equals(actualHash, expectedHash, StringComparison.OrdinalIgnoreCase);
         }
 
-        // Create a .lnk shortcut on the desktop using COM Shell interop
-        private static void CreateDesktopShortcut()
+        // Create a .lnk shortcut at the given path using COM Shell interop
+        private static void CreateShortcut(string shortcutPath)
         {
-            string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
-            string shortcutPath = Path.Combine(desktopPath, "VANTAGE Milestone.lnk");
-
-            // Use the Windows Script Host COM object to create a proper .lnk file
             var shellType = Type.GetTypeFromProgID("WScript.Shell");
             if (shellType == null) return;
 

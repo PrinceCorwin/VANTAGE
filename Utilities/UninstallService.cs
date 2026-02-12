@@ -33,7 +33,7 @@ namespace VANTAGE.Utilities
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "VANTAGE");
 
-            RemoveDesktopShortcut();
+            RemoveShortcuts();
             RemoveRegistryEntries();
 
             if (!keepData)
@@ -44,15 +44,27 @@ namespace VANTAGE.Utilities
             Application.Current.Shutdown();
         }
 
-        private static void RemoveDesktopShortcut()
+        private static void RemoveShortcuts()
         {
+            // Desktop shortcut
             try
             {
-                string shortcutPath = Path.Combine(
+                string desktopShortcut = Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
                     "VANTAGE Milestone.lnk");
-                if (File.Exists(shortcutPath))
-                    File.Delete(shortcutPath);
+                if (File.Exists(desktopShortcut))
+                    File.Delete(desktopShortcut);
+            }
+            catch { }
+
+            // Start Menu shortcut
+            try
+            {
+                string startMenuShortcut = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.StartMenu),
+                    "Programs", "VANTAGE Milestone.lnk");
+                if (File.Exists(startMenuShortcut))
+                    File.Delete(startMenuShortcut);
             }
             catch { }
         }
