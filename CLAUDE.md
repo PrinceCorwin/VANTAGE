@@ -83,7 +83,8 @@ Updates are distributed via GitHub Releases. The auto-updater checks `updates/ma
    - `zipSizeBytes`: from script output
    - `sha256`: from script output
    - `releaseNotes`: brief description
-6. Commit and push the manifest update
+6. **Update `ReleaseNotes.json`** — Add a new entry at the top of the `releases` array with the version, date, and user-facing highlights. This file is embedded in the app and shown in the "See Release Notes" dialog. Must be updated BEFORE the publish script runs so the new entry is included in the build.
+7. Commit and push the manifest update
 
 ### GitHub Release Title Convention
 Use a brief description of the main changes (not the version number as the title).

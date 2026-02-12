@@ -1,6 +1,29 @@
 {
   "releases": [
     {
+      "version": "26.1.12",
+      "date": "2026-02-11",
+      "highlights": [
+        "Updated release notes with complete version history",
+        "Added ReleaseNotes.json update step to publishing process"
+      ]
+    },
+    {
+      "version": "26.1.11",
+      "date": "2026-02-11",
+      "highlights": [
+        "Fix release notes dialog opening behind splash screen on startup"
+      ]
+    },
+    {
+      "version": "26.1.10",
+      "date": "2026-02-11",
+      "highlights": [
+        "See Release Notes dialog in Settings menu — view features and changes per release",
+        "Release notes auto-show after app updates"
+      ]
+    },
+    {
       "version": "26.1.9",
       "date": "2026-02-11",
       "highlights": [
