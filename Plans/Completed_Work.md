@@ -6,6 +6,9 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### February 12, 2026
+- **Help manual column name fixes:** Updated outdated references from SchStart/SchFinish to ActStart/ActFin throughout manual.html. Fixed Today filter description, date validation rules, Schedule detail grid fields, change log field list, and column mapping reference table.
+
 ### February 11, 2026
 - **See Release Notes dialog:** Added "See Release Notes" to Settings menu showing scrollable release history with version headers, dates, and feature bullet points per release. Data loaded from embedded `ReleaseNotes.json` file. Dialog auto-shows after app updates by comparing assembly version to `LastSeenVersion` in UserSettings (skips first launch). New files: `Dialogs/ReleaseNotesDialog.xaml`, `Models/ReleaseNote.cs`, `ReleaseNotes.json`. Updated Help manual.
 - **Windows Add/Remove Programs integration:** Installer now writes registry entries to `HKCU\...\Uninstall\VANTAGE` so the app appears in Settings > Apps with correct name, version, publisher, and size. Updater updates DisplayVersion in registry after applying updates. Main app handles `--uninstall` flag: shows confirmation dialog with option to keep local data, removes app files (via self-delete batch script), desktop shortcut, and registry entries. New files: `VANTAGE.Installer/RegistryHelper.cs`, `VANTAGE.Updater/RegistryHelper.cs`, `Dialogs/UninstallDialog.xaml`, `Utilities/UninstallService.cs`. Version bumped to 26.1.9.

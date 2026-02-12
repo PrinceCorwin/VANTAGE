@@ -619,7 +619,7 @@
         </tr>
         <tr>
             <td><strong>Today</strong></td>
-            <td>Activities with a start date (SchStart) or finish date (SchFinish) of today</td>
+            <td>Activities with an actual start date (ActStart) or actual finish date (ActFin) of today</td>
         </tr>
     </table>
 
@@ -722,11 +722,11 @@
             <th>Rules</th>
         </tr>
         <tr>
-            <td><strong>ActStart (SchStart)</strong></td>
+            <td><strong>ActStart</strong></td>
             <td>Required when percent is greater than 0 (shows red if missing). Cannot be a future date. Cannot be after ActFin. Cannot be cleared if percent is greater than 0.</td>
         </tr>
         <tr>
-            <td><strong>ActFin (SchFinish)</strong></td>
+            <td><strong>ActFin</strong></td>
             <td>Required when percent equals 100% (shows red if missing). Cannot be a future date. Cannot be before ActStart. Cannot be cleared if percent is 100%.</td>
         </tr>
     </table>
@@ -1082,11 +1082,11 @@
             <td>Editable budget hours for this activity</td>
         </tr>
         <tr>
-            <td><strong>ActStart (SchStart)</strong></td>
+            <td><strong>ActStart</strong></td>
             <td>Required when percent > 0. Cannot be future date.</td>
         </tr>
         <tr>
-            <td><strong>ActFin (SchFinish)</strong></td>
+            <td><strong>ActFin</strong></td>
             <td>Required when percent = 100. Cannot be before Start.</td>
         </tr>
     </table>
@@ -1311,7 +1311,7 @@
         </tr>
         <tr>
             <td><strong>Field</strong></td>
-            <td>Which field was changed (PercentEntry, BudgetMHs, SchStart, SchFinish)</td>
+            <td>Which field was changed (PercentEntry, BudgetMHs, ActStart, ActFin)</td>
         </tr>
         <tr>
             <td><strong>Old Value</strong></td>
@@ -2524,8 +2524,8 @@
         <tr><td>ROCPercent</td><td>Val_ROC_Perc</td><td>Not Used</td></tr>
         <tr><td>ROCStep</td><td>Catg_ROC_Step</td><td>Catg_ROC_Step</td></tr>
         <tr><td>SchedActNO</td><td>Tag_Sch_ActNo</td><td>Tag_Sch_ActNo</td></tr>
-        <tr><td>SchFinish</td><td>Sch_Finish</td><td>Sch_Finish</td></tr>
-        <tr><td>SchStart</td><td>Sch_Start</td><td>Sch_Start</td></tr>
+        <tr><td>ActFin</td><td>Sch_Finish</td><td>Sch_Finish</td></tr>
+        <tr><td>ActStart</td><td>Sch_Start</td><td>Sch_Start</td></tr>
         <tr><td>SecondActno</td><td>Sch_Actno</td><td>Sch_Actno</td></tr>
         <tr><td>SecondDwgNO</td><td>Dwg_SecondaryDrawingNO</td><td>Dwg_SecondaryDrawingNO</td></tr>
         <tr><td>Service</td><td>Tag_Service</td><td>Tag_Service</td></tr>
