@@ -338,6 +338,15 @@
                                         Click="MenuTheme_Click"
                                         Cursor="Hand"
                                         ToolTip="Choose between Dark and Light application themes"/>
+                                <Button Content="See Release Notes"
+                                        Background="Transparent"
+                                        Foreground="{StaticResource ForegroundColor}"
+                                        BorderThickness="0"
+                                        Padding="12,8"
+                                        HorizontalContentAlignment="Left"
+                                        Click="MenuReleaseNotes_Click"
+                                        Cursor="Hand"
+                                        ToolTip="View features and changes in each release"/>
 
                                 <Separator Background="{StaticResource BorderColor}" Margin="5,2"/>
                                 <Button Content="About Vantage: Milestone"

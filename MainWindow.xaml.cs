@@ -40,6 +40,9 @@ namespace VANTAGE
                 // Force taskbar icon refresh (fixes first-run icon not showing)
                 var iconPath = new Uri("pack://application:,,,/images/AppIcon.ico", UriKind.Absolute);
                 this.Icon = BitmapFrame.Create(iconPath);
+
+                // Auto-show release notes after an update
+                ShowReleaseNotesIfVersionChanged();
             };
             this.Closing += MainWindow_Closing;
         }
@@ -105,6 +108,42 @@ namespace VANTAGE
                 "About Vantage: Milestone",
                 MessageBoxButton.OK,
                 MessageBoxImage.Information);
+        }
+
+        private void MenuReleaseNotes_Click(object sender, RoutedEventArgs e)
+        {
+            popupSettings.IsOpen = false;
+            var dialog = new ReleaseNotesDialog();
+            dialog.Owner = this;
+            dialog.ShowDialog();
+        }
+
+        // Show release notes automatically if the app version changed since last launch
+        private void ShowReleaseNotesIfVersionChanged()
+        {
+            try
+            {
+                var version = Assembly.GetExecutingAssembly().GetName().Version;
+                string currentVersion = $"{version?.Major}.{version?.Minor}.{version?.Build}";
+                string lastSeenVersion = SettingsManager.GetUserSetting("LastSeenVersion");
+
+                if (lastSeenVersion != currentVersion)
+                {
+                    SettingsManager.SetUserSetting("LastSeenVersion", currentVersion);
+
+                    // Don't show on very first launch (no previous version to compare)
+                    if (!string.IsNullOrEmpty(lastSeenVersion))
+                    {
+                        var dialog = new ReleaseNotesDialog();
+                        dialog.Owner = this;
+                        dialog.ShowDialog();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "MainWindow.ShowReleaseNotesIfVersionChanged");
+            }
         }
 
         // Optional: Allow toggling sidebar with keyboard shortcut (F1)

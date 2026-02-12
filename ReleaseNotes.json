@@ -1,0 +1,97 @@
+{
+  "releases": [
+    {
+      "version": "26.1.9",
+      "date": "2026-02-11",
+      "highlights": [
+        "App now appears in Windows Settings > Apps with full uninstall support",
+        "Start Menu shortcut for Windows Search integration",
+        "Automatic database migrations on version upgrades",
+        "Schedule: paste updates required fields count, Delete/Backspace clears cells",
+        "Renamed date columns SchStart/SchFinish to ActStart/ActFin for clarity",
+        "ActStart/ActFin are now required metadata fields (ActStart when % > 0, ActFin when % = 100)",
+        "MissedReasons and 3WLA dates now persist across P6 imports",
+        "P6 Import project list loads from snapshots (faster, always current)",
+        "Find/Replace: new Replace ALL and Replace BLANK modes",
+        "Snapshot submit now skips conflicts instead of aborting, with export option",
+        "Filter and grid UX fixes across Progress and Schedule modules"
+      ]
+    },
+    {
+      "version": "26.1.8",
+      "date": "2026-02-09",
+      "highlights": [
+        "Fixed ManageProgressLogDialog checkbox selection and delete operation",
+        "ManageProgressLogDialog: added REFRESH button and time-range filtering",
+        "Schedule cell indicator interface for consistent cell styling"
+      ]
+    },
+    {
+      "version": "26.1.7",
+      "date": "2026-02-04",
+      "highlights": [
+        "New Analysis module with 4x2 resizable grid layout and aggregated metrics",
+        "Analysis: Group By dropdown, Current User / All Users filter, multi-project selection",
+        "Analysis: color-coded % Complete cells (red/orange/yellow/green)",
+        "Removed Legacy I/O toggle setting, renamed LocalDirty filter to Unsynced",
+        "Schedule Change Log now clears on P6 import",
+        "P6 import: flexible column header matching supports multiple P6 export formats"
+      ]
+    },
+    {
+      "version": "26.1.6",
+      "date": "2026-02-03",
+      "highlights": [
+        "P6 import: flexible column header matching supports multiple P6 export formats",
+        "Secondary header row detection with automatic normalization"
+      ]
+    },
+    {
+      "version": "26.1.5",
+      "date": "2026-02-02",
+      "highlights": [
+        "Fixed Required Fields count not updating after past 3WLA date rejection"
+      ]
+    },
+    {
+      "version": "26.1.4",
+      "date": "2026-02-02",
+      "highlights": [
+        "Block past 3WLA dates with validation message",
+        "Fixed Schedule save to persist all rows (not just filtered)",
+        "Added P6_% and %_Mismatch columns to 3WLA Excel report",
+        "Replaced P6 baseline dates with current schedule dates",
+        "Improved snapshot save performance with optimized queries",
+        "Optimized Find and Replace with batch database writes"
+      ]
+    },
+    {
+      "version": "26.1.3",
+      "date": "2026-02-01",
+      "highlights": [
+        "Removed test menu from toolbar (production cleanup)",
+        "Connection error dialog now shows your public IP for firewall troubleshooting",
+        "Added Help Troubleshooting section",
+        "Created Publishing Guide for release workflow"
+      ]
+    },
+    {
+      "version": "26.1.2",
+      "date": "2026-02-01",
+      "highlights": [
+        "Connection error dialog shows public IP address for firewall troubleshooting",
+        "COPY button for IP address to send to admin",
+        "Help Troubleshooting section added"
+      ]
+    },
+    {
+      "version": "26.1.1",
+      "date": "2026-01-30",
+      "highlights": [
+        "First published release with auto-update support",
+        "Self-contained deployment (no .NET runtime required)",
+        "Encrypted credential configuration for production"
+      ]
+    }
+  ]
+}
