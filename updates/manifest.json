@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.1.11",
-  "releaseDate": "2026-02-11T21:07:44Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.11/VANTAGE-26.1.11.zip",
-  "zipSizeBytes": 149081380,
-  "sha256": "DE6B279DE0C503A7A633F006202737890E0286D47032B18D35A7217E6E48C911",
-  "releaseNotes": "Fix release notes dialog opening behind splash screen"
+  "currentVersion": "26.1.12",
+  "releaseDate": "2026-02-11T21:15:48Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.12/VANTAGE-26.1.12.zip",
+  "zipSizeBytes": 149081545,
+  "sha256": "55CECE46E3ED93C709D41EAA96D3736035E82DAC7B449C3D81F6ECB02021F3C9",
+  "releaseNotes": "Updated release notes with complete version history"
 }
