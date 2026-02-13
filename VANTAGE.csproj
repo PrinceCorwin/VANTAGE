@@ -58,7 +58,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="AWSSDK.Textract" Version="4.0.3.12" />
+		<PackageReference Include="AWSSDK.Textract" Version="4.0.3.13" />
 		<PackageReference Include="Azure.Communication.Email" Version="1.1.0" />
 		<PackageReference Include="Azure.Data.Tables" Version="12.11.0" />
 		<PackageReference Include="Azure.Identity" Version="1.17.1" />
@@ -67,31 +67,31 @@
 		<PackageReference Include="DocumentFormat.OpenXml" Version="3.4.1" />
 		<PackageReference Include="MaterialDesignColors" Version="5.3.0" />
 		<PackageReference Include="MaterialDesignThemes" Version="5.3.0" />
-		<PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.3" />
+		<PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.4" />
 		<PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.10" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.10">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.10" />
-		<PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.0" />
-		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.10" />
-		<PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="9.0.10" />
+		<PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.3" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.3" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.3" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
 		<PackageReference Include="SharpVectors.Wpf" Version="1.8.5" />
-		<PackageReference Include="Syncfusion.PdfToImageConverter.WPF" Version="32.1.25" />
-		<PackageReference Include="Syncfusion.SfProgressBar.WPF" Version="32.1.25" />
-		<PackageReference Include="Syncfusion.Themes.FluentLight.WPF" Version="32.1.25" />
-		<PackageReference Include="System.Drawing.Common" Version="10.0.1" />
-		<PackageReference Include="Syncfusion.Pdf.WPF" Version="32.1.25" />
-		<PackageReference Include="Syncfusion.PdfViewer.WPF" Version="32.1.25" />
-		<PackageReference Include="Syncfusion.SfBusyIndicator.WPF" Version="32.1.25" />
-		<PackageReference Include="Syncfusion.SfGrid.WPF" Version="32.1.25" />
-		<PackageReference Include="Syncfusion.SfInput.WPF" Version="32.1.25" />
-		<PackageReference Include="Syncfusion.SfTextInputLayout.WPF" Version="32.1.25" />
-		<PackageReference Include="Syncfusion.Tools.WPF" Version="32.1.25" />
-		<PackageReference Include="Syncfusion.Themes.FluentDark.WPF" Version="32.1.25" />
-		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3650.58" />
+		<PackageReference Include="Syncfusion.PdfToImageConverter.WPF" Version="32.2.4" />
+		<PackageReference Include="Syncfusion.SfProgressBar.WPF" Version="32.2.4" />
+		<PackageReference Include="Syncfusion.Themes.FluentLight.WPF" Version="32.2.4" />
+		<PackageReference Include="System.Drawing.Common" Version="10.0.3" />
+		<PackageReference Include="Syncfusion.Pdf.WPF" Version="32.2.4" />
+		<PackageReference Include="Syncfusion.PdfViewer.WPF" Version="32.2.4" />
+		<PackageReference Include="Syncfusion.SfBusyIndicator.WPF" Version="32.2.4" />
+		<PackageReference Include="Syncfusion.SfGrid.WPF" Version="32.2.4" />
+		<PackageReference Include="Syncfusion.SfInput.WPF" Version="32.2.4" />
+		<PackageReference Include="Syncfusion.SfTextInputLayout.WPF" Version="32.2.4" />
+		<PackageReference Include="Syncfusion.Tools.WPF" Version="32.2.4" />
+		<PackageReference Include="Syncfusion.Themes.FluentDark.WPF" Version="32.2.4" />
+		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3719.77" />
 	</ItemGroup>
 
 	<ItemGroup>
