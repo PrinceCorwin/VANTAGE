@@ -119,7 +119,7 @@ namespace VANTAGE.Services
             context.ResolvedTokens["PhaseCode"] = string.Join(", ", phaseCodes);
 
             // Load first distinct value for other activity fields (for WP Name pattern)
-            var singleValueFields = new[] { "Area", "SystemNO", "UDF1", "UDF2", "UDF3", "UDF4", "UDF5",
+            var singleValueFields = new[] { "Area", "PjtSystemNo", "UDF1", "UDF2", "UDF3", "UDF4", "UDF5",
                 "UDF6", "UDF7", "UDF8", "UDF9", "UDF10", "CompType", "PhaseCategory", "SubArea" };
 
             foreach (var field in singleValueFields)
@@ -227,7 +227,7 @@ namespace VANTAGE.Services
                     ["SchedActNO"] = "ACT-001, ACT-002",
                     ["PhaseCode"] = "PIPE",
                     ["Area"] = "AREA-1",
-                    ["SystemNO"] = "SYS-100",
+                    ["PjtSystemNo"] = "SYS-100",
                     ["ProjectManager"] = "John Smith",
                     ["SiteManager"] = "Jane Doe"
                 }

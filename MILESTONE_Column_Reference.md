@@ -47,7 +47,7 @@ Tag_Service = Service
 Tag_ShopField = ShopField
 Tag_SubArea = SubArea
 Tag_System = PjtSystem
-Tag_SystemNo = SystemNO
+Tag_SystemNo = PjtSystemNo
 Tag_TagNo = TagNO
 Tag_Tracing = HtTrace
 Tag_WorkPackage = WorkPackage
@@ -146,7 +146,7 @@ Tag_Service = Service
 Tag_ShopField = ShopField
 Tag_SubArea = SubArea
 Tag_System = PjtSystem
-Tag_SystemNo = SystemNO
+Tag_SystemNo = PjtSystemNo
 Tag_TagNo = TagNO
 Tag_Tracing = HtTrace
 Tag_WorkPackage = WorkPackage
@@ -269,7 +269,7 @@ ShopField
 ShtNO
 SubArea
 PjtSystem
-SystemNO
+PjtSystemNo
 TagNO
 UDF1
 UDF2
@@ -376,7 +376,7 @@ ShtNO
 Status
 SubArea
 SyncVersion
-SystemNO
+PjtSystemNo
 TagNO
 UDF1
 UDF2
@@ -509,7 +509,7 @@ ShopField = Tag_ShopField
 ShtNO = Dwg_ShtNo
 Status = Sch_Status
 SubArea = Tag_SubArea
-SystemNO = Tag_SystemNo
+PjtSystemNo = Tag_SystemNo
 TagNO = Tag_TagNo
 UDF1 = UDF1
 UDF2 = UDF2
@@ -543,7 +543,7 @@ XRay = Tag_XRAY
 
 **Key Differences from OldVantage Names:**
 - `PjtSystem` (Milestone) â†’ `Tag_System` (Azure) - NOT `Tag_SystemNo`
-- `SystemNO` (Milestone) â†’ `Tag_SystemNo` (Azure)
+- `PjtSystemNo` (Milestone) â†' `Tag_SystemNo` (Azure/OldVantage only)
 - `UniqueID` (Milestone) â†’ `UDF19` (Azure) - Stored in UDF field on Azure side
 - `AzureUploadUtcDate` (Milestone) â†’ `Timestamp` (Azure)
 - Several calculated fields are uploaded: `EarnMHsCalc`, `Status`, `ProgDate`, `WeekEndDate`

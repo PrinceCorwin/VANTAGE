@@ -1490,8 +1490,8 @@
                            AllowFiltering="True"
                            TextAlignment="Right" />
 
-                        <syncfusion:GridTextColumn MappingName="SystemNO"
-                           HeaderText="SystemNO" Padding="4,0,4,0"
+                        <syncfusion:GridTextColumn MappingName="PjtSystemNo"
+                           HeaderText="PjtSystemNo" Padding="4,0,4,0"
                            Width="100"
                            IsHidden="True"
                            AllowEditing="True"

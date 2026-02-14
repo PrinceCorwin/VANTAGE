@@ -517,7 +517,6 @@ namespace VANTAGE.Views
                             SubArea = original.SubArea,
                             PjtSystem = original.PjtSystem,
                             PjtSystemNo = original.PjtSystemNo,
-                            SystemNO = original.SystemNO,
                             TagNO = original.TagNO,
                             UDF1 = original.UDF1,
                             UDF2 = original.UDF2,
@@ -556,7 +555,7 @@ namespace VANTAGE.Views
                         PrevEarnMHs, PrevEarnQTY, ProgDate, ProjectID, Quantity, RevNO, RFINO,
                         ROCBudgetQTY, ROCID, ROCPercent, ROCStep, SchedActNO, ActFin, ActStart,
                         SecondActno, SecondDwgNO, Service, ShopField, ShtNO, SubArea, PjtSystem, PjtSystemNo,
-                        SystemNO, TagNO, UDF1, UDF2, UDF3, UDF4, UDF5, UDF6, UDF7, UDF8, UDF9,
+                        TagNO, UDF1, UDF2, UDF3, UDF4, UDF5, UDF6, UDF7, UDF8, UDF9,
                         UDF10, UDF11, UDF12, UDF13, UDF14, UDF15, UDF16, UDF17, RespParty, UDF20,
                         UpdatedBy, UpdatedUtcDate, UOM, WeekEndDate, WorkPackage, XRay, SyncVersion
                     ) VALUES (
@@ -569,7 +568,7 @@ namespace VANTAGE.Views
                         @PrevEarnMHs, @PrevEarnQTY, @ProgDate, @ProjectID, @Quantity, @RevNO, @RFINO,
                         @ROCBudgetQTY, @ROCID, @ROCPercent, @ROCStep, @SchedActNO, @ActFin, @ActStart,
                         @SecondActno, @SecondDwgNO, @Service, @ShopField, @ShtNO, @SubArea, @PjtSystem, @PjtSystemNo,
-                        @SystemNO, @TagNO, @UDF1, @UDF2, @UDF3, @UDF4, @UDF5, @UDF6, @UDF7, @UDF8, @UDF9,
+                        @TagNO, @UDF1, @UDF2, @UDF3, @UDF4, @UDF5, @UDF6, @UDF7, @UDF8, @UDF9,
                         @UDF10, @UDF11, @UDF12, @UDF13, @UDF14, @UDF15, @UDF16, @UDF17, @RespParty, @UDF20,
                         @UpdatedBy, @UpdatedUtcDate, @UOM, @WeekEndDate, @WorkPackage, @XRay, @SyncVersion
                     )";
@@ -637,7 +636,6 @@ namespace VANTAGE.Views
                         insertCmd.Parameters.AddWithValue("@SubArea", duplicate.SubArea ?? "");
                         insertCmd.Parameters.AddWithValue("@PjtSystem", duplicate.PjtSystem ?? "");
                         insertCmd.Parameters.AddWithValue("@PjtSystemNo", duplicate.PjtSystemNo ?? "");
-                        insertCmd.Parameters.AddWithValue("@SystemNO", duplicate.SystemNO ?? "");
                         insertCmd.Parameters.AddWithValue("@TagNO", duplicate.TagNO ?? "");
                         insertCmd.Parameters.AddWithValue("@UDF1", duplicate.UDF1 ?? "");
                         insertCmd.Parameters.AddWithValue("@UDF2", duplicate.UDF2 ?? "");
@@ -2711,7 +2709,7 @@ namespace VANTAGE.Views
                                     PipeGrade, PipeSize1, PipeSize2, PrevEarnMHs, PrevEarnQTY,
                                     ProjectID, Quantity, RevNO, RFINO, ROCBudgetQTY, ROCID, ROCPercent,
                                     ROCStep, SchedActNO, ActFin, ActStart, SecondActno, SecondDwgNO,
-                                    Service, ShopField, ShtNO, SubArea, PjtSystem, PjtSystemNo, SystemNO, TagNO,
+                                    Service, ShopField, ShtNO, SubArea, PjtSystem, PjtSystemNo, TagNO,
                                     UDF1, UDF2, UDF3, UDF4, UDF5, UDF6, UDF7, UDF8, UDF9, UDF10,
                                     UDF11, UDF12, UDF13, UDF14, UDF15, UDF16, UDF17, RespParty, UDF20,
                                     UpdatedBy, UpdatedUtcDate, UOM, WorkPackage, XRay
@@ -2897,7 +2895,6 @@ namespace VANTAGE.Views
                             snapshotTable.Columns.Add("SubArea", typeof(string));
                             snapshotTable.Columns.Add("PjtSystem", typeof(string));
                             snapshotTable.Columns.Add("PjtSystemNo", typeof(string));
-                            snapshotTable.Columns.Add("SystemNO", typeof(string));
                             snapshotTable.Columns.Add("TagNO", typeof(string));
                             snapshotTable.Columns.Add("UDF1", typeof(string));
                             snapshotTable.Columns.Add("UDF2", typeof(string));
@@ -2991,7 +2988,6 @@ namespace VANTAGE.Views
                                 newRow["SubArea"] = row["SubArea"];
                                 newRow["PjtSystem"] = row["PjtSystem"];
                                 newRow["PjtSystemNo"] = row["PjtSystemNo"];
-                                newRow["SystemNO"] = row["SystemNO"];
                                 newRow["TagNO"] = row["TagNO"];
                                 newRow["UDF1"] = row["UDF1"];
                                 newRow["UDF2"] = row["UDF2"];

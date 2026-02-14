@@ -797,7 +797,7 @@ namespace VANTAGE.Views
 
             // Priority fields at top (alphabetical)
             var priorityFields = new[] { "Area", "CompType", "PhaseCategory", "PhaseCode",
-                "SchedActNO", "SystemNO", "UDF2", "WorkPackage" };
+                "SchedActNO", "PjtSystemNo", "UDF2", "WorkPackage" };
 
             // All other fields (alphabetical)
             var otherFields = new[] { "Aux1", "Aux2", "Aux3", "ChgOrdNO", "Description", "DwgNO",

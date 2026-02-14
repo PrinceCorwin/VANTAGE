@@ -144,7 +144,6 @@ namespace VANTAGE.Utilities
             "SubArea",
             "PjtSystem",
             "PjtSystemNo",
-            "SystemNO",
             "TagNO",
             "HtTrace",
             "WorkPackage",

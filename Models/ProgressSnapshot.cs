@@ -85,7 +85,6 @@ namespace VANTAGE.Models
         public string SubArea { get; set; } = string.Empty;
         public string PjtSystem { get; set; } = string.Empty;
         public string PjtSystemNo { get; set; } = string.Empty;
-        public string SystemNO { get; set; } = string.Empty;
         public string TagNO { get; set; } = string.Empty;
         public string UDF1 { get; set; } = string.Empty;
         public string UDF2 { get; set; } = string.Empty;

@@ -22,7 +22,7 @@ namespace VANTAGE.Utilities
         private const string SchemaVersionKey = "SchemaVersion";
 
         // Increment this when adding new migrations
-        public const int CurrentSchemaVersion = 3;
+        public const int CurrentSchemaVersion = 4;
 
         // Runs all pending migrations sequentially
         // progressCallback is invoked with status messages for UI updates
@@ -82,6 +82,9 @@ namespace VANTAGE.Utilities
                     break;
                 case 3:
                     Migration_v3_UpdateColumnMappingsData(connection);
+                    break;
+                case 4:
+                    Migration_v4_RemoveSystemNOColumn(connection);
                     break;
                 default:
                     throw new ArgumentException($"Unknown migration version: {version}");
@@ -216,6 +219,49 @@ namespace VANTAGE.Utilities
                     UPDATE ColumnMappings
                     SET ColumnName = 'ActFin'
                     WHERE OldVantageName = 'Sch_Finish' AND ColumnName = 'SchFinish'";
+                cmd.ExecuteNonQuery();
+            }
+        }
+        // v4: Remove orphaned SystemNO column, keep PjtSystemNo as canonical field
+        private static void Migration_v4_RemoveSystemNOColumn(SqliteConnection connection)
+        {
+            var activitiesCols = GetTableColumns(connection, "Activities");
+
+            // Copy SystemNO data into PjtSystemNo where PjtSystemNo is empty
+            if (activitiesCols.Contains("SystemNO") && activitiesCols.Contains("PjtSystemNo"))
+            {
+                using var cmd = connection.CreateCommand();
+                cmd.CommandText = @"
+                    UPDATE Activities SET PjtSystemNo = SystemNO
+                    WHERE (PjtSystemNo IS NULL OR PjtSystemNo = '')
+                    AND SystemNO IS NOT NULL AND SystemNO != ''";
+                cmd.ExecuteNonQuery();
+            }
+
+            // Drop SystemNO from Activities
+            if (activitiesCols.Contains("SystemNO"))
+            {
+                using var cmd = connection.CreateCommand();
+                cmd.CommandText = "ALTER TABLE Activities DROP COLUMN SystemNO";
+                cmd.ExecuteNonQuery();
+            }
+
+            // Same for VMS_ProgressSnapshots if it exists
+            var snapshotCols = GetTableColumns(connection, "VMS_ProgressSnapshots");
+            if (snapshotCols.Contains("SystemNO") && snapshotCols.Contains("PjtSystemNo"))
+            {
+                using var cmd = connection.CreateCommand();
+                cmd.CommandText = @"
+                    UPDATE VMS_ProgressSnapshots SET PjtSystemNo = SystemNO
+                    WHERE (PjtSystemNo IS NULL OR PjtSystemNo = '')
+                    AND SystemNO IS NOT NULL AND SystemNO != ''";
+                cmd.ExecuteNonQuery();
+            }
+
+            if (snapshotCols.Contains("SystemNO"))
+            {
+                using var cmd = connection.CreateCommand();
+                cmd.CommandText = "ALTER TABLE VMS_ProgressSnapshots DROP COLUMN SystemNO";
                 cmd.ExecuteNonQuery();
             }
         }

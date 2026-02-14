@@ -371,7 +371,7 @@ namespace VANTAGE.Utilities
                 command.CommandText = @"
             INSERT INTO Activities (
                 HexNO, ProjectID, Description, UniqueID,
-                Area, SubArea, PjtSystem, PjtSystemNo, SystemNO,
+                Area, SubArea, PjtSystem, PjtSystemNo,
                 CompType, PhaseCategory, ROCStep,
                 AssignedTo, CreatedBy, UpdatedBy,
                 PercentEntry, Quantity, EarnQtyEntry, UOM,
@@ -393,7 +393,7 @@ namespace VANTAGE.Utilities
                 UpdatedUtcDate, LocalDirty
             ) VALUES (
                 @HexNO, @ProjectID, @Description, @UniqueID,
-                @Area, @SubArea, @PjtSystem, @PjtSystemNo, @SystemNO,
+                @Area, @SubArea, @PjtSystem, @PjtSystemNo,
                 @CompType, @PhaseCategory, @ROCStep,
                 @AssignedTo, @CreatedBy, @UpdatedBy,
                 @PercentEntry, @Quantity, @EarnQtyEntry, @UOM,
@@ -424,7 +424,6 @@ namespace VANTAGE.Utilities
                 command.Parameters.Add("@SubArea", SqliteType.Text);
                 command.Parameters.Add("@PjtSystem", SqliteType.Text);
                 command.Parameters.Add("@PjtSystemNo", SqliteType.Text);
-                command.Parameters.Add("@SystemNO", SqliteType.Text);
                 command.Parameters.Add("@CompType", SqliteType.Text);
                 command.Parameters.Add("@PhaseCategory", SqliteType.Text);
                 command.Parameters.Add("@ROCStep", SqliteType.Text);
@@ -541,7 +540,6 @@ namespace VANTAGE.Utilities
                     command.Parameters["@SubArea"].Value = activity.SubArea ?? "";
                     command.Parameters["@PjtSystem"].Value = activity.PjtSystem ?? "";
                     command.Parameters["@PjtSystemNo"].Value = activity.PjtSystemNo ?? "";
-                    command.Parameters["@SystemNO"].Value = activity.SystemNO ?? "";
                     command.Parameters["@CompType"].Value = activity.CompType ?? "";
                     command.Parameters["@PhaseCategory"].Value = activity.PhaseCategory ?? "";
                     command.Parameters["@ROCStep"].Value = activity.ROCStep ?? "";

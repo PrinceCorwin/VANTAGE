@@ -270,7 +270,6 @@ namespace VANTAGE.Data
                     ShopField = @ShopField,
                     ShtNO = @ShtNO,
                     SubArea = @SubArea,
-                    SystemNO = @SystemNO,
                     TagNO = @TagNO,
                     UDF1 = @UDF1,
                     UDF2 = @UDF2,
@@ -359,7 +358,6 @@ namespace VANTAGE.Data
                     command.Parameters.AddWithValue("@ShopField", activity.ShopField ?? "");
                     command.Parameters.AddWithValue("@ShtNO", activity.ShtNO ?? "");
                     command.Parameters.AddWithValue("@SubArea", activity.SubArea ?? "");
-                    command.Parameters.AddWithValue("@SystemNO", activity.SystemNO ?? "");
                     command.Parameters.AddWithValue("@TagNO", activity.TagNO ?? "");
                     command.Parameters.AddWithValue("@UDF1", activity.UDF1 ?? "");
                     command.Parameters.AddWithValue("@UDF2", activity.UDF2 ?? "");
@@ -789,7 +787,6 @@ namespace VANTAGE.Data
                                  activity.SubArea = GetStringSafe("SubArea");
                                  activity.PjtSystem = GetStringSafe("PjtSystem");
                                  activity.PjtSystemNo = GetStringSafe("PjtSystemNo");
-                                 activity.SystemNO = GetStringSafe("SystemNO");
                                  activity.TagNO = GetStringSafe("TagNO");
                                  activity.HtTrace = GetStringSafe("HtTrace");
                                  activity.WorkPackage = GetStringSafe("WorkPackage");
@@ -1042,7 +1039,6 @@ namespace VANTAGE.Data
                                  activity.SubArea = GetStringSafe("SubArea");
                                  activity.PjtSystem = GetStringSafe("PjtSystem");
                                  activity.PjtSystemNo = GetStringSafe("PjtSystemNo");
-                                 activity.SystemNO = GetStringSafe("SystemNO");
                                  activity.TagNO = GetStringSafe("TagNO");
                                  activity.WorkPackage = GetStringSafe("WorkPackage");
                                  activity.DateTrigger = GetIntSafe("DateTrigger");
@@ -1305,7 +1301,6 @@ namespace VANTAGE.Data
             activity.SubArea = GetStringOrDefault(reader, "SubArea");
             activity.PjtSystem = GetStringOrDefault(reader, "PjtSystem");
             activity.PjtSystemNo = GetStringOrDefault(reader, "PjtSystemNo");
-            activity.SystemNO = GetStringOrDefault(reader, "SystemNO");
             activity.TagNO = GetStringOrDefault(reader, "TagNO");
             activity.UDF1 = GetStringOrDefault(reader, "UDF1");
             activity.UDF2 = GetStringOrDefault(reader, "UDF2");

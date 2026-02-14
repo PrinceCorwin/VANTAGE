@@ -28,7 +28,7 @@ namespace VANTAGE.Views
             "LineNumber", "MtrlSpec", "Notes", "PaintCode", "PhaseCategory", "PhaseCode",
             "PipeGrade", "PjtSystem", "PjtSystemNo", "ProjectID", "RFINO", "RespParty",
             "RevNO", "SchedActNO", "SecondActno", "SecondDwgNO", "Service", "ShopField",
-            "ShtNO", "SubArea", "SystemNO", "TagNO", "UDF1", "UDF10", "UDF11", "UDF12",
+            "ShtNO", "SubArea", "TagNO", "UDF1", "UDF10", "UDF11", "UDF12",
             "UDF13", "UDF14", "UDF15", "UDF16", "UDF17", "UDF2", "UDF20", "UDF3", "UDF4",
             "UDF5", "UDF6", "UDF8", "UDF9", "WorkPackage"
         };

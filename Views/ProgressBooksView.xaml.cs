@@ -32,7 +32,7 @@ namespace VANTAGE.Views
 
         // Available fields for grouping and columns
         private List<string> _allFields = new();
-        private List<string> _commonFields = new() { "PhaseCode", "Area", "SubArea", "SystemNO", "WorkPackage", "TagNO" };
+        private List<string> _commonFields = new() { "PhaseCode", "Area", "SubArea", "PjtSystemNo", "WorkPackage", "TagNO" };
 
         // Flag to prevent recursive updates
         private bool _isLoading;
@@ -109,7 +109,7 @@ namespace VANTAGE.Views
                 "EqmtNO", "HtTrace", "InsulType", "LineNumber", "MtrlSpec", "Notes",
                 "PaintCode", "PhaseCategory", "PhaseCode", "PipeGrade", "ProjectID",
                 "RespParty", "RevNO", "RFINO", "ROCStep", "SchedActNO", "SecondDwgNO",
-                "Service", "ShopField", "ShtNO", "SubArea", "PjtSystem", "PjtSystemNo", "SystemNO",
+                "Service", "ShopField", "ShtNO", "SubArea", "PjtSystem", "PjtSystemNo",
                 "TagNO", "UDF1", "UDF2", "UDF3", "UDF4", "UDF5", "UDF6", "UDF7",
                 "UDF8", "UDF9", "UDF10", "UniqueID", "WorkPackage"
             };

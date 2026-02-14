@@ -7,6 +7,7 @@ This document tracks completed features and fixes. Items are moved here from Pro
 ## Unreleased
 
 ### February 14, 2026
+- **Remove orphaned SystemNO column, keep PjtSystemNo:** Removed `SystemNO` from the entire codebase (17 files). `PjtSystemNo` was the intended replacement (renamed to avoid SQL reserved word "System") but the migration was never completed. Added schema migration v4 that copies any existing SystemNO data into PjtSystemNo before dropping the column. Updated all models, repositories, views, utilities, dialogs, help manual, and column reference doc.
 - **Help manual column mapping table fixes:** Fixed RespParty Azure column (was "RespParty", corrected to "UDF18"). Renamed table header from "Milestone (App)" to "Vantage: MS (App)". Fixed SystemNO Azure column (was "Tag_SystemNo", corrected to "Not Used"). Re-sorted all 97 rows alphabetically by app column name. Added click-to-sort on all three column headers (ascending/descending toggle with arrow indicators).
 
 ### February 12, 2026
