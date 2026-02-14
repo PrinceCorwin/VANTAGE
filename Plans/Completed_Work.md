@@ -7,6 +7,9 @@ This document tracks completed features and fixes. Items are moved here from Pro
 ## Unreleased
 
 ### February 14, 2026
+- **Add Blank Row context menu:** New "Add Blank Row" option in Progress grid right-click menu. Creates an empty activity with system fields prepopulated (UniqueID, AssignedTo, Quantity/BudgetMHs defaults to avoid div/0). Clears filters/sorts and scrolls to the new row. Required field cells highlighted red, metadata error count updates immediately.
+- **Fix delete for local-only rows:** Non-admin users can now delete locally-created rows that haven't synced to Azure yet. Previously failed because ownership check queried Azure which returned null for unsynced rows. Azure soft-delete now only targets records that exist there.
+- **Drop SystemNO from Azure VMS_Activities:** Removed orphaned SystemNO column from the Azure table (constraint + column). Fixes sync pull failure ("table Activities has no column named SystemNO") caused by SELECT * returning the removed column.
 - **Remove orphaned SystemNO column, keep PjtSystemNo:** Removed `SystemNO` from the entire codebase (17 files). `PjtSystemNo` was the intended replacement (renamed to avoid SQL reserved word "System") but the migration was never completed. Added schema migration v4 that copies any existing SystemNO data into PjtSystemNo before dropping the column. Updated all models, repositories, views, utilities, dialogs, help manual, and column reference doc.
 - **Help manual column mapping table fixes:** Fixed RespParty Azure column (was "RespParty", corrected to "UDF18"). Renamed table header from "Milestone (App)" to "Vantage: MS (App)". Fixed SystemNO Azure column (was "Tag_SystemNo", corrected to "Not Used"). Re-sorted all 97 rows alphabetically by app column name. Added click-to-sort on all three column headers (ascending/descending toggle with arrow indicators).
 

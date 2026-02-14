@@ -51,7 +51,8 @@
       "Bash(git pull:*)",
       "Bash(git branch:*)",
       "Bash(git check-ignore:*)",
-      "Bash(where gh:*)"
+      "Bash(where gh:*)",
+      "Bash(git status:*)"
     ]
   }
 }

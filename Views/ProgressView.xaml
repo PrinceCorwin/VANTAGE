@@ -821,6 +821,17 @@
                                 </MenuItem.Icon>
                             </MenuItem>
 
+                            <!-- Add Blank Row -->
+                            <MenuItem Header="Add Blank Row"
+                                      Click="MenuAddBlankRow_Click"
+                                      Background="{StaticResource ControlBackground}"
+                                      Foreground="{StaticResource ForegroundColor}"
+                                      ToolTip="Create a new blank activity row assigned to you">
+                                <MenuItem.Icon>
+                                    <TextBlock Text="📝" FontSize="14"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+
                             <!-- Placeholder 3 -->
                             <MenuItem Header="Export Selected"
                                       Click="MenuExportSelected_Click"

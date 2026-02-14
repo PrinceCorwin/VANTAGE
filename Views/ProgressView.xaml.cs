@@ -1,6 +1,7 @@
 ﻿using Microsoft.Data.Sqlite;
 using Syncfusion.Data;
 using Syncfusion.UI.Xaml.Grid;
+using Syncfusion.UI.Xaml.ScrollAxis;
 using Syncfusion.Windows.Tools.Controls;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -87,11 +88,12 @@ namespace VANTAGE.Views
                     return;
                 }
 
-                // Verify ownership in Azure for each record
+                // Verify ownership for each record (Azure if exists, local if not)
                 using var azureConn = AzureDbManager.GetConnection();
                 azureConn.Open();
 
                 var ownedRecords = new List<Activity>();
+                var localOnlyRecords = new HashSet<string>(); // Records not yet in Azure
                 var deniedRecords = new List<string>();
 
                 foreach (var activity in selected)
@@ -101,7 +103,20 @@ namespace VANTAGE.Views
                     checkCmd.Parameters.AddWithValue("@id", activity.UniqueID);
                     var azureOwner = checkCmd.ExecuteScalar()?.ToString();
 
-                    if (isAdmin || string.Equals(azureOwner, currentUser?.Username, StringComparison.OrdinalIgnoreCase))
+                    if (azureOwner == null)
+                    {
+                        // Record doesn't exist in Azure yet — check local ownership
+                        if (isAdmin || string.Equals(activity.AssignedTo, currentUser?.Username, StringComparison.OrdinalIgnoreCase))
+                        {
+                            ownedRecords.Add(activity);
+                            localOnlyRecords.Add(activity.UniqueID);
+                        }
+                        else
+                        {
+                            deniedRecords.Add(activity.UniqueID);
+                        }
+                    }
+                    else if (isAdmin || string.Equals(azureOwner, currentUser?.Username, StringComparison.OrdinalIgnoreCase))
                     {
                         ownedRecords.Add(activity);
                     }
@@ -151,17 +166,23 @@ namespace VANTAGE.Views
                 deleteLocalCmd.CommandText = $"DELETE FROM Activities WHERE UniqueID IN ({uniqueIdList})";
                 int localDeleted = deleteLocalCmd.ExecuteNonQuery();
 
-                // Set IsDeleted=1 in Azure (SyncVersion auto-increments via trigger)
-                var deleteAzureCmd = azureConn.CreateCommand();
-                deleteAzureCmd.CommandText = $@"
+                // Soft-delete in Azure only for records that exist there
+                int azureDeleted = 0;
+                var azureIds = uniqueIds.Where(id => !localOnlyRecords.Contains(id)).ToList();
+                if (azureIds.Count > 0)
+                {
+                    string azureIdList = string.Join(",", azureIds.Select(id => $"'{id}'"));
+                    var deleteAzureCmd = azureConn.CreateCommand();
+                    deleteAzureCmd.CommandText = $@"
                         UPDATE VMS_Activities
                         SET IsDeleted = 1,
                             UpdatedBy = @user,
                             UpdatedUtcDate = @date
-                        WHERE UniqueID IN ({uniqueIdList})";
-                deleteAzureCmd.Parameters.AddWithValue("@user", currentUser?.Username ?? "Unknown");
-                deleteAzureCmd.Parameters.AddWithValue("@date", DateTime.UtcNow.ToString("o"));
-                int azureDeleted = deleteAzureCmd.ExecuteNonQuery();
+                        WHERE UniqueID IN ({azureIdList})";
+                    deleteAzureCmd.Parameters.AddWithValue("@user", currentUser?.Username ?? "Unknown");
+                    deleteAzureCmd.Parameters.AddWithValue("@date", DateTime.UtcNow.ToString("o"));
+                    azureDeleted = deleteAzureCmd.ExecuteNonQuery();
+                }
 
                 azureConn.Close();
 
@@ -691,6 +712,208 @@ namespace VANTAGE.Views
             {
                 AppLogger.Error(ex, "Duplicate Rows", App.CurrentUser?.Username ?? "Unknown");
                 MessageBox.Show($"Duplication failed: {ex.Message}", "Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        // Adds a blank activity row with only system fields populated
+        private async void MenuAddBlankRow_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var currentUser = App.CurrentUser?.Username ?? "Unknown";
+                var timestamp = DateTime.Now.ToString("yyMMddHHmmss");
+                var userSuffix = App.CurrentUser?.Username?.Length >= 3
+                    ? App.CurrentUser.Username.Substring(App.CurrentUser.Username.Length - 3).ToLower()
+                    : "usr";
+                var uniqueId = $"i{timestamp}1{userSuffix}";
+
+                var newActivity = new Activity();
+                newActivity.BeginInit();
+                newActivity.UniqueID = uniqueId;
+                newActivity.ActivityID = 0;
+                newActivity.AssignedTo = currentUser;
+                newActivity.LocalDirty = 1;
+                newActivity.CreatedBy = currentUser;
+                newActivity.UpdatedBy = currentUser;
+                newActivity.UpdatedUtcDate = DateTime.UtcNow;
+                newActivity.SyncVersion = 0;
+                newActivity.Quantity = 0.001;
+                newActivity.BudgetMHs = 0.001;
+                newActivity.EndInit();
+
+                using var connection = DatabaseSetup.GetConnection();
+                connection.Open();
+
+                var cmd = connection.CreateCommand();
+                cmd.CommandText = @"
+                    INSERT INTO Activities (
+                        UniqueID, ActivityID, Area, AssignedTo, AzureUploadUtcDate, Aux1, Aux2, Aux3,
+                        BaseUnit, BudgetHoursGroup, BudgetHoursROC, BudgetMHs, ChgOrdNO, ClientBudget,
+                        ClientCustom3, ClientEquivQty, CompType, CreatedBy, DateTrigger, Description,
+                        DwgNO, EarnQtyEntry, EarnedMHsRoc, EqmtNO, EquivQTY, EquivUOM, Estimator,
+                        HexNO, HtTrace, InsulType, LineNumber, LocalDirty, MtrlSpec, Notes, PaintCode,
+                        PercentEntry, PhaseCategory, PhaseCode, PipeGrade, PipeSize1, PipeSize2,
+                        PrevEarnMHs, PrevEarnQTY, ProgDate, ProjectID, Quantity, RevNO, RFINO,
+                        ROCBudgetQTY, ROCID, ROCPercent, ROCStep, SchedActNO, ActFin, ActStart,
+                        SecondActno, SecondDwgNO, Service, ShopField, ShtNO, SubArea, PjtSystem, PjtSystemNo,
+                        TagNO, UDF1, UDF2, UDF3, UDF4, UDF5, UDF6, UDF7, UDF8, UDF9,
+                        UDF10, UDF11, UDF12, UDF13, UDF14, UDF15, UDF16, UDF17, RespParty, UDF20,
+                        UpdatedBy, UpdatedUtcDate, UOM, WeekEndDate, WorkPackage, XRay, SyncVersion
+                    ) VALUES (
+                        @UniqueID, @ActivityID, @Area, @AssignedTo, @AzureUploadUtcDate, @Aux1, @Aux2, @Aux3,
+                        @BaseUnit, @BudgetHoursGroup, @BudgetHoursROC, @BudgetMHs, @ChgOrdNO, @ClientBudget,
+                        @ClientCustom3, @ClientEquivQty, @CompType, @CreatedBy, @DateTrigger, @Description,
+                        @DwgNO, @EarnQtyEntry, @EarnedMHsRoc, @EqmtNO, @EquivQTY, @EquivUOM, @Estimator,
+                        @HexNO, @HtTrace, @InsulType, @LineNumber, @LocalDirty, @MtrlSpec, @Notes, @PaintCode,
+                        @PercentEntry, @PhaseCategory, @PhaseCode, @PipeGrade, @PipeSize1, @PipeSize2,
+                        @PrevEarnMHs, @PrevEarnQTY, @ProgDate, @ProjectID, @Quantity, @RevNO, @RFINO,
+                        @ROCBudgetQTY, @ROCID, @ROCPercent, @ROCStep, @SchedActNO, @ActFin, @ActStart,
+                        @SecondActno, @SecondDwgNO, @Service, @ShopField, @ShtNO, @SubArea, @PjtSystem, @PjtSystemNo,
+                        @TagNO, @UDF1, @UDF2, @UDF3, @UDF4, @UDF5, @UDF6, @UDF7, @UDF8, @UDF9,
+                        @UDF10, @UDF11, @UDF12, @UDF13, @UDF14, @UDF15, @UDF16, @UDF17, @RespParty, @UDF20,
+                        @UpdatedBy, @UpdatedUtcDate, @UOM, @WeekEndDate, @WorkPackage, @XRay, @SyncVersion
+                    )";
+
+                cmd.Parameters.AddWithValue("@UniqueID", newActivity.UniqueID);
+                cmd.Parameters.AddWithValue("@ActivityID", 0);
+                cmd.Parameters.AddWithValue("@Area", "");
+                cmd.Parameters.AddWithValue("@AssignedTo", currentUser);
+                cmd.Parameters.AddWithValue("@AzureUploadUtcDate", "");
+                cmd.Parameters.AddWithValue("@Aux1", "");
+                cmd.Parameters.AddWithValue("@Aux2", "");
+                cmd.Parameters.AddWithValue("@Aux3", "");
+                cmd.Parameters.AddWithValue("@BaseUnit", 0.0);
+                cmd.Parameters.AddWithValue("@BudgetHoursGroup", 0.0);
+                cmd.Parameters.AddWithValue("@BudgetHoursROC", 0.0);
+                cmd.Parameters.AddWithValue("@BudgetMHs", 0.001);
+                cmd.Parameters.AddWithValue("@ChgOrdNO", "");
+                cmd.Parameters.AddWithValue("@ClientBudget", 0.0);
+                cmd.Parameters.AddWithValue("@ClientCustom3", 0.0);
+                cmd.Parameters.AddWithValue("@ClientEquivQty", 0.0);
+                cmd.Parameters.AddWithValue("@CompType", "");
+                cmd.Parameters.AddWithValue("@CreatedBy", currentUser);
+                cmd.Parameters.AddWithValue("@DateTrigger", 0);
+                cmd.Parameters.AddWithValue("@Description", "");
+                cmd.Parameters.AddWithValue("@DwgNO", "");
+                cmd.Parameters.AddWithValue("@EarnQtyEntry", 0.0);
+                cmd.Parameters.AddWithValue("@EarnedMHsRoc", 0.0);
+                cmd.Parameters.AddWithValue("@EqmtNO", "");
+                cmd.Parameters.AddWithValue("@EquivQTY", 0.0);
+                cmd.Parameters.AddWithValue("@EquivUOM", "");
+                cmd.Parameters.AddWithValue("@Estimator", "");
+                cmd.Parameters.AddWithValue("@HexNO", 0);
+                cmd.Parameters.AddWithValue("@HtTrace", "");
+                cmd.Parameters.AddWithValue("@InsulType", "");
+                cmd.Parameters.AddWithValue("@LineNumber", "");
+                cmd.Parameters.AddWithValue("@LocalDirty", 1);
+                cmd.Parameters.AddWithValue("@MtrlSpec", "");
+                cmd.Parameters.AddWithValue("@Notes", "");
+                cmd.Parameters.AddWithValue("@PaintCode", "");
+                cmd.Parameters.AddWithValue("@PercentEntry", 0.0);
+                cmd.Parameters.AddWithValue("@PhaseCategory", "");
+                cmd.Parameters.AddWithValue("@PhaseCode", "");
+                cmd.Parameters.AddWithValue("@PipeGrade", "");
+                cmd.Parameters.AddWithValue("@PipeSize1", 0.0);
+                cmd.Parameters.AddWithValue("@PipeSize2", 0.0);
+                cmd.Parameters.AddWithValue("@PrevEarnMHs", 0.0);
+                cmd.Parameters.AddWithValue("@PrevEarnQTY", 0.0);
+                cmd.Parameters.AddWithValue("@ProgDate", "");
+                cmd.Parameters.AddWithValue("@ProjectID", "");
+                cmd.Parameters.AddWithValue("@Quantity", 0.001);
+                cmd.Parameters.AddWithValue("@RevNO", "");
+                cmd.Parameters.AddWithValue("@RFINO", "");
+                cmd.Parameters.AddWithValue("@ROCBudgetQTY", 0.0);
+                cmd.Parameters.AddWithValue("@ROCID", 0.0);
+                cmd.Parameters.AddWithValue("@ROCPercent", 0.0);
+                cmd.Parameters.AddWithValue("@ROCStep", "");
+                cmd.Parameters.AddWithValue("@SchedActNO", "");
+                cmd.Parameters.AddWithValue("@ActFin", "");
+                cmd.Parameters.AddWithValue("@ActStart", "");
+                cmd.Parameters.AddWithValue("@SecondActno", "");
+                cmd.Parameters.AddWithValue("@SecondDwgNO", "");
+                cmd.Parameters.AddWithValue("@Service", "");
+                cmd.Parameters.AddWithValue("@ShopField", "");
+                cmd.Parameters.AddWithValue("@ShtNO", "");
+                cmd.Parameters.AddWithValue("@SubArea", "");
+                cmd.Parameters.AddWithValue("@PjtSystem", "");
+                cmd.Parameters.AddWithValue("@PjtSystemNo", "");
+                cmd.Parameters.AddWithValue("@TagNO", "");
+                cmd.Parameters.AddWithValue("@UDF1", "");
+                cmd.Parameters.AddWithValue("@UDF2", "");
+                cmd.Parameters.AddWithValue("@UDF3", "");
+                cmd.Parameters.AddWithValue("@UDF4", "");
+                cmd.Parameters.AddWithValue("@UDF5", "");
+                cmd.Parameters.AddWithValue("@UDF6", "");
+                cmd.Parameters.AddWithValue("@UDF7", 0);
+                cmd.Parameters.AddWithValue("@UDF8", "");
+                cmd.Parameters.AddWithValue("@UDF9", "");
+                cmd.Parameters.AddWithValue("@UDF10", "");
+                cmd.Parameters.AddWithValue("@UDF11", "");
+                cmd.Parameters.AddWithValue("@UDF12", "");
+                cmd.Parameters.AddWithValue("@UDF13", "");
+                cmd.Parameters.AddWithValue("@UDF14", "");
+                cmd.Parameters.AddWithValue("@UDF15", "");
+                cmd.Parameters.AddWithValue("@UDF16", "");
+                cmd.Parameters.AddWithValue("@UDF17", "");
+                cmd.Parameters.AddWithValue("@RespParty", "");
+                cmd.Parameters.AddWithValue("@UDF20", "");
+                cmd.Parameters.AddWithValue("@UpdatedBy", currentUser);
+                cmd.Parameters.AddWithValue("@UpdatedUtcDate", DateTime.UtcNow.ToString("o"));
+                cmd.Parameters.AddWithValue("@UOM", "");
+                cmd.Parameters.AddWithValue("@WeekEndDate", "");
+                cmd.Parameters.AddWithValue("@WorkPackage", "");
+                cmd.Parameters.AddWithValue("@XRay", 0.0);
+                cmd.Parameters.AddWithValue("@SyncVersion", 0);
+
+                cmd.ExecuteNonQuery();
+
+                AppLogger.Info($"Added blank row {uniqueId}", "ProgressView.MenuAddBlankRow_Click", currentUser);
+
+                // Clear filters and sorts so the new row is visible at the bottom
+                await _viewModel.ClearAllFiltersAsync();
+                _globalSearchText = string.Empty;
+                txtGlobalSearch.Text = string.Empty;
+                sfActivities.View.Filter = null;
+                _scanResultsFilterActive = false;
+                _metadataErrorsFilterActive = false;
+                sfActivities.ClearFilters();
+                sfActivities.View.RefreshFilter();
+
+                // Reset filter button visuals
+                btnFilterComplete.BorderBrush = (Brush)Application.Current.Resources["ControlBorder"];
+                btnFilterInProgress.BorderBrush = (Brush)Application.Current.Resources["ControlBorder"];
+                btnFilterNotStarted.BorderBrush = (Brush)Application.Current.Resources["ControlBorder"];
+                btnFilterLocalDirty.BorderBrush = (Brush)Application.Current.Resources["ControlBorder"];
+                btnFilterMyRecords.BorderBrush = (Brush)Application.Current.Resources["ControlBorder"];
+                btnFilterToday.BorderBrush = (Brush)Application.Current.Resources["ControlBorder"];
+                _activeUserFilter = null;
+                txtUserFilterName.Text = "USER";
+                btnUserFilters.BorderBrush = (Brush)Application.Current.Resources["ControlBorder"];
+                UpdateClearFiltersBorder();
+
+                // Clear sorts
+                sfActivities.SortColumnDescriptions.Clear();
+
+                // Refresh grid to load the new row
+                await _viewModel.RefreshAsync();
+                UpdateRecordCount();
+                UpdateSummaryPanel();
+                await CalculateMetadataErrorCount();
+
+                // Scroll to bottom and select the new row
+                if (sfActivities.View?.Records?.Count > 0)
+                {
+                    var lastRecordIndex = sfActivities.View.Records.Count - 1;
+                    sfActivities.SelectedItem = sfActivities.View.Records[lastRecordIndex].Data;
+                    var gridRowIndex = sfActivities.ResolveToRowIndex(lastRecordIndex);
+                    sfActivities.ScrollInView(new RowColumnIndex(gridRowIndex, sfActivities.ResolveToScrollColumnIndex(0)));
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "ProgressView.MenuAddBlankRow_Click");
+                MessageBox.Show($"Failed to add blank row: {ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
