@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.1.15",
-  "releaseDate": "2026-02-14T09:23:22Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.15/VANTAGE-26.1.15.zip",
-  "zipSizeBytes": 149140305,
-  "sha256": "7BA1D401D5EE0E9B80C29B6C04272C42045DC7412C205A311C22B35301755286",
-  "releaseNotes": "Add Blank Row, fix delete for local-only rows, fix sync pull SystemNO error"
+  "currentVersion": "26.1.16",
+  "releaseDate": "2026-02-14T16:18:46Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.16/VANTAGE-26.1.16.zip",
+  "zipSizeBytes": 149139030,
+  "sha256": "02E80A2DD5F10C2CB6C07047A1F7E5073455DD0D4029ADCEFE20E02649AEC049",
+  "releaseNotes": "Fix layout save bugs, simplify template management, remove dialog sounds"
 }
