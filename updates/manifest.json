@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.1.14",
-  "releaseDate": "2026-02-12T14:52:39Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.14/VANTAGE-26.1.14.zip",
-  "zipSizeBytes": 149083606,
-  "sha256": "A5C94F2F1FEA61A7EEF0FDE03D12C476A705A3509DFC57662F01F4FD0E4E8B79",
-  "releaseNotes": "Submit Week snapshots from local data — faster submits, supports historical backups"
+  "currentVersion": "26.1.15",
+  "releaseDate": "2026-02-14T09:23:22Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.15/VANTAGE-26.1.15.zip",
+  "zipSizeBytes": 149140305,
+  "sha256": "7BA1D401D5EE0E9B80C29B6C04272C42045DC7412C205A311C22B35301755286",
+  "releaseNotes": "Add Blank Row, fix delete for local-only rows, fix sync pull SystemNO error"
 }

@@ -1,6 +1,15 @@
 {
   "releases": [
     {
+      "version": "26.1.15",
+      "date": "2026-02-14",
+      "highlights": [
+        "Add Blank Row in Progress grid right-click menu — create new activity rows directly",
+        "Fix delete for locally-created rows not yet synced to Azure",
+        "Fix sync pull failure caused by removed SystemNO column"
+      ]
+    },
+    {
       "version": "26.1.14",
       "date": "2026-02-12",
       "highlights": [

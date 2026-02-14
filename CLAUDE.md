@@ -87,8 +87,8 @@ Updates are distributed via GitHub Releases. The auto-updater checks `updates/ma
 7. Commit and push the manifest update
 
 ### GitHub Release Title Convention
-Use a brief description of the main changes (not the version number as the title).
-Examples: "P6 import: flexible column header matching", "Analysis module UI polish"
+Always use the format: `VANTAGE: Milestone vX.Y.Z` — the title is the version, NOT a description.
+The description/body of the release contains the change details.
 
 ## C# Code Conventions
 
