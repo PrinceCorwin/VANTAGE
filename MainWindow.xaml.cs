@@ -104,7 +104,7 @@ namespace VANTAGE
                 $"© {DateTime.Now.Year} Summit Industrial",
                 "About Vantage: Milestone",
                 MessageBoxButton.OK,
-                MessageBoxImage.Information);
+                MessageBoxImage.None);
         }
 
         private void MenuReleaseNotes_Click(object sender, RoutedEventArgs e)
@@ -417,7 +417,7 @@ namespace VANTAGE
 
         private void BtnCreate_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("CREATE module coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show("CREATE module coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.None);
         }
 
         private async void ImportP6File_Click(object sender, RoutedEventArgs e)
@@ -461,7 +461,7 @@ namespace VANTAGE
                         $"Projects: {string.Join(", ", p6Dialog.SelectedProjectIDs)}",
                         "Import Complete",
                         MessageBoxButton.OK,
-                        MessageBoxImage.Information);
+                        MessageBoxImage.None);
                     // Refresh Schedule view if currently active
                     if (ContentArea.Content is VANTAGE.Views.ScheduleView scheduleView)
                     {
@@ -496,7 +496,7 @@ namespace VANTAGE
                         "Please navigate to the Schedule module first.",
                         "Export to P6",
                         MessageBoxButton.OK,
-                        MessageBoxImage.Information);
+                        MessageBoxImage.None);
                     return;
                 }
 
@@ -518,7 +518,7 @@ namespace VANTAGE
                         "You have unsaved changes that must be saved before exporting.\n\nSave now and continue with export?",
                         "Save Required",
                         MessageBoxButton.OKCancel,
-                        MessageBoxImage.Information);
+                        MessageBoxImage.None);
 
                     if (saveResult == MessageBoxResult.Cancel)
                         return;
@@ -620,7 +620,7 @@ namespace VANTAGE
                         $"Schedule Reports:\n{reportsFilePath}",
                         "Export Complete",
                         MessageBoxButton.OK,
-                        MessageBoxImage.Information);
+                        MessageBoxImage.None);
                 }
                 catch
                 {
@@ -692,7 +692,7 @@ namespace VANTAGE
                             $"Successfully imported {imported} activities.\n\nAll previous data has been replaced.",
                             "Import Complete",
                             MessageBoxButton.OK,
-                            MessageBoxImage.Information
+                            MessageBoxImage.None
                         );
 
                         // Refresh the view if we're on Progress module
@@ -758,7 +758,7 @@ namespace VANTAGE
                         $"Successfully imported {imported} new activities.\n\nExisting activities were preserved (duplicates skipped).",
                         "Import Complete",
                         MessageBoxButton.OK,
-                        MessageBoxImage.Information
+                        MessageBoxImage.None
                     );
 
                     // Refresh the view if we're on Progress module
@@ -804,7 +804,7 @@ namespace VANTAGE
                 var allActivities = viewModel.Activities?.ToList();
                 if (allActivities == null || allActivities.Count == 0)
                 {
-                    MessageBox.Show("No activities to export.", "Export", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show("No activities to export.", "Export", MessageBoxButton.OK, MessageBoxImage.None);
                     return;
                 }
 
@@ -884,7 +884,7 @@ namespace VANTAGE
                 var allActivities = viewModel.Activities?.ToList();
                 if (allActivities == null || allActivities.Count == 0)
                 {
-                    MessageBox.Show("No activities to export.", "Export", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show("No activities to export.", "Export", MessageBoxButton.OK, MessageBoxImage.None);
                     return;
                 }
 
@@ -981,7 +981,7 @@ namespace VANTAGE
 
                 if (users.Count == 0)
                 {
-                    MessageBox.Show("No users found in database.", "No Users", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show("No users found in database.", "No Users", MessageBoxButton.OK, MessageBoxImage.None);
                     return;
                 }
 
@@ -1074,7 +1074,7 @@ namespace VANTAGE
                                 toggleCmd.Parameters.AddWithValue("@username", selectedUser.Username);
                                 toggleCmd.ExecuteNonQuery();
                                 action = "revoked";
-                                MessageBox.Show($"Admin revoked from {selectedUser.Username}", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                                MessageBox.Show($"Admin revoked from {selectedUser.Username}", "Success", MessageBoxButton.OK, MessageBoxImage.None);
                             }
                             else
                             {
@@ -1084,7 +1084,7 @@ namespace VANTAGE
                                 toggleCmd.Parameters.AddWithValue("@fullname", selectedUser.FullName);
                                 toggleCmd.ExecuteNonQuery();
                                 action = "granted";
-                                MessageBox.Show($"Admin granted to {selectedUser.Username}", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                                MessageBox.Show($"Admin granted to {selectedUser.Username}", "Success", MessageBoxButton.OK, MessageBoxImage.None);
                             }
 
                             // Send email notification to the target user
@@ -1414,7 +1414,7 @@ namespace VANTAGE
                     "Sync to restore data from Azure.",
                     "Clear Complete",
                     MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                    MessageBoxImage.None);
             }
             catch (Exception ex)
             {
@@ -1493,7 +1493,7 @@ namespace VANTAGE
                     "Import a new P6 file to reload.",
                     "Clear Complete",
                     MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                    MessageBoxImage.None);
             }
             catch (Exception ex)
             {
@@ -1512,7 +1512,7 @@ namespace VANTAGE
                 if (settings.Count == 0)
                 {
                     MessageBox.Show("No settings to export.", "Export Settings",
-                        MessageBoxButton.OK, MessageBoxImage.Information);
+                        MessageBoxButton.OK, MessageBoxImage.None);
                     return;
                 }
 
@@ -1542,7 +1542,7 @@ namespace VANTAGE
                         "MainWindow.MenuExportSettings_Click", App.CurrentUser?.Username ?? "Unknown");
 
                     MessageBox.Show($"Exported {settings.Count} settings successfully.",
-                        "Export Settings", MessageBoxButton.OK, MessageBoxImage.Information);
+                        "Export Settings", MessageBoxButton.OK, MessageBoxImage.None);
                 }
             }
             catch (Exception ex)
@@ -1607,7 +1607,7 @@ namespace VANTAGE
                     $"Imported {imported} settings.\n\nSettings applied to current view.",
                     "Import Settings",
                     MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                    MessageBoxImage.None);
             }
             catch (System.Text.Json.JsonException)
             {
@@ -1854,7 +1854,7 @@ namespace VANTAGE
             if (ContentArea.Content is not Views.ProgressView progressView)
             {
                 MessageBox.Show("Prorate MHs is only available in the Progress view.",
-                    "Wrong View", MessageBoxButton.OK, MessageBoxImage.Information);
+                    "Wrong View", MessageBoxButton.OK, MessageBoxImage.None);
                 return;
             }
 
@@ -1863,7 +1863,7 @@ namespace VANTAGE
             if (filteredActivities.Count == 0)
             {
                 MessageBox.Show("No activities to prorate. Import or filter activities first.",
-                    "No Activities", MessageBoxButton.OK, MessageBoxImage.Information);
+                    "No Activities", MessageBoxButton.OK, MessageBoxImage.None);
                 return;
             }
 

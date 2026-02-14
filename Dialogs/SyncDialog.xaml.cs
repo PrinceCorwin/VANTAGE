@@ -274,7 +274,7 @@ namespace VANTAGE.Dialogs
                 AppLogger.Info($"Sync completed: {pushResult.PushedRecords} pushed, {pullResult.PulledRecords} pulled, {localRecordsRemoved} removed (MyRecordsOnly={myRecordsOnly})",
                     "SyncDialog.BtnConfirmSync_Click", App.CurrentUser?.Username);
 
-                MessageBox.Show(message, "Sync Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show(message, "Sync Complete", MessageBoxButton.OK, MessageBoxImage.None);
 
                 DialogResult = true;
                 Close();

@@ -110,7 +110,7 @@ namespace VANTAGE.Dialogs
             if (pnlConditions.Children.Count >= MaxConditions)
             {
                 MessageBox.Show($"Maximum of {MaxConditions} conditions allowed.", "Limit Reached",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBoxButton.OK, MessageBoxImage.None);
                 return;
             }
 
@@ -252,7 +252,7 @@ namespace VANTAGE.Dialogs
             if (lstFilters.SelectedIndex < 0)
             {
                 MessageBox.Show("Please select a filter to delete.", "No Selection",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBoxButton.OK, MessageBoxImage.None);
                 return;
             }
 
@@ -351,7 +351,7 @@ namespace VANTAGE.Dialogs
             if (savedIndex >= 0)
                 lstFilters.SelectedIndex = savedIndex;
 
-            MessageBox.Show("Filter saved.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show("Filter saved.", "Success", MessageBoxButton.OK, MessageBoxImage.None);
         }
 
         private void BtnClose_Click(object sender, RoutedEventArgs e)

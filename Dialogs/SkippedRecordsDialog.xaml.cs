@@ -36,7 +36,7 @@ namespace VANTAGE.Dialogs
                 $"Copied {_records.Count} records to clipboard.",
                 "Copied",
                 MessageBoxButton.OK,
-                MessageBoxImage.Information);
+                MessageBoxImage.None);
         }
 
         private void BtnClose_Click(object sender, RoutedEventArgs e)

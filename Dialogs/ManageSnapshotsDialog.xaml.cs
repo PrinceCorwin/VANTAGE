@@ -205,7 +205,7 @@ namespace VANTAGE.Dialogs
                     $"Successfully deleted {deletedTotal} snapshot(s).",
                     "Delete Complete",
                     MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                    MessageBoxImage.None);
 
                 DialogResult = true;
                 Close();
@@ -1092,7 +1092,7 @@ namespace VANTAGE.Dialogs
                 message += "\n\nWould you like to view the skipped records?";
 
                 var viewResult = MessageBox.Show(message, "Revert Complete",
-                    MessageBoxButton.YesNo, MessageBoxImage.Information);
+                    MessageBoxButton.YesNo, MessageBoxImage.None);
 
                 if (viewResult == MessageBoxResult.Yes)
                 {
@@ -1104,7 +1104,7 @@ namespace VANTAGE.Dialogs
             else
             {
                 MessageBox.Show(message, "Revert Complete",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBoxButton.OK, MessageBoxImage.None);
             }
         }
 

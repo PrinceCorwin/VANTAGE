@@ -265,7 +265,7 @@ namespace VANTAGE.Dialogs
                     $"• {result.existing:N0} batch(es) already tracked\n" +
                     $"• {result.Item3:N0} total batch(es) scanned\n\n" +
                     $"Elapsed: {elapsed}",
-                    "Refresh Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                    "Refresh Complete", MessageBoxButton.OK, MessageBoxImage.None);
 
                 await LoadUploadsAsync();
             }
@@ -386,7 +386,7 @@ namespace VANTAGE.Dialogs
                 {
                     MessageBox.Show(
                         $"Successfully deleted {result.totalDeleted:N0} record(s) from {selected.Count} batch(es).\n\nElapsed: {elapsed}",
-                        "Delete Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                        "Delete Complete", MessageBoxButton.OK, MessageBoxImage.None);
                 }
 
                 await LoadUploadsAsync();

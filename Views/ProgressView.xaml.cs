@@ -73,7 +73,7 @@ namespace VANTAGE.Views
                 if (selected == null || selected.Count == 0)
                 {
                     MessageBox.Show("Please select one or more records to delete.",
-                        "No Selection", MessageBoxButton.OK, MessageBoxImage.Information);
+                        "No Selection", MessageBoxButton.OK, MessageBoxImage.None);
                     return;
                 }
 
@@ -203,7 +203,7 @@ namespace VANTAGE.Views
                     $"{localDeleted} record(s) deleted successfully.",
                     "Delete Complete",
                     MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                    MessageBoxImage.None);
             }
             catch (Exception ex)
             {
@@ -304,7 +304,7 @@ namespace VANTAGE.Views
                 if (selected == null || selected.Count == 0)
                 {
                     MessageBox.Show("Please select one or more records to copy.",
-                        "No Selection", MessageBoxButton.OK, MessageBoxImage.Information);
+                        "No Selection", MessageBoxButton.OK, MessageBoxImage.None);
                     return;
                 }
 
@@ -375,7 +375,7 @@ namespace VANTAGE.Views
                 if (selected == null || selected.Count == 0)
                 {
                     MessageBox.Show("Please select one or more records to copy.",
-                        "No Selection", MessageBoxButton.OK, MessageBoxImage.Information);
+                        "No Selection", MessageBoxButton.OK, MessageBoxImage.None);
                     return;
                 }
 
@@ -439,7 +439,7 @@ namespace VANTAGE.Views
                 if (selected == null || selected.Count == 0)
                 {
                     MessageBox.Show("Please select one or more records to duplicate.",
-                        "No Selection", MessageBoxButton.OK, MessageBoxImage.Information);
+                        "No Selection", MessageBoxButton.OK, MessageBoxImage.None);
                     return;
                 }
 
@@ -698,7 +698,7 @@ namespace VANTAGE.Views
                     UpdateRecordCount();
 
                     MessageBox.Show($"Successfully duplicated {successCount} record(s).\n\nThe new records are assigned to you and marked for sync.",
-                        "Duplication Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                        "Duplication Complete", MessageBoxButton.OK, MessageBoxImage.None);
                 }
                 catch (Exception ex)
                 {
@@ -931,7 +931,7 @@ namespace VANTAGE.Views
                         "No records selected. Please select one or more rows to export.",
                         "Export Selected",
                         MessageBoxButton.OK,
-                        MessageBoxImage.Information);
+                        MessageBoxImage.None);
                     return;
                 }
 
@@ -1869,7 +1869,7 @@ namespace VANTAGE.Views
             if (selectedCount == 0)
             {
                 MessageBox.Show("Please select one or more records.",
-                    "No Selection", MessageBoxButton.OK, MessageBoxImage.Information);
+                    "No Selection", MessageBoxButton.OK, MessageBoxImage.None);
                 return;
             }
 
@@ -1927,7 +1927,7 @@ namespace VANTAGE.Views
                 "int");
 
             MessageBox.Show($"Button reset to {defaultValue}%", "Success",
-                MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBoxButton.OK, MessageBoxImage.None);
         }
 
 
@@ -1979,7 +1979,7 @@ namespace VANTAGE.Views
                 MessageBox.Show($"{buttonName} updated to {newPercent}%",
                     "Success",
                     MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                    MessageBoxImage.None);
             }
         }
 
@@ -2030,7 +2030,7 @@ namespace VANTAGE.Views
                 if (selectedCount == 0)
                 {
                     MessageBox.Show("Please select one or more records.",
-                        "No Selection", MessageBoxButton.OK, MessageBoxImage.Information);
+                        "No Selection", MessageBoxButton.OK, MessageBoxImage.None);
                     return;
                 }
 
@@ -2060,7 +2060,7 @@ namespace VANTAGE.Views
                 if (idsToUpdate.Count == 0)
                 {
                     MessageBox.Show("None of the selected records are assigned to you.",
-                        "No Editable Records", MessageBoxButton.OK, MessageBoxImage.Information);
+                        "No Editable Records", MessageBoxButton.OK, MessageBoxImage.None);
                     return;
                 }
 
@@ -2075,7 +2075,7 @@ namespace VANTAGE.Views
                 if (successCount > 0)
                 {
                     MessageBox.Show($"Set {successCount:N0} record(s) to {percent}%.",
-                        "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                        "Success", MessageBoxButton.OK, MessageBoxImage.None);
                 }
             }
             catch (Exception ex)
@@ -2607,7 +2607,7 @@ namespace VANTAGE.Views
                         "You have no activities assigned to submit.",
                         "No Activities",
                         MessageBoxButton.OK,
-                        MessageBoxImage.Information);
+                        MessageBoxImage.None);
                     return;
                 }
 
@@ -3329,7 +3329,7 @@ namespace VANTAGE.Views
                         msg += $"\n\n{skippedCount:N0} records were skipped (already existed in snapshots).";
                         msg += "\n\nWould you like to export the skipped records to Excel?";
 
-                        var exportResult = MessageBox.Show(msg, "Progress Submitted", MessageBoxButton.YesNo, MessageBoxImage.Information);
+                        var exportResult = MessageBox.Show(msg, "Progress Submitted", MessageBoxButton.YesNo, MessageBoxImage.None);
                         if (exportResult == MessageBoxResult.Yes)
                         {
                             ExportSkippedRecordsToExcel(skippedRecords, weekEndDateStr);
@@ -3338,11 +3338,11 @@ namespace VANTAGE.Views
                     else if (skippedCount > 0)
                     {
                         msg += $"\n\n{skippedCount:N0} records were skipped (already existed in snapshots).";
-                        MessageBox.Show(msg, "Progress Submitted", MessageBoxButton.OK, MessageBoxImage.Information);
+                        MessageBox.Show(msg, "Progress Submitted", MessageBoxButton.OK, MessageBoxImage.None);
                     }
                     else
                     {
-                        MessageBox.Show(msg, "Progress Submitted", MessageBoxButton.OK, MessageBoxImage.Information);
+                        MessageBox.Show(msg, "Progress Submitted", MessageBoxButton.OK, MessageBoxImage.None);
                     }
                 }
                 catch
@@ -3421,7 +3421,7 @@ namespace VANTAGE.Views
                 workbook.SaveAs(saveDialog.FileName);
 
                 MessageBox.Show($"Exported {skippedRecords.Count} skipped records to:\n\n{saveDialog.FileName}",
-                    "Export Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                    "Export Complete", MessageBoxButton.OK, MessageBoxImage.None);
             }
             catch (Exception ex)
             {
@@ -3553,7 +3553,7 @@ namespace VANTAGE.Views
                             $"Reassigned {totalReassigned} records to their respective owners.\n\nContinuing with sync...",
                             "Records Reassigned",
                             MessageBoxButton.OK,
-                            MessageBoxImage.Information);
+                            MessageBoxImage.None);
                     }
                     catch (Exception ex)
                     {
@@ -4459,7 +4459,7 @@ namespace VANTAGE.Views
 
                 if (visibleRecords == null || visibleRecords.Count == 0)
                 {
-                    MessageBox.Show("No visible records to copy.", "No Data", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show("No visible records to copy.", "No Data", MessageBoxButton.OK, MessageBoxImage.None);
                     return;
                 }
 
@@ -4722,7 +4722,7 @@ namespace VANTAGE.Views
             var selectedActivities = sfActivities.SelectedItems.Cast<Activity>().ToList();
             if (!selectedActivities.Any())
             {
-                MessageBox.Show("Please select one or more records to assign.", "No Selection", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Please select one or more records to assign.", "No Selection", MessageBoxButton.OK, MessageBoxImage.None);
                 return;
             }
 
@@ -4889,7 +4889,7 @@ namespace VANTAGE.Views
                     return;
 
                 MessageBox.Show("Please use the SYNC button to sync your changes first, then try reassignment again.",
-                    "Sync Required", MessageBoxButton.OK, MessageBoxImage.Information);
+                    "Sync Required", MessageBoxButton.OK, MessageBoxImage.None);
                 return;
             }
 
@@ -5220,7 +5220,7 @@ namespace VANTAGE.Views
                         successMessage,
                         "Success",
                         MessageBoxButton.OK,
-                        MessageBoxImage.Information);
+                        MessageBoxImage.None);
                 }
                 catch (Exception ex)
                 {

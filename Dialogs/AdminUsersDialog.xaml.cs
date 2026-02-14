@@ -181,7 +181,7 @@ namespace VANTAGE.Dialogs
                         "AdminUsersDialog.BtnSave_Click", App.CurrentUser?.Username);
 
                     MessageBox.Show($"User '{username}' added successfully.", "User Added",
-                        MessageBoxButton.OK, MessageBoxImage.Information);
+                        MessageBoxButton.OK, MessageBoxImage.None);
                 }
                 else
                 {
@@ -211,7 +211,7 @@ namespace VANTAGE.Dialogs
                         "AdminUsersDialog.BtnSave_Click", App.CurrentUser?.Username);
 
                     MessageBox.Show($"User '{username}' updated successfully.", "User Updated",
-                        MessageBoxButton.OK, MessageBoxImage.Information);
+                        MessageBoxButton.OK, MessageBoxImage.None);
                 }
 
                 // Refresh list view
@@ -288,7 +288,7 @@ namespace VANTAGE.Dialogs
                     "AdminUsersDialog.BtnDelete_Click", App.CurrentUser?.Username);
 
                 MessageBox.Show($"User '{username}' deleted successfully.", "User Deleted",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBoxButton.OK, MessageBoxImage.None);
 
                 lvUsers.Items.Refresh();
                 txtUserCount.Text = $"{_users.Count} user(s)";

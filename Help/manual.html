@@ -1507,10 +1507,9 @@
     <p>Layouts save all your editor settings so you can quickly regenerate books with the same configuration.</p>
     <ul>
         <li><strong>Layout dropdown</strong> — Select a previously saved layout to load its settings, or start fresh with the default</li>
-        <li><strong>Name</strong> — Give the layout a descriptive name (e.g., "Mod CB101-C")</li>
-        <li><strong>Clone</strong> — Create a copy of the current layout under a new name</li>
+        <li><strong>Name</strong> — Give the layout a descriptive name (e.g., "Mod CB101-C"). To create a copy, just change the name and save.</li>
         <li><strong>Delete</strong> — Remove the selected saved layout</li>
-        <li><strong>Save</strong> — Save the current settings to the layout name (at the bottom of the editor)</li>
+        <li><strong>Save</strong> — Save the current settings. If the name matches the loaded layout, it updates in place. If the name is different, a new layout is created.</li>
     </ul>
 
     <h4>Paper Size</h4>
@@ -1898,12 +1897,8 @@
             <td>Display name for this template</td>
         </tr>
         <tr>
-            <td><strong>Clone</strong></td>
-            <td>Create a copy of the current template</td>
-        </tr>
-        <tr>
             <td><strong>Delete</strong></td>
-            <td>Remove the template (cannot delete built-in templates)</td>
+            <td>Remove the template (built-in templates cannot be deleted)</td>
         </tr>
         <tr>
             <td><strong>Expiration Days</strong></td>
@@ -1950,10 +1945,10 @@
 
     <img src="wp-form-type-dialog.png" alt="Template type selection dialog" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
 
-    <p>Choose one of the four template types. A new template is created with default settings and the editor loads for that type. You can also <strong>Clone</strong> any existing template to use it as a starting point.</p>
+    <p>Choose one of the four template types. A new template is created with default settings and the editor loads for that type. You can also select any existing template, change the name, and save to create a copy.</p>
 
     <h4>Built-in Templates</h4>
-    <p>VANTAGE includes seven premade templates that cover a typical work package. These are read-only by default — to customize one, clone it or use <strong>Reset Defaults</strong> to revert your changes.</p>
+    <p>VANTAGE includes seven premade templates that cover a typical work package. Built-in templates cannot be overwritten or deleted — to customize one, change the name and save to create your own copy. Use <strong>Reset Defaults</strong> to revert a user-created template back to built-in settings.</p>
 
     <table>
         <tr>
@@ -2028,10 +2023,10 @@
     <p>All form types share these controls:</p>
     <ul>
         <li><strong>Form Template dropdown</strong> — Select a template to edit or "+ Add New"</li>
-        <li><strong>Template Name</strong> — Display name for this form</li>
-        <li><strong>Clone / Delete</strong> — Copy or remove the template</li>
-        <li><strong>Reset Defaults</strong> — Reset a template's structure back to a built-in default. Appears on user-created templates that were cloned from built-in templates.</li>
-        <li><strong>Save</strong> — Save changes to the database</li>
+        <li><strong>Template Name</strong> — Display name for this form. To create a copy, change the name and save.</li>
+        <li><strong>Delete</strong> — Remove the template (built-in templates cannot be deleted)</li>
+        <li><strong>Reset Defaults</strong> — Reset a template's structure back to a built-in default. Appears on user-created templates.</li>
+        <li><strong>Save</strong> — Save changes. If the name matches the loaded template, it updates in place. If the name is different, a new template is created.</li>
     </ul>
 
     <h4>Cover Form</h4>

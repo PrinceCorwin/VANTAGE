@@ -265,7 +265,7 @@ namespace VANTAGE.Dialogs
                     $"Elapsed: {stopwatch.Elapsed.TotalSeconds:F1} seconds",
                     "Upload Complete",
                     MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                    MessageBoxImage.None);
 
                 // Mark uploaded groups in the UI
                 foreach (var group in selectedGroups)
@@ -591,7 +591,7 @@ namespace VANTAGE.Dialogs
                     $"Successfully deleted {deletedTotal} snapshot(s).",
                     "Delete Complete",
                     MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                    MessageBoxImage.None);
 
                 // Reload the list
                 await LoadSnapshotsAsync();
@@ -655,7 +655,7 @@ namespace VANTAGE.Dialogs
                     $"Successfully deleted all {deletedTotal} snapshot(s).",
                     "Delete Complete",
                     MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                    MessageBoxImage.None);
 
                 // Reload the list
                 await LoadSnapshotsAsync();

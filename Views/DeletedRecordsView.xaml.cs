@@ -101,7 +101,7 @@ namespace VANTAGE.Views
                         "Please select at least one project to view deleted records.",
                         "No Projects Selected",
                         MessageBoxButton.OK,
-                        MessageBoxImage.Information);
+                        MessageBoxImage.None);
                     return;
                 }
 
@@ -227,7 +227,7 @@ namespace VANTAGE.Views
             if (!selectedActivities.Any())
             {
                 MessageBox.Show("Please select one or more records to restore.",
-                    "No Selection", MessageBoxButton.OK, MessageBoxImage.Information);
+                    "No Selection", MessageBoxButton.OK, MessageBoxImage.None);
                 return;
             }
 
@@ -276,7 +276,7 @@ namespace VANTAGE.Views
                 });
 
                 MessageBox.Show($"Successfully restored {restored} record(s).\n\nUsers will receive them on next sync.",
-                    "Restore Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                    "Restore Complete", MessageBoxButton.OK, MessageBoxImage.None);
 
                 AppLogger.Info($"Admin restored {restored} records", "DeletedRecordsView.BtnRestore_Click", App.CurrentUser?.Username);
 
@@ -304,7 +304,7 @@ namespace VANTAGE.Views
             if (!selectedActivities.Any())
             {
                 MessageBox.Show("Please select one or more records to purge.",
-                    "No Selection", MessageBoxButton.OK, MessageBoxImage.Information);
+                    "No Selection", MessageBoxButton.OK, MessageBoxImage.None);
                 return;
             }
 
@@ -359,7 +359,7 @@ namespace VANTAGE.Views
                 });
 
                 MessageBox.Show($"Permanently deleted {purged} record(s) from Azure database.",
-                    "Purge Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                    "Purge Complete", MessageBoxButton.OK, MessageBoxImage.None);
 
                 AppLogger.Warning($"Admin purged {purged} records permanently", "DeletedRecordsView.BtnPurge_Click", App.CurrentUser?.Username);
 
@@ -386,7 +386,7 @@ namespace VANTAGE.Views
                 if (_deletedActivities == null || _deletedActivities.Count == 0)
                 {
                     MessageBox.Show("No deleted records to export.", "Export Deleted Records",
-                        MessageBoxButton.OK, MessageBoxImage.Information);
+                        MessageBoxButton.OK, MessageBoxImage.None);
                     return;
                 }
 

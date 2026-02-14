@@ -38,7 +38,7 @@ namespace VANTAGE.Utilities
                         "No activities to export.",
                         "Export",
                         MessageBoxButton.OK,
-                        MessageBoxImage.Information);
+                        MessageBoxImage.None);
                     return;
                 }
 
@@ -90,7 +90,7 @@ namespace VANTAGE.Utilities
                     $"Successfully exported {activitiesToExport.Count:N0} activities to:\n\n{filePath}",
                     "Export Complete",
                     MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                    MessageBoxImage.None);
             }
             catch (Exception ex)
             {
@@ -115,7 +115,7 @@ namespace VANTAGE.Utilities
                         "No activities selected to export.",
                         "Export Selected",
                         MessageBoxButton.OK,
-                        MessageBoxImage.Information);
+                        MessageBoxImage.None);
                     return;
                 }
 
@@ -136,7 +136,7 @@ namespace VANTAGE.Utilities
                     $"Successfully exported {selectedActivities.Count:N0} selected activities to:\n\n{filePath}",
                     "Export Complete",
                     MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                    MessageBoxImage.None);
             }
             catch (Exception ex)
             {
@@ -161,7 +161,7 @@ namespace VANTAGE.Utilities
                         "No deleted records to export.",
                         "Export Deleted Records",
                         MessageBoxButton.OK,
-                        MessageBoxImage.Information);
+                        MessageBoxImage.None);
                     return;
                 }
 
@@ -182,7 +182,7 @@ namespace VANTAGE.Utilities
                     $"Successfully exported {deletedActivities.Count:N0} deleted records to:\n\n{filePath}",
                     "Export Complete",
                     MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                    MessageBoxImage.None);
             }
             catch (Exception ex)
             {
@@ -222,7 +222,7 @@ namespace VANTAGE.Utilities
                     $"Successfully exported template to:\n\n{filePath}",
                     "Export Complete",
                     MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                    MessageBoxImage.None);
             }
             catch (Exception ex)
             {

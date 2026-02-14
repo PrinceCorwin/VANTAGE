@@ -272,7 +272,7 @@ namespace VANTAGE.Views
                         $"PDF saved to:\n{saveDialog.FileName}\n\nOpen now?",
                         "PDF Saved",
                         MessageBoxButton.YesNo,
-                        MessageBoxImage.Information);
+                        MessageBoxImage.None);
 
                     if (result == MessageBoxResult.Yes)
                     {

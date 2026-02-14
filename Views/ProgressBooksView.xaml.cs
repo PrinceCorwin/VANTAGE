@@ -68,7 +68,7 @@ namespace VANTAGE.Views
                 InitializeFieldLists();
                 PopulateDropdowns();
                 await LoadSavedLayoutsAsync();
-                LoadDefaultConfiguration();
+                await LoadDefaultConfigurationAsync();
                 RestoreSplitterPosition();
             }
             finally
@@ -165,56 +165,66 @@ namespace VANTAGE.Views
             };
             items.AddRange(layouts.Select(l => new LayoutDropdownItem { Id = l.Id, Name = l.Name }));
 
+            _isLoading = true;
             cboSavedLayouts.ItemsSource = items;
             cboSavedLayouts.DisplayMemberPath = "Name";
             cboSavedLayouts.SelectedIndex = 0;
+            _isLoading = false;
 
             UpdateDeleteButtonState();
         }
 
         // Load default configuration for a new layout
-        private void LoadDefaultConfiguration()
+        private async System.Threading.Tasks.Task LoadDefaultConfigurationAsync()
         {
-            _currentLayout = null;
-            txtLayoutName.Text = DefaultLayoutName;
-            rbLetter.IsChecked = true;
-            sliderFontSize.Value = 8; // Default to 8pt for better scan accuracy
+            _isLoading = true;
+            try
+            {
+                _currentLayout = null;
+                txtLayoutName.Text = DefaultLayoutName;
+                rbLetter.IsChecked = true;
+                sliderFontSize.Value = 8; // Default to 8pt for better scan accuracy
 
-            // Default filter: WorkPackage
-            SetFilterColumnSelection("WorkPackage");
-            cboFilterValue.ItemsSource = null;
-            cboFilterValue.SelectedItem = null;
+                // Default filter: WorkPackage
+                SetFilterColumnSelection("WorkPackage");
+                cboFilterValue.ItemsSource = null;
+                cboFilterValue.SelectedItem = null;
 
-            // Default columns: ActivityID (short ID for scanning), ROC and Description
-            _columns.Clear();
-            _columns.Add(new ColumnDisplayItem { FieldName = "ActivityID", IsRequired = true });
-            _columns.Add(new ColumnDisplayItem { FieldName = "ROCStep", IsRequired = true });
-            _columns.Add(new ColumnDisplayItem { FieldName = "Description", IsRequired = true });
-            RefreshColumnsListBox();
+                // Default columns: ActivityID (short ID for scanning), ROC and Description
+                _columns.Clear();
+                _columns.Add(new ColumnDisplayItem { FieldName = "ActivityID", IsRequired = true });
+                _columns.Add(new ColumnDisplayItem { FieldName = "ROCStep", IsRequired = true });
+                _columns.Add(new ColumnDisplayItem { FieldName = "Description", IsRequired = true });
+                RefreshColumnsListBox();
 
-            // Default grouping: PhaseCode
-            _groups.Clear();
-            AddGroup("PhaseCode", canDelete: false);
-            RefreshGroups();
+                // Default grouping: PhaseCode
+                _groups.Clear();
+                AddGroup("PhaseCode", canDelete: false);
+                RefreshGroups();
 
-            // Default sort: ROCStep
-            _sortFields.Clear();
-            AddSortField("ROCStep", canDelete: false);
-            RefreshSortFields();
+                // Default sort: ROCStep
+                _sortFields.Clear();
+                AddSortField("ROCStep", canDelete: false);
+                RefreshSortFields();
 
-            RefreshAddColumnDropdown();
-                        UpdateDeleteButtonState();
-            UpdateAddGroupButtonState();
-            UpdateAddSortButtonState();
+                RefreshAddColumnDropdown();
+                UpdateDeleteButtonState();
+                UpdateAddGroupButtonState();
+                UpdateAddSortButtonState();
 
-            // Load filter values for default column
-            _ = LoadFilterValuesAsync();
+                // Load filter values for default column
+                await LoadFilterValuesAsync();
 
-            _hasUnsavedChanges = false;
+                _hasUnsavedChanges = false;
+            }
+            finally
+            {
+                _isLoading = false;
+            }
         }
 
         // Load a saved layout configuration
-        private void LoadLayoutConfiguration(ProgressBookLayout layout)
+        private async System.Threading.Tasks.Task LoadLayoutConfigurationAsync(ProgressBookLayout layout)
         {
             _isLoading = true;
             try
@@ -270,12 +280,12 @@ namespace VANTAGE.Views
                 RefreshSortFields();
 
                 RefreshAddColumnDropdown();
-                                UpdateDeleteButtonState();
+                UpdateDeleteButtonState();
                 UpdateAddGroupButtonState();
                 UpdateAddSortButtonState();
 
-                // Load filter values then set selected value
-                _ = LoadFilterValuesAsync(config.FilterValue);
+                // Load filter values then set selected value (awaited so _isLoading stays true)
+                await LoadFilterValuesAsync(config.FilterValue);
 
                 _hasUnsavedChanges = false;
             }
@@ -533,14 +543,14 @@ namespace VANTAGE.Views
             {
                 if (item.Id == 0)
                 {
-                    LoadDefaultConfiguration();
+                    await LoadDefaultConfigurationAsync();
                 }
                 else
                 {
                     var layout = await ProgressBookLayoutRepository.GetByIdAsync(item.Id);
                     if (layout != null)
                     {
-                        LoadLayoutConfiguration(layout);
+                        await LoadLayoutConfigurationAsync(layout);
                     }
                 }
             }
@@ -627,7 +637,7 @@ namespace VANTAGE.Views
             if (col.IsRequired)
             {
                 MessageBox.Show($"{col.FieldName} is required and cannot be removed.",
-                    "Required Column", MessageBoxButton.OK, MessageBoxImage.Information);
+                    "Required Column", MessageBoxButton.OK, MessageBoxImage.None);
                 return;
             }
 
@@ -654,7 +664,7 @@ namespace VANTAGE.Views
             if (_groups.Count >= MaxGroups)
             {
                 MessageBox.Show($"Maximum of {MaxGroups} grouping levels allowed.",
-                    "Limit Reached", MessageBoxButton.OK, MessageBoxImage.Information);
+                    "Limit Reached", MessageBoxButton.OK, MessageBoxImage.None);
                 return;
             }
 
@@ -682,7 +692,7 @@ namespace VANTAGE.Views
             if (_sortFields.Count >= MaxSorts)
             {
                 MessageBox.Show($"Maximum of {MaxSorts} sort levels allowed.",
-                    "Limit Reached", MessageBoxButton.OK, MessageBoxImage.Information);
+                    "Limit Reached", MessageBoxButton.OK, MessageBoxImage.None);
                 return;
             }
 
@@ -704,27 +714,13 @@ namespace VANTAGE.Views
             }
         }
 
-        // Clone layout - populates name field with "{layout}-Copy", user must save
-        private void BtnCloneLayout_Click(object sender, RoutedEventArgs e)
-        {
-            string currentName = _currentLayout?.Name ?? txtLayoutName.Text.Trim();
-            if (string.IsNullOrEmpty(currentName))
-                currentName = DefaultLayoutName;
-
-            txtLayoutName.Text = $"{currentName}-Copy";
-            txtLayoutName.Focus();
-            txtLayoutName.SelectAll();
-
-            _hasUnsavedChanges = true;
-        }
-
         // Delete layout - Default Layout cannot be deleted
         private async void BtnDeleteLayout_Click(object sender, RoutedEventArgs e)
         {
             if (_currentLayout == null)
             {
                 MessageBox.Show("Default Layout cannot be deleted.", "Cannot Delete",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBoxButton.OK, MessageBoxImage.None);
                 return;
             }
 
@@ -738,7 +734,7 @@ namespace VANTAGE.Views
                 {
                     _hasUnsavedChanges = false;
                     await LoadSavedLayoutsAsync();
-                    LoadDefaultConfiguration();
+                    await LoadDefaultConfigurationAsync();
                     cboSavedLayouts.SelectedIndex = 0;
                 }
             }
@@ -786,15 +782,6 @@ namespace VANTAGE.Views
 
                 if (_currentLayout != null && _currentLayout.Name.Equals(layoutName, StringComparison.OrdinalIgnoreCase))
                 {
-                    var overwriteResult = MessageBox.Show(
-                        $"Overwrite layout '{layoutName}'?",
-                        "Confirm Overwrite",
-                        MessageBoxButton.YesNo,
-                        MessageBoxImage.Question);
-
-                    if (overwriteResult != MessageBoxResult.Yes)
-                        return;
-
                     _currentLayout.UpdatedUtc = DateTime.UtcNow;
                     _currentLayout.SetConfiguration(config);
 
@@ -805,7 +792,7 @@ namespace VANTAGE.Views
                         await LoadSavedLayoutsAsync();
                         SelectLayoutInDropdown(_currentLayout.Id);
                         MessageBox.Show($"Layout '{layoutName}' updated.", "Saved",
-                            MessageBoxButton.OK, MessageBoxImage.Information);
+                            MessageBoxButton.OK, MessageBoxImage.None);
                     }
                 }
                 else
@@ -813,15 +800,6 @@ namespace VANTAGE.Views
                     var existingLayout = await ProgressBookLayoutRepository.GetByNameAsync(layoutName, projectId);
                     if (existingLayout != null)
                     {
-                        var overwriteResult = MessageBox.Show(
-                            $"A layout named '{layoutName}' already exists. Overwrite it?",
-                            "Confirm Overwrite",
-                            MessageBoxButton.YesNo,
-                            MessageBoxImage.Warning);
-
-                        if (overwriteResult != MessageBoxResult.Yes)
-                            return;
-
                         existingLayout.UpdatedUtc = DateTime.UtcNow;
                         existingLayout.SetConfiguration(config);
 
@@ -833,7 +811,7 @@ namespace VANTAGE.Views
                             await LoadSavedLayoutsAsync();
                             SelectLayoutInDropdown(existingLayout.Id);
                             MessageBox.Show($"Layout '{layoutName}' updated.", "Saved",
-                                MessageBoxButton.OK, MessageBoxImage.Information);
+                                MessageBoxButton.OK, MessageBoxImage.None);
                         }
                     }
                     else
@@ -856,7 +834,7 @@ namespace VANTAGE.Views
                             await LoadSavedLayoutsAsync();
                             SelectLayoutInDropdown(newId);
                             MessageBox.Show($"Layout '{layoutName}' saved.", "Saved",
-                                MessageBoxButton.OK, MessageBoxImage.Information);
+                                MessageBoxButton.OK, MessageBoxImage.None);
                         }
                     }
                 }

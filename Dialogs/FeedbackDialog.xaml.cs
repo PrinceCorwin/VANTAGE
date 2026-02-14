@@ -334,7 +334,7 @@ namespace VANTAGE.Dialogs
                     await NotifyAdminsAsync(newFeedback);
 
                     MessageBox.Show($"Feedback submitted successfully.", "Submitted",
-                        MessageBoxButton.OK, MessageBoxImage.Information);
+                        MessageBoxButton.OK, MessageBoxImage.None);
                 }
                 else
                 {
@@ -373,7 +373,7 @@ namespace VANTAGE.Dialogs
                         "FeedbackDialog.BtnSave_Click", currentUser);
 
                     MessageBox.Show($"Feedback updated successfully.", "Updated",
-                        MessageBoxButton.OK, MessageBoxImage.Information);
+                        MessageBoxButton.OK, MessageBoxImage.None);
                 }
 
                 ApplyFilters();
@@ -542,7 +542,7 @@ namespace VANTAGE.Dialogs
                     "FeedbackDialog.BtnRestore_Click", currentUser);
 
                 MessageBox.Show("Feedback restored successfully.", "Restored",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBoxButton.OK, MessageBoxImage.None);
 
                 // Reload to refresh the list
                 await LoadFeedbackAsync();
@@ -620,7 +620,7 @@ namespace VANTAGE.Dialogs
                     "FeedbackDialog.BtnDelete_Click", App.CurrentUser?.Username);
 
                 MessageBox.Show($"Feedback {action.ToLower()} successfully.", action,
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBoxButton.OK, MessageBoxImage.None);
 
                 ApplyFilters();
                 ClearForm();

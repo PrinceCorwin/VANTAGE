@@ -561,7 +561,7 @@ namespace VANTAGE.Dialogs
 
             if (selectedItems.Count == 0)
             {
-                MessageBox.Show("No items selected to apply.", "No Selection", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("No items selected to apply.", "No Selection", MessageBoxButton.OK, MessageBoxImage.None);
                 return;
             }
 
@@ -632,7 +632,7 @@ namespace VANTAGE.Dialogs
             else
             {
                 MessageBox.Show($"Successfully updated {successCount} records.",
-                    "Update Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                    "Update Complete", MessageBoxButton.OK, MessageBoxImage.None);
             }
 
             DialogResult = true;

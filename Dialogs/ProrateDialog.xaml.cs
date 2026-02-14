@@ -196,7 +196,7 @@ namespace VANTAGE.Dialogs
                     if (_eligibleActivities.Count == 0)
                     {
                         MessageBox.Show("No eligible activities to prorate.", "No Activities",
-                            MessageBoxButton.OK, MessageBoxImage.Information);
+                            MessageBoxButton.OK, MessageBoxImage.None);
                         return;
                     }
                 }
@@ -323,7 +323,7 @@ namespace VANTAGE.Dialogs
                     message += $"\n\n{clampedCount} activities were clamped to minimum 0.001 MHs.";
 
                 MessageBox.Show(message, "Prorate Complete",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBoxButton.OK, MessageBoxImage.None);
 
                 // Refresh the grid
                 _refreshCallback?.Invoke();

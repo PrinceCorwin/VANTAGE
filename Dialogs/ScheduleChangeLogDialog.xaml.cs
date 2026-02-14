@@ -111,7 +111,7 @@ namespace VANTAGE.Dialogs
             if (selected.Count == 0)
             {
                 MessageBox.Show("No changes selected.", "Apply Changes",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBoxButton.OK, MessageBoxImage.None);
                 return;
             }
 
@@ -167,7 +167,7 @@ namespace VANTAGE.Dialogs
                     message += $"\n{failCount} change(s) failed (activity may not exist).";
 
                 MessageBox.Show(message, "Apply Complete",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBoxButton.OK, MessageBoxImage.None);
 
                 // Reload to show remaining changes
                 LoadChanges();

@@ -32,7 +32,7 @@ namespace VANTAGE.Installer
                     "Would you like to launch it now?",
                     "Installation Complete",
                     MessageBoxButton.YesNo,
-                    MessageBoxImage.Information);
+                    MessageBoxImage.None);
 
                 if (result == MessageBoxResult.Yes)
                 {

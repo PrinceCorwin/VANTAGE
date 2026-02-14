@@ -1,6 +1,16 @@
 {
   "releases": [
     {
+      "version": "26.1.16",
+      "date": "2026-02-14",
+      "highlights": [
+        "Fix Prog Books layout save — name no longer reverts to Default Layout after saving",
+        "Fix false 'unsaved changes' warning when switching layouts",
+        "Simplify template management — remove clone buttons, save handles create/update automatically",
+        "Remove notification sounds from all message dialogs"
+      ]
+    },
+    {
       "version": "26.1.15",
       "date": "2026-02-14",
       "highlights": [

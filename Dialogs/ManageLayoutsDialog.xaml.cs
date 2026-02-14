@@ -168,7 +168,7 @@ namespace VANTAGE.Dialogs
                 txtNewLayoutName.Clear();
                 LoadLayoutsList();
                 MessageBox.Show($"Layout '{layoutName}' saved.", "Success",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBoxButton.OK, MessageBoxImage.None);
             }
         }
 

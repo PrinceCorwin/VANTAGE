@@ -607,7 +607,7 @@ namespace VANTAGE.Views
             if (drawingItems == null || drawingItems.Count == 0)
             {
                 MessageBox.Show("No drawings to fetch. Select work packages with drawing numbers first.",
-                    "No Drawings", MessageBoxButton.OK, MessageBoxImage.Information);
+                    "No Drawings", MessageBoxButton.OK, MessageBoxImage.None);
                 return;
             }
 
@@ -754,7 +754,7 @@ namespace VANTAGE.Views
                 lblStatus.Text = $"Fetch complete: {found} found, {notFound} not found, {notInDb} not in DB";
                 MessageBox.Show($"Drawings fetch complete.\n\nMatched: {found}\nNot found: {notFound}\nNot in DB: {notInDb}",
                     "Fetch Complete", MessageBoxButton.OK,
-                    notFound > 0 ? MessageBoxImage.Warning : MessageBoxImage.Information);
+                    notFound > 0 ? MessageBoxImage.Warning : MessageBoxImage.None);
             }
             catch (Exception ex)
             {
@@ -787,7 +787,7 @@ namespace VANTAGE.Views
             // TODO: Implement Procore fetch with company/project selection dialog
             await Task.CompletedTask;
             MessageBox.Show("Procore fetch is not yet implemented.",
-                "Coming Soon", MessageBoxButton.OK, MessageBoxImage.Information);
+                "Coming Soon", MessageBoxButton.OK, MessageBoxImage.None);
         }
 
         // Insert field token into WP Name Pattern
@@ -1032,7 +1032,7 @@ namespace VANTAGE.Views
                     lblStatus.Text = $"Generated {successCount} work package(s) successfully.";
                     var paths = string.Join("\n", results.Where(r => r.Success && !string.IsNullOrEmpty(r.MergedPdfPath)).Select(r => r.MergedPdfPath));
                     MessageBox.Show($"Successfully generated {successCount} work package(s).\n\nFiles saved to:\n{paths}",
-                        "Generation Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                        "Generation Complete", MessageBoxButton.OK, MessageBoxImage.None);
                 }
                 else if (successCount == 0 && failCount == 0)
                 {
@@ -1289,62 +1289,7 @@ namespace VANTAGE.Views
             }
         }
 
-        // Clone WP template - creates and saves immediately
-        private async void BtnCloneWPTemplate_Click(object sender, RoutedEventArgs e)
-        {
-            if (_selectedWPTemplate == null) return;
-
-            var existingNames = _wpTemplates.Select(t => t.WPTemplateName).ToList();
-            var defaultName = _selectedWPTemplate.WPTemplateName + " (Copy)";
-
-            var dialog = new TemplateNameDialog(defaultName, existingNames, "Enter a name for the cloned template:")
-            {
-                Owner = Window.GetWindow(this)
-            };
-
-            if (dialog.ShowDialog() == true)
-            {
-                try
-                {
-                    // Create and save the cloned template immediately
-                    var formsJson = _selectedWPTemplate.FormsJson;
-                    var settingsJson = _selectedWPTemplate.DefaultSettings;
-
-                    var template = new WPTemplate
-                    {
-                        WPTemplateID = Guid.NewGuid().ToString(),
-                        WPTemplateName = dialog.TemplateName,
-                        FormsJson = formsJson,
-                        DefaultSettings = settingsJson,
-                        IsBuiltIn = false,
-                        CreatedBy = App.CurrentUser?.Username ?? "Unknown",
-                        CreatedUtc = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ")
-                    };
-                    await TemplateRepository.InsertWPTemplateAsync(template);
-
-                    // Refresh lists and select the new template
-                    _wpTemplates = await TemplateRepository.GetAllWPTemplatesAsync();
-                    PopulateWPTemplateEditDropdown();
-                    cboWPTemplate.ItemsSource = _wpTemplates;
-
-                    var savedTemplate = _wpTemplates.FirstOrDefault(t => t.WPTemplateID == template.WPTemplateID);
-                    if (savedTemplate != null)
-                    {
-                        cboWPTemplateEdit.SelectedItem = savedTemplate;
-                        _selectedWPTemplate = savedTemplate;
-                    }
-
-                    lblStatus.Text = "Template cloned";
-                }
-                catch (Exception ex)
-                {
-                    AppLogger.Error(ex, "WorkPackageView.BtnCloneWPTemplate_Click");
-                    MessageBox.Show($"Error cloning template: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-            }
-        }
-
-        // Delete WP template
+        // Delete WP template (built-in templates are protected)
         private async void BtnDeleteWPTemplate_Click(object sender, RoutedEventArgs e)
         {
             if (_selectedWPTemplate == null) return;
@@ -1377,23 +1322,38 @@ namespace VANTAGE.Views
                 return;
             }
 
-            // Check if saving a built-in template - prompt for new name
+            string newName = txtWPTemplateName.Text.Trim();
+
+            // Built-in templates: name must differ from all existing templates
             if (_selectedWPTemplate?.IsBuiltIn == true)
             {
-                var existingNames = _wpTemplates.Select(t => t.WPTemplateName).ToList();
-                var defaultName = txtWPTemplateName.Text.Trim();
-                if (!defaultName.EndsWith("(Copy)"))
-                    defaultName += " (Copy)";
+                var duplicate = _wpTemplates.FirstOrDefault(t =>
+                    t.WPTemplateName.Equals(newName, StringComparison.OrdinalIgnoreCase));
 
-                var dialog = new TemplateNameDialog(defaultName, existingNames, "This is a built-in template. Enter a name for the new template:")
+                if (duplicate != null)
                 {
-                    Owner = Window.GetWindow(this)
-                };
+                    MessageBox.Show($"A template named '{newName}' already exists. Please choose a different name.",
+                        "Duplicate Name", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    txtWPTemplateName.Focus();
+                    txtWPTemplateName.SelectAll();
+                    return;
+                }
+            }
+            else
+            {
+                // User-created or new: name must not match any OTHER template
+                var duplicate = _wpTemplates.FirstOrDefault(t =>
+                    t.WPTemplateName.Equals(newName, StringComparison.OrdinalIgnoreCase) &&
+                    t.WPTemplateID != _selectedWPTemplate?.WPTemplateID);
 
-                if (dialog.ShowDialog() != true) return;
-
-                txtWPTemplateName.Text = dialog.TemplateName;
-                _selectedWPTemplate = null; // Create new
+                if (duplicate != null)
+                {
+                    MessageBox.Show($"A template named '{newName}' already exists. Please choose a different name.",
+                        "Duplicate Name", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    txtWPTemplateName.Focus();
+                    txtWPTemplateName.SelectAll();
+                    return;
+                }
             }
 
             try
@@ -1402,13 +1362,19 @@ namespace VANTAGE.Views
                 var settingsJson = JsonSerializer.Serialize(new WPTemplateSettings { ExpirationDays = (int)(txtExpirationDays.Value ?? 14) });
 
                 string savedTemplateId;
-                if (_selectedWPTemplate == null)
+
+                // Determine if creating new or updating existing
+                bool isNewTemplate = _selectedWPTemplate == null
+                    || _selectedWPTemplate.IsBuiltIn
+                    || !_selectedWPTemplate.WPTemplateName.Equals(newName, StringComparison.OrdinalIgnoreCase);
+
+                if (isNewTemplate)
                 {
-                    // Create new
+                    // Create new template (covers: built-in save-as, renamed save-as, + Add New)
                     var template = new WPTemplate
                     {
                         WPTemplateID = Guid.NewGuid().ToString(),
-                        WPTemplateName = txtWPTemplateName.Text,
+                        WPTemplateName = newName,
                         FormsJson = formsJson,
                         DefaultSettings = settingsJson,
                         IsBuiltIn = false,
@@ -1421,9 +1387,8 @@ namespace VANTAGE.Views
                 }
                 else
                 {
-                    // Update existing
-                    _selectedWPTemplate.WPTemplateName = txtWPTemplateName.Text;
-                    _selectedWPTemplate.FormsJson = formsJson;
+                    // Update existing user-created template (same name)
+                    _selectedWPTemplate!.FormsJson = formsJson;
                     _selectedWPTemplate.DefaultSettings = settingsJson;
                     await TemplateRepository.UpdateWPTemplateAsync(_selectedWPTemplate);
                     savedTemplateId = _selectedWPTemplate.WPTemplateID;
@@ -1442,6 +1407,9 @@ namespace VANTAGE.Views
                     cboWPTemplateEdit.SelectedItem = savedTemplate;
                     _selectedWPTemplate = savedTemplate;
                 }
+
+                MessageBox.Show($"WP template '{newName}' saved.", "Saved",
+                    MessageBoxButton.OK, MessageBoxImage.None);
             }
             catch (Exception ex)
             {
@@ -1581,60 +1549,7 @@ namespace VANTAGE.Views
         }
 
         // Clone form template - creates and saves immediately
-        private async void BtnCloneFormTemplate_Click(object sender, RoutedEventArgs e)
-        {
-            if (_selectedFormTemplate == null) return;
-
-            var existingNames = _formTemplates.Select(t => t.TemplateName).ToList();
-            var defaultName = _selectedFormTemplate.TemplateName + " (Copy)";
-
-            var dialog = new TemplateNameDialog(defaultName, existingNames, "Enter a name for the cloned template:")
-            {
-                Owner = Window.GetWindow(this)
-            };
-
-            if (dialog.ShowDialog() == true)
-            {
-                try
-                {
-                    // Create and save the cloned template immediately
-                    var template = new FormTemplate
-                    {
-                        TemplateID = Guid.NewGuid().ToString(),
-                        TemplateName = dialog.TemplateName,
-                        TemplateType = _selectedFormTemplate.TemplateType,
-                        StructureJson = _selectedFormTemplate.StructureJson,
-                        IsBuiltIn = false,
-                        CreatedBy = App.CurrentUser?.Username ?? "Unknown",
-                        CreatedUtc = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ")
-                    };
-                    await TemplateRepository.InsertFormTemplateAsync(template);
-
-                    // Refresh lists and select the new template
-                    _formTemplates = await TemplateRepository.GetAllFormTemplatesAsync();
-                    _suppressTypeDialog = true;
-                    PopulateFormTemplateEditDropdown();
-                    _suppressTypeDialog = false;
-                    PopulateAddFormMenu();
-
-                    var savedTemplate = _formTemplates.FirstOrDefault(t => t.TemplateID == template.TemplateID);
-                    if (savedTemplate != null)
-                    {
-                        cboFormTemplateEdit.SelectedItem = savedTemplate;
-                        _selectedFormTemplate = savedTemplate;
-                    }
-
-                    lblStatus.Text = "Template cloned";
-                }
-                catch (Exception ex)
-                {
-                    AppLogger.Error(ex, "WorkPackageView.BtnCloneFormTemplate_Click");
-                    MessageBox.Show($"Error cloning template: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-            }
-        }
-
-        // Delete form template
+        // Delete form template (built-in templates are protected)
         private async void BtnDeleteFormTemplate_Click(object sender, RoutedEventArgs e)
         {
             if (_selectedFormTemplate == null) return;
@@ -1759,73 +1674,77 @@ namespace VANTAGE.Views
                 return;
             }
 
-            // Check for duplicate name (exclude current template if editing existing)
             string newName = txtFormTemplateName.Text.Trim();
-            var duplicate = _formTemplates.FirstOrDefault(t =>
-                t.TemplateName.Equals(newName, StringComparison.OrdinalIgnoreCase) &&
-                t.TemplateID != _selectedFormTemplate?.TemplateID);
 
-            if (duplicate != null)
+            // Built-in templates: name must differ from all existing templates
+            if (_selectedFormTemplate?.IsBuiltIn == true)
             {
-                MessageBox.Show($"A form template named '{newName}' already exists. Please choose a different name.",
-                    "Duplicate Name", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
+                var duplicate = _formTemplates.FirstOrDefault(t =>
+                    t.TemplateName.Equals(newName, StringComparison.OrdinalIgnoreCase));
+
+                if (duplicate != null)
+                {
+                    MessageBox.Show($"A template named '{newName}' already exists. Please choose a different name.",
+                        "Duplicate Name", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    txtFormTemplateName.Focus();
+                    txtFormTemplateName.SelectAll();
+                    return;
+                }
+            }
+            else
+            {
+                // User-created or new: name must not match any OTHER template
+                var duplicate = _formTemplates.FirstOrDefault(t =>
+                    t.TemplateName.Equals(newName, StringComparison.OrdinalIgnoreCase) &&
+                    t.TemplateID != _selectedFormTemplate?.TemplateID);
+
+                if (duplicate != null)
+                {
+                    MessageBox.Show($"A template named '{newName}' already exists. Please choose a different name.",
+                        "Duplicate Name", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    txtFormTemplateName.Focus();
+                    txtFormTemplateName.SelectAll();
+                    return;
+                }
             }
 
             // Get structure JSON from current editor if supported
             string? editorStructureJson = GetStructureJsonFromEditor();
 
-            // Check if saving a built-in template - prompt for new name
-            if (_selectedFormTemplate?.IsBuiltIn == true)
-            {
-                var existingNames = _formTemplates.Select(t => t.TemplateName).ToList();
-                var defaultName = newName;
-                if (!defaultName.EndsWith("(Copy)"))
-                    defaultName += " (Copy)";
-
-                var dialog = new TemplateNameDialog(defaultName, existingNames, "This is a built-in template. Enter a name for the new template:")
-                {
-                    Owner = Window.GetWindow(this)
-                };
-
-                if (dialog.ShowDialog() != true) return;
-
-                newName = dialog.TemplateName;
-                txtFormTemplateName.Text = newName;
-
-                // Preserve data for clone - use editor value if available
-                _clonedFormType = _selectedFormTemplate.TemplateType;
-                _clonedFormStructure = editorStructureJson ?? _selectedFormTemplate.StructureJson;
-                _selectedFormTemplate = null; // Create new
-            }
-
             try
             {
                 string savedTemplateId;
 
-                if (_selectedFormTemplate == null)
+                // Determine if creating new or updating existing
+                bool isNewTemplate = _selectedFormTemplate == null
+                    || _selectedFormTemplate.IsBuiltIn
+                    || !_selectedFormTemplate.TemplateName.Equals(newName, StringComparison.OrdinalIgnoreCase);
+
+                if (isNewTemplate)
                 {
-                    // Creating new template - check for clone data
-                    if (string.IsNullOrEmpty(_clonedFormType) || string.IsNullOrEmpty(_clonedFormStructure))
+                    // Create new template (covers: built-in save-as, renamed save-as, + Add New)
+                    // Get type and structure from current template or clone data
+                    string templateType = _selectedFormTemplate?.TemplateType ?? _clonedFormType ?? "";
+                    string structureJson = editorStructureJson ?? _selectedFormTemplate?.StructureJson ?? _clonedFormStructure ?? "";
+
+                    if (string.IsNullOrEmpty(templateType) || string.IsNullOrEmpty(structureJson))
                     {
-                        MessageBox.Show("Please select a template to clone first.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        MessageBox.Show("Please select a template first.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
                         return;
                     }
 
-                    // Create new from clone data - use editor changes if available
                     var template = new FormTemplate
                     {
                         TemplateID = Guid.NewGuid().ToString(),
                         TemplateName = newName,
-                        TemplateType = _clonedFormType,
-                        StructureJson = editorStructureJson ?? _clonedFormStructure,
+                        TemplateType = templateType,
+                        StructureJson = structureJson,
                         IsBuiltIn = false,
                         CreatedBy = App.CurrentUser?.Username ?? "Unknown",
                         CreatedUtc = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ")
                     };
                     await TemplateRepository.InsertFormTemplateAsync(template);
                     savedTemplateId = template.TemplateID;
-                    lblStatus.Text = "Template created";
 
                     // Clear clone data
                     _clonedFormType = null;
@@ -1833,15 +1752,13 @@ namespace VANTAGE.Views
                 }
                 else
                 {
-                    // Update existing - use editor structure if available
-                    _selectedFormTemplate.TemplateName = newName;
+                    // Update existing user-created template (same name)
                     if (editorStructureJson != null)
                     {
-                        _selectedFormTemplate.StructureJson = editorStructureJson;
+                        _selectedFormTemplate!.StructureJson = editorStructureJson;
                     }
-                    await TemplateRepository.UpdateFormTemplateAsync(_selectedFormTemplate);
-                    savedTemplateId = _selectedFormTemplate.TemplateID;
-                    lblStatus.Text = "Template saved";
+                    await TemplateRepository.UpdateFormTemplateAsync(_selectedFormTemplate!);
+                    savedTemplateId = _selectedFormTemplate!.TemplateID;
                 }
 
                 _hasUnsavedChanges = false;
@@ -1860,6 +1777,10 @@ namespace VANTAGE.Views
                     cboFormTemplateEdit.SelectedItem = savedTemplate;
                     _selectedFormTemplate = savedTemplate;
                 }
+
+                lblStatus.Text = "Template saved";
+                MessageBox.Show($"Form template '{newName}' saved.", "Saved",
+                    MessageBoxButton.OK, MessageBoxImage.None);
             }
             catch (Exception ex)
             {
@@ -1883,7 +1804,7 @@ namespace VANTAGE.Views
                 if (userForms.Count == 0 && userWPs.Count == 0)
                 {
                     MessageBox.Show("No user-created templates to export. Built-in templates are already available on every installation.",
-                        "Nothing to Export", MessageBoxButton.OK, MessageBoxImage.Information);
+                        "Nothing to Export", MessageBoxButton.OK, MessageBoxImage.None);
                     return;
                 }
 
@@ -1941,7 +1862,7 @@ namespace VANTAGE.Views
 
                 await File.WriteAllTextAsync(dialog.FileName, json);
                 MessageBox.Show($"Exported {userForms.Count} form template(s) and {userWPs.Count} WP template(s).",
-                    "Export Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                    "Export Complete", MessageBoxButton.OK, MessageBoxImage.None);
             }
             catch (Exception ex)
             {
@@ -2068,7 +1989,7 @@ namespace VANTAGE.Views
                 _suppressTypeDialog = false;
 
                 MessageBox.Show($"Imported {formCount} form template(s) and {wpCount} WP template(s).",
-                    "Import Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                    "Import Complete", MessageBoxButton.OK, MessageBoxImage.None);
             }
             catch (JsonException)
             {

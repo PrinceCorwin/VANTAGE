@@ -120,11 +120,8 @@
                               SelectionChanged="CboSavedLayouts_SelectionChanged"
                               Margin="0,0,0,10"/>
 
-                    <!-- Clone/Delete Buttons (directly under Layout dropdown) -->
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                        <Button Content="Clone" Click="BtnCloneLayout_Click" Padding="8,4" Margin="0,0,10,0" ToolTip="Create a copy of this layout"/>
-                        <Button x:Name="btnDeleteLayout" Content="Delete" Click="BtnDeleteLayout_Click" Padding="8,4" ToolTip="Delete this layout"/>
-                    </StackPanel>
+                    <!-- Delete Button (directly under Layout dropdown) -->
+                    <Button x:Name="btnDeleteLayout" Content="Delete" Click="BtnDeleteLayout_Click" Padding="8,4" Margin="0,0,0,10" HorizontalAlignment="Left" ToolTip="Delete this layout"/>
 
                     <!-- Name -->
                     <TextBlock Text="Name" FontWeight="Bold" Margin="0,0,0,5"/>

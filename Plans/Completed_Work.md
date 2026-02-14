@@ -7,6 +7,10 @@ This document tracks completed features and fixes. Items are moved here from Pro
 ## Unreleased
 
 ### February 14, 2026
+- **Fix Prog Books layout save bugs:** Layout name no longer reverts to "Default Layout" after saving. Fixed false "unsaved changes" warning when switching layouts (caused by fire-and-forget async filter loading setting dirty flag after load completed). Removed overwrite confirmation prompt — save now goes straight through with a confirmation dialog after.
+- **Simplify template management (WP Templates & Form Templates):** Removed Clone buttons — to copy a template, change the name and save. Save now validates name uniqueness inline (no popup dialog). Built-in templates are protected from overwriting and deletion. Added save confirmation dialogs matching Prog Books behavior.
+- **Remove Clone button from Prog Books layouts:** Same simplification — change name and save to create a copy.
+- **Remove notification sounds from all dialogs:** Changed all `MessageBoxImage.Information` to `MessageBoxImage.None` across the entire codebase (~90 instances) to eliminate Windows notification sounds from informational dialogs.
 - **Add Blank Row context menu:** New "Add Blank Row" option in Progress grid right-click menu. Creates an empty activity with system fields prepopulated (UniqueID, AssignedTo, Quantity/BudgetMHs defaults to avoid div/0). Clears filters/sorts and scrolls to the new row. Required field cells highlighted red, metadata error count updates immediately.
 - **Fix delete for local-only rows:** Non-admin users can now delete locally-created rows that haven't synced to Azure yet. Previously failed because ownership check queried Azure which returned null for unsynced rows. Azure soft-delete now only targets records that exist there.
 - **Drop SystemNO from Azure VMS_Activities:** Removed orphaned SystemNO column from the Azure table (constraint + column). Fixes sync pull failure ("table Activities has no column named SystemNO") caused by SELECT * returning the removed column.

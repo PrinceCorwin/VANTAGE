@@ -170,7 +170,7 @@ namespace VANTAGE.Dialogs
                     "GenerateProgressBookDialog.BtnGenerate_Click", App.CurrentUser?.Username ?? "Unknown");
 
                 MessageBox.Show($"Progress Book saved to:\n{saveDialog.FileName}",
-                    "Generated", MessageBoxButton.OK, MessageBoxImage.Information);
+                    "Generated", MessageBoxButton.OK, MessageBoxImage.None);
 
                 DialogResult = true;
                 Close();

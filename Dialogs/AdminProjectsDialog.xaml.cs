@@ -253,7 +253,7 @@ namespace VANTAGE.Dialogs
                         "AdminProjectsDialog.BtnSave_Click", App.CurrentUser?.Username);
 
                     MessageBox.Show($"Project '{projectId}' added successfully.", "Project Added",
-                        MessageBoxButton.OK, MessageBoxImage.Information);
+                        MessageBoxButton.OK, MessageBoxImage.None);
                 }
                 else
                 {
@@ -311,7 +311,7 @@ namespace VANTAGE.Dialogs
                         "AdminProjectsDialog.BtnSave_Click", App.CurrentUser?.Username);
 
                     MessageBox.Show($"Project '{projectId}' updated successfully.", "Project Updated",
-                        MessageBoxButton.OK, MessageBoxImage.Information);
+                        MessageBoxButton.OK, MessageBoxImage.None);
                 }
 
                 lvProjects.Items.Refresh();
@@ -395,7 +395,7 @@ namespace VANTAGE.Dialogs
                     "AdminProjectsDialog.BtnDelete_Click", App.CurrentUser?.Username);
 
                 MessageBox.Show($"Project '{projectId}' deleted successfully.", "Project Deleted",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBoxButton.OK, MessageBoxImage.None);
 
                 lvProjects.Items.Refresh();
                 txtProjectCount.Text = $"{_projects.Count} project(s)";

@@ -353,7 +353,7 @@ namespace VANTAGE
                     "or contact your administrator directly.",
                     "Offline",
                     MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                    MessageBoxImage.None);
                 return;
             }
 
@@ -381,7 +381,7 @@ namespace VANTAGE
                         "You will receive a response at the email address you provided.",
                         "Request Sent",
                         MessageBoxButton.OK,
-                        MessageBoxImage.Information);
+                        MessageBoxImage.None);
                 }
                 else
                 {

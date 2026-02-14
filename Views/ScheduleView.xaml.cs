@@ -745,7 +745,7 @@ namespace VANTAGE.Views
                 var allRows = _viewModel.GetAllMasterRows();
                 if (allRows == null || allRows.Count == 0)
                 {
-                    MessageBox.Show("No data to save.", "Save", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show("No data to save.", "Save", MessageBoxButton.OK, MessageBoxImage.None);
                     return;
                 }
 

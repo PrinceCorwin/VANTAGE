@@ -138,7 +138,7 @@ namespace VANTAGE.Dialogs
             if (_logs.Count == 0)
             {
                 MessageBox.Show("No logs to export.", "Export Logs",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBoxButton.OK, MessageBoxImage.None);
                 return;
             }
 
@@ -161,7 +161,7 @@ namespace VANTAGE.Dialogs
                         "ExportLogsDialog.BtnExport_Click", App.CurrentUser?.Username ?? "Unknown");
 
                     MessageBox.Show($"Exported {_logs.Count} log entries.", "Export Logs",
-                        MessageBoxButton.OK, MessageBoxImage.Information);
+                        MessageBoxButton.OK, MessageBoxImage.None);
 
                     DialogResult = true;
                     Close();
@@ -188,7 +188,7 @@ namespace VANTAGE.Dialogs
             if (_logs.Count == 0)
             {
                 MessageBox.Show("No logs to send.", "Send Email",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBoxButton.OK, MessageBoxImage.None);
                 return;
             }
 
@@ -246,7 +246,7 @@ namespace VANTAGE.Dialogs
                 if (success)
                 {
                     MessageBox.Show($"Logs sent to {user.Email}", "Send Email",
-                        MessageBoxButton.OK, MessageBoxImage.Information);
+                        MessageBoxButton.OK, MessageBoxImage.None);
                     DialogResult = true;
                     Close();
                     return;

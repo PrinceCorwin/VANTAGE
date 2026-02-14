@@ -153,7 +153,7 @@ namespace VANTAGE.Dialogs
             if (editableMatches > 0)
                 message += $"\n\n{editableMatches:N0} can be replaced.";
 
-            MessageBox.Show(message, "Find Results", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show(message, "Find Results", MessageBoxButton.OK, MessageBoxImage.None);
         }
 
         private async void BtnReplaceAll_Click(object sender, RoutedEventArgs e)
@@ -314,7 +314,7 @@ namespace VANTAGE.Dialogs
                     string noMatchMsg = matchCount == 0
                         ? "No matches found."
                         : $"Found {matchCount} match(es) but all failed type conversion.";
-                    MessageBox.Show(noMatchMsg, "Replace Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show(noMatchMsg, "Replace Complete", MessageBoxButton.OK, MessageBoxImage.None);
                     return;
                 }
 
@@ -346,7 +346,7 @@ namespace VANTAGE.Dialogs
                 if (conversionFailures > 0)
                     message += $"\n\n{conversionFailures:N0} match(es) skipped (conversion failed).";
 
-                MessageBox.Show(message, "Replace Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show(message, "Replace Complete", MessageBoxButton.OK, MessageBoxImage.None);
 
                 this.DialogResult = true;
                 this.Close();
