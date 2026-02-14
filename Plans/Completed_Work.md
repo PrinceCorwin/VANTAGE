@@ -6,6 +6,9 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### February 14, 2026
+- **Help manual column mapping table fixes:** Fixed RespParty Azure column (was "RespParty", corrected to "UDF18"). Renamed table header from "Milestone (App)" to "Vantage: MS (App)". Fixed SystemNO Azure column (was "Tag_SystemNo", corrected to "Not Used"). Re-sorted all 97 rows alphabetically by app column name. Added click-to-sort on all three column headers (ascending/descending toggle with arrow indicators).
+
 ### February 12, 2026
 - **Submit Week snapshots from local data:** Removed forced sync and split ownership check from Submit Week button. Snapshots now capture local data directly instead of pushing to Azure first, enabling historical snapshot scenarios (e.g., restore a backup and snapshot that point-in-time state). Faster submits with fewer network round-trips. Split ownership validation still enforced by the Assign button.
 - **Help manual column name fixes:** Updated outdated references from SchStart/SchFinish to ActStart/ActFin throughout manual.html. Fixed Today filter description, date validation rules, Schedule detail grid fields, change log field list, and column mapping reference table.
