@@ -11,6 +11,7 @@ obj/
 .vscode/
 .idea/
 *.sln.DotSettings
+*.log
 
 # Credentials: plaintext config (dev only, never commit)
 **/appsettings.json
