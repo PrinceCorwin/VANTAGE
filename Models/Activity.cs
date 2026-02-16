@@ -43,6 +43,8 @@ namespace VANTAGE.Models
         public string? SecondActno { get; set; }
         public DateTime? ActStart { get; set; }
         public DateTime? ActFin { get; set; }
+        public DateTime? PlanStart { get; set; }
+        public DateTime? PlanFin { get; set; }
         public DateTime? ProgDate { get; set; }
         public DateTime? WeekEndDate { get; set; }
         public DateTime? AzureUploadUtcDate { get; set; }

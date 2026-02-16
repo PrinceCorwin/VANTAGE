@@ -264,6 +264,8 @@ namespace VANTAGE.Data
                     SchedActNO = @SchedActNO,
                     ActFin = @ActFin,
                     ActStart = @ActStart,
+                    PlanStart = @PlanStart,
+                    PlanFin = @PlanFin,
                     SecondActno = @SecondActno,
                     SecondDwgNO = @SecondDwgNO,
                     Service = @Service,
@@ -352,6 +354,8 @@ namespace VANTAGE.Data
                     command.Parameters.AddWithValue("@SchedActNO", activity.SchedActNO ?? "");
                     command.Parameters.AddWithValue("@ActFin", activity.ActFin?.ToString("yyyy-MM-dd") ?? "");
                     command.Parameters.AddWithValue("@ActStart", activity.ActStart?.ToString("yyyy-MM-dd") ?? "");
+                    command.Parameters.AddWithValue("@PlanStart", activity.PlanStart?.ToString("yyyy-MM-dd") ?? "");
+                    command.Parameters.AddWithValue("@PlanFin", activity.PlanFin?.ToString("yyyy-MM-dd") ?? "");
                     command.Parameters.AddWithValue("@SecondActno", activity.SecondActno ?? "");
                     command.Parameters.AddWithValue("@SecondDwgNO", activity.SecondDwgNO ?? "");
                     command.Parameters.AddWithValue("@Service", activity.Service ?? "");
@@ -761,6 +765,8 @@ namespace VANTAGE.Data
                                  activity.SecondActno = GetStringSafe("SecondActno");
                                  activity.ActStart = GetDateTimeSafe("ActStart");
                                  activity.ActFin = GetDateTimeSafe("ActFin");
+                                 activity.PlanStart = GetDateTimeSafe("PlanStart");
+                                 activity.PlanFin = GetDateTimeSafe("PlanFin");
                                  activity.WeekEndDate = GetDateTimeSafe("WeekEndDate");
                                  activity.ProgDate = GetDateTimeFullSafe("ProgDate");
 
@@ -1002,6 +1008,8 @@ namespace VANTAGE.Data
                                  // Schedule dates
                                  activity.ActStart = GetDateTimeSafe("ActStart");
                                  activity.ActFin = GetDateTimeSafe("ActFin");
+                                 activity.PlanStart = GetDateTimeSafe("PlanStart");
+                                 activity.PlanFin = GetDateTimeSafe("PlanFin");
                                  activity.ProgDate = GetDateTimeSafe("ProgDate");
                                  activity.WeekEndDate = GetDateTimeSafe("WeekEndDate");
                                  activity.AzureUploadUtcDate = GetDateTimeSafe("AzureUploadUtcDate");
@@ -1293,6 +1301,8 @@ namespace VANTAGE.Data
             activity.SchedActNO = GetStringOrDefault(reader, "SchedActNO");
             activity.ActFin = GetDateTimeOrNull(reader, "ActFin");
             activity.ActStart = GetDateTimeOrNull(reader, "ActStart");
+            activity.PlanStart = GetDateTimeOrNull(reader, "PlanStart");
+            activity.PlanFin = GetDateTimeOrNull(reader, "PlanFin");
             activity.SecondActno = GetStringOrDefault(reader, "SecondActno");
             activity.SecondDwgNO = GetStringOrDefault(reader, "SecondDwgNO");
             activity.Service = GetStringOrDefault(reader, "Service");

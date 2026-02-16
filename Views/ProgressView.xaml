@@ -279,7 +279,7 @@
                             Padding="10,0"
                             FontSize="11"
                             Click="BtnFilterToday_Click"
-                            ToolTip="Show activities scheduled within 3-week lookahead"/>
+                            ToolTip="Show activities scheduled to start or finish today"/>
 
                     <Button x:Name="btnUserFilters"
                             Height="35"
@@ -721,6 +721,22 @@
                             <Setter Property="BorderThickness" Value="0,0,0.5,0.5"/>
                             <Setter Property="Padding" Value="4,0,4,0"/>
                         </Style>
+                        <!-- Thicker scrollbars with accent color -->
+                        <Style TargetType="ScrollBar">
+                            <Style.Triggers>
+                                <Trigger Property="Orientation" Value="Vertical">
+                                    <Setter Property="Width" Value="14"/>
+                                    <Setter Property="MinWidth" Value="14"/>
+                                </Trigger>
+                                <Trigger Property="Orientation" Value="Horizontal">
+                                    <Setter Property="Height" Value="14"/>
+                                    <Setter Property="MinHeight" Value="14"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                        <Style TargetType="Thumb">
+                            <Setter Property="Background" Value="{DynamicResource ActiveFilterBorderColor}"/>
+                        </Style>
                         <Style TargetType="syncfusion:FilterToggleButton">
                             <Setter Property="Template">
                                 <Setter.Value>
@@ -1056,7 +1072,6 @@
                               AllowSorting="True" 
                               CellStyle="{StaticResource SchedActNoRequiredStyle}"/>
 
-                        <!-- DRAWING FIELDS -->
                         <syncfusion:GridTextColumn MappingName="DwgNO"
                               HeaderText="DwgNO"
                               Padding="4,0,4,0"
@@ -1065,9 +1080,32 @@
                               AllowFiltering="True"
                               AllowSorting="True" />
 
-                        <!-- ALPHABETICALLY SORTED XAML COLUMNS BY NAME (77 total) -->
+                        <!-- ALPHABETICALLY SORTED XAML COLUMNS BY NAME -->
                         <!-- All original properties preserved -->
 
+                        <syncfusion:GridDateTimeColumn MappingName="ActStart"
+                           HeaderText="ActStart" Padding="4,0,4,0"
+                           Width="100"
+                           IsHidden="False"
+                           AllowEditing="True"
+                           AllowFiltering="True"
+                           AllowSorting="True"
+                           AllowNullValue="True"
+                           NullText=""
+                           Pattern="ShortDate"
+                           CellStyle="{StaticResource ActStartRequiredStyle}" />
+
+                        <syncfusion:GridDateTimeColumn MappingName="ActFin"
+                            HeaderText="ActFin" Padding="4,0,4,0"
+                            Width="100"
+                            IsHidden="False"
+                            AllowEditing="True"
+                            AllowFiltering="True"
+                            AllowSorting="True"
+                            AllowNullValue="True"
+                            NullText=""
+                            Pattern="ShortDate"
+                            CellStyle="{StaticResource ActFinRequiredStyle}" />
                         <syncfusion:GridTextColumn MappingName="Area"
                            HeaderText="Area" Padding="4,0,4,0"
                            Width="80"
@@ -1334,6 +1372,29 @@
                            AllowEditing="True"
                            AllowFiltering="True"
                            AllowSorting="True" />
+                        <syncfusion:GridDateTimeColumn MappingName="PlanStart"
+                             HeaderText="PlanStart" Padding="4,0,4,0"
+                             Width="100"
+                             IsHidden="False"
+                             AllowEditing="True"
+                             AllowFiltering="True"
+                             AllowSorting="True"
+                             AllowNullValue="True"
+                             NullText=""
+                             Pattern="ShortDate"
+                             ToolTipService.ToolTip="Planned start date (populated from 3-week lookahead)" />
+
+                        <syncfusion:GridDateTimeColumn MappingName="PlanFin"
+                            HeaderText="PlanFin" Padding="4,0,4,0"
+                            Width="100"
+                            IsHidden="False"
+                            AllowEditing="True"
+                            AllowFiltering="True"
+                            AllowSorting="True"
+                            AllowNullValue="True"
+                            NullText=""
+                            Pattern="ShortDate"
+                            ToolTipService.ToolTip="Planned finish date (populated from 3-week lookahead)" />
 
                         <syncfusion:GridNumericColumn MappingName="PrevEarnMHs"
                               HeaderText="PrevEarnMHs" Padding="4,0,4,0"
@@ -1412,30 +1473,6 @@
                               AllowFiltering="True"
                               AllowSorting="True"
                               NumberDecimalDigits="2" />
-
-                        <syncfusion:GridDateTimeColumn MappingName="ActFin"
-                            HeaderText="ActFin" Padding="4,0,4,0"
-                            Width="100"
-                            IsHidden="False"
-                            AllowEditing="True"
-                            AllowFiltering="True"
-                            AllowSorting="True"
-                            AllowNullValue="True"
-                            NullText=""
-                            Pattern="ShortDate"
-                            CellStyle="{StaticResource ActFinRequiredStyle}" />
-
-                        <syncfusion:GridDateTimeColumn MappingName="ActStart"
-                           HeaderText="ActStart" Padding="4,0,4,0"
-                           Width="100"
-                           IsHidden="False"
-                           AllowEditing="True"
-                           AllowFiltering="True"
-                           AllowSorting="True"
-                           AllowNullValue="True"
-                           NullText=""
-                           Pattern="ShortDate"
-                           CellStyle="{StaticResource ActStartRequiredStyle}" />
 
                         <syncfusion:GridTextColumn MappingName="SecondActno"
                            HeaderText="SecondActno" Padding="4,0,4,0"
@@ -1754,6 +1791,35 @@
                          TrackColor="{StaticResource ControlBorder}"
                          Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}"
                          ToolTip="Loading data"/>
+
+                    <!-- Grid Navigation Buttons -->
+                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Margin="0,0,15,0">
+                        <Button x:Name="btnGoToFirst" Click="BtnGoToFirst_Click"
+                                Width="20" Height="20" Padding="0"
+                                Background="{StaticResource ControlBackground}"
+                                BorderBrush="{StaticResource ControlBorder}"
+                                BorderThickness="1"
+                                ToolTip="Go to first row (Ctrl+↑)"
+                                Cursor="Hand">
+                            <Path Data="M0,6 L5,0 L10,6 Z"
+                                  Fill="{StaticResource ForegroundColor}"
+                                  Width="10" Height="6"
+                                  Stretch="Uniform"/>
+                        </Button>
+                        <Button x:Name="btnGoToLast" Click="BtnGoToLast_Click"
+                                Width="20" Height="20" Padding="0" Margin="4,0,0,0"
+                                Background="{StaticResource ControlBackground}"
+                                BorderBrush="{StaticResource ControlBorder}"
+                                BorderThickness="1"
+                                ToolTip="Go to last row (Ctrl+↓)"
+                                Cursor="Hand">
+                            <Path Data="M0,0 L5,6 L10,0 Z"
+                                  Fill="{StaticResource ForegroundColor}"
+                                  Width="10" Height="6"
+                                  Stretch="Uniform"/>
+                        </Button>
+                    </StackPanel>
+
                     <Border/>
                 </DockPanel>
             </Border>

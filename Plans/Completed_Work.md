@@ -6,6 +6,11 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### February 16, 2026
+- **Add PlanStart/PlanFin columns to Activities:** New planned date columns for scheduling activities. Populated from Schedule module's 3-Week Lookahead dates when saved (with bounds logic: PlanStart updates if NULL or earlier than 3WLA start, PlanFin updates if NULL or later than 3WLA finish; fallback updates next closest date if nothing matches). Editable directly in Progress grid with no constraints. Today filter now uses PlanStart/PlanFin instead of ActStart/ActFin. Progress module auto-refreshes after Schedule save to show updated dates. Schema migration v5 adds columns to existing databases. Syncs to Azure, included in NewVantage backup exports and snapshot submissions.
+- **Progress grid navigation buttons:** Added ▲/▼ buttons to bottom toolbar for quick navigation to first/last row in large grids. Tooltips show Ctrl+↑/↓ keyboard shortcuts.
+- **Thicker scrollbars:** Increased scrollbar width to 14px with green accent color (matches active filter border) for better visibility.
+
 ### February 14, 2026
 - **Fix Prog Books layout save bugs:** Layout name no longer reverts to "Default Layout" after saving. Fixed false "unsaved changes" warning when switching layouts (caused by fire-and-forget async filter loading setting dirty flag after load completed). Removed overwrite confirmation prompt — save now goes straight through with a confirmation dialog after.
 - **Simplify template management (WP Templates & Form Templates):** Removed Clone buttons — to copy a template, change the name and save. Save now validates name uniqueness inline (no popup dialog). Built-in templates are protected from overwriting and deletion. Added save confirmation dialogs matching Prog Books behavior.

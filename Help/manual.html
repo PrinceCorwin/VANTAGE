@@ -650,7 +650,7 @@
         </tr>
         <tr>
             <td><strong>Today</strong></td>
-            <td>Activities with an actual start date (ActStart) or actual finish date (ActFin) of today</td>
+            <td>Activities with a planned start date (PlanStart) or planned finish date (PlanFin) of today</td>
         </tr>
     </table>
 
@@ -759,6 +759,14 @@
         <tr>
             <td><strong>ActFin</strong></td>
             <td>Required when percent equals 100% (shows red if missing). Cannot be a future date. Cannot be before ActStart. Cannot be cleared if percent is 100%.</td>
+        </tr>
+        <tr>
+            <td><strong>PlanStart</strong></td>
+            <td>Planned start date. Populated from Schedule module's 3-Week Lookahead dates when saved. Can be edited directly. Used by Today filter.</td>
+        </tr>
+        <tr>
+            <td><strong>PlanFin</strong></td>
+            <td>Planned finish date. Populated from Schedule module's 3-Week Lookahead dates when saved. Can be edited directly. Used by Today filter.</td>
         </tr>
     </table>
 
@@ -924,7 +932,25 @@
             <td><span class="keyboard-shortcut">Right-click</span></td>
             <td>Open context menu</td>
         </tr>
+        <tr>
+            <td><span class="keyboard-shortcut">Ctrl+Home</span></td>
+            <td>Go to first cell of first column</td>
+        </tr>
+        <tr>
+            <td><span class="keyboard-shortcut">Ctrl+End</span></td>
+            <td>Go to last cell of last column</td>
+        </tr>
+        <tr>
+            <td><span class="keyboard-shortcut">Ctrl+↑</span></td>
+            <td>Go to first cell of current column</td>
+        </tr>
+        <tr>
+            <td><span class="keyboard-shortcut">Ctrl+↓</span></td>
+            <td>Go to last cell of current column</td>
+        </tr>
     </table>
+
+    <p>You can also use the <strong>▲</strong> and <strong>▼</strong> navigation buttons in the bottom toolbar to jump to the first or last row using the mouse.</p>
 
     <h3 id="prog-copying">Copying Data</h3>
     <p>VANTAGE: Milestone provides multiple ways to copy grid data for use in Excel or other applications:</p>
@@ -2542,6 +2568,8 @@
         <tr><td>PercentEntry</td><td>Val_Perc_Complete</td><td>Val_Perc_Complete</td></tr>
         <tr><td>PhaseCategory</td><td>Catg_PhaseCategory</td><td>Catg_PhaseCategory</td></tr>
         <tr><td>PhaseCode</td><td>Tag_Phase Code</td><td>Tag_PhaseCode</td></tr>
+        <tr><td>PlanFin</td><td>Not Used</td><td>PlanFin</td></tr>
+        <tr><td>PlanStart</td><td>Not Used</td><td>PlanStart</td></tr>
         <tr><td>PipeGrade</td><td>Tag_Pipe_Grade</td><td>Tag_Pipe_Grade</td></tr>
         <tr><td>PipeSize1</td><td>Val_Pipe_Size1</td><td>Val_Pipe_Size1</td></tr>
         <tr><td>PipeSize2</td><td>Val_Pipe_Size2</td><td>Val_Pipe_Size2</td></tr>

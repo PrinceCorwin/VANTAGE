@@ -873,6 +873,85 @@ namespace VANTAGE.Repositories
                             threeWeekCmd.Parameters.AddWithValue("@msFinish",
                                 row.V_Finish?.ToString("yyyy-MM-dd") ?? (object)DBNull.Value);
                             threeWeekCmd.ExecuteNonQuery();
+
+                            // Update Activities.PlanStart/PlanFin with bounds logic
+                            // PlanStart: update if NULL or earlier than 3WLA start
+                            if (row.ThreeWeekStart.HasValue)
+                            {
+                                string planStartStr = row.ThreeWeekStart.Value.ToString("yyyy-MM-dd");
+
+                                using var planStartCmd = connection.CreateCommand();
+                                planStartCmd.Transaction = transaction;
+                                planStartCmd.CommandText = @"
+                                    UPDATE Activities
+                                    SET PlanStart = @planStart
+                                    WHERE SchedActNO = @schedActNo AND ProjectID = @projectId
+                                      AND (PlanStart IS NULL OR PlanStart < @planStart)";
+                                planStartCmd.Parameters.AddWithValue("@planStart", planStartStr);
+                                planStartCmd.Parameters.AddWithValue("@schedActNo", row.SchedActNO);
+                                planStartCmd.Parameters.AddWithValue("@projectId", projectId);
+                                int rowsAffected = planStartCmd.ExecuteNonQuery();
+
+                                // If nothing was updated, find the next closest date and update those
+                                // (earliest PlanStart that is later than the new date)
+                                if (rowsAffected == 0)
+                                {
+                                    using var fallbackCmd = connection.CreateCommand();
+                                    fallbackCmd.Transaction = transaction;
+                                    fallbackCmd.CommandText = @"
+                                        UPDATE Activities
+                                        SET PlanStart = @planStart
+                                        WHERE SchedActNO = @schedActNo AND ProjectID = @projectId
+                                          AND PlanStart = (
+                                            SELECT MIN(PlanStart) FROM Activities
+                                            WHERE SchedActNO = @schedActNo AND ProjectID = @projectId
+                                              AND PlanStart > @planStart
+                                          )";
+                                    fallbackCmd.Parameters.AddWithValue("@planStart", planStartStr);
+                                    fallbackCmd.Parameters.AddWithValue("@schedActNo", row.SchedActNO);
+                                    fallbackCmd.Parameters.AddWithValue("@projectId", projectId);
+                                    fallbackCmd.ExecuteNonQuery();
+                                }
+                            }
+
+                            // PlanFin: update if NULL or later than 3WLA finish
+                            if (row.ThreeWeekFinish.HasValue)
+                            {
+                                string planFinStr = row.ThreeWeekFinish.Value.ToString("yyyy-MM-dd");
+
+                                using var planFinCmd = connection.CreateCommand();
+                                planFinCmd.Transaction = transaction;
+                                planFinCmd.CommandText = @"
+                                    UPDATE Activities
+                                    SET PlanFin = @planFin
+                                    WHERE SchedActNO = @schedActNo AND ProjectID = @projectId
+                                      AND (PlanFin IS NULL OR PlanFin > @planFin)";
+                                planFinCmd.Parameters.AddWithValue("@planFin", planFinStr);
+                                planFinCmd.Parameters.AddWithValue("@schedActNo", row.SchedActNO);
+                                planFinCmd.Parameters.AddWithValue("@projectId", projectId);
+                                int rowsAffected = planFinCmd.ExecuteNonQuery();
+
+                                // If nothing was updated, find the next closest date and update those
+                                // (latest PlanFin that is earlier than the new date)
+                                if (rowsAffected == 0)
+                                {
+                                    using var fallbackCmd = connection.CreateCommand();
+                                    fallbackCmd.Transaction = transaction;
+                                    fallbackCmd.CommandText = @"
+                                        UPDATE Activities
+                                        SET PlanFin = @planFin
+                                        WHERE SchedActNO = @schedActNo AND ProjectID = @projectId
+                                          AND PlanFin = (
+                                            SELECT MAX(PlanFin) FROM Activities
+                                            WHERE SchedActNO = @schedActNo AND ProjectID = @projectId
+                                              AND PlanFin < @planFin
+                                          )";
+                                    fallbackCmd.Parameters.AddWithValue("@planFin", planFinStr);
+                                    fallbackCmd.Parameters.AddWithValue("@schedActNo", row.SchedActNO);
+                                    fallbackCmd.Parameters.AddWithValue("@projectId", projectId);
+                                    fallbackCmd.ExecuteNonQuery();
+                                }
+                            }
                         }
                         else
                         {

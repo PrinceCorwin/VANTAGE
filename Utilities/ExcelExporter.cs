@@ -121,6 +121,8 @@ namespace VANTAGE.Utilities
             "SecondActno",
             "ActStart",
             "ActFin",
+            "PlanStart",
+            "PlanFin",
             "Status",
             "Aux1",
             "Aux2",

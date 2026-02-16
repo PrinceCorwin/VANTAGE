@@ -77,6 +77,8 @@ namespace VANTAGE.Models
         public string SchedActNO { get; set; } = string.Empty;
         public DateTime? ActFin { get; set; }
         public DateTime? ActStart { get; set; }
+        public DateTime? PlanStart { get; set; }
+        public DateTime? PlanFin { get; set; }
         public string SecondActno { get; set; } = string.Empty;
         public string SecondDwgNO { get; set; } = string.Empty;
         public string Service { get; set; } = string.Empty;

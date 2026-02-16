@@ -303,6 +303,8 @@ namespace VANTAGE
                 SchedActNO            TEXT NOT NULL DEFAULT '',
                 ActFin                TEXT,
                 ActStart              TEXT,
+                PlanStart             TEXT,
+                PlanFin               TEXT,
                 SecondActno           TEXT NOT NULL DEFAULT '',
                 SecondDwgNO           TEXT NOT NULL DEFAULT '',
                 Service               TEXT NOT NULL DEFAULT '',

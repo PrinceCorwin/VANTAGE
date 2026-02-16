@@ -480,7 +480,7 @@ namespace VANTAGE.Dialogs
                             MtrlSpec, Notes, PaintCode, PercentEntry, PhaseCategory, PhaseCode,
                             PipeGrade, PipeSize1, PipeSize2, PrevEarnMHs, PrevEarnQTY, ProgDate,
                             ProjectID, Quantity, RevNO, RFINO, ROCBudgetQTY, ROCID, ROCPercent,
-                            ROCStep, SchedActNO, ActFin, ActStart, SecondActno, SecondDwgNO,
+                            ROCStep, SchedActNO, ActFin, ActStart, PlanStart, PlanFin, SecondActno, SecondDwgNO,
                             Service, ShopField, ShtNO, SubArea, PjtSystem, PjtSystemNo, TagNO,
                             UDF1, UDF2, UDF3, UDF4, UDF5, UDF6, UDF7, UDF8, UDF9, UDF10,
                             UDF11, UDF12, UDF13, UDF14, UDF15, UDF16, UDF17, RespParty, UDF20,
@@ -495,7 +495,7 @@ namespace VANTAGE.Dialogs
                             MtrlSpec, Notes, PaintCode, PercentEntry, PhaseCategory, PhaseCode,
                             PipeGrade, PipeSize1, PipeSize2, PrevEarnMHs, PrevEarnQTY, ProgDate,
                             ProjectID, Quantity, RevNO, RFINO, ROCBudgetQTY, ROCID, ROCPercent,
-                            ROCStep, SchedActNO, ActFin, ActStart, SecondActno, SecondDwgNO,
+                            ROCStep, SchedActNO, ActFin, ActStart, PlanStart, PlanFin, SecondActno, SecondDwgNO,
                             Service, ShopField, ShtNO, SubArea, PjtSystem, PjtSystemNo, TagNO,
                             UDF1, UDF2, UDF3, UDF4, UDF5, UDF6, UDF7, UDF8, UDF9, UDF10,
                             UDF11, UDF12, UDF13, UDF14, UDF15, UDF16, UDF17, RespParty, UDF20,
@@ -663,7 +663,7 @@ namespace VANTAGE.Dialogs
                         MtrlSpec, Notes, PaintCode, PercentEntry, PhaseCategory, PhaseCode,
                         PipeGrade, PipeSize1, PipeSize2, PrevEarnMHs, PrevEarnQTY, ProgDate,
                         ProjectID, Quantity, RevNO, RFINO, ROCBudgetQTY, ROCID, ROCPercent,
-                        ROCStep, SchedActNO, ActFin, ActStart, SecondActno, SecondDwgNO,
+                        ROCStep, SchedActNO, ActFin, ActStart, PlanStart, PlanFin, SecondActno, SecondDwgNO,
                         Service, ShopField, ShtNO, SubArea, PjtSystem, PjtSystemNo, TagNO,
                         UDF1, UDF2, UDF3, UDF4, UDF5, UDF6, UDF7, UDF8, UDF9, UDF10,
                         UDF11, UDF12, UDF13, UDF14, UDF15, UDF16, UDF17, RespParty, UDF20,
@@ -745,37 +745,39 @@ namespace VANTAGE.Dialogs
                 SchedActNO = GetStringOrEmpty(reader, 49),
                 ActFin = GetNullableString(reader, 50),
                 ActStart = GetNullableString(reader, 51),
-                SecondActno = GetStringOrEmpty(reader, 52),
-                SecondDwgNO = GetStringOrEmpty(reader, 53),
-                Service = GetStringOrEmpty(reader, 54),
-                ShopField = GetStringOrEmpty(reader, 55),
-                ShtNO = GetStringOrEmpty(reader, 56),
-                SubArea = GetStringOrEmpty(reader, 57),
-                PjtSystem = GetStringOrEmpty(reader, 58),
-                PjtSystemNo = GetStringOrEmpty(reader, 59),
-                TagNO = GetStringOrEmpty(reader, 60),
-                UDF1 = GetStringOrEmpty(reader, 61),
-                UDF2 = GetStringOrEmpty(reader, 62),
-                UDF3 = GetStringOrEmpty(reader, 63),
-                UDF4 = GetStringOrEmpty(reader, 64),
-                UDF5 = GetStringOrEmpty(reader, 65),
-                UDF6 = GetStringOrEmpty(reader, 66),
-                UDF7 = GetStringOrEmpty(reader, 67),
-                UDF8 = GetStringOrEmpty(reader, 68),
-                UDF9 = GetStringOrEmpty(reader, 69),
-                UDF10 = GetStringOrEmpty(reader, 70),
-                UDF11 = GetStringOrEmpty(reader, 71),
-                UDF12 = GetStringOrEmpty(reader, 72),
-                UDF13 = GetStringOrEmpty(reader, 73),
-                UDF14 = GetStringOrEmpty(reader, 74),
-                UDF15 = GetStringOrEmpty(reader, 75),
-                UDF16 = GetStringOrEmpty(reader, 76),
-                UDF17 = GetStringOrEmpty(reader, 77),
-                RespParty = GetStringOrEmpty(reader, 78),
-                UDF20 = GetStringOrEmpty(reader, 79),
-                UOM = GetStringOrEmpty(reader, 80),
-                WorkPackage = GetStringOrEmpty(reader, 81),
-                XRay = GetStringOrEmpty(reader, 82)
+                PlanStart = GetNullableString(reader, 52),
+                PlanFin = GetNullableString(reader, 53),
+                SecondActno = GetStringOrEmpty(reader, 54),
+                SecondDwgNO = GetStringOrEmpty(reader, 55),
+                Service = GetStringOrEmpty(reader, 56),
+                ShopField = GetStringOrEmpty(reader, 57),
+                ShtNO = GetStringOrEmpty(reader, 58),
+                SubArea = GetStringOrEmpty(reader, 59),
+                PjtSystem = GetStringOrEmpty(reader, 60),
+                PjtSystemNo = GetStringOrEmpty(reader, 61),
+                TagNO = GetStringOrEmpty(reader, 62),
+                UDF1 = GetStringOrEmpty(reader, 63),
+                UDF2 = GetStringOrEmpty(reader, 64),
+                UDF3 = GetStringOrEmpty(reader, 65),
+                UDF4 = GetStringOrEmpty(reader, 66),
+                UDF5 = GetStringOrEmpty(reader, 67),
+                UDF6 = GetStringOrEmpty(reader, 68),
+                UDF7 = GetStringOrEmpty(reader, 69),
+                UDF8 = GetStringOrEmpty(reader, 70),
+                UDF9 = GetStringOrEmpty(reader, 71),
+                UDF10 = GetStringOrEmpty(reader, 72),
+                UDF11 = GetStringOrEmpty(reader, 73),
+                UDF12 = GetStringOrEmpty(reader, 74),
+                UDF13 = GetStringOrEmpty(reader, 75),
+                UDF14 = GetStringOrEmpty(reader, 76),
+                UDF15 = GetStringOrEmpty(reader, 77),
+                UDF16 = GetStringOrEmpty(reader, 78),
+                UDF17 = GetStringOrEmpty(reader, 79),
+                RespParty = GetStringOrEmpty(reader, 80),
+                UDF20 = GetStringOrEmpty(reader, 81),
+                UOM = GetStringOrEmpty(reader, 82),
+                WorkPackage = GetStringOrEmpty(reader, 83),
+                XRay = GetStringOrEmpty(reader, 84)
             };
         }
 
@@ -948,6 +950,8 @@ namespace VANTAGE.Dialogs
                     SchedActNO = @schedActNO,
                     ActFin = @schFinish,
                     ActStart = @schStart,
+                    PlanStart = @planStart,
+                    PlanFin = @planFin,
                     SecondActno = @secondActno,
                     SecondDwgNO = @secondDwgNO,
                     Service = @service,
@@ -1038,6 +1042,8 @@ namespace VANTAGE.Dialogs
             cmd.Parameters.AddWithValue("@schedActNO", snapshot.SchedActNO);
             cmd.Parameters.AddWithValue("@schFinish", snapshot.ActFin ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("@schStart", snapshot.ActStart ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@planStart", snapshot.PlanStart ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@planFin", snapshot.PlanFin ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("@secondActno", snapshot.SecondActno);
             cmd.Parameters.AddWithValue("@secondDwgNO", snapshot.SecondDwgNO);
             cmd.Parameters.AddWithValue("@service", snapshot.Service);
@@ -1185,6 +1191,8 @@ namespace VANTAGE.Dialogs
         public string SchedActNO { get; set; } = string.Empty;
         public string? ActFin { get; set; }
         public string? ActStart { get; set; }
+        public string? PlanStart { get; set; }
+        public string? PlanFin { get; set; }
         public string SecondActno { get; set; } = string.Empty;
         public string SecondDwgNO { get; set; } = string.Empty;
         public string Service { get; set; } = string.Empty;

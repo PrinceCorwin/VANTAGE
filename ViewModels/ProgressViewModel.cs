@@ -213,15 +213,15 @@ namespace VANTAGE.ViewModels
             });
         }
 
-        // Show activities that have a start or finish date of today
+        // Show activities that have a planned start or finish date of today
         public bool PassesTodayFilter(Activity activity)
         {
             DateTime today = DateTime.Today;
 
-            if (activity.ActStart.HasValue && activity.ActStart.Value.Date == today)
+            if (activity.PlanStart.HasValue && activity.PlanStart.Value.Date == today)
                 return true;
 
-            if (activity.ActFin.HasValue && activity.ActFin.Value.Date == today)
+            if (activity.PlanFin.HasValue && activity.PlanFin.Value.Date == today)
                 return true;
 
             return false;

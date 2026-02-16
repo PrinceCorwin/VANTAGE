@@ -1899,6 +1899,15 @@ namespace VANTAGE
             ContentArea.Content = _cachedProgressView;
         }
 
+        // Called by ScheduleView when save updates Activities (e.g., PlanStart/PlanFin)
+        public async Task NotifyActivitiesModifiedAsync()
+        {
+            if (_cachedProgressView != null)
+            {
+                await _cachedProgressView.RefreshData();
+            }
+        }
+
         // Check if current view has unsaved changes
         private bool CanLeaveCurrentView()
         {

@@ -22,7 +22,7 @@ namespace VANTAGE.Utilities
         private const string SchemaVersionKey = "SchemaVersion";
 
         // Increment this when adding new migrations
-        public const int CurrentSchemaVersion = 4;
+        public const int CurrentSchemaVersion = 5;
 
         // Runs all pending migrations sequentially
         // progressCallback is invoked with status messages for UI updates
@@ -85,6 +85,9 @@ namespace VANTAGE.Utilities
                     break;
                 case 4:
                     Migration_v4_RemoveSystemNOColumn(connection);
+                    break;
+                case 5:
+                    Migration_v5_AddPlanDateColumns(connection);
                     break;
                 default:
                     throw new ArgumentException($"Unknown migration version: {version}");
@@ -262,6 +265,26 @@ namespace VANTAGE.Utilities
             {
                 using var cmd = connection.CreateCommand();
                 cmd.CommandText = "ALTER TABLE VMS_ProgressSnapshots DROP COLUMN SystemNO";
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        // v5: Add PlanStart and PlanFin columns to Activities table
+        private static void Migration_v5_AddPlanDateColumns(SqliteConnection connection)
+        {
+            var activitiesCols = GetTableColumns(connection, "Activities");
+
+            if (!activitiesCols.Contains("PlanStart"))
+            {
+                using var cmd = connection.CreateCommand();
+                cmd.CommandText = "ALTER TABLE Activities ADD COLUMN PlanStart TEXT";
+                cmd.ExecuteNonQuery();
+            }
+
+            if (!activitiesCols.Contains("PlanFin"))
+            {
+                using var cmd = connection.CreateCommand();
+                cmd.CommandText = "ALTER TABLE Activities ADD COLUMN PlanFin TEXT";
                 cmd.ExecuteNonQuery();
             }
         }

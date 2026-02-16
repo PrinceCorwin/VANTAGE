@@ -758,6 +758,12 @@ namespace VANTAGE.Views
                 txtStatus.Text = $"Saved {savedCount} rows";
                 AppLogger.Info($"Saved {savedCount} schedule rows", "ScheduleView.btnSave_Click", username);
                 _viewModel.HasUnsavedChanges = false;
+
+                // Notify MainWindow to refresh Progress module (PlanStart/PlanFin may have changed)
+                if (Window.GetWindow(this) is MainWindow mainWindow)
+                {
+                    await mainWindow.NotifyActivitiesModifiedAsync();
+                }
             }
             catch (Exception ex)
             {
@@ -822,6 +828,12 @@ namespace VANTAGE.Views
                 txtStatus.Text = $"Saved {savedCount} rows";
                 AppLogger.Info($"Saved {savedCount} schedule rows", "ScheduleView.SaveChanges", username);
                 _viewModel.HasUnsavedChanges = false;
+
+                // Notify MainWindow to refresh Progress module (PlanStart/PlanFin may have changed)
+                if (Window.GetWindow(this) is MainWindow mainWindow)
+                {
+                    await mainWindow.NotifyActivitiesModifiedAsync();
+                }
             }
             catch (Exception ex)
             {

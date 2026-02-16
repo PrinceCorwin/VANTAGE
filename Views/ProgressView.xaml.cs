@@ -292,6 +292,46 @@ namespace VANTAGE.Views
                 AppLogger.Error(ex, "ProgressView.CalculateMetadataErrorCount");
             }
         }
+
+        // Navigate to first row in grid
+        private void BtnGoToFirst_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (sfActivities.View?.Records == null || sfActivities.View.Records.Count == 0)
+                    return;
+
+                sfActivities.SelectedIndex = 0;
+                var gridRowIndex = sfActivities.ResolveToRowIndex(0);
+                sfActivities.ScrollInView(new RowColumnIndex(gridRowIndex,
+                    sfActivities.ResolveToScrollColumnIndex(0)));
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "ProgressView.BtnGoToFirst_Click");
+            }
+        }
+
+        // Navigate to last row in grid
+        private void BtnGoToLast_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (sfActivities.View?.Records == null || sfActivities.View.Records.Count == 0)
+                    return;
+
+                var lastRecordIndex = sfActivities.View.Records.Count - 1;
+                sfActivities.SelectedIndex = lastRecordIndex;
+                var gridRowIndex = sfActivities.ResolveToRowIndex(lastRecordIndex);
+                sfActivities.ScrollInView(new RowColumnIndex(gridRowIndex,
+                    sfActivities.ResolveToScrollColumnIndex(0)));
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "ProgressView.BtnGoToLast_Click");
+            }
+        }
+
         // Add these two methods to ProgressView.xaml.cs (in the context menu handlers region)
 
         // Copy (Visible Columns) - copies only visible columns manually
