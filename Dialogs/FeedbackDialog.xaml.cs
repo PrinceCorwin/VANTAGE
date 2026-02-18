@@ -338,6 +338,10 @@ namespace VANTAGE.Dialogs
                 }
                 else
                 {
+                    // Track old status for notification
+                    string oldStatus = _selectedFeedback!.Status;
+                    string feedbackCreator = _selectedFeedback.CreatedBy;
+
                     // Update existing feedback
                     await System.Threading.Tasks.Task.Run(() =>
                     {
@@ -371,6 +375,12 @@ namespace VANTAGE.Dialogs
 
                     AppLogger.Info($"Updated feedback: {title} (ID: {_selectedFeedback.Id})",
                         "FeedbackDialog.BtnSave_Click", currentUser);
+
+                    // Notify user if status changed and updater is not the creator
+                    if (status != oldStatus && !feedbackCreator.Equals(currentUser, StringComparison.OrdinalIgnoreCase))
+                    {
+                        await NotifyUserStatusChangeAsync(_selectedFeedback, oldStatus, status);
+                    }
 
                     MessageBox.Show($"Feedback updated successfully.", "Updated",
                         MessageBoxButton.OK, MessageBoxImage.None);
@@ -410,8 +420,8 @@ namespace VANTAGE.Dialogs
                     var cmd = conn.CreateCommand();
                     cmd.CommandText = @"
                         SELECT u.Email
-                        FROM Users u
-                        INNER JOIN Admins a ON u.Username = a.Username
+                        FROM VMS_Users u
+                        INNER JOIN VMS_Admins a ON u.Username = a.Username
                         WHERE u.Email IS NOT NULL AND u.Email <> ''";
 
                     using var reader = cmd.ExecuteReader();
@@ -485,6 +495,95 @@ namespace VANTAGE.Dialogs
             {
                 AppLogger.Error(ex, "FeedbackDialog.NotifyAdminsAsync");
                 // Don't show error to user - notification failure shouldn't block submission
+            }
+        }
+
+        // Notify user when their feedback status changes
+        private async System.Threading.Tasks.Task NotifyUserStatusChangeAsync(FeedbackItem feedback, string oldStatus, string newStatus)
+        {
+            try
+            {
+                // Get user email from Azure
+                string? userEmail = await System.Threading.Tasks.Task.Run(() =>
+                {
+                    using var conn = AzureDbManager.GetConnection();
+                    conn.Open();
+
+                    var cmd = conn.CreateCommand();
+                    cmd.CommandText = @"
+                        SELECT Email FROM VMS_Users
+                        WHERE Username = @username AND Email IS NOT NULL AND Email <> ''";
+                    cmd.Parameters.AddWithValue("@username", feedback.CreatedBy);
+
+                    return cmd.ExecuteScalar()?.ToString();
+                });
+
+                if (string.IsNullOrEmpty(userEmail))
+                {
+                    AppLogger.Info(
+                        $"Cannot send status change notification - no email for user: {feedback.CreatedBy}",
+                        "FeedbackDialog.NotifyUserStatusChangeAsync",
+                        App.CurrentUser?.Username);
+                    return;
+                }
+
+                string typeLabel = feedback.Type == "Bug" ? "Bug Report" : "Idea";
+                string subject = $"VANTAGE: MS Feedback: Your {typeLabel} Status Updated";
+                string htmlBody = $@"
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{ font-family: 'Segoe UI', Arial, sans-serif; color: #333; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+        .header {{ background-color: #0078D7; color: white; padding: 15px 20px; border-radius: 4px 4px 0 0; }}
+        .content {{ background-color: #f5f5f5; padding: 20px; border-radius: 0 0 4px 4px; }}
+        .label {{ font-weight: 600; color: #555; }}
+        .detail-row {{ padding: 8px 0; border-bottom: 1px solid #ddd; }}
+        .status-change {{ background-color: #e8f4fd; padding: 15px; border-radius: 4px; margin: 15px 0; }}
+        .old-status {{ color: #888; text-decoration: line-through; }}
+        .new-status {{ color: #0078D7; font-weight: bold; }}
+        .footer {{ margin-top: 20px; font-size: 12px; color: #888; }}
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <div class='header'>
+            <h2 style='margin: 0;'>Your {typeLabel} Status Updated</h2>
+        </div>
+        <div class='content'>
+            <div class='detail-row'>
+                <span class='label'>Title:</span> {System.Net.WebUtility.HtmlEncode(feedback.Title)}
+            </div>
+            <div class='status-change'>
+                <span class='label'>Status changed:</span><br/>
+                <span class='old-status'>{oldStatus}</span> → <span class='new-status'>{newStatus}</span>
+            </div>
+            <div class='detail-row'>
+                <span class='label'>Updated by:</span> {App.CurrentUser?.Username ?? "Unknown"}
+            </div>
+            <div class='detail-row'>
+                <span class='label'>Date:</span> {DateTime.UtcNow:MMMM d, yyyy h:mm tt} UTC
+            </div>
+            <div class='footer'>
+                <p>Open VANTAGE: MS and go to Tools > Feedback Board to view your feedback.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>";
+
+                await EmailService.SendEmailAsync(userEmail, subject, htmlBody);
+
+                AppLogger.Info(
+                    $"Sent status change notification to {feedback.CreatedBy} ({userEmail}) for: {feedback.Title} ({oldStatus} → {newStatus})",
+                    "FeedbackDialog.NotifyUserStatusChangeAsync",
+                    App.CurrentUser?.Username);
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "FeedbackDialog.NotifyUserStatusChangeAsync");
+                // Don't show error to user - notification failure shouldn't block update
             }
         }
 

@@ -7,7 +7,7 @@
         "Simplified Schedule module 3WLA and MissedReasons — 3WLA dates now persist via Activities.PlanStart/PlanFin",
         "MissedReasons only required for P6 dates within current week (not all past dates)",
         "Yellow highlighting for 3WLA forecasts that differ from P6 planned dates",
-        "3WLA dates pre-populate from linked Activities on Schedule load"
+        "Feedback Board email notifications — admins notified on new submissions, users notified on status changes"
       ]
     },
     {
