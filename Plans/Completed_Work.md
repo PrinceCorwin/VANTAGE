@@ -7,6 +7,12 @@ This document tracks completed features and fixes. Items are moved here from Pro
 ## Unreleased
 
 ### February 18, 2026
+- **Simplify Schedule module 3WLA and MissedReasons:** Major simplification of Schedule data storage:
+  - **3WLA dates:** Now load from Activities.PlanStart/PlanFin instead of separate ThreeWeekLookahead table. Pre-populated with MIN(PlanStart)/MAX(PlanFin) grouped by SchedActNO. Persists across P6 imports via Activities table.
+  - **MissedReasons:** Now session-only (stored in Schedule table, cleared on P6 import). Required only for P6 dates within current week (WeekEndDate-7 to WeekEndDate), not all past dates.
+  - **Yellow highlighting:** 3WLA cells now show yellow when forecast differs from P6 date. Red (required) takes priority over yellow.
+  - **Disconnected ThreeWeekLookahead table:** No longer reads from or writes to this table. Can be deleted in future migration.
+  - Files changed: ScheduleRepository.cs, ScheduleMasterRow.cs, ScheduleView.xaml, ScheduleView.xaml.cs, ScheduleExcelImporter.cs, IScheduleCellIndicators.cs, ScheduleViewModel.cs, themes
 - **Fix V-Start/V-Finish calculation:** V-Start now correctly ignores empty strings stored as dates (uses `NULLIF(ActStart, '')`). V-Finish now only displays when ALL linked activities are 100% complete (changed from `MAX(PercentEntry) = 100` to `MIN(PercentEntry) = 100`).
 - **Auto-populate ActStart/ActFin in Schedule detail grid:** When PercentEntry changes from 0 to any positive value, ActStart is auto-set to the WeekEndDate. When PercentEntry reaches 100, ActFin is auto-set to the WeekEndDate.
 - **Enable keyboard input for null date cells:** Added `CanEdit="True"` to all editable GridDateTimeColumn elements in Progress and Schedule grids. Users can now type dates directly into empty date cells instead of only using the date picker.

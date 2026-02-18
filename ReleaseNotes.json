@@ -1,6 +1,16 @@
 {
   "releases": [
     {
+      "version": "26.1.18",
+      "date": "2026-02-18",
+      "highlights": [
+        "Simplified Schedule module 3WLA and MissedReasons — 3WLA dates now persist via Activities.PlanStart/PlanFin",
+        "MissedReasons only required for P6 dates within current week (not all past dates)",
+        "Yellow highlighting for 3WLA forecasts that differ from P6 planned dates",
+        "3WLA dates pre-populate from linked Activities on Schedule load"
+      ]
+    },
+    {
       "version": "26.1.17",
       "date": "2026-02-18",
       "highlights": [

@@ -33,6 +33,8 @@ namespace VANTAGE.ViewModels
         public bool IsMissedFinishReasonRequired => false;
         public bool IsThreeWeekStartRequired => false;
         public bool IsThreeWeekFinishRequired => false;
+        public bool HasThreeWeekStartForecast => false;
+        public bool HasThreeWeekFinishForecast => false;
         public bool HasStartVariance => false;
         public bool HasFinishVariance => false;
         public bool HasBudgetMHsVariance => false;

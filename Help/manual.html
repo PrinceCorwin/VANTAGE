@@ -1178,28 +1178,39 @@
     <h4>Auto-Clear Behavior</h4>
     <p>When you record an actual start or finish in the detail grid, the corresponding 3WLA forecast date is automatically cleared (no longer needed).</p>
 
+    <h4>Pre-Population from Activities</h4>
+    <p>3WLA dates are pre-populated from your Activities data when you load the Schedule module. The system finds the earliest PlanStart and latest PlanFin dates across all activities linked to each schedule activity.</p>
+
+    <h4>Yellow Highlighting</h4>
+    <p>Yellow cells indicate a forecast date that differs from the P6 planned date. This highlights where your forecast diverges from the original schedule. Red cells take priority — if a cell is both required and has a different forecast, it shows red.</p>
+
     <h4>3WLA Workflow</h4>
     <ol>
         <li>Click the <strong>3WLA</strong> filter button to see activities needing forecasts</li>
-        <li>Red cells indicate required forecast dates</li>
+        <li>Red cells indicate required forecast dates; yellow cells indicate forecasts that differ from P6</li>
         <li>Enter your forecast dates for 3WLA Start and/or 3WLA Finish (must be on or after the week ending date)</li>
-        <li>Click <strong>SAVE</strong> to save your forecasts</li>
+        <li>Click <strong>SAVE</strong> to save your forecasts (saved to Activities.PlanStart/PlanFin)</li>
     </ol>
 
     <h3 id="sched-missed-reasons">Missed Reasons</h3>
-    <p>When a P6 deadline passes and VANTAGE: Milestone hasn't met it, you must document why.</p>
+    <p>When a P6 deadline within the current week passes and VANTAGE: Milestone hasn't met it, you must document why.</p>
 
     <h4>When Missed Start Reason Is Required</h4>
     <ul>
-        <li>P6 planned start date has passed</li>
+        <li>P6 planned start date is within the current week (WeekEndDate - 7 days to WeekEndDate)</li>
         <li>AND MS either never started OR started after the P6 date</li>
     </ul>
 
     <h4>When Missed Finish Reason Is Required</h4>
     <ul>
-        <li>P6 planned finish date has passed</li>
+        <li>P6 planned finish date is within the current week (WeekEndDate - 7 days to WeekEndDate)</li>
         <li>AND MS either never finished OR finished after the P6 date</li>
     </ul>
+
+    <div class="note">
+        <div class="note-title">Session-Only Persistence</div>
+        <p>Missed reasons are stored in the Schedule data and persist within your session, but are cleared when you import a new P6 file. This is expected behavior since P6 imports represent fresh schedule data.</p>
+    </div>
 
     <h4>Auto-Populated Reasons</h4>
     <p>If MS completed before the P6 date, the system auto-populates:</p>
@@ -1305,7 +1316,7 @@
 
     <div class="warning">
         <div class="warning-title">Import Replaces Data</div>
-        <p>P6 import replaces all existing schedule data. Your 3WLA forecasts and missed reasons are preserved if the SchedActNO still exists in the new import.</p>
+        <p>P6 import replaces all existing schedule data. Your 3WLA forecast dates are preserved via the Activities PlanStart/PlanFin fields and will reload automatically. Missed reasons are cleared on import since they apply to the previous schedule data.</p>
     </div>
 
     <h3 id="sched-p6-export">P6 Export</h3>

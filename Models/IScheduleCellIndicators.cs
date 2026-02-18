@@ -10,6 +10,8 @@ namespace VANTAGE.Models
         bool IsMissedFinishReasonRequired { get; }
         bool IsThreeWeekStartRequired { get; }
         bool IsThreeWeekFinishRequired { get; }
+        bool HasThreeWeekStartForecast { get; }
+        bool HasThreeWeekFinishForecast { get; }
         bool HasStartVariance { get; }
         bool HasFinishVariance { get; }
         bool HasBudgetMHsVariance { get; }

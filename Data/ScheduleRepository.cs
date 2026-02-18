@@ -95,91 +95,52 @@ namespace VANTAGE.Repositories
                         return masterRows;
                     }
 
-                    // Step 4: Load ThreeWeekLookahead data (3WLA dates, MissedReasons, and stored comparison dates)
+                    // Step 4: Load 3WLA dates from Activities (MIN PlanStart, MAX PlanFin per SchedActNO)
                     string projectIdList = "'" + string.Join("','", projectIds) + "'";
                     schedActNoList = "'" + string.Join("','", schedActNOs) + "'";
 
-                    var threeWeekDict = new Dictionary<string, (
-                        DateTime? ThreeWeekStart, DateTime? ThreeWeekFinish,
-                        string? MissedStartReason, string? MissedFinishReason,
-                        string? StoredP6Start, string? StoredP6Finish,
-                        string? StoredMSStart, string? StoredMSFinish
-                    )>(StringComparer.OrdinalIgnoreCase);
+                    var planDatesDict = new Dictionary<string, (DateTime? MinPlanStart, DateTime? MaxPlanFin)>(StringComparer.OrdinalIgnoreCase);
 
-                    var threeWeekCmd = connection.CreateCommand();
-                    threeWeekCmd.CommandText = $@"
-                SELECT SchedActNO, ThreeWeekStart, ThreeWeekFinish,
-                       MissedStartReason, MissedFinishReason,
-                       P6_Start, P6_Finish, MS_Start, MS_Finish
-                FROM ThreeWeekLookahead
+                    var planDatesCmd = connection.CreateCommand();
+                    planDatesCmd.CommandText = $@"
+                SELECT SchedActNO, MIN(PlanStart), MAX(PlanFin)
+                FROM Activities
                 WHERE ProjectID IN ({projectIdList})
-                  AND SchedActNO IN ({schedActNoList})";
+                  AND SchedActNO IN ({schedActNoList})
+                  AND (PlanStart IS NOT NULL OR PlanFin IS NOT NULL)
+                GROUP BY SchedActNO";
 
-                    using (var twReader = threeWeekCmd.ExecuteReader())
+                    using (var planReader = planDatesCmd.ExecuteReader())
                     {
-                        while (twReader.Read())
+                        while (planReader.Read())
                         {
-                            string actNo = twReader.GetString(0);
-
-                            // If same SchedActNO exists for multiple ProjectIDs, first one wins
-                            if (!threeWeekDict.ContainsKey(actNo))
-                            {
-                                threeWeekDict[actNo] = (
-                                    twReader.IsDBNull(1) ? null : DateTime.Parse(twReader.GetString(1)),
-                                    twReader.IsDBNull(2) ? null : DateTime.Parse(twReader.GetString(2)),
-                                    twReader.IsDBNull(3) ? null : twReader.GetString(3),
-                                    twReader.IsDBNull(4) ? null : twReader.GetString(4),
-                                    twReader.IsDBNull(5) ? null : twReader.GetString(5),
-                                    twReader.IsDBNull(6) ? null : twReader.GetString(6),
-                                    twReader.IsDBNull(7) ? null : twReader.GetString(7),
-                                    twReader.IsDBNull(8) ? null : twReader.GetString(8)
-                                );
-                            }
+                            string actNo = planReader.GetString(0);
+                            DateTime? minStart = planReader.IsDBNull(1) ? null : DateTime.Parse(planReader.GetString(1));
+                            DateTime? maxFin = planReader.IsDBNull(2) ? null : DateTime.Parse(planReader.GetString(2));
+                            planDatesDict[actNo] = (minStart, maxFin);
                         }
                     }
 
-                    // Apply 3WLA dates and MissedReasons to master rows
+                    // Apply 3WLA dates from Activities.PlanStart/PlanFin
                     foreach (var row in masterRows)
                     {
-                        if (threeWeekDict.TryGetValue(row.SchedActNO, out var stored))
+                        if (planDatesDict.TryGetValue(row.SchedActNO, out var planDates))
                         {
-                            // 3WLA Start: only apply if no actual AND not stale
-                            if (stored.ThreeWeekStart.HasValue &&
-                                row.V_Start == null &&
-                                stored.ThreeWeekStart.Value.Date >= weekEndDate.Date)
+                            // Pre-populate ThreeWeekStart if no actual start exists
+                            if (row.V_Start == null && planDates.MinPlanStart.HasValue)
                             {
-                                row.ThreeWeekStart = stored.ThreeWeekStart;
+                                row.ThreeWeekStart = planDates.MinPlanStart;
                             }
 
-                            // 3WLA Finish: only apply if no actual AND not stale
-                            if (stored.ThreeWeekFinish.HasValue &&
-                                row.V_Finish == null &&
-                                stored.ThreeWeekFinish.Value.Date >= weekEndDate.Date)
+                            // Pre-populate ThreeWeekFinish if no actual finish exists
+                            if (row.V_Finish == null && planDates.MaxPlanFin.HasValue)
                             {
-                                row.ThreeWeekFinish = stored.ThreeWeekFinish;
-                            }
-
-                            // MissedStartReason: only apply if P6 and MS dates match what was stored
-                            string? currentP6Start = row.P6_Start?.ToString("yyyy-MM-dd");
-                            string? currentMSStart = row.V_Start?.ToString("yyyy-MM-dd");
-                            if (!string.IsNullOrEmpty(stored.MissedStartReason) &&
-                                stored.StoredP6Start == currentP6Start &&
-                                stored.StoredMSStart == currentMSStart)
-                            {
-                                row.MissedStartReason = stored.MissedStartReason;
-                            }
-
-                            // MissedFinishReason: only apply if P6 and MS dates match what was stored
-                            string? currentP6Finish = row.P6_Finish?.ToString("yyyy-MM-dd");
-                            string? currentMSFinish = row.V_Finish?.ToString("yyyy-MM-dd");
-                            if (!string.IsNullOrEmpty(stored.MissedFinishReason) &&
-                                stored.StoredP6Finish == currentP6Finish &&
-                                stored.StoredMSFinish == currentMSFinish)
-                            {
-                                row.MissedFinishReason = stored.MissedFinishReason;
+                                row.ThreeWeekFinish = planDates.MaxPlanFin;
                             }
                         }
                     }
+
+                    // MissedReasons are now session-only (stored in Schedule table, loaded earlier)
 
                     // Step 5: Apply default MissedReasons based on MS rollups (only if fields are empty)
                     foreach (var row in masterRows)
@@ -445,155 +406,6 @@ namespace VANTAGE.Repositories
                 return results;
             });
         }
-        // Saves 3WLA dates to ThreeWeekLookahead table
-        // INSERT OR REPLACE - creates new row or updates existing
-        public static async Task SaveThreeWeekLookaheadAsync(
-            string schedActNo,
-            string projectId,
-            DateTime? threeWeekStart,
-            DateTime? threeWeekFinish,
-            string username)
-        {
-            await Task.Run(() =>
-            {
-                try
-                {
-                    using var connection = new SqliteConnection($"Data Source={DatabaseSetup.DbPath}");
-                    connection.Open();
-
-                    // If both dates are null, delete the row instead of inserting empty
-                    if (threeWeekStart == null && threeWeekFinish == null)
-                    {
-                        var deleteCmd = connection.CreateCommand();
-                        deleteCmd.CommandText = @"
-                    DELETE FROM ThreeWeekLookahead 
-                    WHERE SchedActNO = @schedActNo AND ProjectID = @projectId";
-                        deleteCmd.Parameters.AddWithValue("@schedActNo", schedActNo);
-                        deleteCmd.Parameters.AddWithValue("@projectId", projectId);
-                        deleteCmd.ExecuteNonQuery();
-                        return;
-                    }
-
-                    var cmd = connection.CreateCommand();
-                    cmd.CommandText = @"
-                INSERT INTO ThreeWeekLookahead (SchedActNO, ProjectID, ThreeWeekStart, ThreeWeekFinish)
-                VALUES (@schedActNo, @projectId, @threeWeekStart, @threeWeekFinish)
-                ON CONFLICT (SchedActNO, ProjectID) DO UPDATE SET
-                    ThreeWeekStart = @threeWeekStart,
-                    ThreeWeekFinish = @threeWeekFinish";
-
-                    cmd.Parameters.AddWithValue("@schedActNo", schedActNo);
-                    cmd.Parameters.AddWithValue("@projectId", projectId);
-                    cmd.Parameters.AddWithValue("@threeWeekStart",
-                        threeWeekStart?.ToString("yyyy-MM-dd") ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@threeWeekFinish",
-                        threeWeekFinish?.ToString("yyyy-MM-dd") ?? (object)DBNull.Value);
-
-                    cmd.ExecuteNonQuery();
-
-                    AppLogger.Info($"Saved 3WLA for {schedActNo}: Start={threeWeekStart:yyyy-MM-dd}, Finish={threeWeekFinish:yyyy-MM-dd}",
-                        "ScheduleRepository.SaveThreeWeekLookaheadAsync", username);
-                }
-                catch (Exception ex)
-                {
-                    AppLogger.Error(ex, "ScheduleRepository.SaveThreeWeekLookaheadAsync");
-                    throw;
-                }
-            });
-        }
-
-        // Clears ThreeWeekStart and/or ThreeWeekFinish from ThreeWeekLookahead table
-        // Used when actuals are created (forecast no longer needed)
-        // Deletes the row entirely if both dates become null after clearing
-        public static async Task ClearThreeWeekDatesAsync(
-            string schedActNo,
-            string projectId,
-            bool clearStart,
-            bool clearFinish,
-            string username)
-        {
-            if (!clearStart && !clearFinish)
-                return;
-
-            await Task.Run(() =>
-            {
-                try
-                {
-                    using var connection = new SqliteConnection($"Data Source={DatabaseSetup.DbPath}");
-                    connection.Open();
-
-                    // First check if the row exists and get current values
-                    var checkCmd = connection.CreateCommand();
-                    checkCmd.CommandText = @"
-                SELECT ThreeWeekStart, ThreeWeekFinish 
-                FROM ThreeWeekLookahead 
-                WHERE SchedActNO = @schedActNo AND ProjectID = @projectId";
-                    checkCmd.Parameters.AddWithValue("@schedActNo", schedActNo);
-                    checkCmd.Parameters.AddWithValue("@projectId", projectId);
-
-                    string? currentStart = null;
-                    string? currentFinish = null;
-                    bool rowExists = false;
-
-                    using (var reader = checkCmd.ExecuteReader())
-                    {
-                        if (reader.Read())
-                        {
-                            rowExists = true;
-                            currentStart = reader.IsDBNull(0) ? null : reader.GetString(0);
-                            currentFinish = reader.IsDBNull(1) ? null : reader.GetString(1);
-                        }
-                    }
-
-                    if (!rowExists)
-                        return;
-
-                    // Calculate what the new values will be
-                    string? newStart = clearStart ? null : currentStart;
-                    string? newFinish = clearFinish ? null : currentFinish;
-
-                    // If both will be null, delete the row
-                    if (newStart == null && newFinish == null)
-                    {
-                        var deleteCmd = connection.CreateCommand();
-                        deleteCmd.CommandText = @"
-                    DELETE FROM ThreeWeekLookahead 
-                    WHERE SchedActNO = @schedActNo AND ProjectID = @projectId";
-                        deleteCmd.Parameters.AddWithValue("@schedActNo", schedActNo);
-                        deleteCmd.Parameters.AddWithValue("@projectId", projectId);
-                        deleteCmd.ExecuteNonQuery();
-
-                        AppLogger.Info($"Deleted 3WLA row for {schedActNo} (both dates cleared)",
-                            "ScheduleRepository.ClearThreeWeekDatesAsync", username);
-                    }
-                    else
-                    {
-                        // Update only the dates that need clearing
-                        var updateCmd = connection.CreateCommand();
-                        updateCmd.CommandText = @"
-                    UPDATE ThreeWeekLookahead 
-                    SET ThreeWeekStart = @threeWeekStart,
-                        ThreeWeekFinish = @threeWeekFinish
-                    WHERE SchedActNO = @schedActNo AND ProjectID = @projectId";
-                        updateCmd.Parameters.AddWithValue("@threeWeekStart", newStart ?? (object)DBNull.Value);
-                        updateCmd.Parameters.AddWithValue("@threeWeekFinish", newFinish ?? (object)DBNull.Value);
-                        updateCmd.Parameters.AddWithValue("@schedActNo", schedActNo);
-                        updateCmd.Parameters.AddWithValue("@projectId", projectId);
-                        updateCmd.ExecuteNonQuery();
-
-                        string cleared = (clearStart && clearFinish) ? "Start and Finish" :
-                                         clearStart ? "Start" : "Finish";
-                        AppLogger.Info($"Cleared 3WLA {cleared} for {schedActNo}",
-                            "ScheduleRepository.ClearThreeWeekDatesAsync", username);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    AppLogger.Error(ex, "ScheduleRepository.ClearThreeWeekDatesAsync");
-                    throw;
-                }
-            });
-        }
 
         // Gets the first ProjectID from ScheduleProjectMappings for a given WeekEndDate
         public static string? GetFirstProjectIDForWeek(DateTime weekEndDate)
@@ -779,7 +591,7 @@ namespace VANTAGE.Repositories
                     connection.Open();
                     using var transaction = connection.BeginTransaction();
 
-                    // Get first ProjectID for this WeekEndDate (for ThreeWeekLookahead)
+                    // Get first ProjectID for this WeekEndDate (for Activities updates)
                     var firstRow = rows.FirstOrDefault();
                     if (firstRow == null)
                         return 0;
@@ -792,44 +604,17 @@ namespace VANTAGE.Repositories
                         return 0;
                     }
 
-                    // Command for updating MissedReasons in Schedule table
+                    // Command for updating MissedReasons in Schedule table (session-only persistence)
                     var scheduleCmd = connection.CreateCommand();
                     scheduleCmd.Transaction = transaction;
                     scheduleCmd.CommandText = @"
-                UPDATE Schedule 
+                UPDATE Schedule
                 SET MissedStartReason = @missedStartReason,
                     MissedFinishReason = @missedFinishReason,
                     UpdatedBy = @updatedBy,
                     UpdatedUtcDate = @updatedUtcDate
-                WHERE SchedActNO = @schedActNo 
+                WHERE SchedActNO = @schedActNo
                   AND WeekEndDate = @weekEndDate";
-
-                    // Command for upserting to ThreeWeekLookahead table (3WLA dates, MissedReasons, and comparison dates)
-                    var threeWeekCmd = connection.CreateCommand();
-                    threeWeekCmd.Transaction = transaction;
-                    threeWeekCmd.CommandText = @"
-                INSERT INTO ThreeWeekLookahead (SchedActNO, ProjectID, ThreeWeekStart, ThreeWeekFinish,
-                    MissedStartReason, MissedFinishReason, P6_Start, P6_Finish, MS_Start, MS_Finish)
-                VALUES (@schedActNo, @projectId, @threeWeekStart, @threeWeekFinish,
-                    @missedStartReason, @missedFinishReason, @p6Start, @p6Finish, @msStart, @msFinish)
-                ON CONFLICT (SchedActNO, ProjectID) DO UPDATE SET
-                    ThreeWeekStart = @threeWeekStart,
-                    ThreeWeekFinish = @threeWeekFinish,
-                    MissedStartReason = @missedStartReason,
-                    MissedFinishReason = @missedFinishReason,
-                    P6_Start = @p6Start,
-                    P6_Finish = @p6Finish,
-                    MS_Start = @msStart,
-                    MS_Finish = @msFinish";
-
-                    // Command for deleting empty rows (only if ALL fields are null)
-                    var deleteCmd = connection.CreateCommand();
-                    deleteCmd.Transaction = transaction;
-                    deleteCmd.CommandText = @"
-                DELETE FROM ThreeWeekLookahead
-                WHERE SchedActNO = @schedActNo AND ProjectID = @projectId
-                  AND ThreeWeekStart IS NULL AND ThreeWeekFinish IS NULL
-                  AND MissedStartReason IS NULL AND MissedFinishReason IS NULL";
 
                     foreach (var row in rows)
                     {
@@ -845,42 +630,26 @@ namespace VANTAGE.Repositories
                         scheduleCmd.Parameters.AddWithValue("@weekEndDate", row.WeekEndDate.ToString("yyyy-MM-dd"));
                         scheduleCmd.ExecuteNonQuery();
 
-                        // Check if there's any data to persist in ThreeWeekLookahead
-                        bool hasAnyData = row.ThreeWeekStart != null ||
-                                          row.ThreeWeekFinish != null ||
-                                          !string.IsNullOrEmpty(row.MissedStartReason) ||
-                                          !string.IsNullOrEmpty(row.MissedFinishReason);
-
-                        if (hasAnyData)
+                        // Update Activities.PlanStart/PlanFin with bounds logic
+                        // PlanStart: update if NULL or earlier than 3WLA start
+                        if (row.ThreeWeekStart.HasValue)
                         {
-                            // Upsert to ThreeWeekLookahead with all data
-                            threeWeekCmd.Parameters.Clear();
-                            threeWeekCmd.Parameters.AddWithValue("@schedActNo", row.SchedActNO);
-                            threeWeekCmd.Parameters.AddWithValue("@projectId", projectId);
-                            threeWeekCmd.Parameters.AddWithValue("@threeWeekStart",
-                                row.ThreeWeekStart?.ToString("yyyy-MM-dd") ?? (object)DBNull.Value);
-                            threeWeekCmd.Parameters.AddWithValue("@threeWeekFinish",
-                                row.ThreeWeekFinish?.ToString("yyyy-MM-dd") ?? (object)DBNull.Value);
-                            threeWeekCmd.Parameters.AddWithValue("@missedStartReason",
-                                row.MissedStartReason ?? (object)DBNull.Value);
-                            threeWeekCmd.Parameters.AddWithValue("@missedFinishReason",
-                                row.MissedFinishReason ?? (object)DBNull.Value);
-                            threeWeekCmd.Parameters.AddWithValue("@p6Start",
-                                row.P6_Start?.ToString("yyyy-MM-dd") ?? (object)DBNull.Value);
-                            threeWeekCmd.Parameters.AddWithValue("@p6Finish",
-                                row.P6_Finish?.ToString("yyyy-MM-dd") ?? (object)DBNull.Value);
-                            threeWeekCmd.Parameters.AddWithValue("@msStart",
-                                row.V_Start?.ToString("yyyy-MM-dd") ?? (object)DBNull.Value);
-                            threeWeekCmd.Parameters.AddWithValue("@msFinish",
-                                row.V_Finish?.ToString("yyyy-MM-dd") ?? (object)DBNull.Value);
-                            threeWeekCmd.ExecuteNonQuery();
+                            string planStartStr = row.ThreeWeekStart.Value.ToString("yyyy-MM-dd");
 
-                            // Update Activities.PlanStart/PlanFin with bounds logic
-                            // PlanStart: update if NULL or earlier than 3WLA start
-                            if (row.ThreeWeekStart.HasValue)
+                            // First check if any activity already has this exact date (skip if so)
+                            using var exactMatchCmd = connection.CreateCommand();
+                            exactMatchCmd.Transaction = transaction;
+                            exactMatchCmd.CommandText = @"
+                                SELECT COUNT(*) FROM Activities
+                                WHERE SchedActNO = @schedActNo AND ProjectID = @projectId
+                                  AND PlanStart = @planStart";
+                            exactMatchCmd.Parameters.AddWithValue("@planStart", planStartStr);
+                            exactMatchCmd.Parameters.AddWithValue("@schedActNo", row.SchedActNO);
+                            exactMatchCmd.Parameters.AddWithValue("@projectId", projectId);
+                            long exactCount = Convert.ToInt64(exactMatchCmd.ExecuteScalar() ?? 0);
+
+                            if (exactCount == 0)
                             {
-                                string planStartStr = row.ThreeWeekStart.Value.ToString("yyyy-MM-dd");
-
                                 using var planStartCmd = connection.CreateCommand();
                                 planStartCmd.Transaction = transaction;
                                 planStartCmd.CommandText = @"
@@ -914,12 +683,27 @@ namespace VANTAGE.Repositories
                                     fallbackCmd.ExecuteNonQuery();
                                 }
                             }
+                        }
 
-                            // PlanFin: update if NULL or later than 3WLA finish
-                            if (row.ThreeWeekFinish.HasValue)
+                        // PlanFin: update if NULL or later than 3WLA finish
+                        if (row.ThreeWeekFinish.HasValue)
+                        {
+                            string planFinStr = row.ThreeWeekFinish.Value.ToString("yyyy-MM-dd");
+
+                            // First check if any activity already has this exact date (skip if so)
+                            using var exactMatchCmd = connection.CreateCommand();
+                            exactMatchCmd.Transaction = transaction;
+                            exactMatchCmd.CommandText = @"
+                                SELECT COUNT(*) FROM Activities
+                                WHERE SchedActNO = @schedActNo AND ProjectID = @projectId
+                                  AND PlanFin = @planFin";
+                            exactMatchCmd.Parameters.AddWithValue("@planFin", planFinStr);
+                            exactMatchCmd.Parameters.AddWithValue("@schedActNo", row.SchedActNO);
+                            exactMatchCmd.Parameters.AddWithValue("@projectId", projectId);
+                            long exactCount = Convert.ToInt64(exactMatchCmd.ExecuteScalar() ?? 0);
+
+                            if (exactCount == 0)
                             {
-                                string planFinStr = row.ThreeWeekFinish.Value.ToString("yyyy-MM-dd");
-
                                 using var planFinCmd = connection.CreateCommand();
                                 planFinCmd.Transaction = transaction;
                                 planFinCmd.CommandText = @"
@@ -953,14 +737,6 @@ namespace VANTAGE.Repositories
                                     fallbackCmd.ExecuteNonQuery();
                                 }
                             }
-                        }
-                        else
-                        {
-                            // Try to delete row if it exists and is completely empty
-                            deleteCmd.Parameters.Clear();
-                            deleteCmd.Parameters.AddWithValue("@schedActNo", row.SchedActNO);
-                            deleteCmd.Parameters.AddWithValue("@projectId", projectId);
-                            deleteCmd.ExecuteNonQuery();
                         }
 
                         savedCount++;

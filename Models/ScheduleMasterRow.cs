@@ -136,6 +136,7 @@ namespace VANTAGE.Models
                     _threeWeekStart = value;
                     OnPropertyChanged(nameof(ThreeWeekStart));
                     OnPropertyChanged(nameof(IsThreeWeekStartRequired));
+                    OnPropertyChanged(nameof(HasThreeWeekStartForecast));
                 }
             }
         }
@@ -151,6 +152,7 @@ namespace VANTAGE.Models
                     _threeWeekFinish = value;
                     OnPropertyChanged(nameof(ThreeWeekFinish));
                     OnPropertyChanged(nameof(IsThreeWeekFinishRequired));
+                    OnPropertyChanged(nameof(HasThreeWeekFinishForecast));
                 }
             }
         }
@@ -240,23 +242,22 @@ namespace VANTAGE.Models
         {
             get
             {
-                // Missed Start = P6 schedule start has passed but MS hasn't started (or started late)
-                if (string.IsNullOrWhiteSpace(MissedStartReason) == false)
+                // MissedStartReason required if P6_Start is within current week and was missed
+                if (!string.IsNullOrWhiteSpace(MissedStartReason))
                     return false; // Already has reason
 
                 if (!P6_Start.HasValue)
                     return false; // No P6 start to miss
 
-                if (P6_Start.Value.Date > WeekEndDate.Date)
-                    return false; // P6 start is still in the future
+                // P6_Start must be within current week (WeekEndDate-7 to WeekEndDate)
+                var weekStart = WeekEndDate.Date.AddDays(-7);
+                var weekEnd = WeekEndDate.Date;
+                if (P6_Start.Value.Date < weekStart || P6_Start.Value.Date > weekEnd)
+                    return false; // P6 start is outside current week
 
-                // P6 start has passed - check if MS started on time
+                // Required if: no actual start OR started late
                 if (!V_Start.HasValue)
                     return true; // Never started - needs explanation
-
-                // If actualized more than 7 days ago, don't require reason (old news)
-                if (V_Start.Value.Date < WeekEndDate.Date.AddDays(-7))
-                    return false;
 
                 return V_Start.Value.Date > P6_Start.Value.Date; // Started late - needs explanation
             }
@@ -266,23 +267,22 @@ namespace VANTAGE.Models
         {
             get
             {
-                // Missed Finish = P6 schedule finish has passed but MS hasn't finished (or finished late)
-                if (string.IsNullOrWhiteSpace(MissedFinishReason) == false)
+                // MissedFinishReason required if P6_Finish is within current week and was missed
+                if (!string.IsNullOrWhiteSpace(MissedFinishReason))
                     return false; // Already has reason
 
                 if (!P6_Finish.HasValue)
                     return false; // No P6 finish to miss
 
-                if (P6_Finish.Value.Date > WeekEndDate.Date)
-                    return false; // P6 finish is still in the future
+                // P6_Finish must be within current week (WeekEndDate-7 to WeekEndDate)
+                var weekStart = WeekEndDate.Date.AddDays(-7);
+                var weekEnd = WeekEndDate.Date;
+                if (P6_Finish.Value.Date < weekStart || P6_Finish.Value.Date > weekEnd)
+                    return false; // P6 finish is outside current week
 
-                // P6 finish has passed - check if MS finished on time
+                // Required if: no actual finish OR finished late
                 if (!V_Finish.HasValue)
                     return true; // Never finished - needs explanation
-
-                // If actualized more than 7 days ago, don't require reason (old news)
-                if (V_Finish.Value.Date < WeekEndDate.Date.AddDays(-7))
-                    return false;
 
                 return V_Finish.Value.Date > P6_Finish.Value.Date; // Finished late - needs explanation
             }
@@ -292,6 +292,7 @@ namespace VANTAGE.Models
         {
             get
             {
+                // 3WLA Start required if P6_Start <= WeekEndDate+21, no actual, no forecast
                 if (ThreeWeekStart.HasValue)
                     return false; // Already has 3WLA date
 
@@ -301,17 +302,8 @@ namespace VANTAGE.Models
                 if (!P6_Start.HasValue)
                     return false; // No P6 start date
 
-                var daysUntilStart = (P6_Start.Value.Date - WeekEndDate.Date).TotalDays;
-
-                // Future: within 21 days
-                if (daysUntilStart >= 0 && daysUntilStart <= 21)
-                    return true;
-
-                // Past-due: P6 start has passed AND MS hasn't started yet
-                if (daysUntilStart < 0 && !V_Start.HasValue)
-                    return true;
-
-                return false;
+                // Required if P6_Start is past-due or within 3-week lookahead
+                return P6_Start.Value.Date <= WeekEndDate.Date.AddDays(21);
             }
         }
 
@@ -319,6 +311,7 @@ namespace VANTAGE.Models
         {
             get
             {
+                // 3WLA Finish required if P6_Finish <= WeekEndDate+21, no actual, no forecast
                 if (ThreeWeekFinish.HasValue)
                     return false; // Already has 3WLA date
 
@@ -328,17 +321,38 @@ namespace VANTAGE.Models
                 if (!P6_Finish.HasValue)
                     return false; // No P6 finish date
 
-                var daysUntilFinish = (P6_Finish.Value.Date - WeekEndDate.Date).TotalDays;
+                // Required if P6_Finish is past-due or within 3-week lookahead
+                return P6_Finish.Value.Date <= WeekEndDate.Date.AddDays(21);
+            }
+        }
 
-                // Future: within 21 days
-                if (daysUntilFinish >= 0 && daysUntilFinish <= 21)
-                    return true;
+        // Gold highlight: 3WLA Start has a forecast different from P6
+        public bool HasThreeWeekStartForecast
+        {
+            get
+            {
+                if (!ThreeWeekStart.HasValue)
+                    return false; // No forecast - no gold
 
-                // Past-due: P6 finish has passed AND MS hasn't finished yet
-                if (daysUntilFinish < 0 && !V_Finish.HasValue)
-                    return true;
+                if (!P6_Start.HasValue)
+                    return true; // Has forecast but no P6 date to compare
 
-                return false;
+                return ThreeWeekStart.Value.Date != P6_Start.Value.Date;
+            }
+        }
+
+        // Gold highlight: 3WLA Finish has a forecast different from P6
+        public bool HasThreeWeekFinishForecast
+        {
+            get
+            {
+                if (!ThreeWeekFinish.HasValue)
+                    return false; // No forecast - no gold
+
+                if (!P6_Finish.HasValue)
+                    return true; // Has forecast but no P6 date to compare
+
+                return ThreeWeekFinish.Value.Date != P6_Finish.Value.Date;
             }
         }
 

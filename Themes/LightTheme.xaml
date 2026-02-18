@@ -35,6 +35,7 @@
     <SolidColorBrush x:Key="StatusYellowBg" Color="#5b4b26"/>
     <SolidColorBrush x:Key="StatusRed" Color="#b63434"/>
     <SolidColorBrush x:Key="StatusRedBg" Color="#5b2626"/>
+    <SolidColorBrush x:Key="StatusGoldBg" Color="#fff8c4"/>
     <SolidColorBrush x:Key="StatusInProgress" Color="#FF3498DB"/>
     <SolidColorBrush x:Key="StatusNotStarted" Color="#FF95A5A6"/>
 

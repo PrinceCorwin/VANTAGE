@@ -320,59 +320,6 @@ namespace VANTAGE.Utilities
 
             try
             {
-                // Build list of imported SchedActNOs for purge logic
-                var importedActNos = scheduleRows.Select(s => s.SchedActNO).ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-                // Purge ThreeWeekLookahead for SchedActNOs NOT in this import (for imported ProjectIDs)
-                string projectIdList = "'" + string.Join("','", projectIds) + "'";
-                string actNoList = "'" + string.Join("','", importedActNos) + "'";
-
-                var purgeOrphanCmd = connection.CreateCommand();
-                purgeOrphanCmd.CommandText = $@"
-            DELETE FROM ThreeWeekLookahead
-            WHERE ProjectID IN ({projectIdList})
-              AND SchedActNO NOT IN ({actNoList})";
-                int orphansPurged = purgeOrphanCmd.ExecuteNonQuery();
-
-                if (orphansPurged > 0)
-                {
-                    AppLogger.Info($"Purged {orphansPurged} orphaned ThreeWeekLookahead rows",
-                        "ScheduleExcelImporter.ImportToDatabase",
-                        App.CurrentUser?.Username);
-                }
-
-                // Clear stale 3WLA dates (dates in the past of selected WeekEndDate)
-                var clearStaleStartCmd = connection.CreateCommand();
-                clearStaleStartCmd.CommandText = @"
-            UPDATE ThreeWeekLookahead
-            SET ThreeWeekStart = NULL
-            WHERE ThreeWeekStart IS NOT NULL AND ThreeWeekStart < @weekEndDate";
-                clearStaleStartCmd.Parameters.AddWithValue("@weekEndDate", weekEndDate.ToString("yyyy-MM-dd"));
-                int clearedStarts = clearStaleStartCmd.ExecuteNonQuery();
-
-                var clearStaleFinishCmd = connection.CreateCommand();
-                clearStaleFinishCmd.CommandText = @"
-            UPDATE ThreeWeekLookahead
-            SET ThreeWeekFinish = NULL
-            WHERE ThreeWeekFinish IS NOT NULL AND ThreeWeekFinish < @weekEndDate";
-                clearStaleFinishCmd.Parameters.AddWithValue("@weekEndDate", weekEndDate.ToString("yyyy-MM-dd"));
-                int clearedFinishes = clearStaleFinishCmd.ExecuteNonQuery();
-
-                if (clearedStarts > 0 || clearedFinishes > 0)
-                {
-                    AppLogger.Info($"Cleared stale 3WLA dates: {clearedStarts} starts, {clearedFinishes} finishes",
-                        "ScheduleExcelImporter.ImportToDatabase",
-                        App.CurrentUser?.Username);
-                }
-
-                // Delete rows where all fields are NULL (no longer useful)
-                var deleteEmptyCmd = connection.CreateCommand();
-                deleteEmptyCmd.CommandText = @"
-            DELETE FROM ThreeWeekLookahead
-            WHERE ThreeWeekStart IS NULL AND ThreeWeekFinish IS NULL
-              AND MissedStartReason IS NULL AND MissedFinishReason IS NULL";
-                deleteEmptyCmd.ExecuteNonQuery();
-
                 // Clear ALL existing Schedule data
                 var deleteScheduleCmd = connection.CreateCommand();
                 deleteScheduleCmd.CommandText = "DELETE FROM Schedule";

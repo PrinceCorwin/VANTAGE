@@ -611,6 +611,7 @@ namespace VANTAGE.Views
                         await _viewModel.RecalculateMSRollupsAsync(editedSnapshot.SchedActNO);
 
                         // Check if actuals were created (changed from null to non-null)
+                        // Clear in-memory 3WLA dates when actuals are created (forecast no longer needed)
                         if (masterRow != null)
                         {
                             bool startCreated = previousMSStart == null && masterRow.V_Start != null;
@@ -618,32 +619,14 @@ namespace VANTAGE.Views
 
                             if (startCreated || finishCreated)
                             {
-                                // Get ProjectID for the 3WLA table
-                                string? projectId = ScheduleRepository.GetFirstProjectIDForWeek(weekEndDate);
-                                if (!string.IsNullOrEmpty(projectId))
-                                {
-                                    // Clear the 3WLA dates that are now obsolete
-                                    await ScheduleRepository.ClearThreeWeekDatesAsync(
-                                        editedSnapshot.SchedActNO,
-                                        projectId,
-                                        startCreated,
-                                        finishCreated,
-                                        username);
+                                if (startCreated)
+                                    masterRow.ThreeWeekStart = null;
+                                if (finishCreated)
+                                    masterRow.ThreeWeekFinish = null;
 
-                                    // Update the in-memory master row
-                                    if (startCreated)
-                                        masterRow.ThreeWeekStart = null;
-                                    if (finishCreated)
-                                        masterRow.ThreeWeekFinish = null;
-
-                                    string cleared = (startCreated && finishCreated) ? "3WLA Start and Finish" :
-                                                     startCreated ? "3WLA Start" : "3WLA Finish";
-                                    txtStatus.Text = $"Saved - {cleared} cleared";
-                                }
-                                else
-                                {
-                                    txtStatus.Text = "Saved";
-                                }
+                                string cleared = (startCreated && finishCreated) ? "3WLA Start and Finish" :
+                                                 startCreated ? "3WLA Start" : "3WLA Finish";
+                                txtStatus.Text = $"Saved - {cleared} cleared";
                             }
                             else
                             {
