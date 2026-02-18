@@ -419,10 +419,12 @@ namespace VANTAGE.Dialogs
 
                     var cmd = conn.CreateCommand();
                     cmd.CommandText = @"
-                        SELECT u.Email
+                        SELECT DISTINCT u.Email
                         FROM VMS_Users u
                         INNER JOIN VMS_Admins a ON u.Username = a.Username
-                        WHERE u.Email IS NOT NULL AND u.Email <> ''";
+                        WHERE u.Email IS NOT NULL AND u.Email <> ''
+                          AND u.Username <> @submitter";
+                    cmd.Parameters.AddWithValue("@submitter", feedback.CreatedBy);
 
                     using var reader = cmd.ExecuteReader();
                     while (reader.Read())

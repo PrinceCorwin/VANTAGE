@@ -136,9 +136,11 @@
 ## Feature Backlog
 
 ### High Priority
-- (no items)
+- **Mobile/iOS Version (iPad)** — Execs want iPad app for field supes to submit progress. Needs architecture discussion: native iOS, cross-platform framework, web app, API design, offline sync, etc.
+- **Import Takeoff to Create Records** — Create activities from takeoff data. Needs discussion on file formats, field mapping, workflow.
 
 ### Medium Priority
+- **Create Activities Feature** — File menu item exists but not implemented. Needs discussion on functionality: possibly AI-assisted (user prompts what they need, records generated), or structured wizard, or template-based. Currently shows "coming soon" placeholder.
 - **MSI/MSIX installer** — Replace custom installer with MSI (WiX Toolset) or MSIX packaging to get genuine Windows install integration. Current custom installer registers via registry but Windows Search won't execute `UninstallString` directly — only MSI and UWP/MSIX apps get direct uninstall from search context menu. Current setup works via Settings > Apps.
 - **Enhanced ThemeManagerDialog** — Show screenshots of ProgressView in each theme (Dark, Light, Orchid) so users can preview before selecting; keep current "restart required" behavior with StaticResource bindings
 - **User-editable header template for WP** — Allow customizing header layout
