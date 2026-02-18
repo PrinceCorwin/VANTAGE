@@ -1,6 +1,15 @@
 {
   "releases": [
     {
+      "version": "26.1.17",
+      "date": "2026-02-18",
+      "highlights": [
+        "Fix V-Start/V-Finish calculation — V-Start ignores empty strings, V-Finish shows only when ALL records are 100%",
+        "Auto-populate ActStart/ActFin in Schedule detail grid when PercentEntry changes",
+        "Enable keyboard input for null date cells in Progress and Schedule grids"
+      ]
+    },
+    {
       "version": "26.1.16",
       "date": "2026-02-14",
       "highlights": [

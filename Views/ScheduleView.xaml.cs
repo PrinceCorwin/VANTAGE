@@ -475,21 +475,42 @@ namespace VANTAGE.Views
                 string username = App.CurrentUser?.Username ?? "Unknown";
                 DateTime weekEndDate = _viewModel.SelectedWeekEndDate ?? DateTime.Today;
 
-                // Handle PercentEntry changes - clear dates as needed
+                // Handle PercentEntry changes - auto-set/clear dates as needed
                 if (columnName == "PercentEntry")
                 {
+                    // Parse old value to detect transitions
+                    double oldPercent = 0;
+                    if (_detailEditOldValue != null)
+                        double.TryParse(_detailEditOldValue, out oldPercent);
+
                     if (editedSnapshot.PercentEntry == 0)
                     {
                         // 0% = not started - clear both dates
                         editedSnapshot.ActStart = null;
                         editedSnapshot.ActFin = null;
                     }
-                    else if (editedSnapshot.PercentEntry < 100)
+                    else
                     {
-                        // <100% → clear ActFin (user must re-enter when reaching 100)
-                        editedSnapshot.ActFin = null;
+                        // >0% - auto-populate ActStart if transitioning from 0
+                        if (oldPercent == 0 && editedSnapshot.ActStart == null)
+                        {
+                            editedSnapshot.ActStart = weekEndDate;
+                        }
+
+                        if (editedSnapshot.PercentEntry >= 100)
+                        {
+                            // 100% - auto-populate ActFin
+                            if (editedSnapshot.ActFin == null)
+                            {
+                                editedSnapshot.ActFin = weekEndDate;
+                            }
+                        }
+                        else
+                        {
+                            // <100% → clear ActFin
+                            editedSnapshot.ActFin = null;
+                        }
                     }
-                    // Note: No auto-set of dates - user must enter ActStart/ActFin manually
                 }
 
                 // Handle ActStart changes - validate

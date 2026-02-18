@@ -232,14 +232,15 @@ namespace VANTAGE.Repositories
 
                 // ONE query to calculate rollups for ALL SchedActNOs
                 // Calculate weighted average directly in SQL (stays in 0-100 scale)
-                // V_Finish only populated if ALL activities have a finish date
+                // V_Start = min ActStart (NULLIF handles empty strings stored instead of NULL)
+                // V_Finish = max ActFin only if ALL activities are 100% complete
                 cmd.CommandText = $@"
             SELECT
                 SchedActNO,
-                MIN(ActStart) as V_Start,
+                MIN(NULLIF(ActStart, '')) as V_Start,
                 CASE
-                    WHEN COUNT(*) = COUNT(ActFin)
-                    THEN MAX(ActFin)
+                    WHEN MIN(PercentEntry) = 100
+                    THEN MAX(NULLIF(ActFin, ''))
                     ELSE NULL
                 END as V_Finish,
                 CASE

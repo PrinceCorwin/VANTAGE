@@ -6,6 +6,11 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### February 18, 2026
+- **Fix V-Start/V-Finish calculation:** V-Start now correctly ignores empty strings stored as dates (uses `NULLIF(ActStart, '')`). V-Finish now only displays when ALL linked activities are 100% complete (changed from `MAX(PercentEntry) = 100` to `MIN(PercentEntry) = 100`).
+- **Auto-populate ActStart/ActFin in Schedule detail grid:** When PercentEntry changes from 0 to any positive value, ActStart is auto-set to the WeekEndDate. When PercentEntry reaches 100, ActFin is auto-set to the WeekEndDate.
+- **Enable keyboard input for null date cells:** Added `CanEdit="True"` to all editable GridDateTimeColumn elements in Progress and Schedule grids. Users can now type dates directly into empty date cells instead of only using the date picker.
+
 ### February 16, 2026
 - **Add PlanStart/PlanFin columns to Activities:** New planned date columns for scheduling activities. Populated from Schedule module's 3-Week Lookahead dates when saved (with bounds logic: PlanStart updates if NULL or earlier than 3WLA start, PlanFin updates if NULL or later than 3WLA finish; fallback updates next closest date if nothing matches). Editable directly in Progress grid with no constraints. Today filter now uses PlanStart/PlanFin instead of ActStart/ActFin. Progress module auto-refreshes after Schedule save to show updated dates. Schema migration v5 adds columns to existing databases. Syncs to Azure, included in NewVantage backup exports and snapshot submissions.
 - **Progress grid navigation buttons:** Added ▲/▼ buttons to bottom toolbar for quick navigation to first/last row in large grids. Tooltips show Ctrl+↑/↓ keyboard shortcuts.

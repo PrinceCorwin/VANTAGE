@@ -481,19 +481,21 @@
                                                 AllowEditing="True"
                                                 CellStyle="{StaticResource MissedFinishReasonRequiredStyle}"/>
 
-                    <syncfusion:GridDateTimeColumn MappingName="ThreeWeekStart" 
-                                                  HeaderText="3WLA Start" 
+                    <syncfusion:GridDateTimeColumn MappingName="ThreeWeekStart"
+                                                  HeaderText="3WLA Start"
                                                   Width="110"
                                                   AllowEditing="True"
+                                                  CanEdit="True"
                                                   AllowNullValue="True"
                                                   NullText=""
                                                   Pattern="ShortDate"
                                                   CellStyle="{StaticResource ThreeWeekStartRequiredStyle}"/>
 
-                    <syncfusion:GridDateTimeColumn MappingName="ThreeWeekFinish" 
-                                                  HeaderText="3WLA Finish" 
+                    <syncfusion:GridDateTimeColumn MappingName="ThreeWeekFinish"
+                                                  HeaderText="3WLA Finish"
                                                   Width="110"
                                                   AllowEditing="True"
+                                                  CanEdit="True"
                                                   AllowNullValue="True"
                                                   NullText=""
                                                   Pattern="ShortDate"
@@ -696,6 +698,7 @@
                                                           HeaderText="ActStart"
                                                           Width="110"
                                                           AllowEditing="True"
+                                                          CanEdit="True"
                                                           AllowNullValue="True"
                                                           NullText=""
                                                           Pattern="ShortDate"/>
@@ -704,6 +707,7 @@
                                                           HeaderText="ActFin"
                                                           Width="110"
                                                           AllowEditing="True"
+                                                          CanEdit="True"
                                                           AllowNullValue="True"
                                                           NullText=""
                                                           Pattern="ShortDate"/>
