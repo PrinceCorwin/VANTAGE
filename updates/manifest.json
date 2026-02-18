@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.1.17",
-  "releaseDate": "2026-02-18T13:07:00Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.17/VANTAGE-26.1.17.zip",
-  "zipSizeBytes": 149142985,
-  "sha256": "6A595D7C4A000141BFBEE66DABAA8BA8C302E6615580D88477AA8A9C9F9C57E0",
-  "releaseNotes": "Fix V-Start/V-Finish calculation, auto-populate dates, enable keyboard input for null dates"
+  "currentVersion": "26.1.18",
+  "releaseDate": "2026-02-18T14:51:56Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.18/VANTAGE-26.1.18.zip",
+  "zipSizeBytes": 149143393,
+  "sha256": "270CCDCB14CFFA9D8056A2A3F43BB699A308858958CCAAC15567127B49762F9C",
+  "releaseNotes": "Simplify Schedule 3WLA/MissedReasons, feedback email notifications"
 }
