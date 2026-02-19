@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.1.18",
-  "releaseDate": "2026-02-18T14:51:56Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.18/VANTAGE-26.1.18.zip",
-  "zipSizeBytes": 149143393,
-  "sha256": "270CCDCB14CFFA9D8056A2A3F43BB699A308858958CCAAC15567127B49762F9C",
-  "releaseNotes": "Simplify Schedule 3WLA/MissedReasons, feedback email notifications"
+  "currentVersion": "26.1.19",
+  "releaseDate": "2026-02-19T07:27:10Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.19/VANTAGE-26.1.19.zip",
+  "zipSizeBytes": 149143413,
+  "sha256": "B1314C84C819E73EB14336F1844AEE9DC5A8BA2E5C92941F816A85CAA75C1FB2",
+  "releaseNotes": "Fix column settings persistence, double-click to sort"
 }

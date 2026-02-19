@@ -56,7 +56,8 @@
       "Bash(xargs sed:*)",
       "Bash(cmd.exe /c \"where gh\")",
       "Bash(git fetch:*)",
-      "Bash(git stash:*)"
+      "Bash(git stash:*)",
+      "Bash(cmd //c \"where gh\")"
     ]
   }
 }
