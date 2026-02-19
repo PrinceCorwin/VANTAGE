@@ -154,8 +154,8 @@ namespace VANTAGE.Views
                     masterHeight = Math.Max(100, masterHeight);
                     detailHeight = Math.Max(80, detailHeight);
 
-                    MasterGridRow.Height = new GridLength(masterHeight);
-                    DetailGridRow.Height = new GridLength(detailHeight);
+                    MasterGridRow.Height = new GridLength(masterHeight, GridUnitType.Star);
+                    DetailGridRow.Height = new GridLength(detailHeight, GridUnitType.Star);
                 }
             }
             catch (Exception ex)
@@ -1067,8 +1067,8 @@ namespace VANTAGE.Views
                 masterHeight = Math.Max(100, masterHeight);
                 detailHeight = Math.Max(80, detailHeight);
 
-                MasterGridRow.Height = new GridLength(masterHeight);
-                DetailGridRow.Height = new GridLength(detailHeight);
+                MasterGridRow.Height = new GridLength(masterHeight, GridUnitType.Star);
+                DetailGridRow.Height = new GridLength(detailHeight, GridUnitType.Star);
             }
             catch (Exception ex)
             {
