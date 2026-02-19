@@ -6,6 +6,10 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### February 19, 2026
+- **Fix column settings lost after updates:** Column order, widths, and visibility preferences were silently discarded when an update added or removed columns (SchemaHash mismatch caused full rejection). Settings now gracefully apply to matching columns — new columns appear at end with defaults, removed columns are ignored. Affected all three grids: Progress, Schedule master, and Schedule detail. Also fixes named layouts (ApplyGridPreferences) for Progress grid.
+- **Double-click to sort:** Changed all three grids (Progress, Schedule master, Schedule detail) from single-click to double-click on column headers to sort. Prevents accidental sorting when clicking headers.
+
 ### February 18, 2026
 - **Simplify Schedule module 3WLA and MissedReasons:** Major simplification of Schedule data storage:
   - **3WLA dates:** Now load from Activities.PlanStart/PlanFin instead of separate ThreeWeekLookahead table. Pre-populated with MIN(PlanStart)/MAX(PlanFin) grouped by SchedActNO. Persists across P6 imports via Activities table.
@@ -268,7 +272,7 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ### January 27, 2026
 - **AWS Textract Migration to Company Account:**
-  - Migrated AWS Textract service from personal AWS account to Summit Constructors company AWS account
+  - Migrated AWS Textract service from personal AWS account to Summit Industrial company AWS account
   - Updated Credentials.cs with company AWS credentials
 
 - **Progress Log Upload Feature (Admin > Manage Snapshots):**
@@ -297,7 +301,7 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ### January 26, 2026
 - **Azure Migration to Company Server (summitpc.database.windows.net):**
-  - Migrated from personal Azure subscription to Summit Constructors company Azure
+  - Migrated from personal Azure subscription to Summit Industrial company Azure
   - Created 12 VMS_ prefixed tables on company Azure (VMS_Activities, VMS_Users, VMS_Projects, etc.)
   - Created TR_VMS_Activities_SyncVersion trigger for auto-increment SyncVersion
   - Migrated data for 5 reference tables: Users, Projects, Admins, ColumnMappings, Managers

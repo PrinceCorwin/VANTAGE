@@ -1,6 +1,14 @@
 {
   "releases": [
     {
+      "version": "26.1.19",
+      "date": "2026-02-19",
+      "highlights": [
+        "Fix column settings lost after updates — saved column order, widths, and visibility now persist across version changes",
+        "Change grid sorting to double-click on column headers (all three grids)"
+      ]
+    },
+    {
       "version": "26.1.18",
       "date": "2026-02-18",
       "highlights": [

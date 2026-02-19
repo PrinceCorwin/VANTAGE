@@ -62,7 +62,7 @@
                    Width="80" Height="80"
                    RenderOptions.BitmapScalingMode="HighQuality"
                    Margin="0,0,0,10"/>
-            <TextBlock Text="Summit Industrial Constructors"
+            <TextBlock Text="Summit Industrial"
                        Foreground="#ccccdd"
                        FontSize="18" FontWeight="SemiBold"
                        HorizontalAlignment="Center"/>

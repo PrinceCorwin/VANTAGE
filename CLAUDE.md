@@ -6,6 +6,9 @@ WPF application for Summit Industrial replacing the legacy MS Access system ("Ol
 - **Official name:** VANTAGE: Milestone (use this in UI, docs, README)
 - **Casual references:** Vantage, VMS, newVantage — all refer to this application
 - **Legacy system:** OldVantage — the predecessor MS Access/VBA application
+- **Company name:** Summit Industrial — this is the ONLY correct name for the company
+  - NEVER use "Summit Constructors", "Summit Industrial Constructors", or any other variation
+  - Always use "Summit Industrial" wherever the company name appears in code, UI, docs, or installer
 - Do NOT refer to the app as just "Milestone" or "MILESTONE" in new code, UI text, or documentation
 
 **See also:** `Project_Status.md` (todos, backlog), `Completed_Work.md` (changelog), `Milestone_Project_plan.md` (architecture), `Schedule_Module_plan.md` (schedule module details), `WorkPackage_Module_Plan.md` (work package module)

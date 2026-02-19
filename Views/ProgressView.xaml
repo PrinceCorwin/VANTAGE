@@ -695,6 +695,7 @@
                     AllowDraggingColumns="True"
                     AllowResizingColumns="True"
                     AllowSorting="True"
+                    SortClickAction="DoubleClick"
                     AllowFiltering="True"
                     LiveDataUpdateMode="AllowSummaryUpdate"
                     SelectionMode="Extended"

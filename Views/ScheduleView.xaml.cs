@@ -1095,25 +1095,25 @@ namespace VANTAGE.Views
                 if (prefs == null)
                     return;
 
-                var currentHash = ComputeSchemaHash(sfScheduleMaster);
-                if (!string.Equals(prefs.SchemaHash, currentHash, StringComparison.Ordinal))
-                    return;
-
                 var byName = sfScheduleMaster.Columns.ToDictionary(c => c.MappingName, c => c);
 
-                // 1) Visibility first
-                foreach (var p in prefs.Columns)
-                    if (byName.TryGetValue(p.Name, out var col))
-                        col.IsHidden = p.IsHidden;
+                // Filter to only prefs whose columns still exist in the grid
+                var matchedPrefs = prefs.Columns.Where(p => byName.ContainsKey(p.Name)).ToList();
+                if (matchedPrefs.Count == 0)
+                    return;
 
-                // 2) Order (move columns to target positions)
-                var orderedPrefs = prefs.Columns.OrderBy(x => x.OrderIndex).ToList();
-                for (int target = 0; target < orderedPrefs.Count; target++)
+                // 1) Visibility first
+                foreach (var p in matchedPrefs)
+                    byName[p.Name].IsHidden = p.IsHidden;
+
+                // 2) Order — place matched columns in their saved order, new columns stay at end
+                var orderedMatched = matchedPrefs.OrderBy(x => x.OrderIndex).ToList();
+                for (int target = 0; target < orderedMatched.Count; target++)
                 {
-                    var p = orderedPrefs[target];
-                    if (!byName.TryGetValue(p.Name, out var col)) continue;
+                    var p = orderedMatched[target];
+                    var col = byName[p.Name];
                     int cur = sfScheduleMaster.Columns.IndexOf(col);
-                    if (cur != target && cur >= 0)
+                    if (cur != target && cur >= 0 && target < sfScheduleMaster.Columns.Count)
                     {
                         sfScheduleMaster.Columns.RemoveAt(cur);
                         sfScheduleMaster.Columns.Insert(target, col);
@@ -1122,9 +1122,13 @@ namespace VANTAGE.Views
 
                 // 3) Width last (guard against tiny widths)
                 const double MinWidth = 40.0;
-                foreach (var p in prefs.Columns)
-                    if (byName.TryGetValue(p.Name, out var col))
-                        col.Width = Math.Max(MinWidth, p.Width);
+                foreach (var p in matchedPrefs)
+                    byName[p.Name].Width = Math.Max(MinWidth, p.Width);
+
+                // Re-save so schema hash is updated for next load
+                var currentHash = ComputeSchemaHash(sfScheduleMaster);
+                if (!string.Equals(prefs.SchemaHash, currentHash, StringComparison.Ordinal))
+                    SaveColumnState();
 
                 sfScheduleMaster.UpdateLayout();
             }
@@ -1186,25 +1190,25 @@ namespace VANTAGE.Views
                 if (prefs == null)
                     return;
 
-                var currentHash = ComputeSchemaHash(sfScheduleDetail);
-                if (!string.Equals(prefs.SchemaHash, currentHash, StringComparison.Ordinal))
-                    return;
-
                 var byName = sfScheduleDetail.Columns.ToDictionary(c => c.MappingName, c => c);
 
-                // 1) Visibility first
-                foreach (var p in prefs.Columns)
-                    if (byName.TryGetValue(p.Name, out var col))
-                        col.IsHidden = p.IsHidden;
+                // Filter to only prefs whose columns still exist in the grid
+                var matchedPrefs = prefs.Columns.Where(p => byName.ContainsKey(p.Name)).ToList();
+                if (matchedPrefs.Count == 0)
+                    return;
 
-                // 2) Order (move columns to target positions)
-                var orderedPrefs = prefs.Columns.OrderBy(x => x.OrderIndex).ToList();
-                for (int target = 0; target < orderedPrefs.Count; target++)
+                // 1) Visibility first
+                foreach (var p in matchedPrefs)
+                    byName[p.Name].IsHidden = p.IsHidden;
+
+                // 2) Order — place matched columns in their saved order, new columns stay at end
+                var orderedMatched = matchedPrefs.OrderBy(x => x.OrderIndex).ToList();
+                for (int target = 0; target < orderedMatched.Count; target++)
                 {
-                    var p = orderedPrefs[target];
-                    if (!byName.TryGetValue(p.Name, out var col)) continue;
+                    var p = orderedMatched[target];
+                    var col = byName[p.Name];
                     int cur = sfScheduleDetail.Columns.IndexOf(col);
-                    if (cur != target && cur >= 0)
+                    if (cur != target && cur >= 0 && target < sfScheduleDetail.Columns.Count)
                     {
                         sfScheduleDetail.Columns.RemoveAt(cur);
                         sfScheduleDetail.Columns.Insert(target, col);
@@ -1213,9 +1217,13 @@ namespace VANTAGE.Views
 
                 // 3) Width last (guard against tiny widths)
                 const double MinWidth = 40.0;
-                foreach (var p in prefs.Columns)
-                    if (byName.TryGetValue(p.Name, out var col))
-                        col.Width = Math.Max(MinWidth, p.Width);
+                foreach (var p in matchedPrefs)
+                    byName[p.Name].Width = Math.Max(MinWidth, p.Width);
+
+                // Re-save so schema hash is updated for next load
+                var currentHash = ComputeSchemaHash(sfScheduleDetail);
+                if (!string.Equals(prefs.SchemaHash, currentHash, StringComparison.Ordinal))
+                    SaveDetailColumnState();
 
                 sfScheduleDetail.UpdateLayout();
             }
