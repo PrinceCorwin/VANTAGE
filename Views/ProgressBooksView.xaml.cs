@@ -904,6 +904,14 @@ namespace VANTAGE.Views
                     return;
                 }
 
+                // Check ALL activities for unsynced ActivityID (still 0), not just the sample
+                var unsyncedCount = activities.Count(a => a.ActivityID == 0);
+                if (unsyncedCount > 0)
+                {
+                    ShowPreviewPlaceholder($"Cannot generate Progress Book.\n\n{unsyncedCount} of {activities.Count} record(s) have not been synced to Azure yet.\n\nPlease sync your records first (Progress module → Sync button).");
+                    return;
+                }
+
                 string projectId = sampleActivities.FirstOrDefault()?.ProjectID ?? "Unknown";
                 string projectDescription = ProjectCache.GetProjectDescription(projectId);
 

@@ -450,7 +450,7 @@
 
                 <TextBlock Grid.Column="0"
                    x:Name="txtAppVersion"
-                   Text="Vantage: MILESTONE v1.0.0"
+                   Text="VANTAGE: Milestone v1.0.0"
                    Foreground="{StaticResource AccentColor}"
                    FontSize="11"
                    FontWeight="SemiBold"

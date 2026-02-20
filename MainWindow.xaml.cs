@@ -275,7 +275,7 @@ namespace VANTAGE
         {
             // Set app version dynamically
             var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-            txtAppVersion.Text = $"Vantage: MILESTONE v{version?.Major}.{version?.Minor}.{version?.Build}";
+            txtAppVersion.Text = $"VANTAGE: Milestone v{version?.Major}.{version?.Minor}.{version?.Build}";
 
             // Load PROGRESS module by default
             LoadProgressModule();

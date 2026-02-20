@@ -106,8 +106,19 @@ namespace VANTAGE.Dialogs
                 }
                 else
                 {
-                    txtStatus.Text = "";
-                    btnGenerate.IsEnabled = true;
+                    // Check if any activities have unsynced ActivityID (still 0)
+                    var unsyncedCount = activities.Count(a => a.ActivityID == 0);
+                    if (unsyncedCount > 0)
+                    {
+                        txtStatus.Text = $"⚠ {unsyncedCount} of {activities.Count} record(s) have not been synced to Azure.\nPlease sync in the Progress module before generating.";
+                        statusBorder.Visibility = Visibility.Visible;
+                        btnGenerate.IsEnabled = false;
+                    }
+                    else
+                    {
+                        statusBorder.Visibility = Visibility.Collapsed;
+                        btnGenerate.IsEnabled = true;
+                    }
                 }
             }
             catch (Exception ex)

@@ -31,12 +31,18 @@
 
     <!-- === STATUS COLORS === -->
     <SolidColorBrush x:Key="StatusGreen" Color="#FF27AE60"/>
+    <SolidColorBrush x:Key="StatusGreenBgBtn" Color="#062010"/>
+    <SolidColorBrush x:Key="StatusGreenFgBtn" Color="#FF3DD975"/>
     <SolidColorBrush x:Key="StatusYellow" Color="#FF8B7D26"/>
     <SolidColorBrush x:Key="StatusYellowBg" Color="#FFF5F0D0"/>
     <SolidColorBrush x:Key="StatusRed" Color="#FFB63434"/>
     <SolidColorBrush x:Key="StatusRedBg" Color="#FFFDE8E8"/>
+    <SolidColorBrush x:Key="StatusRedBgBtn" Color="#200808"/>
+    <SolidColorBrush x:Key="StatusRedFgBtn" Color="#FFDC5050"/>
     <SolidColorBrush x:Key="StatusGoldBg" Color="#FFF5E6B0"/>
     <SolidColorBrush x:Key="StatusInProgress" Color="#FF7B1FA2"/>
+    <SolidColorBrush x:Key="StatusInProgressBgBtn" Color="#201800"/>
+    <SolidColorBrush x:Key="StatusInProgressFgBtn" Color="#FFFFC830"/>
     <SolidColorBrush x:Key="StatusNotStarted" Color="#FF95A5A6"/>
 
     <!-- === ACTIVE FILTER BORDER === -->
@@ -79,6 +85,8 @@
     <SolidColorBrush x:Key="ErrorText" Color="#FFE74C3C"/>
     <SolidColorBrush x:Key="WarningText" Color="#FFD4A017"/>
     <SolidColorBrush x:Key="WarningHighlight" Color="#FFFF6B6B"/>
+    <SolidColorBrush x:Key="WarningBoxBg" Color="#3D2D00"/>
+    <SolidColorBrush x:Key="WarningBoxBorder" Color="#FFB400"/>
 
     <!-- === ANALYSIS MODULE COLORS (% Complete ranges) === -->
     <SolidColorBrush x:Key="AnalysisRedBg" Color="#FFB33A3A"/>       <!-- 0-25% -->
@@ -106,6 +114,21 @@
 
     <!-- === ACTION BUTTON COLORS === -->
     <SolidColorBrush x:Key="ActionButtonForeground" Color="#FFE8EAED"/>
+
+    <!-- === ELEVATION/SHADOW === -->
+    <SolidColorBrush x:Key="SidebarButtonBorder" Color="#FFBCAFC8"/>
+    <Color x:Key="ButtonShadowColor">#000000</Color>
+    <sys:Double xmlns:sys="clr-namespace:System;assembly=mscorlib" x:Key="ButtonShadowOpacity">0.15</sys:Double>
+    <sys:Double xmlns:sys="clr-namespace:System;assembly=mscorlib" x:Key="TextShadowDepth">3</sys:Double>
+    <sys:Double xmlns:sys="clr-namespace:System;assembly=mscorlib" x:Key="TextShadowBlurRadius">1</sys:Double>
+    <Color x:Key="TextShadowColor">#CCCCCC</Color>
+    <SolidColorBrush x:Key="SummaryLabelColor" Color="#FF2D1B36"/>
+    <sys:Double xmlns:sys="clr-namespace:System;assembly=mscorlib" x:Key="TextShadowOpacity">0.3</sys:Double>
+
+    <!-- === SPLASH SCREEN === -->
+    <SolidColorBrush x:Key="SplashBackground" Color="#FF4A148C"/>
+    <SolidColorBrush x:Key="SplashForeground" Color="#E8EAED"/>
+    <SolidColorBrush x:Key="SplashSpinner" Color="#E8EAED"/>
 
     <!-- ========================================= -->
     <!-- === DEFAULT BUTTON STYLE === -->

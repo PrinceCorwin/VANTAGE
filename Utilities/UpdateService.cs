@@ -27,6 +27,11 @@ namespace VANTAGE.Utilities
         {
             try
             {
+                // Skip update check when running in Debug mode (from Visual Studio)
+                #if DEBUG
+                AppLogger.Info("Update check skipped: running in Debug mode", "UpdateService.CheckAndApplyUpdateAsync");
+                return false;
+                #else
                 // Download and parse manifest
                 updateStatus("Checking for updates...");
                 var manifest = await GetManifestAsync();
@@ -100,6 +105,7 @@ namespace VANTAGE.Utilities
                 // Shut down the app so the updater can replace files
                 shutdownApp();
                 return true;
+                #endif
             }
             catch (Exception ex)
             {

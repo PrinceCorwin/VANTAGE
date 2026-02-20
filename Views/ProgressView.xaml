@@ -183,75 +183,99 @@
 
                 <!-- Sidebar Controls -->
                 <StackPanel Grid.Row="0">
-                    <TextBlock Text="QUICK FILTERS" 
+                    <TextBlock Text="QUICK FILTERS"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"
-                               FontSize="11" 
+                               FontSize="11"
                                FontWeight="Bold"
                                Height="30"
                                Padding="10"
                                Foreground="{StaticResource ForegroundColor}"
-                               Margin="0,0,0,10"/>
+                               Margin="0,0,0,20"/>
 
                     <Button x:Name="btnFilterComplete"
                             Content="Complete"
                             Height="35"
-                            Margin="0,0,0,5"
-                            Background="{StaticResource ControlBackground}"
-                            Foreground="{StaticResource ForegroundColor}"
-                            BorderBrush="{StaticResource ControlBorder}"
+                            Margin="0,0,0,10"
+                            Background="{StaticResource StatusGreenBgBtn}"
+                            Foreground="{StaticResource StatusGreenFgBtn}"
+                            BorderBrush="{DynamicResource SidebarButtonBorder}"
                             BorderThickness="1"
                             HorizontalContentAlignment="Center"
                             Padding="10,0"
                             FontSize="11"
                             Click="BtnFilterComplete_Click"
-                            ToolTip="Show only 100% complete activities"/>
+                            ToolTip="Show only 100% complete activities">
+                        <Button.Effect>
+                            <DropShadowEffect ShadowDepth="4" BlurRadius="6" Direction="315"
+                                              Opacity="{DynamicResource ButtonShadowOpacity}"
+                                              Color="{DynamicResource ButtonShadowColor}"/>
+                        </Button.Effect>
+                    </Button>
 
                     <Button x:Name="btnFilterInProgress"
                             Content="In Progress"
                             Height="35"
-                            Margin="0,0,0,5"
-                            Background="{StaticResource ControlBackground}"
-                            Foreground="{StaticResource ForegroundColor}"
-                            BorderBrush="{StaticResource ControlBorder}"
+                            Margin="0,0,0,10"
+                            Background="{StaticResource StatusInProgressBgBtn}"
+                            Foreground="{StaticResource StatusInProgressFgBtn}"
+                            BorderBrush="{DynamicResource SidebarButtonBorder}"
                             BorderThickness="1"
                             HorizontalContentAlignment="Center"
                             Padding="10,0"
                             FontSize="11"
                             Click="btnFilterInProgress_Click"
-                            ToolTip="Show activities between 1-99% complete"/>
+                            ToolTip="Show activities between 1-99% complete">
+                        <Button.Effect>
+                            <DropShadowEffect ShadowDepth="4" BlurRadius="6" Direction="315"
+                                              Opacity="{DynamicResource ButtonShadowOpacity}"
+                                              Color="{DynamicResource ButtonShadowColor}"/>
+                        </Button.Effect>
+                    </Button>
 
                     <Button x:Name="btnFilterNotStarted"
                             Content="Not Started"
                             Height="35"
                             Margin="0,0,0,0"
-                            Background="{StaticResource ControlBackground}"
-                            Foreground="{StaticResource ForegroundColor}"
-                            BorderBrush="{StaticResource ControlBorder}"
+                            Background="{StaticResource StatusRedBgBtn}"
+                            Foreground="{StaticResource StatusRedFgBtn}"
+                            BorderBrush="{DynamicResource SidebarButtonBorder}"
                             BorderThickness="1"
                             HorizontalContentAlignment="Center"
                             Padding="10,0"
                             FontSize="11"
                             Click="BtnFilterNotStarted_Click"
-                            ToolTip="Show activities at 0% complete"/>
+                            ToolTip="Show activities at 0% complete">
+                        <Button.Effect>
+                            <DropShadowEffect ShadowDepth="4" BlurRadius="6" Direction="315"
+                                              Opacity="{DynamicResource ButtonShadowOpacity}"
+                                              Color="{DynamicResource ButtonShadowColor}"/>
+                        </Button.Effect>
+                    </Button>
 
-                    <Border Height="1" 
-                        Background="{StaticResource ControlBorder}" 
-                        Margin="0,10,0,10"/>
+                    <Border Height="1"
+                        Background="{StaticResource ControlBorder}"
+                        Margin="0,20,0,20"/>
 
                     <Button x:Name="btnFilterLocalDirty"
                             Content="Unsynced"
                             Height="35"
-                            Margin="0,0,0,5"
+                            Margin="0,0,0,10"
                             Background="{StaticResource ControlBackground}"
                             Foreground="{StaticResource ForegroundColor}"
-                            BorderBrush="{StaticResource ControlBorder}"
+                            BorderBrush="{DynamicResource SidebarButtonBorder}"
                             BorderThickness="1"
                             HorizontalContentAlignment="Center"
                             Padding="10,0"
                             FontSize="11"
                             Click="BtnFilterLocalDirty_Click"
-                            ToolTip="Show records with unsaved local changes"/>
+                            ToolTip="Show records with unsaved local changes">
+                        <Button.Effect>
+                            <DropShadowEffect ShadowDepth="4" BlurRadius="6" Direction="315"
+                                              Opacity="{DynamicResource ButtonShadowOpacity}"
+                                              Color="{DynamicResource ButtonShadowColor}"/>
+                        </Button.Effect>
+                    </Button>
 
                     <Button x:Name="btnFilterMyRecords"
                             Content="My Records"
@@ -259,34 +283,46 @@
                             Margin="0,0,0,0"
                             Background="{StaticResource ControlBackground}"
                             Foreground="{StaticResource ForegroundColor}"
-                            BorderBrush="{StaticResource ControlBorder}"
+                            BorderBrush="{DynamicResource SidebarButtonBorder}"
                             BorderThickness="1"
                             HorizontalContentAlignment="Center"
                             Padding="10,0"
                             FontSize="11"
                             Click="BtnFilterMyRecords_Click"
-                            ToolTip="Show only records assigned to me"/>
+                            ToolTip="Show only records assigned to me">
+                        <Button.Effect>
+                            <DropShadowEffect ShadowDepth="4" BlurRadius="6" Direction="315"
+                                              Opacity="{DynamicResource ButtonShadowOpacity}"
+                                              Color="{DynamicResource ButtonShadowColor}"/>
+                        </Button.Effect>
+                    </Button>
 
                     <Button x:Name="btnFilterToday"
                             Content="Today"
                             Height="35"
-                            Margin="0,5,0,0"
+                            Margin="0,10,0,0"
                             Background="{StaticResource ControlBackground}"
                             Foreground="{StaticResource ForegroundColor}"
-                            BorderBrush="{StaticResource ControlBorder}"
+                            BorderBrush="{DynamicResource SidebarButtonBorder}"
                             BorderThickness="1"
                             HorizontalContentAlignment="Center"
                             Padding="10,0"
                             FontSize="11"
                             Click="BtnFilterToday_Click"
-                            ToolTip="Show activities scheduled to start or finish today"/>
+                            ToolTip="Show activities scheduled to start or finish today">
+                        <Button.Effect>
+                            <DropShadowEffect ShadowDepth="4" BlurRadius="6" Direction="315"
+                                              Opacity="{DynamicResource ButtonShadowOpacity}"
+                                              Color="{DynamicResource ButtonShadowColor}"/>
+                        </Button.Effect>
+                    </Button>
 
                     <Button x:Name="btnUserFilters"
                             Height="35"
-                            Margin="0,5,0,0"
+                            Margin="0,10,0,0"
                             Background="{StaticResource ControlBackground}"
                             Foreground="{StaticResource ForegroundColor}"
-                            BorderBrush="{StaticResource ControlBorder}"
+                            BorderBrush="{DynamicResource SidebarButtonBorder}"
                             BorderThickness="1"
                             HorizontalContentAlignment="Center"
                             Padding="5,0"
@@ -334,11 +370,16 @@
                                 <!-- Items populated dynamically -->
                             </ContextMenu>
                         </Button.ContextMenu>
+                        <Button.Effect>
+                            <DropShadowEffect ShadowDepth="4" BlurRadius="6" Direction="315"
+                                              Opacity="{DynamicResource ButtonShadowOpacity}"
+                                              Color="{DynamicResource ButtonShadowColor}"/>
+                        </Button.Effect>
                     </Button>
 
                     <Border Height="1"
                         Background="{StaticResource ControlBorder}"
-                        Margin="0,10,0,10"/>
+                        Margin="0,20,0,20"/>
 
                     <Button x:Name="btnClearFilters"
                             Content="Clear Filters"
@@ -346,36 +387,48 @@
                             Margin="0,0,0,0"
                             Background="{StaticResource ControlBackground}"
                             Foreground="{StaticResource ForegroundColor}"
-                            BorderBrush="{StaticResource ControlBorder}"
+                            BorderBrush="{DynamicResource SidebarButtonBorder}"
                             BorderThickness="1"
                             HorizontalContentAlignment="Center"
                             Padding="10,0"
                             FontSize="11"
                             Click="BtnClearFilters_Click"
-                            ToolTip="Remove all active filters"/>
+                            ToolTip="Remove all active filters">
+                        <Button.Effect>
+                            <DropShadowEffect ShadowDepth="4" BlurRadius="6" Direction="315"
+                                              Opacity="{DynamicResource ButtonShadowOpacity}"
+                                              Color="{DynamicResource ButtonShadowColor}"/>
+                        </Button.Effect>
+                    </Button>
 
-                    <Border Height="1" 
-                        Background="{StaticResource ControlBorder}" 
-                        Margin="0,10,0,10"/>
+                    <Border Height="1"
+                        Background="{StaticResource ControlBorder}"
+                        Margin="0,20,0,20"/>
 
                     <Button x:Name="btnAssign"
                             Content="Assign"
-                            
+
                             Height="28"
                             Margin="0,0,0,0"
                             Background="{StaticResource ControlBackground}"
                             Foreground="{StaticResource ForegroundColor}"
-                            BorderBrush="{StaticResource ControlBorder}"
+                            BorderBrush="{DynamicResource SidebarButtonBorder}"
                             BorderThickness="1"
                             Padding="10,0"
                             FontSize="11"
                             VerticalContentAlignment="Center"
                             Click="MenuAssignToUser_Click"
-                            ToolTip="Assign selected records to user"/>
+                            ToolTip="Assign selected records to user">
+                        <Button.Effect>
+                            <DropShadowEffect ShadowDepth="4" BlurRadius="6" Direction="315"
+                                              Opacity="{DynamicResource ButtonShadowOpacity}"
+                                              Color="{DynamicResource ButtonShadowColor}"/>
+                        </Button.Effect>
+                    </Button>
 
-                    <Border Height="1" 
-                        Background="{StaticResource ControlBorder}" 
-                        Margin="0,10,0,10"/>
+                    <Border Height="1"
+                        Background="{StaticResource ControlBorder}"
+                        Margin="0,20,0,20"/>
 
                     <Button x:Name="btnColumnVisibility"
                             Content="Columns"
@@ -383,13 +436,19 @@
                             Margin="0,0,0,0"
                             Background="{StaticResource ControlBackground}"
                             Foreground="{StaticResource ForegroundColor}"
-                            BorderBrush="{StaticResource ControlBorder}"
+                            BorderBrush="{DynamicResource SidebarButtonBorder}"
                             BorderThickness="1"
                             HorizontalContentAlignment="Center"
                             Padding="10,0"
                             FontSize="11"
                             Click="BtnColumnVisibility_Click"
-                            ToolTip="Show or hide grid columns"/>
+                            ToolTip="Show or hide grid columns">
+                        <Button.Effect>
+                            <DropShadowEffect ShadowDepth="4" BlurRadius="6" Direction="315"
+                                              Opacity="{DynamicResource ButtonShadowOpacity}"
+                                              Color="{DynamicResource ButtonShadowColor}"/>
+                        </Button.Effect>
+                    </Button>
 
                 </StackPanel>
                 <!-- Spacer (pushes logo to bottom) -->
@@ -445,6 +504,11 @@
                                 CornerRadius="15"
                                 Margin="15,0,5,0"
                                 Padding="4,2">
+                            <Border.Effect>
+                                <DropShadowEffect ShadowDepth="4" BlurRadius="6" Direction="315"
+                                                  Opacity="{DynamicResource ButtonShadowOpacity}"
+                                                  Color="{DynamicResource ButtonShadowColor}"/>
+                            </Border.Effect>
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
@@ -497,7 +561,13 @@
                                 FontSize="12"
                                 VerticalContentAlignment="Center"
                                 Click="BtnRefresh_Click"
-                                ToolTip="Reload data from local database"/>
+                                ToolTip="Reload data from local database">
+                            <Button.Effect>
+                                <DropShadowEffect ShadowDepth="4" BlurRadius="6" Direction="315"
+                                                  Opacity="{DynamicResource ButtonShadowOpacity}"
+                                                  Color="{DynamicResource ButtonShadowColor}"/>
+                            </Button.Effect>
+                        </Button>
 
                         <Button x:Name="btnScanProgress"
                                 Content="SCAN"
@@ -512,7 +582,13 @@
                                 FontSize="12"
                                 VerticalContentAlignment="Center"
                                 Click="BtnScanProgress_Click"
-                                ToolTip="Scan progress sheets with AI vision"/>
+                                ToolTip="Scan progress sheets with AI vision">
+                            <Button.Effect>
+                                <DropShadowEffect ShadowDepth="4" BlurRadius="6" Direction="315"
+                                                  Opacity="{DynamicResource ButtonShadowOpacity}"
+                                                  Color="{DynamicResource ButtonShadowColor}"/>
+                            </Button.Effect>
+                        </Button>
 
                         <Button x:Name="btnSetPercent100"
                                 Content="100%"
@@ -536,6 +612,11 @@
                                     <MenuItem Header="Custom Percent..." Click="MenuItem_CustomPercent_Click"/>
                                 </ContextMenu>
                             </Button.ContextMenu>
+                            <Button.Effect>
+                                <DropShadowEffect ShadowDepth="4" BlurRadius="6" Direction="315"
+                                                  Opacity="{DynamicResource ButtonShadowOpacity}"
+                                                  Color="{DynamicResource ButtonShadowColor}"/>
+                            </Button.Effect>
                         </Button>
 
                         <Button x:Name="btnSetPercent0"
@@ -560,6 +641,11 @@
                                     <MenuItem Header="Custom Percent..." Click="MenuItem_CustomPercent_Click"/>
                                 </ContextMenu>
                             </Button.ContextMenu>
+                            <Button.Effect>
+                                <DropShadowEffect ShadowDepth="4" BlurRadius="6" Direction="315"
+                                                  Opacity="{DynamicResource ButtonShadowOpacity}"
+                                                  Color="{DynamicResource ButtonShadowColor}"/>
+                            </Button.Effect>
                         </Button>
                     </StackPanel>
 
@@ -583,7 +669,13 @@
                                 FontSize="12"
                                 VerticalContentAlignment="Center"
                                 Click="BtnSync_Click"
-                                ToolTip="Push local changes and pull updates from Azure"/>
+                                ToolTip="Push local changes and pull updates from Azure">
+                            <Button.Effect>
+                                <DropShadowEffect ShadowDepth="4" BlurRadius="6" Direction="315"
+                                                  Opacity="{DynamicResource ButtonShadowOpacity}"
+                                                  Color="{DynamicResource ButtonShadowColor}"/>
+                            </Button.Effect>
+                        </Button>
 
                         <Button x:Name="btnSubmit"
                                 Content="SUBMIT WEEK"
@@ -598,7 +690,13 @@
                                 FontSize="12"
                                 VerticalContentAlignment="Center"
                                 Click="BtnSubmit_Click"
-                                ToolTip="Submit weekly progress and create snapshot"/>
+                                ToolTip="Submit weekly progress and create snapshot">
+                            <Button.Effect>
+                                <DropShadowEffect ShadowDepth="4" BlurRadius="6" Direction="315"
+                                                  Opacity="{DynamicResource ButtonShadowOpacity}"
+                                                  Color="{DynamicResource ButtonShadowColor}"/>
+                            </Button.Effect>
+                        </Button>
                     </StackPanel>
 
                     <!-- RIGHT SIDE: Summary stats -->
@@ -613,7 +711,7 @@
                             <StackPanel Orientation="Horizontal" Margin="0,0,20,0" ToolTip="Click to select column for summary calculations">
                                 <TextBlock x:Name="SummaryColumnSelector"
                                            Text="{Binding SelectedSummaryColumn}"
-                                           Foreground="{StaticResource TextColorSecondary}"
+                                           Foreground="{DynamicResource SummaryLabelColor}"
                                            FontSize="14"
                                            VerticalAlignment="Center"
                                            Cursor="Hand"
@@ -632,45 +730,86 @@
                                                      ItemsSource="{Binding AvailableSummaryColumns}"
                                                      MenuItem.Click="SummaryColumnMenuItem_Click"/>
                                     </TextBlock.ContextMenu>
+                                    <TextBlock.Effect>
+                                        <DropShadowEffect ShadowDepth="{DynamicResource TextShadowDepth}" BlurRadius="{DynamicResource TextShadowBlurRadius}" Direction="315"
+                                                          Opacity="{DynamicResource TextShadowOpacity}"
+                                                          Color="{DynamicResource TextShadowColor}"/>
+                                    </TextBlock.Effect>
                                 </TextBlock>
                                 <TextBlock Text=" ▾:"
-                                           Foreground="{StaticResource TextColorSecondary}"
+                                           Foreground="{DynamicResource SummaryLabelColor}"
                                            FontSize="14"
-                                           VerticalAlignment="Center"/>
+                                           VerticalAlignment="Center">
+                                    <TextBlock.Effect>
+                                        <DropShadowEffect ShadowDepth="{DynamicResource TextShadowDepth}" BlurRadius="{DynamicResource TextShadowBlurRadius}" Direction="315"
+                                                          Opacity="{DynamicResource TextShadowOpacity}"
+                                                          Color="{DynamicResource TextShadowColor}"/>
+                                    </TextBlock.Effect>
+                                </TextBlock>
                                 <TextBlock Text="{Binding BudgetedMHs, StringFormat=N2}"
                                            Foreground="{StaticResource AccentColor}"
                                            FontSize="14"
                                            FontWeight="Bold"
                                            VerticalAlignment="Center"
-                                           Margin="5,0,0,0"/>
+                                           Margin="5,0,0,0">
+                                    <TextBlock.Effect>
+                                        <DropShadowEffect ShadowDepth="{DynamicResource TextShadowDepth}" BlurRadius="{DynamicResource TextShadowBlurRadius}" Direction="315"
+                                                          Opacity="{DynamicResource TextShadowOpacity}"
+                                                          Color="{DynamicResource TextShadowColor}"/>
+                                    </TextBlock.Effect>
+                                </TextBlock>
                             </StackPanel>
 
                             <!-- Earned MHs -->
                             <StackPanel Orientation="Horizontal" Margin="0,0,20,0" ToolTip="Earned Man-Hours">
                                 <TextBlock Text="Earned:"
-                                           Foreground="{StaticResource TextColorSecondary}"
+                                           Foreground="{DynamicResource SummaryLabelColor}"
                                            FontSize="14"
-                                           VerticalAlignment="Center"/>
+                                           VerticalAlignment="Center">
+                                    <TextBlock.Effect>
+                                        <DropShadowEffect ShadowDepth="{DynamicResource TextShadowDepth}" BlurRadius="{DynamicResource TextShadowBlurRadius}" Direction="315"
+                                                          Opacity="{DynamicResource TextShadowOpacity}"
+                                                          Color="{DynamicResource TextShadowColor}"/>
+                                    </TextBlock.Effect>
+                                </TextBlock>
                                 <TextBlock Text="{Binding EarnedMHs, StringFormat=N2}"
                                            Foreground="{StaticResource StatusGreen}"
                                            FontSize="14"
                                            FontWeight="Bold"
                                            VerticalAlignment="Center"
-                                           Margin="5,0,0,0"/>
+                                           Margin="5,0,0,0">
+                                    <TextBlock.Effect>
+                                        <DropShadowEffect ShadowDepth="{DynamicResource TextShadowDepth}" BlurRadius="{DynamicResource TextShadowBlurRadius}" Direction="315"
+                                                          Opacity="{DynamicResource TextShadowOpacity}"
+                                                          Color="{DynamicResource TextShadowColor}"/>
+                                    </TextBlock.Effect>
+                                </TextBlock>
                             </StackPanel>
 
                             <!-- Percent Complete -->
                             <StackPanel Orientation="Horizontal" ToolTip="Percent Complete">
                                 <TextBlock Text="% Complete:"
-                                           Foreground="{StaticResource TextColorSecondary}"
+                                           Foreground="{DynamicResource SummaryLabelColor}"
                                            FontSize="14"
-                                           VerticalAlignment="Center"/>
+                                           VerticalAlignment="Center">
+                                    <TextBlock.Effect>
+                                        <DropShadowEffect ShadowDepth="{DynamicResource TextShadowDepth}" BlurRadius="{DynamicResource TextShadowBlurRadius}" Direction="315"
+                                                          Opacity="{DynamicResource TextShadowOpacity}"
+                                                          Color="{DynamicResource TextShadowColor}"/>
+                                    </TextBlock.Effect>
+                                </TextBlock>
                                 <TextBlock Text="{Binding PercentComplete, StringFormat='{}{0:N2}%'}"
                                            Foreground="{StaticResource StatusInProgress}"
                                            FontSize="14"
                                            FontWeight="Bold"
                                            VerticalAlignment="Center"
-                                           Margin="5,0,0,0"/>
+                                           Margin="5,0,0,0">
+                                    <TextBlock.Effect>
+                                        <DropShadowEffect ShadowDepth="{DynamicResource TextShadowDepth}" BlurRadius="{DynamicResource TextShadowBlurRadius}" Direction="315"
+                                                          Opacity="{DynamicResource TextShadowOpacity}"
+                                                          Color="{DynamicResource TextShadowColor}"/>
+                                    </TextBlock.Effect>
+                                </TextBlock>
                             </StackPanel>
                         </StackPanel>
                     </Viewbox>
@@ -1770,14 +1909,14 @@
                            Foreground="{StaticResource TextColorSecondary}"
                            VerticalAlignment="Center"
                            Margin="10,0,0,0"/>
-                    <!-- NEW: Metadata Errors Button -->
+                    <!-- Metadata Errors Button -->
                     <Button x:Name="btnMetadataErrors"
                                 DockPanel.Dock="Left"
                                 Content="{Binding MetadataErrorButtonText}"
                                 Click="BtnMetadataErrors_Click"
-                                Background="{StaticResource ControlBackground}"
-                                Foreground="{StaticResource StatusRed}"
-                                BorderBrush="{StaticResource ControlBorder}"
+                                Background="{StaticResource WarningBoxBg}"
+                                Foreground="{StaticResource WarningBoxBorder}"
+                                BorderBrush="{StaticResource WarningBoxBorder}"
                                 BorderThickness="1"
                                 Padding="8,4"
                                 Margin="15,0,0,0"

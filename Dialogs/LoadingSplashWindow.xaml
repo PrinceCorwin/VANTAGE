@@ -14,8 +14,8 @@
         Topmost="True"
         Icon="pack://application:,,,/images/AppIcon.ico">
 
-    <Border Background="{StaticResource WindowBackground}"
-            BorderBrush="{StaticResource AccentColor}"
+    <Border Background="{DynamicResource SplashBackground}"
+            BorderBrush="{DynamicResource SplashBackground}"
             BorderThickness="1"
             CornerRadius="8">
 
@@ -34,7 +34,7 @@
                 <TextBlock Text="VANTAGE: MILESTONE"
                            FontSize="20"
                            FontWeight="Bold"
-                           Foreground="{StaticResource ForegroundColor}"
+                           Foreground="{DynamicResource SplashForeground}"
                            VerticalAlignment="Center"/>
             </StackPanel>
 
@@ -44,14 +44,14 @@
                                         AnimationType="DualRing"
                                         ViewboxWidth="50"
                                         ViewboxHeight="50"
-                                        Foreground="{StaticResource AccentColor}"/>
+                                        Foreground="{DynamicResource SplashSpinner}"/>
 
             <!-- Status Text -->
             <TextBlock Grid.Row="2"
                        x:Name="txtStatus"
                        Text="Initializing..."
                        FontSize="13"
-                       Foreground="{StaticResource ForegroundColor}"
+                       Foreground="{DynamicResource SplashForeground}"
                        HorizontalAlignment="Center"
                        Margin="0,20,0,0"/>
         </Grid>

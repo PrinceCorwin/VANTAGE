@@ -6,6 +6,11 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### February 20, 2026
+- **Progress module UI polish with drop shadows:** Added drop shadow effects to sidebar filter buttons, top toolbar buttons, search field, and project summary text (labels and values). Shadows provide visual elevation and separation. All shadow properties are theme-specific: dark mode uses black shadows at 85% opacity, light/orchid modes use lighter shadows (15-30% opacity) that don't overpower the bright backgrounds.
+- **Theme-specific visual refinements:** Doubled vertical spacing between sidebar buttons. Added lighter sidebar button borders. Changed filter button foreground colors (StatusGreenFgBtn, StatusRedFgBtn, StatusInProgressFgBtn) to brighter values for better contrast. Summary labels now use theme-specific colors. Light mode StatusInProgress changed to red-based color for better readability.
+- **Splash screen theme colors:** Light and Orchid themes now use dark backgrounds for splash screen (matching their column header colors) with light text and spinner, eliminating the jarring bright flash on startup.
+
 ### February 19, 2026
 - **Fix column settings lost after updates:** Column order, widths, and visibility preferences were silently discarded when an update added or removed columns (SchemaHash mismatch caused full rejection). Settings now gracefully apply to matching columns — new columns appear at end with defaults, removed columns are ignored. Affected all three grids: Progress, Schedule master, and Schedule detail. Also fixes named layouts (ApplyGridPreferences) for Progress grid.
 - **Double-click to sort:** Changed all three grids (Progress, Schedule master, Schedule detail) from single-click to double-click on column headers to sort. Prevents accidental sorting when clicking headers.
