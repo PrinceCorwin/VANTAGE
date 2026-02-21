@@ -7,7 +7,7 @@
         Width="500"
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize"
-        Background="{StaticResource WindowBackground}">
+        Background="{DynamicResource WindowBackground}">
 
     <Grid Margin="20">
         <Grid.RowDefinitions>
@@ -27,21 +27,21 @@
             <TextBlock Text="Cannot connect to Azure database"
                        FontSize="16"
                        FontWeight="Bold"
-                       Foreground="{StaticResource ForegroundColor}"
+                       Foreground="{DynamicResource ForegroundColor}"
                        VerticalAlignment="Center"/>
         </StackPanel>
 
         <!-- Error Message -->
         <Border Grid.Row="1"
-                Background="{StaticResource ControlBackground}"
-                BorderBrush="{StaticResource BorderColor}"
+                Background="{DynamicResource ControlBackground}"
+                BorderBrush="{DynamicResource BorderColor}"
                 BorderThickness="1"
                 Padding="15"
                 Margin="0,0,0,10">
             <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <TextBlock x:Name="txtErrorMessage"
                            TextWrapping="Wrap"
-                           Foreground="{StaticResource TextColorSecondary}"
+                           Foreground="{DynamicResource TextColorSecondary}"
                            FontSize="12"/>
             </ScrollViewer>
         </Border>
@@ -50,12 +50,12 @@
         <StackPanel Grid.Row="2" Margin="0,0,0,15">
             <TextBlock Text="If this is your first time connecting on this network, provide your IP address to your administrator to request firewall access."
                        TextWrapping="Wrap"
-                       Foreground="{StaticResource TextColorSecondary}"
+                       Foreground="{DynamicResource TextColorSecondary}"
                        FontSize="11"
                        Margin="0,0,0,6"/>
             <StackPanel Orientation="Horizontal">
                 <TextBlock Text="Your public IP:"
-                           Foreground="{StaticResource ForegroundColor}"
+                           Foreground="{DynamicResource ForegroundColor}"
                            FontSize="12"
                            VerticalAlignment="Center"
                            Margin="0,0,8,0"/>
@@ -64,7 +64,7 @@
                            FontFamily="Consolas"
                            FontSize="13"
                            FontWeight="SemiBold"
-                           Foreground="{StaticResource AccentColor}"
+                           Foreground="{DynamicResource AccentColor}"
                            VerticalAlignment="Center"
                            Margin="0,0,10,0"/>
                 <Button x:Name="btnCopyIp"
@@ -74,9 +74,9 @@
                         FontSize="10"
                         IsEnabled="False"
                         ToolTip="Copy IP address to clipboard"
-                        Background="{StaticResource ControlBackground}"
-                        Foreground="{StaticResource ForegroundColor}"
-                        BorderBrush="{StaticResource BorderColor}"
+                        Background="{DynamicResource ControlBackground}"
+                        Foreground="{DynamicResource ForegroundColor}"
+                        BorderBrush="{DynamicResource BorderColor}"
                         BorderThickness="1"
                         Click="BtnCopyIp_Click"/>
             </StackPanel>
@@ -91,9 +91,9 @@
                     Width="120"
                     Height="35"
                     Margin="0,0,10,0"
-                    Background="{StaticResource AccentColor}"
+                    Background="{DynamicResource AccentColor}"
                     Foreground="White"
-                    BorderBrush="{StaticResource AccentColor}"
+                    BorderBrush="{DynamicResource AccentColor}"
                     BorderThickness="1"
                     FontWeight="SemiBold"
                     Click="BtnRetry_Click"
@@ -103,9 +103,9 @@
                     Content="WORK OFFLINE"
                     Width="120"
                     Height="35"
-                    Background="{StaticResource ControlBackground}"
-                    Foreground="{StaticResource ForegroundColor}"
-                    BorderBrush="{StaticResource BorderColor}"
+                    Background="{DynamicResource ControlBackground}"
+                    Foreground="{DynamicResource ForegroundColor}"
+                    BorderBrush="{DynamicResource BorderColor}"
                     BorderThickness="1"
                     Click="BtnWorkOffline_Click"
                     IsCancel="True"/>

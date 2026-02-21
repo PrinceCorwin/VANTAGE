@@ -1018,6 +1018,8 @@ namespace VANTAGE.Views
             InitializeComponent();
             // Apply Syncfusion theme to grid
             Syncfusion.SfSkinManager.SfSkinManager.SetTheme(sfActivities, new Syncfusion.SfSkinManager.Theme(ThemeManager.GetSyncfusionThemeName()));
+            Loaded += (_, __) => ThemeManager.ThemeChanged += OnThemeChanged;
+            Unloaded += (_, __) => ThemeManager.ThemeChanged -= OnThemeChanged;
             // Hook into Syncfusion's filter changed event
             sfActivities.FilterChanged += SfActivities_FilterChanged;
             sfActivities.CurrentCellBeginEdit += SfActivities_CurrentCellBeginEdit;
@@ -1087,6 +1089,29 @@ namespace VANTAGE.Views
             _resizeSaveTimer.Tick += ResizeSaveTimer_Tick;
             SetupColumnResizeSave();
         }
+
+        // Re-apply Syncfusion skin to grid when theme changes
+        private void OnThemeChanged(string themeName)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                // Hide grid during transition to prevent flash of stale row colors
+                sfActivities.Opacity = 0;
+
+                var sfTheme = new Syncfusion.SfSkinManager.Theme(ThemeManager.GetSyncfusionThemeName());
+                Syncfusion.SfSkinManager.SfSkinManager.SetTheme(sfActivities, sfTheme);
+            });
+
+            // Defer RowStyleSelector reset so it runs after SfSkinManager finishes its visual updates
+            Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, () =>
+            {
+                var selector = sfActivities.RowStyleSelector;
+                sfActivities.RowStyleSelector = null;
+                sfActivities.RowStyleSelector = selector;
+                sfActivities.Opacity = 1;
+            });
+        }
+
         private void ResizeSaveTimer_Tick(object? sender, EventArgs e)
         {
             _resizeSaveTimer.Stop();

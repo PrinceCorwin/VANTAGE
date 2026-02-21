@@ -5,7 +5,7 @@
         Height="210"
         Width="350"
         WindowStartupLocation="CenterOwner"
-        Background="{StaticResource BackgroundColor}"
+        Background="{DynamicResource BackgroundColor}"
         ResizeMode="NoResize"
         WindowStyle="SingleBorderWindow">
 
@@ -21,7 +21,7 @@
         <!-- Label -->
         <TextBlock Grid.Row="0"
                    Text="Enter custom percent value (0-100):"
-                   Foreground="{StaticResource ForegroundColor}"
+                   Foreground="{DynamicResource ForegroundColor}"
                    FontSize="13"/>
 
         <!-- Input TextBox -->
@@ -30,9 +30,9 @@
                  Height="35"
                  FontSize="14"
                  Padding="10,8,10,8"
-                 Background="{StaticResource ControlBackground}"
-                 Foreground="{StaticResource ControlForeground}"
-                 BorderBrush="{StaticResource ControlBorder}"
+                 Background="{DynamicResource ControlBackground}"
+                 Foreground="{DynamicResource ControlForeground}"
+                 BorderBrush="{DynamicResource ControlBorder}"
                  BorderThickness="1"
                  VerticalContentAlignment="Center"
                  MaxLength="3"
@@ -46,18 +46,18 @@
                     Width="80"
                     Height="35"
                     Margin="0,0,10,0"
-                    Background="{StaticResource ControlBackground}"
-                    Foreground="{StaticResource ForegroundColor}"
-                    BorderBrush="{StaticResource ControlBorder}"
+                    Background="{DynamicResource ControlBackground}"
+                    Foreground="{DynamicResource ForegroundColor}"
+                    BorderBrush="{DynamicResource ControlBorder}"
                     BorderThickness="1"
                     IsCancel="True"/>
 
             <Button Content="OK"
                     Width="80"
                     Height="35"
-                    Background="{StaticResource AccentColor}"
-                    Foreground="{StaticResource ForegroundColor}"
-                    BorderBrush="{StaticResource AccentColor}"
+                    Background="{DynamicResource AccentColor}"
+                    Foreground="{DynamicResource ForegroundColor}"
+                    BorderBrush="{DynamicResource AccentColor}"
                     BorderThickness="1"
                     IsDefault="True"
                     Click="BtnOK_Click"/>

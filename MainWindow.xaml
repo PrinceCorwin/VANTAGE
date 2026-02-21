@@ -12,7 +12,7 @@
         Height="1080"
         Width="1920"
         WindowState="Maximized"
-        Background="{StaticResource BackgroundColor}"
+        Background="{DynamicResource BackgroundColor}"
         Icon="pack://application:,,,/images/AppIcon.ico">
     <Grid>
         <Grid.RowDefinitions>
@@ -22,8 +22,8 @@
         </Grid.RowDefinitions>
         <!-- TOOLBAR -->
         <Border Grid.Row="0"
-                Background="{StaticResource DarkestBackgroundColor}"
-                BorderBrush="{StaticResource BorderColor}"
+                Background="{DynamicResource DarkestBackgroundColor}"
+                BorderBrush="{DynamicResource BorderColor}"
                 BorderThickness="0"
                 MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
 
@@ -51,7 +51,7 @@
                                 Padding="0"
                                 Margin="5,0"
                                 Background="Transparent"
-                                Foreground="{StaticResource ToolbarForeground}"
+                                Foreground="{DynamicResource ToolbarForeground}"
                                 BorderThickness="0"
                                 IconTemplate="{x:Null}"
                                 SmallIcon="{x:Null}"
@@ -60,28 +60,28 @@
                                 SizeMode="Normal"
                                 ToolTip="File actions">
                         <syncfusion:DropDownMenuGroup
-                            Background="{StaticResource ControlBackground}"
-                            Foreground="{StaticResource ForegroundColor}"
-                            BorderBrush="{StaticResource BorderColor}">
+                            Background="{DynamicResource ControlBackground}"
+                            Foreground="{DynamicResource ForegroundColor}"
+                            BorderBrush="{DynamicResource BorderColor}">
                             <!-- Activities -->
                             <syncfusion:DropDownMenuItem Header="Import Activities (Replace)" Click="MenuExcelImportReplace_Click" ToolTip="Auto-detects Legacy or Milestone format, replaces all existing activities"/>
                             <syncfusion:DropDownMenuItem Header="Import Activities (Combine)" Click="MenuExcelImportCombine_Click" ToolTip="Auto-detects Legacy or Milestone format, adds to existing activities"/>
                             <syncfusion:DropDownMenuItem Header="Export Activities" Click="ExcelExportActivities_Click"/>
                             <syncfusion:DropDownMenuItem Header="Export Activities Template" Click="ExcelExportTemplate_Click"/>
-                            <Separator Background="{StaticResource BorderColor}" Margin="5,2"/>
+                            <Separator Background="{DynamicResource BorderColor}" Margin="5,2"/>
                             <syncfusion:DropDownMenuItem Header="Create Activities" Click="BtnCreate_Click"/>
                             <syncfusion:DropDownMenuItem Header="Clear Local Activities" Click="MenuClearLocalActivities_Click"/>
-                            <Separator Background="{StaticResource BorderColor}" Margin="5,2"/>
+                            <Separator Background="{DynamicResource BorderColor}" Margin="5,2"/>
                             <!-- P6 Files -->
                             <syncfusion:DropDownMenuItem Header="Import From P6 File" Click="ImportP6File_Click"/>
                             <syncfusion:DropDownMenuItem Header="Export To P6 File" Click="ExportP6File_Click"/>
                             <syncfusion:DropDownMenuItem Header="Clear Local Schedule" Click="MenuClearLocalSchedule_Click"/>
-                            <Separator Background="{StaticResource BorderColor}" Margin="5,2"/>
+                            <Separator Background="{DynamicResource BorderColor}" Margin="5,2"/>
                             <!-- Other -->
                             <syncfusion:DropDownMenuItem Header="Export Logs" Click="MenuExportLogs_Click"/>
                             <syncfusion:DropDownMenuItem Header="Manage My Snapshots" Click="MenuManageSnapshots_Click"/>
                             <!-- Legacy Export section -->
-                            <Separator Background="{StaticResource BorderColor}" Margin="5,2"/>
+                            <Separator Background="{DynamicResource BorderColor}" Margin="5,2"/>
                             <syncfusion:DropDownMenuItem Header="Legacy Export Activities" Click="MenuLegacyExportActivities_Click" ToolTip="Export to OldVantage format (percentages as 0-1 decimals)"/>
                             <syncfusion:DropDownMenuItem Header="Legacy Export Template" Click="MenuLegacyExportTemplate_Click" ToolTip="Export empty template with OldVantage column headers"/>
                         </syncfusion:DropDownMenuGroup>
@@ -92,7 +92,7 @@
                               Padding="0"
                               Margin="5,0"
                               Background="Transparent"
-                              Foreground="{StaticResource ToolbarForeground}"
+                              Foreground="{DynamicResource ToolbarForeground}"
                               BorderThickness="0"
                               IconTemplate="{x:Null}"
                               SmallIcon="{x:Null}"
@@ -101,11 +101,11 @@
                               SizeMode="Normal"
                               ToolTip="Utilities and maintenance options">
                         <syncfusion:DropDownMenuGroup
-                            Background="{StaticResource ControlBackground}"
-                            Foreground="{StaticResource ForegroundColor}"
-                            BorderBrush="{StaticResource BorderColor}">
+                            Background="{DynamicResource ControlBackground}"
+                            Foreground="{DynamicResource ForegroundColor}"
+                            BorderBrush="{DynamicResource BorderColor}">
                             <syncfusion:DropDownMenuItem Header="Help Sidebar     (F1)" Click="MenuHelpSidebar_Click" ToolTip="Open the help sidebar"/>
-                            <Separator Background="{StaticResource BorderColor}" Margin="5,2"/>
+                            <Separator Background="{DynamicResource BorderColor}" Margin="5,2"/>
                             <syncfusion:DropDownMenuItem Header="Prorate MHs" Click="MenuProrateMHs_Click"/>
                             <syncfusion:DropDownMenuItem Header="Schedule Change Log" Click="MenuScheduleChangeLog_Click" ToolTip="View and apply changes made in the Schedule detail grid"/>
                         </syncfusion:DropDownMenuGroup>
@@ -116,7 +116,7 @@
                               Padding="0"
                               Margin="5,0"
                           Background="Transparent"
-                          Foreground="{StaticResource ToolbarForeground}"
+                          Foreground="{DynamicResource ToolbarForeground}"
                               BorderThickness="0"
                               IconTemplate="{x:Null}"
                               SmallIcon="{x:Null}"
@@ -124,16 +124,16 @@
                               FontSize="12"
                               SizeMode="Normal">
                         <syncfusion:DropDownMenuGroup
-                            Background="{StaticResource ControlBackground}"
-                            Foreground="{StaticResource ForegroundColor}"
-                            BorderBrush="{StaticResource BorderColor}">
+                            Background="{DynamicResource ControlBackground}"
+                            Foreground="{DynamicResource ForegroundColor}"
+                            BorderBrush="{DynamicResource BorderColor}">
                             <syncfusion:DropDownMenuItem Header="Toggle User Admin" Click="ToggleUserAdmin_Click"/>
-                            <Separator Background="{StaticResource BorderColor}" Margin="5,2"/>
+                            <Separator Background="{DynamicResource BorderColor}" Margin="5,2"/>
                             <syncfusion:DropDownMenuItem Header="Edit Users" Click="MenuEditUsers_Click"/>
                             <syncfusion:DropDownMenuItem Header="Edit Projects" Click="MenuEditProjects_Click"/>
                             <syncfusion:DropDownMenuItem Header="Manage Snapshots" Click="MenuEditSnapshots_Click"/>
                             <syncfusion:DropDownMenuItem Header="Manage Progress Log" Click="MenuManageProgressLog_Click"/>
-                            <Separator Background="{StaticResource BorderColor}" Margin="5,2"/>
+                            <Separator Background="{DynamicResource BorderColor}" Margin="5,2"/>
                             <syncfusion:DropDownMenuItem Header="Deleted Records UI" Click="DeletedRecordsUi_Click"/>
                         </syncfusion:DropDownMenuGroup>
                     </syncfusion:DropDownButtonAdv>
@@ -151,7 +151,7 @@
                                                Label="PROGRESS"
                                                Padding="15,0"
                                                Background="Transparent"
-                                               Foreground="{StaticResource ToolbarForeground}"
+                                               Foreground="{DynamicResource ToolbarForeground}"
                                                BorderThickness="0"
                                                IconTemplate="{x:Null}"
                                                SmallIcon="{x:Null}"
@@ -173,7 +173,7 @@
                                                Label="SCHEDULE"
                                                Padding="15,0"
                                                Background="Transparent"
-                                               Foreground="{StaticResource ToolbarForeground}"
+                                               Foreground="{DynamicResource ToolbarForeground}"
                                                BorderThickness="0"
                                                IconTemplate="{x:Null}"
                                                SmallIcon="{x:Null}"
@@ -195,7 +195,7 @@
                                                Padding="15,0"
                                                Margin="5,0"
                                                Background="Transparent"
-                                               Foreground="{StaticResource ToolbarForeground}"
+                                               Foreground="{DynamicResource ToolbarForeground}"
                                                BorderThickness="0"
                                                IconTemplate="{x:Null}"
                                                SmallIcon="{x:Null}"
@@ -217,7 +217,7 @@
                                              Padding="15,0"
                                              Margin="5,0"
                                              Background="Transparent"
-                                             Foreground="{StaticResource ToolbarForeground}"
+                                             Foreground="{DynamicResource ToolbarForeground}"
                                              BorderThickness="0"
                                              IconTemplate="{x:Null}"
                                              SmallIcon="{x:Null}"
@@ -239,7 +239,7 @@
                                              Padding="15,0"
                                              Margin="5,0"
                                              Background="Transparent"
-                                             Foreground="{StaticResource ToolbarForeground}"
+                                             Foreground="{DynamicResource ToolbarForeground}"
                                              BorderThickness="0"
                                              IconTemplate="{x:Null}"
                                              SmallIcon="{x:Null}"
@@ -278,15 +278,15 @@
                            Placement="Bottom"
                            StaysOpen="False"
                            AllowsTransparency="True">
-                        <Border Background="{StaticResource ControlBackground}"
-                                BorderBrush="{StaticResource BorderColor}"
+                        <Border Background="{DynamicResource ControlBackground}"
+                                BorderBrush="{DynamicResource BorderColor}"
                                 BorderThickness="1"
                                 CornerRadius="2"
                                 Padding="0">
                             <StackPanel>
                                 <Button Content="Help Sidebar   (F1)"
                                         Background="Transparent"
-                                        Foreground="{StaticResource ForegroundColor}"
+                                        Foreground="{DynamicResource ForegroundColor}"
                                         BorderThickness="0"
                                         Padding="12,8"
                                         HorizontalContentAlignment="Left"
@@ -294,17 +294,17 @@
                                         Cursor="Hand"/>
                                 <Button Content="Feedback Board"
                                         Background="Transparent"
-                                        Foreground="{StaticResource ForegroundColor}"
+                                        Foreground="{DynamicResource ForegroundColor}"
                                         BorderThickness="0"
                                         Padding="12,8"
                                         HorizontalContentAlignment="Left"
                                         Click="MenuFeedbackBoard_Click"
                                         Cursor="Hand"
                                         ToolTip="Submit ideas or report bugs"/>
-                                <Separator Background="{StaticResource BorderColor}" Margin="5,2"/>
+                                <Separator Background="{DynamicResource BorderColor}" Margin="5,2"/>
                                 <Button Content="Import Settings"
                                         Background="Transparent"
-                                        Foreground="{StaticResource ForegroundColor}"
+                                        Foreground="{DynamicResource ForegroundColor}"
                                         BorderThickness="0"
                                         Padding="12,8"
                                         HorizontalContentAlignment="Left"
@@ -313,7 +313,7 @@
                                         ToolTip="Import application settings from file"/>
                                 <Button Content="Export Settings"
                                         Background="Transparent"
-                                        Foreground="{StaticResource ForegroundColor}"
+                                        Foreground="{DynamicResource ForegroundColor}"
                                         BorderThickness="0"
                                         Padding="12,8"
                                         HorizontalContentAlignment="Left"
@@ -322,7 +322,7 @@
                                         ToolTip="Export application settings to file"/>
                                 <Button Content="Grid Layouts..."
                                         Background="Transparent"
-                                        Foreground="{StaticResource ForegroundColor}"
+                                        Foreground="{DynamicResource ForegroundColor}"
                                         BorderThickness="0"
                                         Padding="12,8"
                                         HorizontalContentAlignment="Left"
@@ -331,7 +331,7 @@
                                         ToolTip="Save and apply custom column layouts"/>
                                 <Button Content="Theme..."
                                         Background="Transparent"
-                                        Foreground="{StaticResource ForegroundColor}"
+                                        Foreground="{DynamicResource ForegroundColor}"
                                         BorderThickness="0"
                                         Padding="12,8"
                                         HorizontalContentAlignment="Left"
@@ -340,7 +340,7 @@
                                         ToolTip="Choose between Dark and Light application themes"/>
                                 <Button Content="See Release Notes"
                                         Background="Transparent"
-                                        Foreground="{StaticResource ForegroundColor}"
+                                        Foreground="{DynamicResource ForegroundColor}"
                                         BorderThickness="0"
                                         Padding="12,8"
                                         HorizontalContentAlignment="Left"
@@ -348,10 +348,10 @@
                                         Cursor="Hand"
                                         ToolTip="View features and changes in each release"/>
 
-                                <Separator Background="{StaticResource BorderColor}" Margin="5,2"/>
+                                <Separator Background="{DynamicResource BorderColor}" Margin="5,2"/>
                                 <Button Content="About Vantage: Milestone"
                                         Background="Transparent"
-                                        Foreground="{StaticResource ForegroundColor}"
+                                        Foreground="{DynamicResource ForegroundColor}"
                                         BorderThickness="0"
                                         Padding="12,8"
                                         HorizontalContentAlignment="Left"
@@ -387,7 +387,7 @@
                                 <Border x:Name="border" Background="Transparent">
                                     <TextBlock Text="✕"
                                                FontSize="16"
-                                               Foreground="{StaticResource ToolbarForeground}"
+                                               Foreground="{DynamicResource ToolbarForeground}"
                                                HorizontalAlignment="Center"
                                                VerticalAlignment="Center"/>
                                 </Border>
@@ -408,7 +408,7 @@
         </Border>
 
         <!-- CONTENT AREA WITH SIDEBAR -->
-        <Border Grid.Row="1" Background="{StaticResource BackgroundColor}">
+        <Border Grid.Row="1" Background="{DynamicResource BackgroundColor}">
             <Grid x:Name="ContentGrid">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -424,7 +424,7 @@
                               Grid.Column="1"
                               Width="5"
                               HorizontalAlignment="Stretch"
-                              Background="{StaticResource BorderColor}"
+                              Background="{DynamicResource BorderColor}"
                               Visibility="Collapsed"
                               Cursor="SizeWE"
                               DragCompleted="SidebarSplitter_DragCompleted"/>
@@ -437,8 +437,8 @@
         </Border>
         <!-- STATUS BAR -->
         <Border Grid.Row="2"
-        Background="{StaticResource StatusBarBackground}"
-        BorderBrush="{StaticResource BorderColor}"
+        Background="{DynamicResource StatusBarBackground}"
+        BorderBrush="{DynamicResource BorderColor}"
         BorderThickness="0,1,0,0">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -451,7 +451,7 @@
                 <TextBlock Grid.Column="0"
                    x:Name="txtAppVersion"
                    Text="VANTAGE: Milestone v1.0.0"
-                   Foreground="{StaticResource AccentColor}"
+                   Foreground="{DynamicResource AccentColor}"
                    FontSize="11"
                    FontWeight="SemiBold"
                    VerticalAlignment="Center"
@@ -460,7 +460,7 @@
                 <TextBlock Grid.Column="1"
                    x:Name="txtCurrentUser"
                    Text="User: Steve.Amalfitano"
-                   Foreground="{StaticResource StatusBarForeground}"
+                   Foreground="{DynamicResource StatusBarForeground}"
                    FontSize="11"
                    VerticalAlignment="Center"
                    Margin="0,0,20,0"/>
@@ -468,7 +468,7 @@
                 <TextBlock Grid.Column="3"
                    x:Name="txtLastSyncsd"
                    Text="Last Sync: Never"
-                   Foreground="{StaticResource StatusBarForeground}"
+                   Foreground="{DynamicResource StatusBarForeground}"
                    FontSize="11"
                    VerticalAlignment="Center"
                    Margin="0,0,20,0"/>
@@ -477,7 +477,7 @@
         <!-- Modern Loading Overlay for Excel Imports -->
         <Grid x:Name="LoadingOverlay"
               Grid.RowSpan="3"
-              Background="{StaticResource OverlayBackground}"
+              Background="{DynamicResource OverlayBackground}"
               Visibility="Collapsed"
               Panel.ZIndex="1000">
             <StackPanel HorizontalAlignment="Center"
@@ -488,20 +488,20 @@
                                     AnimationType="DualRing"
                                     ViewboxWidth="80"
                                     ViewboxHeight="80"
-                                    Foreground="{StaticResource AccentColor}"/>
+                                    Foreground="{DynamicResource AccentColor}"/>
                 <!-- Loading Text -->
                 <TextBlock x:Name="txtLoadingMessage"
                    Text="Importing Excel File..."
                    FontSize="18"
                    FontWeight="SemiBold"
-                   Foreground="{StaticResource OverlayText}"
+                   Foreground="{DynamicResource OverlayText}"
                    HorizontalAlignment="Center"
                    Margin="0,30,0,10"/>
                 <!-- Progress Text -->
                 <TextBlock x:Name="txtLoadingProgress"
                    Text="0 of 0 records"
                    FontSize="14"
-                   Foreground="{StaticResource OverlayTextSecondary}"
+                   Foreground="{DynamicResource OverlayTextSecondary}"
                    HorizontalAlignment="Center"
                    Margin="0,0,0,15"/>
                 <!-- Progress Bar -->
@@ -509,8 +509,8 @@
                      Width="300"
                      Height="8"
                      IsIndeterminate="True"
-                     ProgressColor="{StaticResource AccentColor}"
-                     TrackColor="#333333"/>
+                     ProgressColor="{DynamicResource ProgressBarAccent}"
+                     TrackColor="{DynamicResource ProgressBarTrackColor}"/>
             </StackPanel>
         </Grid>
 

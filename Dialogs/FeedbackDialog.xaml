@@ -5,7 +5,7 @@
         Height="650"
         Width="900"
         WindowStartupLocation="CenterOwner"
-        Background="{StaticResource BackgroundColor}"
+        Background="{DynamicResource BackgroundColor}"
         ResizeMode="CanResize"
         MinHeight="500"
         MinWidth="700"
@@ -33,20 +33,20 @@
                        Text="Feedback"
                        FontWeight="SemiBold"
                        FontSize="16"
-                       Foreground="{StaticResource ForegroundColor}"/>
+                       Foreground="{DynamicResource ForegroundColor}"/>
 
             <!-- Filters -->
             <StackPanel Grid.Row="2" Orientation="Horizontal">
                 <TextBlock Text="Type:"
-                           Foreground="{StaticResource ForegroundColor}"
+                           Foreground="{DynamicResource ForegroundColor}"
                            VerticalAlignment="Center"
                            Margin="0,0,8,0"/>
                 <ComboBox x:Name="cboFilterType"
                           Width="100"
                           Height="28"
-                          Background="{StaticResource ControlBackground}"
-                          Foreground="{StaticResource ForegroundColor}"
-                          BorderBrush="{StaticResource BorderColor}"
+                          Background="{DynamicResource ControlBackground}"
+                          Foreground="{DynamicResource ForegroundColor}"
+                          BorderBrush="{DynamicResource BorderColor}"
                           SelectionChanged="CboFilter_SelectionChanged">
                     <ComboBoxItem Content="All" IsSelected="True"/>
                     <ComboBoxItem Content="Idea"/>
@@ -54,15 +54,15 @@
                 </ComboBox>
 
                 <TextBlock Text="Status:"
-                           Foreground="{StaticResource ForegroundColor}"
+                           Foreground="{DynamicResource ForegroundColor}"
                            VerticalAlignment="Center"
                            Margin="20,0,8,0"/>
                 <ComboBox x:Name="cboFilterStatus"
                           Width="120"
                           Height="28"
-                          Background="{StaticResource ControlBackground}"
-                          Foreground="{StaticResource ForegroundColor}"
-                          BorderBrush="{StaticResource BorderColor}"
+                          Background="{DynamicResource ControlBackground}"
+                          Foreground="{DynamicResource ForegroundColor}"
+                          BorderBrush="{DynamicResource BorderColor}"
                           SelectionChanged="CboFilter_SelectionChanged">
                     <ComboBoxItem Content="All" IsSelected="True"/>
                     <ComboBoxItem Content="New"/>
@@ -73,7 +73,7 @@
 
                 <CheckBox x:Name="chkShowDeleted"
                           Content="Show Deleted"
-                          Foreground="{StaticResource ForegroundColor}"
+                          Foreground="{DynamicResource ForegroundColor}"
                           VerticalAlignment="Center"
                           Margin="20,0,0,0"
                           Visibility="Collapsed"
@@ -82,15 +82,15 @@
             </StackPanel>
 
             <Border Grid.Row="4"
-                    Background="{StaticResource ControlBackground}"
-                    BorderBrush="{StaticResource BorderColor}"
+                    Background="{DynamicResource ControlBackground}"
+                    BorderBrush="{DynamicResource BorderColor}"
                     BorderThickness="1"
                     CornerRadius="4">
                 <Grid>
                     <ListView x:Name="lvFeedback"
                               Background="Transparent"
                               BorderThickness="0"
-                              Foreground="{StaticResource ForegroundColor}"
+                              Foreground="{DynamicResource ForegroundColor}"
                               SelectionMode="Single"
                               SelectionChanged="LvFeedback_SelectionChanged">
                         <ListView.View>
@@ -109,7 +109,7 @@
                                 VerticalAlignment="Center"
                                 Visibility="Collapsed">
                         <TextBlock Text="Loading feedback..."
-                                   Foreground="{StaticResource ForegroundColor}"
+                                   Foreground="{DynamicResource ForegroundColor}"
                                    Opacity="0.6"/>
                     </StackPanel>
                 </Grid>
@@ -118,7 +118,7 @@
             <TextBlock x:Name="txtFeedbackCount"
                        Grid.Row="5"
                        Text="0 item(s)"
-                       Foreground="{StaticResource ForegroundColor}"
+                       Foreground="{DynamicResource ForegroundColor}"
                        Opacity="0.6"
                        FontSize="12"
                        Margin="0,8,0,0"/>
@@ -137,65 +137,65 @@
                        Text="Details"
                        FontWeight="SemiBold"
                        FontSize="16"
-                       Foreground="{StaticResource ForegroundColor}"/>
+                       Foreground="{DynamicResource ForegroundColor}"/>
 
             <Border Grid.Row="2"
-                    Background="{StaticResource ControlBackground}"
-                    BorderBrush="{StaticResource BorderColor}"
+                    Background="{DynamicResource ControlBackground}"
+                    BorderBrush="{DynamicResource BorderColor}"
                     BorderThickness="1"
                     CornerRadius="4"
                     Padding="15">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel>
                         <TextBlock Text="Type *"
-                                   Foreground="{StaticResource ForegroundColor}"
+                                   Foreground="{DynamicResource ForegroundColor}"
                                    FontSize="12"
                                    Margin="0,0,0,5"/>
                         <ComboBox x:Name="cboType"
                                   Height="32"
-                                  Background="{StaticResource BackgroundColor}"
-                                  Foreground="{StaticResource ForegroundColor}"
-                                  BorderBrush="{StaticResource BorderColor}">
+                                  Background="{DynamicResource BackgroundColor}"
+                                  Foreground="{DynamicResource ForegroundColor}"
+                                  BorderBrush="{DynamicResource BorderColor}">
                             <ComboBoxItem Content="Idea" IsSelected="True"/>
                             <ComboBoxItem Content="Bug"/>
                         </ComboBox>
 
                         <TextBlock Text="Title *"
-                                   Foreground="{StaticResource ForegroundColor}"
+                                   Foreground="{DynamicResource ForegroundColor}"
                                    FontSize="12"
                                    Margin="0,15,0,5"/>
                         <TextBox x:Name="txtTitle"
                                  Height="32"
                                  FontSize="14"
-                                 Background="{StaticResource BackgroundColor}"
-                                 Foreground="{StaticResource ForegroundColor}"
-                                 BorderBrush="{StaticResource BorderColor}"
+                                 Background="{DynamicResource BackgroundColor}"
+                                 Foreground="{DynamicResource ForegroundColor}"
+                                 BorderBrush="{DynamicResource BorderColor}"
                                  Padding="8,5"/>
 
                         <TextBlock Text="Description"
-                                   Foreground="{StaticResource ForegroundColor}"
+                                   Foreground="{DynamicResource ForegroundColor}"
                                    FontSize="12"
                                    Margin="0,15,0,5"/>
                         <TextBox x:Name="txtDescription"
                                  Height="150"
                                  FontSize="14"
-                                 Background="{StaticResource BackgroundColor}"
-                                 Foreground="{StaticResource ForegroundColor}"
-                                 BorderBrush="{StaticResource BorderColor}"
+                                 Background="{DynamicResource BackgroundColor}"
+                                 Foreground="{DynamicResource ForegroundColor}"
+                                 BorderBrush="{DynamicResource BorderColor}"
                                  Padding="8,5"
                                  TextWrapping="Wrap"
                                  AcceptsReturn="True"
                                  VerticalScrollBarVisibility="Auto"/>
 
                         <TextBlock Text="Status"
-                                   Foreground="{StaticResource ForegroundColor}"
+                                   Foreground="{DynamicResource ForegroundColor}"
                                    FontSize="12"
                                    Margin="0,15,0,5"/>
                         <ComboBox x:Name="cboStatus"
                                   Height="32"
-                                  Background="{StaticResource BackgroundColor}"
-                                  Foreground="{StaticResource ForegroundColor}"
-                                  BorderBrush="{StaticResource BorderColor}"
+                                  Background="{DynamicResource BackgroundColor}"
+                                  Foreground="{DynamicResource ForegroundColor}"
+                                  BorderBrush="{DynamicResource BorderColor}"
                                   IsEnabled="False">
                             <ComboBoxItem Content="New" IsSelected="True"/>
                             <ComboBoxItem Content="In Progress"/>
@@ -204,13 +204,13 @@
                         </ComboBox>
                         <TextBlock x:Name="txtStatusNote"
                                    Text="(Admins only)"
-                                   Foreground="{StaticResource ForegroundColor}"
+                                   Foreground="{DynamicResource ForegroundColor}"
                                    Opacity="0.5"
                                    FontSize="11"
                                    Margin="0,3,0,0"/>
 
                         <TextBlock x:Name="txtCreatedInfo"
-                                   Foreground="{StaticResource ForegroundColor}"
+                                   Foreground="{DynamicResource ForegroundColor}"
                                    Opacity="0.6"
                                    FontSize="11"
                                    Margin="0,20,0,0"
@@ -232,9 +232,9 @@
                             Grid.Column="0"
                             Content="New"
                             Height="35"
-                            Background="{StaticResource ControlBackground}"
-                            Foreground="{StaticResource ForegroundColor}"
-                            BorderBrush="{StaticResource ControlBorder}"
+                            Background="{DynamicResource ControlBackground}"
+                            Foreground="{DynamicResource ForegroundColor}"
+                            BorderBrush="{DynamicResource ControlBorder}"
                             BorderThickness="1"
                             Click="BtnNew_Click"/>
 
@@ -242,9 +242,9 @@
                             Grid.Column="2"
                             Content="Submit"
                             Height="35"
-                            Background="{StaticResource ButtonSuccessBackground}"
-                            Foreground="{StaticResource ForegroundColor}"
-                            BorderBrush="{StaticResource ButtonSuccessBorder}"
+                            Background="{DynamicResource ButtonSuccessBackground}"
+                            Foreground="{DynamicResource ForegroundColor}"
+                            BorderBrush="{DynamicResource ButtonSuccessBorder}"
                             BorderThickness="1"
                             Click="BtnSave_Click"/>
                 </Grid>
@@ -260,9 +260,9 @@
                             Grid.Column="0"
                             Content="Restore"
                             Height="35"
-                            Background="{StaticResource ButtonSuccessBackground}"
-                            Foreground="{StaticResource ForegroundColor}"
-                            BorderBrush="{StaticResource ButtonSuccessBorder}"
+                            Background="{DynamicResource ButtonSuccessBackground}"
+                            Foreground="{DynamicResource ForegroundColor}"
+                            BorderBrush="{DynamicResource ButtonSuccessBorder}"
                             BorderThickness="1"
                             Visibility="Collapsed"
                             Click="BtnRestore_Click"/>
@@ -271,9 +271,9 @@
                             Grid.Column="2"
                             Content="Delete"
                             Height="35"
-                            Background="{StaticResource ButtonDangerBackground}"
-                            Foreground="{StaticResource ForegroundColor}"
-                            BorderBrush="{StaticResource ButtonDangerBorder}"
+                            Background="{DynamicResource ButtonDangerBackground}"
+                            Foreground="{DynamicResource ForegroundColor}"
+                            BorderBrush="{DynamicResource ButtonDangerBorder}"
                             BorderThickness="1"
                             IsEnabled="False"
                             Visibility="Collapsed"
@@ -284,9 +284,9 @@
                         Content="Close"
                         Height="35"
                         Margin="0,20,0,0"
-                        Background="{StaticResource ControlBackground}"
-                        Foreground="{StaticResource ForegroundColor}"
-                        BorderBrush="{StaticResource ControlBorder}"
+                        Background="{DynamicResource ControlBackground}"
+                        Foreground="{DynamicResource ForegroundColor}"
+                        BorderBrush="{DynamicResource ControlBorder}"
                         BorderThickness="1"
                         Click="BtnClose_Click"/>
             </StackPanel>

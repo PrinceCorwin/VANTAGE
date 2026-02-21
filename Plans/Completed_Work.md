@@ -6,6 +6,11 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### February 21, 2026
+- **Theme system refactor (Phases 1-7):** Complete overhaul of the theme system enabling live theme switching without app restart. Phase 1: Made ThemeManager.ApplyTheme() public, added ThemeChanged event, added 6 missing theme keys. Phase 2: Converted ~1,119 StaticResource refs to DynamicResource across 37 XAML files. Phase 3: Replaced hardcoded hex colors with theme resources in 6 files. Phase 4: Extracted shared styles (RoundedButtonStyle, PrimaryButtonStyle) to SharedStyles.xaml. Phase 5: Added ThemeChanged subscriptions to 5 views for Syncfusion grid live re-skinning, with Loaded/Unloaded subscription pattern to survive visual tree rebuilds. Phase 6: Added 6 split token keys (ProgressBarAccent, ToggleCheckedBackground, DialogBackground, GridCellBackground, DialogForeground, GridCellForeground) and reassigned 8 consumers. Phase 7: Created Themes/THEME_GUIDE.md with full token reference.
+- **MainWindow nav button theme refresh:** Nav buttons now update their AccentColor/ToolbarForeground on theme change via ThemeChanged subscription, tracking the active button.
+- **ProgressView row style fix:** RowStyleSelector toggle (null/restore) with Opacity hiding prevents flash of stale alternating row colors during theme switch.
+
 ### February 20, 2026
 - **Progress bars in PercentEntry cells:** Added thin colored bar at bottom of PercentEntry cells showing completion progress. Bar color follows percent ranges (red 0-25%, orange 25-50%, yellow 50-75%, green 75-100%) and width scales proportionally. Uses new PercentToDecimalConverter for ScaleTransform binding. Click-to-edit preserved with auto-focus handler.
 - **Progress bars in Schedule module:** Added same progress bar treatment to P6_PercentComplete and MS_PercentComplete columns in the Schedule master grid (read-only, no edit template needed).

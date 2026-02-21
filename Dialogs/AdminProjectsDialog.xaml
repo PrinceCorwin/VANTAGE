@@ -5,7 +5,7 @@
         Height="700"
         Width="850"
         WindowStartupLocation="CenterOwner"
-        Background="{StaticResource BackgroundColor}"
+        Background="{DynamicResource BackgroundColor}"
         ResizeMode="CanResize"
         MinHeight="600"
         MinWidth="700"
@@ -28,19 +28,19 @@
                    Text="Projects" 
                    FontWeight="SemiBold" 
                    FontSize="16" 
-                   Foreground="{StaticResource ForegroundColor}"/>
+                   Foreground="{DynamicResource ForegroundColor}"/>
 
         <!-- Project List -->
         <Border Grid.Row="2"
-                Background="{StaticResource ControlBackground}"
-                BorderBrush="{StaticResource BorderColor}"
+                Background="{DynamicResource ControlBackground}"
+                BorderBrush="{DynamicResource BorderColor}"
                 BorderThickness="1"
                 CornerRadius="4">
             <Grid>
                 <ListView x:Name="lvProjects"
                           Background="Transparent"
                           BorderThickness="0"
-                          Foreground="{StaticResource ForegroundColor}"
+                          Foreground="{DynamicResource ForegroundColor}"
                           SelectionMode="Single"
                           SelectionChanged="LvProjects_SelectionChanged"
                           ScrollViewer.HorizontalScrollBarVisibility="Auto"
@@ -75,7 +75,7 @@
                             VerticalAlignment="Center"
                             Visibility="Collapsed">
                     <TextBlock Text="Loading projects..."
-                               Foreground="{StaticResource ForegroundColor}"
+                               Foreground="{DynamicResource ForegroundColor}"
                                Opacity="0.6"/>
                 </StackPanel>
             </Grid>
@@ -85,14 +85,14 @@
         <TextBlock x:Name="txtProjectCount" 
                    Grid.Row="4" 
                    Text="0 project(s)" 
-                   Foreground="{StaticResource ForegroundColor}"
+                   Foreground="{DynamicResource ForegroundColor}"
                    Opacity="0.6"
                    FontSize="12"/>
 
         <!-- Edit Form -->
         <Border Grid.Row="6"
-                Background="{StaticResource ControlBackground}"
-                BorderBrush="{StaticResource BorderColor}"
+                Background="{DynamicResource ControlBackground}"
+                BorderBrush="{DynamicResource BorderColor}"
                 BorderThickness="1"
                 CornerRadius="4"
                 Padding="15">
@@ -115,21 +115,21 @@
                             </Grid.ColumnDefinitions>
 
                             <StackPanel Grid.Column="0">
-                                <TextBlock Text="Project ID *" Foreground="{StaticResource ForegroundColor}" FontSize="12" Margin="0,0,0,5"/>
-                                <TextBox x:Name="txtProjectID" Height="28" Width="100" HorizontalAlignment="Left" FontSize="13" Background="{StaticResource BackgroundColor}" Foreground="{StaticResource ForegroundColor}" BorderBrush="{StaticResource BorderColor}" Padding="5,3"/>
+                                <TextBlock Text="Project ID *" Foreground="{DynamicResource ForegroundColor}" FontSize="12" Margin="0,0,0,5"/>
+                                <TextBox x:Name="txtProjectID" Height="28" Width="100" HorizontalAlignment="Left" FontSize="13" Background="{DynamicResource BackgroundColor}" Foreground="{DynamicResource ForegroundColor}" BorderBrush="{DynamicResource BorderColor}" Padding="5,3"/>
                             </StackPanel>
 
                             <StackPanel Grid.Column="2">
-                                <TextBlock Text="Description" Foreground="{StaticResource ForegroundColor}" FontSize="12" Margin="0,0,0,5"/>
-                                <TextBox x:Name="txtDescription" Height="28" FontSize="13" Background="{StaticResource BackgroundColor}" Foreground="{StaticResource ForegroundColor}" BorderBrush="{StaticResource BorderColor}" Padding="5,3"/>
+                                <TextBlock Text="Description" Foreground="{DynamicResource ForegroundColor}" FontSize="12" Margin="0,0,0,5"/>
+                                <TextBox x:Name="txtDescription" Height="28" FontSize="13" Background="{DynamicResource BackgroundColor}" Foreground="{DynamicResource ForegroundColor}" BorderBrush="{DynamicResource BorderColor}" Padding="5,3"/>
                             </StackPanel>
                         </Grid>
 
                         <!-- Client Info -->
-                        <TextBlock Text="Client Information" Foreground="{StaticResource ForegroundColor}" FontWeight="SemiBold" FontSize="13" Margin="0,15,0,8"/>
+                        <TextBlock Text="Client Information" Foreground="{DynamicResource ForegroundColor}" FontWeight="SemiBold" FontSize="13" Margin="0,15,0,8"/>
 
-                        <TextBlock Text="Client Name" Foreground="{StaticResource ForegroundColor}" FontSize="12" Margin="0,0,0,5"/>
-                        <TextBox x:Name="txtClientName" Height="28" FontSize="13" Background="{StaticResource BackgroundColor}" Foreground="{StaticResource ForegroundColor}" BorderBrush="{StaticResource BorderColor}" Padding="5,3"/>
+                        <TextBlock Text="Client Name" Foreground="{DynamicResource ForegroundColor}" FontSize="12" Margin="0,0,0,5"/>
+                        <TextBox x:Name="txtClientName" Height="28" FontSize="13" Background="{DynamicResource BackgroundColor}" Foreground="{DynamicResource ForegroundColor}" BorderBrush="{DynamicResource BorderColor}" Padding="5,3"/>
 
                         <Grid Margin="0,8,0,0">
                             <Grid.ColumnDefinitions>
@@ -139,17 +139,17 @@
                             </Grid.ColumnDefinitions>
 
                             <StackPanel Grid.Column="0">
-                                <TextBlock Text="Phone" Foreground="{StaticResource ForegroundColor}" FontSize="12" Margin="0,0,0,5"/>
-                                <TextBox x:Name="txtPhone" Height="28" FontSize="13" Background="{StaticResource BackgroundColor}" Foreground="{StaticResource ForegroundColor}" BorderBrush="{StaticResource BorderColor}" Padding="5,3"/>
+                                <TextBlock Text="Phone" Foreground="{DynamicResource ForegroundColor}" FontSize="12" Margin="0,0,0,5"/>
+                                <TextBox x:Name="txtPhone" Height="28" FontSize="13" Background="{DynamicResource BackgroundColor}" Foreground="{DynamicResource ForegroundColor}" BorderBrush="{DynamicResource BorderColor}" Padding="5,3"/>
                             </StackPanel>
                             <StackPanel Grid.Column="2">
-                                <TextBlock Text="Fax" Foreground="{StaticResource ForegroundColor}" FontSize="12" Margin="0,0,0,5"/>
-                                <TextBox x:Name="txtFax" Height="28" FontSize="13" Background="{StaticResource BackgroundColor}" Foreground="{StaticResource ForegroundColor}" BorderBrush="{StaticResource BorderColor}" Padding="5,3"/>
+                                <TextBlock Text="Fax" Foreground="{DynamicResource ForegroundColor}" FontSize="12" Margin="0,0,0,5"/>
+                                <TextBox x:Name="txtFax" Height="28" FontSize="13" Background="{DynamicResource BackgroundColor}" Foreground="{DynamicResource ForegroundColor}" BorderBrush="{DynamicResource BorderColor}" Padding="5,3"/>
                             </StackPanel>
                         </Grid>
 
-                        <TextBlock Text="Street Address" Foreground="{StaticResource ForegroundColor}" FontSize="12" Margin="0,8,0,5"/>
-                        <TextBox x:Name="txtClientStreetAddress" Height="28" FontSize="13" Background="{StaticResource BackgroundColor}" Foreground="{StaticResource ForegroundColor}" BorderBrush="{StaticResource BorderColor}" Padding="5,3"/>
+                        <TextBlock Text="Street Address" Foreground="{DynamicResource ForegroundColor}" FontSize="12" Margin="0,8,0,5"/>
+                        <TextBox x:Name="txtClientStreetAddress" Height="28" FontSize="13" Background="{DynamicResource BackgroundColor}" Foreground="{DynamicResource ForegroundColor}" BorderBrush="{DynamicResource BorderColor}" Padding="5,3"/>
 
                         <Grid Margin="0,8,0,0">
                             <Grid.ColumnDefinitions>
@@ -161,16 +161,16 @@
                             </Grid.ColumnDefinitions>
 
                             <StackPanel Grid.Column="0">
-                                <TextBlock Text="City" Foreground="{StaticResource ForegroundColor}" FontSize="12" Margin="0,0,0,5"/>
-                                <TextBox x:Name="txtClientCity" Height="28" FontSize="13" Background="{StaticResource BackgroundColor}" Foreground="{StaticResource ForegroundColor}" BorderBrush="{StaticResource BorderColor}" Padding="5,3"/>
+                                <TextBlock Text="City" Foreground="{DynamicResource ForegroundColor}" FontSize="12" Margin="0,0,0,5"/>
+                                <TextBox x:Name="txtClientCity" Height="28" FontSize="13" Background="{DynamicResource BackgroundColor}" Foreground="{DynamicResource ForegroundColor}" BorderBrush="{DynamicResource BorderColor}" Padding="5,3"/>
                             </StackPanel>
                             <StackPanel Grid.Column="2">
-                                <TextBlock Text="State" Foreground="{StaticResource ForegroundColor}" FontSize="12" Margin="0,0,0,5"/>
-                                <TextBox x:Name="txtClientState" Height="28" FontSize="13" Background="{StaticResource BackgroundColor}" Foreground="{StaticResource ForegroundColor}" BorderBrush="{StaticResource BorderColor}" Padding="5,3"/>
+                                <TextBlock Text="State" Foreground="{DynamicResource ForegroundColor}" FontSize="12" Margin="0,0,0,5"/>
+                                <TextBox x:Name="txtClientState" Height="28" FontSize="13" Background="{DynamicResource BackgroundColor}" Foreground="{DynamicResource ForegroundColor}" BorderBrush="{DynamicResource BorderColor}" Padding="5,3"/>
                             </StackPanel>
                             <StackPanel Grid.Column="4">
-                                <TextBlock Text="Zip" Foreground="{StaticResource ForegroundColor}" FontSize="12" Margin="0,0,0,5"/>
-                                <TextBox x:Name="txtClientZipCode" Height="28" FontSize="13" Background="{StaticResource BackgroundColor}" Foreground="{StaticResource ForegroundColor}" BorderBrush="{StaticResource BorderColor}" Padding="5,3"/>
+                                <TextBlock Text="Zip" Foreground="{DynamicResource ForegroundColor}" FontSize="12" Margin="0,0,0,5"/>
+                                <TextBox x:Name="txtClientZipCode" Height="28" FontSize="13" Background="{DynamicResource BackgroundColor}" Foreground="{DynamicResource ForegroundColor}" BorderBrush="{DynamicResource BorderColor}" Padding="5,3"/>
                             </StackPanel>
                         </Grid>
                     </StackPanel>
@@ -186,20 +186,20 @@
                             </Grid.ColumnDefinitions>
 
                             <StackPanel Grid.Column="0">
-                                <TextBlock Text="Project Manager" Foreground="{StaticResource ForegroundColor}" FontSize="12" Margin="0,0,0,5"/>
-                                <TextBox x:Name="txtProjectManager" Height="28" FontSize="13" Background="{StaticResource BackgroundColor}" Foreground="{StaticResource ForegroundColor}" BorderBrush="{StaticResource BorderColor}" Padding="5,3"/>
+                                <TextBlock Text="Project Manager" Foreground="{DynamicResource ForegroundColor}" FontSize="12" Margin="0,0,0,5"/>
+                                <TextBox x:Name="txtProjectManager" Height="28" FontSize="13" Background="{DynamicResource BackgroundColor}" Foreground="{DynamicResource ForegroundColor}" BorderBrush="{DynamicResource BorderColor}" Padding="5,3"/>
                             </StackPanel>
                             <StackPanel Grid.Column="2">
-                                <TextBlock Text="Site Manager" Foreground="{StaticResource ForegroundColor}" FontSize="12" Margin="0,0,0,5"/>
-                                <TextBox x:Name="txtSiteManager" Height="28" FontSize="13" Background="{StaticResource BackgroundColor}" Foreground="{StaticResource ForegroundColor}" BorderBrush="{StaticResource BorderColor}" Padding="5,3"/>
+                                <TextBlock Text="Site Manager" Foreground="{DynamicResource ForegroundColor}" FontSize="12" Margin="0,0,0,5"/>
+                                <TextBox x:Name="txtSiteManager" Height="28" FontSize="13" Background="{DynamicResource BackgroundColor}" Foreground="{DynamicResource ForegroundColor}" BorderBrush="{DynamicResource BorderColor}" Padding="5,3"/>
                             </StackPanel>
                         </Grid>
 
                         <!-- Project Site -->
-                        <TextBlock Text="Project Site" Foreground="{StaticResource ForegroundColor}" FontWeight="SemiBold" FontSize="13" Margin="0,15,0,8"/>
+                        <TextBlock Text="Project Site" Foreground="{DynamicResource ForegroundColor}" FontWeight="SemiBold" FontSize="13" Margin="0,15,0,8"/>
 
-                        <TextBlock Text="Street Address" Foreground="{StaticResource ForegroundColor}" FontSize="12" Margin="0,0,0,5"/>
-                        <TextBox x:Name="txtProjectStreetAddress" Height="28" FontSize="13" Background="{StaticResource BackgroundColor}" Foreground="{StaticResource ForegroundColor}" BorderBrush="{StaticResource BorderColor}" Padding="5,3"/>
+                        <TextBlock Text="Street Address" Foreground="{DynamicResource ForegroundColor}" FontSize="12" Margin="0,0,0,5"/>
+                        <TextBox x:Name="txtProjectStreetAddress" Height="28" FontSize="13" Background="{DynamicResource BackgroundColor}" Foreground="{DynamicResource ForegroundColor}" BorderBrush="{DynamicResource BorderColor}" Padding="5,3"/>
 
                         <Grid Margin="0,8,0,0">
                             <Grid.ColumnDefinitions>
@@ -211,27 +211,27 @@
                             </Grid.ColumnDefinitions>
 
                             <StackPanel Grid.Column="0">
-                                <TextBlock Text="City" Foreground="{StaticResource ForegroundColor}" FontSize="12" Margin="0,0,0,5"/>
-                                <TextBox x:Name="txtProjectCity" Height="28" FontSize="13" Background="{StaticResource BackgroundColor}" Foreground="{StaticResource ForegroundColor}" BorderBrush="{StaticResource BorderColor}" Padding="5,3"/>
+                                <TextBlock Text="City" Foreground="{DynamicResource ForegroundColor}" FontSize="12" Margin="0,0,0,5"/>
+                                <TextBox x:Name="txtProjectCity" Height="28" FontSize="13" Background="{DynamicResource BackgroundColor}" Foreground="{DynamicResource ForegroundColor}" BorderBrush="{DynamicResource BorderColor}" Padding="5,3"/>
                             </StackPanel>
                             <StackPanel Grid.Column="2">
-                                <TextBlock Text="State" Foreground="{StaticResource ForegroundColor}" FontSize="12" Margin="0,0,0,5"/>
-                                <TextBox x:Name="txtProjectState" Height="28" FontSize="13" Background="{StaticResource BackgroundColor}" Foreground="{StaticResource ForegroundColor}" BorderBrush="{StaticResource BorderColor}" Padding="5,3"/>
+                                <TextBlock Text="State" Foreground="{DynamicResource ForegroundColor}" FontSize="12" Margin="0,0,0,5"/>
+                                <TextBox x:Name="txtProjectState" Height="28" FontSize="13" Background="{DynamicResource BackgroundColor}" Foreground="{DynamicResource ForegroundColor}" BorderBrush="{DynamicResource BorderColor}" Padding="5,3"/>
                             </StackPanel>
                             <StackPanel Grid.Column="4">
-                                <TextBlock Text="Zip" Foreground="{StaticResource ForegroundColor}" FontSize="12" Margin="0,0,0,5"/>
-                                <TextBox x:Name="txtProjectZipCode" Height="28" FontSize="13" Background="{StaticResource BackgroundColor}" Foreground="{StaticResource ForegroundColor}" BorderBrush="{StaticResource BorderColor}" Padding="5,3"/>
+                                <TextBlock Text="Zip" Foreground="{DynamicResource ForegroundColor}" FontSize="12" Margin="0,0,0,5"/>
+                                <TextBox x:Name="txtProjectZipCode" Height="28" FontSize="13" Background="{DynamicResource BackgroundColor}" Foreground="{DynamicResource ForegroundColor}" BorderBrush="{DynamicResource BorderColor}" Padding="5,3"/>
                             </StackPanel>
                         </Grid>
 
                         <!-- Flags -->
-                        <TextBlock Text="Flags" Foreground="{StaticResource ForegroundColor}" FontWeight="SemiBold" FontSize="13" Margin="0,15,0,8"/>
+                        <TextBlock Text="Flags" Foreground="{DynamicResource ForegroundColor}" FontWeight="SemiBold" FontSize="13" Margin="0,15,0,8"/>
 
                         <StackPanel Orientation="Horizontal">
-                            <CheckBox x:Name="chkOM" Content="OM" Foreground="{StaticResource ForegroundColor}" Margin="0,0,20,0"/>
-                            <CheckBox x:Name="chkSM" Content="SM" Foreground="{StaticResource ForegroundColor}" Margin="0,0,20,0"/>
-                            <CheckBox x:Name="chkEN" Content="EN" Foreground="{StaticResource ForegroundColor}" Margin="0,0,20,0"/>
-                            <CheckBox x:Name="chkPM" Content="PM" Foreground="{StaticResource ForegroundColor}"/>
+                            <CheckBox x:Name="chkOM" Content="OM" Foreground="{DynamicResource ForegroundColor}" Margin="0,0,20,0"/>
+                            <CheckBox x:Name="chkSM" Content="SM" Foreground="{DynamicResource ForegroundColor}" Margin="0,0,20,0"/>
+                            <CheckBox x:Name="chkEN" Content="EN" Foreground="{DynamicResource ForegroundColor}" Margin="0,0,20,0"/>
+                            <CheckBox x:Name="chkPM" Content="PM" Foreground="{DynamicResource ForegroundColor}"/>
                         </StackPanel>
                     </StackPanel>
                 </Grid>
@@ -245,9 +245,9 @@
                     Width="100"
                     Height="35"
                     Margin="0,0,10,0"
-                    Background="{StaticResource ControlBackground}"
-                    Foreground="{StaticResource ForegroundColor}"
-                    BorderBrush="{StaticResource ControlBorder}"
+                    Background="{DynamicResource ControlBackground}"
+                    Foreground="{DynamicResource ForegroundColor}"
+                    BorderBrush="{DynamicResource ControlBorder}"
                     BorderThickness="1"
                     Click="BtnNew_Click"/>
 
@@ -256,9 +256,9 @@
                     Width="80"
                     Height="35"
                     Margin="0,0,10,0"
-                    Background="{StaticResource ButtonDangerBackground}"
-                    Foreground="{StaticResource ForegroundColor}"
-                    BorderBrush="{StaticResource ButtonDangerBorder}"
+                    Background="{DynamicResource ButtonDangerBackground}"
+                    Foreground="{DynamicResource ForegroundColor}"
+                    BorderBrush="{DynamicResource ButtonDangerBorder}"
                     BorderThickness="1"
                     IsEnabled="False"
                     Click="BtnDelete_Click"/>
@@ -268,9 +268,9 @@
                     Width="80"
                     Height="35"
                     Margin="0,0,10,0"
-                    Background="{StaticResource ControlBackground}"
-                    Foreground="{StaticResource ForegroundColor}"
-                    BorderBrush="{StaticResource ControlBorder}"
+                    Background="{DynamicResource ControlBackground}"
+                    Foreground="{DynamicResource ForegroundColor}"
+                    BorderBrush="{DynamicResource ControlBorder}"
                     BorderThickness="1"
                     Click="BtnClose_Click"/>
 
@@ -278,9 +278,9 @@
                     Content="Add Project"
                     Width="110"
                     Height="35"
-                    Background="{StaticResource ButtonSuccessBackground}"
-                    Foreground="{StaticResource ForegroundColor}"
-                    BorderBrush="{StaticResource ButtonSuccessBorder}"
+                    Background="{DynamicResource ButtonSuccessBackground}"
+                    Foreground="{DynamicResource ForegroundColor}"
+                    BorderBrush="{DynamicResource ButtonSuccessBorder}"
                     BorderThickness="1"
                     Click="BtnSave_Click"/>
         </StackPanel>

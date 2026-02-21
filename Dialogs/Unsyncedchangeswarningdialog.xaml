@@ -5,7 +5,7 @@
         Height="400"
         Width="500"
         WindowStartupLocation="CenterOwner"
-        Background="{StaticResource WindowBackground}"
+        Background="{DynamicResource WindowBackground}"
         ResizeMode="NoResize"
         ShowInTaskbar="False">
 
@@ -22,31 +22,31 @@
         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,15">
             <TextBlock Text="⚠"
                        FontSize="28"
-                       Foreground="{StaticResource WarningText}"
+                       Foreground="{DynamicResource WarningText}"
                        VerticalAlignment="Center"
                        Margin="0,0,12,0"/>
             <TextBlock Text="Unsaved Changes Will Be Lost"
                        FontSize="20"
                        FontWeight="Bold"
-                       Foreground="{StaticResource ForegroundColor}"
+                       Foreground="{DynamicResource ForegroundColor}"
                        VerticalAlignment="Center"/>
         </StackPanel>
 
         <!-- Description Text -->
         <TextBlock Grid.Row="1"
                    TextWrapping="Wrap"
-                   Foreground="{StaticResource ForegroundColor}"
+                   Foreground="{DynamicResource ForegroundColor}"
                    FontSize="13"
                    Margin="0,0,0,15">
             <Run Text="The following projects have unsaved local edits that have "/>
-            <Run Text="NOT" FontWeight="Bold" Foreground="{StaticResource WarningHighlight}"/>
+            <Run Text="NOT" FontWeight="Bold" Foreground="{DynamicResource WarningHighlight}"/>
             <Run Text=" been synced to Central. If you continue, these changes will be permanently lost:"/>
         </TextBlock>
 
         <!-- Project List with Dirty Counts -->
         <Border Grid.Row="2"
-                Background="{StaticResource ControlBackground}"
-                BorderBrush="{StaticResource ControlBorder}"
+                Background="{DynamicResource ControlBackground}"
+                BorderBrush="{DynamicResource ControlBorder}"
                 BorderThickness="1"
                 Margin="0,0,0,15">
             <ScrollViewer VerticalScrollBarVisibility="Auto">
@@ -61,21 +61,21 @@
 
                                 <StackPanel Grid.Column="0" Orientation="Horizontal">
                                     <TextBlock Text="•"
-                                               Foreground="{StaticResource WarningHighlight}"
+                                               Foreground="{DynamicResource WarningHighlight}"
                                                FontSize="14"
                                                Margin="0,0,8,0"/>
-                                    <TextBlock Foreground="{StaticResource ForegroundColor}" FontSize="13">
+                                    <TextBlock Foreground="{DynamicResource ForegroundColor}" FontSize="13">
                                         <Run Text="{Binding ProjectID}" FontWeight="SemiBold"/>
                                         <Run Text=" - "/>
-                                        <Run Text="{Binding ProjectName}" Foreground="{StaticResource TextColorSecondary}"/>
+                                        <Run Text="{Binding ProjectName}" Foreground="{DynamicResource TextColorSecondary}"/>
                                     </TextBlock>
                                 </StackPanel>
 
                                 <Border Grid.Column="1"
-                                        Background="{StaticResource WarningHighlightBackground}"
+                                        Background="{DynamicResource WarningHighlightBackground}"
                                         CornerRadius="3"
                                         Padding="8,2">
-                                    <TextBlock Foreground="{StaticResource WarningHighlight}"
+                                    <TextBlock Foreground="{DynamicResource WarningHighlight}"
                                                FontWeight="Bold"
                                                FontSize="12">
                                         <Run Text="{Binding DirtyCount}"/>
@@ -93,7 +93,7 @@
         <TextBlock Grid.Row="3"
                    x:Name="txtSummary"
                    TextWrapping="Wrap"
-                   Foreground="{StaticResource TextColorSecondary}"
+                   Foreground="{DynamicResource TextColorSecondary}"
                    FontSize="12"
                    FontStyle="Italic"
                    Margin="0,0,0,20"
@@ -117,9 +117,9 @@
                     Width="120"
                     Height="38"
                     Margin="0,0,12,0"
-                    Background="{StaticResource AccentColor}"
-                    Foreground="{StaticResource ForegroundColor}"
-                    BorderBrush="{StaticResource AccentColor}"
+                    Background="{DynamicResource AccentColor}"
+                    Foreground="{DynamicResource ForegroundColor}"
+                    BorderBrush="{DynamicResource AccentColor}"
                     BorderThickness="1"
                     FontWeight="SemiBold"
                     Click="BtnGoBack_Click"/>
@@ -130,9 +130,9 @@
                     Content="Yes, I'm Sure"
                     Width="120"
                     Height="38"
-                    Background="{StaticResource ControlBackground}"
-                    Foreground="{StaticResource WarningHighlight}"
-                    BorderBrush="{StaticResource WarningHighlight}"
+                    Background="{DynamicResource ControlBackground}"
+                    Foreground="{DynamicResource WarningHighlight}"
+                    BorderBrush="{DynamicResource WarningHighlight}"
                     BorderThickness="1"
                     Click="BtnConfirm_Click"/>
         </Grid>

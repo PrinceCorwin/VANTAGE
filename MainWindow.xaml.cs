@@ -21,6 +21,8 @@ namespace VANTAGE
 {
     public partial class MainWindow : ChromelessWindow
     {
+        private Syncfusion.Windows.Tools.Controls.ButtonAdv? _activeNavButton;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -42,6 +44,18 @@ namespace VANTAGE
                 this.Icon = BitmapFrame.Create(iconPath);
             };
             this.Closing += MainWindow_Closing;
+
+            // Re-apply nav button colors when theme changes
+            ThemeManager.ThemeChanged += OnThemeChanged;
+        }
+
+        private void OnThemeChanged(string themeName)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                if (_activeNavButton != null)
+                    HighlightNavigationButton(_activeNavButton);
+            });
         }
         // Cached view instance to avoid full data reload on every navigation
         private Views.ProgressView? _cachedProgressView;
@@ -290,6 +304,8 @@ namespace VANTAGE
         // TOOLBAR BUTTON HANDLERS
         private void HighlightNavigationButton(Syncfusion.Windows.Tools.Controls.ButtonAdv activeButton)
         {
+            _activeNavButton = activeButton;
+
             // Reset all navigation buttons to toolbar foreground
             borderProgress.Background = System.Windows.Media.Brushes.Transparent;
             btnProgress.Foreground = (System.Windows.Media.Brush)FindResource("ToolbarForeground");

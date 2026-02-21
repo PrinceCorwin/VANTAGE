@@ -5,7 +5,7 @@
         Height="500"
         Width="750"
         WindowStartupLocation="CenterOwner"
-        Background="{StaticResource BackgroundColor}"
+        Background="{DynamicResource BackgroundColor}"
         ResizeMode="CanResize"
         MinHeight="400"
         MinWidth="600"
@@ -31,18 +31,18 @@
                        Text="Users" 
                        FontWeight="SemiBold" 
                        FontSize="16" 
-                       Foreground="{StaticResource ForegroundColor}"/>
+                       Foreground="{DynamicResource ForegroundColor}"/>
 
             <Border Grid.Row="2"
-                    Background="{StaticResource ControlBackground}"
-                    BorderBrush="{StaticResource BorderColor}"
+                    Background="{DynamicResource ControlBackground}"
+                    BorderBrush="{DynamicResource BorderColor}"
                     BorderThickness="1"
                     CornerRadius="4">
                 <Grid>
                     <ListView x:Name="lvUsers"
                               Background="Transparent"
                               BorderThickness="0"
-                              Foreground="{StaticResource ForegroundColor}"
+                              Foreground="{DynamicResource ForegroundColor}"
                               SelectionMode="Single"
                               SelectionChanged="LvUsers_SelectionChanged">
                         <ListView.View>
@@ -59,7 +59,7 @@
                                 VerticalAlignment="Center"
                                 Visibility="Collapsed">
                         <TextBlock Text="Loading users..."
-                                   Foreground="{StaticResource ForegroundColor}"
+                                   Foreground="{DynamicResource ForegroundColor}"
                                    Opacity="0.6"/>
                     </StackPanel>
                 </Grid>
@@ -68,7 +68,7 @@
             <TextBlock x:Name="txtUserCount" 
                        Grid.Row="3" 
                        Text="0 user(s)" 
-                       Foreground="{StaticResource ForegroundColor}"
+                       Foreground="{DynamicResource ForegroundColor}"
                        Opacity="0.6"
                        FontSize="12"
                        Margin="0,8,0,0"/>
@@ -88,49 +88,49 @@
                        Text="User Details" 
                        FontWeight="SemiBold" 
                        FontSize="16" 
-                       Foreground="{StaticResource ForegroundColor}"/>
+                       Foreground="{DynamicResource ForegroundColor}"/>
 
             <Border Grid.Row="2"
-                    Background="{StaticResource ControlBackground}"
-                    BorderBrush="{StaticResource BorderColor}"
+                    Background="{DynamicResource ControlBackground}"
+                    BorderBrush="{DynamicResource BorderColor}"
                     BorderThickness="1"
                     CornerRadius="4"
                     Padding="15">
                 <StackPanel>
                     <TextBlock Text="Username *" 
-                               Foreground="{StaticResource ForegroundColor}"
+                               Foreground="{DynamicResource ForegroundColor}"
                                FontSize="12"
                                Margin="0,0,0,5"/>
                     <TextBox x:Name="txtUsername"
                              Height="32"
                              FontSize="14"
-                             Background="{StaticResource BackgroundColor}"
-                             Foreground="{StaticResource ForegroundColor}"
-                             BorderBrush="{StaticResource BorderColor}"
+                             Background="{DynamicResource BackgroundColor}"
+                             Foreground="{DynamicResource ForegroundColor}"
+                             BorderBrush="{DynamicResource BorderColor}"
                              Padding="8,5"/>
 
                     <TextBlock Text="Full Name" 
-                               Foreground="{StaticResource ForegroundColor}"
+                               Foreground="{DynamicResource ForegroundColor}"
                                FontSize="12"
                                Margin="0,15,0,5"/>
                     <TextBox x:Name="txtFullName"
                              Height="32"
                              FontSize="14"
-                             Background="{StaticResource BackgroundColor}"
-                             Foreground="{StaticResource ForegroundColor}"
-                             BorderBrush="{StaticResource BorderColor}"
+                             Background="{DynamicResource BackgroundColor}"
+                             Foreground="{DynamicResource ForegroundColor}"
+                             BorderBrush="{DynamicResource BorderColor}"
                              Padding="8,5"/>
 
                     <TextBlock Text="Email" 
-                               Foreground="{StaticResource ForegroundColor}"
+                               Foreground="{DynamicResource ForegroundColor}"
                                FontSize="12"
                                Margin="0,15,0,5"/>
                     <TextBox x:Name="txtEmail"
                              Height="32"
                              FontSize="14"
-                             Background="{StaticResource BackgroundColor}"
-                             Foreground="{StaticResource ForegroundColor}"
-                             BorderBrush="{StaticResource BorderColor}"
+                             Background="{DynamicResource BackgroundColor}"
+                             Foreground="{DynamicResource ForegroundColor}"
+                             BorderBrush="{DynamicResource BorderColor}"
                              Padding="8,5"/>
                 </StackPanel>
             </Border>
@@ -148,9 +148,9 @@
                             Grid.Column="0"
                             Content="New User"
                             Height="35"
-                            Background="{StaticResource ControlBackground}"
-                            Foreground="{StaticResource ForegroundColor}"
-                            BorderBrush="{StaticResource ControlBorder}"
+                            Background="{DynamicResource ControlBackground}"
+                            Foreground="{DynamicResource ForegroundColor}"
+                            BorderBrush="{DynamicResource ControlBorder}"
                             BorderThickness="1"
                             Click="BtnNew_Click"/>
 
@@ -158,9 +158,9 @@
                             Grid.Column="2"
                             Content="Add User"
                             Height="35"
-                            Background="{StaticResource ButtonSuccessBackground}"
-                            Foreground="{StaticResource ForegroundColor}"
-                            BorderBrush="{StaticResource ButtonSuccessBorder}"
+                            Background="{DynamicResource ButtonSuccessBackground}"
+                            Foreground="{DynamicResource ForegroundColor}"
+                            BorderBrush="{DynamicResource ButtonSuccessBorder}"
                             BorderThickness="1"
                             Click="BtnSave_Click"/>
                 </Grid>
@@ -169,9 +169,9 @@
                         Content="Delete User"
                         Height="35"
                         Margin="0,10,0,0"
-                        Background="{StaticResource ButtonDangerBackground}"
-                        Foreground="{StaticResource ForegroundColor}"
-                        BorderBrush="{StaticResource ButtonDangerBorder}"
+                        Background="{DynamicResource ButtonDangerBackground}"
+                        Foreground="{DynamicResource ForegroundColor}"
+                        BorderBrush="{DynamicResource ButtonDangerBorder}"
                         BorderThickness="1"
                         IsEnabled="False"
                         Click="BtnDelete_Click"/>
@@ -180,9 +180,9 @@
                         Content="Close"
                         Height="35"
                         Margin="0,20,0,0"
-                        Background="{StaticResource ControlBackground}"
-                        Foreground="{StaticResource ForegroundColor}"
-                        BorderBrush="{StaticResource ControlBorder}"
+                        Background="{DynamicResource ControlBackground}"
+                        Foreground="{DynamicResource ForegroundColor}"
+                        BorderBrush="{DynamicResource ControlBorder}"
                         BorderThickness="1"
                         Click="BtnClose_Click"/>
             </StackPanel>

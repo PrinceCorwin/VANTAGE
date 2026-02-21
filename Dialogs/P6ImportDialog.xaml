@@ -5,7 +5,7 @@
         Height="500"
         Width="600"
         WindowStartupLocation="CenterOwner"
-        Background="{StaticResource BackgroundColor}"
+        Background="{DynamicResource BackgroundColor}"
         ResizeMode="NoResize"
         WindowStyle="SingleBorderWindow">
 
@@ -29,11 +29,11 @@
             <TextBlock Text="P6 Schedule File" 
                       FontWeight="SemiBold" 
                       FontSize="14" 
-                      Foreground="{StaticResource ForegroundColor}"
+                      Foreground="{DynamicResource ForegroundColor}"
                       Margin="0,0,0,5"/>
             <TextBlock x:Name="txtFileName" 
                       Text="No file selected" 
-                      Foreground="{StaticResource ForegroundColor}" 
+                      Foreground="{DynamicResource ForegroundColor}" 
                       Opacity="0.6"
                       FontSize="12"/>
         </StackPanel>
@@ -43,18 +43,18 @@
             <TextBlock Text="Week Ending Date" 
                       FontWeight="SemiBold" 
                       FontSize="14" 
-                      Foreground="{StaticResource ForegroundColor}"
+                      Foreground="{DynamicResource ForegroundColor}"
                       Margin="0,0,0,5"/>
             <DatePicker x:Name="dpWeekEndDate" 
                        Width="200" 
                        HorizontalAlignment="Left"
-                       Background="{StaticResource ControlBackground}"
-                       Foreground="{StaticResource ControlForeground}"
-                       BorderBrush="{StaticResource ControlBorder}"
+                       Background="{DynamicResource ControlBackground}"
+                       Foreground="{DynamicResource ControlForeground}"
+                       BorderBrush="{DynamicResource ControlBorder}"
                        SelectedDateChanged="DpWeekEndDate_SelectedDateChanged"/>
             <TextBlock x:Name="txtWeekEndHelper" 
                       Text="Defaults to previous Sunday" 
-                      Foreground="{StaticResource ForegroundColor}" 
+                      Foreground="{DynamicResource ForegroundColor}" 
                       Opacity="0.6"
                       FontSize="11" 
                       Margin="0,4,0,0"/>
@@ -65,30 +65,30 @@
             <TextBlock Text="Which ProjectIDs does this schedule cover?" 
                       FontWeight="SemiBold" 
                       FontSize="14" 
-                      Foreground="{StaticResource ForegroundColor}"
+                      Foreground="{DynamicResource ForegroundColor}"
                       Margin="0,0,0,5"/>
             <TextBlock Text="Select all projects included in this P6 schedule:" 
-                      Foreground="{StaticResource ForegroundColor}" 
+                      Foreground="{DynamicResource ForegroundColor}" 
                       Opacity="0.6"
                       FontSize="11"/>
         </StackPanel>
 
         <!-- Project List -->
         <Border Grid.Row="6"
-                BorderBrush="{StaticResource ControlBorder}"
+                BorderBrush="{DynamicResource ControlBorder}"
                 BorderThickness="1"
-                Background="{StaticResource ControlBackground}">
+                Background="{DynamicResource ControlBackground}">
             <Grid>
                 <ListView x:Name="lvProjects"
                          Background="Transparent"
                          BorderThickness="0"
-                         Foreground="{StaticResource ControlForeground}"
+                         Foreground="{DynamicResource ControlForeground}"
                          Visibility="Collapsed">
                     <ListView.ItemTemplate>
                         <DataTemplate>
                             <CheckBox Content="{Binding DisplayText}"
                                      IsChecked="{Binding IsSelected, Mode=TwoWay}"
-                                     Foreground="{StaticResource ControlForeground}"
+                                     Foreground="{DynamicResource ControlForeground}"
                                      Margin="5"/>
                         </DataTemplate>
                     </ListView.ItemTemplate>
@@ -99,14 +99,14 @@
                            VerticalAlignment="Center"
                            Visibility="Visible">
                     <TextBlock Text="Loading projects from snapshots..."
-                              Foreground="{StaticResource ForegroundColor}"
+                              Foreground="{DynamicResource ForegroundColor}"
                               FontSize="12"
                               HorizontalAlignment="Center"/>
                 </StackPanel>
                 <!-- No snapshots message (shown when list is empty) -->
                 <TextBlock x:Name="txtNoSnapshots"
                           Text="No submitted snapshots found."
-                          Foreground="{StaticResource WarningText}"
+                          Foreground="{DynamicResource WarningText}"
                           FontSize="12"
                           HorizontalAlignment="Center"
                           VerticalAlignment="Center"
@@ -118,7 +118,7 @@
         <!-- Footer hint -->
         <TextBlock Grid.Row="7"
                   Text="If desired project is not visible, cancel and Submit Week in Progress module first."
-                  Foreground="{StaticResource ForegroundColor}"
+                  Foreground="{DynamicResource ForegroundColor}"
                   Opacity="0.6"
                   FontSize="11"
                   FontStyle="Italic"
@@ -128,7 +128,7 @@
         <!-- Error Message -->
         <TextBlock x:Name="txtError"
                   Grid.Row="8"
-                  Foreground="{StaticResource ErrorText}"
+                  Foreground="{DynamicResource ErrorText}"
                   FontSize="12"
                   Margin="0,10,0,0"
                   Visibility="Collapsed"
@@ -143,18 +143,18 @@
                    Width="100"
                    Height="35"
                    Margin="0,0,10,0"
-                   Background="{StaticResource ControlBackground}"
-                   Foreground="{StaticResource ForegroundColor}"
-                   BorderBrush="{StaticResource ControlBorder}"
+                   Background="{DynamicResource ControlBackground}"
+                   Foreground="{DynamicResource ForegroundColor}"
+                   BorderBrush="{DynamicResource ControlBorder}"
                    BorderThickness="1"
                    Click="BtnCancel_Click"/>
             <Button x:Name="btnImport"
                    Content="Import"
                    Width="100"
                    Height="35"
-                   Background="{StaticResource AccentColor}"
-                   Foreground="{StaticResource ForegroundColor}"
-                   BorderBrush="{StaticResource AccentColor}"
+                   Background="{DynamicResource AccentColor}"
+                   Foreground="{DynamicResource ForegroundColor}"
+                   BorderBrush="{DynamicResource AccentColor}"
                    BorderThickness="1"
                    Click="BtnImport_Click"/>
         </StackPanel>

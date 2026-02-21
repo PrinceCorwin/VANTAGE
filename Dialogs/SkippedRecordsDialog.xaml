@@ -5,7 +5,7 @@
         Height="450"
         Width="600"
         WindowStartupLocation="CenterOwner"
-        Background="{StaticResource BackgroundColor}"
+        Background="{DynamicResource BackgroundColor}"
         ResizeMode="CanResize"
         MinHeight="300"
         MinWidth="400"
@@ -25,10 +25,10 @@
             <TextBlock Text="Skipped Records"
                        FontWeight="SemiBold"
                        FontSize="16"
-                       Foreground="{StaticResource ForegroundColor}"/>
+                       Foreground="{DynamicResource ForegroundColor}"/>
             <TextBlock x:Name="txtSummary"
                        Text="The following records could not be restored:"
-                       Foreground="{StaticResource ForegroundColor}"
+                       Foreground="{DynamicResource ForegroundColor}"
                        Opacity="0.7"
                        FontSize="12"
                        Margin="0,5,0,0"/>
@@ -36,13 +36,13 @@
 
         <!-- Records List -->
         <Border Grid.Row="2"
-                BorderBrush="{StaticResource ControlBorder}"
+                BorderBrush="{DynamicResource ControlBorder}"
                 BorderThickness="1"
-                Background="{StaticResource ControlBackground}">
+                Background="{DynamicResource ControlBackground}">
             <ListView x:Name="lvSkippedRecords"
                       Background="Transparent"
                       BorderThickness="0"
-                      Foreground="{StaticResource ControlForeground}">
+                      Foreground="{DynamicResource ControlForeground}">
                 <ListView.View>
                     <GridView>
                         <GridViewColumn Header="UniqueID" Width="280" DisplayMemberBinding="{Binding UniqueID}"/>
@@ -61,9 +61,9 @@
                     Width="130"
                     Height="35"
                     Margin="0,0,10,0"
-                    Background="{StaticResource ControlBackground}"
-                    Foreground="{StaticResource ForegroundColor}"
-                    BorderBrush="{StaticResource ControlBorder}"
+                    Background="{DynamicResource ControlBackground}"
+                    Foreground="{DynamicResource ForegroundColor}"
+                    BorderBrush="{DynamicResource ControlBorder}"
                     BorderThickness="1"
                     ToolTip="Copy the list to clipboard in tab-separated format"
                     Click="BtnCopyToClipboard_Click"/>
@@ -71,9 +71,9 @@
                     Content="Close"
                     Width="100"
                     Height="35"
-                    Background="{StaticResource AccentColor}"
-                    Foreground="{StaticResource ForegroundColor}"
-                    BorderBrush="{StaticResource AccentColor}"
+                    Background="{DynamicResource AccentColor}"
+                    Foreground="{DynamicResource ForegroundColor}"
+                    BorderBrush="{DynamicResource AccentColor}"
                     BorderThickness="1"
                     Click="BtnClose_Click"/>
         </StackPanel>

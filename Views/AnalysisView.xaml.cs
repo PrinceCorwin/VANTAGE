@@ -45,6 +45,7 @@ namespace VANTAGE.Views
 
         private void AnalysisView_Loaded(object sender, RoutedEventArgs e)
         {
+            ThemeManager.ThemeChanged += OnThemeChanged;
             _isInitializing = true;
 
             try
@@ -64,8 +65,19 @@ namespace VANTAGE.Views
 
         private void AnalysisView_Unloaded(object sender, RoutedEventArgs e)
         {
+            ThemeManager.ThemeChanged -= OnThemeChanged;
             SaveSettings();
             SaveGridLayout();
+        }
+
+        // Re-apply Syncfusion skin to grid when theme changes
+        private void OnThemeChanged(string themeName)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                var sfTheme = new Theme(ThemeManager.GetSyncfusionThemeName());
+                SfSkinManager.SetTheme(summaryGrid, sfTheme);
+            });
         }
 
         // Populate Group By dropdown with priority fields first, then others alphabetically

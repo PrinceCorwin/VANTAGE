@@ -6,7 +6,7 @@
         Height="550"
         Width="700"
         WindowStartupLocation="CenterOwner"
-        Background="{StaticResource BackgroundColor}"
+        Background="{DynamicResource BackgroundColor}"
         ResizeMode="CanResize"
         MinHeight="400"
         MinWidth="500"
@@ -27,9 +27,9 @@
             <TextBlock Text="Manage Progress Snapshots" 
                        FontWeight="SemiBold" 
                        FontSize="16" 
-                       Foreground="{StaticResource ForegroundColor}"/>
+                       Foreground="{DynamicResource ForegroundColor}"/>
             <TextBlock Text="View and delete snapshots for any user. Grouped by User, Project, and Week."
-                       Foreground="{StaticResource ForegroundColor}"
+                       Foreground="{DynamicResource ForegroundColor}"
                        Opacity="0.6"
                        FontSize="12"
                        Margin="0,5,0,0"/>
@@ -37,15 +37,15 @@
 
         <!-- Snapshots List -->
         <Border Grid.Row="2"
-                Background="{StaticResource ControlBackground}"
-                BorderBrush="{StaticResource BorderColor}"
+                Background="{DynamicResource ControlBackground}"
+                BorderBrush="{DynamicResource BorderColor}"
                 BorderThickness="1"
                 CornerRadius="4">
             <Grid>
                 <ListView x:Name="lvSnapshots"
                           Background="Transparent"
                           BorderThickness="0"
-                          Foreground="{StaticResource ForegroundColor}"
+                          Foreground="{DynamicResource ForegroundColor}"
                           SelectionMode="Extended">
                     <ListView.View>
                         <GridView>
@@ -71,7 +71,7 @@
                            Text="No snapshots found in database."
                            HorizontalAlignment="Center"
                            VerticalAlignment="Center"
-                           Foreground="{StaticResource ForegroundColor}"
+                           Foreground="{DynamicResource ForegroundColor}"
                            Opacity="0.6"
                            Visibility="Collapsed"/>
 
@@ -81,7 +81,7 @@
                             VerticalAlignment="Center"
                             Visibility="Collapsed">
                     <TextBlock Text="Loading snapshots..."
-                               Foreground="{StaticResource ForegroundColor}"
+                               Foreground="{DynamicResource ForegroundColor}"
                                Opacity="0.6"/>
                 </StackPanel>
             </Grid>
@@ -95,24 +95,24 @@
                         Width="80"
                         Height="28"
                         Margin="0,0,10,0"
-                        Background="{StaticResource ControlBackground}"
-                        Foreground="{StaticResource ForegroundColor}"
-                        BorderBrush="{StaticResource ControlBorder}"
+                        Background="{DynamicResource ControlBackground}"
+                        Foreground="{DynamicResource ForegroundColor}"
+                        BorderBrush="{DynamicResource ControlBorder}"
                         BorderThickness="1"
                         Click="BtnSelectAll_Click"/>
                 <Button x:Name="btnSelectNone"
                         Content="Select None"
                         Width="80"
                         Height="28"
-                        Background="{StaticResource ControlBackground}"
-                        Foreground="{StaticResource ForegroundColor}"
-                        BorderBrush="{StaticResource ControlBorder}"
+                        Background="{DynamicResource ControlBackground}"
+                        Foreground="{DynamicResource ForegroundColor}"
+                        BorderBrush="{DynamicResource ControlBorder}"
                         BorderThickness="1"
                         Click="BtnSelectNone_Click"/>
             </StackPanel>
             <TextBlock x:Name="txtSelectionSummary"
                        Text="0 groups selected (0 snapshots)"
-                       Foreground="{StaticResource ForegroundColor}"
+                       Foreground="{DynamicResource ForegroundColor}"
                        Opacity="0.7"
                        FontSize="12"
                        VerticalAlignment="Center"
@@ -128,9 +128,9 @@
                     Width="160"
                     Height="35"
                     Margin="0,0,10,0"
-                    Background="{StaticResource ControlBackground}"
-                    Foreground="{StaticResource ForegroundColor}"
-                    BorderBrush="{StaticResource ControlBorder}"
+                    Background="{DynamicResource ControlBackground}"
+                    Foreground="{DynamicResource ForegroundColor}"
+                    BorderBrush="{DynamicResource ControlBorder}"
                     BorderThickness="1"
                     IsEnabled="False"
                     ToolTip="Upload selected snapshots to VANTAGE_global_ProgressLog on Azure"
@@ -140,9 +140,9 @@
                     Width="150"
                     Height="35"
                     Margin="0,0,10,0"
-                    Background="{StaticResource ButtonDangerBackground}"
-                    Foreground="{StaticResource ForegroundColor}"
-                    BorderBrush="{StaticResource ButtonDangerBorder}"
+                    Background="{DynamicResource ButtonDangerBackground}"
+                    Foreground="{DynamicResource ForegroundColor}"
+                    BorderBrush="{DynamicResource ButtonDangerBorder}"
                     BorderThickness="1"
                     Click="BtnDeleteAll_Click"/>
             <Button x:Name="btnCancel"
@@ -150,18 +150,18 @@
                     Width="100"
                     Height="35"
                     Margin="0,0,10,0"
-                    Background="{StaticResource ControlBackground}"
-                    Foreground="{StaticResource ForegroundColor}"
-                    BorderBrush="{StaticResource ControlBorder}"
+                    Background="{DynamicResource ControlBackground}"
+                    Foreground="{DynamicResource ForegroundColor}"
+                    BorderBrush="{DynamicResource ControlBorder}"
                     BorderThickness="1"
                     Click="BtnCancel_Click"/>
             <Button x:Name="btnDelete"
                     Content="Delete Selected"
                     Width="120"
                     Height="35"
-                    Background="{StaticResource ButtonDangerBackground}"
-                    Foreground="{StaticResource ForegroundColor}"
-                    BorderBrush="{StaticResource ButtonDangerBorder}"
+                    Background="{DynamicResource ButtonDangerBackground}"
+                    Foreground="{DynamicResource ForegroundColor}"
+                    BorderBrush="{DynamicResource ButtonDangerBorder}"
                     BorderThickness="1"
                     IsEnabled="False"
                     Click="BtnDelete_Click"/>
@@ -171,18 +171,18 @@
         <Border x:Name="pnlOperationLoading"
                 Grid.Row="0"
                 Grid.RowSpan="6"
-                Background="#CC1E1E1E"
+                Background="{DynamicResource OverlayBackground}"
                 Visibility="Collapsed">
             <StackPanel HorizontalAlignment="Center"
                         VerticalAlignment="Center">
                 <busy:SfBusyIndicator IsBusy="True"
                                       AnimationType="DoubleCircle"
-                                      Foreground="{StaticResource ForegroundColor}"
+                                      Foreground="{DynamicResource ForegroundColor}"
                                       Width="60"
                                       Height="60"/>
                 <TextBlock x:Name="txtOperationStatus"
                            Text="Processing..."
-                           Foreground="{StaticResource ForegroundColor}"
+                           Foreground="{DynamicResource ForegroundColor}"
                            FontSize="14"
                            HorizontalAlignment="Center"
                            Margin="0,15,0,0"/>

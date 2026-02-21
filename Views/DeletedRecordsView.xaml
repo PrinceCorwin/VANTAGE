@@ -6,7 +6,7 @@
         Height="700"
         Width="1400"
         WindowStartupLocation="CenterOwner"
-        Background="{StaticResource BackgroundColor}">
+        Background="{DynamicResource BackgroundColor}">
 
     <Grid>
         <Grid.ColumnDefinitions>
@@ -24,8 +24,8 @@
 
         <!-- LEFT SIDEBAR -->
         <Border Grid.Column="0" Grid.Row="0"
-                Background="{StaticResource SidebarBackground}"
-                BorderBrush="{StaticResource SidebarBorder}"
+                Background="{DynamicResource SidebarBackground}"
+                BorderBrush="{DynamicResource SidebarBorder}"
                 BorderThickness="0,0,1,0">
 
             <Grid>
@@ -43,18 +43,18 @@
                     <TextBlock Text="DELETED RECORDS"
                               FontSize="16"
                               FontWeight="Bold"
-                              Foreground="{StaticResource ForegroundColor}"
+                              Foreground="{DynamicResource ForegroundColor}"
                               Margin="0,0,0,5"/>
                     <TextBlock Text="Select projects to view"
                               FontSize="11"
-                              Foreground="{StaticResource TextColorSecondary}"
+                              Foreground="{DynamicResource TextColorSecondary}"
                               TextWrapping="Wrap"/>
                 </StackPanel>
 
                 <!-- PROJECT FILTER LIST -->
                 <Border Grid.Row="1"
-                        Background="{StaticResource BackgroundColor}"
-                        BorderBrush="{StaticResource SidebarBorder}"
+                        Background="{DynamicResource BackgroundColor}"
+                        BorderBrush="{DynamicResource SidebarBorder}"
                         BorderThickness="1"
                         Margin="15,0,15,15"
                         CornerRadius="4">
@@ -63,7 +63,7 @@
                         <syncfusion:SfBusyIndicator x:Name="busyIndicator"
                                                    AnimationType="DoubleCircle"
                                                    IsBusy="False"
-                                                   Foreground="{StaticResource AccentColor}"
+                                                   Foreground="{DynamicResource AccentColor}"
                                                    Header="Loading projects..."
                                                    ViewboxHeight="80"
                                                    ViewboxWidth="80"/>
@@ -77,7 +77,7 @@
                                     <DataTemplate>
                                         <CheckBox Content="{Binding ProjectID}"
                                                  IsChecked="{Binding IsSelected}"
-                                                 Foreground="{StaticResource ForegroundColor}"
+                                                 Foreground="{DynamicResource ForegroundColor}"
                                                  FontSize="12"
                                                  Margin="5,3"
                                                  Padding="5,2"/>
@@ -98,8 +98,8 @@
                                          Height="42"
                                          Margin="0,0,0,8"
                                          SizeMode="Normal"
-                                         Background="{StaticResource ButtonPrimaryBackground}"
-                                         Foreground="{StaticResource OverlayText}"
+                                         Background="{DynamicResource ButtonPrimaryBackground}"
+                                         Foreground="{DynamicResource OverlayText}"
                                          Click="BtnRefresh_Click">
                         <syncfusion:ButtonAdv.ToolTip>
                             <ToolTip Content="Load deleted records for selected projects"/>
@@ -112,8 +112,8 @@
                                          Height="42"
                                          Margin="0,0,0,0"
                                          SizeMode="Normal"
-                                         Background="{StaticResource ButtonSuccessBackground}"
-                                         Foreground="{StaticResource OverlayText}"
+                                         Background="{DynamicResource ButtonSuccessBackground}"
+                                         Foreground="{DynamicResource OverlayText}"
                                          Click="BtnRestore_Click">
                         <syncfusion:ButtonAdv.ToolTip>
                             <ToolTip Content="Restore selected records (sets IsDeleted=0)"/>
@@ -122,7 +122,7 @@
 
                     <!-- Clean divider line -->
                     <Border Height="2"
-                        Background="{StaticResource DividerColor}"
+                        Background="{DynamicResource DividerColor}"
                         Margin="0,8,0,8"/>
 
                     <!-- Purge Button -->
@@ -132,8 +132,8 @@
                                          Height="42"
                                          Margin="0,0,0,6"
                                          SizeMode="Normal"
-                                         Background="{StaticResource ButtonDangerBackground}"
-                                         Foreground="{StaticResource OverlayText}"
+                                         Background="{DynamicResource ButtonDangerBackground}"
+                                         Foreground="{DynamicResource OverlayText}"
                                          Click="BtnPurge_Click">
                         <syncfusion:ButtonAdv.ToolTip>
                             <ToolTip Content="PERMANENTLY delete (cannot be undone)"/>
@@ -146,8 +146,8 @@
                                          SmallIcon="{x:Null}"
                                          Height="42"
                                          SizeMode="Normal"
-                                         Background="{StaticResource SidebarBorder}"
-                                         Foreground="{StaticResource OverlayText}"
+                                         Background="{DynamicResource SidebarBorder}"
+                                         Foreground="{DynamicResource OverlayText}"
                                          Click="BtnExport_Click">
                         <syncfusion:ButtonAdv.ToolTip>
                             <ToolTip Content="Export visible records to Excel"/>
@@ -160,7 +160,7 @@
 
         <!-- MAIN GRID AREA -->
         <Border Grid.Column="1" Grid.Row="0"
-                Background="{StaticResource BackgroundColor}">
+                Background="{DynamicResource BackgroundColor}">
             <syncfusion:SfDataGrid x:Name="sfDeletedActivities"
                                    AutoGenerateColumns="False"
                                    AllowEditing="False"
@@ -223,21 +223,21 @@
 
         <!-- STATUS BAR -->
         <Border Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1"
-                Background="{StaticResource SidebarBackground}"
-                BorderBrush="{StaticResource SidebarBorder}"
+                Background="{DynamicResource SidebarBackground}"
+                BorderBrush="{DynamicResource SidebarBorder}"
                 BorderThickness="0,1,0,0"
                 Padding="15,0">
             <Grid>
                 <TextBlock x:Name="txtRecordCount"
                           Text="0 deleted records"
-                          Foreground="{StaticResource ForegroundColor}"
+                          Foreground="{DynamicResource ForegroundColor}"
                           VerticalAlignment="Center"
                           HorizontalAlignment="Left"
                           FontSize="12"/>
 
                 <TextBlock x:Name="txtStatus"
                           Text="Ready"
-                          Foreground="{StaticResource TextColorSecondary}"
+                          Foreground="{DynamicResource TextColorSecondary}"
                           VerticalAlignment="Center"
                           HorizontalAlignment="Right"
                           FontSize="11"/>

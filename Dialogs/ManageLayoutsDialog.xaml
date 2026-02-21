@@ -5,7 +5,7 @@
         Height="400"
         Width="450"
         WindowStartupLocation="CenterOwner"
-        Background="{StaticResource BackgroundColor}"
+        Background="{DynamicResource BackgroundColor}"
         ResizeMode="NoResize"
         WindowStyle="SingleBorderWindow">
 
@@ -27,14 +27,14 @@
                    Text="Saved Layouts (max 5)"
                    FontWeight="SemiBold"
                    FontSize="14"
-                   Foreground="{StaticResource ForegroundColor}"/>
+                   Foreground="{DynamicResource ForegroundColor}"/>
 
         <!-- Layouts List -->
         <ListBox x:Name="lstLayouts"
                  Grid.Row="2"
-                 Background="{StaticResource ControlBackground}"
-                 Foreground="{StaticResource ForegroundColor}"
-                 BorderBrush="{StaticResource ControlBorder}"
+                 Background="{DynamicResource ControlBackground}"
+                 Foreground="{DynamicResource ForegroundColor}"
+                 BorderBrush="{DynamicResource ControlBorder}"
                  SelectionChanged="LstLayouts_SelectionChanged"/>
 
         <!-- List Action Buttons -->
@@ -45,9 +45,9 @@
                         Width="70"
                         Height="28"
                         Margin="0,0,10,0"
-                        Background="{StaticResource ControlBackground}"
-                        Foreground="{StaticResource StatusGreen}"
-                        BorderBrush="{StaticResource ControlBorder}"
+                        Background="{DynamicResource ControlBackground}"
+                        Foreground="{DynamicResource StatusGreen}"
+                        BorderBrush="{DynamicResource ControlBorder}"
                         Click="BtnApply_Click"
                         IsEnabled="False"/>
                 <Button x:Name="btnRename"
@@ -55,18 +55,18 @@
                         Width="70"
                         Height="28"
                         Margin="0,0,10,0"
-                        Background="{StaticResource ControlBackground}"
-                        Foreground="{StaticResource ForegroundColor}"
-                        BorderBrush="{StaticResource ControlBorder}"
+                        Background="{DynamicResource ControlBackground}"
+                        Foreground="{DynamicResource ForegroundColor}"
+                        BorderBrush="{DynamicResource ControlBorder}"
                         Click="BtnRename_Click"
                         IsEnabled="False"/>
                 <Button x:Name="btnDelete"
                         Content="Delete"
                         Width="70"
                         Height="28"
-                        Background="{StaticResource ControlBackground}"
-                        Foreground="{StaticResource StatusRed}"
-                        BorderBrush="{StaticResource ControlBorder}"
+                        Background="{DynamicResource ControlBackground}"
+                        Foreground="{DynamicResource StatusRed}"
+                        BorderBrush="{DynamicResource ControlBorder}"
                         Click="BtnDelete_Click"
                         IsEnabled="False"/>
             </StackPanel>
@@ -75,16 +75,16 @@
                     Width="70"
                     Height="28"
                     HorizontalAlignment="Right"
-                    Background="{StaticResource ControlBackground}"
-                    Foreground="{StaticResource ForegroundColor}"
-                    BorderBrush="{StaticResource ControlBorder}"
+                    Background="{DynamicResource ControlBackground}"
+                    Foreground="{DynamicResource ForegroundColor}"
+                    BorderBrush="{DynamicResource ControlBorder}"
                     Click="BtnDefault_Click"/>
         </Grid>
 
         <!-- Separator -->
         <Border Grid.Row="6"
                 Height="1"
-                Background="{StaticResource ControlBorder}"/>
+                Background="{DynamicResource ControlBorder}"/>
 
         <!-- Save New Layout Section -->
         <Grid Grid.Row="8">
@@ -99,9 +99,9 @@
             <TextBox x:Name="txtNewLayoutName"
                      Grid.Column="0"
                      Height="28"
-                     Background="{StaticResource ControlBackground}"
-                     Foreground="{StaticResource ForegroundColor}"
-                     BorderBrush="{StaticResource ControlBorder}"
+                     Background="{DynamicResource ControlBackground}"
+                     Foreground="{DynamicResource ForegroundColor}"
+                     BorderBrush="{DynamicResource ControlBorder}"
                      VerticalContentAlignment="Center"
                      Padding="5,0"/>
 
@@ -110,9 +110,9 @@
                     Content="Save New"
                     Width="80"
                     Height="28"
-                    Background="{StaticResource ControlBackground}"
-                    Foreground="{StaticResource StatusGreen}"
-                    BorderBrush="{StaticResource ControlBorder}"
+                    Background="{DynamicResource ControlBackground}"
+                    Foreground="{DynamicResource StatusGreen}"
+                    BorderBrush="{DynamicResource ControlBorder}"
                     Click="BtnSaveNew_Click"/>
 
             <Button x:Name="btnClose"
@@ -120,9 +120,9 @@
                     Content="Close"
                     Width="70"
                     Height="28"
-                    Background="{StaticResource ControlBackground}"
-                    Foreground="{StaticResource ForegroundColor}"
-                    BorderBrush="{StaticResource ControlBorder}"
+                    Background="{DynamicResource ControlBackground}"
+                    Foreground="{DynamicResource ForegroundColor}"
+                    BorderBrush="{DynamicResource ControlBorder}"
                     Click="BtnClose_Click"/>
         </Grid>
     </Grid>

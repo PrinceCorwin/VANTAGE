@@ -5,7 +5,7 @@
         Height="400"
         Width="450"
         WindowStartupLocation="CenterOwner"
-        Background="{StaticResource BackgroundColor}"
+        Background="{DynamicResource BackgroundColor}"
         ResizeMode="NoResize"
         WindowStyle="SingleBorderWindow">
 
@@ -29,9 +29,9 @@
             <TextBlock Text="Export Application Logs"
                        FontWeight="SemiBold"
                        FontSize="16"
-                       Foreground="{StaticResource ForegroundColor}"/>
+                       Foreground="{DynamicResource ForegroundColor}"/>
             <TextBlock Text="Export logs to file or email for support."
-                       Foreground="{StaticResource ForegroundColor}"
+                       Foreground="{DynamicResource ForegroundColor}"
                        Opacity="0.7"
                        FontSize="12"
                        Margin="0,5,0,0"/>
@@ -45,13 +45,13 @@
             </Grid.ColumnDefinitions>
             <TextBlock Text="Date Range:"
                        VerticalAlignment="Center"
-                       Foreground="{StaticResource ForegroundColor}"/>
+                       Foreground="{DynamicResource ForegroundColor}"/>
             <ComboBox x:Name="cboDateRange"
                       Grid.Column="1"
                       Height="30"
-                      Background="{StaticResource ControlBackground}"
-                      Foreground="{StaticResource ControlForeground}"
-                      BorderBrush="{StaticResource ControlBorder}"
+                      Background="{DynamicResource ControlBackground}"
+                      Foreground="{DynamicResource ControlForeground}"
+                      BorderBrush="{DynamicResource ControlBorder}"
                       SelectionChanged="CboDateRange_SelectionChanged">
                 <ComboBoxItem Content="Last 24 hours" IsSelected="True"/>
                 <ComboBoxItem Content="Last 7 days"/>
@@ -68,13 +68,13 @@
             </Grid.ColumnDefinitions>
             <TextBlock Text="Log Level:"
                        VerticalAlignment="Center"
-                       Foreground="{StaticResource ForegroundColor}"/>
+                       Foreground="{DynamicResource ForegroundColor}"/>
             <ComboBox x:Name="cboLogLevel"
                       Grid.Column="1"
                       Height="30"
-                      Background="{StaticResource ControlBackground}"
-                      Foreground="{StaticResource ControlForeground}"
-                      BorderBrush="{StaticResource ControlBorder}"
+                      Background="{DynamicResource ControlBackground}"
+                      Foreground="{DynamicResource ControlForeground}"
+                      BorderBrush="{DynamicResource ControlBorder}"
                       SelectionChanged="CboLogLevel_SelectionChanged">
                 <ComboBoxItem Content="All levels" IsSelected="True"/>
                 <ComboBoxItem Content="Info and above"/>
@@ -85,30 +85,30 @@
 
         <!-- Preview -->
         <Border Grid.Row="6"
-                Background="{StaticResource ControlBackground}"
-                BorderBrush="{StaticResource ControlBorder}"
+                Background="{DynamicResource ControlBackground}"
+                BorderBrush="{DynamicResource ControlBorder}"
                 BorderThickness="1"
                 Padding="10">
             <TextBlock x:Name="txtPreview"
                        Text="0 log entries found"
-                       Foreground="{StaticResource ForegroundColor}"/>
+                       Foreground="{DynamicResource ForegroundColor}"/>
         </Border>
 
         <!-- Email Section -->
         <StackPanel Grid.Row="8">
             <TextBlock Text="Email To (optional):"
-                       Foreground="{StaticResource ForegroundColor}"
+                       Foreground="{DynamicResource ForegroundColor}"
                        Margin="0,0,0,8"/>
             <ComboBox x:Name="cboUsers"
                       Height="30"
-                      Background="{StaticResource ControlBackground}"
-                      Foreground="{StaticResource ControlForeground}"
-                      BorderBrush="{StaticResource ControlBorder}"
+                      Background="{DynamicResource ControlBackground}"
+                      Foreground="{DynamicResource ControlForeground}"
+                      BorderBrush="{DynamicResource ControlBorder}"
                       DisplayMemberPath="DisplayName"
                       SelectionChanged="CboUsers_SelectionChanged"/>
             <TextBlock x:Name="txtEmail"
                        Text=""
-                       Foreground="{StaticResource ForegroundColor}"
+                       Foreground="{DynamicResource ForegroundColor}"
                        Opacity="0.7"
                        FontSize="11"
                        Margin="0,5,0,0"/>
@@ -123,9 +123,9 @@
                     Width="90"
                     Height="35"
                     Margin="0,0,10,0"
-                    Background="{StaticResource ControlBackground}"
-                    Foreground="{StaticResource ForegroundColor}"
-                    BorderBrush="{StaticResource ControlBorder}"
+                    Background="{DynamicResource ControlBackground}"
+                    Foreground="{DynamicResource ForegroundColor}"
+                    BorderBrush="{DynamicResource ControlBorder}"
                     BorderThickness="1"
                     Click="BtnCancel_Click"/>
             <Button x:Name="btnExport"
@@ -133,18 +133,18 @@
                     Width="100"
                     Height="35"
                     Margin="0,0,10,0"
-                    Background="{StaticResource ControlBackground}"
-                    Foreground="{StaticResource ForegroundColor}"
-                    BorderBrush="{StaticResource ControlBorder}"
+                    Background="{DynamicResource ControlBackground}"
+                    Foreground="{DynamicResource ForegroundColor}"
+                    BorderBrush="{DynamicResource ControlBorder}"
                     BorderThickness="1"
                     Click="BtnExport_Click"/>
             <Button x:Name="btnEmail"
                     Content="Send Email"
                     Width="100"
                     Height="35"
-                    Background="{StaticResource ButtonPrimaryBackground}"
-                    Foreground="{StaticResource OverlayText}"
-                    BorderBrush="{StaticResource ButtonPrimaryBorder}"
+                    Background="{DynamicResource ButtonPrimaryBackground}"
+                    Foreground="{DynamicResource OverlayText}"
+                    BorderBrush="{DynamicResource ButtonPrimaryBorder}"
                     BorderThickness="1"
                     IsEnabled="False"
                     Click="BtnEmail_Click"/>

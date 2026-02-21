@@ -5,7 +5,7 @@
         Height="320"
         Width="480"
         WindowStartupLocation="CenterScreen"
-        Background="{StaticResource BackgroundColor}"
+        Background="{DynamicResource BackgroundColor}"
         ResizeMode="NoResize"
         WindowStyle="SingleBorderWindow">
 
@@ -25,29 +25,29 @@
             <TextBlock Grid.Row="0"
                        FontSize="16"
                        FontWeight="SemiBold"
-                       Foreground="{StaticResource ForegroundColor}">
+                       Foreground="{DynamicResource ForegroundColor}">
                 Uninstall VANTAGE: Milestone?
             </TextBlock>
 
             <TextBlock Grid.Row="2"
                        TextWrapping="Wrap"
-                       Foreground="{StaticResource TextColorSecondary}"
+                       Foreground="{DynamicResource TextColorSecondary}"
                        FontSize="13"
                        LineHeight="22">
                 This will remove the following from your computer:
             </TextBlock>
 
             <StackPanel Grid.Row="3" Margin="12,6,0,0">
-                <TextBlock Foreground="{StaticResource TextColorSecondary}" FontSize="13" Text="&#x2022;  Application files"/>
-                <TextBlock Foreground="{StaticResource TextColorSecondary}" FontSize="13" Text="&#x2022;  Desktop and Start Menu shortcuts" Margin="0,3,0,0"/>
-                <TextBlock Foreground="{StaticResource TextColorSecondary}" FontSize="13" Text="&#x2022;  Windows registry entries" Margin="0,3,0,0"/>
+                <TextBlock Foreground="{DynamicResource TextColorSecondary}" FontSize="13" Text="&#x2022;  Application files"/>
+                <TextBlock Foreground="{DynamicResource TextColorSecondary}" FontSize="13" Text="&#x2022;  Desktop and Start Menu shortcuts" Margin="0,3,0,0"/>
+                <TextBlock Foreground="{DynamicResource TextColorSecondary}" FontSize="13" Text="&#x2022;  Windows registry entries" Margin="0,3,0,0"/>
             </StackPanel>
 
             <CheckBox x:Name="chkKeepData"
                       Grid.Row="4"
                       Content="Keep local data (database and settings)"
                       IsChecked="True"
-                      Foreground="{StaticResource ForegroundColor}"
+                      Foreground="{DynamicResource ForegroundColor}"
                       FontSize="13"
                       ToolTip="If unchecked, the local database and all settings will be permanently deleted"/>
 
@@ -55,17 +55,17 @@
                 <Button Content="Cancel"
                         Width="100" Height="34"
                         Margin="0,0,10,0"
-                        Background="{StaticResource ControlBackground}"
-                        Foreground="{StaticResource ForegroundColor}"
-                        BorderBrush="{StaticResource ControlBorder}"
+                        Background="{DynamicResource ControlBackground}"
+                        Foreground="{DynamicResource ForegroundColor}"
+                        BorderBrush="{DynamicResource ControlBorder}"
                         BorderThickness="1"
                         Click="BtnCancel_Click"
                         IsCancel="True"/>
                 <Button Content="Uninstall"
                         Width="100" Height="34"
-                        Background="{StaticResource ButtonDangerBackground}"
-                        Foreground="{StaticResource ForegroundColor}"
-                        BorderBrush="{StaticResource ButtonDangerBorder}"
+                        Background="{DynamicResource ButtonDangerBackground}"
+                        Foreground="{DynamicResource ForegroundColor}"
+                        BorderBrush="{DynamicResource ButtonDangerBorder}"
                         BorderThickness="1"
                         Click="BtnUninstall_Click"/>
             </StackPanel>
@@ -83,7 +83,7 @@
             <TextBlock Grid.Row="0"
                        FontSize="16"
                        FontWeight="SemiBold"
-                       Foreground="{StaticResource ForegroundColor}">
+                       Foreground="{DynamicResource ForegroundColor}">
                 Uninstalling...
             </TextBlock>
 
@@ -91,14 +91,14 @@
                          x:Name="progressBar"
                          Height="4"
                          IsIndeterminate="True"
-                         Foreground="{StaticResource AccentColor}"
-                         Background="{StaticResource ControlBackground}"/>
+                         Foreground="{DynamicResource AccentColor}"
+                         Background="{DynamicResource ControlBackground}"/>
 
             <StackPanel Grid.Row="3" Margin="0,16,0,0">
-                <TextBlock x:Name="txtStep1" FontSize="13" Foreground="{StaticResource TextColorSecondary}" Text="  Removing shortcuts..."/>
-                <TextBlock x:Name="txtStep2" FontSize="13" Foreground="{StaticResource TextColorSecondary}" Text="  Removing registry entries..." Margin="0,6,0,0"/>
-                <TextBlock x:Name="txtStep3" FontSize="13" Foreground="{StaticResource TextColorSecondary}" Text="  Cleaning up application files..." Margin="0,6,0,0"/>
-                <TextBlock x:Name="txtStep4" FontSize="13" Foreground="{StaticResource TextColorSecondary}" Text="  Removing local data..." Margin="0,6,0,0" Visibility="Collapsed"/>
+                <TextBlock x:Name="txtStep1" FontSize="13" Foreground="{DynamicResource TextColorSecondary}" Text="  Removing shortcuts..."/>
+                <TextBlock x:Name="txtStep2" FontSize="13" Foreground="{DynamicResource TextColorSecondary}" Text="  Removing registry entries..." Margin="0,6,0,0"/>
+                <TextBlock x:Name="txtStep3" FontSize="13" Foreground="{DynamicResource TextColorSecondary}" Text="  Cleaning up application files..." Margin="0,6,0,0"/>
+                <TextBlock x:Name="txtStep4" FontSize="13" Foreground="{DynamicResource TextColorSecondary}" Text="  Removing local data..." Margin="0,6,0,0" Visibility="Collapsed"/>
             </StackPanel>
         </Grid>
 
@@ -115,13 +115,13 @@
             <TextBlock Grid.Row="0"
                        FontSize="16"
                        FontWeight="SemiBold"
-                       Foreground="{StaticResource StatusGreen}">
+                       Foreground="{DynamicResource StatusGreen}">
                 Uninstall Complete
             </TextBlock>
 
             <TextBlock Grid.Row="2"
                        TextWrapping="Wrap"
-                       Foreground="{StaticResource ForegroundColor}"
+                       Foreground="{DynamicResource ForegroundColor}"
                        FontSize="13"
                        LineHeight="22">
                 VANTAGE: Milestone has been successfully removed from your computer.
@@ -131,7 +131,7 @@
                        Grid.Row="3"
                        Margin="0,12,0,0"
                        TextWrapping="Wrap"
-                       Foreground="{StaticResource TextColorSecondary}"
+                       Foreground="{DynamicResource TextColorSecondary}"
                        FontSize="12"
                        VerticalAlignment="Top"/>
 
@@ -139,9 +139,9 @@
                     Grid.Row="4"
                     Width="100" Height="34"
                     HorizontalAlignment="Right"
-                    Background="{StaticResource ControlBackground}"
-                    Foreground="{StaticResource ForegroundColor}"
-                    BorderBrush="{StaticResource ControlBorder}"
+                    Background="{DynamicResource ControlBackground}"
+                    Foreground="{DynamicResource ForegroundColor}"
+                    BorderBrush="{DynamicResource ControlBorder}"
                     BorderThickness="1"
                     Click="BtnClose_Click"/>
         </Grid>

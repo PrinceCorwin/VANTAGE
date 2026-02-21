@@ -2,11 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
+using Syncfusion.SfSkinManager;
 
 namespace VANTAGE.Utilities
 {
     public static class ThemeManager
     {
+        // Fired after theme dictionaries are swapped and SfSkinManager is re-applied
+        public static event Action<string>? ThemeChanged;
+
         // Available themes: display name -> Syncfusion theme name
         private static readonly Dictionary<string, string> ThemeMap = new()
         {
@@ -65,7 +69,7 @@ namespace VANTAGE.Utilities
             }
         }
 
-        // Save theme to UserSettings (called by ThemeManagerDialog)
+        // Save theme preference to UserSettings
         public static void SaveTheme(string themeName)
         {
             if (!Array.Exists(AvailableThemes, t => t.Equals(themeName, StringComparison.OrdinalIgnoreCase)))
@@ -73,7 +77,6 @@ namespace VANTAGE.Utilities
                 themeName = "Dark";
             }
 
-            CurrentTheme = themeName;
             SettingsManager.SetUserSetting("Theme", themeName, "string");
             AppLogger.Info($"Theme saved: '{themeName}'", "ThemeManager.SaveTheme");
         }
@@ -84,9 +87,14 @@ namespace VANTAGE.Utilities
             return ThemeMap.GetValueOrDefault(CurrentTheme, "FluentDark");
         }
 
-        // Swap resource dictionaries from Dark to the target theme
-        private static void ApplyTheme(string themeName)
+        // Swap resource dictionaries and re-apply Syncfusion skin to all open windows
+        public static void ApplyTheme(string themeName)
         {
+            if (!Array.Exists(AvailableThemes, t => t.Equals(themeName, StringComparison.OrdinalIgnoreCase)))
+            {
+                themeName = "Dark";
+            }
+
             var mergedDicts = Application.Current.Resources.MergedDictionaries;
             string sfThemeName = ThemeMap.GetValueOrDefault(themeName, "FluentDark");
 
@@ -126,7 +134,11 @@ namespace VANTAGE.Utilities
                 Source = new Uri($"Themes/{themeName}Theme.xaml", UriKind.Relative)
             });
 
-            AppLogger.Info($"Applied theme dictionaries for '{themeName}' (Syncfusion: {sfThemeName})", "ThemeManager.ApplyTheme");
+            CurrentTheme = themeName;
+
+            AppLogger.Info($"Applied theme '{themeName}' (Syncfusion: {sfThemeName})", "ThemeManager.ApplyTheme");
+
+            ThemeChanged?.Invoke(themeName);
         }
     }
 }

@@ -161,7 +161,19 @@ namespace VANTAGE.Views
         {
             InitializeComponent();
             SfSkinManager.SetTheme(this, new Theme(ThemeManager.GetSyncfusionThemeName()));
+            Loaded += (_, __) => ThemeManager.ThemeChanged += OnThemeChanged;
+            Unloaded += (_, __) => ThemeManager.ThemeChanged -= OnThemeChanged;
             Loaded += WorkPackageView_Loaded;
+        }
+
+        // Re-apply Syncfusion skin to grid when theme changes
+        private void OnThemeChanged(string themeName)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                var sfTheme = new Theme(ThemeManager.GetSyncfusionThemeName());
+                SfSkinManager.SetTheme(dgDrawings, sfTheme);
+            });
         }
 
         private async void WorkPackageView_Loaded(object sender, RoutedEventArgs e)

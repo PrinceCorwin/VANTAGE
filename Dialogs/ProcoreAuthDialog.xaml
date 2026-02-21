@@ -5,7 +5,7 @@
         Height="360"
         Width="500"
         WindowStartupLocation="CenterOwner"
-        Background="{StaticResource BackgroundColor}"
+        Background="{DynamicResource BackgroundColor}"
         ResizeMode="NoResize"
         WindowStyle="SingleBorderWindow">
 
@@ -27,9 +27,9 @@
             <TextBlock Text="Connect to Procore" 
                        FontWeight="SemiBold" 
                        FontSize="16" 
-                       Foreground="{StaticResource ForegroundColor}"/>
+                       Foreground="{DynamicResource ForegroundColor}"/>
             <TextBlock Text="Link your Procore account to fetch drawings for work packages."
-                       Foreground="{StaticResource ForegroundColor}"
+                       Foreground="{DynamicResource ForegroundColor}"
                        Opacity="0.6"
                        FontSize="12"
                        Margin="0,5,0,0"/>
@@ -38,15 +38,15 @@
         <!-- Instructions -->
         <StackPanel Grid.Row="2">
             <TextBlock Text="1. Click 'Open Procore Login' to sign in with your Procore account"
-                       Foreground="{StaticResource ForegroundColor}"
+                       Foreground="{DynamicResource ForegroundColor}"
                        Opacity="0.7"
                        Margin="0,0,0,5"/>
             <TextBlock Text="2. After signing in, copy the authorization code shown"
-                       Foreground="{StaticResource ForegroundColor}"
+                       Foreground="{DynamicResource ForegroundColor}"
                        Opacity="0.7"
                        Margin="0,0,0,5"/>
             <TextBlock Text="3. Paste the code below and click Connect"
-                       Foreground="{StaticResource ForegroundColor}"
+                       Foreground="{DynamicResource ForegroundColor}"
                        Opacity="0.7"/>
         </StackPanel>
 
@@ -57,23 +57,23 @@
                 Width="160"
                 Height="32"
                 HorizontalAlignment="Left"
-                Background="{StaticResource ControlBackground}"
-                Foreground="{StaticResource ForegroundColor}"
-                BorderBrush="{StaticResource ControlBorder}"
+                Background="{DynamicResource ControlBackground}"
+                Foreground="{DynamicResource ForegroundColor}"
+                BorderBrush="{DynamicResource ControlBorder}"
                 BorderThickness="1"
                 Click="BtnOpenBrowser_Click"/>
 
         <!-- Auth Code Input -->
         <StackPanel Grid.Row="6">
             <TextBlock Text="Authorization Code:" 
-                       Foreground="{StaticResource ForegroundColor}"
+                       Foreground="{DynamicResource ForegroundColor}"
                        Opacity="0.7"
                        Margin="0,0,0,5"/>
             <TextBox x:Name="txtAuthCode" 
                      Height="28"
-                     Background="{StaticResource ControlBackground}"
-                     Foreground="{StaticResource ForegroundColor}"
-                     BorderBrush="{StaticResource ControlBorder}"
+                     Background="{DynamicResource ControlBackground}"
+                     Foreground="{DynamicResource ForegroundColor}"
+                     BorderBrush="{DynamicResource ControlBorder}"
                      BorderThickness="1"
                      VerticalContentAlignment="Center"
                      Padding="5,0"
@@ -89,18 +89,18 @@
                     Width="100"
                     Height="35"
                     Margin="0,0,10,0"
-                    Background="{StaticResource ControlBackground}"
-                    Foreground="{StaticResource ForegroundColor}"
-                    BorderBrush="{StaticResource ControlBorder}"
+                    Background="{DynamicResource ControlBackground}"
+                    Foreground="{DynamicResource ForegroundColor}"
+                    BorderBrush="{DynamicResource ControlBorder}"
                     BorderThickness="1"
                     Click="BtnCancel_Click"/>
             <Button x:Name="btnConnect"
                     Content="Connect"
                     Width="100"
                     Height="35"
-                    Background="{StaticResource ControlBackground}"
-                    Foreground="{StaticResource ForegroundColor}"
-                    BorderBrush="{StaticResource ControlBorder}"
+                    Background="{DynamicResource ControlBackground}"
+                    Foreground="{DynamicResource ForegroundColor}"
+                    BorderBrush="{DynamicResource ControlBorder}"
                     BorderThickness="1"
                     IsEnabled="False"
                     Click="BtnConnect_Click"/>

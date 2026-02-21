@@ -7,12 +7,12 @@
              xmlns:converters="clr-namespace:VANTAGE.Converters"
              mc:Ignorable="d"
              d:DesignHeight="800" d:DesignWidth="1400"
-             Background="{StaticResource BackgroundColor}">
+             Background="{DynamicResource BackgroundColor}">
 
     <UserControl.Resources>
         <!-- Default TextBlock style -->
         <Style TargetType="TextBlock">
-            <Setter Property="Foreground" Value="{StaticResource ForegroundColor}"/>
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
         </Style>
 
         <!-- Converter for % Complete cell coloring -->
@@ -35,12 +35,12 @@
                     <ControlTemplate TargetType="GridSplitter">
                         <Grid Background="Transparent">
                             <!-- Thin vertical line -->
-                            <Rectangle Width="1" Fill="#40808080" HorizontalAlignment="Center"/>
+                            <Rectangle Width="1" Fill="{DynamicResource SplitterDots}" Opacity="0.4" HorizontalAlignment="Center"/>
                             <!-- Centered grip dots -->
                             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Vertical">
-                                <Ellipse Width="3" Height="3" Fill="#60808080" Margin="0,1"/>
-                                <Ellipse Width="3" Height="3" Fill="#60808080" Margin="0,1"/>
-                                <Ellipse Width="3" Height="3" Fill="#60808080" Margin="0,1"/>
+                                <Ellipse Width="3" Height="3" Fill="{DynamicResource SplitterDots}" Opacity="0.6" Margin="0,1"/>
+                                <Ellipse Width="3" Height="3" Fill="{DynamicResource SplitterDots}" Opacity="0.6" Margin="0,1"/>
+                                <Ellipse Width="3" Height="3" Fill="{DynamicResource SplitterDots}" Opacity="0.6" Margin="0,1"/>
                             </StackPanel>
                         </Grid>
                     </ControlTemplate>
@@ -59,12 +59,12 @@
                     <ControlTemplate TargetType="GridSplitter">
                         <Grid Background="Transparent">
                             <!-- Thin horizontal line -->
-                            <Rectangle Height="1" Fill="#40808080" VerticalAlignment="Center"/>
+                            <Rectangle Height="1" Fill="{DynamicResource SplitterDots}" Opacity="0.4" VerticalAlignment="Center"/>
                             <!-- Centered grip dots -->
                             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal">
-                                <Ellipse Width="3" Height="3" Fill="#60808080" Margin="1,0"/>
-                                <Ellipse Width="3" Height="3" Fill="#60808080" Margin="1,0"/>
-                                <Ellipse Width="3" Height="3" Fill="#60808080" Margin="1,0"/>
+                                <Ellipse Width="3" Height="3" Fill="{DynamicResource SplitterDots}" Opacity="0.6" Margin="1,0"/>
+                                <Ellipse Width="3" Height="3" Fill="{DynamicResource SplitterDots}" Opacity="0.6" Margin="1,0"/>
+                                <Ellipse Width="3" Height="3" Fill="{DynamicResource SplitterDots}" Opacity="0.6" Margin="1,0"/>
                             </StackPanel>
                         </Grid>
                     </ControlTemplate>
@@ -75,7 +75,7 @@
         <!-- Section border style -->
         <Style x:Key="SectionBorderStyle" TargetType="Border">
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Background" Value="{StaticResource BackgroundColor}"/>
+            <Setter Property="Background" Value="{DynamicResource BackgroundColor}"/>
             <Setter Property="Margin" Value="4"/>
         </Style>
     </UserControl.Resources>
@@ -189,21 +189,21 @@
                                   SelectionChanged="CmbGroupBy_SelectionChanged"
                                   ToolTip="Select field to group activities by"/>
 
-                        <Rectangle Width="1" Fill="{StaticResource ControlBorder}" Margin="12,2"/>
+                        <Rectangle Width="1" Fill="{DynamicResource ControlBorder}" Margin="12,2"/>
 
                         <!-- User Filter -->
                         <RadioButton x:Name="rbCurrentUser" Content="My Records"
                                      VerticalAlignment="Center" Margin="8,0"
-                                     Foreground="{StaticResource ForegroundColor}"
+                                     Foreground="{DynamicResource ForegroundColor}"
                                      Checked="UserFilter_Changed"
                                      ToolTip="Show only records assigned to you"/>
                         <RadioButton x:Name="rbAllUsers" Content="All Users"
                                      VerticalAlignment="Center" Margin="8,0"
-                                     Foreground="{StaticResource ForegroundColor}"
+                                     Foreground="{DynamicResource ForegroundColor}"
                                      Checked="UserFilter_Changed"
                                      ToolTip="Show records from all users"/>
 
-                        <Rectangle Width="1" Fill="{StaticResource ControlBorder}" Margin="12,2"/>
+                        <Rectangle Width="1" Fill="{DynamicResource ControlBorder}" Margin="12,2"/>
 
                         <!-- Project Filter (multi-select) -->
                         <TextBlock Text="Projects:" VerticalAlignment="Center" Margin="0,0,8,0"/>
@@ -232,8 +232,8 @@
                                            HeaderLinesVisibility="Both">
                         <syncfusion:SfDataGrid.HeaderStyle>
                             <Style TargetType="syncfusion:GridHeaderCellControl">
-                                <Setter Property="Background" Value="{StaticResource GridHeaderBackground}"/>
-                                <Setter Property="Foreground" Value="{StaticResource GridHeaderForeground}"/>
+                                <Setter Property="Background" Value="{DynamicResource GridHeaderBackground}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource GridHeaderForeground}"/>
                             </Style>
                         </syncfusion:SfDataGrid.HeaderStyle>
                         <syncfusion:SfDataGrid.Resources>

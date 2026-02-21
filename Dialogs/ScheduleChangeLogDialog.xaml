@@ -5,7 +5,7 @@
         Height="550"
         Width="950"
         WindowStartupLocation="CenterOwner"
-        Background="{StaticResource BackgroundColor}"
+        Background="{DynamicResource BackgroundColor}"
         ResizeMode="CanResize"
         MinHeight="400"
         MinWidth="700"
@@ -28,9 +28,9 @@
             <TextBlock Text="Schedule Change Log"
                        FontWeight="SemiBold"
                        FontSize="16"
-                       Foreground="{StaticResource ForegroundColor}"/>
+                       Foreground="{DynamicResource ForegroundColor}"/>
             <TextBlock Text="Review changes made in the Schedule detail grid"
-                       Foreground="{StaticResource ForegroundColor}"
+                       Foreground="{DynamicResource ForegroundColor}"
                        Opacity="0.7"
                        FontSize="12"
                        Margin="0,5,0,0"/>
@@ -38,15 +38,15 @@
 
         <!-- Change List -->
         <Border Grid.Row="2"
-                Background="{StaticResource ControlBackground}"
-                BorderBrush="{StaticResource BorderColor}"
+                Background="{DynamicResource ControlBackground}"
+                BorderBrush="{DynamicResource BorderColor}"
                 BorderThickness="1"
                 CornerRadius="4">
             <Grid>
                 <ListView x:Name="lvChanges"
                           Background="Transparent"
                           BorderThickness="0"
-                          Foreground="{StaticResource ForegroundColor}"
+                          Foreground="{DynamicResource ForegroundColor}"
                           SelectionMode="Extended">
                     <ListView.View>
                         <GridView>
@@ -80,7 +80,7 @@
                            Text="No changes have been logged."
                            HorizontalAlignment="Center"
                            VerticalAlignment="Center"
-                           Foreground="{StaticResource ForegroundColor}"
+                           Foreground="{DynamicResource ForegroundColor}"
                            Opacity="0.6"
                            Visibility="Collapsed"/>
 
@@ -90,7 +90,7 @@
                             VerticalAlignment="Center"
                             Visibility="Collapsed">
                     <TextBlock Text="Loading changes..."
-                               Foreground="{StaticResource ForegroundColor}"
+                               Foreground="{DynamicResource ForegroundColor}"
                                Opacity="0.6"/>
                 </StackPanel>
             </Grid>
@@ -100,20 +100,20 @@
         <TextBlock x:Name="txtSelectionSummary"
                    Grid.Row="3"
                    Text="0 changes selected"
-                   Foreground="{StaticResource ForegroundColor}"
+                   Foreground="{DynamicResource ForegroundColor}"
                    Opacity="0.7"
                    FontSize="12"
                    Margin="0,10,0,0"/>
 
         <!-- Warning Text -->
         <Border Grid.Row="5"
-                Background="{StaticResource ControlBackground}"
-                BorderBrush="{StaticResource BorderColor}"
+                Background="{DynamicResource ControlBackground}"
+                BorderBrush="{DynamicResource BorderColor}"
                 BorderThickness="1"
                 CornerRadius="4"
                 Padding="12">
             <TextBlock TextWrapping="Wrap"
-                       Foreground="{StaticResource ForegroundColor}"
+                       Foreground="{DynamicResource ForegroundColor}"
                        FontSize="12">
                 <Run FontWeight="SemiBold">Note:</Run>
                 <Run>These are changes you made in the Schedule detail grid. Selected changes will be applied to the live Activities, overwriting their current values when the Apply button is clicked. This action cannot be undone. Proceed with caution.</Run>
@@ -129,18 +129,18 @@
                     Width="100"
                     Height="35"
                     Margin="0,0,10,0"
-                    Background="{StaticResource ControlBackground}"
-                    Foreground="{StaticResource ForegroundColor}"
-                    BorderBrush="{StaticResource ControlBorder}"
+                    Background="{DynamicResource ControlBackground}"
+                    Foreground="{DynamicResource ForegroundColor}"
+                    BorderBrush="{DynamicResource ControlBorder}"
                     BorderThickness="1"
                     Click="BtnCancel_Click"/>
             <Button x:Name="btnApply"
                     Content="Apply Selected"
                     Width="120"
                     Height="35"
-                    Background="{StaticResource AccentColor}"
-                    Foreground="{StaticResource ForegroundColor}"
-                    BorderBrush="{StaticResource AccentColor}"
+                    Background="{DynamicResource AccentColor}"
+                    Foreground="{DynamicResource ForegroundColor}"
+                    BorderBrush="{DynamicResource AccentColor}"
                     BorderThickness="1"
                     IsEnabled="False"
                     ToolTip="Apply selected changes to live Activities"

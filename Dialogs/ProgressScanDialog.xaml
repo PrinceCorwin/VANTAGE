@@ -6,7 +6,7 @@
         Height="600"
         Width="1050"
         WindowStartupLocation="CenterOwner"
-        Background="{StaticResource BackgroundColor}"
+        Background="{DynamicResource BackgroundColor}"
         ResizeMode="CanResize"
         MinHeight="500"
         MinWidth="900"
@@ -27,14 +27,14 @@
                        Text="Select Files to Scan"
                        FontSize="16"
                        FontWeight="SemiBold"
-                       Foreground="{StaticResource ForegroundColor}"
+                       Foreground="{DynamicResource ForegroundColor}"
                        Margin="0,0,0,15"/>
 
             <!-- Drop Zone -->
             <Border Grid.Row="1"
                     x:Name="dropZone"
-                    Background="{StaticResource ControlBackground}"
-                    BorderBrush="{StaticResource ControlBorder}"
+                    Background="{DynamicResource ControlBackground}"
+                    BorderBrush="{DynamicResource ControlBorder}"
                     BorderThickness="2"
                     CornerRadius="8"
                     AllowDrop="True"
@@ -52,11 +52,11 @@
                                    Margin="0,0,0,10"/>
                         <TextBlock Text="Drag and drop files here"
                                    FontSize="14"
-                                   Foreground="{StaticResource TextColorSecondary}"
+                                   Foreground="{DynamicResource TextColorSecondary}"
                                    HorizontalAlignment="Center"/>
                         <TextBlock Text="or"
                                    FontSize="12"
-                                   Foreground="{StaticResource TextColorSecondary}"
+                                   Foreground="{DynamicResource TextColorSecondary}"
                                    HorizontalAlignment="Center"
                                    Margin="0,8"/>
                         <Button x:Name="btnBrowse"
@@ -64,13 +64,13 @@
                                 Width="120"
                                 Height="32"
                                 Click="BtnBrowse_Click"
-                                Background="{StaticResource ControlBackground}"
-                                Foreground="{StaticResource AccentColor}"
-                                BorderBrush="{StaticResource AccentColor}"
+                                Background="{DynamicResource ControlBackground}"
+                                Foreground="{DynamicResource AccentColor}"
+                                BorderBrush="{DynamicResource AccentColor}"
                                 ToolTip="Select PDF or image files"/>
                         <TextBlock Text="Supported: PDF, PNG, JPG"
                                    FontSize="11"
-                                   Foreground="{StaticResource TextColorSecondary}"
+                                   Foreground="{DynamicResource TextColorSecondary}"
                                    HorizontalAlignment="Center"
                                    Margin="0,12,0,0"/>
                     </StackPanel>
@@ -85,14 +85,14 @@
                         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
                             <TextBlock Text="Selected Files"
                                        FontWeight="SemiBold"
-                                       Foreground="{StaticResource ForegroundColor}"
+                                       Foreground="{DynamicResource ForegroundColor}"
                                        VerticalAlignment="Center"/>
                             <Button Content="+ Add More"
                                     Margin="15,0,0,0"
                                     Padding="8,4"
                                     Click="BtnBrowse_Click"
                                     Background="Transparent"
-                                    Foreground="{StaticResource AccentColor}"
+                                    Foreground="{DynamicResource AccentColor}"
                                     BorderThickness="0"
                                     Cursor="Hand"/>
                             <Button Content="Clear All"
@@ -100,7 +100,7 @@
                                     Padding="8,4"
                                     Click="BtnClearFiles_Click"
                                     Background="Transparent"
-                                    Foreground="{StaticResource TextColorSecondary}"
+                                    Foreground="{DynamicResource TextColorSecondary}"
                                     BorderThickness="0"
                                     Cursor="Hand"/>
                         </StackPanel>
@@ -121,17 +121,17 @@
                                         </Grid.ColumnDefinitions>
                                         <TextBlock Grid.Column="0"
                                                    Text="✓"
-                                                   Foreground="{StaticResource StatusGreen}"
+                                                   Foreground="{DynamicResource StatusGreen}"
                                                    Margin="0,0,8,0"
                                                    VerticalAlignment="Center"/>
                                         <TextBlock Grid.Column="1"
                                                    Text="{Binding FileName}"
-                                                   Foreground="{StaticResource ForegroundColor}"
+                                                   Foreground="{DynamicResource ForegroundColor}"
                                                    VerticalAlignment="Center"
                                                    TextTrimming="CharacterEllipsis"/>
                                         <TextBlock Grid.Column="2"
                                                    Text="{Binding PageInfo}"
-                                                   Foreground="{StaticResource TextColorSecondary}"
+                                                   Foreground="{DynamicResource TextColorSecondary}"
                                                    Margin="10,0"
                                                    VerticalAlignment="Center"/>
                                         <Button Grid.Column="3"
@@ -139,7 +139,7 @@
                                                 Tag="{Binding FilePath}"
                                                 Click="BtnRemoveFile_Click"
                                                 Background="Transparent"
-                                                Foreground="{StaticResource TextColorSecondary}"
+                                                Foreground="{DynamicResource TextColorSecondary}"
                                                 BorderThickness="0"
                                                 Padding="5,2"
                                                 Cursor="Hand"
@@ -155,12 +155,12 @@
             <!-- Summary -->
             <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,15,0,0">
                 <TextBlock Text="Total Pages:"
-                           Foreground="{StaticResource TextColorSecondary}"
+                           Foreground="{DynamicResource TextColorSecondary}"
                            VerticalAlignment="Center"/>
                 <TextBlock x:Name="txtTotalPages"
                            Text="0"
                            FontWeight="SemiBold"
-                           Foreground="{StaticResource ForegroundColor}"
+                           Foreground="{DynamicResource ForegroundColor}"
                            Margin="8,0,0,0"
                            VerticalAlignment="Center"/>
             </StackPanel>
@@ -177,17 +177,17 @@
                         Margin="0,0,10,0"
                         Click="BtnStartProcessing_Click"
                         IsEnabled="False"
-                        Background="{StaticResource ControlBackground}"
-                        Foreground="{StaticResource StatusGreen}"
-                        BorderBrush="{StaticResource ControlBorder}"
+                        Background="{DynamicResource ControlBackground}"
+                        Foreground="{DynamicResource StatusGreen}"
+                        BorderBrush="{DynamicResource ControlBorder}"
                         ToolTip="Process selected files with AI vision"/>
                 <Button Content="Cancel"
                         Width="80"
                         Height="32"
                         Click="BtnCancel_Click"
-                        Background="{StaticResource ControlBackground}"
-                        Foreground="{StaticResource ForegroundColor}"
-                        BorderBrush="{StaticResource ControlBorder}"/>
+                        Background="{DynamicResource ControlBackground}"
+                        Foreground="{DynamicResource ForegroundColor}"
+                        BorderBrush="{DynamicResource ControlBorder}"/>
             </StackPanel>
         </Grid>
 
@@ -202,7 +202,7 @@
                 <TextBlock Text="Processing Scanned Sheets"
                            FontSize="18"
                            FontWeight="SemiBold"
-                           Foreground="{StaticResource ForegroundColor}"
+                           Foreground="{DynamicResource ForegroundColor}"
                            HorizontalAlignment="Center"
                            Margin="0,0,0,30"/>
 
@@ -212,20 +212,20 @@
                                                  Minimum="0"
                                                  Maximum="100"
                                                  Progress="0"
-                                                 TrackColor="{StaticResource ControlBackground}"
-                                                 ProgressColor="{StaticResource AccentColor}"/>
+                                                 TrackColor="{DynamicResource ControlBackground}"
+                                                 ProgressColor="{DynamicResource ProgressBarAccent}"/>
 
                 <TextBlock x:Name="txtProcessingStatus"
                            Text="Initializing..."
                            FontSize="14"
-                           Foreground="{StaticResource ForegroundColor}"
+                           Foreground="{DynamicResource ForegroundColor}"
                            HorizontalAlignment="Center"
                            Margin="0,20,0,0"/>
 
                 <TextBlock x:Name="txtExtractedCount"
                            Text="Extracted: 0 entries"
                            FontSize="12"
-                           Foreground="{StaticResource TextColorSecondary}"
+                           Foreground="{DynamicResource TextColorSecondary}"
                            HorizontalAlignment="Center"
                            Margin="0,10,0,0"/>
             </StackPanel>
@@ -237,9 +237,9 @@
                     Height="32"
                     HorizontalAlignment="Center"
                     Click="BtnCancelProcessing_Click"
-                    Background="{StaticResource ControlBackground}"
-                    Foreground="{StaticResource ForegroundColor}"
-                    BorderBrush="{StaticResource ControlBorder}"/>
+                    Background="{DynamicResource ControlBackground}"
+                    Foreground="{DynamicResource ForegroundColor}"
+                    BorderBrush="{DynamicResource ControlBorder}"/>
         </Grid>
 
         <!-- STEP 3: Review Panel -->
@@ -256,12 +256,12 @@
                 <TextBlock Text="Review Extracted Data"
                            FontSize="16"
                            FontWeight="SemiBold"
-                           Foreground="{StaticResource ForegroundColor}"
+                           Foreground="{DynamicResource ForegroundColor}"
                            VerticalAlignment="Center"/>
                 <TextBlock x:Name="txtReviewSummary"
                            Text=""
                            FontSize="12"
-                           Foreground="{StaticResource TextColorSecondary}"
+                           Foreground="{DynamicResource TextColorSecondary}"
                            VerticalAlignment="Center"
                            Margin="20,0,0,0"/>
             </StackPanel>
@@ -273,31 +273,31 @@
                              GroupName="ReviewFilter"
                              IsChecked="True"
                              Checked="FilterChanged"
-                             Foreground="{StaticResource ForegroundColor}"
+                             Foreground="{DynamicResource ForegroundColor}"
                              Margin="0,0,15,0"/>
                 <RadioButton x:Name="rbFilterReady"
                              Content="Ready"
                              GroupName="ReviewFilter"
                              Checked="FilterChanged"
-                             Foreground="{StaticResource StatusGreen}"
+                             Foreground="{DynamicResource StatusGreen}"
                              Margin="0,0,15,0"/>
                 <RadioButton x:Name="rbFilterWarnings"
                              Content="Warnings"
                              GroupName="ReviewFilter"
                              Checked="FilterChanged"
-                             Foreground="{StaticResource StatusYellow}"
+                             Foreground="{DynamicResource StatusYellow}"
                              Margin="0,0,15,0"/>
                 <RadioButton x:Name="rbFilterErrors"
                              Content="Errors"
                              GroupName="ReviewFilter"
                              Checked="FilterChanged"
-                             Foreground="{StaticResource ErrorText}"/>
+                             Foreground="{DynamicResource ErrorText}"/>
             </StackPanel>
 
             <!-- Review Grid -->
             <Border Grid.Row="2"
-                    Background="{StaticResource ControlBackground}"
-                    BorderBrush="{StaticResource ControlBorder}"
+                    Background="{DynamicResource ControlBackground}"
+                    BorderBrush="{DynamicResource ControlBorder}"
                     BorderThickness="1"
                     CornerRadius="4">
                 <syncfusion:SfDataGrid x:Name="sfReviewGrid"
@@ -316,8 +316,8 @@
                                        CurrentCellEndEdit="SfReviewGrid_CurrentCellEndEdit">
                     <syncfusion:SfDataGrid.Resources>
                         <Style TargetType="syncfusion:GridHeaderCellControl">
-                            <Setter Property="Background" Value="{StaticResource GridHeaderBackground}"/>
-                            <Setter Property="Foreground" Value="{StaticResource TextColorSecondary}"/>
+                            <Setter Property="Background" Value="{DynamicResource GridHeaderBackground}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource TextColorSecondary}"/>
                         </Style>
                         <Style TargetType="syncfusion:FilterToggleButton">
                             <Setter Property="Template">
@@ -423,7 +423,7 @@
                             Padding="10,6"
                             Click="BtnSelectAll_Click"
                             Background="Transparent"
-                            Foreground="{StaticResource AccentColor}"
+                            Foreground="{DynamicResource AccentColor}"
                             BorderThickness="0"
                             Cursor="Hand"
                             ToolTip="Select all visible items"/>
@@ -431,7 +431,7 @@
                             Padding="10,6"
                             Click="BtnSelectAllReady_Click"
                             Background="Transparent"
-                            Foreground="{StaticResource AccentColor}"
+                            Foreground="{DynamicResource AccentColor}"
                             BorderThickness="0"
                             Cursor="Hand"
                             ToolTip="Select Ready items and Warnings with confidence >= 70%"/>
@@ -439,24 +439,24 @@
                             Padding="10,6"
                             Click="BtnClearSelection_Click"
                             Background="Transparent"
-                            Foreground="{StaticResource TextColorSecondary}"
+                            Foreground="{DynamicResource TextColorSecondary}"
                             BorderThickness="0"
                             Cursor="Hand"
                             ToolTip="Clear all selections"/>
                     <TextBlock x:Name="txtSelectedCount"
                                Text="Selected: 0"
-                               Foreground="{StaticResource TextColorSecondary}"
+                               Foreground="{DynamicResource TextColorSecondary}"
                                VerticalAlignment="Center"
                                Margin="20,0,0,0"/>
 
                     <!-- Rescan controls -->
-                    <Border BorderBrush="{StaticResource ControlBorder}"
+                    <Border BorderBrush="{DynamicResource ControlBorder}"
                             BorderThickness="1,0,0,0"
                             Margin="20,0,0,0"
                             Padding="15,0,0,0">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="Contrast:"
-                                       Foreground="{StaticResource TextColorSecondary}"
+                                       Foreground="{DynamicResource TextColorSecondary}"
                                        VerticalAlignment="Center"
                                        ToolTip="Adjust only if scan returned incorrect values"/>
                             <Slider x:Name="sliderRescanContrast"
@@ -472,16 +472,16 @@
                             <TextBlock x:Name="txtRescanContrastValue"
                                        Text="1.2"
                                        Width="30"
-                                       Foreground="{StaticResource ForegroundColor}"
+                                       Foreground="{DynamicResource ForegroundColor}"
                                        Margin="4,0,0,0"
                                        VerticalAlignment="Center"/>
                             <Button Content="Rescan"
                                     Padding="10,4"
                                     Margin="10,0,0,0"
                                     Click="BtnRescan_Click"
-                                    Background="{StaticResource ControlBackground}"
-                                    Foreground="{StaticResource AccentColor}"
-                                    BorderBrush="{StaticResource AccentColor}"
+                                    Background="{DynamicResource ControlBackground}"
+                                    Foreground="{DynamicResource AccentColor}"
+                                    BorderBrush="{DynamicResource AccentColor}"
                                     ToolTip="Re-process files with new contrast setting"/>
                         </StackPanel>
                     </Border>
@@ -494,9 +494,9 @@
                             Height="32"
                             Margin="0,0,10,0"
                             Click="BtnBackToUpload_Click"
-                            Background="{StaticResource ControlBackground}"
-                            Foreground="{StaticResource ForegroundColor}"
-                            BorderBrush="{StaticResource ControlBorder}"
+                            Background="{DynamicResource ControlBackground}"
+                            Foreground="{DynamicResource ForegroundColor}"
+                            BorderBrush="{DynamicResource ControlBorder}"
                             ToolTip="Go back to file selection"/>
                     <Button x:Name="btnApply"
                             Content="Apply Selected"
@@ -505,17 +505,17 @@
                             Margin="0,0,10,0"
                             Click="BtnApply_Click"
                             IsEnabled="False"
-                            Background="{StaticResource ControlBackground}"
-                            Foreground="{StaticResource StatusGreen}"
-                            BorderBrush="{StaticResource ControlBorder}"
+                            Background="{DynamicResource ControlBackground}"
+                            Foreground="{DynamicResource StatusGreen}"
+                            BorderBrush="{DynamicResource ControlBorder}"
                             ToolTip="Apply selected progress updates"/>
                     <Button Content="Cancel"
                             Width="80"
                             Height="32"
                             Click="BtnCancel_Click"
-                            Background="{StaticResource ControlBackground}"
-                            Foreground="{StaticResource ForegroundColor}"
-                            BorderBrush="{StaticResource ControlBorder}"/>
+                            Background="{DynamicResource ControlBackground}"
+                            Foreground="{DynamicResource ForegroundColor}"
+                            BorderBrush="{DynamicResource ControlBorder}"/>
                 </StackPanel>
             </Grid>
         </Grid>

@@ -5,7 +5,7 @@
         Height="330"
         Width="340"
         WindowStartupLocation="CenterOwner"
-        Background="{StaticResource BackgroundColor}"
+        Background="{DynamicResource BackgroundColor}"
         ResizeMode="NoResize"
         WindowStyle="SingleBorderWindow">
 
@@ -27,21 +27,21 @@
                    Text="Select Theme"
                    FontSize="16"
                    FontWeight="SemiBold"
-                   Foreground="{StaticResource ForegroundColor}"/>
+                   Foreground="{DynamicResource ForegroundColor}"/>
 
         <!-- Dark theme radio button -->
         <RadioButton x:Name="rbDark"
                      Grid.Row="2"
                      GroupName="Theme"
                      Checked="RbTheme_Checked"
-                     Foreground="{StaticResource ForegroundColor}"
+                     Foreground="{DynamicResource ForegroundColor}"
                      FontSize="14"
                      Margin="0,0,0,10"
                      ToolTip="Dark background with light text">
             <StackPanel Orientation="Horizontal">
                 <Border Width="20" Height="20"
                         Background="#FF1E1E1E"
-                        BorderBrush="{StaticResource ControlBorder}"
+                        BorderBrush="{DynamicResource ControlBorder}"
                         BorderThickness="1"
                         CornerRadius="3"
                         Margin="0,0,8,0"/>
@@ -54,14 +54,14 @@
                      Grid.Row="3"
                      GroupName="Theme"
                      Checked="RbTheme_Checked"
-                     Foreground="{StaticResource ForegroundColor}"
+                     Foreground="{DynamicResource ForegroundColor}"
                      FontSize="14"
                      Margin="0,0,0,10"
                      ToolTip="Light background with dark text">
             <StackPanel Orientation="Horizontal">
                 <Border Width="20" Height="20"
                         Background="#FFF3F3F3"
-                        BorderBrush="{StaticResource ControlBorder}"
+                        BorderBrush="{DynamicResource ControlBorder}"
                         BorderThickness="1"
                         CornerRadius="3"
                         Margin="0,0,8,0"/>
@@ -74,7 +74,7 @@
                      Grid.Row="4"
                      GroupName="Theme"
                      Checked="RbTheme_Checked"
-                     Foreground="{StaticResource ForegroundColor}"
+                     Foreground="{DynamicResource ForegroundColor}"
                      FontSize="14"
                      ToolTip="Light purple theme with orchid accents">
             <StackPanel Orientation="Horizontal">
@@ -90,8 +90,8 @@
 
         <!-- Info text -->
         <TextBlock Grid.Row="6"
-                   Text="Theme will be applied when the application restarts."
-                   Foreground="{StaticResource TextColorSecondary}"
+                   Text="Theme is applied instantly."
+                   Foreground="{DynamicResource TextColorSecondary}"
                    FontSize="12"
                    TextWrapping="Wrap"/>
 
@@ -100,7 +100,7 @@
                 Content="Close"
                 Width="80"
                 HorizontalAlignment="Right"
-                Foreground="{StaticResource ForegroundColor}"
+                Foreground="{DynamicResource ForegroundColor}"
                 Click="BtnClose_Click"
                 ToolTip="Close theme selector"/>
     </Grid>

@@ -7,7 +7,7 @@
         Height="550"
         Width="900"
         WindowStartupLocation="CenterOwner"
-        Background="{StaticResource BackgroundColor}"
+        Background="{DynamicResource BackgroundColor}"
         ResizeMode="CanResize"
         MinHeight="400"
         MinWidth="700"
@@ -28,9 +28,9 @@
             <TextBlock Text="Manage Progress Log Uploads"
                        FontWeight="SemiBold"
                        FontSize="16"
-                       Foreground="{StaticResource ForegroundColor}"/>
+                       Foreground="{DynamicResource ForegroundColor}"/>
             <TextBlock Text="View and delete batches uploaded to VANTAGE_global_ProgressLog. Use REFRESH to import legacy uploads."
-                       Foreground="{StaticResource ForegroundColor}"
+                       Foreground="{DynamicResource ForegroundColor}"
                        Opacity="0.6"
                        FontSize="12"
                        Margin="0,5,0,0"/>
@@ -38,8 +38,8 @@
 
         <!-- Uploads Grid -->
         <Border Grid.Row="2"
-                Background="{StaticResource ControlBackground}"
-                BorderBrush="{StaticResource BorderColor}"
+                Background="{DynamicResource ControlBackground}"
+                BorderBrush="{DynamicResource BorderColor}"
                 BorderThickness="1"
                 CornerRadius="4">
             <Grid>
@@ -96,7 +96,7 @@
                            Text="No upload records found. Use REFRESH to import legacy uploads."
                            HorizontalAlignment="Center"
                            VerticalAlignment="Center"
-                           Foreground="{StaticResource ForegroundColor}"
+                           Foreground="{DynamicResource ForegroundColor}"
                            Opacity="0.6"
                            Visibility="Collapsed"/>
 
@@ -106,7 +106,7 @@
                             VerticalAlignment="Center"
                             Visibility="Collapsed">
                     <TextBlock Text="Loading upload records..."
-                               Foreground="{StaticResource ForegroundColor}"
+                               Foreground="{DynamicResource ForegroundColor}"
                                Opacity="0.6"/>
                 </StackPanel>
             </Grid>
@@ -120,9 +120,9 @@
                         Width="80"
                         Height="28"
                         Margin="0,0,10,0"
-                        Background="{StaticResource ControlBackground}"
-                        Foreground="{StaticResource ForegroundColor}"
-                        BorderBrush="{StaticResource ControlBorder}"
+                        Background="{DynamicResource ControlBackground}"
+                        Foreground="{DynamicResource ForegroundColor}"
+                        BorderBrush="{DynamicResource ControlBorder}"
                         BorderThickness="1"
                         ToolTip="Select all upload batches"
                         Click="BtnSelectAll_Click"/>
@@ -131,9 +131,9 @@
                         Width="80"
                         Height="28"
                         Margin="0,0,20,0"
-                        Background="{StaticResource ControlBackground}"
-                        Foreground="{StaticResource ForegroundColor}"
-                        BorderBrush="{StaticResource ControlBorder}"
+                        Background="{DynamicResource ControlBackground}"
+                        Foreground="{DynamicResource ForegroundColor}"
+                        BorderBrush="{DynamicResource ControlBorder}"
                         BorderThickness="1"
                         ToolTip="Deselect all upload batches"
                         Click="BtnSelectNone_Click"/>
@@ -144,9 +144,9 @@
                                               SmallIcon="{x:Null}"
                                               Height="28"
                                               Padding="10,0"
-                                              Background="{StaticResource ControlBackground}"
-                                              Foreground="{StaticResource ForegroundColor}"
-                                              BorderBrush="{StaticResource ControlBorder}"
+                                              Background="{DynamicResource ControlBackground}"
+                                              Foreground="{DynamicResource ForegroundColor}"
+                                              BorderBrush="{DynamicResource ControlBorder}"
                                               BorderThickness="1"
                                               ToolTip="Import legacy uploads from VANTAGE_global_ProgressLog">
                     <syncfusion:DropDownMenuGroup>
@@ -154,7 +154,7 @@
                                                      ToolTip="Scan for uploads from the last 7 days"/>
                         <syncfusion:DropDownMenuItem Header="Last 30 days" Click="MenuRefresh30Days_Click"
                                                      ToolTip="Scan for uploads from the last 30 days"/>
-                        <Separator Background="{StaticResource BorderColor}" Margin="5,2"/>
+                        <Separator Background="{DynamicResource BorderColor}" Margin="5,2"/>
                         <syncfusion:DropDownMenuItem Header="All time" Click="MenuRefreshAll_Click"
                                                      ToolTip="Scan all uploads (may take longer)"/>
                     </syncfusion:DropDownMenuGroup>
@@ -162,7 +162,7 @@
             </StackPanel>
             <TextBlock x:Name="txtSelectionSummary"
                        Text="0 batch(es) selected (0 records)"
-                       Foreground="{StaticResource ForegroundColor}"
+                       Foreground="{DynamicResource ForegroundColor}"
                        Opacity="0.7"
                        FontSize="12"
                        VerticalAlignment="Center"
@@ -178,9 +178,9 @@
                     Width="100"
                     Height="35"
                     Margin="0,0,10,0"
-                    Background="{StaticResource ControlBackground}"
-                    Foreground="{StaticResource ForegroundColor}"
-                    BorderBrush="{StaticResource ControlBorder}"
+                    Background="{DynamicResource ControlBackground}"
+                    Foreground="{DynamicResource ForegroundColor}"
+                    BorderBrush="{DynamicResource ControlBorder}"
                     BorderThickness="1"
                     ToolTip="Close this dialog"
                     Click="BtnCancel_Click"/>
@@ -188,9 +188,9 @@
                     Content="Delete Selected"
                     Width="120"
                     Height="35"
-                    Background="{StaticResource ButtonDangerBackground}"
-                    Foreground="{StaticResource ForegroundColor}"
-                    BorderBrush="{StaticResource ButtonDangerBorder}"
+                    Background="{DynamicResource ButtonDangerBackground}"
+                    Foreground="{DynamicResource ForegroundColor}"
+                    BorderBrush="{DynamicResource ButtonDangerBorder}"
                     BorderThickness="1"
                     IsEnabled="False"
                     ToolTip="Delete selected batches from VANTAGE_global_ProgressLog"
@@ -201,18 +201,18 @@
         <Border x:Name="pnlOperationLoading"
                 Grid.Row="0"
                 Grid.RowSpan="6"
-                Background="#CC1E1E1E"
+                Background="{DynamicResource OverlayBackground}"
                 Visibility="Collapsed">
             <StackPanel HorizontalAlignment="Center"
                         VerticalAlignment="Center">
                 <busy:SfBusyIndicator IsBusy="True"
                                       AnimationType="DoubleCircle"
-                                      Foreground="{StaticResource ForegroundColor}"
+                                      Foreground="{DynamicResource ForegroundColor}"
                                       Width="60"
                                       Height="60"/>
                 <TextBlock x:Name="txtOperationStatus"
                            Text="Processing..."
-                           Foreground="{StaticResource ForegroundColor}"
+                           Foreground="{DynamicResource ForegroundColor}"
                            FontSize="14"
                            HorizontalAlignment="Center"
                            Margin="0,15,0,0"/>

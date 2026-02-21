@@ -18,6 +18,9 @@
                 <!-- Your Custom Dark Theme (overrides Syncfusion where needed) -->
                 <ResourceDictionary Source="Themes/DarkTheme.xaml"/>
 
+                <!-- Shared styles (must be after theme dictionary) -->
+                <ResourceDictionary Source="Themes/SharedStyles.xaml"/>
+
             </ResourceDictionary.MergedDictionaries>
 
             <!-- Converters -->

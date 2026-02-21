@@ -7,7 +7,7 @@
         Height="500"
         Width="600"
         WindowStartupLocation="CenterScreen"
-        Background="{StaticResource WindowBackground}"
+        Background="{DynamicResource WindowBackground}"
         ResizeMode="NoResize">
 
     <Grid Margin="20">
@@ -29,20 +29,20 @@
                    Text="Select Projects to Sync"
                    FontSize="18"
                    FontWeight="Bold"
-                   Foreground="{StaticResource ForegroundColor}"
+                   Foreground="{DynamicResource ForegroundColor}"
                    Margin="0,0,0,20"/>
 
         <!-- Project List -->
         <Border Grid.Row="1"
-                Background="{StaticResource ControlBackground}"
-                BorderBrush="{StaticResource ControlBorder}"
+                Background="{DynamicResource ControlBackground}"
+                BorderBrush="{DynamicResource ControlBorder}"
                 BorderThickness="1"
                 Margin="0,0,0,20">
             <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <ItemsControl x:Name="projectList" Margin="10">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <CheckBox Foreground="{StaticResource ForegroundColor}"
+                            <CheckBox Foreground="{DynamicResource ForegroundColor}"
                                      IsChecked="{Binding IsSelected}"
                                      Margin="0,5">
                                 <TextBlock>
@@ -60,7 +60,7 @@
         <CheckBox x:Name="chkMyRecordsOnly"
           Grid.Row="2"
           Content="My Records Only - Pull only records assigned to me"
-          Foreground="{StaticResource ForegroundColor}"
+          Foreground="{DynamicResource ForegroundColor}"
           IsChecked="False"
           Margin="0,0,0,10"
           VerticalAlignment="Top"/>
@@ -68,7 +68,7 @@
         <!-- Info Text -->
         <TextBlock Grid.Row="3"
            TextWrapping="Wrap"
-           Foreground="{StaticResource ForegroundColor}"
+           Foreground="{DynamicResource ForegroundColor}"
            Opacity="0.8"
            Margin="0,0,0,20">
             <Run Text="• Checked projects will sync changes up to Azure and pull updates down"/>
@@ -88,9 +88,9 @@
                     Width="100"
                     Height="35"
                     Margin="0,0,10,0"
-                    Background="{StaticResource ControlBackground}"
-                    Foreground="{StaticResource ForegroundColor}"
-                    BorderBrush="{StaticResource AccentColor}"
+                    Background="{DynamicResource ControlBackground}"
+                    Foreground="{DynamicResource ForegroundColor}"
+                    BorderBrush="{DynamicResource AccentColor}"
                     BorderThickness="1"
                     Click="BtnCancel_Click"/>
 
@@ -98,16 +98,16 @@
                     Content="Sync"
                     Width="100"
                     Height="35"
-                    Background="{StaticResource AccentColor}"
-                    Foreground="{StaticResource ForegroundColor}"
-                    BorderBrush="{StaticResource AccentColor}"
+                    Background="{DynamicResource AccentColor}"
+                    Foreground="{DynamicResource ForegroundColor}"
+                    BorderBrush="{DynamicResource AccentColor}"
                     BorderThickness="1"
                     Click="BtnConfirmSync_Click"/>
         </StackPanel>
         
         <!-- Modern Loading Overlay for Sync Operations -->
         <Grid x:Name="LoadingOverlay"
-            Background="{StaticResource OverlayBackground}"
+            Background="{DynamicResource OverlayBackground}"
             Visibility="Collapsed"
             Panel.ZIndex="1000">
             <StackPanel HorizontalAlignment="Center"
@@ -118,20 +118,20 @@
                                  AnimationType="DualRing"
                                  ViewboxWidth="80"
                                  ViewboxHeight="80"
-                                 Foreground="{StaticResource AccentColor}"/>
+                                 Foreground="{DynamicResource AccentColor}"/>
                 <!-- Loading Text -->
                 <TextBlock x:Name="txtLoadingMessage"
                             Text="Syncing..."
                             FontSize="18"
                             FontWeight="SemiBold"
-                            Foreground="{StaticResource OverlayText}"
+                            Foreground="{DynamicResource OverlayText}"
                             HorizontalAlignment="Center"
                             Margin="0,30,0,10"/>
                 <!-- Progress Text -->
                 <TextBlock x:Name="txtLoadingProgress"
                             Text="0 of 0 records"
                             FontSize="14"
-                            Foreground="{StaticResource OverlayTextSecondary}"
+                            Foreground="{DynamicResource OverlayTextSecondary}"
                             HorizontalAlignment="Center"
                             Margin="0,0,0,15"/>
                 <!-- Progress Bar -->
@@ -139,8 +139,8 @@
                               Width="300"
                               Height="8"
                               IsIndeterminate="True"
-                              ProgressColor="{StaticResource AccentColor}"
-                              TrackColor="#333333"/>
+                              ProgressColor="{DynamicResource ProgressBarAccent}"
+                              TrackColor="{DynamicResource ProgressBarTrackColor}"/>
             </StackPanel>
         </Grid>
     </Grid>

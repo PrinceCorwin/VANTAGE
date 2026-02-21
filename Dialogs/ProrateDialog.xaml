@@ -5,7 +5,7 @@
         Height="520"
         Width="400"
         WindowStartupLocation="CenterOwner"
-        Background="{StaticResource BackgroundColor}"
+        Background="{DynamicResource BackgroundColor}"
         ResizeMode="NoResize"
         WindowStyle="SingleBorderWindow">
 
@@ -29,28 +29,28 @@
             <TextBlock Text="Operation"
                        FontWeight="SemiBold"
                        FontSize="14"
-                       Foreground="{StaticResource ForegroundColor}"
+                       Foreground="{DynamicResource ForegroundColor}"
                        Margin="0,0,0,8"/>
             <StackPanel Orientation="Horizontal">
                 <RadioButton x:Name="rbNewTotal"
                              Content="New Total"
                              GroupName="Operation"
                              IsChecked="True"
-                             Foreground="{StaticResource ForegroundColor}"
+                             Foreground="{DynamicResource ForegroundColor}"
                              Margin="0,0,20,0"
                              Checked="Operation_Changed"
                              ToolTip="Set the total BudgetMHs to a specific value"/>
                 <RadioButton x:Name="rbAdd"
                              Content="Add"
                              GroupName="Operation"
-                             Foreground="{StaticResource ForegroundColor}"
+                             Foreground="{DynamicResource ForegroundColor}"
                              Margin="0,0,20,0"
                              Checked="Operation_Changed"
                              ToolTip="Add MHs to the current total"/>
                 <RadioButton x:Name="rbSubtract"
                              Content="Subtract"
                              GroupName="Operation"
-                             Foreground="{StaticResource ForegroundColor}"
+                             Foreground="{DynamicResource ForegroundColor}"
                              Checked="Operation_Changed"
                              ToolTip="Subtract MHs from the current total"/>
             </StackPanel>
@@ -61,13 +61,13 @@
             <TextBlock Text="Amount (MHs)"
                        FontWeight="SemiBold"
                        FontSize="14"
-                       Foreground="{StaticResource ForegroundColor}"
+                       Foreground="{DynamicResource ForegroundColor}"
                        Margin="0,0,0,8"/>
             <TextBox x:Name="txtAmount"
                      Height="32"
-                     Background="{StaticResource ControlBackground}"
-                     Foreground="{StaticResource ForegroundColor}"
-                     BorderBrush="{StaticResource ControlBorder}"
+                     Background="{DynamicResource ControlBackground}"
+                     Foreground="{DynamicResource ForegroundColor}"
+                     BorderBrush="{DynamicResource ControlBorder}"
                      VerticalContentAlignment="Center"
                      Padding="8,0"
                      TextChanged="TxtAmount_TextChanged"
@@ -80,12 +80,12 @@
             <TextBlock Text="Preserve"
                        FontWeight="SemiBold"
                        FontSize="14"
-                       Foreground="{StaticResource ForegroundColor}"
+                       Foreground="{DynamicResource ForegroundColor}"
                        Margin="0,0,0,8"/>
             <RadioButton x:Name="rbKeepPercent"
                          Content="Keep Percent Complete (Earned recalculates)"
                          GroupName="Preserve"
-                         Foreground="{StaticResource ForegroundColor}"
+                         Foreground="{DynamicResource ForegroundColor}"
                          Margin="0,0,0,6"
                          Checked="Preserve_Changed"
                          ToolTip="Earned MHs will scale proportionally with budget changes"/>
@@ -93,15 +93,15 @@
                          Content="Keep Earned MHs (Percent recalculates)"
                          GroupName="Preserve"
                          IsChecked="True"
-                         Foreground="{StaticResource ForegroundColor}"
+                         Foreground="{DynamicResource ForegroundColor}"
                          Checked="Preserve_Changed"
                          ToolTip="Earned MHs stays fixed, only remaining MHs changes"/>
         </StackPanel>
 
         <!-- Preview Section -->
         <Border Grid.Row="6"
-                Background="{StaticResource ControlBackground}"
-                BorderBrush="{StaticResource ControlBorder}"
+                Background="{DynamicResource ControlBackground}"
+                BorderBrush="{DynamicResource ControlBorder}"
                 BorderThickness="1"
                 CornerRadius="4"
                 Padding="12">
@@ -109,7 +109,7 @@
                 <TextBlock Text="Preview"
                            FontWeight="SemiBold"
                            FontSize="13"
-                           Foreground="{StaticResource ForegroundColor}"
+                           Foreground="{DynamicResource ForegroundColor}"
                            Margin="0,0,0,8"/>
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -126,29 +126,29 @@
 
                     <TextBlock Grid.Row="0" Grid.Column="0"
                                Text="Eligible Activities:"
-                               Foreground="{StaticResource TextColorSecondary}"/>
+                               Foreground="{DynamicResource TextColorSecondary}"/>
                     <TextBlock x:Name="txtEligibleCount"
                                Grid.Row="0" Grid.Column="1"
                                Text="0"
-                               Foreground="{StaticResource ForegroundColor}"
+                               Foreground="{DynamicResource ForegroundColor}"
                                HorizontalAlignment="Right"/>
 
                     <TextBlock Grid.Row="2" Grid.Column="0"
                                Text="Current Total:"
-                               Foreground="{StaticResource TextColorSecondary}"/>
+                               Foreground="{DynamicResource TextColorSecondary}"/>
                     <TextBlock x:Name="txtCurrentTotal"
                                Grid.Row="2" Grid.Column="1"
                                Text="0.000"
-                               Foreground="{StaticResource ForegroundColor}"
+                               Foreground="{DynamicResource ForegroundColor}"
                                HorizontalAlignment="Right"/>
 
                     <TextBlock Grid.Row="4" Grid.Column="0"
                                Text="New Total:"
-                               Foreground="{StaticResource TextColorSecondary}"/>
+                               Foreground="{DynamicResource TextColorSecondary}"/>
                     <TextBlock x:Name="txtNewTotal"
                                Grid.Row="4" Grid.Column="1"
                                Text="0.000"
-                               Foreground="{StaticResource StatusGreen}"
+                               Foreground="{DynamicResource StatusGreen}"
                                FontWeight="SemiBold"
                                HorizontalAlignment="Right"/>
                 </Grid>
@@ -159,7 +159,7 @@
         <TextBlock x:Name="txtSkippedInfo"
                    Grid.Row="8"
                    Text=""
-                   Foreground="{StaticResource TextColorSecondary}"
+                   Foreground="{DynamicResource TextColorSecondary}"
                    FontSize="12"
                    TextWrapping="Wrap"/>
 
@@ -172,9 +172,9 @@
                     Width="80"
                     Height="32"
                     Margin="0,0,10,0"
-                    Background="{StaticResource ControlBackground}"
-                    Foreground="{StaticResource StatusGreen}"
-                    BorderBrush="{StaticResource ControlBorder}"
+                    Background="{DynamicResource ControlBackground}"
+                    Foreground="{DynamicResource StatusGreen}"
+                    BorderBrush="{DynamicResource ControlBorder}"
                     Click="BtnApply_Click"
                     IsEnabled="False"
                     ToolTip="Apply the prorate to eligible activities"/>
@@ -182,9 +182,9 @@
                     Content="Cancel"
                     Width="80"
                     Height="32"
-                    Background="{StaticResource ControlBackground}"
-                    Foreground="{StaticResource ForegroundColor}"
-                    BorderBrush="{StaticResource ControlBorder}"
+                    Background="{DynamicResource ControlBackground}"
+                    Foreground="{DynamicResource ForegroundColor}"
+                    BorderBrush="{DynamicResource ControlBorder}"
                     Click="BtnCancel_Click"
                     ToolTip="Cancel and close the dialog"/>
         </StackPanel>

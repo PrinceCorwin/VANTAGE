@@ -41,6 +41,8 @@ namespace VANTAGE.Views
             // Apply Syncfusion theme to grids only (not entire UserControl) to avoid overriding custom foreground colors
             SfSkinManager.SetTheme(sfScheduleMaster, new Theme(ThemeManager.GetSyncfusionThemeName()));
             SfSkinManager.SetTheme(sfScheduleDetail, new Theme(ThemeManager.GetSyncfusionThemeName()));
+            Loaded += (_, __) => ThemeManager.ThemeChanged += OnThemeChanged;
+            Unloaded += (_, __) => ThemeManager.ThemeChanged -= OnThemeChanged;
 
             _viewModel = new ScheduleViewModel();
             DataContext = _viewModel;
@@ -133,6 +135,17 @@ namespace VANTAGE.Views
             // Wire up copy/paste handlers for detail grid
             sfScheduleDetail.GridCopyContent += SfScheduleDetail_GridCopyContent;
             sfScheduleDetail.GridPasteContent += SfScheduleDetail_GridPasteContent;
+        }
+
+        // Re-apply Syncfusion skin to grids when theme changes
+        private void OnThemeChanged(string themeName)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                var sfTheme = new Theme(ThemeManager.GetSyncfusionThemeName());
+                SfSkinManager.SetTheme(sfScheduleMaster, sfTheme);
+                SfSkinManager.SetTheme(sfScheduleDetail, sfTheme);
+            });
         }
 
         // ========================================

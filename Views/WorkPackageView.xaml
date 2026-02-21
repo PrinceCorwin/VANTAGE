@@ -7,69 +7,25 @@
              xmlns:pdfviewer="clr-namespace:Syncfusion.Windows.PdfViewer;assembly=Syncfusion.PdfViewer.WPF"
              mc:Ignorable="d"
              d:DesignHeight="800" d:DesignWidth="1400"
-             Background="{StaticResource BackgroundColor}">
+             Background="{DynamicResource BackgroundColor}">
 
     <UserControl.Resources>
         <!-- Default TextBlock style for visibility on dark background -->
         <Style TargetType="TextBlock">
-            <Setter Property="Foreground" Value="{StaticResource ForegroundColor}"/>
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
         </Style>
 
         <!-- Default TextBox style matching Admin dialogs -->
         <Style TargetType="TextBox">
             <Setter Property="Height" Value="28"/>
             <Setter Property="FontSize" Value="13"/>
-            <Setter Property="Background" Value="{StaticResource BackgroundColor}"/>
-            <Setter Property="Foreground" Value="{StaticResource ForegroundColor}"/>
-            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}"/>
+            <Setter Property="Background" Value="{DynamicResource BackgroundColor}"/>
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
             <Setter Property="Padding" Value="5,3"/>
         </Style>
 
-
-        <!-- Rounded Button Style -->
-        <Style x:Key="RoundedButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="{StaticResource ControlBackground}"/>
-            <Setter Property="Foreground" Value="{StaticResource ForegroundColor}"/>
-            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="15,8"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="border"
-                                Background="{TemplateBinding Background}"
-                                Padding="{TemplateBinding Padding}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="4">
-                            <ContentPresenter Content="{TemplateBinding Content}"
-                                              HorizontalAlignment="Center"
-                                              VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource AccentColor}"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="{StaticResource ControlBorder}"/>
-                            </Trigger>
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="border" Property="Opacity" Value="0.5"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <!-- Primary Button Style (for Generate button) -->
-        <Style x:Key="PrimaryButtonStyle" TargetType="Button" BasedOn="{StaticResource RoundedButtonStyle}">
-            <Setter Property="Background" Value="{StaticResource AccentColor}"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Padding" Value="20,10"/>
-        </Style>
+        <!-- RoundedButtonStyle and PrimaryButtonStyle loaded from Themes/SharedStyles.xaml -->
     </UserControl.Resources>
 
     <Grid>
@@ -80,7 +36,7 @@
         </Grid.RowDefinitions>
 
         <!-- Header Bar -->
-        <Border Grid.Row="0" Background="{StaticResource ControlBackground}" Padding="15,10">
+        <Border Grid.Row="0" Background="{DynamicResource ControlBackground}" Padding="15,10">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -92,7 +48,7 @@
                            Text="Work Packages"
                            FontSize="18"
                            FontWeight="Bold"
-                           Foreground="{StaticResource ForegroundColor}"
+                           Foreground="{DynamicResource ForegroundColor}"
                            VerticalAlignment="Center"/>
 
                 <!-- Import/Export Buttons -->
@@ -121,7 +77,7 @@
             <!-- Left Panel - Tabs -->
             <TabControl x:Name="MainTabControl"
                         Grid.Column="0"
-                        Background="{StaticResource BackgroundColor}"
+                        Background="{DynamicResource BackgroundColor}"
                         BorderThickness="0"
                         Padding="10"
                         SelectionChanged="MainTabControl_SelectionChanged">
@@ -233,7 +189,7 @@
                             </Grid>
 
                             <!-- Drawings Section - Hidden for v1 (per-WP location architecture needs design) -->
-                            <Border BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,15"
+                            <Border BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,15"
                                     Visibility="Collapsed">
                                 <StackPanel>
                                     <TextBlock Text="Drawings" FontWeight="Bold" Margin="0,0,0,10"/>
@@ -245,13 +201,13 @@
                                                      GroupName="DrawingsSource"
                                                      IsChecked="True"
                                                      Checked="RbDrawingsSource_Checked"
-                                                     Foreground="{StaticResource ForegroundColor}"
+                                                     Foreground="{DynamicResource ForegroundColor}"
                                                      Margin="0,0,20,0"/>
                                         <RadioButton x:Name="rbDrawingsProcore"
                                                      Content="Procore"
                                                      GroupName="DrawingsSource"
                                                      Checked="RbDrawingsSource_Checked"
-                                                     Foreground="{StaticResource ForegroundColor}"/>
+                                                     Foreground="{DynamicResource ForegroundColor}"/>
                                     </StackPanel>
 
                                     <!-- Local Folder Panel -->
@@ -273,7 +229,7 @@
                                         <TextBlock Text="Use {WorkPackage} token for dynamic paths"
                                                    FontSize="11"
                                                    FontStyle="Italic"
-                                                   Foreground="{StaticResource TextColorSecondary}"
+                                                   Foreground="{DynamicResource TextColorSecondary}"
                                                    Margin="0,3,0,0"/>
                                     </StackPanel>
 
@@ -281,7 +237,7 @@
                                     <StackPanel x:Name="pnlDrawingsProcore" Visibility="Collapsed" Margin="0,0,0,10">
                                         <TextBlock Text="Procore drawings will be fetched based on selected work packages"
                                                    FontStyle="Italic"
-                                                   Foreground="{StaticResource TextColorSecondary}"
+                                                   Foreground="{DynamicResource TextColorSecondary}"
                                                    TextWrapping="Wrap"/>
                                     </StackPanel>
 
@@ -306,7 +262,7 @@
                                                Text="Select work packages above to see drawings"
                                                FontSize="11"
                                                FontStyle="Italic"
-                                               Foreground="{StaticResource TextColorSecondary}"
+                                               Foreground="{DynamicResource TextColorSecondary}"
                                                Margin="0,3,0,0"/>
 
                                     <!-- Fetch Button -->
@@ -334,7 +290,7 @@
                                 <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
                                     <CheckBox x:Name="chkIndividualPdfs"
                                               Content="Also output individual form PDFs"
-                                              Foreground="{StaticResource ForegroundColor}"
+                                              Foreground="{DynamicResource ForegroundColor}"
                                               VerticalAlignment="Center"
                                               Margin="0,0,15,0"
                                               ToolTip="Save each form as a separate PDF in addition to the merged document"/>
@@ -390,7 +346,7 @@
                                                                Label="+ Add Form"
                                                                Padding="0"
                                                                Background="Transparent"
-                                                               Foreground="{StaticResource ForegroundColor}"
+                                                               Foreground="{DynamicResource ForegroundColor}"
                                                                BorderThickness="0"
                                                                IconTemplate="{x:Null}"
                                                                SmallIcon="{x:Null}"
@@ -399,9 +355,9 @@
                                                                SizeMode="Normal"
                                                                ToolTip="Add a form to this work package template">
                                     <syncfusion:DropDownMenuGroup x:Name="menuAddFormGroup"
-                                                                   Background="{StaticResource ControlBackground}"
-                                                                   Foreground="{StaticResource ForegroundColor}"
-                                                                   BorderBrush="{StaticResource BorderColor}"/>
+                                                                   Background="{DynamicResource ControlBackground}"
+                                                                   Foreground="{DynamicResource ForegroundColor}"
+                                                                   BorderBrush="{DynamicResource BorderColor}"/>
                                 </syncfusion:DropDownButtonAdv>
                             </Grid>
                             <Grid Margin="0,0,0,15">
@@ -451,7 +407,7 @@
                                     <TextBlock x:Name="lblFormTemplateType"
                                                FontSize="14"
                                                VerticalAlignment="Center"
-                                               Foreground="{StaticResource TextColorSecondary}"/>
+                                               Foreground="{DynamicResource TextColorSecondary}"/>
                                 </StackPanel>
                             </Grid>
 
@@ -487,12 +443,12 @@
             <GridSplitter Grid.Column="1"
                           Width="5"
                           HorizontalAlignment="Stretch"
-                          Background="{StaticResource BorderColor}"
+                          Background="{DynamicResource BorderColor}"
                           Cursor="SizeWE"
                           DragCompleted="GridSplitter_DragCompleted"/>
 
             <!-- Right Panel - Preview -->
-            <Grid Grid.Column="2" Background="{StaticResource ControlBackground}">
+            <Grid Grid.Column="2" Background="{DynamicResource ControlBackground}">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
@@ -500,7 +456,7 @@
                 </Grid.RowDefinitions>
 
                 <!-- Preview Header -->
-                <Border Grid.Row="0" Background="{StaticResource BackgroundColor}" Padding="10">
+                <Border Grid.Row="0" Background="{DynamicResource BackgroundColor}" Padding="10">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -511,7 +467,7 @@
                                    Grid.Column="0"
                                    Text=""
                                    FontStyle="Italic"
-                                   Foreground="{StaticResource TextColorSecondary}"
+                                   Foreground="{DynamicResource TextColorSecondary}"
                                    HorizontalAlignment="Right"
                                    VerticalAlignment="Center"
                                    Margin="0,0,10,0"/>
@@ -522,15 +478,15 @@
                 <Grid Grid.Row="1" Margin="5">
                     <!-- Placeholder shown when no PDF loaded -->
                     <Border x:Name="pdfPlaceholderBorder"
-                            Background="{StaticResource ControlBackground}"
-                            BorderBrush="{StaticResource BorderColor}"
+                            Background="{DynamicResource ControlBackground}"
+                            BorderBrush="{DynamicResource BorderColor}"
                             BorderThickness="1">
                         <TextBlock x:Name="pdfPlaceholder"
                                    Text="PDF Preview Area&#x0a;&#x0a;Click 'Refresh Preview' to generate"
                                    HorizontalAlignment="Center"
                                    VerticalAlignment="Center"
                                    TextAlignment="Center"
-                                   Foreground="{StaticResource TextColorSecondary}"
+                                   Foreground="{DynamicResource TextColorSecondary}"
                                    FontStyle="Italic"/>
                     </Border>
                     <!-- Actual PDF Viewer -->
@@ -540,7 +496,7 @@
                 </Grid>
 
                 <!-- Refresh Button -->
-                <Border Grid.Row="2" Background="{StaticResource BackgroundColor}" Padding="10">
+                <Border Grid.Row="2" Background="{DynamicResource BackgroundColor}" Padding="10">
                     <Button x:Name="btnRefreshPreview"
                             Content="Refresh Preview"
                             Style="{StaticResource RoundedButtonStyle}"
@@ -551,10 +507,10 @@
         </Grid>
 
         <!-- Status Bar -->
-        <Border Grid.Row="2" Background="{StaticResource ControlBackground}" Padding="10,5">
+        <Border Grid.Row="2" Background="{DynamicResource ControlBackground}" Padding="10,5">
             <TextBlock x:Name="lblStatus"
                        Text="Ready"
-                       Foreground="{StaticResource TextColorSecondary}"/>
+                       Foreground="{DynamicResource TextColorSecondary}"/>
         </Border>
     </Grid>
 </UserControl>

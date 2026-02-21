@@ -25,7 +25,7 @@ namespace VANTAGE.Dialogs
             _initialized = true;
         }
 
-        // Save selected theme when a radio button is checked
+        // Apply and save selected theme when a radio button is checked
         private void RbTheme_Checked(object sender, RoutedEventArgs e)
         {
             if (!_initialized) return;
@@ -33,10 +33,13 @@ namespace VANTAGE.Dialogs
             string selectedTheme = rbOrchid.IsChecked == true ? "Orchid"
                 : rbLight.IsChecked == true ? "Light" : "Dark";
 
-            // Only save if the theme actually changed
             if (selectedTheme != ThemeManager.CurrentTheme)
             {
+                ThemeManager.ApplyTheme(selectedTheme);
                 ThemeManager.SaveTheme(selectedTheme);
+
+                // Re-apply Syncfusion skin to this dialog after dictionary swap
+                SfSkinManager.SetTheme(this, new Theme(ThemeManager.GetSyncfusionThemeName()));
             }
         }
 

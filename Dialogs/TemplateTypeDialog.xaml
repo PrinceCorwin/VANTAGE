@@ -5,7 +5,7 @@
         Height="328"
         Width="350"
         WindowStartupLocation="CenterOwner"
-        Background="{StaticResource BackgroundColor}"
+        Background="{DynamicResource BackgroundColor}"
         ResizeMode="NoResize"
         WindowStyle="SingleBorderWindow">
 
@@ -21,7 +21,7 @@
         <!-- Header -->
         <TextBlock Grid.Row="0"
                    Text="Select the type of form template to create:"
-                   Foreground="{StaticResource ForegroundColor}"
+                   Foreground="{DynamicResource ForegroundColor}"
                    FontSize="13"/>
 
         <!-- Type buttons -->
@@ -29,9 +29,9 @@
             <Button Content="Cover - Title page with image"
                     Height="32"
                     Margin="0,0,0,8"
-                    Background="{StaticResource ControlBackground}"
-                    Foreground="{StaticResource ForegroundColor}"
-                    BorderBrush="{StaticResource ControlBorder}"
+                    Background="{DynamicResource ControlBackground}"
+                    Foreground="{DynamicResource ForegroundColor}"
+                    BorderBrush="{DynamicResource ControlBorder}"
                     HorizontalContentAlignment="Left"
                     Padding="12,0"
                     Click="BtnCover_Click"
@@ -40,9 +40,9 @@
             <Button Content="List - Bulleted text items"
                     Height="32"
                     Margin="0,0,0,8"
-                    Background="{StaticResource ControlBackground}"
-                    Foreground="{StaticResource ForegroundColor}"
-                    BorderBrush="{StaticResource ControlBorder}"
+                    Background="{DynamicResource ControlBackground}"
+                    Foreground="{DynamicResource ForegroundColor}"
+                    BorderBrush="{DynamicResource ControlBorder}"
                     HorizontalContentAlignment="Left"
                     Padding="12,0"
                     Click="BtnList_Click"
@@ -51,9 +51,9 @@
             <Button Content="Grid - Empty rows for data entry"
                     Height="32"
                     Margin="0,0,0,8"
-                    Background="{StaticResource ControlBackground}"
-                    Foreground="{StaticResource ForegroundColor}"
-                    BorderBrush="{StaticResource ControlBorder}"
+                    Background="{DynamicResource ControlBackground}"
+                    Foreground="{DynamicResource ForegroundColor}"
+                    BorderBrush="{DynamicResource ControlBorder}"
                     HorizontalContentAlignment="Left"
                     Padding="12,0"
                     Click="BtnGrid_Click"
@@ -62,9 +62,9 @@
             <Button Content="Form - Sections with labeled items"
                     Height="32"
                     Margin="0,0,0,8"
-                    Background="{StaticResource ControlBackground}"
-                    Foreground="{StaticResource ForegroundColor}"
-                    BorderBrush="{StaticResource ControlBorder}"
+                    Background="{DynamicResource ControlBackground}"
+                    Foreground="{DynamicResource ForegroundColor}"
+                    BorderBrush="{DynamicResource ControlBorder}"
                     HorizontalContentAlignment="Left"
                     Padding="12,0"
                     Click="BtnForm_Click"
@@ -77,9 +77,9 @@
                 Width="80"
                 Height="32"
                 HorizontalAlignment="Right"
-                Background="{StaticResource ControlBackground}"
-                Foreground="{StaticResource ForegroundColor}"
-                BorderBrush="{StaticResource ControlBorder}"
+                Background="{DynamicResource ControlBackground}"
+                Foreground="{DynamicResource ForegroundColor}"
+                BorderBrush="{DynamicResource ControlBorder}"
                 IsCancel="True"/>
     </Grid>
 </Window>

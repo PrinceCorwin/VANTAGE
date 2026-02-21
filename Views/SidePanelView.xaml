@@ -2,7 +2,7 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
-             Background="{StaticResource ControlBackground}">
+             Background="{DynamicResource ControlBackground}">
 
     <Grid>
         <Grid.RowDefinitions>
@@ -14,8 +14,8 @@
 
         <!-- Header with tabs and close button -->
         <Border Grid.Row="0" 
-                Background="{StaticResource DarkestBackgroundColor}" 
-                BorderBrush="{StaticResource BorderColor}"
+                Background="{DynamicResource DarkestBackgroundColor}" 
+                BorderBrush="{DynamicResource BorderColor}"
                 BorderThickness="0,0,0,1"
                 Padding="10,8">
             <Grid>
@@ -30,7 +30,7 @@
                             Content="Help"
                             Padding="15,6"
                             Margin="0,0,5,0"
-                            Background="{StaticResource AccentColor}"
+                            Background="{DynamicResource AccentColor}"
                             Foreground="White"
                             BorderThickness="0"
                             FontWeight="SemiBold"
@@ -40,8 +40,8 @@
                             Content="AI Assistant"
                             Padding="15,6"
                             Background="Transparent"
-                            Foreground="{StaticResource ForegroundColor}"
-                            BorderBrush="{StaticResource BorderColor}"
+                            Foreground="{DynamicResource ForegroundColor}"
+                            BorderBrush="{DynamicResource BorderColor}"
                             BorderThickness="1"
                             Click="BtnAiTab_Click"
                             Cursor="Hand"/>
@@ -53,7 +53,7 @@
                         Width="30"
                         Height="30"
                         Background="Transparent"
-                        Foreground="{StaticResource ForegroundColor}"
+                        Foreground="{DynamicResource ForegroundColor}"
                         BorderThickness="0"
                         FontSize="14"
                         Click="BtnClose_Click"
@@ -64,39 +64,39 @@
 
         <!-- Action Buttons Row -->
         <Border Grid.Row="1"
-                Background="{StaticResource BackgroundColor}"
-                BorderBrush="{StaticResource BorderColor}"
+                Background="{DynamicResource BackgroundColor}"
+                BorderBrush="{DynamicResource BorderColor}"
                 BorderThickness="0,0,0,1"
                 Padding="10,6">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                 <TextBlock x:Name="btnBackToTop"
                            Text="Back to Top"
                            FontSize="12"
-                           Foreground="{StaticResource AccentColor}"
+                           Foreground="{DynamicResource AccentColor}"
                            Cursor="Hand"
                            Margin="0,0,16,0"
                            MouseLeftButtonUp="BtnBackToTop_Click"
                            ToolTip="Scroll to top of help content"/>
                 <TextBlock Text="│"
                            FontSize="12"
-                           Foreground="{StaticResource BorderColor}"
+                           Foreground="{DynamicResource BorderColor}"
                            Margin="0,0,16,0"/>
                 <TextBlock x:Name="btnPrintPdf"
                            Text="Print PDF"
                            FontSize="12"
-                           Foreground="{StaticResource AccentColor}"
+                           Foreground="{DynamicResource AccentColor}"
                            Cursor="Hand"
                            Margin="0,0,16,0"
                            MouseLeftButtonUp="BtnPrintPdf_Click"
                            ToolTip="Print help content to PDF"/>
                 <TextBlock Text="│"
                            FontSize="12"
-                           Foreground="{StaticResource BorderColor}"
+                           Foreground="{DynamicResource BorderColor}"
                            Margin="0,0,16,0"/>
                 <TextBlock x:Name="btnViewInBrowser"
                            Text="View in Browser"
                            FontSize="12"
-                           Foreground="{StaticResource AccentColor}"
+                           Foreground="{DynamicResource AccentColor}"
                            Cursor="Hand"
                            MouseLeftButtonUp="BtnViewInBrowser_Click"
                            ToolTip="Open help in default web browser"/>
@@ -106,8 +106,8 @@
         <!-- Search Field (Help tab only) -->
         <Border x:Name="searchFieldRow"
                 Grid.Row="2"
-                Background="{StaticResource ControlBackground}"
-                BorderBrush="{StaticResource BorderColor}"
+                Background="{DynamicResource ControlBackground}"
+                BorderBrush="{DynamicResource BorderColor}"
                 BorderThickness="0,0,0,1"
                 Padding="8,6"
                 Visibility="Visible">
@@ -124,9 +124,9 @@
                     <TextBox x:Name="txtSearch"
                              Padding="6,4,24,4"
                              FontSize="12"
-                             Background="{StaticResource DarkestBackgroundColor}"
-                             Foreground="{StaticResource ForegroundColor}"
-                             BorderBrush="{StaticResource BorderColor}"
+                             Background="{DynamicResource DarkestBackgroundColor}"
+                             Foreground="{DynamicResource ForegroundColor}"
+                             BorderBrush="{DynamicResource BorderColor}"
                              BorderThickness="1"
                              VerticalContentAlignment="Center"
                              TextChanged="TxtSearch_TextChanged"
@@ -137,7 +137,7 @@
                                Text="Search..."
                                FontSize="12"
                                FontStyle="Italic"
-                               Foreground="#666666"
+                               Foreground="{DynamicResource TextColorSecondary}"
                                VerticalAlignment="Center"
                                Margin="8,0,0,0"
                                IsHitTestVisible="False">
@@ -162,7 +162,7 @@
                             VerticalAlignment="Center"
                             Margin="0,0,4,0"
                             Background="Transparent"
-                            Foreground="{StaticResource TextColorSecondary}"
+                            Foreground="{DynamicResource TextColorSecondary}"
                             BorderThickness="0"
                             FontSize="10"
                             Cursor="Hand"
@@ -191,8 +191,8 @@
                         Padding="0"
                         Click="BtnSearchPrev_Click"
                         Background="Transparent"
-                        Foreground="{StaticResource ForegroundColor}"
-                        BorderBrush="{StaticResource BorderColor}"
+                        Foreground="{DynamicResource ForegroundColor}"
+                        BorderBrush="{DynamicResource BorderColor}"
                         BorderThickness="1"
                         FontSize="14"
                         FontWeight="Bold"
@@ -213,8 +213,8 @@
                         Padding="0"
                         Click="BtnSearchNext_Click"
                         Background="Transparent"
-                        Foreground="{StaticResource ForegroundColor}"
-                        BorderBrush="{StaticResource BorderColor}"
+                        Foreground="{DynamicResource ForegroundColor}"
+                        BorderBrush="{DynamicResource BorderColor}"
                         BorderThickness="1"
                         FontSize="14"
                         FontWeight="Bold"
@@ -230,7 +230,7 @@
                            Grid.Column="3"
                            Text=""
                            FontSize="11"
-                           Foreground="{StaticResource ForegroundColor}"
+                           Foreground="{DynamicResource ForegroundColor}"
                            VerticalAlignment="Center"
                            Margin="8,0,0,0"
                            MinWidth="50"/>
@@ -244,13 +244,13 @@
 
             <!-- Loading/Error overlay -->
             <Border x:Name="helpOverlay"
-                    Background="{StaticResource ControlBackground}"
+                    Background="{DynamicResource ControlBackground}"
                     Visibility="Collapsed">
                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
                     <TextBlock x:Name="txtHelpStatus"
                                Text="Loading help..."
                                FontSize="14"
-                               Foreground="{StaticResource ForegroundColor}"
+                               Foreground="{DynamicResource ForegroundColor}"
                                HorizontalAlignment="Center"/>
                 </StackPanel>
             </Border>
@@ -258,18 +258,18 @@
 
         <!-- AI Content (placeholder) -->
         <Grid x:Name="gridAiContent" Grid.Row="3" Visibility="Collapsed">
-            <Border Background="{StaticResource ControlBackground}"
+            <Border Background="{DynamicResource ControlBackground}"
                     Padding="20">
                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
                     <TextBlock Text="AI Assistant"
                                FontSize="18"
                                FontWeight="SemiBold"
-                               Foreground="{StaticResource ForegroundColor}"
+                               Foreground="{DynamicResource ForegroundColor}"
                                HorizontalAlignment="Center"
                                Margin="0,0,0,10"/>
                     <TextBlock Text="Coming soon..."
                                FontSize="13"
-                               Foreground="{StaticResource ForegroundColor}"
+                               Foreground="{DynamicResource ForegroundColor}"
                                Opacity="0.6"
                                HorizontalAlignment="Center"/>
                 </StackPanel>

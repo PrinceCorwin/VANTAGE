@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
              xmlns:converters="clr-namespace:VANTAGE.Converters"
-             Background="{StaticResource BackgroundColor}">
+             Background="{DynamicResource BackgroundColor}">
 
     <UserControl.Resources>
         <!-- Converters for progress bar cells -->
@@ -12,9 +12,9 @@
 
         <!-- Filter Button Style with Visual Feedback -->
         <Style x:Key="FilterToggleButtonStyle" TargetType="ToggleButton">
-            <Setter Property="Background" Value="{StaticResource ControlBackground}"/>
-            <Setter Property="Foreground" Value="{StaticResource ForegroundColor}"/>
-            <Setter Property="BorderBrush" Value="{StaticResource ControlBorder}"/>
+            <Setter Property="Background" Value="{DynamicResource ControlBackground}"/>
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource ControlBorder}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="FontSize" Value="11"/>
             <Setter Property="Height" Value="32"/>
@@ -43,16 +43,16 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="{StaticResource ControlHoverBackground}"/>
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource ControlHoverBackground}"/>
                                 <Setter Property="Foreground" Value="{DynamicResource ButtonHoverForeground}"/>
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="{StaticResource AccentColor}"/>
-                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource AccentColor}"/>
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource ToggleCheckedBackground}"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource ToggleCheckedBackground}"/>
                                 <Setter Property="Foreground" Value="White"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="{StaticResource ControlPressedBackground}"/>
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource ControlPressedBackground}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -62,9 +62,9 @@
 
         <!-- Filter toggle for buttons with colored backgrounds (Required Fields) -->
         <Style x:Key="ActionFilterToggleStyle" TargetType="ToggleButton">
-            <Setter Property="Background" Value="{StaticResource StatusRedBg}"/>
-            <Setter Property="Foreground" Value="{StaticResource ActionFilterForeground}"/>
-            <Setter Property="BorderBrush" Value="{StaticResource ControlBorder}"/>
+            <Setter Property="Background" Value="{DynamicResource StatusRedBg}"/>
+            <Setter Property="Foreground" Value="{DynamicResource ActionFilterForeground}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource ControlBorder}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="FontSize" Value="11"/>
             <Setter Property="Height" Value="32"/>
@@ -92,16 +92,16 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="{StaticResource ControlHoverBackground}"/>
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource ControlHoverBackground}"/>
                                 <Setter Property="Foreground" Value="{DynamicResource ButtonHoverForeground}"/>
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="{StaticResource AccentColor}"/>
-                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource AccentColor}"/>
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource ToggleCheckedBackground}"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource ToggleCheckedBackground}"/>
                                 <Setter Property="Foreground" Value="White"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="{StaticResource ControlPressedBackground}"/>
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource ControlPressedBackground}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -111,7 +111,7 @@
 
         <!-- GridSplitter Style for Fluent Dark theme -->
         <Style x:Key="HorizontalGridSplitterStyle" TargetType="GridSplitter">
-            <Setter Property="Background" Value="{StaticResource ControlBorder}"/>
+            <Setter Property="Background" Value="{DynamicResource ControlBorder}"/>
             <Setter Property="HorizontalAlignment" Value="Stretch"/>
             <Setter Property="VerticalAlignment" Value="Stretch"/>
             <Setter Property="Cursor" Value="SizeNS"/>
@@ -119,19 +119,19 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="GridSplitter">
                         <Border Background="{TemplateBinding Background}"
-                                BorderBrush="{StaticResource ControlBorder}"
+                                BorderBrush="{DynamicResource ControlBorder}"
                                 BorderThickness="0,1">
                             <StackPanel Orientation="Horizontal"
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Center">
-                                <Ellipse Width="3" Height="3" Fill="{StaticResource SplitterDots}" Margin="2,0"/>
-                                <Ellipse Width="3" Height="3" Fill="{StaticResource SplitterDots}" Margin="2,0"/>
-                                <Ellipse Width="3" Height="3" Fill="{StaticResource SplitterDots}" Margin="2,0"/>
+                                <Ellipse Width="3" Height="3" Fill="{DynamicResource SplitterDots}" Margin="2,0"/>
+                                <Ellipse Width="3" Height="3" Fill="{DynamicResource SplitterDots}" Margin="2,0"/>
+                                <Ellipse Width="3" Height="3" Fill="{DynamicResource SplitterDots}" Margin="2,0"/>
                             </StackPanel>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="{StaticResource AccentColor}"/>
+                                <Setter Property="Background" Value="{DynamicResource AccentColor}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -143,7 +143,7 @@
         <Style TargetType="syncfusion:GridCell">
             <Setter Property="BorderThickness" Value="0,0,0.5,0.5"/>
             <Setter Property="Padding" Value="4,0,4,0"/>
-            <Setter Property="Foreground" Value="{StaticResource ForegroundColor}"/>
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
         </Style>
 
         <!-- Required field styles (red background when field needs attention) -->
@@ -152,7 +152,7 @@
         <Style x:Key="MissedStartReasonRequiredStyle" TargetType="syncfusion:GridCell" BasedOn="{StaticResource {x:Type syncfusion:GridCell}}">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=IsMissedStartReasonRequired}" Value="True">
-                    <Setter Property="Background" Value="{StaticResource StatusRedBg}"/>
+                    <Setter Property="Background" Value="{DynamicResource StatusRedBg}"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
@@ -160,7 +160,7 @@
         <Style x:Key="MissedFinishReasonRequiredStyle" TargetType="syncfusion:GridCell" BasedOn="{StaticResource {x:Type syncfusion:GridCell}}">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=IsMissedFinishReasonRequired}" Value="True">
-                    <Setter Property="Background" Value="{StaticResource StatusRedBg}"/>
+                    <Setter Property="Background" Value="{DynamicResource StatusRedBg}"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
@@ -169,12 +169,12 @@
             <Style.Triggers>
                 <!-- Yellow for forecast different from P6 (lower priority) -->
                 <DataTrigger Binding="{Binding Path=HasThreeWeekStartForecast}" Value="True">
-                    <Setter Property="Background" Value="{StaticResource StatusYellowBg}"/>
-                    <Setter Property="Foreground" Value="{StaticResource StatusYellowFg}"/>
+                    <Setter Property="Background" Value="{DynamicResource StatusYellowBg}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource StatusYellowFg}"/>
                 </DataTrigger>
                 <!-- Red for required field (higher priority - must come after yellow) -->
                 <DataTrigger Binding="{Binding Path=IsThreeWeekStartRequired}" Value="True">
-                    <Setter Property="Background" Value="{StaticResource StatusRedBg}"/>
+                    <Setter Property="Background" Value="{DynamicResource StatusRedBg}"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
@@ -183,12 +183,12 @@
             <Style.Triggers>
                 <!-- Yellow for forecast different from P6 (lower priority) -->
                 <DataTrigger Binding="{Binding Path=HasThreeWeekFinishForecast}" Value="True">
-                    <Setter Property="Background" Value="{StaticResource StatusYellowBg}"/>
-                    <Setter Property="Foreground" Value="{StaticResource StatusYellowFg}"/>
+                    <Setter Property="Background" Value="{DynamicResource StatusYellowBg}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource StatusYellowFg}"/>
                 </DataTrigger>
                 <!-- Red for required field (higher priority - must come after yellow) -->
                 <DataTrigger Binding="{Binding Path=IsThreeWeekFinishRequired}" Value="True">
-                    <Setter Property="Background" Value="{StaticResource StatusRedBg}"/>
+                    <Setter Property="Background" Value="{DynamicResource StatusRedBg}"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
@@ -196,8 +196,8 @@
         <Style x:Key="MSStartVarianceStyle" TargetType="syncfusion:GridCell" BasedOn="{StaticResource {x:Type syncfusion:GridCell}}">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=HasStartVariance}" Value="True">
-                    <Setter Property="Background" Value="{StaticResource StatusYellowBg}"/>
-                    <Setter Property="Foreground" Value="{StaticResource StatusYellowFg}"/>
+                    <Setter Property="Background" Value="{DynamicResource StatusYellowBg}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource StatusYellowFg}"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
@@ -205,8 +205,8 @@
         <Style x:Key="MSFinishVarianceStyle" TargetType="syncfusion:GridCell" BasedOn="{StaticResource {x:Type syncfusion:GridCell}}">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=HasFinishVariance}" Value="True">
-                    <Setter Property="Background" Value="{StaticResource StatusYellowBg}"/>
-                    <Setter Property="Foreground" Value="{StaticResource StatusYellowFg}"/>
+                    <Setter Property="Background" Value="{DynamicResource StatusYellowBg}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource StatusYellowFg}"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
@@ -214,8 +214,8 @@
         <Style x:Key="MSBudgetMHsVarianceStyle" TargetType="syncfusion:GridCell" BasedOn="{StaticResource {x:Type syncfusion:GridCell}}">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=HasBudgetMHsVariance}" Value="True">
-                    <Setter Property="Background" Value="{StaticResource StatusYellowBg}"/>
-                    <Setter Property="Foreground" Value="{StaticResource StatusYellowFg}"/>
+                    <Setter Property="Background" Value="{DynamicResource StatusYellowBg}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource StatusYellowFg}"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
@@ -223,8 +223,8 @@
         <Style x:Key="MSPercentCompleteVarianceStyle" TargetType="syncfusion:GridCell" BasedOn="{StaticResource {x:Type syncfusion:GridCell}}">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=HasPercentCompleteVariance}" Value="True">
-                    <Setter Property="Background" Value="{StaticResource StatusYellowBg}"/>
-                    <Setter Property="Foreground" Value="{StaticResource StatusYellowFg}"/>
+                    <Setter Property="Background" Value="{DynamicResource StatusYellowBg}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource StatusYellowFg}"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
@@ -240,8 +240,8 @@
 
         <!-- TOOLBAR -->
         <Border Grid.Row="0"
-                Background="{StaticResource ToolbarBackground}"
-                BorderBrush="{StaticResource ControlBorder}"
+                Background="{DynamicResource ToolbarBackground}"
+                BorderBrush="{DynamicResource ControlBorder}"
                 BorderThickness="0,0,0,1"
                 Height="50">
             <StackPanel Orientation="Horizontal" 
@@ -250,7 +250,7 @@
 
                 <TextBlock x:Name="txtWeekEndDate"
                        VerticalAlignment="Center"
-                       Foreground="{StaticResource ForegroundColor}"
+                       Foreground="{DynamicResource ForegroundColor}"
                        Margin="0,0,60,0">
                 <Run Text="Week Ending: "/>
                 <Run Text="{Binding SelectedWeekEndDate, StringFormat='MM-dd-yyyy', TargetNullValue='(No schedule loaded)'}"/>
@@ -260,8 +260,8 @@
                         Content="Refresh"
                         Width="80"
                         Height="32"
-                        Background="{StaticResource ControlBackground}"
-                        BorderBrush="{StaticResource ControlBorder}"
+                        Background="{DynamicResource ControlBackground}"
+                        BorderBrush="{DynamicResource ControlBorder}"
                         BorderThickness="1"
                         FontSize="11"
                         Click="btnRefresh_Click"
@@ -279,17 +279,17 @@
                                     Background="{TemplateBinding Background}"
                                     BorderBrush="{TemplateBinding BorderBrush}"
                                     BorderThickness="{TemplateBinding BorderThickness}"
-                                    TextElement.Foreground="{StaticResource ForegroundColor}"
+                                    TextElement.Foreground="{DynamicResource ForegroundColor}"
                                     CornerRadius="3">
                                 <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Border>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter TargetName="border" Property="Background" Value="{StaticResource ControlHoverBackground}"/>
+                                    <Setter TargetName="border" Property="Background" Value="{DynamicResource ControlHoverBackground}"/>
                                     <Setter TargetName="border" Property="TextElement.Foreground" Value="{DynamicResource ButtonHoverForeground}"/>
                                 </Trigger>
                                 <Trigger Property="IsPressed" Value="True">
-                                    <Setter TargetName="border" Property="Background" Value="{StaticResource ControlPressedBackground}"/>
+                                    <Setter TargetName="border" Property="Background" Value="{DynamicResource ControlPressedBackground}"/>
                                 </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
@@ -325,7 +325,7 @@
                              ToolTip="Show activities missing required field values"/>
 
                 <!-- Separator -->
-                <Border Width="1" Background="{StaticResource ControlBorder}" Margin="15,6,15,6"/>
+                <Border Width="1" Background="{DynamicResource ControlBorder}" Margin="15,6,15,6"/>
 
                 <Button x:Name="btnFilterDiscrepancies"
                         Height="32"
@@ -339,9 +339,9 @@
                     </Button.Effect>
                     <Button.Style>
                         <Style TargetType="Button">
-                            <Setter Property="Background" Value="{StaticResource ControlBackground}"/>
-                            <Setter Property="Foreground" Value="{StaticResource ForegroundColor}"/>
-                            <Setter Property="BorderBrush" Value="{StaticResource ControlBorder}"/>
+                            <Setter Property="Background" Value="{DynamicResource ControlBackground}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
+                            <Setter Property="BorderBrush" Value="{DynamicResource ControlBorder}"/>
                             <Setter Property="BorderThickness" Value="1"/>
                             <Setter Property="Template">
                                 <Setter.Value>
@@ -356,11 +356,11 @@
                                         </Border>
                                         <ControlTemplate.Triggers>
                                             <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter TargetName="border" Property="Background" Value="{StaticResource ControlHoverBackground}"/>
+                                                <Setter TargetName="border" Property="Background" Value="{DynamicResource ControlHoverBackground}"/>
                                                 <Setter Property="Foreground" Value="{DynamicResource ButtonHoverForeground}"/>
                                             </Trigger>
                                             <Trigger Property="IsPressed" Value="True">
-                                                <Setter TargetName="border" Property="Background" Value="{StaticResource ControlPressedBackground}"/>
+                                                <Setter TargetName="border" Property="Background" Value="{DynamicResource ControlPressedBackground}"/>
                                             </Trigger>
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
@@ -374,38 +374,38 @@
                     </StackPanel>
                     <Button.ContextMenu>
                         <ContextMenu x:Name="ctxDiscrepancies"
-                                     Background="{StaticResource ControlBackground}"
-                                     Foreground="{StaticResource ForegroundColor}"
-                                     BorderBrush="{StaticResource ControlBorder}"
+                                     Background="{DynamicResource ControlBackground}"
+                                     Foreground="{DynamicResource ForegroundColor}"
+                                     BorderBrush="{DynamicResource ControlBorder}"
                                      BorderThickness="1">
                             <MenuItem Header="Clear Filter" Click="FilterDiscrepancy_Clear_Click"
-                                      Background="{StaticResource ControlBackground}"
-                                      Foreground="{StaticResource ForegroundColor}"/>
+                                      Background="{DynamicResource ControlBackground}"
+                                      Foreground="{DynamicResource ForegroundColor}"/>
                             <MenuItem Header="Actual Start" Click="FilterDiscrepancy_Start_Click"
-                                      Background="{StaticResource ControlBackground}"
-                                      Foreground="{StaticResource ForegroundColor}"/>
+                                      Background="{DynamicResource ControlBackground}"
+                                      Foreground="{DynamicResource ForegroundColor}"/>
                             <MenuItem Header="Actual Finish" Click="FilterDiscrepancy_Finish_Click"
-                                      Background="{StaticResource ControlBackground}"
-                                      Foreground="{StaticResource ForegroundColor}"/>
+                                      Background="{DynamicResource ControlBackground}"
+                                      Foreground="{DynamicResource ForegroundColor}"/>
                             <MenuItem Header="MHs" Click="FilterDiscrepancy_MHs_Click"
-                                      Background="{StaticResource ControlBackground}"
-                                      Foreground="{StaticResource ForegroundColor}"/>
+                                      Background="{DynamicResource ControlBackground}"
+                                      Foreground="{DynamicResource ForegroundColor}"/>
                             <MenuItem Header="% Complete" Click="FilterDiscrepancy_Percent_Click"
-                                      Background="{StaticResource ControlBackground}"
-                                      Foreground="{StaticResource ForegroundColor}"/>
+                                      Background="{DynamicResource ControlBackground}"
+                                      Foreground="{DynamicResource ForegroundColor}"/>
                         </ContextMenu>
                     </Button.ContextMenu>
                 </Button>
 
                 <!-- Separator -->
-                <Border Width="1" Background="{StaticResource ControlBorder}" Margin="15,6,15,6"/>
+                <Border Width="1" Background="{DynamicResource ControlBorder}" Margin="15,6,15,6"/>
 
                 <Button x:Name="btnClearFilters"
                         Content="Clear Filters"
                         Width="90"
                         Height="32"
-                        Background="{StaticResource ControlBackground}"
-                        BorderBrush="{StaticResource ControlBorder}"
+                        Background="{DynamicResource ControlBackground}"
+                        BorderBrush="{DynamicResource ControlBorder}"
                         BorderThickness="1"
                         FontSize="11"
                         Click="btnClearFilters_Click"
@@ -422,17 +422,17 @@
                                     Background="{TemplateBinding Background}"
                                     BorderBrush="{TemplateBinding BorderBrush}"
                                     BorderThickness="{TemplateBinding BorderThickness}"
-                                    TextElement.Foreground="{StaticResource ForegroundColor}"
+                                    TextElement.Foreground="{DynamicResource ForegroundColor}"
                                     CornerRadius="3">
                                 <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Border>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter TargetName="border" Property="Background" Value="{StaticResource ControlHoverBackground}"/>
+                                    <Setter TargetName="border" Property="Background" Value="{DynamicResource ControlHoverBackground}"/>
                                     <Setter TargetName="border" Property="TextElement.Foreground" Value="{DynamicResource ButtonHoverForeground}"/>
                                 </Trigger>
                                 <Trigger Property="IsPressed" Value="True">
-                                    <Setter TargetName="border" Property="Background" Value="{StaticResource ControlPressedBackground}"/>
+                                    <Setter TargetName="border" Property="Background" Value="{DynamicResource ControlPressedBackground}"/>
                                 </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
@@ -440,7 +440,7 @@
                 </Button>
 
                 <!-- Separator -->
-                <Border Width="1" Background="{StaticResource ControlBorder}" Margin="15,6,15,6"/>
+                <Border Width="1" Background="{DynamicResource ControlBorder}" Margin="15,6,15,6"/>
 
                 <Button x:Name="btnSave"
                         Content="SAVE"
@@ -457,9 +457,9 @@
                     </Button.Effect>
                     <Button.Style>
                         <Style TargetType="Button">
-                            <Setter Property="Background" Value="{StaticResource ControlBackground}"/>
-                            <Setter Property="Foreground" Value="{StaticResource ForegroundColor}"/>
-                            <Setter Property="BorderBrush" Value="{StaticResource ControlBorder}"/>
+                            <Setter Property="Background" Value="{DynamicResource ControlBackground}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
+                            <Setter Property="BorderBrush" Value="{DynamicResource ControlBorder}"/>
                             <Setter Property="Cursor" Value="Hand"/>
                             <Setter Property="Template">
                                 <Setter.Value>
@@ -474,11 +474,11 @@
                                         </Border>
                                         <ControlTemplate.Triggers>
                                             <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter TargetName="border" Property="Background" Value="{StaticResource ControlHoverBackground}"/>
+                                                <Setter TargetName="border" Property="Background" Value="{DynamicResource ControlHoverBackground}"/>
                                                 <Setter Property="Foreground" Value="{DynamicResource ButtonHoverForeground}"/>
                                             </Trigger>
                                             <Trigger Property="IsPressed" Value="True">
-                                                <Setter TargetName="border" Property="Background" Value="{StaticResource ControlPressedBackground}"/>
+                                                <Setter TargetName="border" Property="Background" Value="{DynamicResource ControlPressedBackground}"/>
                                             </Trigger>
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
@@ -486,8 +486,8 @@
                             </Setter>
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding HasUnsavedChanges}" Value="True">
-                                    <Setter Property="Background" Value="{StaticResource StatusRed}"/>
-                                    <Setter Property="BorderBrush" Value="{StaticResource StatusRed}"/>
+                                    <Setter Property="Background" Value="{DynamicResource StatusRed}"/>
+                                    <Setter Property="BorderBrush" Value="{DynamicResource StatusRed}"/>
                                     <Setter Property="FontWeight" Value="SemiBold"/>
                                 </DataTrigger>
                             </Style.Triggers>
@@ -526,19 +526,19 @@
                           ShowRowHeader="True"
                           RowHeaderWidth="30"
                           CurrentCellBeginEdit="SfScheduleMaster_CurrentCellBeginEdit"
-                          Background="{StaticResource BackgroundColor}"
-                          Foreground="{StaticResource ForegroundColor}"
+                          Background="{DynamicResource BackgroundColor}"
+                          Foreground="{DynamicResource ForegroundColor}"
                           PreviewMouseWheel="SfScheduleMaster_PreviewMouseWheel">
 
                 <syncfusion:SfDataGrid.Resources>
                     <Style TargetType="syncfusion:GridCell">
                         <Setter Property="BorderThickness" Value="0,0,0.5,0.5"/>
                         <Setter Property="Padding" Value="4,0,4,0"/>
-                        <Setter Property="Foreground" Value="{StaticResource ForegroundColor}"/>
+                        <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
                     </Style>
                     <Style TargetType="syncfusion:GridHeaderCellControl">
-                        <Setter Property="Background" Value="{StaticResource GridHeaderBackground}"/>
-                        <Setter Property="Foreground" Value="{StaticResource GridHeaderForeground}"/>
+                        <Setter Property="Background" Value="{DynamicResource GridHeaderBackground}"/>
+                        <Setter Property="Foreground" Value="{DynamicResource GridHeaderForeground}"/>
                         <Setter Property="BorderThickness" Value="0,0,0.5,0.5"/>
                         <Setter Property="Padding" Value="4,0,4,0"/>
                     </Style>
@@ -738,7 +738,7 @@
 
             <!-- DETAIL GRID (Child ProgressSnapshots) -->
             <Border Grid.Row="2"
-                    BorderBrush="{StaticResource ControlBorder}"
+                    BorderBrush="{DynamicResource ControlBorder}"
                     BorderThickness="0,1,0,0">
                 <Grid>
                     <Grid.RowDefinitions>
@@ -748,11 +748,11 @@
 
                     <!-- Detail Grid Header -->
                     <Border Grid.Row="0"
-                            Background="{StaticResource ToolbarBackground}"
+                            Background="{DynamicResource ToolbarBackground}"
                             Padding="10,5">
                         <TextBlock x:Name="txtDetailHeader"
                                   Text="Select a row above to view detail activities"
-                                  Foreground="{StaticResource ForegroundColor}"
+                                  Foreground="{DynamicResource ForegroundColor}"
                                   FontSize="12"
                                   FontWeight="SemiBold"/>
                     </Border>
@@ -777,18 +777,18 @@
                                   AllowDraggingColumns="True"
                                   ShowRowHeader="True"
                                   RowHeaderWidth="25"
-                                  Background="{StaticResource BackgroundColor}"
-                                  Foreground="{StaticResource ForegroundColor}">
+                                  Background="{DynamicResource BackgroundColor}"
+                                  Foreground="{DynamicResource ForegroundColor}">
 
                         <syncfusion:SfDataGrid.Resources>
                             <Style TargetType="syncfusion:GridCell">
                                 <Setter Property="BorderThickness" Value="0,0,0.5,0.5"/>
                                 <Setter Property="Padding" Value="4,0,4,0"/>
-                                <Setter Property="Foreground" Value="{StaticResource ForegroundColor}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
                             </Style>
                             <Style TargetType="syncfusion:GridHeaderCellControl">
-                                <Setter Property="Background" Value="{StaticResource GridHeaderBackground}"/>
-                                <Setter Property="Foreground" Value="{StaticResource GridHeaderForeground}"/>
+                                <Setter Property="Background" Value="{DynamicResource GridHeaderBackground}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource GridHeaderForeground}"/>
                                 <Setter Property="BorderThickness" Value="0,0,0.5,0.5"/>
                                 <Setter Property="Padding" Value="4,0,4,0"/>
                             </Style>
@@ -888,8 +888,8 @@
 
         <!-- STATUS BAR -->
         <Border Grid.Row="2"
-                Background="{StaticResource ToolbarBackground}"
-                BorderBrush="{StaticResource ControlBorder}"
+                Background="{DynamicResource ToolbarBackground}"
+                BorderBrush="{DynamicResource ControlBorder}"
                 BorderThickness="0,1,0,0"
                 Height="30">
             <Grid>
@@ -899,28 +899,28 @@
                            Margin="15,0">
                     <TextBlock x:Name="txtStatus"
                               Text="Ready"
-                              Foreground="{StaticResource ForegroundColor}"
+                              Foreground="{DynamicResource ForegroundColor}"
                               FontSize="12"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal"
                            HorizontalAlignment="Right"
                            VerticalAlignment="Center"
                            Margin="15,0">
-                    <Rectangle Width="14" Height="14" Fill="{StaticResource StatusRedBg}" Margin="0,0,5,0"/>
+                    <Rectangle Width="14" Height="14" Fill="{DynamicResource StatusRedBg}" Margin="0,0,5,0"/>
                     <TextBlock Text="Required"
-                              Foreground="{StaticResource ForegroundColor}"
+                              Foreground="{DynamicResource ForegroundColor}"
                               FontSize="11"
                               VerticalAlignment="Center"
                               Margin="0,0,15,0"/>
-                    <Rectangle Width="14" Height="14" Fill="{StaticResource StatusYellowBg}" Margin="0,0,5,0"/>
+                    <Rectangle Width="14" Height="14" Fill="{DynamicResource StatusYellowBg}" Margin="0,0,5,0"/>
                     <TextBlock Text="Forecast ≠ P6"
-                              Foreground="{StaticResource ForegroundColor}"
+                              Foreground="{DynamicResource ForegroundColor}"
                               FontSize="11"
                               VerticalAlignment="Center"
                               Margin="0,0,15,0"/>
-                    <Rectangle Width="14" Height="14" Fill="{StaticResource StatusYellow}" Margin="0,0,5,0"/>
+                    <Rectangle Width="14" Height="14" Fill="{DynamicResource StatusYellow}" Margin="0,0,5,0"/>
                     <TextBlock Text="P6 vs Vtg Discrepancies"
-                              Foreground="{StaticResource ForegroundColor}"
+                              Foreground="{DynamicResource ForegroundColor}"
                               FontSize="11"
                               VerticalAlignment="Center"/>
                 </StackPanel>
@@ -929,7 +929,7 @@
 
         <!-- LOADING OVERLAY -->
         <Grid Grid.Row="1"
-              Background="{StaticResource OverlayBackground}"
+              Background="{DynamicResource OverlayBackground}"
               Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}"
               Panel.ZIndex="1000">
             <StackPanel HorizontalAlignment="Center"
@@ -938,10 +938,10 @@
                                            AnimationType="DualRing"
                                            ViewboxWidth="80"
                                            ViewboxHeight="80"
-                                           Foreground="{StaticResource AccentColor}"/>
+                                           Foreground="{DynamicResource AccentColor}"/>
                 <TextBlock Text="Loading schedule data..."
                           FontSize="16"
-                          Foreground="{StaticResource OverlayText}"
+                          Foreground="{DynamicResource OverlayText}"
                           HorizontalAlignment="Center"
                           Margin="0,20,0,0"/>
             </StackPanel>

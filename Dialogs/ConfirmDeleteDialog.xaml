@@ -5,7 +5,7 @@
         Height="260"
         Width="450"
         WindowStartupLocation="CenterOwner"
-        Background="{StaticResource BackgroundColor}"
+        Background="{DynamicResource BackgroundColor}"
         ResizeMode="NoResize"
         WindowStyle="SingleBorderWindow">
 
@@ -21,7 +21,7 @@
         <TextBlock x:Name="txtMessage"
                    Grid.Row="0"
                    TextWrapping="Wrap"
-                   Foreground="{StaticResource ForegroundColor}"
+                   Foreground="{DynamicResource ForegroundColor}"
                    FontSize="13"/>
 
         <!-- Text Input -->
@@ -29,9 +29,9 @@
                  Grid.Row="1"
                  Height="30"
                  FontSize="14"
-                 Background="{StaticResource ControlBackground}"
-                 Foreground="{StaticResource ForegroundColor}"
-                 BorderBrush="{StaticResource ControlBorder}"
+                 Background="{DynamicResource ControlBackground}"
+                 Foreground="{DynamicResource ForegroundColor}"
+                 BorderBrush="{DynamicResource ControlBorder}"
                  BorderThickness="1"
                  Padding="8,4"
                  TextChanged="TxtConfirm_TextChanged"/>
@@ -45,18 +45,18 @@
                     Width="90"
                     Height="32"
                     Margin="0,0,10,0"
-                    Background="{StaticResource ControlBackground}"
-                    Foreground="{StaticResource ForegroundColor}"
-                    BorderBrush="{StaticResource ControlBorder}"
+                    Background="{DynamicResource ControlBackground}"
+                    Foreground="{DynamicResource ForegroundColor}"
+                    BorderBrush="{DynamicResource ControlBorder}"
                     BorderThickness="1"
                     Click="BtnCancel_Click"/>
             <Button x:Name="btnConfirm"
                     Content="Delete"
                     Width="90"
                     Height="32"
-                    Background="{StaticResource ButtonDangerBackground}"
-                    Foreground="{StaticResource ForegroundColor}"
-                    BorderBrush="{StaticResource ButtonDangerBorder}"
+                    Background="{DynamicResource ButtonDangerBackground}"
+                    Foreground="{DynamicResource ForegroundColor}"
+                    BorderBrush="{DynamicResource ButtonDangerBorder}"
                     BorderThickness="1"
                     IsEnabled="False"
                     Click="BtnConfirm_Click"/>

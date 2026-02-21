@@ -5,7 +5,7 @@
         Height="440"
         Width="400"
         WindowStartupLocation="CenterOwner"
-        Background="{StaticResource BackgroundColor}"
+        Background="{DynamicResource BackgroundColor}"
         ResizeMode="NoResize"
         WindowStyle="SingleBorderWindow">
 
@@ -20,8 +20,8 @@
 
         <!-- Progress Book Info -->
         <Border Grid.Row="0"
-                Background="{StaticResource ControlBackground}"
-                BorderBrush="{StaticResource BorderColor}"
+                Background="{DynamicResource ControlBackground}"
+                BorderBrush="{DynamicResource BorderColor}"
                 BorderThickness="1"
                 CornerRadius="4"
                 Padding="12">
@@ -29,26 +29,26 @@
                 <TextBlock Text="Progress Book"
                            FontWeight="SemiBold"
                            FontSize="14"
-                           Foreground="{StaticResource ForegroundColor}"
+                           Foreground="{DynamicResource ForegroundColor}"
                            Margin="0,0,0,8"/>
                 <TextBlock x:Name="txtBookName"
                            Text="Loading..."
                            FontSize="16"
                            FontWeight="Bold"
-                           Foreground="{StaticResource AccentColor}"
+                           Foreground="{DynamicResource AccentColor}"
                            TextWrapping="Wrap"/>
                 <TextBlock x:Name="txtFilterInfo"
                            Text=""
                            FontSize="11"
-                           Foreground="{StaticResource TextColorSecondary}"
+                           Foreground="{DynamicResource TextColorSecondary}"
                            Margin="0,4,0,0"/>
             </StackPanel>
         </Border>
 
         <!-- Summary Stats -->
         <Border Grid.Row="2"
-                Background="{StaticResource ControlBackground}"
-                BorderBrush="{StaticResource ControlBorder}"
+                Background="{DynamicResource ControlBackground}"
+                BorderBrush="{DynamicResource ControlBorder}"
                 BorderThickness="1"
                 CornerRadius="4"
                 Padding="12">
@@ -56,7 +56,7 @@
                 <TextBlock Text="Summary"
                            FontWeight="SemiBold"
                            FontSize="13"
-                           Foreground="{StaticResource ForegroundColor}"
+                           Foreground="{DynamicResource ForegroundColor}"
                            Margin="0,0,0,8"/>
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -73,29 +73,29 @@
 
                     <TextBlock Grid.Row="0" Grid.Column="0"
                                Text="Record Count:"
-                               Foreground="{StaticResource TextColorSecondary}"/>
+                               Foreground="{DynamicResource TextColorSecondary}"/>
                     <TextBlock x:Name="txtRecordCount"
                                Grid.Row="0" Grid.Column="1"
                                Text="0"
-                               Foreground="{StaticResource ForegroundColor}"
+                               Foreground="{DynamicResource ForegroundColor}"
                                HorizontalAlignment="Right"/>
 
                     <TextBlock Grid.Row="2" Grid.Column="0"
                                Text="Estimated Pages:"
-                               Foreground="{StaticResource TextColorSecondary}"/>
+                               Foreground="{DynamicResource TextColorSecondary}"/>
                     <TextBlock x:Name="txtEstimatedPages"
                                Grid.Row="2" Grid.Column="1"
                                Text="0"
-                               Foreground="{StaticResource ForegroundColor}"
+                               Foreground="{DynamicResource ForegroundColor}"
                                HorizontalAlignment="Right"/>
 
                     <TextBlock Grid.Row="4" Grid.Column="0"
                                Text="Project:"
-                               Foreground="{StaticResource TextColorSecondary}"/>
+                               Foreground="{DynamicResource TextColorSecondary}"/>
                     <TextBlock x:Name="txtProjectId"
                                Grid.Row="4" Grid.Column="1"
                                Text="-"
-                               Foreground="{StaticResource ForegroundColor}"
+                               Foreground="{DynamicResource ForegroundColor}"
                                HorizontalAlignment="Right"/>
                 </Grid>
             </StackPanel>
@@ -104,8 +104,8 @@
         <!-- Status Message -->
         <Border x:Name="statusBorder"
                 Grid.Row="3"
-                Background="{StaticResource WarningBoxBg}"
-                BorderBrush="{StaticResource WarningBoxBorder}"
+                Background="{DynamicResource WarningBoxBg}"
+                BorderBrush="{DynamicResource WarningBoxBorder}"
                 BorderThickness="1"
                 CornerRadius="4"
                 Padding="10"
@@ -113,7 +113,7 @@
                 Visibility="Collapsed">
             <TextBlock x:Name="txtStatus"
                        Text=""
-                       Foreground="{StaticResource WarningBoxBorder}"
+                       Foreground="{DynamicResource WarningBoxBorder}"
                        FontSize="12"
                        TextWrapping="Wrap"/>
         </Border>
@@ -127,9 +127,9 @@
                     Width="110"
                     Height="32"
                     Margin="0,0,10,0"
-                    Background="{StaticResource ControlBackground}"
-                    Foreground="{StaticResource StatusGreen}"
-                    BorderBrush="{StaticResource ControlBorder}"
+                    Background="{DynamicResource ControlBackground}"
+                    Foreground="{DynamicResource StatusGreen}"
+                    BorderBrush="{DynamicResource ControlBorder}"
                     Click="BtnGenerate_Click"
                     IsEnabled="False"
                     ToolTip="Generate the PDF and save to file"/>
@@ -137,9 +137,9 @@
                     Content="Cancel"
                     Width="80"
                     Height="32"
-                    Background="{StaticResource ControlBackground}"
-                    Foreground="{StaticResource ForegroundColor}"
-                    BorderBrush="{StaticResource ControlBorder}"
+                    Background="{DynamicResource ControlBackground}"
+                    Foreground="{DynamicResource ForegroundColor}"
+                    BorderBrush="{DynamicResource ControlBorder}"
                     Click="BtnCancel_Click"
                     ToolTip="Cancel and close"/>
         </StackPanel>

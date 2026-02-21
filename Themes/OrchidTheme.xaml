@@ -26,6 +26,22 @@
     <SolidColorBrush x:Key="ControlHoverBackground" Color="#FFEDE4F5"/>
     <SolidColorBrush x:Key="ControlPressedBackground" Color="#FFD4C4E0"/>
 
+    <!-- === CONTENT/DIALOG KEYS (used by FindReplaceDialog, etc.) === -->
+    <SolidColorBrush x:Key="ContentBackground" Color="#FFFFFFFF"/>
+    <SolidColorBrush x:Key="ContentForeground" Color="#FF2D1B36"/>
+    <SolidColorBrush x:Key="PrimaryBackground" Color="#FF7B1FA2"/>
+    <SolidColorBrush x:Key="PrimaryForeground" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="ProgressBarTrackColor" Color="#FFD4C4E0"/>
+    <SolidColorBrush x:Key="GridAlternatingRowBackground" Color="#FFF6F0FA"/>
+
+    <!-- === SPLIT TOKEN KEYS (for independent per-region tuning) === -->
+    <SolidColorBrush x:Key="ProgressBarAccent" Color="#FFE040FB"/>
+    <SolidColorBrush x:Key="ToggleCheckedBackground" Color="#FFE040FB"/>
+    <SolidColorBrush x:Key="DialogBackground" Color="#FFFFFFFF"/>
+    <SolidColorBrush x:Key="GridCellBackground" Color="#FFFFFFFF"/>
+    <SolidColorBrush x:Key="DialogForeground" Color="#FF2D1B36"/>
+    <SolidColorBrush x:Key="GridCellForeground" Color="#FF2D1B36"/>
+
     <!-- === DATAGRID COLORS === -->
     <SolidColorBrush x:Key="GridHeaderBackground" Color="#FF4A148C"/>
 

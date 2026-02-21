@@ -7,7 +7,7 @@
         MinHeight="400"
         MinWidth="400"
         WindowStartupLocation="CenterOwner"
-        Background="{StaticResource BackgroundColor}"
+        Background="{DynamicResource BackgroundColor}"
         ResizeMode="CanResize"
         WindowStyle="SingleBorderWindow">
 
@@ -25,9 +25,9 @@
             <TextBlock Text="Release Notes"
                        FontWeight="SemiBold"
                        FontSize="16"
-                       Foreground="{StaticResource ForegroundColor}"/>
+                       Foreground="{DynamicResource ForegroundColor}"/>
             <TextBlock x:Name="txtVersion"
-                       Foreground="{StaticResource ForegroundColor}"
+                       Foreground="{DynamicResource ForegroundColor}"
                        Opacity="0.7"
                        FontSize="12"
                        Margin="0,5,0,0"/>
@@ -35,8 +35,8 @@
 
         <!-- Scrollable Release Notes -->
         <Border Grid.Row="2"
-                Background="{StaticResource ControlBackground}"
-                BorderBrush="{StaticResource BorderColor}"
+                Background="{DynamicResource ControlBackground}"
+                BorderBrush="{DynamicResource BorderColor}"
                 BorderThickness="1"
                 CornerRadius="4">
             <ScrollViewer VerticalScrollBarVisibility="Auto"
@@ -47,12 +47,12 @@
                             <StackPanel Margin="0,0,0,20">
                                 <!-- Version Header -->
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                                    <TextBlock Foreground="{StaticResource AccentColor}"
+                                    <TextBlock Foreground="{DynamicResource AccentColor}"
                                                FontSize="14"
                                                FontWeight="SemiBold">
                                         <Run Text="v"/><Run Text="{Binding Version, Mode=OneWay}"/>
                                     </TextBlock>
-                                    <TextBlock Foreground="{StaticResource ForegroundColor}"
+                                    <TextBlock Foreground="{DynamicResource ForegroundColor}"
                                                Opacity="0.5"
                                                FontSize="14"
                                                Margin="10,0,0,0"
@@ -63,7 +63,7 @@
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
                                             <TextBlock TextWrapping="Wrap"
-                                                       Foreground="{StaticResource ForegroundColor}"
+                                                       Foreground="{DynamicResource ForegroundColor}"
                                                        FontSize="13"
                                                        Margin="10,2,0,2">
                                                 <Run Text="&#x2022;  "/><Run Text="{Binding Mode=OneWay}"/>
@@ -72,7 +72,7 @@
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
                                 <!-- Separator -->
-                                <Separator Background="{StaticResource BorderColor}"
+                                <Separator Background="{DynamicResource BorderColor}"
                                            Margin="0,12,0,0"/>
                             </StackPanel>
                         </DataTemplate>
@@ -87,9 +87,9 @@
                 Width="80"
                 Height="35"
                 HorizontalAlignment="Right"
-                Background="{StaticResource ControlBackground}"
-                Foreground="{StaticResource ForegroundColor}"
-                BorderBrush="{StaticResource BorderColor}"
+                Background="{DynamicResource ControlBackground}"
+                Foreground="{DynamicResource ForegroundColor}"
+                BorderBrush="{DynamicResource BorderColor}"
                 BorderThickness="1"
                 Click="BtnClose_Click"
                 Cursor="Hand"
