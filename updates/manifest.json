@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.1.19",
-  "releaseDate": "2026-02-19T07:27:10Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.19/VANTAGE-26.1.19.zip",
-  "zipSizeBytes": 149143413,
-  "sha256": "B1314C84C819E73EB14336F1844AEE9DC5A8BA2E5C92941F816A85CAA75C1FB2",
-  "releaseNotes": "Fix column settings persistence, double-click to sort"
+  "currentVersion": "26.1.20",
+  "releaseDate": "2026-02-20T19:32:25Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.20/VANTAGE-26.1.20.zip",
+  "zipSizeBytes": 149148745,
+  "sha256": "93D1147AA5EC8D988294156C6F92739BD39AFD0315B3BE29E261E62F0F540F1E",
+  "releaseNotes": "Progress bars in percent cells, gradient metadata errors, column visibility defaults, bug fixes"
 }
