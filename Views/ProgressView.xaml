@@ -43,6 +43,35 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        <Style x:Key="SidebarButtonStyle" TargetType="Button">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                Padding="{TemplateBinding Padding}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="3">
+                            <ContentPresenter Content="{TemplateBinding Content}"
+                                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource AccentColor}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource ControlBorder}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
         <styles:RecordOwnershipRowStyleSelector x:Key="RowStyleSelector" />
 
         <!-- Base cell style to force consistent border thickness across all columns -->
@@ -199,6 +228,7 @@
                                Margin="0,0,0,20"/>
 
                     <Button x:Name="btnFilterComplete"
+                            Style="{StaticResource SidebarButtonStyle}"
                             Content="Complete"
                             Height="35"
                             Margin="0,0,0,10"
@@ -219,6 +249,7 @@
                     </Button>
 
                     <Button x:Name="btnFilterInProgress"
+                            Style="{StaticResource SidebarButtonStyle}"
                             Content="In Progress"
                             Height="35"
                             Margin="0,0,0,10"
@@ -239,6 +270,7 @@
                     </Button>
 
                     <Button x:Name="btnFilterNotStarted"
+                            Style="{StaticResource SidebarButtonStyle}"
                             Content="Not Started"
                             Height="35"
                             Margin="0,0,0,0"
@@ -263,6 +295,7 @@
                         Margin="0,20,0,20"/>
 
                     <Button x:Name="btnFilterLocalDirty"
+                            Style="{StaticResource SidebarButtonStyle}"
                             Content="Unsynced"
                             Height="35"
                             Margin="0,0,0,10"
@@ -283,6 +316,7 @@
                     </Button>
 
                     <Button x:Name="btnFilterMyRecords"
+                            Style="{StaticResource SidebarButtonStyle}"
                             Content="My Records"
                             Height="35"
                             Margin="0,0,0,0"
@@ -303,6 +337,7 @@
                     </Button>
 
                     <Button x:Name="btnFilterToday"
+                            Style="{StaticResource SidebarButtonStyle}"
                             Content="Today"
                             Height="35"
                             Margin="0,10,0,0"
@@ -323,6 +358,7 @@
                     </Button>
 
                     <Button x:Name="btnUserFilters"
+                            Style="{StaticResource SidebarButtonStyle}"
                             Height="35"
                             Margin="0,10,0,0"
                             Background="{StaticResource ControlBackground}"
@@ -387,6 +423,7 @@
                         Margin="0,20,0,20"/>
 
                     <Button x:Name="btnClearFilters"
+                            Style="{StaticResource SidebarButtonStyle}"
                             Content="Clear Filters"
                             Height="35"
                             Margin="0,0,0,0"
@@ -411,8 +448,8 @@
                         Margin="0,20,0,20"/>
 
                     <Button x:Name="btnAssign"
+                            Style="{StaticResource SidebarButtonStyle}"
                             Content="Assign"
-
                             Height="28"
                             Margin="0,0,0,0"
                             Background="{StaticResource ControlBackground}"
@@ -436,6 +473,7 @@
                         Margin="0,20,0,20"/>
 
                     <Button x:Name="btnColumnVisibility"
+                            Style="{StaticResource SidebarButtonStyle}"
                             Content="Columns"
                             Height="35"
                             Margin="0,0,0,0"
@@ -1941,6 +1979,7 @@
                            Margin="10,0,0,0"/>
                     <!-- Metadata Errors Button -->
                     <Button x:Name="btnMetadataErrors"
+                                Style="{StaticResource SidebarButtonStyle}"
                                 DockPanel.Dock="Left"
                                 Content="{Binding MetadataErrorButtonText}"
                                 Click="BtnMetadataErrors_Click"
