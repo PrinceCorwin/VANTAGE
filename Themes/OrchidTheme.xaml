@@ -128,11 +128,6 @@
     <SolidColorBrush x:Key="SummaryLabelColor" Color="#FF2D1B36"/>
     <sys:Double xmlns:sys="clr-namespace:System;assembly=mscorlib" x:Key="TextShadowOpacity">0.3</sys:Double>
 
-    <!-- === SPLASH SCREEN === -->
-    <SolidColorBrush x:Key="SplashBackground" Color="#FF4A148C"/>
-    <SolidColorBrush x:Key="SplashForeground" Color="#E8EAED"/>
-    <SolidColorBrush x:Key="SplashSpinner" Color="#E8EAED"/>
-
     <!-- ========================================= -->
     <!-- === DEFAULT BUTTON STYLE === -->
     <!-- ========================================= -->
