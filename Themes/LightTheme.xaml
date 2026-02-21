@@ -35,6 +35,7 @@
     <SolidColorBrush x:Key="StatusGreenFgBtn" Color="#FF3DD975"/>
     <SolidColorBrush x:Key="StatusYellow" Color="#5b4b26"/>
     <SolidColorBrush x:Key="StatusYellowBg" Color="#5b4b26"/>
+    <SolidColorBrush x:Key="StatusYellowFg" Color="#E8EAED"/>
     <SolidColorBrush x:Key="StatusRed" Color="#b63434"/>
     <SolidColorBrush x:Key="StatusRedBg" Color="#5b2626"/>
     <SolidColorBrush x:Key="StatusRedBgBtn" Color="#200808"/>
@@ -114,9 +115,11 @@
 
     <!-- === ACTION BUTTON COLORS === -->
     <SolidColorBrush x:Key="ActionButtonForeground" Color="#E8EAED"/>
+    <SolidColorBrush x:Key="ActionFilterForeground" Color="#E8EAED"/>
 
     <!-- === ELEVATION/SHADOW === -->
     <SolidColorBrush x:Key="SidebarButtonBorder" Color="#FFAAAAAA"/>
+    <SolidColorBrush x:Key="ButtonHoverForeground" Color="#FF0078D7"/>
     <Color x:Key="ButtonShadowColor">#000000</Color>
     <sys:Double xmlns:sys="clr-namespace:System;assembly=mscorlib" x:Key="ButtonShadowOpacity">0.15</sys:Double>
     <sys:Double xmlns:sys="clr-namespace:System;assembly=mscorlib" x:Key="TextShadowDepth">3</sys:Double>

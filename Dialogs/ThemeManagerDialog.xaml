@@ -100,6 +100,7 @@
                 Content="Close"
                 Width="80"
                 HorizontalAlignment="Right"
+                Foreground="{StaticResource ForegroundColor}"
                 Click="BtnClose_Click"
                 ToolTip="Close theme selector"/>
     </Grid>

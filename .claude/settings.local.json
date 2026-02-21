@@ -57,7 +57,8 @@
       "Bash(cmd.exe /c \"where gh\")",
       "Bash(git fetch:*)",
       "Bash(git stash:*)",
-      "Bash(cmd //c \"where gh\")"
+      "Bash(cmd //c \"where gh\")",
+      "Bash(cd:*)"
     ]
   }
 }

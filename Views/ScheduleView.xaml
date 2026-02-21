@@ -22,6 +22,13 @@
             <Setter Property="HorizontalContentAlignment" Value="Center"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect ShadowDepth="4" BlurRadius="6" Direction="315"
+                                      Opacity="{DynamicResource ButtonShadowOpacity}"
+                                      Color="{DynamicResource ButtonShadowColor}"/>
+                </Setter.Value>
+            </Setter>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ToggleButton">
@@ -37,6 +44,7 @@
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="border" Property="Background" Value="{StaticResource ControlHoverBackground}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource ButtonHoverForeground}"/>
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
                                 <Setter TargetName="border" Property="Background" Value="{StaticResource AccentColor}"/>
@@ -55,7 +63,7 @@
         <!-- Filter toggle for buttons with colored backgrounds (Required Fields) -->
         <Style x:Key="ActionFilterToggleStyle" TargetType="ToggleButton">
             <Setter Property="Background" Value="{StaticResource StatusRedBg}"/>
-            <Setter Property="Foreground" Value="{StaticResource ActionButtonForeground}"/>
+            <Setter Property="Foreground" Value="{StaticResource ActionFilterForeground}"/>
             <Setter Property="BorderBrush" Value="{StaticResource ControlBorder}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="FontSize" Value="11"/>
@@ -63,6 +71,13 @@
             <Setter Property="HorizontalContentAlignment" Value="Center"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect ShadowDepth="4" BlurRadius="6" Direction="315"
+                                      Opacity="{DynamicResource ButtonShadowOpacity}"
+                                      Color="{DynamicResource ButtonShadowColor}"/>
+                </Setter.Value>
+            </Setter>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ToggleButton">
@@ -78,7 +93,7 @@
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="border" Property="Background" Value="{StaticResource ControlHoverBackground}"/>
-                                <Setter Property="Foreground" Value="{StaticResource ForegroundColor}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource ButtonHoverForeground}"/>
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
                                 <Setter TargetName="border" Property="Background" Value="{StaticResource AccentColor}"/>
@@ -124,6 +139,13 @@
             </Setter>
         </Style>
 
+        <!-- Base cell style for consistent borders and foreground color -->
+        <Style TargetType="syncfusion:GridCell">
+            <Setter Property="BorderThickness" Value="0,0,0.5,0.5"/>
+            <Setter Property="Padding" Value="4,0,4,0"/>
+            <Setter Property="Foreground" Value="{StaticResource ForegroundColor}"/>
+        </Style>
+
         <!-- Required field styles (red background when field needs attention) -->
         <!-- Both ScheduleMasterRow and ScheduleViewModel implement IScheduleCellIndicators -->
         <!-- ViewModel returns false for all; this handles Syncfusion cell recycling without Error 40 -->
@@ -148,6 +170,7 @@
                 <!-- Yellow for forecast different from P6 (lower priority) -->
                 <DataTrigger Binding="{Binding Path=HasThreeWeekStartForecast}" Value="True">
                     <Setter Property="Background" Value="{StaticResource StatusYellowBg}"/>
+                    <Setter Property="Foreground" Value="{StaticResource StatusYellowFg}"/>
                 </DataTrigger>
                 <!-- Red for required field (higher priority - must come after yellow) -->
                 <DataTrigger Binding="{Binding Path=IsThreeWeekStartRequired}" Value="True">
@@ -161,6 +184,7 @@
                 <!-- Yellow for forecast different from P6 (lower priority) -->
                 <DataTrigger Binding="{Binding Path=HasThreeWeekFinishForecast}" Value="True">
                     <Setter Property="Background" Value="{StaticResource StatusYellowBg}"/>
+                    <Setter Property="Foreground" Value="{StaticResource StatusYellowFg}"/>
                 </DataTrigger>
                 <!-- Red for required field (higher priority - must come after yellow) -->
                 <DataTrigger Binding="{Binding Path=IsThreeWeekFinishRequired}" Value="True">
@@ -173,6 +197,7 @@
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=HasStartVariance}" Value="True">
                     <Setter Property="Background" Value="{StaticResource StatusYellowBg}"/>
+                    <Setter Property="Foreground" Value="{StaticResource StatusYellowFg}"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
@@ -181,6 +206,7 @@
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=HasFinishVariance}" Value="True">
                     <Setter Property="Background" Value="{StaticResource StatusYellowBg}"/>
+                    <Setter Property="Foreground" Value="{StaticResource StatusYellowFg}"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
@@ -189,6 +215,7 @@
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=HasBudgetMHsVariance}" Value="True">
                     <Setter Property="Background" Value="{StaticResource StatusYellowBg}"/>
+                    <Setter Property="Foreground" Value="{StaticResource StatusYellowFg}"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
@@ -197,6 +224,7 @@
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=HasPercentCompleteVariance}" Value="True">
                     <Setter Property="Background" Value="{StaticResource StatusYellowBg}"/>
+                    <Setter Property="Foreground" Value="{StaticResource StatusYellowFg}"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
@@ -223,127 +251,185 @@
                 <TextBlock x:Name="txtWeekEndDate"
                        VerticalAlignment="Center"
                        Foreground="{StaticResource ForegroundColor}"
-                       Margin="0,0,20,0">
+                       Margin="0,0,60,0">
                 <Run Text="Week Ending: "/>
                 <Run Text="{Binding SelectedWeekEndDate, StringFormat='MM-dd-yyyy', TargetNullValue='(No schedule loaded)'}"/>
                 </TextBlock>
 
-                <TextBlock Text="Filters:" 
-                          VerticalAlignment="Center"
-                          Foreground="{StaticResource ForegroundColor}"
-                          Margin="0,0,10,0"/>
+                <Button x:Name="btnRefresh"
+                        Content="Refresh"
+                        Width="80"
+                        Height="32"
+                        Background="{StaticResource ControlBackground}"
+                        BorderBrush="{StaticResource ControlBorder}"
+                        BorderThickness="1"
+                        FontSize="11"
+                        Click="btnRefresh_Click"
+                        Margin="0,0,15,0"
+                        Focusable="False"
+                        ToolTip="Reload schedule data and clear all filters">
+                    <Button.Effect>
+                        <DropShadowEffect ShadowDepth="4" BlurRadius="6" Direction="315"
+                                          Opacity="{DynamicResource ButtonShadowOpacity}"
+                                          Color="{DynamicResource ButtonShadowColor}"/>
+                    </Button.Effect>
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="border"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    TextElement.Foreground="{StaticResource ForegroundColor}"
+                                    CornerRadius="3">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="border" Property="Background" Value="{StaticResource ControlHoverBackground}"/>
+                                    <Setter TargetName="border" Property="TextElement.Foreground" Value="{DynamicResource ButtonHoverForeground}"/>
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter TargetName="border" Property="Background" Value="{StaticResource ControlPressedBackground}"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
 
                 <ToggleButton x:Name="btnFilterMissedStart"
                              Content="Missed Start"
                              IsChecked="{Binding FilterMissedStart, Mode=TwoWay}"
                              Style="{StaticResource FilterToggleButtonStyle}"
-                             Margin="0,0,5,0"
+                             Margin="0,0,15,0"
                              ToolTip="Show activities that missed their planned start date"/>
 
                 <ToggleButton x:Name="btnFilterMissedFinish"
                              Content="Missed Finish"
                              IsChecked="{Binding FilterMissedFinish, Mode=TwoWay}"
                              Style="{StaticResource FilterToggleButtonStyle}"
-                             Margin="0,0,5,0"
+                             Margin="0,0,15,0"
                              ToolTip="Show activities that missed their planned finish date"/>
 
                 <ToggleButton x:Name="btnFilter3WLA"
                              Content="3WLA"
                              IsChecked="{Binding Filter3WLA, Mode=TwoWay}"
                              Style="{StaticResource FilterToggleButtonStyle}"
-                             Margin="0,0,5,0"
+                             Margin="0,0,15,0"
                              ToolTip="Show activities in 3-week lookahead window"/>
-
-                <syncfusion:DropDownButtonAdv x:Name="btnFilterDiscrepancies"
-                                              Label="Discrepancies"
-                                              Padding="0"
-                                              Margin="0,0,5,0"
-                                              Background="Transparent"
-                                              Foreground="{StaticResource ForegroundColor}"
-                                              BorderThickness="0"
-                                              IconTemplate="{x:Null}"
-                                              SmallIcon="{x:Null}"
-                                              LargeIcon="{x:Null}"
-                                              FontSize="12"
-                                              SizeMode="Normal"
-                                              ToolTip="Filter by P6 vs MS discrepancy type">
-                    <syncfusion:DropDownMenuGroup
-                        Background="{StaticResource ControlBackground}"
-                        Foreground="{StaticResource ForegroundColor}"
-                        BorderBrush="{StaticResource BorderColor}">
-                        <syncfusion:DropDownMenuItem Header="Clear Filter" Click="FilterDiscrepancy_Clear_Click"/>
-                        <syncfusion:DropDownMenuItem Header="Actual Start" Click="FilterDiscrepancy_Start_Click"/>
-                        <syncfusion:DropDownMenuItem Header="Actual Finish" Click="FilterDiscrepancy_Finish_Click"/>
-                        <syncfusion:DropDownMenuItem Header="MHs" Click="FilterDiscrepancy_MHs_Click"/>
-                        <syncfusion:DropDownMenuItem Header="% Complete" Click="FilterDiscrepancy_Percent_Click"/>
-                    </syncfusion:DropDownMenuGroup>
-                </syncfusion:DropDownButtonAdv>
 
                 <ToggleButton x:Name="btnFilterRequiredFields"
                              Content="{Binding RequiredFieldsButtonText}"
                              IsChecked="{Binding FilterRequiredFields, Mode=TwoWay}"
                              Style="{StaticResource ActionFilterToggleStyle}"
                              Width="130"
-                             Margin="0,0,20,0"
                              ToolTip="Show activities missing required field values"/>
-                <Button x:Name="btnRefresh"
-                        Content="Refresh"
-                        Width="80"
+
+                <!-- Separator -->
+                <Border Width="1" Background="{StaticResource ControlBorder}" Margin="15,6,15,6"/>
+
+                <Button x:Name="btnFilterDiscrepancies"
                         Height="32"
-                        Background="{StaticResource ControlBackground}"
-                        Foreground="{StaticResource ForegroundColor}"
-                        BorderBrush="{StaticResource ControlBorder}"
-                        BorderThickness="1"
-                        FontSize="11"
-                        Click="btnRefresh_Click"
-                        Margin="0,0,5,0"
-                        Focusable="False"
-                        ToolTip="Reload schedule data and clear all filters">
-                    <Button.Template>
-                        <ControlTemplate TargetType="Button">
-                            <Border x:Name="border"
-                                    Background="{TemplateBinding Background}"
-                                    BorderBrush="{TemplateBinding BorderBrush}"
-                                    BorderThickness="{TemplateBinding BorderThickness}"
-                                    CornerRadius="3">
-                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Border>
-                            <ControlTemplate.Triggers>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter TargetName="border" Property="Background" Value="{StaticResource ControlHoverBackground}"/>
-                                </Trigger>
-                                <Trigger Property="IsPressed" Value="True">
-                                    <Setter TargetName="border" Property="Background" Value="{StaticResource ControlPressedBackground}"/>
-                                </Trigger>
-                            </ControlTemplate.Triggers>
-                        </ControlTemplate>
-                    </Button.Template>
+                        FontSize="12"
+                        Click="BtnFilterDiscrepancies_Click"
+                        ToolTip="Filter by P6 vs MS discrepancy type">
+                    <Button.Effect>
+                        <DropShadowEffect ShadowDepth="4" BlurRadius="6" Direction="315"
+                                          Opacity="{DynamicResource ButtonShadowOpacity}"
+                                          Color="{DynamicResource ButtonShadowColor}"/>
+                    </Button.Effect>
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Background" Value="{StaticResource ControlBackground}"/>
+                            <Setter Property="Foreground" Value="{StaticResource ForegroundColor}"/>
+                            <Setter Property="BorderBrush" Value="{StaticResource ControlBorder}"/>
+                            <Setter Property="BorderThickness" Value="1"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="border"
+                                                Background="{TemplateBinding Background}"
+                                                BorderBrush="{TemplateBinding BorderBrush}"
+                                                BorderThickness="{TemplateBinding BorderThickness}"
+                                                CornerRadius="3"
+                                                Padding="8,0">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="border" Property="Background" Value="{StaticResource ControlHoverBackground}"/>
+                                                <Setter Property="Foreground" Value="{DynamicResource ButtonHoverForeground}"/>
+                                            </Trigger>
+                                            <Trigger Property="IsPressed" Value="True">
+                                                <Setter TargetName="border" Property="Background" Value="{StaticResource ControlPressedBackground}"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </Button.Style>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Discrepancies" VerticalAlignment="Center"/>
+                        <TextBlock Text=" &#x25BC;" FontSize="8" VerticalAlignment="Center" Margin="3,1,0,0"/>
+                    </StackPanel>
+                    <Button.ContextMenu>
+                        <ContextMenu x:Name="ctxDiscrepancies"
+                                     Background="{StaticResource ControlBackground}"
+                                     Foreground="{StaticResource ForegroundColor}"
+                                     BorderBrush="{StaticResource ControlBorder}"
+                                     BorderThickness="1">
+                            <MenuItem Header="Clear Filter" Click="FilterDiscrepancy_Clear_Click"
+                                      Background="{StaticResource ControlBackground}"
+                                      Foreground="{StaticResource ForegroundColor}"/>
+                            <MenuItem Header="Actual Start" Click="FilterDiscrepancy_Start_Click"
+                                      Background="{StaticResource ControlBackground}"
+                                      Foreground="{StaticResource ForegroundColor}"/>
+                            <MenuItem Header="Actual Finish" Click="FilterDiscrepancy_Finish_Click"
+                                      Background="{StaticResource ControlBackground}"
+                                      Foreground="{StaticResource ForegroundColor}"/>
+                            <MenuItem Header="MHs" Click="FilterDiscrepancy_MHs_Click"
+                                      Background="{StaticResource ControlBackground}"
+                                      Foreground="{StaticResource ForegroundColor}"/>
+                            <MenuItem Header="% Complete" Click="FilterDiscrepancy_Percent_Click"
+                                      Background="{StaticResource ControlBackground}"
+                                      Foreground="{StaticResource ForegroundColor}"/>
+                        </ContextMenu>
+                    </Button.ContextMenu>
                 </Button>
+
+                <!-- Separator -->
+                <Border Width="1" Background="{StaticResource ControlBorder}" Margin="15,6,15,6"/>
+
                 <Button x:Name="btnClearFilters"
                         Content="Clear Filters"
                         Width="90"
                         Height="32"
                         Background="{StaticResource ControlBackground}"
-                        Foreground="{StaticResource ForegroundColor}"
                         BorderBrush="{StaticResource ControlBorder}"
                         BorderThickness="1"
                         FontSize="11"
                         Click="btnClearFilters_Click"
-                        Margin="0,0,5,0"
                         Focusable="False"
                         ToolTip="Clear all active filters">
+                    <Button.Effect>
+                        <DropShadowEffect ShadowDepth="4" BlurRadius="6" Direction="315"
+                                          Opacity="{DynamicResource ButtonShadowOpacity}"
+                                          Color="{DynamicResource ButtonShadowColor}"/>
+                    </Button.Effect>
                     <Button.Template>
                         <ControlTemplate TargetType="Button">
                             <Border x:Name="border"
                                     Background="{TemplateBinding Background}"
                                     BorderBrush="{TemplateBinding BorderBrush}"
                                     BorderThickness="{TemplateBinding BorderThickness}"
+                                    TextElement.Foreground="{StaticResource ForegroundColor}"
                                     CornerRadius="3">
                                 <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Border>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
                                     <Setter TargetName="border" Property="Background" Value="{StaticResource ControlHoverBackground}"/>
+                                    <Setter TargetName="border" Property="TextElement.Foreground" Value="{DynamicResource ButtonHoverForeground}"/>
                                 </Trigger>
                                 <Trigger Property="IsPressed" Value="True">
                                     <Setter TargetName="border" Property="Background" Value="{StaticResource ControlPressedBackground}"/>
@@ -352,6 +438,10 @@
                         </ControlTemplate>
                     </Button.Template>
                 </Button>
+
+                <!-- Separator -->
+                <Border Width="1" Background="{StaticResource ControlBorder}" Margin="15,6,15,6"/>
+
                 <Button x:Name="btnSave"
                         Content="SAVE"
                         Width="80"
@@ -359,8 +449,12 @@
                         BorderThickness="1"
                         FontSize="11"
                         Click="btnSave_Click"
-                        Margin="0,0,5,0"
                         ToolTip="Save all pending changes to database">
+                    <Button.Effect>
+                        <DropShadowEffect ShadowDepth="4" BlurRadius="6" Direction="315"
+                                          Opacity="{DynamicResource ButtonShadowOpacity}"
+                                          Color="{DynamicResource ButtonShadowColor}"/>
+                    </Button.Effect>
                     <Button.Style>
                         <Style TargetType="Button">
                             <Setter Property="Background" Value="{StaticResource ControlBackground}"/>
@@ -381,6 +475,7 @@
                                         <ControlTemplate.Triggers>
                                             <Trigger Property="IsMouseOver" Value="True">
                                                 <Setter TargetName="border" Property="Background" Value="{StaticResource ControlHoverBackground}"/>
+                                                <Setter Property="Foreground" Value="{DynamicResource ButtonHoverForeground}"/>
                                             </Trigger>
                                             <Trigger Property="IsPressed" Value="True">
                                                 <Setter TargetName="border" Property="Background" Value="{StaticResource ControlPressedBackground}"/>
@@ -431,9 +526,16 @@
                           ShowRowHeader="True"
                           RowHeaderWidth="30"
                           CurrentCellBeginEdit="SfScheduleMaster_CurrentCellBeginEdit"
+                          Background="{StaticResource BackgroundColor}"
+                          Foreground="{StaticResource ForegroundColor}"
                           PreviewMouseWheel="SfScheduleMaster_PreviewMouseWheel">
 
                 <syncfusion:SfDataGrid.Resources>
+                    <Style TargetType="syncfusion:GridCell">
+                        <Setter Property="BorderThickness" Value="0,0,0.5,0.5"/>
+                        <Setter Property="Padding" Value="4,0,4,0"/>
+                        <Setter Property="Foreground" Value="{StaticResource ForegroundColor}"/>
+                    </Style>
                     <Style TargetType="syncfusion:GridHeaderCellControl">
                         <Setter Property="Background" Value="{StaticResource GridHeaderBackground}"/>
                         <Setter Property="Foreground" Value="{StaticResource GridHeaderForeground}"/>
@@ -674,9 +776,16 @@
                                   AllowResizingColumns="True"
                                   AllowDraggingColumns="True"
                                   ShowRowHeader="True"
-                                  RowHeaderWidth="25">
+                                  RowHeaderWidth="25"
+                                  Background="{StaticResource BackgroundColor}"
+                                  Foreground="{StaticResource ForegroundColor}">
 
                         <syncfusion:SfDataGrid.Resources>
+                            <Style TargetType="syncfusion:GridCell">
+                                <Setter Property="BorderThickness" Value="0,0,0.5,0.5"/>
+                                <Setter Property="Padding" Value="4,0,4,0"/>
+                                <Setter Property="Foreground" Value="{StaticResource ForegroundColor}"/>
+                            </Style>
                             <Style TargetType="syncfusion:GridHeaderCellControl">
                                 <Setter Property="Background" Value="{StaticResource GridHeaderBackground}"/>
                                 <Setter Property="Foreground" Value="{StaticResource GridHeaderForeground}"/>

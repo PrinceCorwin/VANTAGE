@@ -38,7 +38,9 @@ namespace VANTAGE.Views
         public ScheduleView()
         {
             InitializeComponent();
-            SfSkinManager.SetTheme(this, new Theme(ThemeManager.GetSyncfusionThemeName()));
+            // Apply Syncfusion theme to grids only (not entire UserControl) to avoid overriding custom foreground colors
+            SfSkinManager.SetTheme(sfScheduleMaster, new Theme(ThemeManager.GetSyncfusionThemeName()));
+            SfSkinManager.SetTheme(sfScheduleDetail, new Theme(ThemeManager.GetSyncfusionThemeName()));
 
             _viewModel = new ScheduleViewModel();
             DataContext = _viewModel;
@@ -1286,6 +1288,17 @@ namespace VANTAGE.Views
         // ========================================
         // DISCREPANCY FILTER DROPDOWN HANDLERS
         // ========================================
+
+        // Open discrepancies context menu
+        private void BtnFilterDiscrepancies_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.ContextMenu != null)
+            {
+                btn.ContextMenu.PlacementTarget = btn;
+                btn.ContextMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
+                btn.ContextMenu.IsOpen = true;
+            }
+        }
 
         // Clear discrepancy filter
         private void FilterDiscrepancy_Clear_Click(object sender, RoutedEventArgs e)

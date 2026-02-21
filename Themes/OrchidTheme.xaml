@@ -35,6 +35,7 @@
     <SolidColorBrush x:Key="StatusGreenFgBtn" Color="#FF3DD975"/>
     <SolidColorBrush x:Key="StatusYellow" Color="#FF8B7D26"/>
     <SolidColorBrush x:Key="StatusYellowBg" Color="#FFF5F0D0"/>
+    <SolidColorBrush x:Key="StatusYellowFg" Color="#FF2D1B36"/>
     <SolidColorBrush x:Key="StatusRed" Color="#FFB63434"/>
     <SolidColorBrush x:Key="StatusRedBg" Color="#FFFDE8E8"/>
     <SolidColorBrush x:Key="StatusRedBgBtn" Color="#200808"/>
@@ -113,10 +114,12 @@
     <Color x:Key="FilterIconActiveColor">#FFFF4444</Color>
 
     <!-- === ACTION BUTTON COLORS === -->
-    <SolidColorBrush x:Key="ActionButtonForeground" Color="#FFE8EAED"/>
+    <SolidColorBrush x:Key="ActionButtonForeground" Color="#FFE0D0F0"/>
+    <SolidColorBrush x:Key="ActionFilterForeground" Color="#FF2D1B36"/>
 
     <!-- === ELEVATION/SHADOW === -->
     <SolidColorBrush x:Key="SidebarButtonBorder" Color="#FFBCAFC8"/>
+    <SolidColorBrush x:Key="ButtonHoverForeground" Color="#FFE040FB"/>
     <Color x:Key="ButtonShadowColor">#000000</Color>
     <sys:Double xmlns:sys="clr-namespace:System;assembly=mscorlib" x:Key="ButtonShadowOpacity">0.15</sys:Double>
     <sys:Double xmlns:sys="clr-namespace:System;assembly=mscorlib" x:Key="TextShadowDepth">3</sys:Double>
