@@ -1,6 +1,21 @@
 {
   "releases": [
     {
+      "version": "26.1.20",
+      "date": "2026-02-20",
+      "highlights": [
+        "Progress bars in PercentEntry cells — colored bar shows completion at a glance",
+        "Progress bars added to P6 % and MS % columns in Schedule master grid",
+        "Gradient red styling for metadata error cells — smoother visual indicator",
+        "Drop shadow effects on Progress module sidebar buttons, toolbar, and summary text",
+        "Default button in Column Visibility dialog to restore XAML-defined column defaults",
+        "Fix metadata error count not updating after bulk percent changes or paste operations",
+        "Fix Schedule module crash on empty PlanStart/PlanFin date strings",
+        "Fix schedule detail grid not resizing when dragging splitter",
+        "Standardized EarnedQtyCalc to 2 decimal places"
+      ]
+    },
+    {
       "version": "26.1.19",
       "date": "2026-02-19",
       "highlights": [

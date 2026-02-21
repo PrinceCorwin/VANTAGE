@@ -43,6 +43,7 @@ namespace VANTAGE.Views
         private const string GridPrefsKey = "ProgressGrid.PreferencesJson";
         private const string FrozenColumnsKey = "ProgressGrid.FrozenColumnCount";
         private bool _skipSaveColumnState = false;
+        private HashSet<string> _xamlHiddenColumns = new(); // XAML-defined default hidden columns
 
         // Debounce timer for summary panel updates during rapid filter changes
         private DispatcherTimer? _summaryDebounce;
@@ -1044,6 +1045,9 @@ namespace VANTAGE.Views
             this.Loaded += (_, __) =>
             {
                 sfActivities.Opacity = 0; // Hide grid during loading to prevent flicker
+                // Capture XAML-defined defaults before user prefs override them
+                _xamlHiddenColumns = new HashSet<string>(
+                    sfActivities.Columns.Where(c => c.IsHidden).Select(c => c.MappingName));
                 // Let layout/render complete, then apply prefs
                 Dispatcher.BeginInvoke(new Action(() =>
                 {
@@ -1280,7 +1284,7 @@ namespace VANTAGE.Views
         }
 
         // Paste clipboard values to selected cells
-        private void PasteToSelectedCells(IList<GridCellInfo> selectedCells, List<string> clipboardValues)
+        private async void PasteToSelectedCells(IList<GridCellInfo> selectedCells, List<string> clipboardValues)
         {
             try
             {
@@ -1405,12 +1409,13 @@ namespace VANTAGE.Views
                 // Save all modified activities to database
                 foreach (var activity in modifiedActivities)
                 {
-                    _ = ActivityRepository.UpdateActivityInDatabase(activity);
+                    await ActivityRepository.UpdateActivityInDatabase(activity);
                 }
 
                 // Refresh grid
                 sfActivities.View?.Refresh();
                 UpdateSummaryPanel();
+                await CalculateMetadataErrorCount();
             }
             catch (Exception ex)
             {
@@ -2113,6 +2118,7 @@ namespace VANTAGE.Views
                 // Reload from database to ensure consistency
                 await _viewModel.RefreshAsync();
                 UpdateSummaryPanel();
+                await CalculateMetadataErrorCount();
 
                 if (successCount > 0)
                 {
@@ -3676,19 +3682,8 @@ namespace VANTAGE.Views
                     Tag = column
                 };
 
-                checkBox.Checked += (s, args) =>
-                {
-                    var col = (Syncfusion.UI.Xaml.Grid.GridColumn)((CheckBox)s).Tag;
-                    col.IsHidden = false;
-                    SaveColumnState();
-                };
-
-                checkBox.Unchecked += (s, args) =>
-                {
-                    var col = (Syncfusion.UI.Xaml.Grid.GridColumn)((CheckBox)s).Tag;
-                    col.IsHidden = true;
-                    SaveColumnState();
-                };
+                checkBox.Checked += CheckBox_ShowColumn;
+                checkBox.Unchecked += CheckBox_HideColumn;
 
                 listBox.Items.Add(checkBox);
             }
@@ -3696,24 +3691,77 @@ namespace VANTAGE.Views
             Grid.SetRow(listBox, 0);
             grid.Children.Add(listBox);
 
+            // Button panel with Default and Close
+            var buttonPanel = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                HorizontalAlignment = HorizontalAlignment.Right,
+                Margin = new Thickness(0, 10, 0, 0)
+            };
+
+            var defaultButton = new Button
+            {
+                Content = "Default",
+                Width = 80,
+                Height = 30,
+                Margin = new Thickness(0, 0, 10, 0),
+                ToolTip = "Reset column visibility to defaults"
+            };
+            defaultButton.Click += (s, args) =>
+            {
+                // Reset columns to XAML-defined defaults
+                foreach (var column in sfActivities.Columns)
+                    column.IsHidden = _xamlHiddenColumns.Contains(column.MappingName);
+
+                // Update checkboxes without triggering their events
+                foreach (CheckBox cb in listBox.Items)
+                {
+                    // Detach events, update, reattach
+                    cb.Checked -= CheckBox_ShowColumn;
+                    cb.Unchecked -= CheckBox_HideColumn;
+                    var col = (Syncfusion.UI.Xaml.Grid.GridColumn)cb.Tag;
+                    cb.IsChecked = !col.IsHidden;
+                    cb.Checked += CheckBox_ShowColumn;
+                    cb.Unchecked += CheckBox_HideColumn;
+                }
+
+                SaveColumnState();
+            };
+
             var closeButton = new Button
             {
                 Content = "Close",
                 Width = 80,
                 Height = 30,
-                Margin = new Thickness(0, 10, 0, 0),
-                HorizontalAlignment = HorizontalAlignment.Right,
                 Background = (System.Windows.Media.Brush)FindResource("AccentColor"),
                 Foreground = (System.Windows.Media.Brush)FindResource("ForegroundColor")
             };
             closeButton.Click += (s, args) => popup.Close();
 
-            Grid.SetRow(closeButton, 1);
-            grid.Children.Add(closeButton);
+            buttonPanel.Children.Add(defaultButton);
+            buttonPanel.Children.Add(closeButton);
+
+            Grid.SetRow(buttonPanel, 1);
+            grid.Children.Add(buttonPanel);
 
             popup.Content = grid;
             popup.ShowDialog();
         }
+        // Column visibility checkbox handlers (named so they can be detached/reattached)
+        private void CheckBox_ShowColumn(object sender, RoutedEventArgs e)
+        {
+            var col = (Syncfusion.UI.Xaml.Grid.GridColumn)((CheckBox)sender).Tag;
+            col.IsHidden = false;
+            SaveColumnState();
+        }
+
+        private void CheckBox_HideColumn(object sender, RoutedEventArgs e)
+        {
+            var col = (Syncfusion.UI.Xaml.Grid.GridColumn)((CheckBox)sender).Tag;
+            col.IsHidden = true;
+            SaveColumnState();
+        }
+
         // === FILTER EVENT HANDLERS ===
 
         private void BtnFilterComplete_Click(object sender, RoutedEventArgs e)
@@ -4166,6 +4214,16 @@ namespace VANTAGE.Views
             return _propertyCache[columnName];
         }
         /// Prevent editing of records not assigned to current user
+
+        // Auto-focus the PercentEntry edit TextBox on single click
+        private void PercentEntryEditBox_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is System.Windows.Controls.TextBox textBox)
+            {
+                textBox.Focus();
+                textBox.SelectAll();
+            }
+        }
 
         private void SfActivities_CurrentCellBeginEdit(object? sender, CurrentCellBeginEditEventArgs e)
 

@@ -36,7 +36,10 @@
     <SolidColorBrush x:Key="StatusYellow" Color="#5b4b26"/>
     <SolidColorBrush x:Key="StatusYellowBg" Color="#5b4b26"/>
     <SolidColorBrush x:Key="StatusRed" Color="#b63434"/>
-    <SolidColorBrush x:Key="StatusRedBg" Color="#5b2626"/>
+    <LinearGradientBrush x:Key="StatusRedBg" StartPoint="0,0" EndPoint="1,0">
+        <GradientStop Color="#1E1E1E" Offset="0.0"/>
+        <GradientStop Color="#5b2626" Offset="1.0"/>
+    </LinearGradientBrush>
     <SolidColorBrush x:Key="StatusRedBgBtn" Color="#80B63434"/>
     <SolidColorBrush x:Key="StatusRedFgBtn" Color="#E8EAED"/>
     <SolidColorBrush x:Key="StatusGoldBg" Color="#4d4a00"/>

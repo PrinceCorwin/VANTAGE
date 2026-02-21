@@ -107,7 +107,7 @@ namespace VANTAGE.Repositories
                 FROM Activities
                 WHERE ProjectID IN ({projectIdList})
                   AND SchedActNO IN ({schedActNoList})
-                  AND (PlanStart IS NOT NULL OR PlanFin IS NOT NULL)
+                  AND ((PlanStart IS NOT NULL AND PlanStart != '') OR (PlanFin IS NOT NULL AND PlanFin != ''))
                 GROUP BY SchedActNO";
 
                     using (var planReader = planDatesCmd.ExecuteReader())
@@ -115,8 +115,10 @@ namespace VANTAGE.Repositories
                         while (planReader.Read())
                         {
                             string actNo = planReader.GetString(0);
-                            DateTime? minStart = planReader.IsDBNull(1) ? null : DateTime.Parse(planReader.GetString(1));
-                            DateTime? maxFin = planReader.IsDBNull(2) ? null : DateTime.Parse(planReader.GetString(2));
+                            string startStr = planReader.IsDBNull(1) ? "" : planReader.GetString(1);
+                            string finStr = planReader.IsDBNull(2) ? "" : planReader.GetString(2);
+                            DateTime? minStart = string.IsNullOrWhiteSpace(startStr) ? null : DateTime.Parse(startStr);
+                            DateTime? maxFin = string.IsNullOrWhiteSpace(finStr) ? null : DateTime.Parse(finStr);
                             planDatesDict[actNo] = (minStart, maxFin);
                         }
                     }

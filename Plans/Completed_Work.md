@@ -7,9 +7,18 @@ This document tracks completed features and fixes. Items are moved here from Pro
 ## Unreleased
 
 ### February 20, 2026
+- **Progress bars in PercentEntry cells:** Added thin colored bar at bottom of PercentEntry cells showing completion progress. Bar color follows percent ranges (red 0-25%, orange 25-50%, yellow 50-75%, green 75-100%) and width scales proportionally. Uses new PercentToDecimalConverter for ScaleTransform binding. Click-to-edit preserved with auto-focus handler.
+- **Progress bars in Schedule module:** Added same progress bar treatment to P6_PercentComplete and MS_PercentComplete columns in the Schedule master grid (read-only, no edit template needed).
+- **Gradient red metadata error styling:** Changed StatusRedBg from solid red to a gradient from grid cell color (#1E1E1E) to muted red (#5b2626). Provides smoother visual indicator for metadata errors.
+- **Default button in Column Visibility dialog:** Added Default button that restores column visibility to XAML-defined defaults. Captures XAML IsHidden states on load before user settings override them. Uses named event handlers (CheckBox_ShowColumn/CheckBox_HideColumn) for clean detach/reattach during reset.
+- **Fix metadata error count after bulk percent:** Metadata error count now updates immediately after using bulk percent buttons (100%, 0%, custom). Added missing `CalculateMetadataErrorCount()` call to `SetSelectedRecordsPercent`.
+- **Fix metadata error count after paste:** Fixed paste operations not updating metadata error count. Also changed fire-and-forget DB writes to awaited calls to prevent stale reads.
+- **Fix Schedule module DateTime parse crash:** Empty PlanStart/PlanFin strings in SQLite caused FormatException. Added null/empty check before DateTime.Parse and tightened SQL filter to exclude empty strings.
+- **EarnedQtyCalc decimal standardization:** Changed EarnedQtyCalc from 3 decimal places to 2, matching PercentCompleteCalc.
 - **Progress module UI polish with drop shadows:** Added drop shadow effects to sidebar filter buttons, top toolbar buttons, search field, and project summary text (labels and values). Shadows provide visual elevation and separation. All shadow properties are theme-specific: dark mode uses black shadows at 85% opacity, light/orchid modes use lighter shadows (15-30% opacity) that don't overpower the bright backgrounds.
 - **Theme-specific visual refinements:** Doubled vertical spacing between sidebar buttons. Added lighter sidebar button borders. Changed filter button foreground colors (StatusGreenFgBtn, StatusRedFgBtn, StatusInProgressFgBtn) to brighter values for better contrast. Summary labels now use theme-specific colors. Light mode StatusInProgress changed to red-based color for better readability.
 - **Splash screen theme colors:** Light and Orchid themes now use dark backgrounds for splash screen (matching their column header colors) with light text and spinner, eliminating the jarring bright flash on startup.
+- **Fix schedule detail grid not resizing when dragging splitter.**
 
 ### February 19, 2026
 - **Fix column settings lost after updates:** Column order, widths, and visibility preferences were silently discarded when an update added or removed columns (SchemaHash mismatch caused full rejection). Settings now gracefully apply to matching columns — new columns appear at end with defaults, removed columns are ignored. Affected all three grids: Progress, Schedule master, and Schedule detail. Also fixes named layouts (ApplyGridPreferences) for Progress grid.

@@ -6,6 +6,7 @@
              xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
              xmlns:svg="http://sharpvectors.codeplex.com/runtime/"
              xmlns:styles="clr-namespace:VANTAGE.Styles"
+             xmlns:converters="clr-namespace:VANTAGE.Converters"
              mc:Ignorable="d"
              d:DesignHeight="1080" d:DesignWidth="1920"
              Background="{StaticResource BackgroundColor}">
@@ -50,7 +51,11 @@
             <Setter Property="Padding" Value="4,0,4,0"/>
         </Style>
 
-        <!-- Style for empty/null required fields with red border -->
+        <!-- Converters for PercentEntry progress bar -->
+        <converters:PercentToDecimalConverter x:Key="PercentToDecimalConverter"/>
+        <converters:PercentToColorConverter x:Key="PercentToColorConverter"/>
+
+        <!-- Style for empty/null required fields with red background -->
         <Style x:Key="CompTypeRequiredStyle" TargetType="syncfusion:GridCell" BasedOn="{StaticResource {x:Type syncfusion:GridCell}}">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=CompType}" Value="">
@@ -1122,7 +1127,7 @@
                               Width="250"
                               AllowEditing="True"
                               AllowFiltering="True"
-                              AllowSorting="True" 
+                              AllowSorting="True"
                               CellStyle="{StaticResource DescRequiredStyle}"/>
 
                         <syncfusion:GridNumericColumn MappingName="EarnQtyEntry"
@@ -1149,15 +1154,40 @@
                                  AllowEditing="False"
                                  AllowFiltering="True"
                                  AllowSorting="True"
-                                 NumberDecimalDigits="3" />
+                                 NumberDecimalDigits="2" />
 
-                        <syncfusion:GridTextColumn MappingName="PercentEntry"
+                        <syncfusion:GridTemplateColumn MappingName="PercentEntry"
                                  HeaderText="PercentEntry"
-                                 Padding="4,0,4,0"
                                  Width="100"
                                  AllowEditing="True"
                                  AllowFiltering="True"
-                                 AllowSorting="True"/>
+                                 AllowSorting="True">
+                            <syncfusion:GridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Grid>
+                                        <TextBlock Text="{Binding PercentEntry}"
+                                                   VerticalAlignment="Center"
+                                                   Padding="4,0,4,0"/>
+                                        <Rectangle Height="3" VerticalAlignment="Bottom"
+                                                   HorizontalAlignment="Stretch"
+                                                   Fill="{Binding PercentEntry, Converter={StaticResource PercentToColorConverter}}"
+                                                   RenderTransformOrigin="0,0.5">
+                                            <Rectangle.RenderTransform>
+                                                <ScaleTransform ScaleX="{Binding PercentEntry, Converter={StaticResource PercentToDecimalConverter}}"/>
+                                            </Rectangle.RenderTransform>
+                                        </Rectangle>
+                                    </Grid>
+                                </DataTemplate>
+                            </syncfusion:GridTemplateColumn.CellTemplate>
+                            <syncfusion:GridTemplateColumn.EditTemplate>
+                                <DataTemplate>
+                                    <TextBox Text="{Binding PercentEntry, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                             VerticalAlignment="Center"
+                                             Padding="4,0,4,0"
+                                             Loaded="PercentEntryEditBox_Loaded"/>
+                                </DataTemplate>
+                            </syncfusion:GridTemplateColumn.EditTemplate>
+                        </syncfusion:GridTemplateColumn>
 
                         <syncfusion:GridNumericColumn MappingName="PercentCompleteCalc"
                                  HeaderText="PercentCompleteCalc"
