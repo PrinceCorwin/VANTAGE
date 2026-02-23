@@ -1,6 +1,16 @@
 {
   "releases": [
     {
+      "version": "26.1.21",
+      "date": "2026-02-22",
+      "highlights": [
+        "Syncfusion packages updated to 32.2.5",
+        "Fix Progress grid scrollbar — restore native Syncfusion dark theme scrollbar (was overridden with thick white Windows-style)",
+        "Fix last row of Progress grid being clipped by horizontal scrollbar",
+        "Remove accidental Syncfusion dependency from Installer and Updater projects"
+      ]
+    },
+    {
       "version": "26.1.20",
       "date": "2026-02-20",
       "highlights": [

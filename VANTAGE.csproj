@@ -8,9 +8,9 @@
 		<ApplicationIcon>images\AppIcon.ico</ApplicationIcon>
 
 		<!-- Version Information -->
-		<Version>26.1.20</Version>
-		<AssemblyVersion>26.1.20.0</AssemblyVersion>
-		<FileVersion>26.1.20.0</FileVersion>
+		<Version>26.1.21</Version>
+		<AssemblyVersion>26.1.21.0</AssemblyVersion>
+		<FileVersion>26.1.21.0</FileVersion>
 		<Company>Summit Industrial</Company>
 		<Product>VANTAGE: MILESTONE</Product>
 		<Copyright>Copyright © 2025 Steve Amalfitano</Copyright>
@@ -79,19 +79,19 @@
 		<PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.3" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
 		<PackageReference Include="SharpVectors.Wpf" Version="1.8.5" />
-		<PackageReference Include="Syncfusion.PdfToImageConverter.WPF" Version="32.2.4" />
-		<PackageReference Include="Syncfusion.SfProgressBar.WPF" Version="32.2.4" />
-		<PackageReference Include="Syncfusion.Themes.FluentLight.WPF" Version="32.2.4" />
+		<PackageReference Include="Syncfusion.PdfToImageConverter.WPF" Version="32.2.5" />
+		<PackageReference Include="Syncfusion.SfProgressBar.WPF" Version="32.2.5" />
+		<PackageReference Include="Syncfusion.Themes.FluentLight.WPF" Version="32.2.5" />
 		<PackageReference Include="System.Drawing.Common" Version="10.0.3" />
-		<PackageReference Include="Syncfusion.Pdf.WPF" Version="32.2.4" />
-		<PackageReference Include="Syncfusion.PdfViewer.WPF" Version="32.2.4" />
-		<PackageReference Include="Syncfusion.SfBusyIndicator.WPF" Version="32.2.4" />
-		<PackageReference Include="Syncfusion.SfGrid.WPF" Version="32.2.4" />
-		<PackageReference Include="Syncfusion.SfInput.WPF" Version="32.2.4" />
-		<PackageReference Include="Syncfusion.SfTextInputLayout.WPF" Version="32.2.4" />
-		<PackageReference Include="Syncfusion.Tools.WPF" Version="32.2.4" />
-		<PackageReference Include="Syncfusion.Themes.FluentDark.WPF" Version="32.2.4" />
-		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3719.77" />
+		<PackageReference Include="Syncfusion.Pdf.WPF" Version="32.2.5" />
+		<PackageReference Include="Syncfusion.PdfViewer.WPF" Version="32.2.5" />
+		<PackageReference Include="Syncfusion.SfBusyIndicator.WPF" Version="32.2.5" />
+		<PackageReference Include="Syncfusion.SfGrid.WPF" Version="32.2.5" />
+		<PackageReference Include="Syncfusion.SfInput.WPF" Version="32.2.5" />
+		<PackageReference Include="Syncfusion.SfTextInputLayout.WPF" Version="32.2.5" />
+		<PackageReference Include="Syncfusion.Tools.WPF" Version="32.2.5" />
+		<PackageReference Include="Syncfusion.Themes.FluentDark.WPF" Version="32.2.5" />
+		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3800.47" />
 	</ItemGroup>
 
 	<ItemGroup>

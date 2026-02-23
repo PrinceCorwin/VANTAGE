@@ -6,6 +6,11 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### February 22, 2026
+- **Fix Progress grid scrollbar styling:** Removed custom ScrollBar/Thumb style overrides from SfDataGrid.Resources that were replacing Syncfusion's FluentDark scrollbar with a thick white Windows-style scrollbar. This also fixed the last row being clipped behind the horizontal scrollbar. Scrollbar now uses native Syncfusion theme styling.
+- **Syncfusion packages 32.2.4 → 32.2.5:** Updated all Syncfusion packages and WebView2.
+- **Remove rogue Syncfusion dependency from Installer/Updater:** Syncfusion.SfTextInputLayout.WPF was accidentally added to both projects during the package update, pulling in a massive dependency tree and slowing builds.
+
 ### February 21, 2026
 - **Theme system refactor (Phases 1-7):** Complete overhaul of the theme system enabling live theme switching without app restart. Phase 1: Made ThemeManager.ApplyTheme() public, added ThemeChanged event, added 6 missing theme keys. Phase 2: Converted ~1,119 StaticResource refs to DynamicResource across 37 XAML files. Phase 3: Replaced hardcoded hex colors with theme resources in 6 files. Phase 4: Extracted shared styles (RoundedButtonStyle, PrimaryButtonStyle) to SharedStyles.xaml. Phase 5: Added ThemeChanged subscriptions to 5 views for Syncfusion grid live re-skinning, with Loaded/Unloaded subscription pattern to survive visual tree rebuilds. Phase 6: Added 6 split token keys (ProgressBarAccent, ToggleCheckedBackground, DialogBackground, GridCellBackground, DialogForeground, GridCellForeground) and reassigned 8 consumers. Phase 7: Created Themes/THEME_GUIDE.md with full token reference.
 - **MainWindow nav button theme refresh:** Nav buttons now update their AccentColor/ToolbarForeground on theme change via ThemeChanged subscription, tracking the active button.

@@ -861,8 +861,8 @@
             </Border>
 
             <!-- DataGrid with VIRTUALIZATION ENABLED -->
-            <Border Grid.Row="1" 
-                    BorderBrush="{DynamicResource ControlBorder}" 
+            <Border Grid.Row="1"
+                    BorderBrush="{DynamicResource ControlBorder}"
                     BorderThickness="0">
                 <syncfusion:SfDataGrid x:Name="sfActivities"
                     AutoGenerateColumns="False"
@@ -903,22 +903,6 @@
                             <Setter Property="Foreground" Value="{DynamicResource GridHeaderForeground}"/>
                             <Setter Property="BorderThickness" Value="0,0,0.5,0.5"/>
                             <Setter Property="Padding" Value="4,0,4,0"/>
-                        </Style>
-                        <!-- Thicker scrollbars with accent color -->
-                        <Style TargetType="ScrollBar">
-                            <Style.Triggers>
-                                <Trigger Property="Orientation" Value="Vertical">
-                                    <Setter Property="Width" Value="14"/>
-                                    <Setter Property="MinWidth" Value="14"/>
-                                </Trigger>
-                                <Trigger Property="Orientation" Value="Horizontal">
-                                    <Setter Property="Height" Value="14"/>
-                                    <Setter Property="MinHeight" Value="14"/>
-                                </Trigger>
-                            </Style.Triggers>
-                        </Style>
-                        <Style TargetType="Thumb">
-                            <Setter Property="Background" Value="{DynamicResource ActiveFilterBorderColor}"/>
                         </Style>
                         <Style TargetType="syncfusion:FilterToggleButton">
                             <Setter Property="Template">
@@ -1960,6 +1944,7 @@
                               AllowSorting="True"
                               NumberDecimalDigits="0" />
                     </syncfusion:SfDataGrid.Columns>
+
                 </syncfusion:SfDataGrid>
             </Border>
 
