@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.1.20",
-  "releaseDate": "2026-02-20T19:32:25Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.20/VANTAGE-26.1.20.zip",
-  "zipSizeBytes": 149148745,
-  "sha256": "93D1147AA5EC8D988294156C6F92739BD39AFD0315B3BE29E261E62F0F540F1E",
-  "releaseNotes": "Progress bars in percent cells, gradient metadata errors, column visibility defaults, bug fixes"
+  "currentVersion": "26.1.21",
+  "releaseDate": "2026-02-22T18:49:11Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.21/VANTAGE-26.1.21.zip",
+  "zipSizeBytes": 149151597,
+  "sha256": "10E29269AB8ED9790F7B0F57E55716827127AE22FD3D2B2B639335F9E9BAE6DF",
+  "releaseNotes": "Live theme switching, Syncfusion 32.2.5 update, fix scrollbar styling and last-row clipping"
 }
