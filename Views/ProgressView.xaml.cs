@@ -194,6 +194,9 @@ namespace VANTAGE.Views
                     await ViewModel.UpdateTotalsAsync();
                 }
 
+                // Update metadata error count (deleted rows may have had errors)
+                await CalculateMetadataErrorCount();
+
                 AppLogger.Info(
                     $"User deleted {localDeleted} activities (IsDeleted=1 set in Azure for {azureDeleted} records).",
                     "ProgressView.DeleteSelectedActivities_Click",

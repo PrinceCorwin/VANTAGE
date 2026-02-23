@@ -239,6 +239,7 @@ namespace VANTAGE
                 Title TEXT NOT NULL DEFAULT '',
                 Description TEXT,
                 Status TEXT NOT NULL DEFAULT 'New',
+                Notes TEXT,
                 CreatedBy TEXT NOT NULL DEFAULT '',
                 CreatedUtcDate TEXT NOT NULL,
                 UpdatedBy TEXT,

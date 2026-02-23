@@ -30,6 +30,8 @@ namespace VANTAGE.Dialogs
                 txtStatusNote.Visibility = Visibility.Collapsed;
                 btnDelete.Visibility = Visibility.Visible;
                 chkShowDeleted.Visibility = Visibility.Visible;
+                lblNotes.Visibility = Visibility.Visible;
+                txtNotes.Visibility = Visibility.Visible;
             }
 
             Loaded += FeedbackDialog_Loaded;
@@ -90,11 +92,11 @@ namespace VANTAGE.Dialogs
 
                     var cmd = azureConn.CreateCommand();
                     cmd.CommandText = includeDeleted
-                        ? @"SELECT Id, Type, Title, Description, Status,
+                        ? @"SELECT Id, Type, Title, Description, Status, Notes,
                                    CreatedBy, CreatedUtcDate, UpdatedBy, UpdatedUtcDate, IsDeleted
                             FROM VMS_Feedback
                             ORDER BY Id DESC"
-                        : @"SELECT Id, Type, Title, Description, Status,
+                        : @"SELECT Id, Type, Title, Description, Status, Notes,
                                    CreatedBy, CreatedUtcDate, UpdatedBy, UpdatedUtcDate, IsDeleted
                             FROM VMS_Feedback
                             WHERE IsDeleted = 0
@@ -110,11 +112,12 @@ namespace VANTAGE.Dialogs
                             Title = reader.GetString(2),
                             Description = reader.IsDBNull(3) ? string.Empty : reader.GetString(3),
                             Status = reader.GetString(4),
-                            CreatedBy = reader.GetString(5),
-                            CreatedUtcDate = reader.IsDBNull(6) ? string.Empty : reader.GetDateTime(6).ToString("yyyy-MM-dd HH:mm"),
-                            UpdatedBy = reader.IsDBNull(7) ? null : reader.GetString(7),
-                            UpdatedUtcDate = reader.IsDBNull(8) ? null : reader.GetDateTime(8).ToString("yyyy-MM-dd HH:mm"),
-                            IsDeleted = reader.GetBoolean(9),
+                            Notes = reader.IsDBNull(5) ? string.Empty : reader.GetString(5),
+                            CreatedBy = reader.GetString(6),
+                            CreatedUtcDate = reader.IsDBNull(7) ? string.Empty : reader.GetDateTime(7).ToString("yyyy-MM-dd HH:mm"),
+                            UpdatedBy = reader.IsDBNull(8) ? null : reader.GetString(8),
+                            UpdatedUtcDate = reader.IsDBNull(9) ? null : reader.GetDateTime(9).ToString("yyyy-MM-dd HH:mm"),
+                            IsDeleted = reader.GetBoolean(10),
                             IsNew = false
                         });
                     }
@@ -207,6 +210,9 @@ namespace VANTAGE.Dialogs
                     }
                 }
 
+                // Bind Notes field (admin-only, but we set the value regardless)
+                txtNotes.Text = _selectedFeedback.Notes;
+
                 // Show created/updated info
                 string info = $"Created by {_selectedFeedback.CreatedBy} on {_selectedFeedback.CreatedUtcDate} UTC";
                 if (!string.IsNullOrEmpty(_selectedFeedback.UpdatedBy))
@@ -252,6 +258,7 @@ namespace VANTAGE.Dialogs
             txtDescription.Text = string.Empty;
             txtDescription.IsReadOnly = false;
             cboStatus.SelectedIndex = 0; // Default to "New"
+            txtNotes.Text = string.Empty;
             txtCreatedInfo.Text = string.Empty;
             btnSave.Content = "Submit";
             btnSave.IsEnabled = true;
@@ -274,6 +281,7 @@ namespace VANTAGE.Dialogs
             string title = txtTitle.Text.Trim();
             string description = txtDescription.Text.Trim();
             string status = (cboStatus.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "New";
+            string notes = txtNotes.Text.Trim();
 
             if (string.IsNullOrEmpty(title) || title.Length < 5)
             {
@@ -301,13 +309,14 @@ namespace VANTAGE.Dialogs
 
                         var cmd = azureConn.CreateCommand();
                         cmd.CommandText = @"
-                            INSERT INTO VMS_Feedback (Type, Title, Description, Status, CreatedBy, CreatedUtcDate)
+                            INSERT INTO VMS_Feedback (Type, Title, Description, Status, Notes, CreatedBy, CreatedUtcDate)
                             OUTPUT INSERTED.Id
-                            VALUES (@type, @title, @description, @status, @createdBy, @createdUtcDate)";
+                            VALUES (@type, @title, @description, @status, @notes, @createdBy, @createdUtcDate)";
                         cmd.Parameters.AddWithValue("@type", type);
                         cmd.Parameters.AddWithValue("@title", title);
                         cmd.Parameters.AddWithValue("@description", string.IsNullOrEmpty(description) ? DBNull.Value : description);
                         cmd.Parameters.AddWithValue("@status", status);
+                        cmd.Parameters.AddWithValue("@notes", string.IsNullOrEmpty(notes) ? DBNull.Value : notes);
                         cmd.Parameters.AddWithValue("@createdBy", currentUser);
                         cmd.Parameters.AddWithValue("@createdUtcDate", DateTime.UtcNow);
 
@@ -321,6 +330,7 @@ namespace VANTAGE.Dialogs
                         Title = title,
                         Description = description,
                         Status = status,
+                        Notes = notes,
                         CreatedBy = currentUser,
                         CreatedUtcDate = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm"),
                         IsNew = false
@@ -352,12 +362,13 @@ namespace VANTAGE.Dialogs
                         cmd.CommandText = @"
                             UPDATE VMS_Feedback
                             SET Type = @type, Title = @title, Description = @description, Status = @status,
-                                UpdatedBy = @updatedBy, UpdatedUtcDate = @updatedUtcDate
+                                Notes = @notes, UpdatedBy = @updatedBy, UpdatedUtcDate = @updatedUtcDate
                             WHERE Id = @id";
                         cmd.Parameters.AddWithValue("@type", type);
                         cmd.Parameters.AddWithValue("@title", title);
                         cmd.Parameters.AddWithValue("@description", string.IsNullOrEmpty(description) ? DBNull.Value : description);
                         cmd.Parameters.AddWithValue("@status", status);
+                        cmd.Parameters.AddWithValue("@notes", string.IsNullOrEmpty(notes) ? DBNull.Value : notes);
                         cmd.Parameters.AddWithValue("@updatedBy", currentUser);
                         cmd.Parameters.AddWithValue("@updatedUtcDate", DateTime.UtcNow);
                         cmd.Parameters.AddWithValue("@id", _selectedFeedback!.Id);
@@ -370,6 +381,7 @@ namespace VANTAGE.Dialogs
                     _selectedFeedback.Title = title;
                     _selectedFeedback.Description = description;
                     _selectedFeedback.Status = status;
+                    _selectedFeedback.Notes = notes;
                     _selectedFeedback.UpdatedBy = currentUser;
                     _selectedFeedback.UpdatedUtcDate = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm");
 
@@ -754,6 +766,7 @@ namespace VANTAGE.Dialogs
         private string _type = "Idea";
         private string _status = "New";
         private string _description = string.Empty;
+        private string _notes = string.Empty;
 
         public int Id { get; set; }
 
@@ -779,6 +792,12 @@ namespace VANTAGE.Dialogs
         {
             get => _status;
             set { _status = value; OnPropertyChanged(nameof(Status)); }
+        }
+
+        public string Notes
+        {
+            get => _notes;
+            set { _notes = value; OnPropertyChanged(nameof(Notes)); }
         }
 
         public string CreatedBy { get; set; } = string.Empty;

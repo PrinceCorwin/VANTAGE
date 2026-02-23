@@ -7,6 +7,8 @@ This document tracks completed features and fixes. Items are moved here from Pro
 ## Unreleased
 
 ### February 23, 2026
+- **Feedback Board Notes column:** Added Notes column to the Feedback Board grid visible to all users, with an admin-only Notes edit field on the right panel. Admins can add status updates or comments that all users can see. Includes schema migration v6 for existing databases.
+- **Fix metadata error count after row deletion:** Metadata error count now updates immediately after deleting rows via the right-click context menu.
 - **Single-value-to-multiple-rows paste (Excel-style fill):** Copy one cell, select multiple rows with Ctrl+Shift+Down, then Ctrl+V to paste that value into all selected rows. Uses UserControl-level PreviewKeyDown to intercept before the grid, with bulk database update for performance. Existing multi-cell paste (copy N / paste N) unchanged.
 
 ### February 22, 2026

@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Feedback Board"
         Height="673"
-        Width="900"
+        Width="1098"
         WindowStartupLocation="CenterOwner"
         Background="{DynamicResource BackgroundColor}"
         ResizeMode="CanResize"
@@ -98,6 +98,7 @@
                                 <GridViewColumn Header="Type" Width="70" DisplayMemberBinding="{Binding Type}"/>
                                 <GridViewColumn Header="Title" Width="200" DisplayMemberBinding="{Binding Title}"/>
                                 <GridViewColumn Header="Status" Width="90" DisplayMemberBinding="{Binding StatusDisplay}"/>
+                                <GridViewColumn Header="Notes" Width="150" DisplayMemberBinding="{Binding Notes}"/>
                                 <GridViewColumn Header="Created By" Width="100" DisplayMemberBinding="{Binding CreatedBy}"/>
                                 <GridViewColumn Header="Date" Width="90" DisplayMemberBinding="{Binding CreatedDateDisplay}"/>
                             </GridView>
@@ -208,6 +209,25 @@
                                    Opacity="0.5"
                                    FontSize="11"
                                    Margin="0,3,0,0"/>
+
+                        <!-- Admin Notes (visible to admins only) -->
+                        <TextBlock x:Name="lblNotes"
+                                   Text="Admin Notes"
+                                   Foreground="{DynamicResource ForegroundColor}"
+                                   FontSize="12"
+                                   Margin="0,15,0,5"
+                                   Visibility="Collapsed"/>
+                        <TextBox x:Name="txtNotes"
+                                 Height="60"
+                                 Background="{DynamicResource BackgroundColor}"
+                                 Foreground="{DynamicResource ForegroundColor}"
+                                 BorderBrush="{DynamicResource BorderColor}"
+                                 Padding="8,6"
+                                 TextWrapping="Wrap"
+                                 AcceptsReturn="True"
+                                 VerticalScrollBarVisibility="Auto"
+                                 Visibility="Collapsed"
+                                 ToolTip="Internal notes visible to all users in the grid"/>
 
                         <TextBlock x:Name="txtCreatedInfo"
                                    Foreground="{DynamicResource ForegroundColor}"

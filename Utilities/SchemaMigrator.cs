@@ -22,7 +22,7 @@ namespace VANTAGE.Utilities
         private const string SchemaVersionKey = "SchemaVersion";
 
         // Increment this when adding new migrations
-        public const int CurrentSchemaVersion = 5;
+        public const int CurrentSchemaVersion = 6;
 
         // Runs all pending migrations sequentially
         // progressCallback is invoked with status messages for UI updates
@@ -88,6 +88,9 @@ namespace VANTAGE.Utilities
                     break;
                 case 5:
                     Migration_v5_AddPlanDateColumns(connection);
+                    break;
+                case 6:
+                    Migration_v6_AddFeedbackNotesColumn(connection);
                     break;
                 default:
                     throw new ArgumentException($"Unknown migration version: {version}");
@@ -285,6 +288,19 @@ namespace VANTAGE.Utilities
             {
                 using var cmd = connection.CreateCommand();
                 cmd.CommandText = "ALTER TABLE Activities ADD COLUMN PlanFin TEXT";
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        // v6: Add Notes column to Feedback table for admin notes
+        private static void Migration_v6_AddFeedbackNotesColumn(SqliteConnection connection)
+        {
+            var feedbackCols = GetTableColumns(connection, "Feedback");
+
+            if (!feedbackCols.Contains("Notes"))
+            {
+                using var cmd = connection.CreateCommand();
+                cmd.CommandText = "ALTER TABLE Feedback ADD COLUMN Notes TEXT";
                 cmd.ExecuteNonQuery();
             }
         }
