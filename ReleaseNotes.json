@@ -1,6 +1,15 @@
 {
   "releases": [
     {
+      "version": "26.1.22",
+      "date": "2026-02-23",
+      "highlights": [
+        "Feedback Board Notes column — admins can add notes visible to all users in the grid",
+        "Excel-style single-value paste — copy one cell, select multiple rows, Ctrl+V to fill all",
+        "Fix metadata error count not updating after row deletion"
+      ]
+    },
+    {
       "version": "26.1.21",
       "date": "2026-02-22",
       "highlights": [
