@@ -1144,6 +1144,34 @@ namespace VANTAGE.Views
             }
         }
 
+        // UserControl-level handler: intercepts Ctrl+V BEFORE the grid sees it
+        // Only handles single-value-to-multiple-rows paste; all other paste flows to grid normally
+        private void UserControl_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            // Only intercept Ctrl+V for our specific case
+            if (e.Key == Key.V && Keyboard.Modifiers == ModifierKeys.Control)
+            {
+                // Check: multiple rows selected via SelectedItems (keyboard selection like Ctrl+Shift+Down)
+                if (sfActivities.SelectedItems.Count > 1 && sfActivities.CurrentColumn != null)
+                {
+                    var clipboardValues = GetClipboardFirstColumn();
+
+                    // Only handle if SINGLE clipboard value being pasted to MULTIPLE rows
+                    if (clipboardValues != null && clipboardValues.Count == 1)
+                    {
+                        e.Handled = true;
+                        var rowBasedCells = BuildCellsFromSelectedRows();
+                        if (rowBasedCells != null && rowBasedCells.Count > 0)
+                        {
+                            PasteToSelectedCells(rowBasedCells, clipboardValues);
+                        }
+                    }
+                    // If multiple clipboard values, let grid handle it normally (don't set e.Handled)
+                }
+                // If not multi-row selection, let grid handle it normally (don't set e.Handled)
+            }
+        }
+
         // Intercept Ctrl+C and Ctrl+V for multi-cell copy/paste before edit control captures it
         private void SfActivities_PreviewKeyDown(object sender, KeyEventArgs e)
         {
@@ -1305,6 +1333,106 @@ namespace VANTAGE.Views
             {
                 AppLogger.Error(ex, "GetClipboardFirstColumn", App.CurrentUser?.Username ?? "Unknown");
                 return null;
+            }
+        }
+
+        // Build target cells from selected rows + current column (for Ctrl+Shift+Down selection)
+        private List<(Activity activity, GridColumn column)>? BuildCellsFromSelectedRows()
+        {
+            var currentColumn = sfActivities.CurrentColumn;
+            if (currentColumn == null)
+                return null;
+
+            var selectedActivities = sfActivities.SelectedItems.Cast<Activity>().ToList();
+            if (selectedActivities.Count == 0)
+                return null;
+
+            return selectedActivities.Select(a => (a, currentColumn)).ToList();
+        }
+
+        // Paste single clipboard value to multiple rows (Ctrl+Shift+Down selection)
+        private async void PasteToSelectedCells(List<(Activity activity, GridColumn column)> rowBasedCells, List<string> clipboardValues)
+        {
+            if (rowBasedCells.Count == 0 || clipboardValues.Count == 0)
+                return;
+
+            var column = rowBasedCells[0].column;
+            string columnName = column.MappingName;
+            string columnHeader = column.HeaderText;
+
+            // Validate: column must be editable
+            if (VANTAGE.Utilities.ColumnPermissions.IsReadOnly(columnName))
+            {
+                MessageBox.Show($"Cannot paste to '{columnHeader}' - this column is read-only.",
+                    "Paste Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // Get property for the target column
+            var property = typeof(Activity).GetProperty(columnName);
+            if (property == null)
+            {
+                MessageBox.Show($"Column '{columnName}' not found.", "Paste Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            // Validate: user must own ALL affected records
+            var currentUser = App.CurrentUser?.Username;
+            var nonOwnedRecords = rowBasedCells
+                .Where(r => !string.Equals(r.activity.AssignedTo, currentUser, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            if (nonOwnedRecords.Count > 0)
+            {
+                MessageBox.Show("Cannot paste - some rows are owned by other users.",
+                    "Paste Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // Single value to paste to all rows
+            string clipboardValue = clipboardValues[0];
+            var now = DateTime.UtcNow;
+
+            try
+            {
+                // Update all in-memory objects first
+                var updates = new List<(string UniqueID, object? NewValue)>();
+
+                foreach (var (activity, _) in rowBasedCells)
+                {
+                    // Try to convert and set value on in-memory object
+                    if (!TrySetPropertyValue(activity, property, columnName, clipboardValue, out string? errorMessage))
+                    {
+                        MessageBox.Show(errorMessage ?? $"Invalid value '{clipboardValue}' for column '{columnHeader}'.",
+                            "Paste Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
+                    }
+
+                    // Mark as modified in-memory
+                    activity.LocalDirty = 1;
+                    activity.UpdatedBy = currentUser ?? "Unknown";
+                    activity.UpdatedUtcDate = now;
+
+                    // Collect for bulk update
+                    var newValue = property.GetValue(activity);
+                    updates.Add((activity.UniqueID, newValue));
+                }
+
+                // Single bulk update to database
+                await ActivityRepository.BulkUpdateColumnAsync(
+                    columnName,
+                    updates,
+                    currentUser ?? "Unknown");
+
+                // Refresh grid
+                sfActivities.View?.Refresh();
+                UpdateSummaryPanel();
+                await CalculateMetadataErrorCount();
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "PasteToSelectedCells(RowBased)", App.CurrentUser?.Username ?? "Unknown");
+                MessageBox.Show($"Paste failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

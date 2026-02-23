@@ -9,7 +9,8 @@
              xmlns:converters="clr-namespace:VANTAGE.Converters"
              mc:Ignorable="d"
              d:DesignHeight="1080" d:DesignWidth="1920"
-             Background="{DynamicResource BackgroundColor}">
+             Background="{DynamicResource BackgroundColor}"
+             PreviewKeyDown="UserControl_PreviewKeyDown">
 
     <UserControl.Resources>
         

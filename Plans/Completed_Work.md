@@ -6,6 +6,9 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### February 23, 2026
+- **Single-value-to-multiple-rows paste (Excel-style fill):** Copy one cell, select multiple rows with Ctrl+Shift+Down, then Ctrl+V to paste that value into all selected rows. Uses UserControl-level PreviewKeyDown to intercept before the grid, with bulk database update for performance. Existing multi-cell paste (copy N / paste N) unchanged.
+
 ### February 22, 2026
 - **Fix Progress grid scrollbar styling:** Removed custom ScrollBar/Thumb style overrides from SfDataGrid.Resources that were replacing Syncfusion's FluentDark scrollbar with a thick white Windows-style scrollbar. This also fixed the last row being clipped behind the horizontal scrollbar. Scrollbar now uses native Syncfusion theme styling.
 - **Syncfusion packages 32.2.4 → 32.2.5:** Updated all Syncfusion packages and WebView2.
