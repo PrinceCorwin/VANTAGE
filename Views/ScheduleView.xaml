@@ -852,11 +852,17 @@
                                                          NumberDecimalDigits="1"
                                                          AllowEditing="True"/>
 
-                            <syncfusion:GridNumericColumn MappingName="BudgetMHs" 
-                                                         HeaderText="Budget MHs" 
+                            <syncfusion:GridNumericColumn MappingName="BudgetMHs"
+                                                         HeaderText="Budget MHs"
                                                          Width="100"
                                                          NumberDecimalDigits="1"
                                                          AllowEditing="True"/>
+
+                            <syncfusion:GridNumericColumn MappingName="EarnMHsCalc"
+                                                         HeaderText="Earn MHs"
+                                                         Width="100"
+                                                         NumberDecimalDigits="3"
+                                                         AllowEditing="False"/>
 
                             <syncfusion:GridDateTimeColumn MappingName="ActStart"
                                                           HeaderText="ActStart"

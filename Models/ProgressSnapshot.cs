@@ -14,6 +14,10 @@ namespace VANTAGE.Models
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
+        // Backing fields for properties that trigger EarnMHsCalc recalculation
+        private double _percentEntry;
+        private double _budgetMHs;
+
         // Primary Key (part 1)
         public string UniqueID { get; set; } = null!;
 
@@ -34,7 +38,19 @@ namespace VANTAGE.Models
         public double BaseUnit { get; set; }
         public double BudgetHoursGroup { get; set; }
         public double BudgetHoursROC { get; set; }
-        public double BudgetMHs { get; set; }
+        public double BudgetMHs
+        {
+            get => _budgetMHs;
+            set
+            {
+                if (Math.Abs(_budgetMHs - value) > 0.0001)
+                {
+                    _budgetMHs = value;
+                    OnPropertyChanged(nameof(BudgetMHs));
+                    OnPropertyChanged(nameof(EarnMHsCalc));
+                }
+            }
+        }
         public string ChgOrdNO { get; set; } = string.Empty;
         public double ClientBudget { get; set; }
         public double ClientCustom3 { get; set; }
@@ -57,7 +73,23 @@ namespace VANTAGE.Models
         public string MtrlSpec { get; set; } = string.Empty;
         public string Notes { get; set; } = string.Empty;
         public string PaintCode { get; set; } = string.Empty;
-        public double PercentEntry { get; set; }
+        public double PercentEntry
+        {
+            get => _percentEntry;
+            set
+            {
+                if (Math.Abs(_percentEntry - value) > 0.0001)
+                {
+                    _percentEntry = value;
+                    OnPropertyChanged(nameof(PercentEntry));
+                    OnPropertyChanged(nameof(EarnMHsCalc));
+                }
+            }
+        }
+
+        // Calculated: (PercentEntry / 100) * BudgetMHs
+        public double EarnMHsCalc =>
+            PercentEntry >= 100 ? BudgetMHs : Math.Round(PercentEntry / 100.0 * BudgetMHs, 3);
         public string PhaseCategory { get; set; } = string.Empty;
         public string PhaseCode { get; set; } = string.Empty;
         public string PipeGrade { get; set; } = string.Empty;
