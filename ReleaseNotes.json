@@ -1,6 +1,13 @@
 {
   "releases": [
     {
+      "version": "26.1.26",
+      "date": "2026-02-25",
+      "highlights": [
+        "Fix Progress sidebar button text clipping — widened toolbar so 'Not Started', 'My Records', etc. display fully"
+      ]
+    },
+    {
       "version": "26.1.25",
       "date": "2026-02-25",
       "highlights": [

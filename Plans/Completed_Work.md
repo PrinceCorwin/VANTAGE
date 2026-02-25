@@ -7,6 +7,7 @@ This document tracks completed features and fixes. Items are moved here from Pro
 ## Unreleased
 
 ### February 25, 2026
+- **Widen Progress sidebar toolbar:** Increased sidebar width from 100px to 115px to prevent button text clipping ("Not Started", "My Records", "Unsynced" were being truncated).
 - **Schedule UDF Column Mapping feature:** Added 5 custom UDF columns (SchedUDF1-5) to the Schedule module that users can map to P6 UDF columns. New ScheduleUDFMappingDialog accessible via Tools menu lets users configure Primary Header (P6 row 1 technical name), Secondary Header (P6 row 2 display name), and custom Display Name for each UDF column. UDF values are imported during P6 import with automatic column detection. Added COLUMNS button to Schedule toolbar for toggling UDF column visibility. Schema migration v7 adds UDF columns to Schedule table. Updated Help manual with UDF Column Mapping documentation.
 - **Fix Schedule grid lines disappearing with DPI settings:** Added `UseDrawing="Default"` to both Schedule grids (master and detail). This property is required for grid lines to render correctly when parent window has DPI rendering settings (`UseLayoutRounding`, `SnapsToDevicePixels`, `TextFormattingMode`). ProgressView already had this property, which is why it wasn't affected.
 
