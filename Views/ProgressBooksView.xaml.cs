@@ -99,19 +99,54 @@ namespace VANTAGE.Views
             }
         }
 
-        // Initialize the list of available Activity fields
+        // Initialize the list of available Activity fields (all data properties)
         private void InitializeFieldLists()
         {
             _allFields = new List<string>
             {
-                "ActivityID", // Short numeric ID for easy scanning
-                "Area", "ChgOrdNO", "CompType", "Description", "DwgNO",
-                "EqmtNO", "HtTrace", "InsulType", "LineNumber", "MtrlSpec", "Notes",
-                "PaintCode", "PhaseCategory", "PhaseCode", "PipeGrade", "ProjectID",
-                "RespParty", "RevNO", "RFINO", "ROCStep", "SchedActNO", "SecondDwgNO",
-                "Service", "ShopField", "ShtNO", "SubArea", "PjtSystem", "PjtSystemNo",
-                "TagNO", "UDF1", "UDF2", "UDF3", "UDF4", "UDF5", "UDF6", "UDF7",
-                "UDF8", "UDF9", "UDF10", "UniqueID", "WorkPackage"
+                // IDs
+                "ActivityID", "HexNO", "UniqueID",
+                // Tags - Core
+                "TagNO", "Description", "Area", "SubArea", "PjtSystem", "PjtSystemNo",
+                "ProjectID", "WorkPackage", "PhaseCode", "Service", "ShopField",
+                // Tags - Equipment/Line
+                "EqmtNO", "LineNumber", "ChgOrdNO",
+                // Tags - Material Specs
+                "MtrlSpec", "PipeGrade", "PaintCode", "InsulType", "HtTrace",
+                // Tags - Auxiliary
+                "Aux1", "Aux2", "Aux3", "Estimator", "RFINO", "SchedActNO", "XRay",
+                // Categories
+                "CompType", "PhaseCategory", "ROCStep",
+                // Drawings
+                "DwgNO", "RevNO", "SecondDwgNO", "ShtNO",
+                // Schedule
+                "SecondActno", "ActStart", "ActFin",
+                // Notes
+                "Notes",
+                // Progress values
+                "Quantity", "UOM", "EarnQtyEntry", "PercentEntry", "BudgetMHs",
+                "BaseUnit", "BudgetHoursGroup", "BudgetHoursROC",
+                // Calculated
+                "Status", "EarnMHsCalc", "EarnedQtyCalc", "PercentCompleteCalc",
+                "EarnedMHsRoc", "ClientEquivEarnQTY",
+                // Equipment values
+                "EquivQTY", "EquivUOM",
+                // ROC
+                "ROCID", "ROCPercent", "ROCBudgetQTY",
+                // Pipe
+                "PipeSize1", "PipeSize2",
+                // History
+                "PrevEarnMHs", "PrevEarnQTY",
+                // Client
+                "ClientEquivQty", "ClientBudget", "ClientCustom3",
+                // UDFs
+                "UDF1", "UDF2", "UDF3", "UDF4", "UDF5", "UDF6", "UDF7",
+                "UDF8", "UDF9", "UDF10", "UDF11", "UDF12", "UDF13", "UDF14",
+                "UDF15", "UDF16", "UDF17", "UDF20", "RespParty",
+                // Tracking
+                "AssignedTo", "CreatedBy", "UpdatedBy",
+                // Trigger
+                "DateTrigger"
             };
             _allFields.Sort();
         }

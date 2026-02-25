@@ -8,6 +8,7 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ### February 24, 2026
 - **Fix row duplication corrupting progress fields:** Duplicate rows had wrong PercentEntry, EarnQtyEntry, EarnedQtyCalc, and EarnMHsCalc values due to cascading recalculations during object initialization. Activity backing fields `_quantity` and `_budgetMHs` default to 0.001, which caused property setters to trigger calculations with wrong values before all fields were set. Fixed by wrapping duplicate creation in `BeginInit()`/`EndInit()` to suppress calculations until all fields are assigned.
+- **Add all Activity columns to Progress Book dropdown:** The Add Column dropdown in Progress Books only had ~39 fields. Expanded to ~80 fields covering all Activity data properties: progress values, calculated fields, dates, ROC, client, pipe, equipment, UDF11-17/20, tracking fields, etc.
 
 ### February 23, 2026
 - **Feedback Board Notes column:** Added Notes column to the Feedback Board grid visible to all users, with an admin-only Notes edit field on the right panel. Admins can add status updates or comments that all users can see. Includes schema migration v6 for existing databases.
