@@ -1337,14 +1337,14 @@
         <li>Go to <strong>Tools → Schedule UDF Mapping...</strong></li>
         <li>For each UDF column you want to use:
             <ul>
-                <li><strong>Enable</strong> — Check to activate this UDF column</li>
-                <li><strong>Primary Header</strong> — The P6 technical column name from row 1 of the export (e.g., <code>UDF_Custom1</code>)</li>
+                <li><strong>Primary Header</strong> — The P6 technical column name from row 1 of the export (e.g., <code>udf_text1</code>)</li>
                 <li><strong>Secondary Header</strong> — The P6 display name from row 2 (e.g., <code>Contractor Code</code>)</li>
                 <li><strong>Display Name</strong> — Your preferred column header in VANTAGE (defaults to SchedUDF1 if blank)</li>
             </ul>
         </li>
         <li>Click <strong>Save</strong></li>
     </ol>
+    <p>A UDF column is considered configured if it has either a Primary Header or Secondary Header filled in.</p>
 
     <h4>How Mapping Works</h4>
     <p>During P6 import, VANTAGE: Milestone searches for each configured UDF column:</p>
@@ -1355,11 +1355,11 @@
     </ol>
 
     <h4>Showing UDF Columns</h4>
-    <p>UDF columns are hidden by default. To show them:</p>
+    <p>UDF columns are hidden by default. To show or hide them:</p>
     <ol>
         <li>Click the <strong>COLUMNS</strong> button in the Schedule toolbar (right side)</li>
-        <li>Check the UDF columns you want to display</li>
-        <li>Enabled UDF columns automatically become visible after mapping configuration</li>
+        <li>Check or uncheck the UDF columns you want to display</li>
+        <li>Your visibility choices are saved and persist across sessions</li>
     </ol>
 
     <div class="note">

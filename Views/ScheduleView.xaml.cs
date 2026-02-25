@@ -1614,7 +1614,8 @@ namespace VANTAGE.Views
             }
         }
 
-        // Updates UDF column headers and visibility based on user's UDF mapping settings
+        // Updates UDF column headers based on user's UDF mapping settings
+        // Visibility is controlled separately via COLUMNS button and persisted in UserSettings
         public void UpdateUDFColumnHeaders()
         {
             try
@@ -1630,25 +1631,21 @@ namespace VANTAGE.Views
                     if (mapping != null && mapping.IsEnabled)
                     {
                         // Set header text (prefer DisplayName, then SecondaryHeader, then default)
-                        string headerText = mapping.DisplayName;
+                        string headerText = mapping.DisplayName ?? string.Empty;
                         if (string.IsNullOrWhiteSpace(headerText))
-                            headerText = mapping.SecondaryHeader;
+                            headerText = mapping.SecondaryHeader ?? string.Empty;
                         if (string.IsNullOrWhiteSpace(headerText))
                             headerText = $"SchedUDF{i + 1}";
 
                         col.HeaderText = headerText;
-                        col.IsHidden = false;
                     }
                     else
                     {
-                        // Not enabled - hide the column
-                        col.IsHidden = true;
+                        // No mapping configured - reset to default header
                         col.HeaderText = $"SchedUDF{i + 1}";
                     }
                 }
-
-                // Persist column state after updating
-                SaveColumnState();
+                // Don't touch IsHidden or SaveColumnState here - visibility comes from LoadColumnState
             }
             catch (Exception ex)
             {

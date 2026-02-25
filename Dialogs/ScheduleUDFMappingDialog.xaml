@@ -2,8 +2,8 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Schedule UDF Column Mappings"
-        Height="420"
-        Width="750"
+        Height="380"
+        Width="700"
         WindowStartupLocation="CenterOwner"
         Background="{DynamicResource BackgroundColor}"
         ResizeMode="NoResize"
@@ -33,7 +33,7 @@
                    FontSize="12">
             <Run Text="Primary Header:"/><Run Text=" P6 row 1 technical name (e.g., UDF_Custom1)  |  "/>
             <Run Text="Secondary Header:"/><Run Text=" P6 row 2 display name (e.g., Contractor Code)  |  "/>
-            <Run Text="Display Name:"/><Run Text=" Your preferred column header"/>
+            <Run Text="Display Name:"/><Run Text=" Your preferred column header in VANTAGE"/>
         </TextBlock>
 
         <!-- Column Headers -->
@@ -52,7 +52,6 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="55"/>
                 <ColumnDefinition Width="75"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="8"/>
@@ -63,51 +62,44 @@
 
             <!-- Column headers -->
             <TextBlock Grid.Row="0" Grid.Column="0"
-                       Text="Enable"
-                       FontWeight="SemiBold"
-                       Foreground="{DynamicResource ForegroundColor}"/>
-            <TextBlock Grid.Row="0" Grid.Column="1"
                        Text="Target"
                        FontWeight="SemiBold"
                        Foreground="{DynamicResource ForegroundColor}"/>
-            <TextBlock Grid.Row="0" Grid.Column="2"
+            <TextBlock Grid.Row="0" Grid.Column="1"
                        Text="Primary Header"
                        FontWeight="SemiBold"
                        Foreground="{DynamicResource ForegroundColor}"/>
-            <TextBlock Grid.Row="0" Grid.Column="4"
+            <TextBlock Grid.Row="0" Grid.Column="3"
                        Text="Secondary Header"
                        FontWeight="SemiBold"
                        Foreground="{DynamicResource ForegroundColor}"/>
-            <TextBlock Grid.Row="0" Grid.Column="6"
+            <TextBlock Grid.Row="0" Grid.Column="5"
                        Text="Display Name"
                        FontWeight="SemiBold"
                        Foreground="{DynamicResource ForegroundColor}"/>
 
             <!-- UDF1 -->
-            <CheckBox x:Name="chkEnable1" Grid.Row="2" Grid.Column="0"
-                      VerticalAlignment="Center" HorizontalAlignment="Center"
-                      ToolTip="Enable mapping for SchedUDF1"/>
-            <TextBlock Grid.Row="2" Grid.Column="1"
+            <TextBlock Grid.Row="2" Grid.Column="0"
                        Text="SchedUDF1"
                        VerticalAlignment="Center"
                        Foreground="{DynamicResource TextColorSecondary}"/>
-            <TextBox x:Name="txtPrimary1" Grid.Row="2" Grid.Column="2"
+            <TextBox x:Name="txtPrimary1" Grid.Row="2" Grid.Column="1"
                      Height="28"
                      Background="{DynamicResource ControlBackground}"
                      Foreground="{DynamicResource ForegroundColor}"
                      BorderBrush="{DynamicResource ControlBorder}"
                      VerticalContentAlignment="Center"
                      Padding="6,0"
-                     ToolTip="P6 row 1 column name"/>
-            <TextBox x:Name="txtSecondary1" Grid.Row="2" Grid.Column="4"
+                     ToolTip="P6 row 1 column name (e.g., udf_text1)"/>
+            <TextBox x:Name="txtSecondary1" Grid.Row="2" Grid.Column="3"
                      Height="28"
                      Background="{DynamicResource ControlBackground}"
                      Foreground="{DynamicResource ForegroundColor}"
                      BorderBrush="{DynamicResource ControlBorder}"
                      VerticalContentAlignment="Center"
                      Padding="6,0"
-                     ToolTip="P6 row 2 column name"/>
-            <TextBox x:Name="txtDisplay1" Grid.Row="2" Grid.Column="6"
+                     ToolTip="P6 row 2 column name (e.g., Contractor Code)"/>
+            <TextBox x:Name="txtDisplay1" Grid.Row="2" Grid.Column="5"
                      Height="28"
                      Background="{DynamicResource ControlBackground}"
                      Foreground="{DynamicResource ForegroundColor}"
@@ -117,14 +109,11 @@
                      ToolTip="Column header shown in grid (defaults to SchedUDF1)"/>
 
             <!-- UDF2 -->
-            <CheckBox x:Name="chkEnable2" Grid.Row="4" Grid.Column="0"
-                      VerticalAlignment="Center" HorizontalAlignment="Center"
-                      ToolTip="Enable mapping for SchedUDF2"/>
-            <TextBlock Grid.Row="4" Grid.Column="1"
+            <TextBlock Grid.Row="4" Grid.Column="0"
                        Text="SchedUDF2"
                        VerticalAlignment="Center"
                        Foreground="{DynamicResource TextColorSecondary}"/>
-            <TextBox x:Name="txtPrimary2" Grid.Row="4" Grid.Column="2"
+            <TextBox x:Name="txtPrimary2" Grid.Row="4" Grid.Column="1"
                      Height="28"
                      Background="{DynamicResource ControlBackground}"
                      Foreground="{DynamicResource ForegroundColor}"
@@ -132,7 +121,7 @@
                      VerticalContentAlignment="Center"
                      Padding="6,0"
                      ToolTip="P6 row 1 column name"/>
-            <TextBox x:Name="txtSecondary2" Grid.Row="4" Grid.Column="4"
+            <TextBox x:Name="txtSecondary2" Grid.Row="4" Grid.Column="3"
                      Height="28"
                      Background="{DynamicResource ControlBackground}"
                      Foreground="{DynamicResource ForegroundColor}"
@@ -140,7 +129,7 @@
                      VerticalContentAlignment="Center"
                      Padding="6,0"
                      ToolTip="P6 row 2 column name"/>
-            <TextBox x:Name="txtDisplay2" Grid.Row="4" Grid.Column="6"
+            <TextBox x:Name="txtDisplay2" Grid.Row="4" Grid.Column="5"
                      Height="28"
                      Background="{DynamicResource ControlBackground}"
                      Foreground="{DynamicResource ForegroundColor}"
@@ -150,14 +139,11 @@
                      ToolTip="Column header shown in grid (defaults to SchedUDF2)"/>
 
             <!-- UDF3 -->
-            <CheckBox x:Name="chkEnable3" Grid.Row="6" Grid.Column="0"
-                      VerticalAlignment="Center" HorizontalAlignment="Center"
-                      ToolTip="Enable mapping for SchedUDF3"/>
-            <TextBlock Grid.Row="6" Grid.Column="1"
+            <TextBlock Grid.Row="6" Grid.Column="0"
                        Text="SchedUDF3"
                        VerticalAlignment="Center"
                        Foreground="{DynamicResource TextColorSecondary}"/>
-            <TextBox x:Name="txtPrimary3" Grid.Row="6" Grid.Column="2"
+            <TextBox x:Name="txtPrimary3" Grid.Row="6" Grid.Column="1"
                      Height="28"
                      Background="{DynamicResource ControlBackground}"
                      Foreground="{DynamicResource ForegroundColor}"
@@ -165,7 +151,7 @@
                      VerticalContentAlignment="Center"
                      Padding="6,0"
                      ToolTip="P6 row 1 column name"/>
-            <TextBox x:Name="txtSecondary3" Grid.Row="6" Grid.Column="4"
+            <TextBox x:Name="txtSecondary3" Grid.Row="6" Grid.Column="3"
                      Height="28"
                      Background="{DynamicResource ControlBackground}"
                      Foreground="{DynamicResource ForegroundColor}"
@@ -173,7 +159,7 @@
                      VerticalContentAlignment="Center"
                      Padding="6,0"
                      ToolTip="P6 row 2 column name"/>
-            <TextBox x:Name="txtDisplay3" Grid.Row="6" Grid.Column="6"
+            <TextBox x:Name="txtDisplay3" Grid.Row="6" Grid.Column="5"
                      Height="28"
                      Background="{DynamicResource ControlBackground}"
                      Foreground="{DynamicResource ForegroundColor}"
@@ -183,14 +169,11 @@
                      ToolTip="Column header shown in grid (defaults to SchedUDF3)"/>
 
             <!-- UDF4 -->
-            <CheckBox x:Name="chkEnable4" Grid.Row="8" Grid.Column="0"
-                      VerticalAlignment="Center" HorizontalAlignment="Center"
-                      ToolTip="Enable mapping for SchedUDF4"/>
-            <TextBlock Grid.Row="8" Grid.Column="1"
+            <TextBlock Grid.Row="8" Grid.Column="0"
                        Text="SchedUDF4"
                        VerticalAlignment="Center"
                        Foreground="{DynamicResource TextColorSecondary}"/>
-            <TextBox x:Name="txtPrimary4" Grid.Row="8" Grid.Column="2"
+            <TextBox x:Name="txtPrimary4" Grid.Row="8" Grid.Column="1"
                      Height="28"
                      Background="{DynamicResource ControlBackground}"
                      Foreground="{DynamicResource ForegroundColor}"
@@ -198,7 +181,7 @@
                      VerticalContentAlignment="Center"
                      Padding="6,0"
                      ToolTip="P6 row 1 column name"/>
-            <TextBox x:Name="txtSecondary4" Grid.Row="8" Grid.Column="4"
+            <TextBox x:Name="txtSecondary4" Grid.Row="8" Grid.Column="3"
                      Height="28"
                      Background="{DynamicResource ControlBackground}"
                      Foreground="{DynamicResource ForegroundColor}"
@@ -206,7 +189,7 @@
                      VerticalContentAlignment="Center"
                      Padding="6,0"
                      ToolTip="P6 row 2 column name"/>
-            <TextBox x:Name="txtDisplay4" Grid.Row="8" Grid.Column="6"
+            <TextBox x:Name="txtDisplay4" Grid.Row="8" Grid.Column="5"
                      Height="28"
                      Background="{DynamicResource ControlBackground}"
                      Foreground="{DynamicResource ForegroundColor}"
@@ -216,14 +199,11 @@
                      ToolTip="Column header shown in grid (defaults to SchedUDF4)"/>
 
             <!-- UDF5 -->
-            <CheckBox x:Name="chkEnable5" Grid.Row="10" Grid.Column="0"
-                      VerticalAlignment="Center" HorizontalAlignment="Center"
-                      ToolTip="Enable mapping for SchedUDF5"/>
-            <TextBlock Grid.Row="10" Grid.Column="1"
+            <TextBlock Grid.Row="10" Grid.Column="0"
                        Text="SchedUDF5"
                        VerticalAlignment="Center"
                        Foreground="{DynamicResource TextColorSecondary}"/>
-            <TextBox x:Name="txtPrimary5" Grid.Row="10" Grid.Column="2"
+            <TextBox x:Name="txtPrimary5" Grid.Row="10" Grid.Column="1"
                      Height="28"
                      Background="{DynamicResource ControlBackground}"
                      Foreground="{DynamicResource ForegroundColor}"
@@ -231,7 +211,7 @@
                      VerticalContentAlignment="Center"
                      Padding="6,0"
                      ToolTip="P6 row 1 column name"/>
-            <TextBox x:Name="txtSecondary5" Grid.Row="10" Grid.Column="4"
+            <TextBox x:Name="txtSecondary5" Grid.Row="10" Grid.Column="3"
                      Height="28"
                      Background="{DynamicResource ControlBackground}"
                      Foreground="{DynamicResource ForegroundColor}"
@@ -239,7 +219,7 @@
                      VerticalContentAlignment="Center"
                      Padding="6,0"
                      ToolTip="P6 row 2 column name"/>
-            <TextBox x:Name="txtDisplay5" Grid.Row="10" Grid.Column="6"
+            <TextBox x:Name="txtDisplay5" Grid.Row="10" Grid.Column="5"
                      Height="28"
                      Background="{DynamicResource ControlBackground}"
                      Foreground="{DynamicResource ForegroundColor}"

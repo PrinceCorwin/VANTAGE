@@ -8,7 +8,6 @@ namespace VANTAGE.Dialogs
 {
     public partial class ScheduleUDFMappingDialog : Window
     {
-        private readonly CheckBox[] _enableCheckboxes;
         private readonly TextBox[] _primaryTextboxes;
         private readonly TextBox[] _secondaryTextboxes;
         private readonly TextBox[] _displayTextboxes;
@@ -16,10 +15,9 @@ namespace VANTAGE.Dialogs
         public ScheduleUDFMappingDialog()
         {
             InitializeComponent();
-            SfSkinManager.SetTheme(this, new Theme("FluentDark"));
+            SfSkinManager.SetTheme(this, new Theme(ThemeManager.GetSyncfusionThemeName()));
 
             // Store control references in arrays for easy iteration
-            _enableCheckboxes = new[] { chkEnable1, chkEnable2, chkEnable3, chkEnable4, chkEnable5 };
             _primaryTextboxes = new[] { txtPrimary1, txtPrimary2, txtPrimary3, txtPrimary4, txtPrimary5 };
             _secondaryTextboxes = new[] { txtSecondary1, txtSecondary2, txtSecondary3, txtSecondary4, txtSecondary5 };
             _displayTextboxes = new[] { txtDisplay1, txtDisplay2, txtDisplay3, txtDisplay4, txtDisplay5 };
@@ -36,7 +34,6 @@ namespace VANTAGE.Dialogs
                 var mapping = config.Mappings.Count > i ? config.Mappings[i] : null;
                 if (mapping != null)
                 {
-                    _enableCheckboxes[i].IsChecked = mapping.IsEnabled;
                     _primaryTextboxes[i].Text = mapping.PrimaryHeader;
                     _secondaryTextboxes[i].Text = mapping.SecondaryHeader;
                     _displayTextboxes[i].Text = mapping.DisplayName;
@@ -50,12 +47,16 @@ namespace VANTAGE.Dialogs
 
             for (int i = 0; i < 5; i++)
             {
+                var primary = _primaryTextboxes[i].Text?.Trim() ?? string.Empty;
+                var secondary = _secondaryTextboxes[i].Text?.Trim() ?? string.Empty;
+
                 config.Mappings.Add(new ScheduleUDFMapping
                 {
                     TargetColumn = $"SchedUDF{i + 1}",
-                    IsEnabled = _enableCheckboxes[i].IsChecked == true,
-                    PrimaryHeader = _primaryTextboxes[i].Text?.Trim() ?? string.Empty,
-                    SecondaryHeader = _secondaryTextboxes[i].Text?.Trim() ?? string.Empty,
+                    // A mapping is enabled if it has any header configured
+                    IsEnabled = !string.IsNullOrEmpty(primary) || !string.IsNullOrEmpty(secondary),
+                    PrimaryHeader = primary,
+                    SecondaryHeader = secondary,
                     DisplayName = _displayTextboxes[i].Text?.Trim() ?? string.Empty
                 });
             }
