@@ -3506,6 +3506,31 @@ namespace VANTAGE.Views
                             updateLocalCmd.Parameters.AddWithValue("@username", currentUser);
                             updateLocalCmd.Parameters.AddWithValue("@projectId", selectedProject);
                             updateLocalCmd.ExecuteNonQuery();
+
+                            // Step 10b: Update PrevEarnMHs to current EarnMHsCalc for submitted records
+                            // This captures the baseline so users can track week-over-week progress
+                            if (activitiesToInsert.Count > 0)
+                            {
+                                var uniqueIds = activitiesToInsert.Select(r => r["UniqueID"].ToString()).ToList();
+                                var idParams = string.Join(",", uniqueIds.Select((_, i) => $"@id{i}"));
+
+                                var prevEarnCmd = localConn.CreateCommand();
+                                prevEarnCmd.CommandText = $@"
+                                    UPDATE Activities
+                                    SET PrevEarnMHs = CASE
+                                        WHEN PercentEntry >= 100 THEN BudgetMHs
+                                        ELSE ROUND(PercentEntry / 100.0 * BudgetMHs, 3)
+                                    END,
+                                    LocalDirty = 1
+                                    WHERE UniqueID IN ({idParams})";
+
+                                for (int i = 0; i < uniqueIds.Count; i++)
+                                {
+                                    prevEarnCmd.Parameters.AddWithValue($"@id{i}", uniqueIds[i]);
+                                }
+
+                                prevEarnCmd.ExecuteNonQuery();
+                            }
                         }
 
                         return (true, string.Empty, snapshots, skipped, skippedList);

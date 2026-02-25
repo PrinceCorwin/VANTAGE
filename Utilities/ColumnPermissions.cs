@@ -19,6 +19,7 @@ namespace VANTAGE.Utilities
             "AssignedTo",
             "WeekEndDate",
             "ProgDate",
+            "PrevEarnMHs",
             "EarnMHsCalc",
             "PercentCompleteCalc",
             "EarnedQtyCalc",
