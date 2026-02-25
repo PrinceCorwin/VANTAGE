@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.1.23",
-  "releaseDate": "2026-02-24T19:23:37Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.23/VANTAGE-26.1.23.zip",
-  "zipSizeBytes": 149154543,
-  "sha256": "813D104F0FFFF34ED379751633983979D52F73ECA813BDBB4EB4ED26AAB09D39",
-  "releaseNotes": "Fix row duplication progress corruption, all columns in Progress Book dropdown, Earn MHs in Schedule detail grid"
+  "currentVersion": "26.1.24",
+  "releaseDate": "2026-02-25T13:50:47Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.24/VANTAGE-26.1.24.zip",
+  "zipSizeBytes": 149164555,
+  "sha256": "2CB1111285188C9BE7330514627980E3DF18C14C1548BEB89954616350D295A5",
+  "releaseNotes": "Schedule UDF Column Mapping, COLUMNS button for UDF visibility, fix grid lines with DPI settings"
 }
