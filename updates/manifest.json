@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.1.22",
-  "releaseDate": "2026-02-23T16:52:01Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.22/VANTAGE-26.1.22.zip",
-  "zipSizeBytes": 149154084,
-  "sha256": "E445C5DFF6B6B077B5977B72E56B945EDA4BCC8C2287D2772FFF6D38FA16EDFB",
-  "releaseNotes": "Feedback Board Notes column, Excel-style single-value paste, metadata error count fix"
+  "currentVersion": "26.1.23",
+  "releaseDate": "2026-02-24T19:23:37Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.23/VANTAGE-26.1.23.zip",
+  "zipSizeBytes": 149154543,
+  "sha256": "813D104F0FFFF34ED379751633983979D52F73ECA813BDBB4EB4ED26AAB09D39",
+  "releaseNotes": "Fix row duplication progress corruption, all columns in Progress Book dropdown, Earn MHs in Schedule detail grid"
 }

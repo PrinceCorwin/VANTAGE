@@ -1,6 +1,15 @@
 {
   "releases": [
     {
+      "version": "26.1.23",
+      "date": "2026-02-24",
+      "highlights": [
+        "Fix row duplication corrupting progress fields (PercentEntry, EarnQtyEntry, EarnMHsCalc)",
+        "Add all Activity columns to Progress Book add-column dropdown (~39 → ~80 fields)",
+        "Add Earn MHs column to Schedule detail grid — auto-recalculates from % and Budget MHs"
+      ]
+    },
+    {
       "version": "26.1.22",
       "date": "2026-02-23",
       "highlights": [
