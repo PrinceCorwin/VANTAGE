@@ -11,7 +11,7 @@ using VANTAGE.Utilities;
 namespace VANTAGE.ViewModels
 {
     // Filter types for P6 vs MS discrepancies
-    public enum DiscrepancyFilterType { None, Start, Finish, MHs, PercentComplete }
+    public enum DiscrepancyFilterType { None, Start, Finish, MHs, PercentComplete, ThreeWeekStart, ThreeWeekFinish }
 
     public class ScheduleViewModel : INotifyPropertyChanged, IScheduleCellIndicators
     {
@@ -272,10 +272,14 @@ namespace VANTAGE.ViewModels
                     }
 
                     OnPropertyChanged(nameof(DiscrepancyFilter));
+                    OnPropertyChanged(nameof(IsDiscrepancyFilterActive));
                     ApplyFilter();
                 }
             }
         }
+
+        // Returns true when any discrepancy filter is active (for ToggleButton binding)
+        public bool IsDiscrepancyFilterActive => _discrepancyFilter != DiscrepancyFilterType.None;
 
         // Clears all filter toggles and discrepancy filter
         public void ClearAllFilters()
@@ -291,6 +295,7 @@ namespace VANTAGE.ViewModels
             OnPropertyChanged(nameof(Filter3WLA));
             OnPropertyChanged(nameof(FilterRequiredFields));
             OnPropertyChanged(nameof(DiscrepancyFilter));
+            OnPropertyChanged(nameof(IsDiscrepancyFilterActive));
 
             ApplyFilter();
         }
@@ -581,6 +586,8 @@ namespace VANTAGE.ViewModels
                     DiscrepancyFilterType.Finish => row.HasFinishVariance,
                     DiscrepancyFilterType.MHs => row.HasBudgetMHsVariance,
                     DiscrepancyFilterType.PercentComplete => row.HasPercentCompleteVariance,
+                    DiscrepancyFilterType.ThreeWeekStart => row.HasThreeWeekStartForecast,
+                    DiscrepancyFilterType.ThreeWeekFinish => row.HasThreeWeekFinishForecast,
                     _ => true
                 };
             }

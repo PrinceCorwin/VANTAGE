@@ -8,6 +8,7 @@ using System.Text.Json;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
@@ -1303,14 +1304,15 @@ namespace VANTAGE.Views
         // DISCREPANCY FILTER DROPDOWN HANDLERS
         // ========================================
 
-        // Open discrepancies context menu
-        private void BtnFilterDiscrepancies_Click(object sender, RoutedEventArgs e)
+        // Open discrepancies context menu (PreviewMouseDown to prevent toggle)
+        private void BtnFilterDiscrepancies_PreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
-            if (sender is Button btn && btn.ContextMenu != null)
+            if (sender is ToggleButton btn && btn.ContextMenu != null)
             {
                 btn.ContextMenu.PlacementTarget = btn;
                 btn.ContextMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
                 btn.ContextMenu.IsOpen = true;
+                e.Handled = true; // Prevent click from toggling the button
             }
         }
 
@@ -1366,6 +1368,30 @@ namespace VANTAGE.Views
                 : DiscrepancyFilterType.PercentComplete;
             txtStatus.Text = _viewModel.DiscrepancyFilter == DiscrepancyFilterType.PercentComplete
                 ? "Filtered: % Complete discrepancies"
+                : "Filter cleared";
+            UpdateClearFiltersBorder();
+        }
+
+        // Filter by 3WLA Start variance (3WLA Start != P6 Start)
+        private void FilterDiscrepancy_3WLAStart_Click(object sender, RoutedEventArgs e)
+        {
+            _viewModel.DiscrepancyFilter = _viewModel.DiscrepancyFilter == DiscrepancyFilterType.ThreeWeekStart
+                ? DiscrepancyFilterType.None
+                : DiscrepancyFilterType.ThreeWeekStart;
+            txtStatus.Text = _viewModel.DiscrepancyFilter == DiscrepancyFilterType.ThreeWeekStart
+                ? "Filtered: 3WLA Start differs from P6"
+                : "Filter cleared";
+            UpdateClearFiltersBorder();
+        }
+
+        // Filter by 3WLA Finish variance (3WLA Finish != P6 Finish)
+        private void FilterDiscrepancy_3WLAFinish_Click(object sender, RoutedEventArgs e)
+        {
+            _viewModel.DiscrepancyFilter = _viewModel.DiscrepancyFilter == DiscrepancyFilterType.ThreeWeekFinish
+                ? DiscrepancyFilterType.None
+                : DiscrepancyFilterType.ThreeWeekFinish;
+            txtStatus.Text = _viewModel.DiscrepancyFilter == DiscrepancyFilterType.ThreeWeekFinish
+                ? "Filtered: 3WLA Finish differs from P6"
                 : "Filter cleared";
             UpdateClearFiltersBorder();
         }

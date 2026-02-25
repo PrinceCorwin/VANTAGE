@@ -1080,7 +1080,7 @@
         </tr>
         <tr>
             <td><strong>Discrepancies</strong></td>
-            <td>Dropdown that filters to activities where VANTAGE and P6 Schedule values don't match. Options: Actual Start, Actual Finish, MHs, % Complete</td>
+            <td>Dropdown that filters to activities where VANTAGE and P6 Schedule values don't match. Options: % Complete, 3WLA Finish, 3WLA Start, Actual Finish, Actual Start, MHs. Button turns green when a filter is active.</td>
         </tr>
         <tr>
             <td><strong>Required Fields</strong></td>
@@ -1238,27 +1238,35 @@
     </ol>
 
     <h3 id="sched-discrepancies">Discrepancies</h3>
-    <p>Yellow highlighting indicates P6 and MS data don't match. Use the Discrepancies dropdown to filter by type:</p>
+    <p>Yellow highlighting indicates P6 and VANTAGE data don't match (legend shows "Vtg ≠ P6"). Use the Discrepancies dropdown to filter by type:</p>
     <table>
         <tr>
             <th>Discrepancy Type</th>
             <th>Meaning</th>
         </tr>
         <tr>
-            <td><strong>Actual Start</strong></td>
-            <td>P6 and MS have different actual start dates (or one has a date and the other doesn't)</td>
+            <td><strong>% Complete</strong></td>
+            <td>P6 percent is higher than VANTAGE percent (P6 ahead of reality)</td>
+        </tr>
+        <tr>
+            <td><strong>3WLA Finish</strong></td>
+            <td>3WLA forecast finish date differs from P6 planned finish date</td>
+        </tr>
+        <tr>
+            <td><strong>3WLA Start</strong></td>
+            <td>3WLA forecast start date differs from P6 planned start date</td>
         </tr>
         <tr>
             <td><strong>Actual Finish</strong></td>
-            <td>P6 and MS have different actual finish dates</td>
+            <td>P6 and VANTAGE have different actual finish dates</td>
+        </tr>
+        <tr>
+            <td><strong>Actual Start</strong></td>
+            <td>P6 and VANTAGE have different actual start dates (or one has a date and the other doesn't)</td>
         </tr>
         <tr>
             <td><strong>MHs</strong></td>
-            <td>MS budget hours differ from P6 by more than 1%</td>
-        </tr>
-        <tr>
-            <td><strong>% Complete</strong></td>
-            <td>P6 percent is higher than MS percent (P6 ahead of reality)</td>
+            <td>VANTAGE budget hours differ from P6 by more than 1%</td>
         </tr>
     </table>
 
