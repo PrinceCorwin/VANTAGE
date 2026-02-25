@@ -22,7 +22,7 @@ VANTAGE: Milestone provides activity tracking, P6 Primavera schedule integration
 
 ### Schedule Module
 - **P6 Primavera Integration:** Import current schedule dates, export 3WLA updates
-- **Discrepancy Detection:** Filter by Actual Start, Actual Finish, MHs, or % Complete variances between P6 and VANTAGE: Milestone
+- **Discrepancy Detection:** Filter by % Complete, 3WLA Finish, 3WLA Start, Actual Finish, Actual Start, or MHs variances between P6 and VANTAGE
 - **MS Rollups:** Automatic MIN(start), MAX(finish), weighted % average from detail ProgressSnapshots
 - **Three-Week Lookahead (3WLA):** Forecast dates for activities starting/finishing within 21 days
 - **3WLA Excel Report:** Export with mismatch highlighting (Actuals, MHs, % Complete, date changes)
@@ -80,9 +80,9 @@ VANTAGE: Milestone provides activity tracking, P6 Primavera schedule integration
 
 ### Multi-Theme System
 - Three themes: Dark (default), Light, Orchid
-- Applied on restart via ThemeManager
-- Syncfusion SfSkinManager integration across all 22+ dialogs/views
-- Architecture supports adding new themes (role-based resource naming)
+- Live switching without restart via ThemeManager
+- Syncfusion SfSkinManager integration across all dialogs/views
+- Architecture supports adding new themes (see Themes/THEME_GUIDE.md)
 
 ### Tools & Utilities
 - Export logs with optional email attachment
@@ -123,7 +123,7 @@ VANTAGE: Milestone provides activity tracking, P6 Primavera schedule integration
 | Component | Technology |
 |-----------|------------|
 | **Framework** | .NET 8.0 (Windows) |
-| **UI** | WPF with Syncfusion 31.2.12 |
+| **UI** | WPF with Syncfusion |
 | **Themes** | FluentDark, FluentLight (Dark, Light, Orchid) |
 | **Local Database** | SQLite |
 | **Cloud Database** | Azure SQL Server |
@@ -138,11 +138,13 @@ VANTAGE: Milestone provides activity tracking, P6 Primavera schedule integration
 
 ## Requirements
 
+### For Users
 - Windows 10/11
-- .NET 8.0 Runtime
-- Visual Studio 2022 (for development)
-- Syncfusion License (community or commercial)
 - Azure SQL Server access (for multi-user sync)
+
+### For Development
+- Visual Studio 2022
+- Syncfusion License (community or commercial)
 - AWS credentials (for AI Progress Scan)
 
 ---
