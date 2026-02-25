@@ -3509,27 +3509,34 @@ namespace VANTAGE.Views
 
                             // Step 10b: Update PrevEarnMHs to current EarnMHsCalc for submitted records
                             // This captures the baseline so users can track week-over-week progress
+                            // Batch in groups of 500 to avoid SQLite's 999 variable limit
                             if (activitiesToInsert.Count > 0)
                             {
                                 var uniqueIds = activitiesToInsert.Select(r => r["UniqueID"].ToString()).ToList();
-                                var idParams = string.Join(",", uniqueIds.Select((_, i) => $"@id{i}"));
+                                const int batchSize = 500;
 
-                                var prevEarnCmd = localConn.CreateCommand();
-                                prevEarnCmd.CommandText = $@"
-                                    UPDATE Activities
-                                    SET PrevEarnMHs = CASE
-                                        WHEN PercentEntry >= 100 THEN BudgetMHs
-                                        ELSE ROUND(PercentEntry / 100.0 * BudgetMHs, 3)
-                                    END,
-                                    LocalDirty = 1
-                                    WHERE UniqueID IN ({idParams})";
-
-                                for (int i = 0; i < uniqueIds.Count; i++)
+                                for (int batch = 0; batch < uniqueIds.Count; batch += batchSize)
                                 {
-                                    prevEarnCmd.Parameters.AddWithValue($"@id{i}", uniqueIds[i]);
-                                }
+                                    var batchIds = uniqueIds.Skip(batch).Take(batchSize).ToList();
+                                    var idParams = string.Join(",", batchIds.Select((_, i) => $"@id{i}"));
 
-                                prevEarnCmd.ExecuteNonQuery();
+                                    var prevEarnCmd = localConn.CreateCommand();
+                                    prevEarnCmd.CommandText = $@"
+                                        UPDATE Activities
+                                        SET PrevEarnMHs = CASE
+                                            WHEN PercentEntry >= 100 THEN BudgetMHs
+                                            ELSE ROUND(PercentEntry / 100.0 * BudgetMHs, 3)
+                                        END,
+                                        LocalDirty = 1
+                                        WHERE UniqueID IN ({idParams})";
+
+                                    for (int i = 0; i < batchIds.Count; i++)
+                                    {
+                                        prevEarnCmd.Parameters.AddWithValue($"@id{i}", batchIds[i]);
+                                    }
+
+                                    prevEarnCmd.ExecuteNonQuery();
+                                }
                             }
                         }
 

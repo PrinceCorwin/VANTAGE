@@ -489,5 +489,43 @@ namespace VANTAGE.Utilities
         {
             SetUserSetting("AnalysisGridLayout", json, "json");
         }
+
+        // === SCHEDULE UDF MAPPING SETTINGS ===
+
+        private const string ScheduleUDFMappingKey = "Schedule.UDFMappings";
+
+        // Get UDF column mappings for P6 import
+        public static Models.ScheduleUDFMappingConfig GetScheduleUDFMappings()
+        {
+            try
+            {
+                var json = GetUserSetting(ScheduleUDFMappingKey);
+                if (!string.IsNullOrWhiteSpace(json))
+                {
+                    var config = System.Text.Json.JsonSerializer.Deserialize<Models.ScheduleUDFMappingConfig>(json);
+                    if (config != null)
+                        return config;
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "SettingsManager.GetScheduleUDFMappings");
+            }
+            return Models.ScheduleUDFMappingConfig.CreateDefault();
+        }
+
+        // Save UDF column mappings
+        public static void SetScheduleUDFMappings(Models.ScheduleUDFMappingConfig config)
+        {
+            try
+            {
+                var json = System.Text.Json.JsonSerializer.Serialize(config);
+                SetUserSetting(ScheduleUDFMappingKey, json, "json");
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "SettingsManager.SetScheduleUDFMappings");
+            }
+        }
     }
 }

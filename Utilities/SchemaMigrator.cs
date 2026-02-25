@@ -22,7 +22,7 @@ namespace VANTAGE.Utilities
         private const string SchemaVersionKey = "SchemaVersion";
 
         // Increment this when adding new migrations
-        public const int CurrentSchemaVersion = 6;
+        public const int CurrentSchemaVersion = 7;
 
         // Runs all pending migrations sequentially
         // progressCallback is invoked with status messages for UI updates
@@ -91,6 +91,9 @@ namespace VANTAGE.Utilities
                     break;
                 case 6:
                     Migration_v6_AddFeedbackNotesColumn(connection);
+                    break;
+                case 7:
+                    Migration_v7_AddScheduleUDFColumns(connection);
                     break;
                 default:
                     throw new ArgumentException($"Unknown migration version: {version}");
@@ -302,6 +305,23 @@ namespace VANTAGE.Utilities
                 using var cmd = connection.CreateCommand();
                 cmd.CommandText = "ALTER TABLE Feedback ADD COLUMN Notes TEXT";
                 cmd.ExecuteNonQuery();
+            }
+        }
+
+        // v7: Add SchedUDF1-5 columns to Schedule table for custom P6 UDF mapping
+        private static void Migration_v7_AddScheduleUDFColumns(SqliteConnection connection)
+        {
+            var scheduleCols = GetTableColumns(connection, "Schedule");
+
+            for (int i = 1; i <= 5; i++)
+            {
+                string colName = $"SchedUDF{i}";
+                if (!scheduleCols.Contains(colName))
+                {
+                    using var cmd = connection.CreateCommand();
+                    cmd.CommandText = $"ALTER TABLE Schedule ADD COLUMN {colName} TEXT NOT NULL DEFAULT ''";
+                    cmd.ExecuteNonQuery();
+                }
             }
         }
     }

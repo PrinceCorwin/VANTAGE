@@ -32,6 +32,16 @@ namespace VANTAGE.Models
         public double P6_BudgetMHs { get; set; }
 
         // ========================================
+        // USER-DEFINED FIELDS (Mapped from P6 UDFs)
+        // ========================================
+
+        public string SchedUDF1 { get; set; } = string.Empty;
+        public string SchedUDF2 { get; set; } = string.Empty;
+        public string SchedUDF3 { get; set; } = string.Empty;
+        public string SchedUDF4 { get; set; } = string.Empty;
+        public string SchedUDF5 { get; set; } = string.Empty;
+
+        // ========================================
         // 3WLA FIELDS (User edits in Schedule Module)
         // ========================================
 

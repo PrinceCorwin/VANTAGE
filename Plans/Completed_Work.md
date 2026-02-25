@@ -6,6 +6,10 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### February 25, 2026
+- **Schedule UDF Column Mapping feature:** Added 5 custom UDF columns (SchedUDF1-5) to the Schedule module that users can map to P6 UDF columns. New ScheduleUDFMappingDialog accessible via Tools menu lets users configure Primary Header (P6 row 1 technical name), Secondary Header (P6 row 2 display name), and custom Display Name for each UDF column. UDF values are imported during P6 import with automatic column detection. Added COLUMNS button to Schedule toolbar for toggling UDF column visibility. Schema migration v7 adds UDF columns to Schedule table. Updated Help manual with UDF Column Mapping documentation.
+- **Fix Schedule grid lines disappearing with DPI settings:** Added `UseDrawing="Default"` to both Schedule grids (master and detail). This property is required for grid lines to render correctly when parent window has DPI rendering settings (`UseLayoutRounding`, `SnapsToDevicePixels`, `TextFormattingMode`). ProgressView already had this property, which is why it wasn't affected.
+
 ### February 24, 2026
 - **Fix row duplication corrupting progress fields:** Duplicate rows had wrong PercentEntry, EarnQtyEntry, EarnedQtyCalc, and EarnMHsCalc values due to cascading recalculations during object initialization. Activity backing fields `_quantity` and `_budgetMHs` default to 0.001, which caused property setters to trigger calculations with wrong values before all fields were set. Fixed by wrapping duplicate creation in `BeginInit()`/`EndInit()` to suppress calculations until all fields are assigned.
 - **Add all Activity columns to Progress Book dropdown:** The Add Column dropdown in Progress Books only had ~39 fields. Expanded to ~80 fields covering all Activity data properties: progress values, calculated fields, dates, ROC, client, pipe, equipment, UDF11-17/20, tracking fields, etc.

@@ -92,6 +92,16 @@ namespace VANTAGE.Models
         }
 
         // ========================================
+        // USER-DEFINED FIELDS (Mapped from P6 UDFs, read-only)
+        // ========================================
+
+        public string SchedUDF1 { get; set; } = string.Empty;
+        public string SchedUDF2 { get; set; } = string.Empty;
+        public string SchedUDF3 { get; set; } = string.Empty;
+        public string SchedUDF4 { get; set; } = string.Empty;
+        public string SchedUDF5 { get; set; } = string.Empty;
+
+        // ========================================
         // EDITABLE FIELDS (user edits in Schedule Module)
         // ========================================
 

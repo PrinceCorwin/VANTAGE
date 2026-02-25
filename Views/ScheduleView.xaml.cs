@@ -68,6 +68,7 @@ namespace VANTAGE.Views
                     LoadColumnState();
                     LoadDetailColumnState();
                     LoadSplitterState();
+                    UpdateUDFColumnHeaders();
                     sfScheduleMaster.Opacity = 1;
                     sfScheduleDetail.Opacity = 1;
                 }), DispatcherPriority.ContextIdle);
@@ -1508,6 +1509,151 @@ namespace VANTAGE.Views
                     return result;
             }
             return null;
+        }
+
+        // ========================================
+        // UDF COLUMN VISIBILITY
+        // ========================================
+
+        // Opens popup with checkboxes for UDF columns only
+        private void BtnColumns_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var config = SettingsManager.GetScheduleUDFMappings();
+
+                // Build popup content
+                var popup = new System.Windows.Controls.Primitives.Popup
+                {
+                    PlacementTarget = btnColumns,
+                    Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom,
+                    StaysOpen = false,
+                    AllowsTransparency = true
+                };
+
+                var border = new Border
+                {
+                    Background = (Brush)FindResource("ControlBackground"),
+                    BorderBrush = (Brush)FindResource("ControlBorder"),
+                    BorderThickness = new Thickness(1),
+                    CornerRadius = new CornerRadius(4),
+                    Padding = new Thickness(10),
+                    Effect = new System.Windows.Media.Effects.DropShadowEffect
+                    {
+                        ShadowDepth = 4,
+                        BlurRadius = 8,
+                        Opacity = 0.3
+                    }
+                };
+
+                var panel = new StackPanel();
+
+                var header = new TextBlock
+                {
+                    Text = "UDF Column Visibility",
+                    FontWeight = FontWeights.SemiBold,
+                    Foreground = (Brush)FindResource("ForegroundColor"),
+                    Margin = new Thickness(0, 0, 0, 8)
+                };
+                panel.Children.Add(header);
+
+                // Create checkbox for each UDF column
+                var udfColumns = new[] { colSchedUDF1, colSchedUDF2, colSchedUDF3, colSchedUDF4, colSchedUDF5 };
+                for (int i = 0; i < 5; i++)
+                {
+                    var mapping = config.Mappings.Count > i ? config.Mappings[i] : null;
+                    var col = udfColumns[i];
+
+                    // Get display name (use DisplayName > SecondaryHeader > default)
+                    string displayName = mapping?.DisplayName ?? string.Empty;
+                    if (string.IsNullOrWhiteSpace(displayName))
+                        displayName = mapping?.SecondaryHeader ?? string.Empty;
+                    if (string.IsNullOrWhiteSpace(displayName))
+                        displayName = $"SchedUDF{i + 1}";
+
+                    var checkBox = new CheckBox
+                    {
+                        Content = displayName,
+                        IsChecked = !col.IsHidden,
+                        Foreground = (Brush)FindResource("ForegroundColor"),
+                        Margin = new Thickness(0, 2, 0, 2),
+                        Tag = col,
+                        IsEnabled = mapping?.IsEnabled ?? false,
+                        ToolTip = mapping?.IsEnabled == true
+                            ? $"Toggle visibility of {displayName}"
+                            : "Enable this column in Tools > Schedule UDF Mapping first"
+                    };
+
+                    checkBox.Checked += (s, args) =>
+                    {
+                        if (checkBox.Tag is GridColumn gc)
+                        {
+                            gc.IsHidden = false;
+                            SaveColumnState();
+                        }
+                    };
+                    checkBox.Unchecked += (s, args) =>
+                    {
+                        if (checkBox.Tag is GridColumn gc)
+                        {
+                            gc.IsHidden = true;
+                            SaveColumnState();
+                        }
+                    };
+
+                    panel.Children.Add(checkBox);
+                }
+
+                border.Child = panel;
+                popup.Child = border;
+                popup.IsOpen = true;
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "ScheduleView.BtnColumns_Click");
+            }
+        }
+
+        // Updates UDF column headers and visibility based on user's UDF mapping settings
+        public void UpdateUDFColumnHeaders()
+        {
+            try
+            {
+                var config = SettingsManager.GetScheduleUDFMappings();
+                var udfColumns = new[] { colSchedUDF1, colSchedUDF2, colSchedUDF3, colSchedUDF4, colSchedUDF5 };
+
+                for (int i = 0; i < 5; i++)
+                {
+                    var mapping = config.Mappings.Count > i ? config.Mappings[i] : null;
+                    var col = udfColumns[i];
+
+                    if (mapping != null && mapping.IsEnabled)
+                    {
+                        // Set header text (prefer DisplayName, then SecondaryHeader, then default)
+                        string headerText = mapping.DisplayName;
+                        if (string.IsNullOrWhiteSpace(headerText))
+                            headerText = mapping.SecondaryHeader;
+                        if (string.IsNullOrWhiteSpace(headerText))
+                            headerText = $"SchedUDF{i + 1}";
+
+                        col.HeaderText = headerText;
+                        col.IsHidden = false;
+                    }
+                    else
+                    {
+                        // Not enabled - hide the column
+                        col.IsHidden = true;
+                        col.HeaderText = $"SchedUDF{i + 1}";
+                    }
+                }
+
+                // Persist column state after updating
+                SaveColumnState();
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "ScheduleView.UpdateUDFColumnHeaders");
+            }
         }
 
         // ========================================

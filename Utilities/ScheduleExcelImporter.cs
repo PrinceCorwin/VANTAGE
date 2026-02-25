@@ -129,7 +129,52 @@ namespace VANTAGE.Utilities
             if (columnMap.Count < 9)
                 throw new InvalidOperationException($"P6 file is missing required columns. Found {columnMap.Count} of 10 expected columns.");
 
+            // Add UDF column mappings based on user configuration
+            AddUDFColumnMappings(columnMap, primaryRow, secondaryRow, lastCol);
+
             return columnMap;
+        }
+
+        // Add UDF columns to the column map based on user's mapping configuration
+        private static void AddUDFColumnMappings(
+            Dictionary<int, string> columnMap,
+            IXLRow primaryRow,
+            IXLRow secondaryRow,
+            int lastCol)
+        {
+            var udfConfig = SettingsManager.GetScheduleUDFMappings();
+
+            foreach (var mapping in udfConfig.Mappings.Where(m => m.IsEnabled))
+            {
+                if (string.IsNullOrWhiteSpace(mapping.PrimaryHeader) && string.IsNullOrWhiteSpace(mapping.SecondaryHeader))
+                    continue;
+
+                // Try to find column by primary header first (row 1, exact match)
+                for (int colNum = 1; colNum <= lastCol; colNum++)
+                {
+                    if (columnMap.ContainsKey(colNum))
+                        continue;
+
+                    string primaryText = primaryRow.Cell(colNum).GetString().Trim();
+                    string secondaryText = NormalizeSecondaryHeader(secondaryRow.Cell(colNum).GetString().Trim());
+
+                    // Match primary header (exact)
+                    if (!string.IsNullOrWhiteSpace(mapping.PrimaryHeader) &&
+                        primaryText.Equals(mapping.PrimaryHeader, StringComparison.OrdinalIgnoreCase))
+                    {
+                        columnMap[colNum] = mapping.TargetColumn;
+                        break;
+                    }
+
+                    // Match secondary header (normalized)
+                    if (!string.IsNullOrWhiteSpace(mapping.SecondaryHeader) &&
+                        secondaryText.Equals(mapping.SecondaryHeader, StringComparison.OrdinalIgnoreCase))
+                    {
+                        columnMap[colNum] = mapping.TargetColumn;
+                        break;
+                    }
+                }
+            }
         }
 
         // Map columns from a header row using the provided lookup dictionary
@@ -299,6 +344,23 @@ namespace VANTAGE.Utilities
                             schedule.P6_BudgetMHs = 0;
                         break;
 
+                    // User-mapped UDF columns from P6
+                    case "SchedUDF1":
+                        schedule.SchedUDF1 = cell.GetString().Trim();
+                        break;
+                    case "SchedUDF2":
+                        schedule.SchedUDF2 = cell.GetString().Trim();
+                        break;
+                    case "SchedUDF3":
+                        schedule.SchedUDF3 = cell.GetString().Trim();
+                        break;
+                    case "SchedUDF4":
+                        schedule.SchedUDF4 = cell.GetString().Trim();
+                        break;
+                    case "SchedUDF5":
+                        schedule.SchedUDF5 = cell.GetString().Trim();
+                        break;
+
                     case "StatusCode":
                         // Read but don't store - we calculate this at export time
                         break;
@@ -341,12 +403,14 @@ namespace VANTAGE.Utilities
                     P6_Start, P6_Finish, P6_ActualStart, P6_ActualFinish,
                     P6_PercentComplete, P6_BudgetMHs,
                     MissedStartReason, MissedFinishReason,
+                    SchedUDF1, SchedUDF2, SchedUDF3, SchedUDF4, SchedUDF5,
                     UpdatedBy, UpdatedUtcDate
                 ) VALUES (
                     @schedActNo, @weekEndDate, @wbsId, @description,
                     @plannedStart, @plannedFinish, @actualStart, @actualFinish,
                     @percentComplete, @budgetMHs,
                     @missedStartReason, @missedFinishReason,
+                    @schedUDF1, @schedUDF2, @schedUDF3, @schedUDF4, @schedUDF5,
                     @updatedBy, @updatedUtc
                 )";
 
@@ -365,6 +429,11 @@ namespace VANTAGE.Utilities
                     insertScheduleCmd.Parameters.AddWithValue("@budgetMHs", schedule.P6_BudgetMHs);
                     insertScheduleCmd.Parameters.AddWithValue("@missedStartReason", schedule.MissedStartReason ?? (object)DBNull.Value);
                     insertScheduleCmd.Parameters.AddWithValue("@missedFinishReason", schedule.MissedFinishReason ?? (object)DBNull.Value);
+                    insertScheduleCmd.Parameters.AddWithValue("@schedUDF1", schedule.SchedUDF1);
+                    insertScheduleCmd.Parameters.AddWithValue("@schedUDF2", schedule.SchedUDF2);
+                    insertScheduleCmd.Parameters.AddWithValue("@schedUDF3", schedule.SchedUDF3);
+                    insertScheduleCmd.Parameters.AddWithValue("@schedUDF4", schedule.SchedUDF4);
+                    insertScheduleCmd.Parameters.AddWithValue("@schedUDF5", schedule.SchedUDF5);
                     insertScheduleCmd.Parameters.AddWithValue("@updatedBy", schedule.UpdatedBy);
                     insertScheduleCmd.Parameters.AddWithValue("@updatedUtc", schedule.UpdatedUtcDate.ToString("yyyy-MM-ddTHH:mm:ssZ"));
 

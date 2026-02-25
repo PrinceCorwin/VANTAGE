@@ -47,16 +47,18 @@ WPF application for Summit Industrial replacing the legacy MS Access system ("Ol
 - Watch for `nul` file in git status - this is a Windows artifact that gets created accidentally. Delete it immediately with `rm -f nul` when spotted.
 
 ### MANDATORY Pre-Commit Checklist
-**STOP. Before running `git commit`, you MUST complete these steps IN ORDER:**
-1. Update C:\Users\steve\source\repos\PrinceCorwin\VANTAGE\Plans\Project_Status.md - Remove completed items from the backlog
-2. Update C:\Users\steve\source\repos\PrinceCorwin\VANTAGE\Plans\Completed_Work.md - Add entry describing what was completed (with date header)
+**When user says "commit", invoke the `/finisher` skill.** If the skill file is unavailable, follow these steps manually:
+
+1. Update `Plans/Project_Status.md` - Remove completed items from the backlog
+2. Update `Plans/Completed_Work.md` - Add entry describing what was completed (with date header)
 3. **HELP MANUAL CHECK (frequently missed!):**
    - Ask: "Did this work change anything a user would see or interact with?"
-   - If YES: Update Help/manual.html (add/update/remove sections, update TOC if needed)
+   - If YES: Update `Help/manual.html` (add/update/remove sections, update TOC if needed)
    - If NO: Confirm why not (e.g., "internal refactor only, no UI change")
 4. Update any other relevant plan docs if the work relates to a specific feature plan
-5. ONLY THEN proceed with git add and git commit
+5. ONLY THEN proceed with `git add -A` and `git commit`
 
+**All paths are relative to the repository root. NEVER use absolute paths.**
 **This is NOT optional. Failure to update status docs before committing is a workflow violation.**
 
 ### Status Doc Timing

@@ -13,7 +13,12 @@
         Width="1920"
         WindowState="Maximized"
         Background="{DynamicResource BackgroundColor}"
-        Icon="pack://application:,,,/images/AppIcon.ico">
+        Icon="pack://application:,,,/images/AppIcon.ico"
+        TextOptions.TextFormattingMode="Display"
+        TextOptions.TextRenderingMode="ClearType"
+        RenderOptions.ClearTypeHint="Enabled"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="40"/>
@@ -108,6 +113,7 @@
                             <Separator Background="{DynamicResource BorderColor}" Margin="5,2"/>
                             <syncfusion:DropDownMenuItem Header="Prorate MHs" Click="MenuProrateMHs_Click"/>
                             <syncfusion:DropDownMenuItem Header="Schedule Change Log" Click="MenuScheduleChangeLog_Click" ToolTip="View and apply changes made in the Schedule detail grid"/>
+                            <syncfusion:DropDownMenuItem Header="Schedule UDF Mapping..." Click="MenuScheduleUDFMapping_Click" ToolTip="Configure custom P6 UDF column mappings"/>
                         </syncfusion:DropDownMenuGroup>
                     </syncfusion:DropDownButtonAdv>
 

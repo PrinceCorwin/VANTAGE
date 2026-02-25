@@ -44,7 +44,8 @@ namespace VANTAGE.Repositories
                 SELECT SchedActNO, WbsId, Description,
                     P6_Start, P6_Finish, P6_ActualStart, P6_ActualFinish,
                     P6_PercentComplete, P6_BudgetMHs,
-                    MissedStartReason, MissedFinishReason
+                    MissedStartReason, MissedFinishReason,
+                    SchedUDF1, SchedUDF2, SchedUDF3, SchedUDF4, SchedUDF5
                 FROM Schedule
                 WHERE WeekEndDate = @weekEndDate
                   AND SchedActNO IN ({schedActNoList})
@@ -73,6 +74,11 @@ namespace VANTAGE.Repositories
                                 P6_BudgetMHs = reader.GetDouble(8),
                                 MissedStartReason = reader.IsDBNull(9) ? null : reader.GetString(9),
                                 MissedFinishReason = reader.IsDBNull(10) ? null : reader.GetString(10),
+                                SchedUDF1 = reader.IsDBNull(11) ? string.Empty : reader.GetString(11),
+                                SchedUDF2 = reader.IsDBNull(12) ? string.Empty : reader.GetString(12),
+                                SchedUDF3 = reader.IsDBNull(13) ? string.Empty : reader.GetString(13),
+                                SchedUDF4 = reader.IsDBNull(14) ? string.Empty : reader.GetString(14),
+                                SchedUDF5 = reader.IsDBNull(15) ? string.Empty : reader.GetString(15),
                                 WeekEndDate = weekEndDate
                             };
 

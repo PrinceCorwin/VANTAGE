@@ -1903,6 +1903,21 @@ namespace VANTAGE
             }
         }
 
+        // Opens the Schedule UDF Mapping dialog to configure custom P6 column mappings
+        private void MenuScheduleUDFMapping_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new Dialogs.ScheduleUDFMappingDialog();
+            dialog.Owner = this;
+            if (dialog.ShowDialog() == true)
+            {
+                // Refresh ScheduleView column headers if loaded
+                if (ContentArea.Content is Views.ScheduleView scheduleView)
+                {
+                    scheduleView.UpdateUDFColumnHeaders();
+                }
+            }
+        }
+
         // MODULE LOADING
 
         // Loads the Progress module, reusing the cached instance unless forceReload is true

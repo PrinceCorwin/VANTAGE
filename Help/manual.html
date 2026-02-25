@@ -305,6 +305,7 @@
                     <li><a href="#sched-missed-reasons">Missed Reasons</a></li>
                     <li><a href="#sched-discrepancies">Discrepancies</a></li>
                     <li><a href="#sched-p6-import">P6 Import</a></li>
+                    <li><a href="#sched-udf-mapping">UDF Column Mapping</a></li>
                     <li><a href="#sched-p6-export">P6 Export</a></li>
                     <li><a href="#sched-saving">Saving Changes</a></li>
                     <li><a href="#sched-change-log">Schedule Change Log</a></li>
@@ -448,6 +449,7 @@
         <li><strong>Help Sidebar</strong> — Open the help documentation sidebar (also F1)</li>
         <li><strong>Prorate MHs</strong> — Distribute budgeted man-hours across filtered activities</li>
         <li><strong>Schedule Change Log</strong> — View and apply changes made in the Schedule detail grid to live Activities</li>
+        <li><strong>Schedule UDF Mapping...</strong> — Configure custom P6 column mappings for the Schedule module UDF columns</li>
     </ul>
 
     <h4>Admin Menu (administrators only)</h4>
@@ -1325,6 +1327,44 @@
     <div class="warning">
         <div class="warning-title">Import Replaces Data</div>
         <p>P6 import replaces all existing schedule data. Your 3WLA forecast dates are preserved via the Activities PlanStart/PlanFin fields and will reload automatically. Missed reasons are cleared on import since they apply to the previous schedule data.</p>
+    </div>
+
+    <h3 id="sched-udf-mapping">UDF Column Mapping</h3>
+    <p>The Schedule module supports five custom UDF columns (SchedUDF1-5) that can be mapped to any P6 user-defined fields in your schedule export. This allows you to import custom P6 data into VANTAGE: Milestone.</p>
+
+    <h4>Configuring UDF Mappings</h4>
+    <ol>
+        <li>Go to <strong>Tools → Schedule UDF Mapping...</strong></li>
+        <li>For each UDF column you want to use:
+            <ul>
+                <li><strong>Enable</strong> — Check to activate this UDF column</li>
+                <li><strong>Primary Header</strong> — The P6 technical column name from row 1 of the export (e.g., <code>UDF_Custom1</code>)</li>
+                <li><strong>Secondary Header</strong> — The P6 display name from row 2 (e.g., <code>Contractor Code</code>)</li>
+                <li><strong>Display Name</strong> — Your preferred column header in VANTAGE (defaults to SchedUDF1 if blank)</li>
+            </ul>
+        </li>
+        <li>Click <strong>Save</strong></li>
+    </ol>
+
+    <h4>How Mapping Works</h4>
+    <p>During P6 import, VANTAGE: Milestone searches for each configured UDF column:</p>
+    <ol>
+        <li>First tries to match the Primary Header (row 1, exact match)</li>
+        <li>Falls back to Secondary Header (row 2, normalized) if primary not found</li>
+        <li>If neither is found, the UDF column remains empty</li>
+    </ol>
+
+    <h4>Showing UDF Columns</h4>
+    <p>UDF columns are hidden by default. To show them:</p>
+    <ol>
+        <li>Click the <strong>COLUMNS</strong> button in the Schedule toolbar (right side)</li>
+        <li>Check the UDF columns you want to display</li>
+        <li>Enabled UDF columns automatically become visible after mapping configuration</li>
+    </ol>
+
+    <div class="note">
+        <div class="note-title">UDF Data Behavior</div>
+        <p>UDF values are imported as text and are read-only. When you change UDF mappings and re-import a schedule, any UDF columns not in the new mapping are cleared to prevent stale data.</p>
     </div>
 
     <h3 id="sched-p6-export">P6 Export</h3>
