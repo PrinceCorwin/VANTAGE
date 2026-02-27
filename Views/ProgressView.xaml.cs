@@ -2483,15 +2483,21 @@ namespace VANTAGE.Views
 
             var filteredCount = _viewModel.FilteredCount;
             var totalCount = _viewModel.TotalRecordCount;
+            var selectedCount = sfActivities?.SelectedItems?.Count ?? 0;
 
-            // Show filtered count
-            if (filteredCount == totalCount)
+            // Build the record count text
+            string recordText = filteredCount == totalCount
+                ? $"{filteredCount:N0} records"
+                : $"{filteredCount:N0} of {totalCount:N0} records";
+
+            // Append selection count when more than 1 selected (1 is always current row)
+            if (selectedCount > 1)
             {
-                txtFilteredCount.Text = $"{filteredCount:N0} records";
+                txtFilteredCount.Text = $"{recordText}  •  {selectedCount:N0} selected";
             }
             else
             {
-                txtFilteredCount.Text = $"{filteredCount:N0} of {totalCount:N0} records";
+                txtFilteredCount.Text = recordText;
             }
         }
 
@@ -5005,6 +5011,9 @@ namespace VANTAGE.Views
 				// No cells selected, clear SelectedItems
 				sfActivities.SelectedItems.Clear();
 			}
+
+			// Update record count display to show selection info
+			UpdateRecordCount();
 		}
 
         private async void MenuAssignToUser_Click(object sender, RoutedEventArgs e)

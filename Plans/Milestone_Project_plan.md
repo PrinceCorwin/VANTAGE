@@ -20,7 +20,7 @@ WPF application replacing legacy MS Access VBA system (OldVantage) for tracking 
 
 ## Data Model
 
-### Activity (78 editable + 12 system fields)
+### Activity (~87 properties)
 Core record representing a construction activity.
 
 **Key Fields:**
@@ -33,6 +33,7 @@ Core record representing a construction activity.
 - `SchStart/SchFinish` - Actual start/finish dates
 - `LocalDirty` - 1=needs sync, 0=clean
 - `SyncVersion` - Monotonic version for sync
+- `UDF1-UDF17, UDF20` - User-defined fields for project-specific data
 
 **Calculated Fields:**
 - `EarnMHsCalc`, `EarnedQtyCalc`, `PercentCompleteCalc`, `Status`, `ROCLookupID`
@@ -47,11 +48,24 @@ Frozen copy of Activity at weekly submission time.
 - Created by Submit Progress button
 - Auto-purged after 4 weeks
 
-### Key Reference Tables
+### Reference Tables (Mirrored from Azure)
 - `Projects` - Valid project IDs
 - `Users` - User accounts with email
 - `Admins` - Admin privileges (Azure only)
+- `Managers` - Project managers
 - `ColumnMappings` - Excel import/export mappings
+- `Feedback` - Ideas/Bugs board entries
+
+### Local Tables
+- `Activities` - Primary data table (synced with Azure VMS_Activities)
+- `Schedule` - P6 import data
+- `ScheduleProjectMappings` - Links schedules to projects
+- `ThreeWeekLookahead` - 3WLA forecast data
+- `AppSettings` - Application configuration
+- `UserSettings` - Per-user preferences (layouts, theme, filters)
+- `FormTemplates` - Work package form templates
+- `WPTemplates` - Work package templates
+- `ProgressBookLayouts` - Saved progress book configurations
 
 ## Sync System
 
@@ -116,6 +130,23 @@ Frozen copy of Activity at weekly submission time.
 - Azure Admins table (single source of truth)
 - Manage users, projects, snapshots
 - View/restore/purge deleted records
+
+### Deleted Records Module
+- View soft-deleted Activities (IsDeleted=1 in Azure)
+- Restore deleted records back to active state
+- Permanently purge records (admin only)
+
+### Feedback Board
+- Ideas and bug tracking system
+- Azure-synced (VMS_Feedback table)
+- Status workflow: Submitted → In Progress → Completed
+- Admin controls for status management and deletion
+- Auto-purge of deleted items after 30 days
+
+### Procore Integration
+- OAuth 2.0 authentication with token refresh
+- API integration for project data sync
+- See `Procore_Plan.md` for implementation details
 
 ### Help Sidebar
 - WebView2-based HTML manual with virtual host mapping

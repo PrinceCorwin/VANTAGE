@@ -454,6 +454,27 @@ namespace VANTAGE.Utilities
                     insertMappingCmd.ExecuteNonQuery();
                 }
 
+                // Populate ThreeWeekStart/ThreeWeekFinish from Activities.PlanStart/PlanFin
+                string projectIdList = "'" + string.Join("','", projectIds) + "'";
+                var updateThreeWeekCmd = connection.CreateCommand();
+                updateThreeWeekCmd.CommandText = $@"
+                    UPDATE Schedule
+                    SET ThreeWeekStart = (
+                            SELECT MIN(PlanStart) FROM Activities
+                            WHERE Activities.SchedActNO = Schedule.SchedActNO
+                              AND Activities.ProjectID IN ({projectIdList})
+                              AND PlanStart IS NOT NULL AND PlanStart != ''
+                        ),
+                        ThreeWeekFinish = (
+                            SELECT MAX(PlanFin) FROM Activities
+                            WHERE Activities.SchedActNO = Schedule.SchedActNO
+                              AND Activities.ProjectID IN ({projectIdList})
+                              AND PlanFin IS NOT NULL AND PlanFin != ''
+                        )
+                    WHERE WeekEndDate = @weekEndDate";
+                updateThreeWeekCmd.Parameters.AddWithValue("@weekEndDate", weekEndDate.ToString("yyyy-MM-dd"));
+                updateThreeWeekCmd.ExecuteNonQuery();
+
                 transaction.Commit();
 
                 AppLogger.Info($"Imported {scheduleRows.Count} P6 activities for {weekEndDate:yyyy-MM-dd}",

@@ -22,7 +22,7 @@ namespace VANTAGE.Utilities
         private const string SchemaVersionKey = "SchemaVersion";
 
         // Increment this when adding new migrations
-        public const int CurrentSchemaVersion = 7;
+        public const int CurrentSchemaVersion = 8;
 
         // Runs all pending migrations sequentially
         // progressCallback is invoked with status messages for UI updates
@@ -94,6 +94,9 @@ namespace VANTAGE.Utilities
                     break;
                 case 7:
                     Migration_v7_AddScheduleUDFColumns(connection);
+                    break;
+                case 8:
+                    Migration_v8_AddScheduleThreeWeekColumns(connection);
                     break;
                 default:
                     throw new ArgumentException($"Unknown migration version: {version}");
@@ -322,6 +325,26 @@ namespace VANTAGE.Utilities
                     cmd.CommandText = $"ALTER TABLE Schedule ADD COLUMN {colName} TEXT NOT NULL DEFAULT ''";
                     cmd.ExecuteNonQuery();
                 }
+            }
+        }
+
+        // v8: Add ThreeWeekStart/ThreeWeekFinish columns to Schedule table for 3WLA date persistence
+        private static void Migration_v8_AddScheduleThreeWeekColumns(SqliteConnection connection)
+        {
+            var scheduleCols = GetTableColumns(connection, "Schedule");
+
+            if (!scheduleCols.Contains("ThreeWeekStart"))
+            {
+                using var cmd = connection.CreateCommand();
+                cmd.CommandText = "ALTER TABLE Schedule ADD COLUMN ThreeWeekStart TEXT";
+                cmd.ExecuteNonQuery();
+            }
+
+            if (!scheduleCols.Contains("ThreeWeekFinish"))
+            {
+                using var cmd = connection.CreateCommand();
+                cmd.CommandText = "ALTER TABLE Schedule ADD COLUMN ThreeWeekFinish TEXT";
+                cmd.ExecuteNonQuery();
             }
         }
     }

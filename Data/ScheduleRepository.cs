@@ -45,7 +45,8 @@ namespace VANTAGE.Repositories
                     P6_Start, P6_Finish, P6_ActualStart, P6_ActualFinish,
                     P6_PercentComplete, P6_BudgetMHs,
                     MissedStartReason, MissedFinishReason,
-                    SchedUDF1, SchedUDF2, SchedUDF3, SchedUDF4, SchedUDF5
+                    SchedUDF1, SchedUDF2, SchedUDF3, SchedUDF4, SchedUDF5,
+                    ThreeWeekStart, ThreeWeekFinish
                 FROM Schedule
                 WHERE WeekEndDate = @weekEndDate
                   AND SchedActNO IN ({schedActNoList})
@@ -60,6 +61,10 @@ namespace VANTAGE.Repositories
                         {
                             var schedActNo = reader.GetString(0);
                             schedActNOs.Add(schedActNo);
+
+                            // Parse 3WLA dates from Schedule table
+                            string threeWeekStartStr = reader.IsDBNull(16) ? "" : reader.GetString(16);
+                            string threeWeekFinishStr = reader.IsDBNull(17) ? "" : reader.GetString(17);
 
                             var masterRow = new ScheduleMasterRow
                             {
@@ -79,6 +84,8 @@ namespace VANTAGE.Repositories
                                 SchedUDF3 = reader.IsDBNull(13) ? string.Empty : reader.GetString(13),
                                 SchedUDF4 = reader.IsDBNull(14) ? string.Empty : reader.GetString(14),
                                 SchedUDF5 = reader.IsDBNull(15) ? string.Empty : reader.GetString(15),
+                                ThreeWeekStart = string.IsNullOrWhiteSpace(threeWeekStartStr) ? null : DateTime.Parse(threeWeekStartStr),
+                                ThreeWeekFinish = string.IsNullOrWhiteSpace(threeWeekFinishStr) ? null : DateTime.Parse(threeWeekFinishStr),
                                 WeekEndDate = weekEndDate
                             };
 
@@ -101,56 +108,7 @@ namespace VANTAGE.Repositories
                         return masterRows;
                     }
 
-                    // Step 4: Load 3WLA dates from Activities (MIN PlanStart, MAX PlanFin per SchedActNO)
-                    string projectIdList = "'" + string.Join("','", projectIds) + "'";
-                    schedActNoList = "'" + string.Join("','", schedActNOs) + "'";
-
-                    var planDatesDict = new Dictionary<string, (DateTime? MinPlanStart, DateTime? MaxPlanFin)>(StringComparer.OrdinalIgnoreCase);
-
-                    var planDatesCmd = connection.CreateCommand();
-                    planDatesCmd.CommandText = $@"
-                SELECT SchedActNO, MIN(PlanStart), MAX(PlanFin)
-                FROM Activities
-                WHERE ProjectID IN ({projectIdList})
-                  AND SchedActNO IN ({schedActNoList})
-                  AND ((PlanStart IS NOT NULL AND PlanStart != '') OR (PlanFin IS NOT NULL AND PlanFin != ''))
-                GROUP BY SchedActNO";
-
-                    using (var planReader = planDatesCmd.ExecuteReader())
-                    {
-                        while (planReader.Read())
-                        {
-                            string actNo = planReader.GetString(0);
-                            string startStr = planReader.IsDBNull(1) ? "" : planReader.GetString(1);
-                            string finStr = planReader.IsDBNull(2) ? "" : planReader.GetString(2);
-                            DateTime? minStart = string.IsNullOrWhiteSpace(startStr) ? null : DateTime.Parse(startStr);
-                            DateTime? maxFin = string.IsNullOrWhiteSpace(finStr) ? null : DateTime.Parse(finStr);
-                            planDatesDict[actNo] = (minStart, maxFin);
-                        }
-                    }
-
-                    // Apply 3WLA dates from Activities.PlanStart/PlanFin
-                    foreach (var row in masterRows)
-                    {
-                        if (planDatesDict.TryGetValue(row.SchedActNO, out var planDates))
-                        {
-                            // Pre-populate ThreeWeekStart if no actual start exists
-                            if (row.V_Start == null && planDates.MinPlanStart.HasValue)
-                            {
-                                row.ThreeWeekStart = planDates.MinPlanStart;
-                            }
-
-                            // Pre-populate ThreeWeekFinish if no actual finish exists
-                            if (row.V_Finish == null && planDates.MaxPlanFin.HasValue)
-                            {
-                                row.ThreeWeekFinish = planDates.MaxPlanFin;
-                            }
-                        }
-                    }
-
-                    // MissedReasons are now session-only (stored in Schedule table, loaded earlier)
-
-                    // Step 5: Apply default MissedReasons based on MS rollups (only if fields are empty)
+                    // Step 4: Apply default MissedReasons based on MS rollups (only if fields are empty)
                     foreach (var row in masterRows)
                     {
                         // Default MissedStartReason to "Started Early" if MS started before P6 schedule date
@@ -612,12 +570,14 @@ namespace VANTAGE.Repositories
                         return 0;
                     }
 
-                    // Command for updating MissedReasons in Schedule table (session-only persistence)
+                    // Command for updating Schedule table (3WLA dates and MissedReasons)
                     var scheduleCmd = connection.CreateCommand();
                     scheduleCmd.Transaction = transaction;
                     scheduleCmd.CommandText = @"
                 UPDATE Schedule
-                SET MissedStartReason = @missedStartReason,
+                SET ThreeWeekStart = @threeWeekStart,
+                    ThreeWeekFinish = @threeWeekFinish,
+                    MissedStartReason = @missedStartReason,
                     MissedFinishReason = @missedFinishReason,
                     UpdatedBy = @updatedBy,
                     UpdatedUtcDate = @updatedUtcDate
@@ -626,8 +586,12 @@ namespace VANTAGE.Repositories
 
                     foreach (var row in rows)
                     {
-                        // Update MissedReasons in Schedule table (for current session display)
+                        // Update Schedule table with 3WLA dates and MissedReasons
                         scheduleCmd.Parameters.Clear();
+                        scheduleCmd.Parameters.AddWithValue("@threeWeekStart",
+                            row.ThreeWeekStart?.ToString("yyyy-MM-dd") ?? (object)DBNull.Value);
+                        scheduleCmd.Parameters.AddWithValue("@threeWeekFinish",
+                            row.ThreeWeekFinish?.ToString("yyyy-MM-dd") ?? (object)DBNull.Value);
                         scheduleCmd.Parameters.AddWithValue("@missedStartReason",
                             row.MissedStartReason ?? (object)DBNull.Value);
                         scheduleCmd.Parameters.AddWithValue("@missedFinishReason",

@@ -5,7 +5,7 @@ Teams Meeting Session
 Target Audience: OldVantage users migrating to the new system
 Prerequisite: App is already installed and initial sync completed
 
-Estimated Total Time: ~90 minutes (adjust based on Q&A)
+Estimated Total Time: ~95 minutes (adjust based on Q&A)
 
 =============================================
 
@@ -14,6 +14,7 @@ Estimated Total Time: ~90 minutes (adjust based on Q&A)
    - Quick tour of the main interface layout
      - Module navigation bar: Progress, Schedule, Prog Books, Work Pkgs, Analysis
      - Status bar: version, current user, last sync time
+     - Three-dot Settings menu (hamburger icon)
    - Key differences from OldVantage
      - Cloud-synced via Azure (no more shared Access database)
      - Real-time multi-user support
@@ -25,11 +26,11 @@ Estimated Total Time: ~90 minutes (adjust based on Q&A)
    a. Grid Basics
       - Scrolling, resizing columns, reordering columns
       - Frozen columns (right-click header to freeze)
-      - Row numbers in the row header
+      - Selection counter in bottom toolbar (e.g., "5 of 89 selected")
       - Summary row at the bottom (totals for Quantity, BudgetMHs, etc.)
 
    b. Sorting & Grouping
-      - Click column header to sort
+      - Double-click column header to sort (prevents accidental sorting)
       - Drag columns to the Group Drop Area for multi-level grouping
       - Collapse/expand groups
 
@@ -41,12 +42,17 @@ Estimated Total Time: ~90 minutes (adjust based on Q&A)
       - User-defined filters (up to 5 conditions with AND/OR logic)
         - Creating, editing, and deleting saved filters via Manage Filters
 
-   d. Column Layouts
+   d. Visual Features
+      - Progress bars in PercentEntry cells (color-coded by completion range)
+      - Navigation buttons (▲/▼) in bottom toolbar for first/last row
+      - Ctrl+↑/↓ keyboard shortcuts for quick navigation
+
+   e. Column Layouts
       - Column visibility (Columns button in sidebar)
       - Saving named layouts via Settings menu > Grid Layouts
       - Switching between layouts
 
-   e. Summary Panel
+   f. Summary Panel
       - Click budget field label to change which column drives the totals
       - Earned value and percent complete calculations
 
@@ -56,7 +62,7 @@ Estimated Total Time: ~90 minutes (adjust based on Q&A)
    a. Editing Cells
       - Double-click to edit, Enter to save, Esc to cancel
       - Required metadata fields (9 fields highlighted red if missing)
-      - Date auto-logic: SchStart auto-sets on first progress, SchFinish auto-sets at 100%
+      - Date requirements: ActStart required when % > 0, ActFin required when % = 100
 
    b. Progressing Records
       - Select rows, then use 100% or 0% toolbar buttons
@@ -65,11 +71,19 @@ Estimated Total Time: ~90 minutes (adjust based on Q&A)
 
    c. Copy & Paste
       - Ctrl+C / Ctrl+V for cells (with validation)
+      - Single-value-to-multiple-rows paste (Excel-style fill: copy one cell, select multiple rows, paste)
       - Right-click context menu: Copy rows (visible or all columns)
       - Column header right-click: Copy column with/without header
 
-   d. Other Row Operations
+   d. Find & Replace (Ctrl+H)
+      - Standard text find/replace
+      - Replace BLANK cells in column (target empty/null cells)
+      - Replace ALL cells in column (bulk update)
+      - Count button to preview matches
+
+   e. Other Row Operations
       - Right-click context menu: Delete, Duplicate, Export Selected to Excel
+      - Add Blank Row: creates empty activity with system fields prepopulated
       - Assign button: reassign selected records to a different user
 
 
@@ -124,9 +138,15 @@ Estimated Total Time: ~90 minutes (adjust based on Q&A)
 
    e. Quick Filters
       - Missed Start / Missed Finish / 3WLA / Discrepancies / Required Fields
+      - Discrepancies dropdown: Start, Finish, Percent, 3WLA Start, 3WLA Finish
       - Brief explanation of what each filter surfaces
 
-   f. Schedule Change Log
+   f. UDF Column Mapping (Tools menu)
+      - 5 custom UDF columns (SchedUDF1-5) mappable to P6 UDF columns
+      - Configure Primary Header (P6 technical name), Secondary Header (display name)
+      - COLUMNS button in toolbar to toggle UDF visibility
+
+   g. Schedule Change Log
       - Tools > Schedule Change Log
       - Reviewing logged changes and applying selected changes to live Activities
 
@@ -135,7 +155,7 @@ Estimated Total Time: ~90 minutes (adjust based on Q&A)
 =============================================
    - Purpose: generate printable PDF checklists for field crews
    - Layout selection and configuration
-      - Clone and delete layouts
+      - To copy a layout: change the name and save
       - Paper size: Letter vs. Tabloid
    - Column selection
    - GENERATE button to produce the PDF
@@ -157,17 +177,32 @@ Estimated Total Time: ~90 minutes (adjust based on Q&A)
    - Token system: dynamic field replacement in generated documents
 
 
-9. TOOLS & SETTINGS (~10 min)
+9. ANALYSIS MODULE (~5 min)
+=============================================
+   - Purpose: view aggregated metrics across activities
+   - Layout: 4×2 resizable grid sections
+   - Summary Grid features
+      - Group By dropdown (AssignedTo, CompType, PhaseCode, SchedActNO, etc.)
+      - Current User / All Users toggle
+      - Projects multi-select filter
+      - Metrics columns: BudgetMHs, EarnedMHs, Quantity, QtyEarned, % Complete
+      - Conditional coloring on % Complete (red/orange/yellow/green by range)
+      - Sortable, filterable, resizable columns
+
+
+10. TOOLS & SETTINGS (~10 min)
 =============================================
    a. Tools Menu
       - Help Sidebar (F1) - searchable context-sensitive help
       - Prorate MHs - distributing budgeted hours across filtered activities
       - Schedule Change Log (covered in Schedule section)
+      - Schedule UDF Column Mapping (covered in Schedule section)
 
    b. Settings Menu (three-dot icon)
       - Grid Layouts (save/load named layouts)
       - Theme selection: Dark, Light, Orchid
       - Import/Export Settings (transfer settings between machines)
+      - See Release Notes: view update history and new features
       - Feedback Board: submitting ideas and bug reports
       - About VANTAGE: Milestone
 
@@ -176,12 +211,15 @@ Estimated Total Time: ~90 minutes (adjust based on Q&A)
       - Double-click: Edit cell
       - Enter/Esc: Save/Cancel
       - Ctrl+C/V: Copy/Paste
+      - Ctrl+H: Find/Replace
       - Ctrl+Click: Multi-select
       - Shift+Click: Range select
+      - Ctrl+↑/↓: Jump to first/last row
+      - Delete/Backspace: Clear selected cell
       - Right-click: Context menu
 
 
-10. Q&A AND WRAP-UP (~5 min)
+11. Q&A AND WRAP-UP (~5 min)
 =============================================
    - Open floor for questions
    - Remind users about:

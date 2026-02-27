@@ -17,9 +17,9 @@ WPF application for Summit Industrial replacing the legacy MS Access system ("Ol
 - WPF .NET 8, Syncfusion 31.2.12 (FluentDark theme)
 - SQLite (local) + Azure SQL Server (central sync)
 - MVVM with async/await
-- Project is a work in progress - architecture and conventions may evolve.
-- Local database can be deleted and re-synced from Azure at any time.
-- Don't reject refactoring opportunities for fear user downtime. There are no production users yet.
+- **App is LIVE with active users** - treat all changes as production changes
+- Schema migrations must be backward-compatible (use SchemaMigrator for local DB changes)
+- Local database contains user data - never suggest deleting it; migrations handle schema updates
 
 ## Development Approach
 - ONE change at a time, test before proceeding

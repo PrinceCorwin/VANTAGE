@@ -6,6 +6,12 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### February 27, 2026
+- **Fix 3WLA date persistence in Schedule module:** 3-Week Lookahead dates (ThreeWeekStart/ThreeWeekFinish) now persist correctly across sessions. Added ThreeWeekStart/ThreeWeekFinish columns to local Schedule table via schema migration v8. P6 Import populates these columns from MIN(Activities.PlanStart)/MAX(Activities.PlanFin) per SchedActNO. Schedule module now reads 3WLA dates directly from Schedule table (not Activities), and Save writes to both Schedule table and local Activities. This ensures session persistence regardless of whether local Activities exist.
+- **Selection counter in Progress grid footer:** When multiple rows are selected (via Ctrl+Click, Shift+Click, etc.), the footer now shows "N selected" alongside the record count. Single-row selection (normal navigation) doesn't trigger the counter since one row is always current.
+- **Update CLAUDE.md for production status:** Removed outdated references to "no production users" and "local database can be deleted". App is now live with active users; schema migrations handle database updates.
+- **Tutorial outline updates:** Added Analysis module section, UDF Column Mapping, Find & Replace enhancements, navigation buttons, selection counter, and other recent features. Fixed outdated info (double-click to sort, date requirements vs auto-set, clone → save-as workflow).
+
 ### February 25, 2026
 - **Widen Progress sidebar toolbar:** Increased sidebar width from 100px to 115px to prevent button text clipping ("Not Started", "My Records", "Unsynced" were being truncated).
 - **Schedule Discrepancies dropdown improvements:** Restyled dropdown to match other filter buttons (uses FilterToggleButtonStyle with green background/border when active). Removed separator lines from menu. Added 3WLA Start and 3WLA Finish filter options for finding rows where 3WLA dates differ from P6 dates. Menu items now in alphabetical order after Clear Filter. Toggle state now only changes on menu item selection, not button click.
