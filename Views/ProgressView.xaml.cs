@@ -1150,6 +1150,20 @@ namespace VANTAGE.Views
             }
         }
 
+        // Returns true if keyboard focus is inside a popup (e.g. column filter search field)
+        private bool IsFocusInsidePopup()
+        {
+            var focused = Keyboard.FocusedElement as DependencyObject;
+            while (focused != null)
+            {
+                if (focused is System.Windows.Controls.Primitives.Popup)
+                    return true;
+                focused = VisualTreeHelper.GetParent(focused)
+                    ?? LogicalTreeHelper.GetParent(focused);
+            }
+            return false;
+        }
+
         // UserControl-level handler: intercepts Ctrl+V BEFORE the grid sees it
         // Only handles single-value-to-multiple-rows paste; all other paste flows to grid normally
         private void UserControl_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -1157,6 +1171,8 @@ namespace VANTAGE.Views
             // Only intercept Ctrl+V for our specific case
             if (e.Key == Key.V && Keyboard.Modifiers == ModifierKeys.Control)
             {
+                // Let filter popup search fields handle their own paste
+                if (IsFocusInsidePopup()) return;
                 // Check: multiple rows selected via SelectedItems (keyboard selection like Ctrl+Shift+Down)
                 if (sfActivities.SelectedItems.Count > 1 && sfActivities.CurrentColumn != null)
                 {
@@ -1181,6 +1197,9 @@ namespace VANTAGE.Views
         // Intercept Ctrl+C and Ctrl+V for multi-cell copy/paste before edit control captures it
         private void SfActivities_PreviewKeyDown(object sender, KeyEventArgs e)
         {
+            // Let filter popup search fields handle their own copy/paste
+            if (IsFocusInsidePopup()) return;
+
             // Handle Ctrl+C for multi-cell copy
             if (e.Key == Key.C && Keyboard.Modifiers == ModifierKeys.Control)
             {

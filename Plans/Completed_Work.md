@@ -6,6 +6,9 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### February 28, 2026
+- **Fix Ctrl+V pasting into grid cell instead of filter popup search field:** When a column filter popup was open, Ctrl+V/Ctrl+C was intercepted by the Progress grid's PreviewKeyDown handlers before the filter's TextBox could process it. Added `IsFocusInsidePopup()` check that walks the visual/logical tree from the focused element to detect if focus is inside a Popup. Both `UserControl_PreviewKeyDown` and `SfActivities_PreviewKeyDown` now bail out when focus is in a popup, letting filter search fields handle copy/paste natively. Schedule view was unaffected because it uses Syncfusion's `GridPasteContent` event instead of PreviewKeyDown for paste.
+
 ### February 27, 2026
 - **Fix 3WLA date persistence in Schedule module:** 3-Week Lookahead dates (ThreeWeekStart/ThreeWeekFinish) now persist correctly across sessions. Added ThreeWeekStart/ThreeWeekFinish columns to local Schedule table via schema migration v8. P6 Import populates these columns from MIN(Activities.PlanStart)/MAX(Activities.PlanFin) per SchedActNO. Schedule module now reads 3WLA dates directly from Schedule table (not Activities), and Save writes to both Schedule table and local Activities. This ensures session persistence regardless of whether local Activities exist.
 - **Selection counter in Progress grid footer:** When multiple rows are selected (via Ctrl+Click, Shift+Click, etc.), the footer now shows "N selected" alongside the record count. Single-row selection (normal navigation) doesn't trigger the counter since one row is always current.
