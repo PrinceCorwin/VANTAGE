@@ -1,6 +1,14 @@
 {
   "releases": [
     {
+      "version": "26.1.28",
+      "date": "2026-02-28",
+      "highlights": [
+        "Undo/Redo (Ctrl+Z / Ctrl+Y) — multi-level undo for cell edits, paste operations, and cell clears in the Progress module",
+        "Fix PercentEntry arrow key navigation — arrow Down/Up now commits edit and moves to next row, typing a number auto-enters edit mode"
+      ]
+    },
+    {
       "version": "26.1.27",
       "date": "2026-02-28",
       "highlights": [

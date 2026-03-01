@@ -78,9 +78,9 @@ Updates are distributed via GitHub Releases. The auto-updater checks `updates/ma
 1. Bump version in `VANTAGE.csproj` (Version, AssemblyVersion, FileVersion)
 2. Run: `powershell -ExecutionPolicy Bypass -File "Scripts\publish-update.ps1" -Version "X.Y.Z"`
 3. Script outputs: ZIP path, size, and SHA-256 hash
-4. Create GitHub Release at `https://github.com/PrinceCorwin/VANTAGE/releases`
+4. Create GitHub Release — **`gh` CLI is NOT installed**; do NOT attempt to use it. Instead, provide the user with the release URL, tag, title, and formatted description to create manually at `https://github.com/PrinceCorwin/VANTAGE/releases`
    - Tag: `vX.Y.Z`
-   - Title: Brief description of main changes (e.g., "Analysis module UI polish")
+   - Title: see convention below
    - Upload the ZIP file
 5. Update `updates/manifest.json` with:
    - `currentVersion`: the new version

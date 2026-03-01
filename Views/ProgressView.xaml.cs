@@ -65,6 +65,8 @@ namespace VANTAGE.Views
             }
         }
         private object? _originalCellValue;
+        private Dictionary<string, object?>? _originalDerivedValues;
+        private readonly UndoManager _undoManager = new();
         private Dictionary<string, PropertyInfo?> _propertyCache = new Dictionary<string, PropertyInfo?>();
         private async void DeleteSelectedActivities_Click(object sender, RoutedEventArgs e)
         {
@@ -1164,11 +1166,28 @@ namespace VANTAGE.Views
             return false;
         }
 
-        // UserControl-level handler: intercepts Ctrl+V BEFORE the grid sees it
-        // Only handles single-value-to-multiple-rows paste; all other paste flows to grid normally
+        // UserControl-level handler: intercepts keyboard shortcuts BEFORE the grid sees them
         private void UserControl_PreviewKeyDown(object sender, KeyEventArgs e)
         {
-            // Only intercept Ctrl+V for our specific case
+            if (IsFocusInsidePopup()) return;
+
+            // Ctrl+Z: Undo
+            if (e.Key == Key.Z && Keyboard.Modifiers == ModifierKeys.Control)
+            {
+                e.Handled = true;
+                _ = PerformUndoAsync();
+                return;
+            }
+
+            // Ctrl+Y: Redo
+            if (e.Key == Key.Y && Keyboard.Modifiers == ModifierKeys.Control)
+            {
+                e.Handled = true;
+                _ = PerformRedoAsync();
+                return;
+            }
+
+            // Ctrl+V: single-value-to-multiple-rows paste
             if (e.Key == Key.V && Keyboard.Modifiers == ModifierKeys.Control)
             {
                 // Let filter popup search fields handle their own paste
@@ -1247,6 +1266,54 @@ namespace VANTAGE.Views
 
                 e.Handled = true;
                 _ = ClearCurrentCellAsync(activity, sfActivities.CurrentColumn.MappingName);
+            }
+            // Auto-enter edit mode on PercentEntry when typing a digit (GridTemplateColumn
+            // doesn't do this natively like GridTextColumn/GridNumericColumn)
+            else if (Keyboard.Modifiers == ModifierKeys.None &&
+                     sfActivities.CurrentColumn?.MappingName == "PercentEntry")
+            {
+                var currentCell = sfActivities.SelectionController.CurrentCellManager.CurrentCell;
+                if (currentCell != null && !currentCell.IsEditing &&
+                    ((e.Key >= Key.D0 && e.Key <= Key.D9) || (e.Key >= Key.NumPad0 && e.Key <= Key.NumPad9)))
+                {
+                    sfActivities.SelectionController.CurrentCellManager.BeginEdit();
+                }
+            }
+        }
+
+        // Find an Activity by UniqueID from the view model's full collection
+        private Activity? FindActivityByUniqueID(string uniqueId)
+        {
+            return _viewModel.Activities.FirstOrDefault(a => a.UniqueID == uniqueId);
+        }
+
+        // Execute undo operation
+        private async Task PerformUndoAsync()
+        {
+            if (!_undoManager.CanUndo) return;
+
+            var (success, description) = await _undoManager.UndoAsync(FindActivityByUniqueID);
+            if (success)
+            {
+                sfActivities.View?.Refresh();
+                UpdateSummaryPanel();
+                await CalculateMetadataErrorCount();
+                txtFilteredCount.Text = $"Undid: {description}";
+            }
+        }
+
+        // Execute redo operation
+        private async Task PerformRedoAsync()
+        {
+            if (!_undoManager.CanRedo) return;
+
+            var (success, description) = await _undoManager.RedoAsync(FindActivityByUniqueID);
+            if (success)
+            {
+                sfActivities.View?.Refresh();
+                UpdateSummaryPanel();
+                await CalculateMetadataErrorCount();
+                txtFilteredCount.Text = $"Redid: {description}";
             }
         }
 
@@ -1420,11 +1487,26 @@ namespace VANTAGE.Views
 
             try
             {
-                // Update all in-memory objects first
-                var updates = new List<(string UniqueID, object? NewValue)>();
-
+                // Capture old values for undo before modifying
+                var undoChanges = new List<CellChange>();
                 foreach (var (activity, _) in rowBasedCells)
                 {
+                    undoChanges.Add(new CellChange
+                    {
+                        UniqueID = activity.UniqueID,
+                        ColumnName = columnName,
+                        OldValue = property.GetValue(activity),
+                        DerivedOldValues = UndoManager.CaptureDerivedFields(activity, columnName)
+                    });
+                }
+
+                // Update all in-memory objects
+                var updates = new List<(string UniqueID, object? NewValue)>();
+
+                for (int i = 0; i < rowBasedCells.Count; i++)
+                {
+                    var (activity, _) = rowBasedCells[i];
+
                     // Try to convert and set value on in-memory object
                     if (!TrySetPropertyValue(activity, property, columnName, clipboardValue, out string? errorMessage))
                     {
@@ -1438,9 +1520,10 @@ namespace VANTAGE.Views
                     activity.UpdatedBy = currentUser ?? "Unknown";
                     activity.UpdatedUtcDate = now;
 
-                    // Collect for bulk update
+                    // Collect for bulk update and record new value for undo
                     var newValue = property.GetValue(activity);
                     updates.Add((activity.UniqueID, newValue));
+                    undoChanges[i].NewValue = newValue;
                 }
 
                 // Single bulk update to database
@@ -1448,6 +1531,13 @@ namespace VANTAGE.Views
                     columnName,
                     updates,
                     currentUser ?? "Unknown");
+
+                // Record undo action
+                _undoManager.RecordAction(new EditAction
+                {
+                    Description = $"Paste {columnName} to {rowBasedCells.Count} rows",
+                    Changes = undoChanges
+                });
 
                 // Refresh grid
                 sfActivities.View?.Refresh();
@@ -1560,14 +1650,19 @@ namespace VANTAGE.Views
                     return;
                 }
 
-                // Paste values
+                // Capture old values for undo, then paste
                 int pasteCount = Math.Min(clipboardValues.Count, targetCells.Count);
                 var modifiedActivities = new List<Activity>();
+                var undoChanges = new List<CellChange>();
 
                 for (int i = 0; i < pasteCount; i++)
                 {
                     var activity = targetCells[i].activity;
                     var clipboardValue = clipboardValues[i];
+
+                    // Capture old value before modification
+                    var oldValue = property.GetValue(activity);
+                    var derivedOldValues = UndoManager.CaptureDerivedFields(activity, columnName);
 
                     // Try to convert and set value
                     if (!TrySetPropertyValue(activity, property, columnName, clipboardValue, out string? errorMessage))
@@ -1582,6 +1677,15 @@ namespace VANTAGE.Views
                     activity.UpdatedBy = currentUser ?? "Unknown";
                     activity.UpdatedUtcDate = DateTime.UtcNow;
                     modifiedActivities.Add(activity);
+
+                    undoChanges.Add(new CellChange
+                    {
+                        UniqueID = activity.UniqueID,
+                        ColumnName = columnName,
+                        OldValue = oldValue,
+                        NewValue = property.GetValue(activity),
+                        DerivedOldValues = derivedOldValues
+                    });
                 }
 
                 // Save all modified activities to database
@@ -1589,6 +1693,13 @@ namespace VANTAGE.Views
                 {
                     await ActivityRepository.UpdateActivityInDatabase(activity);
                 }
+
+                // Record undo action
+                _undoManager.RecordAction(new EditAction
+                {
+                    Description = $"Paste {columnName} to {pasteCount} rows",
+                    Changes = undoChanges
+                });
 
                 // Refresh grid
                 sfActivities.View?.Refresh();
@@ -4406,6 +4517,7 @@ namespace VANTAGE.Views
         
         public async Task RefreshData()
         {
+            _undoManager.Clear(); // Data reloaded — undo history no longer valid
             await _viewModel.RefreshAsync();
             UpdateRecordCount();
             DebouncedUpdateSummary();
@@ -4441,6 +4553,27 @@ namespace VANTAGE.Views
             }
         }
 
+        // Let arrow keys commit edit and navigate like native grid columns
+        private void PercentEntryEditBox_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Down || e.Key == Key.Up || e.Key == Key.Tab)
+            {
+                sfActivities.SelectionController.CurrentCellManager.EndEdit();
+                e.Handled = true;
+
+                // Move to adjacent row
+                var targetKey = e.Key == Key.Tab ? Key.Tab : e.Key;
+                sfActivities.SelectionController.HandleKeyDown(
+                    new KeyEventArgs(Keyboard.PrimaryDevice, PresentationSource.FromVisual(sfActivities), 0, targetKey) { RoutedEvent = Keyboard.KeyDownEvent });
+
+                // Enter edit mode on the new cell so typing works immediately
+                Dispatcher.BeginInvoke(DispatcherPriority.Input, () =>
+                {
+                    sfActivities.SelectionController.CurrentCellManager.BeginEdit();
+                });
+            }
+        }
+
         private void SfActivities_CurrentCellBeginEdit(object? sender, CurrentCellBeginEditEventArgs e)
 
         {
@@ -4459,10 +4592,12 @@ namespace VANTAGE.Views
 
             if (sfActivities.CurrentColumn == null) return;
 
-            var property = GetCachedProperty(sfActivities.CurrentColumn.MappingName);
+            string columnName = sfActivities.CurrentColumn.MappingName;
+            var property = GetCachedProperty(columnName);
             if (property != null)
             {
                 _originalCellValue = property.GetValue(activity);
+                _originalDerivedValues = UndoManager.CaptureDerivedFields(activity, columnName);
             }
         }
         /// Auto-save when user finishes editing a cell
@@ -4638,6 +4773,23 @@ namespace VANTAGE.Views
 
                 if (success)
                 {
+                    // Record undo action
+                    _undoManager.RecordAction(new EditAction
+                    {
+                        Description = $"Edit {columnName}",
+                        Changes = new List<CellChange>
+                        {
+                            new CellChange
+                            {
+                                UniqueID = editedActivity.UniqueID,
+                                ColumnName = columnName,
+                                OldValue = _originalCellValue,
+                                NewValue = currentValue,
+                                DerivedOldValues = _originalDerivedValues
+                            }
+                        }
+                    });
+
                     UpdateSummaryPanel();
                     await CalculateMetadataErrorCount();
                 }
@@ -4670,6 +4822,10 @@ namespace VANTAGE.Views
                 if (property == null || !property.CanWrite)
                     return;
 
+                // Capture old value for undo before clearing
+                object? oldValue = property.GetValue(activity);
+                var derivedOldValues = UndoManager.CaptureDerivedFields(activity, columnName);
+
                 // Determine appropriate empty value based on type
                 object? emptyValue = null;
                 var propType = Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType;
@@ -4697,6 +4853,23 @@ namespace VANTAGE.Views
 
                 if (success)
                 {
+                    // Record undo action
+                    _undoManager.RecordAction(new EditAction
+                    {
+                        Description = $"Clear {columnName}",
+                        Changes = new List<CellChange>
+                        {
+                            new CellChange
+                            {
+                                UniqueID = activity.UniqueID,
+                                ColumnName = columnName,
+                                OldValue = oldValue,
+                                NewValue = emptyValue,
+                                DerivedOldValues = derivedOldValues
+                            }
+                        }
+                    });
+
                     sfActivities.View?.Refresh();
                     UpdateSummaryPanel();
                     await CalculateMetadataErrorCount();

@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.1.27",
-  "releaseDate": "2026-02-28T18:13:54Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.27/VANTAGE-26.1.27.zip",
-  "zipSizeBytes": 149165407,
-  "sha256": "7DCEC982ED0E431FAD3BA9DA27ED39D3AA2C1033EA431A30BAE840ECC5DAFEE6",
-  "releaseNotes": "3WLA date persistence, Discrepancies filter improvements, selection counter, paste-in-filter fix"
+  "currentVersion": "26.1.28",
+  "releaseDate": "2026-02-28T19:16:20Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.28/VANTAGE-26.1.28.zip",
+  "zipSizeBytes": 149168564,
+  "sha256": "299B6126712460E8B62C17A591142A16CA44B165DAE69B7D7E2E65CDE4989EE2",
+  "releaseNotes": "Undo/Redo support, PercentEntry keyboard navigation fix"
 }
