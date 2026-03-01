@@ -1,6 +1,17 @@
 {
   "releases": [
     {
+      "version": "26.1.27",
+      "date": "2026-02-28",
+      "highlights": [
+        "Fix 3WLA date persistence — dates now stored in Schedule table and survive P6 re-imports",
+        "Add 3WLA Start and 3WLA Finish to Schedule Discrepancies filter",
+        "Restyle Discrepancies button to match other filter buttons (green when active)",
+        "Add selection counter to Progress grid footer (shows count for multi-select)",
+        "Fix Ctrl+V pasting into grid cell instead of column filter search field"
+      ]
+    },
+    {
       "version": "26.1.26",
       "date": "2026-02-25",
       "highlights": [

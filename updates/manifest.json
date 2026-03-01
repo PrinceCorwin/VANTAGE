@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.1.26",
-  "releaseDate": "2026-02-25T14:38:17Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.26/VANTAGE-26.1.26.zip",
-  "zipSizeBytes": 149164447,
-  "sha256": "A41EF400140C360FAFED21B0CFEB9E4C5856AC270E0DF993712CA4B48D2BE44C",
-  "releaseNotes": "Fix Progress sidebar button text clipping"
+  "currentVersion": "26.1.27",
+  "releaseDate": "2026-02-28T18:13:54Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.27/VANTAGE-26.1.27.zip",
+  "zipSizeBytes": 149165407,
+  "sha256": "7DCEC982ED0E431FAD3BA9DA27ED39D3AA2C1033EA431A30BAE840ECC5DAFEE6",
+  "releaseNotes": "3WLA date persistence, Discrepancies filter improvements, selection counter, paste-in-filter fix"
 }
