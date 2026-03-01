@@ -27,6 +27,7 @@ public class UndoManager
 {
     private readonly Stack<EditAction> _undoStack = new();
     private readonly Stack<EditAction> _redoStack = new();
+    private const int MaxStackSize = 50;
 
     public bool CanUndo => _undoStack.Count > 0;
     public bool CanRedo => _redoStack.Count > 0;
@@ -39,6 +40,15 @@ public class UndoManager
 
         _undoStack.Push(action);
         _redoStack.Clear(); // New edit invalidates redo history
+
+        // Drop oldest entries beyond cap
+        if (_undoStack.Count > MaxStackSize)
+        {
+            var keep = _undoStack.ToArray();
+            _undoStack.Clear();
+            for (int i = MaxStackSize - 1; i >= 0; i--)
+                _undoStack.Push(keep[i]);
+        }
     }
 
     // Undo the last action - restores old values on Activity objects and saves to DB
