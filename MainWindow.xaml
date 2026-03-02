@@ -133,7 +133,7 @@
                             Background="{DynamicResource ControlBackground}"
                             Foreground="{DynamicResource ForegroundColor}"
                             BorderBrush="{DynamicResource BorderColor}">
-                            <syncfusion:DropDownMenuItem Header="Toggle User Admin" Click="ToggleUserAdmin_Click"/>
+                            <syncfusion:DropDownMenuItem Header="Toggle User Roles" Click="ToggleUserRoles_Click"/>
                             <Separator Background="{DynamicResource BorderColor}" Margin="5,2"/>
                             <syncfusion:DropDownMenuItem Header="Edit Users" Click="MenuEditUsers_Click"/>
                             <syncfusion:DropDownMenuItem Header="Edit Projects" Click="MenuEditProjects_Click"/>
@@ -255,6 +255,28 @@
                                              Click="BtnAnalysis_Click"
                                              ToolTip="View project analytics and dashboards"/>
                         <Border x:Name="AnalysisBorder"
+                                 Width="100"
+                                 Height="3"
+                                 HorizontalAlignment="Stretch"
+                                 VerticalAlignment="Bottom"
+                                 Background="Transparent"/>
+                    </Grid>
+                    <Grid>
+                        <syncfusion:ButtonAdv x:Name="btnTakeoff"
+                                             Label="TAKEOFFS"
+                                             Padding="15,0"
+                                             Margin="5,0"
+                                             Background="Transparent"
+                                             Foreground="{DynamicResource ToolbarForeground}"
+                                             BorderThickness="0"
+                                             IconTemplate="{x:Null}"
+                                             SmallIcon="{x:Null}"
+                                             LargeIcon="{x:Null}"
+                                             FontSize="12"
+                                             FontWeight="Bold"
+                                             Click="BtnTakeoff_Click"
+                                             ToolTip="AI-powered piping takeoff extraction"/>
+                        <Border x:Name="TakeoffBorder"
                                  Width="100"
                                  Height="3"
                                  HorizontalAlignment="Stretch"

@@ -1,6 +1,6 @@
 # MILESTONE - Project Status
 
-**Last Updated:** February 28, 2026
+**Last Updated:** March 2, 2026
 
 ## V1 Testing Scope
 
@@ -35,6 +35,7 @@
 | Work Package | READY FOR TESTING | PDF generation working; Drawings deferred to post-v1 |
 | Help Sidebar | COMPLETE | All V1 sections written; Troubleshooting deferred to post-V1 |
 | AI Progress Scan | COMPLETE | AWS Textract implementation - 100% accuracy |
+| AI Takeoff | IN PROGRESS | Phase 2 complete: batch processing, config-based uploads, manage drawings dialog, estimator role. Next: config creation UI with drawing preview. |
 | AI Features (other) | NOT STARTED | Error Assistant, Description Analysis, etc. |
 
 ## Active Development
@@ -71,8 +72,14 @@
 ## Feature Backlog
 
 ### High Priority
+- **AI Takeoff Module — Next Steps:**
+  - **Config Creation UI** — Let users create new crop configs: upload sample drawing, display at full width in a detached window, draw BOM region(s) + title block region as rectangles, enter client/project names, save to S3. User wants a detached full-width window for drawing preview. See `Plans/summit-takeoff-integration-guide.md` for config JSON schema and coordinate system (percentages).
+  - **Clean up old S3 drawings** — Old batch-prefixed drawings (`vantage-YYYYMMDD-HHMMSS/`) in S3 are orphaned. Need to delete from AWS console or add cleanup tool.
+  - **Help manual update** — Add Takeoffs section to `Help/manual.html` once UI stabilizes.
 - **Mobile/iOS Version (iPad)** — Execs want iPad app for field supes to submit progress. Needs architecture discussion: native iOS, cross-platform framework, web app, API design, offline sync, etc.
 - **Import Takeoff to Create Records** — Create activities from takeoff data. Needs discussion on file formats, field mapping, workflow.
+
+- **Manager Role — AssignTo Permissions** — Refactor VMS_Managers table to match VMS_Admins schema (Username, FullName). Add IsUserManager() check. Managers can reassign any records (same as admin for AssignTo only), no other admin functionality. Add Manager toggle to Toggle User Roles dialog. Refactor AssignTo button to allow managers.
 
 ### Medium Priority
 - **Theme System Refactor** — Phases 1-7 complete. Live switching works, tokens split, guide written. See `Themes/THEME_GUIDE.md`.

@@ -68,6 +68,15 @@ namespace VANTAGE.Utilities
         // Update
         public static string UpdateBaseUrl => Config.Update.BaseUrl;
 
+        // Takeoff (separate IAM user: vantage-takeoff-user)
+        public static string TakeoffAccessKey => Config.Takeoff.AccessKey;
+        public static string TakeoffSecretKey => Config.Takeoff.SecretKey;
+        public static string TakeoffRegion => Config.Takeoff.Region;
+        public static string TakeoffStateMachineArn => Config.Takeoff.StateMachineArn;
+        public static string TakeoffDrawingsBucket => Config.Takeoff.DrawingsBucket;
+        public static string TakeoffProcessingBucket => Config.Takeoff.ProcessingBucket;
+        public static string TakeoffConfigBucket => Config.Takeoff.ConfigBucket;
+
         // Load config: try plaintext first (dev), then encrypted (production)
         private static AppConfig LoadConfig()
         {

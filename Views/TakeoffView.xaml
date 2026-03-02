@@ -1,0 +1,265 @@
+<UserControl x:Class="VANTAGE.Views.TakeoffView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
+             mc:Ignorable="d"
+             d:DesignHeight="800" d:DesignWidth="1400"
+             Background="{DynamicResource BackgroundColor}">
+
+    <UserControl.Resources>
+        <Style TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
+        </Style>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <Grid Margin="40,30">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <TextBlock Grid.Row="0"
+                   Text="AI Takeoff"
+                   FontSize="22"
+                   FontWeight="Bold"
+                   Foreground="{DynamicResource AccentColor}"
+                   Margin="0,0,0,20"/>
+
+        <!-- Config + File Selection -->
+        <Border Grid.Row="1"
+                Background="{DynamicResource ControlBackground}"
+                BorderBrush="{DynamicResource BorderColor}"
+                BorderThickness="1"
+                CornerRadius="4"
+                Padding="16"
+                Margin="0,0,0,16">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="12"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="12"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="100"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Config Selection -->
+                <TextBlock Grid.Row="0" Grid.Column="0"
+                           Text="Config:"
+                           FontSize="13"
+                           FontWeight="SemiBold"
+                           VerticalAlignment="Center"/>
+                <syncfusion:ComboBoxAdv x:Name="cboConfig"
+                          Grid.Row="0" Grid.Column="1"
+                          Height="28"
+                          FontSize="12"
+                          ToolTip="Select the crop region config for this batch"/>
+                <syncfusion:ButtonAdv x:Name="btnRefreshConfigs"
+                                      Grid.Row="0" Grid.Column="2"
+                                      Label="Refresh"
+                                      SmallIcon="{x:Null}"
+                                      LargeIcon="{x:Null}"
+                                      IconTemplate="{x:Null}"
+                                      Padding="12,4"
+                                      Margin="8,0,0,0"
+                                      FontSize="11"
+                                      Background="{DynamicResource ControlBackground}"
+                                      Foreground="{DynamicResource ForegroundColor}"
+                                      BorderBrush="{DynamicResource BorderColor}"
+                                      BorderThickness="1"
+                                      Click="BtnRefreshConfigs_Click"
+                                      ToolTip="Reload config list from S3"/>
+
+                <!-- Drawing Files -->
+                <TextBlock Grid.Row="2" Grid.Column="0"
+                           Text="Drawings:"
+                           FontSize="13"
+                           FontWeight="SemiBold"
+                           VerticalAlignment="Center"/>
+                <TextBlock x:Name="txtFileCount"
+                           Grid.Row="2" Grid.Column="1"
+                           Text="No files selected"
+                           FontSize="12"
+                           Opacity="0.8"
+                           VerticalAlignment="Center"/>
+                <syncfusion:ButtonAdv x:Name="btnSelectFiles"
+                                      Grid.Row="2" Grid.Column="2"
+                                      Label="Select Files..."
+                                      SmallIcon="{x:Null}"
+                                      LargeIcon="{x:Null}"
+                                      IconTemplate="{x:Null}"
+                                      Padding="12,4"
+                                      Margin="8,0,0,0"
+                                      FontSize="11"
+                                      Background="{DynamicResource ControlBackground}"
+                                      Foreground="{DynamicResource ForegroundColor}"
+                                      BorderBrush="{DynamicResource BorderColor}"
+                                      BorderThickness="1"
+                                      Click="BtnSelectFiles_Click"
+                                      ToolTip="Select PDF drawing files to process"/>
+
+                <!-- Batch ID -->
+                <TextBlock Grid.Row="4" Grid.Column="0"
+                           Text="Batch ID:"
+                           FontSize="13"
+                           FontWeight="SemiBold"
+                           VerticalAlignment="Center"/>
+                <TextBlock x:Name="txtBatchId"
+                           Grid.Row="4" Grid.Column="1"
+                           Text="(auto-generated on process)"
+                           FontSize="12"
+                           Opacity="0.8"
+                           VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
+
+        <!-- Action Buttons -->
+        <StackPanel Grid.Row="2"
+                    Orientation="Horizontal"
+                    Margin="0,0,0,16">
+            <syncfusion:ButtonAdv x:Name="btnProcess"
+                                  Label="Process Batch"
+                                  SmallIcon="{x:Null}"
+                                  LargeIcon="{x:Null}"
+                                  IconTemplate="{x:Null}"
+                                  Padding="20,8"
+                                  FontSize="13"
+                                  FontWeight="SemiBold"
+                                  Background="{DynamicResource AccentColor}"
+                                  Foreground="White"
+                                  BorderThickness="0"
+                                  Click="BtnProcess_Click"
+                                  ToolTip="Upload drawings and start AI takeoff extraction"/>
+
+            <syncfusion:ButtonAdv x:Name="btnDownload"
+                                  Label="Download Excel"
+                                  SmallIcon="{x:Null}"
+                                  LargeIcon="{x:Null}"
+                                  IconTemplate="{x:Null}"
+                                  Padding="20,8"
+                                  Margin="12,0,0,0"
+                                  FontSize="13"
+                                  FontWeight="SemiBold"
+                                  Background="{DynamicResource ControlBackground}"
+                                  Foreground="{DynamicResource ForegroundColor}"
+                                  BorderBrush="{DynamicResource BorderColor}"
+                                  BorderThickness="1"
+                                  Visibility="Collapsed"
+                                  Click="BtnDownload_Click"
+                                  ToolTip="Download the output Excel file from S3"/>
+
+            <syncfusion:ButtonAdv x:Name="btnManageDrawings"
+                                  Label="Manage Drawings"
+                                  SmallIcon="{x:Null}"
+                                  LargeIcon="{x:Null}"
+                                  IconTemplate="{x:Null}"
+                                  Padding="20,8"
+                                  Margin="12,0,0,0"
+                                  FontSize="13"
+                                  Background="{DynamicResource ControlBackground}"
+                                  Foreground="{DynamicResource ForegroundColor}"
+                                  BorderBrush="{DynamicResource BorderColor}"
+                                  BorderThickness="1"
+                                  Click="BtnManageDrawings_Click"
+                                  ToolTip="View and manage drawings stored in S3 for the selected config"/>
+        </StackPanel>
+
+        <!-- Status -->
+        <Border Grid.Row="3"
+                Background="{DynamicResource ControlBackground}"
+                BorderBrush="{DynamicResource BorderColor}"
+                BorderThickness="1"
+                CornerRadius="4"
+                Padding="16"
+                Margin="0,0,0,16">
+            <StackPanel>
+                <TextBlock Text="Status"
+                           FontSize="14"
+                           FontWeight="SemiBold"
+                           Margin="0,0,0,8"/>
+                <TextBlock x:Name="txtStatus"
+                           Text="Select a config and drawing files to begin"
+                           FontSize="13"
+                           TextWrapping="Wrap"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Results Summary -->
+        <Border Grid.Row="4"
+                Background="{DynamicResource ControlBackground}"
+                BorderBrush="{DynamicResource BorderColor}"
+                BorderThickness="1"
+                CornerRadius="4"
+                Padding="16"
+                Margin="0,0,0,16"
+                Visibility="Collapsed"
+                x:Name="resultsPanel">
+            <StackPanel>
+                <TextBlock Text="Results"
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           Margin="0,0,0,12"/>
+
+                <!-- Summary Stats -->
+                <StackPanel x:Name="summaryPanel" Margin="0,0,0,12"/>
+
+                <!-- Drawings Expander -->
+                <Expander x:Name="drawingsExpander"
+                          Header="Drawings Processed"
+                          IsExpanded="False"
+                          Foreground="{DynamicResource ForegroundColor}"
+                          Margin="0,0,0,8">
+                    <StackPanel x:Name="drawingsListPanel" Margin="16,8,0,0"/>
+                </Expander>
+
+                <!-- Connections by Type -->
+                <Expander x:Name="connTypeExpander"
+                          Header="Connections by Type"
+                          IsExpanded="False"
+                          Foreground="{DynamicResource ForegroundColor}"
+                          Margin="0,0,0,8">
+                    <StackPanel x:Name="connTypePanel" Margin="16,8,0,0"/>
+                </Expander>
+
+                <!-- Connections by Size -->
+                <Expander x:Name="connSizeExpander"
+                          Header="Connections by Size"
+                          IsExpanded="False"
+                          Foreground="{DynamicResource ForegroundColor}"
+                          Margin="0,0,0,8">
+                    <StackPanel x:Name="connSizePanel" Margin="16,8,0,0"/>
+                </Expander>
+
+                <!-- Components by Type -->
+                <Expander x:Name="compTypeExpander"
+                          Header="Components by Type"
+                          IsExpanded="False"
+                          Foreground="{DynamicResource ForegroundColor}"
+                          Margin="0,0,0,8">
+                    <StackPanel x:Name="compTypePanel" Margin="16,8,0,0"/>
+                </Expander>
+
+                <!-- Connections by Drawing -->
+                <Expander x:Name="connDrawingExpander"
+                          Header="Connections by Drawing"
+                          IsExpanded="False"
+                          Foreground="{DynamicResource ForegroundColor}"
+                          Margin="0,0,0,8">
+                    <StackPanel x:Name="connDrawingPanel" Margin="16,8,0,0"/>
+                </Expander>
+            </StackPanel>
+        </Border>
+    </Grid>
+    </ScrollViewer>
+</UserControl>

@@ -6,6 +6,17 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### March 2, 2026
+- **AI Takeoff Module — Full integration:** New TAKEOFFS nav module integrating the AWS-based Summit Takeoff pipeline (Step Functions + Lambda + Bedrock Claude Vision) into VANTAGE. Uses AWS SDK direct (AWSSDK.S3 + AWSSDK.StepFunctions) with dedicated IAM user (`vantage-takeoff-user`), not shared Textract credentials. Key files: `Services/AI/TakeoffService.cs`, `Views/TakeoffView.xaml/.cs`.
+  - **Config selection:** Loads crop region configs from S3 (`summit-takeoff-config/clients/`), Syncfusion ComboBoxAdv dropdown with refresh button.
+  - **File upload + batch processing:** Multi-file PDF picker, uploads to config-based S3 prefixes (`{client_id}/{project_id}/filename.pdf`), overwrites existing files (latest rev wins). Starts Step Functions execution, polls for completion with elapsed timer, displays parsed results summary.
+  - **Results UI:** Parsed JSON summary with expandable sections — Drawings Processed, Connections by Type/Size, Components by Type, Connections by Drawing. Replaces raw JSON output.
+  - **Excel download:** Downloads output Excel from S3 processing bucket via SaveFileDialog.
+  - **Manage Drawings dialog:** `Dialogs/ManageDrawingsDialog.xaml/.cs` — Browse and delete S3 drawings per config prefix. ListView with File Name, Size, Last Modified columns. Multi-select delete with confirmation. Available to estimators.
+- **Estimator role system:** New VMS_Estimators Azure SQL table (EstimatorID IDENTITY, Username, FullName, DateAdded). `User.IsEstimator` property, `AzureDbManager.IsUserEstimator()` method. TAKEOFFS nav button visible only to estimators (not admin-gated).
+- **Toggle User Roles dialog:** Extracted inline admin toggle from MainWindow (~250 lines) into proper `Dialogs/ToggleUserRolesDialog.xaml/.cs`. Shows users with role tags (ADMIN, ESTIMATOR). Toggle Admin + Toggle Estimator buttons. Email notification on role change. `RoleChanged` event for live MainWindow UI updates.
+- **AppConfig + CredentialService for Takeoff:** `TakeoffConfig` class in `Models/AppConfig.cs` with AccessKey, SecretKey, Region, StateMachineArn, DrawingsBucket, ProcessingBucket, ConfigBucket. Corresponding `CredentialService.Takeoff*` static property accessors.
+
 ### February 28, 2026
 - **Undo/Redo (Ctrl+Z / Ctrl+Y) for Progress module:** Multi-level undo/redo for cell edits, paste operations, and cell clears. New `UndoManager.cs` with `EditAction`/`CellChange` model tracks old/new values plus derived field snapshots (PercentEntry, EarnQtyEntry, EarnMHsCalc, ActStart, ActFin). Uses `BeginInit()` to suppress circular recalculation during undo. Undo stack clears on data refresh/sync. Status bar shows "Undid: Edit PercentEntry" feedback. Not undoable: sync, import, row delete/create, prorate.
 - **Fix PercentEntry arrow key navigation:** PercentEntry uses `GridTemplateColumn` (for progress bar), which doesn't support arrow key navigation or auto-edit on typing like native grid columns. Added `PreviewKeyDown` handler on the edit TextBox that commits the edit and navigates on arrow Down/Up/Tab, then auto-enters edit mode on the new cell via `Dispatcher.BeginInvoke`. Also added digit-key detection in `SfActivities_PreviewKeyDown` to auto-enter edit mode when typing a number on the PercentEntry column.

@@ -8,6 +8,7 @@ namespace VANTAGE.Models
         public AwsConfig Aws { get; set; } = new();
         public ProcoreConfig Procore { get; set; } = new();
         public UpdateConfig Update { get; set; } = new();
+        public TakeoffConfig Takeoff { get; set; } = new();
     }
 
     public class AzureConfig
@@ -48,5 +49,16 @@ namespace VANTAGE.Models
     public class UpdateConfig
     {
         public string BaseUrl { get; set; } = string.Empty;
+    }
+
+    public class TakeoffConfig
+    {
+        public string AccessKey { get; set; } = string.Empty;
+        public string SecretKey { get; set; } = string.Empty;
+        public string Region { get; set; } = string.Empty;
+        public string StateMachineArn { get; set; } = string.Empty;
+        public string DrawingsBucket { get; set; } = string.Empty;
+        public string ProcessingBucket { get; set; } = string.Empty;
+        public string ConfigBucket { get; set; } = string.Empty;
     }
 }

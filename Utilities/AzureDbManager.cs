@@ -57,6 +57,34 @@ namespace VANTAGE.Utilities
             }
         }
 
+        // Check if user is an estimator by querying Azure Estimators table
+        public static bool IsUserEstimator(string username)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(username))
+                    return false;
+
+                if (!IsNetworkAvailable())
+                    return false;
+
+                using var connection = GetConnection();
+                connection.Open();
+
+                var cmd = connection.CreateCommand();
+                cmd.CommandText = "SELECT COUNT(*) FROM VMS_Estimators WHERE Username = @username";
+                cmd.Parameters.AddWithValue("@username", username);
+
+                int count = Convert.ToInt32(cmd.ExecuteScalar());
+                return count > 0;
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "AzureDbManager.IsUserEstimator");
+                return false;
+            }
+        }
+
         // Get email addresses for all administrators (joins Admins with Users table)
         public static async Task<List<string>> GetAdminEmailsAsync()
         {

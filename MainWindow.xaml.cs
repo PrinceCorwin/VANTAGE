@@ -299,6 +299,12 @@ namespace VANTAGE
             {
                 btnAdmin.Visibility = Visibility.Collapsed;
             }
+
+            // Hide TAKEOFFS button unless user is estimator
+            if (App.CurrentUser == null || !App.CurrentUser.IsEstimator)
+            {
+                btnTakeoff.Visibility = Visibility.Collapsed;
+            }
         }
 
         // TOOLBAR BUTTON HANDLERS
@@ -321,6 +327,9 @@ namespace VANTAGE
 
             AnalysisBorder.Background = System.Windows.Media.Brushes.Transparent;
             btnAnalysis.Foreground = (System.Windows.Media.Brush)FindResource("ToolbarForeground");
+
+            TakeoffBorder.Background = System.Windows.Media.Brushes.Transparent;
+            btnTakeoff.Foreground = (System.Windows.Media.Brush)FindResource("ToolbarForeground");
 
             // Highlight active button
             if (activeButton == btnProgress)
@@ -347,6 +356,11 @@ namespace VANTAGE
             {
                 AnalysisBorder.Background = (System.Windows.Media.Brush)FindResource("AccentColor");
                 btnAnalysis.Foreground = (System.Windows.Media.Brush)FindResource("AccentColor");
+            }
+            else if (activeButton == btnTakeoff)
+            {
+                TakeoffBorder.Background = (System.Windows.Media.Brush)FindResource("AccentColor");
+                btnTakeoff.Foreground = (System.Windows.Media.Brush)FindResource("AccentColor");
             }
         }
 
@@ -429,6 +443,23 @@ namespace VANTAGE
             ContentArea.Content = null;
             var analysisView = new Views.AnalysisView();
             ContentArea.Content = analysisView;
+        }
+
+        private void BtnTakeoff_Click(object sender, RoutedEventArgs e)
+        {
+            if (ContentArea.Content is Views.TakeoffView)
+            {
+                HighlightNavigationButton(btnTakeoff);
+                return;
+            }
+
+            if (!CanLeaveCurrentView())
+                return;
+
+            HighlightNavigationButton(btnTakeoff);
+            ContentArea.Content = null;
+            var takeoffView = new Views.TakeoffView();
+            ContentArea.Content = takeoffView;
         }
 
         private void BtnCreate_Click(object sender, RoutedEventArgs e)
@@ -956,7 +987,7 @@ namespace VANTAGE
 
         // === ADMIN DROPDOWN ===
 
-        private void ToggleUserAdmin_Click(object sender, RoutedEventArgs e)
+        private void ToggleUserRoles_Click(object sender, RoutedEventArgs e)
         {
             if (App.CurrentUser == null || !App.CurrentUser.IsAdmin)
             {
@@ -966,21 +997,18 @@ namespace VANTAGE
 
             try
             {
-                // Check Azure connection first
                 if (!AzureDbManager.CheckConnection(out string connectionError))
                 {
-                    MessageBox.Show($"Cannot manage admins - Azure unavailable:\n\n{connectionError}",
+                    MessageBox.Show($"Cannot manage roles - Azure unavailable:\n\n{connectionError}",
                         "Connection Required", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
-                // Get list of all users from local database (for display)
+                // Get all users from local database
                 using var localConn = DatabaseSetup.GetConnection();
                 localConn.Open();
-
                 var command = localConn.CreateCommand();
                 command.CommandText = "SELECT UserID, Username, FullName, Email FROM Users ORDER BY Username";
-
                 var users = new System.Collections.Generic.List<(int UserID, string Username, string FullName, string Email)>();
                 using var reader = command.ExecuteReader();
                 while (reader.Read())
@@ -1001,199 +1029,45 @@ namespace VANTAGE
                     return;
                 }
 
-                // Check which users are admins from Azure
-                var adminUsers = new System.Collections.Generic.HashSet<string>();
+                // Load admin and estimator sets from Azure
+                var adminUsers = new System.Collections.Generic.HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                var estimatorUsers = new System.Collections.Generic.HashSet<string>(StringComparer.OrdinalIgnoreCase);
                 using var azureConn = AzureDbManager.GetConnection();
                 azureConn.Open();
+
                 var adminCmd = azureConn.CreateCommand();
                 adminCmd.CommandText = "SELECT Username FROM VMS_Admins";
                 using var adminReader = adminCmd.ExecuteReader();
-                while (adminReader.Read())
-                {
-                    adminUsers.Add(adminReader.GetString(0).ToLower());
-                }
+                while (adminReader.Read()) adminUsers.Add(adminReader.GetString(0));
                 adminReader.Close();
 
-                // Build display list
-                var userList = users.Select(u =>
-                    $"{u.Username} ({u.FullName}) - {(adminUsers.Contains(u.Username.ToLower()) ? "ADMIN" : "User")}"
-                ).ToList();
+                var estCmd = azureConn.CreateCommand();
+                estCmd.CommandText = "SELECT Username FROM VMS_Estimators";
+                using var estReader = estCmd.ExecuteReader();
+                while (estReader.Read()) estimatorUsers.Add(estReader.GetString(0));
+                estReader.Close();
 
-                var dialog = new System.Windows.Window
+                var dialog = new Dialogs.ToggleUserRolesDialog(users, adminUsers, estimatorUsers, azureConn);
+                dialog.Owner = this;
+
+                // Handle live UI updates when current user's roles change
+                dialog.RoleChanged += (roleName, granted) =>
                 {
-                    Title = "Toggle Admin Status",
-                    Width = 400,
-                    Height = 300,
-                    WindowStartupLocation = WindowStartupLocation.CenterScreen,
-                    Background = ThemeHelper.BackgroundColor
-                };
+                    if (App.CurrentUser == null) return;
 
-                var stackPanel = new System.Windows.Controls.StackPanel { Margin = new Thickness(10) };
-
-                var label = new System.Windows.Controls.TextBlock
-                {
-                    Text = "Select user to toggle admin status:",
-                    Foreground = ThemeHelper.ForegroundColor,
-                    Margin = new Thickness(0, 0, 0, 10)
-                };
-
-                var listBox = new System.Windows.Controls.ListBox
-                {
-                    Height = 150,
-                    Background = ThemeHelper.ControlBackground,
-                    Foreground = ThemeHelper.ForegroundColor
-                };
-
-                foreach (var userStr in userList)
-                {
-                    listBox.Items.Add(userStr);
-                }
-
-                var buttonPanel = new System.Windows.Controls.StackPanel
-                {
-                    Orientation = Orientation.Horizontal,
-                    HorizontalAlignment = HorizontalAlignment.Right,
-                    Margin = new Thickness(0, 10, 0, 0)
-                };
-
-                var okButton = new System.Windows.Controls.Button
-                {
-                    Content = "Toggle Admin",
-                    Width = 100,
-                    Height = 30,
-                    Margin = new Thickness(0, 0, 10, 0)
-                };
-
-                var cancelButton = new System.Windows.Controls.Button
-                {
-                    Content = "Cancel",
-                    Width = 100,
-                    Height = 30
-                };
-
-                okButton.Click += (s, args) =>
-                {
-                    if (listBox.SelectedIndex >= 0)
+                    if (roleName == "Admin")
                     {
-                        var selectedUser = users[listBox.SelectedIndex];
-                        bool isCurrentlyAdmin = adminUsers.Contains(selectedUser.Username.ToLower());
-
-                        try
-                        {
-                            var toggleCmd = azureConn.CreateCommand();
-
-                            string action;
-                            if (isCurrentlyAdmin)
-                            {
-                                // Remove from Admins table
-                                toggleCmd.CommandText = "DELETE FROM VMS_Admins WHERE Username = @username";
-                                toggleCmd.Parameters.AddWithValue("@username", selectedUser.Username);
-                                toggleCmd.ExecuteNonQuery();
-                                action = "revoked";
-                                MessageBox.Show($"Admin revoked from {selectedUser.Username}", "Success", MessageBoxButton.OK, MessageBoxImage.None);
-                            }
-                            else
-                            {
-                                // Add to Admins table
-                                toggleCmd.CommandText = "INSERT INTO VMS_Admins (Username, FullName) VALUES (@username, @fullname)";
-                                toggleCmd.Parameters.AddWithValue("@username", selectedUser.Username);
-                                toggleCmd.Parameters.AddWithValue("@fullname", selectedUser.FullName);
-                                toggleCmd.ExecuteNonQuery();
-                                action = "granted";
-                                MessageBox.Show($"Admin granted to {selectedUser.Username}", "Success", MessageBoxButton.OK, MessageBoxImage.None);
-                            }
-
-                            // Send email notification to the target user
-                            if (!string.IsNullOrWhiteSpace(selectedUser.Email))
-                            {
-                                string recipientName = !string.IsNullOrWhiteSpace(selectedUser.FullName) ? selectedUser.FullName : selectedUser.Username;
-                                string changedBy = App.CurrentUser?.Username ?? "Unknown";
-                                string emailSubject = $"VANTAGE: MS - Admin privileges {action}";
-                                string emailHtml = $@"
-<!DOCTYPE html>
-<html>
-<head>
-    <style>
-        body {{ font-family: 'Segoe UI', Arial, sans-serif; color: #333; }}
-        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
-        .header {{ background-color: #0078D7; color: white; padding: 15px 20px; border-radius: 4px 4px 0 0; }}
-        .content {{ background-color: #f5f5f5; padding: 20px; border-radius: 0 0 4px 4px; }}
-        .highlight {{ font-size: 20px; font-weight: bold; color: {(action == "granted" ? "#2E7D32" : "#C62828")}; }}
-        .details {{ margin-top: 15px; }}
-        .detail-row {{ padding: 8px 0; border-bottom: 1px solid #ddd; }}
-        .label {{ font-weight: 600; color: #555; }}
-        .footer {{ margin-top: 20px; font-size: 12px; color: #888; }}
-    </style>
-</head>
-<body>
-    <div class='container'>
-        <div class='header'>
-            <h2 style='margin: 0;'>VANTAGE: MS Admin Status Change</h2>
-        </div>
-        <div class='content'>
-            <p>Hello {System.Net.WebUtility.HtmlEncode(recipientName)},</p>
-            <p class='highlight'>Admin privileges {action}</p>
-            <div class='details'>
-                <div class='detail-row'>
-                    <span class='label'>Changed by:</span> {System.Net.WebUtility.HtmlEncode(changedBy)}
-                </div>
-                <div class='detail-row'>
-                    <span class='label'>Date:</span> {DateTime.Now:MMMM d, yyyy h:mm tt}
-                </div>
-            </div>
-            <p style='margin-top: 20px;'>{(action == "granted" ? "You now have access to admin features. Restart VANTAGE: MS to see the Admin menu." : "Your admin access has been removed. The change will take effect next time you open VANTAGE: MS.")}</p>
-            <div class='footer'>
-                <p>This is an automated message from VANTAGE: MS. Please do not reply to this email.</p>
-            </div>
-        </div>
-    </div>
-</body>
-</html>";
-                                _ = EmailService.SendEmailAsync(selectedUser.Email, emailSubject, emailHtml);
-                            }
-
-                            // If the selected user is the current user, update UI
-                            if (selectedUser.UserID == App.CurrentUserID)
-                            {
-                                if (isCurrentlyAdmin)
-                                {
-                                    // Revoked admin from current user
-                                    App.CurrentUser.IsAdmin = false;
-                                    btnAdmin.Visibility = Visibility.Collapsed;
-                                }
-                                else
-                                {
-                                    // Granted admin to current user
-                                    App.CurrentUser.IsAdmin = true;
-                                    btnAdmin.Visibility = Visibility.Visible;
-                                }
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            MessageBox.Show($"Error updating admin status: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                        }
-
-                        dialog.DialogResult = true;
-                        dialog.Close();
+                        App.CurrentUser.IsAdmin = granted;
+                        btnAdmin.Visibility = granted ? Visibility.Visible : Visibility.Collapsed;
+                    }
+                    else if (roleName == "Estimator")
+                    {
+                        App.CurrentUser.IsEstimator = granted;
+                        btnTakeoff.Visibility = granted ? Visibility.Visible : Visibility.Collapsed;
                     }
                 };
 
-                cancelButton.Click += (s, args) =>
-                {
-                    dialog.Close();
-                };
-
-                buttonPanel.Children.Add(okButton);
-                buttonPanel.Children.Add(cancelButton);
-
-                stackPanel.Children.Add(label);
-                stackPanel.Children.Add(listBox);
-                stackPanel.Children.Add(buttonPanel);
-
-                dialog.Content = stackPanel;
                 dialog.ShowDialog();
-
                 azureConn.Close();
             }
             catch (Exception ex)

@@ -52,6 +52,7 @@ Frozen copy of Activity at weekly submission time.
 - `Projects` - Valid project IDs
 - `Users` - User accounts with email
 - `Admins` - Admin privileges (Azure only)
+- `Estimators` - Estimator/Takeoff access privileges (Azure only)
 - `Managers` - Project managers
 - `ColumnMappings` - Excel import/export mappings
 - `Feedback` - Ideas/Bugs board entries
@@ -126,10 +127,22 @@ Frozen copy of Activity at weekly submission time.
 - Syncfusion.Pdf for PDF generation, merge individual forms into single package
 - See `WorkPackage_Module_Plan.md` for details
 
+### AI Takeoff Module
+- AWS Step Functions + Lambda + Bedrock Claude Vision pipeline for extracting BOM data from piping ISO drawings
+- AWS SDK direct integration (AWSSDK.S3, AWSSDK.StepFunctions) — no API Gateway layer
+- Dedicated IAM user (`vantage-takeoff-user`) with separate credentials from Textract
+- Config selection from S3 (`summit-takeoff-config/clients/`), file upload, batch processing with poll, Excel download
+- Drawings organized by config-based S3 prefixes (`{client_id}/{project_id}/filename.pdf`)
+- Manage Drawings dialog for browsing/deleting S3 drawings per config
+- Access gated to Estimator role only (VMS_Estimators table)
+- Key files: `Services/AI/TakeoffService.cs`, `Views/TakeoffView.xaml/.cs`, `Dialogs/ManageDrawingsDialog.xaml/.cs`
+- See `Plans/summit-takeoff-integration-guide.md` for AWS resource details and config schema
+
 ### Admin System
 - Azure Admins table (single source of truth)
 - Manage users, projects, snapshots
 - View/restore/purge deleted records
+- Toggle User Roles dialog: grant/revoke Admin and Estimator roles with email notification
 
 ### Deleted Records Module
 - View soft-deleted Activities (IsDeleted=1 in Azure)
