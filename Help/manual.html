@@ -340,7 +340,15 @@
                     <li><a href="#wp-previewing">Previewing Templates</a></li>
                 </ul>
             </li>
-            <li><a href="#administration">8. Administration</a>
+            <li><a href="#ai-takeoff">8. AI Takeoff</a>
+                <ul>
+                    <li><a href="#takeoff-overview">Overview</a></li>
+                    <li><a href="#takeoff-configs">Configs</a></li>
+                    <li><a href="#takeoff-processing">Processing Drawings</a></li>
+                    <li><a href="#takeoff-manage-drawings">Manage Drawings</a></li>
+                </ul>
+            </li>
+            <li><a href="#administration">9. Administration</a>
                 <ul>
                     <li><a href="#admin-overview">Overview</a></li>
                     <li><a href="#admin-user-management">User Management</a></li>
@@ -351,7 +359,7 @@
                     <li><a href="#admin-sync">Database Sync</a></li>
                 </ul>
             </li>
-            <li><a href="#reference">9. Reference</a>
+            <li><a href="#reference">10. Reference</a>
                 <ul>
                     <li><a href="#ref-column-mappings">Column Mappings</a></li>
 
@@ -2484,7 +2492,56 @@
     </div>
 
     <!-- ============================================ -->
-    <h2 id="administration">8. Administration</h2>
+    <h2 id="ai-takeoff">8. AI Takeoff</h2>
+    <!-- ============================================ -->
+
+    <h3 id="takeoff-overview">Overview</h3>
+    <p>The AI Takeoff module uses AWS-powered AI to extract bill of materials (BOM) and connection data from piping isometric drawings. It processes PDF drawings through crop region configs that define where the BOM table and title block are located on each drawing.</p>
+    <p>This module is available to users with the <strong>Estimator</strong> role only. Admins can grant this role via <strong>Admin &gt; Toggle User Roles</strong>.</p>
+
+    <h3 id="takeoff-configs">Configs</h3>
+    <p>A config defines the crop regions on a drawing — where the BOM table(s) and title block are located. Configs are stored in S3 under your username folder.</p>
+
+    <ul>
+        <li><strong>Create:</strong> Select <strong>+ Create New Config...</strong> from the Config dropdown. This opens a maximized window where you can load a sample PDF, draw regions, and save.</li>
+        <li><strong>Edit:</strong> Select a config and click <strong>Edit</strong> to modify regions or delete the config.</li>
+        <li><strong>Refresh:</strong> Click <strong>Refresh</strong> to reload the config list (useful when a coworker creates a new config).</li>
+    </ul>
+
+    <p><strong>Creating/editing a config:</strong></p>
+
+    <ol>
+        <li>Click <strong>Load Drawing...</strong> to open a sample PDF. The first page renders as a background image.</li>
+        <li>Select <strong>BOM Region</strong> mode (green) and draw rectangle(s) around the BOM table area(s). You can draw multiple BOM regions if the table spans multiple areas.</li>
+        <li>Select <strong>Title Block</strong> mode (orange) and draw a rectangle around the title block. Only one title block region is allowed — drawing a new one replaces the previous.</li>
+        <li>Use <strong>Undo Last</strong> or <strong>Clear All</strong> to adjust regions.</li>
+        <li>Enter a <strong>Config Name</strong> (e.g., "Lilly LP1Y SWP Piping"). The S3 path is auto-generated from your username and the config name.</li>
+        <li>Click <strong>Save Config</strong>. The config is saved to S3 and immediately available in the dropdown.</li>
+    </ol>
+
+    <p><strong>Deleting a config:</strong> Open the config in Edit mode and click <strong>Delete Config</strong>. This removes both the config and all associated drawings from S3.</p>
+
+    <h3 id="takeoff-processing">Processing Drawings</h3>
+
+    <ol>
+        <li>Select a config from the dropdown.</li>
+        <li>Click <strong>Select Files...</strong> to choose one or more PDF drawing files.</li>
+        <li>Click <strong>Process Batch</strong>. Drawings are uploaded to S3, then the AI extraction pipeline runs.</li>
+        <li>Progress is shown in the Status area with elapsed time.</li>
+        <li>When complete, results appear in expandable sections: Drawings Processed, Connections by Type/Size, Components by Type, and Connections by Drawing.</li>
+        <li>If successful, click <strong>Download Excel</strong> to save the output spreadsheet.</li>
+    </ol>
+
+    <div class="warning">
+        <div class="warning-title">Processing Failures</div>
+        <p>If the status shows "failed", the crop regions may not align with the drawing layout. Try editing the config to adjust the BOM and title block regions. No Excel file is generated for failed runs.</p>
+    </div>
+
+    <h3 id="takeoff-manage-drawings">Manage Drawings</h3>
+    <p>Click <strong>Manage Drawings</strong> to view and delete drawings stored in S3 for any config. Select a config from the dropdown, then select drawings to delete. Drawings are uploaded automatically during processing — this dialog is for cleanup.</p>
+
+    <!-- ============================================ -->
+    <h2 id="administration">9. Administration</h2>
     <!-- ============================================ -->
 
     <h3 id="admin-overview">Overview</h3>
@@ -2589,7 +2646,7 @@
     </ul>
 
     <!-- ============================================ -->
-    <h2 id="reference">9. Reference</h2>
+    <h2 id="reference">10. Reference</h2>
     <!-- ============================================ -->
 
     <h3 id="ref-column-mappings">Column Mappings</h3>

@@ -1,0 +1,222 @@
+<Window x:Class="VANTAGE.Dialogs.ConfigCreatorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
+        Title="Config Creator"
+        WindowState="Maximized"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource BackgroundColor}"
+        MinHeight="600"
+        MinWidth="900">
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="8"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="8"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Toolbar -->
+        <Border Grid.Row="0"
+                Background="{DynamicResource ControlBackground}"
+                BorderBrush="{DynamicResource BorderColor}"
+                BorderThickness="1"
+                CornerRadius="4"
+                Padding="12,8">
+            <WrapPanel VerticalAlignment="Center">
+                <syncfusion:ButtonAdv x:Name="btnLoadDrawing"
+                                      Label="Load Drawing..."
+                                      SmallIcon="{x:Null}"
+                                      LargeIcon="{x:Null}"
+                                      IconTemplate="{x:Null}"
+                                      Padding="14,6"
+                                      FontSize="12"
+                                      Background="{DynamicResource ControlBackground}"
+                                      Foreground="{DynamicResource ForegroundColor}"
+                                      BorderBrush="{DynamicResource BorderColor}"
+                                      BorderThickness="1"
+                                      Click="BtnLoadDrawing_Click"
+                                      ToolTip="Load a PDF drawing to define crop regions on"/>
+
+                <Rectangle Width="1" Height="24" Fill="{DynamicResource BorderColor}" Margin="12,0"/>
+
+                <TextBlock Text="Mode:"
+                           FontSize="12"
+                           VerticalAlignment="Center"
+                           Foreground="{DynamicResource ForegroundColor}"
+                           Margin="0,0,8,0"/>
+                <syncfusion:ButtonAdv x:Name="btnModeBom"
+                                      Label="BOM Region"
+                                      SmallIcon="{x:Null}"
+                                      LargeIcon="{x:Null}"
+                                      IconTemplate="{x:Null}"
+                                      Padding="14,6"
+                                      FontSize="12"
+                                      Background="#2E7D32"
+                                      Foreground="White"
+                                      BorderThickness="0"
+                                      Click="BtnModeBom_Click"
+                                      ToolTip="Draw BOM table regions (green) — multiple allowed"/>
+                <syncfusion:ButtonAdv x:Name="btnModeTitleBlock"
+                                      Label="Title Block"
+                                      SmallIcon="{x:Null}"
+                                      LargeIcon="{x:Null}"
+                                      IconTemplate="{x:Null}"
+                                      Padding="14,6"
+                                      Margin="6,0,0,0"
+                                      FontSize="12"
+                                      Background="{DynamicResource ControlBackground}"
+                                      Foreground="{DynamicResource ForegroundColor}"
+                                      BorderBrush="{DynamicResource BorderColor}"
+                                      BorderThickness="1"
+                                      Click="BtnModeTitleBlock_Click"
+                                      ToolTip="Draw the title block region (orange) — only one allowed"/>
+
+                <Rectangle Width="1" Height="24" Fill="{DynamicResource BorderColor}" Margin="12,0"/>
+
+                <syncfusion:ButtonAdv x:Name="btnUndo"
+                                      Label="Undo Last"
+                                      SmallIcon="{x:Null}"
+                                      LargeIcon="{x:Null}"
+                                      IconTemplate="{x:Null}"
+                                      Padding="14,6"
+                                      FontSize="12"
+                                      Background="{DynamicResource ControlBackground}"
+                                      Foreground="{DynamicResource ForegroundColor}"
+                                      BorderBrush="{DynamicResource BorderColor}"
+                                      BorderThickness="1"
+                                      Click="BtnUndo_Click"
+                                      ToolTip="Remove the last drawn region"/>
+                <syncfusion:ButtonAdv x:Name="btnClearAll"
+                                      Label="Clear All"
+                                      SmallIcon="{x:Null}"
+                                      LargeIcon="{x:Null}"
+                                      IconTemplate="{x:Null}"
+                                      Padding="14,6"
+                                      Margin="6,0,0,0"
+                                      FontSize="12"
+                                      Background="{DynamicResource ControlBackground}"
+                                      Foreground="{DynamicResource ForegroundColor}"
+                                      BorderBrush="{DynamicResource BorderColor}"
+                                      BorderThickness="1"
+                                      Click="BtnClearAll_Click"
+                                      ToolTip="Remove all drawn regions"/>
+
+                <Rectangle Width="1" Height="24" Fill="{DynamicResource BorderColor}" Margin="12,0"/>
+
+                <TextBlock x:Name="txtRegionCount"
+                           Text="Regions: 0 BOM, 0 Title Block"
+                           FontSize="12"
+                           VerticalAlignment="Center"
+                           Foreground="{DynamicResource ForegroundColor}"
+                           Opacity="0.8"/>
+            </WrapPanel>
+        </Border>
+
+        <!-- Canvas Area -->
+        <Border Grid.Row="2"
+                Background="#1E1E1E"
+                BorderBrush="{DynamicResource BorderColor}"
+                BorderThickness="1"
+                CornerRadius="4"
+                ClipToBounds="True">
+            <Grid x:Name="canvasContainer">
+                <TextBlock x:Name="txtCanvasHint"
+                           Text="Load a drawing to begin defining crop regions"
+                           FontSize="16"
+                           Foreground="{DynamicResource ForegroundColor}"
+                           Opacity="0.4"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"/>
+                <Image x:Name="imgDrawing"
+                       Stretch="Uniform"
+                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                <Canvas x:Name="drawCanvas"
+                        Background="Transparent"
+                        MouseLeftButtonDown="DrawCanvas_MouseLeftButtonDown"
+                        MouseMove="DrawCanvas_MouseMove"
+                        MouseLeftButtonUp="DrawCanvas_MouseLeftButtonUp"
+                        SizeChanged="DrawCanvas_SizeChanged"/>
+            </Grid>
+        </Border>
+
+        <!-- Info Bar -->
+        <Border Grid.Row="4"
+                Background="{DynamicResource ControlBackground}"
+                BorderBrush="{DynamicResource BorderColor}"
+                BorderThickness="1"
+                CornerRadius="4"
+                Padding="12,10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="30"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="20"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0"
+                           Text="Config Name:"
+                           FontSize="12"
+                           FontWeight="SemiBold"
+                           VerticalAlignment="Center"
+                           Foreground="{DynamicResource ForegroundColor}"
+                           Margin="0,0,8,0"/>
+                <TextBox x:Name="txtConfigName"
+                         Grid.Column="1"
+                         FontSize="12"
+                         Height="28"
+                         VerticalContentAlignment="Center"
+                         TextChanged="TxtName_TextChanged"
+                         ToolTip="Name for this config (e.g., Lilly LP1Y SWP Piping)"/>
+
+                <TextBlock Grid.Column="3"
+                           Text="S3 Path:"
+                           FontSize="12"
+                           VerticalAlignment="Center"
+                           Foreground="{DynamicResource ForegroundColor}"
+                           Opacity="0.6"
+                           Margin="0,0,8,0"/>
+                <TextBlock x:Name="txtS3Path"
+                           Grid.Column="4"
+                           Text="clients/.../.json"
+                           FontSize="12"
+                           VerticalAlignment="Center"
+                           Foreground="{DynamicResource ForegroundColor}"
+                           Opacity="0.5"
+                           TextTrimming="CharacterEllipsis"
+                           ToolTip="Auto-generated S3 path: clients/{username}/{config-name}.json"/>
+
+                <StackPanel Grid.Column="6" Orientation="Horizontal">
+                    <Button x:Name="btnDeleteConfig"
+                            Content="Delete Config"
+                            Height="28"
+                            Padding="16,0"
+                            Margin="0,0,12,0"
+                            FontSize="12"
+                            Visibility="Collapsed"
+                            Click="BtnDeleteConfig_Click"
+                            ToolTip="Delete this config and optionally its drawings from S3"/>
+                    <syncfusion:ButtonAdv x:Name="btnSaveConfig"
+                                          Label="Save Config"
+                                          SmallIcon="{x:Null}"
+                                          LargeIcon="{x:Null}"
+                                          IconTemplate="{x:Null}"
+                                          Padding="20,6"
+                                          FontSize="12"
+                                          FontWeight="SemiBold"
+                                          Background="{DynamicResource AccentColor}"
+                                          Foreground="White"
+                                          BorderThickness="0"
+                                          Click="BtnSaveConfig_Click"
+                                          ToolTip="Save the config to S3"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

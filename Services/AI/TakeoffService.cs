@@ -11,6 +11,7 @@ using Amazon.S3.Model;
 using Amazon.S3.Transfer;
 using Amazon.StepFunctions;
 using Amazon.StepFunctions.Model;
+using VANTAGE.Models.AI;
 using VANTAGE.Utilities;
 
 namespace VANTAGE.Services.AI
@@ -130,7 +131,7 @@ namespace VANTAGE.Services.AI
 
             var response = await _s3Client.ListObjectsV2Async(request, cancellationToken);
 
-            foreach (var obj in response.S3Objects.Where(o => o.Key.EndsWith(".json")))
+            foreach (var obj in (response.S3Objects ?? new List<Amazon.S3.Model.S3Object>()).Where(o => o.Key.EndsWith(".json")))
             {
                 // Build display name from path: "clients/lilly/lp1y-swp.json" -> "lilly / lp1y-swp"
                 var parts = obj.Key.Replace("clients/", "").Replace(".json", "").Split('/');
@@ -260,6 +261,95 @@ namespace VANTAGE.Services.AI
             };
 
             await _s3Client.DeleteObjectsAsync(request, cancellationToken);
+        }
+
+        // Save a crop region config to the config bucket
+        public async Task SaveConfigAsync(
+            CropRegionConfig config,
+            CancellationToken cancellationToken = default)
+        {
+            string key = $"clients/{config.ClientId}/{config.ProjectId}.json";
+
+            string json = JsonSerializer.Serialize(config, new JsonSerializerOptions
+            {
+                WriteIndented = true
+            });
+
+            AppLogger.Info($"Saving config to s3://{CredentialService.TakeoffConfigBucket}/{key}",
+                "TakeoffService.SaveConfigAsync");
+
+            var request = new PutObjectRequest
+            {
+                BucketName = CredentialService.TakeoffConfigBucket,
+                Key = key,
+                ContentBody = json,
+                ContentType = "application/json"
+            };
+
+            await _s3Client.PutObjectAsync(request, cancellationToken);
+
+            AppLogger.Info($"Config saved: {key}", "TakeoffService.SaveConfigAsync");
+        }
+
+        // Delete a config JSON from the config bucket
+        public async Task DeleteConfigAsync(
+            string configKey,
+            CancellationToken cancellationToken = default)
+        {
+            AppLogger.Info($"Deleting config: s3://{CredentialService.TakeoffConfigBucket}/{configKey}",
+                "TakeoffService.DeleteConfigAsync");
+
+            var request = new DeleteObjectRequest
+            {
+                BucketName = CredentialService.TakeoffConfigBucket,
+                Key = configKey
+            };
+
+            await _s3Client.DeleteObjectAsync(request, cancellationToken);
+        }
+
+        // Load a crop region config from the config bucket
+        public async Task<CropRegionConfig?> GetConfigAsync(
+            string configKey,
+            CancellationToken cancellationToken = default)
+        {
+            AppLogger.Info($"Loading config: {configKey}", "TakeoffService.GetConfigAsync");
+
+            var request = new GetObjectRequest
+            {
+                BucketName = CredentialService.TakeoffConfigBucket,
+                Key = configKey
+            };
+
+            using var response = await _s3Client.GetObjectAsync(request, cancellationToken);
+            using var reader = new StreamReader(response.ResponseStream);
+            string json = await reader.ReadToEndAsync(cancellationToken);
+
+            return JsonSerializer.Deserialize<CropRegionConfig>(json);
+        }
+
+        // Download a drawing from S3 to a temp file, returns local path
+        public async Task<string> DownloadDrawingToTempAsync(
+            string s3Key,
+            CancellationToken cancellationToken = default)
+        {
+            string ext = Path.GetExtension(s3Key);
+            string tempPath = Path.Combine(Path.GetTempPath(), $"vantage_preview_{Guid.NewGuid():N}{ext}");
+
+            AppLogger.Info($"Downloading drawing to temp: {s3Key}",
+                "TakeoffService.DownloadDrawingToTempAsync");
+
+            var request = new GetObjectRequest
+            {
+                BucketName = CredentialService.TakeoffDrawingsBucket,
+                Key = s3Key
+            };
+
+            using var response = await _s3Client.GetObjectAsync(request, cancellationToken);
+            using var fileStream = File.Create(tempPath);
+            await response.ResponseStream.CopyToAsync(fileStream, cancellationToken);
+
+            return tempPath;
         }
 
         public void Dispose()

@@ -6,6 +6,15 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### March 2, 2026 (Config Creator)
+- **AI Takeoff — Config Creation UI:** New `ConfigCreatorWindow` (maximized modal) for creating and editing crop region configs. Load a PDF drawing, draw BOM regions (green) and Title Block region (orange) as rectangles on a canvas overlay, save to S3. Key files: `Dialogs/ConfigCreatorWindow.xaml/.cs`, `Models/AI/CropRegionConfig.cs`.
+  - **PDF preview with rectangle drawing:** Renders PDF page 0 via `PdfToImageConverter` at 150 DPI. Mouse drag creates rectangles with percentage-based coordinates that survive window resize. BOM mode allows multiple regions; Title Block mode replaces existing.
+  - **Create/Edit/Delete configs:** "Create New Config..." as first combo item opens creator. Edit button loads existing config from S3, downloads a drawing for preview, overlays saved regions. Delete button (edit mode only) removes config JSON and associated drawings from S3 with confirmation.
+  - **Username-based S3 folders:** Config naming changed from separate client/project fields to single "Config Name" field. S3 path: `clients/{username}/{config-name}.json`, drawings: `{username}/{config-name}/`. Each user gets their own folder.
+- **TakeoffView layout improvements:** Narrowed top config section to half-width using Grid column layout. Removed Batch ID row (internal only). Added Edit button. Switched toolbar buttons to standard WPF Button style. File selection shows count in field, filenames in status box.
+- **Failed execution handling:** When Step Functions execution succeeds but app-level output status is "failed", Download Excel button is now hidden and status explains no Excel was generated. Results panel shows warning about partial/cached data.
+- **TakeoffService additions:** `SaveConfigAsync`, `GetConfigAsync`, `DeleteConfigAsync`, `DownloadDrawingToTempAsync`. Null-guard on `ListConfigsAsync` for empty S3 buckets (AWS SDK v4 nullable `S3Objects`).
+
 ### March 2, 2026
 - **AI Takeoff Module — Full integration:** New TAKEOFFS nav module integrating the AWS-based Summit Takeoff pipeline (Step Functions + Lambda + Bedrock Claude Vision) into VANTAGE. Uses AWS SDK direct (AWSSDK.S3 + AWSSDK.StepFunctions) with dedicated IAM user (`vantage-takeoff-user`), not shared Textract credentials. Key files: `Services/AI/TakeoffService.cs`, `Views/TakeoffView.xaml/.cs`.
   - **Config selection:** Loads crop region configs from S3 (`summit-takeoff-config/clients/`), Syncfusion ComboBoxAdv dropdown with refresh button.

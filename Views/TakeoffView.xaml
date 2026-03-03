@@ -32,97 +32,87 @@
                    Foreground="{DynamicResource AccentColor}"
                    Margin="0,0,0,20"/>
 
-        <!-- Config + File Selection -->
-        <Border Grid.Row="1"
-                Background="{DynamicResource ControlBackground}"
-                BorderBrush="{DynamicResource BorderColor}"
-                BorderThickness="1"
-                CornerRadius="4"
-                Padding="16"
-                Margin="0,0,0,16">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="12"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="12"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="100"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+        <!-- Config + File Selection (half-width) -->
+        <Grid Grid.Row="1" Margin="0,0,0,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Border Grid.Column="0"
+                    Background="{DynamicResource ControlBackground}"
+                    BorderBrush="{DynamicResource BorderColor}"
+                    BorderThickness="1"
+                    CornerRadius="4"
+                    Padding="16">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="12"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="80"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
 
-                <!-- Config Selection -->
-                <TextBlock Grid.Row="0" Grid.Column="0"
-                           Text="Config:"
-                           FontSize="13"
-                           FontWeight="SemiBold"
-                           VerticalAlignment="Center"/>
-                <syncfusion:ComboBoxAdv x:Name="cboConfig"
-                          Grid.Row="0" Grid.Column="1"
-                          Height="28"
-                          FontSize="12"
-                          ToolTip="Select the crop region config for this batch"/>
-                <syncfusion:ButtonAdv x:Name="btnRefreshConfigs"
-                                      Grid.Row="0" Grid.Column="2"
-                                      Label="Refresh"
-                                      SmallIcon="{x:Null}"
-                                      LargeIcon="{x:Null}"
-                                      IconTemplate="{x:Null}"
-                                      Padding="12,4"
-                                      Margin="8,0,0,0"
-                                      FontSize="11"
-                                      Background="{DynamicResource ControlBackground}"
-                                      Foreground="{DynamicResource ForegroundColor}"
-                                      BorderBrush="{DynamicResource BorderColor}"
-                                      BorderThickness="1"
-                                      Click="BtnRefreshConfigs_Click"
-                                      ToolTip="Reload config list from S3"/>
+                    <!-- Config Selection -->
+                    <TextBlock Grid.Row="0" Grid.Column="0"
+                               Text="Config:"
+                               FontSize="13"
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center"/>
+                    <syncfusion:ComboBoxAdv x:Name="cboConfig"
+                              Grid.Row="0" Grid.Column="1"
+                              Height="28"
+                              FontSize="12"
+                              SelectionChanged="CboConfig_SelectionChanged"
+                              ToolTip="Select the crop region config for this batch"/>
+                    <Button x:Name="btnEditConfig"
+                            Grid.Row="0" Grid.Column="2"
+                            Content="Edit"
+                            Width="70"
+                            Height="28"
+                            Margin="8,0,0,0"
+                            FontSize="11"
+                            IsEnabled="False"
+                            Click="BtnEditConfig_Click"
+                            ToolTip="Edit the selected crop region config"/>
+                    <Button x:Name="btnRefreshConfigs"
+                            Grid.Row="0" Grid.Column="3"
+                            Content="Refresh"
+                            Width="70"
+                            Height="28"
+                            Margin="8,0,0,0"
+                            FontSize="11"
+                            Click="BtnRefreshConfigs_Click"
+                            ToolTip="Reload config list from S3"/>
 
-                <!-- Drawing Files -->
-                <TextBlock Grid.Row="2" Grid.Column="0"
-                           Text="Drawings:"
-                           FontSize="13"
-                           FontWeight="SemiBold"
-                           VerticalAlignment="Center"/>
-                <TextBlock x:Name="txtFileCount"
-                           Grid.Row="2" Grid.Column="1"
-                           Text="No files selected"
-                           FontSize="12"
-                           Opacity="0.8"
-                           VerticalAlignment="Center"/>
-                <syncfusion:ButtonAdv x:Name="btnSelectFiles"
-                                      Grid.Row="2" Grid.Column="2"
-                                      Label="Select Files..."
-                                      SmallIcon="{x:Null}"
-                                      LargeIcon="{x:Null}"
-                                      IconTemplate="{x:Null}"
-                                      Padding="12,4"
-                                      Margin="8,0,0,0"
-                                      FontSize="11"
-                                      Background="{DynamicResource ControlBackground}"
-                                      Foreground="{DynamicResource ForegroundColor}"
-                                      BorderBrush="{DynamicResource BorderColor}"
-                                      BorderThickness="1"
-                                      Click="BtnSelectFiles_Click"
-                                      ToolTip="Select PDF drawing files to process"/>
-
-                <!-- Batch ID -->
-                <TextBlock Grid.Row="4" Grid.Column="0"
-                           Text="Batch ID:"
-                           FontSize="13"
-                           FontWeight="SemiBold"
-                           VerticalAlignment="Center"/>
-                <TextBlock x:Name="txtBatchId"
-                           Grid.Row="4" Grid.Column="1"
-                           Text="(auto-generated on process)"
-                           FontSize="12"
-                           Opacity="0.8"
-                           VerticalAlignment="Center"/>
-            </Grid>
-        </Border>
+                    <!-- Drawing Files -->
+                    <TextBlock Grid.Row="2" Grid.Column="0"
+                               Text="Drawings:"
+                               FontSize="13"
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center"/>
+                    <TextBlock x:Name="txtFileCount"
+                               Grid.Row="2" Grid.Column="1"
+                               Text="No files selected"
+                               FontSize="12"
+                               Opacity="0.8"
+                               VerticalAlignment="Center"/>
+                    <Button x:Name="btnSelectFiles"
+                            Grid.Row="2" Grid.Column="2"
+                            Content="Select Files..."
+                            Width="70"
+                            Height="28"
+                            Margin="8,0,0,0"
+                            FontSize="11"
+                            Click="BtnSelectFiles_Click"
+                            ToolTip="Select PDF drawing files to process"/>
+                </Grid>
+            </Border>
+        </Grid>
 
         <!-- Action Buttons -->
         <StackPanel Grid.Row="2"

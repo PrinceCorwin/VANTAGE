@@ -18,6 +18,7 @@ namespace VANTAGE.Views
         private List<(string Key, string DisplayName)> _configs = new();
         private string? _currentBatchId;
         private TakeoffService? _service;
+        private bool _isLoadingConfigs;
 
         public TakeoffView()
         {
@@ -34,6 +35,7 @@ namespace VANTAGE.Views
         {
             try
             {
+                _isLoadingConfigs = true;
                 SetStatus("Loading configs from S3...");
                 _service?.Dispose();
                 _service = new TakeoffService();
@@ -41,20 +43,26 @@ namespace VANTAGE.Views
                 _configs = await _service.ListConfigsAsync();
 
                 cboConfig.Items.Clear();
+                cboConfig.Items.Add("+ Create New Config...");
                 foreach (var config in _configs)
                 {
                     cboConfig.Items.Add(config.DisplayName);
                 }
 
                 if (_configs.Count > 0)
-                    cboConfig.SelectedIndex = 0;
+                    cboConfig.SelectedIndex = 1;
 
+                btnEditConfig.IsEnabled = cboConfig.SelectedIndex > 0;
                 SetStatus($"Loaded {_configs.Count} config(s). Select a config and drawing files to begin.");
             }
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "TakeoffView.LoadConfigsAsync");
                 SetStatus($"Error loading configs: {ex.Message}");
+            }
+            finally
+            {
+                _isLoadingConfigs = false;
             }
         }
 
@@ -78,11 +86,17 @@ namespace VANTAGE.Views
             _selectedFiles = dialog.FileNames.ToList();
             txtFileCount.Text = $"{_selectedFiles.Count} file(s) selected";
             txtFileCount.Opacity = 1.0;
+
+            // Show filenames in status
+            var names = _selectedFiles.Select(System.IO.Path.GetFileName);
+            string fileList = string.Join("\n    ", names);
+            SetStatus($"Selected {_selectedFiles.Count} drawing(s):\n    {fileList}");
         }
 
         private async void BtnProcess_Click(object sender, RoutedEventArgs e)
         {
-            if (cboConfig.SelectedIndex < 0)
+            int configIndex = cboConfig.SelectedIndex - 1;
+            if (configIndex < 0 || configIndex >= _configs.Count)
             {
                 MessageBox.Show("Please select a config.", "No Config Selected",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -96,10 +110,8 @@ namespace VANTAGE.Views
                 return;
             }
 
-            string configKey = _configs[cboConfig.SelectedIndex].Key;
+            string configKey = _configs[configIndex].Key;
             _currentBatchId = $"vantage-{DateTime.UtcNow:yyyyMMdd-HHmmss}";
-            txtBatchId.Text = _currentBatchId;
-            txtBatchId.Opacity = 1.0;
 
             btnProcess.IsEnabled = false;
             btnSelectFiles.IsEnabled = false;
@@ -147,9 +159,32 @@ namespace VANTAGE.Views
 
                     if (status == "SUCCEEDED")
                     {
-                        SetStatus($"Succeeded — {_selectedFiles.Count} drawing(s) processed in {elapsed}");
+                        // Check if the app-level output status is "failed" — SF execution
+                        // succeeded but the processing itself may have failed (no Excel generated)
+                        bool appFailed = false;
+                        if (!string.IsNullOrEmpty(output))
+                        {
+                            try
+                            {
+                                using var check = JsonDocument.Parse(output);
+                                if (check.RootElement.TryGetProperty("status", out var appStatus)
+                                    && appStatus.GetString()?.Equals("failed", StringComparison.OrdinalIgnoreCase) == true)
+                                    appFailed = true;
+                            }
+                            catch { /* parse error — show download anyway */ }
+                        }
+
+                        if (appFailed)
+                        {
+                            SetStatus($"Processing failed — {_selectedFiles.Count} drawing(s) in {elapsed}. No Excel output generated.");
+                            btnDownload.Visibility = Visibility.Collapsed;
+                        }
+                        else
+                        {
+                            SetStatus($"Succeeded — {_selectedFiles.Count} drawing(s) processed in {elapsed}");
+                            btnDownload.Visibility = Visibility.Visible;
+                        }
                         ShowResults(output);
-                        btnDownload.Visibility = Visibility.Visible;
                     }
                     else
                     {
@@ -215,9 +250,59 @@ namespace VANTAGE.Views
                 return;
             }
 
-            var dialog = new ManageDrawingsDialog(_configs, cboConfig.SelectedIndex);
+            int configIndex = cboConfig.SelectedIndex - 1;
+            var dialog = new ManageDrawingsDialog(_configs, Math.Max(0, configIndex));
             dialog.Owner = Window.GetWindow(this);
             dialog.ShowDialog();
+        }
+
+        private void CboConfig_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_isLoadingConfigs) return;
+
+            if (cboConfig.SelectedIndex == 0)
+            {
+                // "Create New Config..." selected — open creator and revert selection
+                var creator = new ConfigCreatorWindow();
+                creator.Owner = Window.GetWindow(this);
+                bool? result = creator.ShowDialog();
+
+                if (result == true)
+                {
+                    // Reload configs to pick up the new one
+                    _ = LoadConfigsAsync();
+                }
+                else if (_configs.Count > 0)
+                {
+                    _isLoadingConfigs = true;
+                    cboConfig.SelectedIndex = 1;
+                    _isLoadingConfigs = false;
+                }
+                else
+                {
+                    _isLoadingConfigs = true;
+                    cboConfig.SelectedIndex = -1;
+                    _isLoadingConfigs = false;
+                }
+                return;
+            }
+
+            // Enable Edit button only when a real config is selected
+            btnEditConfig.IsEnabled = cboConfig.SelectedIndex > 0;
+        }
+
+        private void BtnEditConfig_Click(object sender, RoutedEventArgs e)
+        {
+            int configIndex = cboConfig.SelectedIndex - 1;
+            if (configIndex < 0 || configIndex >= _configs.Count) return;
+
+            string configKey = _configs[configIndex].Key;
+            var editor = new ConfigCreatorWindow(configKey);
+            editor.Owner = Window.GetWindow(this);
+            bool? result = editor.ShowDialog();
+
+            if (result == true)
+                _ = LoadConfigsAsync();
         }
 
         private void SetStatus(string message)
@@ -248,8 +333,21 @@ namespace VANTAGE.Views
                 var root = doc.RootElement;
 
                 // Top-level status
+                string? appStatus = null;
                 if (root.TryGetProperty("status", out var statusEl))
-                    AddSummaryLine($"Status:  {statusEl.GetString()}", true);
+                {
+                    appStatus = statusEl.GetString();
+                    AddSummaryLine($"Status:  {appStatus}", true);
+                }
+
+                // Show error/message from backend if present
+                if (root.TryGetProperty("error", out var errorEl))
+                    AddSummaryLine($"Error:  {errorEl.GetString()}", false, true);
+                if (root.TryGetProperty("message", out var msgEl))
+                    AddSummaryLine($"Message:  {msgEl.GetString()}", false, true);
+
+                if (appStatus?.Equals("failed", StringComparison.OrdinalIgnoreCase) == true)
+                    AddSummaryLine("Processing failed — results below may be partial or from prior cached data.", false, true);
 
                 // Summary section
                 if (root.TryGetProperty("summary", out var summary))
