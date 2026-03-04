@@ -35,7 +35,7 @@
 | Work Package | READY FOR TESTING | PDF generation working; Drawings deferred to post-v1 |
 | Help Sidebar | COMPLETE | All V1 sections written; Troubleshooting deferred to post-V1 |
 | AI Progress Scan | COMPLETE | AWS Textract implementation - 100% accuracy |
-| AI Takeoff | IN PROGRESS | Phase 3 complete: config creation/edit/delete UI with PDF preview and rectangle drawing. UI polish done (theme-compliant buttons). Post-processor generates Labor and Summary tabs from AWS output. Next: wire post-processor to Download Excel button. |
+| AI Takeoff | IN PROGRESS | Phase 3 complete: config creation/edit/delete UI with PDF preview and rectangle drawing. UI polish done (theme-compliant buttons). Post-processor generates Labor and Summary tabs from AWS output and is wired to Download Excel. Next: remove test button, test with live AWS batch. |
 | AI Features (other) | NOT STARTED | Error Assistant, Description Analysis, etc. |
 
 ## Active Development
@@ -78,8 +78,8 @@
 
 ### High Priority
 - **AI Takeoff Module — Next Steps:**
-  - **Wire post-processor to Download Excel button** — Call `TakeoffPostProcessor.GenerateLaborAndSummary()` after download completes.
-  - **Remove test button** — Delete `btnTestPostProcess` from UI once post-processor is wired up.
+  - **Remove test button** — Delete `btnTestPostProcess` from UI after verifying post-processor works with live AWS batch.
+  - **Test end-to-end** — Run a full batch through AWS and verify Labor/Summary tabs are generated correctly on download.
 - **Mobile/iOS Version (iPad)** — Execs want iPad app for field supes to submit progress. Needs architecture discussion: native iOS, cross-platform framework, web app, API design, offline sync, etc.
 - **Import Takeoff to Create Records** — Create activities from takeoff data. Needs discussion on file formats, field mapping, workflow.
 

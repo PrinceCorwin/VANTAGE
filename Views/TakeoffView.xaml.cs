@@ -229,6 +229,12 @@ namespace VANTAGE.Views
             try
             {
                 await _service.DownloadExcelAsync(_currentBatchId, dialog.FileName);
+
+                // Generate Labor and Summary tabs from the downloaded Material/Flagged output
+                SetStatus("Generating Labor and Summary tabs...");
+                await System.Threading.Tasks.Task.Run(() =>
+                    TakeoffPostProcessor.GenerateLaborAndSummary(dialog.FileName));
+
                 SetStatus($"Downloaded to {dialog.FileName}");
             }
             catch (Exception ex)
