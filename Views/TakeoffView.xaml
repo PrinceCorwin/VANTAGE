@@ -72,7 +72,7 @@
                     <Button x:Name="btnEditConfig"
                             Grid.Row="0" Grid.Column="2"
                             Content="Edit"
-                            Width="70"
+                            Width="90"
                             Height="28"
                             Margin="8,0,0,0"
                             FontSize="11"
@@ -176,6 +176,25 @@
                     BorderThickness="1"
                     Click="BtnManageDrawings_Click"
                     ToolTip="View and manage drawings stored in S3 for the selected config">
+                <Button.Effect>
+                    <DropShadowEffect ShadowDepth="4" BlurRadius="6" Direction="315"
+                                      Opacity="{DynamicResource ButtonShadowOpacity}"
+                                      Color="{DynamicResource ButtonShadowColor}"/>
+                </Button.Effect>
+            </Button>
+
+            <!-- DEV ONLY: Test post-processor on sample file -->
+            <Button x:Name="btnTestPostProcess"
+                    Content="TEST POST-PROCESS"
+                    Style="{StaticResource RoundedButtonStyle}"
+                    Padding="20,8"
+                    Margin="12,0,0,0"
+                    FontSize="12"
+                    Background="#884400"
+                    Foreground="White"
+                    BorderThickness="0"
+                    Click="BtnTestPostProcess_Click"
+                    ToolTip="DEV: Run post-processor on sample Excel file">
                 <Button.Effect>
                     <DropShadowEffect ShadowDepth="4" BlurRadius="6" Direction="315"
                                       Opacity="{DynamicResource ButtonShadowOpacity}"

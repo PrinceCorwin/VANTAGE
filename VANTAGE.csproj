@@ -106,6 +106,7 @@
 	<ItemGroup>
 		<Folder Include="Controls\" />
 		<Folder Include="Documents\" />
+		<Folder Include="Plans\AWS Agent\" />
 	</ItemGroup>
 
 	<!-- Exclude VANTAGE.Updater subdirectory from this project's compilation -->

@@ -30,7 +30,7 @@ AWS takeoff lambda now outputs only Material + Flagged tabs. We need to generate
   - RawDescription = original Material.Description
   - ConnectionSize defaults to Material.Size if missing
   - Copy all other columns from material row dynamically (title block fields vary by config — any column not in the explicit exclude list gets carried over)
-  - Exclude from Labor: connection_qty, length, quantity (material-only fields)
+  - Exclude from Labor: connection_qty, length (material-only fields)
   - Add BudgetMHs column (null/empty for now)
 
 **Step 3: Write Labor tab**

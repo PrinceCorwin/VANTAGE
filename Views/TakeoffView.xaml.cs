@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Windows;
@@ -303,6 +304,44 @@ namespace VANTAGE.Views
 
             if (result == true)
                 _ = LoadConfigsAsync();
+        }
+
+        // DEV ONLY: Test post-processor on sample file
+        private void BtnTestPostProcess_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // Copy sample to temp so we don't modify original
+                string samplePath = @"C:\Users\Steve.Amalfitano\source\repos\PrinceCorwin\VANTAGE\Plans\AWS Agent\sample_takeoff_excel.xlsx";
+
+                if (!File.Exists(samplePath))
+                {
+                    SetStatus($"Sample file not found: {samplePath}");
+                    return;
+                }
+
+                string tempPath = Path.Combine(Path.GetTempPath(),
+                    $"takeoff_test_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx");
+                File.Copy(samplePath, tempPath, overwrite: true);
+
+                SetStatus("Running post-processor...");
+
+                TakeoffPostProcessor.GenerateLaborAndSummary(tempPath);
+
+                SetStatus($"Post-processor complete. Opening: {tempPath}");
+
+                // Open the result in Excel
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = tempPath,
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "TakeoffView.BtnTestPostProcess_Click");
+                SetStatus($"Error: {ex.Message}");
+            }
         }
 
         private void SetStatus(string message)
