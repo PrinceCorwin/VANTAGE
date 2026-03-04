@@ -10,7 +10,7 @@ The VANTAGE integration is built and working. Key differences from the original 
 - **Drawing upload prefixes:** Changed from batch-based (`batchId/filename.pdf`) to config-based (`{client_id}/{project_id}/filename.pdf`). Files overwrite on re-upload (latest rev wins).
 - **Credentials:** Stored in `appsettings.json` (dev) / `appsettings.enc` (production) via `TakeoffConfig` class, accessed through `CredentialService.Takeoff*` properties. Same encrypted config pattern as Textract.
 - **Access control:** Estimator role (VMS_Estimators Azure table), not a column on Users table.
-- **Config creation UI:** Not yet built. Next step — user wants detached full-width window for drawing preview.
+- **Config creation UI:** Complete. Maximized modal window with PDF preview, canvas rectangle drawing, edit/delete support.
 
 ---
 
