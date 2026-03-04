@@ -116,7 +116,6 @@ namespace VANTAGE.Views
 
             btnProcess.IsEnabled = false;
             btnSelectFiles.IsEnabled = false;
-            btnDownload.Visibility = Visibility.Collapsed;
             resultsPanel.Visibility = Visibility.Collapsed;
 
             try
@@ -134,6 +133,11 @@ namespace VANTAGE.Views
 
                 var drawingKeys = await _service.UploadDrawingsAsync(
                     drawingPrefix, _selectedFiles, progress);
+
+                // Write metadata for Previous Batches listing
+                string username = App.CurrentUser?.Username ?? "Unknown";
+                string configName = _configs[configIndex].DisplayName;
+                await _service.WriteMetadataAsync(_currentBatchId, _selectedFiles.Count, username, configName);
 
                 // Start execution
                 SetStatus("Starting AI extraction...");
@@ -178,12 +182,13 @@ namespace VANTAGE.Views
                         if (appFailed)
                         {
                             SetStatus($"Processing failed — {_selectedFiles.Count} drawing(s) in {elapsed}. No Excel output generated.");
-                            btnDownload.Visibility = Visibility.Collapsed;
                         }
                         else
                         {
                             SetStatus($"Succeeded — {_selectedFiles.Count} drawing(s) processed in {elapsed}");
-                            btnDownload.Visibility = Visibility.Visible;
+
+                            // Auto-download the Excel
+                            await DownloadBatchExcelAsync(_currentBatchId);
                         }
                         ShowResults(output);
                     }
@@ -208,27 +213,29 @@ namespace VANTAGE.Views
             }
         }
 
-        private async void BtnDownload_Click(object sender, RoutedEventArgs e)
+        // Download batch Excel, run post-processor, and open the file
+        private async System.Threading.Tasks.Task DownloadBatchExcelAsync(string batchId)
         {
-            if (_currentBatchId == null || _service == null)
-                return;
+            if (_service == null) return;
 
             var dialog = new SaveFileDialog
             {
-                FileName = $"takeoff_{_currentBatchId}.xlsx",
+                FileName = $"takeoff_{batchId}.xlsx",
                 Filter = "Excel Files|*.xlsx",
                 Title = "Save Takeoff Output"
             };
 
             if (dialog.ShowDialog() != true)
+            {
+                SetStatus("Download cancelled.");
                 return;
+            }
 
-            btnDownload.IsEnabled = false;
             SetStatus("Downloading Excel file...");
 
             try
             {
-                await _service.DownloadExcelAsync(_currentBatchId, dialog.FileName);
+                await _service.DownloadExcelAsync(batchId, dialog.FileName);
 
                 // Generate Labor and Summary tabs from the downloaded Material/Flagged output
                 SetStatus("Generating Labor and Summary tabs...");
@@ -236,15 +243,18 @@ namespace VANTAGE.Views
                     TakeoffPostProcessor.GenerateLaborAndSummary(dialog.FileName));
 
                 SetStatus($"Downloaded to {dialog.FileName}");
+
+                // Open the file
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = dialog.FileName,
+                    UseShellExecute = true
+                });
             }
             catch (Exception ex)
             {
-                AppLogger.Error(ex, "TakeoffView.BtnDownload_Click");
+                AppLogger.Error(ex, "TakeoffView.DownloadBatchExcelAsync");
                 SetStatus($"Download error: {ex.Message}");
-            }
-            finally
-            {
-                btnDownload.IsEnabled = true;
             }
         }
 
@@ -312,41 +322,64 @@ namespace VANTAGE.Views
                 _ = LoadConfigsAsync();
         }
 
-        // DEV ONLY: Test post-processor on sample file
-        private void BtnTestPostProcess_Click(object sender, RoutedEventArgs e)
+        // Show dropdown of previous batches for re-download
+        private async void BtnPreviousBatches_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                // Copy sample to temp so we don't modify original
-                string samplePath = @"C:\Users\Steve.Amalfitano\source\repos\PrinceCorwin\VANTAGE\Plans\AWS Agent\sample_takeoff_excel.xlsx";
+                btnPreviousBatches.IsEnabled = false;
+                SetStatus("Loading previous batches...");
 
-                if (!File.Exists(samplePath))
+                _service?.Dispose();
+                _service = new TakeoffService();
+
+                var batches = await _service.ListBatchesAsync();
+
+                if (batches.Count == 0)
                 {
-                    SetStatus($"Sample file not found: {samplePath}");
+                    SetStatus("No previous batches found.");
                     return;
                 }
 
-                string tempPath = Path.Combine(Path.GetTempPath(),
-                    $"takeoff_test_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx");
-                File.Copy(samplePath, tempPath, overwrite: true);
-
-                SetStatus("Running post-processor...");
-
-                TakeoffPostProcessor.GenerateLaborAndSummary(tempPath);
-
-                SetStatus($"Post-processor complete. Opening: {tempPath}");
-
-                // Open the result in Excel
-                Process.Start(new ProcessStartInfo
+                // Build context menu
+                var menu = new ContextMenu();
+                foreach (var batch in batches)
                 {
-                    FileName = tempPath,
-                    UseShellExecute = true
-                });
+                    string dateStr = batch.SubmittedAt?.ToString("MMM d, yyyy h:mm tt") ?? "Unknown date";
+                    string drawingStr = batch.DrawingCount.HasValue ? $"{batch.DrawingCount} dwg" : "—";
+                    string configStr = batch.ConfigName ?? "—";
+                    string userStr = batch.Username ?? "—";
+                    string statusStr = batch.IsComplete ? "" : " [Failed]";
+
+                    var item = new MenuItem
+                    {
+                        Header = $"{configStr}  •  {dateStr}  •  {drawingStr}  •  {userStr}{statusStr}",
+                        Tag = batch.BatchId,
+                        IsEnabled = batch.IsComplete
+                    };
+                    item.Click += async (s, args) =>
+                    {
+                        if (s is MenuItem mi && mi.Tag is string batchId)
+                            await DownloadBatchExcelAsync(batchId);
+                    };
+                    menu.Items.Add(item);
+                }
+
+                // Show menu below button
+                menu.PlacementTarget = btnPreviousBatches;
+                menu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
+                menu.IsOpen = true;
+
+                SetStatus($"Found {batches.Count} previous batch(es). Select one to download.");
             }
             catch (Exception ex)
             {
-                AppLogger.Error(ex, "TakeoffView.BtnTestPostProcess_Click");
-                SetStatus($"Error: {ex.Message}");
+                AppLogger.Error(ex, "TakeoffView.BtnPreviousBatches_Click");
+                SetStatus($"Error loading batches: {ex.Message}");
+            }
+            finally
+            {
+                btnPreviousBatches.IsEnabled = true;
             }
         }
 

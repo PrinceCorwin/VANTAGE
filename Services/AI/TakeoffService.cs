@@ -16,6 +16,17 @@ using VANTAGE.Utilities;
 
 namespace VANTAGE.Services.AI
 {
+    // Metadata for a previously processed takeoff batch
+    public class BatchInfo
+    {
+        public string BatchId { get; set; } = string.Empty;
+        public DateTime? SubmittedAt { get; set; }
+        public int? DrawingCount { get; set; }
+        public string? Username { get; set; }
+        public string? ConfigName { get; set; }
+        public bool IsComplete { get; set; }
+    }
+
     // AWS Step Functions + S3 wrapper for the Summit Takeoff pipeline
     public class TakeoffService : IDisposable
     {
@@ -326,6 +337,137 @@ namespace VANTAGE.Services.AI
             string json = await reader.ReadToEndAsync(cancellationToken);
 
             return JsonSerializer.Deserialize<CropRegionConfig>(json);
+        }
+
+        // Write batch metadata to S3 for later retrieval by Previous Batches
+        public async Task WriteMetadataAsync(
+            string batchId,
+            int drawingCount,
+            string username,
+            string configName,
+            CancellationToken cancellationToken = default)
+        {
+            var metadata = new
+            {
+                drawingCount,
+                username,
+                configName,
+                submittedAt = DateTime.UtcNow.ToString("o")
+            };
+
+            string json = JsonSerializer.Serialize(metadata);
+            string key = $"batches/{batchId}/metadata.json";
+
+            AppLogger.Info($"Writing metadata for batch '{batchId}': {drawingCount} drawing(s), config={configName}",
+                "TakeoffService.WriteMetadataAsync");
+
+            var request = new PutObjectRequest
+            {
+                BucketName = CredentialService.TakeoffProcessingBucket,
+                Key = key,
+                ContentBody = json,
+                ContentType = "application/json"
+            };
+
+            await _s3Client.PutObjectAsync(request, cancellationToken);
+        }
+
+        // List all previous batches from S3 for the Previous Batches dropdown
+        public async Task<List<BatchInfo>> ListBatchesAsync(
+            CancellationToken cancellationToken = default)
+        {
+            var batches = new List<BatchInfo>();
+
+            // List batch folders using delimiter to get CommonPrefixes
+            var listRequest = new ListObjectsV2Request
+            {
+                BucketName = CredentialService.TakeoffProcessingBucket,
+                Prefix = "batches/",
+                Delimiter = "/"
+            };
+
+            var listResponse = await _s3Client.ListObjectsV2Async(listRequest, cancellationToken);
+
+            // CommonPrefixes are the batch folders (e.g., "batches/vantage-20260304-023504/")
+            var batchFolders = listResponse.CommonPrefixes ?? new List<string>();
+
+            AppLogger.Info($"Found {batchFolders.Count} batch folder(s) in S3",
+                "TakeoffService.ListBatchesAsync");
+
+            // Fetch metadata and check completion status in parallel
+            var tasks = batchFolders.Select(async folder =>
+            {
+                // Extract batch ID from folder path (remove "batches/" prefix and trailing "/")
+                string batchId = folder.Replace("batches/", "").TrimEnd('/');
+                var info = new BatchInfo { BatchId = batchId };
+
+                // Try to read metadata.json
+                try
+                {
+                    var metaRequest = new GetObjectRequest
+                    {
+                        BucketName = CredentialService.TakeoffProcessingBucket,
+                        Key = $"batches/{batchId}/metadata.json"
+                    };
+
+                    using var metaResponse = await _s3Client.GetObjectAsync(metaRequest, cancellationToken);
+                    using var reader = new StreamReader(metaResponse.ResponseStream);
+                    string json = await reader.ReadToEndAsync(cancellationToken);
+
+                    using var doc = JsonDocument.Parse(json);
+                    if (doc.RootElement.TryGetProperty("drawingCount", out var dcElem))
+                        info.DrawingCount = dcElem.GetInt32();
+                    if (doc.RootElement.TryGetProperty("submittedAt", out var saElem))
+                        info.SubmittedAt = DateTime.Parse(saElem.GetString() ?? "");
+                    if (doc.RootElement.TryGetProperty("username", out var userElem))
+                        info.Username = userElem.GetString();
+                    if (doc.RootElement.TryGetProperty("configName", out var cfgElem))
+                        info.ConfigName = cfgElem.GetString();
+                }
+                catch (AmazonS3Exception)
+                {
+                    // No metadata.json - parse date from batch ID if possible
+                    // Format: vantage-yyyyMMdd-HHmmss (UTC time)
+                    if (batchId.StartsWith("vantage-") && batchId.Length >= 22)
+                    {
+                        string dateStr = batchId.Substring(8, 8); // yyyyMMdd
+                        string timeStr = batchId.Substring(17, 6); // HHmmss
+                        if (DateTime.TryParseExact($"{dateStr}{timeStr}", "yyyyMMddHHmmss",
+                            System.Globalization.CultureInfo.InvariantCulture,
+                            System.Globalization.DateTimeStyles.AssumeUniversal, out var parsed))
+                        {
+                            info.SubmittedAt = parsed.ToLocalTime();
+                        }
+                    }
+                }
+
+                // Check if output Excel exists
+                try
+                {
+                    var headRequest = new GetObjectMetadataRequest
+                    {
+                        BucketName = CredentialService.TakeoffProcessingBucket,
+                        Key = $"batches/{batchId}/output/takeoff_{batchId}.xlsx"
+                    };
+                    await _s3Client.GetObjectMetadataAsync(headRequest, cancellationToken);
+                    info.IsComplete = true;
+                }
+                catch (AmazonS3Exception)
+                {
+                    info.IsComplete = false;
+                }
+
+                return info;
+            });
+
+            var results = await Task.WhenAll(tasks);
+
+            // Sort by date descending (newest first), nulls last
+            batches = results
+                .OrderByDescending(b => b.SubmittedAt ?? DateTime.MinValue)
+                .ToList();
+
+            return batches;
         }
 
         // Download a drawing from S3 to a temp file, returns local path

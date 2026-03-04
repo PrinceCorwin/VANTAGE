@@ -345,6 +345,7 @@
                     <li><a href="#takeoff-overview">Overview</a></li>
                     <li><a href="#takeoff-configs">Configs</a></li>
                     <li><a href="#takeoff-processing">Processing Drawings</a></li>
+                    <li><a href="#takeoff-previous-batches">Previous Batches</a></li>
                     <li><a href="#takeoff-excel-output">Excel Output</a></li>
                     <li><a href="#takeoff-manage-drawings">Manage Drawings</a></li>
                 </ul>
@@ -2530,8 +2531,18 @@
         <li>Click <strong>Process Batch</strong>. Drawings are uploaded to S3, then the AI extraction pipeline runs.</li>
         <li>Progress is shown in the Status area with elapsed time.</li>
         <li>When complete, results appear in expandable sections: Drawings Processed, Connections by Type/Size, Components by Type, and Connections by Drawing.</li>
-        <li>If successful, click <strong>Download Excel</strong> to save the output spreadsheet.</li>
+        <li>If successful, a Save dialog appears automatically. Choose a location to save the Excel output, and it will open when complete.</li>
     </ol>
+
+    <h3 id="takeoff-previous-batches">Previous Batches</h3>
+    <p>Click <strong>Previous Batches</strong> to re-download results from earlier processing runs. The dropdown shows all past batches with:</p>
+    <ul>
+        <li><strong>Config name</strong> — The crop region config used</li>
+        <li><strong>Date/time</strong> — When the batch was processed</li>
+        <li><strong>Drawing count</strong> — Number of drawings in the batch</li>
+        <li><strong>Username</strong> — Who submitted the batch</li>
+    </ul>
+    <p>Select any completed batch to download its Excel output. Failed batches are grayed out and cannot be downloaded.</p>
 
     <div class="warning">
         <div class="warning-title">Processing Failures</div>

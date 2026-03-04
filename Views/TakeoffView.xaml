@@ -144,8 +144,8 @@
                 </Button.Effect>
             </Button>
 
-            <Button x:Name="btnDownload"
-                    Content="DOWNLOAD EXCEL"
+            <Button x:Name="btnPreviousBatches"
+                    Content="PREVIOUS BATCHES"
                     Style="{StaticResource RoundedButtonStyle}"
                     Padding="20,8"
                     Margin="12,0,0,0"
@@ -154,9 +154,8 @@
                     Foreground="{DynamicResource ForegroundColor}"
                     BorderBrush="{DynamicResource ControlBorder}"
                     BorderThickness="1"
-                    Visibility="Collapsed"
-                    Click="BtnDownload_Click"
-                    ToolTip="Download the output Excel file from S3">
+                    Click="BtnPreviousBatches_Click"
+                    ToolTip="Download results from previously processed batches">
                 <Button.Effect>
                     <DropShadowEffect ShadowDepth="4" BlurRadius="6" Direction="315"
                                       Opacity="{DynamicResource ButtonShadowOpacity}"
@@ -176,25 +175,6 @@
                     BorderThickness="1"
                     Click="BtnManageDrawings_Click"
                     ToolTip="View and manage drawings stored in S3 for the selected config">
-                <Button.Effect>
-                    <DropShadowEffect ShadowDepth="4" BlurRadius="6" Direction="315"
-                                      Opacity="{DynamicResource ButtonShadowOpacity}"
-                                      Color="{DynamicResource ButtonShadowColor}"/>
-                </Button.Effect>
-            </Button>
-
-            <!-- DEV ONLY: Test post-processor on sample file -->
-            <Button x:Name="btnTestPostProcess"
-                    Content="TEST POST-PROCESS"
-                    Style="{StaticResource RoundedButtonStyle}"
-                    Padding="20,8"
-                    Margin="12,0,0,0"
-                    FontSize="12"
-                    Background="#884400"
-                    Foreground="White"
-                    BorderThickness="0"
-                    Click="BtnTestPostProcess_Click"
-                    ToolTip="DEV: Run post-processor on sample Excel file">
                 <Button.Effect>
                     <DropShadowEffect ShadowDepth="4" BlurRadius="6" Direction="315"
                                       Opacity="{DynamicResource ButtonShadowOpacity}"
