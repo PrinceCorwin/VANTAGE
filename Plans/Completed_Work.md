@@ -7,6 +7,7 @@ This document tracks completed features and fixes. Items are moved here from Pro
 ## Unreleased
 
 ### March 4, 2026
+- **AI Takeoff UI polish and theme compliance:** Reworked `TakeoffView.xaml` action buttons from `syncfusion:ButtonAdv` to standard WPF `Button` with `RoundedButtonStyle` and `DropShadowEffect` to match app conventions. Widened Select Files button (70→90). Added explicit theme bindings (`ControlBackground`, `ForegroundColor`, `BorderColor`) to Edit, Refresh, Select Files buttons. Fixed hardcoded `Foreground="White"` → `DynamicResource ActionButtonForeground`. Fixed code-behind `Brushes.Orange` → `FindResource("WarningText")` for warning messages.
 - **Log retention policy update:** App startup purge window reduced from 30 days to 15 days for AppLogger file logs, AppLogger database log entries, and ScheduleChangeLogger JSON logs. This is now enforced by default purge settings at startup. - Codex
 - **Snapshot retention verified:** `VMS_ProgressSnapshots` maintenance remains event-driven in submit flow and continues to purge any rows older than 28 days globally (not user-scoped). - Codex
 

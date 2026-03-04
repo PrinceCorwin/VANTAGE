@@ -35,7 +35,7 @@
 | Work Package | READY FOR TESTING | PDF generation working; Drawings deferred to post-v1 |
 | Help Sidebar | COMPLETE | All V1 sections written; Troubleshooting deferred to post-V1 |
 | AI Progress Scan | COMPLETE | AWS Textract implementation - 100% accuracy |
-| AI Takeoff | IN PROGRESS | Phase 3 complete: config creation/edit/delete UI with PDF preview and rectangle drawing. Next: help manual section, further UI refinements. |
+| AI Takeoff | IN PROGRESS | Phase 3 complete: config creation/edit/delete UI with PDF preview and rectangle drawing. UI polish done (theme-compliant buttons). Next: help manual section. |
 | AI Features (other) | NOT STARTED | Error Assistant, Description Analysis, etc. |
 
 ## Active Development

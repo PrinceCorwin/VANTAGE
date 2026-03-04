@@ -77,6 +77,9 @@
                             Margin="8,0,0,0"
                             FontSize="11"
                             IsEnabled="False"
+                            Background="{DynamicResource ControlBackground}"
+                            Foreground="{DynamicResource ForegroundColor}"
+                            BorderBrush="{DynamicResource BorderColor}"
                             Click="BtnEditConfig_Click"
                             ToolTip="Edit the selected crop region config"/>
                     <Button x:Name="btnRefreshConfigs"
@@ -86,6 +89,9 @@
                             Height="28"
                             Margin="8,0,0,0"
                             FontSize="11"
+                            Background="{DynamicResource ControlBackground}"
+                            Foreground="{DynamicResource ForegroundColor}"
+                            BorderBrush="{DynamicResource BorderColor}"
                             Click="BtnRefreshConfigs_Click"
                             ToolTip="Reload config list from S3"/>
 
@@ -104,10 +110,13 @@
                     <Button x:Name="btnSelectFiles"
                             Grid.Row="2" Grid.Column="2"
                             Content="Select Files..."
-                            Width="70"
+                            Width="90"
                             Height="28"
                             Margin="8,0,0,0"
                             FontSize="11"
+                            Background="{DynamicResource ControlBackground}"
+                            Foreground="{DynamicResource ForegroundColor}"
+                            BorderBrush="{DynamicResource BorderColor}"
                             Click="BtnSelectFiles_Click"
                             ToolTip="Select PDF drawing files to process"/>
                 </Grid>
@@ -118,51 +127,61 @@
         <StackPanel Grid.Row="2"
                     Orientation="Horizontal"
                     Margin="0,0,0,16">
-            <syncfusion:ButtonAdv x:Name="btnProcess"
-                                  Label="Process Batch"
-                                  SmallIcon="{x:Null}"
-                                  LargeIcon="{x:Null}"
-                                  IconTemplate="{x:Null}"
-                                  Padding="20,8"
-                                  FontSize="13"
-                                  FontWeight="SemiBold"
-                                  Background="{DynamicResource AccentColor}"
-                                  Foreground="White"
-                                  BorderThickness="0"
-                                  Click="BtnProcess_Click"
-                                  ToolTip="Upload drawings and start AI takeoff extraction"/>
+            <Button x:Name="btnProcess"
+                    Content="PROCESS BATCH"
+                    Style="{StaticResource RoundedButtonStyle}"
+                    Padding="20,8"
+                    FontSize="12"
+                    Background="{DynamicResource AccentColor}"
+                    Foreground="{DynamicResource ActionButtonForeground}"
+                    BorderThickness="0"
+                    Click="BtnProcess_Click"
+                    ToolTip="Upload drawings and start AI takeoff extraction">
+                <Button.Effect>
+                    <DropShadowEffect ShadowDepth="4" BlurRadius="6" Direction="315"
+                                      Opacity="{DynamicResource ButtonShadowOpacity}"
+                                      Color="{DynamicResource ButtonShadowColor}"/>
+                </Button.Effect>
+            </Button>
 
-            <syncfusion:ButtonAdv x:Name="btnDownload"
-                                  Label="Download Excel"
-                                  SmallIcon="{x:Null}"
-                                  LargeIcon="{x:Null}"
-                                  IconTemplate="{x:Null}"
-                                  Padding="20,8"
-                                  Margin="12,0,0,0"
-                                  FontSize="13"
-                                  FontWeight="SemiBold"
-                                  Background="{DynamicResource ControlBackground}"
-                                  Foreground="{DynamicResource ForegroundColor}"
-                                  BorderBrush="{DynamicResource BorderColor}"
-                                  BorderThickness="1"
-                                  Visibility="Collapsed"
-                                  Click="BtnDownload_Click"
-                                  ToolTip="Download the output Excel file from S3"/>
+            <Button x:Name="btnDownload"
+                    Content="DOWNLOAD EXCEL"
+                    Style="{StaticResource RoundedButtonStyle}"
+                    Padding="20,8"
+                    Margin="12,0,0,0"
+                    FontSize="12"
+                    Background="{DynamicResource ControlBackground}"
+                    Foreground="{DynamicResource ForegroundColor}"
+                    BorderBrush="{DynamicResource ControlBorder}"
+                    BorderThickness="1"
+                    Visibility="Collapsed"
+                    Click="BtnDownload_Click"
+                    ToolTip="Download the output Excel file from S3">
+                <Button.Effect>
+                    <DropShadowEffect ShadowDepth="4" BlurRadius="6" Direction="315"
+                                      Opacity="{DynamicResource ButtonShadowOpacity}"
+                                      Color="{DynamicResource ButtonShadowColor}"/>
+                </Button.Effect>
+            </Button>
 
-            <syncfusion:ButtonAdv x:Name="btnManageDrawings"
-                                  Label="Manage Drawings"
-                                  SmallIcon="{x:Null}"
-                                  LargeIcon="{x:Null}"
-                                  IconTemplate="{x:Null}"
-                                  Padding="20,8"
-                                  Margin="12,0,0,0"
-                                  FontSize="13"
-                                  Background="{DynamicResource ControlBackground}"
-                                  Foreground="{DynamicResource ForegroundColor}"
-                                  BorderBrush="{DynamicResource BorderColor}"
-                                  BorderThickness="1"
-                                  Click="BtnManageDrawings_Click"
-                                  ToolTip="View and manage drawings stored in S3 for the selected config"/>
+            <Button x:Name="btnManageDrawings"
+                    Content="MANAGE DRAWINGS"
+                    Style="{StaticResource RoundedButtonStyle}"
+                    Padding="20,8"
+                    Margin="12,0,0,0"
+                    FontSize="12"
+                    Background="{DynamicResource ControlBackground}"
+                    Foreground="{DynamicResource ForegroundColor}"
+                    BorderBrush="{DynamicResource ControlBorder}"
+                    BorderThickness="1"
+                    Click="BtnManageDrawings_Click"
+                    ToolTip="View and manage drawings stored in S3 for the selected config">
+                <Button.Effect>
+                    <DropShadowEffect ShadowDepth="4" BlurRadius="6" Direction="315"
+                                      Opacity="{DynamicResource ButtonShadowOpacity}"
+                                      Color="{DynamicResource ButtonShadowColor}"/>
+                </Button.Effect>
+            </Button>
         </StackPanel>
 
         <!-- Status -->

@@ -442,7 +442,7 @@ namespace VANTAGE.Views
                 Text = text,
                 FontSize = 13,
                 Foreground = warning
-                    ? System.Windows.Media.Brushes.Orange
+                    ? (System.Windows.Media.Brush)FindResource("WarningText")
                     : (System.Windows.Media.Brush)FindResource("ForegroundColor"),
                 FontWeight = bold ? FontWeights.SemiBold : FontWeights.Normal,
                 Margin = new Thickness(0, 2, 0, 2)
