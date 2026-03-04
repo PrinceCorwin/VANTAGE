@@ -22,6 +22,7 @@ WPF application for Summit Industrial replacing the legacy MS Access system ("Ol
 - Local database contains user data - never suggest deleting it; migrations handle schema updates
 
 ## Development Approach
+- Never modify the AGENTS.md file or add it to gitignore file.
 - ONE change at a time, test before proceeding
 - No quick fixes - proper architectural solutions
 - Delete/refactor legacy code when no longer relevant

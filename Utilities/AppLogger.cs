@@ -181,19 +181,19 @@ namespace VANTAGE.Utilities
         }
 
         // Purges log files and database entries older than the specified number of days
-        public static void PurgeOldLogs(int daysToKeep = 30)
+        public static void PurgeOldLogs(int daysToKeep = 15)
         {
             var cutoffDate = DateTime.UtcNow.AddDays(-daysToKeep);
 
             // Purge physical log files based on filename date
-            PurgeOldLogFiles(cutoffDate);
+            PurgeOldLogFiles(cutoffDate, daysToKeep);
 
             // Purge database log entries
-            PurgeOldLogEntries(cutoffDate);
+            PurgeOldLogEntries(cutoffDate, daysToKeep);
         }
 
         // Deletes log files older than cutoff date by parsing the filename (app-yyyyMMdd.log)
-        private static void PurgeOldLogFiles(DateTime cutoffDate)
+        private static void PurgeOldLogFiles(DateTime cutoffDate, int daysToKeep)
         {
             try
             {
@@ -231,7 +231,7 @@ namespace VANTAGE.Utilities
 
                 if (purgedCount > 0)
                 {
-                    Info($"Purged {purgedCount} log file(s) older than 30 days", "AppLogger.PurgeOldLogFiles");
+                    Info($"Purged {purgedCount} log file(s) older than {daysToKeep} days", "AppLogger.PurgeOldLogFiles");
                 }
             }
             catch
@@ -241,7 +241,7 @@ namespace VANTAGE.Utilities
         }
 
         // Deletes database log entries older than cutoff date
-        private static void PurgeOldLogEntries(DateTime cutoffDate)
+        private static void PurgeOldLogEntries(DateTime cutoffDate, int daysToKeep)
         {
             try
             {
@@ -256,7 +256,7 @@ namespace VANTAGE.Utilities
 
                 if (rowsDeleted > 0)
                 {
-                    Info($"Purged {rowsDeleted} log entries older than 30 days", "AppLogger.PurgeOldLogEntries");
+                    Info($"Purged {rowsDeleted} log entries older than {daysToKeep} days", "AppLogger.PurgeOldLogEntries");
                 }
             }
             catch

@@ -6,6 +6,10 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### March 4, 2026
+- **Log retention policy update:** App startup purge window reduced from 30 days to 15 days for AppLogger file logs, AppLogger database log entries, and ScheduleChangeLogger JSON logs. This is now enforced by default purge settings at startup. - Codex
+- **Snapshot retention verified:** `VMS_ProgressSnapshots` maintenance remains event-driven in submit flow and continues to purge any rows older than 28 days globally (not user-scoped). - Codex
+
 ### March 2, 2026 (Config Creator)
 - **AI Takeoff — Config Creation UI:** New `ConfigCreatorWindow` (maximized modal) for creating and editing crop region configs. Load a PDF drawing, draw BOM regions (green) and Title Block region (orange) as rectangles on a canvas overlay, save to S3. Key files: `Dialogs/ConfigCreatorWindow.xaml/.cs`, `Models/AI/CropRegionConfig.cs`.
   - **PDF preview with rectangle drawing:** Renders PDF page 0 via `PdfToImageConverter` at 150 DPI. Mouse drag creates rectangles with percentage-based coordinates that survive window resize. BOM mode allows multiple regions; Title Block mode replaces existing.

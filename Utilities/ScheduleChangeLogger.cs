@@ -168,7 +168,7 @@ namespace VANTAGE.Utilities
         }
 
         // Deletes log files older than the specified number of days based on filename date
-        public static void PurgeOldLogs(int daysToKeep = 30)
+        public static void PurgeOldLogs(int daysToKeep = 15)
         {
             try
             {

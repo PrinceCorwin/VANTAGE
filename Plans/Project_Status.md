@@ -1,6 +1,6 @@
 # MILESTONE - Project Status
 
-**Last Updated:** March 2, 2026
+**Last Updated:** March 4, 2026 - Codex
 
 ## V1 Testing Scope
 
@@ -39,6 +39,11 @@
 | AI Features (other) | NOT STARTED | Error Assistant, Description Analysis, etc. |
 
 ## Active Development
+
+### Logging & Snapshot Retention - Codex
+- App startup log maintenance now purges AppLogger file/database logs older than 15 days. - Codex
+- Schedule change log JSON files now purge entries older than 15 days at startup. - Codex
+- VMS_ProgressSnapshots retention remains global at submit-time purge for any rows older than 28 days. - Codex
 
 ### Multi-Theme System
 

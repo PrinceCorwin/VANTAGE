@@ -204,7 +204,7 @@ namespace VANTAGE
                 VANTAGE.Utilities.AppLogger.Initialize();
                 VANTAGE.Utilities.AppLogger.Info("Milestone starting up...", "App.OnStartup");
 
-                // Purge old logs (older than 30 days)
+                // Purge old logs (older than 15 days)
                 VANTAGE.Utilities.ScheduleChangeLogger.PurgeOldLogs();
                 VANTAGE.Utilities.AppLogger.PurgeOldLogs();
 
