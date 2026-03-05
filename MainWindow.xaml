@@ -155,7 +155,7 @@
                     <Grid Margin="10,0">
                         <Button x:Name="btnProgress"
                                 Content="PROGRESS"
-                                Padding="15,0"
+                                Padding="15,0,15,6"
                                 Background="Transparent"
                                 Foreground="{DynamicResource ToolbarForeground}"
                                 BorderThickness="0"
@@ -172,7 +172,7 @@
                     <Grid Margin="10,0">
                         <Button x:Name="btnSchedule"
                                 Content="SCHEDULE"
-                                Padding="15,0"
+                                Padding="15,0,15,6"
                                 Background="Transparent"
                                 Foreground="{DynamicResource ToolbarForeground}"
                                 BorderThickness="0"
@@ -189,7 +189,7 @@
                     <Grid Margin="10,0">
                         <Button x:Name="btnPbook"
                                 Content="PROG BOOKS"
-                                Padding="15,0"
+                                Padding="15,0,15,6"
                                 Background="Transparent"
                                 Foreground="{DynamicResource ToolbarForeground}"
                                 BorderThickness="0"
@@ -206,7 +206,7 @@
                     <Grid Margin="10,0">
                         <Button x:Name="btnWorkPackage"
                                 Content="WORK PKGS"
-                                Padding="15,0"
+                                Padding="15,0,15,6"
                                 Background="Transparent"
                                 Foreground="{DynamicResource ToolbarForeground}"
                                 BorderThickness="0"
@@ -223,7 +223,7 @@
                     <Grid Margin="10,0">
                         <Button x:Name="btnAnalysis"
                                 Content="ANALYSIS"
-                                Padding="15,0"
+                                Padding="15,0,15,6"
                                 Background="Transparent"
                                 Foreground="{DynamicResource ToolbarForeground}"
                                 BorderThickness="0"
@@ -240,7 +240,7 @@
                     <Grid Margin="10,0">
                         <Button x:Name="btnTakeoff"
                                 Content="TAKEOFFS"
-                                Padding="15,0"
+                                Padding="15,0,15,6"
                                 Background="Transparent"
                                 Foreground="{DynamicResource ToolbarForeground}"
                                 BorderThickness="0"

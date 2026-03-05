@@ -341,36 +341,17 @@ namespace VANTAGE.Views
                     return;
                 }
 
-                // Build context menu
-                var menu = new ContextMenu();
-                foreach (var batch in batches)
+                SetStatus("");
+
+                var dialog = new Dialogs.PreviousBatchesDialog(batches)
                 {
-                    string dateStr = batch.SubmittedAt?.ToString("MMM d, yyyy h:mm tt") ?? "Unknown date";
-                    string drawingStr = batch.DrawingCount.HasValue ? $"{batch.DrawingCount} dwg" : "—";
-                    string configStr = batch.ConfigName ?? "—";
-                    string userStr = batch.Username ?? "—";
-                    string statusStr = batch.IsComplete ? "" : " [Failed]";
+                    Owner = Window.GetWindow(this)
+                };
 
-                    var item = new MenuItem
-                    {
-                        Header = $"{configStr}  •  {dateStr}  •  {drawingStr}  •  {userStr}{statusStr}",
-                        Tag = batch.BatchId,
-                        IsEnabled = batch.IsComplete
-                    };
-                    item.Click += async (s, args) =>
-                    {
-                        if (s is MenuItem mi && mi.Tag is string batchId)
-                            await DownloadBatchExcelAsync(batchId);
-                    };
-                    menu.Items.Add(item);
+                if (dialog.ShowDialog() == true && dialog.SelectedBatchId != null)
+                {
+                    await DownloadBatchExcelAsync(dialog.SelectedBatchId);
                 }
-
-                // Show menu below button
-                menu.PlacementTarget = btnPreviousBatches;
-                menu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
-                menu.IsOpen = true;
-
-                SetStatus($"Found {batches.Count} previous batch(es). Select one to download.");
             }
             catch (Exception ex)
             {
