@@ -78,7 +78,13 @@
 
 ### High Priority
 - **Mobile/iOS Version (iPad)** — Execs want iPad app for field supes to submit progress. Needs architecture discussion: native iOS, cross-platform framework, web app, API design, offline sync, etc.
-- **Import Takeoff to Create Records** — Create activities from takeoff data. Needs discussion on file formats, field mapping, workflow.
+- **Takeoff Post-Processing Pipeline** — All operate on the downloaded Excel, no AWS changes needed. See `summit-takeoff-integration-guide.md` for details.
+  1. Fabrication item generation — Generate cut, bevel, handling records from Material tab
+  2. Rate sheet upload — User provides Excel with unit rates
+  3. Rate application — Match rates to items, calculate manhours
+  4. ROC splits — Divide handling records by Rules of Credit
+  5. VANTAGE tab — Column rename for direct import into Activities
+  6. Fitting makeup table — For center-to-center length calculation
 
 - **Manager Role — AssignTo Permissions** — Refactor VMS_Managers table to match VMS_Admins schema (Username, FullName). Add IsUserManager() check. Managers can reassign any records (same as admin for AssignTo only), no other admin functionality. Add Manager toggle to Toggle User Roles dialog. Refactor AssignTo button to allow managers.
 

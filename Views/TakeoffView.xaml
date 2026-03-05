@@ -79,9 +79,16 @@
                             IsEnabled="False"
                             Background="{DynamicResource ControlBackground}"
                             Foreground="{DynamicResource ForegroundColor}"
-                            BorderBrush="{DynamicResource BorderColor}"
+                            BorderBrush="{DynamicResource SidebarButtonBorder}"
+                            BorderThickness="1"
                             Click="BtnEditConfig_Click"
-                            ToolTip="Edit the selected crop region config"/>
+                            ToolTip="Edit the selected crop region config">
+                        <Button.Effect>
+                            <DropShadowEffect ShadowDepth="4" BlurRadius="6" Direction="315"
+                                              Opacity="{DynamicResource ButtonShadowOpacity}"
+                                              Color="{DynamicResource ButtonShadowColor}"/>
+                        </Button.Effect>
+                    </Button>
                     <Button x:Name="btnRefreshConfigs"
                             Grid.Row="0" Grid.Column="3"
                             Content="Refresh"
@@ -91,9 +98,16 @@
                             FontSize="11"
                             Background="{DynamicResource ControlBackground}"
                             Foreground="{DynamicResource ForegroundColor}"
-                            BorderBrush="{DynamicResource BorderColor}"
+                            BorderBrush="{DynamicResource SidebarButtonBorder}"
+                            BorderThickness="1"
                             Click="BtnRefreshConfigs_Click"
-                            ToolTip="Reload config list from S3"/>
+                            ToolTip="Reload config list from S3">
+                        <Button.Effect>
+                            <DropShadowEffect ShadowDepth="4" BlurRadius="6" Direction="315"
+                                              Opacity="{DynamicResource ButtonShadowOpacity}"
+                                              Color="{DynamicResource ButtonShadowColor}"/>
+                        </Button.Effect>
+                    </Button>
 
                     <!-- Drawing Files -->
                     <TextBlock Grid.Row="2" Grid.Column="0"
@@ -116,9 +130,16 @@
                             FontSize="11"
                             Background="{DynamicResource ControlBackground}"
                             Foreground="{DynamicResource ForegroundColor}"
-                            BorderBrush="{DynamicResource BorderColor}"
+                            BorderBrush="{DynamicResource SidebarButtonBorder}"
+                            BorderThickness="1"
                             Click="BtnSelectFiles_Click"
-                            ToolTip="Select PDF drawing files to process"/>
+                            ToolTip="Select PDF drawing files to process">
+                        <Button.Effect>
+                            <DropShadowEffect ShadowDepth="4" BlurRadius="6" Direction="315"
+                                              Opacity="{DynamicResource ButtonShadowOpacity}"
+                                              Color="{DynamicResource ButtonShadowColor}"/>
+                        </Button.Effect>
+                    </Button>
                 </Grid>
             </Border>
         </Grid>
@@ -132,8 +153,8 @@
                     Style="{StaticResource RoundedButtonStyle}"
                     Padding="20,8"
                     FontSize="12"
-                    Background="{DynamicResource AccentColor}"
-                    Foreground="{DynamicResource ActionButtonForeground}"
+                    Background="{DynamicResource StatusGreenBgBtn}"
+                    Foreground="{DynamicResource StatusGreenFgBtn}"
                     BorderThickness="0"
                     Click="BtnProcess_Click"
                     ToolTip="Upload drawings and start AI takeoff extraction">

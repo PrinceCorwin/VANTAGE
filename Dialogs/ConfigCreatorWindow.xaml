@@ -9,6 +9,38 @@
         MinHeight="600"
         MinWidth="900">
 
+    <Window.Resources>
+        <Style x:Key="SidebarButtonStyle" TargetType="Button">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                Padding="{TemplateBinding Padding}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="3">
+                            <ContentPresenter Content="{TemplateBinding Content}"
+                                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource AccentColor}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource ControlBorder}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
     <Grid Margin="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -35,44 +67,44 @@
                                       FontSize="12"
                                       Background="{DynamicResource ControlBackground}"
                                       Foreground="{DynamicResource ForegroundColor}"
-                                      BorderBrush="{DynamicResource BorderColor}"
+                                      BorderBrush="{DynamicResource SidebarButtonBorder}"
                                       BorderThickness="1"
                                       Click="BtnLoadDrawing_Click"
-                                      ToolTip="Load a PDF drawing to define crop regions on"/>
+                                      ToolTip="Load a PDF drawing to define crop regions on">
+                    <syncfusion:ButtonAdv.Effect>
+                        <DropShadowEffect ShadowDepth="4" BlurRadius="6" Direction="315"
+                                          Opacity="{DynamicResource ButtonShadowOpacity}"
+                                          Color="{DynamicResource ButtonShadowColor}"/>
+                    </syncfusion:ButtonAdv.Effect>
+                </syncfusion:ButtonAdv>
 
                 <Rectangle Width="1" Height="24" Fill="{DynamicResource BorderColor}" Margin="12,0"/>
 
-                <TextBlock Text="Mode:"
+                <TextBlock Text="Draw:"
                            FontSize="12"
                            VerticalAlignment="Center"
                            Foreground="{DynamicResource ForegroundColor}"
                            Margin="0,0,8,0"/>
-                <syncfusion:ButtonAdv x:Name="btnModeBom"
-                                      Label="BOM Region"
-                                      SmallIcon="{x:Null}"
-                                      LargeIcon="{x:Null}"
-                                      IconTemplate="{x:Null}"
-                                      Padding="14,6"
-                                      FontSize="12"
-                                      Background="#2E7D32"
-                                      Foreground="White"
-                                      BorderThickness="0"
-                                      Click="BtnModeBom_Click"
-                                      ToolTip="Draw BOM table regions (green) — multiple allowed"/>
-                <syncfusion:ButtonAdv x:Name="btnModeTitleBlock"
-                                      Label="Title Block"
-                                      SmallIcon="{x:Null}"
-                                      LargeIcon="{x:Null}"
-                                      IconTemplate="{x:Null}"
-                                      Padding="14,6"
-                                      Margin="6,0,0,0"
-                                      FontSize="12"
-                                      Background="{DynamicResource ControlBackground}"
-                                      Foreground="{DynamicResource ForegroundColor}"
-                                      BorderBrush="{DynamicResource BorderColor}"
-                                      BorderThickness="1"
-                                      Click="BtnModeTitleBlock_Click"
-                                      ToolTip="Draw the title block region (orange) — only one allowed"/>
+                <Button x:Name="btnModeBom"
+                        Content="BOM Region"
+                        Padding="14,6"
+                        FontSize="12"
+                        Background="#2E7D32"
+                        Foreground="White"
+                        BorderThickness="0"
+                        Click="BtnModeBom_Click"
+                        ToolTip="Draw BOM table regions (green) — multiple allowed"/>
+                <Button x:Name="btnModeTitleBlock"
+                        Content="Title Block"
+                        Padding="14,6"
+                        Margin="6,0,0,0"
+                        FontSize="12"
+                        Background="{DynamicResource ControlBackground}"
+                        Foreground="{DynamicResource ForegroundColor}"
+                        BorderBrush="{DynamicResource BorderColor}"
+                        BorderThickness="1"
+                        Click="BtnModeTitleBlock_Click"
+                        ToolTip="Draw the title block region (orange) — only one allowed"/>
 
                 <Rectangle Width="1" Height="24" Fill="{DynamicResource BorderColor}" Margin="12,0"/>
 
@@ -85,10 +117,16 @@
                                       FontSize="12"
                                       Background="{DynamicResource ControlBackground}"
                                       Foreground="{DynamicResource ForegroundColor}"
-                                      BorderBrush="{DynamicResource BorderColor}"
+                                      BorderBrush="{DynamicResource SidebarButtonBorder}"
                                       BorderThickness="1"
                                       Click="BtnUndo_Click"
-                                      ToolTip="Remove the last drawn region"/>
+                                      ToolTip="Remove the last drawn region">
+                    <syncfusion:ButtonAdv.Effect>
+                        <DropShadowEffect ShadowDepth="4" BlurRadius="6" Direction="315"
+                                          Opacity="{DynamicResource ButtonShadowOpacity}"
+                                          Color="{DynamicResource ButtonShadowColor}"/>
+                    </syncfusion:ButtonAdv.Effect>
+                </syncfusion:ButtonAdv>
                 <syncfusion:ButtonAdv x:Name="btnClearAll"
                                       Label="Clear All"
                                       SmallIcon="{x:Null}"
@@ -99,10 +137,16 @@
                                       FontSize="12"
                                       Background="{DynamicResource ControlBackground}"
                                       Foreground="{DynamicResource ForegroundColor}"
-                                      BorderBrush="{DynamicResource BorderColor}"
+                                      BorderBrush="{DynamicResource SidebarButtonBorder}"
                                       BorderThickness="1"
                                       Click="BtnClearAll_Click"
-                                      ToolTip="Remove all drawn regions"/>
+                                      ToolTip="Remove all drawn regions">
+                    <syncfusion:ButtonAdv.Effect>
+                        <DropShadowEffect ShadowDepth="4" BlurRadius="6" Direction="315"
+                                          Opacity="{DynamicResource ButtonShadowOpacity}"
+                                          Color="{DynamicResource ButtonShadowColor}"/>
+                    </syncfusion:ButtonAdv.Effect>
+                </syncfusion:ButtonAdv>
 
                 <Rectangle Width="1" Height="24" Fill="{DynamicResource BorderColor}" Margin="12,0"/>
 
@@ -194,27 +238,47 @@
 
                 <StackPanel Grid.Column="6" Orientation="Horizontal">
                     <Button x:Name="btnDeleteConfig"
+                            Style="{StaticResource SidebarButtonStyle}"
                             Content="Delete Config"
                             Height="28"
                             Padding="16,0"
                             Margin="0,0,12,0"
                             FontSize="12"
+                            Background="{DynamicResource StatusRedBgBtn}"
+                            Foreground="{DynamicResource StatusRedFgBtn}"
+                            BorderBrush="{DynamicResource SidebarButtonBorder}"
+                            BorderThickness="1"
+                            HorizontalContentAlignment="Center"
                             Visibility="Collapsed"
                             Click="BtnDeleteConfig_Click"
                             ToolTip="Delete this config and optionally its drawings from S3"/>
-                    <syncfusion:ButtonAdv x:Name="btnSaveConfig"
-                                          Label="Save Config"
-                                          SmallIcon="{x:Null}"
-                                          LargeIcon="{x:Null}"
-                                          IconTemplate="{x:Null}"
-                                          Padding="20,6"
-                                          FontSize="12"
-                                          FontWeight="SemiBold"
-                                          Background="{DynamicResource AccentColor}"
-                                          Foreground="White"
-                                          BorderThickness="0"
-                                          Click="BtnSaveConfig_Click"
-                                          ToolTip="Save the config to S3"/>
+                    <Button Style="{StaticResource SidebarButtonStyle}"
+                            Content="Cancel"
+                            Height="28"
+                            Padding="16,0"
+                            Margin="0,0,12,0"
+                            FontSize="12"
+                            Background="{DynamicResource StatusInProgressBgBtn}"
+                            Foreground="{DynamicResource StatusInProgressFgBtn}"
+                            BorderBrush="{DynamicResource SidebarButtonBorder}"
+                            BorderThickness="1"
+                            HorizontalContentAlignment="Center"
+                            IsCancel="True"
+                            ToolTip="Close without saving"/>
+                    <Button x:Name="btnSaveConfig"
+                            Style="{StaticResource SidebarButtonStyle}"
+                            Content="Save Config"
+                            Height="28"
+                            Padding="20,0"
+                            FontSize="12"
+                            FontWeight="SemiBold"
+                            Background="{DynamicResource StatusGreenBgBtn}"
+                            Foreground="{DynamicResource StatusGreenFgBtn}"
+                            BorderBrush="{DynamicResource SidebarButtonBorder}"
+                            BorderThickness="1"
+                            HorizontalContentAlignment="Center"
+                            Click="BtnSaveConfig_Click"
+                            ToolTip="Save the config to S3"/>
                 </StackPanel>
             </Grid>
         </Border>

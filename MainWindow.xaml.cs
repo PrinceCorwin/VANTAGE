@@ -21,7 +21,7 @@ namespace VANTAGE
 {
     public partial class MainWindow : ChromelessWindow
     {
-        private Syncfusion.Windows.Tools.Controls.ButtonAdv? _activeNavButton;
+        private Button? _activeNavButton;
 
         public MainWindow()
         {
@@ -308,7 +308,7 @@ namespace VANTAGE
         }
 
         // TOOLBAR BUTTON HANDLERS
-        private void HighlightNavigationButton(Syncfusion.Windows.Tools.Controls.ButtonAdv activeButton)
+        private void HighlightNavigationButton(Button activeButton)
         {
             _activeNavButton = activeButton;
 

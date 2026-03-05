@@ -51,7 +51,12 @@ namespace VANTAGE.Dialogs
         public ConfigCreatorWindow(string? editConfigKey = null)
         {
             InitializeComponent();
-            SfSkinManager.SetTheme(this, new Theme(ThemeManager.GetSyncfusionThemeName()));
+            // Apply Syncfusion theme only to ButtonAdv controls, not entire window
+            // Window-level theme overrides programmatic Background on standard Buttons (mode toggles)
+            var sfTheme = new Theme(ThemeManager.GetSyncfusionThemeName());
+            SfSkinManager.SetTheme(btnLoadDrawing, sfTheme);
+            SfSkinManager.SetTheme(btnUndo, sfTheme);
+            SfSkinManager.SetTheme(btnClearAll, sfTheme);
 
             _editConfigKey = editConfigKey;
             if (_editConfigKey != null)
