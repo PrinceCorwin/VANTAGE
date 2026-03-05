@@ -79,7 +79,10 @@
 ### High Priority
 - **Mobile/iOS Version (iPad)** — Execs want iPad app for field supes to submit progress. Needs architecture discussion: native iOS, cross-platform framework, web app, API design, offline sync, etc.
 - **Takeoff Post-Processing Pipeline** — All operate on the downloaded Excel, no AWS changes needed. See `summit-takeoff-integration-guide.md` for details.
-  1. Fabrication item generation — Generate cut, bevel, handling records from Material tab
+  1. Fabrication item generation — CUT and BEV rows generating (WIP). TODO:
+     - Fix descriptions for CUT/BEV rows (currently inherits parent connection description)
+     - Remove Connection Type column from Labor tab; put connection type in the Component column for actual connection rows (e.g., "BW" instead of component name)
+     - Handling records (not started)
   2. Rate sheet upload — User provides Excel with unit rates
   3. Rate application — Match rates to items, calculate manhours
   4. ROC splits — Divide handling records by Rules of Credit

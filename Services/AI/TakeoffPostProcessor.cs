@@ -14,7 +14,9 @@ namespace VANTAGE.Services.AI
         private static readonly HashSet<string> ExcludeFromLabor = new(StringComparer.OrdinalIgnoreCase)
         {
             "connection_qty",
-            "length"
+            "Connection Qty",
+            "length",
+            "Item ID"
         };
 
         // Main entry point - processes the downloaded Excel file in place
@@ -198,6 +200,27 @@ namespace VANTAGE.Services.AI
                         labor["BudgetMHs"] = null;
 
                         result.Add(labor);
+
+                        // Fabrication children: CUT for every connection except BU
+                        if (connType != "BU")
+                        {
+                            var cut = new Dictionary<string, object?>(labor, StringComparer.OrdinalIgnoreCase);
+                            cut["Component"] = "CUT";
+                            cut["ShopField"] = 1;
+                            result.Add(cut);
+                        }
+
+                        // Fabrication children: 2 BEV per BW connection
+                        if (connType == "BW")
+                        {
+                            for (int b = 0; b < 2; b++)
+                            {
+                                var bev = new Dictionary<string, object?>(labor, StringComparer.OrdinalIgnoreCase);
+                                bev["Component"] = "BEV";
+                                bev["ShopField"] = 1;
+                                result.Add(bev);
+                            }
+                        }
                     }
                 }
             }
@@ -291,7 +314,7 @@ namespace VANTAGE.Services.AI
             // Define column order (explicit columns first, then dynamic title block fields)
             var explicitColumns = new List<string>
             {
-                "Drawing Number", "Item ID", "Component", "Size", "Connection Size",
+                "Drawing Number", "Component", "Size", "Connection Size",
                 "Connection Type", "Thickness", "Class Rating", "Material",
                 "Commodity Code", "Description", "Raw Description", "Quantity",
                 "ShopField", "Confidence", "Flag", "BudgetMHs"
