@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
 using VANTAGE.Data;
 using VANTAGE.Dialogs;
 using VANTAGE.Models;
@@ -22,6 +23,10 @@ namespace VANTAGE
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
+
+            // Force tooltip initial delay on every hover (disable instant-show after first tooltip)
+            ToolTipService.BetweenShowDelayProperty.OverrideMetadata(
+                typeof(FrameworkElement), new FrameworkPropertyMetadata(0));
 
             // Register Syncfusion license FIRST (before any UI components or database setup)
             Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("Ngo9BigBOggjGyl/VkR+XU9Ff1RDX3xKf0x/TGpQb19xflBPallYVBYiSV9jS3hTd0VnWXhbcHFQQWhfVE91XQ==");
