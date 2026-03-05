@@ -12,6 +12,7 @@ using System.Windows.Media.Imaging;
 using VANTAGE.Data;
 using VANTAGE.Dialogs;
 using VANTAGE.Models;
+using VANTAGE.Services.Plugins;
 using VANTAGE.Utilities;
 using VANTAGE.ViewModels;
 using VANTAGE.Views;
@@ -22,6 +23,7 @@ namespace VANTAGE
     public partial class MainWindow : ChromelessWindow
     {
         private Button? _activeNavButton;
+        private PluginLoaderService? _pluginLoader;
 
         public MainWindow()
         {
@@ -42,6 +44,9 @@ namespace VANTAGE
                 // Force taskbar icon refresh (fixes first-run icon not showing)
                 var iconPath = new Uri("pack://application:,,,/images/AppIcon.ico", UriKind.Absolute);
                 this.Icon = BitmapFrame.Create(iconPath);
+
+                // Load installed plugins
+                LoadPlugins();
             };
             this.Closing += MainWindow_Closing;
 
@@ -56,6 +61,20 @@ namespace VANTAGE
                 if (_activeNavButton != null)
                     HighlightNavigationButton(_activeNavButton);
             });
+        }
+
+        // Initialize and load all installed plugins
+        private void LoadPlugins()
+        {
+            try
+            {
+                _pluginLoader = new PluginLoaderService(this, ToolsMenuGroup);
+                _pluginLoader.LoadAllPlugins();
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "MainWindow.LoadPlugins");
+            }
         }
         // Cached view instance to avoid full data reload on every navigation
         private Views.ProgressView? _cachedProgressView;
@@ -244,6 +263,9 @@ namespace VANTAGE
                     return;
                 }
             }
+
+            // Shutdown plugins
+            _pluginLoader?.ShutdownAllPlugins();
 
             AppLogger.Info("Application closing", "MainWindow.MainWindow_Closing", App.CurrentUser?.Username);
         }
@@ -1798,14 +1820,6 @@ namespace VANTAGE
                     scheduleView.UpdateUDFColumnHeaders();
                 }
             }
-        }
-
-        // Opens the Project Specific dialog for project-scoped utility functions
-        private void MenuProjectSpecific_Click(object sender, RoutedEventArgs e)
-        {
-            var dialog = new Dialogs.ProjectSpecificFunctionsDialog();
-            dialog.Owner = this;
-            dialog.ShowDialog();
         }
 
         // MODULE LOADING

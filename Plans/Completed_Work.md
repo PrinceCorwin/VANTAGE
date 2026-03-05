@@ -6,8 +6,14 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### March 5, 2026 (Plugin Execution Framework)
+- **Plugin execution framework:** Added `IVantagePlugin` interface (Id, Name, Initialize, Shutdown) and `IPluginHost` interface (AddToolsMenuItem, MainWindow, ShowInfo/Error/Confirmation, logging). New `PluginLoaderService` loads plugin assemblies at startup, instantiates entry types, calls Initialize.
+- **Dynamic menu item injection:** Plugins can add items to Tools menu via `host.AddToolsMenuItem(header, onClick, addSeparatorBefore)`. Menu items are cleaned up on shutdown.
+- **Plugin type system:** Added `pluginType` field to `PluginManifest` and `PluginFeedIndex` ("action" for UI plugins, "extension" for passive features). Added `AssemblyFile` and `EntryType` to `InstalledPluginInfo`.
+- **Removed Project Specific dialog:** Deleted `ProjectSpecificFunctionsDialog.xaml/.cs` and menu item — plugins now create their own UI dynamically.
+- **MainWindow integration:** Plugin loading wired into `Loaded` event, cleanup in `Closing` event. Tools menu group named for programmatic access.
+
 ### March 5, 2026
-- **Project Specific dialog (Tools menu):** Added `Tools -> Project Specific` in MainWindow. New `ProjectSpecificFunctionsDialog` shows a read-only grid with `Project` and `Description`, plus `Run` and `Close`. Initial seeded action is `Fluor T&M 25.005 - Update Pipe Support Fab`, currently `Coming soon` placeholder.
 - **Plugin Manager (settings menu):** Added `Plugin Manager...` in top-right `⋮` settings popup. New dialog includes Installed and Available tabs, feed-backed plugin discovery, install from feed, uninstall, refresh, and status feedback.
 - **Plugin feed architecture:** Added plugin feed models and services (`PluginFeedIndex`, `PluginFeedService`) using `Plugins.IndexUrl` in app config (`appsettings.json`, `AppConfig`, `CredentialService`).
 - **Local plugin catalog:** Added recursive manifest scan service (`PluginCatalogService`) for installed plugins under `%LocalAppData%\\VANTAGE\\Plugins`.

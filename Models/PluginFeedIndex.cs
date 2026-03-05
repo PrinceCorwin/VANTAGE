@@ -20,6 +20,9 @@ namespace VANTAGE.Models
         [JsonPropertyName("version")]
         public string Version { get; set; } = string.Empty;
 
+        [JsonPropertyName("pluginType")]
+        public string PluginType { get; set; } = string.Empty;
+
         [JsonPropertyName("project")]
         public string Project { get; set; } = string.Empty;
 

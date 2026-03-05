@@ -13,8 +13,11 @@ namespace VANTAGE.Services.Plugins
         public string Id { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
         public string Version { get; set; } = string.Empty;
+        public string PluginType { get; set; } = string.Empty;
         public string Project { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
+        public string AssemblyFile { get; set; } = string.Empty;
+        public string EntryType { get; set; } = string.Empty;
         public string PluginDirectory { get; set; } = string.Empty;
         public string ManifestPath { get; set; } = string.Empty;
     }
@@ -58,8 +61,11 @@ namespace VANTAGE.Services.Plugins
                             Id = manifest.Id,
                             Name = string.IsNullOrWhiteSpace(manifest.Name) ? manifest.Id : manifest.Name,
                             Version = manifest.Version,
+                            PluginType = manifest.PluginType,
                             Project = manifest.Project,
                             Description = manifest.Description,
+                            AssemblyFile = manifest.AssemblyFile,
+                            EntryType = manifest.EntryType,
                             ManifestPath = manifestPath,
                             PluginDirectory = Path.GetDirectoryName(manifestPath) ?? string.Empty
                         });
