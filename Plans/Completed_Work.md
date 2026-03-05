@@ -6,6 +6,16 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### March 5, 2026
+- **Project Specific dialog (Tools menu):** Added `Tools -> Project Specific` in MainWindow. New `ProjectSpecificFunctionsDialog` shows a read-only grid with `Project` and `Description`, plus `Run` and `Close`. Initial seeded action is `Fluor T&M 25.005 - Update Pipe Support Fab`, currently `Coming soon` placeholder.
+- **Plugin Manager (settings menu):** Added `Plugin Manager...` in top-right `⋮` settings popup. New dialog includes Installed and Available tabs, feed-backed plugin discovery, install from feed, uninstall, refresh, and status feedback.
+- **Plugin feed architecture:** Added plugin feed models and services (`PluginFeedIndex`, `PluginFeedService`) using `Plugins.IndexUrl` in app config (`appsettings.json`, `AppConfig`, `CredentialService`).
+- **Local plugin catalog:** Added recursive manifest scan service (`PluginCatalogService`) for installed plugins under `%LocalAppData%\\VANTAGE\\Plugins`.
+- **Plugin install/uninstall service:** Added `PluginInstallService` for feed package download, optional SHA-256 validation, zip extraction, manifest validation, stale-folder cleanup, install copy, and uninstall delete flow.
+- **Startup automatic plugin updates:** Added `PluginAutoUpdateService` and startup integration in `App.xaml.cs`. On startup, app checks installed plugins against feed versions, installs newer versions, and removes older versions of the same plugin ID.
+- **Validation and hardening from live testing:** Fixed nested-zip manifest detection, stale partial install handling, manifest parse/required field checks, feed-to-manifest ID/version mismatch checks, and improved install error diagnostics (including attempted URL).
+- **Implementation handoff doc:** Added `Plans/Plugin_Manager_Implementation_Guide.md` with full architecture, file-by-file changes, troubleshooting, and next steps for continuing development on another machine.
+
 ### March 4, 2026
 - **Takeoff fabrication items (CUT/BEV) — initial implementation:** Added fabrication row generation to `TakeoffPostProcessor.cs`. Each non-BU connection gets 1 CUT child row; each BW connection gets 2 BEV child rows. Fabrication rows inherit parent fields with Component overridden to "CUT"/"BEV" and ShopField=1. Removed Item ID and Connection Qty from Labor tab columns. WIP — descriptions and column layout still need refinement.
 

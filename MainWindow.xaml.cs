@@ -1,4 +1,4 @@
-﻿using MILESTONE.Services.Procore;
+using MILESTONE.Services.Procore;
 using Syncfusion.Windows.Shared;
 using System;
 using System.IO;
@@ -1544,6 +1544,14 @@ namespace VANTAGE
             dialog.ShowDialog();
         }
 
+        private void MenuPluginManager_Click(object sender, RoutedEventArgs e)
+        {
+            popupSettings.IsOpen = false;
+            var dialog = new Dialogs.PluginManagerDialog();
+            dialog.Owner = this;
+            dialog.ShowDialog();
+        }
+
         // Gather current grid state from all views into a unified layout
         private GridLayout GatherCurrentLayout()
         {
@@ -1790,6 +1798,14 @@ namespace VANTAGE
                     scheduleView.UpdateUDFColumnHeaders();
                 }
             }
+        }
+
+        // Opens the Project Specific dialog for project-scoped utility functions
+        private void MenuProjectSpecific_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new Dialogs.ProjectSpecificFunctionsDialog();
+            dialog.Owner = this;
+            dialog.ShowDialog();
         }
 
         // MODULE LOADING

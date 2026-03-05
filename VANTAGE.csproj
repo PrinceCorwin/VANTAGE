@@ -99,6 +99,7 @@
 	<ItemGroup>
 		<Resource Include="Images\AppIcon.ico" />
 		<Resource Include="Images\CoverPic.png" />
+		<Resource Include="Images\summitLogo_largeText.png" />
 		<Resource Include="Images\SummitLogoNoText.jpg" />
 		<Resource Include="Images\SummitS-Full Summit Peak Logo.jpg" />
 	</ItemGroup>

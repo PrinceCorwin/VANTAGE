@@ -114,6 +114,7 @@
                             <syncfusion:DropDownMenuItem Header="Prorate MHs" Click="MenuProrateMHs_Click"/>
                             <syncfusion:DropDownMenuItem Header="Schedule Change Log" Click="MenuScheduleChangeLog_Click" ToolTip="View and apply changes made in the Schedule detail grid"/>
                             <syncfusion:DropDownMenuItem Header="Schedule UDF Mapping..." Click="MenuScheduleUDFMapping_Click" ToolTip="Configure custom P6 UDF column mappings"/>
+                            <syncfusion:DropDownMenuItem Header="Project Specific" Click="MenuProjectSpecific_Click" ToolTip="Run project-specific VANTAGE: Milestone utilities"/>
                         </syncfusion:DropDownMenuGroup>
                     </syncfusion:DropDownButtonAdv>
 
@@ -328,6 +329,15 @@
                                         Click="MenuGridLayouts_Click"
                                         Cursor="Hand"
                                         ToolTip="Save and apply custom column layouts"/>
+                                <Button Content="Plugin Manager..."
+                                        Background="Transparent"
+                                        Foreground="{DynamicResource ForegroundColor}"
+                                        BorderThickness="0"
+                                        Padding="12,8"
+                                        HorizontalContentAlignment="Left"
+                                        Click="MenuPluginManager_Click"
+                                        Cursor="Hand"
+                                        ToolTip="Install, update, or remove project-specific plugin packages"/>
                                 <Button Content="Theme..."
                                         Background="Transparent"
                                         Foreground="{DynamicResource ForegroundColor}"

@@ -8,6 +8,7 @@ namespace VANTAGE.Models
         public AwsConfig Aws { get; set; } = new();
         public ProcoreConfig Procore { get; set; } = new();
         public UpdateConfig Update { get; set; } = new();
+        public PluginsConfig Plugins { get; set; } = new();
         public TakeoffConfig Takeoff { get; set; } = new();
     }
 
@@ -49,6 +50,11 @@ namespace VANTAGE.Models
     public class UpdateConfig
     {
         public string BaseUrl { get; set; } = string.Empty;
+    }
+
+    public class PluginsConfig
+    {
+        public string IndexUrl { get; set; } = string.Empty;
     }
 
     public class TakeoffConfig

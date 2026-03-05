@@ -382,18 +382,19 @@
     <h3 id="gs-before-you-begin">Before You Begin</h3>
     <p>Before using VANTAGE: Milestone:</p>
     <ul>
-        <li><strong>Admin setup required</strong> — A system administrator must add your Windows username to the VANTAGE: Milestone user database</li>
-        <li><strong>No login needed</strong> — VANTAGE: Milestone automatically detects your Windows username</li>
-        <li><strong>First sync</strong> — On first launch, you'll need to sync with the central Azure database to download project data (or import or create activities if none exist yet for your project). If you import or create new records, they will be assigned to you initially — but you can reassign them if desired.</li>
+        <li><strong>Admin setup required</strong> â€” A system administrator must add your Windows username to the VANTAGE: Milestone user database</li>
+        <li><strong>No login needed</strong> â€” VANTAGE: Milestone automatically detects your Windows username</li>
+        <li><strong>First sync</strong> â€” On first launch, you'll need to sync with the central Azure database to download project data (or import or create activities if none exist yet for your project). If you import or create new records, they will be assigned to you initially â€” but you can reassign them if desired.</li>
     </ul>
 
     <h3 id="gs-auto-updates">Automatic Updates</h3>
     <p>VANTAGE: Milestone checks for updates each time it starts. If a newer version is available, the update is downloaded and installed automatically before the application opens. During this process, you'll see status messages on the splash screen.</p>
     <ul>
-        <li><strong>Internet required</strong> — If the update server is unreachable (no internet connection), the check is skipped and the app starts normally with the current version.</li>
-        <li><strong>No action needed</strong> — Updates are fully automatic. The app will briefly close and reopen with the new version.</li>
-        <li><strong>Your data is safe</strong> — Updates only replace application files. Your local database and settings are not affected.</li>
+        <li><strong>Internet required</strong> â€” If the update server is unreachable (no internet connection), the check is skipped and the app starts normally with the current version.</li>
+        <li><strong>No action needed</strong> â€” Updates are fully automatic. The app will briefly close and reopen with the new version.</li>
+        <li><strong>Your data is safe</strong> â€” Updates only replace application files. Your local database and settings are not affected.</li>
     </ul>
+    <p>Installed plugins are also checked at startup. If a newer version of an installed plugin is available in the configured plugin feed, VANTAGE: Milestone automatically installs the newer plugin version during startup.</p>
 
     <!-- ============================================ -->
     <h2 id="main-interface">2. Main Interface</h2>
@@ -403,9 +404,9 @@
     <img src="start-main-interface.png" alt="Main interface" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
     <p>The main window has three sections:</p>
     <ul>
-        <li><strong>Toolbar</strong> — Menus (File, Tools, Admin) on the left, module navigation buttons in the center, settings menu on the right</li>
-        <li><strong>Content Area</strong> — The currently active module</li>
-        <li><strong>Status Bar</strong> — Shows version, your username, and last sync timestamp</li>
+        <li><strong>Toolbar</strong> â€” Menus (File, Tools, Admin) on the left, module navigation buttons in the center, settings menu on the right</li>
+        <li><strong>Content Area</strong> â€” The currently active module</li>
+        <li><strong>Status Bar</strong> â€” Shows version, your username, and last sync timestamp</li>
     </ul>
 
     <h3 id="ui-navigation">Navigation</h3>
@@ -439,49 +440,51 @@
 
     <h4>File Menu</h4>
     <ul>
-        <li><strong>Import Activities (Replace)</strong> — Import activities from Excel, replacing all existing local data. Auto-detects Legacy (OldVantage) or Milestone format based on column headers.</li>
-        <li><strong>Import Activities (Combine)</strong> — Import activities from Excel, merging with existing data. Auto-detects file format.</li>
-        <li><strong>Export Activities</strong> — Export your activities to an Excel file (Milestone format)</li>
-        <li><strong>Export Activities Template</strong> — Download a blank Excel template for activity import</li>
-        <li><strong>Create Activities</strong> — Generate new activities based on project parameters</li>
-        <li><strong>Clear Local Activities</strong> — Delete all local activity data (requires re-sync)</li>
-        <li><strong>Import From P6 File</strong> — Import schedule data from a P6 Primavera export file</li>
-        <li><strong>Export To P6 File</strong> — Export schedule data for import into P6 Primavera</li>
-        <li><strong>Clear Local Schedule</strong> — Delete all local schedule data</li>
-        <li><strong>Export Logs</strong> — Save application logs to a file or email for troubleshooting</li>
-        <li><strong>Manage My Snapshots</strong> — View, delete, or revert to previous weekly snapshots of your data</li>
-        <li><strong>Legacy Export Activities</strong> — Export to OldVantage format with 0-1 decimal percentages</li>
-        <li><strong>Legacy Export Template</strong> — Export empty template with OldVantage column headers</li>
+        <li><strong>Import Activities (Replace)</strong> â€” Import activities from Excel, replacing all existing local data. Auto-detects Legacy (OldVantage) or Milestone format based on column headers.</li>
+        <li><strong>Import Activities (Combine)</strong> â€” Import activities from Excel, merging with existing data. Auto-detects file format.</li>
+        <li><strong>Export Activities</strong> â€” Export your activities to an Excel file (Milestone format)</li>
+        <li><strong>Export Activities Template</strong> â€” Download a blank Excel template for activity import</li>
+        <li><strong>Create Activities</strong> â€” Generate new activities based on project parameters</li>
+        <li><strong>Clear Local Activities</strong> â€” Delete all local activity data (requires re-sync)</li>
+        <li><strong>Import From P6 File</strong> â€” Import schedule data from a P6 Primavera export file</li>
+        <li><strong>Export To P6 File</strong> â€” Export schedule data for import into P6 Primavera</li>
+        <li><strong>Clear Local Schedule</strong> â€” Delete all local schedule data</li>
+        <li><strong>Export Logs</strong> â€” Save application logs to a file or email for troubleshooting</li>
+        <li><strong>Manage My Snapshots</strong> â€” View, delete, or revert to previous weekly snapshots of your data</li>
+        <li><strong>Legacy Export Activities</strong> â€” Export to OldVantage format with 0-1 decimal percentages</li>
+        <li><strong>Legacy Export Template</strong> â€” Export empty template with OldVantage column headers</li>
     </ul>
 
     <h4>Tools Menu</h4>
     <ul>
-        <li><strong>Help Sidebar</strong> — Open the help documentation sidebar (also F1)</li>
-        <li><strong>Prorate MHs</strong> — Distribute budgeted man-hours across filtered activities</li>
-        <li><strong>Schedule Change Log</strong> — View and apply changes made in the Schedule detail grid to live Activities</li>
-        <li><strong>Schedule UDF Mapping...</strong> — Configure custom P6 column mappings for the Schedule module UDF columns</li>
+        <li><strong>Help Sidebar</strong> â€” Open the help documentation sidebar (also F1)</li>
+        <li><strong>Prorate MHs</strong> â€” Distribute budgeted man-hours across filtered activities</li>
+        <li><strong>Schedule Change Log</strong> â€” View and apply changes made in the Schedule detail grid to live Activities</li>
+        <li><strong>Schedule UDF Mapping...</strong> â€” Configure custom P6 column mappings for the Schedule module UDF columns</li>
+        <li><strong>Project Specific</strong> - Open project-specific utility functions and run project-targeted actions</li>
     </ul>
 
     <h4>Admin Menu (administrators only)</h4>
     <ul>
-        <li><strong>Toggle User Admin</strong> — Grant or revoke admin privileges for any user</li>
-        <li><strong>Edit Users</strong> — Manage user accounts and permissions</li>
-        <li><strong>Edit Projects</strong> — Configure project settings and metadata</li>
-        <li><strong>Edit Snapshots</strong> — Manage weekly data snapshots across all users, upload to Progress Log</li>
-        <li><strong>Manage Progress Log</strong> — View and delete batches previously uploaded to the Progress Log</li>
-        <li><strong>Deleted Records UI</strong> — View and restore soft-deleted records</li>
+        <li><strong>Toggle User Admin</strong> â€” Grant or revoke admin privileges for any user</li>
+        <li><strong>Edit Users</strong> â€” Manage user accounts and permissions</li>
+        <li><strong>Edit Projects</strong> â€” Configure project settings and metadata</li>
+        <li><strong>Edit Snapshots</strong> â€” Manage weekly data snapshots across all users, upload to Progress Log</li>
+        <li><strong>Manage Progress Log</strong> â€” View and delete batches previously uploaded to the Progress Log</li>
+        <li><strong>Deleted Records UI</strong> â€” View and restore soft-deleted records</li>
     </ul>
 
-    <h4>Settings Menu (⋮)</h4>
+    <h4>Settings Menu (â‹®)</h4>
     <ul>
-        <li><strong>Help Sidebar</strong> — Open the help documentation sidebar (also F1)</li>
-        <li><strong>Feedback Board</strong> — Submit ideas or report bugs to the development team. The grid displays a Notes column where admins can add status updates or comments visible to all users. The Notes field is only editable by admins.</li>
-        <li><strong>Import Settings</strong> — Load saved application settings from a file</li>
-        <li><strong>Export Settings</strong> — Save your current settings to a file for backup or transfer</li>
-        <li><strong>Grid Layouts</strong> — Save, load, or manage named column layouts for data grids</li>
-        <li><strong>Theme...</strong> — Choose between Dark, Light, and Orchid application themes. The selected theme is applied instantly across the entire application.</li>
-        <li><strong>See Release Notes</strong> — View features and changes in each release. This dialog also appears automatically after an app update.</li>
-        <li><strong>About VANTAGE: Milestone</strong> — View version information and credits</li>
+        <li><strong>Help Sidebar</strong> â€” Open the help documentation sidebar (also F1)</li>
+        <li><strong>Feedback Board</strong> â€” Submit ideas or report bugs to the development team. The grid displays a Notes column where admins can add status updates or comments visible to all users. The Notes field is only editable by admins.</li>
+        <li><strong>Import Settings</strong> â€” Load saved application settings from a file</li>
+        <li><strong>Export Settings</strong> â€” Save your current settings to a file for backup or transfer</li>
+        <li><strong>Grid Layouts</strong> â€” Save, load, or manage named column layouts for data grids</li>
+        <li><strong>Plugin Manager...</strong> - View installed plugins, browse available plugins from the configured feed, install, uninstall, and refresh plugin listings</li>
+        <li><strong>Theme...</strong> â€” Choose between Dark, Light, and Orchid application themes. The selected theme is applied instantly across the entire application.</li>
+        <li><strong>See Release Notes</strong> â€” View features and changes in each release. This dialog also appears automatically after an app update.</li>
+        <li><strong>About VANTAGE: Milestone</strong> â€” View version information and credits</li>
     </ul>
 
     <h3 id="ui-status-bar">Status Bar</h3>
@@ -489,14 +492,14 @@
     <img src="start-status-bar-right.png" alt="Status bar right" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
     <p>The status bar at the bottom displays:</p>
     <ul>
-        <li><strong>Version</strong> — Current VANTAGE: Milestone version</li>
-        <li><strong>User</strong> — Your Windows username</li>
-        <li><strong>Last Sync</strong> — When you last synced with the central database</li>
+        <li><strong>Version</strong> â€” Current VANTAGE: Milestone version</li>
+        <li><strong>User</strong> â€” Your Windows username</li>
+        <li><strong>Last Sync</strong> â€” When you last synced with the central database</li>
     </ul>
 
     <h3 id="ui-help-sidebar">Help Sidebar</h3>
     <img src="start-help-sidebar.png" alt="Help sidebar" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
-    <p>Open the Help sidebar by pressing <span class="keyboard-shortcut">F1</span> or from the <strong>⋮</strong> settings menu in the top right corner. The sidebar shows context-sensitive help based on your current module. Use the search field to find specific topics.</p>
+    <p>Open the Help sidebar by pressing <span class="keyboard-shortcut">F1</span> or from the <strong>â‹®</strong> settings menu in the top right corner. The sidebar shows context-sensitive help based on your current module. Use the search field to find specific topics.</p>
 
     <h3 id="ui-shortcuts">Keyboard Shortcuts</h3>
     <table>
@@ -534,42 +537,42 @@
     <h3 id="prog-workflow">Typical Workflow</h3>
     <p>The standard daily workflow is:</p>
     <ol>
-        <li><strong>Filter</strong> — Use the sidebar to filter to your records or specific criteria</li>
-        <li><strong>Edit</strong> — Update percent complete and other fields in the grid</li>
-        <li><strong>Sync</strong> — Push your changes to Azure and pull updates from others</li>
+        <li><strong>Filter</strong> â€” Use the sidebar to filter to your records or specific criteria</li>
+        <li><strong>Edit</strong> â€” Update percent complete and other fields in the grid</li>
+        <li><strong>Sync</strong> â€” Push your changes to Azure and pull updates from others</li>
     </ol>
 
     <h3 id="prog-layout">Layout</h3>
     <p>The Progress view has three main areas:</p>
     <ul>
-        <li><strong>Left Sidebar</strong> — Quick filter buttons and controls</li>
-        <li><strong>Main Grid</strong> — Activity data with toolbar above</li>
-        <li><strong>Footer</strong> — Record count, selection counter, and metadata error indicator</li>
+        <li><strong>Left Sidebar</strong> â€” Quick filter buttons and controls</li>
+        <li><strong>Main Grid</strong> â€” Activity data with toolbar above</li>
+        <li><strong>Footer</strong> â€” Record count, selection counter, and metadata error indicator</li>
     </ul>
 
     <h4>Footer Bar</h4>
     <p>The footer bar at the bottom of the grid shows:</p>
     <ul>
-        <li><strong>Record count</strong> — Shows total records, or "X of Y records" when filtered</li>
-        <li><strong>Selection counter</strong> — When multiple rows are selected (via Ctrl+Click or Shift+Click), shows "N selected" alongside the record count</li>
-        <li><strong>Metadata errors</strong> — Button showing count of records with missing required fields (click to filter to those records)</li>
-        <li><strong>Navigation buttons</strong> — ▲/▼ buttons to jump to first/last row</li>
+        <li><strong>Record count</strong> â€” Shows total records, or "X of Y records" when filtered</li>
+        <li><strong>Selection counter</strong> â€” When multiple rows are selected (via Ctrl+Click or Shift+Click), shows "N selected" alongside the record count</li>
+        <li><strong>Metadata errors</strong> â€” Button showing count of records with missing required fields (click to filter to those records)</li>
+        <li><strong>Navigation buttons</strong> â€” â–²/â–¼ buttons to jump to first/last row</li>
     </ul>
 
     <h4>Summary Row</h4>
     <p>A summary row at the bottom of the grid displays totals for key numeric columns:</p>
     <ul>
-        <li><strong>Quantity</strong> — Sum of all quantities</li>
-        <li><strong>EarnQtyEntry</strong> — Sum of earned quantities</li>
-        <li><strong>BudgetMHs</strong> — Sum of budgeted man-hours</li>
-        <li><strong>EarnMHsCalc</strong> — Sum of earned man-hours</li>
-        <li><strong>ClientBudget</strong> — Sum of client budget values</li>
+        <li><strong>Quantity</strong> â€” Sum of all quantities</li>
+        <li><strong>EarnQtyEntry</strong> â€” Sum of earned quantities</li>
+        <li><strong>BudgetMHs</strong> â€” Sum of budgeted man-hours</li>
+        <li><strong>EarnMHsCalc</strong> â€” Sum of earned man-hours</li>
+        <li><strong>ClientBudget</strong> â€” Sum of client budget values</li>
     </ul>
     <p>The summary row updates automatically when you edit values or apply filters, showing totals for the currently visible records only.</p>
 
     <h3 id="prog-toolbar">Toolbar</h3>
 
-    <h4>Left Section — Quick Actions</h4>
+    <h4>Left Section â€” Quick Actions</h4>
     <img src="progress-toolbar-left.png" alt="Progress toolbar left section" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
     <table>
         <tr>
@@ -603,7 +606,7 @@
         <p>Right-click either percent button and select "Custom Percent..." to change it to any value (e.g., 50%, 75%). Your custom values are saved and persist between sessions.</p>
     </div>
 
-    <h4>Center Section — Sync Controls</h4>
+    <h4>Center Section â€” Sync Controls</h4>
     <img src="progress-toolbar-center.png" alt="Progress toolbar center section" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
     <table>
         <tr>
@@ -620,13 +623,13 @@
         </tr>
     </table>
 
-    <h4>Right Section — Summary Panel</h4>
+    <h4>Right Section â€” Summary Panel</h4>
     <img src="progress-toolbar-right.png" alt="Progress toolbar right section" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
     <p>Displays real-time totals for the currently filtered records:</p>
     <ul>
-        <li><strong>Budget</strong> — Click the column name to choose which field to use as the budget total. Options include BudgetMHs (default), Quantity, ClientBudget, and others. Your selection persists between sessions.</li>
-        <li><strong>Earned</strong> — Calculated as the selected budget column multiplied by each activity's percent complete</li>
-        <li><strong>% Complete</strong> — Overall completion percentage (Earned / Budget)</li>
+        <li><strong>Budget</strong> â€” Click the column name to choose which field to use as the budget total. Options include BudgetMHs (default), Quantity, ClientBudget, and others. Your selection persists between sessions.</li>
+        <li><strong>Earned</strong> â€” Calculated as the selected budget column multiplied by each activity's percent complete</li>
+        <li><strong>% Complete</strong> â€” Overall completion percentage (Earned / Budget)</li>
     </ul>
 
     <h3 id="prog-filters">Sidebar Filters</h3>
@@ -634,7 +637,7 @@
     <p>Active filters display a highlighted border so you can easily see which filters are currently applied.</p>
 
     <h4>Progress Filters</h4>
-    <p>These three filters are mutually exclusive — only one can be active at a time:</p>
+    <p>These three filters are mutually exclusive â€” only one can be active at a time:</p>
     <table>
         <tr>
             <th>Filter</th>
@@ -690,18 +693,18 @@
 
     <h4>Other Sidebar Controls</h4>
     <ul>
-        <li><strong>Clear Filters</strong> — Remove all active filters and show all records</li>
-        <li><strong>Assign</strong> — Reassign your selected records to a different user (you can only reassign records assigned to you)</li>
-        <li><strong>Columns</strong> — Show or hide grid columns</li>
+        <li><strong>Clear Filters</strong> â€” Remove all active filters and show all records</li>
+        <li><strong>Assign</strong> â€” Reassign your selected records to a different user (you can only reassign records assigned to you)</li>
+        <li><strong>Columns</strong> â€” Show or hide grid columns</li>
     </ul>
 
     <h4>Column Header Filtering</h4>
     <p>Each column header has a filter icon that opens Excel-like filtering options:</p>
     <ul>
-        <li><strong>Text columns</strong> — Filter by specific values, contains, starts with, ends with, etc.</li>
-        <li><strong>Numeric columns</strong> — Filter by equals, greater than, less than, between, etc.</li>
-        <li><strong>Date columns</strong> — Filter by date ranges, before, after, etc.</li>
-        <li><strong>Checkbox list</strong> — Select/deselect specific values to show or hide</li>
+        <li><strong>Text columns</strong> â€” Filter by specific values, contains, starts with, ends with, etc.</li>
+        <li><strong>Numeric columns</strong> â€” Filter by equals, greater than, less than, between, etc.</li>
+        <li><strong>Date columns</strong> â€” Filter by date ranges, before, after, etc.</li>
+        <li><strong>Checkbox list</strong> â€” Select/deselect specific values to show or hide</li>
     </ul>
     <p>Column filters can be combined with sidebar filters for precise data views.</p>
 
@@ -711,17 +714,17 @@
     <h4>Using the Group Drop Area</h4>
     <p>A Group Drop Area appears at the top of the grid. To group your data:</p>
     <ol>
-        <li><strong>Add grouping</strong> — Drag any column header into the Group Drop Area</li>
-        <li><strong>Multi-level grouping</strong> — Drag additional columns to create nested groups</li>
-        <li><strong>Remove grouping</strong> — Drag the column chip out of the drop area, or click its X button</li>
-        <li><strong>Reorder groups</strong> — Drag chips within the drop area to change grouping priority</li>
+        <li><strong>Add grouping</strong> â€” Drag any column header into the Group Drop Area</li>
+        <li><strong>Multi-level grouping</strong> â€” Drag additional columns to create nested groups</li>
+        <li><strong>Remove grouping</strong> â€” Drag the column chip out of the drop area, or click its X button</li>
+        <li><strong>Reorder groups</strong> â€” Drag chips within the drop area to change grouping priority</li>
     </ol>
 
     <h4>Working with Groups</h4>
     <ul>
-        <li><strong>Expand/Collapse</strong> — Click the arrow (▶/▼) next to any group header</li>
-        <li><strong>Group count</strong> — Each group header shows the number of activities it contains</li>
-        <li><strong>Filtering + Grouping</strong> — Groups respect active filters, showing only matching records</li>
+        <li><strong>Expand/Collapse</strong> â€” Click the arrow (â–¶/â–¼) next to any group header</li>
+        <li><strong>Group count</strong> â€” Each group header shows the number of activities it contains</li>
+        <li><strong>Filtering + Grouping</strong> â€” Groups respect active filters, showing only matching records</li>
     </ul>
 
     <h4>Useful Grouping Columns</h4>
@@ -755,9 +758,9 @@
     <h4>Frozen Columns</h4>
     <p>Keep important columns visible while scrolling horizontally by freezing them in place. Frozen columns stay pinned on the left side of the grid.</p>
     <ul>
-        <li><strong>Freeze columns</strong> — Right-click any column header and select "Freeze Columns to Here". That column and all columns to its left will be frozen.</li>
-        <li><strong>Unfreeze</strong> — Right-click any column header and select "Unfreeze All Columns".</li>
-        <li><strong>Choose which columns</strong> — Drag columns to reorder them, placing the ones you want frozen on the left side of the grid before freezing.</li>
+        <li><strong>Freeze columns</strong> â€” Right-click any column header and select "Freeze Columns to Here". That column and all columns to its left will be frozen.</li>
+        <li><strong>Unfreeze</strong> â€” Right-click any column header and select "Unfreeze All Columns".</li>
+        <li><strong>Choose which columns</strong> â€” Drag columns to reorder them, placing the ones you want frozen on the left side of the grid before freezing.</li>
     </ul>
     <p>Your frozen column setting is saved and restored automatically.</p>
 
@@ -794,11 +797,11 @@
     <h4>Context Menu</h4>
     <p>Right-click selected rows to access:</p>
     <ul>
-        <li><strong>Delete Row(s)</strong> — Delete selected records (ownership verified)</li>
-        <li><strong>Copy Row(s)</strong> — Copy to clipboard (visible or all columns)</li>
-        <li><strong>Duplicate Row(s)</strong> — Create copies of selected records</li>
-        <li><strong>Add Blank Row</strong> — Create a new empty activity row assigned to you. Clears filters and sorts, then scrolls to the new row at the bottom. Required fields are highlighted red so you know what to fill in.</li>
-        <li><strong>Export Selected</strong> — Export selected rows to Excel</li>
+        <li><strong>Delete Row(s)</strong> â€” Delete selected records (ownership verified)</li>
+        <li><strong>Copy Row(s)</strong> â€” Copy to clipboard (visible or all columns)</li>
+        <li><strong>Duplicate Row(s)</strong> â€” Create copies of selected records</li>
+        <li><strong>Add Blank Row</strong> â€” Create a new empty activity row assigned to you. Clears filters and sorts, then scrolls to the new row at the bottom. Required fields are highlighted red so you know what to fill in.</li>
+        <li><strong>Export Selected</strong> â€” Export selected rows to Excel</li>
     </ul>
 
     <h4>Find & Replace</h4>
@@ -806,21 +809,21 @@
 
     <p><strong>Standard Mode:</strong> Enter text in "Find what" and "Replace with" fields. Options include:</p>
     <ul>
-        <li><strong>Match case</strong> — Case-sensitive matching</li>
-        <li><strong>Match entire cell contents</strong> — Only replace if the entire cell value matches (default on)</li>
+        <li><strong>Match case</strong> â€” Case-sensitive matching</li>
+        <li><strong>Match entire cell contents</strong> â€” Only replace if the entire cell value matches (default on)</li>
     </ul>
 
     <p><strong>Special Modes:</strong> Use checkboxes at the top of the dialog for bulk operations:</p>
     <ul>
-        <li><strong>Replace ALL cells in column</strong> — Replace every cell value in the column with the replacement text (confirmation required)</li>
-        <li><strong>Replace BLANK cells in column</strong> — Replace only empty, null, or whitespace-only cells</li>
+        <li><strong>Replace ALL cells in column</strong> â€” Replace every cell value in the column with the replacement text (confirmation required)</li>
+        <li><strong>Replace BLANK cells in column</strong> â€” Replace only empty, null, or whitespace-only cells</li>
     </ul>
     <p>These modes are mutually exclusive and disable the "Find what" field when checked.</p>
 
     <p><strong>Buttons:</strong></p>
     <ul>
-        <li><strong>Count</strong> — Show how many cells match without making changes</li>
-        <li><strong>Replace All</strong> — Replace all matching cells</li>
+        <li><strong>Count</strong> â€” Show how many cells match without making changes</li>
+        <li><strong>Replace All</strong> â€” Replace all matching cells</li>
     </ul>
 
     <h3 id="prog-metadata">Required Metadata Fields</h3>
@@ -900,19 +903,19 @@
     </ol>
     <p>If you work on multiple projects, you'll be prompted to select which project to submit.</p>
 
-    <p><strong>Week-Over-Week Tracking:</strong> When you submit, your current earned man-hours (EarnMHsCalc) are saved to the PrevEarnMHs field. This lets you track progress since your last submission — the difference between EarnMHsCalc and PrevEarnMHs shows how many hours you've earned during the current week.</p>
+    <p><strong>Week-Over-Week Tracking:</strong> When you submit, your current earned man-hours (EarnMHsCalc) are saved to the PrevEarnMHs field. This lets you track progress since your last submission â€” the difference between EarnMHsCalc and PrevEarnMHs shows how many hours you've earned during the current week.</p>
 
     <p><strong>Conflict Handling:</strong> If another user has already submitted a snapshot containing records with the same UniqueID for the selected week, those records are automatically skipped (not overwritten). You'll see a message showing how many records were skipped. You can optionally export the skipped records to Excel to see which records were affected and who originally submitted them.</p>
 
     <h3 id="prog-layouts">Column Layouts</h3>
     <p>Your column widths, order, and visibility are automatically saved and persist across app updates. To customize:</p>
     <ul>
-        <li><strong>Sort columns</strong> — Double-click a column header to sort (hold Ctrl to add multi-sort)</li>
-        <li><strong>Resize columns</strong> — Drag the edge of a column header left or right</li>
-        <li><strong>Reorder columns</strong> — Drag a column header to a new position</li>
-        <li><strong>Hide/show columns</strong> — Click the <strong>Columns</strong> button in the sidebar. Use the <strong>Default</strong> button to restore column visibility to the built-in defaults</li>
+        <li><strong>Sort columns</strong> â€” Double-click a column header to sort (hold Ctrl to add multi-sort)</li>
+        <li><strong>Resize columns</strong> â€” Drag the edge of a column header left or right</li>
+        <li><strong>Reorder columns</strong> â€” Drag a column header to a new position</li>
+        <li><strong>Hide/show columns</strong> â€” Click the <strong>Columns</strong> button in the sidebar. Use the <strong>Default</strong> button to restore column visibility to the built-in defaults</li>
     </ul>
-    <p>Use <strong>Settings (⋮) → Grid Layouts</strong> to save named layouts or switch between different column configurations.</p>
+    <p>Use <strong>Settings (â‹®) â†’ Grid Layouts</strong> to save named layouts or switch between different column configurations.</p>
 
     <h3 id="prog-shortcuts">Keyboard Shortcuts</h3>
     <table>
@@ -973,16 +976,16 @@
             <td>Go to last cell of last column</td>
         </tr>
         <tr>
-            <td><span class="keyboard-shortcut">Ctrl+↑</span></td>
+            <td><span class="keyboard-shortcut">Ctrl+â†‘</span></td>
             <td>Go to first cell of current column</td>
         </tr>
         <tr>
-            <td><span class="keyboard-shortcut">Ctrl+↓</span></td>
+            <td><span class="keyboard-shortcut">Ctrl+â†“</span></td>
             <td>Go to last cell of current column</td>
         </tr>
     </table>
 
-    <p>You can also use the <strong>▲</strong> and <strong>▼</strong> navigation buttons in the bottom toolbar to jump to the first or last row using the mouse.</p>
+    <p>You can also use the <strong>â–²</strong> and <strong>â–¼</strong> navigation buttons in the bottom toolbar to jump to the first or last row using the mouse.</p>
 
     <h3 id="prog-copying">Copying Data</h3>
     <p>VANTAGE: Milestone provides multiple ways to copy grid data for use in Excel or other applications:</p>
@@ -993,16 +996,16 @@
     <h4>Column Header Copy</h4>
     <p>Right-click any column header to access copy options:</p>
     <ul>
-        <li><strong>Copy Column w/ Header</strong> — Copies the column header and all visible row values (newline-separated)</li>
-        <li><strong>Copy Column w/o Header</strong> — Copies only the visible row values without the header</li>
+        <li><strong>Copy Column w/ Header</strong> â€” Copies the column header and all visible row values (newline-separated)</li>
+        <li><strong>Copy Column w/o Header</strong> â€” Copies only the visible row values without the header</li>
     </ul>
     <p>These options copy all visible (filtered) rows in the column, making it easy to extract a single column's data.</p>
 
     <h4>Row Copy (Context Menu)</h4>
     <p>Right-click selected rows to access:</p>
     <ul>
-        <li><strong>Copy (Visible Columns)</strong> — Copies selected rows with only visible columns</li>
-        <li><strong>Copy (All Columns)</strong> — Copies selected rows with all Activity properties</li>
+        <li><strong>Copy (Visible Columns)</strong> â€” Copies selected rows with only visible columns</li>
+        <li><strong>Copy (All Columns)</strong> â€” Copies selected rows with all Activity properties</li>
     </ul>
 
     <h4>Multi-Cell Paste (Ctrl+V)</h4>
@@ -1010,10 +1013,10 @@
 
     <p><strong>How it works:</strong></p>
     <ul>
-        <li><strong>Single cell selected</strong> — Pastes downward from that cell (one value per row)</li>
-        <li><strong>Multiple cells selected</strong> — Pastes into the leftmost column of the selection</li>
-        <li><strong>Single value to multiple rows</strong> — Copy one cell, select multiple rows with <span class="keyboard-shortcut">Ctrl+Shift+Down</span>, then <span class="keyboard-shortcut">Ctrl+V</span> to paste that value into all selected rows (Excel-style fill)</li>
-        <li><strong>Multi-column clipboard</strong> — Only the first column of clipboard data is used</li>
+        <li><strong>Single cell selected</strong> â€” Pastes downward from that cell (one value per row)</li>
+        <li><strong>Multiple cells selected</strong> â€” Pastes into the leftmost column of the selection</li>
+        <li><strong>Single value to multiple rows</strong> â€” Copy one cell, select multiple rows with <span class="keyboard-shortcut">Ctrl+Shift+Down</span>, then <span class="keyboard-shortcut">Ctrl+V</span> to paste that value into all selected rows (Excel-style fill)</li>
+        <li><strong>Multi-column clipboard</strong> â€” Only the first column of clipboard data is used</li>
     </ul>
 
     <p><strong>Validation rules (paste is blocked if any fail):</strong></p>
@@ -1039,7 +1042,7 @@
         <div class="note-title">Prerequisites</div>
         <p>To see data in the Schedule module, you need both of the following for the same week ending date:</p>
         <ul>
-            <li>P6 schedule data imported via <strong>File → Import From P6 File</strong></li>
+            <li>P6 schedule data imported via <strong>File â†’ Import From P6 File</strong></li>
             <li>A progress snapshot created via <strong>SUBMIT WEEK</strong> in the Progress module</li>
         </ul>
         <p>If no P6 file has been imported, the header displays "(No schedule loaded)". Without both P6 data and a snapshot for the same week, the grid will be empty.</p>
@@ -1050,8 +1053,8 @@
     <h3 id="sched-layout">Layout</h3>
     <p>The Schedule view uses a master/detail layout:</p>
     <ul>
-        <li><strong>Master Grid (top)</strong> — P6 schedule activities with MS rollup data</li>
-        <li><strong>Detail Grid (bottom)</strong> — Individual VANTAGE: Milestone activities linked to the selected schedule row</li>
+        <li><strong>Master Grid (top)</strong> â€” P6 schedule activities with MS rollup data</li>
+        <li><strong>Detail Grid (bottom)</strong> â€” Individual VANTAGE: Milestone activities linked to the selected schedule row</li>
     </ul>
     <p>Click any row in the master grid to see its linked activities in the detail grid below. Edits to percent, dates, and budget hours in the detail grid automatically recalculate the rollup values (V-Start, V-Finish, MS %, MS MHs) shown in the master grid.</p>
 
@@ -1076,7 +1079,7 @@
         <tr>
             <td style="background-color: #ffd93d; color: #000; text-align: center;"><strong>Yellow</strong></td>
             <td>Discrepancy between P6 and MS data</td>
-            <td>Optional — review with scheduler if reconciliation needed</td>
+            <td>Optional â€” review with scheduler if reconciliation needed</td>
         </tr>
     </table>
     <p>The status bar shows a legend: red square = required fields, yellow square = discrepancies.</p>
@@ -1117,9 +1120,9 @@
 
     <h4>Action Buttons</h4>
     <ul>
-        <li><strong>Refresh</strong> — Reload schedule data and clear all filters</li>
-        <li><strong>Clear Filters</strong> — Remove active filter without reloading data</li>
-        <li><strong>SAVE</strong> — Save pending changes (turns red when unsaved changes exist)</li>
+        <li><strong>Refresh</strong> â€” Reload schedule data and clear all filters</li>
+        <li><strong>Clear Filters</strong> â€” Remove active filter without reloading data</li>
+        <li><strong>SAVE</strong> â€” Save pending changes (turns red when unsaved changes exist)</li>
     </ul>
 
     <h4>Column Header Filtering</h4>
@@ -1130,29 +1133,29 @@
     <h4>P6 Data (Read-Only)</h4>
     <p>These columns show data imported from P6 Primavera:</p>
     <ul>
-        <li><strong>SchedActNO</strong> — P6 activity ID</li>
-        <li><strong>Description</strong> — Activity name</li>
-        <li><strong>WbsId</strong> — Work breakdown structure code</li>
-        <li><strong>P6 Actual Start/Finish</strong> — P6 recorded actuals</li>
-        <li><strong>P6 %</strong> — P6 percent complete</li>
-        <li><strong>P6 MHs</strong> — P6 budget hours</li>
+        <li><strong>SchedActNO</strong> â€” P6 activity ID</li>
+        <li><strong>Description</strong> â€” Activity name</li>
+        <li><strong>WbsId</strong> â€” Work breakdown structure code</li>
+        <li><strong>P6 Actual Start/Finish</strong> â€” P6 recorded actuals</li>
+        <li><strong>P6 %</strong> â€” P6 percent complete</li>
+        <li><strong>P6 MHs</strong> â€” P6 budget hours</li>
     </ul>
 
     <h4>MS Rollups (Calculated)</h4>
     <p>These columns are calculated from linked VANTAGE: Milestone activities:</p>
     <ul>
-        <li><strong>V-Start</strong> — Earliest start date from linked activities</li>
-        <li><strong>V-Finish</strong> — Latest finish date (only if all linked activities are complete)</li>
-        <li><strong>MS %</strong> — Weighted average percent complete</li>
-        <li><strong>MS MHs</strong> — Sum of budget hours from linked activities</li>
+        <li><strong>V-Start</strong> â€” Earliest start date from linked activities</li>
+        <li><strong>V-Finish</strong> â€” Latest finish date (only if all linked activities are complete)</li>
+        <li><strong>MS %</strong> â€” Weighted average percent complete</li>
+        <li><strong>MS MHs</strong> â€” Sum of budget hours from linked activities</li>
     </ul>
 
     <h4>Editable Fields</h4>
     <ul>
-        <li><strong>Missed Start Reason</strong> — Explanation for missed start deadline</li>
-        <li><strong>Missed Finish Reason</strong> — Explanation for missed finish deadline</li>
-        <li><strong>3WLA Start</strong> — Forecast start date</li>
-        <li><strong>3WLA Finish</strong> — Forecast finish date</li>
+        <li><strong>Missed Start Reason</strong> â€” Explanation for missed start deadline</li>
+        <li><strong>Missed Finish Reason</strong> â€” Explanation for missed finish deadline</li>
+        <li><strong>3WLA Start</strong> â€” Forecast start date</li>
+        <li><strong>3WLA Finish</strong> â€” Forecast finish date</li>
     </ul>
 
     <h3 id="sched-detail-grid">Detail Grid</h3>
@@ -1166,7 +1169,7 @@
         </tr>
         <tr>
             <td><strong>% (PercentEntry)</strong></td>
-            <td>0-100. Changing this auto-adjusts Start/Finish dates. A colored progress bar at the bottom of each cell shows completion at a glance (red → orange → yellow → green).</td>
+            <td>0-100. Changing this auto-adjusts Start/Finish dates. A colored progress bar at the bottom of each cell shows completion at a glance (red â†’ orange â†’ yellow â†’ green).</td>
         </tr>
         <tr>
             <td><strong>Budget MHs</strong></td>
@@ -1174,7 +1177,7 @@
         </tr>
         <tr>
             <td><strong>Earn MHs</strong></td>
-            <td>Read-only. Calculated as (% / 100) × Budget MHs. Updates automatically when % or Budget MHs changes.</td>
+            <td>Read-only. Calculated as (% / 100) Ã— Budget MHs. Updates automatically when % or Budget MHs changes.</td>
         </tr>
         <tr>
             <td><strong>ActStart</strong></td>
@@ -1202,7 +1205,7 @@
     </ul>
 
     <h4>Date Validation</h4>
-    <p>3WLA dates are forecasts — they represent when you expect an activity <em>will</em> start or finish. Dates earlier than the week ending date are not allowed.</p>
+    <p>3WLA dates are forecasts â€” they represent when you expect an activity <em>will</em> start or finish. Dates earlier than the week ending date are not allowed.</p>
     <p>If an activity actually started or finished before the week ending date, do not enter a past 3WLA date. Instead, expand the row and edit the <strong>detail activities</strong> below to set the actual Start or Finish date. This creates the actual date in the system and removes the 3WLA requirement for that activity.</p>
 
     <h4>When 3WLA Dates Are Locked</h4>
@@ -1219,7 +1222,7 @@
     <p>3WLA dates are pre-populated from your Activities data when you load the Schedule module. The system finds the earliest PlanStart and latest PlanFin dates across all activities linked to each schedule activity.</p>
 
     <h4>Yellow Highlighting</h4>
-    <p>Yellow cells indicate a forecast date that differs from the P6 planned date. This highlights where your forecast diverges from the original schedule. Red cells take priority — if a cell is both required and has a different forecast, it shows red.</p>
+    <p>Yellow cells indicate a forecast date that differs from the P6 planned date. This highlights where your forecast diverges from the original schedule. Red cells take priority â€” if a cell is both required and has a different forecast, it shows red.</p>
 
     <h4>3WLA Workflow</h4>
     <ol>
@@ -1252,8 +1255,8 @@
     <h4>Auto-Populated Reasons</h4>
     <p>If MS completed before the P6 date, the system auto-populates:</p>
     <ul>
-        <li><strong>"Started Early"</strong> — MS started before P6 planned start</li>
-        <li><strong>"Finished Early"</strong> — MS finished before P6 planned finish</li>
+        <li><strong>"Started Early"</strong> â€” MS started before P6 planned start</li>
+        <li><strong>"Finished Early"</strong> â€” MS finished before P6 planned finish</li>
     </ul>
 
     <h4>Missed Reasons Workflow</h4>
@@ -1265,7 +1268,7 @@
     </ol>
 
     <h3 id="sched-discrepancies">Discrepancies</h3>
-    <p>Yellow highlighting indicates P6 and VANTAGE data don't match (legend shows "Vtg ≠ P6"). Use the Discrepancies dropdown to filter by type:</p>
+    <p>Yellow highlighting indicates P6 and VANTAGE data don't match (legend shows "Vtg â‰  P6"). Use the Discrepancies dropdown to filter by type:</p>
     <table>
         <tr>
             <th>Discrepancy Type</th>
@@ -1303,7 +1306,7 @@
     <h4>Import Steps</h4>
     <ol>
         <li>Export from P6 Primavera to Excel (TASK sheet format)</li>
-        <li>In VANTAGE: Milestone, go to <strong>File → Import From P6 File</strong></li>
+        <li>In VANTAGE: Milestone, go to <strong>File â†’ Import From P6 File</strong></li>
         <li>Select the Excel file</li>
         <li>Choose the week ending date for this schedule</li>
         <li>Select which projects this schedule covers (the project list shows only projects for which you have submitted snapshots)</li>
@@ -1369,12 +1372,12 @@
 
     <h4>Configuring UDF Mappings</h4>
     <ol>
-        <li>Go to <strong>Tools → Schedule UDF Mapping...</strong></li>
+        <li>Go to <strong>Tools â†’ Schedule UDF Mapping...</strong></li>
         <li>For each UDF column you want to use:
             <ul>
-                <li><strong>Primary Header</strong> — The P6 technical column name from row 1 of the export (e.g., <code>udf_text1</code>)</li>
-                <li><strong>Secondary Header</strong> — The P6 display name from row 2 (e.g., <code>Contractor Code</code>)</li>
-                <li><strong>Display Name</strong> — Your preferred column header in VANTAGE (defaults to SchedUDF1 if blank)</li>
+                <li><strong>Primary Header</strong> â€” The P6 technical column name from row 1 of the export (e.g., <code>udf_text1</code>)</li>
+                <li><strong>Secondary Header</strong> â€” The P6 display name from row 2 (e.g., <code>Contractor Code</code>)</li>
+                <li><strong>Display Name</strong> â€” Your preferred column header in VANTAGE (defaults to SchedUDF1 if blank)</li>
             </ul>
         </li>
         <li>Click <strong>Save</strong></li>
@@ -1407,7 +1410,7 @@
 
     <h4>Export Steps</h4>
     <ol>
-        <li>Go to <strong>File → Export To P6 File</strong></li>
+        <li>Go to <strong>File â†’ Export To P6 File</strong></li>
         <li>Choose a save location</li>
         <li>Select start/finish times (for datetime formatting)</li>
         <li>Click Export</li>
@@ -1416,11 +1419,11 @@
     <h4>Exported Data</h4>
     <p>The export creates an Excel file with:</p>
     <ul>
-        <li><strong>task_code</strong> — SchedActNO</li>
-        <li><strong>status_code</strong> — Derived from MS percent (Not Started, In Progress, Complete)</li>
-        <li><strong>act_start_date</strong> — MS actual start (if percent > 0)</li>
-        <li><strong>act_end_date</strong> — MS actual finish (if percent = 100)</li>
-        <li><strong>complete_pct</strong> — MS percent complete</li>
+        <li><strong>task_code</strong> â€” SchedActNO</li>
+        <li><strong>status_code</strong> â€” Derived from MS percent (Not Started, In Progress, Complete)</li>
+        <li><strong>act_start_date</strong> â€” MS actual start (if percent > 0)</li>
+        <li><strong>act_end_date</strong> â€” MS actual finish (if percent = 100)</li>
+        <li><strong>complete_pct</strong> â€” MS percent complete</li>
     </ul>
 
     <h3 id="sched-saving">Saving Changes</h3>
@@ -1436,7 +1439,7 @@
     <p>When you edit values in the Schedule detail grid (percent, budget hours, start/finish dates), those changes are saved to the weekly snapshot but do not automatically update your live Activities in the Progress module. The Schedule Change Log tracks these edits and lets you optionally apply them to your live Activities.</p>
 
     <h4>Accessing the Change Log</h4>
-    <p>Go to <strong>Tools → Schedule Change Log</strong> to open the dialog.</p>
+    <p>Go to <strong>Tools â†’ Schedule Change Log</strong> to open the dialog.</p>
 
     <h4>Change Log Contents</h4>
     <p>The dialog displays all logged changes with the following columns:</p>
@@ -1536,10 +1539,10 @@
     </div>
 
     <h3 id="analysis-layout">Layout</h3>
-    <p>The Analysis view uses a 4×2 resizable grid layout with independent splitters for each row:</p>
+    <p>The Analysis view uses a 4Ã—2 resizable grid layout with independent splitters for each row:</p>
     <ul>
-        <li><strong>Vertical splitters</strong> — Drag to resize columns within a row. Top and bottom rows resize independently.</li>
-        <li><strong>Horizontal splitter</strong> — Drag to resize the height ratio between the top and bottom rows.</li>
+        <li><strong>Vertical splitters</strong> â€” Drag to resize columns within a row. Top and bottom rows resize independently.</li>
+        <li><strong>Horizontal splitter</strong> â€” Drag to resize the height ratio between the top and bottom rows.</li>
     </ul>
     <p>All splitter positions are saved automatically and restored when you return to the Analysis module.</p>
 
@@ -1594,7 +1597,7 @@
         </tr>
         <tr>
             <td><strong>% Complete</strong></td>
-            <td>Weighted percent complete (EarnedMHs / BudgetMHs × 100). Color-coded: red (0-25%), orange (26-50%), yellow (51-75%), green (76-100%).</td>
+            <td>Weighted percent complete (EarnedMHs / BudgetMHs Ã— 100). Color-coded: red (0-25%), orange (26-50%), yellow (51-75%), green (76-100%).</td>
         </tr>
     </table>
 
@@ -1611,11 +1614,11 @@
 
     <p>The Progress Books workflow:</p>
     <ol>
-        <li><strong>Generate</strong> — Create printable progress books for field crews</li>
-        <li><strong>Distribute</strong> — Print and give to field crews for the work area</li>
-        <li><strong>Collect</strong> — Retrieve completed books with handwritten progress percentages</li>
-        <li><strong>Scan</strong> — Use the SCAN button on the Progress module toolbar to extract the percentages from scanned images using AI Progress Scan</li>
-        <li><strong>Apply</strong> — Review and apply the scanned values to your activities</li>
+        <li><strong>Generate</strong> â€” Create printable progress books for field crews</li>
+        <li><strong>Distribute</strong> â€” Print and give to field crews for the work area</li>
+        <li><strong>Collect</strong> â€” Retrieve completed books with handwritten progress percentages</li>
+        <li><strong>Scan</strong> â€” Use the SCAN button on the Progress module toolbar to extract the percentages from scanned images using AI Progress Scan</li>
+        <li><strong>Apply</strong> â€” Review and apply the scanned values to your activities</li>
     </ol>
 
     <h3 id="pb-generating">Progress Book Editor</h3>
@@ -1631,23 +1634,23 @@
     <h4>Layout</h4>
     <p>Layouts save all your editor settings so you can quickly regenerate books with the same configuration.</p>
     <ul>
-        <li><strong>Layout dropdown</strong> — Select a previously saved layout to load its settings, or start fresh with the default</li>
-        <li><strong>Name</strong> — Give the layout a descriptive name (e.g., "Mod CB101-C"). To create a copy, just change the name and save.</li>
-        <li><strong>Delete</strong> — Remove the selected saved layout</li>
-        <li><strong>Save</strong> — Save the current settings. If the name matches the loaded layout, it updates in place. If the name is different, a new layout is created.</li>
+        <li><strong>Layout dropdown</strong> â€” Select a previously saved layout to load its settings, or start fresh with the default</li>
+        <li><strong>Name</strong> â€” Give the layout a descriptive name (e.g., "Mod CB101-C"). To create a copy, just change the name and save.</li>
+        <li><strong>Delete</strong> â€” Remove the selected saved layout</li>
+        <li><strong>Save</strong> â€” Save the current settings. If the name matches the loaded layout, it updates in place. If the name is different, a new layout is created.</li>
     </ul>
 
     <h4>Paper Size</h4>
     <ul>
-        <li><strong>Letter (11" x 8.5")</strong> — Standard letter size, landscape orientation (default)</li>
-        <li><strong>Tabloid (17" x 11")</strong> — Larger format, landscape orientation. Use for books with many columns.</li>
+        <li><strong>Letter (11" x 8.5")</strong> â€” Standard letter size, landscape orientation (default)</li>
+        <li><strong>Tabloid (17" x 11")</strong> â€” Larger format, landscape orientation. Use for books with many columns.</li>
     </ul>
 
     <h4>Font Size</h4>
     <ul>
-        <li><strong>Slider (4pt - 10pt)</strong> — Controls font size for data rows. Default is 8pt.</li>
+        <li><strong>Slider (4pt - 10pt)</strong> â€” Controls font size for data rows. Default is 8pt.</li>
         <li>The Description column always renders at 9pt regardless of the slider setting</li>
-        <li>A warning appears when font size is below 7pt — smaller fonts may reduce AI Progress Scan accuracy</li>
+        <li>A warning appears when font size is below 7pt â€” smaller fonts may reduce AI Progress Scan accuracy</li>
     </ul>
     <div class="note">
         <div class="note-title">Scan Accuracy</div>
@@ -1657,51 +1660,51 @@
     <h4>Select Progress Book(s)</h4>
     <p>This filter determines which of your assigned activities are included in the book.</p>
     <ul>
-        <li><strong>Column</strong> — Choose the activity field to filter by (e.g., WorkPackage, Area, CompType). Commonly used fields are starred at the top of the dropdown.</li>
-        <li><strong>Value</strong> — Select a value to filter on. This dropdown is populated with distinct values from your assigned activities for the selected column. The selected value also appears as the progress book name in the PDF page header.</li>
-        <li><strong>Exclude Completed Activities</strong> — When checked, activities at 100% progress are omitted from the book</li>
+        <li><strong>Column</strong> â€” Choose the activity field to filter by (e.g., WorkPackage, Area, CompType). Commonly used fields are starred at the top of the dropdown.</li>
+        <li><strong>Value</strong> â€” Select a value to filter on. This dropdown is populated with distinct values from your assigned activities for the selected column. The selected value also appears as the progress book name in the PDF page header.</li>
+        <li><strong>Exclude Completed Activities</strong> â€” When checked, activities at 100% progress are omitted from the book</li>
     </ul>
 
     <h4>Grouping</h4>
     <p>Group activities into sections within the book. Each group creates a header row in the PDF and groups are sorted alphanumerically.</p>
     <ul>
         <li>Select a field from the dropdown to group by (e.g., PhaseCode, Area, CompType)</li>
-        <li><strong>+ Add Group</strong> — Add another grouping level (up to 10). Groups nest in order — the first group is the outermost level.</li>
-        <li><strong>✕</strong> — Remove a grouping level. The first group cannot be removed.</li>
+        <li><strong>+ Add Group</strong> â€” Add another grouping level (up to 10). Groups nest in order â€” the first group is the outermost level.</li>
+        <li><strong>âœ•</strong> â€” Remove a grouping level. The first group cannot be removed.</li>
     </ul>
 
     <h4>Columns</h4>
     <p>Configure which activity fields appear as columns in the PDF. Columns auto-size to fit their content.</p>
     <ul>
         <li><strong>Required columns</strong> (cannot be removed): ActivityID, UniqueID, ROCStep, Description</li>
-        <li><strong>▲ / ▼</strong> — Reorder columns up or down</li>
-        <li><strong>✕</strong> — Remove a column</li>
-        <li><strong>Add column dropdown + Add button</strong> — Select a field and click + Add to include it</li>
+        <li><strong>â–² / â–¼</strong> â€” Reorder columns up or down</li>
+        <li><strong>âœ•</strong> â€” Remove a column</li>
+        <li><strong>Add column dropdown + Add button</strong> â€” Select a field and click + Add to include it</li>
     </ul>
 
     <h4>Sort</h4>
-    <p>Sort activities within each group. Sorts stack like Excel — the first sort is the primary sort, the second breaks ties, and so on.</p>
+    <p>Sort activities within each group. Sorts stack like Excel â€” the first sort is the primary sort, the second breaks ties, and so on.</p>
     <ul>
         <li>Select a field from the dropdown to sort by</li>
-        <li><strong>+ Add Sort</strong> — Add another sort level (up to 10)</li>
-        <li><strong>✕</strong> — Remove a sort level. The first sort cannot be removed.</li>
+        <li><strong>+ Add Sort</strong> â€” Add another sort level (up to 10)</li>
+        <li><strong>âœ•</strong> â€” Remove a sort level. The first sort cannot be removed.</li>
     </ul>
 
     <h4>Preview Panel</h4>
     <img src="pb-preview.png" alt="Progress Book preview panel" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
     <p>The right side of the editor shows a live PDF preview of the progress book.</p>
     <ul>
-        <li><strong>Refresh Preview</strong> — Click to render a preview using sample data from your current settings</li>
-        <li>Drag the splitter between the editor and preview panels to resize — the position is saved between sessions</li>
+        <li><strong>Refresh Preview</strong> â€” Click to render a preview using sample data from your current settings</li>
+        <li>Drag the splitter between the editor and preview panels to resize â€” the position is saved between sessions</li>
     </ul>
 
     <h4>Generating the PDF</h4>
     <p>Click the <strong>GENERATE</strong> button in the top-right header bar. A file save dialog opens to choose the output location. The generated PDF contains:</p>
     <ul>
-        <li><strong>Page header</strong> — Project name, progress book name (from the filter value), and page numbers</li>
-        <li><strong>Group headers</strong> — Section dividers for each grouping level</li>
-        <li><strong>Activity rows</strong> — One row per activity with your configured columns</li>
-        <li><strong>% ENTRY column</strong> — Blank column at the far right for handwritten progress updates</li>
+        <li><strong>Page header</strong> â€” Project name, progress book name (from the filter value), and page numbers</li>
+        <li><strong>Group headers</strong> â€” Section dividers for each grouping level</li>
+        <li><strong>Activity rows</strong> â€” One row per activity with your configured columns</li>
+        <li><strong>% ENTRY column</strong> â€” Blank column at the far right for handwritten progress updates</li>
     </ul>
 
     <div class="note">
@@ -1820,15 +1823,15 @@
         <tr>
             <td><strong>Error</strong></td>
             <td>Activity ID not found or invalid percentage</td>
-            <td>Cannot apply — manually enter in Progress module</td>
+            <td>Cannot apply â€” manually enter in Progress module</td>
         </tr>
     </table>
 
     <h4>Selection Buttons</h4>
     <ul>
-        <li><strong>Select All</strong> — Check all entries regardless of status</li>
-        <li><strong>Select Ready</strong> — Check only entries with "Ready" status</li>
-        <li><strong>Clear Selection</strong> — Uncheck all entries</li>
+        <li><strong>Select All</strong> â€” Check all entries regardless of status</li>
+        <li><strong>Select Ready</strong> â€” Check only entries with "Ready" status</li>
+        <li><strong>Clear Selection</strong> â€” Uncheck all entries</li>
     </ul>
 
     <h4>Contrast Adjustment</h4>
@@ -1873,7 +1876,7 @@
     <ul>
         <li>Update the PercentEntry field for each selected activity</li>
         <li>Mark records as LocalDirty for sync</li>
-        <li>Note: ActStart is required when % > 0, ActFin is required when % = 100 — enter dates manually after applying</li>
+        <li>Note: ActStart is required when % > 0, ActFin is required when % = 100 â€” enter dates manually after applying</li>
     </ul>
 
     <div class="warning">
@@ -1904,18 +1907,18 @@
 
     <p>Key capabilities:</p>
     <ul>
-        <li><strong>Multi-form composition</strong> — Combine cover sheets, lists, forms, and grids into one document</li>
-        <li><strong>Token replacement</strong> — Dynamic content like project names, dates, and activity data</li>
-        <li><strong>Bulk generation</strong> — Generate PDFs for multiple work packages at once</li>
-        <li><strong>Custom branding</strong> — Use your own logo or the default company logo</li>
-        <li><strong>Reusable templates</strong> — Create templates once, use across all projects</li>
+        <li><strong>Multi-form composition</strong> â€” Combine cover sheets, lists, forms, and grids into one document</li>
+        <li><strong>Token replacement</strong> â€” Dynamic content like project names, dates, and activity data</li>
+        <li><strong>Bulk generation</strong> â€” Generate PDFs for multiple work packages at once</li>
+        <li><strong>Custom branding</strong> â€” Use your own logo or the default company logo</li>
+        <li><strong>Reusable templates</strong> â€” Create templates once, use across all projects</li>
     </ul>
 
     <h3 id="wp-layout">Layout</h3>
     <p>The Work Packages view uses a split-pane design:</p>
     <ul>
-        <li><strong>Left Panel</strong> — Three tabs for different functions (Generate, WP Templates, Form Templates)</li>
-        <li><strong>Right Panel</strong> — PDF preview of templates</li>
+        <li><strong>Left Panel</strong> â€” Three tabs for different functions (Generate, WP Templates, Form Templates)</li>
+        <li><strong>Right Panel</strong> â€” PDF preview of templates</li>
     </ul>
     <p>Drag the splitter between panels to resize. Your preference is saved automatically.</p>
 
@@ -1972,10 +1975,10 @@
         <div class="note-title">WP Name Pattern</div>
         <p>Click the <strong>+ Field</strong> button to insert tokens at the cursor position. The dropdown shows commonly used fields at the top (Area, CompType, PhaseCategory, PhaseCode, PjtSystemNo, SchedActNO, UDF2, WorkPackage), followed by all remaining activity fields alphabetically. You can also type plain text alongside tokens. Examples:</p>
         <ul>
-            <li><code>{WorkPackage}</code> — Just the work package ID</li>
-            <li><code>{WorkPackage}-{Area}</code> — Work package with area suffix</li>
-            <li><code>{Area}-{WorkPackage}-{UDF2}</code> — Custom combination</li>
-            <li><code>Pipe Installation for Mod {UDF2}</code> — Descriptive text with a token</li>
+            <li><code>{WorkPackage}</code> â€” Just the work package ID</li>
+            <li><code>{WorkPackage}-{Area}</code> â€” Work package with area suffix</li>
+            <li><code>{Area}-{WorkPackage}-{UDF2}</code> â€” Custom combination</li>
+            <li><code>Pipe Installation for Mod {UDF2}</code> â€” Descriptive text with a token</li>
         </ul>
     </div>
 
@@ -2038,7 +2041,7 @@
             <td>Dropdown menu listing all available form templates. Click one to add it to the work package.</td>
         </tr>
         <tr>
-            <td><strong>▲ / ▼ / ✕</strong></td>
+            <td><strong>â–² / â–¼ / âœ•</strong></td>
             <td>Reorder forms or remove them from the template</td>
         </tr>
     </table>
@@ -2049,7 +2052,7 @@
         <li>Enter a <strong>Template Name</strong></li>
         <li>Set <strong>Expiration Days</strong> if different from default</li>
         <li>Click <strong>+ Add Form</strong> and select forms in the order you want them</li>
-        <li>Use ▲/▼ buttons to reorder if needed</li>
+        <li>Use â–²/â–¼ buttons to reorder if needed</li>
         <li>Click <strong>Save</strong></li>
     </ol>
 
@@ -2073,7 +2076,7 @@
     <p>Choose one of the four template types. A new template is created with default settings and the editor loads for that type. You can also select any existing template, change the name, and save to create a copy.</p>
 
     <h4>Built-in Templates</h4>
-    <p>VANTAGE includes seven premade templates that cover a typical work package. Built-in templates cannot be overwritten or deleted — to customize one, change the name and save to create your own copy. Use <strong>Reset Defaults</strong> to revert a user-created template back to built-in settings.</p>
+    <p>VANTAGE includes seven premade templates that cover a typical work package. Built-in templates cannot be overwritten or deleted â€” to customize one, change the name and save to create your own copy. Use <strong>Reset Defaults</strong> to revert a user-created template back to built-in settings.</p>
 
     <table>
         <tr>
@@ -2147,11 +2150,11 @@
     <h4>Common Controls</h4>
     <p>All form types share these controls:</p>
     <ul>
-        <li><strong>Form Template dropdown</strong> — Select a template to edit or "+ Add New"</li>
-        <li><strong>Template Name</strong> — Display name for this form. To create a copy, change the name and save.</li>
-        <li><strong>Delete</strong> — Remove the template (built-in templates cannot be deleted)</li>
-        <li><strong>Reset Defaults</strong> — Reset a template's structure back to a built-in default. Appears on user-created templates.</li>
-        <li><strong>Save</strong> — Save changes. If the name matches the loaded template, it updates in place. If the name is different, a new template is created.</li>
+        <li><strong>Form Template dropdown</strong> â€” Select a template to edit or "+ Add New"</li>
+        <li><strong>Template Name</strong> â€” Display name for this form. To create a copy, change the name and save.</li>
+        <li><strong>Delete</strong> â€” Remove the template (built-in templates cannot be deleted)</li>
+        <li><strong>Reset Defaults</strong> â€” Reset a template's structure back to a built-in default. Appears on user-created templates.</li>
+        <li><strong>Save</strong> â€” Save changes. If the name matches the loaded template, it updates in place. If the name is different, a new template is created.</li>
     </ul>
 
     <h4>Cover Form</h4>
@@ -2206,24 +2209,24 @@
 
     <h5>Managing List Items</h5>
     <ul>
-        <li><strong>+ Add Item</strong> dropdown — Choose from predefined items, spacing items, or "Add New..." for custom text</li>
-        <li><strong>✎ (Edit)</strong> — Click the pencil icon on an item to edit its text in place</li>
-        <li><strong>▲ / ▼</strong> — Reorder items up or down</li>
-        <li><strong>✕</strong> — Remove an item</li>
+        <li><strong>+ Add Item</strong> dropdown â€” Choose from predefined items, spacing items, or "Add New..." for custom text</li>
+        <li><strong>âœŽ (Edit)</strong> â€” Click the pencil icon on an item to edit its text in place</li>
+        <li><strong>â–² / â–¼</strong> â€” Reorder items up or down</li>
+        <li><strong>âœ•</strong> â€” Remove an item</li>
     </ul>
 
     <p>Predefined items (inserted with tokens that resolve during generation):</p>
     <ul>
-        <li>"WP Doc Expiration Date" → <code>WP DOC EXPIRATION DATE: {ExpirationDate}</code></li>
-        <li>"Printed Date" → <code>PRINTED: {PrintedDate}</code></li>
-        <li>"WP Name" → <code>WP NAME: {WPName}</code></li>
-        <li>"Schedule Activity No" → <code>SCHEDULE ACTIVITY NO: {SchedActNO}</code></li>
-        <li>"Phase Code" → <code>PHASE CODE: {PhaseCode}</code></li>
+        <li>"WP Doc Expiration Date" â†’ <code>WP DOC EXPIRATION DATE: {ExpirationDate}</code></li>
+        <li>"Printed Date" â†’ <code>PRINTED: {PrintedDate}</code></li>
+        <li>"WP Name" â†’ <code>WP NAME: {WPName}</code></li>
+        <li>"Schedule Activity No" â†’ <code>SCHEDULE ACTIVITY NO: {SchedActNO}</code></li>
+        <li>"Phase Code" â†’ <code>PHASE CODE: {PhaseCode}</code></li>
     </ul>
     <p>Spacing items:</p>
     <ul>
-        <li>"Blank Line" — Adds empty vertical space</li>
-        <li>"Line Separator" — Adds a horizontal divider line</li>
+        <li>"Blank Line" â€” Adds empty vertical space</li>
+        <li>"Line Separator" â€” Adds a horizontal divider line</li>
     </ul>
 
     <h4>Form Type</h4>
@@ -2264,18 +2267,18 @@
     <ul>
         <li>Enter a column name and width percentage, then click <strong>+ Add</strong></li>
         <li>Widths automatically prorate to total 100% when adding or removing columns</li>
-        <li><strong>✎ (Edit)</strong> — Click the pencil icon to edit a column's name or width</li>
-        <li><strong>▲ / ▼</strong> — Reorder columns</li>
-        <li><strong>✕</strong> — Remove a column (remaining columns re-prorate)</li>
+        <li><strong>âœŽ (Edit)</strong> â€” Click the pencil icon to edit a column's name or width</li>
+        <li><strong>â–² / â–¼</strong> â€” Reorder columns</li>
+        <li><strong>âœ•</strong> â€” Remove a column (remaining columns re-prorate)</li>
     </ul>
 
     <h5>Managing Sections and Items</h5>
     <ul>
-        <li><strong>+ Add Section</strong> — Create a new named section. The section name appears as a header row in the PDF.</li>
-        <li><strong>+ Add Item</strong> — Add an item to the selected section. Items become labeled rows in the PDF.</li>
-        <li><strong>✎ (Edit)</strong> — Edit section names or item text</li>
-        <li><strong>▲ / ▼</strong> — Reorder sections or items within a section</li>
-        <li><strong>✕</strong> — Remove a section or item</li>
+        <li><strong>+ Add Section</strong> â€” Create a new named section. The section name appears as a header row in the PDF.</li>
+        <li><strong>+ Add Item</strong> â€” Add an item to the selected section. Items become labeled rows in the PDF.</li>
+        <li><strong>âœŽ (Edit)</strong> â€” Edit section names or item text</li>
+        <li><strong>â–² / â–¼</strong> â€” Reorder sections or items within a section</li>
+        <li><strong>âœ•</strong> â€” Remove a section or item</li>
     </ul>
 
     <h4>Grid Form</h4>
@@ -2292,7 +2295,7 @@
         </tr>
         <tr>
             <td><strong>Columns</strong></td>
-            <td>Define column headers and percentage widths (must total 100%). Add with name + width, edit with ✎, reorder with ▲/▼, remove with ✕. Widths auto-prorate when columns are added or removed.</td>
+            <td>Define column headers and percentage widths (must total 100%). Add with name + width, edit with âœŽ, reorder with â–²/â–¼, remove with âœ•. Widths auto-prorate when columns are added or removed.</td>
         </tr>
         <tr>
             <td><strong>Row Count</strong></td>
@@ -2341,9 +2344,9 @@
 
     <p>On import:</p>
     <ul>
-        <li>Each template receives a new unique ID — importing the same file twice creates separate copies</li>
+        <li>Each template receives a new unique ID â€” importing the same file twice creates separate copies</li>
         <li>If a template name already exists, <strong>" (Imported)"</strong> is appended to avoid confusion</li>
-        <li>WP templates retain their form references — imported WP templates point to the correct imported form templates</li>
+        <li>WP templates retain their form references â€” imported WP templates point to the correct imported form templates</li>
     </ul>
 
     <h3 id="wp-tokens">Token System</h3>
@@ -2486,7 +2489,7 @@
         <li>Click the <strong>Refresh Preview</strong> button at the bottom of the preview panel</li>
         <li>The PDF renders using sample data so you can verify layout and token placement</li>
     </ol>
-    <p>The preview is available from all three tabs — Generate, WP Templates, and Form Templates. Use it to verify layout, token placement, and formatting before generating actual work packages.</p>
+    <p>The preview is available from all three tabs â€” Generate, WP Templates, and Form Templates. Use it to verify layout, token placement, and formatting before generating actual work packages.</p>
 
     <div class="warning">
         <div class="warning-title">Sample Data</div>
@@ -2502,7 +2505,7 @@
     <p>This module is available to users with the <strong>Estimator</strong> role only. Admins can grant this role via <strong>Admin &gt; Toggle User Roles</strong>.</p>
 
     <h3 id="takeoff-configs">Configs</h3>
-    <p>A config defines the crop regions on a drawing — where the BOM table(s) and title block are located. Configs are stored in S3 under your username folder.</p>
+    <p>A config defines the crop regions on a drawing â€” where the BOM table(s) and title block are located. Configs are stored in S3 under your username folder.</p>
 
     <ul>
         <li><strong>Create:</strong> Select <strong>+ Create New Config...</strong> from the Config dropdown. This opens a maximized window where you can load a sample PDF, draw regions, and save.</li>
@@ -2515,7 +2518,7 @@
     <ol>
         <li>Click <strong>Load Drawing...</strong> to open a sample PDF. The first page renders as a background image.</li>
         <li>Select <strong>BOM Region</strong> mode (green) and draw rectangle(s) around the BOM table area(s). You can draw multiple BOM regions if the table spans multiple areas.</li>
-        <li>Select <strong>Title Block</strong> mode (orange) and draw a rectangle around the title block. Only one title block region is allowed — drawing a new one replaces the previous.</li>
+        <li>Select <strong>Title Block</strong> mode (orange) and draw a rectangle around the title block. Only one title block region is allowed â€” drawing a new one replaces the previous.</li>
         <li>Use <strong>Undo Last</strong> or <strong>Clear All</strong> to adjust regions.</li>
         <li>Enter a <strong>Config Name</strong> (e.g., "Lilly LP1Y SWP Piping"). The S3 path is auto-generated from your username and the config name.</li>
         <li>Click <strong>Save Config</strong>. The config is saved to S3 and immediately available in the dropdown.</li>
@@ -2537,10 +2540,10 @@
     <h3 id="takeoff-previous-batches">Previous Batches</h3>
     <p>Click <strong>Previous Batches</strong> to re-download results from earlier processing runs. The dropdown shows all past batches with:</p>
     <ul>
-        <li><strong>Config name</strong> — The crop region config used</li>
-        <li><strong>Date/time</strong> — When the batch was processed</li>
-        <li><strong>Drawing count</strong> — Number of drawings in the batch</li>
-        <li><strong>Username</strong> — Who submitted the batch</li>
+        <li><strong>Config name</strong> â€” The crop region config used</li>
+        <li><strong>Date/time</strong> â€” When the batch was processed</li>
+        <li><strong>Drawing count</strong> â€” Number of drawings in the batch</li>
+        <li><strong>Username</strong> â€” Who submitted the batch</li>
     </ul>
     <p>Select any completed batch to download its Excel output. Failed batches are grayed out and cannot be downloaded.</p>
 
@@ -2552,14 +2555,14 @@
     <h3 id="takeoff-excel-output">Excel Output</h3>
     <p>When you download the output spreadsheet, it contains four tabs:</p>
     <ul>
-        <li><strong>Summary</strong> — Statistics overview including total drawings, BOM items, connections by type/size, components by type, and connections by drawing.</li>
-        <li><strong>Material</strong> — Raw BOM extraction from the drawings. One row per material item with quantity, connection count, sizes, descriptions, and title block fields.</li>
-        <li><strong>Labor</strong> — Exploded labor records (one row per connection). Material rows are multiplied by quantity and connection count. Each labor row has quantity=1 and a single connection type. VLV components exclude threaded (THRD) and bolt-up (BU) connections. The ShopField column indicates Shop (1) or Field (2) work.</li>
-        <li><strong>Flagged</strong> — Items flagged by the AI for review (low confidence, missing data, or extraction issues).</li>
+        <li><strong>Summary</strong> â€” Statistics overview including total drawings, BOM items, connections by type/size, components by type, and connections by drawing.</li>
+        <li><strong>Material</strong> â€” Raw BOM extraction from the drawings. One row per material item with quantity, connection count, sizes, descriptions, and title block fields.</li>
+        <li><strong>Labor</strong> â€” Exploded labor records (one row per connection). Material rows are multiplied by quantity and connection count. Each labor row has quantity=1 and a single connection type. VLV components exclude threaded (THRD) and bolt-up (BU) connections. The ShopField column indicates Shop (1) or Field (2) work.</li>
+        <li><strong>Flagged</strong> â€” Items flagged by the AI for review (low confidence, missing data, or extraction issues).</li>
     </ul>
 
     <h3 id="takeoff-manage-drawings">Manage Drawings</h3>
-    <p>Click <strong>Manage Drawings</strong> to view and delete drawings stored in S3 for any config. Select a config from the dropdown, then select drawings to delete. Drawings are uploaded automatically during processing — this dialog is for cleanup.</p>
+    <p>Click <strong>Manage Drawings</strong> to view and delete drawings stored in S3 for any config. Select a config from the dropdown, then select drawings to delete. Drawings are uploaded automatically during processing â€” this dialog is for cleanup.</p>
 
     <!-- ============================================ -->
     <h2 id="administration">9. Administration</h2>
@@ -2571,25 +2574,25 @@
     <h3 id="admin-user-management">User Management (Admin > Edit Users)</h3>
     <p>Manage user accounts in the system. The dialog displays all users in a list on the left, with a detail form on the right for editing.</p>
     <ul>
-        <li><strong>Add User</strong> — Enter a username (required), full name, and email, then click Add. Usernames must be unique and cannot be changed after creation.</li>
-        <li><strong>Edit User</strong> — Select a user from the list to populate the form. Update their full name or email and click Save Changes.</li>
-        <li><strong>Delete User</strong> — Removes the user account. You cannot delete your own account. The user's activities and snapshots are preserved. If the user was an admin, their admin status is also removed.</li>
+        <li><strong>Add User</strong> â€” Enter a username (required), full name, and email, then click Add. Usernames must be unique and cannot be changed after creation.</li>
+        <li><strong>Edit User</strong> â€” Select a user from the list to populate the form. Update their full name or email and click Save Changes.</li>
+        <li><strong>Delete User</strong> â€” Removes the user account. You cannot delete your own account. The user's activities and snapshots are preserved. If the user was an admin, their admin status is also removed.</li>
     </ul>
 
     <h3 id="admin-project-setup">Project Setup (Admin > Edit Projects)</h3>
     <p>Manage construction projects and their associated metadata. The dialog shows a scrollable grid of all projects with a detail form below for editing.</p>
     <ul>
-        <li><strong>Add Project</strong> — Enter a ProjectID (required, must be unique) and fill in project details, then click Add. ProjectID cannot be changed after creation.</li>
-        <li><strong>Edit Project</strong> — Select a project from the grid to populate the form. Update details and click Save Changes.</li>
-        <li><strong>Delete Project</strong> — Removes the project. A warning is shown about potential references from existing activities.</li>
+        <li><strong>Add Project</strong> â€” Enter a ProjectID (required, must be unique) and fill in project details, then click Add. ProjectID cannot be changed after creation.</li>
+        <li><strong>Edit Project</strong> â€” Select a project from the grid to populate the form. Update details and click Save Changes.</li>
+        <li><strong>Delete Project</strong> â€” Removes the project. A warning is shown about potential references from existing activities.</li>
     </ul>
     <p>Project details include:</p>
     <ul>
-        <li><strong>Basic Info</strong> — ProjectID, Description</li>
-        <li><strong>Client Info</strong> — Client Name, Phone, Fax, Address</li>
-        <li><strong>Project Site</strong> — Street Address, City, State, Zip</li>
-        <li><strong>Management</strong> — Project Manager, Site Manager</li>
-        <li><strong>Flags</strong> — OM, SM, EN, PM checkboxes for marking project features</li>
+        <li><strong>Basic Info</strong> â€” ProjectID, Description</li>
+        <li><strong>Client Info</strong> â€” Client Name, Phone, Fax, Address</li>
+        <li><strong>Project Site</strong> â€” Street Address, City, State, Zip</li>
+        <li><strong>Management</strong> â€” Project Manager, Site Manager</li>
+        <li><strong>Flags</strong> â€” OM, SM, EN, PM checkboxes for marking project features</li>
     </ul>
 
     <h3 id="admin-snapshots">Snapshot Management (Admin > Manage Snapshots)</h3>
@@ -2604,8 +2607,8 @@
 
     <h4>Deleting Snapshots</h4>
     <ul>
-        <li><strong>Delete Selected</strong> — Removes the selected snapshot groups from Azure</li>
-        <li><strong>Delete ALL Snapshots</strong> — Removes every snapshot for all users (requires typing "DELETE" to confirm)</li>
+        <li><strong>Delete Selected</strong> â€” Removes the selected snapshot groups from Azure</li>
+        <li><strong>Delete ALL Snapshots</strong> â€” Removes every snapshot for all users (requires typing "DELETE" to confirm)</li>
     </ul>
 
     <h4 id="admin-upload-progress-log">Upload to Progress Log</h4>
@@ -2615,9 +2618,9 @@
         <li>Column mapping is driven by the <code>VMS_ColumnMappings</code> table (Milestone column names are mapped to their Azure/ProgressLog equivalents)</li>
         <li>Calculated fields are computed at upload time:
             <ul>
-                <li><strong>Status</strong> — "Not Started" (0%), "In Progress" (1-99%), or "Complete" (100%) based on PercentEntry</li>
-                <li><strong>EarnMHsCalc</strong> — BudgetMHs x PercentEntry / 100</li>
-                <li><strong>ClientEquivEarnQTY</strong> — (PercentEntry / 100) x ClientEquivQty</li>
+                <li><strong>Status</strong> â€” "Not Started" (0%), "In Progress" (1-99%), or "Complete" (100%) based on PercentEntry</li>
+                <li><strong>EarnMHsCalc</strong> â€” BudgetMHs x PercentEntry / 100</li>
+                <li><strong>ClientEquivEarnQTY</strong> â€” (PercentEntry / 100) x ClientEquivQty</li>
             </ul>
         </li>
         <li><strong>UserID</strong> is set to the admin performing the upload</li>
@@ -2660,10 +2663,10 @@
     <h3 id="admin-sync">Database Sync</h3>
     <p>All users sync their local data with the central Azure database using the <strong>SYNC</strong> button in the Progress module (see <a href="#prog-syncing">Syncing Data</a>). Key points for administrators:</p>
     <ul>
-        <li><strong>Azure is the source of truth</strong> — Local SQLite databases are caches that can be deleted and re-synced at any time</li>
-        <li><strong>Ownership</strong> — Users can only edit activities assigned to them. Admins bypass ownership checks and can edit any record.</li>
-        <li><strong>Pull-only fields</strong> — Some fields (e.g., AzureUploadUtcDate) are set by admins on Azure and received by users on pull, but never overwritten by user push operations</li>
-        <li><strong>Clear Local Activities</strong> — Available from the Settings menu to wipe and re-download all local data from Azure</li>
+        <li><strong>Azure is the source of truth</strong> â€” Local SQLite databases are caches that can be deleted and re-synced at any time</li>
+        <li><strong>Ownership</strong> â€” Users can only edit activities assigned to them. Admins bypass ownership checks and can edit any record.</li>
+        <li><strong>Pull-only fields</strong> â€” Some fields (e.g., AzureUploadUtcDate) are set by admins on Azure and received by users on pull, but never overwritten by user push operations</li>
+        <li><strong>Clear Local Activities</strong> â€” Available from the Settings menu to wipe and re-download all local data from Azure</li>
     </ul>
 
     <!-- ============================================ -->

@@ -1,0 +1,201 @@
+<Window x:Class="VANTAGE.Dialogs.PluginManagerDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
+        Title="Plugin Manager"
+        Height="520"
+        Width="920"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource BackgroundColor}"
+        ResizeMode="CanResize"
+        MinHeight="420"
+        MinWidth="740"
+        WindowStyle="SingleBorderWindow">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="15"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="10"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="15"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0">
+            <TextBlock Text="Plugin Manager"
+                       FontWeight="SemiBold"
+                       FontSize="16"
+                       Foreground="{DynamicResource ForegroundColor}"/>
+            <TextBlock Text="Manage installed plugins and browse available plugins from GitHub"
+                       Foreground="{DynamicResource ForegroundColor}"
+                       Opacity="0.7"
+                       FontSize="12"
+                       Margin="0,5,0,0"/>
+        </StackPanel>
+
+        <Border Grid.Row="2"
+                Background="{DynamicResource ControlBackground}"
+                BorderBrush="{DynamicResource BorderColor}"
+                BorderThickness="1"
+                CornerRadius="4">
+            <TabControl Background="Transparent"
+                        BorderThickness="0">
+                <TabItem Header="Installed">
+                    <Grid>
+                        <syncfusion:SfDataGrid x:Name="sfInstalled"
+                                               AutoGenerateColumns="False"
+                                               AllowEditing="False"
+                                               AllowFiltering="False"
+                                               AllowSorting="True"
+                                               AllowResizingColumns="True"
+                                               SelectionMode="Single"
+                                               NavigationMode="Row"
+                                               ShowRowHeader="False"
+                                               GridLinesVisibility="Horizontal"
+                                               HeaderRowHeight="32"
+                                               RowHeight="28"
+                                               Background="Transparent"
+                                               BorderThickness="0"
+                                               SelectionChanged="SfInstalled_SelectionChanged">
+                            <syncfusion:SfDataGrid.Columns>
+                                <syncfusion:GridTextColumn MappingName="Name"
+                                                           HeaderText="Name"
+                                                           Width="170"
+                                                           AllowEditing="False"/>
+                                <syncfusion:GridTextColumn MappingName="Project"
+                                                           HeaderText="Project"
+                                                           Width="170"
+                                                           AllowEditing="False"/>
+                                <syncfusion:GridTextColumn MappingName="Description"
+                                                           HeaderText="Description"
+                                                           ColumnSizer="Star"
+                                                           AllowEditing="False"/>
+                                <syncfusion:GridTextColumn MappingName="Version"
+                                                           HeaderText="Version"
+                                                           Width="100"
+                                                           AllowEditing="False"/>
+                            </syncfusion:SfDataGrid.Columns>
+                        </syncfusion:SfDataGrid>
+
+                        <TextBlock x:Name="txtNoInstalledPlugins"
+                                   Text="No plugins are currently installed."
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   Foreground="{DynamicResource ForegroundColor}"
+                                   Opacity="0.6"
+                                   Visibility="Collapsed"/>
+                    </Grid>
+                </TabItem>
+                <TabItem Header="Available">
+                    <Grid>
+                        <syncfusion:SfDataGrid x:Name="sfAvailable"
+                                               AutoGenerateColumns="False"
+                                               AllowEditing="False"
+                                               AllowFiltering="False"
+                                               AllowSorting="True"
+                                               AllowResizingColumns="True"
+                                               SelectionMode="Single"
+                                               NavigationMode="Row"
+                                               ShowRowHeader="False"
+                                               GridLinesVisibility="Horizontal"
+                                               HeaderRowHeight="32"
+                                               RowHeight="28"
+                                               Background="Transparent"
+                                               BorderThickness="0"
+                                               SelectionChanged="SfAvailable_SelectionChanged">
+                            <syncfusion:SfDataGrid.Columns>
+                                <syncfusion:GridTextColumn MappingName="Name"
+                                                           HeaderText="Name"
+                                                           Width="170"
+                                                           AllowEditing="False"/>
+                                <syncfusion:GridTextColumn MappingName="Project"
+                                                           HeaderText="Project"
+                                                           Width="170"
+                                                           AllowEditing="False"/>
+                                <syncfusion:GridTextColumn MappingName="Description"
+                                                           HeaderText="Description"
+                                                           ColumnSizer="Star"
+                                                           AllowEditing="False"/>
+                                <syncfusion:GridTextColumn MappingName="Version"
+                                                           HeaderText="Version"
+                                                           Width="100"
+                                                           AllowEditing="False"/>
+                                <syncfusion:GridTextColumn MappingName="InstalledVersionDisplay"
+                                                           HeaderText="Installed"
+                                                           Width="100"
+                                                           AllowEditing="False"/>
+                                <syncfusion:GridTextColumn MappingName="PackageUrl"
+                                                           HeaderText="Package URL"
+                                                           Width="260"
+                                                           AllowEditing="False"/>
+                            </syncfusion:SfDataGrid.Columns>
+                        </syncfusion:SfDataGrid>
+
+                        <TextBlock x:Name="txtNoAvailablePlugins"
+                                   Text="No available plugins found in feed."
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   Foreground="{DynamicResource ForegroundColor}"
+                                   Opacity="0.6"
+                                   Visibility="Collapsed"/>
+                    </Grid>
+                </TabItem>
+            </TabControl>
+        </Border>
+
+        <TextBlock x:Name="txtStatus"
+                   Grid.Row="4"
+                   Foreground="{DynamicResource ForegroundColor}"
+                   Opacity="0.7"
+                   FontSize="12"
+                   Text="Installed: 0 | Available: 0"/>
+
+        <StackPanel Grid.Row="6"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right">
+            <Button x:Name="btnInstall"
+                    Content="Install Selected"
+                    Width="120"
+                    Height="35"
+                    Margin="0,0,10,0"
+                    Background="{DynamicResource ControlBackground}"
+                    Foreground="{DynamicResource ForegroundColor}"
+                    BorderBrush="{DynamicResource ControlBorder}"
+                    BorderThickness="1"
+                    IsEnabled="False"
+                    Click="BtnInstall_Click"/>
+            <Button x:Name="btnUninstall"
+                    Content="Uninstall"
+                    Width="100"
+                    Height="35"
+                    Margin="0,0,10,0"
+                    Background="{DynamicResource ButtonDangerBackground}"
+                    Foreground="{DynamicResource ForegroundColor}"
+                    BorderBrush="{DynamicResource ButtonDangerBorder}"
+                    BorderThickness="1"
+                    IsEnabled="False"
+                    Click="BtnUninstall_Click"/>
+            <Button x:Name="btnRefresh"
+                    Content="Refresh"
+                    Width="100"
+                    Height="35"
+                    Margin="0,0,10,0"
+                    Background="{DynamicResource ControlBackground}"
+                    Foreground="{DynamicResource ForegroundColor}"
+                    BorderBrush="{DynamicResource ControlBorder}"
+                    BorderThickness="1"
+                    Click="BtnRefresh_Click"/>
+            <Button x:Name="btnClose"
+                    Content="Close"
+                    Width="100"
+                    Height="35"
+                    Background="{DynamicResource ControlBackground}"
+                    Foreground="{DynamicResource ForegroundColor}"
+                    BorderBrush="{DynamicResource ControlBorder}"
+                    BorderThickness="1"
+                    Click="BtnClose_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

@@ -67,6 +67,7 @@ namespace VANTAGE.Utilities
 
         // Update
         public static string UpdateBaseUrl => Config.Update.BaseUrl;
+        public static string PluginsIndexUrl => Config.Plugins.IndexUrl;
 
         // Takeoff (separate IAM user: vantage-takeoff-user)
         public static string TakeoffAccessKey => Config.Takeoff.AccessKey;

@@ -1,6 +1,6 @@
 # MILESTONE - Project Status
 
-**Last Updated:** March 4, 2026
+**Last Updated:** March 5, 2026
 
 ## V1 Testing Scope
 
@@ -44,6 +44,13 @@
 - App startup log maintenance now purges AppLogger file/database logs older than 15 days. - Codex
 - Schedule change log JSON files now purge entries older than 15 days at startup. - Codex
 - VMS_ProgressSnapshots retention remains global at submit-time purge for any rows older than 28 days. - Codex
+
+### Plugin System (In Progress)
+- Plugin Manager dialog added to top-right settings menu (`⋮`) with Installed and Available tabs.
+- Available plugins are loaded from `VANTAGE-Plugins` feed (`plugins-index.json`) and installed via GitHub release asset URLs.
+- Uninstall support implemented for installed plugin versions.
+- Startup plugin auto-update implemented: installed plugins are checked against feed versions and newer versions are installed automatically at app launch.
+- Project Specific dialog added under Tools menu with initial placeholder action (`Fluor T&M 25.005 - Update Pipe Support Fab`).
 
 ### Multi-Theme System
 

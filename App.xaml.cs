@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using VANTAGE.Data;
 using VANTAGE.Dialogs;
 using VANTAGE.Models;
+using VANTAGE.Services.Plugins;
 using VANTAGE.Utilities;
 using System.IO;
 using System.Threading.Tasks;
@@ -75,6 +76,17 @@ namespace VANTAGE
                     status => _splashWindow?.UpdateStatus(status),
                     () => Application.Current.Shutdown());
                 if (updateInitiated) return;
+
+                // Step 0b: Auto-update installed plugins from the plugin feed
+                _splashWindow.UpdateStatus("Checking plugin updates...");
+                var pluginUpdateSummary = await PluginAutoUpdateService.CheckAndUpdateInstalledPluginsAsync(
+                    status => _splashWindow?.UpdateStatus(status));
+
+                if (pluginUpdateSummary.UpdatedCount > 0)
+                {
+                    _splashWindow.UpdateStatus($"Updated {pluginUpdateSummary.UpdatedCount} plugin(s).");
+                    await Task.Delay(400);
+                }
 
                 // Step 1: Initialize database and run migrations
                 _splashWindow.UpdateStatus("Initializing Database...");

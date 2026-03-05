@@ -79,6 +79,12 @@ Before committing:
 
 Do not update status docs until user confirms testing passed.
 
+## Line Endings (Required)
+
+-   Use Windows line endings (CRLF) for repository text files.
+-   Preserve existing line ending style when editing files.
+-   Before finishing changes, normalize any touched file that has mixed line endings to consistent CRLF.
+
 ------------------------------------------------------------------------
 
 # C# Code Conventions
