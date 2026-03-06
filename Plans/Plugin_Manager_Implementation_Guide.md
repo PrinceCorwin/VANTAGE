@@ -22,7 +22,7 @@ This document captures the full implementation of the VANTAGE plugin system:
 - Plugin type classification (`pluginType` field in manifests)
 
 **Next Step:**
-- Create first real plugin: PTP Updater for Fluor T&M project
+- Release new VANTAGE version with plugin system included
 
 ---
 
@@ -60,6 +60,7 @@ public interface IPluginHost
     bool ShowConfirmation(string message, string title = "Confirm");
     void LogInfo(string message, string source);
     void LogError(Exception ex, string source);
+    Task RefreshProgressViewAsync();
 }
 ```
 
@@ -167,7 +168,7 @@ See `VANTAGE-Plugins` repository `CLAUDE.md` for detailed plugin development ins
 ### Quick Reference
 
 1. Create project in `VANTAGE-Plugins/src/<plugin-id>/`
-2. Reference `VANTAGE.exe` for plugin interfaces
+2. Reference `VANTAGE.dll` for plugin interfaces
 3. Implement `IVantagePlugin`
 4. Create `plugin.json` manifest
 5. Build, package as ZIP, create GitHub Release
@@ -210,13 +211,13 @@ See `VANTAGE-Plugins` repository `CLAUDE.md` for detailed plugin development ins
 
 ## Remaining Work
 
-### Immediate: PTP Updater Plugin
+### Immediate: PTP Updater Plugin — COMPLETE
 
-Create first real plugin for Fluor T&M 25.005 project:
-- Import PTP (pipe support vendor) weekly Excel report
-- Match records to existing VANTAGE activities
-- Create new activities for unmatched records
-- Update progress/MHs on matched records
+First plugin created and published: `ptp-tfs-mech-updater` v1.0.0
+- Imports PTP vendor shipping reports, aggregates per CWP
+- Creates/updates TFS Mechanical fabrication activities (7.SHP)
+- Change detection, ownership check, date tracking from report
+- Published to GitHub Releases, available via Plugin Manager feed
 
 ### Future Enhancements
 

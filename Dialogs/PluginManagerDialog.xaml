@@ -28,7 +28,7 @@
                        FontWeight="SemiBold"
                        FontSize="16"
                        Foreground="{DynamicResource ForegroundColor}"/>
-            <TextBlock Text="Manage installed plugins and browse available plugins from GitHub"
+            <TextBlock Text="Manage installed and available plugins"
                        Foreground="{DynamicResource ForegroundColor}"
                        Opacity="0.7"
                        FontSize="12"

@@ -2,10 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using Syncfusion.Windows.Tools.Controls;
 using VANTAGE.Utilities;
+using VANTAGE.Views;
 
 namespace VANTAGE.Services.Plugins
 {
@@ -184,6 +186,23 @@ namespace VANTAGE.Services.Plugins
         public void LogError(Exception ex, string source)
         {
             AppLogger.Error(ex, source);
+        }
+
+        // Refresh Progress view data, summary stats, and metadata error count
+        public async Task RefreshProgressViewAsync()
+        {
+            await Application.Current.Dispatcher.InvokeAsync(async () =>
+            {
+                if (_mainWindow is MainWindow mw)
+                {
+                    var contentArea = mw.FindName("ContentArea") as ContentControl;
+                    if (contentArea?.Content is ProgressView progressView)
+                    {
+                        await progressView.RefreshData();
+                        await progressView.CalculateMetadataErrorCount();
+                    }
+                }
+            });
         }
     }
 }

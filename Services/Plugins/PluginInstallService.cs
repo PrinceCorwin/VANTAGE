@@ -180,12 +180,13 @@ namespace VANTAGE.Services.Plugins
 
                 Directory.Delete(pluginDirectory, recursive: true);
 
-                string? versionDir = Path.GetDirectoryName(pluginDirectory);
-                if (!string.IsNullOrWhiteSpace(versionDir) && Directory.Exists(versionDir))
+                // Clean up the parent <plugin-id> folder if no versions remain
+                string? pluginIdDir = Path.GetDirectoryName(pluginDirectory);
+                if (!string.IsNullOrWhiteSpace(pluginIdDir) && Directory.Exists(pluginIdDir))
                 {
-                    if (Directory.GetFileSystemEntries(versionDir).Length == 0)
+                    if (Directory.GetFileSystemEntries(pluginIdDir).Length == 0)
                     {
-                        Directory.Delete(versionDir, recursive: false);
+                        Directory.Delete(pluginIdDir, recursive: false);
                     }
                 }
 

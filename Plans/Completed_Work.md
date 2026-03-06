@@ -6,6 +6,12 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### March 5, 2026 (Plugin System Fixes)
+- **Fixed missing Plugins config in appsettings.json:** Added `Plugins.IndexUrl` pointing to `plugins-index.json` in VANTAGE-Plugins repo. Plugin Manager was showing empty Available tab because the feed URL was not configured.
+- **Added `RefreshProgressViewAsync()` to `IPluginHost`:** Plugins that modify activity data can now refresh the Progress view, summary stats, and metadata error count after import.
+- **Fixed variable naming in `PluginInstallService.UninstallAsync`:** Renamed misleading `versionDir` to `pluginIdDir` with clarifying comment.
+- **PTP TFS MECH Updater plugin v1.0.0 published:** First real plugin live on GitHub Releases feed. Imports PTP vendor shipping reports, creates/updates TFS Mechanical fabrication activities with change detection and ownership checks.
+
 ### March 5, 2026 (Plugin Execution Framework)
 - **Plugin execution framework:** Added `IVantagePlugin` interface (Id, Name, Initialize, Shutdown) and `IPluginHost` interface (AddToolsMenuItem, MainWindow, ShowInfo/Error/Confirmation, logging). New `PluginLoaderService` loads plugin assemblies at startup, instantiates entry types, calls Initialize.
 - **Dynamic menu item injection:** Plugins can add items to Tools menu via `host.AddToolsMenuItem(header, onClick, addSeparatorBefore)`. Menu items are cleaned up on shutdown.

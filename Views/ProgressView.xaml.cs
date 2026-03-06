@@ -256,7 +256,7 @@ namespace VANTAGE.Views
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
-        private async Task CalculateMetadataErrorCount()
+        public async Task CalculateMetadataErrorCount()
         {
             try
             {

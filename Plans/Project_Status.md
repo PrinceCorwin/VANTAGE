@@ -45,14 +45,14 @@
 - Schedule change log JSON files now purge entries older than 15 days at startup. - Codex
 - VMS_ProgressSnapshots retention remains global at submit-time purge for any rows older than 28 days. - Codex
 
-### Plugin System (Ready for Plugin Development)
+### Plugin System (Complete)
 - Plugin Manager dialog in top-right settings menu (`⋮`) with Installed and Available tabs.
 - Feed-based discovery from `VANTAGE-Plugins` repo (`plugins-index.json`), install via GitHub release assets.
 - Startup auto-update: installed plugins checked against feed, newer versions installed automatically.
 - Plugin execution framework: `IVantagePlugin` interface, `IPluginHost` for app capabilities, `PluginLoaderService` loads assemblies at startup.
 - Plugins can add menu items to Tools menu dynamically via `host.AddToolsMenuItem()`.
-- Plugin manifest supports `pluginType` field ("action" for UI plugins, "extension" for passive).
-- Next: Create PTP Updater plugin for Fluor T&M project.
+- `IPluginHost` includes `RefreshProgressViewAsync()` for plugins that modify activity data.
+- First plugin published: `ptp-tfs-mech-updater` v1.0.0 (PTP vendor shipping report importer for TFS Mechanical).
 
 ### Multi-Theme System
 
@@ -86,6 +86,7 @@
 ## Feature Backlog
 
 ### High Priority
+- **Release New VANTAGE Version** — Publish new release that includes Plugin Manager and plugin system. Before release: restrict AI Takeoff module visibility to users `steve` and `steve.amalfitano` only (temporary hardcode while Takeoff is still in development). Revert to estimator role check once Takeoff is finished.
 - **Mobile/iOS Version (iPad)** — Execs want iPad app for field supes to submit progress. Needs architecture discussion: native iOS, cross-platform framework, web app, API design, offline sync, etc.
 - **Takeoff Post-Processing Pipeline** — All operate on the downloaded Excel, no AWS changes needed. See `summit-takeoff-integration-guide.md` for details.
   1. Fabrication item generation — CUT and BEV rows generating (WIP). TODO:

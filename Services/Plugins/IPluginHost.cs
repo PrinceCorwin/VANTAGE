@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using System.Windows;
 
 namespace VANTAGE.Services.Plugins
@@ -32,5 +33,8 @@ namespace VANTAGE.Services.Plugins
 
         // Log an error
         void LogError(Exception ex, string source);
+
+        // Refresh the Progress view data, record counts, summary stats, and metadata errors
+        Task RefreshProgressViewAsync();
     }
 }
