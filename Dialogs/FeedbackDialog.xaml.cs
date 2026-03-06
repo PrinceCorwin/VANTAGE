@@ -421,7 +421,7 @@ namespace VANTAGE.Dialogs
         {
             try
             {
-                // Get admin emails from Azure
+                // Get admin emails from Azure - tries new column, falls back to old table
                 var adminEmails = await System.Threading.Tasks.Task.Run(() =>
                 {
                     var emails = new List<string>();
@@ -429,13 +429,26 @@ namespace VANTAGE.Dialogs
                     using var conn = AzureDbManager.GetConnection();
                     conn.Open();
 
+                    // Try new column first, fall back to old table join
+                    string query;
+                    try
+                    {
+                        var testCmd = conn.CreateCommand();
+                        testCmd.CommandText = "SELECT TOP 1 IsAdmin FROM VMS_Users";
+                        testCmd.ExecuteScalar();
+                        // Column exists - use new query
+                        query = "SELECT DISTINCT Email FROM VMS_Users WHERE IsAdmin = 1 AND Email IS NOT NULL AND Email <> '' AND Username <> @submitter";
+                    }
+                    catch
+                    {
+                        // Column doesn't exist - use old join query
+                        query = @"SELECT DISTINCT u.Email FROM VMS_Users u
+                                  INNER JOIN VMS_Admins a ON u.Username = a.Username
+                                  WHERE u.Email IS NOT NULL AND u.Email <> '' AND u.Username <> @submitter";
+                    }
+
                     var cmd = conn.CreateCommand();
-                    cmd.CommandText = @"
-                        SELECT DISTINCT u.Email
-                        FROM VMS_Users u
-                        INNER JOIN VMS_Admins a ON u.Username = a.Username
-                        WHERE u.Email IS NOT NULL AND u.Email <> ''
-                          AND u.Username <> @submitter";
+                    cmd.CommandText = query;
                     cmd.Parameters.AddWithValue("@submitter", feedback.CreatedBy);
 
                     using var reader = cmd.ExecuteReader();

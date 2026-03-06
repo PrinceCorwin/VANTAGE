@@ -134,8 +134,6 @@
                             Background="{DynamicResource ControlBackground}"
                             Foreground="{DynamicResource ForegroundColor}"
                             BorderBrush="{DynamicResource BorderColor}">
-                            <syncfusion:DropDownMenuItem Header="Toggle User Roles" Click="ToggleUserRoles_Click"/>
-                            <Separator Background="{DynamicResource BorderColor}" Margin="5,2"/>
                             <syncfusion:DropDownMenuItem Header="Edit Users" Click="MenuEditUsers_Click"/>
                             <syncfusion:DropDownMenuItem Header="Edit Projects" Click="MenuEditProjects_Click"/>
                             <syncfusion:DropDownMenuItem Header="Manage Snapshots" Click="MenuEditSnapshots_Click"/>

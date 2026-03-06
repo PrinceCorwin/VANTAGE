@@ -1,6 +1,6 @@
 # MILESTONE - Project Status
 
-**Last Updated:** March 5, 2026
+**Last Updated:** March 6, 2026
 
 ## V1 Testing Scope
 
@@ -110,7 +110,6 @@
   5. VANTAGE tab — Column rename for direct import into Activities
   6. Fitting makeup table — For center-to-center length calculation
 
-- **Manager Role — AssignTo Permissions** — Refactor VMS_Managers table to match VMS_Admins schema (Username, FullName). Add IsUserManager() check. Managers can reassign any records (same as admin for AssignTo only), no other admin functionality. Add Manager toggle to Toggle User Roles dialog. Refactor AssignTo button to allow managers.
 
 ### Medium Priority
 - **Theme System Refactor** — Phases 1-7 complete. Live switching works, tokens split, guide written. See `Themes/THEME_GUIDE.md`.

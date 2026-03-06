@@ -5221,12 +5221,13 @@ namespace VANTAGE.Views
             // Filter: Only allow assigning records that user has permission to modify
             var allowedActivities = selectedActivities.Where(a =>
                 App.CurrentUser!.IsAdmin ||
+                App.CurrentUser!.IsManager ||
                 a.AssignedTo == App.CurrentUser!.Username
             ).ToList();
 
             if (!allowedActivities.Any())
             {
-                MessageBox.Show("You can only assign your own records.\n\nAdmins can assign any record.",
+                MessageBox.Show("You can only assign your own records.\n\nAdmins and Managers can assign any record.",
                     "Permission Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
@@ -5348,7 +5349,7 @@ namespace VANTAGE.Views
                             foreach (var activity in matching)
                             {
                                 // Check permission for newly added activities
-                                if (App.CurrentUser!.IsAdmin || activity.AssignedTo == App.CurrentUser!.Username)
+                                if (App.CurrentUser!.IsAdmin || App.CurrentUser!.IsManager || activity.AssignedTo == App.CurrentUser!.Username)
                                 {
                                     allowedActivities.Add(activity);
                                     currentIds.Add(activity.UniqueID);
@@ -5502,6 +5503,7 @@ namespace VANTAGE.Views
                 var progress = new Progress<string>(status => busyDialog.UpdateStatus(status));
                 var currentUser = App.CurrentUser!.Username;
                 var isAdmin = App.CurrentUser!.IsAdmin;
+                var isManager = App.CurrentUser!.IsManager;
 
                 try
                 {
@@ -5561,7 +5563,7 @@ namespace VANTAGE.Views
                         {
                             if (ownershipMap.TryGetValue(activity.UniqueID, out var azureOwner))
                             {
-                                if (azureOwner == currentUser || isAdmin)
+                                if (azureOwner == currentUser || isAdmin || isManager)
                                 {
                                     ownedRecords.Add(activity);
                                 }

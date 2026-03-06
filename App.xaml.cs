@@ -262,17 +262,19 @@ namespace VANTAGE
 
                 CurrentUserID = CurrentUser.UserID;
 
-                // Check admin status from Azure (only if online)
+                // Check admin/estimator/manager status from Azure (only if online)
                 if (azureOnline)
                 {
                     CurrentUser.IsAdmin = await Task.Run(() => AzureDbManager.IsUserAdmin(CurrentUser.Username));
                     CurrentUser.IsEstimator = await Task.Run(() => AzureDbManager.IsUserEstimator(CurrentUser.Username));
+                    CurrentUser.IsManager = await Task.Run(() => AzureDbManager.IsUserManager(CurrentUser.Username));
                 }
                 else
                 {
-                    // Offline - no admin or estimator access
+                    // Offline - no admin, estimator, or manager access
                     CurrentUser.IsAdmin = false;
                     CurrentUser.IsEstimator = false;
+                    CurrentUser.IsManager = false;
                 }
 
                 // Initialize user settings

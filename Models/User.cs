@@ -10,6 +10,7 @@ namespace VANTAGE.Models
         private string _email = string.Empty;
         private bool _isAdmin;
         private bool _isEstimator;
+        private bool _isManager;
 
         public int UserID
         {
@@ -45,6 +46,12 @@ namespace VANTAGE.Models
         {
             get => _isEstimator;
             set { _isEstimator = value; OnPropertyChanged(nameof(IsEstimator)); }
+        }
+
+        public bool IsManager
+        {
+            get => _isManager;
+            set { _isManager = value; OnPropertyChanged(nameof(IsManager)); }
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;

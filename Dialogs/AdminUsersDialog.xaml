@@ -47,9 +47,9 @@
                               SelectionChanged="LvUsers_SelectionChanged">
                         <ListView.View>
                             <GridView>
-                                <GridViewColumn Header="Username" Width="120" DisplayMemberBinding="{Binding Username}"/>
-                                <GridViewColumn Header="Full Name" Width="150" DisplayMemberBinding="{Binding FullName}"/>
-                                <GridViewColumn Header="Email" Width="150" DisplayMemberBinding="{Binding Email}"/>
+                                <GridViewColumn Header="Username" Width="100" DisplayMemberBinding="{Binding Username}"/>
+                                <GridViewColumn Header="Full Name" Width="130" DisplayMemberBinding="{Binding FullName}"/>
+                                <GridViewColumn Header="Roles" Width="120" DisplayMemberBinding="{Binding RoleDisplay}"/>
                             </GridView>
                         </ListView.View>
                     </ListView>
@@ -132,6 +132,22 @@
                              Foreground="{DynamicResource ForegroundColor}"
                              BorderBrush="{DynamicResource BorderColor}"
                              Padding="8,5"/>
+
+                    <TextBlock Text="Roles"
+                               Foreground="{DynamicResource ForegroundColor}"
+                               FontSize="12"
+                               Margin="0,15,0,5"/>
+                    <StackPanel>
+                        <CheckBox x:Name="chkIsAdmin" Content="Admin"
+                                  Foreground="{DynamicResource ForegroundColor}" Margin="0,3"
+                                  ToolTip="Full administrative privileges"/>
+                        <CheckBox x:Name="chkIsEstimator" Content="Estimator"
+                                  Foreground="{DynamicResource ForegroundColor}" Margin="0,3"
+                                  ToolTip="Access to AI Takeoff module"/>
+                        <CheckBox x:Name="chkIsManager" Content="Manager"
+                                  Foreground="{DynamicResource ForegroundColor}" Margin="0,3"
+                                  ToolTip="Can reassign records to other users"/>
+                    </StackPanel>
                 </StackPanel>
             </Border>
 

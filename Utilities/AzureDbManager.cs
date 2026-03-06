@@ -29,7 +29,7 @@ namespace VANTAGE.Utilities
 
             return builder.ConnectionString;
         }
-        // Check if user is admin by querying Azure Admins table
+        // Check if user is admin - tries VMS_Users.IsAdmin first, falls back to VMS_Admins table
         public static bool IsUserAdmin(string username)
         {
             try
@@ -44,11 +44,24 @@ namespace VANTAGE.Utilities
                 connection.Open();
 
                 var cmd = connection.CreateCommand();
-                cmd.CommandText = "SELECT COUNT(*) FROM VMS_Admins WHERE Username = @username";
-                cmd.Parameters.AddWithValue("@username", username);
 
-                int count = Convert.ToInt32(cmd.ExecuteScalar());
-                return count > 0;
+                // Try new column first, fall back to old table if column doesn't exist
+                try
+                {
+                    cmd.CommandText = "SELECT IsAdmin FROM VMS_Users WHERE Username = @username";
+                    cmd.Parameters.AddWithValue("@username", username);
+                    var result = cmd.ExecuteScalar();
+                    return result != null && Convert.ToBoolean(result);
+                }
+                catch
+                {
+                    // Column doesn't exist yet - use old VMS_Admins table
+                    cmd = connection.CreateCommand();
+                    cmd.CommandText = "SELECT COUNT(*) FROM VMS_Admins WHERE Username = @username";
+                    cmd.Parameters.AddWithValue("@username", username);
+                    int count = Convert.ToInt32(cmd.ExecuteScalar());
+                    return count > 0;
+                }
             }
             catch (Exception ex)
             {
@@ -57,7 +70,7 @@ namespace VANTAGE.Utilities
             }
         }
 
-        // Check if user is an estimator by querying Azure Estimators table
+        // Check if user is estimator - tries VMS_Users.IsEstimator first, falls back to VMS_Estimators table
         public static bool IsUserEstimator(string username)
         {
             try
@@ -72,11 +85,24 @@ namespace VANTAGE.Utilities
                 connection.Open();
 
                 var cmd = connection.CreateCommand();
-                cmd.CommandText = "SELECT COUNT(*) FROM VMS_Estimators WHERE Username = @username";
-                cmd.Parameters.AddWithValue("@username", username);
 
-                int count = Convert.ToInt32(cmd.ExecuteScalar());
-                return count > 0;
+                // Try new column first, fall back to old table if column doesn't exist
+                try
+                {
+                    cmd.CommandText = "SELECT IsEstimator FROM VMS_Users WHERE Username = @username";
+                    cmd.Parameters.AddWithValue("@username", username);
+                    var result = cmd.ExecuteScalar();
+                    return result != null && Convert.ToBoolean(result);
+                }
+                catch
+                {
+                    // Column doesn't exist yet - use old VMS_Estimators table
+                    cmd = connection.CreateCommand();
+                    cmd.CommandText = "SELECT COUNT(*) FROM VMS_Estimators WHERE Username = @username";
+                    cmd.Parameters.AddWithValue("@username", username);
+                    int count = Convert.ToInt32(cmd.ExecuteScalar());
+                    return count > 0;
+                }
             }
             catch (Exception ex)
             {
@@ -85,7 +111,49 @@ namespace VANTAGE.Utilities
             }
         }
 
-        // Get email addresses for all administrators (joins Admins with Users table)
+        // Check if user is manager - tries VMS_Users.IsManager first, falls back to VMS_Managers table
+        public static bool IsUserManager(string username)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(username))
+                    return false;
+
+                if (!IsNetworkAvailable())
+                    return false;
+
+                using var connection = GetConnection();
+                connection.Open();
+
+                var cmd = connection.CreateCommand();
+
+                // Try new column first, fall back to old VMS_Managers table
+                try
+                {
+                    cmd.CommandText = "SELECT IsManager FROM VMS_Users WHERE Username = @username";
+                    cmd.Parameters.AddWithValue("@username", username);
+                    var result = cmd.ExecuteScalar();
+                    return result != null && Convert.ToBoolean(result);
+                }
+                catch
+                {
+                    // Column doesn't exist - use VMS_Managers table (FullName = username)
+                    cmd = connection.CreateCommand();
+                    cmd.CommandText = "SELECT COUNT(*) FROM VMS_Managers WHERE FullName = @username AND IsActive = 1";
+                    cmd.Parameters.AddWithValue("@username", username);
+                    int count = Convert.ToInt32(cmd.ExecuteScalar());
+                    return count > 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "AzureDbManager.IsUserManager");
+                return false;
+            }
+        }
+
+        // Get email addresses for all administrators
+        // Get admin emails - tries VMS_Users.IsAdmin first, falls back to VMS_Admins join
         public static async Task<List<string>> GetAdminEmailsAsync()
         {
             var emails = new List<string>();
@@ -98,13 +166,26 @@ namespace VANTAGE.Utilities
                 await using var connection = GetConnection();
                 await connection.OpenAsync();
 
+                // Try new column first, fall back to old table join
+                string query;
+                try
+                {
+                    await using var testCmd = connection.CreateCommand();
+                    testCmd.CommandText = "SELECT TOP 1 IsAdmin FROM VMS_Users";
+                    await testCmd.ExecuteScalarAsync();
+                    // Column exists - use new query
+                    query = "SELECT DISTINCT Email FROM VMS_Users WHERE IsAdmin = 1 AND Email IS NOT NULL AND Email <> ''";
+                }
+                catch
+                {
+                    // Column doesn't exist - use old join query
+                    query = @"SELECT DISTINCT u.Email FROM VMS_Users u
+                              INNER JOIN VMS_Admins a ON u.Username = a.Username
+                              WHERE u.Email IS NOT NULL AND u.Email <> ''";
+                }
+
                 await using var cmd = connection.CreateCommand();
-                // Join Admins with Users to get email addresses
-                cmd.CommandText = @"
-                    SELECT DISTINCT u.Email
-                    FROM VMS_Admins a
-                    INNER JOIN VMS_Users u ON a.Username = u.Username
-                    WHERE u.Email IS NOT NULL AND u.Email <> ''";
+                cmd.CommandText = query;
 
                 await using var reader = await cmd.ExecuteReaderAsync();
                 while (await reader.ReadAsync())

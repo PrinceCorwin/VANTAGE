@@ -134,11 +134,15 @@ namespace VANTAGE.Dialogs
                     Sha256 = selected.Sha256
                 });
 
+                var message = result.Success
+                    ? $"{result.Message}\n\nRestart VANTAGE for the plugin to become active."
+                    : result.Message;
+
                 MessageBox.Show(
-                    result.Message,
+                    message,
                     result.Success ? "Install Complete" : "Install Failed",
                     MessageBoxButton.OK,
-                    result.Success ? MessageBoxImage.None : MessageBoxImage.Warning);
+                    result.Success ? MessageBoxImage.Information : MessageBoxImage.Warning);
 
                 await RefreshAllAsync();
             }
@@ -178,11 +182,16 @@ namespace VANTAGE.Dialogs
                 txtStatus.Text = $"Uninstalling {selected.Name} v{selected.Version}...";
 
                 var result = await PluginInstallService.UninstallAsync(selected);
+
+                var uninstallMessage = result.Success
+                    ? $"{result.Message}\n\nRestart VANTAGE for the plugin to be fully removed."
+                    : result.Message;
+
                 MessageBox.Show(
-                    result.Message,
+                    uninstallMessage,
                     result.Success ? "Uninstall Complete" : "Uninstall Failed",
                     MessageBoxButton.OK,
-                    result.Success ? MessageBoxImage.None : MessageBoxImage.Warning);
+                    result.Success ? MessageBoxImage.Information : MessageBoxImage.Warning);
 
                 await RefreshAllAsync();
             }

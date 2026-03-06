@@ -26,10 +26,8 @@ namespace VANTAGE
                 // Tables to mirror from Azure (Azure name -> Local name)
                 var tableMappings = new Dictionary<string, string>
                 {
-                    { "VMS_Users", "Users" },
                     { "VMS_Projects", "Projects" },
                     { "VMS_ColumnMappings", "ColumnMappings" },
-                    { "VMS_Managers", "Managers" },
                     { "VMS_Feedback", "Feedback" }
                 };
 
@@ -37,6 +35,9 @@ namespace VANTAGE
                 {
                     CopyTableDataFromAzure(azureConn, localConn, mapping.Key, mapping.Value);
                 }
+
+                // Mirror Users separately - exclude role columns for security
+                CopyUsersTableFromAzure(azureConn, localConn);
 
                 AppLogger.Info("Mirrored tables from Azure database", "DatabaseSetup.MirrorTablesFromAzure");
             }
@@ -96,6 +97,34 @@ namespace VANTAGE
 
             AppLogger.Info($"Copied {rowCount} rows from {azureTableName} to {localTableName}", "DatabaseSetup.CopyTableDataFromAzure");
         }
+
+        // Copy Users table from Azure excluding role columns (security measure)
+        private static void CopyUsersTableFromAzure(SqlConnection azureConn, SqliteConnection localConn)
+        {
+            var deleteCmd = localConn.CreateCommand();
+            deleteCmd.CommandText = "DELETE FROM Users";
+            deleteCmd.ExecuteNonQuery();
+
+            var selectCmd = azureConn.CreateCommand();
+            selectCmd.CommandText = "SELECT UserID, Username, FullName, Email FROM VMS_Users";
+
+            using var reader = selectCmd.ExecuteReader();
+            int rowCount = 0;
+            while (reader.Read())
+            {
+                var insertCmd = localConn.CreateCommand();
+                insertCmd.CommandText = @"INSERT INTO Users (UserID, Username, FullName, Email)
+                                          VALUES (@userID, @username, @fullName, @email)";
+                insertCmd.Parameters.AddWithValue("@userID", reader["UserID"]);
+                insertCmd.Parameters.AddWithValue("@username", reader["Username"]);
+                insertCmd.Parameters.AddWithValue("@fullName", reader["FullName"] ?? DBNull.Value);
+                insertCmd.Parameters.AddWithValue("@email", reader["Email"] ?? DBNull.Value);
+                insertCmd.ExecuteNonQuery();
+                rowCount++;
+            }
+            AppLogger.Info($"Mirrored {rowCount} users (roles excluded)", "DatabaseSetup.CopyUsersTableFromAzure");
+        }
+
         // progressCallback is invoked with status messages for UI updates (e.g., splash screen)
         public static void InitializeDatabase(Action<string>? progressCallback = null)
         {
@@ -219,17 +248,6 @@ namespace VANTAGE
                 IsCalculated INTEGER DEFAULT 0,
                 CalcFormula TEXT,
                 Notes TEXT
-            );
-
-            -- Managers table (mirrored from Azure)
-            CREATE TABLE IF NOT EXISTS Managers (
-                ManagerID INTEGER PRIMARY KEY,
-                FullName TEXT NOT NULL DEFAULT '',
-                Position TEXT NOT NULL DEFAULT '',
-                Company TEXT NOT NULL DEFAULT '',
-                Email TEXT NOT NULL DEFAULT '',
-                ProjectsAssigned TEXT,
-                IsActive INTEGER NOT NULL DEFAULT 1
             );
 
             -- Feedback table (mirrored from Azure)
