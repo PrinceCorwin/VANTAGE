@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.1.29",
-  "releaseDate": "2026-03-06T12:00:00Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.29/VANTAGE-26.1.29.zip",
-  "zipSizeBytes": 149636733,
-  "sha256": "4E3373A2E6C7BC79AFB2BC1EE4B29858D2AE0C6F0219DC79CDC3399571E699C6",
-  "releaseNotes": "Plugin Manager, automatic plugin updates, PTP TFS MECH Updater plugin"
+  "currentVersion": "26.1.30",
+  "releaseDate": "2026-03-06T14:57:30Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.30/VANTAGE-26.1.30.zip",
+  "zipSizeBytes": 149636581,
+  "sha256": "593785FA352E99F22E69BE9C6C7E778586C06E7A1F27E1F3A7919577991FD980",
+  "releaseNotes": "Manager role, role management in Edit Users, email notifications for role changes"
 }

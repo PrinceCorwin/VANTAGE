@@ -1,6 +1,15 @@
 {
   "releases": [
     {
+      "version": "26.1.30",
+      "date": "2026-03-06",
+      "highlights": [
+        "Manager role — users with Manager role can reassign records to other users without full admin access",
+        "Role management moved to Edit Users dialog — assign Admin, Estimator, and Manager roles with checkboxes",
+        "Email notifications when user roles change"
+      ]
+    },
+    {
       "version": "26.1.29",
       "date": "2026-03-06",
       "highlights": [

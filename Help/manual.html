@@ -2576,15 +2576,23 @@
     <!-- ============================================ -->
 
     <h3 id="admin-overview">Overview</h3>
-    <p>Administration features are available to users with admin privileges. Access admin tools from the <strong>Admin</strong> menu in the toolbar. Admins can also use <strong>Toggle User Admin</strong> to grant or revoke admin privileges for other users.</p>
+    <p>Administration features are available to users with admin privileges. Access admin tools from the <strong>Admin</strong> menu in the toolbar.</p>
 
     <h3 id="admin-user-management">User Management (Admin > Edit Users)</h3>
-    <p>Manage user accounts in the system. The dialog displays all users in a list on the left, with a detail form on the right for editing.</p>
+    <p>Manage user accounts and roles. The dialog displays all users in a list on the left (with their current roles), and a detail form on the right for editing.</p>
     <ul>
         <li><strong>Add User</strong> — Enter a username (required), full name, and email, then click Add. Usernames must be unique and cannot be changed after creation.</li>
-        <li><strong>Edit User</strong> — Select a user from the list to populate the form. Update their full name or email and click Save Changes.</li>
-        <li><strong>Delete User</strong> — Removes the user account. You cannot delete your own account. The user's activities and snapshots are preserved. If the user was an admin, their admin status is also removed.</li>
+        <li><strong>Edit User</strong> — Select a user from the list to populate the form. Update their full name, email, or roles and click Save Changes.</li>
+        <li><strong>Delete User</strong> — Removes the user account. You cannot delete your own account. The user's activities and snapshots are preserved.</li>
     </ul>
+    <h4>User Roles</h4>
+    <p>Roles control what features a user can access. Assign roles using the checkboxes in the edit form:</p>
+    <ul>
+        <li><strong>Admin</strong> — Full administrative privileges. Can access all Admin menu items, edit any user's records, and reassign records between users.</li>
+        <li><strong>Estimator</strong> — Access to the AI Takeoff module for automated quantity takeoffs.</li>
+        <li><strong>Manager</strong> — Can reassign records to other users (same as Admin for the Assign To feature only). Useful for supervisors who need to redistribute work without full admin access.</li>
+    </ul>
+    <p>Users without any roles can view and edit only their own assigned records. Role changes take effect immediately and the user receives an email notification.</p>
 
     <h3 id="admin-project-setup">Project Setup (Admin > Edit Projects)</h3>
     <p>Manage construction projects and their associated metadata. The dialog shows a scrollable grid of all projects with a detail form below for editing.</p>
@@ -2671,7 +2679,7 @@
     <p>All users sync their local data with the central Azure database using the <strong>SYNC</strong> button in the Progress module (see <a href="#prog-syncing">Syncing Data</a>). Key points for administrators:</p>
     <ul>
         <li><strong>Azure is the source of truth</strong> — Local SQLite databases are caches that can be deleted and re-synced at any time</li>
-        <li><strong>Ownership</strong> — Users can only edit activities assigned to them. Admins bypass ownership checks and can edit any record.</li>
+        <li><strong>Ownership</strong> — Users can only edit activities assigned to them. Admins and Managers can reassign any record to other users.</li>
         <li><strong>Pull-only fields</strong> — Some fields (e.g., AzureUploadUtcDate) are set by admins on Azure and received by users on pull, but never overwritten by user push operations</li>
         <li><strong>Clear Local Activities</strong> — Available from the Settings menu to wipe and re-download all local data from Azure</li>
     </ul>
