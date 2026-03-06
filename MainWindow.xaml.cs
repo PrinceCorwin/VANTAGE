@@ -322,11 +322,23 @@ namespace VANTAGE
                 btnAdmin.Visibility = Visibility.Collapsed;
             }
 
-            // Hide TAKEOFFS button unless user is estimator
-            if (App.CurrentUser == null || !App.CurrentUser.IsEstimator)
+            // Hide TAKEOFFS button unless user is allowed
+            // TEMPORARY: Restricted to specific users during development
+            // TO REVERT: Replace IsTakeoffAllowed() call with: App.CurrentUser.IsEstimator
+            if (App.CurrentUser == null || !IsTakeoffAllowed())
             {
                 btnTakeoff.Visibility = Visibility.Collapsed;
             }
+        }
+
+        // TEMPORARY: Restrict Takeoff access to specific users during development
+        // TO REVERT: Delete this method and replace IsTakeoffAllowed() calls with App.CurrentUser.IsEstimator
+        private bool IsTakeoffAllowed()
+        {
+            if (App.CurrentUser == null) return false;
+            var username = App.CurrentUser.Username;
+            return username.Equals("steve", StringComparison.OrdinalIgnoreCase) ||
+                   username.Equals("Steve.Amalfitano", StringComparison.OrdinalIgnoreCase);
         }
 
         // TOOLBAR BUTTON HANDLERS
@@ -1085,7 +1097,9 @@ namespace VANTAGE
                     else if (roleName == "Estimator")
                     {
                         App.CurrentUser.IsEstimator = granted;
-                        btnTakeoff.Visibility = granted ? Visibility.Visible : Visibility.Collapsed;
+                        // TEMPORARY: Also check IsTakeoffAllowed() during development restriction
+                        // TO REVERT: Change condition back to just: granted
+                        btnTakeoff.Visibility = (granted && IsTakeoffAllowed()) ? Visibility.Visible : Visibility.Collapsed;
                     }
                 };
 

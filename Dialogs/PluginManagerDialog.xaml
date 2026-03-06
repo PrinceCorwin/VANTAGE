@@ -126,10 +126,6 @@
                                                            HeaderText="Installed"
                                                            Width="100"
                                                            AllowEditing="False"/>
-                                <syncfusion:GridTextColumn MappingName="PackageUrl"
-                                                           HeaderText="Package URL"
-                                                           Width="260"
-                                                           AllowEditing="False"/>
                             </syncfusion:SfDataGrid.Columns>
                         </syncfusion:SfDataGrid>
 

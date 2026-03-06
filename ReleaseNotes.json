@@ -1,6 +1,15 @@
 {
   "releases": [
     {
+      "version": "26.1.29",
+      "date": "2026-03-06",
+      "highlights": [
+        "Plugin Manager — install, uninstall, and manage plugins from the Settings menu",
+        "Automatic plugin updates — installed plugins are updated automatically at startup when newer versions are available",
+        "PTP TFS MECH Updater plugin — imports PTP vendor shipping reports and creates/updates TFS Mechanical fabrication activities (25.005 project)"
+      ]
+    },
+    {
       "version": "26.1.28",
       "date": "2026-02-28",
       "highlights": [

@@ -25,9 +25,9 @@ For every unique **CWP** value in the PTP report, **1 VANTAGE activity row** is 
 
 | ROCStep | Description Pattern                    |
 |---------|----------------------------------------|
-| 7.SHP   | `FABRICATION - 7.SHP {CWP}`           |
+| 4.SHP   | `FABRICATION - 4.SHP {CWP}`           |
 
-Example for CWP `TFS00D001YS18`: `FABRICATION - 7.SHP TFS00D001YS18`
+Example for CWP `TFS00D001YS18`: `FABRICATION - 4.SHP TFS00D001YS18`
 
 **Why single row:** The PTP report only provides shipping status. IWP, CUT, FAB phases are not tracked by this vendor report. ROCStep name may change later.
 
@@ -35,7 +35,7 @@ Example for CWP `TFS00D001YS18`: `FABRICATION - 7.SHP TFS00D001YS18`
 
 | VANTAGE Field   | Value / Source                          | Notes                                |
 |-----------------|----------------------------------------|--------------------------------------|
-| Description     | `FABRICATION - 7.SHP {CWP}`           | Match key for existing rows          |
+| Description     | `FABRICATION - 4.SHP {CWP}`           | Match key for existing rows          |
 | SchedActNO      | `x`                                    | Constant                             |
 | UDF2            | PTP `CWP` column                       | Key field — one CWP = one row        |
 | Area            | `TFS`                                  | Constant                             |
@@ -48,7 +48,7 @@ Example for CWP `TFS00D001YS18`: `FABRICATION - 7.SHP TFS00D001YS18`
 | UDF3            | `NEARSITE`                             | Constant                             |
 | WorkPackage     | `x`                                    | Constant                             |
 | RespParty       | `SUMMIT - PM`                          | Constant                             |
-| ROCStep         | `7.SHP`                               | Constant                             |
+| ROCStep         | `4.SHP`                               | Constant                             |
 | BudgetQty       | SUM of non-Deleted PTP `Quantity`       | Aggregated per CWP                   |
 | BudgetMHs       | `0.001`                                | Constant — not tracking hours        |
 | AssignedTo      | Current user's username                | Set on create only                   |
@@ -75,7 +75,7 @@ If ALL rows for a CWP have Status = "Deleted":
 
 ## Matching Logic
 
-- **Match key:** Description field (e.g. `FABRICATION - 7.SHP TFS00D001YS18`)
+- **Match key:** Description field (e.g. `FABRICATION - 4.SHP TFS00D001YS18`)
 - **If found:** Update BudgetQty and PercentEntry
 - **If not found:** Create new activity with all mapped fields
 

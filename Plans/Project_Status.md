@@ -83,10 +83,21 @@
 - VS sometimes re-adds PNGs as `<Resource Include>` — always verify Content / Copy if newer
 - Troubleshooting section deferred to post-V1
 
+## Temporary Restrictions
+
+### AI Takeoff Module (MainWindow.xaml.cs)
+**Status:** Restricted to users `steve` and `Steve.Amalfitano` only
+
+**To revert to Estimator role check:**
+1. Delete the `IsTakeoffAllowed()` method (~line 340)
+2. Line ~326: Change `!IsTakeoffAllowed()` to `!App.CurrentUser.IsEstimator`
+3. Line ~1093: Change `(granted && IsTakeoffAllowed())` to just `granted`
+4. Remove the `// TEMPORARY` and `// TO REVERT` comments
+5. **Add AI Takeoff module to release notes** — When releasing the version that lifts this restriction, add AI Takeoff feature to ReleaseNotes.json highlights
+
 ## Feature Backlog
 
 ### High Priority
-- **Release New VANTAGE Version** — Publish new release that includes Plugin Manager and plugin system. Before release: restrict AI Takeoff module visibility to users `steve` and `steve.amalfitano` only (temporary hardcode while Takeoff is still in development). Revert to estimator role check once Takeoff is finished.
 - **Mobile/iOS Version (iPad)** — Execs want iPad app for field supes to submit progress. Needs architecture discussion: native iOS, cross-platform framework, web app, API design, offline sync, etc.
 - **Takeoff Post-Processing Pipeline** — All operate on the downloaded Excel, no AWS changes needed. See `summit-takeoff-integration-guide.md` for details.
   1. Fabrication item generation — CUT and BEV rows generating (WIP). TODO:

@@ -6,6 +6,12 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### March 6, 2026
+- **AI Takeoff module restricted to specific users:** Temporarily restricted Takeoff button visibility to users `steve` and `Steve.Amalfitano` only (case-insensitive). Added `IsTakeoffAllowed()` helper method in `MainWindow.xaml.cs`. Revert instructions documented in `Project_Status.md` under "Temporary Restrictions" section.
+- **Help manual - Plugins section:** Added Section 11 (Plugins) with Plugin Manager documentation and PTP TFS MECH Updater plugin usage guide including file preparation steps.
+- **Fixed encoding issues in Help manual:** Replaced mojibake characters (â€") with proper em-dashes throughout manual.html.
+- **Removed Package URL column from Plugin Manager:** Removed GitHub URL column from Available tab to keep UI cleaner.
+
 ### March 5, 2026 (Plugin System Fixes)
 - **Fixed missing Plugins config in appsettings.json:** Added `Plugins.IndexUrl` pointing to `plugins-index.json` in VANTAGE-Plugins repo. Plugin Manager was showing empty Available tab because the feed URL was not configured.
 - **Added `RefreshProgressViewAsync()` to `IPluginHost`:** Plugins that modify activity data can now refresh the Progress view, summary stats, and metadata error count after import.
