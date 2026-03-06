@@ -1,429 +1,268 @@
-# VANTAGE: Milestone Plugin Manager Implementation Guide
+# VANTAGE: Milestone Plugin System Implementation Guide
 
 ## Purpose
 
-This document captures the full implementation and debugging history for:
+This document captures the full implementation of the VANTAGE plugin system:
 
-1. `Tools > Project Specific` menu item and dialog.
-2. `...` (top-right settings popup) `Plugin Manager...` dialog.
-3. GitHub feed-based plugin discovery/install/uninstall.
-4. Startup automatic plugin update behavior.
-
-This is intended as a handoff artifact so work can continue from another machine/session without losing context.
+1. Plugin discovery, install, uninstall via GitHub feed
+2. Startup automatic plugin updates
+3. Plugin execution framework (runtime assembly loading)
+4. Dynamic UI injection (menu items)
 
 ---
 
-## High-Level Outcome
+## Current Status
 
-The app now supports:
+**Fully Implemented:**
+- Plugin Manager dialog (install/uninstall from GitHub feed)
+- Feed-based plugin discovery (`plugins-index.json`)
+- Startup auto-update for installed plugins
+- Plugin execution framework (`IVantagePlugin`, `IPluginHost`, `PluginLoaderService`)
+- Dynamic menu injection via `host.AddToolsMenuItem()`
+- Plugin type classification (`pluginType` field in manifests)
 
-1. A `Project Specific` dialog (currently seeded with one placeholder action).
-2. A `Plugin Manager` dialog that shows:
-   - Installed plugins (from local plugin store)
-   - Available plugins (from GitHub feed `plugins-index.json`)
-3. Install selected plugin from GitHub feed.
-4. Uninstall selected installed plugin.
-5. Automatic startup plugin updates:
-   - Checks installed plugins vs feed versions
-   - Installs newer versions automatically
-   - Removes older versions of the same plugin ID
+**Next Step:**
+- Create first real plugin: PTP Updater for Fluor T&M project
 
 ---
 
-## UX Placement Decisions
+## Architecture Overview
 
-## Menus
+### Plugin Flow
 
-1. `Tools > Project Specific`
-   - Kept in Tools menu.
-   - Intended for project-specific user-run actions.
+1. **Discovery:** `PluginFeedService` downloads `plugins-index.json` from GitHub
+2. **Install:** `PluginInstallService` downloads ZIP, verifies SHA-256, extracts to local store
+3. **Catalog:** `PluginCatalogService` scans `%LocalAppData%\VANTAGE\Plugins` for installed plugins
+4. **Load:** `PluginLoaderService` loads assemblies, instantiates `IVantagePlugin` implementations
+5. **Initialize:** Each plugin's `Initialize(IPluginHost)` is called, allowing UI registration
+6. **Shutdown:** On app close, `Shutdown()` is called on each plugin
 
-2. `...` settings popup > `Plugin Manager...`
-   - Added in top-right toolbar settings popup.
-   - Intended for plugin lifecycle management.
+### Key Interfaces
 
-## Why split this way
+```csharp
+// What plugins must implement
+public interface IVantagePlugin
+{
+    string Id { get; }
+    string Name { get; }
+    void Initialize(IPluginHost host);
+    void Shutdown();
+}
 
-1. `Project Specific` = run business functions.
-2. `Plugin Manager` = install/update/uninstall administration.
-
----
-
-## File-by-File Implementation
-
-## Main Window / Menus
-
-### `MainWindow.xaml`
-
-Added:
-
-1. Tools menu item:
-   - Header: `Project Specific`
-   - Click: `MenuProjectSpecific_Click`
-2. Settings popup menu item:
-   - Button: `Plugin Manager...`
-   - Click: `MenuPluginManager_Click`
-
-### `MainWindow.xaml.cs`
-
-Added:
-
-1. `MenuProjectSpecific_Click`:
-   - Opens `ProjectSpecificFunctionsDialog`.
-2. `MenuPluginManager_Click`:
-   - Opens `PluginManagerDialog`.
+// What the app provides to plugins
+public interface IPluginHost
+{
+    void AddToolsMenuItem(string header, Action onClick, bool addSeparatorBefore = false);
+    Window MainWindow { get; }
+    string CurrentUsername { get; }
+    void ShowInfo(string message, string title = "Information");
+    void ShowError(string message, string title = "Error");
+    bool ShowConfirmation(string message, string title = "Confirm");
+    void LogInfo(string message, string source);
+    void LogError(Exception ex, string source);
+}
+```
 
 ---
 
-## Project Specific Dialog
+## File Reference
 
-### `Dialogs/ProjectSpecificFunctionsDialog.xaml`
+### Plugin Services (`Services/Plugins/`)
 
-Created a themed dialog with:
+| File | Purpose |
+|------|---------|
+| `IVantagePlugin.cs` | Interface plugins must implement |
+| `IPluginHost.cs` | Interface for app capabilities provided to plugins |
+| `PluginLoaderService.cs` | Loads assemblies, instantiates plugins, manages lifecycle |
+| `PluginCatalogService.cs` | Scans local store for installed plugins |
+| `PluginFeedService.cs` | Downloads and parses plugin feed from GitHub |
+| `PluginInstallService.cs` | Handles download, verification, extraction, install/uninstall |
+| `PluginAutoUpdateService.cs` | Checks for updates at startup, auto-upgrades |
 
-1. Read-only grid (`SfDataGrid`).
-2. Columns:
-   - `Project`
-   - `Description`
-3. Buttons:
-   - `Run`
-   - `Close`
+### Models (`Models/`)
 
-### `Dialogs/ProjectSpecificFunctionsDialog.xaml.cs`
+| File | Purpose |
+|------|---------|
+| `PluginManifest.cs` | Local plugin metadata (from `plugin.json`) |
+| `PluginFeedIndex.cs` | Feed index structure (from `plugins-index.json`) |
 
-Implemented:
+### Dialogs (`Dialogs/`)
 
-1. Initial in-memory entry:
-   - Project: `Fluor T&M 25.005`
-   - Description: `Update Pipe Support Fab`
-2. `Run` button behavior:
-   - Shows `Coming soon.` placeholder message.
+| File | Purpose |
+|------|---------|
+| `PluginManagerDialog.xaml/.cs` | Two-tab UI for installed/available plugins |
 
----
+### Integration Points
 
-## Plugin Manifest and Feed Models
-
-### `Models/PluginManifest.cs`
-
-Local package manifest model:
-
-1. `id`, `name`, `version`
-2. `project`, `description`
-3. `assemblyFile`, `entryType`
-4. `minAppVersion`, `maxAppVersion`
-
-### `Models/PluginFeedIndex.cs`
-
-Feed index model for `plugins-index.json`:
-
-1. Root:
-   - `plugins` array
-2. Each feed item:
-   - `id`, `name`, `version`
-   - `project`, `description`
-   - `packageUrl`
-   - `sha256`
+| File | Change |
+|------|--------|
+| `MainWindow.xaml` | Tools menu group named `ToolsMenuGroup` for plugin access |
+| `MainWindow.xaml.cs` | Plugin loading on `Loaded`, cleanup on `Closing` |
+| `App.xaml.cs` | Startup auto-update call |
+| `appsettings.json` | `Plugins.IndexUrl` configuration |
 
 ---
 
-## App Configuration Wiring
+## Manifest Format
 
-### `Models/AppConfig.cs`
+### Local `plugin.json`
 
-Added:
+```json
+{
+  "id": "plugin-id",
+  "name": "Plugin Display Name",
+  "version": "1.0.0",
+  "pluginType": "action",
+  "project": "",
+  "description": "What this plugin does",
+  "assemblyFile": "PluginName.dll",
+  "entryType": "PluginNamespace.PluginClassName",
+  "minAppVersion": "1.0.0",
+  "maxAppVersion": ""
+}
+```
 
-1. `PluginsConfig` with `IndexUrl`.
-2. `AppConfig.Plugins`.
-
-### `Utilities/CredentialService.cs`
-
-Added:
-
-1. `PluginsIndexUrl` property (`Config.Plugins.IndexUrl`).
-
-### `appsettings.json`
-
-Added:
-
-1. `Plugins.IndexUrl` set to:
-   - `https://raw.githubusercontent.com/PrinceCorwin/VANTAGE-Plugins/main/plugins-index.json`
-
----
-
-## Plugin Catalog / Discovery (Installed)
-
-### `Services/Plugins/PluginCatalogService.cs`
-
-Created service to read installed plugins from:
-
-1. Local root:
-   - `%LocalAppData%\VANTAGE\Plugins`
-2. Scans for `plugin.json` files recursively.
-3. Parses manifest into `InstalledPluginInfo`.
-4. Returns list sorted by project/name.
-
-Notes:
-
-1. `InstalledPluginInfo` includes:
-   - `Id`, `Name`, `Version`, `Project`, `Description`
-   - `PluginDirectory` (for uninstall)
-   - `ManifestPath`
-
----
-
-## Plugin Feed / Discovery (Available)
-
-### `Services/Plugins/PluginFeedService.cs`
-
-Created service to:
-
-1. Download `plugins-index.json` from `CredentialService.PluginsIndexUrl`.
-2. Deserialize into `PluginFeedIndex`.
-3. Return sorted `PluginFeedItem` list.
-
----
-
-## Plugin Install/Uninstall Service
-
-### `Services/Plugins/PluginInstallService.cs`
-
-Implemented install/uninstall behavior.
-
-## Install from feed (`InstallFromFeedAsync`)
-
-Flow:
-
-1. Validate feed item has `id`, `version`, `packageUrl`.
-2. Download zip from `packageUrl` to temp.
-3. Optional SHA-256 verify (`sha256` if provided).
-4. Extract zip to temp.
-5. Find `plugin.json` anywhere in extracted content.
-6. Parse and validate manifest:
-   - must have valid JSON
-   - must include `id` and `version`
-   - `manifest.id` must match `feed.id`
-   - `manifest.version` must match `feed.version`
-7. Resolve install target:
-   - `%LocalAppData%\VANTAGE\Plugins\<id>\<version>`
-8. Handle stale partial installs:
-   - If target exists without a manifest, delete stale folder and continue.
-   - If target exists with manifest, return already-installed message.
-9. Copy package contents to target.
-10. Log install with `AppLogger`.
-
-## Uninstall (`UninstallAsync`)
-
-Flow:
-
-1. Delete selected plugin version directory.
-2. If plugin ID parent folder is now empty, delete it too.
-3. Log uninstall with `AppLogger`.
-
-## Diagnostics
-
-1. Install failure message includes the attempted `packageUrl`.
-2. Download URL is logged for troubleshooting.
-
----
-
-## Plugin Manager Dialog
-
-### `Dialogs/PluginManagerDialog.xaml`
-
-Created a themed dialog with:
-
-1. Two tabs:
-   - `Installed`
-   - `Available`
-2. Installed grid columns:
-   - `Name`, `Project`, `Description`, `Version`
-3. Available grid columns:
-   - `Name`, `Project`, `Description`, `Version`, `Installed`, `Package URL`
-4. Buttons:
-   - `Install Selected` (feed-based)
-   - `Uninstall`
-   - `Refresh`
-   - `Close`
-
-### `Dialogs/PluginManagerDialog.xaml.cs`
-
-Implemented:
-
-1. `RefreshAllAsync()`:
-   - Load installed list from local store
-   - Load available list from feed
-2. Install button:
-   - Feed install path only (GitHub URL)
-   - Confirmation dialog
-   - Status text and error/result message
-3. Uninstall button:
-   - Confirmation dialog
-   - Calls uninstall service
-4. Selection-based button enable/disable.
-
-Important:
-
-1. Local/manual install path was intentionally removed.
-2. Plugin installs are controlled via GitHub feed only.
-
----
-
-## Startup Automatic Plugin Update
-
-### `Services/Plugins/PluginAutoUpdateService.cs`
-
-Created service to auto-update installed plugins at startup.
-
-Flow:
-
-1. Read installed plugins.
-2. Read available plugins from feed.
-3. Compare latest installed version vs latest feed version per plugin ID.
-4. If feed is newer:
-   - Install newer version via `InstallFromFeedAsync`.
-   - Remove older installed versions of that plugin ID.
-5. Return summary counts (`checked`, `updated`, `failed`).
-6. Log update outcomes.
-
-### `App.xaml.cs`
-
-Added startup step in `InitializeApplicationAsync` after app binary update check:
-
-1. Splash status: `Checking plugin updates...`
-2. Runs `PluginAutoUpdateService.CheckAndUpdateInstalledPluginsAsync(...)`
-3. If updates applied, splash shows count briefly.
-
----
-
-## Repository / Feed Setup Used
-
-Feed repository:
-
-1. `https://github.com/PrinceCorwin/VANTAGE-Plugins`
-
-Feed file:
-
-1. `plugins-index.json` at repo root.
-
-Package source:
-
-1. GitHub Release asset URLs referenced by `packageUrl`.
-
----
-
-## Required `plugins-index.json` Format
+### Feed `plugins-index.json`
 
 ```json
 {
   "plugins": [
     {
-      "id": "test-hello",
-      "name": "Test Hello",
-      "version": "1.0.2",
-      "project": "Fluor T&M 25.005",
-      "description": "Test plugin for install pipeline",
-      "packageUrl": "https://github.com/PrinceCorwin/VANTAGE-Plugins/releases/download/v1.0.2-test/test-hello.1.0.2.zip",
+      "id": "plugin-id",
+      "name": "Plugin Display Name",
+      "version": "1.0.0",
+      "pluginType": "action",
+      "project": "",
+      "description": "What this plugin does",
+      "packageUrl": "https://github.com/PrinceCorwin/VANTAGE-Plugins/releases/download/tag/plugin-id.1.0.0.zip",
       "sha256": ""
     }
   ]
 }
 ```
 
+### Field Reference
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `id` | Yes | Unique plugin identifier (lowercase, hyphens OK) |
+| `name` | Yes | Display name shown in Plugin Manager |
+| `version` | Yes | Semantic version (X.Y.Z) |
+| `pluginType` | Yes | `"action"` (has UI) or `"extension"` (passive) |
+| `project` | No | Project scope (empty = global) |
+| `description` | Yes | Brief description |
+| `assemblyFile` | Yes | DLL filename |
+| `entryType` | Yes | Full type name implementing `IVantagePlugin` |
+| `minAppVersion` | No | Minimum VANTAGE version required |
+| `maxAppVersion` | No | Maximum VANTAGE version (empty = no limit) |
+| `packageUrl` | Feed only | GitHub Release asset URL |
+| `sha256` | Feed only | Optional integrity hash |
+
 ---
 
-## Required Plugin Package Content
+## Plugin Development
 
-Each plugin zip must contain (at minimum):
+See `VANTAGE-Plugins` repository `CLAUDE.md` for detailed plugin development instructions.
 
-1. `plugin.json`
-2. Plugin assembly file referenced by `assemblyFile`
+### Quick Reference
 
-Example `plugin.json`:
+1. Create project in `VANTAGE-Plugins/src/<plugin-id>/`
+2. Reference `VANTAGE.exe` for plugin interfaces
+3. Implement `IVantagePlugin`
+4. Create `plugin.json` manifest
+5. Build, package as ZIP, create GitHub Release
+6. Update `plugins-index.json` with new entry
 
-```json
-{
-  "id": "test-hello",
-  "name": "Test Hello",
-  "version": "1.0.2",
-  "project": "Fluor T&M 25.005",
-  "description": "Test plugin for install pipeline",
-  "assemblyFile": "TestHelloPlugin.dll",
-  "entryType": "TestHelloPlugin.HelloPlugin",
-  "minAppVersion": "1.0.0",
-  "maxAppVersion": ""
-}
+---
+
+## Local Paths
+
+| Path | Purpose |
+|------|---------|
+| `%LocalAppData%\VANTAGE\Plugins\` | Plugin install root |
+| `%LocalAppData%\VANTAGE\Plugins\<id>\<version>\` | Specific plugin version |
+
+---
+
+## Troubleshooting
+
+### Plugin Not Loading
+
+1. Check `plugin.json` has valid `assemblyFile` and `entryType`
+2. Verify DLL exists in plugin directory
+3. Check app logs for assembly load errors
+4. Ensure entry type implements `IVantagePlugin`
+
+### Install Failures
+
+1. Check `packageUrl` is accessible
+2. Verify ZIP contains `plugin.json` at some level
+3. Check feed `id`/`version` matches manifest `id`/`version`
+4. GitHub raw content may cache for ~5 minutes after push
+
+### Menu Item Not Appearing
+
+1. Verify `Initialize()` calls `host.AddToolsMenuItem()`
+2. Check plugin loaded without errors in logs
+3. Confirm `pluginType` is `"action"` if expecting UI
+
+---
+
+## Remaining Work
+
+### Immediate: PTP Updater Plugin
+
+Create first real plugin for Fluor T&M 25.005 project:
+- Import PTP (pipe support vendor) weekly Excel report
+- Match records to existing VANTAGE activities
+- Create new activities for unmatched records
+- Update progress/MHs on matched records
+
+### Future Enhancements
+
+1. **Version constraint validation** - Check `minAppVersion`/`maxAppVersion` before loading
+2. **Plugin enable/disable toggle** - Allow disabling without uninstalling
+3. **Extended IPluginHost** - Add database access, more UI capabilities as needed
+4. **Signature validation** - Verify plugin authenticity
+5. **Rollback mechanism** - Revert to previous version if update breaks
+
+---
+
+## Repository Structure
+
+Plugins are developed in a **separate GitHub repository** from the main VANTAGE app:
+
+| Repository | Purpose |
+|------------|---------|
+| `PrinceCorwin/VANTAGE` | Main application code |
+| `PrinceCorwin/VANTAGE-Plugins` | Plugin source code, feed index, releases |
+
+### Local Development Setup
+
+Clone both repositories to your local machine in separate folders:
+
+```
+/your-repos-folder/
+├── VANTAGE/              # Main app (this repo)
+└── VANTAGE-Plugins/      # Plugin development repo
+    ├── src/              # Plugin source code
+    │   └── <plugin-id>/  # One folder per plugin
+    ├── plugins-index.json
+    ├── CLAUDE.md         # Plugin development instructions
+    └── README.md
 ```
 
-Validation now enforces:
+The `VANTAGE-Plugins` repo has its own `CLAUDE.md` with detailed plugin development workflows. Claude can work with both repos simultaneously using absolute paths - no directory switching needed.
 
-1. valid JSON
-2. required `id` + `version`
-3. feed `id/version` must match manifest `id/version`
+### Why Separate Repos?
 
----
+- **Clean separation** - App code and plugin code don't mix
+- **Independent versioning** - Update plugins without app releases
+- **Simple distribution** - GitHub Releases provides free ZIP hosting
+- **Configurable feed** - Feed URL is in `appsettings.json` if needed
 
-## Troubleshooting Lessons Learned
+## Repository Links
 
-These issues were encountered and addressed:
-
-1. `plugin.json` malformed JSON
-   - Symptom: install or installed listing behaved inconsistently.
-   - Fix: added strict JSON manifest validation.
-
-2. Zip layout variance (extra top-level folder)
-   - Symptom: manifest not found.
-   - Fix: installer scans recursively for `plugin.json`.
-
-3. Stale partial install directory
-   - Symptom: `already installed` message while not shown under Installed.
-   - Fix: if target version folder exists without manifest, auto-clean stale folder.
-
-4. GitHub index caching delay
-   - Symptom: Available tab lagged behind pushed `plugins-index.json`.
-   - Mitigation: refresh after push delay; diagnostics now include package URL.
-
-5. File lock during local build
-   - Symptom: copy errors when app running.
-   - Mitigation for validation: build using isolated output dir.
-
----
-
-## Current Verified Status
-
-Validated by user:
-
-1. Install works from GitHub feed.
-2. Uninstall works.
-3. Startup plugin auto-update works (`1.0.1` -> `1.0.2` confirmed).
-
----
-
-## Current Scope vs Future Work
-
-Implemented now:
-
-1. Plugin lifecycle management (feed install/uninstall/refresh).
-2. Startup auto-update for installed plugins.
-3. Project Specific menu/dialog scaffold.
-
-Not yet implemented:
-
-1. Executing installed plugin code assemblies (`entryType`) at runtime.
-2. `Project Specific` data source refactor from hardcoded list to installed plugin actions.
-3. Plugin type classification (`project-action` vs passive extension) in UI.
-4. Authenticated feed handling for private-only access (if needed).
-5. Signature validation and rollback policy.
-
----
-
-## Recommended Next Development Steps
-
-1. Add manifest field `pluginType` and enforce allowed values.
-2. Refactor Project Specific dialog to list installed plugins where `pluginType = project-action`.
-3. Implement runtime plugin loader and controlled `Run` execution pipeline.
-4. Build first real plugin:
-   - `Update Pipe Support Fab` for `Fluor T&M 25.005`.
-5. Add update policy controls:
-   - startup auto-update toggle (if needed)
-   - release channel pinning (optional).
-
+- **Main app:** `https://github.com/PrinceCorwin/VANTAGE`
+- **Plugins:** `https://github.com/PrinceCorwin/VANTAGE-Plugins`
+- **Feed URL:** `https://raw.githubusercontent.com/PrinceCorwin/VANTAGE-Plugins/main/plugins-index.json`
