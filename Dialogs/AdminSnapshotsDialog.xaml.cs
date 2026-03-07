@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows;
@@ -12,7 +13,7 @@ namespace VANTAGE.Dialogs
 {
     public partial class AdminSnapshotsDialog : Window
     {
-        private List<SnapshotGroupItem> _groups = new();
+        private ObservableCollection<SnapshotGroupItem> _groups = new();
 
         public AdminSnapshotsDialog()
         {
@@ -29,78 +30,61 @@ namespace VANTAGE.Dialogs
         private async System.Threading.Tasks.Task LoadSnapshotsAsync()
         {
             pnlLoading.Visibility = Visibility.Visible;
-            lvSnapshots.Visibility = Visibility.Collapsed;
+            sfSnapshots.Visibility = Visibility.Collapsed;
             txtNoSnapshots.Visibility = Visibility.Collapsed;
 
             try
             {
-                _groups = await System.Threading.Tasks.Task.Run(() =>
+                var list = await System.Threading.Tasks.Task.Run(() =>
                 {
                     var groupList = new List<SnapshotGroupItem>();
 
                     using var azureConn = AzureDbManager.GetConnection();
                     azureConn.Open();
 
-                    var cmd = azureConn.CreateCommand();
+                    // Single query: GROUP BY snapshots with LEFT JOIN to check upload status
+                    using var cmd = azureConn.CreateCommand();
                     cmd.CommandTimeout = 120;
                     cmd.CommandText = @"
-                        SELECT AssignedTo, ProjectID, WeekEndDate, COUNT(*) as SnapshotCount
-                        FROM VMS_ProgressSnapshots
-                        GROUP BY AssignedTo, ProjectID, WeekEndDate
-                        ORDER BY AssignedTo, ProjectID, WeekEndDate DESC";
-
-                    using (var reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            string username = reader.IsDBNull(0) ? "(Unknown)" : reader.GetString(0);
-                            string projectId = reader.IsDBNull(1) ? "(Unknown)" : reader.GetString(1);
-                            string weekEndDateStr = reader.GetString(2);
-                            int count = reader.GetInt32(3);
-
-                            if (DateTime.TryParse(weekEndDateStr, out DateTime weekEndDate))
-                            {
-                                var item = new SnapshotGroupItem
-                                {
-                                    Username = username,
-                                    ProjectID = projectId,
-                                    WeekEndDate = weekEndDate,
-                                    WeekEndDateStr = weekEndDateStr,
-                                    SnapshotCount = count
-                                };
-                                item.PropertyChanged += GroupItem_PropertyChanged;
-                                groupList.Add(item);
-                            }
-                        }
-                    }
-
-                    // Check which groups have been uploaded to ProgressLog
-                    // Key on Username + ProjectID + WeekEndDate to match group granularity
-                    var uploadedSet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                    using (var uploadCmd = azureConn.CreateCommand())
-                    {
-                        uploadCmd.CommandTimeout = 120;
-                        uploadCmd.CommandText = @"
+                        SELECT s.AssignedTo, s.ProjectID, s.WeekEndDate, COUNT(*) as SnapshotCount,
+                               MAX(CASE WHEN u.ProjectID IS NOT NULL THEN 1 ELSE 0 END) as IsUploaded
+                        FROM VMS_ProgressSnapshots s
+                        LEFT JOIN (
                             SELECT DISTINCT Username, ProjectID, WeekEndDate
-                            FROM VMS_ProgressLogUploads";
-                        using var uploadReader = uploadCmd.ExecuteReader();
-                        while (uploadReader.Read())
-                        {
-                            string user = uploadReader.IsDBNull(0) ? "" : uploadReader.GetString(0);
-                            string pid = uploadReader.IsDBNull(1) ? "" : uploadReader.GetString(1);
-                            string wed = uploadReader.IsDBNull(2) ? "" : uploadReader.GetString(2);
-                            uploadedSet.Add($"{user}|{pid}|{wed}");
-                        }
-                    }
+                            FROM VMS_ProgressLogUploads
+                        ) u ON u.Username = s.AssignedTo AND u.ProjectID = s.ProjectID AND u.WeekEndDate = s.WeekEndDate
+                        GROUP BY s.AssignedTo, s.ProjectID, s.WeekEndDate
+                        ORDER BY s.AssignedTo, s.ProjectID, s.WeekEndDate DESC";
 
-                    foreach (var item in groupList)
+                    using var reader = cmd.ExecuteReader();
+                    while (reader.Read())
                     {
-                        item.IsUploaded = uploadedSet.Contains($"{item.Username}|{item.ProjectID}|{item.WeekEndDateStr}");
+                        string username = reader.IsDBNull(0) ? "(Unknown)" : reader.GetString(0);
+                        string projectId = reader.IsDBNull(1) ? "(Unknown)" : reader.GetString(1);
+                        string weekEndDateStr = reader.GetString(2);
+                        int count = reader.GetInt32(3);
+                        bool isUploaded = reader.GetInt32(4) == 1;
+
+                        if (DateTime.TryParse(weekEndDateStr, out DateTime weekEndDate))
+                        {
+                            var item = new SnapshotGroupItem
+                            {
+                                Username = username,
+                                ProjectID = projectId,
+                                WeekEndDate = weekEndDate,
+                                WeekEndDateStr = weekEndDateStr,
+                                SnapshotCount = count,
+                                IsUploaded = isUploaded
+                            };
+                            item.PropertyChanged += GroupItem_PropertyChanged;
+                            groupList.Add(item);
+                        }
                     }
 
                     return groupList;
                 });
 
+                _groups = new ObservableCollection<SnapshotGroupItem>(list);
                 pnlLoading.Visibility = Visibility.Collapsed;
 
                 if (_groups.Count == 0)
@@ -111,8 +95,8 @@ namespace VANTAGE.Dialogs
                 }
                 else
                 {
-                    lvSnapshots.ItemsSource = _groups;
-                    lvSnapshots.Visibility = Visibility.Visible;
+                    sfSnapshots.ItemsSource = _groups;
+                    sfSnapshots.Visibility = Visibility.Visible;
                     btnDeleteAll.IsEnabled = true;
                 }
 
@@ -270,7 +254,6 @@ namespace VANTAGE.Dialogs
                 // Mark uploaded groups in the UI
                 foreach (var group in selectedGroups)
                     group.IsUploaded = true;
-                lvSnapshots.Items.Refresh();
 
                 AppLogger.Info(
                     $"Admin uploaded {uploadedCount} snapshots to ProgressLog",
@@ -439,27 +422,30 @@ namespace VANTAGE.Dialogs
                 foreach (var group in selectedGroups)
                 {
                     // Query distinct RespParty values and counts for this group's snapshots
-                    using var respCmd = azureConn.CreateCommand();
-                    respCmd.CommandText = @"
-                        SELECT RespParty, COUNT(*) as RecordCount
-                        FROM VMS_ProgressSnapshots
-                        WHERE AssignedTo = @username
-                          AND ProjectID = @projectId
-                          AND WeekEndDate = @weekEndDate
-                        GROUP BY RespParty";
-                    respCmd.Parameters.AddWithValue("@username", group.Username);
-                    respCmd.Parameters.AddWithValue("@projectId", group.ProjectID);
-                    respCmd.Parameters.AddWithValue("@weekEndDate", group.WeekEndDateStr);
-
-                    using var respReader = respCmd.ExecuteReader();
                     var respGroups = new List<(string RespParty, int Count)>();
-                    while (respReader.Read())
+                    using (var respCmd = azureConn.CreateCommand())
                     {
-                        string respParty = respReader.IsDBNull(0) ? "" : respReader.GetString(0);
-                        int count = respReader.GetInt32(1);
-                        respGroups.Add((respParty, count));
+                        respCmd.CommandText = @"
+                            SELECT RespParty, COUNT(*) as RecordCount
+                            FROM VMS_ProgressSnapshots
+                            WHERE AssignedTo = @username
+                              AND ProjectID = @projectId
+                              AND WeekEndDate = @weekEndDate
+                            GROUP BY RespParty";
+                        respCmd.Parameters.AddWithValue("@username", group.Username);
+                        respCmd.Parameters.AddWithValue("@projectId", group.ProjectID);
+                        respCmd.Parameters.AddWithValue("@weekEndDate", group.WeekEndDateStr);
+
+                        using (var respReader = respCmd.ExecuteReader())
+                        {
+                            while (respReader.Read())
+                            {
+                                string respParty = respReader.IsDBNull(0) ? "" : respReader.GetString(0);
+                                int count = respReader.GetInt32(1);
+                                respGroups.Add((respParty, count));
+                            }
+                        }
                     }
-                    respReader.Close();
 
                     foreach (var (respParty, count) in respGroups)
                     {
@@ -801,8 +787,22 @@ namespace VANTAGE.Dialogs
             }
         }
 
-        public bool IsUploaded { get; set; }
+        private bool _isUploaded;
+        public bool IsUploaded
+        {
+            get => _isUploaded;
+            set
+            {
+                if (_isUploaded != value)
+                {
+                    _isUploaded = value;
+                    OnPropertyChanged(nameof(IsUploaded));
+                    OnPropertyChanged(nameof(IsUploadedDisplay));
+                }
+            }
+        }
 
+        public string IsUploadedDisplay => IsUploaded ? "Yes" : "";
         public string WeekEndDateDisplay => WeekEndDate.ToString("MM/dd/yyyy");
 
         public event PropertyChangedEventHandler? PropertyChanged;

@@ -6,7 +6,14 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
-### March 7, 2026
+### March 7, 2026 (Admin Snapshots & Query Optimization)
+- **Fixed Progress Log upload tracking not saving:** Tracking records inserted by AdminSnapshotsDialog into `VMS_ProgressLogUploads` were silently failing due to a `using var` SqlDataReader not being disposed before subsequent INSERT commands on a non-MARS connection. Changed to block-scoped `using` to ensure reader disposal before tracking inserts. This caused uploads to not appear in ManageProgressLogDialog until REFRESH was clicked.
+- **Upgraded AdminSnapshotsDialog grid to Syncfusion SfDataGrid:** Replaced basic WPF ListView with Syncfusion `SfDataGrid` matching ManageProgressLogDialog's style — column header filters, sorting, resizable columns, checkbox column for selection.
+- **Optimized AdminSnapshotsDialog load query:** Combined two sequential Azure queries (snapshot groups + upload status check) into a single query with LEFT JOIN, eliminating a full round-trip and in-memory cross-referencing.
+- **Added Azure index for VMS_ProgressSnapshots:** New covering index `IX_ProgressSnapshots_Group_Lookup` on `(AssignedTo, ProjectID, WeekEndDate) INCLUDE (ProgDate)` auto-created via `EnsureAzureIndexes()`. Speeds up GROUP BY queries in both AdminSnapshotsDialog and ManageSnapshotsDialog.
+- **ObservableCollection for AdminSnapshotsDialog:** Switched `_groups` from `List<T>` to `ObservableCollection<T>` with proper `INotifyPropertyChanged` on `IsUploaded` property for live grid updates.
+
+### March 7, 2026 (Theme Generator)
 - **Theme Generator Script & Skill:** Created `Scripts/Generate-Theme.ps1` PowerShell script that generates a complete theme XAML (103 keys) from 4 hex colors (Primary, Accent, Secondary, Surface) + dark/light base. HSL color math for all derivations. Created `/create-theme` Claude Code skill (`.claude/skills/create-theme/skill.md`) that automates the full workflow: gather inputs, run script, register theme, build.
 - **Dark Forest theme:** New dark green theme generated with the theme builder. Primary `#18230F`, Accent `#1F7D53`, Secondary `#27391C`, Surface `#255F38`. Registered in ThemeManager, ThemeManagerDialog, and help manual.
 - **Independent highlight theme keys:** Decoupled 6 new theme keys from AccentColor so they can be tuned per theme without affecting other themes:

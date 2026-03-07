@@ -735,6 +735,10 @@ namespace VANTAGE
 
                 using var cmd = conn.CreateCommand();
                 cmd.CommandTimeout = 0; // index creation on large tables can take time
+                // Track how many indexes were created
+                int createdCount = 0;
+
+                // Index for ProgressLog delete performance
                 cmd.CommandText = @"
                     IF NOT EXISTS (SELECT 1 FROM sys.indexes
                                    WHERE name = 'IX_ProgressLog_Delete_Lookup'
@@ -742,20 +746,37 @@ namespace VANTAGE
                     BEGIN
                         CREATE NONCLUSTERED INDEX IX_ProgressLog_Delete_Lookup
                         ON VANTAGE_global_ProgressLog (Tag_ProjectID, UDF18, [Timestamp], Val_TimeStamp);
-                        SELECT 1; -- index was created
+                        SELECT 1;
                     END
                     ELSE
-                        SELECT 0; -- index already existed
+                        SELECT 0;
                 ";
-                var result = Convert.ToInt32(cmd.ExecuteScalar() ?? 0);
+                createdCount += Convert.ToInt32(cmd.ExecuteScalar() ?? 0);
+
+                // Index for snapshot GROUP BY queries (Admin Snapshots + Manage Snapshots dialogs)
+                cmd.CommandText = @"
+                    IF NOT EXISTS (SELECT 1 FROM sys.indexes
+                                   WHERE name = 'IX_ProgressSnapshots_Group_Lookup'
+                                   AND object_id = OBJECT_ID('VMS_ProgressSnapshots'))
+                    BEGIN
+                        CREATE NONCLUSTERED INDEX IX_ProgressSnapshots_Group_Lookup
+                        ON VMS_ProgressSnapshots (AssignedTo, ProjectID, WeekEndDate)
+                        INCLUDE (ProgDate);
+                        SELECT 1;
+                    END
+                    ELSE
+                        SELECT 0;
+                ";
+                createdCount += Convert.ToInt32(cmd.ExecuteScalar() ?? 0);
+
                 sw.Stop();
 
                 string elapsed = sw.Elapsed.TotalSeconds < 60
                     ? $"{sw.Elapsed.TotalSeconds:F1}s"
                     : $"{sw.Elapsed.TotalMinutes:F1}m";
 
-                if (result == 1)
-                    AppLogger.Info($"Created IX_ProgressLog_Delete_Lookup index in {elapsed}", "DatabaseSetup.EnsureAzureIndexes");
+                if (createdCount > 0)
+                    AppLogger.Info($"Created {createdCount} Azure index(es) in {elapsed}", "DatabaseSetup.EnsureAzureIndexes");
                 else
                     AppLogger.Info($"Azure indexes verified ({elapsed})", "DatabaseSetup.EnsureAzureIndexes");
             }
