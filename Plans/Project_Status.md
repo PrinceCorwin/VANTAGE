@@ -56,9 +56,11 @@
 
 ### Multi-Theme System
 
-**Current state:** Dark, Light, and Orchid themes with live switching (no restart). ~96 keys per theme. Full token reference in `Themes/THEME_GUIDE.md`.
+**Current state:** Dark, Light, Orchid, and Dark Forest themes with live switching (no restart). 103 keys per theme. Full token reference in `Themes/THEME_GUIDE.md`.
 
 **Architecture:** DynamicResource bindings throughout, `ThemeManager.ApplyTheme()` swaps dictionaries at runtime, fires `ThemeChanged` event. Views with Syncfusion grids re-apply `SfSkinManager.SetTheme()` on their grid controls via the event. See THEME_GUIDE.md for full details on creating new themes and technical constraints.
+
+**Theme Generator:** `Scripts/Generate-Theme.ps1` generates a complete theme XAML from 4 hex colors (Primary, Accent, Secondary, Surface) + dark/light base. Claude Code skill `/create-theme` automates the full workflow. Status button colors are hardcoded per base type (dark/light) to stay consistent. Independent highlight keys (`ScanButtonForeground`, `SummaryBudgetForeground`, `SummaryEarnedForeground`, `SummaryPercentForeground`, `SidebarButtonHoverBorder`, `SidebarButtonHoverBackground`) allow per-theme tuning without affecting other themes.
 
 ### Progress Book Module
 - Phases 1-6 complete: Data models, repository, layout builder UI, PDF generator, live preview, generate dialog
@@ -112,8 +114,7 @@
 
 
 ### Medium Priority
-- **Theme System Refactor** — Phases 1-7 complete. Live switching works, tokens split, guide written. See `Themes/THEME_GUIDE.md`.
-- **Claude Skill: Create Theme** — Build a Claude Code skill that reads `Themes/THEME_GUIDE.md`, accepts 3 palette colors + light/dark base from user, and generates a new theme file. Add to `.claude/` skills.
+- **Theme System Refactor** — Phases 1-7 complete. Live switching works, tokens split, guide written. Theme generator script and `/create-theme` skill complete. See `Themes/THEME_GUIDE.md`.
 - **Create Activities Feature** — File menu item exists but not implemented. Needs discussion on functionality: possibly AI-assisted (user prompts what they need, records generated), or structured wizard, or template-based. Currently shows "coming soon" placeholder.
 - **MSI/MSIX installer** — Replace custom installer with MSI (WiX Toolset) or MSIX packaging to get genuine Windows install integration. Current custom installer registers via registry but Windows Search won't execute `UninstallString` directly — only MSI and UWP/MSIX apps get direct uninstall from search context menu. Current setup works via Settings > Apps.
 - **User-editable header template for WP** — Allow customizing header layout

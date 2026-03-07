@@ -16,6 +16,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="20"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -76,6 +77,7 @@
                      Checked="RbTheme_Checked"
                      Foreground="{DynamicResource ForegroundColor}"
                      FontSize="14"
+                     Margin="0,0,0,10"
                      ToolTip="Light purple theme with orchid accents">
             <StackPanel Orientation="Horizontal">
                 <Border Width="20" Height="20"
@@ -88,15 +90,34 @@
             </StackPanel>
         </RadioButton>
 
+        <!-- Dark Forest theme radio button -->
+        <RadioButton x:Name="rbDarkForest"
+                     Grid.Row="5"
+                     GroupName="Theme"
+                     Checked="RbTheme_Checked"
+                     Foreground="{DynamicResource ForegroundColor}"
+                     FontSize="14"
+                     ToolTip="Dark green forest theme with emerald accents">
+            <StackPanel Orientation="Horizontal">
+                <Border Width="20" Height="20"
+                        Background="#18230F"
+                        BorderBrush="#1F7D53"
+                        BorderThickness="2"
+                        CornerRadius="3"
+                        Margin="0,0,8,0"/>
+                <TextBlock Text="Dark Forest" VerticalAlignment="Center"/>
+            </StackPanel>
+        </RadioButton>
+
         <!-- Info text -->
-        <TextBlock Grid.Row="6"
+        <TextBlock Grid.Row="7"
                    Text="Theme is applied instantly."
                    Foreground="{DynamicResource TextColorSecondary}"
                    FontSize="12"
                    TextWrapping="Wrap"/>
 
         <!-- Close button -->
-        <Button Grid.Row="8"
+        <Button Grid.Row="9"
                 Content="Close"
                 Width="80"
                 HorizontalAlignment="Right"

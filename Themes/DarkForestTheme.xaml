@@ -1,4 +1,3 @@
-
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
@@ -7,148 +6,151 @@
     <sys:Double xmlns:sys="clr-namespace:System;assembly=mscorlib" x:Key="FontSizeNormal">14</sys:Double>
 
     <!-- === COLOR PALETTE === -->
-    <SolidColorBrush x:Key="BackgroundColor" Color="#FFF6F0FA"/>
-    <SolidColorBrush x:Key="DarkBackgroundColor" Color="#FFE8DCF0"/>
-    <SolidColorBrush x:Key="DarkestBackgroundColor" Color="#FF2D1B36"/>
-    <SolidColorBrush x:Key="ForegroundColor" Color="#FF2D1B36"/>
-    <SolidColorBrush x:Key="TextColorSecondary" Color="#FF7B6B8A"/>
-    <SolidColorBrush x:Key="AccentColor" Color="#FFE040FB"/>
-    <SolidColorBrush x:Key="BorderColor" Color="#FFD4C4E0"/>
-    <SolidColorBrush x:Key="DisabledColor" Color="#FFBCAFC8"/>
+    <!-- Generated from: Primary=#18230F, Accent=#1F7D53, Secondary=#27391C, Surface=#255F38, Base=Dark -->
+    <SolidColorBrush x:Key="BackgroundColor" Color="#1D2B12"/>
+    <SolidColorBrush x:Key="DarkBackgroundColor" Color="#11190B"/>
+    <SolidColorBrush x:Key="DarkestBackgroundColor" Color="#0C1208"/>
+    <SolidColorBrush x:Key="ForegroundColor" Color="#E8EAED"/>
+    <SolidColorBrush x:Key="TextColorSecondary" Color="#B0B0B0"/>
+    <SolidColorBrush x:Key="AccentColor" Color="#1F7D53"/>
+    <SolidColorBrush x:Key="BorderColor" Color="#245C36"/>
+    <SolidColorBrush x:Key="DisabledColor" Color="#6A6A6A"/>
 
     <!-- === WINDOW ELEMENTS === -->
-    <SolidColorBrush x:Key="WindowBackground" Color="#FFFBF7FD"/>
-    <SolidColorBrush x:Key="ControlBackground" Color="#FFFFFFFF"/>
-    <SolidColorBrush x:Key="ControlBackgroundGreen" Color="#FF1B3D1B"/>
-    <SolidColorBrush x:Key="ControlBackgroundRed" Color="#FF3D1B1B"/>
-    <SolidColorBrush x:Key="ControlForeground" Color="#FF2D1B36"/>
-    <SolidColorBrush x:Key="ControlBorder" Color="#FFD4C4E0"/>
-    <SolidColorBrush x:Key="ControlHoverBackground" Color="#FFEDE4F5"/>
-    <SolidColorBrush x:Key="ControlPressedBackground" Color="#FFD4C4E0"/>
+    <SolidColorBrush x:Key="WindowBackground" Color="#1B2711"/>
+    <SolidColorBrush x:Key="ControlBackground" Color="#183E25"/>
+    <SolidColorBrush x:Key="ControlBackgroundGreen" Color="#012a00"/>
+    <SolidColorBrush x:Key="ControlBackgroundRed" Color="#2a0000"/>
+    <SolidColorBrush x:Key="ControlForeground" Color="#E8EAED"/>
+    <SolidColorBrush x:Key="ControlBorder" Color="#245C36"/>
+    <SolidColorBrush x:Key="ControlHoverBackground" Color="#1F5130"/>
+    <SolidColorBrush x:Key="ControlPressedBackground" Color="#14331E"/>
 
     <!-- === CONTENT/DIALOG KEYS (used by FindReplaceDialog, etc.) === -->
-    <SolidColorBrush x:Key="ContentBackground" Color="#FFFFFFFF"/>
-    <SolidColorBrush x:Key="ContentForeground" Color="#FF2D1B36"/>
-    <SolidColorBrush x:Key="PrimaryBackground" Color="#FF7B1FA2"/>
+    <SolidColorBrush x:Key="ContentBackground" Color="#183E25"/>
+    <SolidColorBrush x:Key="ContentForeground" Color="#E8EAED"/>
+    <SolidColorBrush x:Key="PrimaryBackground" Color="#1F7D53"/>
     <SolidColorBrush x:Key="PrimaryForeground" Color="#FFFFFF"/>
-    <SolidColorBrush x:Key="ProgressBarTrackColor" Color="#FFD4C4E0"/>
-    <SolidColorBrush x:Key="GridAlternatingRowBackground" Color="#FFF6F0FA"/>
+    <SolidColorBrush x:Key="ProgressBarTrackColor" Color="#1D492B"/>
+    <SolidColorBrush x:Key="GridAlternatingRowBackground" Color="#0C1208"/>
 
     <!-- === SPLIT TOKEN KEYS (for independent per-region tuning) === -->
-    <SolidColorBrush x:Key="ProgressBarAccent" Color="#FFE040FB"/>
-    <SolidColorBrush x:Key="ToggleCheckedBackground" Color="#FFE040FB"/>
-    <SolidColorBrush x:Key="DialogBackground" Color="#FFFFFFFF"/>
-    <SolidColorBrush x:Key="GridCellBackground" Color="#FFFFFFFF"/>
-    <SolidColorBrush x:Key="DialogForeground" Color="#FF2D1B36"/>
-    <SolidColorBrush x:Key="GridCellForeground" Color="#FF2D1B36"/>
+    <SolidColorBrush x:Key="ProgressBarAccent" Color="#1F7D53"/>
+    <SolidColorBrush x:Key="ToggleCheckedBackground" Color="#1F7D53"/>
+    <SolidColorBrush x:Key="DialogBackground" Color="#183E25"/>
+    <SolidColorBrush x:Key="GridCellBackground" Color="#233319"/>
+    <SolidColorBrush x:Key="DialogForeground" Color="#E8EAED"/>
+    <SolidColorBrush x:Key="GridCellForeground" Color="#E8EAED"/>
 
     <!-- === DATAGRID COLORS === -->
-    <SolidColorBrush x:Key="GridHeaderBackground" Color="#FF4A148C"/>
+    <SolidColorBrush x:Key="GridHeaderBackground" Color="#1C2914"/>
 
     <!-- === STATUS COLORS === -->
     <SolidColorBrush x:Key="StatusGreen" Color="#FF27AE60"/>
-    <SolidColorBrush x:Key="StatusGreenBgBtn" Color="#062010"/>
-    <SolidColorBrush x:Key="StatusGreenFgBtn" Color="#FF3DD975"/>
-    <SolidColorBrush x:Key="StatusYellow" Color="#FF8B7D26"/>
-    <SolidColorBrush x:Key="StatusYellowBg" Color="#FFF5F0D0"/>
-    <SolidColorBrush x:Key="StatusYellowFg" Color="#FF2D1B36"/>
-    <SolidColorBrush x:Key="StatusRed" Color="#FFB63434"/>
-    <SolidColorBrush x:Key="StatusRedBg" Color="#FFFDE8E8"/>
-    <SolidColorBrush x:Key="StatusRedBgBtn" Color="#200808"/>
-    <SolidColorBrush x:Key="StatusRedFgBtn" Color="#FFDC5050"/>
-    <SolidColorBrush x:Key="StatusGoldBg" Color="#FFF5E6B0"/>
-    <SolidColorBrush x:Key="StatusInProgress" Color="#FF7B1FA2"/>
-    <SolidColorBrush x:Key="StatusInProgressBgBtn" Color="#201800"/>
-    <SolidColorBrush x:Key="StatusInProgressFgBtn" Color="#FFFFC830"/>
+    <SolidColorBrush x:Key="StatusGreenBgBtn" Color="#8027AE60"/>
+    <SolidColorBrush x:Key="StatusGreenFgBtn" Color="#E8EAED"/>
+    <SolidColorBrush x:Key="StatusYellow" Color="#5b4b26"/>
+    <SolidColorBrush x:Key="StatusYellowBg" Color="#5b4b26"/>
+    <SolidColorBrush x:Key="StatusYellowFg" Color="#E8EAED"/>
+    <SolidColorBrush x:Key="StatusRed" Color="#b63434"/>
+    <LinearGradientBrush x:Key="StatusRedBg" StartPoint="0,0" EndPoint="1,0">
+        <GradientStop Color="#1D2B12" Offset="0.0"/>
+        <GradientStop Color="#5b2626" Offset="1.0"/>
+    </LinearGradientBrush>
+    <SolidColorBrush x:Key="StatusRedBgBtn" Color="#80B63434"/>
+    <SolidColorBrush x:Key="StatusRedFgBtn" Color="#E8EAED"/>
+    <SolidColorBrush x:Key="StatusGoldBg" Color="#4d4a00"/>
+    <SolidColorBrush x:Key="StatusInProgress" Color="#FFFFB400"/>
+    <SolidColorBrush x:Key="StatusInProgressBgBtn" Color="#80FFB400"/>
+    <SolidColorBrush x:Key="StatusInProgressFgBtn" Color="#E8EAED"/>
     <SolidColorBrush x:Key="StatusNotStarted" Color="#FF95A5A6"/>
 
     <!-- === ACTIVE FILTER BORDER === -->
-    <SolidColorBrush x:Key="ActiveFilterBorderColor" Color="#FFE040FB"/>
+    <SolidColorBrush x:Key="ActiveFilterBorderColor" Color="#1F7D53"/>
 
     <!-- === TOOLBAR COLORS === -->
-    <SolidColorBrush x:Key="ToolbarBackground" Color="#FFEDE4F5"/>
+    <SolidColorBrush x:Key="ToolbarBackground" Color="#233319"/>
 
     <!-- === STATUSBAR COLORS === -->
-    <SolidColorBrush x:Key="StatusBarBackground" Color="#FFF0E8F5"/>
-    <SolidColorBrush x:Key="StatusBarForeground" Color="#FF5A3D6E"/>
+    <SolidColorBrush x:Key="StatusBarBackground" Color="#1B2711"/>
+    <SolidColorBrush x:Key="StatusBarForeground" Color="#B0B0B0"/>
 
     <!-- === NON-OWNED RECORDS COLORS === -->
-    <SolidColorBrush x:Key="NotOwnedRowBackground" Color="#FFF3E8FF"/>
-    <SolidColorBrush x:Key="NotOwnedRowForeground" Color="#FF888888"/>
+    <SolidColorBrush x:Key="NotOwnedRowBackground" Color="#080C06"/>
+    <SolidColorBrush x:Key="NotOwnedRowForeground" Color="#629047"/>
 
     <!-- === ACTION BUTTON COLORS === -->
     <!-- Green buttons: Add, Submit, Save, Restore -->
-    <SolidColorBrush x:Key="ButtonSuccessBackground" Color="#FF2D7D46"/>
-    <SolidColorBrush x:Key="ButtonSuccessBorder" Color="#FF2D7D46"/>
-    <SolidColorBrush x:Key="ButtonSuccessHover" Color="#FF359954"/>
+    <SolidColorBrush x:Key="ButtonSuccessBackground" Color="#2D7D46"/>
+    <SolidColorBrush x:Key="ButtonSuccessBorder" Color="#2D7D46"/>
+    <SolidColorBrush x:Key="ButtonSuccessHover" Color="#359954"/>
 
     <!-- Red buttons: Delete, Remove, Destructive actions -->
-    <SolidColorBrush x:Key="ButtonDangerBackground" Color="#FFB33A3A"/>
-    <SolidColorBrush x:Key="ButtonDangerBorder" Color="#FFB33A3A"/>
-    <SolidColorBrush x:Key="ButtonDangerHover" Color="#FFCC4444"/>
+    <SolidColorBrush x:Key="ButtonDangerBackground" Color="#B33A3A"/>
+    <SolidColorBrush x:Key="ButtonDangerBorder" Color="#B33A3A"/>
+    <SolidColorBrush x:Key="ButtonDangerHover" Color="#CC4444"/>
 
-    <!-- Purple buttons: Primary actions -->
-    <SolidColorBrush x:Key="ButtonPrimaryBackground" Color="#FF7B1FA2"/>
-    <SolidColorBrush x:Key="ButtonPrimaryBorder" Color="#FF7B1FA2"/>
-    <SolidColorBrush x:Key="ButtonPrimaryHover" Color="#FF9C27B0"/>
+    <!-- Accent buttons: Primary actions -->
+    <SolidColorBrush x:Key="ButtonPrimaryBackground" Color="#1F7D53"/>
+    <SolidColorBrush x:Key="ButtonPrimaryBorder" Color="#1F7D53"/>
+    <SolidColorBrush x:Key="ButtonPrimaryHover" Color="#000000"/>
 
     <!-- === OVERLAY COLORS === -->
-    <SolidColorBrush x:Key="OverlayBackground" Color="#AAFFFFFF"/>
-    <SolidColorBrush x:Key="OverlayText" Color="#FF2D1B36"/>
-    <SolidColorBrush x:Key="OverlayTextSecondary" Color="#FF7B6B8A"/>
-    <!-- Note: TrackColor on SfLinearProgressBar doesn't accept resource binding -->
+    <SolidColorBrush x:Key="OverlayBackground" Color="#DE000000"/>
+    <SolidColorBrush x:Key="OverlayText" Color="White"/>
+    <SolidColorBrush x:Key="OverlayTextSecondary" Color="#CCCCCC"/>
 
     <!-- === ERROR/WARNING COLORS === -->
-    <SolidColorBrush x:Key="ErrorText" Color="#FFE74C3C"/>
-    <SolidColorBrush x:Key="WarningText" Color="#FFD4A017"/>
-    <SolidColorBrush x:Key="WarningHighlight" Color="#FFFF6B6B"/>
+    <SolidColorBrush x:Key="ErrorText" Color="#E74C3C"/>
+    <SolidColorBrush x:Key="WarningText" Color="#FFC107"/>
+    <SolidColorBrush x:Key="WarningHighlight" Color="#FF6B6B"/>
     <SolidColorBrush x:Key="WarningBoxBg" Color="#3D2D00"/>
     <SolidColorBrush x:Key="WarningBoxBorder" Color="#FFB400"/>
 
     <!-- === ANALYSIS MODULE COLORS (% Complete ranges) === -->
-    <SolidColorBrush x:Key="AnalysisRedBg" Color="#FFB33A3A"/>       <!-- 0-25% -->
-    <SolidColorBrush x:Key="AnalysisOrangeBg" Color="#FFCC7000"/>    <!-- >25-50% -->
-    <SolidColorBrush x:Key="AnalysisYellowBg" Color="#FFB8A000"/>    <!-- >50-75% -->
-    <SolidColorBrush x:Key="AnalysisGreenBg" Color="#FF2D7D46"/>     <!-- >75-100% -->
-    <SolidColorBrush x:Key="WarningHighlightBackground" Color="#44FF6B6B"/>
+    <SolidColorBrush x:Key="AnalysisRedBg" Color="#FFB33A3A"/>
+    <SolidColorBrush x:Key="AnalysisOrangeBg" Color="#FFCC7000"/>
+    <SolidColorBrush x:Key="AnalysisYellowBg" Color="#FFB8A000"/>
+    <SolidColorBrush x:Key="AnalysisGreenBg" Color="#FF2D7D46"/>
+    <SolidColorBrush x:Key="WarningHighlightBackground" Color="#45FF6B6B"/>
 
     <!-- === UI ELEMENT COLORS === -->
-    <SolidColorBrush x:Key="SidebarBackground" Color="#FFF3EDF7"/>
-    <SolidColorBrush x:Key="SidebarBorder" Color="#FFD4C4E0"/>
-    <SolidColorBrush x:Key="DividerColor" Color="#FFD4C4E0"/>
-    <SolidColorBrush x:Key="SplitterDots" Color="#FFBCAFC8"/>
-    <SolidColorBrush x:Key="DisabledText" Color="#FFBCAFC8"/>
+    <SolidColorBrush x:Key="SidebarBackground" Color="#18321A"/>
+    <SolidColorBrush x:Key="SidebarBorder" Color="#27633A"/>
+    <SolidColorBrush x:Key="DividerColor" Color="#27633A"/>
+    <SolidColorBrush x:Key="SplitterDots" Color="#399357"/>
+    <SolidColorBrush x:Key="DisabledText" Color="#888888"/>
 
     <!-- === TOOLBAR BUTTON COLORS === -->
     <SolidColorBrush x:Key="ToolbarForeground" Color="#E8EAED"/>
-    <SolidColorBrush x:Key="ToolbarHoverBackground" Color="#FF5C1780"/>
-    <SolidColorBrush x:Key="ToolbarHoverForeground" Color="#FFFFFFFF"/>
+    <SolidColorBrush x:Key="ToolbarHoverBackground" Color="#334B25"/>
+    <SolidColorBrush x:Key="ToolbarHoverForeground" Color="#FFFFFF"/>
 
     <!-- === GRID HEADER COLORS === -->
-    <SolidColorBrush x:Key="GridHeaderForeground" Color="#FFE0D0F0"/>
-    <Color x:Key="FilterIconColor">#FFD0C0E0</Color>
-    <Color x:Key="FilterIconActiveColor">#FFFF4444</Color>
+    <SolidColorBrush x:Key="GridHeaderForeground" Color="#FFFFFF"/>
+    <Color x:Key="FilterIconColor">#808080</Color>
+    <Color x:Key="FilterIconActiveColor">#FF4444</Color>
 
     <!-- === ACTION BUTTON COLORS === -->
-    <SolidColorBrush x:Key="ActionButtonForeground" Color="#FFE0D0F0"/>
-    <SolidColorBrush x:Key="ActionFilterForeground" Color="#FF2D1B36"/>
+    <SolidColorBrush x:Key="ActionButtonForeground" Color="#E8EAED"/>
+    <SolidColorBrush x:Key="ActionFilterForeground" Color="#E8EAED"/>
 
     <!-- === ELEVATION/SHADOW === -->
-    <SolidColorBrush x:Key="SidebarButtonBorder" Color="#FFBCAFC8"/>
-    <SolidColorBrush x:Key="ButtonHoverForeground" Color="#FFE040FB"/>
+    <SolidColorBrush x:Key="SidebarButtonBorder" Color="#2F7947"/>
+    <SolidColorBrush x:Key="ButtonHoverForeground" Color="#E8EAED"/>
     <Color x:Key="ButtonShadowColor">#000000</Color>
-    <sys:Double xmlns:sys="clr-namespace:System;assembly=mscorlib" x:Key="ButtonShadowOpacity">0.15</sys:Double>
+    <sys:Double xmlns:sys="clr-namespace:System;assembly=mscorlib" x:Key="ButtonShadowOpacity">0.85</sys:Double>
     <sys:Double xmlns:sys="clr-namespace:System;assembly=mscorlib" x:Key="TextShadowDepth">3</sys:Double>
     <sys:Double xmlns:sys="clr-namespace:System;assembly=mscorlib" x:Key="TextShadowBlurRadius">1</sys:Double>
-    <Color x:Key="TextShadowColor">#CCCCCC</Color>
-    <SolidColorBrush x:Key="SummaryLabelColor" Color="#FF2D1B36"/>
-    <SolidColorBrush x:Key="SidebarButtonHoverBorder" Color="#FFE040FB"/>
-    <SolidColorBrush x:Key="SidebarButtonHoverBackground" Color="#FFEDE4F5"/>
-    <SolidColorBrush x:Key="ScanButtonForeground" Color="#FFE040FB"/>
-    <SolidColorBrush x:Key="SummaryBudgetForeground" Color="#FFE040FB"/>
+    <Color x:Key="TextShadowColor">#000000</Color>
+    <SolidColorBrush x:Key="SummaryLabelColor" Color="#B0B0B0"/>
+    <SolidColorBrush x:Key="SidebarButtonHoverBorder" Color="#1F7D53"/>
+    <SolidColorBrush x:Key="SidebarButtonHoverBackground" Color="#1F5130"/>
+    <SolidColorBrush x:Key="ScanButtonForeground" Color="#FF009AFC"/>
+    <SolidColorBrush x:Key="SummaryBudgetForeground" Color="#FF009AFC"/>
     <SolidColorBrush x:Key="SummaryEarnedForeground" Color="#FF27AE60"/>
-    <SolidColorBrush x:Key="SummaryPercentForeground" Color="#FF7B1FA2"/>
-    <sys:Double xmlns:sys="clr-namespace:System;assembly=mscorlib" x:Key="TextShadowOpacity">0.3</sys:Double>
+    <SolidColorBrush x:Key="SummaryPercentForeground" Color="#FFFFB400"/>
+    <sys:Double xmlns:sys="clr-namespace:System;assembly=mscorlib" x:Key="TextShadowOpacity">0.85</sys:Double>
 
     <!-- ========================================= -->
     <!-- === DEFAULT BUTTON STYLE === -->

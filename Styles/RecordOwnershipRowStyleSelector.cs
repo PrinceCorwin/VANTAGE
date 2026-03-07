@@ -36,10 +36,11 @@ namespace VANTAGE.Styles
 
             var style = new Style(typeof(VirtualizingCellsControl));
 
-            // Apply alternating background for all rows
-            if (dataRow != null && dataRow.RowIndex % 2 != 0)
+            // Apply row backgrounds — even rows use GridCellBackground, odd rows use GridAlternatingRowBackground
+            if (dataRow != null)
             {
-                style.Setters.Add(new Setter(VirtualizingCellsControl.BackgroundProperty, Application.Current.Resources["GridAlternatingRowBackground"]));
+                var bgKey = dataRow.RowIndex % 2 != 0 ? "GridAlternatingRowBackground" : "GridCellBackground";
+                style.Setters.Add(new Setter(VirtualizingCellsControl.BackgroundProperty, Application.Current.Resources[bgKey]));
             }
 
             // Apply dimmed foreground for non-owned records

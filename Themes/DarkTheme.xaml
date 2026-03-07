@@ -145,6 +145,12 @@
     <sys:Double xmlns:sys="clr-namespace:System;assembly=mscorlib" x:Key="TextShadowBlurRadius">1</sys:Double>
     <Color x:Key="TextShadowColor">#000000</Color>
     <SolidColorBrush x:Key="SummaryLabelColor" Color="#FFB0B0B0"/>
+    <SolidColorBrush x:Key="SidebarButtonHoverBorder" Color="#FF009AFC"/>
+    <SolidColorBrush x:Key="SidebarButtonHoverBackground" Color="#FF333333"/>
+    <SolidColorBrush x:Key="ScanButtonForeground" Color="#FF009AFC"/>
+    <SolidColorBrush x:Key="SummaryBudgetForeground" Color="#FF009AFC"/>
+    <SolidColorBrush x:Key="SummaryEarnedForeground" Color="#FF27AE60"/>
+    <SolidColorBrush x:Key="SummaryPercentForeground" Color="#FFFFB400"/>
     <sys:Double xmlns:sys="clr-namespace:System;assembly=mscorlib" x:Key="TextShadowOpacity">0.85</sys:Double>
 
     <!-- ========================================= -->

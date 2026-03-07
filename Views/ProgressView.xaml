@@ -60,7 +60,8 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource AccentColor}"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource SidebarButtonHoverBorder}"/>
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource SidebarButtonHoverBackground}"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter TargetName="border" Property="Background" Value="{DynamicResource ControlBorder}"/>
@@ -618,7 +619,7 @@
                                 Width="60"
                                 Margin="5,0"
                                 Background="{DynamicResource ControlBackground}"
-                                Foreground="{DynamicResource AccentColor}"
+                                Foreground="{DynamicResource ScanButtonForeground}"
                                 BorderBrush="{DynamicResource ControlBorder}"
                                 BorderThickness="1"
                                 Padding="5"
@@ -790,7 +791,7 @@
                                     </TextBlock.Effect>
                                 </TextBlock>
                                 <TextBlock Text="{Binding BudgetedMHs, StringFormat=N2}"
-                                           Foreground="{DynamicResource AccentColor}"
+                                           Foreground="{DynamicResource SummaryBudgetForeground}"
                                            FontSize="14"
                                            FontWeight="Bold"
                                            VerticalAlignment="Center"
@@ -816,7 +817,7 @@
                                     </TextBlock.Effect>
                                 </TextBlock>
                                 <TextBlock Text="{Binding EarnedMHs, StringFormat=N2}"
-                                           Foreground="{DynamicResource StatusGreen}"
+                                           Foreground="{DynamicResource SummaryEarnedForeground}"
                                            FontSize="14"
                                            FontWeight="Bold"
                                            VerticalAlignment="Center"
@@ -842,7 +843,7 @@
                                     </TextBlock.Effect>
                                 </TextBlock>
                                 <TextBlock Text="{Binding PercentComplete, StringFormat='{}{0:N2}%'}"
-                                           Foreground="{DynamicResource StatusInProgress}"
+                                           Foreground="{DynamicResource SummaryPercentForeground}"
                                            FontSize="14"
                                            FontWeight="Bold"
                                            VerticalAlignment="Center"

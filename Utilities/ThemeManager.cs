@@ -16,7 +16,8 @@ namespace VANTAGE.Utilities
         {
             { "Dark", "FluentDark" },
             { "Light", "FluentLight" },
-            { "Orchid", "FluentLight" }
+            { "Orchid", "FluentLight" },
+            { "DarkForest", "FluentDark" }
         };
 
         // Syncfusion MSControl dictionaries that must be swapped per theme
@@ -25,7 +26,7 @@ namespace VANTAGE.Utilities
             "Button", "Window", "StatusBar", "TabControl"
         };
 
-        public static readonly string[] AvailableThemes = { "Dark", "Light", "Orchid" };
+        public static readonly string[] AvailableThemes = { "Dark", "Light", "Orchid", "DarkForest" };
 
         // Current active theme name ("Dark" or "Light")
         public static string CurrentTheme { get; private set; } = "Dark";

@@ -23,6 +23,7 @@ WPF application for Summit Industrial replacing the legacy MS Access system ("Ol
 
 ## Development Approach
 - Never modify the AGENTS.md file or add it to gitignore file.
+- **All generated/written files must use CRLF line endings** — Visual Studio shows an annoying "Inconsistent Line Endings" dialog when files have mixed or LF-only endings. When writing files via PowerShell, use `[System.IO.File]::WriteAllText()` with CRLF-normalized content, not `Out-File`. When using the Write tool, ensure content uses `\r\n`.
 - ONE change at a time, test before proceeding
 - No quick fixes - proper architectural solutions
 - Delete/refactor legacy code when no longer relevant

@@ -19,6 +19,8 @@ namespace VANTAGE.Dialogs
                 rbLight.IsChecked = true;
             else if (ThemeManager.CurrentTheme == "Orchid")
                 rbOrchid.IsChecked = true;
+            else if (ThemeManager.CurrentTheme == "DarkForest")
+                rbDarkForest.IsChecked = true;
             else
                 rbDark.IsChecked = true;
 
@@ -31,6 +33,7 @@ namespace VANTAGE.Dialogs
             if (!_initialized) return;
 
             string selectedTheme = rbOrchid.IsChecked == true ? "Orchid"
+                : rbDarkForest.IsChecked == true ? "DarkForest"
                 : rbLight.IsChecked == true ? "Light" : "Dark";
 
             if (selectedTheme != ThemeManager.CurrentTheme)

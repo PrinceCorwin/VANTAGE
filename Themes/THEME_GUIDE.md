@@ -4,25 +4,38 @@ Reference for creating and maintaining themes. Each theme is a single ResourceDi
 
 ## Architecture Overview
 
-- **Theme files:** `Themes/DarkTheme.xaml`, `LightTheme.xaml`, `OrchidTheme.xaml`
+- **Theme files:** `Themes/DarkTheme.xaml`, `LightTheme.xaml`, `OrchidTheme.xaml`, `DarkForestTheme.xaml`
 - **Shared styles:** `Themes/SharedStyles.xaml` — cross-theme styles (RoundedButtonStyle, PrimaryButtonStyle). NOT swapped on theme change.
 - **Engine:** `Utilities/ThemeManager.cs` — swaps ResourceDictionaries at runtime, fires `ThemeChanged` event
+- **Generator:** `Scripts/Generate-Theme.ps1` — generates a theme XAML from 4 hex colors + dark/light base
 - **Syncfusion base themes:** FluentDark (for dark backgrounds), FluentLight (for light backgrounds)
 - **Live switching:** Themes apply instantly. No restart required.
 
 ## How to Create a New Theme
 
-1. **Copy an existing theme file** — Use `DarkTheme.xaml` for dark themes, `LightTheme.xaml` for light themes. Name it `Themes/{Name}Theme.xaml` (e.g. `OceanTheme.xaml`).
+Use the `/create-theme` skill or follow these manual steps:
 
-2. **Adjust all color values** — Every key must be present. See the Token Reference below for what each key controls.
+1. **Run the generator script** (preferred) or copy an existing theme file:
+   ```
+   powershell -ExecutionPolicy Bypass -File "Scripts/Generate-Theme.ps1" -ThemeName "<Name>" -Base "<Dark|Light>" -PrimaryHex "<#hex>" -AccentHex "<#hex>" -SecondaryHex "<#hex>" -SurfaceHex "<#hex>"
+   ```
+   - **Primary** — background tone
+   - **Accent** — interactive highlights (buttons, links, toggles)
+   - **Secondary** — structural chrome (grid headers, toolbar)
+   - **Surface** — controls, cards, dialogs, inputs
 
-3. **Register in ThemeManager.cs:**
+2. **Register in ThemeManager.cs:**
    - Add to `ThemeMap`: `{ "Ocean", "FluentDark" }` (or `"FluentLight"` for light themes)
-   - Add to `AvailableThemes` array: `{ "Dark", "Light", "Orchid", "Ocean" }`
+   - Add to `AvailableThemes` array
 
-4. **Add radio button in ThemeManagerDialog.xaml** — Copy an existing radio button block and update the name/label.
+3. **Add radio button in ThemeManagerDialog.xaml/.cs** — Copy an existing radio button block, update name/label/row, update code-behind selection logic.
 
-5. **Update Help/manual.html** — Add the new theme to the Themes section.
+4. **Update Help/manual.html** — Add the new theme to the Themes section.
+
+5. **Manual tuning** — After generating, review and adjust these keys that often need per-theme attention:
+   - `ScanButtonForeground`, `SummaryBudgetForeground` — may need a brighter color if accent is muted
+   - `SidebarButtonHoverBorder`, `SidebarButtonHoverBackground` — hover visibility
+   - `GridCellBackground`, `GridAlternatingRowBackground` — data row colors
 
 6. **Build and test** — Switch to the new theme. Verify all views, dialogs, hover/pressed/disabled states.
 
@@ -34,6 +47,18 @@ Reference for creating and maintaining themes. Each theme is a single ResourceDi
 | Light backgrounds | `FluentLight` | Grid chrome, scrollbars, headers render for light bg |
 
 The Syncfusion base theme controls SfDataGrid headers, scrollbars, cell selection, and other Syncfusion-specific UI that our theme keys don't reach. Choose the base that matches your background luminance.
+
+## Important Rules
+
+### Status Buttons Are Locked Per Base Type
+The Complete, In Progress, and Not Started quick filter buttons must look **identical** across all themes of the same base type (dark or light). These are functional/semantic colors, not decorative. **Never derive them from the accent color or any palette color.**
+
+All dark themes must match `DarkTheme.xaml` values. All light themes must match `LightTheme.xaml` values. The generator script hardcodes these automatically.
+
+Locked keys: `StatusGreen`, `StatusGreenBgBtn`, `StatusGreenFgBtn`, `StatusYellow`, `StatusYellowBg`, `StatusYellowFg`, `StatusRed`, `StatusRedBg`, `StatusRedBgBtn`, `StatusRedFgBtn`, `StatusGoldBg`, `StatusInProgress`, `StatusInProgressBgBtn`, `StatusInProgressFgBtn`, `StatusNotStarted`
+
+### Grid Row Backgrounds
+`GridCellBackground` controls the primary data row background and `GridAlternatingRowBackground` controls alternating rows. Both are applied via `RecordOwnershipRowStyleSelector` in code-behind. The Syncfusion default row background is NOT used — these keys fully control row colors.
 
 ## Token Reference
 
@@ -50,10 +75,10 @@ All keys are `SolidColorBrush` unless noted otherwise.
 |-----|-------------|
 | `BackgroundColor` | Primary app background (main content areas) |
 | `DarkBackgroundColor` | Darker background variant |
-| `DarkestBackgroundColor` | Darkest background (rarely used) |
+| `DarkestBackgroundColor` | Darkest background (main window top toolbar) |
 | `ForegroundColor` | Primary text color — used everywhere for labels, headers, inputs |
 | `TextColorSecondary` | Muted/secondary text |
-| `AccentColor` | Primary accent — links, active highlights, accent text, button borders on hover |
+| `AccentColor` | Primary accent — links, active highlights, accent text |
 | `BorderColor` | Default control borders |
 | `DisabledColor` | Disabled control foreground (used in button style IsEnabled=False triggers) |
 
@@ -81,7 +106,7 @@ All keys are `SolidColorBrush` unless noted otherwise.
 | Key | Description |
 |-----|-------------|
 | `ProgressBarTrackColor` | SfLinearProgressBar track (the unfilled portion) |
-| `GridAlternatingRowBackground` | Alternating row color in data grids |
+| `GridAlternatingRowBackground` | Alternating data row background (applied via RowStyleSelector) |
 
 ### Split Token Keys (for independent per-region tuning)
 | Key | Derives from | Description |
@@ -89,7 +114,7 @@ All keys are `SolidColorBrush` unless noted otherwise.
 | `ProgressBarAccent` | AccentColor | SfLinearProgressBar fill color (ProgressColor) |
 | `ToggleCheckedBackground` | AccentColor | Toggle button IsChecked=True background |
 | `DialogBackground` | ControlBackground | Reserved — dialog body backgrounds |
-| `GridCellBackground` | ControlBackground | Reserved — grid cell backgrounds |
+| `GridCellBackground` | ControlBackground | Primary data row background (applied via RowStyleSelector) |
 | `DialogForeground` | ForegroundColor | Reserved — dialog text |
 | `GridCellForeground` | ForegroundColor | Reserved — grid cell text |
 
@@ -101,7 +126,7 @@ These start with the same values as their parent. Change them to independently t
 | `GridHeaderBackground` | Grid column header background |
 | `GridHeaderForeground` | Grid column header text |
 
-### Status Colors
+### Status Colors (LOCKED per base type — see Important Rules)
 | Key | Description |
 |-----|-------------|
 | `StatusGreen` | Complete status indicator |
@@ -128,7 +153,7 @@ These start with the same values as their parent. Change them to independently t
 ### Toolbar
 | Key | Description |
 |-----|-------------|
-| `ToolbarBackground` | Main toolbar background (dark in all themes — nav buttons sit here) |
+| `ToolbarBackground` | ProgressView toolbar background (search/buttons bar) |
 | `ToolbarForeground` | Toolbar text/icon color (light — must contrast dark toolbar) |
 | `ToolbarHoverBackground` | Toolbar button hover |
 | `ToolbarHoverForeground` | Toolbar button hover text |
@@ -198,6 +223,22 @@ These start with the same values as their parent. Change them to independently t
 | `ActionButtonForeground` | Action button text on dark toolbar |
 | `ActionFilterForeground` | Filter toggle button text |
 
+### Sidebar Button Hover
+| Key | Description |
+|-----|-------------|
+| `SidebarButtonHoverBorder` | Sidebar button border color on hover (ProgressView side panel) |
+| `SidebarButtonHoverBackground` | Sidebar button background on hover |
+
+### Independent Highlight Keys
+These are decoupled from AccentColor so they can be tuned per theme for visibility:
+
+| Key | Description |
+|-----|-------------|
+| `ScanButtonForeground` | SCAN button text color (often needs a bright color that pops) |
+| `SummaryBudgetForeground` | Summary Budget stat value color |
+| `SummaryEarnedForeground` | Summary Earned stat value color |
+| `SummaryPercentForeground` | Summary % Complete stat value color |
+
 ### Elevation/Shadow
 | Key | Type | Description |
 |-----|------|-------------|
@@ -242,6 +283,9 @@ These use `StaticResource` internally (fine because the entire style is replaced
 
 ### SfLinearProgressBar.TrackColor
 `TrackColor` on SfLinearProgressBar doesn't reliably accept DynamicResource binding in all contexts. Use `ProgressBarTrackColor` where it works; fall back to code-behind if needed.
+
+### Line Endings
+All generated theme files must use CRLF line endings. The generator script handles this via `[System.IO.File]::WriteAllText()` with CRLF-normalized content. Do NOT use `Out-File` which can produce mixed line endings.
 
 ## When to Create a New Key
 

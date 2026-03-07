@@ -6,6 +6,21 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### March 7, 2026
+- **Theme Generator Script & Skill:** Created `Scripts/Generate-Theme.ps1` PowerShell script that generates a complete theme XAML (103 keys) from 4 hex colors (Primary, Accent, Secondary, Surface) + dark/light base. HSL color math for all derivations. Created `/create-theme` Claude Code skill (`.claude/skills/create-theme/skill.md`) that automates the full workflow: gather inputs, run script, register theme, build.
+- **Dark Forest theme:** New dark green theme generated with the theme builder. Primary `#18230F`, Accent `#1F7D53`, Secondary `#27391C`, Surface `#255F38`. Registered in ThemeManager, ThemeManagerDialog, and help manual.
+- **Independent highlight theme keys:** Decoupled 6 new theme keys from AccentColor so they can be tuned per theme without affecting other themes:
+  - `ScanButtonForeground` — SCAN button text (was AccentColor)
+  - `SummaryBudgetForeground` — Budget stat value (was AccentColor)
+  - `SummaryEarnedForeground` — Earned stat value (was StatusGreen)
+  - `SummaryPercentForeground` — % Complete stat value (was StatusInProgress)
+  - `SidebarButtonHoverBorder` — Sidebar button hover border (was AccentColor)
+  - `SidebarButtonHoverBackground` — Sidebar button hover background (new, didn't exist before)
+- **Wired up GridCellBackground:** `RecordOwnershipRowStyleSelector` now applies `GridCellBackground` to even rows and `GridAlternatingRowBackground` to odd rows. Previously `GridCellBackground` was a reserved/unused key and even rows fell through to Syncfusion defaults.
+- **Status button colors locked per base type:** Generator hardcodes Complete/In Progress/Not Started button colors from Dark or Light theme. Status buttons now look identical regardless of custom theme palette.
+- **THEME_GUIDE.md rewrite:** Comprehensive update with generator script docs, status button locking rule, grid row background explanation, new key documentation, line endings note, and `/create-theme` skill reference.
+- **CLAUDE.md — CRLF rule:** Added instruction requiring all generated files use CRLF line endings to prevent Visual Studio "Inconsistent Line Endings" dialog.
+
 ### March 6, 2026
 - **Manager Role & User Table Consolidation:** Added Manager role allowing reassignment of any user's records (same as Admin for AssignTo only). Consolidated role management into Edit Users dialog with Admin/Estimator/Manager checkboxes. Role checks use fallback logic (new VMS_Users columns → old VMS_Admins/VMS_Estimators/VMS_Managers tables) for backward compatibility during migration. Removed Toggle User Roles dialog and menu item. Added email notifications when user roles change. Key files: `AzureDbManager.cs` (IsUserAdmin/IsUserEstimator/IsUserManager with fallbacks), `AdminUsersDialog.xaml/.cs` (role checkboxes, dual-schema save logic, email notifications), `ProgressView.xaml.cs` (IsManager permission checks for AssignTo), `DatabaseSetup.cs` (CopyUsersTableFromAzure excludes role columns for security), `Models/User.cs` (IsManager property).
 - **AI Takeoff module restricted to specific users:** Temporarily restricted Takeoff button visibility to users `steve` and `Steve.Amalfitano` only (case-insensitive). Added `IsTakeoffAllowed()` helper method in `MainWindow.xaml.cs`. Revert instructions documented in `Project_Status.md` under "Temporary Restrictions" section.
