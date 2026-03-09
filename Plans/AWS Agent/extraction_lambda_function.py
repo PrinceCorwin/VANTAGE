@@ -1,6 +1,5 @@
 import json
 import boto3
-import base64
 import os
 import io
 import logging
@@ -71,14 +70,25 @@ def lambda_handler(event, context):
             else:
                 bom_image = bom_crops[0]
 
-            # Crop title block region
-            tb_region = config.get("title_block_region")
-            images_for_claude = [{"bytes": bom_image, "type": "image/png"}]
+            # Clamp stitched image to Bedrock's 8000px max dimension limit
+            bom_image = clamp_image_dimensions(bom_image, max_dim=8000)
 
-            if tb_region:
+            # Crop title block region(s) - supports multiple sections (e.g., PIPE INFO + Project info)
+            # Check for new format (title_block_regions list) first, fall back to old format (title_block_region)
+            tb_regions = config.get("title_block_regions", [])
+            if not tb_regions:
+                old_tb = config.get("title_block_region")
+                if old_tb:
+                    tb_regions = [old_tb]
+
+            images_for_claude = [{"bytes": bom_image, "type": "image/png", "label": "BOM table"}]
+
+            for i, tb_region in enumerate(tb_regions):
                 tb_crop = crop_region(page_image, tb_region)
-                logger.info(f"Title block crop: {tb_crop['width']}x{tb_crop['height']} pixels")
-                images_for_claude.append({"bytes": tb_crop["image_bytes"], "type": "image/png"})
+                label = f"Title block section {i + 1}" if len(tb_regions) > 1 else "Title block"
+                logger.info(f"{label} crop: {tb_crop['width']}x{tb_crop['height']} pixels")
+                tb_image = clamp_image_dimensions(tb_crop["image_bytes"], max_dim=8000)
+                images_for_claude.append({"bytes": tb_image, "type": "image/png", "label": label})
 
             # Call Bedrock with cropped images
             start_time = datetime.now(timezone.utc)
@@ -169,8 +179,15 @@ def load_client_config(config_path):
     """Load client+project config JSON from S3."""
     response = s3.get_object(Bucket=CONFIG_BUCKET, Key=config_path)
     config = json.loads(response["Body"].read().decode("utf-8"))
+
+    # Count title block regions (support both new list format and old single format)
+    tb_count = len(config.get("title_block_regions", []))
+    if tb_count == 0 and config.get("title_block_region"):
+        tb_count = 1
+
     logger.info(f"Client config loaded: {config.get('client_id')}/{config.get('project_id')}, "
                 f"{len(config.get('bom_regions', []))} BOM regions, "
+                f"{tb_count} title block regions, "
                 f"render_dpi={config.get('render_dpi', 300)}")
     return config
 
@@ -293,16 +310,39 @@ def stitch_images(image_bytes_list):
     return png_bytes
 
 
+def clamp_image_dimensions(image_bytes, max_dim=8000):
+    """Downscale image proportionally if either dimension exceeds max_dim. Returns PNG bytes."""
+    from PIL import Image
+
+    img = Image.open(io.BytesIO(image_bytes))
+    w, h = img.size
+
+    if w <= max_dim and h <= max_dim:
+        return image_bytes
+
+    scale = min(max_dim / w, max_dim / h)
+    new_w = int(w * scale)
+    new_h = int(h * scale)
+    img = img.resize((new_w, new_h), Image.LANCZOS)
+
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    png_bytes = buf.getvalue()
+
+    logger.warning(f"Image clamped from {w}x{h} to {new_w}x{new_h} to stay within {max_dim}px Bedrock limit")
+    return png_bytes
+
+
 # ---------------------------------------------------------------------------
 # Bedrock API calls
 # ---------------------------------------------------------------------------
 
 def call_bedrock_multi_image(system_prompt, images):
-    """Call Bedrock with multiple images (BOM crop + title block crop)."""
+    """Call Bedrock with multiple images (BOM crop + title block crops)."""
     content_blocks = []
 
     for i, img in enumerate(images):
-        label = "BOM table" if i == 0 else "Title block"
+        label = img.get("label", f"Image {i+1}")
         content_blocks.append({
             "text": f"Image {i+1}: {label}",
         })
@@ -315,9 +355,22 @@ def call_bedrock_multi_image(system_prompt, images):
             },
         })
 
+    # Build instruction text based on number of title block images
+    tb_count = len(images) - 1  # First image is always BOM
+    if tb_count > 1:
+        tb_instruction = (
+            f"There are {tb_count} title block section images showing different parts of the title block "
+            "(e.g., PIPE INFO section, Project info section). Extract all fields from ALL sections and combine them "
+            "into a single unified title_block object. "
+        )
+    elif tb_count == 1:
+        tb_instruction = "The second image is the title block area. "
+    else:
+        tb_instruction = ""
+
     content_blocks.append({
-        "text": "Extract the title block metadata and BOM data from these cropped regions of an ISO drawing. "
-                "The first image is the BOM table area. The second image (if present) is the title block area. "
+        "text": f"Extract the title block metadata and BOM data from these cropped regions of an ISO drawing. "
+                f"The first image is the BOM table area. {tb_instruction}"
                 "Return the JSON as specified in your instructions.",
     })
 
@@ -353,7 +406,10 @@ def call_bedrock_multi_image(system_prompt, images):
 
     stop_reason = response.get("stopReason", "unknown")
     if stop_reason == "max_tokens":
-        logger.warning("Response truncated by max_tokens limit — increase MAX_TOKENS if needed")
+        logger.error("TRUNCATED_RESPONSE: Claude hit max_tokens limit — JSON will be incomplete. "
+                     f"Increase MAX_TOKENS (currently {MAX_TOKENS}) or reduce drawing complexity.")
+        raise ValueError(f"TRUNCATED_RESPONSE: Bedrock response cut off at {MAX_TOKENS} tokens. "
+                         "Increase MAX_TOKENS constant.")
 
     return full_text
 
@@ -404,7 +460,10 @@ def call_bedrock(full_prompt, image_bytes, media_type):
 
     stop_reason = response.get("stopReason", "unknown")
     if stop_reason == "max_tokens":
-        logger.warning("Response truncated by max_tokens limit — increase MAX_TOKENS if needed")
+        logger.error("TRUNCATED_RESPONSE: Claude hit max_tokens limit — JSON will be incomplete. "
+                     f"Increase MAX_TOKENS (currently {MAX_TOKENS}) or reduce drawing complexity.")
+        raise ValueError(f"TRUNCATED_RESPONSE: Bedrock response cut off at {MAX_TOKENS} tokens. "
+                         "Increase MAX_TOKENS constant.")
 
     return full_text
 
@@ -451,7 +510,7 @@ def load_reference_table(bucket, key):
     xlsx_bytes = response["Body"].read()
     wb = openpyxl.load_workbook(io.BytesIO(xlsx_bytes), read_only=True, data_only=True)
 
-    ws = wb["CONN COUNTS (2)"]
+    ws = wb["CompRef"]
 
     lines = []
     for row in ws.iter_rows(min_row=2, values_only=True):

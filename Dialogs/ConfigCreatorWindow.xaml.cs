@@ -103,15 +103,16 @@ namespace VANTAGE.Dialogs
                     });
                 }
 
-                if (config.TitleBlockRegion != null)
+                // Load title block regions (supports both old single-region and new multi-region format)
+                foreach (var tb in config.TitleBlockRegions)
                 {
                     _pendingRegions.Add(new DrawnRegion
                     {
                         Mode = DrawMode.TitleBlock,
-                        XPct = config.TitleBlockRegion.XPct,
-                        YPct = config.TitleBlockRegion.YPct,
-                        WidthPct = config.TitleBlockRegion.WidthPct,
-                        HeightPct = config.TitleBlockRegion.HeightPct
+                        XPct = tb.XPct,
+                        YPct = tb.YPct,
+                        WidthPct = tb.WidthPct,
+                        HeightPct = tb.HeightPct
                     });
                 }
 
@@ -390,18 +391,7 @@ namespace VANTAGE.Dialogs
             double widthPct = width / imgRect.Width * 100.0;
             double heightPct = height / imgRect.Height * 100.0;
 
-            // If TitleBlock mode, replace any existing title block
-            if (_currentMode == DrawMode.TitleBlock)
-            {
-                var existing = _drawnRegions.FirstOrDefault(r => r.Mode == DrawMode.TitleBlock);
-                if (existing != null)
-                {
-                    if (existing.Visual != null) drawCanvas.Children.Remove(existing.Visual);
-                    if (existing.Label != null) drawCanvas.Children.Remove(existing.Label);
-                    _drawnRegions.Remove(existing);
-                }
-            }
-
+            // Allow multiple title block regions (e.g., PIPE INFO section + Project info section)
             var region = new DrawnRegion
             {
                 Mode = _currentMode,
@@ -449,18 +439,19 @@ namespace VANTAGE.Dialogs
             drawCanvas.Children.Add(rect);
             region.Visual = rect;
 
-            // Label
-            int bomIndex = _drawnRegions.Count(r => r.Mode == DrawMode.Bom && r != region);
-            string labelText = isBom
-                ? (bomIndex == 0 && region == _drawnRegions.Last(r => r.Mode == DrawMode.Bom) ? "BOM" : $"BOM {bomIndex + 1}")
-                : "Title Block";
-
-            // Recalculate BOM labels: just use order
+            // Calculate label text based on mode and position in list
+            string labelText;
             if (isBom)
             {
                 int bomCount = _drawnRegions.Count(r => r.Mode == DrawMode.Bom);
                 int myIndex = _drawnRegions.Where(r => r.Mode == DrawMode.Bom).ToList().IndexOf(region);
                 labelText = bomCount == 1 ? "BOM" : $"BOM {myIndex + 1}";
+            }
+            else
+            {
+                int tbCount = _drawnRegions.Count(r => r.Mode == DrawMode.TitleBlock);
+                int myIndex = _drawnRegions.Where(r => r.Mode == DrawMode.TitleBlock).ToList().IndexOf(region);
+                labelText = tbCount == 1 ? "Title Block" : $"Title Block {myIndex + 1}";
             }
 
             var label = new TextBlock
@@ -630,16 +621,21 @@ namespace VANTAGE.Dialogs
                 });
             }
 
-            // Title block
-            var tbDrawn = _drawnRegions.First(r => r.Mode == DrawMode.TitleBlock);
-            var titleBlock = new CropRegion
+            // Title block regions (multiple sections like PIPE INFO + Project info)
+            var tbRegions = new List<CropRegion>();
+            var tbDrawn = _drawnRegions.Where(r => r.Mode == DrawMode.TitleBlock).ToList();
+            for (int i = 0; i < tbDrawn.Count; i++)
             {
-                Label = "title_block",
-                XPct = tbDrawn.XPct,
-                YPct = tbDrawn.YPct,
-                WidthPct = tbDrawn.WidthPct,
-                HeightPct = tbDrawn.HeightPct
-            };
+                string label = i == 0 ? "title_block" : $"title_block_{i + 1}";
+                tbRegions.Add(new CropRegion
+                {
+                    Label = label,
+                    XPct = tbDrawn[i].XPct,
+                    YPct = tbDrawn[i].YPct,
+                    WidthPct = tbDrawn[i].WidthPct,
+                    HeightPct = tbDrawn[i].HeightPct
+                });
+            }
 
             var config = new CropRegionConfig
             {
@@ -648,7 +644,7 @@ namespace VANTAGE.Dialogs
                 ClientName = App.CurrentUser?.Username ?? "Unknown",
                 ProjectName = txtConfigName.Text.Trim(),
                 BomRegions = bomRegions,
-                TitleBlockRegion = titleBlock,
+                TitleBlockRegions = tbRegions,
                 CreatedAt = DateTime.UtcNow.ToString("o"),
                 CreatedBy = App.CurrentUser?.Username ?? "Unknown"
             };

@@ -1,6 +1,6 @@
 # MILESTONE - Project Status
 
-**Last Updated:** March 7, 2026
+**Last Updated:** March 9, 2026
 
 ## V1 Testing Scope
 
@@ -35,7 +35,7 @@
 | Work Package | READY FOR TESTING | PDF generation working; Drawings deferred to post-v1 |
 | Help Sidebar | COMPLETE | All V1 sections written; Troubleshooting deferred to post-V1 |
 | AI Progress Scan | COMPLETE | AWS Textract implementation - 100% accuracy |
-| AI Takeoff | READY FOR TESTING | Auto-download on completion, Previous Batches dropdown for re-downloading past results. Metadata (username, config, drawing count) stored in S3. |
+| AI Takeoff | READY FOR TESTING | Auto-download on completion, Previous Batches dropdown for re-downloading past results. Metadata (username, config, drawing count) stored in S3. Multi title block regions supported (see Active Development section). |
 | AI Features (other) | NOT STARTED | Error Assistant, Description Analysis, etc. |
 
 ## Active Development
@@ -84,6 +84,39 @@
 - WebView2 virtual host mapping (`https://help.local/manual.html`) — see `SidePanelView.xaml.cs`
 - VS sometimes re-adds PNGs as `<Resource Include>` — always verify Content / Copy if newer
 - Troubleshooting section deferred to post-V1
+
+### AI Takeoff Module - Multi Title Block Regions
+
+**Purpose:** Allow users to draw multiple boxes around different sections of a drawing's title block (e.g., PIPE INFO section, Project info section) to exclude noise like logos and revision history. All regions are sent as separate images to Claude, which extracts them into ONE unified `title_block` object.
+
+**Key difference from BOM multi-box:** BOM regions are stitched into one tall image. Title block regions stay as separate images but produce a single combined extraction.
+
+**Files Modified:**
+
+| File | Changes |
+|------|---------|
+| `Models/AI/CropRegionConfig.cs` | Changed `TitleBlockRegion` (single) to `TitleBlockRegions` (list). Backward compat: `TitleBlockRegion` setter auto-populates list when deserializing old configs. |
+| `Dialogs/ConfigCreatorWindow.xaml.cs` | Removed replace logic that limited to one title block. Labels now show "Title Block", "Title Block 2", etc. Save builds list with labels `title_block`, `title_block_2`. Load iterates over `TitleBlockRegions` list. |
+| `Plans/AWS Agent/extraction_lambda_function.py` | Checks for `title_block_regions` (list) first, falls back to `title_block_region` (single). Crops each region separately. Labels: "Title block section 1", "Title block section 2". Prompt instructs Claude to combine all sections into single `title_block` object. |
+
+**Config JSON Format:**
+```json
+{
+  "title_block_regions": [
+    { "label": "title_block", "x_pct": 75.2, "y_pct": 80.1, "width_pct": 24.5, "height_pct": 19.2 },
+    { "label": "title_block_2", "x_pct": 0.5, "y_pct": 85.0, "width_pct": 20.0, "height_pct": 14.5 }
+  ]
+}
+```
+
+**Lambda Deployment Required:** After testing WPF changes, deploy updated `extraction_lambda_function.py` to AWS Lambda.
+
+**Testing Checklist:**
+- [ ] Create new config — draw 2+ title block regions
+- [ ] Verify labels appear as "Title Block", "Title Block 2" on canvas
+- [ ] Save config — verify JSON has `title_block_regions` array
+- [ ] Edit existing single-region config — verify backward compat loads correctly
+- [ ] Run extraction — verify Claude receives multiple images, produces single unified `tb_*` columns
 
 ## Temporary Restrictions
 

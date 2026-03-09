@@ -6,6 +6,13 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### March 9, 2026 (AI Takeoff - Multi Title Block Regions)
+- **Multi title block region support:** Users can now draw multiple boxes around different sections of a drawing's title block (e.g., PIPE INFO section, Project info section) to exclude noise like logos and revision history. All regions are sent as separate images to Claude, which extracts them into ONE unified `title_block` object.
+- **Data model change:** `CropRegionConfig.TitleBlockRegion` (single) changed to `TitleBlockRegions` (list). Backward compatibility maintained via setter that auto-populates list when deserializing old configs with `title_block_region`.
+- **Config Creator UI changes:** Removed replace logic that limited title block to one region. Labels now show "Title Block", "Title Block 2", etc. Save builds list with labels `title_block`, `title_block_2`.
+- **Lambda changes:** Checks for `title_block_regions` (list) first, falls back to `title_block_region` (single). Crops each region separately with labels "Title block section 1", "Title block section 2". Prompt instructs Claude to combine all sections into single unified `title_block` object.
+- **Key files:** `Models/AI/CropRegionConfig.cs`, `Dialogs/ConfigCreatorWindow.xaml.cs`, `Plans/AWS Agent/extraction_lambda_function.py`
+
 ### March 7, 2026 (Admin Snapshots & Query Optimization)
 - **Fixed Progress Log upload tracking not saving:** Tracking records inserted by AdminSnapshotsDialog into `VMS_ProgressLogUploads` were silently failing due to a `using var` SqlDataReader not being disposed before subsequent INSERT commands on a non-MARS connection. Changed to block-scoped `using` to ensure reader disposal before tracking inserts. This caused uploads to not appear in ManageProgressLogDialog until REFRESH was clicked.
 - **Upgraded AdminSnapshotsDialog grid to Syncfusion SfDataGrid:** Replaced basic WPF ListView with Syncfusion `SfDataGrid` matching ManageProgressLogDialog's style — column header filters, sorting, resizable columns, checkbox column for selection.

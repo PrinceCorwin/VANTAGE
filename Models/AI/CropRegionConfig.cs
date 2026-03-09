@@ -21,8 +21,22 @@ namespace VANTAGE.Models.AI
         [JsonPropertyName("bom_regions")]
         public List<CropRegion> BomRegions { get; set; } = new();
 
+        // New format: multiple title block regions (e.g., PIPE INFO section + Project info section)
+        [JsonPropertyName("title_block_regions")]
+        public List<CropRegion> TitleBlockRegions { get; set; } = new();
+
+        // Backward compat: reads old single-region format, writes to TitleBlockRegions list
         [JsonPropertyName("title_block_region")]
-        public CropRegion? TitleBlockRegion { get; set; }
+        public CropRegion? TitleBlockRegion
+        {
+            get => null; // Always use TitleBlockRegions for reading
+            set
+            {
+                // When deserializing old config with single region, add it to the list
+                if (value != null && TitleBlockRegions.Count == 0)
+                    TitleBlockRegions.Add(value);
+            }
+        }
 
         [JsonPropertyName("created_at")]
         public string CreatedAt { get; set; } = string.Empty;
