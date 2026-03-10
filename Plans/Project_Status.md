@@ -109,14 +109,7 @@
 }
 ```
 
-**Lambda Deployment Required:** After testing WPF changes, deploy updated `extraction_lambda_function.py` to AWS Lambda.
-
-**Testing Checklist:**
-- [ ] Create new config — draw 2+ title block regions
-- [ ] Verify labels appear as "Title Block", "Title Block 2" on canvas
-- [ ] Save config — verify JSON has `title_block_regions` array
-- [ ] Edit existing single-region config — verify backward compat loads correctly
-- [ ] Run extraction — verify Claude receives multiple images, produces single unified `tb_*` columns
+**Lambda Deployed:** Updated `extraction_lambda_function.py` deployed to AWS Lambda (March 2026). Testing complete.
 
 ## Temporary Restrictions
 
@@ -135,10 +128,8 @@
 ### High Priority
 - **Mobile/iOS Version (iPad)** — Execs want iPad app for field supes to submit progress. Needs architecture discussion: native iOS, cross-platform framework, web app, API design, offline sync, etc.
 - **Takeoff Post-Processing Pipeline** — All operate on the downloaded Excel, no AWS changes needed. See `summit-takeoff-integration-guide.md` for details.
-  1. Fabrication item generation — CUT and BEV rows generating (WIP). TODO:
-     - Fix descriptions for CUT/BEV rows (currently inherits parent connection description)
-     - Remove Connection Type column from Labor tab; put connection type in the Component column for actual connection rows (e.g., "BW" instead of component name)
-     - Handling records (not started)
+  1. Fabrication item generation — CUT/BEV rows, connection rows, and BOM fab records complete. TODO:
+     - Handling records for PIPE items (not started)
   2. Rate sheet upload — User provides Excel with unit rates
   3. Rate application — Match rates to items, calculate manhours
   4. ROC splits — Divide handling records by Rules of Credit

@@ -6,6 +6,14 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### March 9, 2026 (Takeoff Post-Processing — Labor Tab Improvements)
+- **CUT/BEV descriptions:** Fabrication rows now get proper dash-separated descriptions (`{size} IN - {thickness} - {pipeSpec} - {material} - CUT/BEVEL`) instead of inheriting the parent connection description.
+- **Connection type moved to Component column:** Connection rows (BW, SW, BU, etc.) now use the Component column for the connection type instead of a separate Connection Type column. Connection Type column removed from Labor tab entirely.
+- **BOM fab records added to Labor tab:** All non-PIPE BOM items (ELL, TEE, VLV, STUB, etc.) now generate a fab record on the Labor tab with original component and raw description from the Material tab.
+- **Raw Description column removed from Labor tab:** Simplified Labor tab by removing the Raw Description column. BOM fab records carry the raw description in the Description column; connection/CUT/BEV rows use their built descriptions.
+- **Multi title block regions testing confirmed:** Lambda deployed and end-to-end testing validated for multi title block region support.
+- **Key file:** `Services/AI/TakeoffPostProcessor.cs`
+
 ### March 9, 2026 (AI Takeoff - Multi Title Block Regions)
 - **Multi title block region support:** Users can now draw multiple boxes around different sections of a drawing's title block (e.g., PIPE INFO section, Project info section) to exclude noise like logos and revision history. All regions are sent as separate images to Claude, which extracts them into ONE unified `title_block` object.
 - **Data model change:** `CropRegionConfig.TitleBlockRegion` (single) changed to `TitleBlockRegions` (list). Backward compatibility maintained via setter that auto-populates list when deserializing old configs with `title_block_region`.

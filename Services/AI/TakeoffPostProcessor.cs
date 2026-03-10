@@ -15,6 +15,10 @@ namespace VANTAGE.Services.AI
         {
             "connection_qty",
             "Connection Qty",
+            "Connection Type",
+            "connection_type",
+            "Raw Description",
+            "raw_description",
             "length",
             "Item ID"
         };
@@ -133,15 +137,42 @@ namespace VANTAGE.Services.AI
         {
             var result = new List<Dictionary<string, object?>>();
 
-            // Get connection info
+            string component = GetString(mat, "Component");
+            int quantity = ParseQuantity(mat);
+            string size = GetString(mat, "Size");
+            string connSize = GetString(mat, "Connection Size");
+            if (string.IsNullOrEmpty(connSize)) connSize = size;
+            string thickness = GetString(mat, "Thickness");
+            string classRating = GetString(mat, "Class Rating");
+            string pipeSpec = FindPipeSpec(mat);
+            string material = GetString(mat, "Material");
+            string commodityCode = GetString(mat, "Commodity Code");
+            string rawDesc = GetString(mat, "Raw Description");
+
+            // Non-PIPE items: add fab record with original component and raw description
+            if (!component.Equals("PIPE", StringComparison.OrdinalIgnoreCase))
+            {
+                for (int q = 0; q < quantity; q++)
+                {
+                    var fab = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+                    foreach (var (key, value) in mat)
+                    {
+                        if (!ExcludeFromLabor.Contains(key))
+                            fab[key] = value;
+                    }
+                    fab["Quantity"] = 1;
+                    fab["Description"] = rawDesc;
+                    fab["BudgetMHs"] = null;
+                    result.Add(fab);
+                }
+            }
+
+            // Connection explosion (all items with connections)
             int connQty = GetInt(mat, "Connection Qty");
             if (connQty <= 0) return result;
 
             string connTypes = GetString(mat, "Connection Type");
             if (string.IsNullOrWhiteSpace(connTypes)) return result;
-
-            string component = GetString(mat, "Component");
-            int quantity = ParseQuantity(mat);
 
             // Parse connection types (may be comma-separated like "BW, THRD")
             var types = connTypes.Split(',', StringSplitOptions.RemoveEmptyEntries)
@@ -159,16 +190,6 @@ namespace VANTAGE.Services.AI
             // Distribute connections across types
             var typeDistribution = DistributeConnections(connQty, types);
 
-            // Get title block and other fields to copy
-            string size = GetString(mat, "Size");
-            string connSize = GetString(mat, "Connection Size");
-            if (string.IsNullOrEmpty(connSize)) connSize = size;
-
-            string thickness = GetString(mat, "Thickness");
-            string pipeSpec = FindPipeSpec(mat);
-            string material = GetString(mat, "Material");
-            string commodityCode = GetString(mat, "Commodity Code");
-
             // Explode: quantity × connections
             for (int q = 0; q < quantity; q++)
             {
@@ -185,8 +206,8 @@ namespace VANTAGE.Services.AI
                                 labor[key] = value;
                         }
 
-                        // Override/set specific columns
-                        labor["Connection Type"] = connType;
+                        // Override/set specific columns - connType goes in Component
+                        labor["Component"] = connType;
                         labor["Connection Size"] = connSize;
                         labor["Quantity"] = 1;
                         labor["ShopField"] = connType == "BU" ? 2 : 1;
@@ -194,7 +215,6 @@ namespace VANTAGE.Services.AI
                         // Build concatenated description
                         labor["Description"] = BuildConcatDescription(
                             size, thickness, pipeSpec, material, commodityCode, connType);
-                        labor["Raw Description"] = GetString(mat, "Description");
 
                         // BudgetMHs placeholder
                         labor["BudgetMHs"] = null;
@@ -207,6 +227,7 @@ namespace VANTAGE.Services.AI
                             var cut = new Dictionary<string, object?>(labor, StringComparer.OrdinalIgnoreCase);
                             cut["Component"] = "CUT";
                             cut["ShopField"] = 1;
+                            cut["Description"] = BuildFabDescription(size, thickness, pipeSpec, material, "CUT");
                             result.Add(cut);
                         }
 
@@ -218,6 +239,7 @@ namespace VANTAGE.Services.AI
                                 var bev = new Dictionary<string, object?>(labor, StringComparer.OrdinalIgnoreCase);
                                 bev["Component"] = "BEV";
                                 bev["ShopField"] = 1;
+                                bev["Description"] = BuildFabDescription(size, thickness, pipeSpec, material, "BEVEL");
                                 result.Add(bev);
                             }
                         }
@@ -279,6 +301,21 @@ namespace VANTAGE.Services.AI
             return "";
         }
 
+        // Build description for fabrication items (CUT/BEVEL)
+        private static string BuildFabDescription(
+            string size, string thickness, string pipeSpec, string material, string fabType)
+        {
+            var parts = new List<string>();
+
+            if (!string.IsNullOrEmpty(size)) parts.Add($"{size} IN");
+            if (!string.IsNullOrEmpty(thickness)) parts.Add(thickness);
+            if (!string.IsNullOrEmpty(pipeSpec)) parts.Add(pipeSpec);
+            if (!string.IsNullOrEmpty(material)) parts.Add(material);
+            parts.Add(fabType);
+
+            return string.Join(" - ", parts);
+        }
+
         // Build concatenated description for rate matching
         private static string BuildConcatDescription(
             string size, string thickness, string pipeSpec,
@@ -315,8 +352,8 @@ namespace VANTAGE.Services.AI
             var explicitColumns = new List<string>
             {
                 "Drawing Number", "Component", "Size", "Connection Size",
-                "Connection Type", "Thickness", "Class Rating", "Material",
-                "Commodity Code", "Description", "Raw Description", "Quantity",
+                "Thickness", "Class Rating", "Material",
+                "Commodity Code", "Description", "Quantity",
                 "ShopField", "Confidence", "Flag", "BudgetMHs"
             };
 
@@ -396,7 +433,7 @@ namespace VANTAGE.Services.AI
             ws.Cell(row, 2).Style.Font.Bold = true;
             row++;
 
-            var byType = laborRows.GroupBy(r => GetString(r, "Connection Type"))
+            var byType = laborRows.GroupBy(r => GetString(r, "Component"))
                                   .OrderBy(g => g.Key);
             foreach (var g in byType)
                 WriteSummaryRow(ws, row++, g.Key, g.Count());
