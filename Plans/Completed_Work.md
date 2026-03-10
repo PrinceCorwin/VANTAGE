@@ -6,6 +6,10 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### March 9, 2026 (Takeoff Post-Processing — FSH Handling Records)
+- **FSH records for PIPE items:** Each PIPE BOM item now generates one FSH (Fab Shop Handling) record on the Labor tab with raw description from Material tab. One record per BOM item regardless of pipe length/quantity.
+- **Key file:** `Services/AI/TakeoffPostProcessor.cs`
+
 ### March 9, 2026 (Takeoff Post-Processing — Labor Tab Improvements)
 - **CUT/BEV descriptions:** Fabrication rows now get proper dash-separated descriptions (`{size} IN - {thickness} - {pipeSpec} - {material} - CUT/BEVEL`) instead of inheriting the parent connection description.
 - **Connection type moved to Component column:** Connection rows (BW, SW, BU, etc.) now use the Component column for the connection type instead of a separate Connection Type column. Connection Type column removed from Labor tab entirely.

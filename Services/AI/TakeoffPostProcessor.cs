@@ -166,6 +166,21 @@ namespace VANTAGE.Services.AI
                     result.Add(fab);
                 }
             }
+            else
+            {
+                // PIPE items: one FSH (fab shop handling) record per BOM item
+                var fsh = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+                foreach (var (key, value) in mat)
+                {
+                    if (!ExcludeFromLabor.Contains(key))
+                        fsh[key] = value;
+                }
+                fsh["Component"] = "FSH";
+                fsh["Quantity"] = 1;
+                fsh["Description"] = rawDesc;
+                fsh["BudgetMHs"] = null;
+                result.Add(fsh);
+            }
 
             // Connection explosion (all items with connections)
             int connQty = GetInt(mat, "Connection Qty");
