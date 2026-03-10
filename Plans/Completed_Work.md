@@ -6,6 +6,10 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### March 10, 2026 (Bulk Reassignment Timeout Fix)
+- **Fixed SQL timeout on large bulk reassignments:** Added `CommandTimeout = 120` (2 minutes) to the ownership verification query and bulk UPDATE command in `MenuAssignToUser_Click`. Default 30-second timeout was exceeded when reassigning large numbers of records, causing "Execution Timeout Expired" errors.
+- **Key file:** `Views/ProgressView.xaml.cs`
+
 ### March 9, 2026 (Takeoff Post-Processing — FSH Handling Records)
 - **FSH records for PIPE items:** Each PIPE BOM item now generates one FSH (Fab Shop Handling) record on the Labor tab with raw description from Material tab. One record per BOM item regardless of pipe length/quantity.
 - **Key file:** `Services/AI/TakeoffPostProcessor.cs`

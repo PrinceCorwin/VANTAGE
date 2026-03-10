@@ -5541,6 +5541,7 @@ namespace VANTAGE.Views
                         // Query all ownerships in one call
                         var ownershipMap = new Dictionary<string, string>();
                         var ownerQuery = azureConn.CreateCommand();
+                        ownerQuery.CommandTimeout = 120;
                         ownerQuery.CommandText = @"
             SELECT a.UniqueID, a.AssignedTo
             FROM VMS_Activities a
@@ -5618,6 +5619,7 @@ namespace VANTAGE.Views
                         }
 
                         var updateCmd = azureConn.CreateCommand();
+                        updateCmd.CommandTimeout = 120;
                         updateCmd.CommandText = @"
             UPDATE a
             SET AssignedTo = @newOwner,
