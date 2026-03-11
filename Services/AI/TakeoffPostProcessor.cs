@@ -27,9 +27,10 @@ namespace VANTAGE.Services.AI
         };
 
         // Components to exclude from fitting makeup lookup (non-weldable items)
+        // Components to exclude from fitting makeup lookup (non-weldable or not tracked)
         private static readonly HashSet<string> ExcludeFromMakeupLookup = new(StringComparer.OrdinalIgnoreCase)
         {
-            "FS", "GSKT", "BOLT", "WAS", "HEAT", "HOSE", "INST", "PLG", "SAFSHW", "F8B", "DPAN", "ACT"
+            "FS", "GSKT", "BOLT", "WAS", "HEAT", "HOSE", "INST", "PLG", "SAFSHW", "F8B", "DPAN", "ACT", "FLGB", "PIPET"
         };
 
         // Main entry point - processes the downloaded Excel file in place
@@ -178,7 +179,7 @@ namespace VANTAGE.Services.AI
                 {
                     double pipeSize = FittingMakeupService.GetDouble(pipe, "Size");
                     string pipeMaterial = GetString(pipe, "Material");
-                    double? pipeClass = GetNullableDouble(pipe, "Class Rating");
+                    string? pipeClass = GetNullableString(pipe, "Class Rating");
 
                     AppLogger.Info($"  PIPE size={pipeSize} material='{pipeMaterial}' class={pipeClass}", "TakeoffPostProcessor.FRH");
 
@@ -794,7 +795,7 @@ namespace VANTAGE.Services.AI
 
             var ws = workbook.Worksheets.Add("Missed Makeups");
 
-            var columns = new[] { "Drawing Number", "Component", "Size", "Connection Type", "Class Rating", "Description" };
+            var columns = new[] { "Drawing Number", "Component", "Size", "Connection Type", "Class Rating", "LookupKey", "Description" };
 
             // Header
             for (int i = 0; i < columns.Length; i++)
@@ -814,7 +815,8 @@ namespace VANTAGE.Services.AI
                 ws.Cell(row, 3).Value = m.Size;
                 ws.Cell(row, 4).Value = m.ConnectionType;
                 ws.Cell(row, 5).Value = m.ClassRating;
-                ws.Cell(row, 6).Value = m.Description;
+                ws.Cell(row, 6).Value = m.LookupKey;
+                ws.Cell(row, 7).Value = m.Description;
             }
 
             ws.Columns().AdjustToContents(1, 100);
@@ -827,6 +829,17 @@ namespace VANTAGE.Services.AI
             if (row.TryGetValue(key, out var val) && val != null)
                 return val.ToString()?.Trim() ?? "";
             return "";
+        }
+
+        // Helper: Get nullable string value from row
+        private static string? GetNullableString(Dictionary<string, object?> row, string key)
+        {
+            if (row.TryGetValue(key, out var val) && val != null)
+            {
+                string s = val.ToString()?.Trim() ?? "";
+                return string.IsNullOrEmpty(s) ? null : s;
+            }
+            return null;
         }
 
         // Helper: Get int value from row

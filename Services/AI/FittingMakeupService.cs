@@ -15,7 +15,7 @@ namespace VANTAGE.Services.AI
         // Olet component types — always looked up as "SOL" with connection type "OLW"
         private static readonly HashSet<string> OletComponents = new(StringComparer.OrdinalIgnoreCase)
         {
-            "SOL", "WOL", "TOL", "ELB", "LOL"
+            "SOL", "WOL", "TOL", "ELB", "LOL", "NOL"
         };
 
         // Lazy-load entries from embedded resource
@@ -38,7 +38,7 @@ namespace VANTAGE.Services.AI
 
         // Look up a fitting makeup entry. Returns (Makeup_Run_In, Makeup_Outlet_In) or null if not found.
         public static (double RunIn, double? OutletIn)? LookupMakeup(
-            string connType, string component, double runSize, double? classRating, double? outletSize = null)
+            string connType, string component, double runSize, string? classRating, double? outletSize = null)
         {
             var entries = LoadEntries();
 
@@ -55,11 +55,11 @@ namespace VANTAGE.Services.AI
 
         // If the JSON entry has a Class value, it must match the provided class.
         // If the JSON entry has no Class (null), it matches any class.
-        private static bool ClassMatches(double? entryClass, double? lookupClass)
+        private static bool ClassMatches(string? entryClass, string? lookupClass)
         {
-            if (entryClass == null) return true;
-            if (lookupClass == null) return false;
-            return Math.Abs(entryClass.Value - lookupClass.Value) < 0.001;
+            if (string.IsNullOrEmpty(entryClass)) return true;
+            if (string.IsNullOrEmpty(lookupClass)) return false;
+            return entryClass.Equals(lookupClass, StringComparison.OrdinalIgnoreCase);
         }
 
         // If checking outlet size, both must match. If entry has no outlet, lookup must also have none.
@@ -73,7 +73,7 @@ namespace VANTAGE.Services.AI
         // Calculate total fitting makeup inches for a pipe, given its size and same-drawing/same-size fittings
         // Returns (totalMakeupInches, missedFittings)
         public static (double TotalMakeupInches, List<MissedMakeup> Missed) CalculateFittingMakeupForPipe(
-            double pipeSize, double? pipeClass, List<Dictionary<string, object?>> fittings)
+            double pipeSize, string? pipeClass, List<Dictionary<string, object?>> fittings)
         {
             double totalInches = 0;
             var missed = new List<MissedMakeup>();
@@ -81,30 +81,39 @@ namespace VANTAGE.Services.AI
             foreach (var fitting in fittings)
             {
                 string component = GetString(fitting, "Component").ToUpper();
-                string connType = GetString(fitting, "Connection Type");
-                double? classRating = GetNullableDouble(fitting, "Class Rating");
+                string connTypes = GetString(fitting, "Connection Type");
+                string? classRating = GetNullableString(fitting, "Class Rating");
                 int qty = GetBomQuantity(fitting);
-                double fittingSize = GetDouble(fitting, "Size");
-                double? connSize = GetNullableDouble(fitting, "Connection Size");
 
                 double? contribution = null;
+                string lookupKey = "";
 
                 if (OletComponents.Contains(component))
                 {
-                    // Olets: always look up as "SOL" with connection type "OLW"
-                    contribution = LookupOlet(pipeSize, classRating);
+                    // Olets: use actual component name and non-OLW connection type
+                    // Fall back to Thickness if Class Rating is empty
+                    string? oletClass = classRating;
+                    if (string.IsNullOrEmpty(oletClass))
+                        oletClass = GetNullableString(fitting, "Thickness");
+                    var (runIn, key) = LookupOlet(component, connTypes, pipeSize, oletClass);
+                    contribution = runIn;
+                    lookupKey = key;
                 }
                 else if (component == "TEE")
                 {
                     // TEE: 3x Makeup_Run_In
-                    var result = LookupMakeup(connType, "TEE", pipeSize, classRating);
+                    string weldType = ExtractWeldableType(connTypes);
+                    var result = LookupMakeup(weldType, "TEE", pipeSize, classRating);
+                    lookupKey = $"{weldType}/TEE/{pipeSize}" + (!string.IsNullOrEmpty(classRating) ? $"/Class{classRating}" : "");
                     if (result != null)
                         contribution = result.Value.RunIn * 3;
                 }
                 else if (component == "CROSS")
                 {
                     // CROSS: 4x Makeup_Run_In
-                    var result = LookupMakeup(connType, "CROSS", pipeSize, classRating);
+                    string weldType = ExtractWeldableType(connTypes);
+                    var result = LookupMakeup(weldType, "CROSS", pipeSize, classRating);
+                    lookupKey = $"{weldType}/CROSS/{pipeSize}" + (!string.IsNullOrEmpty(classRating) ? $"/Class{classRating}" : "");
                     if (result != null)
                         contribution = result.Value.RunIn * 4;
                 }
@@ -113,10 +122,12 @@ namespace VANTAGE.Services.AI
                     // REDT: parse dual size from Size field (e.g., "4x2")
                     string sizeStr = GetString(fitting, "Size");
                     var parsed = ParseDualSize(sizeStr);
+                    string weldType = ExtractWeldableType(connTypes);
                     if (parsed != null)
                     {
                         var (largerSize, smallerSize) = parsed.Value;
-                        var result = LookupMakeup(connType, "REDT", largerSize, classRating, smallerSize);
+                        var result = LookupMakeup(weldType, "REDT", largerSize, classRating, smallerSize);
+                        lookupKey = $"{weldType}/REDT/{largerSize}x{smallerSize}" + (!string.IsNullOrEmpty(classRating) ? $"/Class{classRating}" : "");
                         if (result != null)
                         {
                             // If pipe matches run size, double run makeup (2 welds); if outlet size, single outlet makeup
@@ -130,7 +141,9 @@ namespace VANTAGE.Services.AI
                 else if (component == "90L" || component == "45L")
                 {
                     // Elbows: 2x Makeup_Run_In (two welds)
-                    var result = LookupMakeup(connType, component, pipeSize, classRating);
+                    string weldType = ExtractWeldableType(connTypes);
+                    var result = LookupMakeup(weldType, component, pipeSize, classRating);
+                    lookupKey = $"{weldType}/{component}/{pipeSize}" + (!string.IsNullOrEmpty(classRating) ? $"/Class{classRating}" : "");
                     if (result != null)
                         contribution = result.Value.RunIn * 2;
                 }
@@ -139,9 +152,11 @@ namespace VANTAGE.Services.AI
                     // Reducing fittings: parse dual size, only count on larger size pipe, 1x makeup
                     string sizeStr = GetString(fitting, "Size");
                     var parsed = ParseDualSize(sizeStr);
+                    string weldType = ExtractWeldableType(connTypes);
                     if (parsed != null && Math.Abs(pipeSize - parsed.Value.Larger) < 0.001)
                     {
-                        var result = LookupMakeup(connType, component, parsed.Value.Larger, classRating);
+                        var result = LookupMakeup(weldType, component, parsed.Value.Larger, classRating);
+                        lookupKey = $"{weldType}/{component}/{parsed.Value.Larger}" + (!string.IsNullOrEmpty(classRating) ? $"/Class{classRating}" : "");
                         if (result != null)
                             contribution = result.Value.RunIn;
                     }
@@ -152,7 +167,9 @@ namespace VANTAGE.Services.AI
                 else
                 {
                     // Standard fitting (CAP, FLG, etc.) - single weld
-                    var result = LookupMakeup(connType, component, pipeSize, classRating);
+                    string weldType = ExtractWeldableType(connTypes);
+                    var result = LookupMakeup(weldType, component, pipeSize, classRating);
+                    lookupKey = $"{weldType}/{component}/{pipeSize}" + (!string.IsNullOrEmpty(classRating) ? $"/Class{classRating}" : "");
                     if (result != null)
                         contribution = result.Value.RunIn;
                 }
@@ -163,15 +180,16 @@ namespace VANTAGE.Services.AI
                 }
                 else
                 {
-                    // Log missed fitting
+                    // Log missed fitting with lookup key
                     missed.Add(new MissedMakeup
                     {
                         DrawingNumber = GetString(fitting, "Drawing Number"),
                         Component = component,
                         Size = GetString(fitting, "Size"),
-                        ConnectionType = connType,
+                        ConnectionType = connTypes,
                         ClassRating = GetString(fitting, "Class Rating"),
-                        Description = GetString(fitting, "Raw Description")
+                        Description = GetString(fitting, "Raw Description"),
+                        LookupKey = lookupKey
                     });
                 }
             }
@@ -179,11 +197,31 @@ namespace VANTAGE.Services.AI
             return (totalInches, missed);
         }
 
-        // Olet lookup: always use connection type "OLW" and component "SOL"
-        private static double? LookupOlet(double pipeSize, double? classRating)
+        // Olet lookup: use actual component name and find the non-OLW connection type
+        private static (double? RunIn, string LookupKey) LookupOlet(string component, string connTypes, double pipeSize, string? classRating)
         {
-            var result = LookupMakeup("OLW", "SOL", pipeSize, classRating);
-            return result?.RunIn;
+            string weldType = ExtractWeldableType(connTypes, excludeOlw: true);
+            var result = LookupMakeup(weldType, component, pipeSize, classRating);
+            string key = $"{weldType}/{component}/{pipeSize}" + (!string.IsNullOrEmpty(classRating) ? $"/Class{classRating}" : "");
+            return (result?.RunIn, key);
+        }
+
+        // Extract weldable connection type from comma-separated list (exclude BU for flanges, OLW for olets)
+        private static string ExtractWeldableType(string connTypes, bool excludeOlw = false)
+        {
+            if (string.IsNullOrWhiteSpace(connTypes)) return "BW";
+
+            var types = connTypes.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                                 .Select(t => t.Trim().ToUpper())
+                                 .ToList();
+
+            foreach (var t in types)
+            {
+                if (t == "BU") continue;
+                if (excludeOlw && t == "OLW") continue;
+                return t;
+            }
+            return types.FirstOrDefault() ?? "BW";
         }
 
         // Parse dual size (e.g., "6x1") and return both sizes (larger, smaller), or null if not dual format
@@ -246,6 +284,16 @@ namespace VANTAGE.Services.AI
             return "";
         }
 
+        private static string? GetNullableString(Dictionary<string, object?> row, string key)
+        {
+            if (row.TryGetValue(key, out var val) && val != null)
+            {
+                string s = val.ToString()?.Trim() ?? "";
+                return string.IsNullOrEmpty(s) ? null : s;
+            }
+            return null;
+        }
+
         // Get BOM quantity (integer, minimum 1)
         private static int GetBomQuantity(Dictionary<string, object?> row)
         {
@@ -278,7 +326,7 @@ namespace VANTAGE.Services.AI
     {
         public string Connection_Type { get; set; } = "";
         public string Component { get; set; } = "";
-        public double? Class { get; set; }
+        public string? Class { get; set; }  // STD, XS, 160, 3000, 6000, etc.
         public double Run_Size { get; set; }
         public double? Outlet_Size { get; set; }
         public double Makeup_Run_In { get; set; }
@@ -294,5 +342,6 @@ namespace VANTAGE.Services.AI
         public string ConnectionType { get; set; } = "";
         public string ClassRating { get; set; } = "";
         public string Description { get; set; } = "";
+        public string LookupKey { get; set; } = "";
     }
 }

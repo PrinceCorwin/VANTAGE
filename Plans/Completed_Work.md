@@ -6,13 +6,16 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
-### March 11, 2026 (Takeoff Post-Processing — FRH Records & Fitting Makeup, WIP)
+### March 11, 2026 (Takeoff Post-Processing — FRH Records & Fitting Makeup)
 - **FRH (Field Handling) records for PIPE items:** New FRH row generated on Labor tab for each PIPE BOM item. Quantity = pipe length (ft) + fitting makeup (inches converted to ft).
-- **New file: `Services/AI/FittingMakeupService.cs`** — Loads `Resources/FittingMakeup.json` (1,968 entries, embedded resource) and provides lookup methods. Handles standard fittings (1x), TEE (3x), CROSS (4x), REDT (run+outlet), and olets (always looked up as OLW/SOL with smaller dual size).
+- **New file: `Services/AI/FittingMakeupService.cs`** — Loads `Resources/FittingMakeup.json` (2,078 entries, embedded resource) and provides lookup methods. Handles standard fittings (1x), TEE (3x), CROSS (4x), 90L/45L (2x), REDT (run+outlet), olets, and reducing fittings.
 - **Fitting-to-pipe matching:** Groups material rows by Drawing Number. For each pipe, finds fittings on same drawing with matching size AND material. Olets parse dual size (e.g., "6x1") and match on the smaller size.
-- **Missed Makeups tab:** New Excel worksheet listing fittings that couldn't be looked up in the JSON table OR weren't claimed by any pipe. Only created when there are missed entries. Orange header styling.
-- **Status: WIP** — Initial test showed only 1 fitting found, rest missed. Root cause appears to be upstream agent issue with material field values (e.g., pipe gets `316/316L SS A312` while fittings get `316/316L SS A403-W` — same material family but different ASTM specs prevent exact match). Agent code needs to normalize material values. Debug logging is still in place (`TakeoffPostProcessor.FRH` log lines) to assist next testing session.
-- **Key files:** `Services/AI/FittingMakeupService.cs` (new), `Services/AI/TakeoffPostProcessor.cs` (modified)
+- **Olet lookup improvements:** Olets now use actual component names (WOL, SOL, TOL, ELB, LOL, NOL) instead of always SOL. Non-OLW connection type is extracted for lookup. Falls back to Thickness field when Class Rating is empty.
+- **Class field changed to string:** `FittingMakeupEntry.Class` is now a string to support values like STD, XS, 160, 3000, 6000. ClassMatches does case-insensitive string comparison.
+- **100 new olet entries added:** WOL (STD/XS/160), SOL (3000/6000), TOL (3000/6000), ELB (3000/6000), LOL (3000/6000), NOL (3000/6000 across BW/SW/THRD).
+- **Exclusions list expanded:** Added FLGB, PIPET to components excluded from makeup lookup (also FS, GSKT, BOLT, WAS, HEAT, HOSE, INST, PLG, SAFSHW, F8B, DPAN, ACT).
+- **Missed Makeups tab:** New Excel worksheet listing fittings that couldn't be looked up in the JSON table OR weren't claimed by any pipe. Includes LookupKey column showing connection type/component/size/class used for lookup.
+- **Key files:** `Services/AI/FittingMakeupService.cs`, `Services/AI/TakeoffPostProcessor.cs`, `Resources/FittingMakeup.json`
 
 ### March 10, 2026 (Takeoff Post-Processing — Connection & Description Refinements)
 - **ROCStep column added** to Labor tab (between ShopField and Confidence), empty for now.
