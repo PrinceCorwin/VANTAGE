@@ -292,15 +292,18 @@ namespace VANTAGE.Services.AI
                     frhRows.Add(frh);
                 }
 
-                // Log fittings on this drawing that weren't claimed by any pipe
+                // Log fittings on this drawing that weren't claimed by any pipe (excluding non-weldable)
                 foreach (var fitting in fittingRows)
                 {
                     if (claimedFittings.Contains(fitting)) continue;
 
+                    string component = GetString(fitting, "Component").ToUpper();
+                    if (ExcludeFromMakeupLookup.Contains(component)) continue;
+
                     _missedMakeups.Add(new MissedMakeup
                     {
                         DrawingNumber = GetString(fitting, "Drawing Number"),
-                        Component = GetString(fitting, "Component"),
+                        Component = component,
                         Size = GetString(fitting, "Size"),
                         ConnectionType = GetString(fitting, "Connection Type"),
                         ClassRating = GetString(fitting, "Class Rating"),
@@ -331,17 +334,20 @@ namespace VANTAGE.Services.AI
         {
             var result = new List<Dictionary<string, object?>>();
 
-            string component = GetString(mat, "Component");
+            string component = GetString(mat, "Component").ToUpper();
             int quantity = ParseQuantity(mat);
-            string size = GetString(mat, "Size");
-            string connSize = GetString(mat, "Connection Size");
-            if (string.IsNullOrEmpty(connSize)) connSize = size;
+            string sizeStr = GetString(mat, "Size");
             string thickness = GetString(mat, "Thickness");
-            string classRating = GetString(mat, "Class Rating");
             string pipeSpec = FindPipeSpec(mat);
             string material = GetString(mat, "Material");
             string commodityCode = GetString(mat, "Commodity Code");
             string rawDesc = GetString(mat, "Raw Description");
+
+            // Parse dual size if present (e.g., "4x2" → larger=4, smaller=2)
+            var dualSize = FittingMakeupService.ParseDualSize(sizeStr);
+            double largerSize = dualSize?.Larger ?? FittingMakeupService.GetDouble(mat, "Size");
+            double smallerSize = dualSize?.Smaller ?? largerSize;
+            bool isDualSize = dualSize != null;
 
             // Non-PIPE items: add fab record with original component and raw description
             if (!component.Equals("PIPE", StringComparison.OrdinalIgnoreCase))
@@ -390,63 +396,36 @@ namespace VANTAGE.Services.AI
                                  .Select(t => t.Trim().ToUpper())
                                  .ToList();
 
-            // Distribute connections across types
-            var typeDistribution = DistributeConnections(connQty, types);
+            // Build list of (connectionType, size) pairs based on component type
+            var connectionPairs = BuildConnectionPairs(component, types, connQty, largerSize, smallerSize, isDualSize);
 
             // Explode: quantity × connections
             for (int q = 0; q < quantity; q++)
             {
-                foreach (var (connType, count) in typeDistribution)
+                foreach (var (connType, connSize) in connectionPairs)
                 {
-                    for (int c = 0; c < count; c++)
+                    // Skip NIP connections
+                    if (connType == "NIP") continue;
+
+                    var labor = CreateLaborRow(mat, connType, connSize, thickness, pipeSpec, material);
+                    result.Add(labor);
+
+                    // Fabrication records (not for olets)
+                    if (!FittingMakeupService.IsOlet(component))
                     {
-                        // Skip NIP connections
-                        if (connType == "NIP") continue;
-
-                        var labor = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
-
-                        // Copy all columns except excluded ones
-                        foreach (var (key, value) in mat)
+                        // CUT: one per BW, SW, or THRD connection
+                        if (connType == "BW" || connType == "SW" || connType == "THRD")
                         {
-                            if (!ExcludeFromLabor.Contains(key))
-                                labor[key] = value;
-                        }
-
-                        // Override/set specific columns - connType goes in Component
-                        labor["Component"] = connType;
-                        labor["Size"] = connSize;
-                        labor["Connection Size"] = connSize;
-                        labor["Quantity"] = 1;
-                        labor["ShopField"] = connType == "BU" ? 2 : 1;
-
-                        // Build concatenated description using connection size
-                        labor["Description"] = BuildConcatDescription(
-                            connSize, thickness, pipeSpec, material, connType);
-
-                        // BudgetMHs placeholder
-                        labor["BudgetMHs"] = null;
-
-                        result.Add(labor);
-
-                        // Fabrication children: CUT for BW and SW connections only
-                        if (connType == "BW" || connType == "SW")
-                        {
-                            var cut = new Dictionary<string, object?>(labor, StringComparer.OrdinalIgnoreCase);
-                            cut["Component"] = "CUT";
-                            cut["ShopField"] = 1;
-                            cut["Description"] = BuildFabDescription(connSize, thickness, pipeSpec, material, "CUT");
+                            var cut = CreateFabRow(mat, "CUT", connSize, thickness, pipeSpec, material);
                             result.Add(cut);
                         }
 
-                        // Fabrication children: 2 BEV per BW connection
+                        // BEV: two per BW connection
                         if (connType == "BW")
                         {
                             for (int b = 0; b < 2; b++)
                             {
-                                var bev = new Dictionary<string, object?>(labor, StringComparer.OrdinalIgnoreCase);
-                                bev["Component"] = "BEV";
-                                bev["ShopField"] = 1;
-                                bev["Description"] = BuildFabDescription(connSize, thickness, pipeSpec, material, "BEVEL");
+                                var bev = CreateFabRow(mat, "BEV", connSize, thickness, pipeSpec, material);
                                 result.Add(bev);
                             }
                         }
@@ -455,6 +434,130 @@ namespace VANTAGE.Services.AI
             }
 
             return result;
+        }
+
+        // Build list of (connectionType, size) pairs based on component type
+        private static List<(string Type, double Size)> BuildConnectionPairs(
+            string component, List<string> types, int connQty, double largerSize, double smallerSize, bool isDualSize)
+        {
+            var pairs = new List<(string, double)>();
+            if (types.Count == 0 || connQty <= 0) return pairs;
+
+            // Olets: use smaller size only, OLW + other type (both at smaller size)
+            if (FittingMakeupService.IsOlet(component))
+            {
+                // Always add OLW for the weld to header
+                pairs.Add(("OLW", smallerSize));
+                // Add the other connection type if present and not OLW
+                foreach (var t in types)
+                {
+                    if (t != "OLW")
+                    {
+                        pairs.Add((t, smallerSize));
+                        break;
+                    }
+                }
+                return pairs;
+            }
+
+            // FLG types: BU + other type (typically BW)
+            if (component == "FLG" || component == "FLGB" || component == "FLGO")
+            {
+                // Always add BU for the bolt-up
+                pairs.Add(("BU", largerSize));
+                // Add the other connection type if present and not BU
+                foreach (var t in types)
+                {
+                    if (t != "BU")
+                    {
+                        pairs.Add((t, largerSize));
+                        break;
+                    }
+                }
+                return pairs;
+            }
+
+            // TEE with dual size: 2 connections for larger (run faces), 1 for smaller (outlet)
+            if (component == "TEE" && isDualSize)
+            {
+                string runType = types.Count > 0 ? types[0] : "BW";
+                string outletType = types.Count > 1 ? types[1] : runType;
+                pairs.Add((runType, largerSize));
+                pairs.Add((runType, largerSize));
+                pairs.Add((outletType, smallerSize));
+                return pairs;
+            }
+
+            // Dual-size fittings (REDT, REDC, REDE, SWG, etc.): 1st type at larger, 2nd type at smaller
+            if (isDualSize)
+            {
+                string largerType = types.Count > 0 ? types[0] : "BW";
+                string smallerType = types.Count > 1 ? types[1] : largerType;
+                pairs.Add((largerType, largerSize));
+                pairs.Add((smallerType, smallerSize));
+                return pairs;
+            }
+
+            // Single-size fittings: distribute connQty across types
+            // If only one type and connQty > 1, repeat that type
+            if (types.Count == 1)
+            {
+                for (int i = 0; i < connQty; i++)
+                    pairs.Add((types[0], largerSize));
+            }
+            else
+            {
+                // Multiple types: assign in order, cycle if connQty > types.Count
+                for (int i = 0; i < connQty; i++)
+                    pairs.Add((types[i % types.Count], largerSize));
+            }
+            return pairs;
+        }
+
+        // Create a labor row for a connection
+        private static Dictionary<string, object?> CreateLaborRow(
+            Dictionary<string, object?> mat, string connType, double size,
+            string thickness, string pipeSpec, string material)
+        {
+            var labor = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+            foreach (var (key, value) in mat)
+            {
+                if (!ExcludeFromLabor.Contains(key))
+                    labor[key] = value;
+            }
+
+            string sizeStr = size.ToString("0.###");
+            labor["Component"] = connType;
+            labor["Size"] = sizeStr;
+            labor["Quantity"] = 1;
+            labor["ShopField"] = connType == "BU" ? 2 : 1;
+            labor["Description"] = BuildConcatDescription(sizeStr, thickness, pipeSpec, material, connType);
+            labor["BudgetMHs"] = null;
+
+            return labor;
+        }
+
+        // Create a fabrication row (CUT or BEV)
+        private static Dictionary<string, object?> CreateFabRow(
+            Dictionary<string, object?> mat, string fabType, double size,
+            string thickness, string pipeSpec, string material)
+        {
+            var fab = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+            foreach (var (key, value) in mat)
+            {
+                if (!ExcludeFromLabor.Contains(key))
+                    fab[key] = value;
+            }
+
+            string sizeStr = size.ToString("0.###");
+            fab["Component"] = fabType;
+            fab["Size"] = sizeStr;
+            fab["Quantity"] = 1;
+            fab["ShopField"] = 1;
+            fab["Description"] = BuildFabDescription(sizeStr, thickness, pipeSpec, material, fabType == "BEV" ? "BEVEL" : fabType);
+            fab["BudgetMHs"] = null;
+
+            return fab;
         }
 
         // Parse quantity - handles formats like "2", "41.3'", etc.
@@ -472,25 +575,6 @@ namespace VANTAGE.Services.AI
                 return Math.Max(1, (int)Math.Floor(d));
 
             return 1;
-        }
-
-        // Distribute connections evenly across types, remainder to first types
-        private static List<(string Type, int Count)> DistributeConnections(int total, List<string> types)
-        {
-            if (types.Count == 0) return new List<(string, int)>();
-
-            int perType = total / types.Count;
-            int remainder = total % types.Count;
-
-            var result = new List<(string, int)>();
-            for (int i = 0; i < types.Count; i++)
-            {
-                int count = perType + (i < remainder ? 1 : 0);
-                if (count > 0)
-                    result.Add((types[i], count));
-            }
-
-            return result;
         }
 
         // Find pipe spec from title block fields (various naming conventions)
