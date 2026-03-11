@@ -221,6 +221,11 @@
 	  </Content>
 	</ItemGroup>
 
+	<!-- Fitting makeup reference data (embedded resource) -->
+	<ItemGroup>
+		<EmbeddedResource Include="Resources\FittingMakeup.json" />
+	</ItemGroup>
+
 	<!-- Config files: appsettings.json for dev, appsettings.enc for production -->
 	<ItemGroup>
 		<None Update="appsettings.json" Condition="Exists('appsettings.json')">

@@ -128,13 +128,14 @@
 ### High Priority
 - **Mobile/iOS Version (iPad)** — Execs want iPad app for field supes to submit progress. Needs architecture discussion: native iOS, cross-platform framework, web app, API design, offline sync, etc.
 - **Takeoff Post-Processing Pipeline** — All operate on the downloaded Excel, no AWS changes needed. See `summit-takeoff-integration-guide.md` for details.
-  1. Fabrication item generation — CUT/BEV rows, connection rows, BOM fab records, FSH records, ROCStep column complete. TODO:
-     - FRH (Field Handling) records for PIPE items
+  1. Fabrication item generation — CUT/BEV rows, connection rows, BOM fab records, FSH records, ROCStep column complete. FRH records implemented (WIP — fitting lookup works but agent material normalization needed for matching). TODO:
+     - Fix agent material field normalization so pipe and fittings share identical material strings
+     - Investigate why only 1 of many fittings was found in JSON lookup (review Missed Makeups tab, check connType/component/size/class values)
+     - Remove debug logging from TakeoffPostProcessor.cs once FRH is verified
   2. Rate sheet upload — User provides Excel with unit rates
   3. Rate application — Match rates to items, calculate manhours
   4. ROC splits — Divide handling records by Rules of Credit
   5. VANTAGE tab — Column rename for direct import into Activities
-  6. Fitting makeup table — For center-to-center length calculation
 
 
 ### Medium Priority

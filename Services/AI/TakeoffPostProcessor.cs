@@ -10,6 +10,9 @@ namespace VANTAGE.Services.AI
     // and Summary tab (stats) from the Material tab produced by AWS lambda.
     public static class TakeoffPostProcessor
     {
+        // Accumulates missed fitting lookups during FRH generation (reset each run)
+        private static List<MissedMakeup> _missedMakeups = new();
+
         // Columns to exclude from Labor tab (material-only fields)
         private static readonly HashSet<string> ExcludeFromLabor = new(StringComparer.OrdinalIgnoreCase)
         {
@@ -30,6 +33,9 @@ namespace VANTAGE.Services.AI
             {
                 using var workbook = new XLWorkbook(excelPath);
 
+                // Reset missed makeups for this run
+                _missedMakeups = new List<MissedMakeup>();
+
                 // Step A: Read Material tab
                 var materialRows = ReadMaterialTab(workbook);
                 AppLogger.Info($"Read {materialRows.Count} material rows", "TakeoffPostProcessor");
@@ -44,7 +50,14 @@ namespace VANTAGE.Services.AI
                 // Step D & E: Generate and write Summary tab
                 WriteSummaryTab(workbook, materialRows, laborRows);
 
-                // Step F: Reorder tabs (Summary, Material, Labor, Flagged)
+                // Step F: Write Missed Makeups tab (only if there are missed lookups)
+                if (_missedMakeups.Count > 0)
+                {
+                    WriteMissedMakeupsTab(workbook);
+                    AppLogger.Info($"Logged {_missedMakeups.Count} missed fitting makeups", "TakeoffPostProcessor");
+                }
+
+                // Step G: Reorder tabs
                 ReorderTabs(workbook);
 
                 // Step G: Save
@@ -61,7 +74,7 @@ namespace VANTAGE.Services.AI
         // Reorder tabs: Summary, Material, Labor, Flagged
         private static void ReorderTabs(XLWorkbook workbook)
         {
-            var desiredOrder = new[] { "Summary", "Material", "Labor", "Flagged" };
+            var desiredOrder = new[] { "Summary", "Material", "Labor", "Flagged", "Missed Makeups" };
             int position = 1;
 
             foreach (var name in desiredOrder)
@@ -116,7 +129,7 @@ namespace VANTAGE.Services.AI
             return rows;
         }
 
-        // Step B: Generate Labor rows (one per connection, exploded)
+        // Step B: Generate Labor rows (one per connection, exploded) + FRH records
         private static List<Dictionary<string, object?>> GenerateLaborRows(
             List<Dictionary<string, object?>> materialRows)
         {
@@ -128,7 +141,153 @@ namespace VANTAGE.Services.AI
                 laborRows.AddRange(rows);
             }
 
+            // Generate FRH (Field Handling) records for PIPE items with fitting makeup
+            var frhRows = GenerateFrhRows(materialRows);
+            laborRows.AddRange(frhRows);
+
             return laborRows;
+        }
+
+        // Generate FRH records by computing fitting makeup for each pipe
+        private static List<Dictionary<string, object?>> GenerateFrhRows(
+            List<Dictionary<string, object?>> materialRows)
+        {
+            var frhRows = new List<Dictionary<string, object?>>();
+
+            // Group material rows by Drawing Number
+            var byDrawing = materialRows.GroupBy(r => GetString(r, "Drawing Number"));
+
+            foreach (var drawingGroup in byDrawing)
+            {
+                var rows = drawingGroup.ToList();
+                var pipeRows = rows.Where(r => GetString(r, "Component").Equals("PIPE", StringComparison.OrdinalIgnoreCase)).ToList();
+                var fittingRows = rows.Where(r => !GetString(r, "Component").Equals("PIPE", StringComparison.OrdinalIgnoreCase)).ToList();
+
+                AppLogger.Info($"Drawing '{drawingGroup.Key}': {pipeRows.Count} pipes, {fittingRows.Count} fittings", "TakeoffPostProcessor.FRH");
+
+                // Track which fittings get claimed by at least one pipe
+                var claimedFittings = new HashSet<Dictionary<string, object?>>();
+
+                foreach (var pipe in pipeRows)
+                {
+                    double pipeSize = FittingMakeupService.GetDouble(pipe, "Size");
+                    string pipeMaterial = GetString(pipe, "Material");
+                    double? pipeClass = GetNullableDouble(pipe, "Class Rating");
+
+                    AppLogger.Info($"  PIPE size={pipeSize} material='{pipeMaterial}' class={pipeClass}", "TakeoffPostProcessor.FRH");
+
+                    // Find fittings on same drawing with matching size AND material
+                    var matchingFittings = new List<Dictionary<string, object?>>();
+                    foreach (var fitting in fittingRows)
+                    {
+                        string fittingComponent = GetString(fitting, "Component").ToUpper();
+                        string fittingMaterial = GetString(fitting, "Material");
+
+                        // Material must match
+                        if (!fittingMaterial.Equals(pipeMaterial, StringComparison.OrdinalIgnoreCase))
+                        {
+                            AppLogger.Info($"    SKIP {fittingComponent}: material mismatch pipe='{pipeMaterial}' fitting='{fittingMaterial}'", "TakeoffPostProcessor.FRH");
+                            continue;
+                        }
+
+                        // Size matching: olets use the smaller of their dual size
+                        if (FittingMakeupService.IsOlet(fittingComponent))
+                        {
+                            // Olet BOM has dual size in Size field (e.g., "6x1") — parse smaller
+                            string sizeStr = GetString(fitting, "Size");
+                            double? smallSize = FittingMakeupService.ParseOletSmallSize(sizeStr);
+                            if (smallSize == null)
+                            {
+                                // Single size — try direct match
+                                double fittingSize = FittingMakeupService.GetDouble(fitting, "Size");
+                                if (Math.Abs(fittingSize - pipeSize) < 0.001)
+                                {
+                                    matchingFittings.Add(fitting);
+                                    claimedFittings.Add(fitting);
+                                }
+                            }
+                            else if (Math.Abs(smallSize.Value - pipeSize) < 0.001)
+                            {
+                                matchingFittings.Add(fitting);
+                                claimedFittings.Add(fitting);
+                            }
+                        }
+                        else
+                        {
+                            // Standard fitting — size must match pipe size
+                            double fittingSize = FittingMakeupService.GetDouble(fitting, "Size");
+                            if (Math.Abs(fittingSize - pipeSize) < 0.001)
+                            {
+                                matchingFittings.Add(fitting);
+                                claimedFittings.Add(fitting);
+                            }
+                        }
+                    }
+
+                    AppLogger.Info($"  Matched {matchingFittings.Count} fittings to pipe size={pipeSize}", "TakeoffPostProcessor.FRH");
+
+                    // Calculate fitting makeup
+                    var (totalMakeupInches, missed) = FittingMakeupService.CalculateFittingMakeupForPipe(
+                        pipeSize, pipeClass, matchingFittings);
+
+                    AppLogger.Info($"  Makeup: {totalMakeupInches} inches, {missed.Count} missed", "TakeoffPostProcessor.FRH");
+
+                    // Collect missed makeups for the tab
+                    _missedMakeups.AddRange(missed);
+
+                    // Get pipe length in feet
+                    double pipeLengthFeet = FittingMakeupService.ParsePipeLengthFeet(pipe);
+
+                    // FRH Quantity = pipe length (ft) + (total makeup inches / 12)
+                    double frhQuantity = pipeLengthFeet + (totalMakeupInches / 12.0);
+                    if (frhQuantity <= 0) continue;
+
+                    // Create FRH row (same structure as FSH)
+                    var frh = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+                    foreach (var (key, value) in pipe)
+                    {
+                        if (!ExcludeFromLabor.Contains(key))
+                            frh[key] = value;
+                    }
+                    frh["Component"] = "FRH";
+                    frh["Quantity"] = Math.Round(frhQuantity, 3);
+                    frh["Description"] = GetString(pipe, "Raw Description");
+                    frh["BudgetMHs"] = null;
+
+                    frhRows.Add(frh);
+                }
+
+                // Log fittings on this drawing that weren't claimed by any pipe
+                foreach (var fitting in fittingRows)
+                {
+                    if (claimedFittings.Contains(fitting)) continue;
+
+                    _missedMakeups.Add(new MissedMakeup
+                    {
+                        DrawingNumber = GetString(fitting, "Drawing Number"),
+                        Component = GetString(fitting, "Component"),
+                        Size = GetString(fitting, "Size"),
+                        ConnectionType = GetString(fitting, "Connection Type"),
+                        ClassRating = GetString(fitting, "Class Rating"),
+                        Description = GetString(fitting, "Raw Description")
+                    });
+                }
+            }
+
+            return frhRows;
+        }
+
+        // Helper: Get nullable double from row
+        private static double? GetNullableDouble(Dictionary<string, object?> row, string key)
+        {
+            if (row.TryGetValue(key, out var val) && val != null)
+            {
+                if (val is double d) return d;
+                string s = val.ToString()?.Trim() ?? "";
+                s = s.TrimEnd('\'', '"');
+                if (double.TryParse(s, out double parsed)) return parsed;
+            }
+            return null;
         }
 
         // Explode a single material row into labor rows
@@ -506,6 +665,41 @@ namespace VANTAGE.Services.AI
         {
             ws.Cell(row, 1).Value = label;
             ws.Cell(row, 2).Value = value;
+        }
+
+        // Write Missed Makeups tab for fittings not found in the lookup table
+        private static void WriteMissedMakeupsTab(XLWorkbook workbook)
+        {
+            if (workbook.TryGetWorksheet("Missed Makeups", out _))
+                workbook.Worksheets.Delete("Missed Makeups");
+
+            var ws = workbook.Worksheets.Add("Missed Makeups");
+
+            var columns = new[] { "Drawing Number", "Component", "Size", "Connection Type", "Class Rating", "Description" };
+
+            // Header
+            for (int i = 0; i < columns.Length; i++)
+                ws.Cell(1, i + 1).Value = columns[i];
+
+            var headerRange = ws.Range(1, 1, 1, columns.Length);
+            headerRange.Style.Font.Bold = true;
+            headerRange.Style.Fill.BackgroundColor = XLColor.FromHtml("#FDE9D9");
+
+            // Data rows
+            for (int i = 0; i < _missedMakeups.Count; i++)
+            {
+                var m = _missedMakeups[i];
+                int row = i + 2;
+                ws.Cell(row, 1).Value = m.DrawingNumber;
+                ws.Cell(row, 2).Value = m.Component;
+                ws.Cell(row, 3).Value = m.Size;
+                ws.Cell(row, 4).Value = m.ConnectionType;
+                ws.Cell(row, 5).Value = m.ClassRating;
+                ws.Cell(row, 6).Value = m.Description;
+            }
+
+            ws.Columns().AdjustToContents(1, 100);
+            ws.SheetView.FreezeRows(1);
         }
 
         // Helper: Get string value from row
