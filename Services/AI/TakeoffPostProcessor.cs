@@ -161,7 +161,9 @@ namespace VANTAGE.Services.AI
                             fab[key] = value;
                     }
                     fab["Quantity"] = 1;
-                    fab["Description"] = rawDesc;
+                    fab["Description"] = string.IsNullOrEmpty(commodityCode)
+                        ? rawDesc
+                        : $"{rawDesc} - {commodityCode}";
                     fab["BudgetMHs"] = null;
                     result.Add(fab);
                 }
@@ -194,14 +196,6 @@ namespace VANTAGE.Services.AI
                                  .Select(t => t.Trim().ToUpper())
                                  .ToList();
 
-            // VLV rule: exclude THRD and BU connections
-            if (component.Equals("VLV", StringComparison.OrdinalIgnoreCase))
-            {
-                types = types.Where(t => t != "THRD" && t != "BU").ToList();
-                connQty = types.Count;
-                if (connQty == 0) return result;
-            }
-
             // Distribute connections across types
             var typeDistribution = DistributeConnections(connQty, types);
 
@@ -212,6 +206,9 @@ namespace VANTAGE.Services.AI
                 {
                     for (int c = 0; c < count; c++)
                     {
+                        // Skip NIP connections
+                        if (connType == "NIP") continue;
+
                         var labor = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
 
                         // Copy all columns except excluded ones
@@ -223,26 +220,27 @@ namespace VANTAGE.Services.AI
 
                         // Override/set specific columns - connType goes in Component
                         labor["Component"] = connType;
+                        labor["Size"] = connSize;
                         labor["Connection Size"] = connSize;
                         labor["Quantity"] = 1;
                         labor["ShopField"] = connType == "BU" ? 2 : 1;
 
-                        // Build concatenated description
+                        // Build concatenated description using connection size
                         labor["Description"] = BuildConcatDescription(
-                            size, thickness, pipeSpec, material, commodityCode, connType);
+                            connSize, thickness, pipeSpec, material, connType);
 
                         // BudgetMHs placeholder
                         labor["BudgetMHs"] = null;
 
                         result.Add(labor);
 
-                        // Fabrication children: CUT for every connection except BU
-                        if (connType != "BU")
+                        // Fabrication children: CUT for BW and SW connections only
+                        if (connType == "BW" || connType == "SW")
                         {
                             var cut = new Dictionary<string, object?>(labor, StringComparer.OrdinalIgnoreCase);
                             cut["Component"] = "CUT";
                             cut["ShopField"] = 1;
-                            cut["Description"] = BuildFabDescription(size, thickness, pipeSpec, material, "CUT");
+                            cut["Description"] = BuildFabDescription(connSize, thickness, pipeSpec, material, "CUT");
                             result.Add(cut);
                         }
 
@@ -254,7 +252,7 @@ namespace VANTAGE.Services.AI
                                 var bev = new Dictionary<string, object?>(labor, StringComparer.OrdinalIgnoreCase);
                                 bev["Component"] = "BEV";
                                 bev["ShopField"] = 1;
-                                bev["Description"] = BuildFabDescription(size, thickness, pipeSpec, material, "BEVEL");
+                                bev["Description"] = BuildFabDescription(connSize, thickness, pipeSpec, material, "BEVEL");
                                 result.Add(bev);
                             }
                         }
@@ -331,10 +329,10 @@ namespace VANTAGE.Services.AI
             return string.Join(" - ", parts);
         }
 
-        // Build concatenated description for rate matching
+        // Build concatenated description for connection rows
         private static string BuildConcatDescription(
             string size, string thickness, string pipeSpec,
-            string material, string commodityCode, string connType)
+            string material, string connType)
         {
             var parts = new List<string>();
 
@@ -342,7 +340,6 @@ namespace VANTAGE.Services.AI
             if (!string.IsNullOrEmpty(thickness)) parts.Add(thickness);
             if (!string.IsNullOrEmpty(pipeSpec)) parts.Add(pipeSpec);
             if (!string.IsNullOrEmpty(material)) parts.Add(material);
-            if (!string.IsNullOrEmpty(commodityCode)) parts.Add(commodityCode);
             if (!string.IsNullOrEmpty(connType)) parts.Add(connType);
 
             return string.Join(" - ", parts);
@@ -369,7 +366,7 @@ namespace VANTAGE.Services.AI
                 "Drawing Number", "Component", "Size", "Connection Size",
                 "Thickness", "Class Rating", "Material",
                 "Commodity Code", "Description", "Quantity",
-                "ShopField", "Confidence", "Flag", "BudgetMHs"
+                "ShopField", "ROCStep", "Confidence", "Flag", "BudgetMHs"
             };
 
             // Find any additional columns (title block fields)

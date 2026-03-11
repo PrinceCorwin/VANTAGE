@@ -6,6 +6,16 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### March 10, 2026 (Takeoff Post-Processing — Connection & Description Refinements)
+- **ROCStep column added** to Labor tab (between ShopField and Confidence), empty for now.
+- **Removed VLV rule:** Valve connections are no longer excluded. Specific valve component types (VBL, VGT, etc.) are used instead of generic VLV.
+- **NIP connections excluded:** Connection rows are not created for NIP (nipple) connection types.
+- **CUT rows restricted to BW and SW** connections only (previously created for all non-BU).
+- **Connection size used for connections/CUT/BEV:** Size column and descriptions for connection, CUT, and BEV rows now use connection size from Material tab instead of component size. BOM fab records still use original size.
+- **Connection description simplified:** Removed commodity code from connection row descriptions. Format is now `{connSize} IN - {thickness} - {pipeSpec} - {material} - {connType}`.
+- **BOM fab record descriptions:** Now append commodity code to raw description (`{rawDesc} - {commodityCode}`).
+- **Key file:** `Services/AI/TakeoffPostProcessor.cs`
+
 ### March 10, 2026 (Bulk Reassignment Timeout Fix)
 - **Fixed SQL timeout on large bulk reassignments:** Added `CommandTimeout = 120` (2 minutes) to the ownership verification query and bulk UPDATE command in `MenuAssignToUser_Click`. Default 30-second timeout was exceeded when reassigning large numbers of records, causing "Execution Timeout Expired" errors.
 - **Key file:** `Views/ProgressView.xaml.cs`
