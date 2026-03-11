@@ -26,6 +26,12 @@ namespace VANTAGE.Services.AI
             "Item ID"
         };
 
+        // Components to exclude from fitting makeup lookup (non-weldable items)
+        private static readonly HashSet<string> ExcludeFromMakeupLookup = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "FS", "GSKT", "BOLT", "WAS", "HEAT", "HOSE", "INST", "PLG", "SAFSHW", "F8B", "DPAN", "ACT"
+        };
+
         // Main entry point - processes the downloaded Excel file in place
         public static void GenerateLaborAndSummary(string excelPath)
         {
@@ -181,6 +187,11 @@ namespace VANTAGE.Services.AI
                     foreach (var fitting in fittingRows)
                     {
                         string fittingComponent = GetString(fitting, "Component").ToUpper();
+
+                        // Skip non-weldable components
+                        if (ExcludeFromMakeupLookup.Contains(fittingComponent))
+                            continue;
+
                         string fittingMaterial = GetString(fitting, "Material");
 
                         // Material must match
@@ -190,7 +201,7 @@ namespace VANTAGE.Services.AI
                             continue;
                         }
 
-                        // Size matching: olets use the smaller of their dual size
+                        // Size matching logic varies by component type
                         if (FittingMakeupService.IsOlet(fittingComponent))
                         {
                             // Olet BOM has dual size in Size field (e.g., "6x1") — parse smaller
@@ -207,6 +218,30 @@ namespace VANTAGE.Services.AI
                                 }
                             }
                             else if (Math.Abs(smallSize.Value - pipeSize) < 0.001)
+                            {
+                                matchingFittings.Add(fitting);
+                                claimedFittings.Add(fitting);
+                            }
+                        }
+                        else if (fittingComponent == "REDT")
+                        {
+                            // REDT: parse dual size (e.g., "4x2"), match if pipe equals either size
+                            string sizeStr = GetString(fitting, "Size");
+                            var parsed = FittingMakeupService.ParseDualSize(sizeStr);
+                            if (parsed != null &&
+                                (Math.Abs(parsed.Value.Larger - pipeSize) < 0.001 ||
+                                 Math.Abs(parsed.Value.Smaller - pipeSize) < 0.001))
+                            {
+                                matchingFittings.Add(fitting);
+                                claimedFittings.Add(fitting);
+                            }
+                        }
+                        else if (fittingComponent == "REDC" || fittingComponent == "REDE" || fittingComponent == "SWG")
+                        {
+                            // Reducing fittings: parse dual size, only match on larger size
+                            string sizeStr = GetString(fitting, "Size");
+                            var parsed = FittingMakeupService.ParseDualSize(sizeStr);
+                            if (parsed != null && Math.Abs(parsed.Value.Larger - pipeSize) < 0.001)
                             {
                                 matchingFittings.Add(fitting);
                                 claimedFittings.Add(fitting);

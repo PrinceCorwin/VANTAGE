@@ -110,19 +110,48 @@ namespace VANTAGE.Services.AI
                 }
                 else if (component == "REDT")
                 {
-                    // REDT: use larger size as Run_Size, smaller as Outlet_Size
-                    double largerSize = fittingSize;
-                    double smallerSize = connSize ?? fittingSize;
-                    if (smallerSize > largerSize)
-                        (largerSize, smallerSize) = (smallerSize, largerSize);
-
-                    var result = LookupMakeup(connType, "REDT", largerSize, classRating, smallerSize);
+                    // REDT: parse dual size from Size field (e.g., "4x2")
+                    string sizeStr = GetString(fitting, "Size");
+                    var parsed = ParseDualSize(sizeStr);
+                    if (parsed != null)
+                    {
+                        var (largerSize, smallerSize) = parsed.Value;
+                        var result = LookupMakeup(connType, "REDT", largerSize, classRating, smallerSize);
+                        if (result != null)
+                        {
+                            // If pipe matches run size, double run makeup (2 welds); if outlet size, single outlet makeup
+                            if (Math.Abs(pipeSize - largerSize) < 0.001)
+                                contribution = result.Value.RunIn * 2;
+                            else
+                                contribution = result.Value.OutletIn ?? 0;
+                        }
+                    }
+                }
+                else if (component == "90L" || component == "45L")
+                {
+                    // Elbows: 2x Makeup_Run_In (two welds)
+                    var result = LookupMakeup(connType, component, pipeSize, classRating);
                     if (result != null)
-                        contribution = result.Value.RunIn + (result.Value.OutletIn ?? 0);
+                        contribution = result.Value.RunIn * 2;
+                }
+                else if (component == "REDC" || component == "REDE" || component == "SWG")
+                {
+                    // Reducing fittings: parse dual size, only count on larger size pipe, 1x makeup
+                    string sizeStr = GetString(fitting, "Size");
+                    var parsed = ParseDualSize(sizeStr);
+                    if (parsed != null && Math.Abs(pipeSize - parsed.Value.Larger) < 0.001)
+                    {
+                        var result = LookupMakeup(connType, component, parsed.Value.Larger, classRating);
+                        if (result != null)
+                            contribution = result.Value.RunIn;
+                    }
+                    // Skip if pipe is the smaller size or parse failed - don't add to missed
+                    else
+                        contribution = 0;
                 }
                 else
                 {
-                    // Standard fitting (45L, 90L, CAP, FLG, etc.)
+                    // Standard fitting (CAP, FLG, etc.) - single weld
                     var result = LookupMakeup(connType, component, pipeSize, classRating);
                     if (result != null)
                         contribution = result.Value.RunIn;
@@ -157,20 +186,26 @@ namespace VANTAGE.Services.AI
             return result?.RunIn;
         }
 
-        // Parse olet dual size (e.g., "6x1") and return the smaller size, or null if not dual
-        public static double? ParseOletSmallSize(string sizeStr)
+        // Parse dual size (e.g., "6x1") and return both sizes (larger, smaller), or null if not dual format
+        public static (double Larger, double Smaller)? ParseDualSize(string sizeStr)
         {
             if (string.IsNullOrEmpty(sizeStr)) return null;
 
-            // Check for "NxM" format
             var parts = sizeStr.Split('x', 'X');
             if (parts.Length == 2 &&
                 double.TryParse(parts[0].Trim(), out double size1) &&
                 double.TryParse(parts[1].Trim(), out double size2))
             {
-                return Math.Min(size1, size2);
+                return size1 >= size2 ? (size1, size2) : (size2, size1);
             }
             return null;
+        }
+
+        // Parse olet dual size (e.g., "6x1") and return the smaller size, or null if not dual
+        public static double? ParseOletSmallSize(string sizeStr)
+        {
+            var parsed = ParseDualSize(sizeStr);
+            return parsed?.Smaller;
         }
 
         // Check if a fitting is an olet type
