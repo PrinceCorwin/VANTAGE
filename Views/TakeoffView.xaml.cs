@@ -198,6 +198,17 @@ namespace VANTAGE.Views
                         ShowResults(output);
                     }
 
+                    // Clean up uploaded drawings from S3
+                    try
+                    {
+                        await _service.DeleteDrawingsAsync(drawingKeys);
+                        AppLogger.Info($"Cleaned up {drawingKeys.Count} drawing(s) from S3", "TakeoffView.BtnProcess_Click");
+                    }
+                    catch (Exception cleanupEx)
+                    {
+                        AppLogger.Error(cleanupEx, "TakeoffView.BtnProcess_Click.Cleanup");
+                    }
+
                     break;
                 }
             }

@@ -6,6 +6,10 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### March 12, 2026 (Takeoff — S3 Drawing Cleanup & Rate Application Plan)
+- **S3 drawing cleanup after processing:** Uploaded drawings are now automatically deleted from S3 after takeoff processing completes (success or failure). Drawings were being overwritten on each run anyway (to support new revisions with same filename), so persisting them served no purpose.
+- **Rate Application Plan:** Created `Plans/Rate_Application_Plan.md` with component-to-EST_GRP mapping table, schedule translation rules, and gap analysis TODO list. Rate sheet will be embedded as JSON resource (universal, not per-project).
+
 ### March 11, 2026 (Takeoff Post-Processing — FRH Records & Fitting Makeup)
 - **FRH (Field Handling) records for PIPE items:** New FRH row generated on Labor tab for each PIPE BOM item. Quantity = pipe length (ft) + fitting makeup (inches converted to ft).
 - **New file: `Services/AI/FittingMakeupService.cs`** — Loads `Resources/FittingMakeup.json` (2,078 entries, embedded resource) and provides lookup methods. Handles standard fittings (1x), TEE (3x), CROSS (4x), 90L/45L (2x), REDT (run+outlet), olets, and reducing fittings.
