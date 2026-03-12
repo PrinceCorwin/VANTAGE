@@ -1,6 +1,15 @@
 {
   "releases": [
     {
+      "version": "26.1.31",
+      "date": "2026-03-12",
+      "highlights": [
+        "Theme generator system — create custom themes with the new theme generator, includes Dark Forest theme",
+        "Admin Snapshots grid improvements — upgraded grid with better filtering and optimized queries",
+        "Fix SQL timeout on large bulk record reassignments"
+      ]
+    },
+    {
       "version": "26.1.30",
       "date": "2026-03-06",
       "highlights": [

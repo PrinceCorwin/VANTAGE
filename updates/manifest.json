@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.1.30",
-  "releaseDate": "2026-03-06T14:57:30Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.30/VANTAGE-26.1.30.zip",
-  "zipSizeBytes": 149636581,
-  "sha256": "593785FA352E99F22E69BE9C6C7E778586C06E7A1F27E1F3A7919577991FD980",
-  "releaseNotes": "Manager role, role management in Edit Users, email notifications for role changes"
+  "currentVersion": "26.1.31",
+  "releaseDate": "2026-03-12T15:12:05Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.31/VANTAGE-26.1.31.zip",
+  "zipSizeBytes": 149660913,
+  "sha256": "D74E5426A03ECAE3392DF07C11060F382380ADF0A80D38B5A02E1FDB9B22D9E7",
+  "releaseNotes": "Theme generator with Dark Forest theme, Admin Snapshots grid improvements, SQL timeout fix"
 }
