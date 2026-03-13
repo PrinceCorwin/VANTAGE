@@ -1,6 +1,6 @@
 # MILESTONE - Project Status
 
-**Last Updated:** March 11, 2026
+**Last Updated:** March 12, 2026
 
 ## V1 Testing Scope
 
@@ -130,7 +130,11 @@
 - **Takeoff Post-Processing Pipeline** — All operate on the downloaded Excel, no AWS changes needed. See `summit-takeoff-integration-guide.md` for details.
   1. Fabrication item generation — CUT/BEV rows, connection rows, BOM fab records, FSH/FRH records, ROCStep column complete. Fitting makeup lookup complete with olet support (WOL/SOL/TOL/ELB/LOL/NOL), class as string, Thickness fallback for olets. Missed Makeups tab has Reason column (No Makeup Found / Unclaimed). TODO:
      - Remove debug logging from TakeoffPostProcessor.cs once FRH is fully verified
-  2. **Rate application** — Deep-dive gap analysis needed: verify all component/thickness/class/size mappings between labor output and rate sheet before implementing. See `Rate_Application_Plan.md` for mapping table and TODO list.
+  2. **Rate application** — See `Rate_Application_Plan.md` for full mapping table, decisions, and implementation plan. Core implementation complete (RateSheetService, ApplyRates, Missed Rates tab). TODO:
+     - ~~CVLV (control valve)~~ — Skipped for now, maps to VLV. Possible future add.
+     - Determine connection types for HEAT, HOSE, DPAN, F8B so they generate labor rows
+     - Add CompRefTable entries for missing rate sheet groups: ORIFICE, GAUGE, GAUGE GLASS, METER, METER RUN, PROBE, XMTR, SADDLE, RED FLG, SCRD MU, VENT/DRAIN, SHOE, SPRING SUPPT, ANCHOR, CLAMP
+     - Add "Send Missed Makeups and Rates to Admin" checkbox to Takeoff module (default checked). When batch processes, sends Excel with Missed Makeups and Missed Rates tabs to admins.
   3. ROC splits — Divide handling records by Rules of Credit
   4. VANTAGE tab — Column rename for direct import into Activities
 

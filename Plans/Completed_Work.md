@@ -6,6 +6,20 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### March 12, 2026 (Takeoff — Rate Application & CUT/Connection Fixes)
+- **Rate application implemented:** New `Services/AI/RateSheetService.cs` loads embedded `Resources/RateSheet.json` (6,603 rate entries) and provides rate lookups. Component mapping dictionary translates our components to rate sheet EST_GRP keys (e.g., BEV→BEVEL, FSH→PIPE, FRH→SPOOL, valves→VLV, fittings→FTG, etc.). Fallback chain: try Thickness → try Class Rating → try size-only → missed.
+- **STD↔S40 synonym:** If lookup with STD fails, automatically retries with S40 (and vice versa).
+- **Schedule translation:** Numeric schedules auto-prefixed with "S" at lookup time (40→S40, 80→S80). WT values pass through as-is.
+- **BudgetMHs populated on Labor tab:** `ApplyRates()` in TakeoffPostProcessor sets `BudgetMHs = Quantity × FLD_MHU` for each labor row. BU rates halved since each flanged end creates a BU row (2 rows per joint).
+- **Missed Rates tab:** New Excel worksheet listing labor rows with no rate match, showing the lookup key attempted. Same styling as Missed Makeups tab.
+- **CUT records require matching PIPE:** CUTs are only created when a PIPE entry exists on the same drawing with matching size and material. CUT inherits Thickness and Class Rating from the matching pipe. No pipe = no cut.
+- **BEV unchanged:** Bevels still created for any BW connection regardless of pipe match.
+- **Connection rows guaranteed thickness:** If source item has no thickness, checks matching PIPE entry, defaults to "40" if nothing found.
+- **NIP and PLG excluded from connection explosion:** These components only create fab records, no connection/CUT/BEV rows.
+- **Olet FTG lookup uses branch size:** Dual-size olets (e.g., "24x1") look up FTG rate using only the smaller/branch size.
+- **S3 drawing cleanup:** Uploaded drawings deleted from S3 after processing completes.
+- **Key files:** `Services/AI/RateSheetService.cs` (new), `Resources/RateSheet.json` (new), `Services/AI/TakeoffPostProcessor.cs`, `VANTAGE.csproj`
+
 ### March 12, 2026 (Takeoff — Results Panel Removal & Missed Makeups Reason Column)
 - **Removed Results panel from TakeoffView:** The in-app results summary panel (status, expandable sections for drawings/connections/components) has been removed since the same information is available in the downloaded Excel file. Removed XAML panel, `ShowResults()`, `AddSummaryLine()`, `AddDetailLine()` methods, and all references.
 - **Missed Makeups tab — Reason column:** Added a Reason column to the Missed Makeups Excel tab to distinguish between "No Makeup Found" (lookup attempted but no match in FittingMakeup.json) and "Unclaimed" (fitting had no matching pipe size on the drawing, so no lookup was attempted). This makes it easy to filter out unclaimed fittings and focus on actual lookup gaps.

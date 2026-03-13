@@ -221,9 +221,10 @@
 	  </Content>
 	</ItemGroup>
 
-	<!-- Fitting makeup reference data (embedded resource) -->
+	<!-- Fitting makeup and rate sheet reference data (embedded resources) -->
 	<ItemGroup>
 		<EmbeddedResource Include="Resources\FittingMakeup.json" />
+		<EmbeddedResource Include="Resources\RateSheet.json" />
 	</ItemGroup>
 
 	<!-- Config files: appsettings.json for dev, appsettings.enc for production -->

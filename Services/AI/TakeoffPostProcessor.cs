@@ -13,6 +13,9 @@ namespace VANTAGE.Services.AI
         // Accumulates missed fitting lookups during FRH generation (reset each run)
         private static List<MissedMakeup> _missedMakeups = new();
 
+        // Accumulates missed rate lookups during rate application (reset each run)
+        private static List<MissedRate> _missedRates = new();
+
         // Columns to exclude from Labor tab (material-only fields)
         private static readonly HashSet<string> ExcludeFromLabor = new(StringComparer.OrdinalIgnoreCase)
         {
@@ -40,8 +43,9 @@ namespace VANTAGE.Services.AI
             {
                 using var workbook = new XLWorkbook(excelPath);
 
-                // Reset missed makeups for this run
+                // Reset missed lookups for this run
                 _missedMakeups = new List<MissedMakeup>();
+                _missedRates = new List<MissedRate>();
 
                 // Step A: Read Material tab
                 var materialRows = ReadMaterialTab(workbook);
@@ -51,20 +55,30 @@ namespace VANTAGE.Services.AI
                 var laborRows = GenerateLaborRows(materialRows);
                 AppLogger.Info($"Generated {laborRows.Count} labor rows", "TakeoffPostProcessor");
 
-                // Step C: Write Labor tab
+                // Step C: Apply rates to labor rows
+                ApplyRates(laborRows);
+
+                // Step D: Write Labor tab
                 WriteLaborTab(workbook, laborRows);
 
-                // Step D & E: Generate and write Summary tab
+                // Step E & F: Generate and write Summary tab
                 WriteSummaryTab(workbook, materialRows, laborRows);
 
-                // Step F: Write Missed Makeups tab (only if there are missed lookups)
+                // Step G: Write Missed Makeups tab (only if there are missed lookups)
                 if (_missedMakeups.Count > 0)
                 {
                     WriteMissedMakeupsTab(workbook);
                     AppLogger.Info($"Logged {_missedMakeups.Count} missed fitting makeups", "TakeoffPostProcessor");
                 }
 
-                // Step G: Reorder tabs
+                // Step H: Write Missed Rates tab (only if there are missed lookups)
+                if (_missedRates.Count > 0)
+                {
+                    WriteMissedRatesTab(workbook);
+                    AppLogger.Info($"Logged {_missedRates.Count} missed rate lookups", "TakeoffPostProcessor");
+                }
+
+                // Step I: Reorder tabs
                 ReorderTabs(workbook);
 
                 // Step G: Save
@@ -81,7 +95,7 @@ namespace VANTAGE.Services.AI
         // Reorder tabs: Summary, Material, Labor, Flagged
         private static void ReorderTabs(XLWorkbook workbook)
         {
-            var desiredOrder = new[] { "Summary", "Material", "Labor", "Flagged", "Missed Makeups" };
+            var desiredOrder = new[] { "Summary", "Material", "Labor", "Flagged", "Missed Makeups", "Missed Rates" };
             int position = 1;
 
             foreach (var name in desiredOrder)
@@ -144,7 +158,7 @@ namespace VANTAGE.Services.AI
 
             foreach (var mat in materialRows)
             {
-                var rows = ExplodeMaterialRow(mat);
+                var rows = ExplodeMaterialRow(mat, materialRows);
                 laborRows.AddRange(rows);
             }
 
@@ -332,7 +346,8 @@ namespace VANTAGE.Services.AI
 
         // Explode a single material row into labor rows
         private static List<Dictionary<string, object?>> ExplodeMaterialRow(
-            Dictionary<string, object?> mat)
+            Dictionary<string, object?> mat,
+            List<Dictionary<string, object?>>? allMaterialRows = null)
         {
             var result = new List<Dictionary<string, object?>>();
 
@@ -386,6 +401,10 @@ namespace VANTAGE.Services.AI
                 result.Add(fsh);
             }
 
+            // NIP and PLG don't create connection rows — their connections are
+            // always to another fitting and get counted from that fitting instead
+            if (component == "NIP" || component == "PLG") return result;
+
             // Connection explosion (all items with connections)
             int connQty = GetInt(mat, "Connection Qty");
             if (connQty <= 0) return result;
@@ -406,23 +425,32 @@ namespace VANTAGE.Services.AI
             {
                 foreach (var (connType, connSize) in connectionPairs)
                 {
-                    // Skip NIP connections
-                    if (connType == "NIP") continue;
-
-                    var labor = CreateLaborRow(mat, connType, connSize, thickness, pipeSpec, material);
+                    var labor = CreateLaborRow(mat, connType, connSize, thickness, pipeSpec, material, allMaterialRows);
                     result.Add(labor);
 
                     // Fabrication records (not for olets)
                     if (!FittingMakeupService.IsOlet(component))
                     {
-                        // CUT: one per BW, SW, or THRD connection
+                        // CUT: one per BW, SW, or THRD connection — only if matching PIPE exists
+                        // Cuts are pipe prep, so no pipe = no cut. Inherit thickness/class from pipe.
                         if (connType == "BW" || connType == "SW" || connType == "THRD")
                         {
-                            var cut = CreateFabRow(mat, "CUT", connSize, thickness, pipeSpec, material);
-                            result.Add(cut);
+                            var matchingPipe = FindMatchingPipe(allMaterialRows, mat, connSize);
+                            if (matchingPipe != null)
+                            {
+                                string pipeThickness = GetString(matchingPipe, "Thickness");
+                                string pipePipeSpec = FindPipeSpec(matchingPipe);
+                                string pipeMaterial = GetString(matchingPipe, "Material");
+                                string pipeClassRating = GetString(matchingPipe, "Class Rating");
+
+                                var cut = CreateFabRow(mat, "CUT", connSize, pipeThickness, pipePipeSpec, pipeMaterial);
+                                if (!string.IsNullOrEmpty(pipeClassRating))
+                                    cut["Class Rating"] = pipeClassRating;
+                                result.Add(cut);
+                            }
                         }
 
-                        // BEV: two per BW connection
+                        // BEV: two per BW connection (bevels apply to any BW joint)
                         if (connType == "BW")
                         {
                             for (int b = 0; b < 2; b++)
@@ -516,11 +544,24 @@ namespace VANTAGE.Services.AI
             return pairs;
         }
 
-        // Create a labor row for a connection
+        // Create a labor row for a connection.
+        // All connection rows must have a thickness. If the source item has none,
+        // check the matching PIPE entry. If no pipe found, default to "40".
         private static Dictionary<string, object?> CreateLaborRow(
             Dictionary<string, object?> mat, string connType, double size,
-            string thickness, string pipeSpec, string material)
+            string thickness, string pipeSpec, string material,
+            List<Dictionary<string, object?>>? allMaterialRows = null)
         {
+            // Ensure thickness is populated
+            if (string.IsNullOrWhiteSpace(thickness) && allMaterialRows != null)
+            {
+                var matchingPipe = FindMatchingPipe(allMaterialRows, mat, size);
+                if (matchingPipe != null)
+                    thickness = GetString(matchingPipe, "Thickness");
+            }
+            if (string.IsNullOrWhiteSpace(thickness))
+                thickness = "40";
+
             var labor = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
             foreach (var (key, value) in mat)
             {
@@ -531,6 +572,7 @@ namespace VANTAGE.Services.AI
             string sizeStr = size.ToString("0.###");
             labor["Component"] = connType;
             labor["Size"] = sizeStr;
+            labor["Thickness"] = thickness;
             labor["Quantity"] = 1;
             labor["ShopField"] = connType == "BU" ? 2 : 1;
             labor["Description"] = BuildConcatDescription(sizeStr, thickness, pipeSpec, material, connType);
@@ -560,6 +602,45 @@ namespace VANTAGE.Services.AI
             fab["BudgetMHs"] = null;
 
             return fab;
+        }
+
+        // Find a PIPE material row matching the connection size and material on the same drawing.
+        // Used to inherit thickness/class for CUT and BEV records.
+        private static Dictionary<string, object?>? FindMatchingPipe(
+            List<Dictionary<string, object?>>? allMaterialRows,
+            Dictionary<string, object?> fittingRow,
+            double connSize)
+        {
+            if (allMaterialRows == null) return null;
+
+            string drawingNumber = GetString(fittingRow, "Drawing Number");
+            string fittingMaterial = GetString(fittingRow, "Material");
+            string connSizeStr = connSize.ToString("0.###");
+
+            foreach (var row in allMaterialRows)
+            {
+                string comp = GetString(row, "Component").ToUpper();
+                if (comp != "PIPE") continue;
+
+                // Same drawing
+                if (!GetString(row, "Drawing Number").Equals(drawingNumber, StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                // Matching size
+                string pipeSize = GetString(row, "Size");
+                if (!pipeSize.Equals(connSizeStr, StringComparison.OrdinalIgnoreCase)
+                    && !pipeSize.Equals(connSize.ToString("0"), StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                // Matching material
+                string pipeMaterial = GetString(row, "Material");
+                if (!pipeMaterial.Equals(fittingMaterial, StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                return row;
+            }
+
+            return null;
         }
 
         // Parse quantity - handles formats like "2", "41.3'", etc.
@@ -819,6 +900,86 @@ namespace VANTAGE.Services.AI
                 ws.Cell(row, 6).Value = m.LookupKey;
                 ws.Cell(row, 7).Value = m.Reason;
                 ws.Cell(row, 8).Value = m.Description;
+            }
+
+            ws.Columns().AdjustToContents(1, 100);
+            ws.SheetView.FreezeRows(1);
+        }
+
+        // Apply rates from rate sheet to labor rows, setting BudgetMHs = Quantity × FLD_MHU
+        private static void ApplyRates(List<Dictionary<string, object?>> laborRows)
+        {
+            int matched = 0;
+            foreach (var row in laborRows)
+            {
+                string component = GetString(row, "Component");
+                string size = GetString(row, "Size");
+                string? thickness = GetNullableString(row, "Thickness");
+                string? classRating = GetNullableString(row, "Class Rating");
+
+                var (fldMhu, keyAttempted) = RateSheetService.FindRate(component, size, thickness, classRating);
+
+                if (fldMhu.HasValue)
+                {
+                    int qty = GetInt(row, "Quantity");
+                    double mhu = fldMhu.Value;
+
+                    // BU rows are created for each flanged end, so every bolt-up joint
+                    // generates 2 rows. Halve the rate so the total per joint is correct.
+                    if (component.Equals("BU", StringComparison.OrdinalIgnoreCase))
+                        mhu /= 2;
+
+                    row["BudgetMHs"] = NumericHelper.RoundToPlaces(mhu * qty);
+                    matched++;
+                }
+                else
+                {
+                    _missedRates.Add(new MissedRate
+                    {
+                        DrawingNumber = GetString(row, "Drawing Number"),
+                        Component = component,
+                        Size = size,
+                        Thickness = thickness ?? "",
+                        ClassRating = classRating ?? "",
+                        LookupKey = keyAttempted,
+                        Description = GetString(row, "Description")
+                    });
+                }
+            }
+
+            AppLogger.Info($"Rate application: {matched}/{laborRows.Count} matched, {_missedRates.Count} missed", "TakeoffPostProcessor");
+        }
+
+        // Write Missed Rates tab
+        private static void WriteMissedRatesTab(XLWorkbook workbook)
+        {
+            if (workbook.TryGetWorksheet("Missed Rates", out _))
+                workbook.Worksheets.Delete("Missed Rates");
+
+            var ws = workbook.Worksheets.Add("Missed Rates");
+
+            var columns = new[] { "Drawing Number", "Component", "Size", "Thickness", "Class Rating", "LookupKey", "Description" };
+
+            // Header
+            for (int i = 0; i < columns.Length; i++)
+                ws.Cell(1, i + 1).Value = columns[i];
+
+            var headerRange = ws.Range(1, 1, 1, columns.Length);
+            headerRange.Style.Font.Bold = true;
+            headerRange.Style.Fill.BackgroundColor = XLColor.FromHtml("#FDE9D9");
+
+            // Data rows
+            for (int i = 0; i < _missedRates.Count; i++)
+            {
+                var m = _missedRates[i];
+                int row = i + 2;
+                ws.Cell(row, 1).Value = m.DrawingNumber;
+                ws.Cell(row, 2).Value = m.Component;
+                ws.Cell(row, 3).Value = m.Size;
+                ws.Cell(row, 4).Value = m.Thickness;
+                ws.Cell(row, 5).Value = m.ClassRating;
+                ws.Cell(row, 6).Value = m.LookupKey;
+                ws.Cell(row, 7).Value = m.Description;
             }
 
             ws.Columns().AdjustToContents(1, 100);
