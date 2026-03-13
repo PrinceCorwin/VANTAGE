@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.1.31",
-  "releaseDate": "2026-03-12T15:12:05Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.31/VANTAGE-26.1.31.zip",
-  "zipSizeBytes": 149660913,
-  "sha256": "D74E5426A03ECAE3392DF07C11060F382380ADF0A80D38B5A02E1FDB9B22D9E7",
-  "releaseNotes": "Theme generator with Dark Forest theme, Admin Snapshots grid improvements, SQL timeout fix"
+  "currentVersion": "26.1.32",
+  "releaseDate": "2026-03-13T12:24:25Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.32/VANTAGE-26.1.32.zip",
+  "zipSizeBytes": 149728492,
+  "sha256": "3A13474CF7FD396C0E9FA1AEE4D0BC94B7FBA3828B1A7AA78AE6D82891DC0928",
+  "releaseNotes": "Themed scrollbars and grid styling improvements"
 }
