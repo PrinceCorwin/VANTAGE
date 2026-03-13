@@ -10,6 +10,12 @@
     <SolidColorBrush x:Key="BackgroundColor" Color="#FFF6F0FA"/>
     <SolidColorBrush x:Key="DarkBackgroundColor" Color="#FFE8DCF0"/>
     <SolidColorBrush x:Key="DarkestBackgroundColor" Color="#FF2D1B36"/>
+    <SolidColorBrush x:Key="ScrollBarTrackColor" Color="#FF2D1B36"/>
+    <SolidColorBrush x:Key="ScrollBarThumbColor" Color="#FFE040FB"/>
+    <SolidColorBrush x:Key="ScrollBarThumbHoverColor" Color="#FFEDA6FD"/>
+    <SolidColorBrush x:Key="ScrollBarBorderColor" Color="#FFE8DCF0"/>
+    <SolidColorBrush x:Key="GridRowHeaderBackground" Color="#FF4A148C"/>
+    <SolidColorBrush x:Key="GridRowHoverBackground" Color="#FF7B6B8A"/>
     <SolidColorBrush x:Key="ForegroundColor" Color="#FF2D1B36"/>
     <SolidColorBrush x:Key="TextColorSecondary" Color="#FF7B6B8A"/>
     <SolidColorBrush x:Key="AccentColor" Color="#FFE040FB"/>

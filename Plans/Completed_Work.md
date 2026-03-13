@@ -6,6 +6,13 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### March 13, 2026 (Grid Scrollbar & Theme Polish)
+- **Always-visible grid scrollbars:** Replaced auto-hiding scrollbars on the Progress grid with always-visible, wider (14px) scrollbars using custom ControlTemplates for both vertical and horizontal orientations. Bottom padding prevents last row from being hidden by the horizontal scrollbar.
+- **Themed scrollbar colors:** New theme variables `ScrollBarTrackColor`, `ScrollBarThumbColor`, `ScrollBarThumbHoverColor`, `ScrollBarBorderColor` added to all 4 themes. Thumb uses AccentColor per theme with 40% lighter hover effect.
+- **Grid row header styling:** New `GridRowHeaderBackground` theme variable. Row selector column now matches `GridHeaderBackground` color across all themes.
+- **Grid row hover background:** New `GridRowHoverBackground` theme variable replaces hardcoded `TextColorSecondary` for row hover. Light theme gets a readable light blue-gray (`#FFD0D8E0`) instead of the previous medium gray that made text hard to read.
+- **Key files:** `Views/ProgressView.xaml` (ScrollBar templates), `Styles/RecordOwnershipRowStyleSelector.cs` (hover background), all 4 theme files (new variables)
+
 ### March 12, 2026 (Takeoff — Rate Application & CUT/Connection Fixes)
 - **Rate application implemented:** New `Services/AI/RateSheetService.cs` loads embedded `Resources/RateSheet.json` (6,603 rate entries) and provides rate lookups. Component mapping dictionary translates our components to rate sheet EST_GRP keys (e.g., BEV→BEVEL, FSH→PIPE, FRH→SPOOL, valves→VLV, fittings→FTG, etc.). Fallback chain: try Thickness → try Class Rating → try size-only → missed.
 - **STD↔S40 synonym:** If lookup with STD fails, automatically retries with S40 (and vice versa).

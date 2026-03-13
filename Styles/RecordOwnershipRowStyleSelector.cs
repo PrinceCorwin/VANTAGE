@@ -55,7 +55,7 @@ namespace VANTAGE.Styles
                 Property = VirtualizingCellsControl.IsMouseOverProperty,
                 Value = true
             };
-            hoverTrigger.Setters.Add(new Setter(VirtualizingCellsControl.BackgroundProperty, Application.Current.Resources["TextColorSecondary"]));
+            hoverTrigger.Setters.Add(new Setter(VirtualizingCellsControl.BackgroundProperty, Application.Current.Resources["GridRowHoverBackground"]));
             style.Triggers.Add(hoverTrigger);
 
             return style;

@@ -1,6 +1,15 @@
 {
   "releases": [
     {
+      "version": "26.1.32",
+      "date": "2026-03-13",
+      "highlights": [
+        "Always-visible themed scrollbars on the Progress grid — wider, easier to grab",
+        "Grid row hover and row header colors improved across all themes",
+        "New theme variables for scrollbar and grid styling"
+      ]
+    },
+    {
       "version": "26.1.31",
       "date": "2026-03-12",
       "highlights": [
