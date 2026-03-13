@@ -128,7 +128,7 @@
 ### High Priority
 - **Mobile/iOS Version (iPad)** — Execs want iPad app for field supes to submit progress. Needs architecture discussion: native iOS, cross-platform framework, web app, API design, offline sync, etc.
 - **Takeoff Post-Processing Pipeline** — All operate on the downloaded Excel, no AWS changes needed. See `summit-takeoff-integration-guide.md` for details.
-  1. Fabrication item generation — CUT/BEV rows, connection rows, BOM fab records, FSH/FRH records, ROCStep column complete. Fitting makeup lookup complete with olet support (WOL/SOL/TOL/ELB/LOL/NOL), class as string, Thickness fallback for olets. TODO:
+  1. Fabrication item generation — CUT/BEV rows, connection rows, BOM fab records, FSH/FRH records, ROCStep column complete. Fitting makeup lookup complete with olet support (WOL/SOL/TOL/ELB/LOL/NOL), class as string, Thickness fallback for olets. Missed Makeups tab has Reason column (No Makeup Found / Unclaimed). TODO:
      - Remove debug logging from TakeoffPostProcessor.cs once FRH is fully verified
   2. **Rate application** — Deep-dive gap analysis needed: verify all component/thickness/class/size mappings between labor output and rate sheet before implementing. See `Rate_Application_Plan.md` for mapping table and TODO list.
   3. ROC splits — Divide handling records by Rules of Credit

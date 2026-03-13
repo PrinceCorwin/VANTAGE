@@ -6,6 +6,11 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### March 12, 2026 (Takeoff — Results Panel Removal & Missed Makeups Reason Column)
+- **Removed Results panel from TakeoffView:** The in-app results summary panel (status, expandable sections for drawings/connections/components) has been removed since the same information is available in the downloaded Excel file. Removed XAML panel, `ShowResults()`, `AddSummaryLine()`, `AddDetailLine()` methods, and all references.
+- **Missed Makeups tab — Reason column:** Added a Reason column to the Missed Makeups Excel tab to distinguish between "No Makeup Found" (lookup attempted but no match in FittingMakeup.json) and "Unclaimed" (fitting had no matching pipe size on the drawing, so no lookup was attempted). This makes it easy to filter out unclaimed fittings and focus on actual lookup gaps.
+- **Key files:** `Views/TakeoffView.xaml`, `Views/TakeoffView.xaml.cs`, `Services/AI/FittingMakeupService.cs`, `Services/AI/TakeoffPostProcessor.cs`
+
 ### March 12, 2026 (Takeoff — S3 Drawing Cleanup & Rate Application Plan)
 - **S3 drawing cleanup after processing:** Uploaded drawings are now automatically deleted from S3 after takeoff processing completes (success or failure). Drawings were being overwritten on each run anyway (to support new revisions with same filename), so persisting them served no purpose.
 - **Rate Application Plan:** Created `Plans/Rate_Application_Plan.md` with component-to-EST_GRP mapping table, schedule translation rules, and gap analysis TODO list. Rate sheet will be embedded as JSON resource (universal, not per-project).

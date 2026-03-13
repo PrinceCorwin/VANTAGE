@@ -189,7 +189,8 @@ namespace VANTAGE.Services.AI
                         ConnectionType = connTypes,
                         ClassRating = GetString(fitting, "Class Rating"),
                         Description = GetString(fitting, "Raw Description"),
-                        LookupKey = lookupKey
+                        LookupKey = lookupKey,
+                        Reason = "No Makeup Found"
                     });
                 }
             }
@@ -343,5 +344,6 @@ namespace VANTAGE.Services.AI
         public string ClassRating { get; set; } = "";
         public string Description { get; set; } = "";
         public string LookupKey { get; set; } = "";
+        public string Reason { get; set; } = "";
     }
 }

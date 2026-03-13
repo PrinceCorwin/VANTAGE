@@ -116,7 +116,6 @@ namespace VANTAGE.Views
 
             btnProcess.IsEnabled = false;
             btnSelectFiles.IsEnabled = false;
-            resultsPanel.Visibility = Visibility.Collapsed;
 
             try
             {
@@ -190,12 +189,10 @@ namespace VANTAGE.Views
                             // Auto-download the Excel
                             await DownloadBatchExcelAsync(_currentBatchId);
                         }
-                        ShowResults(output);
                     }
                     else
                     {
                         SetStatus($"Execution {status} after {elapsed}");
-                        ShowResults(output);
                     }
 
                     // Clean up uploaded drawings from S3
@@ -380,158 +377,5 @@ namespace VANTAGE.Views
             txtStatus.Text = message;
         }
 
-        // Parse the execution output JSON and display a clean summary
-        private void ShowResults(string? outputJson)
-        {
-            summaryPanel.Children.Clear();
-            drawingsListPanel.Children.Clear();
-            connTypePanel.Children.Clear();
-            connSizePanel.Children.Clear();
-            compTypePanel.Children.Clear();
-            connDrawingPanel.Children.Clear();
-
-            if (string.IsNullOrEmpty(outputJson))
-            {
-                AddSummaryLine("No output returned.");
-                resultsPanel.Visibility = Visibility.Visible;
-                return;
-            }
-
-            try
-            {
-                using var doc = JsonDocument.Parse(outputJson);
-                var root = doc.RootElement;
-
-                // Top-level status
-                string? appStatus = null;
-                if (root.TryGetProperty("status", out var statusEl))
-                {
-                    appStatus = statusEl.GetString();
-                    AddSummaryLine($"Status:  {appStatus}", true);
-                }
-
-                // Show error/message from backend if present
-                if (root.TryGetProperty("error", out var errorEl))
-                    AddSummaryLine($"Error:  {errorEl.GetString()}", false, true);
-                if (root.TryGetProperty("message", out var msgEl))
-                    AddSummaryLine($"Message:  {msgEl.GetString()}", false, true);
-
-                if (appStatus?.Equals("failed", StringComparison.OrdinalIgnoreCase) == true)
-                    AddSummaryLine("Processing failed — results below may be partial or from prior cached data.", false, true);
-
-                // Summary section
-                if (root.TryGetProperty("summary", out var summary))
-                {
-                    if (summary.TryGetProperty("total_drawings", out var td))
-                        AddSummaryLine($"Total Drawings:  {td.GetInt32()}");
-
-                    if (summary.TryGetProperty("total_bom_items", out var tb))
-                        AddSummaryLine($"Total BOM Items:  {tb.GetInt32()}");
-
-                    if (summary.TryGetProperty("total_connections", out var tc))
-                        AddSummaryLine($"Total Connections:  {tc.GetInt32()}");
-
-                    // Drawing numbers list
-                    if (summary.TryGetProperty("drawing_numbers", out var drawings))
-                    {
-                        int count = 0;
-                        foreach (var d in drawings.EnumerateArray())
-                        {
-                            AddDetailLine(drawingsListPanel, d.GetString() ?? "");
-                            count++;
-                        }
-                        drawingsExpander.Header = $"Drawings Processed ({count})";
-                    }
-
-                    // Connections by type
-                    if (summary.TryGetProperty("connections_by_type", out var cbt))
-                    {
-                        int total = 0;
-                        foreach (var prop in cbt.EnumerateObject())
-                        {
-                            int val = prop.Value.GetInt32();
-                            total += val;
-                            AddDetailLine(connTypePanel, $"{prop.Name}:  {val}");
-                        }
-                        connTypeExpander.Header = $"Connections by Type ({total})";
-                    }
-
-                    // Connections by size
-                    if (summary.TryGetProperty("connections_by_size", out var cbs))
-                    {
-                        foreach (var prop in cbs.EnumerateObject())
-                            AddDetailLine(connSizePanel, $"{prop.Name}\":  {prop.Value.GetInt32()}");
-                        connSizeExpander.Header = $"Connections by Size ({cbs.EnumerateObject().Count()})";
-                    }
-
-                    // Components by type
-                    if (summary.TryGetProperty("components_by_type", out var cbtype))
-                    {
-                        int total = 0;
-                        foreach (var prop in cbtype.EnumerateObject())
-                        {
-                            int val = prop.Value.GetInt32();
-                            total += val;
-                            AddDetailLine(compTypePanel, $"{prop.Name}:  {val}");
-                        }
-                        compTypeExpander.Header = $"Components by Type ({total})";
-                    }
-
-                    // Connections by drawing
-                    if (summary.TryGetProperty("connections_by_drawing", out var cbd))
-                    {
-                        foreach (var prop in cbd.EnumerateObject())
-                            AddDetailLine(connDrawingPanel, $"{prop.Name}:  {prop.Value.GetInt32()}");
-                        connDrawingExpander.Header = $"Connections by Drawing ({cbd.EnumerateObject().Count()})";
-                    }
-                }
-
-                // Flagged count if present
-                if (root.TryGetProperty("summary", out var sum2) &&
-                    sum2.TryGetProperty("flagged_count", out var flagged) &&
-                    flagged.GetInt32() > 0)
-                {
-                    AddSummaryLine($"Flagged Items:  {flagged.GetInt32()}", false, true);
-                }
-            }
-            catch (Exception ex)
-            {
-                AppLogger.Error(ex, "TakeoffView.ShowResults");
-                AddSummaryLine("Could not parse results. Raw output:");
-                AddSummaryLine(outputJson);
-            }
-
-            resultsPanel.Visibility = Visibility.Visible;
-        }
-
-        // Add a line to the summary stats area
-        private void AddSummaryLine(string text, bool bold = false, bool warning = false)
-        {
-            var tb = new TextBlock
-            {
-                Text = text,
-                FontSize = 13,
-                Foreground = warning
-                    ? (System.Windows.Media.Brush)FindResource("WarningText")
-                    : (System.Windows.Media.Brush)FindResource("ForegroundColor"),
-                FontWeight = bold ? FontWeights.SemiBold : FontWeights.Normal,
-                Margin = new Thickness(0, 2, 0, 2)
-            };
-            summaryPanel.Children.Add(tb);
-        }
-
-        // Add a line to a detail expander panel
-        private void AddDetailLine(StackPanel panel, string text)
-        {
-            var tb = new TextBlock
-            {
-                Text = text,
-                FontSize = 12,
-                Foreground = (System.Windows.Media.Brush)FindResource("ForegroundColor"),
-                Opacity = 0.85,
-                Margin = new Thickness(0, 1, 0, 1)
-            };
-            panel.Children.Add(tb);
-        }
     }
 }

@@ -308,7 +308,8 @@ namespace VANTAGE.Services.AI
                         Size = GetString(fitting, "Size"),
                         ConnectionType = GetString(fitting, "Connection Type"),
                         ClassRating = GetString(fitting, "Class Rating"),
-                        Description = GetString(fitting, "Raw Description")
+                        Description = GetString(fitting, "Raw Description"),
+                        Reason = "Unclaimed"
                     });
                 }
             }
@@ -795,7 +796,7 @@ namespace VANTAGE.Services.AI
 
             var ws = workbook.Worksheets.Add("Missed Makeups");
 
-            var columns = new[] { "Drawing Number", "Component", "Size", "Connection Type", "Class Rating", "LookupKey", "Description" };
+            var columns = new[] { "Drawing Number", "Component", "Size", "Connection Type", "Class Rating", "LookupKey", "Reason", "Description" };
 
             // Header
             for (int i = 0; i < columns.Length; i++)
@@ -816,7 +817,8 @@ namespace VANTAGE.Services.AI
                 ws.Cell(row, 4).Value = m.ConnectionType;
                 ws.Cell(row, 5).Value = m.ClassRating;
                 ws.Cell(row, 6).Value = m.LookupKey;
-                ws.Cell(row, 7).Value = m.Description;
+                ws.Cell(row, 7).Value = m.Reason;
+                ws.Cell(row, 8).Value = m.Description;
             }
 
             ws.Columns().AdjustToContents(1, 100);

@@ -21,7 +21,6 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <!-- Header -->
@@ -224,71 +223,6 @@
             </StackPanel>
         </Border>
 
-        <!-- Results Summary -->
-        <Border Grid.Row="4"
-                Background="{DynamicResource ControlBackground}"
-                BorderBrush="{DynamicResource BorderColor}"
-                BorderThickness="1"
-                CornerRadius="4"
-                Padding="16"
-                Margin="0,0,0,16"
-                Visibility="Collapsed"
-                x:Name="resultsPanel">
-            <StackPanel>
-                <TextBlock Text="Results"
-                           FontSize="16"
-                           FontWeight="SemiBold"
-                           Margin="0,0,0,12"/>
-
-                <!-- Summary Stats -->
-                <StackPanel x:Name="summaryPanel" Margin="0,0,0,12"/>
-
-                <!-- Drawings Expander -->
-                <Expander x:Name="drawingsExpander"
-                          Header="Drawings Processed"
-                          IsExpanded="False"
-                          Foreground="{DynamicResource ForegroundColor}"
-                          Margin="0,0,0,8">
-                    <StackPanel x:Name="drawingsListPanel" Margin="16,8,0,0"/>
-                </Expander>
-
-                <!-- Connections by Type -->
-                <Expander x:Name="connTypeExpander"
-                          Header="Connections by Type"
-                          IsExpanded="False"
-                          Foreground="{DynamicResource ForegroundColor}"
-                          Margin="0,0,0,8">
-                    <StackPanel x:Name="connTypePanel" Margin="16,8,0,0"/>
-                </Expander>
-
-                <!-- Connections by Size -->
-                <Expander x:Name="connSizeExpander"
-                          Header="Connections by Size"
-                          IsExpanded="False"
-                          Foreground="{DynamicResource ForegroundColor}"
-                          Margin="0,0,0,8">
-                    <StackPanel x:Name="connSizePanel" Margin="16,8,0,0"/>
-                </Expander>
-
-                <!-- Components by Type -->
-                <Expander x:Name="compTypeExpander"
-                          Header="Components by Type"
-                          IsExpanded="False"
-                          Foreground="{DynamicResource ForegroundColor}"
-                          Margin="0,0,0,8">
-                    <StackPanel x:Name="compTypePanel" Margin="16,8,0,0"/>
-                </Expander>
-
-                <!-- Connections by Drawing -->
-                <Expander x:Name="connDrawingExpander"
-                          Header="Connections by Drawing"
-                          IsExpanded="False"
-                          Foreground="{DynamicResource ForegroundColor}"
-                          Margin="0,0,0,8">
-                    <StackPanel x:Name="connDrawingPanel" Margin="16,8,0,0"/>
-                </Expander>
-            </StackPanel>
-        </Border>
     </Grid>
     </ScrollViewer>
 </UserControl>
