@@ -37,7 +37,8 @@ namespace VANTAGE.Services.AI
         };
 
         // Main entry point - processes the downloaded Excel file in place
-        public static void GenerateLaborAndSummary(string excelPath)
+        // Returns counts of missed makeups and missed rates for caller use
+        public static (int MissedMakeups, int MissedRates) GenerateLaborAndSummary(string excelPath)
         {
             try
             {
@@ -81,9 +82,11 @@ namespace VANTAGE.Services.AI
                 // Step I: Reorder tabs
                 ReorderTabs(workbook);
 
-                // Step G: Save
+                // Save
                 workbook.Save();
                 AppLogger.Info($"Saved workbook with Labor and Summary tabs", "TakeoffPostProcessor");
+
+                return (_missedMakeups.Count, _missedRates.Count);
             }
             catch (Exception ex)
             {
@@ -184,8 +187,6 @@ namespace VANTAGE.Services.AI
                 var pipeRows = rows.Where(r => GetString(r, "Component").Equals("PIPE", StringComparison.OrdinalIgnoreCase)).ToList();
                 var fittingRows = rows.Where(r => !GetString(r, "Component").Equals("PIPE", StringComparison.OrdinalIgnoreCase)).ToList();
 
-                AppLogger.Info($"Drawing '{drawingGroup.Key}': {pipeRows.Count} pipes, {fittingRows.Count} fittings", "TakeoffPostProcessor.FRH");
-
                 // Track which fittings get claimed by at least one pipe
                 var claimedFittings = new HashSet<Dictionary<string, object?>>();
 
@@ -194,8 +195,6 @@ namespace VANTAGE.Services.AI
                     double pipeSize = FittingMakeupService.GetDouble(pipe, "Size");
                     string pipeMaterial = GetString(pipe, "Material");
                     string? pipeClass = GetNullableString(pipe, "Class Rating");
-
-                    AppLogger.Info($"  PIPE size={pipeSize} material='{pipeMaterial}' class={pipeClass}", "TakeoffPostProcessor.FRH");
 
                     // Find fittings on same drawing with matching size AND material
                     var matchingFittings = new List<Dictionary<string, object?>>();
@@ -211,10 +210,7 @@ namespace VANTAGE.Services.AI
 
                         // Material must match
                         if (!fittingMaterial.Equals(pipeMaterial, StringComparison.OrdinalIgnoreCase))
-                        {
-                            AppLogger.Info($"    SKIP {fittingComponent}: material mismatch pipe='{pipeMaterial}' fitting='{fittingMaterial}'", "TakeoffPostProcessor.FRH");
                             continue;
-                        }
 
                         // Size matching logic varies by component type
                         if (FittingMakeupService.IsOlet(fittingComponent))
@@ -274,13 +270,9 @@ namespace VANTAGE.Services.AI
                         }
                     }
 
-                    AppLogger.Info($"  Matched {matchingFittings.Count} fittings to pipe size={pipeSize}", "TakeoffPostProcessor.FRH");
-
                     // Calculate fitting makeup
                     var (totalMakeupInches, missed) = FittingMakeupService.CalculateFittingMakeupForPipe(
                         pipeSize, pipeClass, matchingFittings);
-
-                    AppLogger.Info($"  Makeup: {totalMakeupInches} inches, {missed.Count} missed", "TakeoffPostProcessor.FRH");
 
                     // Collect missed makeups for the tab
                     _missedMakeups.AddRange(missed);

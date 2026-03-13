@@ -2540,9 +2540,10 @@
         <li>Click <strong>Select Files...</strong> to choose one or more PDF drawing files.</li>
         <li>Click <strong>Process Batch</strong>. Drawings are uploaded to S3, then the AI extraction pipeline runs.</li>
         <li>Progress is shown in the Status area with elapsed time.</li>
-        <li>When complete, results appear in expandable sections: Drawings Processed, Connections by Type/Size, Components by Type, and Connections by Drawing.</li>
         <li>If successful, a Save dialog appears automatically. Choose a location to save the Excel output, and it will open when complete.</li>
     </ol>
+
+    <p>The <strong>Send Missed Makeups and Rates to Admin</strong> checkbox (checked by default) automatically emails administrators when the batch has unmatched fitting makeups or rates. Only the missed data tabs are sent — not the full Excel.</p>
 
     <h3 id="takeoff-previous-batches">Previous Batches</h3>
     <p>Click <strong>Previous Batches</strong> to re-download results from earlier processing runs. The dropdown shows all past batches with:</p>
@@ -2560,12 +2561,14 @@
     </div>
 
     <h3 id="takeoff-excel-output">Excel Output</h3>
-    <p>When you download the output spreadsheet, it contains four tabs:</p>
+    <p>When you download the output spreadsheet, it contains the following tabs:</p>
     <ul>
         <li><strong>Summary</strong> — Statistics overview including total drawings, BOM items, connections by type/size, components by type, and connections by drawing.</li>
         <li><strong>Material</strong> — Raw BOM extraction from the drawings. One row per material item with quantity, connection count, sizes, descriptions, and title block fields.</li>
-        <li><strong>Labor</strong> — Exploded labor records (one row per connection). Material rows are multiplied by quantity and connection count. Each labor row has quantity=1 and a single connection type. VLV components exclude threaded (THRD) and bolt-up (BU) connections. The ShopField column indicates Shop (1) or Field (2) work.</li>
+        <li><strong>Labor</strong> — Exploded labor records (one row per connection). Material rows are multiplied by quantity and connection count. Each labor row has quantity=1 and a single connection type. BudgetMHs are populated from rate lookups. The ShopField column indicates Shop (1) or Field (2) work.</li>
         <li><strong>Flagged</strong> — Items flagged by the AI for review (low confidence, missing data, or extraction issues).</li>
+        <li><strong>Missed Makeups</strong> — (if any) Fittings that could not be matched to a makeup lookup entry, with reason and source details.</li>
+        <li><strong>Missed Rates</strong> — (if any) Labor rows that could not be matched to a rate sheet entry, with the lookup key attempted.</li>
     </ul>
 
     <h3 id="takeoff-manage-drawings">Manage Drawings</h3>

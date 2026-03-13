@@ -21,6 +21,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <!-- Header -->
@@ -203,8 +204,18 @@
             </Button>
         </StackPanel>
 
+        <!-- Options -->
+        <CheckBox x:Name="chkSendMissedToAdmin"
+                  Grid.Row="3"
+                  Content="Send Missed Makeups and Rates to Admin"
+                  IsChecked="True"
+                  FontSize="12"
+                  Foreground="{DynamicResource ForegroundColor}"
+                  Margin="0,0,0,16"
+                  ToolTip="When checked, emails the takeoff Excel to administrators if there are missed fitting makeups or unmatched rates"/>
+
         <!-- Status -->
-        <Border Grid.Row="3"
+        <Border Grid.Row="4"
                 Background="{DynamicResource ControlBackground}"
                 BorderBrush="{DynamicResource BorderColor}"
                 BorderThickness="1"

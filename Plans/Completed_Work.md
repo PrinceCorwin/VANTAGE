@@ -6,6 +6,12 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### March 13, 2026 (Takeoff — Debug Cleanup & Admin Missed Data Notification)
+- **Removed FRH debug logging:** Deleted 5 per-drawing/per-pipe `AppLogger.Info` calls from `TakeoffPostProcessor.cs` (FRH section). High-level summary logs retained.
+- **Send Missed Makeups and Rates to Admin:** New checkbox on the Takeoff view (default checked). After post-processing, if there are missed fitting makeups or unmatched rates, a separate Excel containing only the Missed Makeups and Missed Rates tabs is emailed to all administrators via Azure Communication Services.
+- **GenerateLaborAndSummary return value:** Method now returns `(int MissedMakeups, int MissedRates)` tuple so callers can act on missed data counts.
+- **Key files:** `Services/AI/TakeoffPostProcessor.cs`, `Views/TakeoffView.xaml`, `Views/TakeoffView.xaml.cs`
+
 ### March 13, 2026 (Grid Scrollbar & Theme Polish)
 - **Always-visible grid scrollbars:** Replaced auto-hiding scrollbars on the Progress grid with always-visible, wider (14px) scrollbars using custom ControlTemplates for both vertical and horizontal orientations. Bottom padding prevents last row from being hidden by the horizontal scrollbar.
 - **Themed scrollbar colors:** New theme variables `ScrollBarTrackColor`, `ScrollBarThumbColor`, `ScrollBarThumbHoverColor`, `ScrollBarBorderColor` added to all 4 themes. Thumb uses AccentColor per theme with 40% lighter hover effect.

@@ -247,10 +247,14 @@ namespace VANTAGE.Views
 
                 // Generate Labor and Summary tabs from the downloaded Material/Flagged output
                 SetStatus("Generating Labor and Summary tabs...");
-                await System.Threading.Tasks.Task.Run(() =>
+                var (missedMakeups, missedRates) = await System.Threading.Tasks.Task.Run(() =>
                     TakeoffPostProcessor.GenerateLaborAndSummary(dialog.FileName));
 
                 SetStatus($"Downloaded to {dialog.FileName}");
+
+                // Send missed data to admins if checkbox checked and there are misses
+                if (chkSendMissedToAdmin.IsChecked == true && (missedMakeups > 0 || missedRates > 0))
+                    _ = SendMissedToAdminsAsync(dialog.FileName, missedMakeups, missedRates);
 
                 // Open the file
                 Process.Start(new ProcessStartInfo
@@ -369,6 +373,68 @@ namespace VANTAGE.Views
             finally
             {
                 btnPreviousBatches.IsEnabled = true;
+            }
+        }
+
+        // Send only Missed Makeups and Missed Rates tabs to all admins
+        private async System.Threading.Tasks.Task SendMissedToAdminsAsync(
+            string excelPath, int missedMakeups, int missedRates)
+        {
+            try
+            {
+                var adminEmails = await AzureDbManager.GetAdminEmailsAsync();
+                if (adminEmails.Count == 0)
+                {
+                    AppLogger.Warning("No admin emails found — skipping missed data notification",
+                        "TakeoffView.SendMissedToAdminsAsync");
+                    return;
+                }
+
+                // Build a smaller Excel with only the missed tabs
+                byte[] fileData = await System.Threading.Tasks.Task.Run(() =>
+                {
+                    using var source = new ClosedXML.Excel.XLWorkbook(excelPath);
+                    using var missedWb = new ClosedXML.Excel.XLWorkbook();
+
+                    if (source.Worksheets.TryGetWorksheet("Missed Makeups", out var makeupSheet))
+                        makeupSheet.CopyTo(missedWb, "Missed Makeups");
+
+                    if (source.Worksheets.TryGetWorksheet("Missed Rates", out var ratesSheet))
+                        ratesSheet.CopyTo(missedWb, "Missed Rates");
+
+                    using var ms = new System.IO.MemoryStream();
+                    missedWb.SaveAs(ms);
+                    return ms.ToArray();
+                });
+
+                string username = App.CurrentUser?.Username ?? "Unknown";
+                string baseName = System.IO.Path.GetFileNameWithoutExtension(excelPath);
+                string fileName = $"{baseName}_missed.xlsx";
+
+                var parts = new List<string>();
+                if (missedMakeups > 0) parts.Add($"{missedMakeups} missed makeup(s)");
+                if (missedRates > 0) parts.Add($"{missedRates} missed rate(s)");
+                string summary = string.Join(" and ", parts);
+
+                string subject = $"Takeoff Missed Data — {summary} ({username})";
+                string body = $@"<p>A takeoff batch processed by <b>{username}</b> has {summary}.</p>
+<p>The attached Excel contains only the <b>Missed Makeups</b> and <b>Missed Rates</b> tabs.</p>
+<p style='color:#888;font-size:12px;'>This notification was sent automatically by VANTAGE: Milestone.</p>";
+
+                foreach (string adminEmail in adminEmails)
+                {
+                    await EmailService.SendEmailWithAttachmentAsync(
+                        adminEmail, "Admin", subject, body,
+                        fileName, fileData,
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+                }
+
+                AppLogger.Info($"Sent missed data notification to {adminEmails.Count} admin(s)",
+                    "TakeoffView.SendMissedToAdminsAsync", username);
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "TakeoffView.SendMissedToAdminsAsync");
             }
         }
 
