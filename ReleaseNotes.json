@@ -1,6 +1,15 @@
 {
   "releases": [
     {
+      "version": "26.1.33",
+      "date": "2026-03-13",
+      "highlights": [
+        "Analysis summary grid — Export button to save filtered data to Excel",
+        "Feedback Board — Column sorting and filtering on all columns",
+        "Takeoff — Send Missed to Admin preference now saved between sessions"
+      ]
+    },
+    {
       "version": "26.1.32",
       "date": "2026-03-13",
       "highlights": [

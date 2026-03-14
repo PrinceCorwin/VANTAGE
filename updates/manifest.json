@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.1.32",
-  "releaseDate": "2026-03-13T12:24:25Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.32/VANTAGE-26.1.32.zip",
-  "zipSizeBytes": 149728492,
-  "sha256": "3A13474CF7FD396C0E9FA1AEE4D0BC94B7FBA3828B1A7AA78AE6D82891DC0928",
-  "releaseNotes": "Themed scrollbars and grid styling improvements"
+  "currentVersion": "26.1.33",
+  "releaseDate": "2026-03-13T20:37:20Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.33/VANTAGE-26.1.33.zip",
+  "zipSizeBytes": 149761846,
+  "sha256": "472456ADB633E192529B5854D25C20252FFAF0230B2E45886C555B0EE881B3EE",
+  "releaseNotes": "Analysis export, Feedback grid sorting/filtering, Takeoff setting persistence"
 }
