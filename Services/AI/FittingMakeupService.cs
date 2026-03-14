@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 
 namespace VANTAGE.Services.AI
 {
-    // Loads fitting makeup reference data and computes makeup lengths for pipe FRH records
+    // Loads fitting makeup reference data and computes makeup lengths for pipe SPL (spool) records
     public static class FittingMakeupService
     {
         private static List<FittingMakeupEntry>? _entries;

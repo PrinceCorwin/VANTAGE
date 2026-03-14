@@ -14,11 +14,6 @@ namespace VANTAGE.Services.AI
         // Component-to-EST_GRP mapping for components that don't match directly
         private static readonly Dictionary<string, string> ComponentToEstGrp = new(StringComparer.OrdinalIgnoreCase)
         {
-            // Generated components — mapped names
-            { "BEV", "BEVEL" },
-            { "OLW", "OLET WLD" },
-            { "FSH", "PIPE" },
-            { "FRH", "SPOOL" },
             { "BOLT", "HARDWARE" },
             { "WAS", "HARDWARE" },
 
@@ -86,7 +81,7 @@ namespace VANTAGE.Services.AI
         // Components that match the rate sheet EST_GRP directly (no mapping needed)
         private static readonly HashSet<string> DirectMatchComponents = new(StringComparer.OrdinalIgnoreCase)
         {
-            "BW", "SW", "BU", "THRD", "GRV", "CUT", "GSKT"
+            "BW", "SW", "BU", "THRD", "GRV", "CUT", "GSKT", "PIPE", "BEV", "OLW", "SPL"
         };
 
         // Lazy-load rate data from embedded resource into a dictionary keyed by GRP_SIZE_RTG

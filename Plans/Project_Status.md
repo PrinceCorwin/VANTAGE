@@ -129,7 +129,7 @@
 ### High Priority
 - **Mobile/iOS Version (iPad)** — Execs want iPad app for field supes to submit progress. Needs architecture discussion: native iOS, cross-platform framework, web app, API design, offline sync, etc.
 - **Takeoff Post-Processing Pipeline** — All operate on the downloaded Excel, no AWS changes needed. See `summit-takeoff-integration-guide.md` for details.
-  1. Fabrication item generation — CUT/BEV rows, connection rows, BOM fab records, FSH/FRH records, ROCStep column complete. Fitting makeup lookup complete with olet support (WOL/SOL/TOL/ELB/LOL/NOL), class as string, Thickness fallback for olets. Missed Makeups tab has Reason column (No Makeup Found / Unclaimed).
+  1. Fabrication item generation — CUT/BEV rows, connection rows, BOM fab records, PIPE/SPL records, ROCStep column complete. Fitting makeup lookup complete with olet support (WOL/SOL/TOL/ELB/LOL/NOL), class as string, Thickness fallback for olets. Missed Makeups tab has Reason column (No Makeup Found / Unclaimed).
   2. **Rate application** — Core implementation complete. Per-project rate overrides with management dialog, upload from Excel, RateSource column. Admin email notification for missed data. TODO:
      - ~~CVLV (control valve)~~ — Skipped for now, maps to VLV. Possible future add.
      - Determine connection types for HEAT, HOSE, DPAN, F8B so they generate labor rows

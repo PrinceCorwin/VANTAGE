@@ -6,6 +6,14 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### March 14, 2026 (Takeoff — Component Renaming, Rate Sheet Cleanup, Labor Row Fixes)
+- **Component renaming:** Renamed FSH → PIPE (fab labor for pipe BOM items) and FRH → SPL (spool handling). Component names in generated Excel now reflect what the rows actually represent.
+- **Rate sheet key alignment:** Renamed keys in embedded `RateSheet.json` to match component names directly (BEVEL→BEV, SPOOL→SPL, OLET WLD→OLW). Removed unnecessary translation entries from `ComponentToEstGrp` and added BEV, OLW, SPL, PIPE to `DirectMatchComponents`.
+- **PIPE quantity fix:** PIPE fab labor rows now preserve the exact decimal quantity from the material BOM (was being truncated to int via `ParseQuantity`). New `ParseExactQuantity` method returns double.
+- **Labor row descriptions:** Added class rating to all exploded labor row descriptions (connections, BEV, CUT). BU rows now append "BU - One Flange" instead of just "BU". PIPE rows append " - Fab Pipe Handling", SPL rows append " - Spool Handling".
+- **Pipe spec lookup:** Simplified `FindPipeSpec` to match any column containing "spec" (case-insensitive) instead of a hardcoded list of exact names.
+- **Key files:** `Services/AI/TakeoffPostProcessor.cs`, `Services/AI/RateSheetService.cs`, `Resources/RateSheet.json`, `Services/AI/FittingMakeupService.cs`
+
 ### March 14, 2026 (CONST TFS MECH Updater Plugin — Scaffold)
 - **CONST TFS MECH Updater plugin scaffold:** Created in `VANTAGE-Plugins` repo (`src/const-tfs-mech-updater/`). Identical architecture to PTP plugin — ConstTfsMechUpdaterPlugin.cs (IVantagePlugin entry point), ConstImporter.cs (Excel parsing, CWP aggregation, activity create/update logic). ROCStep set to `4.SHP`, description prefix `FABRICATION - 4.SHP CONST ` to avoid collisions with PTP records.
 - **Remaining work:** Column header mappings (RequiredHeaders, column lookups in ParseReport) need updating once first CONST vendor report is received. Not yet added to `plugins-index.json` or published as a GitHub release.

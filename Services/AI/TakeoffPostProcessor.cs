@@ -10,7 +10,7 @@ namespace VANTAGE.Services.AI
     // and Summary tab (stats) from the Material tab produced by AWS lambda.
     public static class TakeoffPostProcessor
     {
-        // Accumulates missed fitting lookups during FRH generation (reset each run)
+        // Accumulates missed fitting lookups during SPL generation (reset each run)
         private static List<MissedMakeup> _missedMakeups = new();
 
         // Accumulates missed rate lookups during rate application (reset each run)
@@ -155,7 +155,7 @@ namespace VANTAGE.Services.AI
             return rows;
         }
 
-        // Step B: Generate Labor rows (one per connection, exploded) + FRH records
+        // Step B: Generate Labor rows (one per connection, exploded) + SPL records
         private static List<Dictionary<string, object?>> GenerateLaborRows(
             List<Dictionary<string, object?>> materialRows)
         {
@@ -167,18 +167,18 @@ namespace VANTAGE.Services.AI
                 laborRows.AddRange(rows);
             }
 
-            // Generate FRH (Field Handling) records for PIPE items with fitting makeup
-            var frhRows = GenerateFrhRows(materialRows);
-            laborRows.AddRange(frhRows);
+            // Generate SPL (Spool Handling) records for PIPE items with fitting makeup
+            var splRows = GenerateSplRows(materialRows);
+            laborRows.AddRange(splRows);
 
             return laborRows;
         }
 
-        // Generate FRH records by computing fitting makeup for each pipe
-        private static List<Dictionary<string, object?>> GenerateFrhRows(
+        // Generate SPL (Spool) records by computing fitting makeup for each pipe
+        private static List<Dictionary<string, object?>> GenerateSplRows(
             List<Dictionary<string, object?>> materialRows)
         {
-            var frhRows = new List<Dictionary<string, object?>>();
+            var splRows = new List<Dictionary<string, object?>>();
 
             // Group material rows by Drawing Number
             var byDrawing = materialRows.GroupBy(r => GetString(r, "Drawing Number"));
@@ -282,23 +282,23 @@ namespace VANTAGE.Services.AI
                     // Get pipe length in feet
                     double pipeLengthFeet = FittingMakeupService.ParsePipeLengthFeet(pipe);
 
-                    // FRH Quantity = pipe length (ft) + (total makeup inches / 12)
-                    double frhQuantity = pipeLengthFeet + (totalMakeupInches / 12.0);
-                    if (frhQuantity <= 0) continue;
+                    // SPL Quantity = pipe length (ft) + (total makeup inches / 12)
+                    double splQuantity = pipeLengthFeet + (totalMakeupInches / 12.0);
+                    if (splQuantity <= 0) continue;
 
-                    // Create FRH row (same structure as FSH)
-                    var frh = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+                    // Create SPL row (spool handling for field-installed fabricated spools)
+                    var spl = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
                     foreach (var (key, value) in pipe)
                     {
                         if (!ExcludeFromLabor.Contains(key))
-                            frh[key] = value;
+                            spl[key] = value;
                     }
-                    frh["Component"] = "FRH";
-                    frh["Quantity"] = Math.Round(frhQuantity, 3);
-                    frh["Description"] = GetString(pipe, "Raw Description");
-                    frh["BudgetMHs"] = null;
+                    spl["Component"] = "SPL";
+                    spl["Quantity"] = Math.Round(splQuantity, 3);
+                    spl["Description"] = GetString(pipe, "Raw Description") + " - Spool Handling";
+                    spl["BudgetMHs"] = null;
 
-                    frhRows.Add(frh);
+                    splRows.Add(spl);
                 }
 
                 // Log fittings on this drawing that weren't claimed by any pipe (excluding non-weldable)
@@ -322,7 +322,7 @@ namespace VANTAGE.Services.AI
                 }
             }
 
-            return frhRows;
+            return splRows;
         }
 
         // Helper: Get nullable double from row
@@ -381,18 +381,18 @@ namespace VANTAGE.Services.AI
             }
             else
             {
-                // PIPE items: one FSH (fab shop handling) record per BOM item
-                var fsh = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+                // PIPE items: one PIPE fab labor record per BOM item
+                var pipeFab = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
                 foreach (var (key, value) in mat)
                 {
                     if (!ExcludeFromLabor.Contains(key))
-                        fsh[key] = value;
+                        pipeFab[key] = value;
                 }
-                fsh["Component"] = "FSH";
-                fsh["Quantity"] = 1;
-                fsh["Description"] = rawDesc;
-                fsh["BudgetMHs"] = null;
-                result.Add(fsh);
+                pipeFab["Component"] = "PIPE";
+                pipeFab["Quantity"] = ParseExactQuantity(mat);
+                pipeFab["Description"] = rawDesc + " - Fab Pipe Handling";
+                pipeFab["BudgetMHs"] = null;
+                result.Add(pipeFab);
             }
 
             // NIP and PLG don't create connection rows — their connections are
@@ -564,12 +564,14 @@ namespace VANTAGE.Services.AI
             }
 
             string sizeStr = size.ToString("0.###");
+            string classRating = GetString(mat, "Class Rating");
             labor["Component"] = connType;
             labor["Size"] = sizeStr;
             labor["Thickness"] = thickness;
             labor["Quantity"] = 1;
             labor["ShopField"] = connType == "BU" ? 2 : 1;
-            labor["Description"] = BuildConcatDescription(sizeStr, thickness, pipeSpec, material, connType);
+            string descSuffix = connType == "BU" ? "BU - One Flange" : connType;
+            labor["Description"] = BuildConcatDescription(sizeStr, thickness, classRating, pipeSpec, material, descSuffix);
             labor["BudgetMHs"] = null;
 
             return labor;
@@ -588,11 +590,12 @@ namespace VANTAGE.Services.AI
             }
 
             string sizeStr = size.ToString("0.###");
+            string classRating = GetString(mat, "Class Rating");
             fab["Component"] = fabType;
             fab["Size"] = sizeStr;
             fab["Quantity"] = 1;
             fab["ShopField"] = 1;
-            fab["Description"] = BuildFabDescription(sizeStr, thickness, pipeSpec, material, fabType == "BEV" ? "BEVEL" : fabType);
+            fab["Description"] = BuildFabDescription(sizeStr, thickness, classRating, pipeSpec, material, fabType);
             fab["BudgetMHs"] = null;
 
             return fab;
@@ -654,13 +657,28 @@ namespace VANTAGE.Services.AI
             return 1;
         }
 
+        // Parse quantity preserving decimal value (for PIPE fab labor rows)
+        private static double ParseExactQuantity(Dictionary<string, object?> mat)
+        {
+            var qtyVal = mat.GetValueOrDefault("Quantity");
+            if (qtyVal == null) return 1;
+
+            string qtyStr = qtyVal.ToString()?.Trim() ?? "1";
+            qtyStr = qtyStr.TrimEnd('\'', '"');
+
+            if (double.TryParse(qtyStr, out double d))
+                return Math.Max(0.001, d);
+
+            return 1;
+        }
+
         // Find pipe spec from title block fields (various naming conventions)
         private static string FindPipeSpec(Dictionary<string, object?> mat)
         {
-            string[] possibleNames = { "Pipe Spec", "PIPE SPEC", "Piping Spec", "PipeSpec" };
-            foreach (var name in possibleNames)
+            foreach (var (key, val) in mat)
             {
-                if (mat.TryGetValue(name, out var val) && val != null)
+                if (val == null) continue;
+                if (key.Contains("spec", StringComparison.OrdinalIgnoreCase))
                 {
                     string s = val.ToString()?.Trim() ?? "";
                     if (!string.IsNullOrEmpty(s)) return s;
@@ -671,12 +689,14 @@ namespace VANTAGE.Services.AI
 
         // Build description for fabrication items (CUT/BEVEL)
         private static string BuildFabDescription(
-            string size, string thickness, string pipeSpec, string material, string fabType)
+            string size, string thickness, string classRating,
+            string pipeSpec, string material, string fabType)
         {
             var parts = new List<string>();
 
             if (!string.IsNullOrEmpty(size)) parts.Add($"{size} IN");
             if (!string.IsNullOrEmpty(thickness)) parts.Add(thickness);
+            if (!string.IsNullOrEmpty(classRating)) parts.Add(classRating);
             if (!string.IsNullOrEmpty(pipeSpec)) parts.Add(pipeSpec);
             if (!string.IsNullOrEmpty(material)) parts.Add(material);
             parts.Add(fabType);
@@ -686,13 +706,14 @@ namespace VANTAGE.Services.AI
 
         // Build concatenated description for connection rows
         private static string BuildConcatDescription(
-            string size, string thickness, string pipeSpec,
-            string material, string connType)
+            string size, string thickness, string classRating,
+            string pipeSpec, string material, string connType)
         {
             var parts = new List<string>();
 
             if (!string.IsNullOrEmpty(size)) parts.Add($"{size} IN");
             if (!string.IsNullOrEmpty(thickness)) parts.Add(thickness);
+            if (!string.IsNullOrEmpty(classRating)) parts.Add(classRating);
             if (!string.IsNullOrEmpty(pipeSpec)) parts.Add(pipeSpec);
             if (!string.IsNullOrEmpty(material)) parts.Add(material);
             if (!string.IsNullOrEmpty(connType)) parts.Add(connType);
