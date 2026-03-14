@@ -22,6 +22,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <!-- Header -->
@@ -144,8 +145,58 @@
             </Border>
         </Grid>
 
+        <!-- Rate + ROC Selection (half-width) -->
+        <Grid Grid.Row="2" Margin="0,0,0,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Border Grid.Column="0"
+                    Background="{DynamicResource ControlBackground}"
+                    BorderBrush="{DynamicResource BorderColor}"
+                    BorderThickness="1"
+                    CornerRadius="4"
+                    Padding="16">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="12"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="80"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Row="0" Grid.Column="0"
+                               Text="Unit Rates:"
+                               FontSize="13"
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center"/>
+                    <syncfusion:ComboBoxAdv x:Name="cboUnitRates"
+                              Grid.Row="0" Grid.Column="1"
+                              Height="28"
+                              FontSize="12"
+                              SelectionChanged="CboUnitRates_SelectionChanged"
+                              ToolTip="Select project-specific unit rates or use the default embedded rate sheet"/>
+
+                    <TextBlock Grid.Row="2" Grid.Column="0"
+                               Text="ROC Set:"
+                               FontSize="13"
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center"/>
+                    <syncfusion:ComboBoxAdv x:Name="cboROCSet"
+                              Grid.Row="2" Grid.Column="1"
+                              Height="28"
+                              FontSize="12"
+                              SelectionChanged="CboROCSet_SelectionChanged"
+                              ToolTip="Select a ROC percentage split set for post-processing (optional)"/>
+                </Grid>
+            </Border>
+        </Grid>
+
         <!-- Action Buttons -->
-        <StackPanel Grid.Row="2"
+        <StackPanel Grid.Row="3"
                     Orientation="Horizontal"
                     Margin="0,0,0,16">
             <Button x:Name="btnProcess"
@@ -206,7 +257,7 @@
 
         <!-- Options -->
         <CheckBox x:Name="chkSendMissedToAdmin"
-                  Grid.Row="3"
+                  Grid.Row="4"
                   Content="Send Missed Makeups and Rates to Admin"
                   IsChecked="True"
                   FontSize="12"
@@ -215,7 +266,7 @@
                   ToolTip="When checked, emails the takeoff Excel to administrators if there are missed fitting makeups or unmatched rates"/>
 
         <!-- Status -->
-        <Border Grid.Row="4"
+        <Border Grid.Row="5"
                 Background="{DynamicResource ControlBackground}"
                 BorderBrush="{DynamicResource BorderColor}"
                 BorderThickness="1"

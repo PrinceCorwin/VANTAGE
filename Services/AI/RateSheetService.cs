@@ -9,7 +9,7 @@ namespace VANTAGE.Services.AI
     // Loads rate sheet data and provides rate lookups for takeoff labor rows
     public static class RateSheetService
     {
-        private static Dictionary<string, double>? _rates;
+        private static Dictionary<string, (double FldMhu, string Unit)>? _rates;
 
         // Component-to-EST_GRP mapping for components that don't match directly
         private static readonly Dictionary<string, string> ComponentToEstGrp = new(StringComparer.OrdinalIgnoreCase)
@@ -90,7 +90,7 @@ namespace VANTAGE.Services.AI
         };
 
         // Lazy-load rate data from embedded resource into a dictionary keyed by GRP_SIZE_RTG
-        private static Dictionary<string, double> LoadRates()
+        private static Dictionary<string, (double FldMhu, string Unit)> LoadRates()
         {
             if (_rates != null) return _rates;
 
@@ -104,32 +104,32 @@ namespace VANTAGE.Services.AI
             var entries = JsonConvert.DeserializeObject<List<RateEntry>>(json)
                 ?? throw new InvalidOperationException("Failed to deserialize RateSheet.json");
 
-            _rates = new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase);
+            _rates = new Dictionary<string, (double FldMhu, string Unit)>(StringComparer.OrdinalIgnoreCase);
             foreach (var entry in entries)
             {
                 if (!string.IsNullOrEmpty(entry.Key) && entry.FldMhu.HasValue)
-                    _rates[entry.Key] = entry.FldMhu.Value;
+                    _rates[entry.Key] = (entry.FldMhu.Value, entry.Unit ?? "EA");
             }
 
             return _rates;
         }
 
-        // Look up rate by exact GRP_SIZE_RTG key. Returns FLD_MHU or null.
-        public static double? LookupRate(string grpSizeRtg)
+        // Look up rate by exact GRP_SIZE_RTG key. Returns (FldMhu, Unit) or null.
+        public static (double FldMhu, string Unit)? LookupRate(string grpSizeRtg)
         {
             var rates = LoadRates();
-            return rates.TryGetValue(grpSizeRtg, out double mhu) ? mhu : null;
+            return rates.TryGetValue(grpSizeRtg, out var entry) ? entry : null;
         }
 
         // Build lookup key and find rate for a labor row.
-        // Returns (FldMhu, KeyUsed) or (null, lastKeyAttempted) if not found.
+        // Returns (FldMhu, Unit, KeyUsed) or (null, null, lastKeyAttempted) if not found.
         // Fallback chain: Thickness → Class Rating → size-only
-        public static (double? FldMhu, string KeyAttempted) FindRate(
+        public static (double? FldMhu, string? Unit, string KeyAttempted) FindRate(
             string component, string size, string? thickness, string? classRating)
         {
             string estGrp = ResolveEstGrp(component);
             if (string.IsNullOrEmpty(estGrp))
-                return (null, $"UNMAPPED:{component}");
+                return (null, null, $"UNMAPPED:{component}");
 
             // Olet fab records have dual size (e.g., "24x1") — use the branch/smaller size for lookup
             if (FittingMakeupService.IsOlet(component))
@@ -145,7 +145,7 @@ namespace VANTAGE.Services.AI
                 string schRtg = TranslateSchedule(thickness);
                 string key = $"{estGrp}-{size}:{schRtg}";
                 var rate = LookupRate(key);
-                if (rate.HasValue) return (rate, key);
+                if (rate.HasValue) return (rate.Value.FldMhu, rate.Value.Unit, key);
 
                 // STD and S40 are synonymous — try the other if first lookup failed
                 string? synonym = GetScheduleSynonym(schRtg);
@@ -153,7 +153,7 @@ namespace VANTAGE.Services.AI
                 {
                     string altKey = $"{estGrp}-{size}:{synonym}";
                     rate = LookupRate(altKey);
-                    if (rate.HasValue) return (rate, altKey);
+                    if (rate.HasValue) return (rate.Value.FldMhu, rate.Value.Unit, altKey);
                 }
             }
 
@@ -162,14 +162,14 @@ namespace VANTAGE.Services.AI
             {
                 string key = $"{estGrp}-{size}:{classRating}";
                 var rate = LookupRate(key);
-                if (rate.HasValue) return (rate, key);
+                if (rate.HasValue) return (rate.Value.FldMhu, rate.Value.Unit, key);
             }
 
             // Try size-only key (for FTG, GSKT, HARDWARE, etc.)
             {
                 string key = $"{estGrp}-{size}";
                 var rate = LookupRate(key);
-                if (rate.HasValue) return (rate, key);
+                if (rate.HasValue) return (rate.Value.FldMhu, rate.Value.Unit, key);
             }
 
             // Build the best key description for the missed rates report
@@ -179,7 +179,7 @@ namespace VANTAGE.Services.AI
                     ? $"{estGrp}-{size}:{classRating}"
                     : $"{estGrp}-{size}";
 
-            return (null, attemptedKey);
+            return (null, null, attemptedKey);
         }
 
         // Resolve our component name to rate sheet EST_GRP
@@ -222,6 +222,73 @@ namespace VANTAGE.Services.AI
             if (schRtg.Equals("S40", StringComparison.OrdinalIgnoreCase)) return "STD";
             return null;
         }
+
+        // Find rate with optional project-specific overrides. Checks project cache first,
+        // falls back to embedded default. Returns RateSource to identify which was used.
+        public static (double? FldMhu, string? Unit, string? RateSource, string KeyAttempted) FindRateWithProjectOverride(
+            Dictionary<string, (double MH, string Unit)>? projectRateCache,
+            string component, string size, string? thickness, string? classRating)
+        {
+            // Try project rates first if cache provided
+            if (projectRateCache != null)
+            {
+                string estGrp = ResolveEstGrp(component);
+                if (!string.IsNullOrEmpty(estGrp))
+                {
+                    string lookupSize = size;
+
+                    // Olet: use branch/smaller size
+                    if (FittingMakeupService.IsOlet(component))
+                    {
+                        var dualSize = FittingMakeupService.ParseDualSize(size);
+                        if (dualSize != null)
+                            lookupSize = dualSize.Value.Smaller.ToString("0.###");
+                    }
+
+                    // Try thickness key
+                    if (!string.IsNullOrWhiteSpace(thickness))
+                    {
+                        string schRtg = TranslateSchedule(thickness);
+                        string key = $"{estGrp}-{lookupSize}:{schRtg}";
+                        if (projectRateCache.TryGetValue(key, out var projRate))
+                            return (projRate.MH, projRate.Unit, "Project", key);
+
+                        string? synonym = GetScheduleSynonym(schRtg);
+                        if (synonym != null)
+                        {
+                            string altKey = $"{estGrp}-{lookupSize}:{synonym}";
+                            if (projectRateCache.TryGetValue(altKey, out projRate))
+                                return (projRate.MH, projRate.Unit, "Project", altKey);
+                        }
+                    }
+
+                    // Try class rating key
+                    if (!string.IsNullOrWhiteSpace(classRating))
+                    {
+                        string key = $"{estGrp}-{lookupSize}:{classRating}";
+                        if (projectRateCache.TryGetValue(key, out var projRate))
+                            return (projRate.MH, projRate.Unit, "Project", key);
+                    }
+
+                    // Try size-only key
+                    {
+                        string key = $"{estGrp}-{lookupSize}";
+                        if (projectRateCache.TryGetValue(key, out var projRate))
+                            return (projRate.MH, projRate.Unit, "Project", key);
+                    }
+                }
+            }
+
+            // Fall back to embedded default rates
+            var (fldMhu, unit, keyAttempted) = FindRate(component, size, thickness, classRating);
+            if (fldMhu.HasValue)
+                return (fldMhu, unit, "Default", keyAttempted);
+
+            return (null, null, null, keyAttempted);
+        }
+
+        // Resolve component to EST_GRP (public for project rate cache building)
+        public static string GetEstGrp(string component) => ResolveEstGrp(component);
     }
 
     // Rate sheet entry for JSON deserialization

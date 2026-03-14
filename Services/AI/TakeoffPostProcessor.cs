@@ -38,7 +38,9 @@ namespace VANTAGE.Services.AI
 
         // Main entry point - processes the downloaded Excel file in place
         // Returns counts of missed makeups and missed rates for caller use
-        public static (int MissedMakeups, int MissedRates) GenerateLaborAndSummary(string excelPath)
+        // Optional projectRateCache provides per-project rate overrides
+        public static (int MissedMakeups, int MissedRates) GenerateLaborAndSummary(
+            string excelPath, Dictionary<string, (double MH, string Unit)>? projectRateCache = null)
         {
             try
             {
@@ -56,8 +58,8 @@ namespace VANTAGE.Services.AI
                 var laborRows = GenerateLaborRows(materialRows);
                 AppLogger.Info($"Generated {laborRows.Count} labor rows", "TakeoffPostProcessor");
 
-                // Step C: Apply rates to labor rows
-                ApplyRates(laborRows);
+                // Step C: Apply rates to labor rows (with optional project overrides)
+                ApplyRates(laborRows, projectRateCache);
 
                 // Step D: Write Labor tab
                 WriteLaborTab(workbook, laborRows);
@@ -719,7 +721,7 @@ namespace VANTAGE.Services.AI
                 "Drawing Number", "Component", "Size", "Connection Size",
                 "Thickness", "Class Rating", "Material",
                 "Commodity Code", "Description", "Quantity",
-                "ShopField", "ROCStep", "Confidence", "Flag", "BudgetMHs"
+                "ShopField", "ROCStep", "Confidence", "Flag", "BudgetMHs", "UOM", "RateSource"
             };
 
             // Find any additional columns (title block fields)
@@ -899,7 +901,9 @@ namespace VANTAGE.Services.AI
         }
 
         // Apply rates from rate sheet to labor rows, setting BudgetMHs = Quantity × FLD_MHU
-        private static void ApplyRates(List<Dictionary<string, object?>> laborRows)
+        // Optional projectRateCache provides per-project rate overrides (falls back to default)
+        private static void ApplyRates(List<Dictionary<string, object?>> laborRows,
+            Dictionary<string, (double MH, string Unit)>? projectRateCache = null)
         {
             int matched = 0;
             foreach (var row in laborRows)
@@ -909,7 +913,8 @@ namespace VANTAGE.Services.AI
                 string? thickness = GetNullableString(row, "Thickness");
                 string? classRating = GetNullableString(row, "Class Rating");
 
-                var (fldMhu, keyAttempted) = RateSheetService.FindRate(component, size, thickness, classRating);
+                var (fldMhu, unit, rateSource, keyAttempted) = RateSheetService.FindRateWithProjectOverride(
+                    projectRateCache, component, size, thickness, classRating);
 
                 if (fldMhu.HasValue)
                 {
@@ -922,6 +927,8 @@ namespace VANTAGE.Services.AI
                         mhu /= 2;
 
                     row["BudgetMHs"] = NumericHelper.RoundToPlaces(mhu * qty);
+                    row["UOM"] = unit;
+                    row["RateSource"] = rateSource;
                     matched++;
                 }
                 else

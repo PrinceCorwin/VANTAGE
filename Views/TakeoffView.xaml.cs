@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Win32;
+using VANTAGE.Data;
 using VANTAGE.Dialogs;
 using VANTAGE.Services.AI;
 using VANTAGE.Utilities;
@@ -21,6 +22,11 @@ namespace VANTAGE.Views
         private TakeoffService? _service;
         private bool _isLoadingConfigs;
 
+        // Dropdown data for unit rates and ROC sets
+        private List<(string ProjectID, string SetName)> _rateSets = new();
+        private List<(string ProjectID, string SetName)> _rocSets = new();
+        private bool _isLoadingRateDropdowns;
+
         public TakeoffView()
         {
             InitializeComponent();
@@ -30,6 +36,8 @@ namespace VANTAGE.Views
         private async void TakeoffView_Loaded(object sender, RoutedEventArgs e)
         {
             await LoadConfigsAsync();
+            await LoadRateOptionsAsync();
+            await LoadROCSetsAsync();
         }
 
         private async System.Threading.Tasks.Task LoadConfigsAsync()
@@ -245,10 +253,13 @@ namespace VANTAGE.Views
             {
                 await _service.DownloadExcelAsync(batchId, dialog.FileName);
 
+                // Load project rate cache if selected
+                var projectRateCache = await GetSelectedProjectRateCacheAsync();
+
                 // Generate Labor and Summary tabs from the downloaded Material/Flagged output
                 SetStatus("Generating Labor and Summary tabs...");
                 var (missedMakeups, missedRates) = await System.Threading.Tasks.Task.Run(() =>
-                    TakeoffPostProcessor.GenerateLaborAndSummary(dialog.FileName));
+                    TakeoffPostProcessor.GenerateLaborAndSummary(dialog.FileName, projectRateCache));
 
                 SetStatus($"Downloaded to {dialog.FileName}");
 
@@ -436,6 +447,100 @@ namespace VANTAGE.Views
             {
                 AppLogger.Error(ex, "TakeoffView.SendMissedToAdminsAsync");
             }
+        }
+
+        // Load project rate sets for unit rates dropdown
+        private async System.Threading.Tasks.Task LoadRateOptionsAsync()
+        {
+            try
+            {
+                _isLoadingRateDropdowns = true;
+                _rateSets = await ProjectRateRepository.GetProjectRateSetsAsync();
+
+                cboUnitRates.Items.Clear();
+                cboUnitRates.Items.Add("+ Upload New...");
+                cboUnitRates.Items.Add("Default (Embedded)");
+                foreach (var (projectId, setName) in _rateSets)
+                    cboUnitRates.Items.Add($"{projectId} / {setName}");
+                cboUnitRates.SelectedIndex = 1;
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "TakeoffView.LoadRateOptionsAsync");
+                cboUnitRates.Items.Clear();
+                cboUnitRates.Items.Add("+ Upload New...");
+                cboUnitRates.Items.Add("Default (Embedded)");
+                cboUnitRates.SelectedIndex = 1;
+            }
+            finally
+            {
+                _isLoadingRateDropdowns = false;
+            }
+        }
+
+        // Load distinct (ProjectID, SetName) from VMS_ROCRates for ROC set dropdown
+        private async System.Threading.Tasks.Task LoadROCSetsAsync()
+        {
+            try
+            {
+                _isLoadingRateDropdowns = true;
+                _rocSets = await ProjectRateRepository.GetROCSetsAsync();
+
+                cboROCSet.Items.Clear();
+                cboROCSet.Items.Add("+ Create New...");
+                cboROCSet.Items.Add("None");
+                foreach (var (projectId, setName) in _rocSets)
+                    cboROCSet.Items.Add($"{projectId} / {setName}");
+                cboROCSet.SelectedIndex = 1;
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "TakeoffView.LoadROCSetsAsync");
+                cboROCSet.Items.Clear();
+                cboROCSet.Items.Add("+ Create New...");
+                cboROCSet.Items.Add("None");
+                cboROCSet.SelectedIndex = 1;
+            }
+            finally
+            {
+                _isLoadingRateDropdowns = false;
+            }
+        }
+
+        // Handle "Upload New..." selection in unit rates dropdown — opens the management dialog
+        private async void CboUnitRates_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_isLoadingRateDropdowns || cboUnitRates.SelectedIndex != 0) return;
+
+            var dialog = new ManageProjectRatesDialog();
+            dialog.Owner = Window.GetWindow(this);
+            dialog.ShowDialog();
+
+            await LoadRateOptionsAsync();
+        }
+
+        // Handle "Create New..." selection in ROC set dropdown
+        private void CboROCSet_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_isLoadingRateDropdowns || cboROCSet.SelectedIndex != 0) return;
+
+            var dialog = new ManageROCRatesDialog();
+            dialog.Owner = Window.GetWindow(this);
+            dialog.ShowDialog();
+
+            _ = LoadROCSetsAsync();
+        }
+
+        // Get selected project rate cache (null = use defaults)
+        // Index 0 = "Upload New...", Index 1 = "Default (Embedded)", 2+ = project sets
+        private async System.Threading.Tasks.Task<Dictionary<string, (double MH, string Unit)>?> GetSelectedProjectRateCacheAsync()
+        {
+            int rateIndex = cboUnitRates.SelectedIndex - 2;
+            if (rateIndex < 0 || rateIndex >= _rateSets.Count)
+                return null;
+
+            var (projectId, setName) = _rateSets[rateIndex];
+            return await ProjectRateRepository.BuildLookupCacheAsync(projectId, setName);
         }
 
         private void SetStatus(string message)

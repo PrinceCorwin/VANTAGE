@@ -344,6 +344,8 @@
                 <ul>
                     <li><a href="#takeoff-overview">Overview</a></li>
                     <li><a href="#takeoff-configs">Configs</a></li>
+                    <li><a href="#takeoff-unit-rates">Unit Rates</a></li>
+                    <li><a href="#takeoff-roc-sets">ROC Sets</a></li>
                     <li><a href="#takeoff-processing">Processing Drawings</a></li>
                     <li><a href="#takeoff-previous-batches">Previous Batches</a></li>
                     <li><a href="#takeoff-excel-output">Excel Output</a></li>
@@ -358,6 +360,8 @@
                     <li><a href="#admin-snapshots">Snapshot Management</a></li>
                     <li><a href="#admin-upload-progress-log">Upload to Progress Log</a></li>
                     <li><a href="#admin-progress-log">Manage Progress Log</a></li>
+                    <li><a href="#admin-project-rates">Project Rates</a></li>
+                    <li><a href="#admin-roc-rates">ROC Rates</a></li>
                     <li><a href="#admin-sync">Database Sync</a></li>
                 </ul>
             </li>
@@ -2533,6 +2537,24 @@
 
     <p><strong>Deleting a config:</strong> Open the config in Edit mode and click <strong>Delete Config</strong>. This removes both the config and all associated drawings from S3.</p>
 
+    <h3 id="takeoff-unit-rates">Unit Rates</h3>
+    <p>The <strong>Unit Rates</strong> dropdown lets you select which rate sheet to use for BudgetMHs calculation during post-processing.</p>
+    <ul>
+        <li><strong>Default (Embedded)</strong> — Uses the built-in rate sheet with standard rates.</li>
+        <li><strong>Project-specific sets</strong> — Per-project rate overrides uploaded via Excel. When selected, project rates are checked first; any unmatched items fall back to the default embedded rates. The <strong>RateSource</strong> column on the Labor tab shows "Project" or "Default" for each row.</li>
+        <li><strong>+ Upload New...</strong> — Opens the Project Rates management dialog where you can upload, view, and delete rate sets.</li>
+    </ul>
+    <p>Project rate sets can be managed via <strong>Admin &gt; Project Rates</strong> (see <a href="#admin-project-rates">Project Rates</a> in the Administration section).</p>
+
+    <h3 id="takeoff-roc-sets">ROC Sets</h3>
+    <p>The <strong>ROC Set</strong> dropdown lets you select a Rules of Credit percentage split set for post-processing.</p>
+    <ul>
+        <li><strong>None</strong> — No ROC splitting applied.</li>
+        <li><strong>Named sets</strong> — Per-project ROC sets defining how labor records are divided into credit steps with percentage splits.</li>
+        <li><strong>+ Create New...</strong> — Opens the ROC Rates management dialog to create a new set.</li>
+    </ul>
+    <p>ROC sets can be managed via <strong>Admin &gt; ROC Rates</strong> (see <a href="#admin-roc-rates">ROC Rates</a> in the Administration section).</p>
+
     <h3 id="takeoff-processing">Processing Drawings</h3>
 
     <ol>
@@ -2565,7 +2587,7 @@
     <ul>
         <li><strong>Summary</strong> — Statistics overview including total drawings, BOM items, connections by type/size, components by type, and connections by drawing.</li>
         <li><strong>Material</strong> — Raw BOM extraction from the drawings. One row per material item with quantity, connection count, sizes, descriptions, and title block fields.</li>
-        <li><strong>Labor</strong> — Exploded labor records (one row per connection). Material rows are multiplied by quantity and connection count. Each labor row has quantity=1 and a single connection type. BudgetMHs are populated from rate lookups. The ShopField column indicates Shop (1) or Field (2) work.</li>
+        <li><strong>Labor</strong> — Exploded labor records (one row per connection). Material rows are multiplied by quantity and connection count. Each labor row has quantity=1 and a single connection type. BudgetMHs are populated from rate lookups. The UOM column shows the unit of measure. The RateSource column shows "Project" or "Default" to indicate which rate sheet was used. The ShopField column indicates Shop (1) or Field (2) work.</li>
         <li><strong>Flagged</strong> — Items flagged by the AI for review (low confidence, missing data, or extraction issues).</li>
         <li><strong>Missed Makeups</strong> — (if any) Fittings that could not be matched to a makeup lookup entry, with reason and source details.</li>
         <li><strong>Missed Rates</strong> — (if any) Labor rows that could not be matched to a rate sheet entry, with the lookup key attempted.</li>
@@ -2677,6 +2699,38 @@
         <li>This permanently removes the matching records from both <code>VANTAGE_global_ProgressLog</code> and the tracking table</li>
         <li>Use this when progress data needs to be corrected and re-uploaded for a given week</li>
     </ul>
+
+    <h3 id="admin-project-rates">Project Rates (Admin > Project Rates)</h3>
+    <p>Manage per-project unit rate sheets used by the AI Takeoff module. Each project can have multiple named rate sets.</p>
+
+    <p>The management dialog shows all uploaded rate sets in a grid with Project, Rate Set Name, rate count, Created By, Created Date, Updated By, and Updated Date columns.</p>
+
+    <ul>
+        <li><strong>Upload New...</strong> — Import a rate sheet from an Excel file (.xlsx). The file must contain the required columns: <strong>Item</strong>, <strong>Size</strong>, <strong>MH</strong>. Optional: <strong>Sch-Class</strong>, <strong>Unit</strong> (defaults to EA). You will be prompted to select a Project ID from a dropdown and enter a Rate Set Name. If a set with the same name already exists for that project, it will be replaced.</li>
+        <li><strong>Delete Selected</strong> — Remove the selected rate set permanently.</li>
+        <li><strong>Export Template</strong> — Download a blank Excel template with the correct column headers to use as a starting point.</li>
+    </ul>
+
+    <p>Rate sets uploaded here appear in the <strong>Unit Rates</strong> dropdown on the AI Takeoff view. This dialog is also accessible from the "Upload New..." option in that dropdown.</p>
+
+    <h3 id="admin-roc-rates">ROC Rates (Admin > ROC Rates)</h3>
+    <p>Manage Rules of Credit (ROC) percentage split sets for the AI Takeoff module. Each project can have multiple named ROC sets that define how labor records are divided into credit steps.</p>
+
+    <p>The dialog has two dropdowns at the top for selecting or creating sets:</p>
+    <ul>
+        <li><strong>Project</strong> — Select a project ID. To create a set for a new project, type the project ID directly.</li>
+        <li><strong>Set Name</strong> — Select an existing set or type a new name to create one.</li>
+    </ul>
+
+    <p>The grid shows the ROC steps for the selected set with inline-editable columns:</p>
+    <ul>
+        <li><strong>ROCStep</strong> — The credit step name (e.g., "1.FAB", "2.INST").</li>
+        <li><strong>Percentage</strong> — The percentage of BudgetMHs allocated to this step. All percentages must sum to 100%.</li>
+        <li><strong>ShopField</strong> — Whether this step applies to Shop (1) or Field (2) records.</li>
+        <li><strong>SortOrder</strong> — Controls the display order of steps.</li>
+    </ul>
+
+    <p>Use <strong>Add Row</strong> to add steps, <strong>Delete Row</strong> to remove selected steps, and <strong>Save</strong> to persist changes. The status bar shows the current percentage sum and warns if it does not equal 100%.</p>
 
     <h3 id="admin-sync">Database Sync</h3>
     <p>All users sync their local data with the central Azure database using the <strong>SYNC</strong> button in the Progress module (see <a href="#prog-syncing">Syncing Data</a>). Key points for administrators:</p>

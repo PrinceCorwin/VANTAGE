@@ -6,6 +6,16 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### March 13, 2026 (Takeoff — Project Rates, ROC Rates, & Rate/ROC Dropdowns)
+- **Per-project unit rate overrides:** New `VMS_ProjectRates` Azure table allows uploading project-specific rate sheets from Excel. Multiple named rate sets per project. Rates are looked up before the embedded default rate sheet — fallback to defaults for unmatched entries. `RateSource` column on Labor tab shows "Project" or "Default" for each row.
+- **UOM column on Labor tab:** Rate lookups now write the Unit of Measure (UOM) alongside BudgetMHs.
+- **Project Rate Management dialog:** Admin > Project Rates opens a management dialog showing all uploaded rate sets with Project, Set Name, rate count, Created By, Created Date, Updated By, Updated Date columns. Upload New, Delete Selected, Export Template, and Close buttons. Template exports an Excel with the expected column headers (Item, Size, Sch-Class, Unit, MH).
+- **Project Rate upload flow:** Upload validates Excel column headers (accepts aliases for backward compatibility), prompts for Project ID (dropdown from VMS_Projects) and Rate Set Name, bulk-imports via SqlBulkCopy. Replaces existing set if same name exists.
+- **ROC Rates admin dialog:** Admin > ROC Rates opens a dialog for managing per-project ROC percentage split sets. Inline-editable grid with ROCStep, Percentage, ShopField (Shop/Field dropdown), SortOrder columns. Percentage sum validation (must equal 100%). Full CRUD for admins, read-only for estimators.
+- **TakeoffView dropdowns:** Two new dropdowns — "Unit Rates" (Default Embedded + project-specific sets + Upload New option) and "ROC Set" (None + named sets + Create New option). Both "Upload New" and "Create New" open their respective management dialogs.
+- **Column rename:** Project rate columns renamed from (EST_GRP, Size, SCH_RTG, Unit, FLD_MHU) to (Item, Size, Sch-Class, Unit, MH) across all code, Azure table, upload validation, template export, and lookup cache.
+- **Key files:** `Data/ProjectRateRepository.cs` (new), `Services/AI/ProjectRateUploader.cs` (new), `Dialogs/ManageProjectRatesDialog.xaml/.cs` (new), `Dialogs/ManageROCRatesDialog.xaml/.cs` (new), `Services/AI/RateSheetService.cs`, `Services/AI/TakeoffPostProcessor.cs`, `Views/TakeoffView.xaml/.cs`, `MainWindow.xaml/.cs`
+
 ### March 13, 2026 (Takeoff — Debug Cleanup & Admin Missed Data Notification)
 - **Removed FRH debug logging:** Deleted 5 per-drawing/per-pipe `AppLogger.Info` calls from `TakeoffPostProcessor.cs` (FRH section). High-level summary logs retained.
 - **Send Missed Makeups and Rates to Admin:** New checkbox on the Takeoff view (default checked). After post-processing, if there are missed fitting makeups or unmatched rates, a separate Excel containing only the Missed Makeups and Missed Rates tabs is emailed to all administrators via Azure Communication Services.

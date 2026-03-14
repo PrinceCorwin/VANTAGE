@@ -1097,6 +1097,37 @@ namespace VANTAGE
             dialog.ShowDialog();
         }
 
+        private void MenuROCRates_Click(object sender, RoutedEventArgs e)
+        {
+            // Estimators get read-only view, admins get full CRUD
+            if (!AzureDbManager.CheckConnection(out string rocError))
+            {
+                MessageBox.Show(
+                    $"Cannot connect to Azure database:\n\n{rocError}\n\nThis feature requires an active connection.",
+                    "Connection Required", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var dialog = new Dialogs.ManageROCRatesDialog();
+            dialog.Owner = this;
+            dialog.ShowDialog();
+        }
+
+        private void MenuProjectRates_Click(object sender, RoutedEventArgs e)
+        {
+            if (!AzureDbManager.CheckConnection(out string prError))
+            {
+                MessageBox.Show(
+                    $"Cannot connect to Azure database:\n\n{prError}\n\nThis feature requires an active connection.",
+                    "Connection Required", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var dialog = new Dialogs.ManageProjectRatesDialog();
+            dialog.Owner = this;
+            dialog.ShowDialog();
+        }
+
         private void MenuEditUsers_Click(object sender, RoutedEventArgs e)
         {
             // Check admin status
