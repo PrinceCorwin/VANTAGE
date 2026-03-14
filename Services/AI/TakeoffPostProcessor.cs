@@ -312,13 +312,13 @@ namespace VANTAGE.Services.AI
                     splRows.Add(spl);
                 }
 
-                // Log fittings on this drawing that weren't claimed by any pipe (excluding non-weldable)
+                // Log fittings on this drawing that weren't claimed by any pipe
                 foreach (var fitting in fittingRows)
                 {
                     if (claimedFittings.Contains(fitting)) continue;
 
                     string component = GetString(fitting, "Component").ToUpper();
-                    if (ExcludeFromMakeupLookup.Contains(component)) continue;
+                    string reason = ExcludeFromMakeupLookup.Contains(component) ? "Excluded" : "Unclaimed";
 
                     _missedMakeups.Add(new MissedMakeup
                     {
@@ -328,7 +328,7 @@ namespace VANTAGE.Services.AI
                         ConnectionType = GetString(fitting, "Connection Type"),
                         ClassRating = GetString(fitting, "Class Rating"),
                         Description = GetString(fitting, "Raw Description"),
-                        Reason = "Unclaimed"
+                        Reason = reason
                     });
                 }
             }
@@ -408,7 +408,11 @@ namespace VANTAGE.Services.AI
 
             // NIP and PLG don't create connection rows — their connections are
             // always to another fitting and get counted from that fitting instead
-            if (component == "NIP" || component == "PLG") return result;
+            if (component == "NIP" || component == "PLG")
+            {
+                _noConns.Add(mat);
+                return result;
+            }
 
             // Connection explosion (all items with connections)
             int connQty = GetInt(mat, "Connection Qty");

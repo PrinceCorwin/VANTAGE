@@ -7,7 +7,8 @@ This document tracks completed features and fixes. Items are moved here from Pro
 ## Unreleased
 
 ### March 14, 2026 (Takeoff — Rate Sheet Overhaul, No Conns Tab, Component Cleanup)
-- **No Conns tab:** New Excel tab showing material BOM items that had no connections to explode (connQty <= 0 or empty connection type, excluding PIPE). Columns: Drawing Number, Component, Size, Quantity, Thickness, Class Rating, Material, Connection Qty, Connection Type, Raw Description. Built during existing explosion pass — no extra loop.
+- **No Conns tab:** New Excel tab showing material BOM items that had no connections to explode (connQty <= 0 or empty connection type, excluding PIPE). Also includes NIP and PLG items. Columns: Drawing Number, Component, Size, Quantity, Thickness, Class Rating, Material, Connection Qty, Connection Type, Raw Description. Built during existing explosion pass — no extra loop.
+- **Missed Makeups — Excluded items now visible:** Items in `ExcludeFromMakeupLookup` (NIP, PLG, BOLT, GSKT, etc.) now appear on the Missed Makeups tab with reason "Excluded" instead of being silently skipped. Helps users understand what is and isn't included in SPL fitting makeup calculations.
 - **NIP added to makeup exclusion list:** NIP was missing from `ExcludeFromMakeupLookup`, inconsistent with PLG which was already excluded.
 - **SWG mapped to FTG:** Swage now looks up rates as a fitting. REDC/REDE combined to RED. FLGR (RED FLG) removed from rate sheet — looked up as FTG.
 - **INSTRUM→INST, SHOWER→SAFSHW, TUBING→TUBE in rate sheet:** These now match component names directly, removing translation entries.
