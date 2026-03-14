@@ -6,6 +6,10 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### March 14, 2026 (CONST TFS MECH Updater Plugin — Scaffold)
+- **CONST TFS MECH Updater plugin scaffold:** Created in `VANTAGE-Plugins` repo (`src/const-tfs-mech-updater/`). Identical architecture to PTP plugin — ConstTfsMechUpdaterPlugin.cs (IVantagePlugin entry point), ConstImporter.cs (Excel parsing, CWP aggregation, activity create/update logic). ROCStep set to `4.SHP`, description prefix `FABRICATION - 4.SHP CONST ` to avoid collisions with PTP records.
+- **Remaining work:** Column header mappings (RequiredHeaders, column lookups in ParseReport) need updating once first CONST vendor report is received. Not yet added to `plugins-index.json` or published as a GitHub release.
+
 ### March 13, 2026 (Analysis Export, Feedback Grid Upgrade, Takeoff Settings)
 - **Analysis summary grid Export button:** Added an Export button to the AnalysisView summary grid filter bar. Exports the current filtered grid contents to Excel via ClosedXML with styled headers and auto-fit columns. Default filename includes the Group By field and timestamp.
 - **Feedback Board sorting & filtering:** Replaced the standard WPF ListView in `FeedbackDialog` with a Syncfusion `SfDataGrid`. All columns (Type, Title, Status, Notes, Created By, Date) now support column header sorting and filtering, matching the rest of the app's grid behavior.

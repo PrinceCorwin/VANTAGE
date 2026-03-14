@@ -52,7 +52,8 @@
 - Plugin execution framework: `IVantagePlugin` interface, `IPluginHost` for app capabilities, `PluginLoaderService` loads assemblies at startup.
 - Plugins can add menu items to Tools menu dynamically via `host.AddToolsMenuItem()`.
 - `IPluginHost` includes `RefreshProgressViewAsync()` for plugins that modify activity data.
-- First plugin published: `ptp-tfs-mech-updater` v1.0.0 (PTP vendor shipping report importer for TFS Mechanical).
+- First plugin published: `ptp-tfs-mech-updater` v1.0.1 (PTP vendor shipping report importer for TFS Mechanical, ROCStep 4.SHP).
+- **`const-tfs-mech-updater` (WIP):** Scaffold complete — identical structure to PTP plugin with ROCStep 4.SHP, description prefix `FABRICATION - 4.SHP CONST `. Pending: column mappings from first CONST vendor report. Not yet in plugins-index.json or published as a release.
 
 ### Multi-Theme System
 
