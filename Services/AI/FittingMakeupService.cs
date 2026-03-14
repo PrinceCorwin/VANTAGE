@@ -147,7 +147,7 @@ namespace VANTAGE.Services.AI
                     if (result != null)
                         contribution = result.Value.RunIn * 2;
                 }
-                else if (component == "REDC" || component == "REDE" || component == "SWG")
+                else if (component == "RED" || component == "SWG")
                 {
                     // Reducing fittings: parse dual size, only count on larger size pipe, 1x makeup
                     string sizeStr = GetString(fitting, "Size");

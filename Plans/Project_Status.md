@@ -133,7 +133,7 @@
   2. **Rate application** — Core implementation complete. Per-project rate overrides with management dialog, upload from Excel, RateSource column. Admin email notification for missed data. TODO:
      - ~~CVLV (control valve)~~ — Skipped for now, maps to VLV. Possible future add.
      - Determine connection types for HEAT, HOSE, DPAN, F8B so they generate labor rows
-     - Add CompRefTable entries for missing rate sheet groups: ORIFICE, GAUGE, GAUGE GLASS, METER, METER RUN, PROBE, XMTR, SADDLE, RED FLG, SCRD MU, VENT/DRAIN, SHOE, SPRING SUPPT, ANCHOR, CLAMP
+     - Add CompRefTable entries for missing rate sheet groups: ORFC, GAUGE, GGLASS, METER, METERR, PROBE, XMTR, SAD, REDF, SCRD, VNTDRN, SHOE, SPRING, ANCH, CLMP
   3. **ROC splits** — VMS_ROCRates table and admin dialog complete. ROC set dropdown on TakeoffView complete. Post-processing logic to apply ROC percentage splits NOT yet implemented.
   4. VANTAGE tab — Column rename for direct import into Activities
 

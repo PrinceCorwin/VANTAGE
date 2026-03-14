@@ -1,7 +1,7 @@
 [
   {
-    "Key": "ANALYZER-0.5",
-    "EstGrp": "ANALYZER",
+    "Key": "ANLZR-0.5",
+    "EstGrp": "ANLZR",
     "Size": 0.5,
     "SchRtg": null,
     "Unit": "EA",
@@ -9,8 +9,8 @@
     "DollarEach": null
   },
   {
-    "Key": "ANALYZER-0.75",
-    "EstGrp": "ANALYZER",
+    "Key": "ANLZR-0.75",
+    "EstGrp": "ANLZR",
     "Size": 0.75,
     "SchRtg": null,
     "Unit": "EA",
@@ -18,8 +18,8 @@
     "DollarEach": null
   },
   {
-    "Key": "ANALYZER-1",
-    "EstGrp": "ANALYZER",
+    "Key": "ANLZR-1",
+    "EstGrp": "ANLZR",
     "Size": 1.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -27,8 +27,8 @@
     "DollarEach": null
   },
   {
-    "Key": "ANALYZER-1.5",
-    "EstGrp": "ANALYZER",
+    "Key": "ANLZR-1.5",
+    "EstGrp": "ANLZR",
     "Size": 1.5,
     "SchRtg": null,
     "Unit": "EA",
@@ -36,8 +36,8 @@
     "DollarEach": null
   },
   {
-    "Key": "ANALYZER-3",
-    "EstGrp": "ANALYZER",
+    "Key": "ANLZR-3",
+    "EstGrp": "ANLZR",
     "Size": 3.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -45,8 +45,8 @@
     "DollarEach": null
   },
   {
-    "Key": "ANCHOR-0.625",
-    "EstGrp": "ANCHOR",
+    "Key": "ANCH-0.625",
+    "EstGrp": "ANCH",
     "Size": 0.625,
     "SchRtg": null,
     "Unit": "EA",
@@ -11484,8 +11484,8 @@
     "DollarEach": null
   },
   {
-    "Key": "CLAMP-0.75",
-    "EstGrp": "CLAMP",
+    "Key": "CLMP-0.75",
+    "EstGrp": "CLMP",
     "Size": 0.75,
     "SchRtg": null,
     "Unit": "EA",
@@ -11493,8 +11493,8 @@
     "DollarEach": null
   },
   {
-    "Key": "CLAMP-1",
-    "EstGrp": "CLAMP",
+    "Key": "CLMP-1",
+    "EstGrp": "CLMP",
     "Size": 1.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -11502,8 +11502,8 @@
     "DollarEach": null
   },
   {
-    "Key": "CLAMP-2",
-    "EstGrp": "CLAMP",
+    "Key": "CLMP-2",
+    "EstGrp": "CLMP",
     "Size": 2.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -11511,8 +11511,8 @@
     "DollarEach": null
   },
   {
-    "Key": "COAT & WRAP FTG-0.5",
-    "EstGrp": "COAT & WRAP FTG",
+    "Key": "WRAPF-0.5",
+    "EstGrp": "WRAPF",
     "Size": 0.5,
     "SchRtg": null,
     "Unit": "EA",
@@ -11520,8 +11520,8 @@
     "DollarEach": null
   },
   {
-    "Key": "COAT & WRAP FTG-0.75",
-    "EstGrp": "COAT & WRAP FTG",
+    "Key": "WRAPF-0.75",
+    "EstGrp": "WRAPF",
     "Size": 0.75,
     "SchRtg": null,
     "Unit": "EA",
@@ -11529,8 +11529,8 @@
     "DollarEach": null
   },
   {
-    "Key": "COAT & WRAP FTG-1",
-    "EstGrp": "COAT & WRAP FTG",
+    "Key": "WRAPF-1",
+    "EstGrp": "WRAPF",
     "Size": 1.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -11538,8 +11538,8 @@
     "DollarEach": null
   },
   {
-    "Key": "COAT & WRAP FTG-1.5",
-    "EstGrp": "COAT & WRAP FTG",
+    "Key": "WRAPF-1.5",
+    "EstGrp": "WRAPF",
     "Size": 1.5,
     "SchRtg": null,
     "Unit": "EA",
@@ -11547,8 +11547,8 @@
     "DollarEach": null
   },
   {
-    "Key": "COAT & WRAP FTG-2",
-    "EstGrp": "COAT & WRAP FTG",
+    "Key": "WRAPF-2",
+    "EstGrp": "WRAPF",
     "Size": 2.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -11556,8 +11556,8 @@
     "DollarEach": null
   },
   {
-    "Key": "COAT & WRAP FTG-2.5",
-    "EstGrp": "COAT & WRAP FTG",
+    "Key": "WRAPF-2.5",
+    "EstGrp": "WRAPF",
     "Size": 2.5,
     "SchRtg": null,
     "Unit": "EA",
@@ -11565,8 +11565,8 @@
     "DollarEach": null
   },
   {
-    "Key": "COAT & WRAP FTG-3",
-    "EstGrp": "COAT & WRAP FTG",
+    "Key": "WRAPF-3",
+    "EstGrp": "WRAPF",
     "Size": 3.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -11574,8 +11574,8 @@
     "DollarEach": null
   },
   {
-    "Key": "COAT & WRAP FTG-4",
-    "EstGrp": "COAT & WRAP FTG",
+    "Key": "WRAPF-4",
+    "EstGrp": "WRAPF",
     "Size": 4.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -11583,8 +11583,8 @@
     "DollarEach": null
   },
   {
-    "Key": "COAT & WRAP FTG-6",
-    "EstGrp": "COAT & WRAP FTG",
+    "Key": "WRAPF-6",
+    "EstGrp": "WRAPF",
     "Size": 6.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -11592,8 +11592,8 @@
     "DollarEach": null
   },
   {
-    "Key": "COAT & WRAP FTG-8",
-    "EstGrp": "COAT & WRAP FTG",
+    "Key": "WRAPF-8",
+    "EstGrp": "WRAPF",
     "Size": 8.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -11601,8 +11601,8 @@
     "DollarEach": null
   },
   {
-    "Key": "COAT & WRAP FTG-10",
-    "EstGrp": "COAT & WRAP FTG",
+    "Key": "WRAPF-10",
+    "EstGrp": "WRAPF",
     "Size": 10.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -11610,8 +11610,8 @@
     "DollarEach": null
   },
   {
-    "Key": "COAT & WRAP FTG-12",
-    "EstGrp": "COAT & WRAP FTG",
+    "Key": "WRAPF-12",
+    "EstGrp": "WRAPF",
     "Size": 12.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -11619,8 +11619,8 @@
     "DollarEach": null
   },
   {
-    "Key": "COAT & WRAP FTG-14",
-    "EstGrp": "COAT & WRAP FTG",
+    "Key": "WRAPF-14",
+    "EstGrp": "WRAPF",
     "Size": 14.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -11628,8 +11628,8 @@
     "DollarEach": null
   },
   {
-    "Key": "COAT & WRAP FTG-16",
-    "EstGrp": "COAT & WRAP FTG",
+    "Key": "WRAPF-16",
+    "EstGrp": "WRAPF",
     "Size": 16.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -11637,8 +11637,8 @@
     "DollarEach": null
   },
   {
-    "Key": "COAT & WRAP FTG-18",
-    "EstGrp": "COAT & WRAP FTG",
+    "Key": "WRAPF-18",
+    "EstGrp": "WRAPF",
     "Size": 18.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -11646,8 +11646,8 @@
     "DollarEach": null
   },
   {
-    "Key": "COAT & WRAP FTG-20",
-    "EstGrp": "COAT & WRAP FTG",
+    "Key": "WRAPF-20",
+    "EstGrp": "WRAPF",
     "Size": 20.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -11655,8 +11655,8 @@
     "DollarEach": null
   },
   {
-    "Key": "COAT & WRAP FTG-24",
-    "EstGrp": "COAT & WRAP FTG",
+    "Key": "WRAPF-24",
+    "EstGrp": "WRAPF",
     "Size": 24.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -11664,8 +11664,8 @@
     "DollarEach": null
   },
   {
-    "Key": "COAT & WRAP FTG-30",
-    "EstGrp": "COAT & WRAP FTG",
+    "Key": "WRAPF-30",
+    "EstGrp": "WRAPF",
     "Size": 30.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -11673,8 +11673,8 @@
     "DollarEach": null
   },
   {
-    "Key": "COAT & WRAP FTG-36",
-    "EstGrp": "COAT & WRAP FTG",
+    "Key": "WRAPF-36",
+    "EstGrp": "WRAPF",
     "Size": 36.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -11682,8 +11682,8 @@
     "DollarEach": null
   },
   {
-    "Key": "COAT & WRAP FTG-42",
-    "EstGrp": "COAT & WRAP FTG",
+    "Key": "WRAPF-42",
+    "EstGrp": "WRAPF",
     "Size": 42.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -11691,8 +11691,8 @@
     "DollarEach": null
   },
   {
-    "Key": "COAT & WRAP FTG-48",
-    "EstGrp": "COAT & WRAP FTG",
+    "Key": "WRAPF-48",
+    "EstGrp": "WRAPF",
     "Size": 48.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -11700,8 +11700,8 @@
     "DollarEach": null
   },
   {
-    "Key": "COAT & WRAP WLD-0.5",
-    "EstGrp": "COAT & WRAP WLD",
+    "Key": "WRAPW-0.5",
+    "EstGrp": "WRAPW",
     "Size": 0.5,
     "SchRtg": null,
     "Unit": "EA",
@@ -11709,8 +11709,8 @@
     "DollarEach": null
   },
   {
-    "Key": "COAT & WRAP WLD-0.75",
-    "EstGrp": "COAT & WRAP WLD",
+    "Key": "WRAPW-0.75",
+    "EstGrp": "WRAPW",
     "Size": 0.75,
     "SchRtg": null,
     "Unit": "EA",
@@ -11718,8 +11718,8 @@
     "DollarEach": null
   },
   {
-    "Key": "COAT & WRAP WLD-1",
-    "EstGrp": "COAT & WRAP WLD",
+    "Key": "WRAPW-1",
+    "EstGrp": "WRAPW",
     "Size": 1.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -11727,8 +11727,8 @@
     "DollarEach": null
   },
   {
-    "Key": "COAT & WRAP WLD-1.5",
-    "EstGrp": "COAT & WRAP WLD",
+    "Key": "WRAPW-1.5",
+    "EstGrp": "WRAPW",
     "Size": 1.5,
     "SchRtg": null,
     "Unit": "EA",
@@ -11736,8 +11736,8 @@
     "DollarEach": null
   },
   {
-    "Key": "COAT & WRAP WLD-2",
-    "EstGrp": "COAT & WRAP WLD",
+    "Key": "WRAPW-2",
+    "EstGrp": "WRAPW",
     "Size": 2.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -11745,8 +11745,8 @@
     "DollarEach": null
   },
   {
-    "Key": "COAT & WRAP WLD-2.5",
-    "EstGrp": "COAT & WRAP WLD",
+    "Key": "WRAPW-2.5",
+    "EstGrp": "WRAPW",
     "Size": 2.5,
     "SchRtg": null,
     "Unit": "EA",
@@ -11754,8 +11754,8 @@
     "DollarEach": null
   },
   {
-    "Key": "COAT & WRAP WLD-3",
-    "EstGrp": "COAT & WRAP WLD",
+    "Key": "WRAPW-3",
+    "EstGrp": "WRAPW",
     "Size": 3.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -11763,8 +11763,8 @@
     "DollarEach": null
   },
   {
-    "Key": "COAT & WRAP WLD-4",
-    "EstGrp": "COAT & WRAP WLD",
+    "Key": "WRAPW-4",
+    "EstGrp": "WRAPW",
     "Size": 4.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -11772,8 +11772,8 @@
     "DollarEach": null
   },
   {
-    "Key": "COAT & WRAP WLD-6",
-    "EstGrp": "COAT & WRAP WLD",
+    "Key": "WRAPW-6",
+    "EstGrp": "WRAPW",
     "Size": 6.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -11781,8 +11781,8 @@
     "DollarEach": null
   },
   {
-    "Key": "COAT & WRAP WLD-8",
-    "EstGrp": "COAT & WRAP WLD",
+    "Key": "WRAPW-8",
+    "EstGrp": "WRAPW",
     "Size": 8.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -11790,8 +11790,8 @@
     "DollarEach": null
   },
   {
-    "Key": "COAT & WRAP WLD-10",
-    "EstGrp": "COAT & WRAP WLD",
+    "Key": "WRAPW-10",
+    "EstGrp": "WRAPW",
     "Size": 10.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -11799,8 +11799,8 @@
     "DollarEach": null
   },
   {
-    "Key": "COAT & WRAP WLD-12",
-    "EstGrp": "COAT & WRAP WLD",
+    "Key": "WRAPW-12",
+    "EstGrp": "WRAPW",
     "Size": 12.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -11808,8 +11808,8 @@
     "DollarEach": null
   },
   {
-    "Key": "COAT & WRAP WLD-14",
-    "EstGrp": "COAT & WRAP WLD",
+    "Key": "WRAPW-14",
+    "EstGrp": "WRAPW",
     "Size": 14.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -11817,8 +11817,8 @@
     "DollarEach": null
   },
   {
-    "Key": "COAT & WRAP WLD-16",
-    "EstGrp": "COAT & WRAP WLD",
+    "Key": "WRAPW-16",
+    "EstGrp": "WRAPW",
     "Size": 16.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -11826,8 +11826,8 @@
     "DollarEach": null
   },
   {
-    "Key": "COAT & WRAP WLD-18",
-    "EstGrp": "COAT & WRAP WLD",
+    "Key": "WRAPW-18",
+    "EstGrp": "WRAPW",
     "Size": 18.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -11835,8 +11835,8 @@
     "DollarEach": null
   },
   {
-    "Key": "COAT & WRAP WLD-20",
-    "EstGrp": "COAT & WRAP WLD",
+    "Key": "WRAPW-20",
+    "EstGrp": "WRAPW",
     "Size": 20.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -11844,8 +11844,8 @@
     "DollarEach": null
   },
   {
-    "Key": "COAT & WRAP WLD-24",
-    "EstGrp": "COAT & WRAP WLD",
+    "Key": "WRAPW-24",
+    "EstGrp": "WRAPW",
     "Size": 24.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -11853,8 +11853,8 @@
     "DollarEach": null
   },
   {
-    "Key": "COAT & WRAP WLD-30",
-    "EstGrp": "COAT & WRAP WLD",
+    "Key": "WRAPW-30",
+    "EstGrp": "WRAPW",
     "Size": 30.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -11862,8 +11862,8 @@
     "DollarEach": null
   },
   {
-    "Key": "COAT & WRAP WLD-36",
-    "EstGrp": "COAT & WRAP WLD",
+    "Key": "WRAPW-36",
+    "EstGrp": "WRAPW",
     "Size": 36.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -11871,8 +11871,8 @@
     "DollarEach": null
   },
   {
-    "Key": "COAT & WRAP WLD-42",
-    "EstGrp": "COAT & WRAP WLD",
+    "Key": "WRAPW-42",
+    "EstGrp": "WRAPW",
     "Size": 42.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -11880,8 +11880,8 @@
     "DollarEach": null
   },
   {
-    "Key": "COAT & WRAP WLD-48",
-    "EstGrp": "COAT & WRAP WLD",
+    "Key": "WRAPW-48",
+    "EstGrp": "WRAPW",
     "Size": 48.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -19836,8 +19836,8 @@
     "DollarEach": null
   },
   {
-    "Key": "EYEWASH-0.75",
-    "EstGrp": "EYEWASH",
+    "Key": "EW-0.75",
+    "EstGrp": "EW",
     "Size": 0.75,
     "SchRtg": null,
     "Unit": "EA",
@@ -19845,8 +19845,8 @@
     "DollarEach": null
   },
   {
-    "Key": "EYEWASH-1.25",
-    "EstGrp": "EYEWASH",
+    "Key": "EW-1.25",
+    "EstGrp": "EW",
     "Size": 1.25,
     "SchRtg": null,
     "Unit": "EA",
@@ -19854,8 +19854,8 @@
     "DollarEach": null
   },
   {
-    "Key": "EYEWASH-1.5",
-    "EstGrp": "EYEWASH",
+    "Key": "EW-1.5",
+    "EstGrp": "EW",
     "Size": 1.5,
     "SchRtg": null,
     "Unit": "EA",
@@ -19863,8 +19863,8 @@
     "DollarEach": null
   },
   {
-    "Key": "EYEWASH STATION-0.75:1",
-    "EstGrp": "EYEWASH STATION",
+    "Key": "EWST-0.75:1",
+    "EstGrp": "EWST",
     "Size": 0.75,
     "SchRtg": "1",
     "Unit": "EA",
@@ -19872,8 +19872,8 @@
     "DollarEach": null
   },
   {
-    "Key": "EYEWASH STATION-1.25:1",
-    "EstGrp": "EYEWASH STATION",
+    "Key": "EWST-1.25:1",
+    "EstGrp": "EWST",
     "Size": 1.25,
     "SchRtg": "1",
     "Unit": "EA",
@@ -19881,8 +19881,8 @@
     "DollarEach": null
   },
   {
-    "Key": "EYEWASH STATION-1.5:1",
-    "EstGrp": "EYEWASH STATION",
+    "Key": "EWST-1.5:1",
+    "EstGrp": "EWST",
     "Size": 1.5,
     "SchRtg": "1",
     "Unit": "EA",
@@ -19890,8 +19890,8 @@
     "DollarEach": null
   },
   {
-    "Key": "EYEWASH/SHOWER-0.75",
-    "EstGrp": "EYEWASH/SHOWER",
+    "Key": "EWSH-0.75",
+    "EstGrp": "EWSH",
     "Size": 0.75,
     "SchRtg": null,
     "Unit": "EA",
@@ -19899,8 +19899,8 @@
     "DollarEach": null
   },
   {
-    "Key": "EYEWASH/SHOWER-1.25",
-    "EstGrp": "EYEWASH/SHOWER",
+    "Key": "EWSH-1.25",
+    "EstGrp": "EWSH",
     "Size": 1.25,
     "SchRtg": null,
     "Unit": "EA",
@@ -19908,8 +19908,8 @@
     "DollarEach": null
   },
   {
-    "Key": "EYEWASH/SHOWER-1.5",
-    "EstGrp": "EYEWASH/SHOWER",
+    "Key": "EWSH-1.5",
+    "EstGrp": "EWSH",
     "Size": 1.5,
     "SchRtg": null,
     "Unit": "EA",
@@ -26496,8 +26496,8 @@
     "DollarEach": null
   },
   {
-    "Key": "FLUSH-0.125",
-    "EstGrp": "FLUSH",
+    "Key": "FLSH-0.125",
+    "EstGrp": "FLSH",
     "Size": 0.125,
     "SchRtg": null,
     "Unit": "LF",
@@ -26505,8 +26505,8 @@
     "DollarEach": 0.3
   },
   {
-    "Key": "FLUSH-0.25",
-    "EstGrp": "FLUSH",
+    "Key": "FLSH-0.25",
+    "EstGrp": "FLSH",
     "Size": 0.25,
     "SchRtg": null,
     "Unit": "LF",
@@ -26514,8 +26514,8 @@
     "DollarEach": 0.3
   },
   {
-    "Key": "FLUSH-0.375",
-    "EstGrp": "FLUSH",
+    "Key": "FLSH-0.375",
+    "EstGrp": "FLSH",
     "Size": 0.375,
     "SchRtg": null,
     "Unit": "LF",
@@ -26523,8 +26523,8 @@
     "DollarEach": 0.3
   },
   {
-    "Key": "FLUSH-0.5",
-    "EstGrp": "FLUSH",
+    "Key": "FLSH-0.5",
+    "EstGrp": "FLSH",
     "Size": 0.5,
     "SchRtg": null,
     "Unit": "LF",
@@ -26532,8 +26532,8 @@
     "DollarEach": 0.3
   },
   {
-    "Key": "FLUSH-0.75",
-    "EstGrp": "FLUSH",
+    "Key": "FLSH-0.75",
+    "EstGrp": "FLSH",
     "Size": 0.75,
     "SchRtg": null,
     "Unit": "LF",
@@ -26541,8 +26541,8 @@
     "DollarEach": 0.3
   },
   {
-    "Key": "FLUSH-1",
-    "EstGrp": "FLUSH",
+    "Key": "FLSH-1",
+    "EstGrp": "FLSH",
     "Size": 1.0,
     "SchRtg": null,
     "Unit": "LF",
@@ -26550,8 +26550,8 @@
     "DollarEach": 0.3
   },
   {
-    "Key": "FLUSH-1.25",
-    "EstGrp": "FLUSH",
+    "Key": "FLSH-1.25",
+    "EstGrp": "FLSH",
     "Size": 1.25,
     "SchRtg": null,
     "Unit": "LF",
@@ -26559,8 +26559,8 @@
     "DollarEach": 0.3
   },
   {
-    "Key": "FLUSH-1.5",
-    "EstGrp": "FLUSH",
+    "Key": "FLSH-1.5",
+    "EstGrp": "FLSH",
     "Size": 1.5,
     "SchRtg": null,
     "Unit": "LF",
@@ -26568,8 +26568,8 @@
     "DollarEach": 0.3
   },
   {
-    "Key": "FLUSH-2",
-    "EstGrp": "FLUSH",
+    "Key": "FLSH-2",
+    "EstGrp": "FLSH",
     "Size": 2.0,
     "SchRtg": null,
     "Unit": "LF",
@@ -26577,8 +26577,8 @@
     "DollarEach": 0.3
   },
   {
-    "Key": "FLUSH-2.5",
-    "EstGrp": "FLUSH",
+    "Key": "FLSH-2.5",
+    "EstGrp": "FLSH",
     "Size": 2.5,
     "SchRtg": null,
     "Unit": "LF",
@@ -26586,8 +26586,8 @@
     "DollarEach": 0.3
   },
   {
-    "Key": "FLUSH-3",
-    "EstGrp": "FLUSH",
+    "Key": "FLSH-3",
+    "EstGrp": "FLSH",
     "Size": 3.0,
     "SchRtg": null,
     "Unit": "LF",
@@ -26595,8 +26595,8 @@
     "DollarEach": 0.3
   },
   {
-    "Key": "FLUSH-3.5",
-    "EstGrp": "FLUSH",
+    "Key": "FLSH-3.5",
+    "EstGrp": "FLSH",
     "Size": 3.5,
     "SchRtg": null,
     "Unit": "LF",
@@ -26604,8 +26604,8 @@
     "DollarEach": 0.3
   },
   {
-    "Key": "FLUSH-4",
-    "EstGrp": "FLUSH",
+    "Key": "FLSH-4",
+    "EstGrp": "FLSH",
     "Size": 4.0,
     "SchRtg": null,
     "Unit": "LF",
@@ -26613,8 +26613,8 @@
     "DollarEach": 0.3
   },
   {
-    "Key": "FLUSH-5",
-    "EstGrp": "FLUSH",
+    "Key": "FLSH-5",
+    "EstGrp": "FLSH",
     "Size": 5.0,
     "SchRtg": null,
     "Unit": "LF",
@@ -26622,8 +26622,8 @@
     "DollarEach": 0.3
   },
   {
-    "Key": "FLUSH-6",
-    "EstGrp": "FLUSH",
+    "Key": "FLSH-6",
+    "EstGrp": "FLSH",
     "Size": 6.0,
     "SchRtg": null,
     "Unit": "LF",
@@ -26631,8 +26631,8 @@
     "DollarEach": 0.3
   },
   {
-    "Key": "FLUSH-8",
-    "EstGrp": "FLUSH",
+    "Key": "FLSH-8",
+    "EstGrp": "FLSH",
     "Size": 8.0,
     "SchRtg": null,
     "Unit": "LF",
@@ -26640,8 +26640,8 @@
     "DollarEach": 0.3
   },
   {
-    "Key": "FLUSH-10",
-    "EstGrp": "FLUSH",
+    "Key": "FLSH-10",
+    "EstGrp": "FLSH",
     "Size": 10.0,
     "SchRtg": null,
     "Unit": "LF",
@@ -26649,8 +26649,8 @@
     "DollarEach": 0.3
   },
   {
-    "Key": "FLUSH-12",
-    "EstGrp": "FLUSH",
+    "Key": "FLSH-12",
+    "EstGrp": "FLSH",
     "Size": 12.0,
     "SchRtg": null,
     "Unit": "LF",
@@ -26658,8 +26658,8 @@
     "DollarEach": 0.36
   },
   {
-    "Key": "FLUSH-14",
-    "EstGrp": "FLUSH",
+    "Key": "FLSH-14",
+    "EstGrp": "FLSH",
     "Size": 14.0,
     "SchRtg": null,
     "Unit": "LF",
@@ -26667,8 +26667,8 @@
     "DollarEach": 0.42
   },
   {
-    "Key": "FLUSH-16",
-    "EstGrp": "FLUSH",
+    "Key": "FLSH-16",
+    "EstGrp": "FLSH",
     "Size": 16.0,
     "SchRtg": null,
     "Unit": "LF",
@@ -26676,8 +26676,8 @@
     "DollarEach": 0.48
   },
   {
-    "Key": "FLUSH-18",
-    "EstGrp": "FLUSH",
+    "Key": "FLSH-18",
+    "EstGrp": "FLSH",
     "Size": 18.0,
     "SchRtg": null,
     "Unit": "LF",
@@ -26685,8 +26685,8 @@
     "DollarEach": 0.54
   },
   {
-    "Key": "FLUSH-20",
-    "EstGrp": "FLUSH",
+    "Key": "FLSH-20",
+    "EstGrp": "FLSH",
     "Size": 20.0,
     "SchRtg": null,
     "Unit": "LF",
@@ -26694,8 +26694,8 @@
     "DollarEach": 0.6
   },
   {
-    "Key": "FLUSH-22",
-    "EstGrp": "FLUSH",
+    "Key": "FLSH-22",
+    "EstGrp": "FLSH",
     "Size": 22.0,
     "SchRtg": null,
     "Unit": "LF",
@@ -26703,8 +26703,8 @@
     "DollarEach": 0.66
   },
   {
-    "Key": "FLUSH-24",
-    "EstGrp": "FLUSH",
+    "Key": "FLSH-24",
+    "EstGrp": "FLSH",
     "Size": 24.0,
     "SchRtg": null,
     "Unit": "LF",
@@ -26712,8 +26712,8 @@
     "DollarEach": 0.72
   },
   {
-    "Key": "FLUSH-26",
-    "EstGrp": "FLUSH",
+    "Key": "FLSH-26",
+    "EstGrp": "FLSH",
     "Size": 26.0,
     "SchRtg": null,
     "Unit": "LF",
@@ -26721,8 +26721,8 @@
     "DollarEach": 0.78
   },
   {
-    "Key": "FLUSH-28",
-    "EstGrp": "FLUSH",
+    "Key": "FLSH-28",
+    "EstGrp": "FLSH",
     "Size": 28.0,
     "SchRtg": null,
     "Unit": "LF",
@@ -26730,8 +26730,8 @@
     "DollarEach": 0.84
   },
   {
-    "Key": "FLUSH-30",
-    "EstGrp": "FLUSH",
+    "Key": "FLSH-30",
+    "EstGrp": "FLSH",
     "Size": 30.0,
     "SchRtg": null,
     "Unit": "LF",
@@ -26739,8 +26739,8 @@
     "DollarEach": 0.9
   },
   {
-    "Key": "FLUSH-34",
-    "EstGrp": "FLUSH",
+    "Key": "FLSH-34",
+    "EstGrp": "FLSH",
     "Size": 34.0,
     "SchRtg": null,
     "Unit": "LF",
@@ -26748,8 +26748,8 @@
     "DollarEach": 1.02
   },
   {
-    "Key": "FLUSH-36",
-    "EstGrp": "FLUSH",
+    "Key": "FLSH-36",
+    "EstGrp": "FLSH",
     "Size": 36.0,
     "SchRtg": null,
     "Unit": "LF",
@@ -26757,8 +26757,8 @@
     "DollarEach": 1.08
   },
   {
-    "Key": "FLUSH-66",
-    "EstGrp": "FLUSH",
+    "Key": "FLSH-66",
+    "EstGrp": "FLSH",
     "Size": 66.0,
     "SchRtg": null,
     "Unit": "LF",
@@ -26766,8 +26766,8 @@
     "DollarEach": 1.98
   },
   {
-    "Key": "FLUSH-84",
-    "EstGrp": "FLUSH",
+    "Key": "FLSH-84",
+    "EstGrp": "FLSH",
     "Size": 84.0,
     "SchRtg": null,
     "Unit": "LF",
@@ -26775,8 +26775,8 @@
     "DollarEach": 2.52
   },
   {
-    "Key": "FLUSH-32",
-    "EstGrp": "FLUSH",
+    "Key": "FLSH-32",
+    "EstGrp": "FLSH",
     "Size": 32.0,
     "SchRtg": null,
     "Unit": "LF",
@@ -26784,8 +26784,8 @@
     "DollarEach": 0.95
   },
   {
-    "Key": "FLUSH-40",
-    "EstGrp": "FLUSH",
+    "Key": "FLSH-40",
+    "EstGrp": "FLSH",
     "Size": 40.0,
     "SchRtg": null,
     "Unit": "LF",
@@ -26793,8 +26793,8 @@
     "DollarEach": 1.1
   },
   {
-    "Key": "FLUSH-42",
-    "EstGrp": "FLUSH",
+    "Key": "FLSH-42",
+    "EstGrp": "FLSH",
     "Size": 42.0,
     "SchRtg": null,
     "Unit": "LF",
@@ -26802,8 +26802,8 @@
     "DollarEach": 1.26
   },
   {
-    "Key": "FLUSH-48",
-    "EstGrp": "FLUSH",
+    "Key": "FLSH-48",
+    "EstGrp": "FLSH",
     "Size": 48.0,
     "SchRtg": null,
     "Unit": "LF",
@@ -26811,8 +26811,8 @@
     "DollarEach": 1.44
   },
   {
-    "Key": "FLUSH-52",
-    "EstGrp": "FLUSH",
+    "Key": "FLSH-52",
+    "EstGrp": "FLSH",
     "Size": 52.0,
     "SchRtg": null,
     "Unit": "LF",
@@ -26820,8 +26820,8 @@
     "DollarEach": 1.5
   },
   {
-    "Key": "FLUSH-54",
-    "EstGrp": "FLUSH",
+    "Key": "FLSH-54",
+    "EstGrp": "FLSH",
     "Size": 54.0,
     "SchRtg": null,
     "Unit": "LF",
@@ -26829,8 +26829,8 @@
     "DollarEach": 1.6
   },
   {
-    "Key": "FLUSH-60",
-    "EstGrp": "FLUSH",
+    "Key": "FLSH-60",
+    "EstGrp": "FLSH",
     "Size": 60.0,
     "SchRtg": null,
     "Unit": "LF",
@@ -26838,8 +26838,8 @@
     "DollarEach": 1.75
   },
   {
-    "Key": "FLUSH-72",
-    "EstGrp": "FLUSH",
+    "Key": "FLSH-72",
+    "EstGrp": "FLSH",
     "Size": 72.0,
     "SchRtg": null,
     "Unit": "LF",
@@ -27657,8 +27657,8 @@
     "DollarEach": null
   },
   {
-    "Key": "GAUGE GLASS-0.75",
-    "EstGrp": "GAUGE GLASS",
+    "Key": "GGLASS-0.75",
+    "EstGrp": "GGLASS",
     "Size": 0.75,
     "SchRtg": null,
     "Unit": "EA",
@@ -27666,8 +27666,8 @@
     "DollarEach": null
   },
   {
-    "Key": "GAUGE GLASS-1.5",
-    "EstGrp": "GAUGE GLASS",
+    "Key": "GGLASS-1.5",
+    "EstGrp": "GGLASS",
     "Size": 1.5,
     "SchRtg": null,
     "Unit": "EA",
@@ -28116,8 +28116,8 @@
     "DollarEach": null
   },
   {
-    "Key": "HARDWARE-0.5",
-    "EstGrp": "HARDWARE",
+    "Key": "HARD-0.5",
+    "EstGrp": "HARD",
     "Size": 0.5,
     "SchRtg": null,
     "Unit": "EA",
@@ -28125,8 +28125,8 @@
     "DollarEach": null
   },
   {
-    "Key": "HARDWARE-0.625",
-    "EstGrp": "HARDWARE",
+    "Key": "HARD-0.625",
+    "EstGrp": "HARD",
     "Size": 0.625,
     "SchRtg": null,
     "Unit": "EA",
@@ -28134,8 +28134,8 @@
     "DollarEach": null
   },
   {
-    "Key": "HARDWARE-0.75",
-    "EstGrp": "HARDWARE",
+    "Key": "HARD-0.75",
+    "EstGrp": "HARD",
     "Size": 0.75,
     "SchRtg": null,
     "Unit": "EA",
@@ -28143,8 +28143,8 @@
     "DollarEach": null
   },
   {
-    "Key": "HARDWARE-1",
-    "EstGrp": "HARDWARE",
+    "Key": "HARD-1",
+    "EstGrp": "HARD",
     "Size": 1.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -28152,8 +28152,8 @@
     "DollarEach": null
   },
   {
-    "Key": "HARDWARE-1.25",
-    "EstGrp": "HARDWARE",
+    "Key": "HARD-1.25",
+    "EstGrp": "HARD",
     "Size": 1.25,
     "SchRtg": null,
     "Unit": "EA",
@@ -28161,8 +28161,8 @@
     "DollarEach": null
   },
   {
-    "Key": "HARDWARE-1.5",
-    "EstGrp": "HARDWARE",
+    "Key": "HARD-1.5",
+    "EstGrp": "HARD",
     "Size": 1.5,
     "SchRtg": null,
     "Unit": "EA",
@@ -28170,8 +28170,8 @@
     "DollarEach": null
   },
   {
-    "Key": "HARDWARE-1.625",
-    "EstGrp": "HARDWARE",
+    "Key": "HARD-1.625",
+    "EstGrp": "HARD",
     "Size": 1.625,
     "SchRtg": null,
     "Unit": "EA",
@@ -28179,8 +28179,8 @@
     "DollarEach": null
   },
   {
-    "Key": "HARDWARE-2",
-    "EstGrp": "HARDWARE",
+    "Key": "HARD-2",
+    "EstGrp": "HARD",
     "Size": 2.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -28188,8 +28188,8 @@
     "DollarEach": null
   },
   {
-    "Key": "HARDWARE-2.5",
-    "EstGrp": "HARDWARE",
+    "Key": "HARD-2.5",
+    "EstGrp": "HARD",
     "Size": 2.5,
     "SchRtg": null,
     "Unit": "EA",
@@ -28197,8 +28197,8 @@
     "DollarEach": null
   },
   {
-    "Key": "HARDWARE-3",
-    "EstGrp": "HARDWARE",
+    "Key": "HARD-3",
+    "EstGrp": "HARD",
     "Size": 3.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -28206,8 +28206,8 @@
     "DollarEach": null
   },
   {
-    "Key": "HARDWARE-4",
-    "EstGrp": "HARDWARE",
+    "Key": "HARD-4",
+    "EstGrp": "HARD",
     "Size": 4.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -28215,8 +28215,8 @@
     "DollarEach": null
   },
   {
-    "Key": "HARDWARE-6",
-    "EstGrp": "HARDWARE",
+    "Key": "HARD-6",
+    "EstGrp": "HARD",
     "Size": 6.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -28224,8 +28224,8 @@
     "DollarEach": null
   },
   {
-    "Key": "HARDWARE-8",
-    "EstGrp": "HARDWARE",
+    "Key": "HARD-8",
+    "EstGrp": "HARD",
     "Size": 8.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -28233,8 +28233,8 @@
     "DollarEach": null
   },
   {
-    "Key": "HARDWARE-10",
-    "EstGrp": "HARDWARE",
+    "Key": "HARD-10",
+    "EstGrp": "HARD",
     "Size": 10.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -28242,8 +28242,8 @@
     "DollarEach": null
   },
   {
-    "Key": "HARDWARE-12",
-    "EstGrp": "HARDWARE",
+    "Key": "HARD-12",
+    "EstGrp": "HARD",
     "Size": 12.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -28251,8 +28251,8 @@
     "DollarEach": null
   },
   {
-    "Key": "HARDWARE-14",
-    "EstGrp": "HARDWARE",
+    "Key": "HARD-14",
+    "EstGrp": "HARD",
     "Size": 14.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -28260,8 +28260,8 @@
     "DollarEach": null
   },
   {
-    "Key": "HARDWARE-16",
-    "EstGrp": "HARDWARE",
+    "Key": "HARD-16",
+    "EstGrp": "HARD",
     "Size": 16.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -28269,8 +28269,8 @@
     "DollarEach": null
   },
   {
-    "Key": "HARDWARE-18",
-    "EstGrp": "HARDWARE",
+    "Key": "HARD-18",
+    "EstGrp": "HARD",
     "Size": 18.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -28278,8 +28278,8 @@
     "DollarEach": null
   },
   {
-    "Key": "HARDWARE-20",
-    "EstGrp": "HARDWARE",
+    "Key": "HARD-20",
+    "EstGrp": "HARD",
     "Size": 20.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -28287,8 +28287,8 @@
     "DollarEach": null
   },
   {
-    "Key": "HARDWARE-22",
-    "EstGrp": "HARDWARE",
+    "Key": "HARD-22",
+    "EstGrp": "HARD",
     "Size": 22.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -28296,8 +28296,8 @@
     "DollarEach": null
   },
   {
-    "Key": "HARDWARE-24",
-    "EstGrp": "HARDWARE",
+    "Key": "HARD-24",
+    "EstGrp": "HARD",
     "Size": 24.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -28305,8 +28305,8 @@
     "DollarEach": null
   },
   {
-    "Key": "HARDWARE-26",
-    "EstGrp": "HARDWARE",
+    "Key": "HARD-26",
+    "EstGrp": "HARD",
     "Size": 26.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -28314,8 +28314,8 @@
     "DollarEach": null
   },
   {
-    "Key": "HARDWARE-28",
-    "EstGrp": "HARDWARE",
+    "Key": "HARD-28",
+    "EstGrp": "HARD",
     "Size": 28.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -28323,8 +28323,8 @@
     "DollarEach": null
   },
   {
-    "Key": "HARDWARE-30",
-    "EstGrp": "HARDWARE",
+    "Key": "HARD-30",
+    "EstGrp": "HARD",
     "Size": 30.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -28332,8 +28332,8 @@
     "DollarEach": null
   },
   {
-    "Key": "HARDWARE-32",
-    "EstGrp": "HARDWARE",
+    "Key": "HARD-32",
+    "EstGrp": "HARD",
     "Size": 32.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -28341,8 +28341,8 @@
     "DollarEach": null
   },
   {
-    "Key": "HARDWARE-34",
-    "EstGrp": "HARDWARE",
+    "Key": "HARD-34",
+    "EstGrp": "HARD",
     "Size": 34.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -28350,8 +28350,8 @@
     "DollarEach": null
   },
   {
-    "Key": "HARDWARE-36",
-    "EstGrp": "HARDWARE",
+    "Key": "HARD-36",
+    "EstGrp": "HARD",
     "Size": 36.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -28359,8 +28359,8 @@
     "DollarEach": null
   },
   {
-    "Key": "HARDWARE-38",
-    "EstGrp": "HARDWARE",
+    "Key": "HARD-38",
+    "EstGrp": "HARD",
     "Size": 38.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -28368,8 +28368,8 @@
     "DollarEach": null
   },
   {
-    "Key": "HARDWARE-40",
-    "EstGrp": "HARDWARE",
+    "Key": "HARD-40",
+    "EstGrp": "HARD",
     "Size": 40.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -28377,8 +28377,8 @@
     "DollarEach": null
   },
   {
-    "Key": "HARDWARE-42",
-    "EstGrp": "HARDWARE",
+    "Key": "HARD-42",
+    "EstGrp": "HARD",
     "Size": 42.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -28386,8 +28386,8 @@
     "DollarEach": null
   },
   {
-    "Key": "HARDWARE-44",
-    "EstGrp": "HARDWARE",
+    "Key": "HARD-44",
+    "EstGrp": "HARD",
     "Size": 44.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -28395,8 +28395,8 @@
     "DollarEach": null
   },
   {
-    "Key": "HARDWARE-46",
-    "EstGrp": "HARDWARE",
+    "Key": "HARD-46",
+    "EstGrp": "HARD",
     "Size": 46.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -28404,8 +28404,8 @@
     "DollarEach": null
   },
   {
-    "Key": "HARDWARE-48",
-    "EstGrp": "HARDWARE",
+    "Key": "HARD-48",
+    "EstGrp": "HARD",
     "Size": 48.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -28413,8 +28413,8 @@
     "DollarEach": null
   },
   {
-    "Key": "HARDWARE-50",
-    "EstGrp": "HARDWARE",
+    "Key": "HARD-50",
+    "EstGrp": "HARD",
     "Size": 50.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -28422,8 +28422,8 @@
     "DollarEach": null
   },
   {
-    "Key": "HARDWARE-52",
-    "EstGrp": "HARDWARE",
+    "Key": "HARD-52",
+    "EstGrp": "HARD",
     "Size": 52.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -28431,8 +28431,8 @@
     "DollarEach": null
   },
   {
-    "Key": "HARDWARE-54",
-    "EstGrp": "HARDWARE",
+    "Key": "HARD-54",
+    "EstGrp": "HARD",
     "Size": 54.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -28440,8 +28440,8 @@
     "DollarEach": null
   },
   {
-    "Key": "HARDWARE-56",
-    "EstGrp": "HARDWARE",
+    "Key": "HARD-56",
+    "EstGrp": "HARD",
     "Size": 56.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -28449,8 +28449,8 @@
     "DollarEach": null
   },
   {
-    "Key": "HARDWARE-58",
-    "EstGrp": "HARDWARE",
+    "Key": "HARD-58",
+    "EstGrp": "HARD",
     "Size": 58.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -28458,8 +28458,8 @@
     "DollarEach": null
   },
   {
-    "Key": "HARDWARE-60",
-    "EstGrp": "HARDWARE",
+    "Key": "HARD-60",
+    "EstGrp": "HARD",
     "Size": 60.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -28467,8 +28467,8 @@
     "DollarEach": null
   },
   {
-    "Key": "HARDWARE-62",
-    "EstGrp": "HARDWARE",
+    "Key": "HARD-62",
+    "EstGrp": "HARD",
     "Size": 62.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -28476,8 +28476,8 @@
     "DollarEach": null
   },
   {
-    "Key": "HARDWARE-64",
-    "EstGrp": "HARDWARE",
+    "Key": "HARD-64",
+    "EstGrp": "HARD",
     "Size": 64.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -28485,8 +28485,8 @@
     "DollarEach": null
   },
   {
-    "Key": "HARDWARE-66",
-    "EstGrp": "HARDWARE",
+    "Key": "HARD-66",
+    "EstGrp": "HARD",
     "Size": 66.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -28494,8 +28494,8 @@
     "DollarEach": null
   },
   {
-    "Key": "HARDWARE-68",
-    "EstGrp": "HARDWARE",
+    "Key": "HARD-68",
+    "EstGrp": "HARD",
     "Size": 68.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -28503,8 +28503,8 @@
     "DollarEach": null
   },
   {
-    "Key": "HARDWARE-70",
-    "EstGrp": "HARDWARE",
+    "Key": "HARD-70",
+    "EstGrp": "HARD",
     "Size": 70.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -28512,8 +28512,8 @@
     "DollarEach": null
   },
   {
-    "Key": "HARDWARE-72",
-    "EstGrp": "HARDWARE",
+    "Key": "HARD-72",
+    "EstGrp": "HARD",
     "Size": 72.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -28521,8 +28521,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-0.125:150",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-0.125:150",
+    "EstGrp": "INST",
     "Size": 0.125,
     "SchRtg": "150",
     "Unit": "EA",
@@ -28530,8 +28530,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-0.125:1500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-0.125:1500",
+    "EstGrp": "INST",
     "Size": 0.125,
     "SchRtg": "1500",
     "Unit": "EA",
@@ -28539,8 +28539,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-0.125:2500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-0.125:2500",
+    "EstGrp": "INST",
     "Size": 0.125,
     "SchRtg": "2500",
     "Unit": "EA",
@@ -28548,8 +28548,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-0.125:300",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-0.125:300",
+    "EstGrp": "INST",
     "Size": 0.125,
     "SchRtg": "300",
     "Unit": "EA",
@@ -28557,8 +28557,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-0.125:400",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-0.125:400",
+    "EstGrp": "INST",
     "Size": 0.125,
     "SchRtg": "400",
     "Unit": "EA",
@@ -28566,8 +28566,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-0.125:600",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-0.125:600",
+    "EstGrp": "INST",
     "Size": 0.125,
     "SchRtg": "600",
     "Unit": "EA",
@@ -28575,8 +28575,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-0.125:900",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-0.125:900",
+    "EstGrp": "INST",
     "Size": 0.125,
     "SchRtg": "900",
     "Unit": "EA",
@@ -28584,8 +28584,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-0.375:150",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-0.375:150",
+    "EstGrp": "INST",
     "Size": 0.375,
     "SchRtg": "150",
     "Unit": "EA",
@@ -28593,8 +28593,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-0.375:1500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-0.375:1500",
+    "EstGrp": "INST",
     "Size": 0.375,
     "SchRtg": "1500",
     "Unit": "EA",
@@ -28602,8 +28602,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-0.375:2500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-0.375:2500",
+    "EstGrp": "INST",
     "Size": 0.375,
     "SchRtg": "2500",
     "Unit": "EA",
@@ -28611,8 +28611,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-0.375:300",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-0.375:300",
+    "EstGrp": "INST",
     "Size": 0.375,
     "SchRtg": "300",
     "Unit": "EA",
@@ -28620,8 +28620,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-0.375:400",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-0.375:400",
+    "EstGrp": "INST",
     "Size": 0.375,
     "SchRtg": "400",
     "Unit": "EA",
@@ -28629,8 +28629,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-0.375:600",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-0.375:600",
+    "EstGrp": "INST",
     "Size": 0.375,
     "SchRtg": "600",
     "Unit": "EA",
@@ -28638,8 +28638,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-0.375:900",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-0.375:900",
+    "EstGrp": "INST",
     "Size": 0.375,
     "SchRtg": "900",
     "Unit": "EA",
@@ -28647,8 +28647,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-0.5:150",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-0.5:150",
+    "EstGrp": "INST",
     "Size": 0.5,
     "SchRtg": "150",
     "Unit": "EA",
@@ -28656,8 +28656,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-0.5:1500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-0.5:1500",
+    "EstGrp": "INST",
     "Size": 0.5,
     "SchRtg": "1500",
     "Unit": "EA",
@@ -28665,8 +28665,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-0.5:2500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-0.5:2500",
+    "EstGrp": "INST",
     "Size": 0.5,
     "SchRtg": "2500",
     "Unit": "EA",
@@ -28674,8 +28674,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-0.5:3000",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-0.5:3000",
+    "EstGrp": "INST",
     "Size": 0.5,
     "SchRtg": "3000",
     "Unit": "EA",
@@ -28683,8 +28683,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-0.5:300",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-0.5:300",
+    "EstGrp": "INST",
     "Size": 0.5,
     "SchRtg": "300",
     "Unit": "EA",
@@ -28692,8 +28692,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-0.5:400",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-0.5:400",
+    "EstGrp": "INST",
     "Size": 0.5,
     "SchRtg": "400",
     "Unit": "EA",
@@ -28701,8 +28701,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-0.5:600",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-0.5:600",
+    "EstGrp": "INST",
     "Size": 0.5,
     "SchRtg": "600",
     "Unit": "EA",
@@ -28710,8 +28710,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-0.5:900",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-0.5:900",
+    "EstGrp": "INST",
     "Size": 0.5,
     "SchRtg": "900",
     "Unit": "EA",
@@ -28719,8 +28719,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-0.75:150",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-0.75:150",
+    "EstGrp": "INST",
     "Size": 0.75,
     "SchRtg": "150",
     "Unit": "EA",
@@ -28728,8 +28728,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-0.75:1500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-0.75:1500",
+    "EstGrp": "INST",
     "Size": 0.75,
     "SchRtg": "1500",
     "Unit": "EA",
@@ -28737,8 +28737,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-0.75:2500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-0.75:2500",
+    "EstGrp": "INST",
     "Size": 0.75,
     "SchRtg": "2500",
     "Unit": "EA",
@@ -28746,8 +28746,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-0.75:300",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-0.75:300",
+    "EstGrp": "INST",
     "Size": 0.75,
     "SchRtg": "300",
     "Unit": "EA",
@@ -28755,8 +28755,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-0.75:400",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-0.75:400",
+    "EstGrp": "INST",
     "Size": 0.75,
     "SchRtg": "400",
     "Unit": "EA",
@@ -28764,8 +28764,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-0.75:600",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-0.75:600",
+    "EstGrp": "INST",
     "Size": 0.75,
     "SchRtg": "600",
     "Unit": "EA",
@@ -28773,8 +28773,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-0.75:900",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-0.75:900",
+    "EstGrp": "INST",
     "Size": 0.75,
     "SchRtg": "900",
     "Unit": "EA",
@@ -28782,8 +28782,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-1:150",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-1:150",
+    "EstGrp": "INST",
     "Size": 1.0,
     "SchRtg": "150",
     "Unit": "EA",
@@ -28791,8 +28791,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-1:1500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-1:1500",
+    "EstGrp": "INST",
     "Size": 1.0,
     "SchRtg": "1500",
     "Unit": "EA",
@@ -28800,8 +28800,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-1:2500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-1:2500",
+    "EstGrp": "INST",
     "Size": 1.0,
     "SchRtg": "2500",
     "Unit": "EA",
@@ -28809,8 +28809,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-1:300",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-1:300",
+    "EstGrp": "INST",
     "Size": 1.0,
     "SchRtg": "300",
     "Unit": "EA",
@@ -28818,8 +28818,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-1:400",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-1:400",
+    "EstGrp": "INST",
     "Size": 1.0,
     "SchRtg": "400",
     "Unit": "EA",
@@ -28827,8 +28827,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-1:600",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-1:600",
+    "EstGrp": "INST",
     "Size": 1.0,
     "SchRtg": "600",
     "Unit": "EA",
@@ -28836,8 +28836,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-1:900",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-1:900",
+    "EstGrp": "INST",
     "Size": 1.0,
     "SchRtg": "900",
     "Unit": "EA",
@@ -28845,8 +28845,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-1.25:150",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-1.25:150",
+    "EstGrp": "INST",
     "Size": 1.25,
     "SchRtg": "150",
     "Unit": "EA",
@@ -28854,8 +28854,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-1.25:1500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-1.25:1500",
+    "EstGrp": "INST",
     "Size": 1.25,
     "SchRtg": "1500",
     "Unit": "EA",
@@ -28863,8 +28863,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-1.25:2500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-1.25:2500",
+    "EstGrp": "INST",
     "Size": 1.25,
     "SchRtg": "2500",
     "Unit": "EA",
@@ -28872,8 +28872,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-1.25:300",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-1.25:300",
+    "EstGrp": "INST",
     "Size": 1.25,
     "SchRtg": "300",
     "Unit": "EA",
@@ -28881,8 +28881,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-1.25:400",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-1.25:400",
+    "EstGrp": "INST",
     "Size": 1.25,
     "SchRtg": "400",
     "Unit": "EA",
@@ -28890,8 +28890,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-1.25:600",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-1.25:600",
+    "EstGrp": "INST",
     "Size": 1.25,
     "SchRtg": "600",
     "Unit": "EA",
@@ -28899,8 +28899,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-1.25:900",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-1.25:900",
+    "EstGrp": "INST",
     "Size": 1.25,
     "SchRtg": "900",
     "Unit": "EA",
@@ -28908,8 +28908,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-1.5:150",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-1.5:150",
+    "EstGrp": "INST",
     "Size": 1.5,
     "SchRtg": "150",
     "Unit": "EA",
@@ -28917,8 +28917,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-1.5:1500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-1.5:1500",
+    "EstGrp": "INST",
     "Size": 1.5,
     "SchRtg": "1500",
     "Unit": "EA",
@@ -28926,8 +28926,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-1.5:2500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-1.5:2500",
+    "EstGrp": "INST",
     "Size": 1.5,
     "SchRtg": "2500",
     "Unit": "EA",
@@ -28935,8 +28935,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-1.5:300",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-1.5:300",
+    "EstGrp": "INST",
     "Size": 1.5,
     "SchRtg": "300",
     "Unit": "EA",
@@ -28944,8 +28944,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-1.5:400",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-1.5:400",
+    "EstGrp": "INST",
     "Size": 1.5,
     "SchRtg": "400",
     "Unit": "EA",
@@ -28953,8 +28953,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-1.5:600",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-1.5:600",
+    "EstGrp": "INST",
     "Size": 1.5,
     "SchRtg": "600",
     "Unit": "EA",
@@ -28962,8 +28962,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-1.5:900",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-1.5:900",
+    "EstGrp": "INST",
     "Size": 1.5,
     "SchRtg": "900",
     "Unit": "EA",
@@ -28971,8 +28971,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-2:150",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-2:150",
+    "EstGrp": "INST",
     "Size": 2.0,
     "SchRtg": "150",
     "Unit": "EA",
@@ -28980,8 +28980,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-2:1500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-2:1500",
+    "EstGrp": "INST",
     "Size": 2.0,
     "SchRtg": "1500",
     "Unit": "EA",
@@ -28989,8 +28989,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-2:2500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-2:2500",
+    "EstGrp": "INST",
     "Size": 2.0,
     "SchRtg": "2500",
     "Unit": "EA",
@@ -28998,8 +28998,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-2:300",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-2:300",
+    "EstGrp": "INST",
     "Size": 2.0,
     "SchRtg": "300",
     "Unit": "EA",
@@ -29007,8 +29007,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-2:400",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-2:400",
+    "EstGrp": "INST",
     "Size": 2.0,
     "SchRtg": "400",
     "Unit": "EA",
@@ -29016,8 +29016,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-2:600",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-2:600",
+    "EstGrp": "INST",
     "Size": 2.0,
     "SchRtg": "600",
     "Unit": "EA",
@@ -29025,8 +29025,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-2:900",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-2:900",
+    "EstGrp": "INST",
     "Size": 2.0,
     "SchRtg": "900",
     "Unit": "EA",
@@ -29034,8 +29034,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-2.5:150",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-2.5:150",
+    "EstGrp": "INST",
     "Size": 2.5,
     "SchRtg": "150",
     "Unit": "EA",
@@ -29043,8 +29043,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-2.5:1500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-2.5:1500",
+    "EstGrp": "INST",
     "Size": 2.5,
     "SchRtg": "1500",
     "Unit": "EA",
@@ -29052,8 +29052,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-2.5:2500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-2.5:2500",
+    "EstGrp": "INST",
     "Size": 2.5,
     "SchRtg": "2500",
     "Unit": "EA",
@@ -29061,8 +29061,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-2.5:300",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-2.5:300",
+    "EstGrp": "INST",
     "Size": 2.5,
     "SchRtg": "300",
     "Unit": "EA",
@@ -29070,8 +29070,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-2.5:400",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-2.5:400",
+    "EstGrp": "INST",
     "Size": 2.5,
     "SchRtg": "400",
     "Unit": "EA",
@@ -29079,8 +29079,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-2.5:600",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-2.5:600",
+    "EstGrp": "INST",
     "Size": 2.5,
     "SchRtg": "600",
     "Unit": "EA",
@@ -29088,8 +29088,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-2.5:900",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-2.5:900",
+    "EstGrp": "INST",
     "Size": 2.5,
     "SchRtg": "900",
     "Unit": "EA",
@@ -29097,8 +29097,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-3:150",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-3:150",
+    "EstGrp": "INST",
     "Size": 3.0,
     "SchRtg": "150",
     "Unit": "EA",
@@ -29106,8 +29106,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-3:1500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-3:1500",
+    "EstGrp": "INST",
     "Size": 3.0,
     "SchRtg": "1500",
     "Unit": "EA",
@@ -29115,8 +29115,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-3:2500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-3:2500",
+    "EstGrp": "INST",
     "Size": 3.0,
     "SchRtg": "2500",
     "Unit": "EA",
@@ -29124,8 +29124,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-3:300",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-3:300",
+    "EstGrp": "INST",
     "Size": 3.0,
     "SchRtg": "300",
     "Unit": "EA",
@@ -29133,8 +29133,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-3:400",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-3:400",
+    "EstGrp": "INST",
     "Size": 3.0,
     "SchRtg": "400",
     "Unit": "EA",
@@ -29142,8 +29142,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-3:600",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-3:600",
+    "EstGrp": "INST",
     "Size": 3.0,
     "SchRtg": "600",
     "Unit": "EA",
@@ -29151,8 +29151,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-3:900",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-3:900",
+    "EstGrp": "INST",
     "Size": 3.0,
     "SchRtg": "900",
     "Unit": "EA",
@@ -29160,8 +29160,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-3.5:150",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-3.5:150",
+    "EstGrp": "INST",
     "Size": 3.5,
     "SchRtg": "150",
     "Unit": "EA",
@@ -29169,8 +29169,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-3.5:1500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-3.5:1500",
+    "EstGrp": "INST",
     "Size": 3.5,
     "SchRtg": "1500",
     "Unit": "EA",
@@ -29178,8 +29178,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-3.5:2500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-3.5:2500",
+    "EstGrp": "INST",
     "Size": 3.5,
     "SchRtg": "2500",
     "Unit": "EA",
@@ -29187,8 +29187,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-3.5:300",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-3.5:300",
+    "EstGrp": "INST",
     "Size": 3.5,
     "SchRtg": "300",
     "Unit": "EA",
@@ -29196,8 +29196,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-3.5:400",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-3.5:400",
+    "EstGrp": "INST",
     "Size": 3.5,
     "SchRtg": "400",
     "Unit": "EA",
@@ -29205,8 +29205,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-3.5:600",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-3.5:600",
+    "EstGrp": "INST",
     "Size": 3.5,
     "SchRtg": "600",
     "Unit": "EA",
@@ -29214,8 +29214,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-3.5:900",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-3.5:900",
+    "EstGrp": "INST",
     "Size": 3.5,
     "SchRtg": "900",
     "Unit": "EA",
@@ -29223,8 +29223,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-4:150",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-4:150",
+    "EstGrp": "INST",
     "Size": 4.0,
     "SchRtg": "150",
     "Unit": "EA",
@@ -29232,8 +29232,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-4:1500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-4:1500",
+    "EstGrp": "INST",
     "Size": 4.0,
     "SchRtg": "1500",
     "Unit": "EA",
@@ -29241,8 +29241,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-4:2500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-4:2500",
+    "EstGrp": "INST",
     "Size": 4.0,
     "SchRtg": "2500",
     "Unit": "EA",
@@ -29250,8 +29250,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-4:300",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-4:300",
+    "EstGrp": "INST",
     "Size": 4.0,
     "SchRtg": "300",
     "Unit": "EA",
@@ -29259,8 +29259,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-4:400",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-4:400",
+    "EstGrp": "INST",
     "Size": 4.0,
     "SchRtg": "400",
     "Unit": "EA",
@@ -29268,8 +29268,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-4:600",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-4:600",
+    "EstGrp": "INST",
     "Size": 4.0,
     "SchRtg": "600",
     "Unit": "EA",
@@ -29277,8 +29277,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-4:900",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-4:900",
+    "EstGrp": "INST",
     "Size": 4.0,
     "SchRtg": "900",
     "Unit": "EA",
@@ -29286,8 +29286,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-5:150",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-5:150",
+    "EstGrp": "INST",
     "Size": 5.0,
     "SchRtg": "150",
     "Unit": "EA",
@@ -29295,8 +29295,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-5:1500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-5:1500",
+    "EstGrp": "INST",
     "Size": 5.0,
     "SchRtg": "1500",
     "Unit": "EA",
@@ -29304,8 +29304,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-5:2500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-5:2500",
+    "EstGrp": "INST",
     "Size": 5.0,
     "SchRtg": "2500",
     "Unit": "EA",
@@ -29313,8 +29313,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-5:300",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-5:300",
+    "EstGrp": "INST",
     "Size": 5.0,
     "SchRtg": "300",
     "Unit": "EA",
@@ -29322,8 +29322,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-5:400",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-5:400",
+    "EstGrp": "INST",
     "Size": 5.0,
     "SchRtg": "400",
     "Unit": "EA",
@@ -29331,8 +29331,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-5:600",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-5:600",
+    "EstGrp": "INST",
     "Size": 5.0,
     "SchRtg": "600",
     "Unit": "EA",
@@ -29340,8 +29340,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-5:900",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-5:900",
+    "EstGrp": "INST",
     "Size": 5.0,
     "SchRtg": "900",
     "Unit": "EA",
@@ -29349,8 +29349,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-6:150",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-6:150",
+    "EstGrp": "INST",
     "Size": 6.0,
     "SchRtg": "150",
     "Unit": "EA",
@@ -29358,8 +29358,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-6:1500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-6:1500",
+    "EstGrp": "INST",
     "Size": 6.0,
     "SchRtg": "1500",
     "Unit": "EA",
@@ -29367,8 +29367,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-6:2500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-6:2500",
+    "EstGrp": "INST",
     "Size": 6.0,
     "SchRtg": "2500",
     "Unit": "EA",
@@ -29376,8 +29376,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-6:300",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-6:300",
+    "EstGrp": "INST",
     "Size": 6.0,
     "SchRtg": "300",
     "Unit": "EA",
@@ -29385,8 +29385,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-6:400",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-6:400",
+    "EstGrp": "INST",
     "Size": 6.0,
     "SchRtg": "400",
     "Unit": "EA",
@@ -29394,8 +29394,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-6:600",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-6:600",
+    "EstGrp": "INST",
     "Size": 6.0,
     "SchRtg": "600",
     "Unit": "EA",
@@ -29403,8 +29403,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-6:900",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-6:900",
+    "EstGrp": "INST",
     "Size": 6.0,
     "SchRtg": "900",
     "Unit": "EA",
@@ -29412,8 +29412,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-8:150",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-8:150",
+    "EstGrp": "INST",
     "Size": 8.0,
     "SchRtg": "150",
     "Unit": "EA",
@@ -29421,8 +29421,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-8:1500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-8:1500",
+    "EstGrp": "INST",
     "Size": 8.0,
     "SchRtg": "1500",
     "Unit": "EA",
@@ -29430,8 +29430,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-8:2500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-8:2500",
+    "EstGrp": "INST",
     "Size": 8.0,
     "SchRtg": "2500",
     "Unit": "EA",
@@ -29439,8 +29439,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-8:300",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-8:300",
+    "EstGrp": "INST",
     "Size": 8.0,
     "SchRtg": "300",
     "Unit": "EA",
@@ -29448,8 +29448,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-8:400",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-8:400",
+    "EstGrp": "INST",
     "Size": 8.0,
     "SchRtg": "400",
     "Unit": "EA",
@@ -29457,8 +29457,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-8:600",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-8:600",
+    "EstGrp": "INST",
     "Size": 8.0,
     "SchRtg": "600",
     "Unit": "EA",
@@ -29466,8 +29466,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-8:900",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-8:900",
+    "EstGrp": "INST",
     "Size": 8.0,
     "SchRtg": "900",
     "Unit": "EA",
@@ -29475,8 +29475,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-10:150",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-10:150",
+    "EstGrp": "INST",
     "Size": 10.0,
     "SchRtg": "150",
     "Unit": "EA",
@@ -29484,8 +29484,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-10:1500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-10:1500",
+    "EstGrp": "INST",
     "Size": 10.0,
     "SchRtg": "1500",
     "Unit": "EA",
@@ -29493,8 +29493,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-10:2500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-10:2500",
+    "EstGrp": "INST",
     "Size": 10.0,
     "SchRtg": "2500",
     "Unit": "EA",
@@ -29502,8 +29502,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-10:300",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-10:300",
+    "EstGrp": "INST",
     "Size": 10.0,
     "SchRtg": "300",
     "Unit": "EA",
@@ -29511,8 +29511,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-10:400",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-10:400",
+    "EstGrp": "INST",
     "Size": 10.0,
     "SchRtg": "400",
     "Unit": "EA",
@@ -29520,8 +29520,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-10:600",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-10:600",
+    "EstGrp": "INST",
     "Size": 10.0,
     "SchRtg": "600",
     "Unit": "EA",
@@ -29529,8 +29529,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-10:900",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-10:900",
+    "EstGrp": "INST",
     "Size": 10.0,
     "SchRtg": "900",
     "Unit": "EA",
@@ -29538,8 +29538,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-12:150",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-12:150",
+    "EstGrp": "INST",
     "Size": 12.0,
     "SchRtg": "150",
     "Unit": "EA",
@@ -29547,8 +29547,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-12:1500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-12:1500",
+    "EstGrp": "INST",
     "Size": 12.0,
     "SchRtg": "1500",
     "Unit": "EA",
@@ -29556,8 +29556,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-12:2500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-12:2500",
+    "EstGrp": "INST",
     "Size": 12.0,
     "SchRtg": "2500",
     "Unit": "EA",
@@ -29565,8 +29565,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-12:300",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-12:300",
+    "EstGrp": "INST",
     "Size": 12.0,
     "SchRtg": "300",
     "Unit": "EA",
@@ -29574,8 +29574,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-12:400",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-12:400",
+    "EstGrp": "INST",
     "Size": 12.0,
     "SchRtg": "400",
     "Unit": "EA",
@@ -29583,8 +29583,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-12:600",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-12:600",
+    "EstGrp": "INST",
     "Size": 12.0,
     "SchRtg": "600",
     "Unit": "EA",
@@ -29592,8 +29592,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-12:900",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-12:900",
+    "EstGrp": "INST",
     "Size": 12.0,
     "SchRtg": "900",
     "Unit": "EA",
@@ -29601,8 +29601,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-14:150",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-14:150",
+    "EstGrp": "INST",
     "Size": 14.0,
     "SchRtg": "150",
     "Unit": "EA",
@@ -29610,8 +29610,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-14:1500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-14:1500",
+    "EstGrp": "INST",
     "Size": 14.0,
     "SchRtg": "1500",
     "Unit": "EA",
@@ -29619,8 +29619,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-14:2500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-14:2500",
+    "EstGrp": "INST",
     "Size": 14.0,
     "SchRtg": "2500",
     "Unit": "EA",
@@ -29628,8 +29628,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-14:300",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-14:300",
+    "EstGrp": "INST",
     "Size": 14.0,
     "SchRtg": "300",
     "Unit": "EA",
@@ -29637,8 +29637,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-14:400",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-14:400",
+    "EstGrp": "INST",
     "Size": 14.0,
     "SchRtg": "400",
     "Unit": "EA",
@@ -29646,8 +29646,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-14:600",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-14:600",
+    "EstGrp": "INST",
     "Size": 14.0,
     "SchRtg": "600",
     "Unit": "EA",
@@ -29655,8 +29655,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-14:900",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-14:900",
+    "EstGrp": "INST",
     "Size": 14.0,
     "SchRtg": "900",
     "Unit": "EA",
@@ -29664,8 +29664,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-16:150",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-16:150",
+    "EstGrp": "INST",
     "Size": 16.0,
     "SchRtg": "150",
     "Unit": "EA",
@@ -29673,8 +29673,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-16:1500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-16:1500",
+    "EstGrp": "INST",
     "Size": 16.0,
     "SchRtg": "1500",
     "Unit": "EA",
@@ -29682,8 +29682,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-16:2500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-16:2500",
+    "EstGrp": "INST",
     "Size": 16.0,
     "SchRtg": "2500",
     "Unit": "EA",
@@ -29691,8 +29691,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-16:300",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-16:300",
+    "EstGrp": "INST",
     "Size": 16.0,
     "SchRtg": "300",
     "Unit": "EA",
@@ -29700,8 +29700,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-16:400",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-16:400",
+    "EstGrp": "INST",
     "Size": 16.0,
     "SchRtg": "400",
     "Unit": "EA",
@@ -29709,8 +29709,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-16:600",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-16:600",
+    "EstGrp": "INST",
     "Size": 16.0,
     "SchRtg": "600",
     "Unit": "EA",
@@ -29718,8 +29718,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-16:900",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-16:900",
+    "EstGrp": "INST",
     "Size": 16.0,
     "SchRtg": "900",
     "Unit": "EA",
@@ -29727,8 +29727,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-18:150",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-18:150",
+    "EstGrp": "INST",
     "Size": 18.0,
     "SchRtg": "150",
     "Unit": "EA",
@@ -29736,8 +29736,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-18:1500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-18:1500",
+    "EstGrp": "INST",
     "Size": 18.0,
     "SchRtg": "1500",
     "Unit": "EA",
@@ -29745,8 +29745,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-18:2500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-18:2500",
+    "EstGrp": "INST",
     "Size": 18.0,
     "SchRtg": "2500",
     "Unit": "EA",
@@ -29754,8 +29754,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-18:300",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-18:300",
+    "EstGrp": "INST",
     "Size": 18.0,
     "SchRtg": "300",
     "Unit": "EA",
@@ -29763,8 +29763,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-18:400",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-18:400",
+    "EstGrp": "INST",
     "Size": 18.0,
     "SchRtg": "400",
     "Unit": "EA",
@@ -29772,8 +29772,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-18:600",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-18:600",
+    "EstGrp": "INST",
     "Size": 18.0,
     "SchRtg": "600",
     "Unit": "EA",
@@ -29781,8 +29781,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-18:900",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-18:900",
+    "EstGrp": "INST",
     "Size": 18.0,
     "SchRtg": "900",
     "Unit": "EA",
@@ -29790,8 +29790,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-20:150",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-20:150",
+    "EstGrp": "INST",
     "Size": 20.0,
     "SchRtg": "150",
     "Unit": "EA",
@@ -29799,8 +29799,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-20:1500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-20:1500",
+    "EstGrp": "INST",
     "Size": 20.0,
     "SchRtg": "1500",
     "Unit": "EA",
@@ -29808,8 +29808,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-20:2500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-20:2500",
+    "EstGrp": "INST",
     "Size": 20.0,
     "SchRtg": "2500",
     "Unit": "EA",
@@ -29817,8 +29817,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-20:300",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-20:300",
+    "EstGrp": "INST",
     "Size": 20.0,
     "SchRtg": "300",
     "Unit": "EA",
@@ -29826,8 +29826,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-20:400",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-20:400",
+    "EstGrp": "INST",
     "Size": 20.0,
     "SchRtg": "400",
     "Unit": "EA",
@@ -29835,8 +29835,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-20:600",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-20:600",
+    "EstGrp": "INST",
     "Size": 20.0,
     "SchRtg": "600",
     "Unit": "EA",
@@ -29844,8 +29844,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-20:900",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-20:900",
+    "EstGrp": "INST",
     "Size": 20.0,
     "SchRtg": "900",
     "Unit": "EA",
@@ -29853,8 +29853,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-24:150",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-24:150",
+    "EstGrp": "INST",
     "Size": 24.0,
     "SchRtg": "150",
     "Unit": "EA",
@@ -29862,8 +29862,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-24:1500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-24:1500",
+    "EstGrp": "INST",
     "Size": 24.0,
     "SchRtg": "1500",
     "Unit": "EA",
@@ -29871,8 +29871,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-24:2500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-24:2500",
+    "EstGrp": "INST",
     "Size": 24.0,
     "SchRtg": "2500",
     "Unit": "EA",
@@ -29880,8 +29880,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-24:300",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-24:300",
+    "EstGrp": "INST",
     "Size": 24.0,
     "SchRtg": "300",
     "Unit": "EA",
@@ -29889,8 +29889,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-24:400",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-24:400",
+    "EstGrp": "INST",
     "Size": 24.0,
     "SchRtg": "400",
     "Unit": "EA",
@@ -29898,8 +29898,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-24:600",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-24:600",
+    "EstGrp": "INST",
     "Size": 24.0,
     "SchRtg": "600",
     "Unit": "EA",
@@ -29907,8 +29907,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-24:900",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-24:900",
+    "EstGrp": "INST",
     "Size": 24.0,
     "SchRtg": "900",
     "Unit": "EA",
@@ -29916,8 +29916,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-26:150",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-26:150",
+    "EstGrp": "INST",
     "Size": 26.0,
     "SchRtg": "150",
     "Unit": "EA",
@@ -29925,8 +29925,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-26:1500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-26:1500",
+    "EstGrp": "INST",
     "Size": 26.0,
     "SchRtg": "1500",
     "Unit": "EA",
@@ -29934,8 +29934,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-26:2500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-26:2500",
+    "EstGrp": "INST",
     "Size": 26.0,
     "SchRtg": "2500",
     "Unit": "EA",
@@ -29943,8 +29943,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-26:300",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-26:300",
+    "EstGrp": "INST",
     "Size": 26.0,
     "SchRtg": "300",
     "Unit": "EA",
@@ -29952,8 +29952,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-26:400",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-26:400",
+    "EstGrp": "INST",
     "Size": 26.0,
     "SchRtg": "400",
     "Unit": "EA",
@@ -29961,8 +29961,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-26:600",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-26:600",
+    "EstGrp": "INST",
     "Size": 26.0,
     "SchRtg": "600",
     "Unit": "EA",
@@ -29970,8 +29970,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-26:900",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-26:900",
+    "EstGrp": "INST",
     "Size": 26.0,
     "SchRtg": "900",
     "Unit": "EA",
@@ -29979,8 +29979,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-28:150",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-28:150",
+    "EstGrp": "INST",
     "Size": 28.0,
     "SchRtg": "150",
     "Unit": "EA",
@@ -29988,8 +29988,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-28:1500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-28:1500",
+    "EstGrp": "INST",
     "Size": 28.0,
     "SchRtg": "1500",
     "Unit": "EA",
@@ -29997,8 +29997,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-28:2500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-28:2500",
+    "EstGrp": "INST",
     "Size": 28.0,
     "SchRtg": "2500",
     "Unit": "EA",
@@ -30006,8 +30006,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-28:300",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-28:300",
+    "EstGrp": "INST",
     "Size": 28.0,
     "SchRtg": "300",
     "Unit": "EA",
@@ -30015,8 +30015,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-28:400",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-28:400",
+    "EstGrp": "INST",
     "Size": 28.0,
     "SchRtg": "400",
     "Unit": "EA",
@@ -30024,8 +30024,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-28:600",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-28:600",
+    "EstGrp": "INST",
     "Size": 28.0,
     "SchRtg": "600",
     "Unit": "EA",
@@ -30033,8 +30033,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-28:900",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-28:900",
+    "EstGrp": "INST",
     "Size": 28.0,
     "SchRtg": "900",
     "Unit": "EA",
@@ -30042,8 +30042,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-30:150",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-30:150",
+    "EstGrp": "INST",
     "Size": 30.0,
     "SchRtg": "150",
     "Unit": "EA",
@@ -30051,8 +30051,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-30:1500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-30:1500",
+    "EstGrp": "INST",
     "Size": 30.0,
     "SchRtg": "1500",
     "Unit": "EA",
@@ -30060,8 +30060,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-30:2500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-30:2500",
+    "EstGrp": "INST",
     "Size": 30.0,
     "SchRtg": "2500",
     "Unit": "EA",
@@ -30069,8 +30069,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-30:300",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-30:300",
+    "EstGrp": "INST",
     "Size": 30.0,
     "SchRtg": "300",
     "Unit": "EA",
@@ -30078,8 +30078,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-30:400",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-30:400",
+    "EstGrp": "INST",
     "Size": 30.0,
     "SchRtg": "400",
     "Unit": "EA",
@@ -30087,8 +30087,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-30:600",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-30:600",
+    "EstGrp": "INST",
     "Size": 30.0,
     "SchRtg": "600",
     "Unit": "EA",
@@ -30096,8 +30096,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-30:900",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-30:900",
+    "EstGrp": "INST",
     "Size": 30.0,
     "SchRtg": "900",
     "Unit": "EA",
@@ -30105,8 +30105,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-32:150",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-32:150",
+    "EstGrp": "INST",
     "Size": 32.0,
     "SchRtg": "150",
     "Unit": "EA",
@@ -30114,8 +30114,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-32:1500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-32:1500",
+    "EstGrp": "INST",
     "Size": 32.0,
     "SchRtg": "1500",
     "Unit": "EA",
@@ -30123,8 +30123,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-32:2500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-32:2500",
+    "EstGrp": "INST",
     "Size": 32.0,
     "SchRtg": "2500",
     "Unit": "EA",
@@ -30132,8 +30132,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-32:300",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-32:300",
+    "EstGrp": "INST",
     "Size": 32.0,
     "SchRtg": "300",
     "Unit": "EA",
@@ -30141,8 +30141,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-32:400",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-32:400",
+    "EstGrp": "INST",
     "Size": 32.0,
     "SchRtg": "400",
     "Unit": "EA",
@@ -30150,8 +30150,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-32:600",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-32:600",
+    "EstGrp": "INST",
     "Size": 32.0,
     "SchRtg": "600",
     "Unit": "EA",
@@ -30159,8 +30159,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-32:900",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-32:900",
+    "EstGrp": "INST",
     "Size": 32.0,
     "SchRtg": "900",
     "Unit": "EA",
@@ -30168,8 +30168,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-34:150",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-34:150",
+    "EstGrp": "INST",
     "Size": 34.0,
     "SchRtg": "150",
     "Unit": "EA",
@@ -30177,8 +30177,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-34:1500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-34:1500",
+    "EstGrp": "INST",
     "Size": 34.0,
     "SchRtg": "1500",
     "Unit": "EA",
@@ -30186,8 +30186,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-34:2500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-34:2500",
+    "EstGrp": "INST",
     "Size": 34.0,
     "SchRtg": "2500",
     "Unit": "EA",
@@ -30195,8 +30195,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-34:300",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-34:300",
+    "EstGrp": "INST",
     "Size": 34.0,
     "SchRtg": "300",
     "Unit": "EA",
@@ -30204,8 +30204,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-34:400",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-34:400",
+    "EstGrp": "INST",
     "Size": 34.0,
     "SchRtg": "400",
     "Unit": "EA",
@@ -30213,8 +30213,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-34:600",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-34:600",
+    "EstGrp": "INST",
     "Size": 34.0,
     "SchRtg": "600",
     "Unit": "EA",
@@ -30222,8 +30222,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-34:900",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-34:900",
+    "EstGrp": "INST",
     "Size": 34.0,
     "SchRtg": "900",
     "Unit": "EA",
@@ -30231,8 +30231,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-36:150",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-36:150",
+    "EstGrp": "INST",
     "Size": 36.0,
     "SchRtg": "150",
     "Unit": "EA",
@@ -30240,8 +30240,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-36:1500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-36:1500",
+    "EstGrp": "INST",
     "Size": 36.0,
     "SchRtg": "1500",
     "Unit": "EA",
@@ -30249,8 +30249,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-36:2500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-36:2500",
+    "EstGrp": "INST",
     "Size": 36.0,
     "SchRtg": "2500",
     "Unit": "EA",
@@ -30258,8 +30258,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-36:300",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-36:300",
+    "EstGrp": "INST",
     "Size": 36.0,
     "SchRtg": "300",
     "Unit": "EA",
@@ -30267,8 +30267,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-36:400",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-36:400",
+    "EstGrp": "INST",
     "Size": 36.0,
     "SchRtg": "400",
     "Unit": "EA",
@@ -30276,8 +30276,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-36:600",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-36:600",
+    "EstGrp": "INST",
     "Size": 36.0,
     "SchRtg": "600",
     "Unit": "EA",
@@ -30285,8 +30285,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-36:900",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-36:900",
+    "EstGrp": "INST",
     "Size": 36.0,
     "SchRtg": "900",
     "Unit": "EA",
@@ -30294,8 +30294,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-38:150",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-38:150",
+    "EstGrp": "INST",
     "Size": 38.0,
     "SchRtg": "150",
     "Unit": "EA",
@@ -30303,8 +30303,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-38:1500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-38:1500",
+    "EstGrp": "INST",
     "Size": 38.0,
     "SchRtg": "1500",
     "Unit": "EA",
@@ -30312,8 +30312,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-38:2500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-38:2500",
+    "EstGrp": "INST",
     "Size": 38.0,
     "SchRtg": "2500",
     "Unit": "EA",
@@ -30321,8 +30321,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-38:300",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-38:300",
+    "EstGrp": "INST",
     "Size": 38.0,
     "SchRtg": "300",
     "Unit": "EA",
@@ -30330,8 +30330,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-38:400",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-38:400",
+    "EstGrp": "INST",
     "Size": 38.0,
     "SchRtg": "400",
     "Unit": "EA",
@@ -30339,8 +30339,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-38:600",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-38:600",
+    "EstGrp": "INST",
     "Size": 38.0,
     "SchRtg": "600",
     "Unit": "EA",
@@ -30348,8 +30348,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-38:900",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-38:900",
+    "EstGrp": "INST",
     "Size": 38.0,
     "SchRtg": "900",
     "Unit": "EA",
@@ -30357,8 +30357,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-40:150",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-40:150",
+    "EstGrp": "INST",
     "Size": 40.0,
     "SchRtg": "150",
     "Unit": "EA",
@@ -30366,8 +30366,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-40:1500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-40:1500",
+    "EstGrp": "INST",
     "Size": 40.0,
     "SchRtg": "1500",
     "Unit": "EA",
@@ -30375,8 +30375,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-40:2500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-40:2500",
+    "EstGrp": "INST",
     "Size": 40.0,
     "SchRtg": "2500",
     "Unit": "EA",
@@ -30384,8 +30384,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-40:300",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-40:300",
+    "EstGrp": "INST",
     "Size": 40.0,
     "SchRtg": "300",
     "Unit": "EA",
@@ -30393,8 +30393,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-40:400",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-40:400",
+    "EstGrp": "INST",
     "Size": 40.0,
     "SchRtg": "400",
     "Unit": "EA",
@@ -30402,8 +30402,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-40:600",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-40:600",
+    "EstGrp": "INST",
     "Size": 40.0,
     "SchRtg": "600",
     "Unit": "EA",
@@ -30411,8 +30411,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-40:900",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-40:900",
+    "EstGrp": "INST",
     "Size": 40.0,
     "SchRtg": "900",
     "Unit": "EA",
@@ -30420,8 +30420,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-42:150",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-42:150",
+    "EstGrp": "INST",
     "Size": 42.0,
     "SchRtg": "150",
     "Unit": "EA",
@@ -30429,8 +30429,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-42:1500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-42:1500",
+    "EstGrp": "INST",
     "Size": 42.0,
     "SchRtg": "1500",
     "Unit": "EA",
@@ -30438,8 +30438,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-42:2500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-42:2500",
+    "EstGrp": "INST",
     "Size": 42.0,
     "SchRtg": "2500",
     "Unit": "EA",
@@ -30447,8 +30447,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-42:300",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-42:300",
+    "EstGrp": "INST",
     "Size": 42.0,
     "SchRtg": "300",
     "Unit": "EA",
@@ -30456,8 +30456,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-42:400",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-42:400",
+    "EstGrp": "INST",
     "Size": 42.0,
     "SchRtg": "400",
     "Unit": "EA",
@@ -30465,8 +30465,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-42:600",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-42:600",
+    "EstGrp": "INST",
     "Size": 42.0,
     "SchRtg": "600",
     "Unit": "EA",
@@ -30474,8 +30474,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-42:900",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-42:900",
+    "EstGrp": "INST",
     "Size": 42.0,
     "SchRtg": "900",
     "Unit": "EA",
@@ -30483,8 +30483,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-44:150",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-44:150",
+    "EstGrp": "INST",
     "Size": 44.0,
     "SchRtg": "150",
     "Unit": "EA",
@@ -30492,8 +30492,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-44:1500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-44:1500",
+    "EstGrp": "INST",
     "Size": 44.0,
     "SchRtg": "1500",
     "Unit": "EA",
@@ -30501,8 +30501,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-44:2500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-44:2500",
+    "EstGrp": "INST",
     "Size": 44.0,
     "SchRtg": "2500",
     "Unit": "EA",
@@ -30510,8 +30510,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-44:300",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-44:300",
+    "EstGrp": "INST",
     "Size": 44.0,
     "SchRtg": "300",
     "Unit": "EA",
@@ -30519,8 +30519,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-44:400",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-44:400",
+    "EstGrp": "INST",
     "Size": 44.0,
     "SchRtg": "400",
     "Unit": "EA",
@@ -30528,8 +30528,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-44:600",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-44:600",
+    "EstGrp": "INST",
     "Size": 44.0,
     "SchRtg": "600",
     "Unit": "EA",
@@ -30537,8 +30537,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-44:900",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-44:900",
+    "EstGrp": "INST",
     "Size": 44.0,
     "SchRtg": "900",
     "Unit": "EA",
@@ -30546,8 +30546,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-46:150",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-46:150",
+    "EstGrp": "INST",
     "Size": 46.0,
     "SchRtg": "150",
     "Unit": "EA",
@@ -30555,8 +30555,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-46:1500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-46:1500",
+    "EstGrp": "INST",
     "Size": 46.0,
     "SchRtg": "1500",
     "Unit": "EA",
@@ -30564,8 +30564,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-46:2500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-46:2500",
+    "EstGrp": "INST",
     "Size": 46.0,
     "SchRtg": "2500",
     "Unit": "EA",
@@ -30573,8 +30573,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-46:300",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-46:300",
+    "EstGrp": "INST",
     "Size": 46.0,
     "SchRtg": "300",
     "Unit": "EA",
@@ -30582,8 +30582,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-46:400",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-46:400",
+    "EstGrp": "INST",
     "Size": 46.0,
     "SchRtg": "400",
     "Unit": "EA",
@@ -30591,8 +30591,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-46:600",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-46:600",
+    "EstGrp": "INST",
     "Size": 46.0,
     "SchRtg": "600",
     "Unit": "EA",
@@ -30600,8 +30600,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-46:900",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-46:900",
+    "EstGrp": "INST",
     "Size": 46.0,
     "SchRtg": "900",
     "Unit": "EA",
@@ -30609,8 +30609,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-48:150",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-48:150",
+    "EstGrp": "INST",
     "Size": 48.0,
     "SchRtg": "150",
     "Unit": "EA",
@@ -30618,8 +30618,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-48:1500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-48:1500",
+    "EstGrp": "INST",
     "Size": 48.0,
     "SchRtg": "1500",
     "Unit": "EA",
@@ -30627,8 +30627,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-48:2500",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-48:2500",
+    "EstGrp": "INST",
     "Size": 48.0,
     "SchRtg": "2500",
     "Unit": "EA",
@@ -30636,8 +30636,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-48:300",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-48:300",
+    "EstGrp": "INST",
     "Size": 48.0,
     "SchRtg": "300",
     "Unit": "EA",
@@ -30645,8 +30645,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-48:400",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-48:400",
+    "EstGrp": "INST",
     "Size": 48.0,
     "SchRtg": "400",
     "Unit": "EA",
@@ -30654,8 +30654,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-48:600",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-48:600",
+    "EstGrp": "INST",
     "Size": 48.0,
     "SchRtg": "600",
     "Unit": "EA",
@@ -30663,8 +30663,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM-48:900",
-    "EstGrp": "INSTRUM",
+    "Key": "INST-48:900",
+    "EstGrp": "INST",
     "Size": 48.0,
     "SchRtg": "900",
     "Unit": "EA",
@@ -30672,8 +30672,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM STAND-0.5",
-    "EstGrp": "INSTRUM STAND",
+    "Key": "INSTSTND-0.5",
+    "EstGrp": "INSTSTND",
     "Size": 0.5,
     "SchRtg": null,
     "Unit": null,
@@ -30681,8 +30681,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM STAND-0.75",
-    "EstGrp": "INSTRUM STAND",
+    "Key": "INSTSTND-0.75",
+    "EstGrp": "INSTSTND",
     "Size": 0.75,
     "SchRtg": null,
     "Unit": null,
@@ -30690,8 +30690,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM STAND-1",
-    "EstGrp": "INSTRUM STAND",
+    "Key": "INSTSTND-1",
+    "EstGrp": "INSTSTND",
     "Size": 1.0,
     "SchRtg": null,
     "Unit": null,
@@ -30699,8 +30699,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM STAND-2",
-    "EstGrp": "INSTRUM STAND",
+    "Key": "INSTSTND-2",
+    "EstGrp": "INSTSTND",
     "Size": 2.0,
     "SchRtg": null,
     "Unit": null,
@@ -30708,8 +30708,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM STAND-3",
-    "EstGrp": "INSTRUM STAND",
+    "Key": "INSTSTND-3",
+    "EstGrp": "INSTSTND",
     "Size": 3.0,
     "SchRtg": null,
     "Unit": null,
@@ -30717,8 +30717,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM STAND-8",
-    "EstGrp": "INSTRUM STAND",
+    "Key": "INSTSTND-8",
+    "EstGrp": "INSTSTND",
     "Size": 8.0,
     "SchRtg": null,
     "Unit": null,
@@ -30726,8 +30726,8 @@
     "DollarEach": null
   },
   {
-    "Key": "INSTRUM STAND-16",
-    "EstGrp": "INSTRUM STAND",
+    "Key": "INSTSTND-16",
+    "EstGrp": "INSTSTND",
     "Size": 16.0,
     "SchRtg": null,
     "Unit": null,
@@ -30735,8 +30735,8 @@
     "DollarEach": null
   },
   {
-    "Key": "JET PUMP-4",
-    "EstGrp": "JET PUMP",
+    "Key": "JPUMP-4",
+    "EstGrp": "JPUMP",
     "Size": 4.0,
     "SchRtg": null,
     "Unit": null,
@@ -30744,8 +30744,8 @@
     "DollarEach": null
   },
   {
-    "Key": "JET PUMP-8",
-    "EstGrp": "JET PUMP",
+    "Key": "JPUMP-8",
+    "EstGrp": "JPUMP",
     "Size": 8.0,
     "SchRtg": null,
     "Unit": null,
@@ -30789,8 +30789,8 @@
     "DollarEach": null
   },
   {
-    "Key": "METER RUN-2:300",
-    "EstGrp": "METER RUN",
+    "Key": "METERR-2:300",
+    "EstGrp": "METERR",
     "Size": 2.0,
     "SchRtg": "300",
     "Unit": "EA",
@@ -30798,8 +30798,8 @@
     "DollarEach": null
   },
   {
-    "Key": "METER RUN-3:150",
-    "EstGrp": "METER RUN",
+    "Key": "METERR-3:150",
+    "EstGrp": "METERR",
     "Size": 3.0,
     "SchRtg": "150",
     "Unit": "EA",
@@ -30807,8 +30807,8 @@
     "DollarEach": null
   },
   {
-    "Key": "METER RUN-6:150",
-    "EstGrp": "METER RUN",
+    "Key": "METERR-6:150",
+    "EstGrp": "METERR",
     "Size": 6.0,
     "SchRtg": "150",
     "Unit": "EA",
@@ -30816,8 +30816,8 @@
     "DollarEach": null
   },
   {
-    "Key": "METER RUN-6:1500",
-    "EstGrp": "METER RUN",
+    "Key": "METERR-6:1500",
+    "EstGrp": "METERR",
     "Size": 6.0,
     "SchRtg": "1500",
     "Unit": "EA",
@@ -30825,8 +30825,8 @@
     "DollarEach": null
   },
   {
-    "Key": "METER RUN-8:300",
-    "EstGrp": "METER RUN",
+    "Key": "METERR-8:300",
+    "EstGrp": "METERR",
     "Size": 8.0,
     "SchRtg": "300",
     "Unit": "EA",
@@ -30834,8 +30834,8 @@
     "DollarEach": null
   },
   {
-    "Key": "METER RUN-8:600",
-    "EstGrp": "METER RUN",
+    "Key": "METERR-8:600",
+    "EstGrp": "METERR",
     "Size": 8.0,
     "SchRtg": "600",
     "Unit": "EA",
@@ -30843,8 +30843,8 @@
     "DollarEach": null
   },
   {
-    "Key": "METER RUN-12:300",
-    "EstGrp": "METER RUN",
+    "Key": "METERR-12:300",
+    "EstGrp": "METERR",
     "Size": 12.0,
     "SchRtg": "300",
     "Unit": "EA",
@@ -31743,8 +31743,8 @@
     "DollarEach": null
   },
   {
-    "Key": "OPERATOR-2",
-    "EstGrp": "OPERATOR",
+    "Key": "OPRTR-2",
+    "EstGrp": "OPRTR",
     "Size": 2.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -31752,8 +31752,8 @@
     "DollarEach": null
   },
   {
-    "Key": "OPERATOR-3",
-    "EstGrp": "OPERATOR",
+    "Key": "OPRTR-3",
+    "EstGrp": "OPRTR",
     "Size": 3.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -31761,8 +31761,8 @@
     "DollarEach": null
   },
   {
-    "Key": "OPERATOR-4",
-    "EstGrp": "OPERATOR",
+    "Key": "OPRTR-4",
+    "EstGrp": "OPRTR",
     "Size": 4.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -31770,8 +31770,8 @@
     "DollarEach": null
   },
   {
-    "Key": "OPERATOR-6",
-    "EstGrp": "OPERATOR",
+    "Key": "OPRTR-6",
+    "EstGrp": "OPRTR",
     "Size": 6.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -31779,8 +31779,8 @@
     "DollarEach": null
   },
   {
-    "Key": "OPERATOR-8",
-    "EstGrp": "OPERATOR",
+    "Key": "OPRTR-8",
+    "EstGrp": "OPRTR",
     "Size": 8.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -31788,8 +31788,8 @@
     "DollarEach": null
   },
   {
-    "Key": "OPERATOR-10",
-    "EstGrp": "OPERATOR",
+    "Key": "OPRTR-10",
+    "EstGrp": "OPRTR",
     "Size": 10.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -31797,8 +31797,8 @@
     "DollarEach": null
   },
   {
-    "Key": "OPERATOR-16",
-    "EstGrp": "OPERATOR",
+    "Key": "OPRTR-16",
+    "EstGrp": "OPRTR",
     "Size": 16.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -31806,8 +31806,8 @@
     "DollarEach": null
   },
   {
-    "Key": "OPERATOR-18",
-    "EstGrp": "OPERATOR",
+    "Key": "OPRTR-18",
+    "EstGrp": "OPRTR",
     "Size": 18.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -31815,8 +31815,8 @@
     "DollarEach": null
   },
   {
-    "Key": "ORIFICE-0.5",
-    "EstGrp": "ORIFICE",
+    "Key": "ORFC-0.5",
+    "EstGrp": "ORFC",
     "Size": 0.5,
     "SchRtg": null,
     "Unit": "EA",
@@ -31824,8 +31824,8 @@
     "DollarEach": null
   },
   {
-    "Key": "ORIFICE-0.75",
-    "EstGrp": "ORIFICE",
+    "Key": "ORFC-0.75",
+    "EstGrp": "ORFC",
     "Size": 0.75,
     "SchRtg": null,
     "Unit": "EA",
@@ -31833,8 +31833,8 @@
     "DollarEach": null
   },
   {
-    "Key": "ORIFICE-1",
-    "EstGrp": "ORIFICE",
+    "Key": "ORFC-1",
+    "EstGrp": "ORFC",
     "Size": 1.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -31842,8 +31842,8 @@
     "DollarEach": null
   },
   {
-    "Key": "ORIFICE-2",
-    "EstGrp": "ORIFICE",
+    "Key": "ORFC-2",
+    "EstGrp": "ORFC",
     "Size": 2.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -31851,8 +31851,8 @@
     "DollarEach": null
   },
   {
-    "Key": "ORIFICE-3",
-    "EstGrp": "ORIFICE",
+    "Key": "ORFC-3",
+    "EstGrp": "ORFC",
     "Size": 3.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -31860,8 +31860,8 @@
     "DollarEach": null
   },
   {
-    "Key": "ORIFICE-4",
-    "EstGrp": "ORIFICE",
+    "Key": "ORFC-4",
+    "EstGrp": "ORFC",
     "Size": 4.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -31869,8 +31869,8 @@
     "DollarEach": null
   },
   {
-    "Key": "ORIFICE-5",
-    "EstGrp": "ORIFICE",
+    "Key": "ORFC-5",
+    "EstGrp": "ORFC",
     "Size": 5.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -31878,8 +31878,8 @@
     "DollarEach": null
   },
   {
-    "Key": "ORIFICE-6",
-    "EstGrp": "ORIFICE",
+    "Key": "ORFC-6",
+    "EstGrp": "ORFC",
     "Size": 6.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -31887,8 +31887,8 @@
     "DollarEach": null
   },
   {
-    "Key": "ORIFICE-8",
-    "EstGrp": "ORIFICE",
+    "Key": "ORFC-8",
+    "EstGrp": "ORFC",
     "Size": 8.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -31896,8 +31896,8 @@
     "DollarEach": null
   },
   {
-    "Key": "ORIFICE-10",
-    "EstGrp": "ORIFICE",
+    "Key": "ORFC-10",
+    "EstGrp": "ORFC",
     "Size": 10.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -31905,8 +31905,8 @@
     "DollarEach": null
   },
   {
-    "Key": "ORIFICE-14",
-    "EstGrp": "ORIFICE",
+    "Key": "ORFC-14",
+    "EstGrp": "ORFC",
     "Size": 14.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -31914,8 +31914,8 @@
     "DollarEach": null
   },
   {
-    "Key": "ORIFICE-16",
-    "EstGrp": "ORIFICE",
+    "Key": "ORFC-16",
+    "EstGrp": "ORFC",
     "Size": 16.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -31923,8 +31923,8 @@
     "DollarEach": null
   },
   {
-    "Key": "PENETRATION-0.5",
-    "EstGrp": "PENETRATION",
+    "Key": "PEN-0.5",
+    "EstGrp": "PEN",
     "Size": 0.5,
     "SchRtg": null,
     "Unit": "EA",
@@ -31932,8 +31932,8 @@
     "DollarEach": null
   },
   {
-    "Key": "PENETRATION-0.75",
-    "EstGrp": "PENETRATION",
+    "Key": "PEN-0.75",
+    "EstGrp": "PEN",
     "Size": 0.75,
     "SchRtg": null,
     "Unit": "EA",
@@ -31941,8 +31941,8 @@
     "DollarEach": null
   },
   {
-    "Key": "PENETRATION-1",
-    "EstGrp": "PENETRATION",
+    "Key": "PEN-1",
+    "EstGrp": "PEN",
     "Size": 1.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -31950,8 +31950,8 @@
     "DollarEach": null
   },
   {
-    "Key": "PENETRATION-1.5",
-    "EstGrp": "PENETRATION",
+    "Key": "PEN-1.5",
+    "EstGrp": "PEN",
     "Size": 1.5,
     "SchRtg": null,
     "Unit": "EA",
@@ -31959,8 +31959,8 @@
     "DollarEach": null
   },
   {
-    "Key": "PENETRATION-2",
-    "EstGrp": "PENETRATION",
+    "Key": "PEN-2",
+    "EstGrp": "PEN",
     "Size": 2.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -31968,8 +31968,8 @@
     "DollarEach": null
   },
   {
-    "Key": "PENETRATION-2.5",
-    "EstGrp": "PENETRATION",
+    "Key": "PEN-2.5",
+    "EstGrp": "PEN",
     "Size": 2.5,
     "SchRtg": null,
     "Unit": "EA",
@@ -31977,8 +31977,8 @@
     "DollarEach": null
   },
   {
-    "Key": "PENETRATION-3",
-    "EstGrp": "PENETRATION",
+    "Key": "PEN-3",
+    "EstGrp": "PEN",
     "Size": 3.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -31986,8 +31986,8 @@
     "DollarEach": null
   },
   {
-    "Key": "PENETRATION-4",
-    "EstGrp": "PENETRATION",
+    "Key": "PEN-4",
+    "EstGrp": "PEN",
     "Size": 4.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -31995,8 +31995,8 @@
     "DollarEach": null
   },
   {
-    "Key": "PENETRATION-6",
-    "EstGrp": "PENETRATION",
+    "Key": "PEN-6",
+    "EstGrp": "PEN",
     "Size": 6.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -32004,8 +32004,8 @@
     "DollarEach": null
   },
   {
-    "Key": "PENETRATION-8",
-    "EstGrp": "PENETRATION",
+    "Key": "PEN-8",
+    "EstGrp": "PEN",
     "Size": 8.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -32013,8 +32013,8 @@
     "DollarEach": null
   },
   {
-    "Key": "PENETRATION-10",
-    "EstGrp": "PENETRATION",
+    "Key": "PEN-10",
+    "EstGrp": "PEN",
     "Size": 10.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -32022,8 +32022,8 @@
     "DollarEach": null
   },
   {
-    "Key": "PENETRATION-12",
-    "EstGrp": "PENETRATION",
+    "Key": "PEN-12",
+    "EstGrp": "PEN",
     "Size": 12.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -32031,8 +32031,8 @@
     "DollarEach": null
   },
   {
-    "Key": "PENETRATION-14",
-    "EstGrp": "PENETRATION",
+    "Key": "PEN-14",
+    "EstGrp": "PEN",
     "Size": 14.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -32040,8 +32040,8 @@
     "DollarEach": null
   },
   {
-    "Key": "PENETRATION-16",
-    "EstGrp": "PENETRATION",
+    "Key": "PEN-16",
+    "EstGrp": "PEN",
     "Size": 16.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -32049,8 +32049,8 @@
     "DollarEach": null
   },
   {
-    "Key": "PENETRATION-18",
-    "EstGrp": "PENETRATION",
+    "Key": "PEN-18",
+    "EstGrp": "PEN",
     "Size": 18.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -32058,8 +32058,8 @@
     "DollarEach": null
   },
   {
-    "Key": "PENETRATION-20",
-    "EstGrp": "PENETRATION",
+    "Key": "PEN-20",
+    "EstGrp": "PEN",
     "Size": 20.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -32067,8 +32067,8 @@
     "DollarEach": null
   },
   {
-    "Key": "PENETRATION-22",
-    "EstGrp": "PENETRATION",
+    "Key": "PEN-22",
+    "EstGrp": "PEN",
     "Size": 22.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -32076,8 +32076,8 @@
     "DollarEach": null
   },
   {
-    "Key": "PENETRATION-24",
-    "EstGrp": "PENETRATION",
+    "Key": "PEN-24",
+    "EstGrp": "PEN",
     "Size": 24.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -32085,8 +32085,8 @@
     "DollarEach": null
   },
   {
-    "Key": "PENETRATION-34",
-    "EstGrp": "PENETRATION",
+    "Key": "PEN-34",
+    "EstGrp": "PEN",
     "Size": 34.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -32094,8 +32094,8 @@
     "DollarEach": null
   },
   {
-    "Key": "PENETRATION-28",
-    "EstGrp": "PENETRATION",
+    "Key": "PEN-28",
+    "EstGrp": "PEN",
     "Size": 28.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -39006,8 +39006,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-0.75:S160",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-0.75:S160",
+    "EstGrp": "QCTST",
     "Size": 0.75,
     "SchRtg": "S160",
     "Unit": "EA",
@@ -39015,8 +39015,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-0.75:S40",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-0.75:S40",
+    "EstGrp": "QCTST",
     "Size": 0.75,
     "SchRtg": "S40",
     "Unit": "EA",
@@ -39024,8 +39024,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-0.75:S80",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-0.75:S80",
+    "EstGrp": "QCTST",
     "Size": 0.75,
     "SchRtg": "S80",
     "Unit": "EA",
@@ -39033,8 +39033,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-0.75:XS",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-0.75:XS",
+    "EstGrp": "QCTST",
     "Size": 0.75,
     "SchRtg": "XS",
     "Unit": "EA",
@@ -39042,8 +39042,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-0.75:XXS",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-0.75:XXS",
+    "EstGrp": "QCTST",
     "Size": 0.75,
     "SchRtg": "XXS",
     "Unit": "EA",
@@ -39051,8 +39051,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-1:S160",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-1:S160",
+    "EstGrp": "QCTST",
     "Size": 1.0,
     "SchRtg": "S160",
     "Unit": "EA",
@@ -39060,8 +39060,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-1:S40",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-1:S40",
+    "EstGrp": "QCTST",
     "Size": 1.0,
     "SchRtg": "S40",
     "Unit": "EA",
@@ -39069,8 +39069,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-1:S80",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-1:S80",
+    "EstGrp": "QCTST",
     "Size": 1.0,
     "SchRtg": "S80",
     "Unit": "EA",
@@ -39078,8 +39078,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-1:XS",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-1:XS",
+    "EstGrp": "QCTST",
     "Size": 1.0,
     "SchRtg": "XS",
     "Unit": "EA",
@@ -39087,8 +39087,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-1:XXS",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-1:XXS",
+    "EstGrp": "QCTST",
     "Size": 1.0,
     "SchRtg": "XXS",
     "Unit": "EA",
@@ -39096,8 +39096,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-1.5:S160",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-1.5:S160",
+    "EstGrp": "QCTST",
     "Size": 1.5,
     "SchRtg": "S160",
     "Unit": "EA",
@@ -39105,8 +39105,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-1.5:S40",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-1.5:S40",
+    "EstGrp": "QCTST",
     "Size": 1.5,
     "SchRtg": "S40",
     "Unit": "EA",
@@ -39114,8 +39114,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-1.5:S80",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-1.5:S80",
+    "EstGrp": "QCTST",
     "Size": 1.5,
     "SchRtg": "S80",
     "Unit": "EA",
@@ -39123,8 +39123,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-1.5:XS",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-1.5:XS",
+    "EstGrp": "QCTST",
     "Size": 1.5,
     "SchRtg": "XS",
     "Unit": "EA",
@@ -39132,8 +39132,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-1.5:XXS",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-1.5:XXS",
+    "EstGrp": "QCTST",
     "Size": 1.5,
     "SchRtg": "XXS",
     "Unit": "EA",
@@ -39141,8 +39141,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-2:S160",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-2:S160",
+    "EstGrp": "QCTST",
     "Size": 2.0,
     "SchRtg": "S160",
     "Unit": "EA",
@@ -39150,8 +39150,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-2:S40",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-2:S40",
+    "EstGrp": "QCTST",
     "Size": 2.0,
     "SchRtg": "S40",
     "Unit": "EA",
@@ -39159,8 +39159,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-2:S80",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-2:S80",
+    "EstGrp": "QCTST",
     "Size": 2.0,
     "SchRtg": "S80",
     "Unit": "EA",
@@ -39168,8 +39168,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-2:XS",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-2:XS",
+    "EstGrp": "QCTST",
     "Size": 2.0,
     "SchRtg": "XS",
     "Unit": "EA",
@@ -39177,8 +39177,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-3:S10",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-3:S10",
+    "EstGrp": "QCTST",
     "Size": 3.0,
     "SchRtg": "S10",
     "Unit": "EA",
@@ -39186,8 +39186,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-3:S160",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-3:S160",
+    "EstGrp": "QCTST",
     "Size": 3.0,
     "SchRtg": "S160",
     "Unit": "EA",
@@ -39195,8 +39195,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-3:S40",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-3:S40",
+    "EstGrp": "QCTST",
     "Size": 3.0,
     "SchRtg": "S40",
     "Unit": "EA",
@@ -39204,8 +39204,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-3:S80",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-3:S80",
+    "EstGrp": "QCTST",
     "Size": 3.0,
     "SchRtg": "S80",
     "Unit": "EA",
@@ -39213,8 +39213,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-3:STD",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-3:STD",
+    "EstGrp": "QCTST",
     "Size": 3.0,
     "SchRtg": "STD",
     "Unit": "EA",
@@ -39222,8 +39222,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-3:XS",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-3:XS",
+    "EstGrp": "QCTST",
     "Size": 3.0,
     "SchRtg": "XS",
     "Unit": "EA",
@@ -39231,8 +39231,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-4:S10",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-4:S10",
+    "EstGrp": "QCTST",
     "Size": 4.0,
     "SchRtg": "S10",
     "Unit": "EA",
@@ -39240,8 +39240,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-4:S120",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-4:S120",
+    "EstGrp": "QCTST",
     "Size": 4.0,
     "SchRtg": "S120",
     "Unit": "EA",
@@ -39249,8 +39249,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-4:S160",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-4:S160",
+    "EstGrp": "QCTST",
     "Size": 4.0,
     "SchRtg": "S160",
     "Unit": "EA",
@@ -39258,8 +39258,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-4:.750\" WT",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-4:.750\" WT",
+    "EstGrp": "QCTST",
     "Size": 4.0,
     "SchRtg": ".750\" WT",
     "Unit": "EA",
@@ -39267,8 +39267,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-4:1.00\" WT",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-4:1.00\" WT",
+    "EstGrp": "QCTST",
     "Size": 4.0,
     "SchRtg": "1.00\" WT",
     "Unit": "EA",
@@ -39276,8 +39276,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-4:S40",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-4:S40",
+    "EstGrp": "QCTST",
     "Size": 4.0,
     "SchRtg": "S40",
     "Unit": "EA",
@@ -39285,8 +39285,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-4:S80",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-4:S80",
+    "EstGrp": "QCTST",
     "Size": 4.0,
     "SchRtg": "S80",
     "Unit": "EA",
@@ -39294,8 +39294,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-4:STD",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-4:STD",
+    "EstGrp": "QCTST",
     "Size": 4.0,
     "SchRtg": "STD",
     "Unit": "EA",
@@ -39303,8 +39303,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-4:XS",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-4:XS",
+    "EstGrp": "QCTST",
     "Size": 4.0,
     "SchRtg": "XS",
     "Unit": "EA",
@@ -39312,8 +39312,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-5:XXS",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-5:XXS",
+    "EstGrp": "QCTST",
     "Size": 5.0,
     "SchRtg": "XXS",
     "Unit": "EA",
@@ -39321,8 +39321,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-5:1.00\" WT",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-5:1.00\" WT",
+    "EstGrp": "QCTST",
     "Size": 5.0,
     "SchRtg": "1.00\" WT",
     "Unit": "EA",
@@ -39330,8 +39330,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-6:S10",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-6:S10",
+    "EstGrp": "QCTST",
     "Size": 6.0,
     "SchRtg": "S10",
     "Unit": "EA",
@@ -39339,8 +39339,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-6:S160",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-6:S160",
+    "EstGrp": "QCTST",
     "Size": 6.0,
     "SchRtg": "S160",
     "Unit": "EA",
@@ -39348,8 +39348,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-6:S40",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-6:S40",
+    "EstGrp": "QCTST",
     "Size": 6.0,
     "SchRtg": "S40",
     "Unit": "EA",
@@ -39357,8 +39357,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-6:S80",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-6:S80",
+    "EstGrp": "QCTST",
     "Size": 6.0,
     "SchRtg": "S80",
     "Unit": "EA",
@@ -39366,8 +39366,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-6:STD",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-6:STD",
+    "EstGrp": "QCTST",
     "Size": 6.0,
     "SchRtg": "STD",
     "Unit": "EA",
@@ -39375,8 +39375,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-6:XS",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-6:XS",
+    "EstGrp": "QCTST",
     "Size": 6.0,
     "SchRtg": "XS",
     "Unit": "EA",
@@ -39384,8 +39384,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-8:S140",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-8:S140",
+    "EstGrp": "QCTST",
     "Size": 8.0,
     "SchRtg": "S140",
     "Unit": "EA",
@@ -39393,8 +39393,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-8:S20",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-8:S20",
+    "EstGrp": "QCTST",
     "Size": 8.0,
     "SchRtg": "S20",
     "Unit": "EA",
@@ -39402,8 +39402,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-8:S40",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-8:S40",
+    "EstGrp": "QCTST",
     "Size": 8.0,
     "SchRtg": "S40",
     "Unit": "EA",
@@ -39411,8 +39411,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-8:S80",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-8:S80",
+    "EstGrp": "QCTST",
     "Size": 8.0,
     "SchRtg": "S80",
     "Unit": "EA",
@@ -39420,8 +39420,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-8:STD",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-8:STD",
+    "EstGrp": "QCTST",
     "Size": 8.0,
     "SchRtg": "STD",
     "Unit": "EA",
@@ -39429,8 +39429,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-8:XS",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-8:XS",
+    "EstGrp": "QCTST",
     "Size": 8.0,
     "SchRtg": "XS",
     "Unit": "EA",
@@ -39438,8 +39438,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-10:S140",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-10:S140",
+    "EstGrp": "QCTST",
     "Size": 10.0,
     "SchRtg": "S140",
     "Unit": "EA",
@@ -39447,8 +39447,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-10:S20",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-10:S20",
+    "EstGrp": "QCTST",
     "Size": 10.0,
     "SchRtg": "S20",
     "Unit": "EA",
@@ -39456,8 +39456,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-10:S40",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-10:S40",
+    "EstGrp": "QCTST",
     "Size": 10.0,
     "SchRtg": "S40",
     "Unit": "EA",
@@ -39465,8 +39465,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-10:S80",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-10:S80",
+    "EstGrp": "QCTST",
     "Size": 10.0,
     "SchRtg": "S80",
     "Unit": "EA",
@@ -39474,8 +39474,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-10:STD",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-10:STD",
+    "EstGrp": "QCTST",
     "Size": 10.0,
     "SchRtg": "STD",
     "Unit": "EA",
@@ -39483,8 +39483,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-10:XS",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-10:XS",
+    "EstGrp": "QCTST",
     "Size": 10.0,
     "SchRtg": "XS",
     "Unit": "EA",
@@ -39492,8 +39492,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-12:S140",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-12:S140",
+    "EstGrp": "QCTST",
     "Size": 12.0,
     "SchRtg": "S140",
     "Unit": "EA",
@@ -39501,8 +39501,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-12:S20",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-12:S20",
+    "EstGrp": "QCTST",
     "Size": 12.0,
     "SchRtg": "S20",
     "Unit": "EA",
@@ -39510,8 +39510,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-12:S40",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-12:S40",
+    "EstGrp": "QCTST",
     "Size": 12.0,
     "SchRtg": "S40",
     "Unit": "EA",
@@ -39519,8 +39519,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-12:S80",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-12:S80",
+    "EstGrp": "QCTST",
     "Size": 12.0,
     "SchRtg": "S80",
     "Unit": "EA",
@@ -39528,8 +39528,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-12:STD",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-12:STD",
+    "EstGrp": "QCTST",
     "Size": 12.0,
     "SchRtg": "STD",
     "Unit": "EA",
@@ -39537,8 +39537,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-12:XS",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-12:XS",
+    "EstGrp": "QCTST",
     "Size": 12.0,
     "SchRtg": "XS",
     "Unit": "EA",
@@ -39546,8 +39546,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-14:S10",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-14:S10",
+    "EstGrp": "QCTST",
     "Size": 14.0,
     "SchRtg": "S10",
     "Unit": "EA",
@@ -39555,8 +39555,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-14:S140",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-14:S140",
+    "EstGrp": "QCTST",
     "Size": 14.0,
     "SchRtg": "S140",
     "Unit": "EA",
@@ -39564,8 +39564,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-14:S40",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-14:S40",
+    "EstGrp": "QCTST",
     "Size": 14.0,
     "SchRtg": "S40",
     "Unit": "EA",
@@ -39573,8 +39573,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-14:S80",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-14:S80",
+    "EstGrp": "QCTST",
     "Size": 14.0,
     "SchRtg": "S80",
     "Unit": "EA",
@@ -39582,8 +39582,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-14:STD",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-14:STD",
+    "EstGrp": "QCTST",
     "Size": 14.0,
     "SchRtg": "STD",
     "Unit": "EA",
@@ -39591,8 +39591,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-16:S10",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-16:S10",
+    "EstGrp": "QCTST",
     "Size": 16.0,
     "SchRtg": "S10",
     "Unit": "EA",
@@ -39600,8 +39600,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-16:S140",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-16:S140",
+    "EstGrp": "QCTST",
     "Size": 16.0,
     "SchRtg": "S140",
     "Unit": "EA",
@@ -39609,8 +39609,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-16:S40",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-16:S40",
+    "EstGrp": "QCTST",
     "Size": 16.0,
     "SchRtg": "S40",
     "Unit": "EA",
@@ -39618,8 +39618,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-16:S80",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-16:S80",
+    "EstGrp": "QCTST",
     "Size": 16.0,
     "SchRtg": "S80",
     "Unit": "EA",
@@ -39627,8 +39627,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-16:STD",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-16:STD",
+    "EstGrp": "QCTST",
     "Size": 16.0,
     "SchRtg": "STD",
     "Unit": "EA",
@@ -39636,8 +39636,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-18:S10",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-18:S10",
+    "EstGrp": "QCTST",
     "Size": 18.0,
     "SchRtg": "S10",
     "Unit": "EA",
@@ -39645,8 +39645,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-18:S140",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-18:S140",
+    "EstGrp": "QCTST",
     "Size": 18.0,
     "SchRtg": "S140",
     "Unit": "EA",
@@ -39654,8 +39654,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-18:S40",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-18:S40",
+    "EstGrp": "QCTST",
     "Size": 18.0,
     "SchRtg": "S40",
     "Unit": "EA",
@@ -39663,8 +39663,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-18:S80",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-18:S80",
+    "EstGrp": "QCTST",
     "Size": 18.0,
     "SchRtg": "S80",
     "Unit": "EA",
@@ -39672,8 +39672,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-18:STD",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-18:STD",
+    "EstGrp": "QCTST",
     "Size": 18.0,
     "SchRtg": "STD",
     "Unit": "EA",
@@ -39681,8 +39681,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-20:S10",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-20:S10",
+    "EstGrp": "QCTST",
     "Size": 20.0,
     "SchRtg": "S10",
     "Unit": "EA",
@@ -39690,8 +39690,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-20:S100",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-20:S100",
+    "EstGrp": "QCTST",
     "Size": 20.0,
     "SchRtg": "S100",
     "Unit": "EA",
@@ -39699,8 +39699,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-20:S140",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-20:S140",
+    "EstGrp": "QCTST",
     "Size": 20.0,
     "SchRtg": "S140",
     "Unit": "EA",
@@ -39708,8 +39708,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-20:S60",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-20:S60",
+    "EstGrp": "QCTST",
     "Size": 20.0,
     "SchRtg": "S60",
     "Unit": "EA",
@@ -39717,8 +39717,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-20:STD",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-20:STD",
+    "EstGrp": "QCTST",
     "Size": 20.0,
     "SchRtg": "STD",
     "Unit": "EA",
@@ -39726,8 +39726,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-20:XS",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-20:XS",
+    "EstGrp": "QCTST",
     "Size": 20.0,
     "SchRtg": "XS",
     "Unit": "EA",
@@ -39735,8 +39735,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-24:S10",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-24:S10",
+    "EstGrp": "QCTST",
     "Size": 24.0,
     "SchRtg": "S10",
     "Unit": "EA",
@@ -39744,8 +39744,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-24:S100",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-24:S100",
+    "EstGrp": "QCTST",
     "Size": 24.0,
     "SchRtg": "S100",
     "Unit": "EA",
@@ -39753,8 +39753,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-24:S140",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-24:S140",
+    "EstGrp": "QCTST",
     "Size": 24.0,
     "SchRtg": "S140",
     "Unit": "EA",
@@ -39762,8 +39762,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-24:S60",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-24:S60",
+    "EstGrp": "QCTST",
     "Size": 24.0,
     "SchRtg": "S60",
     "Unit": "EA",
@@ -39771,8 +39771,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-24:STD",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-24:STD",
+    "EstGrp": "QCTST",
     "Size": 24.0,
     "SchRtg": "STD",
     "Unit": "EA",
@@ -39780,8 +39780,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-24:XS",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-24:XS",
+    "EstGrp": "QCTST",
     "Size": 24.0,
     "SchRtg": "XS",
     "Unit": "EA",
@@ -39789,8 +39789,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-30:.750\" WT",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-30:.750\" WT",
+    "EstGrp": "QCTST",
     "Size": 30.0,
     "SchRtg": ".750\" WT",
     "Unit": "EA",
@@ -39798,8 +39798,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-30:S60",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-30:S60",
+    "EstGrp": "QCTST",
     "Size": 30.0,
     "SchRtg": "S60",
     "Unit": "EA",
@@ -39807,8 +39807,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-30:STD",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-30:STD",
+    "EstGrp": "QCTST",
     "Size": 30.0,
     "SchRtg": "STD",
     "Unit": "EA",
@@ -39816,8 +39816,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-36:.750\" WT",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-36:.750\" WT",
+    "EstGrp": "QCTST",
     "Size": 36.0,
     "SchRtg": ".750\" WT",
     "Unit": "EA",
@@ -39825,8 +39825,8 @@
     "DollarEach": null
   },
   {
-    "Key": "QC-TEST-42:.750\" WT",
-    "EstGrp": "QC-TEST",
+    "Key": "QCTST-42:.750\" WT",
+    "EstGrp": "QCTST",
     "Size": 42.0,
     "SchRtg": ".750\" WT",
     "Unit": "EA",
@@ -39834,8 +39834,8 @@
     "DollarEach": null
   },
   {
-    "Key": "RED FLG-2:150",
-    "EstGrp": "RED FLG",
+    "Key": "REDF-2:150",
+    "EstGrp": "REDF",
     "Size": 2.0,
     "SchRtg": "150",
     "Unit": "EA",
@@ -39843,8 +39843,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SADDLE-1:3000",
-    "EstGrp": "SADDLE",
+    "Key": "SAD-1:3000",
+    "EstGrp": "SAD",
     "Size": 1.0,
     "SchRtg": "3000",
     "Unit": "EA",
@@ -39852,8 +39852,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SADDLE-1.5:3000",
-    "EstGrp": "SADDLE",
+    "Key": "SAD-1.5:3000",
+    "EstGrp": "SAD",
     "Size": 1.5,
     "SchRtg": "3000",
     "Unit": "EA",
@@ -39861,8 +39861,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SCRD MU-0.25",
-    "EstGrp": "SCRD MU",
+    "Key": "SCRD-0.25",
+    "EstGrp": "SCRD",
     "Size": 0.25,
     "SchRtg": null,
     "Unit": "EA",
@@ -39870,8 +39870,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SCRD MU-0.38",
-    "EstGrp": "SCRD MU",
+    "Key": "SCRD-0.38",
+    "EstGrp": "SCRD",
     "Size": 0.38,
     "SchRtg": null,
     "Unit": "EA",
@@ -39879,8 +39879,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SCRD MU-0.5",
-    "EstGrp": "SCRD MU",
+    "Key": "SCRD-0.5",
+    "EstGrp": "SCRD",
     "Size": 0.5,
     "SchRtg": null,
     "Unit": "EA",
@@ -39888,8 +39888,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SCRD MU-0.75",
-    "EstGrp": "SCRD MU",
+    "Key": "SCRD-0.75",
+    "EstGrp": "SCRD",
     "Size": 0.75,
     "SchRtg": null,
     "Unit": "EA",
@@ -39897,8 +39897,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SCRD MU-1",
-    "EstGrp": "SCRD MU",
+    "Key": "SCRD-1",
+    "EstGrp": "SCRD",
     "Size": 1.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -39906,8 +39906,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SCRD MU-1.25",
-    "EstGrp": "SCRD MU",
+    "Key": "SCRD-1.25",
+    "EstGrp": "SCRD",
     "Size": 1.25,
     "SchRtg": null,
     "Unit": "EA",
@@ -39915,8 +39915,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SCRD MU-1.5",
-    "EstGrp": "SCRD MU",
+    "Key": "SCRD-1.5",
+    "EstGrp": "SCRD",
     "Size": 1.5,
     "SchRtg": null,
     "Unit": "EA",
@@ -39924,8 +39924,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SCRD MU-2",
-    "EstGrp": "SCRD MU",
+    "Key": "SCRD-2",
+    "EstGrp": "SCRD",
     "Size": 2.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -39933,8 +39933,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SCRD MU-2.5",
-    "EstGrp": "SCRD MU",
+    "Key": "SCRD-2.5",
+    "EstGrp": "SCRD",
     "Size": 2.5,
     "SchRtg": null,
     "Unit": "EA",
@@ -39942,8 +39942,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SCRD MU-3",
-    "EstGrp": "SCRD MU",
+    "Key": "SCRD-3",
+    "EstGrp": "SCRD",
     "Size": 3.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -39951,8 +39951,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SCRD MU-4",
-    "EstGrp": "SCRD MU",
+    "Key": "SCRD-4",
+    "EstGrp": "SCRD",
     "Size": 4.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -40113,8 +40113,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SHOWER-1.25",
-    "EstGrp": "SHOWER",
+    "Key": "SAFSHW-1.25",
+    "EstGrp": "SAFSHW",
     "Size": 1.25,
     "SchRtg": null,
     "Unit": "EA",
@@ -48420,8 +48420,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SPRING SUPPT",
-    "EstGrp": "SPRING SUPPT",
+    "Key": "SPRING",
+    "EstGrp": "SPRING",
     "Size": null,
     "SchRtg": null,
     "Unit": "EA",
@@ -48429,8 +48429,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SPRING SUPPT-0.75",
-    "EstGrp": "SPRING SUPPT",
+    "Key": "SPRING-0.75",
+    "EstGrp": "SPRING",
     "Size": 0.75,
     "SchRtg": null,
     "Unit": "EA",
@@ -48438,8 +48438,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SPRING SUPPT-1",
-    "EstGrp": "SPRING SUPPT",
+    "Key": "SPRING-1",
+    "EstGrp": "SPRING",
     "Size": 1.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -48447,8 +48447,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SPRING SUPPT-1.5",
-    "EstGrp": "SPRING SUPPT",
+    "Key": "SPRING-1.5",
+    "EstGrp": "SPRING",
     "Size": 1.5,
     "SchRtg": null,
     "Unit": "EA",
@@ -48456,8 +48456,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SPRING SUPPT-2",
-    "EstGrp": "SPRING SUPPT",
+    "Key": "SPRING-2",
+    "EstGrp": "SPRING",
     "Size": 2.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -48465,8 +48465,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SPRING SUPPT-3",
-    "EstGrp": "SPRING SUPPT",
+    "Key": "SPRING-3",
+    "EstGrp": "SPRING",
     "Size": 3.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -48474,8 +48474,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SPRING SUPPT-4",
-    "EstGrp": "SPRING SUPPT",
+    "Key": "SPRING-4",
+    "EstGrp": "SPRING",
     "Size": 4.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -48483,8 +48483,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SPRING SUPPT-6",
-    "EstGrp": "SPRING SUPPT",
+    "Key": "SPRING-6",
+    "EstGrp": "SPRING",
     "Size": 6.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -48492,8 +48492,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SPRING SUPPT-8",
-    "EstGrp": "SPRING SUPPT",
+    "Key": "SPRING-8",
+    "EstGrp": "SPRING",
     "Size": 8.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -48501,8 +48501,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SPRING SUPPT-10",
-    "EstGrp": "SPRING SUPPT",
+    "Key": "SPRING-10",
+    "EstGrp": "SPRING",
     "Size": 10.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -48510,8 +48510,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SPRING SUPPT-12",
-    "EstGrp": "SPRING SUPPT",
+    "Key": "SPRING-12",
+    "EstGrp": "SPRING",
     "Size": 12.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -48519,8 +48519,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SPRING SUPPT-14",
-    "EstGrp": "SPRING SUPPT",
+    "Key": "SPRING-14",
+    "EstGrp": "SPRING",
     "Size": 14.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -48528,8 +48528,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SPRING SUPPT-16",
-    "EstGrp": "SPRING SUPPT",
+    "Key": "SPRING-16",
+    "EstGrp": "SPRING",
     "Size": 16.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -48537,8 +48537,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SPRING SUPPT-18",
-    "EstGrp": "SPRING SUPPT",
+    "Key": "SPRING-18",
+    "EstGrp": "SPRING",
     "Size": 18.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -48546,8 +48546,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SPRING SUPPT-20",
-    "EstGrp": "SPRING SUPPT",
+    "Key": "SPRING-20",
+    "EstGrp": "SPRING",
     "Size": 20.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -48555,8 +48555,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SPRING SUPPT-24",
-    "EstGrp": "SPRING SUPPT",
+    "Key": "SPRING-24",
+    "EstGrp": "SPRING",
     "Size": 24.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -48564,8 +48564,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SPRING SUPPT-30",
-    "EstGrp": "SPRING SUPPT",
+    "Key": "SPRING-30",
+    "EstGrp": "SPRING",
     "Size": 30.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -55494,8 +55494,8 @@
     "DollarEach": null
   },
   {
-    "Key": "STRUT - HDC-0.75",
-    "EstGrp": "STRUT - HDC",
+    "Key": "STRUT-0.75",
+    "EstGrp": "STRUT",
     "Size": 0.75,
     "SchRtg": null,
     "Unit": "EA",
@@ -55503,8 +55503,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SUPPT-0.375",
-    "EstGrp": "SUPPT",
+    "Key": "SPT-0.375",
+    "EstGrp": "SPT",
     "Size": 0.375,
     "SchRtg": null,
     "Unit": "EA",
@@ -55512,8 +55512,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SUPPT-0.5",
-    "EstGrp": "SUPPT",
+    "Key": "SPT-0.5",
+    "EstGrp": "SPT",
     "Size": 0.5,
     "SchRtg": null,
     "Unit": "EA",
@@ -55521,8 +55521,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SUPPT-0.75",
-    "EstGrp": "SUPPT",
+    "Key": "SPT-0.75",
+    "EstGrp": "SPT",
     "Size": 0.75,
     "SchRtg": null,
     "Unit": "EA",
@@ -55530,8 +55530,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SUPPT-1",
-    "EstGrp": "SUPPT",
+    "Key": "SPT-1",
+    "EstGrp": "SPT",
     "Size": 1.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -55539,8 +55539,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SUPPT-1.25",
-    "EstGrp": "SUPPT",
+    "Key": "SPT-1.25",
+    "EstGrp": "SPT",
     "Size": 1.25,
     "SchRtg": null,
     "Unit": "EA",
@@ -55548,8 +55548,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SUPPT-1.5",
-    "EstGrp": "SUPPT",
+    "Key": "SPT-1.5",
+    "EstGrp": "SPT",
     "Size": 1.5,
     "SchRtg": null,
     "Unit": "EA",
@@ -55557,8 +55557,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SUPPT-2",
-    "EstGrp": "SUPPT",
+    "Key": "SPT-2",
+    "EstGrp": "SPT",
     "Size": 2.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -55566,8 +55566,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SUPPT-2.5",
-    "EstGrp": "SUPPT",
+    "Key": "SPT-2.5",
+    "EstGrp": "SPT",
     "Size": 2.5,
     "SchRtg": null,
     "Unit": "EA",
@@ -55575,8 +55575,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SUPPT-3",
-    "EstGrp": "SUPPT",
+    "Key": "SPT-3",
+    "EstGrp": "SPT",
     "Size": 3.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -55584,8 +55584,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SUPPT-4",
-    "EstGrp": "SUPPT",
+    "Key": "SPT-4",
+    "EstGrp": "SPT",
     "Size": 4.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -55593,8 +55593,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SUPPT-5",
-    "EstGrp": "SUPPT",
+    "Key": "SPT-5",
+    "EstGrp": "SPT",
     "Size": 5.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -55602,8 +55602,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SUPPT-6",
-    "EstGrp": "SUPPT",
+    "Key": "SPT-6",
+    "EstGrp": "SPT",
     "Size": 6.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -55611,8 +55611,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SUPPT-8",
-    "EstGrp": "SUPPT",
+    "Key": "SPT-8",
+    "EstGrp": "SPT",
     "Size": 8.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -55620,8 +55620,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SUPPT-10",
-    "EstGrp": "SUPPT",
+    "Key": "SPT-10",
+    "EstGrp": "SPT",
     "Size": 10.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -55629,8 +55629,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SUPPT-12",
-    "EstGrp": "SUPPT",
+    "Key": "SPT-12",
+    "EstGrp": "SPT",
     "Size": 12.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -55638,8 +55638,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SUPPT-14",
-    "EstGrp": "SUPPT",
+    "Key": "SPT-14",
+    "EstGrp": "SPT",
     "Size": 14.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -55647,8 +55647,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SUPPT-16",
-    "EstGrp": "SUPPT",
+    "Key": "SPT-16",
+    "EstGrp": "SPT",
     "Size": 16.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -55656,8 +55656,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SUPPT-18",
-    "EstGrp": "SUPPT",
+    "Key": "SPT-18",
+    "EstGrp": "SPT",
     "Size": 18.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -55665,8 +55665,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SUPPT-20",
-    "EstGrp": "SUPPT",
+    "Key": "SPT-20",
+    "EstGrp": "SPT",
     "Size": 20.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -55674,8 +55674,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SUPPT-22",
-    "EstGrp": "SUPPT",
+    "Key": "SPT-22",
+    "EstGrp": "SPT",
     "Size": 22.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -55683,8 +55683,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SUPPT-24",
-    "EstGrp": "SUPPT",
+    "Key": "SPT-24",
+    "EstGrp": "SPT",
     "Size": 24.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -55692,8 +55692,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SUPPT-26",
-    "EstGrp": "SUPPT",
+    "Key": "SPT-26",
+    "EstGrp": "SPT",
     "Size": 26.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -55701,8 +55701,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SUPPT-28",
-    "EstGrp": "SUPPT",
+    "Key": "SPT-28",
+    "EstGrp": "SPT",
     "Size": 28.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -55710,8 +55710,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SUPPT-30",
-    "EstGrp": "SUPPT",
+    "Key": "SPT-30",
+    "EstGrp": "SPT",
     "Size": 30.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -55719,8 +55719,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SUPPT-34",
-    "EstGrp": "SUPPT",
+    "Key": "SPT-34",
+    "EstGrp": "SPT",
     "Size": 34.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -55728,8 +55728,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SUPPT-36",
-    "EstGrp": "SUPPT",
+    "Key": "SPT-36",
+    "EstGrp": "SPT",
     "Size": 36.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -55737,8 +55737,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SUPPT-66",
-    "EstGrp": "SUPPT",
+    "Key": "SPT-66",
+    "EstGrp": "SPT",
     "Size": 66.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -55746,8 +55746,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SUPPT-84",
-    "EstGrp": "SUPPT",
+    "Key": "SPT-84",
+    "EstGrp": "SPT",
     "Size": 84.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -55755,8 +55755,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SUPPT-32",
-    "EstGrp": "SUPPT",
+    "Key": "SPT-32",
+    "EstGrp": "SPT",
     "Size": 32.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -55764,8 +55764,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SUPPT-40",
-    "EstGrp": "SUPPT",
+    "Key": "SPT-40",
+    "EstGrp": "SPT",
     "Size": 40.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -55773,8 +55773,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SUPPT-42",
-    "EstGrp": "SUPPT",
+    "Key": "SPT-42",
+    "EstGrp": "SPT",
     "Size": 42.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -55782,8 +55782,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SUPPT-48",
-    "EstGrp": "SUPPT",
+    "Key": "SPT-48",
+    "EstGrp": "SPT",
     "Size": 48.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -55791,8 +55791,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SUPPT-52",
-    "EstGrp": "SUPPT",
+    "Key": "SPT-52",
+    "EstGrp": "SPT",
     "Size": 52.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -55800,8 +55800,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SUPPT-54",
-    "EstGrp": "SUPPT",
+    "Key": "SPT-54",
+    "EstGrp": "SPT",
     "Size": 54.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -55809,8 +55809,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SUPPT-60",
-    "EstGrp": "SUPPT",
+    "Key": "SPT-60",
+    "EstGrp": "SPT",
     "Size": 60.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -55818,8 +55818,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SUPPT-72",
-    "EstGrp": "SUPPT",
+    "Key": "SPT-72",
+    "EstGrp": "SPT",
     "Size": 72.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -56124,8 +56124,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SWAGE CONC-1:XXS",
-    "EstGrp": "SWAGE CONC",
+    "Key": "SWGC-1:XXS",
+    "EstGrp": "SWGC",
     "Size": 1.0,
     "SchRtg": "XXS",
     "Unit": "EA",
@@ -56133,8 +56133,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SWAY SUPPT-0.75",
-    "EstGrp": "SWAY SUPPT",
+    "Key": "SWAY-0.75",
+    "EstGrp": "SWAY",
     "Size": 0.75,
     "SchRtg": null,
     "Unit": "EA",
@@ -56142,8 +56142,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SWAY SUPPT-1",
-    "EstGrp": "SWAY SUPPT",
+    "Key": "SWAY-1",
+    "EstGrp": "SWAY",
     "Size": 1.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -56151,8 +56151,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SWAY SUPPT-1.5",
-    "EstGrp": "SWAY SUPPT",
+    "Key": "SWAY-1.5",
+    "EstGrp": "SWAY",
     "Size": 1.5,
     "SchRtg": null,
     "Unit": "EA",
@@ -56160,8 +56160,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SWAY SUPPT-2",
-    "EstGrp": "SWAY SUPPT",
+    "Key": "SWAY-2",
+    "EstGrp": "SWAY",
     "Size": 2.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -56169,8 +56169,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SWAY SUPPT-3",
-    "EstGrp": "SWAY SUPPT",
+    "Key": "SWAY-3",
+    "EstGrp": "SWAY",
     "Size": 3.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -56178,8 +56178,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SWAY SUPPT-4",
-    "EstGrp": "SWAY SUPPT",
+    "Key": "SWAY-4",
+    "EstGrp": "SWAY",
     "Size": 4.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -56187,8 +56187,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SWAY SUPPT-6",
-    "EstGrp": "SWAY SUPPT",
+    "Key": "SWAY-6",
+    "EstGrp": "SWAY",
     "Size": 6.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -56196,8 +56196,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SWAY SUPPT-8",
-    "EstGrp": "SWAY SUPPT",
+    "Key": "SWAY-8",
+    "EstGrp": "SWAY",
     "Size": 8.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -56205,8 +56205,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SWAY SUPPT-10",
-    "EstGrp": "SWAY SUPPT",
+    "Key": "SWAY-10",
+    "EstGrp": "SWAY",
     "Size": 10.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -56214,8 +56214,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SWAY SUPPT-12",
-    "EstGrp": "SWAY SUPPT",
+    "Key": "SWAY-12",
+    "EstGrp": "SWAY",
     "Size": 12.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -56223,8 +56223,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SWAY SUPPT-14",
-    "EstGrp": "SWAY SUPPT",
+    "Key": "SWAY-14",
+    "EstGrp": "SWAY",
     "Size": 14.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -56232,8 +56232,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SWAY SUPPT-16",
-    "EstGrp": "SWAY SUPPT",
+    "Key": "SWAY-16",
+    "EstGrp": "SWAY",
     "Size": 16.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -56241,8 +56241,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SWAY SUPPT-18",
-    "EstGrp": "SWAY SUPPT",
+    "Key": "SWAY-18",
+    "EstGrp": "SWAY",
     "Size": 18.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -56250,8 +56250,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SWAY SUPPT-20",
-    "EstGrp": "SWAY SUPPT",
+    "Key": "SWAY-20",
+    "EstGrp": "SWAY",
     "Size": 20.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -56259,8 +56259,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SWAY SUPPT-24",
-    "EstGrp": "SWAY SUPPT",
+    "Key": "SWAY-24",
+    "EstGrp": "SWAY",
     "Size": 24.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -56268,8 +56268,8 @@
     "DollarEach": null
   },
   {
-    "Key": "SWAY SUPPT-30",
-    "EstGrp": "SWAY SUPPT",
+    "Key": "SWAY-30",
+    "EstGrp": "SWAY",
     "Size": 30.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -56520,8 +56520,8 @@
     "DollarEach": null
   },
   {
-    "Key": "T-SUPPT-0.75",
-    "EstGrp": "T-SUPPT",
+    "Key": "TSPT-0.75",
+    "EstGrp": "TSPT",
     "Size": 0.75,
     "SchRtg": null,
     "Unit": "EA",
@@ -56529,8 +56529,8 @@
     "DollarEach": null
   },
   {
-    "Key": "T-SUPPT-1",
-    "EstGrp": "T-SUPPT",
+    "Key": "TSPT-1",
+    "EstGrp": "TSPT",
     "Size": 1.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -56538,8 +56538,8 @@
     "DollarEach": null
   },
   {
-    "Key": "T-SUPPT-1.5",
-    "EstGrp": "T-SUPPT",
+    "Key": "TSPT-1.5",
+    "EstGrp": "TSPT",
     "Size": 1.5,
     "SchRtg": null,
     "Unit": "EA",
@@ -56547,8 +56547,8 @@
     "DollarEach": null
   },
   {
-    "Key": "T-SUPPT-2",
-    "EstGrp": "T-SUPPT",
+    "Key": "TSPT-2",
+    "EstGrp": "TSPT",
     "Size": 2.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -56556,8 +56556,8 @@
     "DollarEach": null
   },
   {
-    "Key": "T-SUPPT-3",
-    "EstGrp": "T-SUPPT",
+    "Key": "TSPT-3",
+    "EstGrp": "TSPT",
     "Size": 3.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -56565,8 +56565,8 @@
     "DollarEach": null
   },
   {
-    "Key": "T-SUPPT-4",
-    "EstGrp": "T-SUPPT",
+    "Key": "TSPT-4",
+    "EstGrp": "TSPT",
     "Size": 4.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -56574,8 +56574,8 @@
     "DollarEach": null
   },
   {
-    "Key": "T-SUPPT-6",
-    "EstGrp": "T-SUPPT",
+    "Key": "TSPT-6",
+    "EstGrp": "TSPT",
     "Size": 6.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -56583,8 +56583,8 @@
     "DollarEach": null
   },
   {
-    "Key": "T-SUPPT-8",
-    "EstGrp": "T-SUPPT",
+    "Key": "TSPT-8",
+    "EstGrp": "TSPT",
     "Size": 8.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -56592,8 +56592,8 @@
     "DollarEach": null
   },
   {
-    "Key": "T-SUPPT-10",
-    "EstGrp": "T-SUPPT",
+    "Key": "TSPT-10",
+    "EstGrp": "TSPT",
     "Size": 10.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -56601,8 +56601,8 @@
     "DollarEach": null
   },
   {
-    "Key": "T-SUPPT-12",
-    "EstGrp": "T-SUPPT",
+    "Key": "TSPT-12",
+    "EstGrp": "TSPT",
     "Size": 12.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -56610,8 +56610,8 @@
     "DollarEach": null
   },
   {
-    "Key": "T-SUPPT-14",
-    "EstGrp": "T-SUPPT",
+    "Key": "TSPT-14",
+    "EstGrp": "TSPT",
     "Size": 14.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -56619,8 +56619,8 @@
     "DollarEach": null
   },
   {
-    "Key": "T-SUPPT-16",
-    "EstGrp": "T-SUPPT",
+    "Key": "TSPT-16",
+    "EstGrp": "TSPT",
     "Size": 16.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -56628,8 +56628,8 @@
     "DollarEach": null
   },
   {
-    "Key": "T-SUPPT-18",
-    "EstGrp": "T-SUPPT",
+    "Key": "TSPT-18",
+    "EstGrp": "TSPT",
     "Size": 18.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -56637,8 +56637,8 @@
     "DollarEach": null
   },
   {
-    "Key": "T-SUPPT-20",
-    "EstGrp": "T-SUPPT",
+    "Key": "TSPT-20",
+    "EstGrp": "TSPT",
     "Size": 20.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -56646,8 +56646,8 @@
     "DollarEach": null
   },
   {
-    "Key": "T-SUPPT-24",
-    "EstGrp": "T-SUPPT",
+    "Key": "TSPT-24",
+    "EstGrp": "TSPT",
     "Size": 24.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -56655,8 +56655,8 @@
     "DollarEach": null
   },
   {
-    "Key": "T-SUPPT-30",
-    "EstGrp": "T-SUPPT",
+    "Key": "TSPT-30",
+    "EstGrp": "TSPT",
     "Size": 30.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -56664,8 +56664,8 @@
     "DollarEach": null
   },
   {
-    "Key": "TUBING-0.25",
-    "EstGrp": "TUBING",
+    "Key": "TUBE-0.25",
+    "EstGrp": "TUBE",
     "Size": 0.25,
     "SchRtg": null,
     "Unit": "LFT",
@@ -56673,8 +56673,8 @@
     "DollarEach": null
   },
   {
-    "Key": "TUBING-0.375",
-    "EstGrp": "TUBING",
+    "Key": "TUBE-0.375",
+    "EstGrp": "TUBE",
     "Size": 0.375,
     "SchRtg": null,
     "Unit": "LFT",
@@ -56682,8 +56682,8 @@
     "DollarEach": null
   },
   {
-    "Key": "TUBING-0.5",
-    "EstGrp": "TUBING",
+    "Key": "TUBE-0.5",
+    "EstGrp": "TUBE",
     "Size": 0.5,
     "SchRtg": null,
     "Unit": "LFT",
@@ -56691,8 +56691,8 @@
     "DollarEach": null
   },
   {
-    "Key": "TUBING-0.75:.065\" WT",
-    "EstGrp": "TUBING",
+    "Key": "TUBE-0.75:.065\" WT",
+    "EstGrp": "TUBE",
     "Size": 0.75,
     "SchRtg": ".065\" WT",
     "Unit": "EA",
@@ -56700,8 +56700,8 @@
     "DollarEach": null
   },
   {
-    "Key": "TUBING-0.75",
-    "EstGrp": "TUBING",
+    "Key": "TUBE-0.75",
+    "EstGrp": "TUBE",
     "Size": 0.75,
     "SchRtg": null,
     "Unit": "LFT",
@@ -56709,8 +56709,8 @@
     "DollarEach": null
   },
   {
-    "Key": "TUBING-1",
-    "EstGrp": "TUBING",
+    "Key": "TUBE-1",
+    "EstGrp": "TUBE",
     "Size": 1.0,
     "SchRtg": null,
     "Unit": "LFT",
@@ -56718,8 +56718,8 @@
     "DollarEach": null
   },
   {
-    "Key": "TUBING-1.5",
-    "EstGrp": "TUBING",
+    "Key": "TUBE-1.5",
+    "EstGrp": "TUBE",
     "Size": 1.5,
     "SchRtg": null,
     "Unit": "LFT",
@@ -56727,8 +56727,8 @@
     "DollarEach": null
   },
   {
-    "Key": "TUBING-2",
-    "EstGrp": "TUBING",
+    "Key": "TUBE-2",
+    "EstGrp": "TUBE",
     "Size": 2.0,
     "SchRtg": null,
     "Unit": "LFT",
@@ -56736,8 +56736,8 @@
     "DollarEach": null
   },
   {
-    "Key": "TUBING-3",
-    "EstGrp": "TUBING",
+    "Key": "TUBE-3",
+    "EstGrp": "TUBE",
     "Size": 3.0,
     "SchRtg": null,
     "Unit": "LFT",
@@ -56745,8 +56745,8 @@
     "DollarEach": null
   },
   {
-    "Key": "TUBING-4",
-    "EstGrp": "TUBING",
+    "Key": "TUBE-4",
+    "EstGrp": "TUBE",
     "Size": 4.0,
     "SchRtg": null,
     "Unit": "LFT",
@@ -56754,8 +56754,8 @@
     "DollarEach": null
   },
   {
-    "Key": "TUBING-6",
-    "EstGrp": "TUBING",
+    "Key": "TUBE-6",
+    "EstGrp": "TUBE",
     "Size": 6.0,
     "SchRtg": null,
     "Unit": "LFT",
@@ -56763,8 +56763,8 @@
     "DollarEach": null
   },
   {
-    "Key": "TUBING-8",
-    "EstGrp": "TUBING",
+    "Key": "TUBE-8",
+    "EstGrp": "TUBE",
     "Size": 8.0,
     "SchRtg": null,
     "Unit": "LFP",
@@ -56772,8 +56772,8 @@
     "DollarEach": null
   },
   {
-    "Key": "TUBING-12",
-    "EstGrp": "TUBING",
+    "Key": "TUBE-12",
+    "EstGrp": "TUBE",
     "Size": 12.0,
     "SchRtg": null,
     "Unit": "LFP",
@@ -56781,8 +56781,8 @@
     "DollarEach": null
   },
   {
-    "Key": "TUBING-16",
-    "EstGrp": "TUBING",
+    "Key": "TUBE-16",
+    "EstGrp": "TUBE",
     "Size": 16.0,
     "SchRtg": null,
     "Unit": "LFP",
@@ -56790,8 +56790,8 @@
     "DollarEach": null
   },
   {
-    "Key": "TUBING-34",
-    "EstGrp": "TUBING",
+    "Key": "TUBE-34",
+    "EstGrp": "TUBE",
     "Size": 34.0,
     "SchRtg": null,
     "Unit": "LFP",
@@ -56799,8 +56799,8 @@
     "DollarEach": null
   },
   {
-    "Key": "VENT/DRAIN-0.5:800",
-    "EstGrp": "VENT/DRAIN",
+    "Key": "VNTDRN-0.5:800",
+    "EstGrp": "VNTDRN",
     "Size": 0.5,
     "SchRtg": "800",
     "Unit": "EA",
@@ -56808,8 +56808,8 @@
     "DollarEach": null
   },
   {
-    "Key": "VENT/DRAIN-0.75:800",
-    "EstGrp": "VENT/DRAIN",
+    "Key": "VNTDRN-0.75:800",
+    "EstGrp": "VNTDRN",
     "Size": 0.75,
     "SchRtg": "800",
     "Unit": "EA",
@@ -56817,8 +56817,8 @@
     "DollarEach": null
   },
   {
-    "Key": "VENT/DRAIN-1:800",
-    "EstGrp": "VENT/DRAIN",
+    "Key": "VNTDRN-1:800",
+    "EstGrp": "VNTDRN",
     "Size": 1.0,
     "SchRtg": "800",
     "Unit": "EA",
@@ -56826,8 +56826,8 @@
     "DollarEach": null
   },
   {
-    "Key": "VENT/DRAIN-1.5:800",
-    "EstGrp": "VENT/DRAIN",
+    "Key": "VNTDRN-1.5:800",
+    "EstGrp": "VNTDRN",
     "Size": 1.5,
     "SchRtg": "800",
     "Unit": "EA",
@@ -56835,8 +56835,8 @@
     "DollarEach": null
   },
   {
-    "Key": "VENT/DRAIN-0.5:1500",
-    "EstGrp": "VENT/DRAIN",
+    "Key": "VNTDRN-0.5:1500",
+    "EstGrp": "VNTDRN",
     "Size": 0.5,
     "SchRtg": "1500",
     "Unit": "EA",
@@ -56844,8 +56844,8 @@
     "DollarEach": null
   },
   {
-    "Key": "VENT/DRAIN-0.75:1500",
-    "EstGrp": "VENT/DRAIN",
+    "Key": "VNTDRN-0.75:1500",
+    "EstGrp": "VNTDRN",
     "Size": 0.75,
     "SchRtg": "1500",
     "Unit": "EA",
@@ -56853,8 +56853,8 @@
     "DollarEach": null
   },
   {
-    "Key": "VENT/DRAIN-1:1500",
-    "EstGrp": "VENT/DRAIN",
+    "Key": "VNTDRN-1:1500",
+    "EstGrp": "VNTDRN",
     "Size": 1.0,
     "SchRtg": "1500",
     "Unit": "EA",
@@ -56862,8 +56862,8 @@
     "DollarEach": null
   },
   {
-    "Key": "VENT/DRAIN-1.5:1500",
-    "EstGrp": "VENT/DRAIN",
+    "Key": "VNTDRN-1.5:1500",
+    "EstGrp": "VNTDRN",
     "Size": 1.5,
     "SchRtg": "1500",
     "Unit": "EA",
@@ -56871,8 +56871,8 @@
     "DollarEach": null
   },
   {
-    "Key": "VENT/DRAIN-0.5:2500",
-    "EstGrp": "VENT/DRAIN",
+    "Key": "VNTDRN-0.5:2500",
+    "EstGrp": "VNTDRN",
     "Size": 0.5,
     "SchRtg": "2500",
     "Unit": "EA",
@@ -56880,8 +56880,8 @@
     "DollarEach": null
   },
   {
-    "Key": "VENT/DRAIN-0.75:2500",
-    "EstGrp": "VENT/DRAIN",
+    "Key": "VNTDRN-0.75:2500",
+    "EstGrp": "VNTDRN",
     "Size": 0.75,
     "SchRtg": "2500",
     "Unit": "EA",
@@ -56889,8 +56889,8 @@
     "DollarEach": null
   },
   {
-    "Key": "VENT/DRAIN-1:2500",
-    "EstGrp": "VENT/DRAIN",
+    "Key": "VNTDRN-1:2500",
+    "EstGrp": "VNTDRN",
     "Size": 1.0,
     "SchRtg": "2500",
     "Unit": "EA",
@@ -56898,8 +56898,8 @@
     "DollarEach": null
   },
   {
-    "Key": "VENT/DRAIN-1.5:2500",
-    "EstGrp": "VENT/DRAIN",
+    "Key": "VNTDRN-1.5:2500",
+    "EstGrp": "VNTDRN",
     "Size": 1.5,
     "SchRtg": "2500",
     "Unit": "EA",
@@ -58725,8 +58725,8 @@
     "DollarEach": null
   },
   {
-    "Key": "VLV OPERATOR-2",
-    "EstGrp": "VLV OPERATOR",
+    "Key": "VLVOP-2",
+    "EstGrp": "VLVOP",
     "Size": 2.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -58734,8 +58734,8 @@
     "DollarEach": null
   },
   {
-    "Key": "VLV OPERATOR-3",
-    "EstGrp": "VLV OPERATOR",
+    "Key": "VLVOP-3",
+    "EstGrp": "VLVOP",
     "Size": 3.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -58743,8 +58743,8 @@
     "DollarEach": null
   },
   {
-    "Key": "VLV OPERATOR-4",
-    "EstGrp": "VLV OPERATOR",
+    "Key": "VLVOP-4",
+    "EstGrp": "VLVOP",
     "Size": 4.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -58752,8 +58752,8 @@
     "DollarEach": null
   },
   {
-    "Key": "VLV OPERATOR-6",
-    "EstGrp": "VLV OPERATOR",
+    "Key": "VLVOP-6",
+    "EstGrp": "VLVOP",
     "Size": 6.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -58761,8 +58761,8 @@
     "DollarEach": null
   },
   {
-    "Key": "VLV OPERATOR-8",
-    "EstGrp": "VLV OPERATOR",
+    "Key": "VLVOP-8",
+    "EstGrp": "VLVOP",
     "Size": 8.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -58770,8 +58770,8 @@
     "DollarEach": null
   },
   {
-    "Key": "VLV OPERATOR-10",
-    "EstGrp": "VLV OPERATOR",
+    "Key": "VLVOP-10",
+    "EstGrp": "VLVOP",
     "Size": 10.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -58779,8 +58779,8 @@
     "DollarEach": null
   },
   {
-    "Key": "VLV OPERATOR-12",
-    "EstGrp": "VLV OPERATOR",
+    "Key": "VLVOP-12",
+    "EstGrp": "VLVOP",
     "Size": 12.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -58788,8 +58788,8 @@
     "DollarEach": null
   },
   {
-    "Key": "VLV OPERATOR-14",
-    "EstGrp": "VLV OPERATOR",
+    "Key": "VLVOP-14",
+    "EstGrp": "VLVOP",
     "Size": 14.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -58797,8 +58797,8 @@
     "DollarEach": null
   },
   {
-    "Key": "VLV OPERATOR-16",
-    "EstGrp": "VLV OPERATOR",
+    "Key": "VLVOP-16",
+    "EstGrp": "VLVOP",
     "Size": 16.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -58806,8 +58806,8 @@
     "DollarEach": null
   },
   {
-    "Key": "VLV OPERATOR-18",
-    "EstGrp": "VLV OPERATOR",
+    "Key": "VLVOP-18",
+    "EstGrp": "VLVOP",
     "Size": 18.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -58815,8 +58815,8 @@
     "DollarEach": null
   },
   {
-    "Key": "VLV OPERATOR-20",
-    "EstGrp": "VLV OPERATOR",
+    "Key": "VLVOP-20",
+    "EstGrp": "VLVOP",
     "Size": 20.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -58824,8 +58824,8 @@
     "DollarEach": null
   },
   {
-    "Key": "VLV OPERATOR-22",
-    "EstGrp": "VLV OPERATOR",
+    "Key": "VLVOP-22",
+    "EstGrp": "VLVOP",
     "Size": 22.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -58833,8 +58833,8 @@
     "DollarEach": null
   },
   {
-    "Key": "VLV OPERATOR-24",
-    "EstGrp": "VLV OPERATOR",
+    "Key": "VLVOP-24",
+    "EstGrp": "VLVOP",
     "Size": 24.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -58842,8 +58842,8 @@
     "DollarEach": null
   },
   {
-    "Key": "VLV OPERATOR-26",
-    "EstGrp": "VLV OPERATOR",
+    "Key": "VLVOP-26",
+    "EstGrp": "VLVOP",
     "Size": 26.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -58851,8 +58851,8 @@
     "DollarEach": null
   },
   {
-    "Key": "VLV OPERATOR-28",
-    "EstGrp": "VLV OPERATOR",
+    "Key": "VLVOP-28",
+    "EstGrp": "VLVOP",
     "Size": 28.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -58860,8 +58860,8 @@
     "DollarEach": null
   },
   {
-    "Key": "VLV OPERATOR-30",
-    "EstGrp": "VLV OPERATOR",
+    "Key": "VLVOP-30",
+    "EstGrp": "VLVOP",
     "Size": 30.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -58869,8 +58869,8 @@
     "DollarEach": null
   },
   {
-    "Key": "VLV OPERATOR-32",
-    "EstGrp": "VLV OPERATOR",
+    "Key": "VLVOP-32",
+    "EstGrp": "VLVOP",
     "Size": 32.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -58878,8 +58878,8 @@
     "DollarEach": null
   },
   {
-    "Key": "VLV OPERATOR-34",
-    "EstGrp": "VLV OPERATOR",
+    "Key": "VLVOP-34",
+    "EstGrp": "VLVOP",
     "Size": 34.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -58887,8 +58887,8 @@
     "DollarEach": null
   },
   {
-    "Key": "VLV OPERATOR-36",
-    "EstGrp": "VLV OPERATOR",
+    "Key": "VLVOP-36",
+    "EstGrp": "VLVOP",
     "Size": 36.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -58896,8 +58896,8 @@
     "DollarEach": null
   },
   {
-    "Key": "VLV OPERATOR-38",
-    "EstGrp": "VLV OPERATOR",
+    "Key": "VLVOP-38",
+    "EstGrp": "VLVOP",
     "Size": 38.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -58905,8 +58905,8 @@
     "DollarEach": null
   },
   {
-    "Key": "VLV OPERATOR-40",
-    "EstGrp": "VLV OPERATOR",
+    "Key": "VLVOP-40",
+    "EstGrp": "VLVOP",
     "Size": 40.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -58914,8 +58914,8 @@
     "DollarEach": null
   },
   {
-    "Key": "VLV OPERATOR-42",
-    "EstGrp": "VLV OPERATOR",
+    "Key": "VLVOP-42",
+    "EstGrp": "VLVOP",
     "Size": 42.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -58923,8 +58923,8 @@
     "DollarEach": null
   },
   {
-    "Key": "VLV OPERATOR-44",
-    "EstGrp": "VLV OPERATOR",
+    "Key": "VLVOP-44",
+    "EstGrp": "VLVOP",
     "Size": 44.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -58932,8 +58932,8 @@
     "DollarEach": null
   },
   {
-    "Key": "VLV OPERATOR-46",
-    "EstGrp": "VLV OPERATOR",
+    "Key": "VLVOP-46",
+    "EstGrp": "VLVOP",
     "Size": 46.0,
     "SchRtg": null,
     "Unit": "EA",
@@ -58941,8 +58941,8 @@
     "DollarEach": null
   },
   {
-    "Key": "VLV OPERATOR-48",
-    "EstGrp": "VLV OPERATOR",
+    "Key": "VLVOP-48",
+    "EstGrp": "VLVOP",
     "Size": 48.0,
     "SchRtg": null,
     "Unit": "EA",

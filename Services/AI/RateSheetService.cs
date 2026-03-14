@@ -14,15 +14,12 @@ namespace VANTAGE.Services.AI
         // Component-to-EST_GRP mapping for components that don't match directly
         private static readonly Dictionary<string, string> ComponentToEstGrp = new(StringComparer.OrdinalIgnoreCase)
         {
-            { "BOLT", "HARDWARE" },
-            { "WAS", "HARDWARE" },
+            { "BOLT", "HARD" },
+            { "WAS", "HARD" },
 
             // Special fab record mappings
-            { "SWG", "SWAGE CONC" },
-            { "SAFSHW", "SHOWER" },
-            { "ACT", "OPERATOR" },
-            { "FS", "SUPPT" },
-            { "TUBE", "TUBING" },
+            { "ACT", "OPRTR" },
+            { "FS", "SPT" },
 
             // Valve types → VLV
             { "VBF", "VLV" },
@@ -43,8 +40,6 @@ namespace VANTAGE.Services.AI
             { "VVNT", "VLV" },
             { "VYG", "VLV" },
 
-            // Instrument
-            { "INST", "INSTRUM" },
 
             // Fittings → FTG
             { "45L", "FTG" },
@@ -65,9 +60,9 @@ namespace VANTAGE.Services.AI
             { "NIP", "FTG" },
             { "PIPET", "FTG" },
             { "PLG", "FTG" },
-            { "REDC", "FTG" },
-            { "REDE", "FTG" },
+            { "RED", "FTG" },
             { "REDT", "FTG" },
+            { "SWG", "FTG" },
             { "SOL", "FTG" },
             { "STR", "FTG" },
             { "STUB", "FTG" },
@@ -78,11 +73,6 @@ namespace VANTAGE.Services.AI
             { "WOL", "FTG" }
         };
 
-        // Components that match the rate sheet EST_GRP directly (no mapping needed)
-        private static readonly HashSet<string> DirectMatchComponents = new(StringComparer.OrdinalIgnoreCase)
-        {
-            "BW", "SW", "BU", "THRD", "GRV", "CUT", "GSKT", "PIPE", "BEV", "OLW", "SPL"
-        };
 
         // Lazy-load rate data from embedded resource into a dictionary keyed by GRP_SIZE_RTG
         private static Dictionary<string, (double FldMhu, string Unit)> LoadRates()
@@ -182,13 +172,11 @@ namespace VANTAGE.Services.AI
         {
             if (string.IsNullOrEmpty(component)) return "";
 
-            if (DirectMatchComponents.Contains(component))
-                return component;
-
+            // Use mapping if one exists, otherwise use component name directly
             if (ComponentToEstGrp.TryGetValue(component, out string? estGrp))
                 return estGrp;
 
-            return "";
+            return component;
         }
 
         // Translate our Thickness values to rate sheet SCH_RTG format

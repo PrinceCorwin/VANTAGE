@@ -249,7 +249,7 @@ namespace VANTAGE.Services.AI
                                 claimedFittings.Add(fitting);
                             }
                         }
-                        else if (fittingComponent == "REDC" || fittingComponent == "REDE" || fittingComponent == "SWG")
+                        else if (fittingComponent == "RED" || fittingComponent == "SWG")
                         {
                             // Reducing fittings: parse dual size, only match on larger size
                             string sizeStr = GetString(fitting, "Size");

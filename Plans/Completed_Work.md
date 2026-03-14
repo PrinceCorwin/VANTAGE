@@ -6,10 +6,12 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
-### March 14, 2026 (Takeoff — Component Renaming, Rate Sheet Cleanup, Labor Row Fixes)
+### March 14, 2026 (Takeoff — Rate Sheet Overhaul, Component Renaming, Labor Row Fixes)
+- **Rate sheet key overhaul:** Renamed all 56 EstGrp keys in embedded `RateSheet.json` to short, consistent names with no spaces (e.g., COAT & WRAP FTG→WRAPF, GAUGE GLASS→GGLASS, SPRING SUPPT→SPRING, VLV OPERATOR→VLVOP, SUPPT→SPT, etc.). Eliminated the `DirectMatchComponents` set — `ResolveEstGrp` now uses the component name directly as the rate key, falling back to `ComponentToEstGrp` only for many-to-one mappings (valves→VLV, fittings→FTG, etc.).
 - **Component renaming:** Renamed FSH → PIPE (fab labor for pipe BOM items) and FRH → SPL (spool handling). Component names in generated Excel now reflect what the rows actually represent.
-- **Rate sheet key alignment:** Renamed keys in embedded `RateSheet.json` to match component names directly (BEVEL→BEV, SPOOL→SPL, OLET WLD→OLW). Removed unnecessary translation entries from `ComponentToEstGrp` and added BEV, OLW, SPL, PIPE to `DirectMatchComponents`.
+- **Direct-match components:** INST, SAFSHW, TUBE, PIPE, BEV, OLW, SPL now match rate sheet keys directly — removed their translation entries from `ComponentToEstGrp`.
 - **PIPE quantity fix:** PIPE fab labor rows now preserve the exact decimal quantity from the material BOM (was being truncated to int via `ParseQuantity`). New `ParseExactQuantity` method returns double.
+- **REDC/REDE → RED:** Combined reducer concentric/eccentric into single RED component to match updated AWS agent output. SWG added to FTG mapping.
 - **Labor row descriptions:** Added class rating to all exploded labor row descriptions (connections, BEV, CUT). BU rows now append "BU - One Flange" instead of just "BU". PIPE rows append " - Fab Pipe Handling", SPL rows append " - Spool Handling".
 - **Pipe spec lookup:** Simplified `FindPipeSpec` to match any column containing "spec" (case-insensitive) instead of a hardcoded list of exact names.
 - **Key files:** `Services/AI/TakeoffPostProcessor.cs`, `Services/AI/RateSheetService.cs`, `Resources/RateSheet.json`, `Services/AI/FittingMakeupService.cs`
