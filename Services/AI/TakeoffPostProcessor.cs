@@ -16,6 +16,9 @@ namespace VANTAGE.Services.AI
         // Accumulates missed rate lookups during rate application (reset each run)
         private static List<MissedRate> _missedRates = new();
 
+        // Accumulates material items that had no connections to explode (reset each run)
+        private static List<Dictionary<string, object?>> _noConns = new();
+
         // Columns to exclude from Labor tab (material-only fields)
         private static readonly HashSet<string> ExcludeFromLabor = new(StringComparer.OrdinalIgnoreCase)
         {
@@ -33,7 +36,7 @@ namespace VANTAGE.Services.AI
         // Components to exclude from fitting makeup lookup (non-weldable or not tracked)
         private static readonly HashSet<string> ExcludeFromMakeupLookup = new(StringComparer.OrdinalIgnoreCase)
         {
-            "FS", "GSKT", "BOLT", "WAS", "HEAT", "HOSE", "INST", "PLG", "SAFSHW", "F8B", "DPAN", "ACT", "FLGB", "PIPET"
+            "FS", "GSKT", "BOLT", "WAS", "HEAT", "HOSE", "INST", "NIP", "PLG", "SAFSHW", "F8B", "DPAN", "ACT", "FLGB", "PIPET"
         };
 
         // Main entry point - processes the downloaded Excel file in place
@@ -49,6 +52,7 @@ namespace VANTAGE.Services.AI
                 // Reset missed lookups for this run
                 _missedMakeups = new List<MissedMakeup>();
                 _missedRates = new List<MissedRate>();
+                _noConns = new List<Dictionary<string, object?>>();
 
                 // Step A: Read Material tab
                 var materialRows = ReadMaterialTab(workbook);
@@ -81,7 +85,14 @@ namespace VANTAGE.Services.AI
                     AppLogger.Info($"Logged {_missedRates.Count} missed rate lookups", "TakeoffPostProcessor");
                 }
 
-                // Step I: Reorder tabs
+                // Step I: Write No Conns tab (material items with no connections)
+                if (_noConns.Count > 0)
+                {
+                    WriteNoConnsTab(workbook);
+                    AppLogger.Info($"Logged {_noConns.Count} material items with no connections", "TakeoffPostProcessor");
+                }
+
+                // Step J: Reorder tabs
                 ReorderTabs(workbook);
 
                 // Save
@@ -100,7 +111,7 @@ namespace VANTAGE.Services.AI
         // Reorder tabs: Summary, Material, Labor, Flagged
         private static void ReorderTabs(XLWorkbook workbook)
         {
-            var desiredOrder = new[] { "Summary", "Material", "Labor", "Flagged", "Missed Makeups", "Missed Rates" };
+            var desiredOrder = new[] { "Summary", "Material", "Labor", "Flagged", "Missed Makeups", "Missed Rates", "No Conns" };
             int position = 1;
 
             foreach (var name in desiredOrder)
@@ -401,10 +412,20 @@ namespace VANTAGE.Services.AI
 
             // Connection explosion (all items with connections)
             int connQty = GetInt(mat, "Connection Qty");
-            if (connQty <= 0) return result;
+            if (connQty <= 0)
+            {
+                if (!component.Equals("PIPE", StringComparison.OrdinalIgnoreCase))
+                    _noConns.Add(mat);
+                return result;
+            }
 
             string connTypes = GetString(mat, "Connection Type");
-            if (string.IsNullOrWhiteSpace(connTypes)) return result;
+            if (string.IsNullOrWhiteSpace(connTypes))
+            {
+                if (!component.Equals("PIPE", StringComparison.OrdinalIgnoreCase))
+                    _noConns.Add(mat);
+                return result;
+            }
 
             // Parse connection types (may be comma-separated like "BW, THRD")
             var types = connTypes.Split(',', StringSplitOptions.RemoveEmptyEntries)
@@ -1000,6 +1021,45 @@ namespace VANTAGE.Services.AI
                 ws.Cell(row, 5).Value = m.ClassRating;
                 ws.Cell(row, 6).Value = m.LookupKey;
                 ws.Cell(row, 7).Value = m.Description;
+            }
+
+            ws.Columns().AdjustToContents(1, 100);
+            ws.SheetView.FreezeRows(1);
+        }
+
+        // Write No Conns tab — material items that had no connections to explode
+        private static void WriteNoConnsTab(XLWorkbook workbook)
+        {
+            if (workbook.TryGetWorksheet("No Conns", out _))
+                workbook.Worksheets.Delete("No Conns");
+
+            var ws = workbook.Worksheets.Add("No Conns");
+
+            var columns = new[] { "Drawing Number", "Component", "Size", "Quantity", "Thickness", "Class Rating", "Material", "Connection Qty", "Connection Type", "Raw Description" };
+
+            // Header
+            for (int i = 0; i < columns.Length; i++)
+                ws.Cell(1, i + 1).Value = columns[i];
+
+            var headerRange = ws.Range(1, 1, 1, columns.Length);
+            headerRange.Style.Font.Bold = true;
+            headerRange.Style.Fill.BackgroundColor = XLColor.FromHtml("#D9E2F3");
+
+            // Data rows
+            for (int i = 0; i < _noConns.Count; i++)
+            {
+                var m = _noConns[i];
+                int row = i + 2;
+                ws.Cell(row, 1).Value = GetString(m, "Drawing Number");
+                ws.Cell(row, 2).Value = GetString(m, "Component");
+                ws.Cell(row, 3).Value = GetString(m, "Size");
+                ws.Cell(row, 4).Value = GetString(m, "Quantity");
+                ws.Cell(row, 5).Value = GetString(m, "Thickness");
+                ws.Cell(row, 6).Value = GetString(m, "Class Rating");
+                ws.Cell(row, 7).Value = GetString(m, "Material");
+                ws.Cell(row, 8).Value = GetString(m, "Connection Qty");
+                ws.Cell(row, 9).Value = GetString(m, "Connection Type");
+                ws.Cell(row, 10).Value = GetString(m, "Raw Description");
             }
 
             ws.Columns().AdjustToContents(1, 100);

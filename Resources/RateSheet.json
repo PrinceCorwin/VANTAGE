@@ -39834,15 +39834,6 @@
     "DollarEach": null
   },
   {
-    "Key": "REDF-2:150",
-    "EstGrp": "REDF",
-    "Size": 2.0,
-    "SchRtg": "150",
-    "Unit": "EA",
-    "FldMhu": 0.7,
-    "DollarEach": null
-  },
-  {
     "Key": "SAD-1:3000",
     "EstGrp": "SAD",
     "Size": 1.0,

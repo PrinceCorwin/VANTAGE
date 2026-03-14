@@ -6,6 +6,12 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### March 14, 2026 (Takeoff — Rate Sheet Overhaul, No Conns Tab, Component Cleanup)
+- **No Conns tab:** New Excel tab showing material BOM items that had no connections to explode (connQty <= 0 or empty connection type, excluding PIPE). Columns: Drawing Number, Component, Size, Quantity, Thickness, Class Rating, Material, Connection Qty, Connection Type, Raw Description. Built during existing explosion pass — no extra loop.
+- **NIP added to makeup exclusion list:** NIP was missing from `ExcludeFromMakeupLookup`, inconsistent with PLG which was already excluded.
+- **SWG mapped to FTG:** Swage now looks up rates as a fitting. REDC/REDE combined to RED. FLGR (RED FLG) removed from rate sheet — looked up as FTG.
+- **INSTRUM→INST, SHOWER→SAFSHW, TUBING→TUBE in rate sheet:** These now match component names directly, removing translation entries.
+
 ### March 14, 2026 (Takeoff — Rate Sheet Overhaul, Component Renaming, Labor Row Fixes)
 - **Rate sheet key overhaul:** Renamed all 56 EstGrp keys in embedded `RateSheet.json` to short, consistent names with no spaces (e.g., COAT & WRAP FTG→WRAPF, GAUGE GLASS→GGLASS, SPRING SUPPT→SPRING, VLV OPERATOR→VLVOP, SUPPT→SPT, etc.). Eliminated the `DirectMatchComponents` set — `ResolveEstGrp` now uses the component name directly as the rate key, falling back to `ComponentToEstGrp` only for many-to-one mappings (valves→VLV, fittings→FTG, etc.).
 - **Component renaming:** Renamed FSH → PIPE (fab labor for pipe BOM items) and FRH → SPL (spool handling). Component names in generated Excel now reflect what the rows actually represent.
