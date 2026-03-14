@@ -6,6 +6,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using Syncfusion.SfSkinManager;
+using Syncfusion.UI.Xaml.Grid;
 using VANTAGE.Utilities;
 
 namespace VANTAGE.Dialogs
@@ -173,7 +174,7 @@ namespace VANTAGE.Dialogs
             txtFeedbackCount.Text = $"{_filteredFeedback.Count} item(s)";
         }
 
-        private void CboFilter_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void CboFilter_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
             if (_allFeedback != null)
             {
@@ -181,7 +182,7 @@ namespace VANTAGE.Dialogs
             }
         }
 
-        private void LvFeedback_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void LvFeedback_SelectionChanged(object sender, GridSelectionChangedEventArgs e)
         {
             _selectedFeedback = lvFeedback.SelectedItem as FeedbackItem;
 
@@ -399,7 +400,6 @@ namespace VANTAGE.Dialogs
                 }
 
                 ApplyFilters();
-                lvFeedback.Items.Refresh();
                 ClearForm();
 
                 // Update local database

@@ -1,6 +1,7 @@
 <Window x:Class="VANTAGE.Dialogs.FeedbackDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
         Title="Feedback Board"
         Height="673"
         Width="1098"
@@ -81,40 +82,47 @@
                           Unchecked="ChkShowDeleted_Changed"/>
             </StackPanel>
 
-            <Border Grid.Row="4"
-                    Background="{DynamicResource ControlBackground}"
-                    BorderBrush="{DynamicResource BorderColor}"
-                    BorderThickness="1"
-                    CornerRadius="4">
-                <Grid>
-                    <ListView x:Name="lvFeedback"
-                              Background="Transparent"
-                              BorderThickness="0"
-                              Foreground="{DynamicResource ForegroundColor}"
-                              SelectionMode="Single"
-                              SelectionChanged="LvFeedback_SelectionChanged">
-                        <ListView.View>
-                            <GridView>
-                                <GridViewColumn Header="Type" Width="70" DisplayMemberBinding="{Binding Type}"/>
-                                <GridViewColumn Header="Title" Width="200" DisplayMemberBinding="{Binding Title}"/>
-                                <GridViewColumn Header="Status" Width="90" DisplayMemberBinding="{Binding StatusDisplay}"/>
-                                <GridViewColumn Header="Notes" Width="150" DisplayMemberBinding="{Binding Notes}"/>
-                                <GridViewColumn Header="Created By" Width="100" DisplayMemberBinding="{Binding CreatedBy}"/>
-                                <GridViewColumn Header="Date" Width="90" DisplayMemberBinding="{Binding CreatedDateDisplay}"/>
-                            </GridView>
-                        </ListView.View>
-                    </ListView>
+            <Grid Grid.Row="4">
+                <syncfusion:SfDataGrid x:Name="lvFeedback"
+                                       AutoGenerateColumns="False"
+                                       AllowSorting="True"
+                                       AllowFiltering="True"
+                                       AllowResizingColumns="True"
+                                       AllowDraggingColumns="True"
+                                       IsReadOnly="True"
+                                       SelectionMode="Single"
+                                       NavigationMode="Row"
+                                       ColumnSizer="Star"
+                                       HeaderRowHeight="32"
+                                       RowHeight="28"
+                                       GridLinesVisibility="Both"
+                                       HeaderLinesVisibility="Both"
+                                       SelectionChanged="LvFeedback_SelectionChanged">
+                    <syncfusion:SfDataGrid.HeaderStyle>
+                        <Style TargetType="syncfusion:GridHeaderCellControl">
+                            <Setter Property="Background" Value="{DynamicResource GridHeaderBackground}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource GridHeaderForeground}"/>
+                        </Style>
+                    </syncfusion:SfDataGrid.HeaderStyle>
+                    <syncfusion:SfDataGrid.Columns>
+                        <syncfusion:GridTextColumn MappingName="Type" HeaderText="Type" Width="80"/>
+                        <syncfusion:GridTextColumn MappingName="Title" HeaderText="Title" Width="200"/>
+                        <syncfusion:GridTextColumn MappingName="StatusDisplay" HeaderText="Status" Width="100"/>
+                        <syncfusion:GridTextColumn MappingName="Notes" HeaderText="Notes" Width="150"/>
+                        <syncfusion:GridTextColumn MappingName="CreatedBy" HeaderText="Created By" Width="110"/>
+                        <syncfusion:GridTextColumn MappingName="CreatedDateDisplay" HeaderText="Date" Width="100"/>
+                    </syncfusion:SfDataGrid.Columns>
+                </syncfusion:SfDataGrid>
 
-                    <StackPanel x:Name="pnlLoading"
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center"
-                                Visibility="Collapsed">
-                        <TextBlock Text="Loading feedback..."
-                                   Foreground="{DynamicResource ForegroundColor}"
-                                   Opacity="0.6"/>
-                    </StackPanel>
-                </Grid>
-            </Border>
+                <StackPanel x:Name="pnlLoading"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Visibility="Collapsed">
+                    <TextBlock Text="Loading feedback..."
+                               Foreground="{DynamicResource ForegroundColor}"
+                               Opacity="0.6"/>
+                </StackPanel>
+            </Grid>
 
             <TextBlock x:Name="txtFeedbackCount"
                        Grid.Row="5"

@@ -213,6 +213,13 @@
                                                 EnableOKCancel="False"
                                                 SelectionChanged="CmbProjects_SelectionChanged"
                                                 ToolTip="Select projects to include in analysis"/>
+
+                        <Rectangle Width="1" Fill="{DynamicResource ControlBorder}" Margin="12,2"/>
+
+                        <Button Content="Export"
+                                Click="BtnExport_Click"
+                                Padding="8,2"
+                                ToolTip="Export current grid data to Excel"/>
                     </StackPanel>
 
                     <!-- Summary Grid -->

@@ -6,6 +6,12 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### March 13, 2026 (Analysis Export, Feedback Grid Upgrade, Takeoff Settings)
+- **Analysis summary grid Export button:** Added an Export button to the AnalysisView summary grid filter bar. Exports the current filtered grid contents to Excel via ClosedXML with styled headers and auto-fit columns. Default filename includes the Group By field and timestamp.
+- **Feedback Board sorting & filtering:** Replaced the standard WPF ListView in `FeedbackDialog` with a Syncfusion `SfDataGrid`. All columns (Type, Title, Status, Notes, Created By, Date) now support column header sorting and filtering, matching the rest of the app's grid behavior.
+- **Takeoff "Send Missed to Admin" persistence:** The checkbox state is now saved to UserSettings (`TakeoffSendMissedToAdmin`) and restored on load. Defaults to checked for users who haven't toggled it. Event handlers wired after restore to prevent the XAML default from overwriting saved state.
+- **Key files:** `Views/AnalysisView.xaml`, `Views/AnalysisView.xaml.cs`, `Dialogs/FeedbackDialog.xaml`, `Dialogs/FeedbackDialog.xaml.cs`, `Views/TakeoffView.xaml`, `Views/TakeoffView.xaml.cs`
+
 ### March 13, 2026 (Takeoff — Project Rates, ROC Rates, & Rate/ROC Dropdowns)
 - **Per-project unit rate overrides:** New `VMS_ProjectRates` Azure table allows uploading project-specific rate sheets from Excel. Multiple named rate sets per project. Rates are looked up before the embedded default rate sheet — fallback to defaults for unmatched entries. `RateSource` column on Labor tab shows "Project" or "Default" for each row.
 - **UOM column on Labor tab:** Rate lookups now write the Unit of Measure (UOM) alongside BudgetMHs.

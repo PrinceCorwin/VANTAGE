@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
+using ClosedXML.Excel;
 using Syncfusion.SfSkinManager;
 using VANTAGE.Data;
 using VANTAGE.Models;
@@ -341,6 +343,86 @@ namespace VANTAGE.Views
         {
             if (_isInitializing) return;
             LoadSummaryData();
+        }
+
+        // Export current filtered grid contents to Excel
+        private void BtnExport_Click(object sender, RoutedEventArgs e)
+        {
+            var rows = summaryGrid.ItemsSource as List<AnalysisSummaryRow>;
+            if (rows == null || rows.Count == 0)
+            {
+                MessageBox.Show("No data to export.", "Export", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            // Get visible (filtered) records from the grid view
+            var visibleRows = summaryGrid.View?.Records?
+                .Select(r => r.Data as AnalysisSummaryRow)
+                .Where(r => r != null)
+                .ToList();
+
+            if (visibleRows == null || visibleRows.Count == 0)
+            {
+                MessageBox.Show("No data to export.", "Export", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var groupField = cmbGroupBy.SelectedItem?.ToString() ?? "Group";
+            var dialog = new Microsoft.Win32.SaveFileDialog
+            {
+                Filter = "Excel Files|*.xlsx",
+                FileName = $"Analysis_{groupField}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
+                DefaultExt = ".xlsx"
+            };
+
+            if (dialog.ShowDialog() != true) return;
+
+            try
+            {
+                using var workbook = new XLWorkbook();
+                var ws = workbook.Worksheets.Add("Analysis Summary");
+
+                // Headers
+                var headers = new[] { groupField, "BudgetMHs", "EarnedMHs", "Quantity", "QtyEarned", "% Complete" };
+                for (int c = 0; c < headers.Length; c++)
+                {
+                    var cell = ws.Cell(1, c + 1);
+                    cell.Value = headers[c];
+                    cell.Style.Font.Bold = true;
+                    cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#2D2D30");
+                    cell.Style.Font.FontColor = XLColor.White;
+                }
+
+                // Data rows
+                for (int r = 0; r < visibleRows.Count; r++)
+                {
+                    var row = visibleRows[r]!;
+                    int rowNum = r + 2;
+                    ws.Cell(rowNum, 1).Value = row.GroupValue;
+                    ws.Cell(rowNum, 2).Value = row.BudgetMHs;
+                    ws.Cell(rowNum, 3).Value = row.EarnedMHs;
+                    ws.Cell(rowNum, 4).Value = row.Quantity;
+                    ws.Cell(rowNum, 5).Value = row.QtyEarned;
+                    ws.Cell(rowNum, 6).Value = row.PercentComplete;
+                }
+
+                ws.Columns().AdjustToContents();
+                workbook.SaveAs(dialog.FileName);
+
+                MessageBox.Show($"Exported {visibleRows.Count} rows to Excel.", "Export Complete",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (IOException)
+            {
+                MessageBox.Show("Cannot save — the file may be open in another application.", "Export Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "AnalysisView.BtnExport_Click");
+                MessageBox.Show($"Export failed: {ex.Message}", "Export Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
     }
 }

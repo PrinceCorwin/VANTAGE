@@ -1,6 +1,6 @@
 # MILESTONE - Project Status
 
-**Last Updated:** March 12, 2026
+**Last Updated:** March 13, 2026
 
 ## V1 Testing Scope
 
@@ -29,7 +29,7 @@
 |--------|--------|-------|
 | Progress | READY FOR TESTING | Core features complete |
 | Schedule | READY FOR TESTING | Core features complete |
-| Analysis | IN PROGRESS | Initial 4x2 grid layout with summary metrics in section (2,2) |
+| Analysis | IN PROGRESS | 4x2 grid layout with summary metrics, Excel export |
 | Sync | COMPLETE | Bidirectional sync working |
 | Admin | COMPLETE | User/project/snapshot management |
 | Work Package | READY FOR TESTING | PDF generation working; Drawings deferred to post-v1 |
