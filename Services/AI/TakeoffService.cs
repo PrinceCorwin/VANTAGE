@@ -470,6 +470,33 @@ namespace VANTAGE.Services.AI
             return batches;
         }
 
+        // Delete a batch folder and all its contents from S3
+        public async Task DeleteBatchAsync(string batchId, CancellationToken cancellationToken = default)
+        {
+            string prefix = $"batches/{batchId}/";
+
+            // List all objects under this batch prefix
+            var listRequest = new ListObjectsV2Request
+            {
+                BucketName = CredentialService.TakeoffProcessingBucket,
+                Prefix = prefix
+            };
+
+            var response = await _s3Client.ListObjectsV2Async(listRequest, cancellationToken);
+            var objects = response.S3Objects;
+            if (objects == null || objects.Count == 0) return;
+
+            // Delete all objects in the batch folder
+            foreach (var obj in objects)
+            {
+                await _s3Client.DeleteObjectAsync(
+                    CredentialService.TakeoffProcessingBucket, obj.Key, cancellationToken);
+            }
+
+            AppLogger.Info($"Deleted batch {batchId} ({objects.Count} objects)",
+                "TakeoffService.DeleteBatchAsync", App.CurrentUser?.Username);
+        }
+
         // Download a drawing from S3 to a temp file, returns local path
         public async Task<string> DownloadDrawingToTempAsync(
             string s3Key,

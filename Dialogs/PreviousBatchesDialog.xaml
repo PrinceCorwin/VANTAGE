@@ -124,36 +124,73 @@
                    TextWrapping="Wrap"/>
 
         <!-- Buttons -->
-        <StackPanel Grid.Row="6"
-                    Orientation="Horizontal"
-                    HorizontalAlignment="Right">
-            <Button Style="{StaticResource SidebarButtonStyle}"
-                    Content="Cancel"
-                    Height="30"
-                    Padding="20,0"
-                    Margin="0,0,10,0"
-                    FontSize="12"
-                    Background="{DynamicResource StatusInProgressBgBtn}"
-                    Foreground="{DynamicResource StatusInProgressFgBtn}"
-                    BorderBrush="{DynamicResource SidebarButtonBorder}"
-                    BorderThickness="1"
-                    HorizontalContentAlignment="Center"
-                    IsCancel="True"
-                    ToolTip="Close without downloading"/>
-            <Button x:Name="btnDownload"
-                    Style="{StaticResource SidebarButtonStyle}"
-                    Content="Download Excel"
-                    Height="30"
-                    Padding="20,0"
-                    FontSize="12"
-                    Background="{DynamicResource StatusGreenBgBtn}"
-                    Foreground="{DynamicResource StatusGreenFgBtn}"
-                    BorderBrush="{DynamicResource SidebarButtonBorder}"
-                    BorderThickness="1"
-                    HorizontalContentAlignment="Center"
-                    IsEnabled="False"
-                    Click="BtnDownload_Click"
-                    ToolTip="Download the selected batch's takeoff Excel"/>
-        </StackPanel>
+        <Grid Grid.Row="6">
+            <!-- Admin delete buttons (left) -->
+            <StackPanel x:Name="pnlAdminButtons"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Left"
+                        Visibility="Collapsed">
+                <Button x:Name="btnDeleteSelected"
+                        Style="{StaticResource SidebarButtonStyle}"
+                        Content="Delete Selected"
+                        Height="30"
+                        Padding="20,0"
+                        Margin="0,0,10,0"
+                        FontSize="12"
+                        Background="{DynamicResource StatusRedBgBtn}"
+                        Foreground="{DynamicResource StatusRedFgBtn}"
+                        BorderBrush="{DynamicResource SidebarButtonBorder}"
+                        BorderThickness="1"
+                        HorizontalContentAlignment="Center"
+                        IsEnabled="False"
+                        Click="BtnDeleteSelected_Click"
+                        ToolTip="Delete the selected batch from AWS"/>
+                <Button x:Name="btnDeleteAll"
+                        Style="{StaticResource SidebarButtonStyle}"
+                        Content="Delete All"
+                        Height="30"
+                        Padding="20,0"
+                        FontSize="12"
+                        Background="{DynamicResource StatusRedBgBtn}"
+                        Foreground="{DynamicResource StatusRedFgBtn}"
+                        BorderBrush="{DynamicResource SidebarButtonBorder}"
+                        BorderThickness="1"
+                        HorizontalContentAlignment="Center"
+                        Click="BtnDeleteAll_Click"
+                        ToolTip="Delete all batches from AWS"/>
+            </StackPanel>
+
+            <!-- Download/Cancel buttons (right) -->
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Right">
+                <Button Style="{StaticResource SidebarButtonStyle}"
+                        Content="Cancel"
+                        Height="30"
+                        Padding="20,0"
+                        Margin="0,0,10,0"
+                        FontSize="12"
+                        Background="{DynamicResource StatusInProgressBgBtn}"
+                        Foreground="{DynamicResource StatusInProgressFgBtn}"
+                        BorderBrush="{DynamicResource SidebarButtonBorder}"
+                        BorderThickness="1"
+                        HorizontalContentAlignment="Center"
+                        IsCancel="True"
+                        ToolTip="Close without downloading"/>
+                <Button x:Name="btnDownload"
+                        Style="{StaticResource SidebarButtonStyle}"
+                        Content="Download Excel"
+                        Height="30"
+                        Padding="20,0"
+                        FontSize="12"
+                        Background="{DynamicResource StatusGreenBgBtn}"
+                        Foreground="{DynamicResource StatusGreenFgBtn}"
+                        BorderBrush="{DynamicResource SidebarButtonBorder}"
+                        BorderThickness="1"
+                        HorizontalContentAlignment="Center"
+                        IsEnabled="False"
+                        Click="BtnDownload_Click"
+                        ToolTip="Download the selected batch's takeoff Excel"/>
+            </StackPanel>
+        </Grid>
     </Grid>
 </Window>

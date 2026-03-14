@@ -132,7 +132,7 @@
   1. Fabrication item generation — CUT/BEV rows, connection rows, BOM fab records, PIPE/SPL records, ROCStep column complete. Fitting makeup lookup complete with olet support (WOL/SOL/TOL/ELB/LOL/NOL), class as string, Thickness fallback for olets. Missed Makeups tab has Reason column (No Makeup Found / Unclaimed). No Conns tab shows material items with no connections.
   2. **Rate application** — Core implementation complete. Rate sheet keys shortened to match component names directly. Per-project rate overrides with management dialog, upload from Excel, RateSource column. Admin email notification for missed data.
   3. **ROC splits** — VMS_ROCRates table and admin dialog complete. ROC set dropdown on TakeoffView complete. Post-processing logic to apply ROC percentage splits NOT yet implemented.
-  4. VANTAGE tab — Column rename for direct import into Activities
+  4. VANTAGE tab — Column rename for direct import into Activities. Optional "Rollup Labor" mode: creates one FAB row per drawing (component=FAB, description="Fabrication of DWG# - {Drawing Number}") that sums all ShopField=1 labor MHs. FAB row gets split by selected ROC percentages (or stays as-is if no ROC profile selected). UI location for the rollup option TBD.
 
 
 ### Medium Priority

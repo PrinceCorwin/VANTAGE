@@ -6,6 +6,11 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### March 14, 2026 (Remember Last View, Previous Batches Admin Delete)
+- **Remember last view on startup:** App now saves the last visited nav view (Progress, Schedule, Prog Books, Work Pkgs, Analysis, Takeoffs) to UserSettings via `HighlightNavigationButton`. On startup, `LoadInitialModule` restores the saved view. Defaults to Progress if no setting exists. Takeoff falls back to Progress if user no longer has access. Fixed `Loaded` event overriding the restored highlight by using `_activeNavButton ?? btnProgress`.
+- **Previous Batches — admin delete:** Delete Selected and Delete All buttons added to `PreviousBatchesDialog`, visible only to admins (`AzureDbManager.IsUserAdmin`). Confirmation dialogs before deletion. `TakeoffService.DeleteBatchAsync` lists all S3 objects under `batches/{batchId}/` and deletes them. Progress status shown during Delete All. Requires `s3:DeleteObject` on the processing bucket (IAM policy updated).
+- **Key files:** `MainWindow.xaml.cs`, `Dialogs/PreviousBatchesDialog.xaml`, `Dialogs/PreviousBatchesDialog.xaml.cs`, `Services/AI/TakeoffService.cs`
+
 ### March 14, 2026 (Takeoff — Rate Sheet Overhaul, No Conns Tab, Component Cleanup)
 - **No Conns tab:** New Excel tab showing material BOM items that had no connections to explode (connQty <= 0 or empty connection type, excluding PIPE). Also includes NIP and PLG items. Columns: Drawing Number, Component, Size, Quantity, Thickness, Class Rating, Material, Connection Qty, Connection Type, Raw Description. Built during existing explosion pass — no extra loop.
 - **Missed Makeups — Excluded items now visible:** Items in `ExcludeFromMakeupLookup` (NIP, PLG, BOLT, GSKT, etc.) now appear on the Missed Makeups tab with reason "Excluded" instead of being silently skipped. Helps users understand what is and isn't included in SPL fitting makeup calculations.

@@ -1,6 +1,8 @@
 using System.Windows;
 using System.Windows.Controls;
+using VANTAGE.Data;
 using VANTAGE.Services.AI;
+using VANTAGE.Utilities;
 
 namespace VANTAGE.Dialogs
 {
@@ -38,14 +40,20 @@ namespace VANTAGE.Dialogs
 
             lstBatches.ItemsSource = items;
             txtStatus.Text = $"{batches.Count} batch(es) found.";
+
+            // Show delete buttons for admins
+            if (App.CurrentUser != null && AzureDbManager.IsUserAdmin(App.CurrentUser.Username))
+            {
+                pnlAdminButtons.Visibility = Visibility.Visible;
+                btnDeleteAll.IsEnabled = items.Count > 0;
+            }
         }
 
         private void LstBatches_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (lstBatches.SelectedItem is BatchDisplayItem item)
-                btnDownload.IsEnabled = item.IsComplete;
-            else
-                btnDownload.IsEnabled = false;
+            bool hasSelection = lstBatches.SelectedItem is BatchDisplayItem item;
+            btnDownload.IsEnabled = hasSelection && ((BatchDisplayItem)lstBatches.SelectedItem!).IsComplete;
+            btnDeleteSelected.IsEnabled = hasSelection;
         }
 
         private void LstBatches_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
@@ -66,6 +74,94 @@ namespace VANTAGE.Dialogs
                 DialogResult = true;
                 Close();
             }
+        }
+
+        private async void BtnDeleteSelected_Click(object sender, RoutedEventArgs e)
+        {
+            if (lstBatches.SelectedItem is not BatchDisplayItem item) return;
+
+            var result = MessageBox.Show(
+                $"Delete batch '{item.ConfigName}' from {item.DateDisplay}?\n\nThis cannot be undone.",
+                "Delete Batch", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+
+            if (result != MessageBoxResult.Yes) return;
+
+            try
+            {
+                SetButtonsEnabled(false);
+                txtStatus.Text = "Deleting batch...";
+
+                using var service = new TakeoffService();
+                await service.DeleteBatchAsync(item.BatchId);
+
+                // Remove from list
+                var items = (List<BatchDisplayItem>)lstBatches.ItemsSource;
+                items.Remove(item);
+                lstBatches.ItemsSource = null;
+                lstBatches.ItemsSource = items;
+                txtStatus.Text = $"{items.Count} batch(es) found.";
+                btnDeleteAll.IsEnabled = items.Count > 0;
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "PreviousBatchesDialog.BtnDeleteSelected_Click");
+                txtStatus.Text = $"Delete failed: {ex.Message}";
+            }
+            finally
+            {
+                SetButtonsEnabled(true);
+                btnDeleteSelected.IsEnabled = lstBatches.SelectedItem != null;
+            }
+        }
+
+        private async void BtnDeleteAll_Click(object sender, RoutedEventArgs e)
+        {
+            var items = lstBatches.ItemsSource as List<BatchDisplayItem>;
+            if (items == null || items.Count == 0) return;
+
+            var result = MessageBox.Show(
+                $"Delete ALL {items.Count} batches?\n\nThis cannot be undone.",
+                "Delete All Batches", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+
+            if (result != MessageBoxResult.Yes) return;
+
+            try
+            {
+                SetButtonsEnabled(false);
+
+                using var service = new TakeoffService();
+                int total = items.Count;
+
+                for (int i = 0; i < total; i++)
+                {
+                    txtStatus.Text = $"Deleting batch {i + 1} of {total}...";
+                    await service.DeleteBatchAsync(items[i].BatchId);
+                }
+
+                items.Clear();
+                lstBatches.ItemsSource = null;
+                lstBatches.ItemsSource = items;
+                txtStatus.Text = "All batches deleted.";
+                btnDeleteAll.IsEnabled = false;
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "PreviousBatchesDialog.BtnDeleteAll_Click");
+                txtStatus.Text = $"Delete failed: {ex.Message}";
+            }
+            finally
+            {
+                SetButtonsEnabled(true);
+                btnDeleteSelected.IsEnabled = lstBatches.SelectedItem != null;
+            }
+        }
+
+        // Enable/disable all action buttons during async operations
+        private void SetButtonsEnabled(bool enabled)
+        {
+            btnDownload.IsEnabled = enabled && lstBatches.SelectedItem is BatchDisplayItem { IsComplete: true };
+            btnDeleteSelected.IsEnabled = enabled && lstBatches.SelectedItem != null;
+            btnDeleteAll.IsEnabled = enabled && lstBatches.Items.Count > 0;
         }
     }
 }

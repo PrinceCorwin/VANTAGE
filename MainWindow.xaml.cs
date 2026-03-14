@@ -39,7 +39,7 @@ namespace VANTAGE
 
             this.Loaded += (s, e) =>
             {
-                HighlightNavigationButton(btnProgress);
+                HighlightNavigationButton(_activeNavButton ?? btnProgress);
 
                 // Force taskbar icon refresh (fixes first-run icon not showing)
                 var iconPath = new Uri("pack://application:,,,/images/AppIcon.ico", UriKind.Absolute);
@@ -313,9 +313,6 @@ namespace VANTAGE
             var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
             txtAppVersion.Text = $"VANTAGE: Milestone v{version?.Major}.{version?.Minor}.{version?.Build}";
 
-            // Load PROGRESS module by default
-            LoadProgressModule();
-
             // Hide ADMIN button if not admin (checked against Azure)
             if (App.CurrentUser == null || !App.CurrentUser.IsAdmin)
             {
@@ -328,6 +325,33 @@ namespace VANTAGE
             if (App.CurrentUser == null || !IsTakeoffAllowed())
             {
                 btnTakeoff.Visibility = Visibility.Collapsed;
+            }
+
+            // Restore last visited view (default to Progress)
+            string lastView = SettingsManager.GetUserSetting("LastView", "Progress");
+            switch (lastView)
+            {
+                case "Schedule":
+                    BtnSchedule_Click(this, new RoutedEventArgs());
+                    break;
+                case "ProgBooks":
+                    BtnPbook_Click(this, new RoutedEventArgs());
+                    break;
+                case "WorkPkgs":
+                    BtnWorkPackage_Click(this, new RoutedEventArgs());
+                    break;
+                case "Analysis":
+                    BtnAnalysis_Click(this, new RoutedEventArgs());
+                    break;
+                case "Takeoffs":
+                    if (IsTakeoffAllowed())
+                        BtnTakeoff_Click(this, new RoutedEventArgs());
+                    else
+                        LoadProgressModule();
+                    break;
+                default:
+                    LoadProgressModule();
+                    break;
             }
         }
 
@@ -345,6 +369,16 @@ namespace VANTAGE
         private void HighlightNavigationButton(Button activeButton)
         {
             _activeNavButton = activeButton;
+
+            // Save last visited view
+            string viewName = activeButton == btnProgress ? "Progress"
+                : activeButton == btnSchedule ? "Schedule"
+                : activeButton == btnPbook ? "ProgBooks"
+                : activeButton == btnWorkPackage ? "WorkPkgs"
+                : activeButton == btnAnalysis ? "Analysis"
+                : activeButton == btnTakeoff ? "Takeoffs"
+                : "Progress";
+            SettingsManager.SetUserSetting("LastView", viewName);
 
             // Reset all navigation buttons to toolbar foreground
             borderProgress.Background = System.Windows.Media.Brushes.Transparent;
