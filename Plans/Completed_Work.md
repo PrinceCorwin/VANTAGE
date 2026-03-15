@@ -6,6 +6,15 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### March 15, 2026 (Import Takeoff Manager, ROC Set Manager Redesign, Batch Naming)
+- **Import from AI Takeoff dialog:** New modal dialog (`ImportTakeoffDialog`) opened from File menu (replaces "Create Activities" placeholder). Source selection via "From File" (`.xlsx` picker) or "From Batch" (new `SelectBatchDialog` — simplified batch list with OK/Cancel, no download/delete). ROC Set dropdown with "+ Create New..." opens ROC Set Manager. Import and Cancel buttons (Import is placeholder, Cancel closes).
+- **ROC Set Manager redesigned:** Two-mode UI — **View mode** shows single "ProjectID - SetName" dropdown with read-only grid, New Set/Modify/Delete Set buttons. **Edit mode** shows project dropdown + set name textbox with editable grid, Add Row/Delete Row/Save/Cancel buttons. Save handles renames via transaction (deletes original if project/name changed). Close warns about unsaved changes in edit mode. Admin gating removed — all users can manage sets.
+- **Batch naming:** New "Batch Name" field above Config dropdown in TakeoffView. Custom names get timestamp appended (`{name}-yyyyMMdd-HHmmss`). Default changed from `vantage-` to `AwsDwgTakeoff-` prefix. `batchName` stored in S3 metadata.json. New "Name" column in both PreviousBatchesDialog and SelectBatchDialog (falls back to batch ID for legacy batches).
+- **ROC Set removed from TakeoffView:** `cboROCSet` dropdown, `LoadROCSetsAsync()`, `CboROCSet_SelectionChanged`, and `_rocSets` field removed. ROC set selection now lives in ImportTakeoffDialog.
+- **Admin menu cleanup:** Removed "ROC Rates" item from Admin menu and `MenuROCRates_Click` handler.
+- **Fallback date parsing improved:** `ListBatchesAsync` now extracts timestamp from last 15 chars of batch ID, supporting any prefix (legacy `vantage-`, new `AwsDwgTakeoff-`, or custom names).
+- **Key files:** `Dialogs/ImportTakeoffDialog.xaml/.cs` (new), `Dialogs/SelectBatchDialog.xaml/.cs` (new), `Dialogs/ManageROCRatesDialog.xaml/.cs` (rewritten), `Views/TakeoffView.xaml/.cs`, `MainWindow.xaml/.cs`, `Services/AI/TakeoffService.cs`, `Dialogs/PreviousBatchesDialog.xaml/.cs`
+
 ### March 14, 2026 (Takeoff — OLW/SW Rate Sheet Entries, Class Rating Tier Fallback)
 - **OLW size 2 rate entries added:** Added 5 new entries to `RateSheet.json` for OLW size 2 (40, 80, 160, STD, XXS). Updated existing XS entry (FldMhu 6.4→4.8, Unit null→EA).
 - **Class rating tier fallback for OLW and SW:** When a rate lookup fails for OLW or SW components, the system now tries equivalent class ratings from the same tier before reporting a miss. Tiers: 40/S40/STD/2000, 80/S80/XS/3000, 160/S160/XXS/6000/9000. Applies to both default and project-override rate lookups.

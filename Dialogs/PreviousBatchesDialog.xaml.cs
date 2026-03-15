@@ -10,6 +10,7 @@ namespace VANTAGE.Dialogs
     public class BatchDisplayItem
     {
         public string BatchId { get; set; } = string.Empty;
+        public string BatchName { get; set; } = "—";
         public string ConfigName { get; set; } = "—";
         public string DateDisplay { get; set; } = "Unknown";
         public string DrawingDisplay { get; set; } = "—";
@@ -30,6 +31,7 @@ namespace VANTAGE.Dialogs
             var items = batches.Select(b => new BatchDisplayItem
             {
                 BatchId = b.BatchId,
+                BatchName = b.BatchName ?? b.BatchId,
                 ConfigName = b.ConfigName ?? "—",
                 DateDisplay = b.SubmittedAt?.ToString("MMM d, yyyy h:mm tt") ?? "Unknown",
                 DrawingDisplay = b.DrawingCount.HasValue ? b.DrawingCount.ToString()! : "—",

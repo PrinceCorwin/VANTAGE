@@ -24,7 +24,6 @@ namespace VANTAGE.Views
 
         // Dropdown data for unit rates and ROC sets
         private List<(string ProjectID, string SetName)> _rateSets = new();
-        private List<(string ProjectID, string SetName)> _rocSets = new();
         private bool _isLoadingRateDropdowns;
 
         public TakeoffView()
@@ -43,7 +42,6 @@ namespace VANTAGE.Views
 
             await LoadConfigsAsync();
             await LoadRateOptionsAsync();
-            await LoadROCSetsAsync();
         }
 
         private async System.Threading.Tasks.Task LoadConfigsAsync()
@@ -126,7 +124,12 @@ namespace VANTAGE.Views
             }
 
             string configKey = _configs[configIndex].Key;
-            _currentBatchId = $"vantage-{DateTime.UtcNow:yyyyMMdd-HHmmss}";
+            string timestamp = DateTime.UtcNow.ToString("yyyyMMdd-HHmmss");
+            string? customName = txtBatchName.Text?.Trim();
+            if (string.IsNullOrEmpty(customName))
+                _currentBatchId = $"AwsDwgTakeoff-{timestamp}";
+            else
+                _currentBatchId = $"{customName}-{timestamp}";
 
             btnProcess.IsEnabled = false;
             btnSelectFiles.IsEnabled = false;
@@ -150,7 +153,7 @@ namespace VANTAGE.Views
                 // Write metadata for Previous Batches listing
                 string username = App.CurrentUser?.Username ?? "Unknown";
                 string configName = _configs[configIndex].DisplayName;
-                await _service.WriteMetadataAsync(_currentBatchId, _selectedFiles.Count, username, configName);
+                await _service.WriteMetadataAsync(_currentBatchId, _selectedFiles.Count, username, configName, _currentBatchId);
 
                 // Start execution
                 SetStatus("Starting AI extraction...");
@@ -491,34 +494,6 @@ namespace VANTAGE.Views
             }
         }
 
-        // Load distinct (ProjectID, SetName) from VMS_ROCRates for ROC set dropdown
-        private async System.Threading.Tasks.Task LoadROCSetsAsync()
-        {
-            try
-            {
-                _isLoadingRateDropdowns = true;
-                _rocSets = await ProjectRateRepository.GetROCSetsAsync();
-
-                cboROCSet.Items.Clear();
-                cboROCSet.Items.Add("+ Create New...");
-                cboROCSet.Items.Add("None");
-                foreach (var (projectId, setName) in _rocSets)
-                    cboROCSet.Items.Add($"{projectId} / {setName}");
-                cboROCSet.SelectedIndex = 1;
-            }
-            catch (Exception ex)
-            {
-                AppLogger.Error(ex, "TakeoffView.LoadROCSetsAsync");
-                cboROCSet.Items.Clear();
-                cboROCSet.Items.Add("+ Create New...");
-                cboROCSet.Items.Add("None");
-                cboROCSet.SelectedIndex = 1;
-            }
-            finally
-            {
-                _isLoadingRateDropdowns = false;
-            }
-        }
 
         // Handle "Upload New..." selection in unit rates dropdown — opens the management dialog
         private async void CboUnitRates_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -532,17 +507,6 @@ namespace VANTAGE.Views
             await LoadRateOptionsAsync();
         }
 
-        // Handle "Create New..." selection in ROC set dropdown
-        private void CboROCSet_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (_isLoadingRateDropdowns || cboROCSet.SelectedIndex != 0) return;
-
-            var dialog = new ManageROCRatesDialog();
-            dialog.Owner = Window.GetWindow(this);
-            dialog.ShowDialog();
-
-            _ = LoadROCSetsAsync();
-        }
 
         // Get selected project rate cache (null = use defaults)
         // Index 0 = "Upload New...", Index 1 = "Default (Embedded)", 2+ = project sets

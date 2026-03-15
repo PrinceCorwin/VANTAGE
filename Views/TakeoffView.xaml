@@ -50,6 +50,8 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="12"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="12"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="80"/>
@@ -58,20 +60,37 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <!-- Config Selection -->
+                    <!-- Batch Name -->
                     <TextBlock Grid.Row="0" Grid.Column="0"
+                               Text="Batch Name:"
+                               FontSize="13"
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center"/>
+                    <TextBox x:Name="txtBatchName"
+                             Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3"
+                             Height="28"
+                             FontSize="12"
+                             VerticalContentAlignment="Center"
+                             Padding="4,0"
+                             Background="{DynamicResource ControlBackground}"
+                             Foreground="{DynamicResource ForegroundColor}"
+                             BorderBrush="{DynamicResource BorderColor}"
+                             ToolTip="Optional batch name — leave blank for auto-generated name"/>
+
+                    <!-- Config Selection -->
+                    <TextBlock Grid.Row="2" Grid.Column="0"
                                Text="Config:"
                                FontSize="13"
                                FontWeight="SemiBold"
                                VerticalAlignment="Center"/>
                     <syncfusion:ComboBoxAdv x:Name="cboConfig"
-                              Grid.Row="0" Grid.Column="1"
+                              Grid.Row="2" Grid.Column="1"
                               Height="28"
                               FontSize="12"
                               SelectionChanged="CboConfig_SelectionChanged"
                               ToolTip="Select the crop region config for this batch"/>
                     <Button x:Name="btnEditConfig"
-                            Grid.Row="0" Grid.Column="2"
+                            Grid.Row="2" Grid.Column="2"
                             Content="Edit"
                             Width="90"
                             Height="28"
@@ -91,7 +110,7 @@
                         </Button.Effect>
                     </Button>
                     <Button x:Name="btnRefreshConfigs"
-                            Grid.Row="0" Grid.Column="3"
+                            Grid.Row="2" Grid.Column="3"
                             Content="Refresh"
                             Width="70"
                             Height="28"
@@ -111,19 +130,19 @@
                     </Button>
 
                     <!-- Drawing Files -->
-                    <TextBlock Grid.Row="2" Grid.Column="0"
+                    <TextBlock Grid.Row="4" Grid.Column="0"
                                Text="Drawings:"
                                FontSize="13"
                                FontWeight="SemiBold"
                                VerticalAlignment="Center"/>
                     <TextBlock x:Name="txtFileCount"
-                               Grid.Row="2" Grid.Column="1"
+                               Grid.Row="4" Grid.Column="1"
                                Text="No files selected"
                                FontSize="12"
                                Opacity="0.8"
                                VerticalAlignment="Center"/>
                     <Button x:Name="btnSelectFiles"
-                            Grid.Row="2" Grid.Column="2"
+                            Grid.Row="4" Grid.Column="2"
                             Content="Select Files..."
                             Width="90"
                             Height="28"
@@ -160,8 +179,6 @@
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="12"/>
-                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="80"/>
@@ -179,18 +196,6 @@
                               FontSize="12"
                               SelectionChanged="CboUnitRates_SelectionChanged"
                               ToolTip="Select project-specific unit rates or use the default embedded rate sheet"/>
-
-                    <TextBlock Grid.Row="2" Grid.Column="0"
-                               Text="ROC Set:"
-                               FontSize="13"
-                               FontWeight="SemiBold"
-                               VerticalAlignment="Center"/>
-                    <syncfusion:ComboBoxAdv x:Name="cboROCSet"
-                              Grid.Row="2" Grid.Column="1"
-                              Height="28"
-                              FontSize="12"
-                              SelectionChanged="CboROCSet_SelectionChanged"
-                              ToolTip="Select a ROC percentage split set for post-processing (optional)"/>
                 </Grid>
             </Border>
         </Grid>

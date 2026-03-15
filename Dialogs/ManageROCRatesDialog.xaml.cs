@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Data.SqlClient;
 using Syncfusion.SfSkinManager;
+using VANTAGE.Data;
 using VANTAGE.Utilities;
 
 namespace VANTAGE.Dialogs
@@ -14,8 +15,19 @@ namespace VANTAGE.Dialogs
     public partial class ManageROCRatesDialog : Window
     {
         private ObservableCollection<ROCRateItem> _items = new();
-        private bool _isAdmin;
         private bool _isLoading;
+        private bool _isEditMode;
+        private bool _isNewSet;
+
+        // Track original project+set for rename detection during modify
+        private string? _originalProjectId;
+        private string? _originalSetName;
+
+        // All sets for the view-mode dropdown
+        private List<(string ProjectID, string SetName)> _allSets = new();
+
+        // All projects for the edit-mode project dropdown
+        private List<string> _allProjects = new();
 
         // Shop/Field dropdown options for the grid
         public List<int> ShopFieldOptions { get; } = new() { 1, 2 };
@@ -25,85 +37,41 @@ namespace VANTAGE.Dialogs
             InitializeComponent();
             DataContext = this;
             SfSkinManager.SetTheme(this, new Theme(ThemeManager.GetSyncfusionThemeName()));
-
-            _isAdmin = AzureDbManager.IsUserAdmin(App.CurrentUser?.Username ?? "");
-
-            // Disable editing for non-admins
-            if (!_isAdmin)
-            {
-                sfGrid.AllowEditing = false;
-                btnAddRow.IsEnabled = false;
-                btnDeleteRow.IsEnabled = false;
-                btnSave.IsEnabled = false;
-                btnDeleteSet.IsEnabled = false;
-                cboSetName.IsEditable = false;
-            }
-
             Loaded += ManageROCRatesDialog_Loaded;
         }
 
         private async void ManageROCRatesDialog_Loaded(object sender, RoutedEventArgs e)
         {
-            await LoadProjectsAsync();
+            await LoadAllSetsAsync();
         }
 
-        // Load distinct ProjectIDs from VMS_ROCRates
-        private async System.Threading.Tasks.Task LoadProjectsAsync()
+        // Load all (ProjectID, SetName) pairs for the view-mode dropdown
+        private async System.Threading.Tasks.Task LoadAllSetsAsync()
         {
             try
             {
                 _isLoading = true;
-                SetStatus("Loading projects...");
+                SetStatus("Loading sets...");
 
-                var projects = await System.Threading.Tasks.Task.Run(() =>
+                _allSets = await ProjectRateRepository.GetROCSetsAsync();
+
+                cboSet.Items.Clear();
+                foreach (var (projectId, setName) in _allSets)
+                    cboSet.Items.Add($"{projectId} - {setName}");
+
+                if (_allSets.Count > 0)
+                    cboSet.SelectedIndex = 0;
+                else
                 {
-                    var list = new List<string>();
-                    using var conn = AzureDbManager.GetConnection();
-                    conn.Open();
-                    using var cmd = conn.CreateCommand();
-                    cmd.CommandText = "SELECT DISTINCT ProjectID FROM VMS_ROCRates ORDER BY ProjectID";
-                    using var reader = cmd.ExecuteReader();
-                    while (reader.Read())
-                        list.Add(reader.GetString(0));
-                    return list;
-                });
-
-                cboProject.Items.Clear();
-                foreach (var p in projects)
-                    cboProject.Items.Add(p);
-
-                // Also add projects from VMS_Projects that aren't in ROCRates yet
-                try
-                {
-                    var allProjects = await System.Threading.Tasks.Task.Run(() =>
-                    {
-                        var list = new List<string>();
-                        using var conn = AzureDbManager.GetConnection();
-                        conn.Open();
-                        using var cmd = conn.CreateCommand();
-                        cmd.CommandText = "SELECT ProjectID FROM VMS_Projects ORDER BY ProjectID";
-                        using var reader = cmd.ExecuteReader();
-                        while (reader.Read())
-                            list.Add(reader.GetString(0));
-                        return list;
-                    });
-
-                    foreach (var p in allProjects)
-                    {
-                        if (!projects.Contains(p))
-                            cboProject.Items.Add(p);
-                    }
+                    _items.Clear();
+                    sfGrid.ItemsSource = _items;
                 }
-                catch { /* VMS_Projects might not exist */ }
-
-                if (cboProject.Items.Count > 0)
-                    cboProject.SelectedIndex = 0;
 
                 SetStatus("");
             }
             catch (Exception ex)
             {
-                AppLogger.Error(ex, "ManageROCRatesDialog.LoadProjectsAsync");
+                AppLogger.Error(ex, "ManageROCRatesDialog.LoadAllSetsAsync");
                 SetStatus($"Error: {ex.Message}");
             }
             finally
@@ -112,50 +80,7 @@ namespace VANTAGE.Dialogs
             }
         }
 
-        // Load set names for selected project
-        private async System.Threading.Tasks.Task LoadSetsForProjectAsync(string projectId)
-        {
-            try
-            {
-                _isLoading = true;
-                var sets = await System.Threading.Tasks.Task.Run(() =>
-                {
-                    var list = new List<string>();
-                    using var conn = AzureDbManager.GetConnection();
-                    conn.Open();
-                    using var cmd = conn.CreateCommand();
-                    cmd.CommandText = "SELECT DISTINCT SetName FROM VMS_ROCRates WHERE ProjectID = @ProjectID ORDER BY SetName";
-                    cmd.Parameters.AddWithValue("@ProjectID", projectId);
-                    using var reader = cmd.ExecuteReader();
-                    while (reader.Read())
-                        list.Add(reader.GetString(0));
-                    return list;
-                });
-
-                cboSetName.Items.Clear();
-                foreach (var s in sets)
-                    cboSetName.Items.Add(s);
-
-                if (sets.Count > 0)
-                    cboSetName.SelectedIndex = 0;
-                else
-                    _items.Clear();
-
-                sfGrid.ItemsSource = _items;
-                UpdateStatus();
-            }
-            catch (Exception ex)
-            {
-                AppLogger.Error(ex, "ManageROCRatesDialog.LoadSetsForProjectAsync");
-                SetStatus($"Error: {ex.Message}");
-            }
-            finally
-            {
-                _isLoading = false;
-            }
-        }
-
-        // Load rows for selected project + set
+        // Load rows for a specific project+set into the grid
         private async System.Threading.Tasks.Task LoadSetDataAsync(string projectId, string setName)
         {
             try
@@ -201,61 +126,174 @@ namespace VANTAGE.Dialogs
             }
         }
 
-        private async void CboProject_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        // Load all projects for the edit-mode project dropdown
+        private async System.Threading.Tasks.Task LoadProjectsAsync()
         {
-            if (_isLoading || cboProject.SelectedItem == null) return;
-            await LoadSetsForProjectAsync(cboProject.SelectedItem.ToString()!);
-        }
-
-        private void CboSetName_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            // Selection change only — actual load happens on Load button click
-        }
-
-        private async void BtnLoadSet_Click(object sender, RoutedEventArgs e)
-        {
-            string? projectId = cboProject.SelectedItem?.ToString();
-            string? setName = cboSetName.Text?.Trim();
-
-            if (string.IsNullOrEmpty(projectId) || string.IsNullOrEmpty(setName))
+            try
             {
-                MessageBox.Show("Select a project and set name.", "Missing Selection",
+                var projects = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+                await System.Threading.Tasks.Task.Run(() =>
+                {
+                    // From VMS_ROCRates
+                    using var conn = AzureDbManager.GetConnection();
+                    conn.Open();
+                    using var cmd = conn.CreateCommand();
+                    cmd.CommandText = "SELECT DISTINCT ProjectID FROM VMS_ROCRates ORDER BY ProjectID";
+                    using var reader = cmd.ExecuteReader();
+                    while (reader.Read())
+                        projects.Add(reader.GetString(0));
+                });
+
+                try
+                {
+                    await System.Threading.Tasks.Task.Run(() =>
+                    {
+                        // From VMS_Projects
+                        using var conn = AzureDbManager.GetConnection();
+                        conn.Open();
+                        using var cmd = conn.CreateCommand();
+                        cmd.CommandText = "SELECT ProjectID FROM VMS_Projects ORDER BY ProjectID";
+                        using var reader = cmd.ExecuteReader();
+                        while (reader.Read())
+                            projects.Add(reader.GetString(0));
+                    });
+                }
+                catch { /* VMS_Projects might not exist */ }
+
+                _allProjects = projects.OrderBy(p => p, StringComparer.OrdinalIgnoreCase).ToList();
+
+                cboEditProject.Items.Clear();
+                foreach (var p in _allProjects)
+                    cboEditProject.Items.Add(p);
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "ManageROCRatesDialog.LoadProjectsAsync");
+            }
+        }
+
+        // View-mode dropdown selection changed — load the selected set
+        private async void CboSet_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_isLoading || cboSet.SelectedIndex < 0) return;
+
+            var (projectId, setName) = _allSets[cboSet.SelectedIndex];
+            await LoadSetDataAsync(projectId, setName);
+        }
+
+        // Switch to edit mode
+        private void EnterEditMode(bool isNew)
+        {
+            _isEditMode = true;
+            _isNewSet = isNew;
+
+            // Show/hide panels
+            pnlViewHeader.Visibility = Visibility.Collapsed;
+            pnlEditHeader.Visibility = Visibility.Visible;
+
+            // Show edit buttons, hide view buttons
+            btnAddRow.Visibility = Visibility.Visible;
+            btnDeleteRow.Visibility = Visibility.Visible;
+            btnSave.Visibility = Visibility.Visible;
+            btnCancel.Visibility = Visibility.Visible;
+
+            // Enable grid editing
+            sfGrid.AllowEditing = true;
+
+            SetStatus("");
+        }
+
+        // Switch to view mode
+        private void ExitEditMode()
+        {
+            _isEditMode = false;
+            _isNewSet = false;
+            _originalProjectId = null;
+            _originalSetName = null;
+
+            // Show/hide panels
+            pnlViewHeader.Visibility = Visibility.Visible;
+            pnlEditHeader.Visibility = Visibility.Collapsed;
+
+            // Hide edit buttons
+            btnAddRow.Visibility = Visibility.Collapsed;
+            btnDeleteRow.Visibility = Visibility.Collapsed;
+            btnSave.Visibility = Visibility.Collapsed;
+            btnCancel.Visibility = Visibility.Collapsed;
+
+            // Disable grid editing
+            sfGrid.AllowEditing = false;
+
+            SetStatus("");
+        }
+
+        // New Set button — switch to edit mode with empty grid
+        private async void BtnNewSet_Click(object sender, RoutedEventArgs e)
+        {
+            await LoadProjectsAsync();
+            EnterEditMode(isNew: true);
+
+            // Clear fields
+            if (cboEditProject.Items.Count > 0)
+                cboEditProject.SelectedIndex = 0;
+            txtEditSetName.Text = "";
+
+            _items = new ObservableCollection<ROCRateItem>();
+            sfGrid.ItemsSource = _items;
+        }
+
+        // Modify button — switch to edit mode with current set data
+        private async void BtnModify_Click(object sender, RoutedEventArgs e)
+        {
+            if (cboSet.SelectedIndex < 0 || _allSets.Count == 0)
+            {
+                MessageBox.Show("Select a set to modify.", "No Selection",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            await LoadSetDataAsync(projectId, setName);
+            var (projectId, setName) = _allSets[cboSet.SelectedIndex];
+            _originalProjectId = projectId;
+            _originalSetName = setName;
+
+            await LoadProjectsAsync();
+            EnterEditMode(isNew: false);
+
+            // Pre-fill project and set name
+            int projIdx = _allProjects.IndexOf(projectId);
+            if (projIdx >= 0)
+                cboEditProject.SelectedIndex = projIdx;
+            txtEditSetName.Text = setName;
+
+            // Data is already loaded from view mode
         }
 
-        private void BtnAddRow_Click(object sender, RoutedEventArgs e)
+        // Cancel button — discard and return to view mode
+        private async void BtnCancel_Click(object sender, RoutedEventArgs e)
         {
-            _items.Add(new ROCRateItem
-            {
-                ROCStep = "New Step",
-                Percentage = 0,
-                ShopField = 2,
-                SortOrder = _items.Count > 0 ? _items.Max(i => i.SortOrder) + 1 : 0
-            });
-            UpdateStatus();
+            ExitEditMode();
+
+            // Reload to restore view state
+            await LoadAllSetsAsync();
         }
 
-        private void BtnDeleteRow_Click(object sender, RoutedEventArgs e)
-        {
-            if (sfGrid.SelectedItem is ROCRateItem item)
-            {
-                _items.Remove(item);
-                UpdateStatus();
-            }
-        }
-
+        // Save button — validate and save the set
         private async void BtnSave_Click(object sender, RoutedEventArgs e)
         {
-            string? projectId = cboProject.SelectedItem?.ToString();
-            string? setName = cboSetName.Text?.Trim();
+            string? projectId = cboEditProject.SelectedItem?.ToString();
+            string? setName = txtEditSetName.Text?.Trim();
 
             if (string.IsNullOrEmpty(projectId) || string.IsNullOrEmpty(setName))
             {
                 MessageBox.Show("Select a project and enter a set name.", "Missing Info",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (_items.Count == 0)
+            {
+                MessageBox.Show("Add at least one ROC step.", "No Steps",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
@@ -293,7 +331,23 @@ namespace VANTAGE.Dialogs
 
                     try
                     {
-                        // Delete existing rows for this project/set
+                        // If modifying and project/set name changed, delete the original
+                        if (!_isNewSet && _originalProjectId != null && _originalSetName != null)
+                        {
+                            bool renamed = !string.Equals(projectId, _originalProjectId, StringComparison.OrdinalIgnoreCase)
+                                        || !string.Equals(setName, _originalSetName, StringComparison.OrdinalIgnoreCase);
+                            if (renamed)
+                            {
+                                using var delOrigCmd = conn.CreateCommand();
+                                delOrigCmd.Transaction = transaction;
+                                delOrigCmd.CommandText = "DELETE FROM VMS_ROCRates WHERE ProjectID = @ProjectID AND SetName = @SetName";
+                                delOrigCmd.Parameters.AddWithValue("@ProjectID", _originalProjectId);
+                                delOrigCmd.Parameters.AddWithValue("@SetName", _originalSetName);
+                                delOrigCmd.ExecuteNonQuery();
+                            }
+                        }
+
+                        // Delete target rows (handles overwrite/update)
                         using (var delCmd = conn.CreateCommand())
                         {
                             delCmd.Transaction = transaction;
@@ -303,7 +357,7 @@ namespace VANTAGE.Dialogs
                             delCmd.ExecuteNonQuery();
                         }
 
-                        // Insert all current rows
+                        // Insert all rows
                         foreach (var item in _items)
                         {
                             using var cmd = conn.CreateCommand();
@@ -331,16 +385,26 @@ namespace VANTAGE.Dialogs
                     }
                 });
 
-                // Reload to get new IDs
-                await LoadSetDataAsync(projectId, setName);
-
-                // Refresh set name list if this is a new set
-                await LoadSetsForProjectAsync(projectId);
-                cboSetName.Text = setName;
-
-                SetStatus($"Saved {_items.Count} step(s)");
                 AppLogger.Info($"Saved ROC rate set '{setName}' for project '{projectId}' ({_items.Count} steps)",
                     "ManageROCRatesDialog.BtnSave_Click", username);
+
+                // Switch back to view mode and select the saved set
+                ExitEditMode();
+                await LoadAllSetsAsync();
+
+                // Select the set we just saved
+                int idx = _allSets.FindIndex(s =>
+                    s.ProjectID.Equals(projectId, StringComparison.OrdinalIgnoreCase)
+                    && s.SetName.Equals(setName, StringComparison.OrdinalIgnoreCase));
+                if (idx >= 0)
+                {
+                    _isLoading = true;
+                    cboSet.SelectedIndex = idx;
+                    _isLoading = false;
+                    await LoadSetDataAsync(projectId, setName);
+                }
+
+                SetStatus($"Saved {_items.Count} step(s)");
             }
             catch (Exception ex)
             {
@@ -354,17 +418,17 @@ namespace VANTAGE.Dialogs
             }
         }
 
+        // Delete the selected set
         private async void BtnDeleteSet_Click(object sender, RoutedEventArgs e)
         {
-            string? projectId = cboProject.SelectedItem?.ToString();
-            string? setName = cboSetName.SelectedItem?.ToString();
-
-            if (string.IsNullOrEmpty(projectId) || string.IsNullOrEmpty(setName))
+            if (cboSet.SelectedIndex < 0 || _allSets.Count == 0)
             {
-                MessageBox.Show("Select a project and set to delete.", "Missing Selection",
+                MessageBox.Show("Select a set to delete.", "No Selection",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
+
+            var (projectId, setName) = _allSets[cboSet.SelectedIndex];
 
             var result = MessageBox.Show($"Delete the entire set '{setName}' for project '{projectId}'?\n\nThis cannot be undone.",
                 "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning);
@@ -384,13 +448,14 @@ namespace VANTAGE.Dialogs
                     cmd.ExecuteNonQuery();
                 });
 
-                _items.Clear();
-                sfGrid.ItemsSource = _items;
-                await LoadSetsForProjectAsync(projectId);
-
-                SetStatus($"Deleted set '{setName}'");
                 AppLogger.Info($"Deleted ROC rate set '{setName}' for project '{projectId}'",
                     "ManageROCRatesDialog.BtnDeleteSet_Click", username);
+
+                _items.Clear();
+                sfGrid.ItemsSource = _items;
+                await LoadAllSetsAsync();
+
+                SetStatus($"Deleted set '{setName}'");
             }
             catch (Exception ex)
             {
@@ -400,16 +465,43 @@ namespace VANTAGE.Dialogs
             }
         }
 
+        private void BtnAddRow_Click(object sender, RoutedEventArgs e)
+        {
+            _items.Add(new ROCRateItem
+            {
+                ROCStep = "New Step",
+                Percentage = 0,
+                ShopField = 2,
+                SortOrder = _items.Count > 0 ? _items.Max(i => i.SortOrder) + 1 : 0
+            });
+            UpdateStatus();
+        }
+
+        private void BtnDeleteRow_Click(object sender, RoutedEventArgs e)
+        {
+            if (sfGrid.SelectedItem is ROCRateItem item)
+            {
+                _items.Remove(item);
+                UpdateStatus();
+            }
+        }
+
         private void BtnClose_Click(object sender, RoutedEventArgs e)
         {
+            if (_isEditMode)
+            {
+                var result = MessageBox.Show("You have unsaved changes. Close anyway?",
+                    "Unsaved Changes", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                if (result != MessageBoxResult.Yes) return;
+            }
             Close();
         }
 
         private void UpdateStatus()
         {
             double total = _items.Sum(i => i.Percentage);
-            string color = Math.Abs(total - 100.0) < 0.01 ? "✓" : "⚠";
-            txtStatus.Text = $"{_items.Count} step(s)  |  Total: {total:F2}% {color}";
+            string indicator = Math.Abs(total - 100.0) < 0.01 ? "✓" : "⚠";
+            txtStatus.Text = $"{_items.Count} step(s)  |  Total: {total:F2}% {indicator}";
         }
 
         private void SetStatus(string message)

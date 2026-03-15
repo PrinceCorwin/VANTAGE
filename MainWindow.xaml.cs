@@ -532,7 +532,17 @@ namespace VANTAGE
 
         private void BtnCreate_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("CREATE module coming soon!", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.None);
+            if (!AzureDbManager.CheckConnection(out string error))
+            {
+                MessageBox.Show(
+                    $"Cannot connect to Azure database:\n\n{error}\n\nThis feature requires an active connection.",
+                    "Connection Required", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var dialog = new Dialogs.ImportTakeoffDialog();
+            dialog.Owner = this;
+            dialog.ShowDialog();
         }
 
         private async void ImportP6File_Click(object sender, RoutedEventArgs e)
@@ -1131,21 +1141,6 @@ namespace VANTAGE
             dialog.ShowDialog();
         }
 
-        private void MenuROCRates_Click(object sender, RoutedEventArgs e)
-        {
-            // Estimators get read-only view, admins get full CRUD
-            if (!AzureDbManager.CheckConnection(out string rocError))
-            {
-                MessageBox.Show(
-                    $"Cannot connect to Azure database:\n\n{rocError}\n\nThis feature requires an active connection.",
-                    "Connection Required", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            var dialog = new Dialogs.ManageROCRatesDialog();
-            dialog.Owner = this;
-            dialog.ShowDialog();
-        }
 
         private void MenuProjectRates_Click(object sender, RoutedEventArgs e)
         {

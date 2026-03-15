@@ -30,58 +30,62 @@
                    FontSize="16"
                    Foreground="{DynamicResource ForegroundColor}"/>
 
-        <!-- Project + Set Selection -->
-        <Grid Grid.Row="2">
+        <!-- VIEW MODE: Set Selection -->
+        <Grid x:Name="pnlViewHeader" Grid.Row="2">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="70"/>
-                <ColumnDefinition Width="200"/>
-                <ColumnDefinition Width="20"/>
-                <ColumnDefinition Width="70"/>
-                <ColumnDefinition Width="250"/>
-                <ColumnDefinition Width="20"/>
+                <ColumnDefinition Width="35"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="12"/>
                 <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="8"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="8"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <TextBlock Grid.Column="0" Text="Project:"
+            <TextBlock Grid.Column="0" Text="Set:"
                        Foreground="{DynamicResource ForegroundColor}"
-                       VerticalAlignment="Center"/>
-            <syncfusion:ComboBoxAdv x:Name="cboProject"
+                       VerticalAlignment="Center"
+                       FontWeight="SemiBold"/>
+            <syncfusion:ComboBoxAdv x:Name="cboSet"
                        Grid.Column="1"
                        Height="28"
                        FontSize="12"
-                       SelectionChanged="CboProject_SelectionChanged"
-                       ToolTip="Select a project to view its ROC rate sets"/>
+                       IsEditable="False"
+                       SelectionChanged="CboSet_SelectionChanged"
+                       ToolTip="Select a ROC rate set to view"/>
 
-            <TextBlock Grid.Column="3" Text="Set Name:"
-                       Foreground="{DynamicResource ForegroundColor}"
-                       VerticalAlignment="Center"/>
-            <syncfusion:ComboBoxAdv x:Name="cboSetName"
-                       Grid.Column="4"
-                       Height="28"
-                       FontSize="12"
-                       IsEditable="True"
-                       SelectionChanged="CboSetName_SelectionChanged"
-                       ToolTip="Select an existing set or type a new name"/>
-
-            <Button x:Name="btnLoadSet"
-                    Grid.Column="6"
-                    Content="Load"
-                    Width="70"
+            <Button x:Name="btnNewSet"
+                    Grid.Column="3"
+                    Content="New Set"
+                    Width="80"
                     Height="28"
                     FontSize="11"
                     Background="{DynamicResource ControlBackground}"
                     Foreground="{DynamicResource ForegroundColor}"
                     BorderBrush="{DynamicResource SidebarButtonBorder}"
                     BorderThickness="1"
-                    Click="BtnLoadSet_Click"
-                    ToolTip="Load the selected set for editing"/>
+                    Click="BtnNewSet_Click"
+                    ToolTip="Create a new ROC rate set"/>
+
+            <Button x:Name="btnModify"
+                    Grid.Column="5"
+                    Content="Modify"
+                    Width="80"
+                    Height="28"
+                    FontSize="11"
+                    Background="{DynamicResource ControlBackground}"
+                    Foreground="{DynamicResource ForegroundColor}"
+                    BorderBrush="{DynamicResource SidebarButtonBorder}"
+                    BorderThickness="1"
+                    Click="BtnModify_Click"
+                    ToolTip="Edit the selected ROC rate set"/>
+
             <Button x:Name="btnDeleteSet"
                     Grid.Column="7"
                     Content="Delete Set"
                     Width="80"
                     Height="28"
-                    Margin="8,0,0,0"
                     FontSize="11"
                     Background="{DynamicResource ControlBackground}"
                     Foreground="#FF6B6B"
@@ -91,11 +95,48 @@
                     ToolTip="Delete the entire selected set"/>
         </Grid>
 
+        <!-- EDIT MODE: Project + Set Name -->
+        <Grid x:Name="pnlEditHeader" Grid.Row="2" Visibility="Collapsed">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="60"/>
+                <ColumnDefinition Width="200"/>
+                <ColumnDefinition Width="20"/>
+                <ColumnDefinition Width="70"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Column="0" Text="Project:"
+                       Foreground="{DynamicResource ForegroundColor}"
+                       VerticalAlignment="Center"
+                       FontWeight="SemiBold"/>
+            <syncfusion:ComboBoxAdv x:Name="cboEditProject"
+                       Grid.Column="1"
+                       Height="28"
+                       FontSize="12"
+                       IsEditable="False"
+                       ToolTip="Select the project for this ROC rate set"/>
+
+            <TextBlock Grid.Column="3" Text="Set Name:"
+                       Foreground="{DynamicResource ForegroundColor}"
+                       VerticalAlignment="Center"
+                       FontWeight="SemiBold"/>
+            <TextBox x:Name="txtEditSetName"
+                     Grid.Column="4"
+                     Height="28"
+                     FontSize="12"
+                     VerticalContentAlignment="Center"
+                     Padding="4,0"
+                     Background="{DynamicResource ControlBackground}"
+                     Foreground="{DynamicResource ForegroundColor}"
+                     BorderBrush="{DynamicResource BorderColor}"
+                     ToolTip="Enter a name for this ROC rate set"/>
+        </Grid>
+
         <!-- Data Grid -->
         <syncfusion:SfDataGrid x:Name="sfGrid"
                                Grid.Row="4"
                                AutoGenerateColumns="False"
-                               AllowEditing="True"
+                               AllowEditing="False"
                                EditTrigger="OnTap"
                                AllowDeleting="False"
                                AllowSorting="False"
@@ -123,9 +164,10 @@
             </syncfusion:SfDataGrid.Columns>
         </syncfusion:SfDataGrid>
 
-        <!-- Bottom: Buttons + Status -->
+        <!-- Bottom Buttons -->
         <Grid Grid.Row="6">
             <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
@@ -134,12 +176,14 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
+            <!-- Edit mode buttons (hidden in view mode) -->
             <Button x:Name="btnAddRow"
                     Grid.Column="0"
                     Content="Add Row"
                     Width="80"
                     Height="28"
                     FontSize="11"
+                    Visibility="Collapsed"
                     Background="{DynamicResource ControlBackground}"
                     Foreground="{DynamicResource ForegroundColor}"
                     BorderBrush="{DynamicResource SidebarButtonBorder}"
@@ -153,6 +197,7 @@
                     Height="28"
                     Margin="8,0,0,0"
                     FontSize="11"
+                    Visibility="Collapsed"
                     Background="{DynamicResource ControlBackground}"
                     Foreground="{DynamicResource ForegroundColor}"
                     BorderBrush="{DynamicResource SidebarButtonBorder}"
@@ -166,14 +211,30 @@
                     Height="28"
                     Margin="8,0,0,0"
                     FontSize="11"
+                    Visibility="Collapsed"
                     Background="{DynamicResource StatusGreenBgBtn}"
                     Foreground="{DynamicResource StatusGreenFgBtn}"
                     BorderThickness="0"
                     Click="BtnSave_Click"
                     ToolTip="Save ROC rate set to Azure"/>
+            <Button x:Name="btnCancel"
+                    Grid.Column="3"
+                    Content="Cancel"
+                    Width="80"
+                    Height="28"
+                    Margin="8,0,0,0"
+                    FontSize="11"
+                    Visibility="Collapsed"
+                    Background="{DynamicResource ControlBackground}"
+                    Foreground="{DynamicResource ForegroundColor}"
+                    BorderBrush="{DynamicResource SidebarButtonBorder}"
+                    BorderThickness="1"
+                    Click="BtnCancel_Click"
+                    ToolTip="Discard changes and return to view mode"/>
 
+            <!-- Status text -->
             <TextBlock x:Name="txtStatus"
-                       Grid.Column="3"
+                       Grid.Column="4"
                        Text=""
                        FontSize="12"
                        Foreground="{DynamicResource ForegroundColor}"
@@ -181,8 +242,9 @@
                        HorizontalAlignment="Center"
                        Opacity="0.8"/>
 
+            <!-- Close (always visible) -->
             <Button x:Name="btnClose"
-                    Grid.Column="5"
+                    Grid.Column="6"
                     Content="Close"
                     Width="80"
                     Height="28"

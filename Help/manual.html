@@ -345,8 +345,9 @@
                     <li><a href="#takeoff-overview">Overview</a></li>
                     <li><a href="#takeoff-configs">Configs</a></li>
                     <li><a href="#takeoff-unit-rates">Unit Rates</a></li>
-                    <li><a href="#takeoff-roc-sets">ROC Sets</a></li>
+                    <li><a href="#takeoff-batch-name">Batch Name</a></li>
                     <li><a href="#takeoff-processing">Processing Drawings</a></li>
+                    <li><a href="#takeoff-import">Import from AI Takeoff</a></li>
                     <li><a href="#takeoff-previous-batches">Previous Batches</a></li>
                     <li><a href="#takeoff-excel-output">Excel Output</a></li>
                     <li><a href="#takeoff-manage-drawings">Manage Drawings</a></li>
@@ -361,7 +362,6 @@
                     <li><a href="#admin-upload-progress-log">Upload to Progress Log</a></li>
                     <li><a href="#admin-progress-log">Manage Progress Log</a></li>
                     <li><a href="#admin-project-rates">Project Rates</a></li>
-                    <li><a href="#admin-roc-rates">ROC Rates</a></li>
                     <li><a href="#admin-sync">Database Sync</a></li>
                 </ul>
             </li>
@@ -455,7 +455,7 @@
         <li><strong>Import Activities (Combine)</strong> — Import activities from Excel, merging with existing data. Auto-detects file format.</li>
         <li><strong>Export Activities</strong> — Export your activities to an Excel file (Milestone format)</li>
         <li><strong>Export Activities Template</strong> — Download a blank Excel template for activity import</li>
-        <li><strong>Create Activities</strong> — Generate new activities based on project parameters</li>
+        <li><strong>Import from AI Takeoff</strong> — Open the Import Takeoff Manager to import activities from a takeoff Excel file or batch</li>
         <li><strong>Clear Local Activities</strong> — Delete all local activity data (requires re-sync)</li>
         <li><strong>Import From P6 File</strong> — Import schedule data from a P6 Primavera export file</li>
         <li><strong>Export To P6 File</strong> — Export schedule data for import into P6 Primavera</li>
@@ -2550,18 +2550,14 @@
     </ul>
     <p>Project rate sets can be managed via <strong>Admin &gt; Project Rates</strong> (see <a href="#admin-project-rates">Project Rates</a> in the Administration section).</p>
 
-    <h3 id="takeoff-roc-sets">ROC Sets</h3>
-    <p>The <strong>ROC Set</strong> dropdown lets you select a Rules of Credit percentage split set for post-processing.</p>
-    <ul>
-        <li><strong>None</strong> — No ROC splitting applied.</li>
-        <li><strong>Named sets</strong> — Per-project ROC sets defining how labor records are divided into credit steps with percentage splits.</li>
-        <li><strong>+ Create New...</strong> — Opens the ROC Rates management dialog to create a new set.</li>
-    </ul>
-    <p>ROC sets can be managed via <strong>Admin &gt; ROC Rates</strong> (see <a href="#admin-roc-rates">ROC Rates</a> in the Administration section).</p>
+    <h3 id="takeoff-batch-name">Batch Name</h3>
+    <p>The <strong>Batch Name</strong> field (above the Config dropdown) lets you give a custom name to the batch before processing. If left blank, it defaults to <code>AwsDwgTakeoff</code>. A UTC timestamp is always appended (e.g., <code>MyProject-20260315-143022</code>).</p>
+    <p>The batch name is stored in S3 metadata and shown in the <strong>Name</strong> column of the Previous Batches and Select Batch dialogs.</p>
 
     <h3 id="takeoff-processing">Processing Drawings</h3>
 
     <ol>
+        <li>(Optional) Enter a <strong>Batch Name</strong> — leave blank for auto-generated name.</li>
         <li>Select a config from the dropdown.</li>
         <li>Click <strong>Select Files...</strong> to choose one or more PDF drawing files.</li>
         <li>Click <strong>Process Batch</strong>. Drawings are uploaded to S3, then the AI extraction pipeline runs.</li>
@@ -2575,6 +2571,8 @@
     <p>Click <strong>Previous Batches</strong> to re-download results from earlier processing runs. The dropdown shows all past batches with:</p>
     <ul>
         <li><strong>Config name</strong> — The crop region config used</li>
+        <li><strong>Name</strong> — The batch name (custom or auto-generated)</li>
+        <li><strong>Config</strong> — The config used for processing</li>
         <li><strong>Date/time</strong> — When the batch was processed</li>
         <li><strong>Drawing count</strong> — Number of drawings in the batch</li>
         <li><strong>Username</strong> — Who submitted the batch</li>
@@ -2586,6 +2584,25 @@
         <div class="warning-title">Processing Failures</div>
         <p>If the status shows "failed", the crop regions may not align with the drawing layout. Try editing the config to adjust the BOM and title block regions. No Excel file is generated for failed runs.</p>
     </div>
+
+    <h3 id="takeoff-import">Import from AI Takeoff</h3>
+    <p>Open via <strong>File &gt; Import from AI Takeoff</strong>. This dialog is the bridge between raw takeoff Excel output and creating VANTAGE activities. It requires an Azure connection.</p>
+
+    <p><strong>Source selection:</strong></p>
+    <ul>
+        <li><strong>From File</strong> (default) — Click <strong>Select File...</strong> to browse for a local <code>.xlsx</code> takeoff file.</li>
+        <li><strong>From Batch</strong> — Click <strong>Batches...</strong> to select a previously processed batch. A simplified batch picker shows available batches with Name, Config, Date, Drawings, User, and Status columns. Select a batch and click OK.</li>
+    </ul>
+
+    <p><strong>ROC Set:</strong> Select a ROC percentage split set for the import. Choose <strong>None</strong> to skip ROC splitting, or select a named set. <strong>+ Create New...</strong> opens the ROC Set Manager to create a new set.</p>
+
+    <p><strong>ROC Set Manager:</strong> The ROC Set Manager has two modes:</p>
+    <ul>
+        <li><strong>View mode</strong> — Select a set from the dropdown (shown as "ProjectID - SetName") to view its steps in a read-only grid. Use <strong>New Set</strong>, <strong>Modify</strong>, or <strong>Delete Set</strong> to manage sets.</li>
+        <li><strong>Edit mode</strong> — Select a project and enter a set name. The grid becomes editable with ROCStep, Percentage, ShopField, and SortOrder columns. Percentages must sum to 100%. Use <strong>Save</strong> to persist or <strong>Cancel</strong> to discard changes. Renaming a set (changing project or name) during Modify cleanly replaces the original.</li>
+    </ul>
+
+    <p>Click <strong>Import</strong> to process the selected source into VANTAGE activities, or <strong>Cancel</strong> to close.</p>
 
     <h3 id="takeoff-excel-output">Excel Output</h3>
     <p>When you download the output spreadsheet, it contains the following tabs:</p>
@@ -2719,24 +2736,6 @@
 
     <p>Rate sets uploaded here appear in the <strong>Unit Rates</strong> dropdown on the AI Takeoff view. This dialog is also accessible from the "Upload New..." option in that dropdown.</p>
 
-    <h3 id="admin-roc-rates">ROC Rates (Admin > ROC Rates)</h3>
-    <p>Manage Rules of Credit (ROC) percentage split sets for the AI Takeoff module. Each project can have multiple named ROC sets that define how labor records are divided into credit steps.</p>
-
-    <p>The dialog has two dropdowns at the top for selecting or creating sets:</p>
-    <ul>
-        <li><strong>Project</strong> — Select a project ID. To create a set for a new project, type the project ID directly.</li>
-        <li><strong>Set Name</strong> — Select an existing set or type a new name to create one.</li>
-    </ul>
-
-    <p>The grid shows the ROC steps for the selected set with inline-editable columns:</p>
-    <ul>
-        <li><strong>ROCStep</strong> — The credit step name (e.g., "1.FAB", "2.INST").</li>
-        <li><strong>Percentage</strong> — The percentage of BudgetMHs allocated to this step. All percentages must sum to 100%.</li>
-        <li><strong>ShopField</strong> — Whether this step applies to Shop (1) or Field (2) records.</li>
-        <li><strong>SortOrder</strong> — Controls the display order of steps.</li>
-    </ul>
-
-    <p>Use <strong>Add Row</strong> to add steps, <strong>Delete Row</strong> to remove selected steps, and <strong>Save</strong> to persist changes. The status bar shows the current percentage sum and warns if it does not equal 100%.</p>
 
     <h3 id="admin-sync">Database Sync</h3>
     <p>All users sync their local data with the central Azure database using the <strong>SYNC</strong> button in the Progress module (see <a href="#prog-syncing">Syncing Data</a>). Key points for administrators:</p>

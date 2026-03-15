@@ -20,6 +20,7 @@ namespace VANTAGE.Services.AI
     public class BatchInfo
     {
         public string BatchId { get; set; } = string.Empty;
+        public string? BatchName { get; set; }
         public DateTime? SubmittedAt { get; set; }
         public int? DrawingCount { get; set; }
         public string? Username { get; set; }
@@ -345,6 +346,7 @@ namespace VANTAGE.Services.AI
             int drawingCount,
             string username,
             string configName,
+            string? batchName = null,
             CancellationToken cancellationToken = default)
         {
             var metadata = new
@@ -352,6 +354,7 @@ namespace VANTAGE.Services.AI
                 drawingCount,
                 username,
                 configName,
+                batchName,
                 submittedAt = DateTime.UtcNow.ToString("o")
             };
 
@@ -423,16 +426,18 @@ namespace VANTAGE.Services.AI
                         info.Username = userElem.GetString();
                     if (doc.RootElement.TryGetProperty("configName", out var cfgElem))
                         info.ConfigName = cfgElem.GetString();
+                    if (doc.RootElement.TryGetProperty("batchName", out var bnElem))
+                        info.BatchName = bnElem.GetString();
                 }
                 catch (AmazonS3Exception)
                 {
-                    // No metadata.json - parse date from batch ID if possible
-                    // Format: vantage-yyyyMMdd-HHmmss (UTC time)
-                    if (batchId.StartsWith("vantage-") && batchId.Length >= 22)
+                    // No metadata.json - try to parse timestamp from end of batch ID
+                    // Formats: vantage-yyyyMMdd-HHmmss, AwsDwgTakeoff-yyyyMMdd-HHmmss, or custom-yyyyMMdd-HHmmss
+                    if (batchId.Length >= 15)
                     {
-                        string dateStr = batchId.Substring(8, 8); // yyyyMMdd
-                        string timeStr = batchId.Substring(17, 6); // HHmmss
-                        if (DateTime.TryParseExact($"{dateStr}{timeStr}", "yyyyMMddHHmmss",
+                        string tail = batchId.Substring(batchId.Length - 15); // yyyyMMdd-HHmmss
+                        string dateTime = tail.Replace("-", ""); // yyyyMMddHHmmss
+                        if (dateTime.Length == 14 && DateTime.TryParseExact(dateTime, "yyyyMMddHHmmss",
                             System.Globalization.CultureInfo.InvariantCulture,
                             System.Globalization.DateTimeStyles.AssumeUniversal, out var parsed))
                         {

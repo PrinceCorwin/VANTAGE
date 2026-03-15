@@ -1,6 +1,6 @@
 # MILESTONE - Project Status
 
-**Last Updated:** March 13, 2026
+**Last Updated:** March 15, 2026
 
 ## V1 Testing Scope
 
@@ -131,13 +131,13 @@
 - **Takeoff Post-Processing Pipeline** — All operate on the downloaded Excel, no AWS changes needed. See `summit-takeoff-integration-guide.md` for details.
   1. Fabrication item generation — CUT/BEV rows, connection rows, BOM fab records, PIPE/SPL records, ROCStep column complete. Fitting makeup lookup complete with olet support (WOL/SOL/TOL/ELB/LOL/NOL), class as string, Thickness fallback for olets. Missed Makeups tab has Reason column (No Makeup Found / Unclaimed). No Conns tab shows material items with no connections.
   2. **Rate application** — Core implementation complete. Rate sheet keys shortened to match component names directly. Per-project rate overrides with management dialog, upload from Excel, RateSource column. Admin email notification for missed data. OLW/SW class rating tier fallback (40/STD/2000, 80/XS/3000, 160/XXS/6000).
-  3. **ROC splits** — VMS_ROCRates table and admin dialog complete. ROC set dropdown on TakeoffView complete. Post-processing logic to apply ROC percentage splits NOT yet implemented.
+  3. **ROC splits** — VMS_ROCRates table complete. ROC Set Manager redesigned with view/edit modes (removed admin gating). ROC set dropdown moved from TakeoffView to ImportTakeoffDialog. Post-processing logic to apply ROC percentage splits NOT yet implemented.
   4. VANTAGE tab — Column rename for direct import into Activities. Optional "Rollup Labor" mode: creates one FAB row per drawing (component=FAB, description="Fabrication of DWG# - {Drawing Number}") that sums all ShopField=1 labor MHs. FAB row gets split by selected ROC percentages (or stays as-is if no ROC profile selected). UI location for the rollup option TBD.
 
 
 ### Medium Priority
 - **Theme System Refactor** — Phases 1-7 complete. Live switching works, tokens split, guide written. Theme generator script and `/create-theme` skill complete. See `Themes/THEME_GUIDE.md`.
-- **Create Activities Feature** — File menu item exists but not implemented. Needs discussion on functionality: possibly AI-assisted (user prompts what they need, records generated), or structured wizard, or template-based. Currently shows "coming soon" placeholder.
+- **Import from AI Takeoff** — Import Takeoff Manager dialog shell complete (source selection, ROC set dropdown, Import/Cancel buttons). Import logic not yet implemented. Replaces old "Create Activities" placeholder.
 - **MSI/MSIX installer** — Replace custom installer with MSI (WiX Toolset) or MSIX packaging to get genuine Windows install integration. Current custom installer registers via registry but Windows Search won't execute `UninstallString` directly — only MSI and UWP/MSIX apps get direct uninstall from search context menu. Current setup works via Settings > Apps.
 - **User-editable header template for WP** — Allow customizing header layout
 

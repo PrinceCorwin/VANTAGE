@@ -74,7 +74,7 @@
                             <syncfusion:DropDownMenuItem Header="Export Activities" Click="ExcelExportActivities_Click"/>
                             <syncfusion:DropDownMenuItem Header="Export Activities Template" Click="ExcelExportTemplate_Click"/>
                             <Separator Background="{DynamicResource BorderColor}" Margin="5,2"/>
-                            <syncfusion:DropDownMenuItem Header="Create Activities" Click="BtnCreate_Click"/>
+                            <syncfusion:DropDownMenuItem Header="Import from AI Takeoff" Click="BtnCreate_Click" ToolTip="Import activities from an AI Takeoff Excel file or batch"/>
                             <syncfusion:DropDownMenuItem Header="Clear Local Activities" Click="MenuClearLocalActivities_Click"/>
                             <Separator Background="{DynamicResource BorderColor}" Margin="5,2"/>
                             <!-- P6 Files -->
@@ -139,7 +139,6 @@
                             <syncfusion:DropDownMenuItem Header="Manage Snapshots" Click="MenuEditSnapshots_Click"/>
                             <syncfusion:DropDownMenuItem Header="Manage Progress Log" Click="MenuManageProgressLog_Click"/>
                             <Separator Background="{DynamicResource BorderColor}" Margin="5,2"/>
-                            <syncfusion:DropDownMenuItem Header="ROC Rates" Click="MenuROCRates_Click" ToolTip="Manage per-project ROC percentage split sets"/>
                             <syncfusion:DropDownMenuItem Header="Project Rates" Click="MenuProjectRates_Click" ToolTip="Manage per-project unit rate overrides"/>
                             <Separator Background="{DynamicResource BorderColor}" Margin="5,2"/>
                             <syncfusion:DropDownMenuItem Header="Deleted Records UI" Click="DeletedRecordsUi_Click"/>
