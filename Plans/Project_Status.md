@@ -121,8 +121,10 @@
 1. Delete the `IsTakeoffAllowed()` method (~line 340)
 2. Line ~326: Change `!IsTakeoffAllowed()` to `!App.CurrentUser.IsEstimator`
 3. Line ~1093: Change `(granted && IsTakeoffAllowed())` to just `granted`
-4. Remove the `// TEMPORARY` and `// TO REVERT` comments
-5. **Add AI Takeoff module to release notes** — When releasing the version that lifts this restriction, add AI Takeoff feature to ReleaseNotes.json highlights
+4. Remove `menuImportTakeoff.Visibility = Visibility.Collapsed;` line (below btnTakeoff collapse)
+5. `MainWindow.xaml`: Remove `x:Name="menuImportTakeoff"` and the TEMPORARY/TO REVERT comments from the Import from AI Takeoff menu item
+6. Remove the remaining `// TEMPORARY` and `// TO REVERT` comments
+7. **Add AI Takeoff module to release notes** — When releasing the version that lifts this restriction, add AI Takeoff feature to ReleaseNotes.json highlights
 
 ## Feature Backlog
 

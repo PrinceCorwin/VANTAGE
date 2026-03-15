@@ -325,6 +325,7 @@ namespace VANTAGE
             if (App.CurrentUser == null || !IsTakeoffAllowed())
             {
                 btnTakeoff.Visibility = Visibility.Collapsed;
+                menuImportTakeoff.Visibility = Visibility.Collapsed;
             }
 
             // Restore last visited view (default to Progress)
