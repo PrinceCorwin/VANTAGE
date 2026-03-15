@@ -107,8 +107,9 @@ namespace VANTAGE.Services.AI
         }
 
         // Build lookup key and find rate for a labor row.
-        // Returns (FldMhu, Unit, KeyUsed) or (null, null, lastKeyAttempted) if not found.
-        // Fallback chain: Thickness → Class Rating → size-only
+        // Returns (FldMhu, Unit, KeyUsed) or (null, null, keysAttempted) if not found.
+        // Lookup: Thickness (+ toggle leading S) → Class Rating → size-only.
+        // On miss, reports both thickness and class keys attempted.
         public static (double? FldMhu, string? Unit, string KeyAttempted) FindRate(
             string component, string size, string? thickness, string? classRating)
         {
@@ -116,46 +117,38 @@ namespace VANTAGE.Services.AI
             if (string.IsNullOrEmpty(estGrp))
                 return (null, null, $"UNMAPPED:{component}");
 
-            // Olet fab records have dual size (e.g., "24x1") — use the branch/smaller size for lookup
-            if (FittingMakeupService.IsOlet(component))
-            {
-                var dualSize = FittingMakeupService.ParseDualSize(size);
-                if (dualSize != null)
-                    size = dualSize.Value.Smaller.ToString("0.###");
-            }
+            // Dual size (e.g., "2x0.75") — use the smaller size for rate lookup
+            var dualSize = FittingMakeupService.ParseDualSize(size);
+            if (dualSize != null)
+                size = dualSize.Value.Smaller.ToString("0.###");
 
-            // Try with Thickness as SCH_RTG (with STD↔S40 synonym fallback)
+            string? thicknessKey = null;
+            string? classKey = null;
+
+            // Try with Thickness as-is, then toggle leading "S"
             if (!string.IsNullOrWhiteSpace(thickness))
             {
-                string schRtg = TranslateSchedule(thickness);
-                string key = $"{estGrp}-{size}:{schRtg}";
-                var rate = LookupRate(key);
-                if (rate.HasValue) return (rate.Value.FldMhu, rate.Value.Unit, key);
+                string t = thickness.Trim().ToUpper();
+                thicknessKey = $"{estGrp}-{size}:{t}";
+                var rate = LookupRate(thicknessKey);
+                if (rate.HasValue) return (rate.Value.FldMhu, rate.Value.Unit, thicknessKey);
 
-                // STD and S40 are synonymous — try the other if first lookup failed
-                string? synonym = GetScheduleSynonym(schRtg);
-                if (synonym != null)
+                // Toggle leading "S": if it starts with S remove it, otherwise add it
+                string toggled = t.StartsWith("S") ? t[1..] : $"S{t}";
+                if (toggled.Length > 0)
                 {
-                    string altKey = $"{estGrp}-{size}:{synonym}";
+                    string altKey = $"{estGrp}-{size}:{toggled}";
                     rate = LookupRate(altKey);
                     if (rate.HasValue) return (rate.Value.FldMhu, rate.Value.Unit, altKey);
                 }
-
-                // OLW fallback: try equivalent class ratings for the thickness
-                var olwFallback = TryOlwClassFallback(estGrp, size, schRtg);
-                if (olwFallback.HasValue) return (olwFallback.Value.FldMhu, olwFallback.Value.Unit, olwFallback.Value.Key);
             }
 
-            // Try with Class Rating as SCH_RTG
+            // Try with Class Rating
             if (!string.IsNullOrWhiteSpace(classRating))
             {
-                string key = $"{estGrp}-{size}:{classRating}";
-                var rate = LookupRate(key);
-                if (rate.HasValue) return (rate.Value.FldMhu, rate.Value.Unit, key);
-
-                // OLW fallback: try equivalent class ratings
-                var olwFallback = TryOlwClassFallback(estGrp, size, classRating);
-                if (olwFallback.HasValue) return (olwFallback.Value.FldMhu, olwFallback.Value.Unit, olwFallback.Value.Key);
+                classKey = $"{estGrp}-{size}:{classRating}";
+                var rate = LookupRate(classKey);
+                if (rate.HasValue) return (rate.Value.FldMhu, rate.Value.Unit, classKey);
             }
 
             // Try size-only key (for FTG, GSKT, HARDWARE, etc.)
@@ -165,12 +158,14 @@ namespace VANTAGE.Services.AI
                 if (rate.HasValue) return (rate.Value.FldMhu, rate.Value.Unit, key);
             }
 
-            // Build the best key description for the missed rates report
-            string attemptedKey = !string.IsNullOrWhiteSpace(thickness)
-                ? $"{estGrp}-{size}:{TranslateSchedule(thickness)}"
-                : !string.IsNullOrWhiteSpace(classRating)
-                    ? $"{estGrp}-{size}:{classRating}"
-                    : $"{estGrp}-{size}";
+            // Report all keys attempted for the missed rates tab
+            string attemptedKey = (thicknessKey, classKey) switch
+            {
+                (not null, not null) => $"{thicknessKey}, {classKey}",
+                (not null, null) => thicknessKey,
+                (null, not null) => classKey,
+                _ => $"{estGrp}-{size}"
+            };
 
             return (null, null, attemptedKey);
         }
@@ -187,97 +182,9 @@ namespace VANTAGE.Services.AI
             return component;
         }
 
-        // Translate our Thickness values to rate sheet SCH_RTG format
-        // STD, XS, XXS pass through. Numeric schedules get "S" prefix (40→S40).
-        private static string TranslateSchedule(string thickness)
-        {
-            if (string.IsNullOrWhiteSpace(thickness)) return "";
-
-            string t = thickness.Trim().ToUpper();
-
-            // Direct pass-through values
-            if (t == "STD" || t == "XS" || t == "XXS") return t;
-
-            // Numeric schedules: prefix with "S"
-            if (double.TryParse(t, out _))
-                return $"S{t}";
-
-            // Anything else (e.g., ".250\" WT") passes through as-is
-            return t;
-        }
-
-        // Components that use the class rating tier fallback
-        private static bool UsesClassTierFallback(string estGrp) =>
-            estGrp.Equals("OLW", StringComparison.OrdinalIgnoreCase) ||
-            estGrp.Equals("SW", StringComparison.OrdinalIgnoreCase);
-
-        // OLW/SW equivalent class rating tiers — when one rating fails, try others in same tier
-        private static readonly string[][] OlwClassTiers = new[]
-        {
-            new[] { "40", "S40", "STD", "2000" },
-            new[] { "80", "S80", "XS", "3000" },
-            new[] { "160", "S160", "XXS", "6000", "9000" }
-        };
-
-        // For OLW, try all equivalent class ratings in the same tier
-        private static (double FldMhu, string Unit, string Key)? TryOlwClassFallback(string estGrp, string size, string? rating)
-        {
-            if (!UsesClassTierFallback(estGrp) || string.IsNullOrWhiteSpace(rating))
-                return null;
-
-            foreach (var tier in OlwClassTiers)
-            {
-                bool inTier = false;
-                foreach (var val in tier)
-                {
-                    if (val.Equals(rating, StringComparison.OrdinalIgnoreCase))
-                    { inTier = true; break; }
-                }
-                if (!inTier) continue;
-
-                foreach (var alt in tier)
-                {
-                    if (alt.Equals(rating, StringComparison.OrdinalIgnoreCase)) continue;
-                    string key = $"{estGrp}-{size}:{alt}";
-                    var rate = LookupRate(key);
-                    if (rate.HasValue) return (rate.Value.FldMhu, rate.Value.Unit, key);
-                }
-            }
-            return null;
-        }
-
-        // Returns the other values in the same OLW tier (excluding the input), or null if not in any tier
-        private static List<string>? GetOlwTierAlternates(string rating)
-        {
-            foreach (var tier in OlwClassTiers)
-            {
-                foreach (var val in tier)
-                {
-                    if (val.Equals(rating, StringComparison.OrdinalIgnoreCase))
-                    {
-                        var alts = new List<string>();
-                        foreach (var alt in tier)
-                        {
-                            if (!alt.Equals(rating, StringComparison.OrdinalIgnoreCase))
-                                alts.Add(alt);
-                        }
-                        return alts;
-                    }
-                }
-            }
-            return null;
-        }
-
-        // STD and S40 are synonymous — return the alternate if applicable
-        private static string? GetScheduleSynonym(string schRtg)
-        {
-            if (schRtg.Equals("STD", StringComparison.OrdinalIgnoreCase)) return "S40";
-            if (schRtg.Equals("S40", StringComparison.OrdinalIgnoreCase)) return "STD";
-            return null;
-        }
 
         // Find rate with optional project-specific overrides. Checks project cache first,
-        // falls back to embedded default. Returns RateSource to identify which was used.
+        // falls back to embedded default. Same lookup logic: thickness (+ toggle S) → class → size-only.
         public static (double? FldMhu, string? Unit, string? RateSource, string KeyAttempted) FindRateWithProjectOverride(
             Dictionary<string, (double MH, string Unit)>? projectRateCache,
             string component, string size, string? thickness, string? classRating)
@@ -290,68 +197,34 @@ namespace VANTAGE.Services.AI
                 {
                     string lookupSize = size;
 
-                    // Olet: use branch/smaller size
-                    if (FittingMakeupService.IsOlet(component))
-                    {
-                        var dualSize = FittingMakeupService.ParseDualSize(size);
-                        if (dualSize != null)
-                            lookupSize = dualSize.Value.Smaller.ToString("0.###");
-                    }
+                    // Dual size (e.g., "2x0.75") — use the smaller size
+                    var dualSize = FittingMakeupService.ParseDualSize(size);
+                    if (dualSize != null)
+                        lookupSize = dualSize.Value.Smaller.ToString("0.###");
 
-                    // Try thickness key
+                    // Try thickness as-is, then toggle leading "S"
                     if (!string.IsNullOrWhiteSpace(thickness))
                     {
-                        string schRtg = TranslateSchedule(thickness);
-                        string key = $"{estGrp}-{lookupSize}:{schRtg}";
+                        string t = thickness.Trim().ToUpper();
+                        string key = $"{estGrp}-{lookupSize}:{t}";
                         if (projectRateCache.TryGetValue(key, out var projRate))
                             return (projRate.MH, projRate.Unit, "Project", key);
 
-                        string? synonym = GetScheduleSynonym(schRtg);
-                        if (synonym != null)
+                        string toggled = t.StartsWith("S") ? t[1..] : $"S{t}";
+                        if (toggled.Length > 0)
                         {
-                            string altKey = $"{estGrp}-{lookupSize}:{synonym}";
+                            string altKey = $"{estGrp}-{lookupSize}:{toggled}";
                             if (projectRateCache.TryGetValue(altKey, out projRate))
                                 return (projRate.MH, projRate.Unit, "Project", altKey);
                         }
                     }
 
-                    // OLW fallback for thickness in project rates
-                    if (UsesClassTierFallback(estGrp) && !string.IsNullOrWhiteSpace(thickness))
-                    {
-                        string schRtg = TranslateSchedule(thickness);
-                        var olwTier = GetOlwTierAlternates(schRtg);
-                        if (olwTier != null)
-                        {
-                            foreach (var alt in olwTier)
-                            {
-                                string altKey = $"{estGrp}-{lookupSize}:{alt}";
-                                if (projectRateCache.TryGetValue(altKey, out var projAlt))
-                                    return (projAlt.MH, projAlt.Unit, "Project", altKey);
-                            }
-                        }
-                    }
-
-                    // Try class rating key
+                    // Try class rating
                     if (!string.IsNullOrWhiteSpace(classRating))
                     {
                         string key = $"{estGrp}-{lookupSize}:{classRating}";
                         if (projectRateCache.TryGetValue(key, out var projRate))
                             return (projRate.MH, projRate.Unit, "Project", key);
-
-                        // OLW fallback for class rating in project rates
-                        if (UsesClassTierFallback(estGrp))
-                        {
-                            var olwTier = GetOlwTierAlternates(classRating);
-                            if (olwTier != null)
-                            {
-                                foreach (var alt in olwTier)
-                                {
-                                    string altKey = $"{estGrp}-{lookupSize}:{alt}";
-                                    if (projectRateCache.TryGetValue(altKey, out projRate))
-                                        return (projRate.MH, projRate.Unit, "Project", altKey);
-                                }
-                            }
-                        }
                     }
 
                     // Try size-only key

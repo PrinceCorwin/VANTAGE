@@ -6,6 +6,12 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### March 15, 2026 (Rate Lookup Simplification)
+- **Rate lookup refactored:** Removed OLW/SW class rating tier fallback system (`OlwClassTiers`, `TryOlwClassFallback`, `GetOlwTierAlternates`, `UsesClassTierFallback`). Removed `TranslateSchedule`, `GetScheduleSynonym` (STD↔S40), `GetTrailingSFallback`. New simplified lookup: try thickness as-is, toggle leading "S" (has S → remove, no S → add), try class rating, try size-only.
+- **Missed rates now report both keys:** When neither thickness nor class rating matches, the LookupKey field shows both attempted keys comma-separated (e.g., `SW-0.75:10S, SW-0.75:150`) instead of just the thickness key.
+- **Dual-size parsing for all components:** Rate lookup now parses `AxB` size format (e.g., `2x0.75` → `0.75`) for any component, not just olets. Fixes missed rates for PIPET and similar components with reducing sizes.
+- **Key file:** `Services/AI/RateSheetService.cs`
+
 ### March 15, 2026 (Import Takeoff Manager, ROC Set Manager Redesign, Batch Naming)
 - **Import from AI Takeoff dialog:** New modal dialog (`ImportTakeoffDialog`) opened from File menu (replaces "Create Activities" placeholder). Source selection via "From File" (`.xlsx` picker) or "From Batch" (new `SelectBatchDialog` — simplified batch list with OK/Cancel, no download/delete). ROC Set dropdown with "+ Create New..." opens ROC Set Manager. Import and Cancel buttons (Import is placeholder, Cancel closes).
 - **ROC Set Manager redesigned:** Two-mode UI — **View mode** shows single "ProjectID - SetName" dropdown with read-only grid, New Set/Modify/Delete Set buttons. **Edit mode** shows project dropdown + set name textbox with editable grid, Add Row/Delete Row/Save/Cancel buttons. Save handles renames via transaction (deletes original if project/name changed). Close warns about unsaved changes in edit mode. Admin gating removed — all users can manage sets.
