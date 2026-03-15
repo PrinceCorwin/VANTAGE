@@ -6,6 +6,11 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### March 14, 2026 (Takeoff — OLW/SW Rate Sheet Entries, Class Rating Tier Fallback)
+- **OLW size 2 rate entries added:** Added 5 new entries to `RateSheet.json` for OLW size 2 (40, 80, 160, STD, XXS). Updated existing XS entry (FldMhu 6.4→4.8, Unit null→EA).
+- **Class rating tier fallback for OLW and SW:** When a rate lookup fails for OLW or SW components, the system now tries equivalent class ratings from the same tier before reporting a miss. Tiers: 40/S40/STD/2000, 80/S80/XS/3000, 160/S160/XXS/6000/9000. Applies to both default and project-override rate lookups.
+- **Key files:** `Services/AI/RateSheetService.cs`, `Resources/RateSheet.json`
+
 ### March 14, 2026 (Remember Last View, Previous Batches Admin Delete)
 - **Remember last view on startup:** App now saves the last visited nav view (Progress, Schedule, Prog Books, Work Pkgs, Analysis, Takeoffs) to UserSettings via `HighlightNavigationButton`. On startup, `LoadInitialModule` restores the saved view. Defaults to Progress if no setting exists. Takeoff falls back to Progress if user no longer has access. Fixed `Loaded` event overriding the restored highlight by using `_activeNavButton ?? btnProgress`.
 - **Previous Batches — admin delete:** Delete Selected and Delete All buttons added to `PreviousBatchesDialog`, visible only to admins (`AzureDbManager.IsUserAdmin`). Confirmation dialogs before deletion. `TakeoffService.DeleteBatchAsync` lists all S3 objects under `batches/{batchId}/` and deletes them. Progress status shown during Delete All. Requires `s3:DeleteObject` on the processing bucket (IAM policy updated).

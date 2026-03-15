@@ -31167,11 +31167,56 @@
     "DollarEach": null
   },
   {
+    "Key": "OLW-2:40",
+    "EstGrp": "OLW",
+    "Size": 2.0,
+    "SchRtg": "40",
+    "Unit": "EA",
+    "FldMhu": 3.9,
+    "DollarEach": null
+  },
+  {
+    "Key": "OLW-2:80",
+    "EstGrp": "OLW",
+    "Size": 2.0,
+    "SchRtg": "80",
+    "Unit": "EA",
+    "FldMhu": 4.8,
+    "DollarEach": null
+  },
+  {
+    "Key": "OLW-2:160",
+    "EstGrp": "OLW",
+    "Size": 2.0,
+    "SchRtg": "160",
+    "Unit": "EA",
+    "FldMhu": 6.4,
+    "DollarEach": null
+  },
+  {
+    "Key": "OLW-2:STD",
+    "EstGrp": "OLW",
+    "Size": 2.0,
+    "SchRtg": "STD",
+    "Unit": "EA",
+    "FldMhu": 3.9,
+    "DollarEach": null
+  },
+  {
     "Key": "OLW-2:XS",
     "EstGrp": "OLW",
     "Size": 2.0,
     "SchRtg": "XS",
-    "Unit": null,
+    "Unit": "EA",
+    "FldMhu": 4.8,
+    "DollarEach": null
+  },
+  {
+    "Key": "OLW-2:XXS",
+    "EstGrp": "OLW",
+    "Size": 2.0,
+    "SchRtg": "XXS",
+    "Unit": "EA",
     "FldMhu": 6.4,
     "DollarEach": null
   },

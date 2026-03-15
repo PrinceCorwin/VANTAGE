@@ -140,6 +140,10 @@ namespace VANTAGE.Services.AI
                     rate = LookupRate(altKey);
                     if (rate.HasValue) return (rate.Value.FldMhu, rate.Value.Unit, altKey);
                 }
+
+                // OLW fallback: try equivalent class ratings for the thickness
+                var olwFallback = TryOlwClassFallback(estGrp, size, schRtg);
+                if (olwFallback.HasValue) return (olwFallback.Value.FldMhu, olwFallback.Value.Unit, olwFallback.Value.Key);
             }
 
             // Try with Class Rating as SCH_RTG
@@ -148,6 +152,10 @@ namespace VANTAGE.Services.AI
                 string key = $"{estGrp}-{size}:{classRating}";
                 var rate = LookupRate(key);
                 if (rate.HasValue) return (rate.Value.FldMhu, rate.Value.Unit, key);
+
+                // OLW fallback: try equivalent class ratings
+                var olwFallback = TryOlwClassFallback(estGrp, size, classRating);
+                if (olwFallback.HasValue) return (olwFallback.Value.FldMhu, olwFallback.Value.Unit, olwFallback.Value.Key);
             }
 
             // Try size-only key (for FTG, GSKT, HARDWARE, etc.)
@@ -198,6 +206,68 @@ namespace VANTAGE.Services.AI
             return t;
         }
 
+        // Components that use the class rating tier fallback
+        private static bool UsesClassTierFallback(string estGrp) =>
+            estGrp.Equals("OLW", StringComparison.OrdinalIgnoreCase) ||
+            estGrp.Equals("SW", StringComparison.OrdinalIgnoreCase);
+
+        // OLW/SW equivalent class rating tiers — when one rating fails, try others in same tier
+        private static readonly string[][] OlwClassTiers = new[]
+        {
+            new[] { "40", "S40", "STD", "2000" },
+            new[] { "80", "S80", "XS", "3000" },
+            new[] { "160", "S160", "XXS", "6000", "9000" }
+        };
+
+        // For OLW, try all equivalent class ratings in the same tier
+        private static (double FldMhu, string Unit, string Key)? TryOlwClassFallback(string estGrp, string size, string? rating)
+        {
+            if (!UsesClassTierFallback(estGrp) || string.IsNullOrWhiteSpace(rating))
+                return null;
+
+            foreach (var tier in OlwClassTiers)
+            {
+                bool inTier = false;
+                foreach (var val in tier)
+                {
+                    if (val.Equals(rating, StringComparison.OrdinalIgnoreCase))
+                    { inTier = true; break; }
+                }
+                if (!inTier) continue;
+
+                foreach (var alt in tier)
+                {
+                    if (alt.Equals(rating, StringComparison.OrdinalIgnoreCase)) continue;
+                    string key = $"{estGrp}-{size}:{alt}";
+                    var rate = LookupRate(key);
+                    if (rate.HasValue) return (rate.Value.FldMhu, rate.Value.Unit, key);
+                }
+            }
+            return null;
+        }
+
+        // Returns the other values in the same OLW tier (excluding the input), or null if not in any tier
+        private static List<string>? GetOlwTierAlternates(string rating)
+        {
+            foreach (var tier in OlwClassTiers)
+            {
+                foreach (var val in tier)
+                {
+                    if (val.Equals(rating, StringComparison.OrdinalIgnoreCase))
+                    {
+                        var alts = new List<string>();
+                        foreach (var alt in tier)
+                        {
+                            if (!alt.Equals(rating, StringComparison.OrdinalIgnoreCase))
+                                alts.Add(alt);
+                        }
+                        return alts;
+                    }
+                }
+            }
+            return null;
+        }
+
         // STD and S40 are synonymous — return the alternate if applicable
         private static string? GetScheduleSynonym(string schRtg)
         {
@@ -245,12 +315,43 @@ namespace VANTAGE.Services.AI
                         }
                     }
 
+                    // OLW fallback for thickness in project rates
+                    if (UsesClassTierFallback(estGrp) && !string.IsNullOrWhiteSpace(thickness))
+                    {
+                        string schRtg = TranslateSchedule(thickness);
+                        var olwTier = GetOlwTierAlternates(schRtg);
+                        if (olwTier != null)
+                        {
+                            foreach (var alt in olwTier)
+                            {
+                                string altKey = $"{estGrp}-{lookupSize}:{alt}";
+                                if (projectRateCache.TryGetValue(altKey, out var projAlt))
+                                    return (projAlt.MH, projAlt.Unit, "Project", altKey);
+                            }
+                        }
+                    }
+
                     // Try class rating key
                     if (!string.IsNullOrWhiteSpace(classRating))
                     {
                         string key = $"{estGrp}-{lookupSize}:{classRating}";
                         if (projectRateCache.TryGetValue(key, out var projRate))
                             return (projRate.MH, projRate.Unit, "Project", key);
+
+                        // OLW fallback for class rating in project rates
+                        if (UsesClassTierFallback(estGrp))
+                        {
+                            var olwTier = GetOlwTierAlternates(classRating);
+                            if (olwTier != null)
+                            {
+                                foreach (var alt in olwTier)
+                                {
+                                    string altKey = $"{estGrp}-{lookupSize}:{alt}";
+                                    if (projectRateCache.TryGetValue(altKey, out projRate))
+                                        return (projRate.MH, projRate.Unit, "Project", altKey);
+                                }
+                            }
+                        }
                     }
 
                     // Try size-only key
