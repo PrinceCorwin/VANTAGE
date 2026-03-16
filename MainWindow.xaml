@@ -140,6 +140,7 @@
                             <syncfusion:DropDownMenuItem Header="Edit Projects" Click="MenuEditProjects_Click"/>
                             <syncfusion:DropDownMenuItem Header="Manage Snapshots" Click="MenuEditSnapshots_Click"/>
                             <syncfusion:DropDownMenuItem Header="Manage Progress Log" Click="MenuManageProgressLog_Click"/>
+                            <syncfusion:DropDownMenuItem Header="Manage S3 Drawings" Click="MenuManageS3Drawings_Click" ToolTip="View and delete orphaned drawings in S3"/>
                             <Separator Background="{DynamicResource BorderColor}" Margin="5,2"/>
                             <syncfusion:DropDownMenuItem Header="Project Rates" Click="MenuProjectRates_Click" ToolTip="Manage per-project unit rate overrides"/>
                             <Separator Background="{DynamicResource BorderColor}" Margin="5,2"/>

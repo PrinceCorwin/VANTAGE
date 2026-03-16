@@ -104,6 +104,22 @@ namespace VANTAGE.Services.AI
             return (status, output);
         }
 
+        // Stop a running Step Functions execution
+        public async Task StopExecutionAsync(
+            string executionArn,
+            string cause = "User cancelled batch",
+            CancellationToken cancellationToken = default)
+        {
+            var request = new StopExecutionRequest
+            {
+                ExecutionArn = executionArn,
+                Cause = cause
+            };
+
+            await _sfnClient.StopExecutionAsync(request, cancellationToken);
+            AppLogger.Info($"Stopped execution: {executionArn}", "TakeoffService.StopExecutionAsync");
+        }
+
         // Download the output Excel file from S3 to a local path
         public async Task DownloadExcelAsync(
             string batchId,

@@ -12,6 +12,7 @@ using System.Windows.Media.Imaging;
 using VANTAGE.Data;
 using VANTAGE.Dialogs;
 using VANTAGE.Models;
+using VANTAGE.Services.AI;
 using VANTAGE.Services.Plugins;
 using VANTAGE.Utilities;
 using VANTAGE.ViewModels;
@@ -1142,6 +1143,39 @@ namespace VANTAGE
             dialog.ShowDialog();
         }
 
+        // Open Manage S3 Drawings dialog (for orphaned drawings cleanup)
+        private async void MenuManageS3Drawings_Click(object sender, RoutedEventArgs e)
+        {
+            if (App.CurrentUser == null || !App.CurrentUser.IsAdmin)
+            {
+                MessageBox.Show("You do not have admin privileges.", "Access Denied",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            try
+            {
+                using var service = new TakeoffService();
+                var configs = await service.ListConfigsAsync();
+
+                if (configs.Count == 0)
+                {
+                    MessageBox.Show("No takeoff configs found in S3.", "No Configs",
+                        MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                var dialog = new ManageDrawingsDialog(configs);
+                dialog.Owner = this;
+                dialog.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "MainWindow.MenuManageS3Drawings_Click");
+                MessageBox.Show($"Error loading configs: {ex.Message}", "Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
 
         private void MenuProjectRates_Click(object sender, RoutedEventArgs e)
         {

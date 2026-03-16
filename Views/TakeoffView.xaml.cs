@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Win32;
@@ -19,8 +20,10 @@ namespace VANTAGE.Views
         private List<string> _selectedFiles = new();
         private List<(string Key, string DisplayName)> _configs = new();
         private string? _currentBatchId;
+        private string? _currentExecutionArn;
         private TakeoffService? _service;
         private bool _isLoadingConfigs;
+        private CancellationTokenSource? _processCts;
 
         // Dropdown data for unit rates and ROC sets
         private List<(string ProjectID, string SetName)> _rateSets = new();
@@ -131,8 +134,16 @@ namespace VANTAGE.Views
             else
                 _currentBatchId = $"{customName}-{timestamp}";
 
-            btnProcess.IsEnabled = false;
+            // Set up cancellation and UI state
+            _processCts?.Dispose();
+            _processCts = new CancellationTokenSource();
+            var token = _processCts.Token;
+
+            btnProcess.Visibility = Visibility.Collapsed;
+            btnCancel.Visibility = Visibility.Visible;
             btnSelectFiles.IsEnabled = false;
+
+            List<string>? drawingKeys = null;
 
             try
             {
@@ -147,18 +158,20 @@ namespace VANTAGE.Views
                     SetStatus($"Uploading drawing {p.current} of {p.total}...");
                 });
 
-                var drawingKeys = await _service.UploadDrawingsAsync(
-                    drawingPrefix, _selectedFiles, progress);
+                drawingKeys = await _service.UploadDrawingsAsync(
+                    drawingPrefix, _selectedFiles, progress, token);
+
+                token.ThrowIfCancellationRequested();
 
                 // Write metadata for Previous Batches listing
                 string username = App.CurrentUser?.Username ?? "Unknown";
                 string configName = _configs[configIndex].DisplayName;
-                await _service.WriteMetadataAsync(_currentBatchId, _selectedFiles.Count, username, configName, _currentBatchId);
+                await _service.WriteMetadataAsync(_currentBatchId, _selectedFiles.Count, username, configName, _currentBatchId, token);
 
                 // Start execution
                 SetStatus("Starting AI extraction...");
-                var executionArn = await _service.StartBatchAsync(
-                    _currentBatchId, configKey, drawingKeys);
+                _currentExecutionArn = await _service.StartBatchAsync(
+                    _currentBatchId, configKey, drawingKeys, token);
 
                 // Poll until done
                 SetStatus("Processing — polling for completion...");
@@ -166,9 +179,9 @@ namespace VANTAGE.Views
 
                 while (true)
                 {
-                    await System.Threading.Tasks.Task.Delay(3000);
+                    await System.Threading.Tasks.Task.Delay(3000, token);
 
-                    var (status, output) = await _service.PollExecutionAsync(executionArn);
+                    var (status, output) = await _service.PollExecutionAsync(_currentExecutionArn, token);
                     string elapsed = $"{stopwatch.Elapsed.TotalSeconds:F0}s";
 
                     SetStatus($"Status: {status}  ({elapsed} elapsed, {_selectedFiles.Count} drawing(s))");
@@ -213,18 +226,18 @@ namespace VANTAGE.Views
                     }
 
                     // Clean up uploaded drawings from S3
-                    try
-                    {
-                        await _service.DeleteDrawingsAsync(drawingKeys);
-                        AppLogger.Info($"Cleaned up {drawingKeys.Count} drawing(s) from S3", "TakeoffView.BtnProcess_Click");
-                    }
-                    catch (Exception cleanupEx)
-                    {
-                        AppLogger.Error(cleanupEx, "TakeoffView.BtnProcess_Click.Cleanup");
-                    }
-
+                    CleanupDrawings(drawingKeys);
                     break;
                 }
+            }
+            catch (OperationCanceledException)
+            {
+                SetStatus("Processing cancelled by user.");
+                AppLogger.Info("Batch processing cancelled by user", "TakeoffView.BtnProcess_Click");
+
+                // Clean up uploaded drawings if cancellation occurred after upload
+                if (drawingKeys != null)
+                    CleanupDrawings(drawingKeys);
             }
             catch (Exception ex)
             {
@@ -233,9 +246,53 @@ namespace VANTAGE.Views
             }
             finally
             {
-                btnProcess.IsEnabled = true;
+                _currentExecutionArn = null;
+                btnProcess.Visibility = Visibility.Visible;
+                btnCancel.Visibility = Visibility.Collapsed;
+                btnCancel.IsEnabled = true;
                 btnSelectFiles.IsEnabled = true;
             }
+        }
+
+        // Clean up uploaded drawings from S3 (fire-and-forget helper)
+        private async void CleanupDrawings(List<string> drawingKeys)
+        {
+            if (_service == null || drawingKeys.Count == 0) return;
+
+            try
+            {
+                await _service.DeleteDrawingsAsync(drawingKeys);
+                AppLogger.Info($"Cleaned up {drawingKeys.Count} drawing(s) from S3", "TakeoffView.CleanupDrawings");
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "TakeoffView.CleanupDrawings");
+            }
+        }
+
+        // Cancel button handler - stops the Step Functions execution and cancels local polling
+        private async void BtnCancel_Click(object sender, RoutedEventArgs e)
+        {
+            if (_processCts == null || _processCts.IsCancellationRequested) return;
+
+            btnCancel.IsEnabled = false;
+            SetStatus("Cancelling...");
+
+            // Stop the Step Functions execution if running
+            if (_service != null && !string.IsNullOrEmpty(_currentExecutionArn))
+            {
+                try
+                {
+                    await _service.StopExecutionAsync(_currentExecutionArn, "User cancelled batch");
+                }
+                catch (Exception ex)
+                {
+                    AppLogger.Error(ex, "TakeoffView.BtnCancel_Click.StopExecution");
+                }
+            }
+
+            // Cancel the local polling loop
+            _processCts.Cancel();
         }
 
         // Download batch Excel, run post-processor, and open the file
@@ -288,21 +345,6 @@ namespace VANTAGE.Views
                 AppLogger.Error(ex, "TakeoffView.DownloadBatchExcelAsync");
                 SetStatus($"Download error: {ex.Message}");
             }
-        }
-
-        private void BtnManageDrawings_Click(object sender, RoutedEventArgs e)
-        {
-            if (_configs.Count == 0)
-            {
-                MessageBox.Show("No configs loaded. Please refresh configs first.", "No Configs",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            int configIndex = cboConfig.SelectedIndex - 1;
-            var dialog = new ManageDrawingsDialog(_configs, Math.Max(0, configIndex));
-            dialog.Owner = Window.GetWindow(this);
-            dialog.ShowDialog();
         }
 
         private void CboConfig_SelectionChanged(object sender, SelectionChangedEventArgs e)

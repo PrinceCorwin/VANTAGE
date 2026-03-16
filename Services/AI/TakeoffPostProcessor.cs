@@ -137,13 +137,19 @@ namespace VANTAGE.Services.AI
             int lastRow = usedRange.LastRow().RowNumber();
             int lastCol = usedRange.LastColumn().ColumnNumber();
 
-            // Build column name map from header row
+            // Build column name map from header row, keeping only the first occurrence
+            // of each column name. BOM columns come before Title Block columns, so this
+            // ensures BOM fields (like "Size") aren't overwritten by Title Block fields.
             var columnMap = new Dictionary<int, string>();
+            var seenNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             for (int col = 1; col <= lastCol; col++)
             {
                 string header = ws.Cell(1, col).GetString().Trim();
-                if (!string.IsNullOrEmpty(header))
+                if (!string.IsNullOrEmpty(header) && !seenNames.Contains(header))
+                {
                     columnMap[col] = header;
+                    seenNames.Add(header);
+                }
             }
 
             // Read data rows

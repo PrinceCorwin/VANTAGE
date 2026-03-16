@@ -56160,6 +56160,699 @@
     "DollarEach": null
   },
   {
+    "Key": "SW-0.125:10",
+    "EstGrp": "SW",
+    "Size": 0.125,
+    "SchRtg": "10",
+    "Unit": "EA",
+    "FldMhu": 0.35,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-0.125:40",
+    "EstGrp": "SW",
+    "Size": 0.125,
+    "SchRtg": "40",
+    "Unit": "EA",
+    "FldMhu": 0.4,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-0.125:STD",
+    "EstGrp": "SW",
+    "Size": 0.125,
+    "SchRtg": "STD",
+    "Unit": "EA",
+    "FldMhu": 0.4,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-0.125:80",
+    "EstGrp": "SW",
+    "Size": 0.125,
+    "SchRtg": "80",
+    "Unit": "EA",
+    "FldMhu": 0.45,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-0.125:XS",
+    "EstGrp": "SW",
+    "Size": 0.125,
+    "SchRtg": "XS",
+    "Unit": "EA",
+    "FldMhu": 0.45,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-0.125:160",
+    "EstGrp": "SW",
+    "Size": 0.125,
+    "SchRtg": "160",
+    "Unit": "EA",
+    "FldMhu": 0.55,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-0.125:XXS",
+    "EstGrp": "SW",
+    "Size": 0.125,
+    "SchRtg": "XXS",
+    "Unit": "EA",
+    "FldMhu": 0.6,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-0.25:10",
+    "EstGrp": "SW",
+    "Size": 0.25,
+    "SchRtg": "10",
+    "Unit": "EA",
+    "FldMhu": 0.4,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-0.25:40",
+    "EstGrp": "SW",
+    "Size": 0.25,
+    "SchRtg": "40",
+    "Unit": "EA",
+    "FldMhu": 0.45,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-0.25:STD",
+    "EstGrp": "SW",
+    "Size": 0.25,
+    "SchRtg": "STD",
+    "Unit": "EA",
+    "FldMhu": 0.45,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-0.25:80",
+    "EstGrp": "SW",
+    "Size": 0.25,
+    "SchRtg": "80",
+    "Unit": "EA",
+    "FldMhu": 0.5,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-0.25:XS",
+    "EstGrp": "SW",
+    "Size": 0.25,
+    "SchRtg": "XS",
+    "Unit": "EA",
+    "FldMhu": 0.5,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-0.25:160",
+    "EstGrp": "SW",
+    "Size": 0.25,
+    "SchRtg": "160",
+    "Unit": "EA",
+    "FldMhu": 0.6,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-0.25:XXS",
+    "EstGrp": "SW",
+    "Size": 0.25,
+    "SchRtg": "XXS",
+    "Unit": "EA",
+    "FldMhu": 0.65,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-0.375:10",
+    "EstGrp": "SW",
+    "Size": 0.375,
+    "SchRtg": "10",
+    "Unit": "EA",
+    "FldMhu": 0.45,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-0.375:40",
+    "EstGrp": "SW",
+    "Size": 0.375,
+    "SchRtg": "40",
+    "Unit": "EA",
+    "FldMhu": 0.5,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-0.375:STD",
+    "EstGrp": "SW",
+    "Size": 0.375,
+    "SchRtg": "STD",
+    "Unit": "EA",
+    "FldMhu": 0.5,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-0.375:80",
+    "EstGrp": "SW",
+    "Size": 0.375,
+    "SchRtg": "80",
+    "Unit": "EA",
+    "FldMhu": 0.55,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-0.375:XS",
+    "EstGrp": "SW",
+    "Size": 0.375,
+    "SchRtg": "XS",
+    "Unit": "EA",
+    "FldMhu": 0.55,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-0.375:160",
+    "EstGrp": "SW",
+    "Size": 0.375,
+    "SchRtg": "160",
+    "Unit": "EA",
+    "FldMhu": 0.65,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-0.375:XXS",
+    "EstGrp": "SW",
+    "Size": 0.375,
+    "SchRtg": "XXS",
+    "Unit": "EA",
+    "FldMhu": 0.7,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-0.5:10",
+    "EstGrp": "SW",
+    "Size": 0.5,
+    "SchRtg": "10",
+    "Unit": "EA",
+    "FldMhu": 0.5,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-0.5:40",
+    "EstGrp": "SW",
+    "Size": 0.5,
+    "SchRtg": "40",
+    "Unit": "EA",
+    "FldMhu": 0.55,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-0.5:STD",
+    "EstGrp": "SW",
+    "Size": 0.5,
+    "SchRtg": "STD",
+    "Unit": "EA",
+    "FldMhu": 0.55,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-0.5:80",
+    "EstGrp": "SW",
+    "Size": 0.5,
+    "SchRtg": "80",
+    "Unit": "EA",
+    "FldMhu": 0.6,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-0.5:XS",
+    "EstGrp": "SW",
+    "Size": 0.5,
+    "SchRtg": "XS",
+    "Unit": "EA",
+    "FldMhu": 0.6,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-0.5:160",
+    "EstGrp": "SW",
+    "Size": 0.5,
+    "SchRtg": "160",
+    "Unit": "EA",
+    "FldMhu": 0.7,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-0.5:XXS",
+    "EstGrp": "SW",
+    "Size": 0.5,
+    "SchRtg": "XXS",
+    "Unit": "EA",
+    "FldMhu": 0.75,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-0.75:10",
+    "EstGrp": "SW",
+    "Size": 0.75,
+    "SchRtg": "10",
+    "Unit": "EA",
+    "FldMhu": 0.55,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-0.75:40",
+    "EstGrp": "SW",
+    "Size": 0.75,
+    "SchRtg": "40",
+    "Unit": "EA",
+    "FldMhu": 0.6,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-0.75:STD",
+    "EstGrp": "SW",
+    "Size": 0.75,
+    "SchRtg": "STD",
+    "Unit": "EA",
+    "FldMhu": 0.6,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-0.75:80",
+    "EstGrp": "SW",
+    "Size": 0.75,
+    "SchRtg": "80",
+    "Unit": "EA",
+    "FldMhu": 0.65,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-0.75:XS",
+    "EstGrp": "SW",
+    "Size": 0.75,
+    "SchRtg": "XS",
+    "Unit": "EA",
+    "FldMhu": 0.65,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-0.75:160",
+    "EstGrp": "SW",
+    "Size": 0.75,
+    "SchRtg": "160",
+    "Unit": "EA",
+    "FldMhu": 0.75,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-0.75:XXS",
+    "EstGrp": "SW",
+    "Size": 0.75,
+    "SchRtg": "XXS",
+    "Unit": "EA",
+    "FldMhu": 0.8,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-1:10",
+    "EstGrp": "SW",
+    "Size": 1.0,
+    "SchRtg": "10",
+    "Unit": "EA",
+    "FldMhu": 0.6,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-1:40",
+    "EstGrp": "SW",
+    "Size": 1.0,
+    "SchRtg": "40",
+    "Unit": "EA",
+    "FldMhu": 0.65,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-1:STD",
+    "EstGrp": "SW",
+    "Size": 1.0,
+    "SchRtg": "STD",
+    "Unit": "EA",
+    "FldMhu": 0.65,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-1:80",
+    "EstGrp": "SW",
+    "Size": 1.0,
+    "SchRtg": "80",
+    "Unit": "EA",
+    "FldMhu": 0.7,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-1:XS",
+    "EstGrp": "SW",
+    "Size": 1.0,
+    "SchRtg": "XS",
+    "Unit": "EA",
+    "FldMhu": 0.7,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-1:160",
+    "EstGrp": "SW",
+    "Size": 1.0,
+    "SchRtg": "160",
+    "Unit": "EA",
+    "FldMhu": 0.8,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-1:XXS",
+    "EstGrp": "SW",
+    "Size": 1.0,
+    "SchRtg": "XXS",
+    "Unit": "EA",
+    "FldMhu": 0.85,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-1.25:10",
+    "EstGrp": "SW",
+    "Size": 1.25,
+    "SchRtg": "10",
+    "Unit": "EA",
+    "FldMhu": 0.65,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-1.25:40",
+    "EstGrp": "SW",
+    "Size": 1.25,
+    "SchRtg": "40",
+    "Unit": "EA",
+    "FldMhu": 0.7,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-1.25:STD",
+    "EstGrp": "SW",
+    "Size": 1.25,
+    "SchRtg": "STD",
+    "Unit": "EA",
+    "FldMhu": 0.7,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-1.25:80",
+    "EstGrp": "SW",
+    "Size": 1.25,
+    "SchRtg": "80",
+    "Unit": "EA",
+    "FldMhu": 0.75,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-1.25:XS",
+    "EstGrp": "SW",
+    "Size": 1.25,
+    "SchRtg": "XS",
+    "Unit": "EA",
+    "FldMhu": 0.75,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-1.25:160",
+    "EstGrp": "SW",
+    "Size": 1.25,
+    "SchRtg": "160",
+    "Unit": "EA",
+    "FldMhu": 0.85,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-1.25:XXS",
+    "EstGrp": "SW",
+    "Size": 1.25,
+    "SchRtg": "XXS",
+    "Unit": "EA",
+    "FldMhu": 0.9,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-1.5:10",
+    "EstGrp": "SW",
+    "Size": 1.5,
+    "SchRtg": "10",
+    "Unit": "EA",
+    "FldMhu": 0.7,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-1.5:40",
+    "EstGrp": "SW",
+    "Size": 1.5,
+    "SchRtg": "40",
+    "Unit": "EA",
+    "FldMhu": 0.75,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-1.5:STD",
+    "EstGrp": "SW",
+    "Size": 1.5,
+    "SchRtg": "STD",
+    "Unit": "EA",
+    "FldMhu": 0.75,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-1.5:80",
+    "EstGrp": "SW",
+    "Size": 1.5,
+    "SchRtg": "80",
+    "Unit": "EA",
+    "FldMhu": 0.8,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-1.5:XS",
+    "EstGrp": "SW",
+    "Size": 1.5,
+    "SchRtg": "XS",
+    "Unit": "EA",
+    "FldMhu": 0.8,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-1.5:160",
+    "EstGrp": "SW",
+    "Size": 1.5,
+    "SchRtg": "160",
+    "Unit": "EA",
+    "FldMhu": 0.9,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-1.5:XXS",
+    "EstGrp": "SW",
+    "Size": 1.5,
+    "SchRtg": "XXS",
+    "Unit": "EA",
+    "FldMhu": 0.95,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-2:10",
+    "EstGrp": "SW",
+    "Size": 2.0,
+    "SchRtg": "10",
+    "Unit": "EA",
+    "FldMhu": 0.75,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-2:40",
+    "EstGrp": "SW",
+    "Size": 2.0,
+    "SchRtg": "40",
+    "Unit": "EA",
+    "FldMhu": 0.8,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-2:STD",
+    "EstGrp": "SW",
+    "Size": 2.0,
+    "SchRtg": "STD",
+    "Unit": "EA",
+    "FldMhu": 0.8,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-2:80",
+    "EstGrp": "SW",
+    "Size": 2.0,
+    "SchRtg": "80",
+    "Unit": "EA",
+    "FldMhu": 0.85,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-2:XS",
+    "EstGrp": "SW",
+    "Size": 2.0,
+    "SchRtg": "XS",
+    "Unit": "EA",
+    "FldMhu": 0.85,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-2:160",
+    "EstGrp": "SW",
+    "Size": 2.0,
+    "SchRtg": "160",
+    "Unit": "EA",
+    "FldMhu": 0.95,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-2:XXS",
+    "EstGrp": "SW",
+    "Size": 2.0,
+    "SchRtg": "XXS",
+    "Unit": "EA",
+    "FldMhu": 1.0,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-2.5:10",
+    "EstGrp": "SW",
+    "Size": 2.5,
+    "SchRtg": "10",
+    "Unit": "EA",
+    "FldMhu": 0.8,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-2.5:40",
+    "EstGrp": "SW",
+    "Size": 2.5,
+    "SchRtg": "40",
+    "Unit": "EA",
+    "FldMhu": 0.85,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-2.5:STD",
+    "EstGrp": "SW",
+    "Size": 2.5,
+    "SchRtg": "STD",
+    "Unit": "EA",
+    "FldMhu": 0.85,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-2.5:80",
+    "EstGrp": "SW",
+    "Size": 2.5,
+    "SchRtg": "80",
+    "Unit": "EA",
+    "FldMhu": 0.9,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-2.5:XS",
+    "EstGrp": "SW",
+    "Size": 2.5,
+    "SchRtg": "XS",
+    "Unit": "EA",
+    "FldMhu": 0.9,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-2.5:160",
+    "EstGrp": "SW",
+    "Size": 2.5,
+    "SchRtg": "160",
+    "Unit": "EA",
+    "FldMhu": 1.0,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-2.5:XXS",
+    "EstGrp": "SW",
+    "Size": 2.5,
+    "SchRtg": "XXS",
+    "Unit": "EA",
+    "FldMhu": 1.05,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-3:10",
+    "EstGrp": "SW",
+    "Size": 3.0,
+    "SchRtg": "10",
+    "Unit": "EA",
+    "FldMhu": 1.0,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-3:40",
+    "EstGrp": "SW",
+    "Size": 3.0,
+    "SchRtg": "40",
+    "Unit": "EA",
+    "FldMhu": 1.05,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-3:STD",
+    "EstGrp": "SW",
+    "Size": 3.0,
+    "SchRtg": "STD",
+    "Unit": "EA",
+    "FldMhu": 1.05,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-3:80",
+    "EstGrp": "SW",
+    "Size": 3.0,
+    "SchRtg": "80",
+    "Unit": "EA",
+    "FldMhu": 1.1,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-3:XS",
+    "EstGrp": "SW",
+    "Size": 3.0,
+    "SchRtg": "XS",
+    "Unit": "EA",
+    "FldMhu": 1.1,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-3:160",
+    "EstGrp": "SW",
+    "Size": 3.0,
+    "SchRtg": "160",
+    "Unit": "EA",
+    "FldMhu": 1.2,
+    "DollarEach": null
+  },
+  {
+    "Key": "SW-3:XXS",
+    "EstGrp": "SW",
+    "Size": 3.0,
+    "SchRtg": "XXS",
+    "Unit": "EA",
+    "FldMhu": 1.25,
+    "DollarEach": null
+  },
+  {
     "Key": "SWGC-1:XXS",
     "EstGrp": "SWGC",
     "Size": 1.0,

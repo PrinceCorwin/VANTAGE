@@ -2565,6 +2565,8 @@
         <li>If successful, a Save dialog appears automatically. Choose a location to save the Excel output, and it will open when complete.</li>
     </ol>
 
+    <p><strong>Cancelling:</strong> While processing, the PROCESS BATCH button changes to a red <strong>CANCEL</strong> button. Click it to abort the current batch. The AWS Step Functions execution will be stopped (any in-flight Lambda invocations will complete, but no further processing occurs). Uploaded drawings are cleaned up from S3.</p>
+
     <p>The <strong>Send Missed Makeups and Rates to Admin</strong> checkbox (checked by default) automatically emails administrators when the batch has unmatched fitting makeups or rates. Only the missed data tabs are sent — not the full Excel.</p>
 
     <h3 id="takeoff-previous-batches">Previous Batches</h3>

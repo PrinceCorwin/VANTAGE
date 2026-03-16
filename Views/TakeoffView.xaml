@@ -221,6 +221,24 @@
                 </Button.Effect>
             </Button>
 
+            <Button x:Name="btnCancel"
+                    Content="CANCEL"
+                    Style="{StaticResource RoundedButtonStyle}"
+                    Padding="20,8"
+                    FontSize="12"
+                    Visibility="Collapsed"
+                    Background="{DynamicResource StatusRedBgBtn}"
+                    Foreground="{DynamicResource StatusRedFgBtn}"
+                    BorderThickness="0"
+                    Click="BtnCancel_Click"
+                    ToolTip="Cancel the current batch processing">
+                <Button.Effect>
+                    <DropShadowEffect ShadowDepth="4" BlurRadius="6" Direction="315"
+                                      Opacity="{DynamicResource ButtonShadowOpacity}"
+                                      Color="{DynamicResource ButtonShadowColor}"/>
+                </Button.Effect>
+            </Button>
+
             <Button x:Name="btnPreviousBatches"
                     Content="PREVIOUS BATCHES"
                     Style="{StaticResource RoundedButtonStyle}"
@@ -240,24 +258,6 @@
                 </Button.Effect>
             </Button>
 
-            <Button x:Name="btnManageDrawings"
-                    Content="MANAGE DRAWINGS"
-                    Style="{StaticResource RoundedButtonStyle}"
-                    Padding="20,8"
-                    Margin="12,0,0,0"
-                    FontSize="12"
-                    Background="{DynamicResource ControlBackground}"
-                    Foreground="{DynamicResource ForegroundColor}"
-                    BorderBrush="{DynamicResource ControlBorder}"
-                    BorderThickness="1"
-                    Click="BtnManageDrawings_Click"
-                    ToolTip="View and manage drawings stored in S3 for the selected config">
-                <Button.Effect>
-                    <DropShadowEffect ShadowDepth="4" BlurRadius="6" Direction="315"
-                                      Opacity="{DynamicResource ButtonShadowOpacity}"
-                                      Color="{DynamicResource ButtonShadowColor}"/>
-                </Button.Effect>
-            </Button>
         </StackPanel>
 
         <!-- Options -->

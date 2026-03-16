@@ -6,6 +6,12 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### March 16, 2026 (Takeoff — Cancel Button, Duplicate Column Fix, Fitting Makeups)
+- **Cancel button for batch processing:** Added CANCEL button to TakeoffView that appears while processing (replacing PROCESS BATCH). Calls `StopExecutionAsync` to abort the AWS Step Functions execution, then cancels the local polling loop. Cleans up uploaded drawings from S3 on cancellation. Execution will show as ABORTED in the Step Functions console.
+- **Duplicate column name fix:** Material tab reading now keeps only the first occurrence of each column name. Fixes issue where Title Block "Size" column (containing values like "A3" drawing size) was overwriting BOM "Size" column (containing pipe sizes like "1.5").
+- **Fitting makeup entries added:** Added 34 new CAP entries (17 for SW, 17 for THRD connection types) covering sizes 0.5" through 30". Added 1 new REDT entry (BW, 1.5x0.75, 2.25" makeup).
+- **Key files:** `Views/TakeoffView.xaml`, `Views/TakeoffView.xaml.cs`, `Services/AI/TakeoffService.cs`, `Services/AI/TakeoffPostProcessor.cs`, `Resources/FittingMakeup.json`
+
 ### March 15, 2026 (Rate Lookup Simplification)
 - **Rate lookup refactored:** Removed OLW/SW class rating tier fallback system (`OlwClassTiers`, `TryOlwClassFallback`, `GetOlwTierAlternates`, `UsesClassTierFallback`). Removed `TranslateSchedule`, `GetScheduleSynonym` (STD↔S40), `GetTrailingSFallback`. New simplified lookup: try thickness as-is, toggle leading "S" (has S → remove, no S → add), try class rating, try size-only.
 - **Missed rates now report both keys:** When neither thickness nor class rating matches, the LookupKey field shows both attempted keys comma-separated (e.g., `SW-0.75:10S, SW-0.75:150`) instead of just the thickness key.

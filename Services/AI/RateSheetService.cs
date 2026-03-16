@@ -125,7 +125,7 @@ namespace VANTAGE.Services.AI
             string? thicknessKey = null;
             string? classKey = null;
 
-            // Try with Thickness as-is, then toggle leading "S"
+            // Try with Thickness as-is, then fallback variations
             if (!string.IsNullOrWhiteSpace(thickness))
             {
                 string t = thickness.Trim().ToUpper();
@@ -133,13 +133,30 @@ namespace VANTAGE.Services.AI
                 var rate = LookupRate(thicknessKey);
                 if (rate.HasValue) return (rate.Value.FldMhu, rate.Value.Unit, thicknessKey);
 
-                // Toggle leading "S": if it starts with S remove it, otherwise add it
-                string toggled = t.StartsWith("S") ? t[1..] : $"S{t}";
-                if (toggled.Length > 0)
+                // Trailing S (e.g., "10S" for SS schedule): try without trailing S, then with leading S
+                if (t.EndsWith("S") && !t.StartsWith("S") && t.Length > 1)
                 {
-                    string altKey = $"{estGrp}-{size}:{toggled}";
+                    string withoutTrailing = t[..^1];  // "10S" → "10"
+                    string altKey = $"{estGrp}-{size}:{withoutTrailing}";
                     rate = LookupRate(altKey);
                     if (rate.HasValue) return (rate.Value.FldMhu, rate.Value.Unit, altKey);
+
+                    // Try with leading S: "10" → "S10"
+                    string withLeadingS = $"S{withoutTrailing}";
+                    altKey = $"{estGrp}-{size}:{withLeadingS}";
+                    rate = LookupRate(altKey);
+                    if (rate.HasValue) return (rate.Value.FldMhu, rate.Value.Unit, altKey);
+                }
+                else
+                {
+                    // Toggle leading "S": if it starts with S remove it, otherwise add it
+                    string toggled = t.StartsWith("S") ? t[1..] : $"S{t}";
+                    if (toggled.Length > 0)
+                    {
+                        string altKey = $"{estGrp}-{size}:{toggled}";
+                        rate = LookupRate(altKey);
+                        if (rate.HasValue) return (rate.Value.FldMhu, rate.Value.Unit, altKey);
+                    }
                 }
             }
 
@@ -202,7 +219,7 @@ namespace VANTAGE.Services.AI
                     if (dualSize != null)
                         lookupSize = dualSize.Value.Smaller.ToString("0.###");
 
-                    // Try thickness as-is, then toggle leading "S"
+                    // Try thickness as-is, then fallback variations
                     if (!string.IsNullOrWhiteSpace(thickness))
                     {
                         string t = thickness.Trim().ToUpper();
@@ -210,12 +227,30 @@ namespace VANTAGE.Services.AI
                         if (projectRateCache.TryGetValue(key, out var projRate))
                             return (projRate.MH, projRate.Unit, "Project", key);
 
-                        string toggled = t.StartsWith("S") ? t[1..] : $"S{t}";
-                        if (toggled.Length > 0)
+                        // Trailing S (e.g., "10S" for SS schedule): try without trailing S, then with leading S
+                        if (t.EndsWith("S") && !t.StartsWith("S") && t.Length > 1)
                         {
-                            string altKey = $"{estGrp}-{lookupSize}:{toggled}";
+                            string withoutTrailing = t[..^1];  // "10S" → "10"
+                            string altKey = $"{estGrp}-{lookupSize}:{withoutTrailing}";
                             if (projectRateCache.TryGetValue(altKey, out projRate))
                                 return (projRate.MH, projRate.Unit, "Project", altKey);
+
+                            // Try with leading S: "10" → "S10"
+                            string withLeadingS = $"S{withoutTrailing}";
+                            altKey = $"{estGrp}-{lookupSize}:{withLeadingS}";
+                            if (projectRateCache.TryGetValue(altKey, out projRate))
+                                return (projRate.MH, projRate.Unit, "Project", altKey);
+                        }
+                        else
+                        {
+                            // Toggle leading "S": if it starts with S remove it, otherwise add it
+                            string toggled = t.StartsWith("S") ? t[1..] : $"S{t}";
+                            if (toggled.Length > 0)
+                            {
+                                string altKey = $"{estGrp}-{lookupSize}:{toggled}";
+                                if (projectRateCache.TryGetValue(altKey, out projRate))
+                                    return (projRate.MH, projRate.Unit, "Project", altKey);
+                            }
                         }
                     }
 
