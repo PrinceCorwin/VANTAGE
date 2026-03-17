@@ -59,6 +59,9 @@ namespace VANTAGE.Services.AI
                 var materialRows = ReadMaterialTab(workbook);
                 AppLogger.Info($"Read {materialRows.Count} material rows", "TakeoffPostProcessor");
 
+                // Step A2: Normalize TEE sizes (convert single sizes like "4" to "4x4")
+                NormalizeTeeSizes(materialRows);
+
                 // Step B: Generate Labor rows
                 var laborRows = GenerateLaborRows(materialRows);
                 AppLogger.Info($"Generated {laborRows.Count} labor rows", "TakeoffPostProcessor");
@@ -180,6 +183,31 @@ namespace VANTAGE.Services.AI
             return rows;
         }
 
+        // Step A2: Normalize TEE sizes - convert single sizes (e.g., "4") to dual format (e.g., "4x4")
+        // This must run before any makeup or rate lookups since those depend on proper size format
+        private static void NormalizeTeeSizes(List<Dictionary<string, object?>> materialRows)
+        {
+            foreach (var row in materialRows)
+            {
+                string component = GetString(row, "Component").ToUpper();
+                if (component != "TEE") continue;
+
+                string sizeStr = GetString(row, "Size").Trim();
+                if (string.IsNullOrEmpty(sizeStr)) continue;
+
+                // Skip if already in AxB format (contains 'x' or 'X')
+                if (sizeStr.Contains('x', StringComparison.OrdinalIgnoreCase)) continue;
+
+                // Check if it's a single number
+                if (double.TryParse(sizeStr, out double size))
+                {
+                    // Convert to AxA format
+                    string normalized = $"{sizeStr}x{sizeStr}";
+                    row["Size"] = normalized;
+                }
+            }
+        }
+
         // Step B: Generate Labor rows (one per connection, exploded) + SPL records
         private static List<Dictionary<string, object?>> GenerateLaborRows(
             List<Dictionary<string, object?>> materialRows)
@@ -220,7 +248,7 @@ namespace VANTAGE.Services.AI
                 foreach (var pipe in pipeRows)
                 {
                     double pipeSize = FittingMakeupService.GetDouble(pipe, "Size");
-                    string pipeMaterial = GetString(pipe, "Material");
+                    string pipeMaterial = GetString(pipe, "Matl_Grp");
                     string? pipeClass = GetNullableString(pipe, "Class Rating");
 
                     // Find fittings on same drawing with matching size AND material
@@ -233,7 +261,7 @@ namespace VANTAGE.Services.AI
                         if (ExcludeFromMakeupLookup.Contains(fittingComponent))
                             continue;
 
-                        string fittingMaterial = GetString(fitting, "Material");
+                        string fittingMaterial = GetString(fitting, "Matl_Grp");
 
                         // Material must match
                         if (!fittingMaterial.Equals(pipeMaterial, StringComparison.OrdinalIgnoreCase))
@@ -261,9 +289,9 @@ namespace VANTAGE.Services.AI
                                 claimedFittings.Add(fitting);
                             }
                         }
-                        else if (fittingComponent == "REDT")
+                        else if (fittingComponent == "REDT" || fittingComponent == "TEE")
                         {
-                            // REDT: parse dual size (e.g., "4x2"), match if pipe equals either size
+                            // REDT/TEE: parse dual size (e.g., "4x2" or "4x4"), match if pipe equals either size
                             string sizeStr = GetString(fitting, "Size");
                             var parsed = FittingMakeupService.ParseDualSize(sizeStr);
                             if (parsed != null &&
@@ -375,7 +403,7 @@ namespace VANTAGE.Services.AI
             string sizeStr = GetString(mat, "Size");
             string thickness = GetString(mat, "Thickness");
             string pipeSpec = FindPipeSpec(mat);
-            string material = GetString(mat, "Material");
+            string material = GetString(mat, "Matl_Grp");
             string commodityCode = GetString(mat, "Commodity Code");
             string rawDesc = GetString(mat, "Raw Description");
 
@@ -473,7 +501,7 @@ namespace VANTAGE.Services.AI
                             {
                                 string pipeThickness = GetString(matchingPipe, "Thickness");
                                 string pipePipeSpec = FindPipeSpec(matchingPipe);
-                                string pipeMaterial = GetString(matchingPipe, "Material");
+                                string pipeMaterial = GetString(matchingPipe, "Matl_Grp");
                                 string pipeClassRating = GetString(matchingPipe, "Class Rating");
 
                                 var cut = CreateFabRow(mat, "CUT", connSize, pipeThickness, pipePipeSpec, pipeMaterial);
@@ -483,14 +511,11 @@ namespace VANTAGE.Services.AI
                             }
                         }
 
-                        // BEV: two per BW connection (bevels apply to any BW joint)
+                        // BEV: one per BW connection
                         if (connType == "BW")
                         {
-                            for (int b = 0; b < 2; b++)
-                            {
-                                var bev = CreateFabRow(mat, "BEV", connSize, thickness, pipeSpec, material);
-                                result.Add(bev);
-                            }
+                            var bev = CreateFabRow(mat, "BEV", connSize, thickness, pipeSpec, material);
+                            result.Add(bev);
                         }
                     }
                 }
@@ -650,7 +675,7 @@ namespace VANTAGE.Services.AI
             if (allMaterialRows == null) return null;
 
             string drawingNumber = GetString(fittingRow, "Drawing Number");
-            string fittingMaterial = GetString(fittingRow, "Material");
+            string fittingMaterial = GetString(fittingRow, "Matl_Grp");
             string connSizeStr = connSize.ToString("0.###");
 
             foreach (var row in allMaterialRows)
@@ -669,7 +694,7 @@ namespace VANTAGE.Services.AI
                     continue;
 
                 // Matching material
-                string pipeMaterial = GetString(row, "Material");
+                string pipeMaterial = GetString(row, "Matl_Grp");
                 if (!pipeMaterial.Equals(fittingMaterial, StringComparison.OrdinalIgnoreCase))
                     continue;
 
@@ -779,7 +804,7 @@ namespace VANTAGE.Services.AI
             var explicitColumns = new List<string>
             {
                 "Drawing Number", "Component", "Size", "Connection Size",
-                "Thickness", "Class Rating", "Material",
+                "Thickness", "Class Rating", "Matl_Grp",
                 "Commodity Code", "Description", "Quantity",
                 "ShopField", "ROCStep", "Confidence", "Flag", "BudgetMHs", "UOM", "RateSource"
             };
@@ -1053,7 +1078,7 @@ namespace VANTAGE.Services.AI
 
             var ws = workbook.Worksheets.Add("No Conns");
 
-            var columns = new[] { "Drawing Number", "Component", "Size", "Quantity", "Thickness", "Class Rating", "Material", "Connection Qty", "Connection Type", "Raw Description" };
+            var columns = new[] { "Drawing Number", "Component", "Size", "Quantity", "Thickness", "Class Rating", "Matl_Grp", "Connection Qty", "Connection Type", "Raw Description" };
 
             // Header
             for (int i = 0; i < columns.Length; i++)
@@ -1074,7 +1099,7 @@ namespace VANTAGE.Services.AI
                 ws.Cell(row, 4).Value = GetString(m, "Quantity");
                 ws.Cell(row, 5).Value = GetString(m, "Thickness");
                 ws.Cell(row, 6).Value = GetString(m, "Class Rating");
-                ws.Cell(row, 7).Value = GetString(m, "Material");
+                ws.Cell(row, 7).Value = GetString(m, "Matl_Grp");
                 ws.Cell(row, 8).Value = GetString(m, "Connection Qty");
                 ws.Cell(row, 9).Value = GetString(m, "Connection Type");
                 ws.Cell(row, 10).Value = GetString(m, "Raw Description");

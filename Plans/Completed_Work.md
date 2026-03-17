@@ -6,6 +6,14 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### March 17, 2026 (Takeoff — Post-Processing Fixes)
+- **BEV reduced to 1 per BW:** Changed from 2 BEV records to 1 BEV record per BW connection.
+- **Material column renamed to Matl_Grp:** Updated all column references in TakeoffPostProcessor.cs to use the new `Matl_Grp` column name from AWS output.
+- **TEE size normalization:** Added preprocessing step that converts single-size TEEs (e.g., "4") to dual format (e.g., "4x4") before any makeup or rate lookups.
+- **TEE dual-size matching:** TEE components now use dual-size parsing for fitting-to-pipe matching (like REDT), fixing "Unclaimed" issues where TEEs had sizes like "4x4".
+- **RED fitting makeup consolidated:** Merged duplicate REDC and REDE entries in FittingMakeup.json into single RED component (identical makeups).
+- **Key files:** `Services/AI/TakeoffPostProcessor.cs`, `Resources/FittingMakeup.json`
+
 ### March 16, 2026 (Takeoff — Batch Completion Summary & Failed DWGs Tab)
 - **Per-drawing result counts in status panel:** After a batch completes, the status now shows how many drawings succeeded, how many failed, and total elapsed time (e.g., "Completed in 2:34 — all 5 drawing(s) succeeded" or "Completed in 1:12 — 4 succeeded, 1 failed (5 total)"). Parses the `extraction_results` array from Step Functions output to count per-drawing success/failure.
 - **Failed DWGs Excel tab:** When drawings fail AI extraction, a "Failed DWGs" tab is added to the output Excel listing the filenames. Red header styling (`#F4CCCC`). Tab only appears when failures exist. Ordered after Flagged in tab sequence.
