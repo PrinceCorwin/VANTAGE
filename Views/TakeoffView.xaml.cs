@@ -182,7 +182,7 @@ namespace VANTAGE.Views
                     await System.Threading.Tasks.Task.Delay(3000, token);
 
                     var (status, output) = await _service.PollExecutionAsync(_currentExecutionArn, token);
-                    string elapsed = $"{stopwatch.Elapsed.TotalSeconds:F0}s";
+                    string elapsed = FormatElapsed(stopwatch.Elapsed);
 
                     SetStatus($"Status: {status}  ({elapsed} elapsed, {_selectedFiles.Count} drawing(s))");
 
@@ -193,9 +193,11 @@ namespace VANTAGE.Views
 
                     if (status == "SUCCEEDED")
                     {
-                        // Check if the app-level output status is "failed" — SF execution
-                        // succeeded but the processing itself may have failed (no Excel generated)
+                        // Parse the output to get per-drawing results
                         bool appFailed = false;
+                        int succeededCount = 0;
+                        int failedCount = _selectedFiles.Count;
+
                         if (!string.IsNullOrEmpty(output))
                         {
                             try
@@ -204,6 +206,20 @@ namespace VANTAGE.Views
                                 if (check.RootElement.TryGetProperty("status", out var appStatus)
                                     && appStatus.GetString()?.Equals("failed", StringComparison.OrdinalIgnoreCase) == true)
                                     appFailed = true;
+
+                                // Count per-drawing results from extraction_results array
+                                if (check.RootElement.TryGetProperty("extraction_results", out var results))
+                                {
+                                    foreach (var item in results.EnumerateArray())
+                                    {
+                                        if (item.TryGetProperty("status", out var s)
+                                            && s.GetString()?.Equals("success", StringComparison.OrdinalIgnoreCase) == true)
+                                            succeededCount++;
+                                    }
+                                }
+
+                                failedCount = _selectedFiles.Count - succeededCount;
+                                if (failedCount < 0) failedCount = 0;
                             }
                             catch { /* parse error — show download anyway */ }
                         }
@@ -214,7 +230,10 @@ namespace VANTAGE.Views
                         }
                         else
                         {
-                            SetStatus($"Succeeded — {_selectedFiles.Count} drawing(s) processed in {elapsed}");
+                            string resultSummary = failedCount > 0
+                                ? $"Completed in {elapsed} — {succeededCount} succeeded, {failedCount} failed ({_selectedFiles.Count} total)"
+                                : $"Completed in {elapsed} — all {_selectedFiles.Count} drawing(s) succeeded";
+                            SetStatus(resultSummary);
 
                             // Auto-download the Excel
                             await DownloadBatchExcelAsync(_currentBatchId);
@@ -313,21 +332,16 @@ namespace VANTAGE.Views
                 return;
             }
 
-            SetStatus("Downloading Excel file...");
-
             try
             {
                 await _service.DownloadExcelAsync(batchId, dialog.FileName);
 
                 // Load project rate cache if selected
                 var projectRateCache = await GetSelectedProjectRateCacheAsync();
-
-                // Generate Labor and Summary tabs from the downloaded Material/Flagged output
-                SetStatus("Generating Labor and Summary tabs...");
                 var (missedMakeups, missedRates) = await System.Threading.Tasks.Task.Run(() =>
                     TakeoffPostProcessor.GenerateLaborAndSummary(dialog.FileName, projectRateCache));
 
-                SetStatus($"Downloaded to {dialog.FileName}");
+                AppendStatus($"Downloaded to {dialog.FileName}");
 
                 // Send missed data to admins if checkbox checked and there are misses
                 if (chkSendMissedToAdmin.IsChecked == true && (missedMakeups > 0 || missedRates > 0))
@@ -565,6 +579,20 @@ namespace VANTAGE.Views
         private void SetStatus(string message)
         {
             txtStatus.Text = message;
+        }
+
+        // Append a line to the status panel without replacing existing text
+        private void AppendStatus(string message)
+        {
+            txtStatus.Text += "\n" + message;
+        }
+
+        // Format elapsed time as "Xs" for short durations, "M:SS" for longer
+        private static string FormatElapsed(TimeSpan elapsed)
+        {
+            if (elapsed.TotalMinutes >= 1)
+                return $"{(int)elapsed.TotalMinutes}:{elapsed.Seconds:D2}";
+            return $"{elapsed.TotalSeconds:F0}s";
         }
 
     }

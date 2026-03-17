@@ -6,6 +6,13 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### March 16, 2026 (Takeoff — Batch Completion Summary)
+- **Per-drawing result counts in status panel:** After a batch completes, the status now shows how many drawings succeeded, how many failed, and total elapsed time (e.g., "Completed in 2:34 — all 5 drawing(s) succeeded" or "Completed in 1:12 — 4 succeeded, 1 failed (5 total)"). Parses the `extraction_results` array from Step Functions output to count per-drawing success/failure.
+- **Elapsed time formatting:** Times under 60s show as "40s", longer times show as "2:34" (minutes:seconds). Applied to both the polling status and the final result.
+- **Status panel appends instead of overwrites:** After processing completes, subsequent status messages (download path) are appended as new lines instead of replacing the completion summary. Transient progress messages ("Downloading Excel file...", "Generating Labor and Summary tabs...") removed entirely.
+- **Scrollable status panel:** Status panel now has a `MaxHeight="300"` with an internal ScrollViewer. The "Status" header stays pinned while content scrolls — supports large drawing lists without extending the page.
+- **Key files:** `Views/TakeoffView.xaml`, `Views/TakeoffView.xaml.cs`
+
 ### March 16, 2026 (Takeoff — Cancel Button, Duplicate Column Fix, Fitting Makeups)
 - **Cancel button for batch processing:** Added CANCEL button to TakeoffView that appears while processing (replacing PROCESS BATCH). Calls `StopExecutionAsync` to abort the AWS Step Functions execution, then cancels the local polling loop. Cleans up uploaded drawings from S3 on cancellation. Execution will show as ABORTED in the Step Functions console.
 - **Duplicate column name fix:** Material tab reading now keeps only the first occurrence of each column name. Fixes issue where Title Block "Size" column (containing values like "A3" drawing size) was overwriting BOM "Size" column (containing pipe sizes like "1.5").
