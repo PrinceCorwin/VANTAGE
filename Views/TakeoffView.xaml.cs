@@ -24,6 +24,7 @@ namespace VANTAGE.Views
         private TakeoffService? _service;
         private bool _isLoadingConfigs;
         private CancellationTokenSource? _processCts;
+        private List<string> _failedDrawings = new();
 
         // Dropdown data for unit rates and ROC sets
         private List<(string ProjectID, string SetName)> _rateSets = new();
@@ -208,13 +209,24 @@ namespace VANTAGE.Views
                                     appFailed = true;
 
                                 // Count per-drawing results from extraction_results array
+                                _failedDrawings.Clear();
                                 if (check.RootElement.TryGetProperty("extraction_results", out var results))
                                 {
                                     foreach (var item in results.EnumerateArray())
                                     {
                                         if (item.TryGetProperty("status", out var s)
                                             && s.GetString()?.Equals("success", StringComparison.OrdinalIgnoreCase) == true)
+                                        {
                                             succeededCount++;
+                                        }
+                                        else
+                                        {
+                                            // Extract filename from drawing_key (e.g. "steve/config/filename.pdf" -> "filename.pdf")
+                                            string drawingName = "Unknown";
+                                            if (item.TryGetProperty("drawing_key", out var dk))
+                                                drawingName = System.IO.Path.GetFileName(dk.GetString() ?? "Unknown");
+                                            _failedDrawings.Add(drawingName);
+                                        }
                                     }
                                 }
 
@@ -338,8 +350,9 @@ namespace VANTAGE.Views
 
                 // Load project rate cache if selected
                 var projectRateCache = await GetSelectedProjectRateCacheAsync();
+                var failedList = _failedDrawings.Count > 0 ? new List<string>(_failedDrawings) : null;
                 var (missedMakeups, missedRates) = await System.Threading.Tasks.Task.Run(() =>
-                    TakeoffPostProcessor.GenerateLaborAndSummary(dialog.FileName, projectRateCache));
+                    TakeoffPostProcessor.GenerateLaborAndSummary(dialog.FileName, projectRateCache, failedList));
 
                 AppendStatus($"Downloaded to {dialog.FileName}");
 

@@ -43,7 +43,8 @@ namespace VANTAGE.Services.AI
         // Returns counts of missed makeups and missed rates for caller use
         // Optional projectRateCache provides per-project rate overrides
         public static (int MissedMakeups, int MissedRates) GenerateLaborAndSummary(
-            string excelPath, Dictionary<string, (double MH, string Unit)>? projectRateCache = null)
+            string excelPath, Dictionary<string, (double MH, string Unit)>? projectRateCache = null,
+            List<string>? failedDrawings = null)
         {
             try
             {
@@ -92,7 +93,14 @@ namespace VANTAGE.Services.AI
                     AppLogger.Info($"Logged {_noConns.Count} material items with no connections", "TakeoffPostProcessor");
                 }
 
-                // Step J: Reorder tabs
+                // Step J: Write Failed DWGs tab (drawings that failed AI extraction)
+                if (failedDrawings != null && failedDrawings.Count > 0)
+                {
+                    WriteFailedDrawingsTab(workbook, failedDrawings);
+                    AppLogger.Info($"Logged {failedDrawings.Count} failed drawing(s)", "TakeoffPostProcessor");
+                }
+
+                // Step K: Reorder tabs
                 ReorderTabs(workbook);
 
                 // Save
@@ -111,7 +119,7 @@ namespace VANTAGE.Services.AI
         // Reorder tabs: Summary, Material, Labor, Flagged
         private static void ReorderTabs(XLWorkbook workbook)
         {
-            var desiredOrder = new[] { "Summary", "Material", "Labor", "Flagged", "Missed Makeups", "Missed Rates", "No Conns" };
+            var desiredOrder = new[] { "Summary", "Material", "Labor", "Flagged", "Failed DWGs", "Missed Makeups", "Missed Rates", "No Conns" };
             int position = 1;
 
             foreach (var name in desiredOrder)
@@ -1071,6 +1079,28 @@ namespace VANTAGE.Services.AI
                 ws.Cell(row, 9).Value = GetString(m, "Connection Type");
                 ws.Cell(row, 10).Value = GetString(m, "Raw Description");
             }
+
+            ws.Columns().AdjustToContents(1, 100);
+            ws.SheetView.FreezeRows(1);
+        }
+
+        // Write Failed DWGs tab — drawings that failed AI extraction
+        private static void WriteFailedDrawingsTab(XLWorkbook workbook, List<string> failedDrawings)
+        {
+            if (workbook.TryGetWorksheet("Failed DWGs", out _))
+                workbook.Worksheets.Delete("Failed DWGs");
+
+            var ws = workbook.Worksheets.Add("Failed DWGs");
+
+            // Header
+            ws.Cell(1, 1).Value = "Drawing File";
+            var headerRange = ws.Range(1, 1, 1, 1);
+            headerRange.Style.Font.Bold = true;
+            headerRange.Style.Fill.BackgroundColor = XLColor.FromHtml("#F4CCCC");
+
+            // Data rows
+            for (int i = 0; i < failedDrawings.Count; i++)
+                ws.Cell(i + 2, 1).Value = failedDrawings[i];
 
             ws.Columns().AdjustToContents(1, 100);
             ws.SheetView.FreezeRows(1);
