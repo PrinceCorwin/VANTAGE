@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.1.33",
-  "releaseDate": "2026-03-13T20:37:20Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.33/VANTAGE-26.1.33.zip",
-  "zipSizeBytes": 149761846,
-  "sha256": "472456ADB633E192529B5854D25C20252FFAF0230B2E45886C555B0EE881B3EE",
-  "releaseNotes": "Analysis export, Feedback grid sorting/filtering, Takeoff setting persistence"
+  "currentVersion": "26.1.34",
+  "releaseDate": "2026-03-18T10:39:10Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.34/VANTAGE-26.1.34.zip",
+  "zipSizeBytes": 149949849,
+  "sha256": "A2000DCF5E4EBDA730630D6C94AFC618764F7AC7EDCC0A7A5E595D0A8C21EEE8",
+  "releaseNotes": "Remember last view on startup, Progress Books exclude filter, column visibility UX improvements, Ctrl+V paste fix"
 }
