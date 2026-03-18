@@ -103,7 +103,7 @@ namespace VANTAGE.Services.AI
                 {
                     // TEE: 3x Makeup_Run_In
                     string weldType = ExtractWeldableType(connTypes);
-                    var result = LookupMakeup(weldType, "TEE", pipeSize, classRating);
+                    var result = LookupMakeup(weldType, "TEE", pipeSize, classRating, pipeSize);
                     lookupKey = $"{weldType}/TEE/{pipeSize}" + (!string.IsNullOrEmpty(classRating) ? $"/Class{classRating}" : "");
                     if (result != null)
                         contribution = result.Value.RunIn * 3;
@@ -112,7 +112,7 @@ namespace VANTAGE.Services.AI
                 {
                     // CROSS: 4x Makeup_Run_In
                     string weldType = ExtractWeldableType(connTypes);
-                    var result = LookupMakeup(weldType, "CROSS", pipeSize, classRating);
+                    var result = LookupMakeup(weldType, "CROSS", pipeSize, classRating, pipeSize);
                     lookupKey = $"{weldType}/CROSS/{pipeSize}" + (!string.IsNullOrEmpty(classRating) ? $"/Class{classRating}" : "");
                     if (result != null)
                         contribution = result.Value.RunIn * 4;

@@ -32,11 +32,35 @@ namespace VANTAGE.Services.AI
             "Item ID"
         };
 
-        // Components to exclude from fitting makeup lookup (non-weldable items)
+        // Material group multipliers for labor MH calculations
+        private static readonly Dictionary<string, double> MaterialMultipliers = new(StringComparer.OrdinalIgnoreCase)
+        {
+            { "CS", 1.000 }, { "CR1", 1.230 }, { "CR2", 1.310 }, { "CR3", 1.415 },
+            { "SS", 1.425 }, { "CU", 1.200 }, { "A333", 1.500 }, { "HAST", 2.000 },
+            { "SSX", 1.435 }, { "AL", 1.640 }, { "HDPE", 0.500 }, { "PVC", 0.330 },
+            { "FRP", 0.700 }, { "CLINED", 1.050 }, { "RLINED", 1.050 }, { "NVD", 1.050 }
+        };
+
+        // Returns the material multiplier for a Matl_Grp, defaults to 1.0 if not found
+        private static double GetMaterialMultiplier(string matlGrp)
+        {
+            return MaterialMultipliers.TryGetValue(matlGrp, out double mult) ? mult : 1.0;
+        }
+
+        // Returns the rollup multiplier based on component type
+        private static double GetRollupMultiplier(string component)
+        {
+            if (component.Equals("PIPE", StringComparison.OrdinalIgnoreCase)) return 1.4;
+            if (component.Equals("BW", StringComparison.OrdinalIgnoreCase)) return 1.25;
+            if (component.Equals("SW", StringComparison.OrdinalIgnoreCase)) return 1.25;
+            if (component.Equals("FW", StringComparison.OrdinalIgnoreCase)) return 1.35;
+            return 1.0;
+        }
+
         // Components to exclude from fitting makeup lookup (non-weldable or not tracked)
         private static readonly HashSet<string> ExcludeFromMakeupLookup = new(StringComparer.OrdinalIgnoreCase)
         {
-            "FS", "GSKT", "BOLT", "WAS", "HEAT", "HOSE", "INST", "NIP", "PLG", "SAFSHW", "F8B", "DPAN", "ACT", "FLGB", "PIPET"
+            "FS", "GSKT", "BOLT", "WAS", "HEAT", "HOSE", "INST", "NIP", "PLG", "SAFSHW", "F8B", "DPAN", "ACT", "FLGB", "PIPET", "FLGLJ"
         };
 
         // Main entry point - processes the downloaded Excel file in place
@@ -244,6 +268,8 @@ namespace VANTAGE.Services.AI
 
                 // Track which fittings get claimed by at least one pipe
                 var claimedFittings = new HashSet<Dictionary<string, object?>>();
+                // Map each pipe to its SPL row so pass 2 can update quantities
+                var pipeToSpl = new Dictionary<Dictionary<string, object?>, Dictionary<string, object?>>();
 
                 foreach (var pipe in pipeRows)
                 {
@@ -352,6 +378,67 @@ namespace VANTAGE.Services.AI
                     spl["BudgetMHs"] = null;
 
                     splRows.Add(spl);
+                    pipeToSpl[pipe] = spl;
+                }
+
+                // Pass 2: unclaimed RED/SWG — try matching on smaller size
+                foreach (var fitting in fittingRows)
+                {
+                    if (claimedFittings.Contains(fitting)) continue;
+                    string comp = GetString(fitting, "Component").ToUpper();
+                    if (comp != "RED" && comp != "SWG") continue;
+
+                    string sizeStr = GetString(fitting, "Size");
+                    var parsed = FittingMakeupService.ParseDualSize(sizeStr);
+                    if (parsed == null) continue;
+
+                    string fittingMaterial = GetString(fitting, "Matl_Grp");
+                    int qty = Math.Max(1, (int)FittingMakeupService.GetDouble(fitting, "Quantity"));
+
+                    foreach (var pipe in pipeRows)
+                    {
+                        if (!pipeToSpl.ContainsKey(pipe)) continue;
+                        double pipeSize = FittingMakeupService.GetDouble(pipe, "Size");
+                        string pipeMaterial = GetString(pipe, "Matl_Grp");
+
+                        if (!fittingMaterial.Equals(pipeMaterial, StringComparison.OrdinalIgnoreCase)) continue;
+                        if (Math.Abs(parsed.Value.Smaller - pipeSize) > 0.001) continue;
+
+                        // Matched on smaller size — look up makeup by larger size
+                        string connTypes = GetString(fitting, "Connection Type");
+                        string? classRating = GetNullableString(fitting, "Class Rating");
+                        string weldType = connTypes.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                            .Select(t => t.Trim().ToUpper())
+                            .FirstOrDefault(t => t != "BU") ?? "BW";
+                        var result = FittingMakeupService.LookupMakeup(weldType, comp, parsed.Value.Larger, classRating);
+
+                        if (result != null)
+                        {
+                            double extraInches = result.Value.RunIn * qty;
+                            var spl = pipeToSpl[pipe];
+                            double currentQty = FittingMakeupService.GetDouble(spl, "Quantity");
+                            spl["Quantity"] = Math.Round(currentQty + (extraInches / 12.0), 3);
+                        }
+                        else
+                        {
+                            string lookupKey = $"{weldType}/{comp}/{parsed.Value.Larger}" +
+                                (!string.IsNullOrEmpty(classRating) ? $"/Class{classRating}" : "");
+                            _missedMakeups.Add(new MissedMakeup
+                            {
+                                DrawingNumber = GetString(fitting, "Drawing Number"),
+                                Component = comp,
+                                Size = sizeStr,
+                                ConnectionType = connTypes,
+                                ClassRating = classRating ?? "",
+                                Description = GetString(fitting, "Raw Description"),
+                                LookupKey = lookupKey,
+                                Reason = "No Makeup Found (fallback to smaller pipe)"
+                            });
+                        }
+
+                        claimedFittings.Add(fitting);
+                        break; // Claimed by first matching pipe
+                    }
                 }
 
                 // Log fittings on this drawing that weren't claimed by any pipe
@@ -414,6 +501,10 @@ namespace VANTAGE.Services.AI
             bool isDualSize = dualSize != null;
 
             // Non-PIPE items: add fab record with original component and raw description
+            // GSKT and BOLT are material-only — no labor records
+            if (component == "GSKT" || component == "BOLT")
+                return result;
+
             if (!component.Equals("PIPE", StringComparison.OrdinalIgnoreCase))
             {
                 for (int q = 0; q < quantity; q++)
@@ -486,38 +577,12 @@ namespace VANTAGE.Services.AI
             {
                 foreach (var (connType, connSize) in connectionPairs)
                 {
+                    // SPT connections don't get labor rows — MHs come from the FS fab record
+                    if (connType == "SPT") continue;
+
                     var labor = CreateLaborRow(mat, connType, connSize, thickness, pipeSpec, material, allMaterialRows);
                     result.Add(labor);
 
-                    // Fabrication records (not for olets)
-                    if (!FittingMakeupService.IsOlet(component))
-                    {
-                        // CUT: one per BW, SW, or THRD connection — only if matching PIPE exists
-                        // Cuts are pipe prep, so no pipe = no cut. Inherit thickness/class from pipe.
-                        if (connType == "BW" || connType == "SW" || connType == "THRD")
-                        {
-                            var matchingPipe = FindMatchingPipe(allMaterialRows, mat, connSize);
-                            if (matchingPipe != null)
-                            {
-                                string pipeThickness = GetString(matchingPipe, "Thickness");
-                                string pipePipeSpec = FindPipeSpec(matchingPipe);
-                                string pipeMaterial = GetString(matchingPipe, "Matl_Grp");
-                                string pipeClassRating = GetString(matchingPipe, "Class Rating");
-
-                                var cut = CreateFabRow(mat, "CUT", connSize, pipeThickness, pipePipeSpec, pipeMaterial);
-                                if (!string.IsNullOrEmpty(pipeClassRating))
-                                    cut["Class Rating"] = pipeClassRating;
-                                result.Add(cut);
-                            }
-                        }
-
-                        // BEV: one per BW connection
-                        if (connType == "BW")
-                        {
-                            var bev = CreateFabRow(mat, "BEV", connSize, thickness, pipeSpec, material);
-                            result.Add(bev);
-                        }
-                    }
                 }
             }
 
@@ -806,7 +871,7 @@ namespace VANTAGE.Services.AI
                 "Drawing Number", "Component", "Size", "Connection Size",
                 "Thickness", "Class Rating", "Matl_Grp",
                 "Commodity Code", "Description", "Quantity",
-                "ShopField", "ROCStep", "Confidence", "Flag", "BudgetMHs", "UOM", "RateSource"
+                "ShopField", "ROCStep", "Confidence", "Flag", "RateSheet", "RollupMult", "MatlMult", "CutAdd", "BevelAdd", "BudgetMHs", "UOM", "RateSource"
             };
 
             // Find any additional columns (title block fields)
@@ -1011,7 +1076,34 @@ namespace VANTAGE.Services.AI
                     if (component.Equals("BU", StringComparison.OrdinalIgnoreCase))
                         mhu /= 2;
 
-                    row["BudgetMHs"] = NumericHelper.RoundToPlaces(mhu * qty);
+                    // Rollup and material multipliers
+                    double rollupMult = GetRollupMultiplier(component);
+                    string matlGrp = GetString(row, "Matl_Grp");
+                    double matlMult = GetMaterialMultiplier(matlGrp);
+                    row["RateSheet"] = mhu;
+                    row["RollupMult"] = rollupMult;
+                    row["MatlMult"] = matlMult;
+
+                    // BW: add CUT + BEV rates (unmultiplied). SW/THRD: add CUT rate only.
+                    double cutAdd = 0;
+                    double bevAdd = 0;
+                    if (component.Equals("BW", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var cutRate = RateSheetService.FindRate("CUT", size, thickness, classRating);
+                        var bevRate = RateSheetService.FindRate("BEV", size, thickness, classRating);
+                        if (cutRate.FldMhu.HasValue) cutAdd = cutRate.FldMhu.Value;
+                        if (bevRate.FldMhu.HasValue) bevAdd = bevRate.FldMhu.Value;
+                    }
+                    else if (component.Equals("SW", StringComparison.OrdinalIgnoreCase) ||
+                             component.Equals("THRD", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var cutRate = RateSheetService.FindRate("CUT", size, thickness, classRating);
+                        if (cutRate.FldMhu.HasValue) cutAdd = cutRate.FldMhu.Value;
+                    }
+                    row["CutAdd"] = cutAdd;
+                    row["BevelAdd"] = bevAdd;
+
+                    row["BudgetMHs"] = NumericHelper.RoundToPlaces((mhu * rollupMult * Math.Max(rollupMult, matlMult) + cutAdd + bevAdd) * qty);
                     row["UOM"] = unit;
                     row["RateSource"] = rateSource;
                     matched++;

@@ -6,6 +6,18 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### March 17, 2026 (Takeoff — Labor Multipliers, Rate Folding, Makeup Fixes)
+- **Material multipliers (MatlMult):** Added 16-entry material group multiplier table (CS=1.0, SS=1.425, HAST=2.0, HDPE=0.5, PVC=0.33, etc.). Each labor row's MHs are scaled by its `Matl_Grp`.
+- **Rollup multipliers (RollupMult):** PIPE=1.4, BW/SW=1.25, FW=1.35, all others=1.0. Formula: `BudgetMHs = (RateSheet × RollupMult × max(RollupMult, MatlMult) + CutAdd + BevelAdd) × Qty`.
+- **CUT/BEV folded into connections:** CUT and BEV no longer generate separate labor rows. Instead, BW connections include CUT+BEV rate additions, SW/THRD connections include CUT rate addition. Rates added unmultiplied.
+- **Audit columns added to Labor tab:** RateSheet (original rate), RollupMult, MatlMult, CutAdd, BevelAdd — so users can verify the BudgetMHs calculation.
+- **GSKT/BOLT excluded from labor:** These material-only items no longer create any labor records.
+- **FLGLJ excluded from makeup:** Added to `ExcludeFromMakeupLookup` (lap joint flanges have no weld makeup).
+- **SPT connection rows skipped:** Connection type SPT no longer generates labor rows — MHs come from the FS fab record.
+- **TEE/CROSS makeup fix:** Lookup now passes outlet size (equal to pipe size) to match FittingMakeup.json entries that have `Outlet_Size` populated.
+- **RED/SWG fallback to smaller pipe:** After pass 1 (larger size match), unclaimed RED/SWG fittings try matching on smaller size. Makeup still looked up by larger size, 1x RunIn. Still-unclaimed items go to Missed Makeup tab.
+- **Key files:** `Services/AI/TakeoffPostProcessor.cs`, `Services/AI/FittingMakeupService.cs`
+
 ### March 17, 2026 (Takeoff — Post-Processing Fixes)
 - **BEV reduced to 1 per BW:** Changed from 2 BEV records to 1 BEV record per BW connection.
 - **Material column renamed to Matl_Grp:** Updated all column references in TakeoffPostProcessor.cs to use the new `Matl_Grp` column name from AWS output.
