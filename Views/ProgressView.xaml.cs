@@ -1192,6 +1192,12 @@ namespace VANTAGE.Views
             {
                 // Let filter popup search fields handle their own paste
                 if (IsFocusInsidePopup()) return;
+
+                // If cell is in edit mode, let the TextBox handle paste naturally (insert at cursor)
+                var currentCell = sfActivities.SelectionController.CurrentCellManager.CurrentCell;
+                if (currentCell != null && currentCell.IsEditing)
+                    return;
+
                 // Check: multiple rows selected via SelectedItems (keyboard selection like Ctrl+Shift+Down)
                 if (sfActivities.SelectedItems.Count > 1 && sfActivities.CurrentColumn != null)
                 {
@@ -1234,6 +1240,11 @@ namespace VANTAGE.Views
             // Handle Ctrl+V for multi-cell paste
             else if (e.Key == Key.V && Keyboard.Modifiers == ModifierKeys.Control)
             {
+                // If cell is in edit mode, let the TextBox handle paste naturally (insert at cursor)
+                var currentCell = sfActivities.SelectionController.CurrentCellManager.CurrentCell;
+                if (currentCell != null && currentCell.IsEditing)
+                    return;
+
                 var selectedCells = sfActivities.GetSelectedCells();
                 var clipboardValues = GetClipboardFirstColumn();
 
@@ -3996,8 +4007,8 @@ namespace VANTAGE.Views
                 BorderThickness = new Thickness(1)
             };
 
-            // Populate with current grid columns
-            foreach (var column in sfActivities.Columns)
+            // Populate with current grid columns - sorted alphabetically for easy lookup
+            foreach (var column in sfActivities.Columns.OrderBy(c => GetColumnPropertyName(c)))
             {
                 string columnName = GetColumnPropertyName(column);
                 var checkBox = new CheckBox
@@ -4036,6 +4047,15 @@ namespace VANTAGE.Views
             };
             defaultButton.Click += (s, args) =>
             {
+                var result = MessageBox.Show(
+                    "This will restore column visibility to default settings.\n\nDo you want to continue?",
+                    "Restore Defaults",
+                    MessageBoxButton.OKCancel,
+                    MessageBoxImage.Question);
+
+                if (result != MessageBoxResult.OK)
+                    return;
+
                 // Reset columns to XAML-defined defaults
                 foreach (var column in sfActivities.Columns)
                     column.IsHidden = _xamlHiddenColumns.Contains(column.MappingName);

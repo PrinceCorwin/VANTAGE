@@ -32,10 +32,13 @@ namespace VANTAGE.Views
 
         // Available fields for grouping and columns
         private List<string> _allFields = new();
-        private List<string> _commonFields = new() { "PhaseCode", "Area", "SubArea", "PjtSystemNo", "WorkPackage", "TagNO" };
+        private List<string> _commonFields = new() { "Area", "PhaseCode", "PjtSystemNo", "ROCStep", "SubArea", "TagNO", "WorkPackage" };
 
         // Flag to prevent recursive updates
         private bool _isLoading;
+
+        // Track selected exclude values (multi-select)
+        private HashSet<string> _selectedExcludeValues = new();
 
         // Track unsaved changes to warn user before switching layouts
         private bool _hasUnsavedChanges;
@@ -164,7 +167,19 @@ namespace VANTAGE.Views
             filterColumnItems.AddRange(_allFields);
 
             cboFilterColumn.ItemsSource = filterColumnItems;
-            cboFilterColumn.SelectedIndex = 4; // WorkPackage
+            cboFilterColumn.SelectedIndex = 6; // WorkPackage
+
+            // Exclude column dropdown - same structure with "(none)" option
+            var excludeColumnItems = new List<string> { "(none)" };
+            foreach (var field in _commonFields)
+            {
+                excludeColumnItems.Add($"★ {field}");
+            }
+            excludeColumnItems.Add("───────────");
+            excludeColumnItems.AddRange(_allFields);
+
+            cboExcludeColumn.ItemsSource = excludeColumnItems;
+            cboExcludeColumn.SelectedIndex = 0; // (none)
 
             // Add column dropdown - all fields
             RefreshAddColumnDropdown();
@@ -250,6 +265,12 @@ namespace VANTAGE.Views
                 // Load filter values for default column
                 await LoadFilterValuesAsync();
 
+                // Reset exclude column/values
+                cboExcludeColumn.SelectedIndex = 0; // (none)
+                _selectedExcludeValues.Clear();
+                pnlExcludeValues.Children.Clear();
+                UpdateExcludeValuesDisplay();
+
                 _hasUnsavedChanges = false;
             }
             finally
@@ -321,6 +342,19 @@ namespace VANTAGE.Views
 
                 // Load filter values then set selected value (awaited so _isLoading stays true)
                 await LoadFilterValuesAsync(config.FilterValue);
+
+                // Load exclude column and values
+                SetExcludeColumnSelection(config.ExcludeColumn);
+                if (!string.IsNullOrEmpty(config.ExcludeColumn))
+                {
+                    await LoadExcludeValuesAsync(config.ExcludeValues);
+                }
+                else
+                {
+                    _selectedExcludeValues.Clear();
+                    pnlExcludeValues.Children.Clear();
+                    UpdateExcludeValuesDisplay();
+                }
 
                 _hasUnsavedChanges = false;
             }
@@ -505,7 +539,9 @@ namespace VANTAGE.Views
                 FontSize = (int)sliderFontSize.Value,
                 FilterField = GetSelectedFilterColumn(),
                 FilterValue = cboFilterValue.SelectedItem as string ?? string.Empty,
-                ExcludeCompleted = chkExcludeCompleted.IsChecked == true
+                ExcludeCompleted = chkExcludeCompleted.IsChecked == true,
+                ExcludeColumn = GetSelectedExcludeColumn(),
+                ExcludeValues = _selectedExcludeValues.ToList()
             };
 
             // Add groups
@@ -632,6 +668,149 @@ namespace VANTAGE.Views
         {
             if (!_isLoading)
                 _hasUnsavedChanges = true;
+        }
+
+        // Exclude column selection changed - reload exclude values
+        private async void ExcludeColumn_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_isLoading) return;
+
+            await LoadExcludeValuesAsync();
+            _hasUnsavedChanges = true;
+        }
+
+        // Get the currently selected exclude column field (without the star)
+        private string GetSelectedExcludeColumn()
+        {
+            var selected = cboExcludeColumn.SelectedItem as string;
+            if (string.IsNullOrEmpty(selected) || selected == "(none)" || selected.StartsWith("──"))
+                return string.Empty;
+            return selected.Replace("★ ", "");
+        }
+
+        // Load distinct exclude values for the selected column and create checkboxes
+        private async System.Threading.Tasks.Task LoadExcludeValuesAsync(List<string>? selectedValues = null)
+        {
+            pnlExcludeValues.Children.Clear();
+            _selectedExcludeValues.Clear();
+
+            var excludeColumn = GetSelectedExcludeColumn();
+            if (string.IsNullOrEmpty(excludeColumn))
+            {
+                UpdateExcludeValuesDisplay();
+                return;
+            }
+
+            try
+            {
+                var username = App.CurrentUser?.Username ?? "";
+
+                // Query distinct values for this column from user's records
+                var whereClause = $"AssignedTo = '{username}' AND {excludeColumn} IS NOT NULL AND {excludeColumn} != ''";
+                var (activities, _) = await ActivityRepository.GetAllActivitiesAsync(whereClause);
+
+                // Get distinct values using reflection
+                var distinctValues = activities
+                    .Select(a => GetActivityFieldValue(a, excludeColumn))
+                    .Where(v => !string.IsNullOrEmpty(v))
+                    .Select(v => v!)  // Cast to non-null since we filtered nulls above
+                    .Distinct()
+                    .OrderBy(v => v)
+                    .ToList();
+
+                // Pre-populate selected values if loading from saved layout
+                if (selectedValues != null)
+                {
+                    foreach (var val in selectedValues)
+                    {
+                        if (distinctValues.Contains(val))
+                            _selectedExcludeValues.Add(val);
+                    }
+                }
+
+                // Create checkboxes for each value
+                foreach (var value in distinctValues)
+                {
+                    var checkBox = new CheckBox
+                    {
+                        Content = value,
+                        IsChecked = _selectedExcludeValues.Contains(value),
+                        Margin = new Thickness(5, 3, 5, 3),
+                        Foreground = (System.Windows.Media.Brush)FindResource("ForegroundColor"),
+                        Tag = value
+                    };
+                    checkBox.Checked += ExcludeValueCheckBox_Changed;
+                    checkBox.Unchecked += ExcludeValueCheckBox_Changed;
+                    pnlExcludeValues.Children.Add(checkBox);
+                }
+
+                UpdateExcludeValuesDisplay();
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "ProgressBooksView.LoadExcludeValuesAsync");
+            }
+        }
+
+        // Handle checkbox checked/unchecked for exclude values
+        private void ExcludeValueCheckBox_Changed(object sender, RoutedEventArgs e)
+        {
+            if (sender is CheckBox cb && cb.Tag is string value)
+            {
+                if (cb.IsChecked == true)
+                    _selectedExcludeValues.Add(value);
+                else
+                    _selectedExcludeValues.Remove(value);
+
+                UpdateExcludeValuesDisplay();
+
+                if (!_isLoading)
+                    _hasUnsavedChanges = true;
+            }
+        }
+
+        // Update the display text for selected exclude values
+        private void UpdateExcludeValuesDisplay()
+        {
+            if (_selectedExcludeValues.Count == 0)
+            {
+                txtExcludeValuesDisplay.Text = "(none selected)";
+            }
+            else if (_selectedExcludeValues.Count == 1)
+            {
+                txtExcludeValuesDisplay.Text = _selectedExcludeValues.First();
+            }
+            else
+            {
+                txtExcludeValuesDisplay.Text = $"{_selectedExcludeValues.Count} selected";
+            }
+        }
+
+        // Set the exclude column dropdown to the specified field
+        private void SetExcludeColumnSelection(string fieldName)
+        {
+            if (string.IsNullOrEmpty(fieldName))
+            {
+                cboExcludeColumn.SelectedIndex = 0; // (none)
+                return;
+            }
+
+            var starredVersion = $"★ {fieldName}";
+            var items = cboExcludeColumn.ItemsSource as List<string>;
+            if (items != null)
+            {
+                var starredIndex = items.IndexOf(starredVersion);
+                if (starredIndex >= 0)
+                {
+                    cboExcludeColumn.SelectedIndex = starredIndex;
+                    return;
+                }
+                var normalIndex = items.IndexOf(fieldName);
+                if (normalIndex >= 0)
+                {
+                    cboExcludeColumn.SelectedIndex = normalIndex;
+                }
+            }
         }
 
         // Column list actions
@@ -929,6 +1108,14 @@ namespace VANTAGE.Views
                 }
 
                 var (activities, _) = await ActivityRepository.GetAllActivitiesAsync(whereClause);
+
+                // Filter out excluded values if configured
+                if (!string.IsNullOrEmpty(config.ExcludeColumn) && config.ExcludeValues.Count > 0)
+                {
+                    activities = activities
+                        .Where(a => !config.ExcludeValues.Contains(GetActivityFieldValue(a, config.ExcludeColumn) ?? ""))
+                        .ToList();
+                }
 
                 // Take a sample for preview
                 var sampleActivities = activities.Take(100).ToList();

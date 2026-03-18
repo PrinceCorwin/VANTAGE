@@ -25,6 +25,14 @@ namespace VANTAGE.Models.ProgressBook
         [JsonPropertyName("excludeCompleted")]
         public bool ExcludeCompleted { get; set; } = false;
 
+        // Column to use for value-based exclusion filtering
+        [JsonPropertyName("excludeColumn")]
+        public string ExcludeColumn { get; set; } = string.Empty;
+
+        // Values to exclude from the selected column (multi-select)
+        [JsonPropertyName("excludeValues")]
+        public List<string> ExcludeValues { get; set; } = new();
+
         // Group fields for organizing data (up to 10 levels)
         // Groups are always sorted alphanumerically
         [JsonPropertyName("groups")]

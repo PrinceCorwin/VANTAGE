@@ -86,6 +86,15 @@ namespace VANTAGE.Dialogs
                 }
 
                 var (activities, _) = await ActivityRepository.GetAllActivitiesAsync(whereClause);
+
+                // Filter out excluded values if configured
+                if (!string.IsNullOrEmpty(_config.ExcludeColumn) && _config.ExcludeValues.Count > 0)
+                {
+                    activities = activities
+                        .Where(a => !_config.ExcludeValues.Contains(GetActivityFieldValue(a, _config.ExcludeColumn) ?? ""))
+                        .ToList();
+                }
+
                 _activities = activities;
 
                 txtRecordCount.Text = activities.Count.ToString("N0");
@@ -200,6 +209,21 @@ namespace VANTAGE.Dialogs
         {
             DialogResult = false;
             Close();
+        }
+
+        // Get a field value from an Activity using reflection
+        private string? GetActivityFieldValue(Activity activity, string fieldName)
+        {
+            try
+            {
+                var prop = typeof(Activity).GetProperty(fieldName,
+                    System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.IgnoreCase);
+                return prop?.GetValue(activity)?.ToString();
+            }
+            catch
+            {
+                return null;
+            }
         }
     }
 }

@@ -6,6 +6,14 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### March 18, 2026 (Progress Module UX Improvements)
+- **Column visibility list sorted alphabetically:** The Columns popup in Progress module now displays columns in alphabetical order for easier lookup, regardless of XAML definition order.
+- **Default button confirmation:** Clicking Default in the column visibility popup now shows a confirmation dialog before restoring columns to default visibility.
+- **Ctrl+V paste fix:** When editing a cell, Ctrl+V now inserts clipboard text at cursor position or replaces selected text (standard Windows behavior). Previously it replaced the entire cell value.
+- **Progress Books — Exclude Values From Column:** New section below "Exclude Completed Activities" with Column dropdown and multi-select Values dropdown. Select values to exclude from aggregation (e.g., exclude specific WorkPackage values). Exclusion settings are saved with layouts.
+- **ROCStep added to starred fields:** Both Select Progress Book(s) and Exclude Values From Column dropdowns now include ROCStep in the starred common fields section, sorted alphabetically.
+- **Key files:** `Views/ProgressView.xaml.cs`, `Views/ProgressBooksView.xaml`, `Views/ProgressBooksView.xaml.cs`, `Models/ProgressBook/ProgressBookConfiguration.cs`, `Dialogs/GenerateProgressBookDialog.xaml.cs`
+
 ### March 17, 2026 (Takeoff — Labor Multipliers, Rate Folding, Makeup Fixes)
 - **Material multipliers (MatlMult):** Added 16-entry material group multiplier table (CS=1.0, SS=1.425, HAST=2.0, HDPE=0.5, PVC=0.33, etc.). Each labor row's MHs are scaled by its `Matl_Grp`.
 - **Rollup multipliers (RollupMult):** PIPE=1.4, BW/SW=1.25, FW=1.35, all others=1.0. Formula: `BudgetMHs = (RateSheet × RollupMult × max(RollupMult, MatlMult) + CutAdd + BevelAdd) × Qty`.

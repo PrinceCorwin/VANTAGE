@@ -158,6 +158,51 @@
                               Margin="0,10,0,0"
                               ToolTip="When checked, activities with 100% progress will not be included in the progress book"/>
 
+                    <!-- Exclude Values From Column -->
+                    <TextBlock Text="Exclude Values From Column" FontWeight="Bold" Margin="0,15,0,5"/>
+                    <Grid Margin="0,0,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="10"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="Column" FontSize="11" Foreground="{DynamicResource TextColorSecondary}"/>
+                        <TextBlock Grid.Column="2" Text="Values" FontSize="11" Foreground="{DynamicResource TextColorSecondary}"/>
+                        <ComboBox x:Name="cboExcludeColumn"
+                                  Grid.Row="1"
+                                  ToolTip="Select a column to exclude values from"
+                                  SelectionChanged="ExcludeColumn_SelectionChanged"/>
+                        <!-- Multi-select dropdown using ToggleButton + Popup -->
+                        <Grid Grid.Row="1" Grid.Column="2">
+                            <ToggleButton x:Name="btnExcludeValues"
+                                          HorizontalContentAlignment="Left"
+                                          Padding="5,0"
+                                          ToolTip="Select values to exclude from the progress book">
+                                <TextBlock x:Name="txtExcludeValuesDisplay" Text="(none selected)" TextTrimming="CharacterEllipsis"/>
+                            </ToggleButton>
+                            <Popup x:Name="popupExcludeValues"
+                                   PlacementTarget="{Binding ElementName=btnExcludeValues}"
+                                   Placement="Bottom"
+                                   StaysOpen="False"
+                                   IsOpen="{Binding IsChecked, ElementName=btnExcludeValues, Mode=TwoWay}"
+                                   AllowsTransparency="True">
+                                <Border Background="{DynamicResource ControlBackground}"
+                                        BorderBrush="{DynamicResource BorderColor}"
+                                        BorderThickness="1"
+                                        MaxHeight="200"
+                                        MinWidth="{Binding ActualWidth, ElementName=btnExcludeValues}">
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                        <StackPanel x:Name="pnlExcludeValues"/>
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                    </Grid>
+
                     <Separator Margin="0,15,0,15"/>
 
                     <!-- Grouping (groups are auto-sorted alphanumerically) -->
