@@ -37,28 +37,33 @@ namespace VANTAGE.Services.AI
         }
 
         // Look up a fitting makeup entry. Returns (Makeup_Run_In, Makeup_Outlet_In) or null if not found.
+        // Two-pass lookup: exact class match first, then fallback to wildcard (null class) entries.
         public static (double RunIn, double? OutletIn)? LookupMakeup(
             string connType, string component, double runSize, string? classRating, double? outletSize = null)
         {
             var entries = LoadEntries();
 
-            var match = entries.FirstOrDefault(e =>
+            // Filter to entries matching connection type, component, size, and outlet
+            var candidates = entries.Where(e =>
                 e.Connection_Type.Equals(connType, StringComparison.OrdinalIgnoreCase) &&
                 e.Component.Equals(component, StringComparison.OrdinalIgnoreCase) &&
                 Math.Abs(e.Run_Size - runSize) < 0.001 &&
-                ClassMatches(e.Class, classRating) &&
-                OutletMatches(e.Outlet_Size, outletSize));
+                OutletMatches(e.Outlet_Size, outletSize)).ToList();
+
+            // Pass 1: Try exact class match
+            var match = candidates.FirstOrDefault(e => ClassMatchesExact(e.Class, classRating));
+
+            // Pass 2: Fall back to wildcard entries (no class specified)
+            match ??= candidates.FirstOrDefault(e => string.IsNullOrEmpty(e.Class));
 
             if (match == null) return null;
             return (match.Makeup_Run_In, match.Makeup_Outlet_In);
         }
 
-        // If the JSON entry has a Class value, it must match the provided class.
-        // If the JSON entry has no Class (null), it matches any class.
-        private static bool ClassMatches(string? entryClass, string? lookupClass)
+        // Exact class match - both must have a value and match
+        private static bool ClassMatchesExact(string? entryClass, string? lookupClass)
         {
-            if (string.IsNullOrEmpty(entryClass)) return true;
-            if (string.IsNullOrEmpty(lookupClass)) return false;
+            if (string.IsNullOrEmpty(entryClass) || string.IsNullOrEmpty(lookupClass)) return false;
             return entryClass.Equals(lookupClass, StringComparison.OrdinalIgnoreCase);
         }
 
@@ -84,6 +89,10 @@ namespace VANTAGE.Services.AI
                 string connTypes = GetString(fitting, "Connection Type");
                 string? classRating = GetNullableString(fitting, "Class Rating");
                 int qty = GetBomQuantity(fitting);
+
+                // Skip BU-only fittings (flanged items with no weld connection to pipe)
+                if (IsBoltUpOnly(connTypes))
+                    continue;
 
                 double? contribution = null;
                 string lookupKey = "";
@@ -205,6 +214,18 @@ namespace VANTAGE.Services.AI
             var result = LookupMakeup(weldType, component, pipeSize, classRating);
             string key = $"{weldType}/{component}/{pipeSize}" + (!string.IsNullOrEmpty(classRating) ? $"/Class{classRating}" : "");
             return (result?.RunIn, key);
+        }
+
+        // Check if connection types are BU-only (no weldable connection)
+        private static bool IsBoltUpOnly(string connTypes)
+        {
+            if (string.IsNullOrWhiteSpace(connTypes)) return false;
+
+            var types = connTypes.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                                 .Select(t => t.Trim().ToUpper())
+                                 .ToList();
+
+            return types.All(t => t == "BU");
         }
 
         // Extract weldable connection type from comma-separated list (exclude BU for flanges, OLW for olets)

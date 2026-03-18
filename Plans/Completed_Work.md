@@ -6,6 +6,11 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### March 18, 2026 (Takeoff — Fitting Makeup Lookup Fixes)
+- **Class matching priority fix:** Makeup lookup now tries exact class match first, then falls back to wildcard (null class) entries. Previously, a wildcard entry appearing first in the JSON would incorrectly match even when a class-specific entry existed.
+- **BU-only fittings skipped:** Fittings with only bolt-up connections (e.g., flanged 90L with "BU,BU") are now skipped from makeup calculation since they don't add weld makeup to the pipe.
+- **Key file:** `Services/AI/FittingMakeupService.cs`
+
 ### March 18, 2026 (Progress Module UX Improvements)
 - **Column visibility list sorted alphabetically:** The Columns popup in Progress module now displays columns in alphabetical order for easier lookup, regardless of XAML definition order.
 - **Default button confirmation:** Clicking Default in the column visibility popup now shows a confirmation dialog before restoring columns to default visibility.
