@@ -51,6 +51,7 @@ namespace VANTAGE.Services.AI
         private static double GetRollupMultiplier(string component)
         {
             if (component.Equals("PIPE", StringComparison.OrdinalIgnoreCase)) return 1.4;
+            if (component.Equals("SPL", StringComparison.OrdinalIgnoreCase)) return 1.4;
             if (component.Equals("BW", StringComparison.OrdinalIgnoreCase)) return 1.25;
             if (component.Equals("SW", StringComparison.OrdinalIgnoreCase)) return 1.25;
             if (component.Equals("FW", StringComparison.OrdinalIgnoreCase)) return 1.35;
@@ -1103,7 +1104,7 @@ namespace VANTAGE.Services.AI
                     row["CutAdd"] = cutAdd;
                     row["BevelAdd"] = bevAdd;
 
-                    row["BudgetMHs"] = NumericHelper.RoundToPlaces((mhu * rollupMult * Math.Max(rollupMult, matlMult) + cutAdd + bevAdd) * qty);
+                    row["BudgetMHs"] = NumericHelper.RoundToPlaces((mhu * rollupMult * matlMult + cutAdd + bevAdd) * qty);
                     row["UOM"] = unit;
                     row["RateSource"] = rateSource;
                     matched++;
