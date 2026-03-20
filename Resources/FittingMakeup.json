@@ -2797,6 +2797,654 @@
         "Makeup_Outlet_In":  29.016
     },
     {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "3000",
+        "Run_Size":  0.75,
+        "Outlet_Size":  0.5,
+        "Makeup_Run_In":  0.768,
+        "Makeup_Outlet_In":  0.61
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "3000",
+        "Run_Size":  1,
+        "Outlet_Size":  0.5,
+        "Makeup_Run_In":  0.866,
+        "Makeup_Outlet_In":  0.61
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "3000",
+        "Run_Size":  1,
+        "Outlet_Size":  0.75,
+        "Makeup_Run_In":  0.866,
+        "Makeup_Outlet_In":  0.768
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "3000",
+        "Run_Size":  1.25,
+        "Outlet_Size":  0.5,
+        "Makeup_Run_In":  1.063,
+        "Makeup_Outlet_In":  0.61
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "3000",
+        "Run_Size":  1.25,
+        "Outlet_Size":  0.75,
+        "Makeup_Run_In":  1.063,
+        "Makeup_Outlet_In":  0.768
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "3000",
+        "Run_Size":  1.25,
+        "Outlet_Size":  1,
+        "Makeup_Run_In":  1.063,
+        "Makeup_Outlet_In":  0.866
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "3000",
+        "Run_Size":  1.5,
+        "Outlet_Size":  0.5,
+        "Makeup_Run_In":  1.26,
+        "Makeup_Outlet_In":  0.61
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "3000",
+        "Run_Size":  1.5,
+        "Outlet_Size":  0.75,
+        "Makeup_Run_In":  1.26,
+        "Makeup_Outlet_In":  0.768
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "3000",
+        "Run_Size":  1.5,
+        "Outlet_Size":  1,
+        "Makeup_Run_In":  1.26,
+        "Makeup_Outlet_In":  0.866
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "3000",
+        "Run_Size":  1.5,
+        "Outlet_Size":  1.25,
+        "Makeup_Run_In":  1.26,
+        "Makeup_Outlet_In":  1.063
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "3000",
+        "Run_Size":  2,
+        "Outlet_Size":  0.5,
+        "Makeup_Run_In":  1.496,
+        "Makeup_Outlet_In":  0.61
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "3000",
+        "Run_Size":  2,
+        "Outlet_Size":  0.75,
+        "Makeup_Run_In":  1.496,
+        "Makeup_Outlet_In":  0.768
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "3000",
+        "Run_Size":  2,
+        "Outlet_Size":  1,
+        "Makeup_Run_In":  1.496,
+        "Makeup_Outlet_In":  0.866
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "3000",
+        "Run_Size":  2,
+        "Outlet_Size":  1.25,
+        "Makeup_Run_In":  1.496,
+        "Makeup_Outlet_In":  1.063
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "3000",
+        "Run_Size":  2,
+        "Outlet_Size":  1.5,
+        "Makeup_Run_In":  1.496,
+        "Makeup_Outlet_In":  1.26
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "3000",
+        "Run_Size":  2.5,
+        "Outlet_Size":  0.5,
+        "Makeup_Run_In":  1.634,
+        "Makeup_Outlet_In":  0.61
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "3000",
+        "Run_Size":  2.5,
+        "Outlet_Size":  0.75,
+        "Makeup_Run_In":  1.634,
+        "Makeup_Outlet_In":  0.768
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "3000",
+        "Run_Size":  2.5,
+        "Outlet_Size":  1,
+        "Makeup_Run_In":  1.634,
+        "Makeup_Outlet_In":  0.866
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "3000",
+        "Run_Size":  2.5,
+        "Outlet_Size":  1.25,
+        "Makeup_Run_In":  1.634,
+        "Makeup_Outlet_In":  1.063
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "3000",
+        "Run_Size":  2.5,
+        "Outlet_Size":  1.5,
+        "Makeup_Run_In":  1.634,
+        "Makeup_Outlet_In":  1.26
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "3000",
+        "Run_Size":  2.5,
+        "Outlet_Size":  2,
+        "Makeup_Run_In":  1.634,
+        "Makeup_Outlet_In":  1.496
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "3000",
+        "Run_Size":  3,
+        "Outlet_Size":  0.5,
+        "Makeup_Run_In":  2.264,
+        "Makeup_Outlet_In":  0.61
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "3000",
+        "Run_Size":  3,
+        "Outlet_Size":  0.75,
+        "Makeup_Run_In":  2.264,
+        "Makeup_Outlet_In":  0.768
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "3000",
+        "Run_Size":  3,
+        "Outlet_Size":  1,
+        "Makeup_Run_In":  2.264,
+        "Makeup_Outlet_In":  0.866
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "3000",
+        "Run_Size":  3,
+        "Outlet_Size":  1.25,
+        "Makeup_Run_In":  2.264,
+        "Makeup_Outlet_In":  1.063
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "3000",
+        "Run_Size":  3,
+        "Outlet_Size":  1.5,
+        "Makeup_Run_In":  2.264,
+        "Makeup_Outlet_In":  1.26
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "3000",
+        "Run_Size":  3,
+        "Outlet_Size":  2,
+        "Makeup_Run_In":  2.264,
+        "Makeup_Outlet_In":  1.496
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "3000",
+        "Run_Size":  3,
+        "Outlet_Size":  2.5,
+        "Makeup_Run_In":  2.264,
+        "Makeup_Outlet_In":  1.634
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "3000",
+        "Run_Size":  4,
+        "Outlet_Size":  0.5,
+        "Makeup_Run_In":  2.618,
+        "Makeup_Outlet_In":  0.61
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "3000",
+        "Run_Size":  4,
+        "Outlet_Size":  0.75,
+        "Makeup_Run_In":  2.618,
+        "Makeup_Outlet_In":  0.768
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "3000",
+        "Run_Size":  4,
+        "Outlet_Size":  1,
+        "Makeup_Run_In":  2.618,
+        "Makeup_Outlet_In":  0.866
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "3000",
+        "Run_Size":  4,
+        "Outlet_Size":  1.25,
+        "Makeup_Run_In":  2.618,
+        "Makeup_Outlet_In":  1.063
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "3000",
+        "Run_Size":  4,
+        "Outlet_Size":  1.5,
+        "Makeup_Run_In":  2.618,
+        "Makeup_Outlet_In":  1.26
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "3000",
+        "Run_Size":  4,
+        "Outlet_Size":  2,
+        "Makeup_Run_In":  2.618,
+        "Makeup_Outlet_In":  1.496
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "3000",
+        "Run_Size":  4,
+        "Outlet_Size":  2.5,
+        "Makeup_Run_In":  2.618,
+        "Makeup_Outlet_In":  1.634
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "3000",
+        "Run_Size":  4,
+        "Outlet_Size":  3,
+        "Makeup_Run_In":  2.618,
+        "Makeup_Outlet_In":  2.264
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "6000",
+        "Run_Size":  0.75,
+        "Outlet_Size":  0.5,
+        "Makeup_Run_In":  0.768,
+        "Makeup_Outlet_In":  0.61
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "6000",
+        "Run_Size":  1,
+        "Outlet_Size":  0.5,
+        "Makeup_Run_In":  0.866,
+        "Makeup_Outlet_In":  0.61
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "6000",
+        "Run_Size":  1,
+        "Outlet_Size":  0.75,
+        "Makeup_Run_In":  0.866,
+        "Makeup_Outlet_In":  0.768
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "6000",
+        "Run_Size":  1.25,
+        "Outlet_Size":  0.5,
+        "Makeup_Run_In":  1.063,
+        "Makeup_Outlet_In":  0.61
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "6000",
+        "Run_Size":  1.25,
+        "Outlet_Size":  0.75,
+        "Makeup_Run_In":  1.063,
+        "Makeup_Outlet_In":  0.768
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "6000",
+        "Run_Size":  1.25,
+        "Outlet_Size":  1,
+        "Makeup_Run_In":  1.063,
+        "Makeup_Outlet_In":  0.866
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "6000",
+        "Run_Size":  1.5,
+        "Outlet_Size":  0.5,
+        "Makeup_Run_In":  1.26,
+        "Makeup_Outlet_In":  0.61
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "6000",
+        "Run_Size":  1.5,
+        "Outlet_Size":  0.75,
+        "Makeup_Run_In":  1.26,
+        "Makeup_Outlet_In":  0.768
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "6000",
+        "Run_Size":  1.5,
+        "Outlet_Size":  1,
+        "Makeup_Run_In":  1.26,
+        "Makeup_Outlet_In":  0.866
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "6000",
+        "Run_Size":  1.5,
+        "Outlet_Size":  1.25,
+        "Makeup_Run_In":  1.26,
+        "Makeup_Outlet_In":  1.063
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "6000",
+        "Run_Size":  2,
+        "Outlet_Size":  0.5,
+        "Makeup_Run_In":  1.496,
+        "Makeup_Outlet_In":  0.61
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "6000",
+        "Run_Size":  2,
+        "Outlet_Size":  0.75,
+        "Makeup_Run_In":  1.496,
+        "Makeup_Outlet_In":  0.768
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "6000",
+        "Run_Size":  2,
+        "Outlet_Size":  1,
+        "Makeup_Run_In":  1.496,
+        "Makeup_Outlet_In":  0.866
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "6000",
+        "Run_Size":  2,
+        "Outlet_Size":  1.25,
+        "Makeup_Run_In":  1.496,
+        "Makeup_Outlet_In":  1.063
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "6000",
+        "Run_Size":  2,
+        "Outlet_Size":  1.5,
+        "Makeup_Run_In":  1.496,
+        "Makeup_Outlet_In":  1.26
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "6000",
+        "Run_Size":  2.5,
+        "Outlet_Size":  0.5,
+        "Makeup_Run_In":  1.634,
+        "Makeup_Outlet_In":  0.61
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "6000",
+        "Run_Size":  2.5,
+        "Outlet_Size":  0.75,
+        "Makeup_Run_In":  1.634,
+        "Makeup_Outlet_In":  0.768
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "6000",
+        "Run_Size":  2.5,
+        "Outlet_Size":  1,
+        "Makeup_Run_In":  1.634,
+        "Makeup_Outlet_In":  0.866
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "6000",
+        "Run_Size":  2.5,
+        "Outlet_Size":  1.25,
+        "Makeup_Run_In":  1.634,
+        "Makeup_Outlet_In":  1.063
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "6000",
+        "Run_Size":  2.5,
+        "Outlet_Size":  1.5,
+        "Makeup_Run_In":  1.634,
+        "Makeup_Outlet_In":  1.26
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "6000",
+        "Run_Size":  2.5,
+        "Outlet_Size":  2,
+        "Makeup_Run_In":  1.634,
+        "Makeup_Outlet_In":  1.496
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "6000",
+        "Run_Size":  3,
+        "Outlet_Size":  0.5,
+        "Makeup_Run_In":  2.264,
+        "Makeup_Outlet_In":  0.61
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "6000",
+        "Run_Size":  3,
+        "Outlet_Size":  0.75,
+        "Makeup_Run_In":  2.264,
+        "Makeup_Outlet_In":  0.768
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "6000",
+        "Run_Size":  3,
+        "Outlet_Size":  1,
+        "Makeup_Run_In":  2.264,
+        "Makeup_Outlet_In":  0.866
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "6000",
+        "Run_Size":  3,
+        "Outlet_Size":  1.25,
+        "Makeup_Run_In":  2.264,
+        "Makeup_Outlet_In":  1.063
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "6000",
+        "Run_Size":  3,
+        "Outlet_Size":  1.5,
+        "Makeup_Run_In":  2.264,
+        "Makeup_Outlet_In":  1.26
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "6000",
+        "Run_Size":  3,
+        "Outlet_Size":  2,
+        "Makeup_Run_In":  2.264,
+        "Makeup_Outlet_In":  1.496
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "6000",
+        "Run_Size":  3,
+        "Outlet_Size":  2.5,
+        "Makeup_Run_In":  2.264,
+        "Makeup_Outlet_In":  1.634
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "6000",
+        "Run_Size":  4,
+        "Outlet_Size":  0.5,
+        "Makeup_Run_In":  2.618,
+        "Makeup_Outlet_In":  0.61
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "6000",
+        "Run_Size":  4,
+        "Outlet_Size":  0.75,
+        "Makeup_Run_In":  2.618,
+        "Makeup_Outlet_In":  0.768
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "6000",
+        "Run_Size":  4,
+        "Outlet_Size":  1,
+        "Makeup_Run_In":  2.618,
+        "Makeup_Outlet_In":  0.866
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "6000",
+        "Run_Size":  4,
+        "Outlet_Size":  1.25,
+        "Makeup_Run_In":  2.618,
+        "Makeup_Outlet_In":  1.063
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "6000",
+        "Run_Size":  4,
+        "Outlet_Size":  1.5,
+        "Makeup_Run_In":  2.618,
+        "Makeup_Outlet_In":  1.26
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "6000",
+        "Run_Size":  4,
+        "Outlet_Size":  2,
+        "Makeup_Run_In":  2.618,
+        "Makeup_Outlet_In":  1.496
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "6000",
+        "Run_Size":  4,
+        "Outlet_Size":  2.5,
+        "Makeup_Run_In":  2.618,
+        "Makeup_Outlet_In":  1.634
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "REDT",
+        "Class":  "6000",
+        "Run_Size":  4,
+        "Outlet_Size":  3,
+        "Makeup_Run_In":  2.618,
+        "Makeup_Outlet_In":  2.264
+    },
+    {
         "Connection_Type":  "BW",
         "Component":  "TEE",
         "Run_Size":  0.5,
@@ -10670,6 +11318,120 @@
         "Makeup_Run_In":  55
     },
     {
+        "Connection_Type":  "BW",
+        "Component":  "VBL",
+        "Run_Size":  0.5,
+        "Makeup_Run_In":  5.419966667
+    },
+    {
+        "Connection_Type":  "BW",
+        "Component":  "VBL",
+        "Run_Size":  0.75,
+        "Makeup_Run_In":  6.023633333
+    },
+    {
+        "Connection_Type":  "BW",
+        "Component":  "VBL",
+        "Run_Size":  1,
+        "Makeup_Run_In":  6.666666667
+    },
+    {
+        "Connection_Type":  "BW",
+        "Component":  "VBL",
+        "Run_Size":  1.25,
+        "Makeup_Run_In":  7.178466667
+    },
+    {
+        "Connection_Type":  "BW",
+        "Component":  "VBL",
+        "Run_Size":  1.5,
+        "Makeup_Run_In":  7.821533333
+    },
+    {
+        "Connection_Type":  "BW",
+        "Component":  "VBL",
+        "Run_Size":  2,
+        "Makeup_Run_In":  9.002633333
+    },
+    {
+        "Connection_Type":  "BW",
+        "Component":  "VBL",
+        "Run_Size":  2.5,
+        "Makeup_Run_In":  9.986866667
+    },
+    {
+        "Connection_Type":  "BW",
+        "Component":  "VBL",
+        "Run_Size":  3,
+        "Makeup_Run_In":  11.03673333
+    },
+    {
+        "Connection_Type":  "BW",
+        "Component":  "VBL",
+        "Run_Size":  4,
+        "Makeup_Run_In":  12.67716667
+    },
+    {
+        "Connection_Type":  "BW",
+        "Component":  "VBL",
+        "Run_Size":  6,
+        "Makeup_Run_In":  17.79526667
+    },
+    {
+        "Connection_Type":  "BW",
+        "Component":  "VBL",
+        "Run_Size":  8,
+        "Makeup_Run_In":  21.24673333
+    },
+    {
+        "Connection_Type":  "BW",
+        "Component":  "VBL",
+        "Run_Size":  10,
+        "Makeup_Run_In":  24.77693333
+    },
+    {
+        "Connection_Type":  "BW",
+        "Component":  "VBL",
+        "Run_Size":  12,
+        "Makeup_Run_In":  27.50653333
+    },
+    {
+        "Connection_Type":  "BW",
+        "Component":  "VBL",
+        "Run_Size":  14,
+        "Makeup_Run_In":  30.6693
+    },
+    {
+        "Connection_Type":  "BW",
+        "Component":  "VBL",
+        "Run_Size":  16,
+        "Makeup_Run_In":  36.0039
+    },
+    {
+        "Connection_Type":  "BW",
+        "Component":  "VBL",
+        "Run_Size":  18,
+        "Makeup_Run_In":  39.4882
+    },
+    {
+        "Connection_Type":  "BW",
+        "Component":  "VBL",
+        "Run_Size":  20,
+        "Makeup_Run_In":  43.0118
+    },
+    {
+        "Connection_Type":  "BW",
+        "Component":  "VBL",
+        "Run_Size":  22,
+        "Makeup_Run_In":  50.9843
+    },
+    {
+        "Connection_Type":  "BW",
+        "Component":  "VBL",
+        "Run_Size":  24,
+        "Makeup_Run_In":  50
+    },
+    {
         "Connection_Type":  "SW",
         "Component":  "VBL",
         "Class":  "150",
@@ -10862,6 +11624,120 @@
         "Connection_Type":  "SW",
         "Component":  "VBL",
         "Class":  "600",
+        "Run_Size":  24,
+        "Makeup_Run_In":  55
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "VBL",
+        "Run_Size":  0.5,
+        "Makeup_Run_In":  5.5118
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "VBL",
+        "Run_Size":  0.75,
+        "Makeup_Run_In":  5.9843
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "VBL",
+        "Run_Size":  1,
+        "Makeup_Run_In":  6.4961
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "VBL",
+        "Run_Size":  1.25,
+        "Makeup_Run_In":  7.0079
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "VBL",
+        "Run_Size":  1.5,
+        "Makeup_Run_In":  7.4803
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "VBL",
+        "Run_Size":  2,
+        "Makeup_Run_In":  8.5039
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "VBL",
+        "Run_Size":  2.5,
+        "Makeup_Run_In":  9.4882
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "VBL",
+        "Run_Size":  3,
+        "Makeup_Run_In":  12.0735
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "VBL",
+        "Run_Size":  4,
+        "Makeup_Run_In":  13.67456667
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "VBL",
+        "Run_Size":  6,
+        "Makeup_Run_In":  18.937
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "VBL",
+        "Run_Size":  8,
+        "Makeup_Run_In":  21.2402
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "VBL",
+        "Run_Size":  10,
+        "Makeup_Run_In":  24.4882
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "VBL",
+        "Run_Size":  12,
+        "Makeup_Run_In":  26.37795
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "VBL",
+        "Run_Size":  14,
+        "Makeup_Run_In":  35
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "VBL",
+        "Run_Size":  16,
+        "Makeup_Run_In":  39.0157
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "VBL",
+        "Run_Size":  18,
+        "Makeup_Run_In":  42.9921
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "VBL",
+        "Run_Size":  20,
+        "Makeup_Run_In":  47.0079
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "VBL",
+        "Run_Size":  22,
+        "Makeup_Run_In":  50.9843
+    },
+    {
+        "Connection_Type":  "SW",
+        "Component":  "VBL",
         "Run_Size":  24,
         "Makeup_Run_In":  55
     },

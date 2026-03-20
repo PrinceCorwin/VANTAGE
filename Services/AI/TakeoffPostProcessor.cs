@@ -1064,6 +1064,16 @@ namespace VANTAGE.Services.AI
                 string? thickness = GetNullableString(row, "Thickness");
                 string? classRating = GetNullableString(row, "Class Rating");
 
+                // Default class for rate lookup when none specified
+                if (string.IsNullOrWhiteSpace(classRating))
+                {
+                    string connType = GetString(row, "Connection Type");
+                    if (connType.Equals("SW", StringComparison.OrdinalIgnoreCase))
+                        classRating = "3000";
+                    else if (component.Equals("BU", StringComparison.OrdinalIgnoreCase))
+                        classRating = "150";
+                }
+
                 var (fldMhu, unit, rateSource, keyAttempted) = RateSheetService.FindRateWithProjectOverride(
                     projectRateCache, component, size, thickness, classRating);
 

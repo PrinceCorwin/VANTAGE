@@ -6,6 +6,15 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### March 19, 2026 (Takeoff — Makeup & Rate Sheet Data Expansion, SW/BU Class Defaults)
+- **SW REDT entries added to FittingMakeup.json:** 72 new SW REDT rows (36 Class 3000 + 36 Class 6000) from `SW_REDT_rows.csv`.
+- **Classless VBL fallback entries:** 38 new VBL entries (19 BW + 19 SW) with no class specified, serving as wildcard fallbacks when a specific class (e.g., 1000) isn't found in the makeup table.
+- **SW connection class default:** `ApplyRates` now defaults SW labor rows to class 3000 for rate lookup when no class is specified.
+- **BU connection class default:** `ApplyRates` now defaults BU labor rows to class 150 for rate lookup when no class is specified.
+- **BU-1.75 rate entries:** Added 6 entries (classes 150, 300, 600, 900, 1500, 2500) to RateSheet.json.
+- **VLV-1.75 rate entries:** Added 7 entries (classes 150, 300, 600, 800, 900, 2500 + size-only fallback) to RateSheet.json.
+- **Key files:** `Resources/FittingMakeup.json`, `Resources/RateSheet.json`, `Services/AI/TakeoffPostProcessor.cs`
+
 ### March 18, 2026 (Takeoff — Fitting Makeup, Rate Sheet, and MH Formula Updates)
 - **FittingMakeup.json replaced:** New 2,039-entry table converted from edited CSV. All TEE entries now have both run and outlet makeup values.
 - **Class matching priority fix:** Makeup lookup now tries exact class match first, then falls back to wildcard (null class) entries.
