@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.1.34",
-  "releaseDate": "2026-03-18T10:39:10Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.34/VANTAGE-26.1.34.zip",
-  "zipSizeBytes": 149949849,
-  "sha256": "A2000DCF5E4EBDA730630D6C94AFC618764F7AC7EDCC0A7A5E595D0A8C21EEE8",
-  "releaseNotes": "Remember last view on startup, Progress Books exclude filter, column visibility UX improvements, Ctrl+V paste fix"
+  "currentVersion": "26.1.35",
+  "releaseDate": "2026-03-20T14:06:01Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.35/VANTAGE-26.1.35.zip",
+  "zipSizeBytes": 149952675,
+  "sha256": "6E51577B9E82B26154C5B2634F5034B4BA31E802F79091B3C0EEC04516D7F42F",
+  "releaseNotes": "Progress Books cover page with project summary, multi-user support, checkbox persistence"
 }
