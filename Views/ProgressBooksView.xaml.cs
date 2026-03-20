@@ -262,14 +262,18 @@ namespace VANTAGE.Views
                 UpdateAddGroupButtonState();
                 UpdateAddSortButtonState();
 
-                // Load filter values for default column
-                await LoadFilterValuesAsync();
+                // Load checkbox states from user settings BEFORE loading filter values (default unchecked)
+                chkExcludeCompleted.IsChecked = SettingsManager.GetUserSetting("ProgressBook.ExcludeCompleted") == "true";
+                chkIncludeAllUsers.IsChecked = SettingsManager.GetUserSetting("ProgressBook.IncludeAllUsers") == "true";
 
                 // Reset exclude column/values
                 cboExcludeColumn.SelectedIndex = 0; // (none)
                 _selectedExcludeValues.Clear();
                 pnlExcludeValues.Children.Clear();
                 UpdateExcludeValuesDisplay();
+
+                // Load filter values (uses checkbox states set above)
+                await LoadFilterValuesAsync();
 
                 _hasUnsavedChanges = false;
             }
@@ -297,6 +301,7 @@ namespace VANTAGE.Views
                 // Load filter settings
                 SetFilterColumnSelection(config.FilterField);
                 chkExcludeCompleted.IsChecked = config.ExcludeCompleted;
+                chkIncludeAllUsers.IsChecked = config.IncludeAllUsers;
 
                 // Load columns
                 _columns.Clear();
@@ -404,9 +409,18 @@ namespace VANTAGE.Views
             {
                 var filterColumn = GetSelectedFilterColumn();
                 var username = App.CurrentUser?.Username ?? "";
+                var includeAllUsers = chkIncludeAllUsers.IsChecked == true;
 
-                // Query distinct values for this column from user's records
-                var whereClause = $"AssignedTo = '{username}' AND {filterColumn} IS NOT NULL AND {filterColumn} != ''";
+                // Query distinct values for this column (optionally including all users)
+                string whereClause;
+                if (includeAllUsers)
+                {
+                    whereClause = $"{filterColumn} IS NOT NULL AND {filterColumn} != ''";
+                }
+                else
+                {
+                    whereClause = $"AssignedTo = '{username}' AND {filterColumn} IS NOT NULL AND {filterColumn} != ''";
+                }
                 var (activities, _) = await ActivityRepository.GetAllActivitiesAsync(whereClause);
 
                 // Get distinct values using reflection
@@ -448,6 +462,44 @@ namespace VANTAGE.Views
             {
                 return null;
             }
+        }
+
+        // Get the last sync display string from user settings
+        private string GetLastSyncDisplay()
+        {
+            var lastSyncString = SettingsManager.GetUserSetting("LastSyncUtcDate");
+            if (string.IsNullOrEmpty(lastSyncString))
+                return "Never";
+
+            if (DateTime.TryParse(lastSyncString, out DateTime lastSyncUtc))
+            {
+                var localTime = lastSyncUtc.ToLocalTime();
+                return localTime.ToString("M/d/yyyy HH:mm");
+            }
+            return "Never";
+        }
+
+        // Get the max UpdatedUtcDate from activities as display string
+        private string GetLastUpdatedDisplay(List<Models.Activity> activities)
+        {
+            if (activities.Count == 0)
+                return "N/A";
+
+            DateTime? maxDate = null;
+            foreach (var activity in activities)
+            {
+                if (activity.UpdatedUtcDate.HasValue)
+                {
+                    if (!maxDate.HasValue || activity.UpdatedUtcDate.Value > maxDate.Value)
+                        maxDate = activity.UpdatedUtcDate.Value;
+                }
+            }
+
+            if (!maxDate.HasValue)
+                return "N/A";
+
+            var localTime = maxDate.Value.ToLocalTime();
+            return localTime.ToString("M/d/yyyy HH:mm");
         }
 
         // Add a group to the collection
@@ -540,6 +592,7 @@ namespace VANTAGE.Views
                 FilterField = GetSelectedFilterColumn(),
                 FilterValue = cboFilterValue.SelectedItem as string ?? string.Empty,
                 ExcludeCompleted = chkExcludeCompleted.IsChecked == true,
+                IncludeAllUsers = chkIncludeAllUsers.IsChecked == true,
                 ExcludeColumn = GetSelectedExcludeColumn(),
                 ExcludeValues = _selectedExcludeValues.ToList()
             };
@@ -670,6 +723,29 @@ namespace VANTAGE.Views
                 _hasUnsavedChanges = true;
         }
 
+        // Exclude completed checkbox changed - save setting
+        private void ChkExcludeCompleted_Changed(object sender, RoutedEventArgs e)
+        {
+            if (_isLoading) return;
+
+            SettingsManager.SetUserSetting("ProgressBook.ExcludeCompleted",
+                chkExcludeCompleted.IsChecked == true ? "true" : "false", "string");
+            _hasUnsavedChanges = true;
+        }
+
+        // Include all users checkbox changed - reload filter values and save setting
+        private async void ChkIncludeAllUsers_Changed(object sender, RoutedEventArgs e)
+        {
+            if (_isLoading) return;
+
+            SettingsManager.SetUserSetting("ProgressBook.IncludeAllUsers",
+                chkIncludeAllUsers.IsChecked == true ? "true" : "false", "string");
+
+            await LoadFilterValuesAsync();
+            await LoadExcludeValuesAsync();
+            _hasUnsavedChanges = true;
+        }
+
         // Exclude column selection changed - reload exclude values
         private async void ExcludeColumn_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -704,9 +780,18 @@ namespace VANTAGE.Views
             try
             {
                 var username = App.CurrentUser?.Username ?? "";
+                var includeAllUsers = chkIncludeAllUsers.IsChecked == true;
 
-                // Query distinct values for this column from user's records
-                var whereClause = $"AssignedTo = '{username}' AND {excludeColumn} IS NOT NULL AND {excludeColumn} != ''";
+                // Query distinct values for this column (optionally including all users)
+                string whereClause;
+                if (includeAllUsers)
+                {
+                    whereClause = $"{excludeColumn} IS NOT NULL AND {excludeColumn} != ''";
+                }
+                else
+                {
+                    whereClause = $"AssignedTo = '{username}' AND {excludeColumn} IS NOT NULL AND {excludeColumn} != ''";
+                }
                 var (activities, _) = await ActivityRepository.GetAllActivitiesAsync(whereClause);
 
                 // Get distinct values using reflection
@@ -1090,32 +1175,68 @@ namespace VANTAGE.Views
                 var filterColumn = config.FilterField;
                 var filterValue = config.FilterValue;
 
-                string whereClause;
+                // Base where clause (without ExcludeCompleted filter - we need all for cover page totals)
+                string baseWhereClause;
                 if (!string.IsNullOrEmpty(filterValue))
                 {
                     var escapedValue = filterValue.Replace("'", "''");
-                    whereClause = $"AssignedTo = '{username}' AND {filterColumn} = '{escapedValue}'";
+                    if (config.IncludeAllUsers)
+                    {
+                        baseWhereClause = $"{filterColumn} = '{escapedValue}'";
+                    }
+                    else
+                    {
+                        baseWhereClause = $"AssignedTo = '{username}' AND {filterColumn} = '{escapedValue}'";
+                    }
                 }
                 else
                 {
-                    whereClause = $"AssignedTo = '{username}'";
+                    if (config.IncludeAllUsers)
+                    {
+                        baseWhereClause = "1=1"; // All records
+                    }
+                    else
+                    {
+                        baseWhereClause = $"AssignedTo = '{username}'";
+                    }
                 }
 
-                // Add filter for excluding completed activities
-                if (config.ExcludeCompleted)
-                {
-                    whereClause += " AND PercentEntry < 100";
-                }
+                // Query ALL activities first (for cover page totals)
+                var (allActivities, _) = await ActivityRepository.GetAllActivitiesAsync(baseWhereClause);
 
-                var (activities, _) = await ActivityRepository.GetAllActivitiesAsync(whereClause);
-
-                // Filter out excluded values if configured
+                // Filter out excluded column values if configured
                 if (!string.IsNullOrEmpty(config.ExcludeColumn) && config.ExcludeValues.Count > 0)
                 {
-                    activities = activities
+                    allActivities = allActivities
                         .Where(a => !config.ExcludeValues.Contains(GetActivityFieldValue(a, config.ExcludeColumn) ?? ""))
                         .ToList();
                 }
+
+                // Compute cover page data from ALL activities (including completed)
+                var coverPageData = new CoverPageData
+                {
+                    TotalBudgetMHs = allActivities.Sum(a => a.BudgetMHs),
+                    TotalEarnedMHs = allActivities.Sum(a => a.EarnMHsCalc),
+                    LastSyncDisplay = GetLastSyncDisplay()
+                };
+
+                // Separate completed activities
+                var completedActivities = allActivities.Where(a => a.PercentEntry >= 100).ToList();
+                var activities = config.ExcludeCompleted
+                    ? allActivities.Where(a => a.PercentEntry < 100).ToList()
+                    : allActivities;
+
+                // Set cover page counts
+                coverPageData.IncludedCount = activities.Count;
+                if (config.ExcludeCompleted)
+                {
+                    coverPageData.ExcludedCompletedCount = completedActivities.Count;
+                    coverPageData.ExcludedCompletedBudgetMHs = completedActivities.Sum(a => a.BudgetMHs);
+                    coverPageData.ExcludedCompletedEarnedMHs = completedActivities.Sum(a => a.EarnMHsCalc);
+                }
+
+                // Get max UpdatedUtcDate from included activities
+                coverPageData.LastUpdatedDisplay = GetLastUpdatedDisplay(activities);
 
                 // Take a sample for preview
                 var sampleActivities = activities.Take(100).ToList();
@@ -1127,10 +1248,10 @@ namespace VANTAGE.Views
                 }
 
                 // Check ALL activities for unsynced ActivityID (still 0), not just the sample
-                var unsyncedCount = activities.Count(a => a.ActivityID == 0);
+                var unsyncedCount = allActivities.Count(a => a.ActivityID == 0);
                 if (unsyncedCount > 0)
                 {
-                    ShowPreviewPlaceholder($"Cannot generate Progress Book.\n\n{unsyncedCount} of {activities.Count} record(s) have not been synced to Azure yet.\n\nPlease sync your records first (Progress module → Sync button).");
+                    ShowPreviewPlaceholder($"Cannot generate Progress Book.\n\n{unsyncedCount} of {allActivities.Count} record(s) have not been synced to Azure yet.\n\nPlease sync your records first (Progress module → Sync button).");
                     return;
                 }
 
@@ -1140,7 +1261,7 @@ namespace VANTAGE.Views
                 // Generate PDF - use filter value as the book name
                 var generator = new ProgressBookPdfGenerator();
                 var bookName = string.IsNullOrEmpty(filterValue) ? "Preview" : filterValue;
-                var pdfDocument = generator.Generate(config, sampleActivities, bookName, projectId, projectDescription);
+                var pdfDocument = generator.Generate(config, sampleActivities, bookName, projectId, projectDescription, coverPageData);
 
                 _previewStream?.Dispose();
                 _previewStream = new MemoryStream();

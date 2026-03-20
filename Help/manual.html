@@ -1677,8 +1677,10 @@
     <ul>
         <li><strong>Column</strong> — Choose the activity field to filter by (e.g., WorkPackage, Area, CompType). Commonly used fields are starred at the top of the dropdown.</li>
         <li><strong>Value</strong> — Select a value to filter on. This dropdown is populated with distinct values from your assigned activities for the selected column. The selected value also appears as the progress book name in the PDF page header.</li>
-        <li><strong>Exclude Completed Activities</strong> — When checked, activities at 100% progress are omitted from the book</li>
+        <li><strong>Exclude Completed Activities</strong> — When checked, activities at 100% progress are omitted from the book (but their totals are still included on the cover page)</li>
+        <li><strong>Include Records Assigned to Others</strong> — When checked, the progress book includes all records in your local database, not just those assigned to you. Useful for generating books that span multiple users' work areas.</li>
     </ul>
+    <p>Both checkbox states are saved to your user settings and restored when you return to the Progress Books view.</p>
 
     <h4>Grouping</h4>
     <p>Group activities into sections within the book. Each group creates a header row in the PDF and groups are sorted alphanumerically.</p>
@@ -1716,6 +1718,15 @@
     <h4>Generating the PDF</h4>
     <p>Click the <strong>GENERATE</strong> button in the top-right header bar. A file save dialog opens to choose the output location. The generated PDF contains:</p>
     <ul>
+        <li><strong>Cover page</strong> — Project summary with logo, project name, book title, print date, sync date, last updated date, and totals:
+            <ul>
+                <li><strong>Total Budget MHs</strong> — Sum of all activities (including excluded completed)</li>
+                <li><strong>Total Earned MHs</strong> — Sum of all activities (including excluded completed)</li>
+                <li><strong>Percent Complete</strong> — Overall completion percentage</li>
+                <li><strong>Activities Included</strong> — Count of activities in the book</li>
+                <li><strong>Excluded Records</strong> — If "Exclude Completed" is checked, shows count and Budget/Earned totals of excluded activities</li>
+            </ul>
+        </li>
         <li><strong>Page header</strong> — Project name, progress book name (from the filter value), and page numbers</li>
         <li><strong>Group headers</strong> — Section dividers for each grouping level</li>
         <li><strong>Activity rows</strong> — One row per activity with your configured columns</li>

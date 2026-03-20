@@ -6,6 +6,19 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### March 20, 2026 (Progress Books — Cover Page & Multi-User Support)
+- **Progress Book cover page:** Generated PDFs now include a cover page (page 1) with:
+  - Summit Industrial logo (centered)
+  - Project ID and description
+  - Progress Book title (from filter value)
+  - Printed date, Last Sync date, and Last Updated date (max UpdatedUtcDate from included activities)
+  - Summary box with Total Budget MHs, Total Earned MHs, Percent Complete, and Activities Included
+  - If "Exclude Completed" is checked: shows Excluded Records count with Budget/Earned totals
+- **Include Records Assigned to Others checkbox:** New checkbox below "Exclude Completed Activities" that allows generating progress books from all records in the local database, not just those assigned to the current user. Useful for supervisors generating books spanning multiple users' work areas.
+- **Checkbox state persistence:** Both "Exclude Completed Activities" and "Include Records Assigned to Others" checkbox states are saved to UserSettings and restored on view load.
+- **Filter values refresh on load:** When "Include Records Assigned to Others" is saved as checked, the filter value dropdown now correctly shows all users' values on view load (previously only refreshed on click).
+- **Key files:** `Models/ProgressBook/ProgressBookConfiguration.cs` (CoverPageData class), `Services/ProgressBook/ProgressBookPdfGenerator.cs` (RenderCoverPage), `Views/ProgressBooksView.xaml/.cs`, `Dialogs/GenerateProgressBookDialog.xaml.cs`
+
 ### March 19, 2026 (Takeoff — Makeup & Rate Sheet Data Expansion, SW/BU Class Defaults)
 - **SW REDT entries added to FittingMakeup.json:** 72 new SW REDT rows (36 Class 3000 + 36 Class 6000) from `SW_REDT_rows.csv`.
 - **Classless VBL fallback entries:** 38 new VBL entries (19 BW + 19 SW) with no class specified, serving as wildcard fallbacks when a specific class (e.g., 1000) isn't found in the makeup table.

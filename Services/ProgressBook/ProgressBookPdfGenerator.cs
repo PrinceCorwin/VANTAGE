@@ -74,6 +74,7 @@ namespace VANTAGE.Services.ProgressBook
 
         // Configuration
         private ProgressBookConfiguration _config = null!;
+        private CoverPageData _coverPageData = null!;
         private string _bookName = string.Empty;
         private string _projectId = string.Empty;
         private string _projectDescription = string.Empty;
@@ -102,13 +103,15 @@ namespace VANTAGE.Services.ProgressBook
             List<Activity> activities,
             string bookName,
             string projectId,
-            string projectDescription = "")
+            string projectDescription = "",
+            CoverPageData? coverPageData = null)
         {
             _config = config;
             _activities = activities;
             _bookName = bookName;
             _projectId = projectId;
             _projectDescription = projectDescription;
+            _coverPageData = coverPageData ?? new CoverPageData();
 
             InitializePageDimensions();
             InitializeFonts();
@@ -118,9 +121,15 @@ namespace VANTAGE.Services.ProgressBook
 
             if (activities.Count == 0)
             {
-                // Generate empty page with header (page numbers in header now)
+                // Calculate total pages (cover + 1 empty data page)
+                _totalPages = 2;
+
+                // Render cover page first
+                RenderCoverPage(document);
+
+                // Generate empty page with header
                 var page = document.Pages.Add();
-                RenderPageHeader(page, 1, 1);
+                RenderPageHeader(page, 2, 2);
                 RenderColumnHeaders(page, GetHeaderY());
                 return document;
             }
@@ -128,11 +137,14 @@ namespace VANTAGE.Services.ProgressBook
             // Group and sort activities
             var groupedData = GroupAndSortActivities(activities);
 
-            // Calculate total pages for header display
-            _totalPages = EstimatePageCount(groupedData);
-            _pageNumber = 1; // Start at page 1
+            // Calculate total pages for header display (+1 for cover page)
+            _totalPages = EstimatePageCount(groupedData) + 1;
+            _pageNumber = 2; // Data pages start at page 2 (cover page is 1)
 
-            // Render pages
+            // Render cover page first (now that we know total pages)
+            RenderCoverPage(document);
+
+            // Render data pages
             RenderPages(document, groupedData);
 
             return document;
@@ -176,6 +188,157 @@ namespace VANTAGE.Services.ProgressBook
             // Adjust row height and line height based on data font size
             _lineHeight = descFontSize + 2;
             _dataRowHeight = dataFontSize + 8; // More padding for readability
+        }
+
+        // Render the cover page with project summary
+        private void RenderCoverPage(PdfDocument document)
+        {
+            var page = document.Pages.Add();
+            var graphics = page.Graphics;
+
+            // Fonts for cover page
+            var largeTitleFont = new PdfStandardFont(PdfFontFamily.Helvetica, 24, PdfFontStyle.Bold);
+            var mediumFont = new PdfStandardFont(PdfFontFamily.Helvetica, 14, PdfFontStyle.Regular);
+            var mediumBoldFont = new PdfStandardFont(PdfFontFamily.Helvetica, 14, PdfFontStyle.Bold);
+            var summaryFont = new PdfStandardFont(PdfFontFamily.Helvetica, 16, PdfFontStyle.Regular);
+            var summaryBoldFont = new PdfStandardFont(PdfFontFamily.Helvetica, 16, PdfFontStyle.Bold);
+            var smallFont = new PdfStandardFont(PdfFontFamily.Helvetica, 11, PdfFontStyle.Regular);
+
+            float centerX = _pageWidth / 2;
+            float y = MarginTop + 40;
+
+            // Logo (centered, larger than data page headers)
+            float logoHeight = 60f;
+            try
+            {
+                var logo = LoadImage(DefaultLogoPath);
+                if (logo != null)
+                {
+                    float logoWidth = logoHeight * (logo.Width / (float)logo.Height);
+                    float logoX = centerX - (logoWidth / 2);
+                    graphics.DrawImage(logo, logoX, y, logoWidth, logoHeight);
+                    y += logoHeight + 15;
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "ProgressBookPdfGenerator.RenderCoverPage (logo)");
+                y += 20;
+            }
+
+            // Project ID - Description
+            string projectText = string.IsNullOrEmpty(_projectDescription)
+                ? _projectId
+                : $"{_projectId} - {_projectDescription}";
+            var projectSize = mediumBoldFont.MeasureString(projectText);
+            graphics.DrawString(projectText, mediumBoldFont, BlackBrush,
+                new PointF(centerX - projectSize.Width / 2, y));
+            y += projectSize.Height + 30;
+
+            // Progress Book Title
+            string bookTitle = $"Progress Book: {_bookName}";
+            var titleSize = largeTitleFont.MeasureString(bookTitle);
+            graphics.DrawString(bookTitle, largeTitleFont, BlackBrush,
+                new PointF(centerX - titleSize.Width / 2, y));
+            y += titleSize.Height + 15;
+
+            // Date Printed
+            string dateText = $"Printed: {DateTime.Now:MMMM dd, yyyy}";
+            var dateSize = mediumFont.MeasureString(dateText);
+            graphics.DrawString(dateText, mediumFont, BlackBrush,
+                new PointF(centerX - dateSize.Width / 2, y));
+            y += dateSize.Height + 8;
+
+            // Last Synced
+            string syncText = $"Synced: {_coverPageData.LastSyncDisplay}";
+            var syncSize = mediumFont.MeasureString(syncText);
+            graphics.DrawString(syncText, mediumFont, BlackBrush,
+                new PointF(centerX - syncSize.Width / 2, y));
+            y += syncSize.Height + 8;
+
+            // Last Updated (max UpdatedUtcDate of included activities)
+            string updatedText = $"Updated: {_coverPageData.LastUpdatedDisplay}";
+            var updatedSize = mediumFont.MeasureString(updatedText);
+            graphics.DrawString(updatedText, mediumFont, BlackBrush,
+                new PointF(centerX - updatedSize.Width / 2, y));
+            y += updatedSize.Height + 35;
+
+            // Summary box
+            float boxWidth = 400;
+            float boxX = centerX - boxWidth / 2;
+            float boxPadding = 20;
+            float lineSpacing = 28;
+
+            // Calculate box height (Budget, Earned, Percent, Included + optional Excluded with details)
+            float boxContentHeight = lineSpacing * 4;
+            if (_coverPageData.ExcludedCompletedCount > 0)
+            {
+                boxContentHeight += lineSpacing + 10; // Excluded count line + details line
+            }
+            float boxHeight = boxContentHeight + (boxPadding * 2);
+
+            // Draw box background and border
+            var boxBrush = new PdfSolidBrush(new PdfColor(248, 248, 248));
+            graphics.DrawRectangle(boxBrush, new RectangleF(boxX, y, boxWidth, boxHeight));
+            graphics.DrawRectangle(NormalPen, new RectangleF(boxX, y, boxWidth, boxHeight));
+
+            float textY = y + boxPadding;
+            float labelX = boxX + boxPadding;
+            float valueX = boxX + boxWidth - boxPadding;
+
+            // Total Budget MHs
+            graphics.DrawString("Total Budget MHs:", summaryFont, BlackBrush, new PointF(labelX, textY));
+            string budgetValue = _coverPageData.TotalBudgetMHs.ToString("N2");
+            var budgetSize = summaryBoldFont.MeasureString(budgetValue);
+            graphics.DrawString(budgetValue, summaryBoldFont, BlackBrush,
+                new PointF(valueX - budgetSize.Width, textY));
+            textY += lineSpacing;
+
+            // Total Earned MHs
+            graphics.DrawString("Total Earned MHs:", summaryFont, BlackBrush, new PointF(labelX, textY));
+            string earnedValue = _coverPageData.TotalEarnedMHs.ToString("N2");
+            var earnedSize = summaryBoldFont.MeasureString(earnedValue);
+            graphics.DrawString(earnedValue, summaryBoldFont, BlackBrush,
+                new PointF(valueX - earnedSize.Width, textY));
+            textY += lineSpacing;
+
+            // Percent Complete
+            graphics.DrawString("Percent Complete:", summaryFont, BlackBrush, new PointF(labelX, textY));
+            string percentValue = $"{_coverPageData.PercentComplete:N2}%";
+            var percentSize = summaryBoldFont.MeasureString(percentValue);
+            graphics.DrawString(percentValue, summaryBoldFont, BlackBrush,
+                new PointF(valueX - percentSize.Width, textY));
+            textY += lineSpacing;
+
+            // Activities Included (in the book, not counting excluded)
+            graphics.DrawString("Activities Included:", summaryFont, BlackBrush, new PointF(labelX, textY));
+            string includedValue = _coverPageData.IncludedCount.ToString("N0");
+            var includedSize = summaryBoldFont.MeasureString(includedValue);
+            graphics.DrawString(includedValue, summaryBoldFont, BlackBrush,
+                new PointF(valueX - includedSize.Width, textY));
+            textY += lineSpacing;
+
+            // Excluded Records (if any were excluded)
+            if (_coverPageData.ExcludedCompletedCount > 0)
+            {
+                graphics.DrawString("Excluded Records:", summaryFont, BlackBrush, new PointF(labelX, textY));
+                string excludedValue = _coverPageData.ExcludedCompletedCount.ToString("N0");
+                var excludedSize = summaryBoldFont.MeasureString(excludedValue);
+                graphics.DrawString(excludedValue, summaryBoldFont, BlackBrush,
+                    new PointF(valueX - excludedSize.Width, textY));
+                textY += lineSpacing;
+
+                // Budget and Earned details on next line (indented, smaller)
+                string excludedDetails = $"(Budget: {_coverPageData.ExcludedCompletedBudgetMHs:N2} MHs, Earned: {_coverPageData.ExcludedCompletedEarnedMHs:N2} MHs)";
+                graphics.DrawString(excludedDetails, smallFont, BlackBrush,
+                    new PointF(labelX + 10, textY - 8));
+            }
+
+            // Page number at bottom
+            string pageText = $"Page 1 of {_totalPages}";
+            var pageSize = _smallFont.MeasureString(pageText);
+            graphics.DrawString(pageText, _smallFont, BlackBrush,
+                new PointF(centerX - pageSize.Width / 2, _pageHeight - MarginBottom - pageSize.Height));
         }
 
         // Calculate auto-fit column widths based on actual data content

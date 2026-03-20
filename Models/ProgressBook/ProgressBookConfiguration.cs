@@ -25,6 +25,10 @@ namespace VANTAGE.Models.ProgressBook
         [JsonPropertyName("excludeCompleted")]
         public bool ExcludeCompleted { get; set; } = false;
 
+        // Include records assigned to other users (not just current user)
+        [JsonPropertyName("includeAllUsers")]
+        public bool IncludeAllUsers { get; set; } = false;
+
         // Column to use for value-based exclusion filtering
         [JsonPropertyName("excludeColumn")]
         public string ExcludeColumn { get; set; } = string.Empty;
@@ -67,5 +71,36 @@ namespace VANTAGE.Models.ProgressBook
                 }
             };
         }
+    }
+
+    // Summary data for the progress book cover page
+    public class CoverPageData
+    {
+        // Total Budget MHs for ALL records (including excluded completed)
+        public double TotalBudgetMHs { get; set; }
+
+        // Total Earned MHs for ALL records (including excluded completed)
+        public double TotalEarnedMHs { get; set; }
+
+        // Percent complete for ALL records (Earned / Budget * 100)
+        public double PercentComplete => TotalBudgetMHs > 0 ? (TotalEarnedMHs / TotalBudgetMHs) * 100 : 0;
+
+        // Number of activities included in the book (not counting excluded)
+        public int IncludedCount { get; set; }
+
+        // Last sync display text (e.g., "3/20/2026 09:31" or "Never")
+        public string LastSyncDisplay { get; set; } = "Never";
+
+        // Last updated display text (max UpdatedUtcDate of included activities)
+        public string LastUpdatedDisplay { get; set; } = "N/A";
+
+        // Number of completed activities that were excluded from the book
+        public int ExcludedCompletedCount { get; set; }
+
+        // Total Budget MHs of the excluded completed activities
+        public double ExcludedCompletedBudgetMHs { get; set; }
+
+        // Total Earned MHs of the excluded completed activities
+        public double ExcludedCompletedEarnedMHs { get; set; }
     }
 }
