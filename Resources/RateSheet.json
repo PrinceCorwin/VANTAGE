@@ -280,14 +280,6 @@
         "FldMhu": 0.06
     },
     {
-        "Key": "BEV-1.25:XS",
-        "EstGrp": "BEV",
-        "Size": 1.25,
-        "SchRtg": "XS",
-        "Unit": "EA",
-        "FldMhu": 0.075
-    },
-    {
         "Key": "BEV-1.25:STD",
         "EstGrp": "BEV",
         "Size": 1.25,
@@ -8544,14 +8536,6 @@
         "FldMhu": 68.3
     },
     {
-        "Key": "BW-30:2.50\" WT",
-        "EstGrp": "BW",
-        "Size": 30.0,
-        "SchRtg": "2.50\" WT",
-        "Unit": "EA",
-        "FldMhu": 99.5
-    },
-    {
         "Key": "BW-30:2.75\" WT",
         "EstGrp": "BW",
         "Size": 30.0,
@@ -8792,22 +8776,6 @@
         "FldMhu": 104.0
     },
     {
-        "Key": "BW-30:2.25\" WT",
-        "EstGrp": "BW",
-        "Size": 30.0,
-        "SchRtg": "2.25\" WT",
-        "Unit": "EA",
-        "FldMhu": 68.3
-    },
-    {
-        "Key": "BW-30:2.50\" WT",
-        "EstGrp": "BW",
-        "Size": 30.0,
-        "SchRtg": "2.50\" WT",
-        "Unit": "EA",
-        "FldMhu": 99.5
-    },
-    {
         "Key": "BW-32:2.75\" WT",
         "EstGrp": "BW",
         "Size": 32.0,
@@ -9008,22 +8976,6 @@
         "FldMhu": 110.0
     },
     {
-        "Key": "BW-30:2.25\" WT",
-        "EstGrp": "BW",
-        "Size": 30.0,
-        "SchRtg": "2.25\" WT",
-        "Unit": "EA",
-        "FldMhu": 68.3
-    },
-    {
-        "Key": "BW-30:2.50\" WT",
-        "EstGrp": "BW",
-        "Size": 30.0,
-        "SchRtg": "2.50\" WT",
-        "Unit": "EA",
-        "FldMhu": 99.5
-    },
-    {
         "Key": "BW-34:2.75\" WT",
         "EstGrp": "BW",
         "Size": 34.0,
@@ -9168,22 +9120,6 @@
         "FldMhu": 27.8
     },
     {
-        "Key": "BW-36:.940\" WT",
-        "EstGrp": "BW",
-        "Size": 36.0,
-        "SchRtg": ".940\" WT",
-        "Unit": "EA",
-        "FldMhu": 33.2
-    },
-    {
-        "Key": "BW-36:1.00\" WT",
-        "EstGrp": "BW",
-        "Size": 36.0,
-        "SchRtg": "1.00\" WT",
-        "Unit": "EA",
-        "FldMhu": 33.2
-    },
-    {
         "Key": "BW-36:1.25\" WT",
         "EstGrp": "BW",
         "Size": 36.0,
@@ -9230,22 +9166,6 @@
         "SchRtg": "2.50\" WT",
         "Unit": "EA",
         "FldMhu": 117.0
-    },
-    {
-        "Key": "BW-30:2.25\" WT",
-        "EstGrp": "BW",
-        "Size": 30.0,
-        "SchRtg": "2.25\" WT",
-        "Unit": "EA",
-        "FldMhu": 68.3
-    },
-    {
-        "Key": "BW-30:2.50\" WT",
-        "EstGrp": "BW",
-        "Size": 30.0,
-        "SchRtg": "2.50\" WT",
-        "Unit": "EA",
-        "FldMhu": 99.5
     },
     {
         "Key": "BW-36:2.75\" WT",
@@ -10118,14 +10038,6 @@
         "SchRtg": "STD",
         "Unit": "EA",
         "FldMhu": 69.0
-    },
-    {
-        "Key": "BW-60:XS",
-        "EstGrp": "BW",
-        "Size": 60.0,
-        "SchRtg": "XS",
-        "Unit": "EA",
-        "FldMhu": 76.2
     },
     {
         "Key": "BW-66:STD",
@@ -14000,28 +13912,12 @@
         "FldMhu": 6.315
     },
     {
-        "Key": "CUT-28:.750\" WT",
-        "EstGrp": "CUT",
-        "Size": 28.0,
-        "SchRtg": ".750\" WT",
-        "Unit": "EA",
-        "FldMhu": 6.67
-    },
-    {
         "Key": "CUT-28:.840\" WT",
         "EstGrp": "CUT",
         "Size": 28.0,
         "SchRtg": ".840\" WT",
         "Unit": "EA",
         "FldMhu": 6.94
-    },
-    {
-        "Key": "CUT-28:1.00\" WT",
-        "EstGrp": "CUT",
-        "Size": 28.0,
-        "SchRtg": "1.00\" WT",
-        "Unit": "EA",
-        "FldMhu": 7.2
     },
     {
         "Key": "CUT-28:1.25\" WT",
@@ -14230,14 +14126,6 @@
         "SchRtg": ".625\" WT",
         "Unit": "EA",
         "FldMhu": 6.815
-    },
-    {
-        "Key": "CUT-30:.750\" WT",
-        "EstGrp": "CUT",
-        "Size": 30.0,
-        "SchRtg": ".750\" WT",
-        "Unit": "EA",
-        "FldMhu": 7.2
     },
     {
         "Key": "CUT-30:.784\" WT",
@@ -15774,14 +15662,6 @@
         "SchRtg": "2.00\" WT",
         "Unit": "EA",
         "FldMhu": 21.83
-    },
-    {
-        "Key": "CUT-60:STD",
-        "EstGrp": "CUT",
-        "Size": 60.0,
-        "SchRtg": "STD",
-        "Unit": "EA",
-        "FldMhu": 17.25
     },
     {
         "Key": "CUT-66:STD",
@@ -21672,14 +21552,6 @@
         "FldMhu": 68.3
     },
     {
-        "Key": "FFW-30:2.50\" WT",
-        "EstGrp": "FFW",
-        "Size": 30.0,
-        "SchRtg": "2.50\" WT",
-        "Unit": "EA",
-        "FldMhu": 99.5
-    },
-    {
         "Key": "FFW-30:2.75\" WT",
         "EstGrp": "FFW",
         "Size": 30.0,
@@ -21920,22 +21792,6 @@
         "FldMhu": 104.0
     },
     {
-        "Key": "FFW-30:2.25\" WT",
-        "EstGrp": "FFW",
-        "Size": 30.0,
-        "SchRtg": "2.25\" WT",
-        "Unit": "EA",
-        "FldMhu": 68.3
-    },
-    {
-        "Key": "FFW-30:2.50\" WT",
-        "EstGrp": "FFW",
-        "Size": 30.0,
-        "SchRtg": "2.50\" WT",
-        "Unit": "EA",
-        "FldMhu": 99.5
-    },
-    {
         "Key": "FFW-32:2.75\" WT",
         "EstGrp": "FFW",
         "Size": 32.0,
@@ -22134,22 +21990,6 @@
         "SchRtg": "2.50\" WT",
         "Unit": "EA",
         "FldMhu": 110.0
-    },
-    {
-        "Key": "FFW-30:2.25\" WT",
-        "EstGrp": "FFW",
-        "Size": 30.0,
-        "SchRtg": "2.25\" WT",
-        "Unit": "EA",
-        "FldMhu": 68.3
-    },
-    {
-        "Key": "FFW-30:2.50\" WT",
-        "EstGrp": "FFW",
-        "Size": 30.0,
-        "SchRtg": "2.50\" WT",
-        "Unit": "EA",
-        "FldMhu": 99.5
     },
     {
         "Key": "FFW-34:2.75\" WT",
@@ -22358,22 +22198,6 @@
         "SchRtg": "2.50\" WT",
         "Unit": "EA",
         "FldMhu": 117.0
-    },
-    {
-        "Key": "FFW-30:2.25\" WT",
-        "EstGrp": "FFW",
-        "Size": 30.0,
-        "SchRtg": "2.25\" WT",
-        "Unit": "EA",
-        "FldMhu": 68.3
-    },
-    {
-        "Key": "FFW-30:2.50\" WT",
-        "EstGrp": "FFW",
-        "Size": 30.0,
-        "SchRtg": "2.50\" WT",
-        "Unit": "EA",
-        "FldMhu": 99.5
     },
     {
         "Key": "FFW-36:2.75\" WT",
@@ -23480,38 +23304,6 @@
         "FldMhu": 39.8
     },
     {
-        "Key": "FFW-16:S20",
-        "EstGrp": "FFW",
-        "Size": 16.0,
-        "SchRtg": "S20",
-        "Unit": "EA",
-        "FldMhu": 5.0
-    },
-    {
-        "Key": "FFW-16:S30",
-        "EstGrp": "FFW",
-        "Size": 16.0,
-        "SchRtg": "S30",
-        "Unit": "EA",
-        "FldMhu": 5.0
-    },
-    {
-        "Key": "FFW-18:S20",
-        "EstGrp": "FFW",
-        "Size": 18.0,
-        "SchRtg": "S20",
-        "Unit": "EA",
-        "FldMhu": 5.9
-    },
-    {
-        "Key": "FFW-18:S30",
-        "EstGrp": "FFW",
-        "Size": 18.0,
-        "SchRtg": "S30",
-        "Unit": "EA",
-        "FldMhu": 5.9
-    },
-    {
         "Key": "FFW-18:S5",
         "EstGrp": "FFW",
         "Size": 18.0,
@@ -23526,22 +23318,6 @@
         "SchRtg": ".500\" WT",
         "Unit": "EA",
         "FldMhu": 8.4
-    },
-    {
-        "Key": "FFW-20:S20",
-        "EstGrp": "FFW",
-        "Size": 20.0,
-        "SchRtg": "S20",
-        "Unit": "EA",
-        "FldMhu": 6.3
-    },
-    {
-        "Key": "FFW-20:S30",
-        "EstGrp": "FFW",
-        "Size": 20.0,
-        "SchRtg": "S30",
-        "Unit": "EA",
-        "FldMhu": 6.3
     },
     {
         "Key": "FFW-22:.500\" WT",
@@ -23574,14 +23350,6 @@
         "SchRtg": ".500\" WT",
         "Unit": "EA",
         "FldMhu": 10.1
-    },
-    {
-        "Key": "FFW-24:S20",
-        "EstGrp": "FFW",
-        "Size": 24.0,
-        "SchRtg": "S20",
-        "Unit": "EA",
-        "FldMhu": 6.9
     },
     {
         "Key": "FFW-24:S30",
@@ -28813,22 +28581,6 @@
         "Size": 0.5,
         "SchRtg": "S160",
         "Unit": "LFP",
-        "FldMhu": 0.18
-    },
-    {
-        "Key": "PIPE-0.5:XS",
-        "EstGrp": "PIPE",
-        "Size": 0.5,
-        "SchRtg": "XS",
-        "Unit": "LFP",
-        "FldMhu": 0.18
-    },
-    {
-        "Key": "PIPE-0.5:S160",
-        "EstGrp": "PIPE",
-        "Size": 0.5,
-        "SchRtg": "S160",
-        "Unit": "LFP",
         "FldMhu": 0.2
     },
     {
@@ -30056,14 +29808,6 @@
         "FldMhu": 0.43
     },
     {
-        "Key": "PIPE-10:S10",
-        "EstGrp": "PIPE",
-        "Size": 10.0,
-        "SchRtg": "S10",
-        "Unit": "LFP",
-        "FldMhu": 0.43
-    },
-    {
         "Key": "PIPE-10:S20",
         "EstGrp": "PIPE",
         "Size": 10.0,
@@ -30680,14 +30424,6 @@
         "FldMhu": 0.75
     },
     {
-        "Key": "PIPE-16:STD",
-        "EstGrp": "PIPE",
-        "Size": 16.0,
-        "SchRtg": "STD",
-        "Unit": "LFP",
-        "FldMhu": 0.75
-    },
-    {
         "Key": "PIPE-16:S60",
         "EstGrp": "PIPE",
         "Size": 16.0,
@@ -30784,28 +30520,12 @@
         "FldMhu": 2.07
     },
     {
-        "Key": "PIPE-16:1.75\" WT",
-        "EstGrp": "PIPE",
-        "Size": 16.0,
-        "SchRtg": "1.75\" WT",
-        "Unit": "LFP",
-        "FldMhu": 1.56
-    },
-    {
         "Key": "PIPE-16:2\" WT",
         "EstGrp": "PIPE",
         "Size": 16.0,
         "SchRtg": "2\" WT",
         "Unit": "LFP",
         "FldMhu": 1.73
-    },
-    {
-        "Key": "PIPE-16:2.25\" WT",
-        "EstGrp": "PIPE",
-        "Size": 16.0,
-        "SchRtg": "2.25\" WT",
-        "Unit": "LFP",
-        "FldMhu": 1.89
     },
     {
         "Key": "PIPE-16:2.5\" WT",
@@ -32020,22 +31740,6 @@
         "EstGrp": "PIPE",
         "Size": 28.0,
         "SchRtg": "XS",
-        "Unit": "LFP",
-        "FldMhu": null
-    },
-    {
-        "Key": "PIPE-28:.2.25\" WT",
-        "EstGrp": "PIPE",
-        "Size": 28.0,
-        "SchRtg": ".2.25\" WT",
-        "Unit": "LFP",
-        "FldMhu": null
-    },
-    {
-        "Key": "PIPE-28:.2.25\" WT",
-        "EstGrp": "PIPE",
-        "Size": 28.0,
-        "SchRtg": ".2.25\" WT",
         "Unit": "LFP",
         "FldMhu": null
     },
@@ -36968,28 +36672,12 @@
         "FldMhu": 0.52
     },
     {
-        "Key": "SPL-4:S120",
-        "EstGrp": "SPL",
-        "Size": 4.0,
-        "SchRtg": "S120",
-        "Unit": "LFP",
-        "FldMhu": 0.59
-    },
-    {
         "Key": "SPL-4:S160",
         "EstGrp": "SPL",
         "Size": 4.0,
         "SchRtg": "S160",
         "Unit": "LFP",
         "FldMhu": 0.66
-    },
-    {
-        "Key": "SPL-4:XXS",
-        "EstGrp": "SPL",
-        "Size": 4.0,
-        "SchRtg": "XXS",
-        "Unit": "LFP",
-        "FldMhu": null
     },
     {
         "Key": "SPL-4:.750\" WT",
@@ -37070,22 +36758,6 @@
         "SchRtg": "S80",
         "Unit": "LFP",
         "FldMhu": 0.57
-    },
-    {
-        "Key": "SPL-5:S120",
-        "EstGrp": "SPL",
-        "Size": 5.0,
-        "SchRtg": "S120",
-        "Unit": "LFP",
-        "FldMhu": 0.645
-    },
-    {
-        "Key": "SPL-5:S160",
-        "EstGrp": "SPL",
-        "Size": 5.0,
-        "SchRtg": "S160",
-        "Unit": "LFP",
-        "FldMhu": 0.72
     },
     {
         "Key": "SPL-5:XXS",
@@ -37216,14 +36888,6 @@
         "FldMhu": 0.84
     },
     {
-        "Key": "SPL-6:.750\" WT",
-        "EstGrp": "SPL",
-        "Size": 6.0,
-        "SchRtg": ".750\" WT",
-        "Unit": "LFP",
-        "FldMhu": 0.87
-    },
-    {
         "Key": "SPL-6:1.00\" WT",
         "EstGrp": "SPL",
         "Size": 6.0,
@@ -37302,14 +36966,6 @@
         "SchRtg": "S10",
         "Unit": "LFP",
         "FldMhu": 0.57
-    },
-    {
-        "Key": "SPL-8:S20",
-        "EstGrp": "SPL",
-        "Size": 8.0,
-        "SchRtg": "S20",
-        "Unit": "LFP",
-        "FldMhu": null
     },
     {
         "Key": "SPL-8:S30",
@@ -37480,22 +37136,6 @@
         "FldMhu": 0.72
     },
     {
-        "Key": "SPL-10:S10",
-        "EstGrp": "SPL",
-        "Size": 10.0,
-        "SchRtg": "S10",
-        "Unit": "LFP",
-        "FldMhu": null
-    },
-    {
-        "Key": "SPL-10:S20",
-        "EstGrp": "SPL",
-        "Size": 10.0,
-        "SchRtg": "S20",
-        "Unit": "LFP",
-        "FldMhu": null
-    },
-    {
         "Key": "SPL-10:S30",
         "EstGrp": "SPL",
         "Size": 10.0,
@@ -37524,14 +37164,6 @@
         "EstGrp": "SPL",
         "Size": 10.0,
         "SchRtg": "S60",
-        "Unit": "LFP",
-        "FldMhu": 0.86
-    },
-    {
-        "Key": "SPL-10:XS",
-        "EstGrp": "SPL",
-        "Size": 10.0,
-        "SchRtg": "XS",
         "Unit": "LFP",
         "FldMhu": 0.86
     },
@@ -37728,14 +37360,6 @@
         "FldMhu": 1.23
     },
     {
-        "Key": "SPL-12:S100",
-        "EstGrp": "SPL",
-        "Size": 12.0,
-        "SchRtg": "S100",
-        "Unit": "LFP",
-        "FldMhu": null
-    },
-    {
         "Key": "SPL-12:S120",
         "EstGrp": "SPL",
         "Size": 12.0,
@@ -37862,14 +37486,6 @@
         "SchRtg": "S10",
         "Unit": "LFP",
         "FldMhu": 1.01
-    },
-    {
-        "Key": "SPL-14:S20",
-        "EstGrp": "SPL",
-        "Size": 14.0,
-        "SchRtg": "S20",
-        "Unit": "LFP",
-        "FldMhu": null
     },
     {
         "Key": "SPL-14:S30",
@@ -38072,14 +37688,6 @@
         "FldMhu": 1.27
     },
     {
-        "Key": "SPL-16:S20",
-        "EstGrp": "SPL",
-        "Size": 16.0,
-        "SchRtg": "S20",
-        "Unit": "LFP",
-        "FldMhu": null
-    },
-    {
         "Key": "SPL-16:S30",
         "EstGrp": "SPL",
         "Size": 16.0,
@@ -38102,14 +37710,6 @@
         "SchRtg": "S40",
         "Unit": "LFP",
         "FldMhu": 1.27
-    },
-    {
-        "Key": "SPL-16:STD",
-        "EstGrp": "SPL",
-        "Size": 16.0,
-        "SchRtg": "STD",
-        "Unit": "LFP",
-        "FldMhu": null
     },
     {
         "Key": "SPL-16:S60",
@@ -38208,28 +37808,12 @@
         "FldMhu": 3.11
     },
     {
-        "Key": "SPL-16:1.75\" WT",
-        "EstGrp": "SPL",
-        "Size": 16.0,
-        "SchRtg": "1.75\" WT",
-        "Unit": "LFP",
-        "FldMhu": 2.42
-    },
-    {
         "Key": "SPL-16:2\" WT",
         "EstGrp": "SPL",
         "Size": 16.0,
         "SchRtg": "2\" WT",
         "Unit": "LFP",
         "FldMhu": 2.6
-    },
-    {
-        "Key": "SPL-16:2.25\" WT",
-        "EstGrp": "SPL",
-        "Size": 16.0,
-        "SchRtg": "2.25\" WT",
-        "Unit": "LFP",
-        "FldMhu": 2.84
     },
     {
         "Key": "SPL-16:2.5\" WT",
@@ -38302,14 +37886,6 @@
         "SchRtg": "S10",
         "Unit": "LFP",
         "FldMhu": 1.48
-    },
-    {
-        "Key": "SPL-18:S20",
-        "EstGrp": "SPL",
-        "Size": 18.0,
-        "SchRtg": "S20",
-        "Unit": "LFP",
-        "FldMhu": null
     },
     {
         "Key": "SPL-18:S30",
@@ -38976,14 +38552,6 @@
         "FldMhu": 1.94
     },
     {
-        "Key": "SPL-24:S20",
-        "EstGrp": "SPL",
-        "Size": 24.0,
-        "SchRtg": "S20",
-        "Unit": "LFP",
-        "FldMhu": null
-    },
-    {
         "Key": "SPL-24:S30",
         "EstGrp": "SPL",
         "Size": 24.0,
@@ -39204,14 +38772,6 @@
         "EstGrp": "SPL",
         "Size": 26.0,
         "SchRtg": "S20",
-        "Unit": "LFP",
-        "FldMhu": null
-    },
-    {
-        "Key": "SPL-26:STD",
-        "EstGrp": "SPL",
-        "Size": 26.0,
-        "SchRtg": "STD",
         "Unit": "LFP",
         "FldMhu": null
     },
@@ -39440,46 +39000,6 @@
         "FldMhu": null
     },
     {
-        "Key": "SPL-28:STD",
-        "EstGrp": "SPL",
-        "Size": 28.0,
-        "SchRtg": "STD",
-        "Unit": "LFP",
-        "FldMhu": null
-    },
-    {
-        "Key": "SPL-28:XS",
-        "EstGrp": "SPL",
-        "Size": 28.0,
-        "SchRtg": "XS",
-        "Unit": "LFP",
-        "FldMhu": 1.97
-    },
-    {
-        "Key": "SPL-28:.2.25\" WT",
-        "EstGrp": "SPL",
-        "Size": 28.0,
-        "SchRtg": ".2.25\" WT",
-        "Unit": "LFP",
-        "FldMhu": null
-    },
-    {
-        "Key": "SPL-28:.2.25\" WT",
-        "EstGrp": "SPL",
-        "Size": 28.0,
-        "SchRtg": ".2.25\" WT",
-        "Unit": "LFP",
-        "FldMhu": null
-    },
-    {
-        "Key": "SPL-28:.2.25\" WT",
-        "EstGrp": "SPL",
-        "Size": 28.0,
-        "SchRtg": ".2.25\" WT",
-        "Unit": "LFP",
-        "FldMhu": null
-    },
-    {
         "Key": "SPL-28:.500\" WT",
         "EstGrp": "SPL",
         "Size": 28.0,
@@ -39680,14 +39200,6 @@
         "FldMhu": 2.07
     },
     {
-        "Key": "SPL-30:S20",
-        "EstGrp": "SPL",
-        "Size": 30.0,
-        "SchRtg": "S20",
-        "Unit": "LFP",
-        "FldMhu": null
-    },
-    {
         "Key": "SPL-30:S30",
         "EstGrp": "SPL",
         "Size": 30.0,
@@ -39704,22 +39216,6 @@
         "FldMhu": 2.07
     },
     {
-        "Key": "SPL-30:XS",
-        "EstGrp": "SPL",
-        "Size": 30.0,
-        "SchRtg": "XS",
-        "Unit": "LFP",
-        "FldMhu": 2.07
-    },
-    {
-        "Key": "SPL-30:.375\" WT",
-        "EstGrp": "SPL",
-        "Size": 30.0,
-        "SchRtg": ".375\" WT",
-        "Unit": "LFP",
-        "FldMhu": null
-    },
-    {
         "Key": "SPL-30:.500\" WT",
         "EstGrp": "SPL",
         "Size": 30.0,
@@ -39734,22 +39230,6 @@
         "SchRtg": ".625\" WT",
         "Unit": "LFP",
         "FldMhu": 2.13
-    },
-    {
-        "Key": "SPL-30:.750\" WT",
-        "EstGrp": "SPL",
-        "Size": 30.0,
-        "SchRtg": ".750\" WT",
-        "Unit": "LFP",
-        "FldMhu": 2.18
-    },
-    {
-        "Key": "SPL-30:.875\" WT",
-        "EstGrp": "SPL",
-        "Size": 30.0,
-        "SchRtg": ".875\" WT",
-        "Unit": "LFP",
-        "FldMhu": null
     },
     {
         "Key": "SPL-30:1.00\" WT",
@@ -39928,14 +39408,6 @@
         "FldMhu": 2.26
     },
     {
-        "Key": "SPL-30:S10",
-        "EstGrp": "SPL",
-        "Size": 30.0,
-        "SchRtg": "S10",
-        "Unit": "LFP",
-        "FldMhu": 2.07
-    },
-    {
         "Key": "SPL-30:S60",
         "EstGrp": "SPL",
         "Size": 30.0,
@@ -39950,22 +39422,6 @@
         "SchRtg": "S80",
         "Unit": "LFP",
         "FldMhu": 2.8
-    },
-    {
-        "Key": "SPL-30:STD",
-        "EstGrp": "SPL",
-        "Size": 30.0,
-        "SchRtg": "STD",
-        "Unit": "LFP",
-        "FldMhu": 2.07
-    },
-    {
-        "Key": "SPL-30:XS",
-        "EstGrp": "SPL",
-        "Size": 30.0,
-        "SchRtg": "XS",
-        "Unit": "LFP",
-        "FldMhu": 2.07
     },
     {
         "Key": "SPL-32:S10",
@@ -39988,14 +39444,6 @@
         "EstGrp": "SPL",
         "Size": 32.0,
         "SchRtg": "S30",
-        "Unit": "LFP",
-        "FldMhu": null
-    },
-    {
-        "Key": "SPL-32:STD",
-        "EstGrp": "SPL",
-        "Size": 32.0,
-        "SchRtg": "STD",
         "Unit": "LFP",
         "FldMhu": null
     },
@@ -40432,22 +39880,6 @@
         "FldMhu": null
     },
     {
-        "Key": "SPL-36:STD",
-        "EstGrp": "SPL",
-        "Size": 36.0,
-        "SchRtg": "STD",
-        "Unit": "LFP",
-        "FldMhu": null
-    },
-    {
-        "Key": "SPL-36:XS",
-        "EstGrp": "SPL",
-        "Size": 36.0,
-        "SchRtg": "XS",
-        "Unit": "LFP",
-        "FldMhu": 2.46
-    },
-    {
         "Key": "SPL-36:.500\" WT",
         "EstGrp": "SPL",
         "Size": 36.0,
@@ -40720,14 +40152,6 @@
         "FldMhu": 4.64
     },
     {
-        "Key": "SPL-40:XS",
-        "EstGrp": "SPL",
-        "Size": 40.0,
-        "SchRtg": "XS",
-        "Unit": "LFP",
-        "FldMhu": 2.65
-    },
-    {
         "Key": "SPL-40:.500\" WT",
         "EstGrp": "SPL",
         "Size": 40.0,
@@ -40782,14 +40206,6 @@
         "SchRtg": "1.75\" WT",
         "Unit": "LFP",
         "FldMhu": 3.98
-    },
-    {
-        "Key": "SPL-40:2.00\" WT",
-        "EstGrp": "SPL",
-        "Size": 40.0,
-        "SchRtg": "2.00\" WT",
-        "Unit": "LFP",
-        "FldMhu": 4.44
     },
     {
         "Key": "SPL-40:2.00\" WT",
@@ -41248,174 +40664,6 @@
         "FldMhu": 7.4
     },
     {
-        "Key": "SPL-1.5:DR11",
-        "EstGrp": "SPL",
-        "Size": 1.5,
-        "SchRtg": "DR11",
-        "Unit": "LFP",
-        "FldMhu": 0.3
-    },
-    {
-        "Key": "SPL-3:DR11",
-        "EstGrp": "SPL",
-        "Size": 3.0,
-        "SchRtg": "DR11",
-        "Unit": "LFP",
-        "FldMhu": 0.34
-    },
-    {
-        "Key": "SPL-4:DR11",
-        "EstGrp": "SPL",
-        "Size": 4.0,
-        "SchRtg": "DR11",
-        "Unit": "LFP",
-        "FldMhu": 0.38
-    },
-    {
-        "Key": "SPL-6:DR11",
-        "EstGrp": "SPL",
-        "Size": 6.0,
-        "SchRtg": "DR11",
-        "Unit": "LFP",
-        "FldMhu": 0.42
-    },
-    {
-        "Key": "SPL-8:DR11",
-        "EstGrp": "SPL",
-        "Size": 8.0,
-        "SchRtg": "DR11",
-        "Unit": "LFP",
-        "FldMhu": 0.54
-    },
-    {
-        "Key": "SPL-10:DR11",
-        "EstGrp": "SPL",
-        "Size": 10.0,
-        "SchRtg": "DR11",
-        "Unit": "LFP",
-        "FldMhu": 0.66
-    },
-    {
-        "Key": "SPL-12:DR11",
-        "EstGrp": "SPL",
-        "Size": 12.0,
-        "SchRtg": "DR11",
-        "Unit": "LFP",
-        "FldMhu": 0.8
-    },
-    {
-        "Key": "SPL-14:DR11",
-        "EstGrp": "SPL",
-        "Size": 14.0,
-        "SchRtg": "DR11",
-        "Unit": "LFP",
-        "FldMhu": 0.88
-    },
-    {
-        "Key": "SPL-16:DR11",
-        "EstGrp": "SPL",
-        "Size": 16.0,
-        "SchRtg": "DR11",
-        "Unit": "LFP",
-        "FldMhu": 1.08
-    },
-    {
-        "Key": "SPL-18:DR11",
-        "EstGrp": "SPL",
-        "Size": 18.0,
-        "SchRtg": "DR11",
-        "Unit": "LFP",
-        "FldMhu": 1.34
-    },
-    {
-        "Key": "SPL-20:DR11",
-        "EstGrp": "SPL",
-        "Size": 20.0,
-        "SchRtg": "DR11",
-        "Unit": "LFP",
-        "FldMhu": 1.5
-    },
-    {
-        "Key": "SPL-24:DR11",
-        "EstGrp": "SPL",
-        "Size": 24.0,
-        "SchRtg": "DR11",
-        "Unit": "LFP",
-        "FldMhu": 1.8
-    },
-    {
-        "Key": "SPL-30:DR11",
-        "EstGrp": "SPL",
-        "Size": 30.0,
-        "SchRtg": "DR11",
-        "Unit": "LFP",
-        "FldMhu": 2.26
-    },
-    {
-        "Key": "SPL-2.5:S10",
-        "EstGrp": "SPL",
-        "Size": 2.5,
-        "SchRtg": "S10",
-        "Unit": "LFP",
-        "FldMhu": 0.36
-    },
-    {
-        "Key": "SPL-2.5:S160",
-        "EstGrp": "SPL",
-        "Size": 2.5,
-        "SchRtg": "S160",
-        "Unit": "LFP",
-        "FldMhu": 0.54
-    },
-    {
-        "Key": "SPL-2.5:S40",
-        "EstGrp": "SPL",
-        "Size": 2.5,
-        "SchRtg": "S40",
-        "Unit": "LFP",
-        "FldMhu": 0.36
-    },
-    {
-        "Key": "SPL-2.5:STD",
-        "EstGrp": "SPL",
-        "Size": 2.5,
-        "SchRtg": "STD",
-        "Unit": "LFP",
-        "FldMhu": 0.36
-    },
-    {
-        "Key": "SPL-2.5:S80",
-        "EstGrp": "SPL",
-        "Size": 2.5,
-        "SchRtg": "S80",
-        "Unit": "LFP",
-        "FldMhu": 0.44
-    },
-    {
-        "Key": "SPL-2.5:XS",
-        "EstGrp": "SPL",
-        "Size": 2.5,
-        "SchRtg": "XS",
-        "Unit": "LFP",
-        "FldMhu": 0.44
-    },
-    {
-        "Key": "SPL-2.5:XXS",
-        "EstGrp": "SPL",
-        "Size": 2.5,
-        "SchRtg": "XXS",
-        "Unit": "LFP",
-        "FldMhu": 0.54
-    },
-    {
-        "Key": "SPL-3:S10",
-        "EstGrp": "SPL",
-        "Size": 3.0,
-        "SchRtg": "S10",
-        "Unit": "LFP",
-        "FldMhu": 0.39
-    },
-    {
         "Key": "SPL-3:S100",
         "EstGrp": "SPL",
         "Size": 3.0,
@@ -41432,92 +40680,12 @@
         "FldMhu": 0.59
     },
     {
-        "Key": "SPL-3:S160",
-        "EstGrp": "SPL",
-        "Size": 3.0,
-        "SchRtg": "S160",
-        "Unit": "LFP",
-        "FldMhu": 0.59
-    },
-    {
-        "Key": "SPL-3:S40",
-        "EstGrp": "SPL",
-        "Size": 3.0,
-        "SchRtg": "S40",
-        "Unit": "LFP",
-        "FldMhu": 0.39
-    },
-    {
-        "Key": "SPL-3:S5",
-        "EstGrp": "SPL",
-        "Size": 3.0,
-        "SchRtg": "S5",
-        "Unit": "LFP",
-        "FldMhu": 0.39
-    },
-    {
-        "Key": "SPL-3:S80",
-        "EstGrp": "SPL",
-        "Size": 3.0,
-        "SchRtg": "S80",
-        "Unit": "LFP",
-        "FldMhu": 0.48
-    },
-    {
-        "Key": "SPL-3:STD",
-        "EstGrp": "SPL",
-        "Size": 3.0,
-        "SchRtg": "STD",
-        "Unit": "LFP",
-        "FldMhu": 0.39
-    },
-    {
-        "Key": "SPL-3:XS",
-        "EstGrp": "SPL",
-        "Size": 3.0,
-        "SchRtg": "XS",
-        "Unit": "LFP",
-        "FldMhu": 0.48
-    },
-    {
-        "Key": "SPL-3:XXS",
-        "EstGrp": "SPL",
-        "Size": 3.0,
-        "SchRtg": "XXS",
-        "Unit": "LFP",
-        "FldMhu": 0.59
-    },
-    {
-        "Key": "SPL-3.5:S40",
-        "EstGrp": "SPL",
-        "Size": 3.5,
-        "SchRtg": "S40",
-        "Unit": "LFP",
-        "FldMhu": 0.4
-    },
-    {
         "Key": "SPL-4:XXS",
         "EstGrp": "SPL",
         "Size": 4.0,
         "SchRtg": "XXS",
         "Unit": "LFP",
         "FldMhu": 0.66
-    },
-    {
-        "Key": "SPL-4:1.25\" WT",
-        "EstGrp": "SPL",
-        "Size": 4.0,
-        "SchRtg": "1.25\" WT",
-        "Unit": "LFP",
-        "FldMhu": 0.84
-    },
-    {
-        "Key": "SPL-4:S10",
-        "EstGrp": "SPL",
-        "Size": 4.0,
-        "SchRtg": "S10",
-        "Unit": "LFP",
-        "FldMhu": 0.41
     },
     {
         "Key": "SPL-4:S100",
@@ -41536,60 +40704,12 @@
         "FldMhu": 0.66
     },
     {
-        "Key": "SPL-4:S160",
-        "EstGrp": "SPL",
-        "Size": 4.0,
-        "SchRtg": "S160",
-        "Unit": "LFP",
-        "FldMhu": 0.66
-    },
-    {
-        "Key": "SPL-4:S40",
-        "EstGrp": "SPL",
-        "Size": 4.0,
-        "SchRtg": "S40",
-        "Unit": "LFP",
-        "FldMhu": 0.41
-    },
-    {
         "Key": "SPL-4:S60",
         "EstGrp": "SPL",
         "Size": 4.0,
         "SchRtg": "S60",
         "Unit": "LFP",
         "FldMhu": 0.41
-    },
-    {
-        "Key": "SPL-4:S80",
-        "EstGrp": "SPL",
-        "Size": 4.0,
-        "SchRtg": "S80",
-        "Unit": "LFP",
-        "FldMhu": 0.52
-    },
-    {
-        "Key": "SPL-4:STD",
-        "EstGrp": "SPL",
-        "Size": 4.0,
-        "SchRtg": "STD",
-        "Unit": "LFP",
-        "FldMhu": 0.41
-    },
-    {
-        "Key": "SPL-4:XS",
-        "EstGrp": "SPL",
-        "Size": 4.0,
-        "SchRtg": "XS",
-        "Unit": "LFP",
-        "FldMhu": 0.52
-    },
-    {
-        "Key": "SPL-5:S40",
-        "EstGrp": "SPL",
-        "Size": 5.0,
-        "SchRtg": "S40",
-        "Unit": "LFP",
-        "FldMhu": 0.44
     },
     {
         "Key": "SPL-5:S120",
@@ -41624,84 +40744,12 @@
         "FldMhu": 0.9
     },
     {
-        "Key": "SPL-6:S10",
-        "EstGrp": "SPL",
-        "Size": 6.0,
-        "SchRtg": "S10",
-        "Unit": "LFP",
-        "FldMhu": 0.47
-    },
-    {
-        "Key": "SPL-6:S100",
-        "EstGrp": "SPL",
-        "Size": 6.0,
-        "SchRtg": "S100",
-        "Unit": "LFP",
-        "FldMhu": 0.64
-    },
-    {
-        "Key": "SPL-6:S120",
-        "EstGrp": "SPL",
-        "Size": 6.0,
-        "SchRtg": "S120",
-        "Unit": "LFP",
-        "FldMhu": 0.84
-    },
-    {
-        "Key": "SPL-6:S160",
-        "EstGrp": "SPL",
-        "Size": 6.0,
-        "SchRtg": "S160",
-        "Unit": "LFP",
-        "FldMhu": 0.84
-    },
-    {
-        "Key": "SPL-6:S40",
-        "EstGrp": "SPL",
-        "Size": 6.0,
-        "SchRtg": "S40",
-        "Unit": "LFP",
-        "FldMhu": 0.47
-    },
-    {
-        "Key": "SPL-6:S80",
-        "EstGrp": "SPL",
-        "Size": 6.0,
-        "SchRtg": "S80",
-        "Unit": "LFP",
-        "FldMhu": 0.64
-    },
-    {
-        "Key": "SPL-6:STD",
-        "EstGrp": "SPL",
-        "Size": 6.0,
-        "SchRtg": "STD",
-        "Unit": "LFP",
-        "FldMhu": 0.47
-    },
-    {
-        "Key": "SPL-6:XS",
-        "EstGrp": "SPL",
-        "Size": 6.0,
-        "SchRtg": "XS",
-        "Unit": "LFP",
-        "FldMhu": 0.64
-    },
-    {
         "Key": "SPL-6:XXS",
         "EstGrp": "SPL",
         "Size": 6.0,
         "SchRtg": "XXS",
         "Unit": "LFP",
         "FldMhu": 0.84
-    },
-    {
-        "Key": "SPL-7:S10",
-        "EstGrp": "SPL",
-        "Size": 7.0,
-        "SchRtg": "S10",
-        "Unit": "LFP",
-        "FldMhu": 0.52
     },
     {
         "Key": "SPL-8:.99\" WT",
@@ -41712,116 +40760,12 @@
         "FldMhu": 1.07
     },
     {
-        "Key": "SPL-8:1.00\" WT",
-        "EstGrp": "SPL",
-        "Size": 8.0,
-        "SchRtg": "1.00\" WT",
-        "Unit": "LFP",
-        "FldMhu": 1.07
-    },
-    {
-        "Key": "SPL-8:1.25\" WT",
-        "EstGrp": "SPL",
-        "Size": 8.0,
-        "SchRtg": "1.25\" WT",
-        "Unit": "LFP",
-        "FldMhu": 1.2
-    },
-    {
-        "Key": "SPL-8:S10",
-        "EstGrp": "SPL",
-        "Size": 8.0,
-        "SchRtg": "S10",
-        "Unit": "LFP",
-        "FldMhu": 0.57
-    },
-    {
-        "Key": "SPL-8:S100",
-        "EstGrp": "SPL",
-        "Size": 8.0,
-        "SchRtg": "S100",
-        "Unit": "LFP",
-        "FldMhu": 0.81
-    },
-    {
-        "Key": "SPL-8:S120",
-        "EstGrp": "SPL",
-        "Size": 8.0,
-        "SchRtg": "S120",
-        "Unit": "LFP",
-        "FldMhu": 0.99
-    },
-    {
-        "Key": "SPL-8:S140",
-        "EstGrp": "SPL",
-        "Size": 8.0,
-        "SchRtg": "S140",
-        "Unit": "LFP",
-        "FldMhu": 0.99
-    },
-    {
-        "Key": "SPL-8:S160",
-        "EstGrp": "SPL",
-        "Size": 8.0,
-        "SchRtg": "S160",
-        "Unit": "LFP",
-        "FldMhu": 0.99
-    },
-    {
         "Key": "SPL-8:S20",
         "EstGrp": "SPL",
         "Size": 8.0,
         "SchRtg": "S20",
         "Unit": "LFP",
         "FldMhu": 0.57
-    },
-    {
-        "Key": "SPL-8:S40",
-        "EstGrp": "SPL",
-        "Size": 8.0,
-        "SchRtg": "S40",
-        "Unit": "LFP",
-        "FldMhu": 0.57
-    },
-    {
-        "Key": "SPL-8:S60",
-        "EstGrp": "SPL",
-        "Size": 8.0,
-        "SchRtg": "S60",
-        "Unit": "LFP",
-        "FldMhu": 0.57
-    },
-    {
-        "Key": "SPL-8:S80",
-        "EstGrp": "SPL",
-        "Size": 8.0,
-        "SchRtg": "S80",
-        "Unit": "LFP",
-        "FldMhu": 0.81
-    },
-    {
-        "Key": "SPL-8:STD",
-        "EstGrp": "SPL",
-        "Size": 8.0,
-        "SchRtg": "STD",
-        "Unit": "LFP",
-        "FldMhu": 0.57
-    },
-    {
-        "Key": "SPL-8:XS",
-        "EstGrp": "SPL",
-        "Size": 8.0,
-        "SchRtg": "XS",
-        "Unit": "LFP",
-        "FldMhu": 0.81
-    },
-    {
-        "Key": "SPL-8:XXS",
-        "EstGrp": "SPL",
-        "Size": 8.0,
-        "SchRtg": "XXS",
-        "Unit": "LFP",
-        "FldMhu": 0.99
     },
     {
         "Key": "SPL-10:.250\" WT",
@@ -41840,90 +40784,10 @@
         "FldMhu": 1.43
     },
     {
-        "Key": "SPL-10:1.25\" WT",
-        "EstGrp": "SPL",
-        "Size": 10.0,
-        "SchRtg": "1.25\" WT",
-        "Unit": "LFP",
-        "FldMhu": 1.43
-    },
-    {
-        "Key": "SPL-10:S10",
-        "EstGrp": "SPL",
-        "Size": 10.0,
-        "SchRtg": "S10",
-        "Unit": "LFP",
-        "FldMhu": 0.72
-    },
-    {
-        "Key": "SPL-10:S100",
-        "EstGrp": "SPL",
-        "Size": 10.0,
-        "SchRtg": "S100",
-        "Unit": "LFP",
-        "FldMhu": 1.0
-    },
-    {
-        "Key": "SPL-10:S120",
-        "EstGrp": "SPL",
-        "Size": 10.0,
-        "SchRtg": "S120",
-        "Unit": "LFP",
-        "FldMhu": 1.0
-    },
-    {
-        "Key": "SPL-10:S140",
-        "EstGrp": "SPL",
-        "Size": 10.0,
-        "SchRtg": "S140",
-        "Unit": "LFP",
-        "FldMhu": 1.38
-    },
-    {
-        "Key": "SPL-10:S160",
-        "EstGrp": "SPL",
-        "Size": 10.0,
-        "SchRtg": "S160",
-        "Unit": "LFP",
-        "FldMhu": 1.38
-    },
-    {
         "Key": "SPL-10:S20",
         "EstGrp": "SPL",
         "Size": 10.0,
         "SchRtg": "S20",
-        "Unit": "LFP",
-        "FldMhu": 0.72
-    },
-    {
-        "Key": "SPL-10:S40",
-        "EstGrp": "SPL",
-        "Size": 10.0,
-        "SchRtg": "S40",
-        "Unit": "LFP",
-        "FldMhu": 0.72
-    },
-    {
-        "Key": "SPL-10:S60",
-        "EstGrp": "SPL",
-        "Size": 10.0,
-        "SchRtg": "S60",
-        "Unit": "LFP",
-        "FldMhu": 0.72
-    },
-    {
-        "Key": "SPL-10:S80",
-        "EstGrp": "SPL",
-        "Size": 10.0,
-        "SchRtg": "S80",
-        "Unit": "LFP",
-        "FldMhu": 1.0
-    },
-    {
-        "Key": "SPL-10:STD",
-        "EstGrp": "SPL",
-        "Size": 10.0,
-        "SchRtg": "STD",
         "Unit": "LFP",
         "FldMhu": 0.72
     },
@@ -41934,14 +40798,6 @@
         "SchRtg": "XS",
         "Unit": "LFP",
         "FldMhu": 1.0
-    },
-    {
-        "Key": "SPL-10:XXS",
-        "EstGrp": "SPL",
-        "Size": 10.0,
-        "SchRtg": "XXS",
-        "Unit": "LFP",
-        "FldMhu": 1.38
     },
     {
         "Key": "SPL-12:1.25\" WT",
@@ -41960,82 +40816,10 @@
         "FldMhu": 1.76
     },
     {
-        "Key": "SPL-12:S10",
-        "EstGrp": "SPL",
-        "Size": 12.0,
-        "SchRtg": "S10",
-        "Unit": "LFP",
-        "FldMhu": 0.88
-    },
-    {
         "Key": "SPL-12:S100",
         "EstGrp": "SPL",
         "Size": 12.0,
         "SchRtg": "S100",
-        "Unit": "LFP",
-        "FldMhu": 1.23
-    },
-    {
-        "Key": "SPL-12:S140",
-        "EstGrp": "SPL",
-        "Size": 12.0,
-        "SchRtg": "S140",
-        "Unit": "LFP",
-        "FldMhu": 1.69
-    },
-    {
-        "Key": "SPL-12:S160",
-        "EstGrp": "SPL",
-        "Size": 12.0,
-        "SchRtg": "S160",
-        "Unit": "LFP",
-        "FldMhu": 1.69
-    },
-    {
-        "Key": "SPL-12:S20",
-        "EstGrp": "SPL",
-        "Size": 12.0,
-        "SchRtg": "S20",
-        "Unit": "LFP",
-        "FldMhu": 0.88
-    },
-    {
-        "Key": "SPL-12:S40",
-        "EstGrp": "SPL",
-        "Size": 12.0,
-        "SchRtg": "S40",
-        "Unit": "LFP",
-        "FldMhu": 0.88
-    },
-    {
-        "Key": "SPL-12:S60",
-        "EstGrp": "SPL",
-        "Size": 12.0,
-        "SchRtg": "S60",
-        "Unit": "LFP",
-        "FldMhu": 0.88
-    },
-    {
-        "Key": "SPL-12:S80",
-        "EstGrp": "SPL",
-        "Size": 12.0,
-        "SchRtg": "S80",
-        "Unit": "LFP",
-        "FldMhu": 1.23
-    },
-    {
-        "Key": "SPL-12:STD",
-        "EstGrp": "SPL",
-        "Size": 12.0,
-        "SchRtg": "STD",
-        "Unit": "LFP",
-        "FldMhu": 0.88
-    },
-    {
-        "Key": "SPL-12:XS",
-        "EstGrp": "SPL",
-        "Size": 12.0,
-        "SchRtg": "XS",
         "Unit": "LFP",
         "FldMhu": 1.23
     },
@@ -42048,82 +40832,10 @@
         "FldMhu": 2.03
     },
     {
-        "Key": "SPL-14:1.75\" WT",
-        "EstGrp": "SPL",
-        "Size": 14.0,
-        "SchRtg": "1.75\" WT",
-        "Unit": "LFP",
-        "FldMhu": 2.25
-    },
-    {
-        "Key": "SPL-14:S10",
-        "EstGrp": "SPL",
-        "Size": 14.0,
-        "SchRtg": "S10",
-        "Unit": "LFP",
-        "FldMhu": 1.01
-    },
-    {
-        "Key": "SPL-14:S100",
-        "EstGrp": "SPL",
-        "Size": 14.0,
-        "SchRtg": "S100",
-        "Unit": "LFP",
-        "FldMhu": 1.46
-    },
-    {
-        "Key": "SPL-14:S140",
-        "EstGrp": "SPL",
-        "Size": 14.0,
-        "SchRtg": "S140",
-        "Unit": "LFP",
-        "FldMhu": 2.01
-    },
-    {
-        "Key": "SPL-14:S160",
-        "EstGrp": "SPL",
-        "Size": 14.0,
-        "SchRtg": "S160",
-        "Unit": "LFP",
-        "FldMhu": 2.01
-    },
-    {
         "Key": "SPL-14:S20",
         "EstGrp": "SPL",
         "Size": 14.0,
         "SchRtg": "S20",
-        "Unit": "LFP",
-        "FldMhu": 1.01
-    },
-    {
-        "Key": "SPL-14:S40",
-        "EstGrp": "SPL",
-        "Size": 14.0,
-        "SchRtg": "S40",
-        "Unit": "LFP",
-        "FldMhu": 1.01
-    },
-    {
-        "Key": "SPL-14:S60",
-        "EstGrp": "SPL",
-        "Size": 14.0,
-        "SchRtg": "S60",
-        "Unit": "LFP",
-        "FldMhu": 1.01
-    },
-    {
-        "Key": "SPL-14:S80",
-        "EstGrp": "SPL",
-        "Size": 14.0,
-        "SchRtg": "S80",
-        "Unit": "LFP",
-        "FldMhu": 1.46
-    },
-    {
-        "Key": "SPL-14:STD",
-        "EstGrp": "SPL",
-        "Size": 14.0,
-        "SchRtg": "STD",
         "Unit": "LFP",
         "FldMhu": 1.01
     },
@@ -42136,532 +40848,12 @@
         "FldMhu": 1.46
     },
     {
-        "Key": "SPL-14:XS",
-        "EstGrp": "SPL",
-        "Size": 14.0,
-        "SchRtg": "XS",
-        "Unit": "LFP",
-        "FldMhu": 1.46
-    },
-    {
-        "Key": "SPL-16:1.75\" WT",
-        "EstGrp": "SPL",
-        "Size": 16.0,
-        "SchRtg": "1.75\" WT",
-        "Unit": "LFP",
-        "FldMhu": 2.42
-    },
-    {
-        "Key": "SPL-16:2\" WT",
-        "EstGrp": "SPL",
-        "Size": 16.0,
-        "SchRtg": "2\" WT",
-        "Unit": "LFP",
-        "FldMhu": 2.6
-    },
-    {
-        "Key": "SPL-16:2.25\" WT",
-        "EstGrp": "SPL",
-        "Size": 16.0,
-        "SchRtg": "2.25\" WT",
-        "Unit": "LFP",
-        "FldMhu": 2.84
-    },
-    {
-        "Key": "SPL-16:2.5\" WT",
-        "EstGrp": "SPL",
-        "Size": 16.0,
-        "SchRtg": "2.5\" WT",
-        "Unit": "LFP",
-        "FldMhu": 3.11
-    },
-    {
-        "Key": "SPL-16:S10",
-        "EstGrp": "SPL",
-        "Size": 16.0,
-        "SchRtg": "S10",
-        "Unit": "LFP",
-        "FldMhu": 1.27
-    },
-    {
-        "Key": "SPL-16:S100",
-        "EstGrp": "SPL",
-        "Size": 16.0,
-        "SchRtg": "S100",
-        "Unit": "LFP",
-        "FldMhu": 2.34
-    },
-    {
-        "Key": "SPL-16:S120",
-        "EstGrp": "SPL",
-        "Size": 16.0,
-        "SchRtg": "S120",
-        "Unit": "LFP",
-        "FldMhu": 2.34
-    },
-    {
-        "Key": "SPL-16:S140",
-        "EstGrp": "SPL",
-        "Size": 16.0,
-        "SchRtg": "S140",
-        "Unit": "LFP",
-        "FldMhu": 2.34
-    },
-    {
-        "Key": "SPL-16:S160",
-        "EstGrp": "SPL",
-        "Size": 16.0,
-        "SchRtg": "S160",
-        "Unit": "LFP",
-        "FldMhu": 2.34
-    },
-    {
-        "Key": "SPL-16:S40",
-        "EstGrp": "SPL",
-        "Size": 16.0,
-        "SchRtg": "S40",
-        "Unit": "LFP",
-        "FldMhu": 1.27
-    },
-    {
-        "Key": "SPL-16:S60",
-        "EstGrp": "SPL",
-        "Size": 16.0,
-        "SchRtg": "S60",
-        "Unit": "LFP",
-        "FldMhu": 1.27
-    },
-    {
-        "Key": "SPL-16:S80",
-        "EstGrp": "SPL",
-        "Size": 16.0,
-        "SchRtg": "S80",
-        "Unit": "LFP",
-        "FldMhu": 1.71
-    },
-    {
-        "Key": "SPL-16:STD",
-        "EstGrp": "SPL",
-        "Size": 16.0,
-        "SchRtg": "STD",
-        "Unit": "LFP",
-        "FldMhu": 1.16
-    },
-    {
-        "Key": "SPL-16:XS",
-        "EstGrp": "SPL",
-        "Size": 16.0,
-        "SchRtg": "XS",
-        "Unit": "LFP",
-        "FldMhu": 1.71
-    },
-    {
-        "Key": "SPL-18:1.75\" WT",
-        "EstGrp": "SPL",
-        "Size": 18.0,
-        "SchRtg": "1.75\" WT",
-        "Unit": "LFP",
-        "FldMhu": 2.76
-    },
-    {
-        "Key": "SPL-18:S10",
-        "EstGrp": "SPL",
-        "Size": 18.0,
-        "SchRtg": "S10",
-        "Unit": "LFP",
-        "FldMhu": 1.48
-    },
-    {
-        "Key": "SPL-18:S100",
-        "EstGrp": "SPL",
-        "Size": 18.0,
-        "SchRtg": "S100",
-        "Unit": "LFP",
-        "FldMhu": 1.96
-    },
-    {
-        "Key": "SPL-18:S120",
-        "EstGrp": "SPL",
-        "Size": 18.0,
-        "SchRtg": "S120",
-        "Unit": "LFP",
-        "FldMhu": 2.69
-    },
-    {
-        "Key": "SPL-18:S140",
-        "EstGrp": "SPL",
-        "Size": 18.0,
-        "SchRtg": "S140",
-        "Unit": "LFP",
-        "FldMhu": 2.69
-    },
-    {
-        "Key": "SPL-18:S40",
-        "EstGrp": "SPL",
-        "Size": 18.0,
-        "SchRtg": "S40",
-        "Unit": "LFP",
-        "FldMhu": 1.48
-    },
-    {
-        "Key": "SPL-18:S80",
-        "EstGrp": "SPL",
-        "Size": 18.0,
-        "SchRtg": "S80",
-        "Unit": "LFP",
-        "FldMhu": 1.96
-    },
-    {
-        "Key": "SPL-18:STD",
-        "EstGrp": "SPL",
-        "Size": 18.0,
-        "SchRtg": "STD",
-        "Unit": "LFP",
-        "FldMhu": 1.3
-    },
-    {
-        "Key": "SPL-18:XS",
-        "EstGrp": "SPL",
-        "Size": 18.0,
-        "SchRtg": "XS",
-        "Unit": "LFP",
-        "FldMhu": 1.96
-    },
-    {
-        "Key": "SPL-20:S10",
-        "EstGrp": "SPL",
-        "Size": 20.0,
-        "SchRtg": "S10",
-        "Unit": "LFP",
-        "FldMhu": 1.74
-    },
-    {
-        "Key": "SPL-20:S20",
-        "EstGrp": "SPL",
-        "Size": 20.0,
-        "SchRtg": "S20",
-        "Unit": "LFP",
-        "FldMhu": 1.74
-    },
-    {
-        "Key": "SPL-20:S100",
-        "EstGrp": "SPL",
-        "Size": 20.0,
-        "SchRtg": "S100",
-        "Unit": "LFP",
-        "FldMhu": 2.22
-    },
-    {
-        "Key": "SPL-20:S140",
-        "EstGrp": "SPL",
-        "Size": 20.0,
-        "SchRtg": "S140",
-        "Unit": "LFP",
-        "FldMhu": 3.04
-    },
-    {
-        "Key": "SPL-20:S160",
-        "EstGrp": "SPL",
-        "Size": 20.0,
-        "SchRtg": "S160",
-        "Unit": "LFP",
-        "FldMhu": 3.04
-    },
-    {
-        "Key": "SPL-20:S40",
-        "EstGrp": "SPL",
-        "Size": 20.0,
-        "SchRtg": "S40",
-        "Unit": "LFP",
-        "FldMhu": 1.74
-    },
-    {
-        "Key": "SPL-20:S60",
-        "EstGrp": "SPL",
-        "Size": 20.0,
-        "SchRtg": "S60",
-        "Unit": "LFP",
-        "FldMhu": 1.74
-    },
-    {
-        "Key": "SPL-20:S80",
-        "EstGrp": "SPL",
-        "Size": 20.0,
-        "SchRtg": "S80",
-        "Unit": "LFP",
-        "FldMhu": 2.22
-    },
-    {
-        "Key": "SPL-20:STD",
-        "EstGrp": "SPL",
-        "Size": 20.0,
-        "SchRtg": "STD",
-        "Unit": "LFP",
-        "FldMhu": 1.43
-    },
-    {
-        "Key": "SPL-20:XS",
-        "EstGrp": "SPL",
-        "Size": 20.0,
-        "SchRtg": "XS",
-        "Unit": "LFP",
-        "FldMhu": 2.22
-    },
-    {
-        "Key": "SPL-22:S10",
-        "EstGrp": "SPL",
-        "Size": 22.0,
-        "SchRtg": "S10",
-        "Unit": "LFP",
-        "FldMhu": 1.52
-    },
-    {
-        "Key": "SPL-22:2.5\" WT",
-        "EstGrp": "SPL",
-        "Size": 22.0,
-        "SchRtg": "2.5\" WT",
-        "Unit": "LFP",
-        "FldMhu": 3.42
-    },
-    {
-        "Key": "SPL-22:S60",
-        "EstGrp": "SPL",
-        "Size": 22.0,
-        "SchRtg": "S60",
-        "Unit": "LFP",
-        "FldMhu": 1.84
-    },
-    {
-        "Key": "SPL-22:STD",
-        "EstGrp": "SPL",
-        "Size": 22.0,
-        "SchRtg": "STD",
-        "Unit": "LFP",
-        "FldMhu": 1.52
-    },
-    {
-        "Key": "SPL-22:S80",
-        "EstGrp": "SPL",
-        "Size": 22.0,
-        "SchRtg": "S80",
-        "Unit": "LFP",
-        "FldMhu": 2.51
-    },
-    {
-        "Key": "SPL-24:S10",
-        "EstGrp": "SPL",
-        "Size": 24.0,
-        "SchRtg": "S10",
-        "Unit": "LFP",
-        "FldMhu": 1.94
-    },
-    {
-        "Key": "SPL-24:S100",
-        "EstGrp": "SPL",
-        "Size": 24.0,
-        "SchRtg": "S100",
-        "Unit": "LFP",
-        "FldMhu": 2.51
-    },
-    {
-        "Key": "SPL-24:S140",
-        "EstGrp": "SPL",
-        "Size": 24.0,
-        "SchRtg": "S140",
-        "Unit": "LFP",
-        "FldMhu": 3.43
-    },
-    {
-        "Key": "SPL-24:S160",
-        "EstGrp": "SPL",
-        "Size": 24.0,
-        "SchRtg": "S160",
-        "Unit": "LFP",
-        "FldMhu": 3.43
-    },
-    {
-        "Key": "SPL-24:S40",
-        "EstGrp": "SPL",
-        "Size": 24.0,
-        "SchRtg": "S40",
-        "Unit": "LFP",
-        "FldMhu": 1.94
-    },
-    {
-        "Key": "SPL-24:S60",
-        "EstGrp": "SPL",
-        "Size": 24.0,
-        "SchRtg": "S60",
-        "Unit": "LFP",
-        "FldMhu": 1.94
-    },
-    {
-        "Key": "SPL-24:S80",
-        "EstGrp": "SPL",
-        "Size": 24.0,
-        "SchRtg": "S80",
-        "Unit": "LFP",
-        "FldMhu": 2.51
-    },
-    {
-        "Key": "SPL-24:STD",
-        "EstGrp": "SPL",
-        "Size": 24.0,
-        "SchRtg": "STD",
-        "Unit": "LFP",
-        "FldMhu": 1.61
-    },
-    {
-        "Key": "SPL-24:XS",
-        "EstGrp": "SPL",
-        "Size": 24.0,
-        "SchRtg": "XS",
-        "Unit": "LFP",
-        "FldMhu": 2.51
-    },
-    {
-        "Key": "SPL-26:.750\" WT",
-        "EstGrp": "SPL",
-        "Size": 26.0,
-        "SchRtg": ".750\" WT",
-        "Unit": "LFP",
-        "FldMhu": 1.86
-    },
-    {
-        "Key": "SPL-26:1.00\" WT",
-        "EstGrp": "SPL",
-        "Size": 26.0,
-        "SchRtg": "1.00\" WT",
-        "Unit": "LFP",
-        "FldMhu": 2.18
-    },
-    {
-        "Key": "SPL-26:1.25\" WT",
-        "EstGrp": "SPL",
-        "Size": 26.0,
-        "SchRtg": "1.25\" WT",
-        "Unit": "LFP",
-        "FldMhu": 2.31
-    },
-    {
-        "Key": "SPL-26:1.50\" WT",
-        "EstGrp": "SPL",
-        "Size": 26.0,
-        "SchRtg": "1.50\" WT",
-        "Unit": "LFP",
-        "FldMhu": 2.42
-    },
-    {
-        "Key": "SPL-26:1.75\" WT",
-        "EstGrp": "SPL",
-        "Size": 26.0,
-        "SchRtg": "1.75\" WT",
-        "Unit": "LFP",
-        "FldMhu": 2.91
-    },
-    {
-        "Key": "SPL-26:2.00\" WT",
-        "EstGrp": "SPL",
-        "Size": 26.0,
-        "SchRtg": "2.00\" WT",
-        "Unit": "LFP",
-        "FldMhu": 3.05
-    },
-    {
-        "Key": "SPL-26:2.25\" WT",
-        "EstGrp": "SPL",
-        "Size": 26.0,
-        "SchRtg": "2.25\" WT",
-        "Unit": "LFP",
-        "FldMhu": 3.26
-    },
-    {
-        "Key": "SPL-28:.750\" WT",
-        "EstGrp": "SPL",
-        "Size": 28.0,
-        "SchRtg": ".750\" WT",
-        "Unit": "LFP",
-        "FldMhu": 2.07
-    },
-    {
-        "Key": "SPL-28:1.00\" WT",
-        "EstGrp": "SPL",
-        "Size": 28.0,
-        "SchRtg": "1.00\" WT",
-        "Unit": "LFP",
-        "FldMhu": 2.28
-    },
-    {
-        "Key": "SPL-28:1.25\" WT",
-        "EstGrp": "SPL",
-        "Size": 28.0,
-        "SchRtg": "1.25\" WT",
-        "Unit": "LFP",
-        "FldMhu": 2.53
-    },
-    {
-        "Key": "SPL-28:1.50\" WT",
-        "EstGrp": "SPL",
-        "Size": 28.0,
-        "SchRtg": "1.50\" WT",
-        "Unit": "LFP",
-        "FldMhu": 2.77
-    },
-    {
-        "Key": "SPL-28:1.75\" WT",
-        "EstGrp": "SPL",
-        "Size": 28.0,
-        "SchRtg": "1.75\" WT",
-        "Unit": "LFP",
-        "FldMhu": 2.97
-    },
-    {
-        "Key": "SPL-28:2.00\" WT",
-        "EstGrp": "SPL",
-        "Size": 28.0,
-        "SchRtg": "2.00\" WT",
-        "Unit": "LFP",
-        "FldMhu": 3.21
-    },
-    {
         "Key": "SPL-28:.2.25\" WT",
         "EstGrp": "SPL",
         "Size": 28.0,
         "SchRtg": ".2.25\" WT",
         "Unit": "LFP",
         "FldMhu": 3.45
-    },
-    {
-        "Key": "SPL-30:S10",
-        "EstGrp": "SPL",
-        "Size": 30.0,
-        "SchRtg": "S10",
-        "Unit": "LFP",
-        "FldMhu": 2.07
-    },
-    {
-        "Key": "SPL-30:S60",
-        "EstGrp": "SPL",
-        "Size": 30.0,
-        "SchRtg": "S60",
-        "Unit": "LFP",
-        "FldMhu": 2.38
-    },
-    {
-        "Key": "SPL-30:S80",
-        "EstGrp": "SPL",
-        "Size": 30.0,
-        "SchRtg": "S80",
-        "Unit": "LFP",
-        "FldMhu": 2.8
-    },
-    {
-        "Key": "SPL-30:STD",
-        "EstGrp": "SPL",
-        "Size": 30.0,
-        "SchRtg": "STD",
-        "Unit": "LFP",
-        "FldMhu": 2.07
     },
     {
         "Key": "SPL-30:XS",
@@ -42680,14 +40872,6 @@
         "FldMhu": 2.07
     },
     {
-        "Key": "SPL-30:.750\" WT",
-        "EstGrp": "SPL",
-        "Size": 30.0,
-        "SchRtg": ".750\" WT",
-        "Unit": "LFP",
-        "FldMhu": 2.18
-    },
-    {
         "Key": "SPL-30:.875\" WT",
         "EstGrp": "SPL",
         "Size": 30.0,
@@ -42696,188 +40880,12 @@
         "FldMhu": 2.38
     },
     {
-        "Key": "SPL-30:1.00\" WT",
-        "EstGrp": "SPL",
-        "Size": 30.0,
-        "SchRtg": "1.00\" WT",
-        "Unit": "LFP",
-        "FldMhu": 2.38
-    },
-    {
-        "Key": "SPL-30:1.25\" WT",
-        "EstGrp": "SPL",
-        "Size": 30.0,
-        "SchRtg": "1.25\" WT",
-        "Unit": "LFP",
-        "FldMhu": 2.61
-    },
-    {
-        "Key": "SPL-30:1.50\" WT",
-        "EstGrp": "SPL",
-        "Size": 30.0,
-        "SchRtg": "1.50\" WT",
-        "Unit": "LFP",
-        "FldMhu": 2.8
-    },
-    {
-        "Key": "SPL-30:1.75\" WT",
-        "EstGrp": "SPL",
-        "Size": 30.0,
-        "SchRtg": "1.75\" WT",
-        "Unit": "LFP",
-        "FldMhu": 3.12
-    },
-    {
-        "Key": "SPL-30:2.00\" WT",
-        "EstGrp": "SPL",
-        "Size": 30.0,
-        "SchRtg": "2.00\" WT",
-        "Unit": "LFP",
-        "FldMhu": 3.49
-    },
-    {
-        "Key": "SPL-30:2.25\" WT",
-        "EstGrp": "SPL",
-        "Size": 30.0,
-        "SchRtg": "2.25\" WT",
-        "Unit": "LFP",
-        "FldMhu": 3.8
-    },
-    {
-        "Key": "SPL-34:1.00\" WT",
-        "EstGrp": "SPL",
-        "Size": 34.0,
-        "SchRtg": "1.00\" WT",
-        "Unit": "LFP",
-        "FldMhu": 2.62
-    },
-    {
-        "Key": "SPL-36:1.00\" WT",
-        "EstGrp": "SPL",
-        "Size": 36.0,
-        "SchRtg": "1.00\" WT",
-        "Unit": null,
-        "FldMhu": 2.83
-    },
-    {
         "Key": "SPL-36:XS",
         "EstGrp": "SPL",
         "Size": 36.0,
         "SchRtg": "XS",
         "Unit": "LFP",
         "FldMhu": 3.08
-    },
-    {
-        "Key": "SPL-66:STD",
-        "EstGrp": "SPL",
-        "Size": 66.0,
-        "SchRtg": "STD",
-        "Unit": "LFP",
-        "FldMhu": 5.5
-    },
-    {
-        "Key": "SPL-84:STD",
-        "EstGrp": "SPL",
-        "Size": 84.0,
-        "SchRtg": "STD",
-        "Unit": "LFP",
-        "FldMhu": 7.4
-    },
-    {
-        "Key": "SPL-3:DR11",
-        "EstGrp": "SPL",
-        "Size": 3.0,
-        "SchRtg": "DR11",
-        "Unit": "LFP",
-        "FldMhu": 0.34
-    },
-    {
-        "Key": "SPL-4:DR11",
-        "EstGrp": "SPL",
-        "Size": 4.0,
-        "SchRtg": "DR11",
-        "Unit": "LFP",
-        "FldMhu": 0.38
-    },
-    {
-        "Key": "SPL-6:DR11",
-        "EstGrp": "SPL",
-        "Size": 6.0,
-        "SchRtg": "DR11",
-        "Unit": "LFP",
-        "FldMhu": 0.42
-    },
-    {
-        "Key": "SPL-8:DR11",
-        "EstGrp": "SPL",
-        "Size": 8.0,
-        "SchRtg": "DR11",
-        "Unit": "LFP",
-        "FldMhu": 0.54
-    },
-    {
-        "Key": "SPL-10:DR11",
-        "EstGrp": "SPL",
-        "Size": 10.0,
-        "SchRtg": "DR11",
-        "Unit": "LFP",
-        "FldMhu": 0.66
-    },
-    {
-        "Key": "SPL-12:DR11",
-        "EstGrp": "SPL",
-        "Size": 12.0,
-        "SchRtg": "DR11",
-        "Unit": "LFP",
-        "FldMhu": 0.8
-    },
-    {
-        "Key": "SPL-14:DR11",
-        "EstGrp": "SPL",
-        "Size": 14.0,
-        "SchRtg": "DR11",
-        "Unit": "LFP",
-        "FldMhu": 0.88
-    },
-    {
-        "Key": "SPL-16:DR11",
-        "EstGrp": "SPL",
-        "Size": 16.0,
-        "SchRtg": "DR11",
-        "Unit": "LFP",
-        "FldMhu": 1.08
-    },
-    {
-        "Key": "SPL-18:DR11",
-        "EstGrp": "SPL",
-        "Size": 18.0,
-        "SchRtg": "DR11",
-        "Unit": "LFP",
-        "FldMhu": 1.34
-    },
-    {
-        "Key": "SPL-20:DR11",
-        "EstGrp": "SPL",
-        "Size": 20.0,
-        "SchRtg": "DR11",
-        "Unit": "LFP",
-        "FldMhu": 1.5
-    },
-    {
-        "Key": "SPL-24:DR11",
-        "EstGrp": "SPL",
-        "Size": 24.0,
-        "SchRtg": "DR11",
-        "Unit": "LFP",
-        "FldMhu": 1.8
-    },
-    {
-        "Key": "SPL-30:DR11",
-        "EstGrp": "SPL",
-        "Size": 30.0,
-        "SchRtg": "DR11",
-        "Unit": "LFP",
-        "FldMhu": 2.26
     },
     {
         "Key": "SPL-16:S20",
@@ -43000,28 +41008,12 @@
         "FldMhu": 2.35
     },
     {
-        "Key": "SPL-42:XS",
-        "EstGrp": "SPL",
-        "Size": 42.0,
-        "SchRtg": "XS",
-        "Unit": "LFP",
-        "FldMhu": 2.84
-    },
-    {
         "Key": "SPL-48:STD",
         "EstGrp": "SPL",
         "Size": 48.0,
         "SchRtg": "STD",
         "Unit": "LFP",
         "FldMhu": 2.69
-    },
-    {
-        "Key": "SPL-48:XS",
-        "EstGrp": "SPL",
-        "Size": 48.0,
-        "SchRtg": "XS",
-        "Unit": "LFP",
-        "FldMhu": 3.19
     },
     {
         "Key": "SPL-52:XS",
@@ -43046,14 +41038,6 @@
         "SchRtg": "STD",
         "Unit": "LFP",
         "FldMhu": 3.36
-    },
-    {
-        "Key": "SPL-60:XS",
-        "EstGrp": "SPL",
-        "Size": 60.0,
-        "SchRtg": "XS",
-        "Unit": "LFP",
-        "FldMhu": 4.07
     },
     {
         "Key": "SPL-72:STD",
@@ -43736,30 +41720,6 @@
         "FldMhu": 2.6
     },
     {
-        "Key": "STRESS-2:S40",
-        "EstGrp": "STRESS",
-        "Size": 2.0,
-        "SchRtg": "S40",
-        "Unit": "EA",
-        "FldMhu": 2.6
-    },
-    {
-        "Key": "STRESS-2:S80",
-        "EstGrp": "STRESS",
-        "Size": 2.0,
-        "SchRtg": "S80",
-        "Unit": "EA",
-        "FldMhu": 2.8
-    },
-    {
-        "Key": "STRESS-2:XS",
-        "EstGrp": "STRESS",
-        "Size": 2.0,
-        "SchRtg": "XS",
-        "Unit": "EA",
-        "FldMhu": 2.8
-    },
-    {
         "Key": "STRESS-2:XXS",
         "EstGrp": "STRESS",
         "Size": 2.0,
@@ -43797,47 +41757,7 @@
         "Size": 2.5,
         "SchRtg": "S160",
         "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-2.5:S40",
-        "EstGrp": "STRESS",
-        "Size": 2.5,
-        "SchRtg": "S40",
-        "Unit": "EA",
-        "FldMhu": 2.8
-    },
-    {
-        "Key": "STRESS-2.5:S80",
-        "EstGrp": "STRESS",
-        "Size": 2.5,
-        "SchRtg": "S80",
-        "Unit": "EA",
-        "FldMhu": 2.9
-    },
-    {
-        "Key": "STRESS-2.5:S160",
-        "EstGrp": "STRESS",
-        "Size": 2.5,
-        "SchRtg": "S160",
-        "Unit": "EA",
         "FldMhu": 3.1
-    },
-    {
-        "Key": "STRESS-2.5:STD",
-        "EstGrp": "STRESS",
-        "Size": 2.5,
-        "SchRtg": "STD",
-        "Unit": "EA",
-        "FldMhu": 2.8
-    },
-    {
-        "Key": "STRESS-2.5:XS",
-        "EstGrp": "STRESS",
-        "Size": 2.5,
-        "SchRtg": "XS",
-        "Unit": "EA",
-        "FldMhu": 2.9
     },
     {
         "Key": "STRESS-3:.250\" WT",
@@ -43872,44 +41792,12 @@
         "FldMhu": 3.5
     },
     {
-        "Key": "STRESS-3:S40",
-        "EstGrp": "STRESS",
-        "Size": 3.0,
-        "SchRtg": "S40",
-        "Unit": "EA",
-        "FldMhu": 2.9
-    },
-    {
-        "Key": "STRESS-3:S80",
-        "EstGrp": "STRESS",
-        "Size": 3.0,
-        "SchRtg": "S80",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
         "Key": "STRESS-3:S160",
         "EstGrp": "STRESS",
         "Size": 3.0,
         "SchRtg": "S160",
         "Unit": "EA",
         "FldMhu": 3.5
-    },
-    {
-        "Key": "STRESS-3:STD",
-        "EstGrp": "STRESS",
-        "Size": 3.0,
-        "SchRtg": "STD",
-        "Unit": "EA",
-        "FldMhu": 2.9
-    },
-    {
-        "Key": "STRESS-3:XS",
-        "EstGrp": "STRESS",
-        "Size": 3.0,
-        "SchRtg": "XS",
-        "Unit": "EA",
-        "FldMhu": 3.0
     },
     {
         "Key": "STRESS-3:XXS",
@@ -44030,22 +41918,6 @@
         "SchRtg": "S100",
         "Unit": "EA",
         "FldMhu": 4.0
-    },
-    {
-        "Key": "STRESS-4:S120",
-        "EstGrp": "STRESS",
-        "Size": 4.0,
-        "SchRtg": "S120",
-        "Unit": "EA",
-        "FldMhu": 3.6
-    },
-    {
-        "Key": "STRESS-4:S160",
-        "EstGrp": "STRESS",
-        "Size": 4.0,
-        "SchRtg": "S160",
-        "Unit": "EA",
-        "FldMhu": 3.9
     },
     {
         "Key": "STRESS-4:S40",
@@ -44278,14 +42150,6 @@
         "SchRtg": "2.25\" WT",
         "Unit": "EA",
         "FldMhu": 9.7
-    },
-    {
-        "Key": "STRESS-8:1.00\" WT",
-        "EstGrp": "STRESS",
-        "Size": 8.0,
-        "SchRtg": "1.00\" WT",
-        "Unit": "EA",
-        "FldMhu": 5.9
     },
     {
         "Key": "STRESS-8:1.125\" WT",
@@ -44592,14 +42456,6 @@
         "FldMhu": 4.6
     },
     {
-        "Key": "STRESS-10:XS",
-        "EstGrp": "STRESS",
-        "Size": 10.0,
-        "SchRtg": "XS",
-        "Unit": "EA",
-        "FldMhu": 5.1
-    },
-    {
         "Key": "STRESS-10:XXS",
         "EstGrp": "STRESS",
         "Size": 10.0,
@@ -44784,22 +42640,6 @@
         "FldMhu": 5.1
     },
     {
-        "Key": "STRESS-12:STD",
-        "EstGrp": "STRESS",
-        "Size": 12.0,
-        "SchRtg": "STD",
-        "Unit": "EA",
-        "FldMhu": 5.1
-    },
-    {
-        "Key": "STRESS-12:XS",
-        "EstGrp": "STRESS",
-        "Size": 12.0,
-        "SchRtg": "XS",
-        "Unit": "EA",
-        "FldMhu": 5.5
-    },
-    {
         "Key": "STRESS-14:.500\" WT",
         "EstGrp": "STRESS",
         "Size": 14.0,
@@ -44968,22 +42808,6 @@
         "FldMhu": 6.7
     },
     {
-        "Key": "STRESS-14:STD",
-        "EstGrp": "STRESS",
-        "Size": 14.0,
-        "SchRtg": "STD",
-        "Unit": "EA",
-        "FldMhu": 5.5
-    },
-    {
-        "Key": "STRESS-14:XS",
-        "EstGrp": "STRESS",
-        "Size": 14.0,
-        "SchRtg": "XS",
-        "Unit": "EA",
-        "FldMhu": 5.9
-    },
-    {
         "Key": "STRESS-16:.500\" WT",
         "EstGrp": "STRESS",
         "Size": 16.0,
@@ -45144,22 +42968,6 @@
         "FldMhu": 7.2
     },
     {
-        "Key": "STRESS-16:STD",
-        "EstGrp": "STRESS",
-        "Size": 16.0,
-        "SchRtg": "STD",
-        "Unit": "EA",
-        "FldMhu": 5.9
-    },
-    {
-        "Key": "STRESS-16:XS",
-        "EstGrp": "STRESS",
-        "Size": 16.0,
-        "SchRtg": "XS",
-        "Unit": "EA",
-        "FldMhu": 6.4
-    },
-    {
         "Key": "STRESS-18:1.75\" WT",
         "EstGrp": "STRESS",
         "Size": 18.0,
@@ -45248,14 +43056,6 @@
         "FldMhu": 8.3
     },
     {
-        "Key": "STRESS-18:S120",
-        "EstGrp": "STRESS",
-        "Size": 18.0,
-        "SchRtg": "S120",
-        "Unit": "EA",
-        "FldMhu": 8.7
-    },
-    {
         "Key": "STRESS-18:S140",
         "EstGrp": "STRESS",
         "Size": 18.0,
@@ -45308,14 +43108,6 @@
         "EstGrp": "STRESS",
         "Size": 18.0,
         "SchRtg": "S20",
-        "Unit": "EA",
-        "FldMhu": 6.4
-    },
-    {
-        "Key": "STRESS-18:STD",
-        "EstGrp": "STRESS",
-        "Size": 18.0,
-        "SchRtg": "STD",
         "Unit": "EA",
         "FldMhu": 6.4
     },
@@ -45934,22 +43726,6 @@
         "SchRtg": "S80",
         "Unit": "EA",
         "FldMhu": 9.2
-    },
-    {
-        "Key": "STRESS-24:STD",
-        "EstGrp": "STRESS",
-        "Size": 24.0,
-        "SchRtg": "STD",
-        "Unit": "EA",
-        "FldMhu": 7.1
-    },
-    {
-        "Key": "STRESS-24:XS",
-        "EstGrp": "STRESS",
-        "Size": 24.0,
-        "SchRtg": "XS",
-        "Unit": "EA",
-        "FldMhu": 7.3
     },
     {
         "Key": "STRESS-26:S60",
@@ -47808,490 +45584,10 @@
         "FldMhu": 3.0
     },
     {
-        "Key": "STRESS-0.125:S100",
-        "EstGrp": "STRESS",
-        "Size": 0.125,
-        "SchRtg": "S100",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-0.125:S160",
-        "EstGrp": "STRESS",
-        "Size": 0.125,
-        "SchRtg": "S160",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-0.25:S40",
-        "EstGrp": "STRESS",
-        "Size": 0.25,
-        "SchRtg": "S40",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-0.25:XS",
-        "EstGrp": "STRESS",
-        "Size": 0.25,
-        "SchRtg": "XS",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-0.375:3000",
-        "EstGrp": "STRESS",
-        "Size": 0.375,
-        "SchRtg": "3000",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-0.375:S100",
-        "EstGrp": "STRESS",
-        "Size": 0.375,
-        "SchRtg": "S100",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-0.375:S160",
-        "EstGrp": "STRESS",
-        "Size": 0.375,
-        "SchRtg": "S160",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-0.375:S40",
-        "EstGrp": "STRESS",
-        "Size": 0.375,
-        "SchRtg": "S40",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-0.375:STD",
-        "EstGrp": "STRESS",
-        "Size": 0.375,
-        "SchRtg": "STD",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
         "Key": "STRESS-0.375:S80",
         "EstGrp": "STRESS",
         "Size": 0.375,
         "SchRtg": "S80",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-0.375:STD",
-        "EstGrp": "STRESS",
-        "Size": 0.375,
-        "SchRtg": "STD",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-0.375:XS",
-        "EstGrp": "STRESS",
-        "Size": 0.375,
-        "SchRtg": "XS",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-0.5:3000",
-        "EstGrp": "STRESS",
-        "Size": 0.5,
-        "SchRtg": "3000",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-0.5:6000",
-        "EstGrp": "STRESS",
-        "Size": 0.5,
-        "SchRtg": "6000",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-0.5:S100",
-        "EstGrp": "STRESS",
-        "Size": 0.5,
-        "SchRtg": "S100",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-0.5:S160",
-        "EstGrp": "STRESS",
-        "Size": 0.5,
-        "SchRtg": "S160",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-0.5:S40",
-        "EstGrp": "STRESS",
-        "Size": 0.5,
-        "SchRtg": "S40",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-0.5:XS",
-        "EstGrp": "STRESS",
-        "Size": 0.5,
-        "SchRtg": "XS",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-0.75:3000",
-        "EstGrp": "STRESS",
-        "Size": 0.75,
-        "SchRtg": "3000",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-0.75:6000",
-        "EstGrp": "STRESS",
-        "Size": 0.75,
-        "SchRtg": "6000",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-0.75:9000",
-        "EstGrp": "STRESS",
-        "Size": 0.75,
-        "SchRtg": "9000",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-0.75:S100",
-        "EstGrp": "STRESS",
-        "Size": 0.75,
-        "SchRtg": "S100",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-0.75:S160",
-        "EstGrp": "STRESS",
-        "Size": 0.75,
-        "SchRtg": "S160",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-0.75:S40",
-        "EstGrp": "STRESS",
-        "Size": 0.75,
-        "SchRtg": "S40",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-0.75:S80",
-        "EstGrp": "STRESS",
-        "Size": 0.75,
-        "SchRtg": "S80",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-0.75:XS",
-        "EstGrp": "STRESS",
-        "Size": 0.75,
-        "SchRtg": "XS",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-0.75:XXS",
-        "EstGrp": "STRESS",
-        "Size": 0.75,
-        "SchRtg": "XXS",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-1:150",
-        "EstGrp": "STRESS",
-        "Size": 1.0,
-        "SchRtg": "150",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-1:3000",
-        "EstGrp": "STRESS",
-        "Size": 1.0,
-        "SchRtg": "3000",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-1:600",
-        "EstGrp": "STRESS",
-        "Size": 1.0,
-        "SchRtg": "600",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-1:6000",
-        "EstGrp": "STRESS",
-        "Size": 1.0,
-        "SchRtg": "6000",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-1:9000",
-        "EstGrp": "STRESS",
-        "Size": 1.0,
-        "SchRtg": "9000",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-1:S100",
-        "EstGrp": "STRESS",
-        "Size": 1.0,
-        "SchRtg": "S100",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-1:S160",
-        "EstGrp": "STRESS",
-        "Size": 1.0,
-        "SchRtg": "S160",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-1:S40",
-        "EstGrp": "STRESS",
-        "Size": 1.0,
-        "SchRtg": "S40",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-1:S80",
-        "EstGrp": "STRESS",
-        "Size": 1.0,
-        "SchRtg": "S80",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-1:XS",
-        "EstGrp": "STRESS",
-        "Size": 1.0,
-        "SchRtg": "XS",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-1:XXS",
-        "EstGrp": "STRESS",
-        "Size": 1.0,
-        "SchRtg": "XXS",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-1.25:3000",
-        "EstGrp": "STRESS",
-        "Size": 1.25,
-        "SchRtg": "3000",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-1.25:S100",
-        "EstGrp": "STRESS",
-        "Size": 1.25,
-        "SchRtg": "S100",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-1.25:S160",
-        "EstGrp": "STRESS",
-        "Size": 1.25,
-        "SchRtg": "S160",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-1.25:XS",
-        "EstGrp": "STRESS",
-        "Size": 1.25,
-        "SchRtg": "XS",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-1.25:XXS",
-        "EstGrp": "STRESS",
-        "Size": 1.25,
-        "SchRtg": "XXS",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-1.5:600",
-        "EstGrp": "STRESS",
-        "Size": 1.5,
-        "SchRtg": "600",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-1.5:3000",
-        "EstGrp": "STRESS",
-        "Size": 1.5,
-        "SchRtg": "3000",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-1.5:6000",
-        "EstGrp": "STRESS",
-        "Size": 1.5,
-        "SchRtg": "6000",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-1.5:9000",
-        "EstGrp": "STRESS",
-        "Size": 1.5,
-        "SchRtg": "9000",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-1.5:S100",
-        "EstGrp": "STRESS",
-        "Size": 1.5,
-        "SchRtg": "S100",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-1.5:S160",
-        "EstGrp": "STRESS",
-        "Size": 1.5,
-        "SchRtg": "S160",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-1.5:S40",
-        "EstGrp": "STRESS",
-        "Size": 1.5,
-        "SchRtg": "S40",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-1.5:S60",
-        "EstGrp": "STRESS",
-        "Size": 1.5,
-        "SchRtg": "S60",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-1.5:S80",
-        "EstGrp": "STRESS",
-        "Size": 1.5,
-        "SchRtg": "S80",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-1.5:STD",
-        "EstGrp": "STRESS",
-        "Size": 1.5,
-        "SchRtg": "STD",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-1.5:XS",
-        "EstGrp": "STRESS",
-        "Size": 1.5,
-        "SchRtg": "XS",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-1.5:XXS",
-        "EstGrp": "STRESS",
-        "Size": 1.5,
-        "SchRtg": "XXS",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-2:2500",
-        "EstGrp": "STRESS",
-        "Size": 2.0,
-        "SchRtg": "2500",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-2:3000",
-        "EstGrp": "STRESS",
-        "Size": 2.0,
-        "SchRtg": "3000",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-2:6000",
-        "EstGrp": "STRESS",
-        "Size": 2.0,
-        "SchRtg": "6000",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-2:9000",
-        "EstGrp": "STRESS",
-        "Size": 2.0,
-        "SchRtg": "9000",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-2:S100",
-        "EstGrp": "STRESS",
-        "Size": 2.0,
-        "SchRtg": "S100",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-2:S160",
-        "EstGrp": "STRESS",
-        "Size": 2.0,
-        "SchRtg": "S160",
         "Unit": "EA",
         "FldMhu": 3.0
     },
@@ -48316,46 +45612,6 @@
         "EstGrp": "STRESS",
         "Size": 2.0,
         "SchRtg": "XS",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-2:XXS",
-        "EstGrp": "STRESS",
-        "Size": 2.0,
-        "SchRtg": "XXS",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-2.5:6000",
-        "EstGrp": "STRESS",
-        "Size": 2.5,
-        "SchRtg": "6000",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-2.5:9000",
-        "EstGrp": "STRESS",
-        "Size": 2.5,
-        "SchRtg": "9000",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-2.5:S100",
-        "EstGrp": "STRESS",
-        "Size": 2.5,
-        "SchRtg": "S100",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-2.5:S160",
-        "EstGrp": "STRESS",
-        "Size": 2.5,
-        "SchRtg": "S160",
         "Unit": "EA",
         "FldMhu": 3.0
     },
@@ -48392,46 +45648,6 @@
         "FldMhu": 3.0
     },
     {
-        "Key": "STRESS-3:.250\" WT",
-        "EstGrp": "STRESS",
-        "Size": 3.0,
-        "SchRtg": ".250\" WT",
-        "Unit": "EA",
-        "FldMhu": 3.5
-    },
-    {
-        "Key": "STRESS-3:3000",
-        "EstGrp": "STRESS",
-        "Size": 3.0,
-        "SchRtg": "3000",
-        "Unit": "EA",
-        "FldMhu": 3.5
-    },
-    {
-        "Key": "STRESS-3:S100",
-        "EstGrp": "STRESS",
-        "Size": 3.0,
-        "SchRtg": "S100",
-        "Unit": "EA",
-        "FldMhu": 3.5
-    },
-    {
-        "Key": "STRESS-3:S120",
-        "EstGrp": "STRESS",
-        "Size": 3.0,
-        "SchRtg": "S120",
-        "Unit": "EA",
-        "FldMhu": 3.5
-    },
-    {
-        "Key": "STRESS-3:S160",
-        "EstGrp": "STRESS",
-        "Size": 3.0,
-        "SchRtg": "S160",
-        "Unit": "EA",
-        "FldMhu": 3.5
-    },
-    {
         "Key": "STRESS-3:S40",
         "EstGrp": "STRESS",
         "Size": 3.0,
@@ -48464,46 +45680,6 @@
         "FldMhu": 3.5
     },
     {
-        "Key": "STRESS-3:XXS",
-        "EstGrp": "STRESS",
-        "Size": 3.0,
-        "SchRtg": "XXS",
-        "Unit": "EA",
-        "FldMhu": 3.8
-    },
-    {
-        "Key": "STRESS-3.5:S100",
-        "EstGrp": "STRESS",
-        "Size": 3.5,
-        "SchRtg": "S100",
-        "Unit": "EA",
-        "FldMhu": 3.8
-    },
-    {
-        "Key": "STRESS-3.5:S160",
-        "EstGrp": "STRESS",
-        "Size": 3.5,
-        "SchRtg": "S160",
-        "Unit": "EA",
-        "FldMhu": 3.8
-    },
-    {
-        "Key": "STRESS-4:S10",
-        "EstGrp": "STRESS",
-        "Size": 4.0,
-        "SchRtg": "S10",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-4:S100",
-        "EstGrp": "STRESS",
-        "Size": 4.0,
-        "SchRtg": "S100",
-        "Unit": "EA",
-        "FldMhu": 4.0
-    },
-    {
         "Key": "STRESS-4:S120",
         "EstGrp": "STRESS",
         "Size": 4.0,
@@ -48518,22 +45694,6 @@
         "SchRtg": "S160",
         "Unit": "EA",
         "FldMhu": 4.0
-    },
-    {
-        "Key": "STRESS-4:S40",
-        "EstGrp": "STRESS",
-        "Size": 4.0,
-        "SchRtg": "S40",
-        "Unit": "EA",
-        "FldMhu": 3.0
-    },
-    {
-        "Key": "STRESS-4:S80",
-        "EstGrp": "STRESS",
-        "Size": 4.0,
-        "SchRtg": "S80",
-        "Unit": "EA",
-        "FldMhu": 3.5
     },
     {
         "Key": "STRESS-4:STD",
@@ -48552,330 +45712,10 @@
         "FldMhu": 3.5
     },
     {
-        "Key": "STRESS-5:S100",
-        "EstGrp": "STRESS",
-        "Size": 5.0,
-        "SchRtg": "S100",
-        "Unit": "EA",
-        "FldMhu": 4.0
-    },
-    {
-        "Key": "STRESS-5:S160",
-        "EstGrp": "STRESS",
-        "Size": 5.0,
-        "SchRtg": "S160",
-        "Unit": "EA",
-        "FldMhu": 4.3
-    },
-    {
-        "Key": "STRESS-6:S100",
-        "EstGrp": "STRESS",
-        "Size": 6.0,
-        "SchRtg": "S100",
-        "Unit": "EA",
-        "FldMhu": 3.7
-    },
-    {
-        "Key": "STRESS-6:S120",
-        "EstGrp": "STRESS",
-        "Size": 6.0,
-        "SchRtg": "S120",
-        "Unit": "EA",
-        "FldMhu": 4.3
-    },
-    {
-        "Key": "STRESS-6:S160",
-        "EstGrp": "STRESS",
-        "Size": 6.0,
-        "SchRtg": "S160",
-        "Unit": "EA",
-        "FldMhu": 4.9
-    },
-    {
-        "Key": "STRESS-6:S40",
-        "EstGrp": "STRESS",
-        "Size": 6.0,
-        "SchRtg": "S40",
-        "Unit": "EA",
-        "FldMhu": 3.7
-    },
-    {
-        "Key": "STRESS-6:S60",
-        "EstGrp": "STRESS",
-        "Size": 6.0,
-        "SchRtg": "S60",
-        "Unit": "EA",
-        "FldMhu": 4.1
-    },
-    {
-        "Key": "STRESS-6:S80",
-        "EstGrp": "STRESS",
-        "Size": 6.0,
-        "SchRtg": "S80",
-        "Unit": "EA",
-        "FldMhu": 4.1
-    },
-    {
-        "Key": "STRESS-6:STD",
-        "EstGrp": "STRESS",
-        "Size": 6.0,
-        "SchRtg": "STD",
-        "Unit": "EA",
-        "FldMhu": 3.7
-    },
-    {
-        "Key": "STRESS-6:XS",
-        "EstGrp": "STRESS",
-        "Size": 6.0,
-        "SchRtg": "XS",
-        "Unit": "EA",
-        "FldMhu": 4.1
-    },
-    {
-        "Key": "STRESS-6:XXS",
-        "EstGrp": "STRESS",
-        "Size": 6.0,
-        "SchRtg": "XXS",
-        "Unit": "EA",
-        "FldMhu": 4.9
-    },
-    {
-        "Key": "STRESS-8:1.00\" WT",
-        "EstGrp": "STRESS",
-        "Size": 8.0,
-        "SchRtg": "1.00\" WT",
-        "Unit": "EA",
-        "FldMhu": 5.9
-    },
-    {
-        "Key": "STRESS-8:1.125\" WT",
-        "EstGrp": "STRESS",
-        "Size": 8.0,
-        "SchRtg": "1.125\" WT",
-        "Unit": "EA",
-        "FldMhu": 5.9
-    },
-    {
-        "Key": "STRESS-8:1.25\" WT",
-        "EstGrp": "STRESS",
-        "Size": 8.0,
-        "SchRtg": "1.25\" WT",
-        "Unit": "EA",
-        "FldMhu": 7.8
-    },
-    {
-        "Key": "STRESS-8:S100",
-        "EstGrp": "STRESS",
-        "Size": 8.0,
-        "SchRtg": "S100",
-        "Unit": "EA",
-        "FldMhu": 5.1
-    },
-    {
-        "Key": "STRESS-8:S120",
-        "EstGrp": "STRESS",
-        "Size": 8.0,
-        "SchRtg": "S120",
-        "Unit": "EA",
-        "FldMhu": 5.3
-    },
-    {
-        "Key": "STRESS-8:S160",
-        "EstGrp": "STRESS",
-        "Size": 8.0,
-        "SchRtg": "S160",
-        "Unit": "EA",
-        "FldMhu": 5.9
-    },
-    {
-        "Key": "STRESS-8:S40",
-        "EstGrp": "STRESS",
-        "Size": 8.0,
-        "SchRtg": "S40",
-        "Unit": "EA",
-        "FldMhu": 4.2
-    },
-    {
-        "Key": "STRESS-8:S60",
-        "EstGrp": "STRESS",
-        "Size": 8.0,
-        "SchRtg": "S60",
-        "Unit": "EA",
-        "FldMhu": 4.2
-    },
-    {
-        "Key": "STRESS-8:S80",
-        "EstGrp": "STRESS",
-        "Size": 8.0,
-        "SchRtg": "S80",
-        "Unit": "EA",
-        "FldMhu": 4.2
-    },
-    {
-        "Key": "STRESS-8:STD",
-        "EstGrp": "STRESS",
-        "Size": 8.0,
-        "SchRtg": "STD",
-        "Unit": "EA",
-        "FldMhu": 4.2
-    },
-    {
-        "Key": "STRESS-8:XS",
-        "EstGrp": "STRESS",
-        "Size": 8.0,
-        "SchRtg": "XS",
-        "Unit": "EA",
-        "FldMhu": 4.7
-    },
-    {
-        "Key": "STRESS-8:XXS",
-        "EstGrp": "STRESS",
-        "Size": 8.0,
-        "SchRtg": "XXS",
-        "Unit": "EA",
-        "FldMhu": 5.9
-    },
-    {
-        "Key": "STRESS-10:1.25\" WT",
-        "EstGrp": "STRESS",
-        "Size": 10.0,
-        "SchRtg": "1.25\" WT",
-        "Unit": "EA",
-        "FldMhu": 8.1
-    },
-    {
-        "Key": "STRESS-10:S100",
-        "EstGrp": "STRESS",
-        "Size": 10.0,
-        "SchRtg": "S100",
-        "Unit": "EA",
-        "FldMhu": 5.7
-    },
-    {
-        "Key": "STRESS-10:S160",
-        "EstGrp": "STRESS",
-        "Size": 10.0,
-        "SchRtg": "S160",
-        "Unit": "EA",
-        "FldMhu": 6.7
-    },
-    {
-        "Key": "STRESS-10:S40",
-        "EstGrp": "STRESS",
-        "Size": 10.0,
-        "SchRtg": "S40",
-        "Unit": "EA",
-        "FldMhu": 4.6
-    },
-    {
-        "Key": "STRESS-10:S60",
-        "EstGrp": "STRESS",
-        "Size": 10.0,
-        "SchRtg": "S60",
-        "Unit": "EA",
-        "FldMhu": 5.1
-    },
-    {
-        "Key": "STRESS-10:S80",
-        "EstGrp": "STRESS",
-        "Size": 10.0,
-        "SchRtg": "S80",
-        "Unit": "EA",
-        "FldMhu": 5.3
-    },
-    {
-        "Key": "STRESS-10:S120",
-        "EstGrp": "STRESS",
-        "Size": 10.0,
-        "SchRtg": "S120",
-        "Unit": "EA",
-        "FldMhu": 5.3
-    },
-    {
-        "Key": "STRESS-10:STD",
-        "EstGrp": "STRESS",
-        "Size": 10.0,
-        "SchRtg": "STD",
-        "Unit": "EA",
-        "FldMhu": 4.6
-    },
-    {
         "Key": "STRESS-10:XS",
         "EstGrp": "STRESS",
         "Size": 10.0,
         "SchRtg": "XS",
-        "Unit": "EA",
-        "FldMhu": 5.3
-    },
-    {
-        "Key": "STRESS-10:XXS",
-        "EstGrp": "STRESS",
-        "Size": 10.0,
-        "SchRtg": "XXS",
-        "Unit": "EA",
-        "FldMhu": 6.7
-    },
-    {
-        "Key": "STRESS-12:.250\" WT",
-        "EstGrp": "STRESS",
-        "Size": 12.0,
-        "SchRtg": ".250\" WT",
-        "Unit": "EA",
-        "FldMhu": 5.1
-    },
-    {
-        "Key": "STRESS-12:1.25\" WT",
-        "EstGrp": "STRESS",
-        "Size": 12.0,
-        "SchRtg": "1.25\" WT",
-        "Unit": "EA",
-        "FldMhu": 9.0
-    },
-    {
-        "Key": "STRESS-12:1.5\" WT",
-        "EstGrp": "STRESS",
-        "Size": 12.0,
-        "SchRtg": "1.5\" WT",
-        "Unit": "EA",
-        "FldMhu": 9.0
-    },
-    {
-        "Key": "STRESS-12:1.625\" WT",
-        "EstGrp": "STRESS",
-        "Size": 12.0,
-        "SchRtg": "1.625\" WT",
-        "Unit": "EA",
-        "FldMhu": 9.0
-    },
-    {
-        "Key": "STRESS-12:S100",
-        "EstGrp": "STRESS",
-        "Size": 12.0,
-        "SchRtg": "S100",
-        "Unit": "EA",
-        "FldMhu": 6.5
-    },
-    {
-        "Key": "STRESS-12:S160",
-        "EstGrp": "STRESS",
-        "Size": 12.0,
-        "SchRtg": "S160",
-        "Unit": "EA",
-        "FldMhu": 7.4
-    },
-    {
-        "Key": "STRESS-12:S80",
-        "EstGrp": "STRESS",
-        "Size": 12.0,
-        "SchRtg": "S80",
-        "Unit": "EA",
-        "FldMhu": 6.0
-    },
-    {
-        "Key": "STRESS-12:S40",
-        "EstGrp": "STRESS",
-        "Size": 12.0,
-        "SchRtg": "S40",
         "Unit": "EA",
         "FldMhu": 5.3
     },
@@ -48896,60 +45736,12 @@
         "FldMhu": 6.0
     },
     {
-        "Key": "STRESS-14:1.75\" WT",
-        "EstGrp": "STRESS",
-        "Size": 14.0,
-        "SchRtg": "1.75\" WT",
-        "Unit": "EA",
-        "FldMhu": 10.3
-    },
-    {
         "Key": "STRESS-14:2\" WT",
         "EstGrp": "STRESS",
         "Size": 14.0,
         "SchRtg": "2\" WT",
         "Unit": "EA",
         "FldMhu": 11.2
-    },
-    {
-        "Key": "STRESS-14:S100",
-        "EstGrp": "STRESS",
-        "Size": 14.0,
-        "SchRtg": "S100",
-        "Unit": "EA",
-        "FldMhu": 7.1
-    },
-    {
-        "Key": "STRESS-14:S140",
-        "EstGrp": "STRESS",
-        "Size": 14.0,
-        "SchRtg": "S140",
-        "Unit": "EA",
-        "FldMhu": 7.9
-    },
-    {
-        "Key": "STRESS-14:S160",
-        "EstGrp": "STRESS",
-        "Size": 14.0,
-        "SchRtg": "S160",
-        "Unit": "EA",
-        "FldMhu": 8.3
-    },
-    {
-        "Key": "STRESS-14:S40",
-        "EstGrp": "STRESS",
-        "Size": 14.0,
-        "SchRtg": "S40",
-        "Unit": "EA",
-        "FldMhu": 5.9
-    },
-    {
-        "Key": "STRESS-14:S80",
-        "EstGrp": "STRESS",
-        "Size": 14.0,
-        "SchRtg": "S80",
-        "Unit": "EA",
-        "FldMhu": 6.7
     },
     {
         "Key": "STRESS-14:STD",
@@ -48968,62 +45760,6 @@
         "FldMhu": 6.7
     },
     {
-        "Key": "STRESS-16:1.75\" WT",
-        "EstGrp": "STRESS",
-        "Size": 16.0,
-        "SchRtg": "1.75\" WT",
-        "Unit": "EA",
-        "FldMhu": 10.8
-    },
-    {
-        "Key": "STRESS-16:2\" WT",
-        "EstGrp": "STRESS",
-        "Size": 16.0,
-        "SchRtg": "2\" WT",
-        "Unit": "EA",
-        "FldMhu": 11.6
-    },
-    {
-        "Key": "STRESS-16:S100",
-        "EstGrp": "STRESS",
-        "Size": 16.0,
-        "SchRtg": "S100",
-        "Unit": "EA",
-        "FldMhu": 7.6
-    },
-    {
-        "Key": "STRESS-16:S160",
-        "EstGrp": "STRESS",
-        "Size": 16.0,
-        "SchRtg": "S160",
-        "Unit": "EA",
-        "FldMhu": 9.2
-    },
-    {
-        "Key": "STRESS-16:S40",
-        "EstGrp": "STRESS",
-        "Size": 16.0,
-        "SchRtg": "S40",
-        "Unit": "EA",
-        "FldMhu": 6.4
-    },
-    {
-        "Key": "STRESS-16:S60",
-        "EstGrp": "STRESS",
-        "Size": 16.0,
-        "SchRtg": "S60",
-        "Unit": "EA",
-        "FldMhu": 6.8
-    },
-    {
-        "Key": "STRESS-16:S80",
-        "EstGrp": "STRESS",
-        "Size": 16.0,
-        "SchRtg": "S80",
-        "Unit": "EA",
-        "FldMhu": 7.2
-    },
-    {
         "Key": "STRESS-16:STD",
         "EstGrp": "STRESS",
         "Size": 16.0,
@@ -49040,22 +45776,6 @@
         "FldMhu": 7.2
     },
     {
-        "Key": "STRESS-18:1.75\" WT",
-        "EstGrp": "STRESS",
-        "Size": 18.0,
-        "SchRtg": "1.75\" WT",
-        "Unit": "EA",
-        "FldMhu": 12.3
-    },
-    {
-        "Key": "STRESS-18:S100",
-        "EstGrp": "STRESS",
-        "Size": 18.0,
-        "SchRtg": "S100",
-        "Unit": "EA",
-        "FldMhu": 8.3
-    },
-    {
         "Key": "STRESS-18:S120",
         "EstGrp": "STRESS",
         "Size": 18.0,
@@ -49064,172 +45784,12 @@
         "FldMhu": 10.1
     },
     {
-        "Key": "STRESS-18:S160",
-        "EstGrp": "STRESS",
-        "Size": 18.0,
-        "SchRtg": "S160",
-        "Unit": "EA",
-        "FldMhu": 10.1
-    },
-    {
-        "Key": "STRESS-18:S80",
-        "EstGrp": "STRESS",
-        "Size": 18.0,
-        "SchRtg": "S80",
-        "Unit": "EA",
-        "FldMhu": 7.8
-    },
-    {
         "Key": "STRESS-18:STD",
         "EstGrp": "STRESS",
         "Size": 18.0,
         "SchRtg": "STD",
         "Unit": "EA",
         "FldMhu": 6.8
-    },
-    {
-        "Key": "STRESS-18:XS",
-        "EstGrp": "STRESS",
-        "Size": 18.0,
-        "SchRtg": "XS",
-        "Unit": "EA",
-        "FldMhu": 6.8
-    },
-    {
-        "Key": "STRESS-20:S100",
-        "EstGrp": "STRESS",
-        "Size": 20.0,
-        "SchRtg": "S100",
-        "Unit": "EA",
-        "FldMhu": 9.2
-    },
-    {
-        "Key": "STRESS-20:S160",
-        "EstGrp": "STRESS",
-        "Size": 20.0,
-        "SchRtg": "S160",
-        "Unit": "EA",
-        "FldMhu": 11.1
-    },
-    {
-        "Key": "STRESS-20:S40",
-        "EstGrp": "STRESS",
-        "Size": 20.0,
-        "SchRtg": "S40",
-        "Unit": "EA",
-        "FldMhu": 7.3
-    },
-    {
-        "Key": "STRESS-20:S80",
-        "EstGrp": "STRESS",
-        "Size": 20.0,
-        "SchRtg": "S80",
-        "Unit": "EA",
-        "FldMhu": 8.3
-    },
-    {
-        "Key": "STRESS-20:STD",
-        "EstGrp": "STRESS",
-        "Size": 20.0,
-        "SchRtg": "STD",
-        "Unit": "EA",
-        "FldMhu": 7.3
-    },
-    {
-        "Key": "STRESS-20:XS",
-        "EstGrp": "STRESS",
-        "Size": 20.0,
-        "SchRtg": "XS",
-        "Unit": "EA",
-        "FldMhu": 8.3
-    },
-    {
-        "Key": "STRESS-20:XXS",
-        "EstGrp": "STRESS",
-        "Size": 20.0,
-        "SchRtg": "XXS",
-        "Unit": "EA",
-        "FldMhu": 11.1
-    },
-    {
-        "Key": "STRESS-22:2.5\" WT",
-        "EstGrp": "STRESS",
-        "Size": 22.0,
-        "SchRtg": "2.5\" WT",
-        "Unit": "EA",
-        "FldMhu": 16.4
-    },
-    {
-        "Key": "STRESS-22:S60",
-        "EstGrp": "STRESS",
-        "Size": 22.0,
-        "SchRtg": "S60",
-        "Unit": "EA",
-        "FldMhu": 8.1
-    },
-    {
-        "Key": "STRESS-22:S80",
-        "EstGrp": "STRESS",
-        "Size": 22.0,
-        "SchRtg": "S80",
-        "Unit": "EA",
-        "FldMhu": 7.2
-    },
-    {
-        "Key": "STRESS-22:S120",
-        "EstGrp": "STRESS",
-        "Size": 22.0,
-        "SchRtg": "S120",
-        "Unit": "EA",
-        "FldMhu": 7.2
-    },
-    {
-        "Key": "STRESS-22:XS",
-        "EstGrp": "STRESS",
-        "Size": 22.0,
-        "SchRtg": "XS",
-        "Unit": "EA",
-        "FldMhu": 7.2
-    },
-    {
-        "Key": "STRESS-24:1.375\" WT",
-        "EstGrp": "STRESS",
-        "Size": 24.0,
-        "SchRtg": "1.375\" WT",
-        "Unit": "EA",
-        "FldMhu": 10.1
-    },
-    {
-        "Key": "STRESS-24:S100",
-        "EstGrp": "STRESS",
-        "Size": 24.0,
-        "SchRtg": "S100",
-        "Unit": "EA",
-        "FldMhu": 10.1
-    },
-    {
-        "Key": "STRESS-24:S160",
-        "EstGrp": "STRESS",
-        "Size": 24.0,
-        "SchRtg": "S160",
-        "Unit": "EA",
-        "FldMhu": 12.5
-    },
-    {
-        "Key": "STRESS-24:S40",
-        "EstGrp": "STRESS",
-        "Size": 24.0,
-        "SchRtg": "S40",
-        "Unit": "EA",
-        "FldMhu": 8.0
-    },
-    {
-        "Key": "STRESS-24:S80",
-        "EstGrp": "STRESS",
-        "Size": 24.0,
-        "SchRtg": "S80",
-        "Unit": "EA",
-        "FldMhu": 9.2
     },
     {
         "Key": "STRESS-24:STD",
@@ -49246,86 +45806,6 @@
         "SchRtg": "XS",
         "Unit": "EA",
         "FldMhu": 9.2
-    },
-    {
-        "Key": "STRESS-26:.750\" WT",
-        "EstGrp": "STRESS",
-        "Size": 26.0,
-        "SchRtg": ".750\" WT",
-        "Unit": "EA",
-        "FldMhu": 11.3
-    },
-    {
-        "Key": "STRESS-26:S60",
-        "EstGrp": "STRESS",
-        "Size": 26.0,
-        "SchRtg": "S60",
-        "Unit": "EA",
-        "FldMhu": 11.8
-    },
-    {
-        "Key": "STRESS-28:1.00\" WT",
-        "EstGrp": "STRESS",
-        "Size": 28.0,
-        "SchRtg": "1.00\" WT",
-        "Unit": "EA",
-        "FldMhu": 12.7
-    },
-    {
-        "Key": "STRESS-30:1.375\" WT",
-        "EstGrp": "STRESS",
-        "Size": 30.0,
-        "SchRtg": "1.375\" WT",
-        "Unit": "EA",
-        "FldMhu": 16.7
-    },
-    {
-        "Key": "STRESS-30:XS",
-        "EstGrp": "STRESS",
-        "Size": 30.0,
-        "SchRtg": "XS",
-        "Unit": "EA",
-        "FldMhu": 11.3
-    },
-    {
-        "Key": "STRESS-34:1.00\" WT",
-        "EstGrp": "STRESS",
-        "Size": 34.0,
-        "SchRtg": "1.00\" WT",
-        "Unit": "EA",
-        "FldMhu": 16.2
-    },
-    {
-        "Key": "STRESS-36:1.00\" WT",
-        "EstGrp": "STRESS",
-        "Size": 36.0,
-        "SchRtg": "1.00\" WT",
-        "Unit": "EA",
-        "FldMhu": 18.1
-    },
-    {
-        "Key": "STRESS-36:XS",
-        "EstGrp": "STRESS",
-        "Size": 36.0,
-        "SchRtg": "XS",
-        "Unit": "EA",
-        "FldMhu": 14.7
-    },
-    {
-        "Key": "STRESS-66:STD",
-        "EstGrp": "STRESS",
-        "Size": 66.0,
-        "SchRtg": "STD",
-        "Unit": "EA",
-        "FldMhu": 33.4
-    },
-    {
-        "Key": "STRESS-84:STD",
-        "EstGrp": "STRESS",
-        "Size": 84.0,
-        "SchRtg": "STD",
-        "Unit": "EA",
-        "FldMhu": 42.6
     },
     {
         "Key": "STRESS-26:STD",

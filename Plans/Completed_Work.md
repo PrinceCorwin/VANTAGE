@@ -13,6 +13,7 @@ This document tracks completed features and fixes. Items are moved here from Pro
 - **BU connection class default:** `ApplyRates` now defaults BU labor rows to class 150 for rate lookup when no class is specified.
 - **BU-1.75 rate entries:** Added 6 entries (classes 150, 300, 600, 900, 1500, 2500) to RateSheet.json.
 - **VLV-1.75 rate entries:** Added 7 entries (classes 150, 300, 600, 800, 900, 2500 + size-only fallback) to RateSheet.json.
+- **RateSheet.json deduplication:** Removed 366 true duplicates (all fields identical) and 74 conflicting duplicates (same key, different MHs — kept higher value). Down from 6,766 to 6,326 unique entries.
 - **Key files:** `Resources/FittingMakeup.json`, `Resources/RateSheet.json`, `Services/AI/TakeoffPostProcessor.cs`
 
 ### March 18, 2026 (Takeoff — Fitting Makeup, Rate Sheet, and MH Formula Updates)
