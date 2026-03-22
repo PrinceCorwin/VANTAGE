@@ -1330,46 +1330,62 @@
     </div>
 
     <h4>P6 Column Mapping</h4>
+    <p>The importer recognizes two rows of headers: <strong>Row 1</strong> contains technical field names (shown in the "P6 Column" column below), and <strong>Row 2</strong> contains display names (shown in the "Alternate Header" column). Row 2 display names are checked first since they are more consistent across P6 configurations.</p>
     <table>
         <tr>
-            <th>P6 Column</th>
+            <th>P6 Column (Row 1)</th>
+            <th>Alternate Header (Row 2)</th>
             <th>MILESTONE Field</th>
         </tr>
         <tr>
             <td>task_code</td>
+            <td>Activity ID</td>
             <td>SchedActNO</td>
         </tr>
         <tr>
             <td>task_name</td>
+            <td>Activity Name</td>
             <td>Description</td>
         </tr>
         <tr>
             <td>wbs_id</td>
+            <td>WBS Code</td>
             <td>WbsId</td>
         </tr>
         <tr>
-            <td>start_date</td>
+            <td>start_date <em>or</em> target_start_date</td>
+            <td>Start</td>
             <td>P6_Start</td>
         </tr>
         <tr>
-            <td>end_date</td>
+            <td>end_date <em>or</em> target_end_date</td>
+            <td>Finish</td>
             <td>P6_Finish</td>
         </tr>
         <tr>
             <td>act_start_date</td>
+            <td>Actual Start</td>
             <td>P6_ActualStart</td>
         </tr>
         <tr>
             <td>act_end_date</td>
+            <td>Actual Finish</td>
             <td>P6_ActualFinish</td>
         </tr>
         <tr>
             <td>complete_pct</td>
+            <td>Activity % Complete</td>
             <td>P6_PercentComplete (converted from 0-1 to 0-100)</td>
         </tr>
         <tr>
             <td>target_work_qty</td>
+            <td>Budgeted Labor Units</td>
             <td>P6_BudgetMHs</td>
+        </tr>
+        <tr>
+            <td>status_code</td>
+            <td>Activity Status</td>
+            <td>StatusCode</td>
         </tr>
     </table>
 
