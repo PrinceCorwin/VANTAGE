@@ -6130,35 +6130,35 @@
         "Makeup_Run_In":  0
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "NOL",
         "Class":  "3000",
         "Run_Size":  0.5,
         "Makeup_Run_In":  3.5039
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "NOL",
         "Class":  "3000",
         "Run_Size":  0.75,
         "Makeup_Run_In":  3.5039
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "NOL",
         "Class":  "3000",
         "Run_Size":  1,
         "Makeup_Run_In":  3.5039
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "NOL",
         "Class":  "3000",
         "Run_Size":  1.5,
         "Makeup_Run_In":  3.5039
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "NOL",
         "Class":  "3000",
         "Run_Size":  2,
@@ -6235,35 +6235,35 @@
         "Makeup_Run_In":  3.5039
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "NOL",
         "Class":  "6000",
         "Run_Size":  0.5,
         "Makeup_Run_In":  3.5039
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "NOL",
         "Class":  "6000",
         "Run_Size":  0.75,
         "Makeup_Run_In":  3.5039
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "NOL",
         "Class":  "6000",
         "Run_Size":  1,
         "Makeup_Run_In":  3.5039
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "NOL",
         "Class":  "6000",
         "Run_Size":  1.5,
         "Makeup_Run_In":  3.5039
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "NOL",
         "Class":  "6000",
         "Run_Size":  2,
@@ -6445,105 +6445,105 @@
         "Makeup_Run_In":  3.25
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "ELB",
         "Class":  "3000",
         "Run_Size":  0.25,
         "Makeup_Run_In":  0.956
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "ELB",
         "Class":  "3000",
         "Run_Size":  0.375,
         "Makeup_Run_In":  0.956
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "ELB",
         "Class":  "3000",
         "Run_Size":  0.5,
         "Makeup_Run_In":  0.956
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "ELB",
         "Class":  "3000",
         "Run_Size":  0.75,
         "Makeup_Run_In":  1.125
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "ELB",
         "Class":  "3000",
         "Run_Size":  1,
         "Makeup_Run_In":  1.35
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "ELB",
         "Class":  "3000",
         "Run_Size":  1.25,
         "Makeup_Run_In":  1.5
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "ELB",
         "Class":  "3000",
         "Run_Size":  1.5,
         "Makeup_Run_In":  1.613
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "ELB",
         "Class":  "3000",
         "Run_Size":  2,
         "Makeup_Run_In":  2.25
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "ELB",
         "Class":  "6000",
         "Run_Size":  0.25,
         "Makeup_Run_In":  0.956
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "ELB",
         "Class":  "6000",
         "Run_Size":  0.375,
         "Makeup_Run_In":  0.956
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "ELB",
         "Class":  "6000",
         "Run_Size":  0.5,
         "Makeup_Run_In":  1.125
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "ELB",
         "Class":  "6000",
         "Run_Size":  0.75,
         "Makeup_Run_In":  1.35
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "ELB",
         "Class":  "6000",
         "Run_Size":  1,
         "Makeup_Run_In":  1.5
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "ELB",
         "Class":  "6000",
         "Run_Size":  1.25,
         "Makeup_Run_In":  1.613
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "ELB",
         "Class":  "6000",
         "Run_Size":  1.5,
@@ -6809,56 +6809,56 @@
         "Makeup_Run_In":  4.563
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "LOL",
         "Class":  "3000",
         "Run_Size":  0.25,
         "Makeup_Run_In":  1.563
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "LOL",
         "Class":  "3000",
         "Run_Size":  0.375,
         "Makeup_Run_In":  1.563
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "LOL",
         "Class":  "3000",
         "Run_Size":  0.5,
         "Makeup_Run_In":  1.563
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "LOL",
         "Class":  "3000",
         "Run_Size":  0.75,
         "Makeup_Run_In":  1.906
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "LOL",
         "Class":  "3000",
         "Run_Size":  1,
         "Makeup_Run_In":  2.187
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "LOL",
         "Class":  "3000",
         "Run_Size":  1.25,
         "Makeup_Run_In":  2.937
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "LOL",
         "Class":  "3000",
         "Run_Size":  1.5,
         "Makeup_Run_In":  2.625
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "LOL",
         "Class":  "3000",
         "Run_Size":  2,
@@ -6921,56 +6921,56 @@
         "Makeup_Run_In":  3.156
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "LOL",
         "Class":  "6000",
         "Run_Size":  0.25,
         "Makeup_Run_In":  1.563
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "LOL",
         "Class":  "6000",
         "Run_Size":  0.375,
         "Makeup_Run_In":  1.563
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "LOL",
         "Class":  "6000",
         "Run_Size":  0.5,
         "Makeup_Run_In":  1.906
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "LOL",
         "Class":  "6000",
         "Run_Size":  0.75,
         "Makeup_Run_In":  2.187
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "LOL",
         "Class":  "6000",
         "Run_Size":  1,
         "Makeup_Run_In":  2.469
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "LOL",
         "Class":  "6000",
         "Run_Size":  1.25,
         "Makeup_Run_In":  2.625
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "LOL",
         "Class":  "6000",
         "Run_Size":  1.5,
         "Makeup_Run_In":  3.156
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "LOL",
         "Class":  "6000",
         "Run_Size":  2,
@@ -7033,14 +7033,14 @@
         "Makeup_Run_In":  3.156
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "90L",
         "Class":  "2000",
         "Run_Size":  0.125,
         "Makeup_Run_In":  0.827
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TEE",
         "Class":  "2000",
         "Run_Size":  0.125,
@@ -7049,7 +7049,7 @@
         "Makeup_Outlet_In":  0.827
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CROSS",
         "Class":  "2000",
         "Run_Size":  0.125,
@@ -7058,21 +7058,21 @@
         "Makeup_Outlet_In":  0.827
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "45L",
         "Class":  "2000",
         "Run_Size":  0.125,
         "Makeup_Run_In":  0.669
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "90L",
         "Class":  "2000",
         "Run_Size":  0.25,
         "Makeup_Run_In":  0.827
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TEE",
         "Class":  "2000",
         "Run_Size":  0.25,
@@ -7081,7 +7081,7 @@
         "Makeup_Outlet_In":  0.827
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CROSS",
         "Class":  "2000",
         "Run_Size":  0.25,
@@ -7090,21 +7090,21 @@
         "Makeup_Outlet_In":  0.827
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "45L",
         "Class":  "2000",
         "Run_Size":  0.25,
         "Makeup_Run_In":  0.669
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "90L",
         "Class":  "2000",
         "Run_Size":  0.375,
         "Makeup_Run_In":  0.984
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TEE",
         "Class":  "2000",
         "Run_Size":  0.375,
@@ -7113,7 +7113,7 @@
         "Makeup_Outlet_In":  0.984
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CROSS",
         "Class":  "2000",
         "Run_Size":  0.375,
@@ -7122,21 +7122,21 @@
         "Makeup_Outlet_In":  0.984
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "45L",
         "Class":  "2000",
         "Run_Size":  0.375,
         "Makeup_Run_In":  0.748
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "90L",
         "Class":  "2000",
         "Run_Size":  0.5,
         "Makeup_Run_In":  1.102
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TEE",
         "Class":  "2000",
         "Run_Size":  0.5,
@@ -7145,7 +7145,7 @@
         "Makeup_Outlet_In":  1.102
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CROSS",
         "Class":  "2000",
         "Run_Size":  0.5,
@@ -7154,21 +7154,21 @@
         "Makeup_Outlet_In":  1.102
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "45L",
         "Class":  "2000",
         "Run_Size":  0.5,
         "Makeup_Run_In":  0.866
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "90L",
         "Class":  "2000",
         "Run_Size":  0.75,
         "Makeup_Run_In":  1.299
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TEE",
         "Class":  "2000",
         "Run_Size":  0.75,
@@ -7177,7 +7177,7 @@
         "Makeup_Outlet_In":  1.299
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CROSS",
         "Class":  "2000",
         "Run_Size":  0.75,
@@ -7186,21 +7186,21 @@
         "Makeup_Outlet_In":  1.299
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "45L",
         "Class":  "2000",
         "Run_Size":  0.75,
         "Makeup_Run_In":  0.984
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "90L",
         "Class":  "2000",
         "Run_Size":  1,
         "Makeup_Run_In":  1.496
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TEE",
         "Class":  "2000",
         "Run_Size":  1,
@@ -7209,7 +7209,7 @@
         "Makeup_Outlet_In":  1.496
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CROSS",
         "Class":  "2000",
         "Run_Size":  1,
@@ -7218,21 +7218,21 @@
         "Makeup_Outlet_In":  1.496
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "45L",
         "Class":  "2000",
         "Run_Size":  1,
         "Makeup_Run_In":  1.102
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "90L",
         "Class":  "2000",
         "Run_Size":  1.25,
         "Makeup_Run_In":  1.732
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TEE",
         "Class":  "2000",
         "Run_Size":  1.25,
@@ -7241,7 +7241,7 @@
         "Makeup_Outlet_In":  1.732
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CROSS",
         "Class":  "2000",
         "Run_Size":  1.25,
@@ -7250,21 +7250,21 @@
         "Makeup_Outlet_In":  1.732
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "45L",
         "Class":  "2000",
         "Run_Size":  1.25,
         "Makeup_Run_In":  1.299
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "90L",
         "Class":  "2000",
         "Run_Size":  1.5,
         "Makeup_Run_In":  2.008
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TEE",
         "Class":  "2000",
         "Run_Size":  1.5,
@@ -7273,7 +7273,7 @@
         "Makeup_Outlet_In":  2.008
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CROSS",
         "Class":  "2000",
         "Run_Size":  1.5,
@@ -7282,21 +7282,21 @@
         "Makeup_Outlet_In":  2.008
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "45L",
         "Class":  "2000",
         "Run_Size":  1.5,
         "Makeup_Run_In":  1.378
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "90L",
         "Class":  "2000",
         "Run_Size":  2,
         "Makeup_Run_In":  2.362
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TEE",
         "Class":  "2000",
         "Run_Size":  2,
@@ -7305,7 +7305,7 @@
         "Makeup_Outlet_In":  2.362
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CROSS",
         "Class":  "2000",
         "Run_Size":  2,
@@ -7314,21 +7314,21 @@
         "Makeup_Outlet_In":  2.362
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "45L",
         "Class":  "2000",
         "Run_Size":  2,
         "Makeup_Run_In":  1.693
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "90L",
         "Class":  "2000",
         "Run_Size":  2.5,
         "Makeup_Run_In":  2.992
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TEE",
         "Class":  "2000",
         "Run_Size":  2.5,
@@ -7337,7 +7337,7 @@
         "Makeup_Outlet_In":  2.992
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CROSS",
         "Class":  "2000",
         "Run_Size":  2.5,
@@ -7346,21 +7346,21 @@
         "Makeup_Outlet_In":  2.992
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "45L",
         "Class":  "2000",
         "Run_Size":  2.5,
         "Makeup_Run_In":  2.047
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "90L",
         "Class":  "2000",
         "Run_Size":  3,
         "Makeup_Run_In":  3.386
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TEE",
         "Class":  "2000",
         "Run_Size":  3,
@@ -7369,7 +7369,7 @@
         "Makeup_Outlet_In":  3.386
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CROSS",
         "Class":  "2000",
         "Run_Size":  3,
@@ -7378,21 +7378,21 @@
         "Makeup_Outlet_In":  3.386
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "45L",
         "Class":  "2000",
         "Run_Size":  3,
         "Makeup_Run_In":  2.52
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "90L",
         "Class":  "2000",
         "Run_Size":  4,
         "Makeup_Run_In":  4.173
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TEE",
         "Class":  "2000",
         "Run_Size":  4,
@@ -7401,7 +7401,7 @@
         "Makeup_Outlet_In":  4.173
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CROSS",
         "Class":  "2000",
         "Run_Size":  4,
@@ -7410,21 +7410,21 @@
         "Makeup_Outlet_In":  4.173
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "45L",
         "Class":  "2000",
         "Run_Size":  4,
         "Makeup_Run_In":  2.52
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "90L",
         "Class":  "3000",
         "Run_Size":  0.125,
         "Makeup_Run_In":  0.827
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TEE",
         "Class":  "3000",
         "Run_Size":  0.125,
@@ -7433,7 +7433,7 @@
         "Makeup_Outlet_In":  0.827
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CROSS",
         "Class":  "3000",
         "Run_Size":  0.125,
@@ -7442,21 +7442,21 @@
         "Makeup_Outlet_In":  0.827
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "45L",
         "Class":  "3000",
         "Run_Size":  0.125,
         "Makeup_Run_In":  0.669
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "90L",
         "Class":  "3000",
         "Run_Size":  0.25,
         "Makeup_Run_In":  0.984
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TEE",
         "Class":  "3000",
         "Run_Size":  0.25,
@@ -7465,7 +7465,7 @@
         "Makeup_Outlet_In":  0.984
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CROSS",
         "Class":  "3000",
         "Run_Size":  0.25,
@@ -7474,21 +7474,21 @@
         "Makeup_Outlet_In":  0.984
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "45L",
         "Class":  "3000",
         "Run_Size":  0.25,
         "Makeup_Run_In":  0.748
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "90L",
         "Class":  "3000",
         "Run_Size":  0.375,
         "Makeup_Run_In":  1.102
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TEE",
         "Class":  "3000",
         "Run_Size":  0.375,
@@ -7497,7 +7497,7 @@
         "Makeup_Outlet_In":  1.102
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CROSS",
         "Class":  "3000",
         "Run_Size":  0.375,
@@ -7506,21 +7506,21 @@
         "Makeup_Outlet_In":  1.102
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "45L",
         "Class":  "3000",
         "Run_Size":  0.375,
         "Makeup_Run_In":  0.866
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "90L",
         "Class":  "3000",
         "Run_Size":  0.5,
         "Makeup_Run_In":  1.299
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TEE",
         "Class":  "3000",
         "Run_Size":  0.5,
@@ -7529,7 +7529,7 @@
         "Makeup_Outlet_In":  1.299
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CROSS",
         "Class":  "3000",
         "Run_Size":  0.5,
@@ -7538,21 +7538,21 @@
         "Makeup_Outlet_In":  1.299
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "45L",
         "Class":  "3000",
         "Run_Size":  0.5,
         "Makeup_Run_In":  0.984
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "90L",
         "Class":  "3000",
         "Run_Size":  0.75,
         "Makeup_Run_In":  1.496
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TEE",
         "Class":  "3000",
         "Run_Size":  0.75,
@@ -7561,7 +7561,7 @@
         "Makeup_Outlet_In":  1.496
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CROSS",
         "Class":  "3000",
         "Run_Size":  0.75,
@@ -7570,21 +7570,21 @@
         "Makeup_Outlet_In":  1.496
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "45L",
         "Class":  "3000",
         "Run_Size":  0.75,
         "Makeup_Run_In":  1.102
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "90L",
         "Class":  "3000",
         "Run_Size":  1,
         "Makeup_Run_In":  1.732
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TEE",
         "Class":  "3000",
         "Run_Size":  1,
@@ -7593,7 +7593,7 @@
         "Makeup_Outlet_In":  1.732
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CROSS",
         "Class":  "3000",
         "Run_Size":  1,
@@ -7602,21 +7602,21 @@
         "Makeup_Outlet_In":  1.732
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "45L",
         "Class":  "3000",
         "Run_Size":  1,
         "Makeup_Run_In":  1.299
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "90L",
         "Class":  "3000",
         "Run_Size":  1.25,
         "Makeup_Run_In":  2.008
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TEE",
         "Class":  "3000",
         "Run_Size":  1.25,
@@ -7625,7 +7625,7 @@
         "Makeup_Outlet_In":  2.008
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CROSS",
         "Class":  "3000",
         "Run_Size":  1.25,
@@ -7634,21 +7634,21 @@
         "Makeup_Outlet_In":  2.008
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "45L",
         "Class":  "3000",
         "Run_Size":  1.25,
         "Makeup_Run_In":  1.378
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "90L",
         "Class":  "3000",
         "Run_Size":  1.5,
         "Makeup_Run_In":  2.362
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TEE",
         "Class":  "3000",
         "Run_Size":  1.5,
@@ -7657,7 +7657,7 @@
         "Makeup_Outlet_In":  2.362
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CROSS",
         "Class":  "3000",
         "Run_Size":  1.5,
@@ -7666,21 +7666,21 @@
         "Makeup_Outlet_In":  2.362
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "45L",
         "Class":  "3000",
         "Run_Size":  1.5,
         "Makeup_Run_In":  1.693
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "90L",
         "Class":  "3000",
         "Run_Size":  2,
         "Makeup_Run_In":  2.52
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TEE",
         "Class":  "3000",
         "Run_Size":  2,
@@ -7689,7 +7689,7 @@
         "Makeup_Outlet_In":  2.52
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CROSS",
         "Class":  "3000",
         "Run_Size":  2,
@@ -7698,21 +7698,21 @@
         "Makeup_Outlet_In":  2.52
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "45L",
         "Class":  "3000",
         "Run_Size":  2,
         "Makeup_Run_In":  1.732
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "90L",
         "Class":  "3000",
         "Run_Size":  2.5,
         "Makeup_Run_In":  3.268
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TEE",
         "Class":  "3000",
         "Run_Size":  2.5,
@@ -7721,7 +7721,7 @@
         "Makeup_Outlet_In":  3.268
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CROSS",
         "Class":  "3000",
         "Run_Size":  2.5,
@@ -7730,21 +7730,21 @@
         "Makeup_Outlet_In":  3.268
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "45L",
         "Class":  "3000",
         "Run_Size":  2.5,
         "Makeup_Run_In":  2.047
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "90L",
         "Class":  "3000",
         "Run_Size":  3,
         "Makeup_Run_In":  3.74
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TEE",
         "Class":  "3000",
         "Run_Size":  3,
@@ -7753,7 +7753,7 @@
         "Makeup_Outlet_In":  3.74
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CROSS",
         "Class":  "3000",
         "Run_Size":  3,
@@ -7762,21 +7762,21 @@
         "Makeup_Outlet_In":  3.74
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "45L",
         "Class":  "3000",
         "Run_Size":  3,
         "Makeup_Run_In":  2.52
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "90L",
         "Class":  "3000",
         "Run_Size":  4,
         "Makeup_Run_In":  4.173
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TEE",
         "Class":  "3000",
         "Run_Size":  4,
@@ -7785,7 +7785,7 @@
         "Makeup_Outlet_In":  4.173
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CROSS",
         "Class":  "3000",
         "Run_Size":  4,
@@ -7794,21 +7794,21 @@
         "Makeup_Outlet_In":  4.173
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "45L",
         "Class":  "3000",
         "Run_Size":  4,
         "Makeup_Run_In":  3.11
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "90L",
         "Class":  "6000",
         "Run_Size":  0.125,
         "Makeup_Run_In":  0.984
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TEE",
         "Class":  "6000",
         "Run_Size":  0.125,
@@ -7817,7 +7817,7 @@
         "Makeup_Outlet_In":  0.984
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CROSS",
         "Class":  "6000",
         "Run_Size":  0.125,
@@ -7826,21 +7826,21 @@
         "Makeup_Outlet_In":  0.984
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "45L",
         "Class":  "6000",
         "Run_Size":  0.125,
         "Makeup_Run_In":  0.748
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "90L",
         "Class":  "6000",
         "Run_Size":  0.25,
         "Makeup_Run_In":  1.102
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TEE",
         "Class":  "6000",
         "Run_Size":  0.25,
@@ -7849,7 +7849,7 @@
         "Makeup_Outlet_In":  1.102
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CROSS",
         "Class":  "6000",
         "Run_Size":  0.25,
@@ -7858,21 +7858,21 @@
         "Makeup_Outlet_In":  1.102
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "45L",
         "Class":  "6000",
         "Run_Size":  0.25,
         "Makeup_Run_In":  0.866
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "90L",
         "Class":  "6000",
         "Run_Size":  0.375,
         "Makeup_Run_In":  1.299
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TEE",
         "Class":  "6000",
         "Run_Size":  0.375,
@@ -7881,7 +7881,7 @@
         "Makeup_Outlet_In":  1.299
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CROSS",
         "Class":  "6000",
         "Run_Size":  0.375,
@@ -7890,21 +7890,21 @@
         "Makeup_Outlet_In":  1.299
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "45L",
         "Class":  "6000",
         "Run_Size":  0.375,
         "Makeup_Run_In":  0.866
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "90L",
         "Class":  "6000",
         "Run_Size":  0.5,
         "Makeup_Run_In":  1.496
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TEE",
         "Class":  "6000",
         "Run_Size":  0.5,
@@ -7913,7 +7913,7 @@
         "Makeup_Outlet_In":  1.496
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CROSS",
         "Class":  "6000",
         "Run_Size":  0.5,
@@ -7922,21 +7922,21 @@
         "Makeup_Outlet_In":  1.496
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "45L",
         "Class":  "6000",
         "Run_Size":  0.5,
         "Makeup_Run_In":  0.984
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "90L",
         "Class":  "6000",
         "Run_Size":  0.75,
         "Makeup_Run_In":  1.732
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TEE",
         "Class":  "6000",
         "Run_Size":  0.75,
@@ -7945,7 +7945,7 @@
         "Makeup_Outlet_In":  1.732
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CROSS",
         "Class":  "6000",
         "Run_Size":  0.75,
@@ -7954,21 +7954,21 @@
         "Makeup_Outlet_In":  1.732
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "45L",
         "Class":  "6000",
         "Run_Size":  0.75,
         "Makeup_Run_In":  1.102
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "90L",
         "Class":  "6000",
         "Run_Size":  1,
         "Makeup_Run_In":  2.008
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TEE",
         "Class":  "6000",
         "Run_Size":  1,
@@ -7977,7 +7977,7 @@
         "Makeup_Outlet_In":  2.008
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CROSS",
         "Class":  "6000",
         "Run_Size":  1,
@@ -7986,21 +7986,21 @@
         "Makeup_Outlet_In":  2.008
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "45L",
         "Class":  "6000",
         "Run_Size":  1,
         "Makeup_Run_In":  1.378
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "90L",
         "Class":  "6000",
         "Run_Size":  1.25,
         "Makeup_Run_In":  2.362
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TEE",
         "Class":  "6000",
         "Run_Size":  1.25,
@@ -8009,7 +8009,7 @@
         "Makeup_Outlet_In":  2.362
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CROSS",
         "Class":  "6000",
         "Run_Size":  1.25,
@@ -8018,21 +8018,21 @@
         "Makeup_Outlet_In":  2.362
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "45L",
         "Class":  "6000",
         "Run_Size":  1.25,
         "Makeup_Run_In":  1.693
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "90L",
         "Class":  "6000",
         "Run_Size":  1.5,
         "Makeup_Run_In":  2.52
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TEE",
         "Class":  "6000",
         "Run_Size":  1.5,
@@ -8041,7 +8041,7 @@
         "Makeup_Outlet_In":  2.52
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CROSS",
         "Class":  "6000",
         "Run_Size":  1.5,
@@ -8050,21 +8050,21 @@
         "Makeup_Outlet_In":  2.52
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "45L",
         "Class":  "6000",
         "Run_Size":  1.5,
         "Makeup_Run_In":  1.732
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "90L",
         "Class":  "6000",
         "Run_Size":  2,
         "Makeup_Run_In":  3.268
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TEE",
         "Class":  "6000",
         "Run_Size":  2,
@@ -8073,7 +8073,7 @@
         "Makeup_Outlet_In":  3.268
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CROSS",
         "Class":  "6000",
         "Run_Size":  2,
@@ -8082,21 +8082,21 @@
         "Makeup_Outlet_In":  3.268
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "45L",
         "Class":  "6000",
         "Run_Size":  2,
         "Makeup_Run_In":  2.047
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "90L",
         "Class":  "6000",
         "Run_Size":  2.5,
         "Makeup_Run_In":  3.74
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TEE",
         "Class":  "6000",
         "Run_Size":  2.5,
@@ -8105,7 +8105,7 @@
         "Makeup_Outlet_In":  3.74
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CROSS",
         "Class":  "6000",
         "Run_Size":  2.5,
@@ -8114,21 +8114,21 @@
         "Makeup_Outlet_In":  3.74
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "45L",
         "Class":  "6000",
         "Run_Size":  2.5,
         "Makeup_Run_In":  2.52
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "90L",
         "Class":  "6000",
         "Run_Size":  3,
         "Makeup_Run_In":  4.173
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TEE",
         "Class":  "6000",
         "Run_Size":  3,
@@ -8137,7 +8137,7 @@
         "Makeup_Outlet_In":  4.173
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CROSS",
         "Class":  "6000",
         "Run_Size":  3,
@@ -8146,21 +8146,21 @@
         "Makeup_Outlet_In":  4.173
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "45L",
         "Class":  "6000",
         "Run_Size":  3,
         "Makeup_Run_In":  3.11
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "90L",
         "Class":  "6000",
         "Run_Size":  4,
         "Makeup_Run_In":  4.488
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TEE",
         "Class":  "6000",
         "Run_Size":  4,
@@ -8169,7 +8169,7 @@
         "Makeup_Outlet_In":  4.488
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CROSS",
         "Class":  "6000",
         "Run_Size":  4,
@@ -8178,403 +8178,403 @@
         "Makeup_Outlet_In":  4.488
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "45L",
         "Class":  "6000",
         "Run_Size":  4,
         "Makeup_Run_In":  3.11
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CPL",
         "Class":  "3000",
         "Run_Size":  0.125,
         "Makeup_Run_In":  1.26
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CPL",
         "Class":  "3000",
         "Run_Size":  0.25,
         "Makeup_Run_In":  1.378
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CPL",
         "Class":  "3000",
         "Run_Size":  0.375,
         "Makeup_Run_In":  1.496
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CPL",
         "Class":  "3000",
         "Run_Size":  0.5,
         "Makeup_Run_In":  1.89
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CPL",
         "Class":  "3000",
         "Run_Size":  0.75,
         "Makeup_Run_In":  2.008
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CPL",
         "Class":  "3000",
         "Run_Size":  1,
         "Makeup_Run_In":  2.362
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CPL",
         "Class":  "3000",
         "Run_Size":  1.25,
         "Makeup_Run_In":  2.638
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CPL",
         "Class":  "3000",
         "Run_Size":  1.5,
         "Makeup_Run_In":  3.11
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CPL",
         "Class":  "3000",
         "Run_Size":  2,
         "Makeup_Run_In":  3.386
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CPL",
         "Class":  "3000",
         "Run_Size":  2.5,
         "Makeup_Run_In":  3.622
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CPL",
         "Class":  "3000",
         "Run_Size":  3,
         "Makeup_Run_In":  4.252
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CPL",
         "Class":  "3000",
         "Run_Size":  4,
         "Makeup_Run_In":  4.764
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CPL",
         "Class":  "6000",
         "Run_Size":  0.125,
         "Makeup_Run_In":  1.26
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CPL",
         "Class":  "6000",
         "Run_Size":  0.25,
         "Makeup_Run_In":  1.378
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CPL",
         "Class":  "6000",
         "Run_Size":  0.375,
         "Makeup_Run_In":  1.496
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CPL",
         "Class":  "6000",
         "Run_Size":  0.5,
         "Makeup_Run_In":  1.89
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CPL",
         "Class":  "6000",
         "Run_Size":  0.75,
         "Makeup_Run_In":  2.008
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CPL",
         "Class":  "6000",
         "Run_Size":  1,
         "Makeup_Run_In":  2.362
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CPL",
         "Class":  "6000",
         "Run_Size":  1.25,
         "Makeup_Run_In":  2.638
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CPL",
         "Class":  "6000",
         "Run_Size":  1.5,
         "Makeup_Run_In":  3.11
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CPL",
         "Class":  "6000",
         "Run_Size":  2,
         "Makeup_Run_In":  3.386
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CPL",
         "Class":  "6000",
         "Run_Size":  2.5,
         "Makeup_Run_In":  3.622
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CPL",
         "Class":  "6000",
         "Run_Size":  3,
         "Makeup_Run_In":  4.252
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CPL",
         "Class":  "6000",
         "Run_Size":  4,
         "Makeup_Run_In":  4.764
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CAP",
         "Class":  "3000",
         "Run_Size":  0.125,
         "Makeup_Run_In":  0.748
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CAP",
         "Class":  "3000",
         "Run_Size":  0.25,
         "Makeup_Run_In":  0.984
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CAP",
         "Class":  "3000",
         "Run_Size":  0.375,
         "Makeup_Run_In":  0.984
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CAP",
         "Class":  "3000",
         "Run_Size":  0.5,
         "Makeup_Run_In":  1.26
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CAP",
         "Class":  "3000",
         "Run_Size":  0.75,
         "Makeup_Run_In":  1.457
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CAP",
         "Class":  "3000",
         "Run_Size":  1,
         "Makeup_Run_In":  1.614
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CAP",
         "Class":  "3000",
         "Run_Size":  1.25,
         "Makeup_Run_In":  1.732
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CAP",
         "Class":  "3000",
         "Run_Size":  1.5,
         "Makeup_Run_In":  1.732
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CAP",
         "Class":  "3000",
         "Run_Size":  2,
         "Makeup_Run_In":  1.89
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CAP",
         "Class":  "3000",
         "Run_Size":  2.5,
         "Makeup_Run_In":  2.362
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CAP",
         "Class":  "3000",
         "Run_Size":  3,
         "Makeup_Run_In":  2.559
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CAP",
         "Class":  "3000",
         "Run_Size":  4,
         "Makeup_Run_In":  2.677
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CAP",
         "Class":  "6000",
         "Run_Size":  0.25,
         "Makeup_Run_In":  1.063
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CAP",
         "Class":  "6000",
         "Run_Size":  0.375,
         "Makeup_Run_In":  1.063
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CAP",
         "Class":  "6000",
         "Run_Size":  0.5,
         "Makeup_Run_In":  1.299
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CAP",
         "Class":  "6000",
         "Run_Size":  0.75,
         "Makeup_Run_In":  1.496
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CAP",
         "Class":  "6000",
         "Run_Size":  1,
         "Makeup_Run_In":  1.693
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CAP",
         "Class":  "6000",
         "Run_Size":  1.25,
         "Makeup_Run_In":  1.811
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CAP",
         "Class":  "6000",
         "Run_Size":  1.5,
         "Makeup_Run_In":  1.89
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CAP",
         "Class":  "6000",
         "Run_Size":  2,
         "Makeup_Run_In":  2.008
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CAP",
         "Class":  "6000",
         "Run_Size":  2.5,
         "Makeup_Run_In":  2.52
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CAP",
         "Class":  "6000",
         "Run_Size":  3,
         "Makeup_Run_In":  2.677
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "CAP",
         "Class":  "6000",
         "Run_Size":  4,
         "Makeup_Run_In":  2.953
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "UN",
         "Run_Size":  0.125,
         "Makeup_Run_In":  0.815
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "UN",
         "Run_Size":  0.25,
         "Makeup_Run_In":  0.815
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "UN",
         "Run_Size":  0.375,
         "Makeup_Run_In":  0.906
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "UN",
         "Run_Size":  0.5,
         "Makeup_Run_In":  0.965
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "UN",
         "Run_Size":  0.75,
         "Makeup_Run_In":  1.12
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "UN",
         "Run_Size":  1,
         "Makeup_Run_In":  1.22
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "UN",
         "Run_Size":  1.25,
         "Makeup_Run_In":  1.4
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "UN",
         "Run_Size":  1.5,
         "Makeup_Run_In":  1.506
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "UN",
         "Run_Size":  2,
         "Makeup_Run_In":  1.695
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "UN",
         "Run_Size":  2.5,
         "Makeup_Run_In":  2.016
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "UN",
         "Run_Size":  3,
         "Makeup_Run_In":  2.146
@@ -8712,67 +8712,67 @@
         "Makeup_Run_In":  9.6
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "SWG",
         "Run_Size":  0.5,
         "Makeup_Run_In":  1.65
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "SWG",
         "Run_Size":  0.75,
         "Makeup_Run_In":  1.8
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "SWG",
         "Run_Size":  1,
         "Makeup_Run_In":  2.1
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "SWG",
         "Run_Size":  1.5,
         "Makeup_Run_In":  2.7
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "SWG",
         "Run_Size":  2,
         "Makeup_Run_In":  3.9
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "SWG",
         "Run_Size":  3,
         "Makeup_Run_In":  4.8
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "SWG",
         "Run_Size":  4,
         "Makeup_Run_In":  5.4
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "SWG",
         "Run_Size":  6,
         "Makeup_Run_In":  7.2
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "SWG",
         "Run_Size":  8,
         "Makeup_Run_In":  7.8
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "SWG",
         "Run_Size":  10,
         "Makeup_Run_In":  9
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "SWG",
         "Run_Size":  12,
         "Makeup_Run_In":  9.6
@@ -10765,154 +10765,154 @@
         "Makeup_Run_In":  18.25
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TOL",
         "Class":  "3000",
         "Run_Size":  0.5,
         "Makeup_Run_In":  0.6299
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TOL",
         "Class":  "3000",
         "Run_Size":  0.75,
         "Makeup_Run_In":  0.6299
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TOL",
         "Class":  "3000",
         "Run_Size":  1,
         "Makeup_Run_In":  0.8661
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TOL",
         "Class":  "3000",
         "Run_Size":  1.5,
         "Makeup_Run_In":  0.9449
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TOL",
         "Class":  "3000",
         "Run_Size":  2,
         "Makeup_Run_In":  0.9449
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TOL",
         "Class":  "3000",
         "Run_Size":  2.5,
         "Makeup_Run_In":  0.9843
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TOL",
         "Class":  "3000",
         "Run_Size":  3,
         "Makeup_Run_In":  1.1811
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TOL",
         "Class":  "3000",
         "Run_Size":  4,
         "Makeup_Run_In":  1.1811
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TOL",
         "Class":  "6000",
         "Run_Size":  0.5,
         "Makeup_Run_In":  0.9449
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TOL",
         "Class":  "6000",
         "Run_Size":  0.75,
         "Makeup_Run_In":  0.9843
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TOL",
         "Class":  "6000",
         "Run_Size":  1,
         "Makeup_Run_In":  1.1024
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TOL",
         "Class":  "6000",
         "Run_Size":  1.5,
         "Makeup_Run_In":  1.2598
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TOL",
         "Class":  "6000",
         "Run_Size":  2,
         "Makeup_Run_In":  1.4567
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TOL",
         "Class":  "6000",
         "Run_Size":  2.5,
         "Makeup_Run_In":  1.811
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TOL",
         "Class":  "6000",
         "Run_Size":  3,
         "Makeup_Run_In":  2.0079
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TOL",
         "Class":  "6000",
         "Run_Size":  4,
         "Makeup_Run_In":  2.2441
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TOL",
         "Class":  "9000",
         "Run_Size":  0.5,
         "Makeup_Run_In":  1.25
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TOL",
         "Class":  "9000",
         "Run_Size":  0.75,
         "Makeup_Run_In":  1.4375
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TOL",
         "Class":  "9000",
         "Run_Size":  1,
         "Makeup_Run_In":  1.5625
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TOL",
         "Class":  "9000",
         "Run_Size":  1.25,
         "Makeup_Run_In":  1.625
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TOL",
         "Class":  "9000",
         "Run_Size":  1.5,
         "Makeup_Run_In":  1.6875
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "TOL",
         "Class":  "9000",
         "Run_Size":  2,
@@ -11742,154 +11742,154 @@
         "Makeup_Run_In":  55
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VBL",
         "Class":  "150",
         "Run_Size":  0.5,
         "Makeup_Run_In":  5.5118
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VBL",
         "Class":  "150",
         "Run_Size":  0.75,
         "Makeup_Run_In":  5.9843
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VBL",
         "Class":  "150",
         "Run_Size":  1,
         "Makeup_Run_In":  6.4961
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VBL",
         "Class":  "150",
         "Run_Size":  1.25,
         "Makeup_Run_In":  7.0079
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VBL",
         "Class":  "150",
         "Run_Size":  1.5,
         "Makeup_Run_In":  7.4803
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VBL",
         "Class":  "150",
         "Run_Size":  2,
         "Makeup_Run_In":  8.5039
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VBL",
         "Class":  "300",
         "Run_Size":  6,
         "Makeup_Run_In":  15.8661
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VBL",
         "Class":  "300",
         "Run_Size":  8,
         "Makeup_Run_In":  16.4961
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VBL",
         "Class":  "300",
         "Run_Size":  10,
         "Makeup_Run_In":  17.9921
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VBL",
         "Class":  "300",
         "Run_Size":  12,
         "Makeup_Run_In":  19.7638
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VBL",
         "Class":  "300",
         "Run_Size":  14,
         "Makeup_Run_In":  22.5197
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VBL",
         "Class":  "300",
         "Run_Size":  16,
         "Makeup_Run_In":  24.0157
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VBL",
         "Class":  "300",
         "Run_Size":  18,
         "Makeup_Run_In":  25.9843
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VBL",
         "Class":  "300",
         "Run_Size":  20,
         "Makeup_Run_In":  27.9921
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VBL",
         "Class":  "300",
         "Run_Size":  24,
         "Makeup_Run_In":  31.9685
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VBL",
         "Class":  "600",
         "Run_Size":  0.5,
         "Makeup_Run_In":  6.4961
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VBL",
         "Class":  "600",
         "Run_Size":  0.75,
         "Makeup_Run_In":  7.4803
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VBL",
         "Class":  "600",
         "Run_Size":  1,
         "Makeup_Run_In":  8.5039
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VBL",
         "Class":  "600",
         "Run_Size":  1.25,
         "Makeup_Run_In":  9.0157
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VBL",
         "Class":  "600",
         "Run_Size":  1.5,
         "Makeup_Run_In":  9.4882
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VBL",
         "Class":  "600",
         "Run_Size":  2,
         "Makeup_Run_In":  11.4961
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VBL",
         "Class":  "600",
         "Run_Size":  2.5,
@@ -12008,70 +12008,70 @@
         "Makeup_Run_In":  12.0079
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VBLL",
         "Class":  "300",
         "Run_Size":  6,
         "Makeup_Run_In":  17.9921
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VBLL",
         "Class":  "300",
         "Run_Size":  8,
         "Makeup_Run_In":  20.5118
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VBLL",
         "Class":  "300",
         "Run_Size":  10,
         "Makeup_Run_In":  22.0079
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VBLL",
         "Class":  "300",
         "Run_Size":  12,
         "Makeup_Run_In":  25
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VBLL",
         "Class":  "300",
         "Run_Size":  14,
         "Makeup_Run_In":  30
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VBLL",
         "Class":  "300",
         "Run_Size":  16,
         "Makeup_Run_In":  32.9921
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VBLL",
         "Class":  "300",
         "Run_Size":  18,
         "Makeup_Run_In":  35.9843
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VBLL",
         "Class":  "300",
         "Run_Size":  20,
         "Makeup_Run_In":  39.0157
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VBLL",
         "Class":  "300",
         "Run_Size":  22,
         "Makeup_Run_In":  42.9921
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VBLL",
         "Class":  "300",
         "Run_Size":  24,
@@ -12484,112 +12484,112 @@
         "Makeup_Run_In":  3.14
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VCK",
         "Class":  "800",
         "Run_Size":  1,
         "Makeup_Run_In":  4.33
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VCK",
         "Class":  "800",
         "Run_Size":  1.25,
         "Makeup_Run_In":  5
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VCK",
         "Class":  "800",
         "Run_Size":  1.5,
         "Makeup_Run_In":  6.1
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VCK",
         "Class":  "800",
         "Run_Size":  2,
         "Makeup_Run_In":  6.69
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VCK",
         "Class":  "800",
         "Run_Size":  0.25,
         "Makeup_Run_In":  3.25
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VCK",
         "Class":  "800",
         "Run_Size":  0.375,
         "Makeup_Run_In":  3.25
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VCK",
         "Class":  "800",
         "Run_Size":  0.5,
         "Makeup_Run_In":  3.54
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VCK",
         "Class":  "800",
         "Run_Size":  0.75,
         "Makeup_Run_In":  3.54
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VCK",
         "Class":  "1500",
         "Run_Size":  0.25,
         "Makeup_Run_In":  3.14
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VCK",
         "Class":  "1500",
         "Run_Size":  0.375,
         "Makeup_Run_In":  3.14
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VCK",
         "Class":  "1500",
         "Run_Size":  0.5,
         "Makeup_Run_In":  3.54
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VCK",
         "Class":  "1500",
         "Run_Size":  0.75,
         "Makeup_Run_In":  4.33
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VCK",
         "Class":  "1500",
         "Run_Size":  1,
         "Makeup_Run_In":  5
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VCK",
         "Class":  "1500",
         "Run_Size":  1.25,
         "Makeup_Run_In":  6.1
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VCK",
         "Class":  "1500",
         "Run_Size":  1.5,
         "Makeup_Run_In":  6.69
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VCK",
         "Class":  "1500",
         "Run_Size":  2,
@@ -13240,112 +13240,112 @@
         "Makeup_Run_In":  7.25
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VGL",
         "Class":  "800",
         "Run_Size":  0.25,
         "Makeup_Run_In":  3.25
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VGL",
         "Class":  "800",
         "Run_Size":  0.375,
         "Makeup_Run_In":  3.25
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VGL",
         "Class":  "800",
         "Run_Size":  0.5,
         "Makeup_Run_In":  3.25
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VGL",
         "Class":  "800",
         "Run_Size":  0.75,
         "Makeup_Run_In":  3.5
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VGL",
         "Class":  "800",
         "Run_Size":  1,
         "Makeup_Run_In":  4.5
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VGL",
         "Class":  "800",
         "Run_Size":  1.25,
         "Makeup_Run_In":  6.25
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VGL",
         "Class":  "800",
         "Run_Size":  1.5,
         "Makeup_Run_In":  6.25
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VGL",
         "Class":  "800",
         "Run_Size":  2,
         "Makeup_Run_In":  7.25
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VGL",
         "Class":  "1500",
         "Run_Size":  0.25,
         "Makeup_Run_In":  3.5
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VGL",
         "Class":  "1500",
         "Run_Size":  0.375,
         "Makeup_Run_In":  3.5
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VGL",
         "Class":  "1500",
         "Run_Size":  0.5,
         "Makeup_Run_In":  3.5
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VGL",
         "Class":  "1500",
         "Run_Size":  0.75,
         "Makeup_Run_In":  4.5
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VGL",
         "Class":  "1500",
         "Run_Size":  1,
         "Makeup_Run_In":  6.25
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VGL",
         "Class":  "1500",
         "Run_Size":  1.25,
         "Makeup_Run_In":  7.25
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VGL",
         "Class":  "1500",
         "Run_Size":  1.5,
         "Makeup_Run_In":  7.25
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VGL",
         "Class":  "1500",
         "Run_Size":  2,
@@ -14080,112 +14080,112 @@
         "Makeup_Run_In":  6.25
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VGT",
         "Class":  "800",
         "Run_Size":  0.25,
         "Makeup_Run_In":  3.25
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VGT",
         "Class":  "800",
         "Run_Size":  0.375,
         "Makeup_Run_In":  3.25
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VGT",
         "Class":  "800",
         "Run_Size":  0.5,
         "Makeup_Run_In":  3.25
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VGT",
         "Class":  "800",
         "Run_Size":  0.75,
         "Makeup_Run_In":  3.5
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VGT",
         "Class":  "800",
         "Run_Size":  1,
         "Makeup_Run_In":  3.88
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VGT",
         "Class":  "800",
         "Run_Size":  1.25,
         "Makeup_Run_In":  4.75
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VGT",
         "Class":  "800",
         "Run_Size":  1.5,
         "Makeup_Run_In":  4.75
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VGT",
         "Class":  "800",
         "Run_Size":  2,
         "Makeup_Run_In":  5.5
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VGT",
         "Class":  "1500",
         "Run_Size":  0.25,
         "Makeup_Run_In":  3.5
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VGT",
         "Class":  "1500",
         "Run_Size":  0.375,
         "Makeup_Run_In":  3.5
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VGT",
         "Class":  "1500",
         "Run_Size":  0.5,
         "Makeup_Run_In":  3.5
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VGT",
         "Class":  "1500",
         "Run_Size":  0.75,
         "Makeup_Run_In":  3.88
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VGT",
         "Class":  "1500",
         "Run_Size":  1,
         "Makeup_Run_In":  4.75
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VGT",
         "Class":  "1500",
         "Run_Size":  1.25,
         "Makeup_Run_In":  5.5
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VGT",
         "Class":  "1500",
         "Run_Size":  1.5,
         "Makeup_Run_In":  5.5
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VGT",
         "Class":  "1500",
         "Run_Size":  2,
@@ -14381,70 +14381,70 @@
         "Makeup_Run_In":  3.94
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VND",
         "Class":  "3000",
         "Run_Size":  0.25,
         "Makeup_Run_In":  2.76
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VND",
         "Class":  "3000",
         "Run_Size":  0.375,
         "Makeup_Run_In":  2.95
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VND",
         "Class":  "3000",
         "Run_Size":  0.5,
         "Makeup_Run_In":  3.35
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VND",
         "Class":  "3000",
         "Run_Size":  0.75,
         "Makeup_Run_In":  3.62
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VND",
         "Class":  "3000",
         "Run_Size":  1,
         "Makeup_Run_In":  3.94
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VND",
         "Class":  "6000",
         "Run_Size":  0.25,
         "Makeup_Run_In":  2.76
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VND",
         "Class":  "6000",
         "Run_Size":  0.375,
         "Makeup_Run_In":  2.95
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VND",
         "Class":  "6000",
         "Run_Size":  0.5,
         "Makeup_Run_In":  3.35
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VND",
         "Class":  "6000",
         "Run_Size":  0.75,
         "Makeup_Run_In":  3.62
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VND",
         "Class":  "6000",
         "Run_Size":  1,
@@ -14563,112 +14563,112 @@
         "Makeup_Run_In":  5.5
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VPL",
         "Class":  "800",
         "Run_Size":  0.25,
         "Makeup_Run_In":  3.25
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VPL",
         "Class":  "800",
         "Run_Size":  0.375,
         "Makeup_Run_In":  3.25
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VPL",
         "Class":  "800",
         "Run_Size":  0.5,
         "Makeup_Run_In":  3.25
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VPL",
         "Class":  "800",
         "Run_Size":  0.75,
         "Makeup_Run_In":  3.5
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VPL",
         "Class":  "800",
         "Run_Size":  1,
         "Makeup_Run_In":  3.88
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VPL",
         "Class":  "800",
         "Run_Size":  1.25,
         "Makeup_Run_In":  4.75
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VPL",
         "Class":  "800",
         "Run_Size":  1.5,
         "Makeup_Run_In":  4.75
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VPL",
         "Class":  "800",
         "Run_Size":  2,
         "Makeup_Run_In":  5.5
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VSOL",
         "Class":  "800",
         "Run_Size":  0.25,
         "Makeup_Run_In":  3.25
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VSOL",
         "Class":  "800",
         "Run_Size":  0.375,
         "Makeup_Run_In":  3.25
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VSOL",
         "Class":  "800",
         "Run_Size":  0.5,
         "Makeup_Run_In":  3.25
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VSOL",
         "Class":  "800",
         "Run_Size":  0.75,
         "Makeup_Run_In":  3.5
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VSOL",
         "Class":  "800",
         "Run_Size":  1,
         "Makeup_Run_In":  4.5
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VSOL",
         "Class":  "800",
         "Run_Size":  1.25,
         "Makeup_Run_In":  6.25
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VSOL",
         "Class":  "800",
         "Run_Size":  1.5,
         "Makeup_Run_In":  6.25
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VSOL",
         "Class":  "800",
         "Run_Size":  2,
@@ -15060,42 +15060,42 @@
         "Makeup_Run_In":  8.26
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VSW",
         "Class":  "800",
         "Run_Size":  0.5,
         "Makeup_Run_In":  3.54
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VSW",
         "Class":  "800",
         "Run_Size":  0.75,
         "Makeup_Run_In":  3.54
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VSW",
         "Class":  "800",
         "Run_Size":  1,
         "Makeup_Run_In":  4.33
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VSW",
         "Class":  "800",
         "Run_Size":  1.25,
         "Makeup_Run_In":  5
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VSW",
         "Class":  "800",
         "Run_Size":  1.5,
         "Makeup_Run_In":  5
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VSW",
         "Class":  "800",
         "Run_Size":  2,
@@ -15242,70 +15242,70 @@
         "Makeup_Run_In":  7.68
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VYG",
         "Class":  "800",
         "Run_Size":  0.5,
         "Makeup_Run_In":  4.72
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VYG",
         "Class":  "800",
         "Run_Size":  0.75,
         "Makeup_Run_In":  4.72
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VYG",
         "Class":  "800",
         "Run_Size":  1,
         "Makeup_Run_In":  5.12
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VYG",
         "Class":  "800",
         "Run_Size":  1.5,
         "Makeup_Run_In":  7.17
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VYG",
         "Class":  "800",
         "Run_Size":  2,
         "Makeup_Run_In":  7.68
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VYG",
         "Class":  "1500",
         "Run_Size":  0.5,
         "Makeup_Run_In":  4.72
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VYG",
         "Class":  "1500",
         "Run_Size":  0.75,
         "Makeup_Run_In":  4.72
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VYG",
         "Class":  "1500",
         "Run_Size":  1,
         "Makeup_Run_In":  5.12
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VYG",
         "Class":  "1500",
         "Run_Size":  1.5,
         "Makeup_Run_In":  7.17
     },
     {
-        "Connection_Type":  "THRD",
+        "Connection_Type":  "SCRD",
         "Component":  "VYG",
         "Class":  "1500",
         "Run_Size":  2,

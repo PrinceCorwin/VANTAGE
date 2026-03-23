@@ -501,13 +501,44 @@ namespace VANTAGE.Services.AI
             double smallerSize = dualSize?.Smaller ?? largerSize;
             bool isDualSize = dualSize != null;
 
-            // Non-PIPE items: add fab record with original component and raw description
-            // GSKT and BOLT are material-only — no labor records
-            if (component == "GSKT" || component == "BOLT")
-                return result;
-
-            if (!component.Equals("PIPE", StringComparison.OrdinalIgnoreCase))
+            // Hardware items (BOLT, GSKT, WAS): one aggregated labor row per material row
+            // Preserves original quantity for MH calculation (rate × qty)
+            if (component == "BOLT" || component == "GSKT" || component == "WAS")
             {
+                var hardware = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+                foreach (var (key, value) in mat)
+                {
+                    if (!ExcludeFromLabor.Contains(key))
+                        hardware[key] = value;
+                }
+                hardware["Quantity"] = quantity;
+                hardware["Description"] = string.IsNullOrEmpty(commodityCode)
+                    ? rawDesc
+                    : $"{rawDesc} - {commodityCode}";
+                hardware["BudgetMHs"] = null;
+                result.Add(hardware);
+                return result;
+            }
+
+            // PIPE items: one PIPE fab labor record per BOM item
+            if (component.Equals("PIPE", StringComparison.OrdinalIgnoreCase))
+            {
+                var pipeFab = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+                foreach (var (key, value) in mat)
+                {
+                    if (!ExcludeFromLabor.Contains(key))
+                        pipeFab[key] = value;
+                }
+                pipeFab["Component"] = "PIPE";
+                pipeFab["Quantity"] = ParseExactQuantity(mat);
+                pipeFab["Description"] = rawDesc + " - Fab Pipe Handling";
+                pipeFab["BudgetMHs"] = null;
+                result.Add(pipeFab);
+            }
+            // FLGLJ and FLGB don't get fab records — labor is covered by their BU connection row
+            else if (component != "FLGLJ" && component != "FLGB")
+            {
+                // Non-PIPE items: add fab record with original component and raw description
                 for (int q = 0; q < quantity; q++)
                 {
                     var fab = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
@@ -524,21 +555,7 @@ namespace VANTAGE.Services.AI
                     result.Add(fab);
                 }
             }
-            else
-            {
-                // PIPE items: one PIPE fab labor record per BOM item
-                var pipeFab = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
-                foreach (var (key, value) in mat)
-                {
-                    if (!ExcludeFromLabor.Contains(key))
-                        pipeFab[key] = value;
-                }
-                pipeFab["Component"] = "PIPE";
-                pipeFab["Quantity"] = ParseExactQuantity(mat);
-                pipeFab["Description"] = rawDesc + " - Fab Pipe Handling";
-                pipeFab["BudgetMHs"] = null;
-                result.Add(pipeFab);
-            }
+            // else: FLGLJ/FLGB — skip fab record, continue to connection explosion
 
             // NIP and PLG don't create connection rows — their connections are
             // always to another fitting and get counted from that fitting instead
@@ -565,7 +582,7 @@ namespace VANTAGE.Services.AI
                 return result;
             }
 
-            // Parse connection types (may be comma-separated like "BW, THRD")
+            // Parse connection types (may be comma-separated like "BW, SCRD")
             var types = connTypes.Split(',', StringSplitOptions.RemoveEmptyEntries)
                                  .Select(t => t.Trim().ToUpper())
                                  .ToList();
@@ -614,8 +631,8 @@ namespace VANTAGE.Services.AI
                 return pairs;
             }
 
-            // FLG types: BU + other type (typically BW)
-            if (component == "FLG" || component == "FLGB" || component == "FLGO")
+            // FLG types with 2 connections: BU (bolt side) + other type (typically BW)
+            if (component == "FLG" || component == "FLGO")
             {
                 // Always add BU for the bolt-up
                 pairs.Add(("BU", largerSize));
@@ -1079,7 +1096,8 @@ namespace VANTAGE.Services.AI
 
                 if (fldMhu.HasValue)
                 {
-                    int qty = GetInt(row, "Quantity");
+                    // Use double for quantity — PIPE fab rows have feet values < 1
+                    double qty = GetNullableDouble(row, "Quantity") ?? 1;
                     double mhu = fldMhu.Value;
 
                     // BU rows are created for each flanged end, so every bolt-up joint
@@ -1095,7 +1113,7 @@ namespace VANTAGE.Services.AI
                     row["RollupMult"] = rollupMult;
                     row["MatlMult"] = matlMult;
 
-                    // BW: add CUT + BEV rates (unmultiplied). SW/THRD: add CUT rate only.
+                    // BW: add CUT + BEV rates (unmultiplied). SW/SCRD: add CUT rate only.
                     double cutAdd = 0;
                     double bevAdd = 0;
                     if (component.Equals("BW", StringComparison.OrdinalIgnoreCase))
@@ -1106,7 +1124,7 @@ namespace VANTAGE.Services.AI
                         if (bevRate.FldMhu.HasValue) bevAdd = bevRate.FldMhu.Value;
                     }
                     else if (component.Equals("SW", StringComparison.OrdinalIgnoreCase) ||
-                             component.Equals("THRD", StringComparison.OrdinalIgnoreCase))
+                             component.Equals("SCRD", StringComparison.OrdinalIgnoreCase))
                     {
                         var cutRate = RateSheetService.FindRate("CUT", size, thickness, classRating);
                         if (cutRate.FldMhu.HasValue) cutAdd = cutRate.FldMhu.Value;

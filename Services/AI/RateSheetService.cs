@@ -21,6 +21,9 @@ namespace VANTAGE.Services.AI
             { "ACT", "OPRTR" },
             { "FS", "SPT" },
 
+            // Connection type mappings
+            { "GRV", "BW" },
+
             // Valve types → VLV
             { "VBF", "VLV" },
             { "VBFL", "VLV" },
