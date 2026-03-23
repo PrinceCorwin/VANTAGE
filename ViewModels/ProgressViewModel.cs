@@ -59,9 +59,7 @@ namespace VANTAGE.ViewModels
 
                     // Save to UserSettings
                     SettingsManager.SetUserSetting("SummaryStats.BudgetColumn", value);
-
-                    // Recalculate totals with new column
-                    _ = UpdateTotalsAsync();
+                    // View triggers recalculation with filtered records via DebouncedUpdateSummary()
                 }
             }
         }
@@ -594,8 +592,12 @@ namespace VANTAGE.ViewModels
             {
                 _isLoading = value;
                 OnPropertyChanged(nameof(IsLoading));
+                OnPropertyChanged(nameof(IsNotLoading));
             }
         }
+
+        // Inverse of IsLoading for disabling UI during load
+        public bool IsNotLoading => !_isLoading;
 
         // ========================================
         // METHODS

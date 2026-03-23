@@ -2665,6 +2665,8 @@ namespace VANTAGE.Views
             if (e.OriginalSource is MenuItem menuItem && menuItem.Header is string columnName)
             {
                 _viewModel.SelectedSummaryColumn = columnName;
+                // Recalculate using filtered records (the setter uses all records)
+                DebouncedUpdateSummary();
             }
         }
 

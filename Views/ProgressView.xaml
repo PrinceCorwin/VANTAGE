@@ -198,7 +198,7 @@
 
     </UserControl.Resources>
 
-    <Grid>
+    <Grid IsEnabled="{Binding IsNotLoading}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="115"/>
             <ColumnDefinition Width="*"/>

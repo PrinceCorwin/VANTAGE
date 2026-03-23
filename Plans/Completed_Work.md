@@ -6,6 +6,12 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### March 23, 2026 (Progress Module — Summary Panel Fixes)
+- **Summary column selection now respects active filters:** When changing the budget column via the summary dropdown (e.g., BudgetMHs → ClientBudget), the recalculated totals now correctly reflect only filtered records instead of all records.
+- **Fixed summary value flicker:** Removed double-update that caused brief flash of all-records values before showing correct filtered values when changing summary column.
+- **ProgressView disabled during loading:** The entire view is now disabled (grayed out, non-interactive) while data loads, preventing user interaction with stale or incomplete data.
+- **Key files:** `Views/ProgressView.xaml`, `Views/ProgressView.xaml.cs`, `ViewModels/ProgressViewModel.cs`
+
 ### March 20, 2026 (Progress Books — Cover Page & Multi-User Support)
 - **Progress Book cover page:** Generated PDFs now include a cover page (page 1) with:
   - Summit Industrial logo (centered)
