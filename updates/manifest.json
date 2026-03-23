@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.1.35",
-  "releaseDate": "2026-03-20T14:06:01Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.35/VANTAGE-26.1.35.zip",
-  "zipSizeBytes": 149952675,
-  "sha256": "6E51577B9E82B26154C5B2634F5034B4BA31E802F79091B3C0EEC04516D7F42F",
-  "releaseNotes": "Progress Books cover page with project summary, multi-user support, checkbox persistence"
+  "currentVersion": "26.1.36",
+  "releaseDate": "2026-03-23T12:15:26Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.36/VANTAGE-26.1.36.zip",
+  "zipSizeBytes": 149953162,
+  "sha256": "97BADE0C63F53CC38824C537FEE0D2670D6E0E10556F4DFEDED0A7CBB881E2AF",
+  "releaseNotes": "Progress summary panel fixes, view disabled during load"
 }

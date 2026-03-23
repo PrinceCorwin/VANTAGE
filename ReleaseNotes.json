@@ -1,6 +1,15 @@
 {
   "releases": [
     {
+      "version": "26.1.36",
+      "date": "2026-03-23",
+      "highlights": [
+        "Progress — Summary panel column selection now correctly shows filtered totals",
+        "Progress — Fixed flicker when changing summary column",
+        "Progress — View disabled during data load to prevent premature interaction"
+      ]
+    },
+    {
       "version": "26.1.35",
       "date": "2026-03-20",
       "highlights": [
