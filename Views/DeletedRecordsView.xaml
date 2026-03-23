@@ -9,18 +9,20 @@
         Background="{DynamicResource BackgroundColor}">
 
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="190"/>
-            <!-- Left Sidebar -->
-            <ColumnDefinition Width="*"/>
-            <!-- Main Grid -->
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*"/>
-            <!-- Content -->
-            <RowDefinition Height="45"/>
-            <!-- Status Bar -->
-        </Grid.RowDefinitions>
+        <!-- Main content wrapper - disabled during load -->
+        <Grid x:Name="mainContent" IsEnabled="False">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="190"/>
+                <!-- Left Sidebar -->
+                <ColumnDefinition Width="*"/>
+                <!-- Main Grid -->
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <!-- Content -->
+                <RowDefinition Height="45"/>
+                <!-- Status Bar -->
+            </Grid.RowDefinitions>
 
         <!-- LEFT SIDEBAR -->
         <Border Grid.Column="0" Grid.Row="0"
@@ -242,6 +244,25 @@
                           HorizontalAlignment="Right"
                           FontSize="11"/>
             </Grid>
+        </Border>
+        </Grid>
+
+        <!-- Loading overlay - covers entire window during initial load -->
+        <Border x:Name="loadingOverlay"
+                Background="{DynamicResource BackgroundColor}"
+                Visibility="Visible">
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                <syncfusion:SfBusyIndicator AnimationType="DoubleCircle"
+                                           IsBusy="True"
+                                           Foreground="{DynamicResource AccentColor}"
+                                           ViewboxHeight="80"
+                                           ViewboxWidth="80"/>
+                <TextBlock Text="Loading projects with deleted records..."
+                          Foreground="{DynamicResource ForegroundColor}"
+                          FontSize="14"
+                          HorizontalAlignment="Center"
+                          Margin="0,15,0,0"/>
+            </StackPanel>
         </Border>
     </Grid>
 </Window>

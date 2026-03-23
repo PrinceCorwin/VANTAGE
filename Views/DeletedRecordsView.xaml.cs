@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using VANTAGE.Data;
@@ -23,7 +24,12 @@ namespace VANTAGE.Views
             SfSkinManager.SetTheme(this, new Theme(ThemeManager.GetSyncfusionThemeName()));
             ThemeManager.ThemeChanged += OnThemeChanged;
             Closed += (_, __) => ThemeManager.ThemeChanged -= OnThemeChanged;
-            LoadProjectsFromAzure();
+            Loaded += OnViewLoaded;
+        }
+
+        private async void OnViewLoaded(object sender, RoutedEventArgs e)
+        {
+            await LoadProjectsFromAzureAsync();
         }
 
         // Re-apply Syncfusion skin to grid when theme changes
@@ -36,12 +42,10 @@ namespace VANTAGE.Views
             });
         }
 
-        private void LoadProjectsFromAzure()
+        private async Task LoadProjectsFromAzureAsync()
         {
             try
             {
-                busyIndicator.IsBusy = true;
-
                 // Check connection to Azure
                 if (!AzureDbManager.CheckConnection(out string errorMessage))
                 {
@@ -55,34 +59,44 @@ namespace VANTAGE.Views
                     return;
                 }
 
-                // Get distinct ProjectIDs from Azure where IsDeleted = 1
-                using var connection = AzureDbManager.GetConnection();
-                connection.Open();
-
-                var cmd = connection.CreateCommand();
-                cmd.CommandText = "SELECT DISTINCT ProjectID FROM VMS_Activities WHERE IsDeleted = 1 ORDER BY ProjectID";
-
-                _projects = new List<ProjectSelection>();
-                using var reader = cmd.ExecuteReader();
-                while (reader.Read())
+                // Load projects on background thread
+                _projects = await Task.Run(() =>
                 {
-                    var projectId = reader.GetString(0);
-                    if (!string.IsNullOrWhiteSpace(projectId))
+                    var projects = new List<ProjectSelection>();
+
+                    using var connection = AzureDbManager.GetConnection();
+                    connection.Open();
+
+                    var cmd = connection.CreateCommand();
+                    cmd.CommandText = "SELECT DISTINCT ProjectID FROM VMS_Activities WHERE IsDeleted = 1 ORDER BY ProjectID";
+
+                    using var reader = cmd.ExecuteReader();
+                    while (reader.Read())
                     {
-                        _projects.Add(new ProjectSelection { ProjectID = projectId, IsSelected = false });
+                        var projectId = reader.GetString(0);
+                        if (!string.IsNullOrWhiteSpace(projectId))
+                        {
+                            projects.Add(new ProjectSelection { ProjectID = projectId, IsSelected = false });
+                        }
                     }
-                }
+
+                    return projects;
+                });
 
                 lstProjectFilter.ItemsSource = _projects;
                 txtStatus.Text = $"Found {_projects.Count} projects with deleted records";
-                busyIndicator.IsBusy = false;
+
+                // Hide overlay and enable content
+                loadingOverlay.Visibility = Visibility.Collapsed;
+                mainContent.IsEnabled = true;
             }
             catch (Exception ex)
             {
-                busyIndicator.IsBusy = false;
+                loadingOverlay.Visibility = Visibility.Collapsed;
+                mainContent.IsEnabled = true;
                 MessageBox.Show($"Error loading projects: {ex.Message}",
                     "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                AppLogger.Error(ex, "DeletedRecordsView.LoadProjectsFromAzure");
+                AppLogger.Error(ex, "DeletedRecordsView.LoadProjectsFromAzureAsync");
             }
         }
 
