@@ -1,6 +1,6 @@
 # MILESTONE - Project Status
 
-**Last Updated:** March 23, 2026
+**Last Updated:** March 24, 2026
 
 ## V1 Testing Scope
 
@@ -53,7 +53,7 @@
 - Plugins can add menu items to Tools menu dynamically via `host.AddToolsMenuItem()`.
 - `IPluginHost` includes `RefreshProgressViewAsync()` for plugins that modify activity data.
 - First plugin published: `ptp-tfs-mech-updater` v1.0.1 (PTP vendor shipping report importer for TFS Mechanical, ROCStep 4.SHP).
-- **`const-tfs-mech-updater` (WIP):** Scaffold complete — identical structure to PTP plugin with ROCStep 4.SHP, description prefix `FABRICATION - 4.SHP CONST `. Pending: column mappings from first CONST vendor report. Not yet in plugins-index.json or published as a release.
+- Second plugin published: `const-tfs-mech-updater` v1.0.0 (Constellation vendor spool report importer for TFS Mechanical). 1:1 spool tracking by Piece Mark, progress = (WLD % All × 80%) + (shipped? 20%), auto-deletion detection for removed spools.
 
 ### Multi-Theme System
 

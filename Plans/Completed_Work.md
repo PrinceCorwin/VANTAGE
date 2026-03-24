@@ -6,6 +6,17 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### March 24, 2026 (CONST TFS MECH Updater Plugin v1.0.0)
+- **CONST TFS MECH Updater plugin published:** Imports Constellation vendor spool reports and creates/updates fabrication activities in VANTAGE. Available via Plugin Manager.
+- **1:1 spool tracking:** Each spool (identified by Piece Mark) becomes one activity. Description format: `Constellation Fabrication for PieceMark {PieceMark} - Spool {Spool}`.
+- **Progress calculation:** PercentEntry = (WLD % All × 80%) + (Final Shipment date? 20%). Excel stores percentages as decimals, so automatic 0-1 to 0-100 conversion included.
+- **Column mappings:** 19 CONST columns mapped to VANTAGE fields (SecondDwgNO, DwgNO, Quantity, UDF7, etc.). Hardcoded values for required metadata fields (ProjectID, ROCStep, PhaseCategory, etc.).
+- **Weekly update behavior:** Only updates progress fields (PercentEntry, Quantity, Weight, ActStart, ActFin, PlanFin, Notes) — metadata set on insert only.
+- **Data warnings:** If a spool has a Final Shipment date but WLD % All < 100%, Notes field populated with "DATA WARNING: Shipped with WLD at X%".
+- **Deletion detection:** Spools missing from subsequent reports are marked 100% complete with "DELETED" appended to Notes.
+- **Multi-tab validation:** Reports with multiple worksheets are rejected with error message directing user to keep only "Detailed Spool Report" tab.
+- **Key files:** `VANTAGE-Plugins/src/const-tfs-mech-updater/ConstImporter.cs`, `ConstTfsMechUpdaterPlugin.cs`, `plugin.json`
+
 ### March 23, 2026 (Progress Module — Summary Panel Fixes)
 - **Summary column selection now respects active filters:** When changing the budget column via the summary dropdown (e.g., BudgetMHs → ClientBudget), the recalculated totals now correctly reflect only filtered records instead of all records.
 - **Fixed summary value flicker:** Removed double-update that caused brief flash of all-records values before showing correct filtered values when changing summary column.
