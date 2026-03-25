@@ -8,9 +8,9 @@
 		<ApplicationIcon>images\AppIcon.ico</ApplicationIcon>
 
 		<!-- Version Information -->
-		<Version>26.1.37</Version>
-		<AssemblyVersion>26.1.37.0</AssemblyVersion>
-		<FileVersion>26.1.37.0</FileVersion>
+		<Version>26.1.38</Version>
+		<AssemblyVersion>26.1.38.0</AssemblyVersion>
+		<FileVersion>26.1.38.0</FileVersion>
 		<Company>Summit Industrial</Company>
 		<Product>VANTAGE: MILESTONE</Product>
 		<Copyright>Copyright © 2025 Steve Amalfitano</Copyright>
@@ -58,42 +58,42 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="AWSSDK.S3" Version="4.0.19" />
-		<PackageReference Include="AWSSDK.StepFunctions" Version="4.0.2.12" />
-		<PackageReference Include="AWSSDK.Textract" Version="4.0.3.16" />
+		<PackageReference Include="AWSSDK.S3" Version="4.0.19.2" />
+		<PackageReference Include="AWSSDK.StepFunctions" Version="4.0.2.13" />
+		<PackageReference Include="AWSSDK.Textract" Version="4.0.3.17" />
 		<PackageReference Include="Azure.Communication.Email" Version="1.1.0" />
 		<PackageReference Include="Azure.Data.Tables" Version="12.11.0" />
 		<PackageReference Include="Azure.Identity" Version="1.19.0" />
 		<PackageReference Include="ClosedXML" Version="0.105.0" />
-		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
-		<PackageReference Include="DocumentFormat.OpenXml" Version="3.4.1" />
+		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+		<PackageReference Include="DocumentFormat.OpenXml" Version="3.5.1" />
 		<PackageReference Include="MaterialDesignColors" Version="5.3.1" />
 		<PackageReference Include="MaterialDesignThemes" Version="5.3.1" />
-		<PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.4" />
+		<PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.0" />
 		<PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.10" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.10">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.10" />
-		<PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.3" />
-		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.3" />
-		<PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.3" />
+		<PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.5" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.5" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.5" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
 		<PackageReference Include="SharpVectors.Wpf" Version="1.8.5" />
-		<PackageReference Include="Syncfusion.PdfToImageConverter.WPF" Version="32.2.9" />
-		<PackageReference Include="Syncfusion.SfProgressBar.WPF" Version="32.2.9" />
-		<PackageReference Include="Syncfusion.Themes.FluentLight.WPF" Version="32.2.9" />
+		<PackageReference Include="Syncfusion.PdfToImageConverter.WPF" Version="33.1.45" />
+		<PackageReference Include="Syncfusion.SfProgressBar.WPF" Version="33.1.45" />
+		<PackageReference Include="Syncfusion.Themes.FluentLight.WPF" Version="33.1.45" />
 		<PackageReference Include="System.Drawing.Common" Version="10.0.5" />
-		<PackageReference Include="Syncfusion.Pdf.WPF" Version="32.2.9" />
-		<PackageReference Include="Syncfusion.PdfViewer.WPF" Version="32.2.9" />
-		<PackageReference Include="Syncfusion.SfBusyIndicator.WPF" Version="32.2.9" />
-		<PackageReference Include="Syncfusion.SfGrid.WPF" Version="32.2.9" />
-		<PackageReference Include="Syncfusion.SfInput.WPF" Version="32.2.9" />
-		<PackageReference Include="Syncfusion.SfTextInputLayout.WPF" Version="32.2.9" />
-		<PackageReference Include="Syncfusion.Tools.WPF" Version="32.2.9" />
-		<PackageReference Include="Syncfusion.Themes.FluentDark.WPF" Version="32.2.9" />
-		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3800.47" />
+		<PackageReference Include="Syncfusion.Pdf.WPF" Version="33.1.45" />
+		<PackageReference Include="Syncfusion.PdfViewer.WPF" Version="33.1.45" />
+		<PackageReference Include="Syncfusion.SfBusyIndicator.WPF" Version="33.1.45" />
+		<PackageReference Include="Syncfusion.SfGrid.WPF" Version="33.1.45" />
+		<PackageReference Include="Syncfusion.SfInput.WPF" Version="33.1.45" />
+		<PackageReference Include="Syncfusion.SfTextInputLayout.WPF" Version="33.1.45" />
+		<PackageReference Include="Syncfusion.Tools.WPF" Version="33.1.45" />
+		<PackageReference Include="Syncfusion.Themes.FluentDark.WPF" Version="33.1.45" />
+		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3856.49" />
 	</ItemGroup>
 
 	<ItemGroup>

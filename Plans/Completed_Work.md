@@ -6,6 +6,15 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### March 25, 2026 (Takeoff — Makeup & Rate Fixes, Recalc Tab Cleanup)
+- **SCRD/FLG makeup entries added:** Created 30 SCRD/FLG entries (cloned from SW/FLG) covering sizes 0.5-2" across classes 150, 300, 600, 900, 1500. Enables ADPT→FLG equivalence to resolve for screwed connections.
+- **Wildcard SCRD/CPLG entries:** Added 12 classless fallback entries for SCRD/CPLG using 3000 class values. Resolves mismatches when drawings have pressure class ratings (e.g., 150) instead of fitting weight classes (3000/6000).
+- **Classless FLG wildcards:** Added 29 wildcard (no class) FLG entries across BW (17), SW (6), and SCRD (6) using class 150 values as baseline. Catches FLG/ADPT lookups when no class rating is specified.
+- **GAUGE excluded from makeup:** Added GAUGE to `ExcludeFromMakeupLookup` set in TakeoffPostProcessor — gauge components no longer appear as "No Makeup Found" on Missed Makeups tab.
+- **Stale diagnostic tabs fix:** Recalc Excel now deletes old Missed Makeups, Missed Rates, No Conns, and Failed DWGs tabs when the new run produces zero entries. Previously, these tabs persisted with stale data from prior runs.
+- **Syncfusion license key updated:** Updated to new license key for upgraded Syncfusion packages.
+- **Key files:** `Resources/FittingMakeup.json`, `Services/AI/TakeoffPostProcessor.cs`, `App.xaml.cs`
+
 ### March 25, 2026 (Takeoff — Lilly Support Rates & Sizeless Fallback)
 - **Lilly support rates added:** 122 new SPT entries with commodity codes as class ratings (e.g., `SPT-0.5:5ABS1`, `SPT-6:5UGSP-1INS`). Covers support types 5ABS1-3, 5BS1-2, 5C, 5CC, 5CH, 5CI, 5DA1/3, 5DS1, 5FS1, 5FSS2, 5G1-3, 5HR1/4, 5IAC, 5IGC, 5ISC, 5MFSS5, 5MG1, 5MS, 5PU3, 5S1, 5UG, 5UGSP, 5US.
 - **Sizeless rate fallback:** Rate lookup now tries component-only key (e.g., `SPT`, `ANLZR`) as last resort when size-specific lookup fails. Enables existing sizeless fallback entries (ANLZR, SPRING, XMTR, SPT) to work as catch-all defaults.

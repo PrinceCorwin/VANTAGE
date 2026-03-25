@@ -61,7 +61,7 @@ namespace VANTAGE.Services.AI
         // Components to exclude from fitting makeup lookup (non-weldable or not tracked)
         private static readonly HashSet<string> ExcludeFromMakeupLookup = new(StringComparer.OrdinalIgnoreCase)
         {
-            "FS", "GSKT", "BOLT", "WAS", "HEAT", "HOSE", "INST", "NIP", "PLG", "SAFSHW", "F8B", "DPAN", "ACT", "FLGB", "PIPET", "FLGLJ"
+            "FS", "GSKT", "BOLT", "WAS", "HEAT", "HOSE", "INST", "NIP", "PLG", "SAFSHW", "F8B", "DPAN", "ACT", "FLGB", "PIPET", "FLGLJ", "GAUGE"
         };
 
         // Main entry point - processes the downloaded Excel file in place
@@ -100,32 +100,48 @@ namespace VANTAGE.Services.AI
                 // Step E & F: Generate and write Summary tab
                 WriteSummaryTab(workbook, materialRows, laborRows);
 
-                // Step G: Write Missed Makeups tab (only if there are missed lookups)
+                // Step G: Write or remove Missed Makeups tab
                 if (_missedMakeups.Count > 0)
                 {
                     WriteMissedMakeupsTab(workbook);
                     AppLogger.Info($"Logged {_missedMakeups.Count} missed fitting makeups", "TakeoffPostProcessor");
                 }
+                else if (workbook.TryGetWorksheet("Missed Makeups", out _))
+                {
+                    workbook.Worksheets.Delete("Missed Makeups");
+                }
 
-                // Step H: Write Missed Rates tab (only if there are missed lookups)
+                // Step H: Write or remove Missed Rates tab
                 if (_missedRates.Count > 0)
                 {
                     WriteMissedRatesTab(workbook);
                     AppLogger.Info($"Logged {_missedRates.Count} missed rate lookups", "TakeoffPostProcessor");
                 }
+                else if (workbook.TryGetWorksheet("Missed Rates", out _))
+                {
+                    workbook.Worksheets.Delete("Missed Rates");
+                }
 
-                // Step I: Write No Conns tab (material items with no connections)
+                // Step I: Write or remove No Conns tab
                 if (_noConns.Count > 0)
                 {
                     WriteNoConnsTab(workbook);
                     AppLogger.Info($"Logged {_noConns.Count} material items with no connections", "TakeoffPostProcessor");
                 }
+                else if (workbook.TryGetWorksheet("No Conns", out _))
+                {
+                    workbook.Worksheets.Delete("No Conns");
+                }
 
-                // Step J: Write Failed DWGs tab (drawings that failed AI extraction)
+                // Step J: Write or remove Failed DWGs tab
                 if (failedDrawings != null && failedDrawings.Count > 0)
                 {
                     WriteFailedDrawingsTab(workbook, failedDrawings);
                     AppLogger.Info($"Logged {failedDrawings.Count} failed drawing(s)", "TakeoffPostProcessor");
+                }
+                else if (workbook.TryGetWorksheet("Failed DWGs", out _))
+                {
+                    workbook.Worksheets.Delete("Failed DWGs");
                 }
 
                 // Step K: Reorder tabs

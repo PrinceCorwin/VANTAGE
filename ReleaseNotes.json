@@ -1,6 +1,15 @@
 {
   "releases": [
     {
+      "version": "26.1.38",
+      "date": "2026-03-25",
+      "highlights": [
+        "Takeoff — Expanded fitting makeup coverage (SCRD/FLG, wildcard CPLG, classless FLG fallbacks)",
+        "Takeoff — GAUGE excluded from makeup lookup",
+        "Takeoff — Recalc now clears stale Missed Makeups, Missed Rates, No Conns, and Failed DWGs tabs"
+      ]
+    },
+    {
       "version": "26.1.37",
       "date": "2026-03-25",
       "highlights": [

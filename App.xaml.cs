@@ -30,7 +30,7 @@ namespace VANTAGE
                 typeof(FrameworkElement), new FrameworkPropertyMetadata(0));
 
             // Register Syncfusion license FIRST (before any UI components or database setup)
-            Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("Ngo9BigBOggjGyl/VkR+XU9Ff1RDX3xKf0x/TGpQb19xflBPallYVBYiSV9jS3hTd0VnWXhbcHFQQWhfVE91XQ==");
+            Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("Ngo9BigBOggjHTQxAR8/V1JHaF5cWWZCf1FpRmJGdld5fUVHYVZUTXxaS00DNHVRdkdlWXxcdXVSQmJfVEx3XENWYEo=");
 
             // Handle --uninstall before any other initialization
             if (Environment.GetCommandLineArgs().Any(a => a.Equals("--uninstall", StringComparison.OrdinalIgnoreCase)))
