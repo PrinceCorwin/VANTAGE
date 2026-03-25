@@ -19,6 +19,8 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="12"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="12"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <!-- Header -->
@@ -61,8 +63,15 @@
             </syncfusion:SfDataGrid.Columns>
         </syncfusion:SfDataGrid>
 
+        <!-- Warning -->
+        <TextBlock Grid.Row="4"
+                   Text="⚠ Rate sheet columns must be formatted correctly. Use Export Template to get the required format."
+                   FontSize="12"
+                   Foreground="{DynamicResource WarningText}"
+                   HorizontalAlignment="Left"/>
+
         <!-- Bottom: Buttons + Status -->
-        <Grid Grid.Row="4">
+        <Grid Grid.Row="6">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>

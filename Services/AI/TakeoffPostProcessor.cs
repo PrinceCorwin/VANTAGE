@@ -552,6 +552,12 @@ namespace VANTAGE.Services.AI
                         ? rawDesc
                         : $"{rawDesc} - {commodityCode}";
                     fab["BudgetMHs"] = null;
+
+                    // FS (field supports): use Commodity Code as Class Rating for rate lookup
+                    // Allows lookup as SPT-{size}:{commodityCode} with fallback to SPT-{size}
+                    if (component == "FS" && !string.IsNullOrEmpty(commodityCode))
+                        fab["Class Rating"] = commodityCode;
+
                     result.Add(fab);
                 }
             }

@@ -6,6 +6,12 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### March 25, 2026 (Takeoff — FS Commodity Code Lookup & Project Rates UX)
+- **FS commodity code rate lookup:** Field support (FS) items now use their Commodity Code for specialized rate lookup. During labor row generation, FS fab records copy the Commodity Code to the Class Rating column, enabling lookups like `SPT-4:A1234` with automatic fallback to `SPT-4` if not found.
+- **Project Rates dialog warning:** Added warning message above buttons: "⚠ Rate sheet columns must be formatted correctly. Use Export Template to get the required format." Uses `WarningText` theme resource.
+- **Help manual updated:** Added guidance in the Project Rates section explaining that specialized field supports should use `SPT` in the Item column and put the commodity code in the `Sch-Class` column of imported rate sheets.
+- **Key files:** `Services/AI/TakeoffPostProcessor.cs`, `Dialogs/ManageProjectRatesDialog.xaml`, `Help/manual.html`
+
 ### March 25, 2026 (Takeoff — Rate Sheet & Makeup Table Expansion)
 - **VLV rate classes expanded:** Added classes 1000, 1440, 1480 (99 entries) copying rates from class 1500. Added VLV-2000 entries (34 entries) copying rates from 2500. Added missing VLV sizes (2.5, 26-48) for classes 2000 and 2500 using 1.04x extrapolation from 1500 rates.
 - **INST fallback entries:** Added 34 size-only INST entries (no class) using 2500 rates as defaults for unspecified class ratings.

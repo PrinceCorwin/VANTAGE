@@ -2760,7 +2760,9 @@
     <p>The management dialog shows all uploaded rate sets in a grid with Project, Rate Set Name, rate count, Created By, Created Date, Updated By, and Updated Date columns.</p>
 
     <ul>
-        <li><strong>Upload New...</strong> — Import a rate sheet from an Excel file (.xlsx). The file must contain the required columns: <strong>Item</strong>, <strong>Size</strong>, <strong>MH</strong>. Optional: <strong>Sch-Class</strong>, <strong>Unit</strong> (defaults to EA). You will be prompted to select a Project ID from a dropdown and enter a Rate Set Name. If a set with the same name already exists for that project, it will be replaced.</li>
+        <li><strong>Upload New...</strong> — Import a rate sheet from an Excel file (.xlsx). The file must contain the required columns: <strong>Item</strong>, <strong>Size</strong>, <strong>MH</strong>. Optional: <strong>Sch-Class</strong>, <strong>Unit</strong> (defaults to EA). You will be prompted to select a Project ID from a dropdown and enter a Rate Set Name. If a set with the same name already exists for that project, it will be replaced.
+            <p style="margin-top: 0.5em;"><strong>Field Supports (FS):</strong> For specialized supports with commodity codes, use <strong>SPT</strong> in the Item column (the standard support group) and put the commodity code in the <strong>Sch-Class</strong> column. For example, a 4" support with commodity code A1234 would have Item=SPT, Size=4, Sch-Class=A1234. This allows the rate lookup to find specific support types while falling back to size-only rates for supports without matching commodity codes.</p>
+        </li>
         <li><strong>Delete Selected</strong> — Remove the selected rate set permanently.</li>
         <li><strong>Export Template</strong> — Download a blank Excel template with the correct column headers to use as a starting point.</li>
     </ul>
