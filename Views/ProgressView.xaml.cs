@@ -3656,7 +3656,7 @@ namespace VANTAGE.Views
                             updateLocalCmd.Parameters.AddWithValue("@projectId", selectedProject);
                             updateLocalCmd.ExecuteNonQuery();
 
-                            // Step 10b: Update PrevEarnMHs to current EarnMHsCalc for submitted records
+                            // Step 10b: Update PrevEarnMHs and PrevEarnQTY to current earned values for submitted records
                             // This captures the baseline so users can track week-over-week progress
                             // Batch in groups of 500 to avoid SQLite's 999 variable limit
                             if (activitiesToInsert.Count > 0)
@@ -3675,6 +3675,10 @@ namespace VANTAGE.Views
                                         SET PrevEarnMHs = CASE
                                             WHEN PercentEntry >= 100 THEN BudgetMHs
                                             ELSE ROUND(PercentEntry / 100.0 * BudgetMHs, 3)
+                                        END,
+                                        PrevEarnQTY = CASE
+                                            WHEN PercentEntry >= 100 THEN Quantity
+                                            ELSE ROUND(PercentEntry / 100.0 * Quantity, 3)
                                         END,
                                         LocalDirty = 1
                                         WHERE UniqueID IN ({idParams})";

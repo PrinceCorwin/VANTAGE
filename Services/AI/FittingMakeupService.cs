@@ -18,6 +18,13 @@ namespace VANTAGE.Services.AI
             "SOL", "WOL", "TOL", "ELB", "LOL", "NOL"
         };
 
+        // Components that share identical makeup values with another component
+        private static readonly Dictionary<string, string> MakeupEquiv = new(StringComparer.OrdinalIgnoreCase)
+        {
+            { "ADPT", "FLG" },
+            { "FLGR", "FLG" }
+        };
+
         // Lazy-load entries from embedded resource
         private static List<FittingMakeupEntry> LoadEntries()
         {
@@ -38,8 +45,24 @@ namespace VANTAGE.Services.AI
 
         // Look up a fitting makeup entry. Returns (Makeup_Run_In, Makeup_Outlet_In) or null if not found.
         // Two-pass lookup: exact class match first, then fallback to wildcard (null class) entries.
+        // Falls back to equivalent component (e.g., FLGR → FLG) only if direct lookup fails.
         public static (double RunIn, double? OutletIn)? LookupMakeup(
             string connType, string component, double runSize, string? classRating, double? outletSize = null)
+        {
+            // Try direct component lookup first
+            var result = LookupMakeupCore(connType, component, runSize, classRating, outletSize);
+            if (result != null) return result;
+
+            // Fall back to equivalent component if one exists
+            if (MakeupEquiv.TryGetValue(component, out string? equivComponent))
+                return LookupMakeupCore(connType, equivComponent, runSize, classRating, outletSize);
+
+            return null;
+        }
+
+        // Core lookup logic
+        private static (double RunIn, double? OutletIn)? LookupMakeupCore(
+            string connType, string component, double runSize, string? classRating, double? outletSize)
         {
             var entries = LoadEntries();
 
@@ -135,15 +158,27 @@ namespace VANTAGE.Services.AI
                     if (parsed != null)
                     {
                         var (largerSize, smallerSize) = parsed.Value;
-                        var result = LookupMakeup(weldType, "REDT", largerSize, classRating, smallerSize);
-                        lookupKey = $"{weldType}/REDT/{largerSize}x{smallerSize}" + (!string.IsNullOrEmpty(classRating) ? $"/Class{classRating}" : "");
-                        if (result != null)
+
+                        // Same-size REDT is actually a TEE (e.g., "0.75x0.75" = standard tee)
+                        if (Math.Abs(largerSize - smallerSize) < 0.001)
                         {
-                            // If pipe matches run size, double run makeup (2 welds); if outlet size, single outlet makeup
-                            if (Math.Abs(pipeSize - largerSize) < 0.001)
-                                contribution = result.Value.RunIn * 2;
-                            else
-                                contribution = result.Value.OutletIn ?? 0;
+                            var result = LookupMakeup(weldType, "TEE", pipeSize, classRating, pipeSize);
+                            lookupKey = $"{weldType}/TEE/{pipeSize}" + (!string.IsNullOrEmpty(classRating) ? $"/Class{classRating}" : "");
+                            if (result != null)
+                                contribution = result.Value.RunIn * 3;
+                        }
+                        else
+                        {
+                            var result = LookupMakeup(weldType, "REDT", largerSize, classRating, smallerSize);
+                            lookupKey = $"{weldType}/REDT/{largerSize}x{smallerSize}" + (!string.IsNullOrEmpty(classRating) ? $"/Class{classRating}" : "");
+                            if (result != null)
+                            {
+                                // If pipe matches run size, double run makeup (2 welds); if outlet size, single outlet makeup
+                                if (Math.Abs(pipeSize - largerSize) < 0.001)
+                                    contribution = result.Value.RunIn * 2;
+                                else
+                                    contribution = result.Value.OutletIn ?? 0;
+                            }
                         }
                     }
                 }

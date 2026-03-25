@@ -6,6 +6,19 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### March 25, 2026 (Takeoff — Rate Sheet & Makeup Table Expansion)
+- **VLV rate classes expanded:** Added classes 1000, 1440, 1480 (99 entries) copying rates from class 1500. Added VLV-2000 entries (34 entries) copying rates from 2500. Added missing VLV sizes (2.5, 26-48) for classes 2000 and 2500 using 1.04x extrapolation from 1500 rates.
+- **INST fallback entries:** Added 34 size-only INST entries (no class) using 2500 rates as defaults for unspecified class ratings.
+- **ANLZR entries:** Added fallback entry (no size, 6 MHs) and size 2 entry (6 MHs) for analyzer components.
+- **MakeupEquiv system implemented:** New `MakeupEquiv` dictionary in `FittingMakeupService.cs` maps components to equivalent makeup entries (ADPT→FLG, FLGR→FLG). Two-pass lookup tries direct match first, then equivalent component only if not found (performance optimized).
+- **RateEquiv mappings added:** Added HOSE→FTG, GGLASS→VLV, METER→INST, F8B→FTG, ADPT→FTG, FLGR→FTG to `ComponentToEstGrp` dictionary in `RateSheetService.cs`.
+- **Makeup table fixes:** Renamed CPL to CPLG (51 entries). Added VCK SCRD fallback entries (8 entries using 1500 class dimensions). Fixed REDT same-size handling to use TEE lookup (3x makeup) instead of reducing tee logic.
+- **Valve wildcard fallbacks:** Added 275 wildcard (null class) entries for 13 valve components (VBL, VBLL, VCK, VGL, VGT, VSW, VCKS, VGLS, VGTS, VPL, VSOL, VYG, VND) using largest available class values. FittingMakeup.json now has 2,432 entries.
+- **Recalc Excel button:** New "RECALC EXCEL" button in TakeoffView recalculates Labor, Summary, and other tabs from an existing takeoff Excel's Material tab without re-running AWS extraction.
+- **PrevEarnQTY calculation added:** Snapshot submission now calculates and stores PrevEarnQTY alongside PrevEarnMHs using the same formula (PercentEntry / 100 × Quantity).
+- **Failed DWGs tab preservation:** Previous Batches download and Recalc Excel now pass null for failedDrawings, preserving existing Failed DWGs tab instead of overwriting it.
+- **Key files:** `Services/AI/RateSheetService.cs`, `Services/AI/FittingMakeupService.cs`, `Resources/RateSheet.json`, `Resources/FittingMakeup.json`, `Views/TakeoffView.xaml`, `Views/TakeoffView.xaml.cs`, `Views/ProgressView.xaml.cs`
+
 ### March 24, 2026 (CONST TFS MECH Updater Plugin v1.0.0)
 - **CONST TFS MECH Updater plugin published:** Imports Constellation vendor spool reports and creates/updates fabrication activities in VANTAGE. Available via Plugin Manager.
 - **1:1 spool tracking:** Each spool (identified by Piece Mark) becomes one activity. Description format: `Constellation Fabrication for PieceMark {PieceMark} - Spool {Spool}`.

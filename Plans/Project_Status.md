@@ -1,6 +1,6 @@
 # MILESTONE - Project Status
 
-**Last Updated:** March 24, 2026
+**Last Updated:** March 25, 2026
 
 ## V1 Testing Scope
 
@@ -142,6 +142,8 @@
 - **Import from AI Takeoff** — Import Takeoff Manager dialog shell complete (source selection, ROC set dropdown, Import/Cancel buttons). Import logic not yet implemented. Replaces old "Create Activities" placeholder.
 - **MSI/MSIX installer** — Replace custom installer with MSI (WiX Toolset) or MSIX packaging to get genuine Windows install integration. Current custom installer registers via registry but Windows Search won't execute `UninstallString` directly — only MSI and UWP/MSIX apps get direct uninstall from search context menu. Current setup works via Settings > Apps.
 - **User-editable header template for WP** — Allow customizing header layout
+- **Complete RateEquiv mappings** — Finish adding all component-to-EstGrp mappings in `RateSheetService.cs` (ComponentToEstGrp dictionary). Currently has valve types, fittings, GGLASS, METER, HOSE, etc.
+- **Unify component reference tables** — Ensure all components are represented across CompRefTable, RateSheet.json, and FittingMakeup.json. Audit for missing entries and add equivalence mappings (MakeupEquiv in FittingMakeupService.cs) where components share identical values.
 
 ### V2 Data Model
 - Add ClientEarnedEquivQty column to Activities table, Azure VMS_Activities, and ColumnMappings (maps to OldVantage `VAL_Client_Earned_EQ-QTY`) - currently ignored during import

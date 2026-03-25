@@ -350,9 +350,9 @@ namespace VANTAGE.Views
 
                 // Load project rate cache if selected
                 var projectRateCache = await GetSelectedProjectRateCacheAsync();
-                var failedList = _failedDrawings.Count > 0 ? new List<string>(_failedDrawings) : null;
+                // Pass null for failedDrawings to preserve existing Failed DWGs tab from S3
                 var (missedMakeups, missedRates) = await System.Threading.Tasks.Task.Run(() =>
-                    TakeoffPostProcessor.GenerateLaborAndSummary(dialog.FileName, projectRateCache, failedList));
+                    TakeoffPostProcessor.GenerateLaborAndSummary(dialog.FileName, projectRateCache, failedDrawings: null));
 
                 AppendStatus($"Downloaded to {dialog.FileName}");
 
@@ -462,6 +462,55 @@ namespace VANTAGE.Views
             finally
             {
                 btnPreviousBatches.IsEnabled = true;
+            }
+        }
+
+        // Recalculate Labor, Summary, and other tabs from an existing Excel's Material tab
+        private async void BtnRecalcExcel_Click(object sender, RoutedEventArgs e)
+        {
+            var openDialog = new OpenFileDialog
+            {
+                Filter = "Excel Files|*.xlsx",
+                Title = "Select Takeoff Excel to Recalculate"
+            };
+
+            if (openDialog.ShowDialog() != true)
+                return;
+
+            string filePath = openDialog.FileName;
+
+            try
+            {
+                btnRecalcExcel.IsEnabled = false;
+                SetStatus("Recalculating Excel...");
+
+                // Load project rate cache if selected
+                var projectRateCache = await GetSelectedProjectRateCacheAsync();
+
+                var (missedMakeups, missedRates) = await System.Threading.Tasks.Task.Run(() =>
+                    TakeoffPostProcessor.GenerateLaborAndSummary(filePath, projectRateCache, failedDrawings: null));
+
+                SetStatus($"Recalculated: {missedMakeups} missed makeups, {missedRates} missed rates");
+
+                // Send missed data to admins if checkbox checked and there are misses
+                if (chkSendMissedToAdmin.IsChecked == true && (missedMakeups > 0 || missedRates > 0))
+                    _ = SendMissedToAdminsAsync(filePath, missedMakeups, missedRates);
+
+                // Open the file
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = filePath,
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "TakeoffView.BtnRecalcExcel_Click");
+                SetStatus($"Recalc error: {ex.Message}");
+            }
+            finally
+            {
+                btnRecalcExcel.IsEnabled = true;
             }
         }
 

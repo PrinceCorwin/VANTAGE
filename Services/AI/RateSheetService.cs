@@ -44,6 +44,12 @@ namespace VANTAGE.Services.AI
             { "VYG", "VLV" },
 
 
+            // Gauge glass → VLV
+            { "GGLASS", "VLV" },
+
+            // Meter → INST
+            { "METER", "INST" },
+
             // Fittings → FTG
             { "45L", "FTG" },
             { "90L", "FTG" },
@@ -58,7 +64,10 @@ namespace VANTAGE.Services.AI
             { "FLGB", "FTG" },
             { "FLGLJ", "FTG" },
             { "FLGO", "FTG" },
+            { "FLGR", "FTG" },
+            { "F8B", "FTG" },
             { "FO", "FTG" },
+            { "HOSE", "FTG" },
             { "LOL", "FTG" },
             { "NIP", "FTG" },
             { "PIPET", "FTG" },

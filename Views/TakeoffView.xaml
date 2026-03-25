@@ -258,6 +258,25 @@
                 </Button.Effect>
             </Button>
 
+            <Button x:Name="btnRecalcExcel"
+                    Content="RECALC EXCEL"
+                    Style="{StaticResource RoundedButtonStyle}"
+                    Padding="20,8"
+                    Margin="12,0,0,0"
+                    FontSize="12"
+                    Background="{DynamicResource ControlBackground}"
+                    Foreground="{DynamicResource ForegroundColor}"
+                    BorderBrush="{DynamicResource ControlBorder}"
+                    BorderThickness="1"
+                    Click="BtnRecalcExcel_Click"
+                    ToolTip="Recalculate Labor, Summary, and other tabs from an existing takeoff Excel's Material tab">
+                <Button.Effect>
+                    <DropShadowEffect ShadowDepth="4" BlurRadius="6" Direction="315"
+                                      Opacity="{DynamicResource ButtonShadowOpacity}"
+                                      Color="{DynamicResource ButtonShadowColor}"/>
+                </Button.Effect>
+            </Button>
+
         </StackPanel>
 
         <!-- Options -->
