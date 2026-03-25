@@ -6,6 +6,12 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### March 25, 2026 (Takeoff — Lilly Support Rates & Sizeless Fallback)
+- **Lilly support rates added:** 122 new SPT entries with commodity codes as class ratings (e.g., `SPT-0.5:5ABS1`, `SPT-6:5UGSP-1INS`). Covers support types 5ABS1-3, 5BS1-2, 5C, 5CC, 5CH, 5CI, 5DA1/3, 5DS1, 5FS1, 5FSS2, 5G1-3, 5HR1/4, 5IAC, 5IGC, 5ISC, 5MFSS5, 5MG1, 5MS, 5PU3, 5S1, 5UG, 5UGSP, 5US.
+- **Sizeless rate fallback:** Rate lookup now tries component-only key (e.g., `SPT`, `ANLZR`) as last resort when size-specific lookup fails. Enables existing sizeless fallback entries (ANLZR, SPRING, XMTR, SPT) to work as catch-all defaults.
+- **SPT fallback entry:** Added `SPT` with no size at 3 MHs as default for unmatched support sizes.
+- **Key files:** `Services/AI/RateSheetService.cs`, `Resources/RateSheet.json`
+
 ### March 25, 2026 (Takeoff — FS Commodity Code Lookup & Project Rates UX)
 - **FS commodity code rate lookup:** Field support (FS) items now use their Commodity Code for specialized rate lookup. During labor row generation, FS fab records copy the Commodity Code to the Class Rating column, enabling lookups like `SPT-4:A1234` with automatic fallback to `SPT-4` if not found.
 - **Project Rates dialog warning:** Added warning message above buttons: "⚠ Rate sheet columns must be formatted correctly. Use Export Template to get the required format." Uses `WarningText` theme resource.

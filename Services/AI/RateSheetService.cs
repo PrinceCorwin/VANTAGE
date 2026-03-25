@@ -187,6 +187,12 @@ namespace VANTAGE.Services.AI
                 if (rate.HasValue) return (rate.Value.FldMhu, rate.Value.Unit, key);
             }
 
+            // Try component-only fallback (no size) as last resort
+            {
+                var rate = LookupRate(estGrp);
+                if (rate.HasValue) return (rate.Value.FldMhu, rate.Value.Unit, estGrp);
+            }
+
             // Report all keys attempted for the missed rates tab
             string attemptedKey = (thicknessKey, classKey) switch
             {
@@ -280,6 +286,10 @@ namespace VANTAGE.Services.AI
                         if (projectRateCache.TryGetValue(key, out var projRate))
                             return (projRate.MH, projRate.Unit, "Project", key);
                     }
+
+                    // Try component-only fallback (no size) as last resort
+                    if (projectRateCache.TryGetValue(estGrp, out var fallbackRate))
+                        return (fallbackRate.MH, fallbackRate.Unit, "Project", estGrp);
                 }
             }
 
