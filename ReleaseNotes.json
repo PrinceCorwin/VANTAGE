@@ -1,6 +1,15 @@
 {
   "releases": [
     {
+      "version": "26.1.37",
+      "date": "2026-03-25",
+      "highlights": [
+        "Takeoff — Recalc Excel button to reprocess existing takeoff files without re-running AWS extraction",
+        "Takeoff — Expanded rate sheet and makeup tables for better coverage (VLV classes, INST fallbacks, valve wildcards)",
+        "Progress — PrevEarnQTY now calculated during snapshot submission"
+      ]
+    },
+    {
       "version": "26.1.36",
       "date": "2026-03-23",
       "highlights": [

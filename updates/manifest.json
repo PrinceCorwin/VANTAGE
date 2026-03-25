@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.1.36",
-  "releaseDate": "2026-03-23T12:15:26Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.36/VANTAGE-26.1.36.zip",
-  "zipSizeBytes": 149953162,
-  "sha256": "97BADE0C63F53CC38824C537FEE0D2670D6E0E10556F4DFEDED0A7CBB881E2AF",
-  "releaseNotes": "Progress summary panel fixes, view disabled during load"
+  "currentVersion": "26.1.37",
+  "releaseDate": "2026-03-25T12:21:31Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.37/VANTAGE-26.1.37.zip",
+  "zipSizeBytes": 149958830,
+  "sha256": "9D48E30A7BC554B0C3693B2B0C1E26FEAAE0DB36377F54E4A53A5FB2DEF7D887",
+  "releaseNotes": "Takeoff recalc button, expanded rate/makeup tables, PrevEarnQTY calculation"
 }
