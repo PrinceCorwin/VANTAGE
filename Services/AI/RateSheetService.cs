@@ -47,8 +47,9 @@ namespace VANTAGE.Services.AI
             // Gauge glass → VLV
             { "GGLASS", "VLV" },
 
-            // Meter → INST
+            // Meter, Heater → INST
             { "METER", "INST" },
+            { "HEAT", "INST" },
 
             // Fittings → FTG
             { "45L", "FTG" },

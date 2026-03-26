@@ -348,6 +348,9 @@ namespace VANTAGE.Views
             {
                 await _service.DownloadExcelAsync(batchId, dialog.FileName);
 
+                // Prompt for any blank Component values before processing
+                PromptForBlankComponents(dialog.FileName);
+
                 // Load project rate cache if selected
                 var projectRateCache = await GetSelectedProjectRateCacheAsync();
                 // Pass null for failedDrawings to preserve existing Failed DWGs tab from S3
@@ -484,6 +487,9 @@ namespace VANTAGE.Views
                 btnRecalcExcel.IsEnabled = false;
                 SetStatus("Recalculating Excel...");
 
+                // Prompt for any blank Component values before recalculating
+                PromptForBlankComponents(filePath);
+
                 // Load project rate cache if selected
                 var projectRateCache = await GetSelectedProjectRateCacheAsync();
 
@@ -512,6 +518,24 @@ namespace VANTAGE.Views
             {
                 btnRecalcExcel.IsEnabled = true;
             }
+        }
+
+        // Prompt user to assign components for any Material rows with blank Component
+        // Returns false if user cancelled and processing should stop
+        private bool PromptForBlankComponents(string excelPath)
+        {
+            var blankRows = TakeoffPostProcessor.GetBlankComponentRows(excelPath);
+            if (blankRows.Count == 0) return true;
+
+            var dialog = new BlankComponentDialog(blankRows) { Owner = Window.GetWindow(this) };
+            if (dialog.ShowDialog() == true)
+            {
+                var assignments = dialog.GetAssignments();
+                if (assignments.Count > 0)
+                    TakeoffPostProcessor.WriteBlankComponents(excelPath, assignments);
+            }
+
+            return true;
         }
 
         // Send only Missed Makeups and Missed Rates tabs to all admins

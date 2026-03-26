@@ -6,6 +6,19 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### March 25, 2026 (Takeoff — Summary Tab, Blank Components, Rate/Makeup Expansion)
+- **Summary tab connection counts fixed:** Total Connections now only counts BW, SW, SCRD, and BU (BU rows / 2 rounded up). Previously counted all labor rows including PIPE, SPL, hardware, fab records.
+- **Summary tab MHs columns:** Added MHs column to Connections By Type, Connections By Size, and Connections By Drawing sections. Added Total MHs row (all labor) to top summary.
+- **Summary tab section reorder:** Components By Type (no MHs) moved to second section, before the three Connections sections that have MHs.
+- **Blank component dialog:** New `BlankComponentDialog` prompts user to fill in missing Component values on Material tab rows before labor explosion. Shows drawing number + raw description with input field. Runs before both initial download processing and Recalc Excel.
+- **GSKT sizeless default:** Material rows with Component=GSKT and blank Size now default to size 2 before labor generation.
+- **STR (strainer) connection fix:** Strainer dual-size items (e.g., 1x0.375) now create both connections at the larger size. The smaller size is a drain outlet, not a connection.
+- **GRV makeup fallback chain:** `FittingMakeupService.LookupMakeup` now falls back GRV → SW → BW when a grooved connection type isn't found in the makeup table. Resolves ~150 missed makeups for GRV VBL, CAP, RED, REDT components.
+- **FittingMakeup.json additions:** BW/UN entries (SW values × 1.20), VPL size 3 entries (size 2 × 1.10), SCRD/FLG size 3 entries (from BW/FLG size 3), 24 wildcard SCRD/TEE and SCRD/90L entries (Class 2000 values).
+- **RateSheet.json fixes:** Fixed SCRD-0.38 → SCRD-0.375 (correct 3/8" size). Added HARD-0.875 (0.25 MHs), DPAN-0.5 (3.0 MHs).
+- **HEAT → INST rate equivalence:** Added HEAT to `ComponentToEstGrp` mapping in `RateSheetService.cs`, resolving water heater rate lookups via INST rates.
+- **Key files:** `Services/AI/TakeoffPostProcessor.cs`, `Services/AI/FittingMakeupService.cs`, `Services/AI/RateSheetService.cs`, `Resources/FittingMakeup.json`, `Resources/RateSheet.json`, `Dialogs/BlankComponentDialog.xaml/.cs`, `Views/TakeoffView.xaml.cs`
+
 ### March 25, 2026 (Takeoff — Makeup & Rate Fixes, Recalc Tab Cleanup)
 - **SCRD/FLG makeup entries added:** Created 30 SCRD/FLG entries (cloned from SW/FLG) covering sizes 0.5-2" across classes 150, 300, 600, 900, 1500. Enables ADPT→FLG equivalence to resolve for screwed connections.
 - **Wildcard SCRD/CPLG entries:** Added 12 classless fallback entries for SCRD/CPLG using 3000 class values. Resolves mismatches when drawings have pressure class ratings (e.g., 150) instead of fitting weight classes (3000/6000).

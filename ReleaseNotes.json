@@ -1,6 +1,15 @@
 {
   "releases": [
     {
+      "version": "26.1.39",
+      "date": "2026-03-25",
+      "highlights": [
+        "Takeoff — Summary tab connection counts now correctly filter to BW/SW/SCRD/BU only, with MHs columns",
+        "Takeoff — Blank component dialog prompts user before processing, GSKT defaults to size 2",
+        "Takeoff — GRV makeup fallback chain (GRV→SW→BW), expanded rate/makeup coverage (HEAT→INST, HARD-0.875, DPAN, SCRD FLG size 3)"
+      ]
+    },
+    {
       "version": "26.1.38",
       "date": "2026-03-25",
       "highlights": [

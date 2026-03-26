@@ -64,6 +64,77 @@ namespace VANTAGE.Services.AI
             "FS", "GSKT", "BOLT", "WAS", "HEAT", "HOSE", "INST", "NIP", "PLG", "SAFSHW", "F8B", "DPAN", "ACT", "FLGB", "PIPET", "FLGLJ", "GAUGE"
         };
 
+        // Find Material tab rows with blank Component values
+        // Returns list of (excelRow, drawingNumber, rawDescription) for UI prompt
+        public static List<(int ExcelRow, string DrawingNumber, string RawDescription)> GetBlankComponentRows(string excelPath)
+        {
+            var results = new List<(int, string, string)>();
+            using var workbook = new XLWorkbook(excelPath);
+
+            if (!workbook.TryGetWorksheet("Material", out var ws)) return results;
+            var usedRange = ws.RangeUsed();
+            if (usedRange == null) return results;
+
+            // Find Component, Drawing Number, and Raw Description column indices
+            int lastCol = usedRange.LastColumn().ColumnNumber();
+            int compCol = -1, dwgCol = -1, descCol = -1;
+            for (int col = 1; col <= lastCol; col++)
+            {
+                string header = ws.Cell(1, col).GetString().Trim();
+                if (header.Equals("Component", StringComparison.OrdinalIgnoreCase) && compCol == -1) compCol = col;
+                else if (header.Equals("Drawing Number", StringComparison.OrdinalIgnoreCase) && dwgCol == -1) dwgCol = col;
+                else if (header.Equals("Raw Description", StringComparison.OrdinalIgnoreCase) && descCol == -1) descCol = col;
+            }
+            if (compCol == -1) return results;
+
+            int lastRow = usedRange.LastRow().RowNumber();
+            for (int row = 2; row <= lastRow; row++)
+            {
+                string comp = ws.Cell(row, compCol).GetString().Trim();
+                if (string.IsNullOrEmpty(comp))
+                {
+                    string dwg = dwgCol > 0 ? ws.Cell(row, dwgCol).GetString().Trim() : "";
+                    string desc = descCol > 0 ? ws.Cell(row, descCol).GetString().Trim() : "";
+                    results.Add((row, dwg, desc));
+                }
+            }
+
+            return results;
+        }
+
+        // Write user-supplied Component values back to the Material tab
+        // rowComponents maps excel row number -> component value
+        public static void WriteBlankComponents(string excelPath, Dictionary<int, string> rowComponents)
+        {
+            if (rowComponents.Count == 0) return;
+
+            using var workbook = new XLWorkbook(excelPath);
+            if (!workbook.TryGetWorksheet("Material", out var ws)) return;
+
+            var usedRange = ws.RangeUsed();
+            if (usedRange == null) return;
+
+            int lastCol = usedRange.LastColumn().ColumnNumber();
+            int compCol = -1;
+            for (int col = 1; col <= lastCol; col++)
+            {
+                if (ws.Cell(1, col).GetString().Trim().Equals("Component", StringComparison.OrdinalIgnoreCase))
+                {
+                    compCol = col;
+                    break;
+                }
+            }
+            if (compCol == -1) return;
+
+            foreach (var (row, component) in rowComponents)
+            {
+                if (!string.IsNullOrWhiteSpace(component))
+                    ws.Cell(row, compCol).Value = component.Trim().ToUpper();
+            }
+
+            workbook.Save();
+        }
+
         // Main entry point - processes the downloaded Excel file in place
         // Returns counts of missed makeups and missed rates for caller use
         // Optional projectRateCache provides per-project rate overrides
@@ -86,6 +157,16 @@ namespace VANTAGE.Services.AI
 
                 // Step A2: Normalize TEE sizes (convert single sizes like "4" to "4x4")
                 NormalizeTeeSizes(materialRows);
+
+                // Step A3: Default sizeless GSKT rows to size 2
+                foreach (var row in materialRows)
+                {
+                    if (GetString(row, "Component").Equals("GSKT", StringComparison.OrdinalIgnoreCase)
+                        && string.IsNullOrWhiteSpace(GetString(row, "Size")))
+                    {
+                        row["Size"] = "2";
+                    }
+                }
 
                 // Step B: Generate Labor rows
                 var laborRows = GenerateLaborRows(materialRows);
@@ -681,6 +762,15 @@ namespace VANTAGE.Services.AI
                 return pairs;
             }
 
+            // STR (strainer): smaller size is drain outlet, not a connection — all connections at larger size
+            if (component == "STR")
+            {
+                string connType = types[0];
+                for (int i = 0; i < connQty; i++)
+                    pairs.Add((connType, largerSize));
+                return pairs;
+            }
+
             // Dual-size fittings (REDT, REDC, REDE, SWG, etc.): 1st type at larger, 2nd type at smaller
             if (isDualSize)
             {
@@ -973,9 +1063,23 @@ namespace VANTAGE.Services.AI
             int lowConf = materialRows.Count(r => GetString(r, "Confidence").Equals("low", StringComparison.OrdinalIgnoreCase));
             int medConf = materialRows.Count(r => GetString(r, "Confidence").Equals("medium", StringComparison.OrdinalIgnoreCase));
 
+            // Connection types: BW, SW, SCRD counted as-is; BU divided by 2 rounded up (each row is one flange)
+            var connectionTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "BW", "SW", "SCRD", "BU" };
+            var connectionRows = laborRows.Where(r => connectionTypes.Contains(GetString(r, "Component"))).ToList();
+            int bwCount = connectionRows.Count(r => GetString(r, "Component").Equals("BW", StringComparison.OrdinalIgnoreCase));
+            int swCount = connectionRows.Count(r => GetString(r, "Component").Equals("SW", StringComparison.OrdinalIgnoreCase));
+            int scrdCount = connectionRows.Count(r => GetString(r, "Component").Equals("SCRD", StringComparison.OrdinalIgnoreCase));
+            int buRows = connectionRows.Count(r => GetString(r, "Component").Equals("BU", StringComparison.OrdinalIgnoreCase));
+            int buCount = (int)Math.Ceiling(buRows / 2.0);
+            int totalConnections = bwCount + swCount + scrdCount + buCount;
+
+            // Total MHs across all labor rows
+            double totalMHs = laborRows.Sum(r => GetBudgetMHs(r));
+
             WriteSummaryRow(ws, row++, "Total Drawings", drawingNumbers.Count);
             WriteSummaryRow(ws, row++, "Total BOM Items", materialRows.Count);
-            WriteSummaryRow(ws, row++, "Total Connections", laborRows.Count);
+            WriteSummaryRow(ws, row++, "Total Connections", totalConnections);
+            WriteSummaryRowDouble(ws, row++, "Total MHs", totalMHs);
             WriteSummaryRow(ws, row++, "Shop Items", shopCount);
             WriteSummaryRow(ws, row++, "Field Items", fieldCount);
             WriteSummaryRow(ws, row++, "Flagged Items", lowConf + medConf);
@@ -983,33 +1087,7 @@ namespace VANTAGE.Services.AI
             WriteSummaryRow(ws, row++, "Medium Confidence", medConf);
             row++;
 
-            // Section: CONNECTIONS BY TYPE
-            WriteSectionHeader(ws, row, "CONNECTIONS BY TYPE", headerFill);
-            ws.Cell(row, 2).Value = "Count";
-            ws.Cell(row, 2).Style.Fill.BackgroundColor = headerFill;
-            ws.Cell(row, 2).Style.Font.Bold = true;
-            row++;
-
-            var byType = laborRows.GroupBy(r => GetString(r, "Component"))
-                                  .OrderBy(g => g.Key);
-            foreach (var g in byType)
-                WriteSummaryRow(ws, row++, g.Key, g.Count());
-            row++;
-
-            // Section: CONNECTIONS BY SIZE
-            WriteSectionHeader(ws, row, "CONNECTIONS BY SIZE", headerFill);
-            ws.Cell(row, 2).Value = "Count";
-            ws.Cell(row, 2).Style.Fill.BackgroundColor = headerFill;
-            ws.Cell(row, 2).Style.Font.Bold = true;
-            row++;
-
-            var bySize = laborRows.GroupBy(r => GetString(r, "Connection Size"))
-                                  .OrderBy(g => ParseSizeForSort(g.Key));
-            foreach (var g in bySize)
-                WriteSummaryRow(ws, row++, g.Key, g.Count());
-            row++;
-
-            // Section: COMPONENTS BY TYPE
+            // Section: COMPONENTS BY TYPE (from Material tab)
             WriteSectionHeader(ws, row, "COMPONENTS BY TYPE", headerFill);
             ws.Cell(row, 2).Value = "Count";
             ws.Cell(row, 2).Style.Fill.BackgroundColor = headerFill;
@@ -1022,20 +1100,72 @@ namespace VANTAGE.Services.AI
                 WriteSummaryRow(ws, row++, g.Key, g.Count());
             row++;
 
-            // Section: CONNECTIONS BY DRAWING
+            // Section: CONNECTIONS BY TYPE (BW, SW, SCRD, BU only; BU count = rows/2 rounded up)
+            WriteSectionHeader(ws, row, "CONNECTIONS BY TYPE", headerFill);
+            ws.Cell(row, 2).Value = "Count";
+            ws.Cell(row, 2).Style.Fill.BackgroundColor = headerFill;
+            ws.Cell(row, 2).Style.Font.Bold = true;
+            ws.Cell(row, 3).Value = "MHs";
+            ws.Cell(row, 3).Style.Fill.BackgroundColor = headerFill;
+            ws.Cell(row, 3).Style.Font.Bold = true;
+            row++;
+
+            var byType = connectionRows.GroupBy(r => GetString(r, "Component").ToUpper())
+                                       .OrderBy(g => g.Key);
+            foreach (var g in byType)
+            {
+                int count = g.Key == "BU" ? (int)Math.Ceiling(g.Count() / 2.0) : g.Count();
+                double mhs = g.Sum(r => GetBudgetMHs(r));
+                WriteSummaryRowWithMHs(ws, row++, g.Key, count, mhs);
+            }
+            row++;
+
+            // Section: CONNECTIONS BY SIZE (BW, SW, SCRD, BU only; BU count = rows/2 rounded up)
+            WriteSectionHeader(ws, row, "CONNECTIONS BY SIZE", headerFill);
+            ws.Cell(row, 2).Value = "Count";
+            ws.Cell(row, 2).Style.Fill.BackgroundColor = headerFill;
+            ws.Cell(row, 2).Style.Font.Bold = true;
+            ws.Cell(row, 3).Value = "MHs";
+            ws.Cell(row, 3).Style.Fill.BackgroundColor = headerFill;
+            ws.Cell(row, 3).Style.Font.Bold = true;
+            row++;
+
+            var bySize = connectionRows.GroupBy(r => GetString(r, "Connection Size"))
+                                       .OrderBy(g => ParseSizeForSort(g.Key));
+            foreach (var g in bySize)
+            {
+                int buInGroup = g.Count(r => GetString(r, "Component").Equals("BU", StringComparison.OrdinalIgnoreCase));
+                int nonBu = g.Count() - buInGroup;
+                int count = nonBu + (int)Math.Ceiling(buInGroup / 2.0);
+                double mhs = g.Sum(r => GetBudgetMHs(r));
+                WriteSummaryRowWithMHs(ws, row++, g.Key, count, mhs);
+            }
+            row++;
+
+            // Section: CONNECTIONS BY DRAWING (BW, SW, SCRD, BU only; BU count = rows/2 rounded up)
             WriteSectionHeader(ws, row, "CONNECTIONS BY DRAWING", headerFill);
             ws.Cell(row, 2).Value = "Connections";
             ws.Cell(row, 2).Style.Fill.BackgroundColor = headerFill;
             ws.Cell(row, 2).Style.Font.Bold = true;
+            ws.Cell(row, 3).Value = "MHs";
+            ws.Cell(row, 3).Style.Fill.BackgroundColor = headerFill;
+            ws.Cell(row, 3).Style.Font.Bold = true;
             row++;
 
-            var byDrawing = laborRows.GroupBy(r => GetString(r, "Drawing Number"))
-                                     .OrderBy(g => g.Key);
+            var byDrawing = connectionRows.GroupBy(r => GetString(r, "Drawing Number"))
+                                          .OrderBy(g => g.Key);
             foreach (var g in byDrawing)
-                WriteSummaryRow(ws, row++, g.Key, g.Count());
+            {
+                int buInGroup = g.Count(r => GetString(r, "Component").Equals("BU", StringComparison.OrdinalIgnoreCase));
+                int nonBu = g.Count() - buInGroup;
+                int count = nonBu + (int)Math.Ceiling(buInGroup / 2.0);
+                double mhs = g.Sum(r => GetBudgetMHs(r));
+                WriteSummaryRowWithMHs(ws, row++, g.Key, count, mhs);
+            }
 
             ws.Column(1).AdjustToContents();
             ws.Column(2).AdjustToContents();
+            ws.Column(3).AdjustToContents();
         }
 
         // Write a section header with green background
@@ -1051,6 +1181,30 @@ namespace VANTAGE.Services.AI
         {
             ws.Cell(row, 1).Value = label;
             ws.Cell(row, 2).Value = value;
+        }
+
+        // Write a label/double value row
+        private static void WriteSummaryRowDouble(IXLWorksheet ws, int row, string label, double value)
+        {
+            ws.Cell(row, 1).Value = label;
+            ws.Cell(row, 2).Value = NumericHelper.RoundToPlaces(value);
+        }
+
+        // Write a label/count/MHs row
+        private static void WriteSummaryRowWithMHs(IXLWorksheet ws, int row, string label, int count, double mhs)
+        {
+            ws.Cell(row, 1).Value = label;
+            ws.Cell(row, 2).Value = count;
+            ws.Cell(row, 3).Value = NumericHelper.RoundToPlaces(mhs);
+        }
+
+        // Get BudgetMHs as double (0 if null or non-numeric)
+        private static double GetBudgetMHs(Dictionary<string, object?> row)
+        {
+            if (!row.TryGetValue("BudgetMHs", out var val) || val == null) return 0;
+            if (val is double d) return d;
+            if (double.TryParse(val.ToString(), out double parsed)) return parsed;
+            return 0;
         }
 
         // Write Missed Makeups tab for fittings not found in the lookup table

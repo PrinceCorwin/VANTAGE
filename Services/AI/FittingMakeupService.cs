@@ -43,9 +43,16 @@ namespace VANTAGE.Services.AI
             return _entries;
         }
 
+        // Connection type fallback chain: GRV → SW → BW
+        private static readonly string[][] ConnTypeFallbacks = new[]
+        {
+            new[] { "GRV", "SW", "BW" }
+        };
+
         // Look up a fitting makeup entry. Returns (Makeup_Run_In, Makeup_Outlet_In) or null if not found.
         // Two-pass lookup: exact class match first, then fallback to wildcard (null class) entries.
         // Falls back to equivalent component (e.g., FLGR → FLG) only if direct lookup fails.
+        // GRV connections fall back to SW, then BW if not found.
         public static (double RunIn, double? OutletIn)? LookupMakeup(
             string connType, string component, double runSize, string? classRating, double? outletSize = null)
         {
@@ -55,7 +62,28 @@ namespace VANTAGE.Services.AI
 
             // Fall back to equivalent component if one exists
             if (MakeupEquiv.TryGetValue(component, out string? equivComponent))
-                return LookupMakeupCore(connType, equivComponent, runSize, classRating, outletSize);
+            {
+                result = LookupMakeupCore(connType, equivComponent, runSize, classRating, outletSize);
+                if (result != null) return result;
+            }
+
+            // Connection type fallback chain (e.g., GRV → SW → BW)
+            foreach (var chain in ConnTypeFallbacks)
+            {
+                if (!connType.Equals(chain[0], StringComparison.OrdinalIgnoreCase)) continue;
+
+                for (int i = 1; i < chain.Length; i++)
+                {
+                    result = LookupMakeupCore(chain[i], component, runSize, classRating, outletSize);
+                    if (result != null) return result;
+
+                    if (MakeupEquiv.TryGetValue(component, out string? equivComp))
+                    {
+                        result = LookupMakeupCore(chain[i], equivComp, runSize, classRating, outletSize);
+                        if (result != null) return result;
+                    }
+                }
+            }
 
             return null;
         }
