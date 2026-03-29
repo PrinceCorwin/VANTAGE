@@ -2110,6 +2110,17 @@
                         </Button>
                     </StackPanel>
 
+                    <!-- Selection Stats (Count, Sum, Avg) -->
+                    <StackPanel x:Name="pnlSelectionStats" DockPanel.Dock="Right" Orientation="Horizontal" Margin="0,0,10,0"
+                                Visibility="Collapsed" VerticalAlignment="Center">
+                        <TextBlock Text="Count:" Foreground="{DynamicResource SummaryLabelColor}" FontSize="11" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="txtSelCount" Text="0" Foreground="{DynamicResource SummaryBudgetForeground}" FontSize="11" FontWeight="Bold" Margin="3,0,10,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="Sum:" Foreground="{DynamicResource SummaryLabelColor}" FontSize="11" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="txtSelSum" Text="0" Foreground="{DynamicResource SummaryEarnedForeground}" FontSize="11" FontWeight="Bold" Margin="3,0,10,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="Avg:" Foreground="{DynamicResource SummaryLabelColor}" FontSize="11" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="txtSelAvg" Text="0" Foreground="{DynamicResource SummaryPercentForeground}" FontSize="11" FontWeight="Bold" Margin="3,0,0,0" VerticalAlignment="Center"/>
+                    </StackPanel>
+
                     <Border/>
                 </DockPanel>
             </Border>

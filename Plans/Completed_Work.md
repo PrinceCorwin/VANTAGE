@@ -6,6 +6,10 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### March 29, 2026 (Progress Grid — Selection Stats)
+- **Cell selection stats in footer bar:** When 2+ cells are selected, the footer bar now shows Count, Sum, and Avg of the selected values. Uses the same color scheme as the top summary stats (Budget/Earned/Percent). If any selected cell is non-numeric, Sum and Avg display "NotNum". Panel hides when fewer than 2 cells are selected.
+- **Key files:** `Views/ProgressView.xaml`, `Views/ProgressView.xaml.cs`
+
 ### March 25, 2026 (Takeoff — Summary Tab, Blank Components, Rate/Makeup Expansion)
 - **Summary tab connection counts fixed:** Total Connections now only counts BW, SW, SCRD, and BU (BU rows / 2 rounded up). Previously counted all labor rows including PIPE, SPL, hardware, fab records.
 - **Summary tab MHs columns:** Added MHs column to Connections By Type, Connections By Size, and Connections By Drawing sections. Added Total MHs row (all labor) to top summary.

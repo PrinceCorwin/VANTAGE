@@ -5232,7 +5232,80 @@ namespace VANTAGE.Views
 
 			// Update record count display to show selection info
 			UpdateRecordCount();
+
+			// Update selection stats (Count, Sum, Avg)
+			UpdateSelectionStats(selectedCells);
 		}
+
+        // Updates Count/Sum/Avg stats for selected cells in the bottom toolbar
+        private void UpdateSelectionStats(IList<Syncfusion.UI.Xaml.Grid.GridCellInfo> selectedCells)
+        {
+            if (selectedCells == null || selectedCells.Count < 2)
+            {
+                pnlSelectionStats.Visibility = Visibility.Collapsed;
+                return;
+            }
+
+            var values = new List<double>();
+            bool allNumeric = true;
+
+            foreach (var cell in selectedCells)
+            {
+                var activity = cell.RowData as Activity;
+                if (activity == null || cell.Column == null)
+                {
+                    allNumeric = false;
+                    break;
+                }
+
+                var property = typeof(Activity).GetProperty(cell.Column.MappingName);
+                if (property == null)
+                {
+                    allNumeric = false;
+                    break;
+                }
+
+                var rawValue = property.GetValue(activity);
+                if (rawValue == null)
+                {
+                    allNumeric = false;
+                    break;
+                }
+
+                if (rawValue is double d)
+                    values.Add(d);
+                else if (rawValue is int i)
+                    values.Add(i);
+                else if (rawValue is long l)
+                    values.Add(l);
+                else if (rawValue is float f)
+                    values.Add(f);
+                else if (rawValue is decimal dec)
+                    values.Add((double)dec);
+                else if (double.TryParse(rawValue.ToString(), out double parsed))
+                    values.Add(parsed);
+                else
+                {
+                    allNumeric = false;
+                    break;
+                }
+            }
+
+            pnlSelectionStats.Visibility = Visibility.Visible;
+
+            if (allNumeric && values.Count > 0)
+            {
+                txtSelCount.Text = values.Count.ToString();
+                txtSelSum.Text = NumericHelper.RoundToPlaces(values.Sum()).ToString("N3");
+                txtSelAvg.Text = NumericHelper.RoundToPlaces(values.Average()).ToString("N3");
+            }
+            else
+            {
+                txtSelCount.Text = selectedCells.Count.ToString();
+                txtSelSum.Text = "NotNum";
+                txtSelAvg.Text = "NotNum";
+            }
+        }
 
         private async void MenuAssignToUser_Click(object sender, RoutedEventArgs e)
         {
