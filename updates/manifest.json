@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.1.39",
-  "releaseDate": "2026-03-25T21:25:25Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.39/VANTAGE-26.1.39.zip",
-  "zipSizeBytes": 150137538,
-  "sha256": "39B5C8BCD5197B78A35CB31B226758DACFBA69AE762EC184ADF8977BAF5C2A49",
-  "releaseNotes": "Summary tab fixes, blank component dialog, rate/makeup expansion"
+  "currentVersion": "26.1.40",
+  "releaseDate": "2026-03-29T18:08:30Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.40/VANTAGE-26.1.40.zip",
+  "zipSizeBytes": 150138701,
+  "sha256": "F3D48EE7AA1AA12452DCAB0A83192C9FE9B971AF18167396D2CA62D876404AA7",
+  "releaseNotes": "Cell selection stats, GitHub CLI integration, version numbering docs"
 }

@@ -76,22 +76,30 @@ WPF application for Summit Industrial replacing the legacy MS Access system ("Ol
 ## Publishing Updates
 Updates are distributed via GitHub Releases. The auto-updater checks `updates/manifest.json` for new versions.
 
+### Version Numbering
+Format: `YY.Q.N` where:
+- **YY** = 2-digit year (e.g., 26 for 2026)
+- **Q** = quarter (1 = Jan-Mar, 2 = Apr-Jun, 3 = Jul-Sep, 4 = Oct-Dec)
+- **N** = sequential release number within that quarter, resets to 1 each new quarter
+
+Example: `26.1.40` = year 2026, Q1, 40th release. On April 1st, the next release becomes `26.2.1`.
+
 ### Release Process
 1. Bump version in `VANTAGE.csproj` (Version, AssemblyVersion, FileVersion)
-2. Run: `powershell -ExecutionPolicy Bypass -File "Scripts\publish-update.ps1" -Version "X.Y.Z"`
-3. Script outputs: ZIP path, size, and SHA-256 hash
-4. Create GitHub Release — **`gh` CLI is NOT installed**; do NOT attempt to use it. Instead, provide the user with the release URL, tag, title, and formatted description to create manually at `https://github.com/PrinceCorwin/VANTAGE/releases`
-   - Tag: `vX.Y.Z`
-   - Title: see convention below
-   - Upload the ZIP file
+2. **Update `ReleaseNotes.json`** — Add a new entry at the top of the `releases` array with the version, date, and user-facing highlights. This file is embedded in the app and shown in the "See Release Notes" dialog. Must be updated BEFORE the publish script runs so the new entry is included in the build.
+3. Run: `powershell -ExecutionPolicy Bypass -File "Scripts\publish-update.ps1" -Version "X.Y.Z"`
+4. Script outputs: ZIP path, size, and SHA-256 hash
 5. Update `updates/manifest.json` with:
    - `currentVersion`: the new version
    - `downloadUrl`: `https://github.com/PrinceCorwin/VANTAGE/releases/download/vX.Y.Z/VANTAGE-X.Y.Z.zip`
    - `zipSizeBytes`: from script output
    - `sha256`: from script output
    - `releaseNotes`: brief description
-6. **Update `ReleaseNotes.json`** — Add a new entry at the top of the `releases` array with the version, date, and user-facing highlights. This file is embedded in the app and shown in the "See Release Notes" dialog. Must be updated BEFORE the publish script runs so the new entry is included in the build.
-7. Commit and push the manifest update
+6. Commit and push the manifest update
+7. Create GitHub Release using `gh`:
+   ```
+   gh release create vX.Y.Z path/to/VANTAGE-X.Y.Z.zip --title "VANTAGE: Milestone vX.Y.Z" --notes "description"
+   ```
 
 ### GitHub Release Title Convention
 Always use the format: `VANTAGE: Milestone vX.Y.Z` — the title is the version, NOT a description.
