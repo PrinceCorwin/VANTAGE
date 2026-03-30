@@ -22,7 +22,7 @@ namespace VANTAGE.Utilities
         private const string SchemaVersionKey = "SchemaVersion";
 
         // Increment this when adding new migrations
-        public const int CurrentSchemaVersion = 8;
+        public const int CurrentSchemaVersion = 9;
 
         // Runs all pending migrations sequentially
         // progressCallback is invoked with status messages for UI updates
@@ -97,6 +97,9 @@ namespace VANTAGE.Utilities
                     break;
                 case 8:
                     Migration_v8_AddScheduleThreeWeekColumns(connection);
+                    break;
+                case 9:
+                    Migration_v9_CleanupStaleDates(connection);
                     break;
                 default:
                     throw new ArgumentException($"Unknown migration version: {version}");
@@ -345,6 +348,37 @@ namespace VANTAGE.Utilities
                 using var cmd = connection.CreateCommand();
                 cmd.CommandText = "ALTER TABLE Schedule ADD COLUMN ThreeWeekFinish TEXT";
                 cmd.ExecuteNonQuery();
+            }
+        }
+        // v9: Clear stale ActStart/ActFin dates that don't align with PercentEntry
+        // 0% should have no dates, <100% should have no ActFin
+        private static void Migration_v9_CleanupStaleDates(SqliteConnection connection)
+        {
+            // Clear both dates for 0% records
+            using (var cmd = connection.CreateCommand())
+            {
+                cmd.CommandText = @"
+                    UPDATE Activities SET ActStart = '', ActFin = '', LocalDirty = 1
+                    WHERE PercentEntry = 0
+                    AND (ActStart IS NOT NULL AND ActStart != ''
+                         OR ActFin IS NOT NULL AND ActFin != '')";
+                int cleared = cmd.ExecuteNonQuery();
+                if (cleared > 0)
+                    AppLogger.Info($"Cleared dates on {cleared} records with 0% progress",
+                        "SchemaMigrator.Migration_v9");
+            }
+
+            // Clear ActFin for >0% but <100% records
+            using (var cmd = connection.CreateCommand())
+            {
+                cmd.CommandText = @"
+                    UPDATE Activities SET ActFin = '', LocalDirty = 1
+                    WHERE PercentEntry > 0 AND PercentEntry < 100
+                    AND ActFin IS NOT NULL AND ActFin != ''";
+                int cleared = cmd.ExecuteNonQuery();
+                if (cleared > 0)
+                    AppLogger.Info($"Cleared ActFin on {cleared} records with <100% progress",
+                        "SchemaMigrator.Migration_v9");
             }
         }
     }

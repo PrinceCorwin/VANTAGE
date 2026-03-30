@@ -6,6 +6,14 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### March 30, 2026 (Find & Replace / Percent Buttons — Date Handling & Bug Fixes)
+- **Find & Replace EarnMHsCalc error fixed:** Removed `EarnMHsCalc` from derived columns written to DB — it's a computed property, not a DB column. This was causing transaction rollback and all find-replace changes to revert on refresh.
+- **Find & Replace ActStart/ActFin date clearing:** When find-replacing PercentEntry or EarnQtyEntry, dates are now cleared/preserved using the same rules as normal cell editing (0% clears both, <100% clears ActFin, 100% leaves both as required metadata).
+- **Find & Replace date matching fix:** "Match entire cell contents" now works for date columns (ActStart, ActFin). DateTime values are formatted to short date for comparison, matching the grid display.
+- **Percent buttons date clearing:** `BulkUpdatePercentAsync` now clears ActStart/ActFin in the same SQL transaction (0% clears both, <100% clears ActFin).
+- **Schema migration v9 — stale date cleanup:** One-time migration clears dates that don't align with PercentEntry (0% with dates, <100% with ActFin). Marks affected records LocalDirty for Azure sync.
+- **Key files:** `Dialogs/FindReplaceDialog.xaml.cs`, `Data/ActivityRepository.cs`, `Utilities/SchemaMigrator.cs`
+
 ### March 29, 2026 (Progress Grid — Selection Stats)
 - **Cell selection stats in footer bar:** When 2+ cells are selected, the footer bar now shows Count, Sum, and Avg of the selected values. Uses the same color scheme as the top summary stats (Budget/Earned/Percent). If any selected cell is non-numeric, Sum and Avg display "NotNum". Panel hides when fewer than 2 cells are selected.
 - **Key files:** `Views/ProgressView.xaml`, `Views/ProgressView.xaml.cs`

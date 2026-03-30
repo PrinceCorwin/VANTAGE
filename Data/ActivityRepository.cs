@@ -444,6 +444,13 @@ namespace VANTAGE.Data
                             cmd.Parameters.AddWithValue($"@id{i}", batch[i]);
                         }
 
+                        // Date clearing: 0% clears both, >0 <100 clears ActFin, 100% leaves both
+                        string dateClauses = percentRounded == 0
+                            ? ", ActStart = '', ActFin = ''"
+                            : percentRounded < 100
+                                ? ", ActFin = ''"
+                                : "";
+
                         cmd.CommandText = $@"
                             UPDATE Activities SET
                                 PercentEntry = @percent,
@@ -451,6 +458,7 @@ namespace VANTAGE.Data
                                 UpdatedBy = @updatedBy,
                                 UpdatedUtcDate = @updatedDate,
                                 LocalDirty = 1
+                                {dateClauses}
                             WHERE UniqueID IN ({string.Join(",", idParams)})";
 
                         cmd.Parameters.AddWithValue("@percent", percentRounded);

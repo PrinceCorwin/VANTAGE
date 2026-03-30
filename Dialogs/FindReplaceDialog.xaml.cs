@@ -109,7 +109,7 @@ namespace VANTAGE.Dialogs
             foreach (var activity in allActivities)
             {
                 var currentValue = provider.GetValue(activity, _columnMappingName);
-                string currentText = currentValue?.ToString() ?? string.Empty;
+                string currentText = FormatValueForComparison(currentValue);
 
                 bool isMatch;
                 if (findBlanks)
@@ -229,7 +229,7 @@ namespace VANTAGE.Dialogs
                 foreach (var activity in editableActivities)
                 {
                     var currentValue = provider.GetValue(activity, _columnMappingName);
-                    string currentText = currentValue?.ToString() ?? string.Empty;
+                    string currentText = FormatValueForComparison(currentValue);
 
                     bool isMatch;
                     if (replaceAllCells)
@@ -290,10 +290,29 @@ namespace VANTAGE.Dialogs
                         {
                             activity.RecalculateDerivedFields(_columnMappingName);
 
+                            // Handle ActStart/ActFin date clearing based on resulting PercentEntry
+                            double resultPercent = activity.PercentEntry;
+                            if (resultPercent == 0)
+                            {
+                                // 0% → clear both dates
+                                activity.ActStart = null;
+                                activity.ActFin = null;
+                            }
+                            else if (resultPercent < 100)
+                            {
+                                // >0 but <100 → clear ActFin only
+                                activity.ActFin = null;
+                            }
+
                             // Collect derived field values for DB update
-                            CollectDerivedValue(derivedColumns, "EarnMHsCalc", activity.UniqueID, activity.EarnMHsCalc);
+                            // EarnMHsCalc is a computed property (not a DB column) — skip it
                             CollectDerivedValue(derivedColumns, "EarnQtyEntry", activity.UniqueID, activity.EarnQtyEntry);
                             CollectDerivedValue(derivedColumns, "PercentEntry", activity.UniqueID, activity.PercentEntry);
+                            // Dates stored as TEXT in DB — empty string for null
+                            CollectDerivedValue(derivedColumns, "ActStart", activity.UniqueID,
+                                activity.ActStart?.ToString("yyyy-MM-dd HH:mm:ss") ?? (object)"");
+                            CollectDerivedValue(derivedColumns, "ActFin", activity.UniqueID,
+                                activity.ActFin?.ToString("yyyy-MM-dd HH:mm:ss") ?? (object)"");
                         }
 
                         activity.LocalDirty = 1;
@@ -401,6 +420,14 @@ namespace VANTAGE.Dialogs
 
             // Add more types as needed
             return System.Convert.ChangeType(value, targetType);
+        }
+
+        // Formats a cell value to its display text (dates use short date to match grid display)
+        private static string FormatValueForComparison(object? value)
+        {
+            if (value == null) return string.Empty;
+            if (value is DateTime dt) return dt.ToString("d"); // ShortDate pattern
+            return value.ToString() ?? string.Empty;
         }
 
         private void BtnClose_Click(object sender, RoutedEventArgs e)
