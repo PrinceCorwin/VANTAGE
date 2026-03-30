@@ -1,6 +1,16 @@
 {
   "releases": [
     {
+      "version": "26.1.41",
+      "date": "2026-03-30",
+      "highlights": [
+        "Fix — Find & Replace no longer errors on PercentEntry/EarnQtyEntry columns (EarnMHsCalc bug)",
+        "Fix — Find & Replace and percent buttons now correctly clear ActStart/ActFin dates based on percent value",
+        "Fix — Find & Replace 'Match entire cell contents' now works for date columns",
+        "Fix — One-time migration cleans up stale dates that don't align with PercentEntry values"
+      ]
+    },
+    {
       "version": "26.1.40",
       "date": "2026-03-29",
       "highlights": [
