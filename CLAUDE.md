@@ -42,7 +42,12 @@ WPF application for Summit Industrial replacing the legacy MS Access system ("Ol
   - "Update X" or "Add Y" means make the change, NOT commit it
   - Wait for explicit "commit" instruction before running git commit
 - ALWAYS push to remote after committing, unless user instructs otherwise
-- **ALWAYS commit ALL uncommitted changes** when user says "commit" - use `git add -A` to stage everything. NEVER selectively choose files. The ONLY exception is if user explicitly says "commit only X" or "don't commit Y"
+- **ALWAYS commit ALL uncommitted changes** when user says "commit":
+  - Use `git add -A` to stage EVERYTHING — no exceptions
+  - NEVER selectively choose files based on what you worked on
+  - NEVER skip files because they were "already modified" or "unrelated to current work"
+  - If a file shows up in `git status`, it gets committed. Period.
+  - The ONLY exception is if user explicitly says "commit only X" or "don't commit Y"
 - Do NOT add "Generated with Claude" or "Co-Authored-By: Claude" to commit messages
 - Do NOT add AI attribution comments in code
 - Write clear, concise commit messages describing the change
