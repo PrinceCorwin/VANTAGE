@@ -518,6 +518,51 @@ namespace VANTAGE.Services.AI
                 "TakeoffService.DeleteBatchAsync", App.CurrentUser?.Username);
         }
 
+        // Rename a batch by updating its metadata.json
+        public async Task RenameBatchAsync(string batchId, string newName, CancellationToken cancellationToken = default)
+        {
+            string metadataKey = $"batches/{batchId}/metadata.json";
+            Dictionary<string, object> metadata;
+
+            // Read existing metadata
+            try
+            {
+                var getRequest = new GetObjectRequest
+                {
+                    BucketName = CredentialService.TakeoffProcessingBucket,
+                    Key = metadataKey
+                };
+
+                using var response = await _s3Client.GetObjectAsync(getRequest, cancellationToken);
+                using var reader = new StreamReader(response.ResponseStream);
+                string json = await reader.ReadToEndAsync(cancellationToken);
+                metadata = JsonSerializer.Deserialize<Dictionary<string, object>>(json) ?? new();
+            }
+            catch (AmazonS3Exception)
+            {
+                // No existing metadata - create new
+                metadata = new Dictionary<string, object>();
+            }
+
+            // Update batch name
+            metadata["batchName"] = newName;
+
+            // Write back to S3
+            string updatedJson = JsonSerializer.Serialize(metadata, new JsonSerializerOptions { WriteIndented = true });
+            var putRequest = new PutObjectRequest
+            {
+                BucketName = CredentialService.TakeoffProcessingBucket,
+                Key = metadataKey,
+                ContentBody = updatedJson,
+                ContentType = "application/json"
+            };
+
+            await _s3Client.PutObjectAsync(putRequest, cancellationToken);
+
+            AppLogger.Info($"Renamed batch {batchId} to '{newName}'",
+                "TakeoffService.RenameBatchAsync", App.CurrentUser?.Username);
+        }
+
         // Download a drawing from S3 to a temp file, returns local path
         public async Task<string> DownloadDrawingToTempAsync(
             string s3Key,

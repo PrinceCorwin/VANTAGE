@@ -6,6 +6,18 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### March 31, 2026 (Takeoff — RateSheet Overhaul, STR Makeup, THRD Labor, Rename Batches)
+- **Block Delete/Backspace on read-only columns:** Delete and Backspace keys now check `ColumnPermissions.IsReadOnly()` before clearing cell values. Prevents accidental clearing of AssignedTo and other protected columns.
+- **PTP Plugin v1.0.2 published:** Changed matching logic from Description pattern to UDF2 (CWP) field. Description field was being edited by users after import, breaking the update-vs-create detection. Now matches on `WHERE Area = 'TFS' AND ROCStep = '4.SHP' AND UDF2 IS NOT NULL`.
+- **Dual-size matching refactor:** Takeoff post-processing now tries `ParseDualSize()` FIRST for ALL fitting components, then determines match behavior by component type. TEE/REDT match on either size (both ends connect to pipes); all other dual-size components match on larger size only. Eliminates hardcoded component checks.
+- **STR (strainer) makeup calculation:** Strainers now lookup as TEE using the larger size for both run and outlet, with 2x multiplier. The smaller size is a drain connection, not a pipe connection.
+- **Previous Batches Rename button:** New Rename button in PreviousBatchesDialog (admin-only panel) allows renaming takeoff batches. Creates new `InputDialog.xaml/.cs` for simple text input. Updates S3 `metadata.json` with new `batchName`.
+- **RateSheet SCRD simplified:** Consolidated SCRD entries from 33 (schedule-specific) to 11 size-only entries (0.25-4"). S-toggle lookup logic handles schedule variants automatically.
+- **RateSheet THRD added:** Added 44 THRD entries — 33 schedule-specific (40/80/160 for each size) plus 11 size-only fallbacks using averaged values.
+- **RateSheet key fix:** Fixed 1474 keys that had S prefix (e.g., `BEV-0.5:S40`) but SchRtg column values without S (e.g., `40`). All keys now match `{EstGrp}-{Size}:{SchRtg}` format exactly.
+- **THRD labor row generation:** Every SCRD connection now also generates a THRD labor row for threading labor. Default thickness is 40 if not present in source.
+- **Key files:** `Services/AI/TakeoffPostProcessor.cs`, `Services/AI/FittingMakeupService.cs`, `Resources/RateSheet.json`, `Dialogs/PreviousBatchesDialog.xaml/.cs`, `Dialogs/InputDialog.xaml/.cs`, `Services/AI/TakeoffService.cs`
+
 ### March 30, 2026 (Find & Replace / Percent Buttons — Date Handling & Bug Fixes)
 - **Find & Replace EarnMHsCalc error fixed:** Removed `EarnMHsCalc` from derived columns written to DB — it's a computed property, not a DB column. This was causing transaction rollback and all find-replace changes to revert on refresh.
 - **Find & Replace ActStart/ActFin date clearing:** When find-replacing PercentEntry or EarnQtyEntry, dates are now cleared/preserved using the same rules as normal cell editing (0% clears both, <100% clears ActFin, 100% leaves both as required metadata).

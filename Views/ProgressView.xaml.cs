@@ -1275,8 +1275,14 @@ namespace VANTAGE.Views
                 if (sfActivities.CurrentColumn == null)
                     return;
 
+                string columnName = sfActivities.CurrentColumn.MappingName;
+
+                // Block clearing read-only columns
+                if (ColumnPermissions.IsReadOnly(columnName))
+                    return;
+
                 e.Handled = true;
-                _ = ClearCurrentCellAsync(activity, sfActivities.CurrentColumn.MappingName);
+                _ = ClearCurrentCellAsync(activity, columnName);
             }
             // Auto-enter edit mode on PercentEntry when typing a digit (GridTemplateColumn
             // doesn't do this natively like GridTextColumn/GridNumericColumn)

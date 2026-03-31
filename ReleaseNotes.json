@@ -1,6 +1,17 @@
 {
   "releases": [
     {
+      "version": "26.1.42",
+      "date": "2026-03-31",
+      "highlights": [
+        "Fix — Delete/Backspace keys blocked on read-only columns (prevents accidental clearing of AssignedTo)",
+        "Takeoff — Dual-size matching: TEE/REDT match either pipe size, others match larger size only",
+        "Takeoff — STR (strainer) makeup calculation uses larger size with 2x multiplier",
+        "Takeoff — Previous Batches rename button for admins to rename takeoff batches",
+        "Takeoff — RateSheet: SCRD simplified to 11 entries, THRD 44 entries added, 1474 key format fixes"
+      ]
+    },
+    {
       "version": "26.1.41",
       "date": "2026-03-30",
       "highlights": [

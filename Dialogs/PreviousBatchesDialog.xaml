@@ -160,6 +160,21 @@
                         HorizontalContentAlignment="Center"
                         Click="BtnDeleteAll_Click"
                         ToolTip="Delete all batches from AWS"/>
+                <Button x:Name="btnRename"
+                        Style="{StaticResource SidebarButtonStyle}"
+                        Content="Rename"
+                        Height="30"
+                        Padding="20,0"
+                        Margin="10,0,0,0"
+                        FontSize="12"
+                        Background="{DynamicResource StatusInProgressBgBtn}"
+                        Foreground="{DynamicResource StatusInProgressFgBtn}"
+                        BorderBrush="{DynamicResource SidebarButtonBorder}"
+                        BorderThickness="1"
+                        HorizontalContentAlignment="Center"
+                        IsEnabled="False"
+                        Click="BtnRename_Click"
+                        ToolTip="Rename the selected batch"/>
             </StackPanel>
 
             <!-- Download/Cancel buttons (right) -->

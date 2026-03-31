@@ -56,6 +56,7 @@ namespace VANTAGE.Dialogs
             bool hasSelection = lstBatches.SelectedItem is BatchDisplayItem item;
             btnDownload.IsEnabled = hasSelection && ((BatchDisplayItem)lstBatches.SelectedItem!).IsComplete;
             btnDeleteSelected.IsEnabled = hasSelection;
+            btnRename.IsEnabled = hasSelection;
         }
 
         private void LstBatches_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
@@ -158,12 +159,53 @@ namespace VANTAGE.Dialogs
             }
         }
 
+        private async void BtnRename_Click(object sender, RoutedEventArgs e)
+        {
+            if (lstBatches.SelectedItem is not BatchDisplayItem item) return;
+
+            // Prompt for new name
+            var inputDialog = new InputDialog(
+                "Rename Batch",
+                "Enter a new name for this batch:",
+                item.BatchName);
+
+            if (inputDialog.ShowDialog(this) != true || string.IsNullOrWhiteSpace(inputDialog.InputText))
+                return;
+
+            string newName = inputDialog.InputText.Trim();
+            if (newName == item.BatchName) return;
+
+            try
+            {
+                SetButtonsEnabled(false);
+                txtStatus.Text = "Renaming batch...";
+
+                using var service = new TakeoffService();
+                await service.RenameBatchAsync(item.BatchId, newName);
+
+                // Update display
+                item.BatchName = newName;
+                lstBatches.Items.Refresh();
+                txtStatus.Text = $"Batch renamed to '{newName}'.";
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "PreviousBatchesDialog.BtnRename_Click");
+                txtStatus.Text = $"Rename failed: {ex.Message}";
+            }
+            finally
+            {
+                SetButtonsEnabled(true);
+            }
+        }
+
         // Enable/disable all action buttons during async operations
         private void SetButtonsEnabled(bool enabled)
         {
             btnDownload.IsEnabled = enabled && lstBatches.SelectedItem is BatchDisplayItem { IsComplete: true };
             btnDeleteSelected.IsEnabled = enabled && lstBatches.SelectedItem != null;
             btnDeleteAll.IsEnabled = enabled && lstBatches.Items.Count > 0;
+            btnRename.IsEnabled = enabled && lstBatches.SelectedItem != null;
         }
     }
 }

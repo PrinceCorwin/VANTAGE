@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.1.41",
-  "releaseDate": "2026-03-30T07:37:32Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.41/VANTAGE-26.1.41.zip",
-  "zipSizeBytes": 150139481,
-  "sha256": "48F772F3B3723A2A30E91AF4CE95D4D4938EB71CED39DC31707A02F2EC822362",
-  "releaseNotes": "Fix find-replace and percent button date handling, stale date migration"
+  "currentVersion": "26.1.42",
+  "releaseDate": "2026-03-31T16:18:12Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.42/VANTAGE-26.1.42.zip",
+  "zipSizeBytes": 150142291,
+  "sha256": "1F844D43116E5C08CE8A495C3B23E91E203B8FC91B2F324AFF5EAD5A9A24773D",
+  "releaseNotes": "Block Delete/Backspace on read-only columns, Takeoff dual-size matching, STR makeup, rename batches"
 }

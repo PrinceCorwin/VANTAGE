@@ -219,6 +219,18 @@ namespace VANTAGE.Services.AI
                     if (result != null)
                         contribution = result.Value.RunIn * 2;
                 }
+                else if (component == "STR")
+                {
+                    // STR (strainer): lookup as TEE using larger size for both run and outlet, 2x makeup (drain isn't a pipe connection)
+                    string sizeStr = GetString(fitting, "Size");
+                    var parsed = ParseDualSize(sizeStr);
+                    double largerSize = parsed?.Larger ?? pipeSize;
+                    string weldType = ExtractWeldableType(connTypes);
+                    var result = LookupMakeup(weldType, "TEE", largerSize, classRating, largerSize);
+                    lookupKey = $"{weldType}/TEE/{largerSize}x{largerSize} (STR)" + (!string.IsNullOrEmpty(classRating) ? $"/Class{classRating}" : "");
+                    if (result != null)
+                        contribution = result.Value.RunIn * 2;
+                }
                 else if (component == "RED" || component == "SWG")
                 {
                     // Reducing fittings: parse dual size, only count on larger size pipe, 1x makeup

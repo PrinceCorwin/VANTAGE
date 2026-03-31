@@ -391,61 +391,44 @@ namespace VANTAGE.Services.AI
                         if (!fittingMaterial.Equals(pipeMaterial, StringComparison.OrdinalIgnoreCase))
                             continue;
 
-                        // Size matching logic varies by component type
+                        // Size matching - try dual size first, then single size
+                        string sizeStr = GetString(fitting, "Size");
+                        bool matched = false;
+
                         if (FittingMakeupService.IsOlet(fittingComponent))
                         {
-                            // Olet BOM has dual size in Size field (e.g., "6x1") — parse smaller
-                            string sizeStr = GetString(fitting, "Size");
+                            // Olets match on smaller size (branch connection)
                             double? smallSize = FittingMakeupService.ParseOletSmallSize(sizeStr);
-                            if (smallSize == null)
-                            {
-                                // Single size — try direct match
-                                double fittingSize = FittingMakeupService.GetDouble(fitting, "Size");
-                                if (Math.Abs(fittingSize - pipeSize) < 0.001)
-                                {
-                                    matchingFittings.Add(fitting);
-                                    claimedFittings.Add(fitting);
-                                }
-                            }
-                            else if (Math.Abs(smallSize.Value - pipeSize) < 0.001)
-                            {
-                                matchingFittings.Add(fitting);
-                                claimedFittings.Add(fitting);
-                            }
-                        }
-                        else if (fittingComponent == "REDT" || fittingComponent == "TEE")
-                        {
-                            // REDT/TEE: parse dual size (e.g., "4x2" or "4x4"), match if pipe equals either size
-                            string sizeStr = GetString(fitting, "Size");
-                            var parsed = FittingMakeupService.ParseDualSize(sizeStr);
-                            if (parsed != null &&
-                                (Math.Abs(parsed.Value.Larger - pipeSize) < 0.001 ||
-                                 Math.Abs(parsed.Value.Smaller - pipeSize) < 0.001))
-                            {
-                                matchingFittings.Add(fitting);
-                                claimedFittings.Add(fitting);
-                            }
-                        }
-                        else if (fittingComponent == "RED" || fittingComponent == "SWG")
-                        {
-                            // Reducing fittings: parse dual size, only match on larger size
-                            string sizeStr = GetString(fitting, "Size");
-                            var parsed = FittingMakeupService.ParseDualSize(sizeStr);
-                            if (parsed != null && Math.Abs(parsed.Value.Larger - pipeSize) < 0.001)
-                            {
-                                matchingFittings.Add(fitting);
-                                claimedFittings.Add(fitting);
-                            }
+                            if (smallSize != null)
+                                matched = Math.Abs(smallSize.Value - pipeSize) < 0.001;
+                            else
+                                matched = Math.Abs(FittingMakeupService.GetDouble(fitting, "Size") - pipeSize) < 0.001;
                         }
                         else
                         {
-                            // Standard fitting — size must match pipe size
-                            double fittingSize = FittingMakeupService.GetDouble(fitting, "Size");
-                            if (Math.Abs(fittingSize - pipeSize) < 0.001)
+                            // Try parsing as dual size first
+                            var dualSize = FittingMakeupService.ParseDualSize(sizeStr);
+                            if (dualSize != null)
                             {
-                                matchingFittings.Add(fitting);
-                                claimedFittings.Add(fitting);
+                                // TEE/REDT: match on either size (both ends connect to pipes)
+                                // All other dual-size components: match on larger size only
+                                if (fittingComponent == "TEE" || fittingComponent == "REDT")
+                                    matched = Math.Abs(dualSize.Value.Larger - pipeSize) < 0.001 ||
+                                              Math.Abs(dualSize.Value.Smaller - pipeSize) < 0.001;
+                                else
+                                    matched = Math.Abs(dualSize.Value.Larger - pipeSize) < 0.001;
                             }
+                            else
+                            {
+                                // Single size — direct match
+                                matched = Math.Abs(FittingMakeupService.GetDouble(fitting, "Size") - pipeSize) < 0.001;
+                            }
+                        }
+
+                        if (matched)
+                        {
+                            matchingFittings.Add(fitting);
+                            claimedFittings.Add(fitting);
                         }
                     }
 
@@ -704,6 +687,12 @@ namespace VANTAGE.Services.AI
                     var labor = CreateLaborRow(mat, connType, connSize, thickness, pipeSpec, material, allMaterialRows);
                     result.Add(labor);
 
+                    // SCRD connections also generate a THRD labor row for threading labor
+                    if (connType == "SCRD")
+                    {
+                        var thrdLabor = CreateLaborRow(mat, "THRD", connSize, thickness, pipeSpec, material, allMaterialRows);
+                        result.Add(thrdLabor);
+                    }
                 }
             }
 

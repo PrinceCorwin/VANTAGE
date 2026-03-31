@@ -1,6 +1,6 @@
 # MILESTONE - Project Status
 
-**Last Updated:** March 25, 2026
+**Last Updated:** March 31, 2026
 
 ## V1 Testing Scope
 
@@ -35,7 +35,7 @@
 | Work Package | READY FOR TESTING | PDF generation working; Drawings deferred to post-v1 |
 | Help Sidebar | COMPLETE | All V1 sections written; Troubleshooting deferred to post-V1 |
 | AI Progress Scan | COMPLETE | AWS Textract implementation - 100% accuracy |
-| AI Takeoff | READY FOR TESTING | Auto-download on completion, Previous Batches dropdown for re-downloading past results. Metadata (username, config, drawing count) stored in S3. Multi title block regions supported (see Active Development section). |
+| AI Takeoff | READY FOR TESTING | Auto-download on completion, Previous Batches dropdown for re-downloading past results (admin can delete/rename batches). Metadata (username, config, drawing count) stored in S3. Multi title block regions supported (see Active Development section). |
 | AI Features (other) | NOT STARTED | Error Assistant, Description Analysis, etc. |
 
 ## Active Development
@@ -52,7 +52,7 @@
 - Plugin execution framework: `IVantagePlugin` interface, `IPluginHost` for app capabilities, `PluginLoaderService` loads assemblies at startup.
 - Plugins can add menu items to Tools menu dynamically via `host.AddToolsMenuItem()`.
 - `IPluginHost` includes `RefreshProgressViewAsync()` for plugins that modify activity data.
-- First plugin published: `ptp-tfs-mech-updater` v1.0.1 (PTP vendor shipping report importer for TFS Mechanical, ROCStep 4.SHP).
+- First plugin published: `ptp-tfs-mech-updater` v1.0.2 (PTP vendor shipping report importer for TFS Mechanical, ROCStep 4.SHP). v1.0.2: matches on UDF2 (CWP) instead of Description field.
 - Second plugin published: `const-tfs-mech-updater` v1.0.0 (Constellation vendor spool report importer for TFS Mechanical). 1:1 spool tracking by Piece Mark, progress = (WLD % All × 80%) + (shipped? 20%), auto-deletion detection for removed spools.
 
 ### Multi-Theme System
@@ -131,8 +131,8 @@
 ### High Priority
 - **Mobile/iOS Version (iPad)** — Execs want iPad app for field supes to submit progress. Needs architecture discussion: native iOS, cross-platform framework, web app, API design, offline sync, etc.
 - **Takeoff Post-Processing Pipeline** — All operate on the downloaded Excel, no AWS changes needed. See `summit-takeoff-integration-guide.md` for details.
-  1. Fabrication item generation — Connection rows, BOM fab records, PIPE/SPL records, ROCStep column complete. CUT/BEV no longer separate rows — their rates are folded into BW/SW/THRD connection rows. GSKT/BOLT excluded from labor. FLGLJ excluded from makeup. Fitting makeup lookup complete with olet support (WOL/SOL/TOL/ELB/LOL/NOL), class as string, Thickness fallback for olets. RED/SWG fallback to smaller pipe if unclaimed by larger. Missed Makeups tab has Reason column (No Makeup Found / Unclaimed). No Conns tab shows material items with no connections.
-  2. **Rate application** — Core implementation complete. Rate sheet keys shortened to match component names directly. Per-project rate overrides with management dialog, upload from Excel, RateSource column. Admin email notification for missed data. Simplified rate lookup: thickness as-is → toggle leading S → class rating → size-only. Dual-size parsing for all components (not just olets). Missed rates tab shows both thickness and class keys attempted. Material multipliers (MatlMult) and rollup multipliers (RollupMult) applied to labor MHs. BudgetMHs = (RateSheet × RollupMult × max(RollupMult, MatlMult) + CutAdd + BevelAdd) × Qty. Audit columns (RateSheet, RollupMult, MatlMult, CutAdd, BevelAdd) in Excel for user verification. **FS commodity code support:** Field supports (FS) now copy Commodity Code to Class Rating for rate lookup, enabling specialized rates like `SPT-4:A1234` with fallback to `SPT-4`.
+  1. Fabrication item generation — Connection rows, BOM fab records, PIPE/SPL records, ROCStep column complete. CUT/BEV no longer separate rows — their rates are folded into BW/SW/THRD connection rows. GSKT/BOLT excluded from labor. FLGLJ excluded from makeup. Fitting makeup lookup complete with olet support (WOL/SOL/TOL/ELB/LOL/NOL), class as string, Thickness fallback for olets. RED/SWG fallback to smaller pipe if unclaimed by larger. Missed Makeups tab has Reason column (No Makeup Found / Unclaimed). No Conns tab shows material items with no connections. **Dual-size matching:** All components try `ParseDualSize()` first; TEE/REDT match either size, others match larger size only. **STR makeup:** Strainers lookup as TEE using larger size, 2x multiplier (drain is not a pipe connection).
+  2. **Rate application** — Core implementation complete. Rate sheet keys shortened to match component names directly. Per-project rate overrides with management dialog, upload from Excel, RateSource column. Admin email notification for missed data. Simplified rate lookup: thickness as-is → toggle leading S → class rating → size-only. Dual-size parsing for all components (not just olets). Missed rates tab shows both thickness and class keys attempted. Material multipliers (MatlMult) and rollup multipliers (RollupMult) applied to labor MHs. BudgetMHs = (RateSheet × RollupMult × max(RollupMult, MatlMult) + CutAdd + BevelAdd) × Qty. Audit columns (RateSheet, RollupMult, MatlMult, CutAdd, BevelAdd) in Excel for user verification. **FS commodity code support:** Field supports (FS) now copy Commodity Code to Class Rating for rate lookup, enabling specialized rates like `SPT-4:A1234` with fallback to `SPT-4`. **THRD labor generation:** Every SCRD connection now generates a companion THRD labor row for threading labor. SCRD consolidated to 11 size-only entries, THRD has 44 entries (33 schedule-specific + 11 fallbacks).
   3. **ROC splits** — VMS_ROCRates table complete. ROC Set Manager redesigned with view/edit modes (removed admin gating). ROC set dropdown moved from TakeoffView to ImportTakeoffDialog. Post-processing logic to apply ROC percentage splits NOT yet implemented.
   4. VANTAGE tab — Column rename for direct import into Activities. Optional "Rollup Labor" mode: creates one FAB row per drawing (component=FAB, description="Fabrication of DWG# - {Drawing Number}") that sums all ShopField=1 labor MHs. FAB row gets split by selected ROC percentages (or stays as-is if no ROC profile selected). UI location for the rollup option TBD.
 
