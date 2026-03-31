@@ -35,9 +35,9 @@ Example for CWP `TFS00D001YS18`: `FABRICATION - 4.SHP TFS00D001YS18`
 
 | VANTAGE Field   | Value / Source                          | Notes                                |
 |-----------------|----------------------------------------|--------------------------------------|
-| Description     | `FABRICATION - 4.SHP {CWP}`           | Match key for existing rows          |
+| Description     | `FABRICATION - 4.SHP {CWP}`           | Default value, user can modify       |
 | SchedActNO      | `x`                                    | Constant                             |
-| UDF2            | PTP `CWP` column                       | Key field — one CWP = one row        |
+| UDF2            | PTP `CWP` column                       | **Match key** — one CWP = one row    |
 | Area            | `TFS`                                  | Constant                             |
 | CompType        | `P`                                    | Constant                             |
 | PhaseCategory   | `PSF`                                  | Constant                             |
@@ -75,9 +75,12 @@ If ALL rows for a CWP have Status = "Deleted":
 
 ## Matching Logic
 
-- **Match key:** Description field (e.g. `FABRICATION - 4.SHP TFS00D001YS18`)
+- **Match key:** UDF2 field (contains the CWP value directly)
+- **Query criteria:** Area = 'TFS' AND ROCStep = '4.SHP' AND UDF2 is not empty
 - **If found:** Update BudgetQty and PercentEntry
 - **If not found:** Create new activity with all mapped fields
+
+Note: Previously matched by Description pattern, but this prevented users from modifying descriptions. Changed to UDF2 in v1.0.2.
 
 ## Ownership Check
 
