@@ -21,8 +21,9 @@ namespace VANTAGE.Dialogs
 
     public partial class PreviousBatchesDialog : Window
     {
-        // The batch ID the user selected for download
+        // The batch ID and name the user selected for download
         public string? SelectedBatchId { get; private set; }
+        public string? SelectedBatchName { get; private set; }
 
         public PreviousBatchesDialog(List<BatchInfo> batches)
         {
@@ -64,6 +65,7 @@ namespace VANTAGE.Dialogs
             if (lstBatches.SelectedItem is BatchDisplayItem item && item.IsComplete)
             {
                 SelectedBatchId = item.BatchId;
+                SelectedBatchName = item.BatchName;
                 DialogResult = true;
                 Close();
             }
@@ -74,6 +76,7 @@ namespace VANTAGE.Dialogs
             if (lstBatches.SelectedItem is BatchDisplayItem item && item.IsComplete)
             {
                 SelectedBatchId = item.BatchId;
+                SelectedBatchName = item.BatchName;
                 DialogResult = true;
                 Close();
             }

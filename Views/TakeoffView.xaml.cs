@@ -327,13 +327,16 @@ namespace VANTAGE.Views
         }
 
         // Download batch Excel, run post-processor, and open the file
-        private async System.Threading.Tasks.Task DownloadBatchExcelAsync(string batchId)
+        private async System.Threading.Tasks.Task DownloadBatchExcelAsync(string batchId, string? batchName = null)
         {
             if (_service == null) return;
 
+            // Use batch name for filename if provided, otherwise fall back to batch ID
+            string fileName = !string.IsNullOrEmpty(batchName) ? $"{batchName}.xlsx" : $"takeoff_{batchId}.xlsx";
+
             var dialog = new SaveFileDialog
             {
-                FileName = $"takeoff_{batchId}.xlsx",
+                FileName = fileName,
                 Filter = "Excel Files|*.xlsx",
                 Title = "Save Takeoff Output"
             };
@@ -454,7 +457,7 @@ namespace VANTAGE.Views
 
                 if (dialog.ShowDialog() == true && dialog.SelectedBatchId != null)
                 {
-                    await DownloadBatchExcelAsync(dialog.SelectedBatchId);
+                    await DownloadBatchExcelAsync(dialog.SelectedBatchId, dialog.SelectedBatchName);
                 }
             }
             catch (Exception ex)
