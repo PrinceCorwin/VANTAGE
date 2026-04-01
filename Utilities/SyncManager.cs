@@ -749,6 +749,7 @@ namespace VANTAGE.Utilities
                                 insertCmd.Parameters["@" + colName].Value = record[colName] ?? DBNull.Value;
                             }
                             insertCmd.Parameters["@LocalDirty"].Value = 0;
+
                             insertCmd.ExecuteNonQuery();
                         }
 

@@ -1424,14 +1424,13 @@
                            AllowFiltering="True"
                            AllowSorting="True" />
 
-                        <syncfusion:GridDateTimeColumn MappingName="AzureUploadUtcDate"
+                        <syncfusion:GridTextColumn MappingName="AzureUploadUtcDateDisplay"
                                HeaderText="AzureUploadUtcDate" Padding="4,0,4,0"
                                Width="120"
                                IsHidden="True"
                                AllowEditing="False"
                                AllowFiltering="True"
-                               AllowSorting="True"
-                               Pattern="ShortDate" />
+                               AllowSorting="True" />
 
                         <syncfusion:GridNumericColumn MappingName="BaseUnit"
                               HeaderText="BaseUnit" Padding="4,0,4,0"

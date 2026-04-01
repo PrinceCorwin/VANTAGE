@@ -835,6 +835,7 @@ namespace VANTAGE.Data
                                  activity.UpdatedBy = GetStringSafe("UpdatedBy");
                                  activity.CreatedBy = GetStringSafe("CreatedBy");
                                  activity.UpdatedUtcDate = GetDateTimeFullSafe("UpdatedUtcDate");
+                                 activity.AzureUploadUtcDate = GetDateTimeFullSafe("AzureUploadUtcDate");
                                  activity.LocalDirty = GetIntSafe("LocalDirty");
                                  activity.SyncVersion = GetIntSafe("SyncVersion");
 
@@ -1085,6 +1086,7 @@ namespace VANTAGE.Data
                                  activity.UpdatedBy = GetStringSafe("UpdatedBy");
                                  activity.CreatedBy = GetStringSafe("CreatedBy");
                                  activity.UpdatedUtcDate = GetDateTimeFullSafe("UpdatedUtcDate");
+                                 activity.AzureUploadUtcDate = GetDateTimeFullSafe("AzureUploadUtcDate");
                                  activity.LocalDirty = GetIntSafe("LocalDirty");
 
 

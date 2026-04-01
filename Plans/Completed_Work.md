@@ -6,6 +6,11 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### April 1, 2026 (Progress Grid — AzureUploadUtcDate Fix)
+- **Fixed AzureUploadUtcDate not displaying:** The `AzureUploadUtcDate` column was always blank in the Progress grid even though values existed on Azure. The bug was in `ActivityRepository.GetPageAsync` — it simply never read the column from the database when loading Activity objects. Added the missing read in both GetPageAsync locations.
+- **Consistent date/time formatting:** Added `AzureUploadUtcDateDisplay` property to `Activity.cs` matching the `UpdatedUtcDateDisplay` format (`yyyy-MM-dd HH:mm`). Changed the XAML column from `GridDateTimeColumn` to `GridTextColumn` bound to the display property for consistent formatting with `UpdatedUtcDate`.
+- **Key files:** `Data/ActivityRepository.cs`, `Models/Activity.cs`, `Views/ProgressView.xaml`
+
 ### March 31, 2026 (Takeoff — RateSheet Overhaul, STR Makeup, THRD Labor, Rename Batches)
 - **Block Delete/Backspace on read-only columns:** Delete and Backspace keys now check `ColumnPermissions.IsReadOnly()` before clearing cell values. Prevents accidental clearing of AssignedTo and other protected columns.
 - **PTP Plugin v1.0.2 published:** Changed matching logic from Description pattern to UDF2 (CWP) field. Description field was being edited by users after import, breaking the update-vs-create detection. Now matches on `WHERE Area = 'TFS' AND ROCStep = '4.SHP' AND UDF2 IS NOT NULL`.

@@ -49,6 +49,9 @@ namespace VANTAGE.Models
         public DateTime? WeekEndDate { get; set; }
         public DateTime? AzureUploadUtcDate { get; set; }
 
+        // Display-friendly version of AzureUploadUtcDate
+        public string AzureUploadUtcDateDisplay => AzureUploadUtcDate.HasValue ? AzureUploadUtcDate.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm") : "";
+
 
         /// Status based on PercentEntry (0-100)
 
