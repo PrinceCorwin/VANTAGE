@@ -6,6 +6,13 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### April 1, 2026 (Takeoff ShopField Post-Processing, Dialog Fixes)
+- **ShopField post-processing on Material tab:** Lambda now sets all material rows to ShopField=1 (Shop). Post-processor (`AssignMaterialShopField`) corrects to Field (2) for: items with all BU/SCRD connection types, inherently field components (FS, BOLT, GSKT, WAS, INST, GAUGE), and items with zero connections or empty connection type. PIPE always stays Shop. Mixed connection types (e.g., "BW, SCRD") stay Shop. `WriteMaterialShopField` writes corrected values back to the Material worksheet.
+- **Previous Batches dialog — Rename button repositioned:** Moved Rename button from overlapping fixed-margin position into the right-side button panel, directly left of Cancel. Visible to all users.
+- **Previous Batches dialog — Cancel button styling:** Cancel button now uses red background (`StatusRedBgBtn`/`StatusRedFgBtn`) matching Delete All.
+- **InputDialog SizeToContent fix:** Changed from fixed `Height="180"` to `SizeToContent="Height"` so buttons are never cut off at different DPI/scaling.
+- **Key files:** `Services/AI/TakeoffPostProcessor.cs`, `Dialogs/PreviousBatchesDialog.xaml`, `Dialogs/InputDialog.xaml`
+
 ### April 1, 2026 (Progress Grid — AzureUploadUtcDate Fix)
 - **Fixed AzureUploadUtcDate not displaying:** The `AzureUploadUtcDate` column was always blank in the Progress grid even though values existed on Azure. The bug was in `ActivityRepository.GetPageAsync` — it simply never read the column from the database when loading Activity objects. Added the missing read in both GetPageAsync locations.
 - **Consistent date/time formatting:** Added `AzureUploadUtcDateDisplay` property to `Activity.cs` matching the `UpdatedUtcDateDisplay` format (`yyyy-MM-dd HH:mm`). Changed the XAML column from `GridDateTimeColumn` to `GridTextColumn` bound to the display property for consistent formatting with `UpdatedUtcDate`.

@@ -168,6 +168,11 @@ namespace VANTAGE.Services.AI
                     }
                 }
 
+                // Step A4: Correct ShopField on material rows
+                // Lambda sets all to 1 (Shop); post-process to set Field (2) where appropriate
+                AssignMaterialShopField(materialRows);
+                WriteMaterialShopField(workbook, materialRows);
+
                 // Step B: Generate Labor rows
                 var laborRows = GenerateLaborRows(materialRows);
                 AppLogger.Info($"Generated {laborRows.Count} labor rows", "TakeoffPostProcessor");
@@ -327,6 +332,71 @@ namespace VANTAGE.Services.AI
                     string normalized = $"{sizeStr}x{sizeStr}";
                     row["Size"] = normalized;
                 }
+            }
+        }
+
+        // Components that are always Field work (no welding/fabrication connections)
+        private static readonly HashSet<string> FieldComponents = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "FS", "BOLT", "GSKT", "WAS", "INST", "GAUGE"
+        };
+
+        // Step A4: Correct ShopField on material rows
+        // Lambda defaults all rows to 1 (Shop). This sets Field (2) for:
+        // - Rows with BU connection type
+        // - Components that are inherently field work (FS, BOLT, GSKT, WAS, INST, GAUGE, NIP, PLG)
+        // - Items with no connections (zero conn qty or empty connection type)
+        private static void AssignMaterialShopField(List<Dictionary<string, object?>> materialRows)
+        {
+            foreach (var row in materialRows)
+            {
+                string component = GetString(row, "Component").ToUpper();
+                if (component == "PIPE") continue;
+
+                string connType = GetString(row, "Connection Type").ToUpper();
+                int connQty = GetInt(row, "Connection Qty");
+
+                if (FieldComponents.Contains(component)
+                    || connQty <= 0
+                    || string.IsNullOrWhiteSpace(connType))
+                {
+                    row["ShopField"] = 2;
+                    continue;
+                }
+
+                // Field (2) only if ALL connection types are BU or SCRD
+                // Mixed types like "BW, SCRD" stay Shop (1)
+                var types = connType.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                                    .Select(t => t.Trim()).ToList();
+                if (types.Count > 0 && types.All(t => t == "BU" || t == "SCRD"))
+                {
+                    row["ShopField"] = 2;
+                }
+            }
+        }
+
+        // Write corrected ShopField values back to the Material worksheet
+        private static void WriteMaterialShopField(XLWorkbook workbook, List<Dictionary<string, object?>> materialRows)
+        {
+            if (!workbook.TryGetWorksheet("Material", out var ws)) return;
+
+            // Find the ShopField column
+            int shopFieldCol = 0;
+            int lastCol = ws.RangeUsed()?.LastColumn().ColumnNumber() ?? 0;
+            for (int col = 1; col <= lastCol; col++)
+            {
+                if (ws.Cell(1, col).GetString().Trim().Equals("ShopField", StringComparison.OrdinalIgnoreCase))
+                {
+                    shopFieldCol = col;
+                    break;
+                }
+            }
+            if (shopFieldCol == 0) return;
+
+            // Write updated values (data starts at row 2)
+            for (int i = 0; i < materialRows.Count; i++)
+            {
+                ws.Cell(i + 2, shopFieldCol).Value = GetInt(materialRows[i], "ShopField");
             }
         }
 
