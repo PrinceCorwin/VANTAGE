@@ -2639,7 +2639,7 @@
     <p>When you download the output spreadsheet, it contains the following tabs:</p>
     <ul>
         <li><strong>Summary</strong> — Statistics overview including total drawings, BOM items, connections by type/size, components by type, and connections by drawing.</li>
-        <li><strong>Material</strong> — Raw BOM extraction from the drawings. One row per material item with quantity, connection count, sizes, descriptions, and title block fields.</li>
+        <li><strong>Material</strong> — Raw BOM extraction from the drawings. One row per material item with quantity, connection count, sizes, descriptions, and title block fields. Field support (FS) components have their material group automatically corrected to match the pipe of the same size in the same drawing, since the AI often defaults FS to Carbon Steel. Corrected rows include a Matl_Grp_Desc column with the full material group description.</li>
         <li><strong>Labor</strong> — Exploded labor records (one row per connection). Material rows are multiplied by quantity and connection count. Each labor row has quantity=1 and a single connection type. BudgetMHs are populated from rate lookups. The UOM column shows the unit of measure. The RateSource column shows "Project" or "Default" to indicate which rate sheet was used. The ShopField column indicates Shop (1) or Field (2) work.</li>
         <li><strong>Flagged</strong> — Items flagged by the AI for review (low confidence, missing data, or extraction issues).</li>
         <li><strong>Failed DWGs</strong> — (if any) Drawings that failed AI extraction. Lists the filename of each drawing that did not process successfully.</li>

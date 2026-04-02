@@ -6,6 +6,14 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### April 2, 2026 (Takeoff FS Material Group Correction)
+- **FS Matl_Grp auto-correction:** New post-processing step (A5) corrects field support (FS) component `Matl_Grp` values to match the pipe of the same size in the same drawing. AI often defaults FS to CS because material isn't in the description. When multiple pipe materials exist, picks the non-CS value. No matching pipe leaves FS unchanged.
+- **Matl_Grp_Desc column:** Corrected FS rows get a `Matl_Grp_Desc` column populated with the full material group description. Column is inserted right after `Matl_Grp` in the Material tab.
+- **MaterialGroupDescriptions dictionary:** Added 16-entry mapping from `Matl_Grp` codes to descriptions (e.g., CS→CARBON STL, SS→STAINLESS, HAST→HASTELLOY, TITANIUM, 99%NI).
+- **Edge case logging:** Multi-material and non-CS selection decisions are logged with drawing number, size, and resolution note.
+- **All three paths covered:** Process Batch, Previous Batches download, and Recalc Excel all run through the new correction step.
+- **Key files:** `Services/AI/TakeoffPostProcessor.cs`
+
 ### April 1, 2026 (Takeoff ShopField Post-Processing, Dialog Fixes)
 - **ShopField post-processing on Material tab:** Lambda now sets all material rows to ShopField=1 (Shop). Post-processor (`AssignMaterialShopField`) corrects to Field (2) for: items with all BU/SCRD connection types, inherently field components (FS, BOLT, GSKT, WAS, INST, GAUGE), and items with zero connections or empty connection type. PIPE always stays Shop. Mixed connection types (e.g., "BW, SCRD") stay Shop. `WriteMaterialShopField` writes corrected values back to the Material worksheet.
 - **Previous Batches dialog — Rename button repositioned:** Moved Rename button from overlapping fixed-margin position into the right-side button panel, directly left of Cancel. Visible to all users.

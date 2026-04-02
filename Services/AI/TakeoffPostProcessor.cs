@@ -41,6 +41,17 @@ namespace VANTAGE.Services.AI
             { "FRP", 0.700 }, { "CLINED", 1.050 }, { "RLINED", 1.050 }, { "NVD", 1.050 }
         };
 
+        // Matl_Grp -> Matl_Grp_Desc mapping
+        private static readonly Dictionary<string, string> MaterialGroupDescriptions = new(StringComparer.OrdinalIgnoreCase)
+        {
+            { "CS", "CARBON STL" }, { "CR1", "A335-P1,2,3,11,12" }, { "CR2", "A335-P3b,5,5b,5c,21,22" },
+            { "CR3", "A333, A335-P7,9, FERR CHR" }, { "SS", "STAINLESS" }, { "CU", "CU, BRASS, EVERDUR" },
+            { "A333", "A333-GR1,4,6,9" }, { "HAST", "HASTELLOY, TITANIUM, 99%NI" },
+            { "SSX", "SS 321,347, CU-NI, MONEL, ALLOY 20" }, { "AL", "ALUMINUM" },
+            { "HDPE", "HDPE" }, { "PVC", "PVC, CPVC" }, { "FRP", "FRP" },
+            { "CLINED", "CEMENT LINED" }, { "RLINED", "RUBBER LINED, POLY LINED" }, { "NVD", "NUVALLOY, DURITE" }
+        };
+
         // Returns the material multiplier for a Matl_Grp, defaults to 1.0 if not found
         private static double GetMaterialMultiplier(string matlGrp)
         {
@@ -172,6 +183,20 @@ namespace VANTAGE.Services.AI
                 // Lambda sets all to 1 (Shop); post-process to set Field (2) where appropriate
                 AssignMaterialShopField(materialRows);
                 WriteMaterialShopField(workbook, materialRows);
+
+                // Step A5: Correct FS Matl_Grp to match pipe material in same drawing+size
+                var fsCorrections = CorrectFsMaterial(materialRows);
+                if (fsCorrections.Count > 0)
+                {
+                    WriteFsMaterialCorrections(workbook, materialRows);
+                    foreach (var (dwg, size, oldGrp, newGrp, note) in fsCorrections)
+                    {
+                        string logMsg = $"FS material corrected: DWG={dwg}, Size={size}, {oldGrp}->{newGrp}";
+                        if (!string.IsNullOrEmpty(note)) logMsg += $" ({note})";
+                        AppLogger.Info(logMsg, "TakeoffPostProcessor.CorrectFsMaterial");
+                    }
+                    AppLogger.Info($"Corrected {fsCorrections.Count} FS material assignments", "TakeoffPostProcessor");
+                }
 
                 // Step B: Generate Labor rows
                 var laborRows = GenerateLaborRows(materialRows);
@@ -397,6 +422,129 @@ namespace VANTAGE.Services.AI
             for (int i = 0; i < materialRows.Count; i++)
             {
                 ws.Cell(i + 2, shopFieldCol).Value = GetInt(materialRows[i], "ShopField");
+            }
+        }
+
+        // Step A5: Correct FS (field support) Matl_Grp to match pipe of same size in same drawing.
+        // AI often defaults FS to CS because material isn't in the description.
+        // Returns list of corrections made for logging/flagging.
+        private static List<(string Dwg, string Size, string OldGrp, string NewGrp, string Note)> CorrectFsMaterial(
+            List<Dictionary<string, object?>> materialRows)
+        {
+            var corrections = new List<(string Dwg, string Size, string OldGrp, string NewGrp, string Note)>();
+
+            // Build lookup: (DrawingNumber, Size) -> list of PIPE Matl_Grp values
+            var pipeMaterials = new Dictionary<(string Dwg, string Size), List<string>>();
+            foreach (var row in materialRows)
+            {
+                if (!GetString(row, "Component").Equals("PIPE", StringComparison.OrdinalIgnoreCase))
+                    continue;
+                string dwg = GetString(row, "Drawing Number");
+                string size = GetString(row, "Size");
+                if (string.IsNullOrEmpty(dwg) || string.IsNullOrEmpty(size)) continue;
+
+                var key = (dwg, size);
+                if (!pipeMaterials.ContainsKey(key))
+                    pipeMaterials[key] = new List<string>();
+                string matlGrp = GetString(row, "Matl_Grp");
+                if (!string.IsNullOrEmpty(matlGrp) && !pipeMaterials[key].Contains(matlGrp, StringComparer.OrdinalIgnoreCase))
+                    pipeMaterials[key].Add(matlGrp);
+            }
+
+            // Correct each FS row
+            foreach (var row in materialRows)
+            {
+                if (!GetString(row, "Component").Equals("FS", StringComparison.OrdinalIgnoreCase))
+                    continue;
+                string dwg = GetString(row, "Drawing Number");
+                string size = GetString(row, "Size");
+                if (string.IsNullOrEmpty(dwg) || string.IsNullOrEmpty(size)) continue;
+
+                var key = (dwg, size);
+                if (!pipeMaterials.TryGetValue(key, out var pipeGrps) || pipeGrps.Count == 0)
+                    continue; // No matching pipe — leave as-is
+
+                string oldGrp = GetString(row, "Matl_Grp");
+                string newGrp;
+                string note = "";
+
+                if (pipeGrps.Count == 1)
+                {
+                    newGrp = pipeGrps[0];
+                }
+                else
+                {
+                    // Multiple pipe materials — pick the non-CS one
+                    var nonCs = pipeGrps.Where(g => !g.Equals("CS", StringComparison.OrdinalIgnoreCase)).ToList();
+                    if (nonCs.Count == 1)
+                    {
+                        newGrp = nonCs[0];
+                        note = $"Multiple pipe materials [{string.Join(", ", pipeGrps)}], picked non-CS";
+                    }
+                    else if (nonCs.Count > 1)
+                    {
+                        newGrp = nonCs[0];
+                        note = $"Multiple non-CS pipe materials [{string.Join(", ", pipeGrps)}], picked first non-CS";
+                    }
+                    else
+                    {
+                        // All are CS
+                        newGrp = "CS";
+                    }
+                }
+
+                if (newGrp.Equals(oldGrp, StringComparison.OrdinalIgnoreCase))
+                    continue; // Already correct
+
+                row["Matl_Grp"] = newGrp;
+                row["Matl_Grp_Desc"] = MaterialGroupDescriptions.TryGetValue(newGrp, out string? desc) ? desc : "";
+                corrections.Add((dwg, size, oldGrp, newGrp, note));
+            }
+
+            return corrections;
+        }
+
+        // Write FS material corrections back to the Material worksheet
+        private static void WriteFsMaterialCorrections(XLWorkbook workbook, List<Dictionary<string, object?>> materialRows)
+        {
+            if (!workbook.TryGetWorksheet("Material", out var ws)) return;
+
+            int lastCol = ws.RangeUsed()?.LastColumn().ColumnNumber() ?? 0;
+
+            // Find Matl_Grp column
+            int matlGrpCol = 0;
+            for (int col = 1; col <= lastCol; col++)
+            {
+                if (ws.Cell(1, col).GetString().Trim().Equals("Matl_Grp", StringComparison.OrdinalIgnoreCase))
+                { matlGrpCol = col; break; }
+            }
+            if (matlGrpCol == 0) return;
+
+            // Find or create Matl_Grp_Desc column (insert right after Matl_Grp)
+            int descCol = 0;
+            for (int col = 1; col <= lastCol; col++)
+            {
+                if (ws.Cell(1, col).GetString().Trim().Equals("Matl_Grp_Desc", StringComparison.OrdinalIgnoreCase))
+                { descCol = col; break; }
+            }
+            if (descCol == 0)
+            {
+                descCol = matlGrpCol + 1;
+                ws.Column(descCol).InsertColumnsBefore(1);
+                ws.Cell(1, descCol).Value = "Matl_Grp_Desc";
+            }
+
+            // Write only FS rows that have Matl_Grp_Desc set (the ones we changed)
+            for (int i = 0; i < materialRows.Count; i++)
+            {
+                if (!GetString(materialRows[i], "Component").Equals("FS", StringComparison.OrdinalIgnoreCase))
+                    continue;
+                string desc = GetString(materialRows[i], "Matl_Grp_Desc");
+                if (string.IsNullOrEmpty(desc)) continue;
+
+                int excelRow = i + 2;
+                ws.Cell(excelRow, matlGrpCol).Value = GetString(materialRows[i], "Matl_Grp");
+                ws.Cell(excelRow, descCol).Value = desc;
             }
         }
 
