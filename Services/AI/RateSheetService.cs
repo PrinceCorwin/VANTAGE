@@ -87,6 +87,30 @@ namespace VANTAGE.Services.AI
         };
 
 
+        // Get all unique component names from the rate sheet and ComponentToEstGrp mappings.
+        // Includes both the EstGrp values from the rate sheet and all alias component names.
+        public static List<string> GetAllComponents()
+        {
+            var rates = LoadRates();
+            var components = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            // Extract EstGrp from rate keys (format: "EstGrp-Size" or "EstGrp-Size:Rating")
+            foreach (var key in rates.Keys)
+            {
+                int dashIdx = key.IndexOf('-');
+                if (dashIdx > 0)
+                    components.Add(key[..dashIdx]);
+                else
+                    components.Add(key);
+            }
+
+            // Add all alias component names from the mapping dictionary
+            foreach (var alias in ComponentToEstGrp.Keys)
+                components.Add(alias);
+
+            return components.OrderBy(c => c, StringComparer.OrdinalIgnoreCase).ToList();
+        }
+
         // Lazy-load rate data from embedded resource into a dictionary keyed by GRP_SIZE_RTG
         private static Dictionary<string, (double FldMhu, string Unit)> LoadRates()
         {

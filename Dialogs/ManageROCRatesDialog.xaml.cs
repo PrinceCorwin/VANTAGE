@@ -8,6 +8,7 @@ using System.Windows.Controls;
 using Microsoft.Data.SqlClient;
 using Syncfusion.SfSkinManager;
 using VANTAGE.Data;
+using VANTAGE.Services.AI;
 using VANTAGE.Utilities;
 
 namespace VANTAGE.Dialogs
@@ -23,17 +24,24 @@ namespace VANTAGE.Dialogs
         private string? _originalProjectId;
         private string? _originalSetName;
 
+        // When true, dialog opens directly in New Set edit mode
+        private bool _openInNewSetMode;
+
         // All sets for the view-mode dropdown
         private List<(string ProjectID, string SetName)> _allSets = new();
 
         // All projects for the edit-mode project dropdown
         private List<string> _allProjects = new();
 
+        // Component checklist items
+        private ObservableCollection<ComponentCheckItem> _componentItems = new();
+
         // Shop/Field dropdown options for the grid
         public List<int> ShopFieldOptions { get; } = new() { 1, 2 };
 
-        public ManageROCRatesDialog()
+        public ManageROCRatesDialog(bool openInNewSetMode = false)
         {
+            _openInNewSetMode = openInNewSetMode;
             InitializeComponent();
             DataContext = this;
             SfSkinManager.SetTheme(this, new Theme(ThemeManager.GetSyncfusionThemeName()));
@@ -42,11 +50,18 @@ namespace VANTAGE.Dialogs
 
         private async void ManageROCRatesDialog_Loaded(object sender, RoutedEventArgs e)
         {
+            LoadComponentChecklist();
+            SetComponentChecklistEnabled(false);
             await LoadAllSetsAsync();
+
+            // If opened from "+ Create New...", go straight to new set edit mode
+            if (_openInNewSetMode)
+                BtnNewSet_Click(this, new RoutedEventArgs());
         }
 
-        // Load all (ProjectID, SetName) pairs for the view-mode dropdown
-        private async System.Threading.Tasks.Task LoadAllSetsAsync()
+        // Load all (ProjectID, SetName) pairs for the view-mode dropdown.
+        // If selectIndex is provided, select that set and load its data.
+        private async System.Threading.Tasks.Task LoadAllSetsAsync(int selectIndex = -1)
         {
             try
             {
@@ -59,12 +74,14 @@ namespace VANTAGE.Dialogs
                 foreach (var (projectId, setName) in _allSets)
                     cboSet.Items.Add($"{projectId} - {setName}");
 
-                if (_allSets.Count > 0)
-                    cboSet.SelectedIndex = 0;
-                else
+                if (selectIndex >= 0 && selectIndex < _allSets.Count)
+                    cboSet.SelectedIndex = selectIndex;
+
+                if (cboSet.SelectedIndex < 0)
                 {
                     _items.Clear();
                     sfGrid.ItemsSource = _items;
+                    ApplyComponentSelections(null);
                 }
 
                 SetStatus("");
@@ -78,23 +95,31 @@ namespace VANTAGE.Dialogs
             {
                 _isLoading = false;
             }
+
+            // Load the selected set's data now that _isLoading is cleared
+            if (cboSet.SelectedIndex >= 0 && cboSet.SelectedIndex < _allSets.Count)
+            {
+                var (projectId, setName) = _allSets[cboSet.SelectedIndex];
+                await LoadSetDataAsync(projectId, setName);
+            }
         }
 
-        // Load rows for a specific project+set into the grid
+        // Load rows for a specific project+set into the grid and component checklist
         private async System.Threading.Tasks.Task LoadSetDataAsync(string projectId, string setName)
         {
             try
             {
                 SetStatus("Loading set...");
 
-                var items = await System.Threading.Tasks.Task.Run(() =>
+                var (items, components) = await System.Threading.Tasks.Task.Run(() =>
                 {
                     var list = new List<ROCRateItem>();
+                    string? comp = null;
                     using var conn = AzureDbManager.GetConnection();
                     conn.Open();
                     using var cmd = conn.CreateCommand();
                     cmd.CommandText = @"
-                        SELECT Id, ROCStep, Percentage, ShopField, SortOrder
+                        SELECT Id, ROCStep, Percentage, ShopField, SortOrder, Components
                         FROM VMS_ROCRates
                         WHERE ProjectID = @ProjectID AND SetName = @SetName
                         ORDER BY SortOrder, ROCStep";
@@ -111,12 +136,19 @@ namespace VANTAGE.Dialogs
                             ShopField = reader.GetInt32(3),
                             SortOrder = reader.GetInt32(4)
                         });
+                        // Read Components from the first row that has it
+                        if (comp == null && !reader.IsDBNull(5))
+                            comp = reader.GetString(5);
                     }
-                    return list;
+                    return (list, comp);
                 });
 
                 _items = new ObservableCollection<ROCRateItem>(items);
                 sfGrid.ItemsSource = _items;
+
+                // Apply component selections
+                ApplyComponentSelections(components);
+
                 UpdateStatus();
             }
             catch (Exception ex)
@@ -198,8 +230,9 @@ namespace VANTAGE.Dialogs
             btnSave.Visibility = Visibility.Visible;
             btnCancel.Visibility = Visibility.Visible;
 
-            // Enable grid editing
+            // Enable grid editing and component checkboxes
             sfGrid.AllowEditing = true;
+            SetComponentChecklistEnabled(true);
 
             SetStatus("");
         }
@@ -222,8 +255,9 @@ namespace VANTAGE.Dialogs
             btnSave.Visibility = Visibility.Collapsed;
             btnCancel.Visibility = Visibility.Collapsed;
 
-            // Disable grid editing
+            // Disable grid editing and component checkboxes
             sfGrid.AllowEditing = false;
+            SetComponentChecklistEnabled(false);
 
             SetStatus("");
         }
@@ -241,6 +275,10 @@ namespace VANTAGE.Dialogs
 
             _items = new ObservableCollection<ROCRateItem>();
             sfGrid.ItemsSource = _items;
+
+            // Clear all component checkboxes for new set
+            foreach (var c in _componentItems) c.IsChecked = false;
+            UpdateComponentCount();
         }
 
         // Modify button — switch to edit mode with current set data
@@ -274,7 +312,7 @@ namespace VANTAGE.Dialogs
         {
             ExitEditMode();
 
-            // Reload to restore view state
+            // Reload to restore view state (no set selected)
             await LoadAllSetsAsync();
         }
 
@@ -357,20 +395,25 @@ namespace VANTAGE.Dialogs
                             delCmd.ExecuteNonQuery();
                         }
 
+                        // Build comma-separated components string from checked items
+                        string componentsValue = string.Join(",",
+                            _componentItems.Where(c => c.IsChecked).Select(c => c.Name));
+
                         // Insert all rows
                         foreach (var item in _items)
                         {
                             using var cmd = conn.CreateCommand();
                             cmd.Transaction = transaction;
                             cmd.CommandText = @"
-                                INSERT INTO VMS_ROCRates (ProjectID, SetName, ROCStep, Percentage, ShopField, SortOrder, CreatedBy, UpdatedBy)
-                                VALUES (@ProjectID, @SetName, @ROCStep, @Percentage, @ShopField, @SortOrder, @CreatedBy, @UpdatedBy)";
+                                INSERT INTO VMS_ROCRates (ProjectID, SetName, ROCStep, Percentage, ShopField, SortOrder, Components, CreatedBy, UpdatedBy)
+                                VALUES (@ProjectID, @SetName, @ROCStep, @Percentage, @ShopField, @SortOrder, @Components, @CreatedBy, @UpdatedBy)";
                             cmd.Parameters.AddWithValue("@ProjectID", projectId);
                             cmd.Parameters.AddWithValue("@SetName", setName);
                             cmd.Parameters.AddWithValue("@ROCStep", item.ROCStep);
                             cmd.Parameters.AddWithValue("@Percentage", item.Percentage);
                             cmd.Parameters.AddWithValue("@ShopField", item.ShopField);
                             cmd.Parameters.AddWithValue("@SortOrder", item.SortOrder);
+                            cmd.Parameters.AddWithValue("@Components", string.IsNullOrEmpty(componentsValue) ? (object)DBNull.Value : componentsValue);
                             cmd.Parameters.AddWithValue("@CreatedBy", username);
                             cmd.Parameters.AddWithValue("@UpdatedBy", username);
                             cmd.ExecuteNonQuery();
@@ -392,15 +435,13 @@ namespace VANTAGE.Dialogs
                 ExitEditMode();
                 await LoadAllSetsAsync();
 
-                // Select the set we just saved
+                // Find and select the saved set
                 int idx = _allSets.FindIndex(s =>
                     s.ProjectID.Equals(projectId, StringComparison.OrdinalIgnoreCase)
                     && s.SetName.Equals(setName, StringComparison.OrdinalIgnoreCase));
                 if (idx >= 0)
                 {
-                    _isLoading = true;
                     cboSet.SelectedIndex = idx;
-                    _isLoading = false;
                     await LoadSetDataAsync(projectId, setName);
                 }
 
@@ -497,6 +538,78 @@ namespace VANTAGE.Dialogs
             Close();
         }
 
+        // ========================================
+        // COMPONENT CHECKLIST
+        // ========================================
+
+        // Build the component checklist from the rate sheet
+        private void LoadComponentChecklist()
+        {
+            var allComponents = RateSheetService.GetAllComponents();
+            _componentItems = new ObservableCollection<ComponentCheckItem>(
+                allComponents.Select(c => new ComponentCheckItem { Name = c, IsChecked = false, IsEnabled = false })
+            );
+
+            foreach (var item in _componentItems)
+                item.PropertyChanged += ComponentItem_PropertyChanged;
+
+            icComponents.ItemsSource = _componentItems;
+            UpdateComponentCount();
+        }
+
+        // Apply a comma-separated components string to the checklist
+        private void ApplyComponentSelections(string? components)
+        {
+            if (string.IsNullOrEmpty(components))
+            {
+                foreach (var item in _componentItems) item.IsChecked = false;
+            }
+            else
+            {
+                var checkedSet = new HashSet<string>(
+                    components.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
+                    StringComparer.OrdinalIgnoreCase);
+
+                foreach (var item in _componentItems)
+                    item.IsChecked = checkedSet.Contains(item.Name);
+            }
+
+            UpdateComponentCount();
+        }
+
+        // Enable/disable checkboxes based on edit mode
+        private void SetComponentChecklistEnabled(bool enabled)
+        {
+            foreach (var item in _componentItems)
+                item.IsEnabled = enabled;
+        }
+
+        private void BtnCheckAll_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (var item in _componentItems)
+                item.IsChecked = true;
+            UpdateComponentCount();
+        }
+
+        private void BtnUncheckAll_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (var item in _componentItems)
+                item.IsChecked = false;
+            UpdateComponentCount();
+        }
+
+        private void ComponentItem_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(ComponentCheckItem.IsChecked))
+                UpdateComponentCount();
+        }
+
+        private void UpdateComponentCount()
+        {
+            int checkedCount = _componentItems.Count(c => c.IsChecked);
+            txtComponentCount.Text = $"{checkedCount} / {_componentItems.Count}";
+        }
+
         private void UpdateStatus()
         {
             double total = _items.Sum(i => i.Percentage);
@@ -547,6 +660,36 @@ namespace VANTAGE.Dialogs
         {
             get => _sortOrder;
             set { _sortOrder = value; OnPropertyChanged(nameof(SortOrder)); }
+        }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+        private void OnPropertyChanged(string name) =>
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+    }
+
+    // Component checkbox item for the applicable components checklist
+    public class ComponentCheckItem : INotifyPropertyChanged
+    {
+        private string _name = "";
+        private bool _isChecked;
+        private bool _isEnabled = true;
+
+        public string Name
+        {
+            get => _name;
+            set { _name = value; OnPropertyChanged(nameof(Name)); }
+        }
+
+        public bool IsChecked
+        {
+            get => _isChecked;
+            set { _isChecked = value; OnPropertyChanged(nameof(IsChecked)); }
+        }
+
+        public bool IsEnabled
+        {
+            get => _isEnabled;
+            set { _isEnabled = value; OnPropertyChanged(nameof(IsEnabled)); }
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;

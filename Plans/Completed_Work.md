@@ -6,6 +6,16 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### April 3, 2026 (Import Profiles, ROC Manager Components, UniqueID Fix)
+- **UniqueID generation fixed:** `SetSystemFields()` now matches `ExcelImporter` pattern — `i` prefix, `yyMMddHHmmss` (local time), last 3 chars of username lowercased, `"usr"` fallback. Previously used `t` prefix with `yyyyMMddHHmmss` (UTC) and first 3 chars uppercased.
+- **Import profiles:** Save/load/delete named presets in the Import from AI Takeoff dialog. Profiles store output mode, handling, options, ROC set, column mappings, and metadata values. Stored in UserSettings as JSON (same pattern as GridLayouts). Profiles can be loaded before file selection — saved column mappings re-apply automatically when file loads.
+- **Batch source removed:** Removed From File/From Batch radio buttons, Batches button, and all batch-related code from ImportTakeoffDialog. Source is now just a Select File button with inline file name display.
+- **ROC Manager — applicable components checklist:** New right panel with scrollable checkbox list of all component types from the rate sheet. All/None quick-select buttons with count display (e.g., "12 / 95"). Checkboxes enabled only in edit mode. Component list built dynamically via `RateSheetService.GetAllComponents()`. Selections stored as comma-separated string in new `Components` column on `VMS_ROCRates` table.
+- **ROC Manager — bug fixes:** Fixed set data never loading on dialog open (`_isLoading` guard prevented `CboSet_SelectionChanged` from firing). No set auto-selected on open — user picks from dropdown. Dialog opens in New Set mode when accessed via "+ Create New..." from ImportTakeoffDialog.
+- **ROC Manager in Tools menu:** Added "ROC Manager" menu item to MainWindow Tools menu for standalone access to create, view, modify, and delete ROC rate sets.
+- **Help manual updated:** Comprehensive AI Takeoff documentation — added Blank Components, Recalc Excel, ROC Manager sections. Updated Import from AI Takeoff with profiles, output modes, handling, options, column mapping, metadata. Updated multi title block regions, Previous Batches rename, Tools menu ROC Manager.
+- **Key files:** `Dialogs/ImportTakeoffDialog.xaml/.cs`, `Dialogs/ManageROCRatesDialog.xaml/.cs`, `Models/ImportProfile.cs`, `Services/AI/RateSheetService.cs`, `MainWindow.xaml/.cs`, `Help/manual.html`
+
 ### April 3, 2026 (Import from AI Takeoff — Dialog & Import/Export Logic)
 - **Import Takeoff Dialog redesigned:** Two-column layout (1200px wide, SizeToContent height). Left column: Source, Output, Handling, Options, ROC Set, Metadata. Right column: Column Mapping with SfBusyIndicator spinner during file loading.
 - **Source selection:** From File (local .xlsx) or From Batch (S3, TODO: wire up download). File picker populates column mapping grid with headers and first non-blank sample values.

@@ -4,12 +4,12 @@
         xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
         Title="Manage ROC Rate Sets"
         Height="600"
-        Width="900"
+        Width="1250"
         WindowStartupLocation="CenterOwner"
         Background="{DynamicResource BackgroundColor}"
         ResizeMode="CanResize"
         MinHeight="450"
-        MinWidth="700"
+        MinWidth="1050"
         WindowStyle="SingleBorderWindow">
 
     <Grid Margin="20">
@@ -132,37 +132,114 @@
                      ToolTip="Enter a name for this ROC rate set"/>
         </Grid>
 
-        <!-- Data Grid -->
-        <syncfusion:SfDataGrid x:Name="sfGrid"
-                               Grid.Row="4"
-                               AutoGenerateColumns="False"
-                               AllowEditing="False"
-                               EditTrigger="OnTap"
-                               AllowDeleting="False"
-                               AllowSorting="False"
-                               SelectionMode="Single"
-                               NavigationMode="Cell"
-                               GridLinesVisibility="Both"
-                               HeaderRowHeight="32"
-                               RowHeight="28"
-                               Background="{DynamicResource ControlBackground}"
-                               Foreground="{DynamicResource ForegroundColor}"
-                               BorderBrush="{DynamicResource BorderColor}"
-                               BorderThickness="1">
-            <syncfusion:SfDataGrid.Columns>
-                <syncfusion:GridTextColumn MappingName="ROCStep" HeaderText="ROC Step" Width="180"
-                                           ToolTipTemplate="{x:Null}"/>
-                <syncfusion:GridNumericColumn MappingName="Percentage" HeaderText="Percentage" Width="120"
-                                              NumberDecimalDigits="2"
-                                              ToolTipTemplate="{x:Null}"/>
-                <syncfusion:GridComboBoxColumn MappingName="ShopField" HeaderText="Shop/Field" Width="120"
-                                               ItemsSource="{Binding ShopFieldOptions}"
+        <!-- Data Grid + Component Checklist -->
+        <Grid Grid.Row="4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="16"/>
+                <ColumnDefinition Width="280"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- ROC Steps Grid -->
+            <syncfusion:SfDataGrid x:Name="sfGrid"
+                                   Grid.Column="0"
+                                   AutoGenerateColumns="False"
+                                   AllowEditing="False"
+                                   EditTrigger="OnTap"
+                                   AllowDeleting="False"
+                                   AllowSorting="False"
+                                   SelectionMode="Single"
+                                   NavigationMode="Cell"
+                                   GridLinesVisibility="Both"
+                                   HeaderRowHeight="32"
+                                   RowHeight="28"
+                                   Background="{DynamicResource ControlBackground}"
+                                   Foreground="{DynamicResource ForegroundColor}"
+                                   BorderBrush="{DynamicResource BorderColor}"
+                                   BorderThickness="1">
+                <syncfusion:SfDataGrid.Columns>
+                    <syncfusion:GridTextColumn MappingName="ROCStep" HeaderText="ROC Step" Width="180"
                                                ToolTipTemplate="{x:Null}"/>
-                <syncfusion:GridNumericColumn MappingName="SortOrder" HeaderText="Sort Order" Width="100"
-                                              NumberDecimalDigits="0"
-                                              ToolTipTemplate="{x:Null}"/>
-            </syncfusion:SfDataGrid.Columns>
-        </syncfusion:SfDataGrid>
+                    <syncfusion:GridNumericColumn MappingName="Percentage" HeaderText="Percentage" Width="120"
+                                                  NumberDecimalDigits="2"
+                                                  ToolTipTemplate="{x:Null}"/>
+                    <syncfusion:GridComboBoxColumn MappingName="ShopField" HeaderText="Shop/Field" Width="120"
+                                                   ItemsSource="{Binding ShopFieldOptions}"
+                                                   ToolTipTemplate="{x:Null}"/>
+                    <syncfusion:GridNumericColumn MappingName="SortOrder" HeaderText="Sort Order" Width="100"
+                                                  NumberDecimalDigits="0"
+                                                  ToolTipTemplate="{x:Null}"/>
+                </syncfusion:SfDataGrid.Columns>
+            </syncfusion:SfDataGrid>
+
+            <!-- Applicable Components Checklist -->
+            <Border Grid.Column="2"
+                    BorderBrush="{DynamicResource BorderColor}"
+                    BorderThickness="1"
+                    CornerRadius="4">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Text="Applicable Components"
+                               Foreground="{DynamicResource ForegroundColor}"
+                               FontSize="13"
+                               FontWeight="SemiBold"
+                               Margin="10,8,10,4"/>
+
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="10,0,10,6">
+                        <Button x:Name="btnCheckAll"
+                                Content="All"
+                                Width="40"
+                                Height="22"
+                                FontSize="10"
+                                Background="{DynamicResource ControlBackground}"
+                                Foreground="{DynamicResource ForegroundColor}"
+                                BorderBrush="{DynamicResource SidebarButtonBorder}"
+                                BorderThickness="1"
+                                Click="BtnCheckAll_Click"
+                                ToolTip="Check all components"/>
+                        <Button x:Name="btnUncheckAll"
+                                Content="None"
+                                Width="40"
+                                Height="22"
+                                FontSize="10"
+                                Margin="4,0,0,0"
+                                Background="{DynamicResource ControlBackground}"
+                                Foreground="{DynamicResource ForegroundColor}"
+                                BorderBrush="{DynamicResource SidebarButtonBorder}"
+                                BorderThickness="1"
+                                Click="BtnUncheckAll_Click"
+                                ToolTip="Uncheck all components"/>
+                        <TextBlock x:Name="txtComponentCount"
+                                   Foreground="{DynamicResource ForegroundColor}"
+                                   FontSize="11"
+                                   Opacity="0.7"
+                                   VerticalAlignment="Center"
+                                   Margin="8,0,0,0"/>
+                    </StackPanel>
+
+                    <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" Margin="6,0,6,6">
+                        <ItemsControl x:Name="icComponents">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <CheckBox Content="{Binding Name}"
+                                              IsChecked="{Binding IsChecked, Mode=TwoWay}"
+                                              IsEnabled="{Binding IsEnabled}"
+                                              Foreground="{DynamicResource ForegroundColor}"
+                                              Margin="4,1,0,1"
+                                              FontSize="12"
+                                              ToolTip="Check to include this component in ROC splits"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+        </Grid>
 
         <!-- Bottom Buttons -->
         <Grid Grid.Row="6">

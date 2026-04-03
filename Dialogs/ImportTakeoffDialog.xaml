@@ -20,12 +20,65 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Header -->
-        <TextBlock Grid.Row="0"
-                   Text="Import from AI Takeoff"
-                   FontWeight="SemiBold"
-                   FontSize="16"
-                   Foreground="{DynamicResource ForegroundColor}"/>
+        <!-- Header with Profile controls -->
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Column="0"
+                       Text="Import from AI Takeoff"
+                       FontWeight="SemiBold"
+                       FontSize="16"
+                       VerticalAlignment="Center"
+                       Foreground="{DynamicResource ForegroundColor}"/>
+
+            <!-- Profile controls -->
+            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="Profile:"
+                           Foreground="{DynamicResource ForegroundColor}"
+                           FontSize="12"
+                           VerticalAlignment="Center"
+                           Margin="0,0,6,0"/>
+
+                <syncfusion:ComboBoxAdv x:Name="cboProfile"
+                                        Width="180"
+                                        Height="26"
+                                        FontSize="11"
+                                        IsEditable="False"
+                                        SelectionChanged="CboProfile_SelectionChanged"
+                                        ToolTip="Load a saved import profile"/>
+
+                <Button x:Name="btnSaveProfile"
+                        Content="Save"
+                        Width="50"
+                        Height="26"
+                        FontSize="11"
+                        Margin="6,0,0,0"
+                        Background="{DynamicResource ControlBackground}"
+                        Foreground="{DynamicResource ForegroundColor}"
+                        BorderBrush="{DynamicResource SidebarButtonBorder}"
+                        BorderThickness="1"
+                        Click="BtnSaveProfile_Click"
+                        ToolTip="Save current settings as a named profile"/>
+
+                <Button x:Name="btnDeleteProfile"
+                        Content="Delete"
+                        Width="50"
+                        Height="26"
+                        FontSize="11"
+                        Margin="4,0,0,0"
+                        IsEnabled="False"
+                        Background="{DynamicResource ControlBackground}"
+                        Foreground="{DynamicResource ForegroundColor}"
+                        BorderBrush="{DynamicResource SidebarButtonBorder}"
+                        BorderThickness="1"
+                        Click="BtnDeleteProfile_Click"
+                        ToolTip="Delete the selected profile"/>
+            </StackPanel>
+        </Grid>
 
         <!-- Main content: two columns -->
         <Grid Grid.Row="2">
@@ -43,12 +96,8 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="70"/>
                         <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="20"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="20"/>
-                        <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="12"/>
-                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
                     <TextBlock Grid.Column="0" Text="Source:"
@@ -57,27 +106,8 @@
                                FontSize="13"
                                FontWeight="SemiBold"/>
 
-                    <RadioButton x:Name="rbFromFile"
-                                 Grid.Column="1"
-                                 Content="From File"
-                                 IsChecked="True"
-                                 Foreground="{DynamicResource ForegroundColor}"
-                                 VerticalAlignment="Center"
-                                 GroupName="Source"
-                                 Checked="RbSource_Checked"
-                                 ToolTip="Import from a local Excel file"/>
-
-                    <RadioButton x:Name="rbFromBatch"
-                                 Grid.Column="3"
-                                 Content="From Batch"
-                                 Foreground="{DynamicResource ForegroundColor}"
-                                 VerticalAlignment="Center"
-                                 GroupName="Source"
-                                 Checked="RbSource_Checked"
-                                 ToolTip="Import from a previously processed AI Takeoff batch"/>
-
                     <Button x:Name="btnSelectFile"
-                            Grid.Column="5"
+                            Grid.Column="1"
                             Content="Select File..."
                             Width="90"
                             Height="28"
@@ -89,29 +119,15 @@
                             Click="BtnSelectFile_Click"
                             ToolTip="Browse for an Excel (.xlsx) takeoff file"/>
 
-                    <Button x:Name="btnBatches"
-                            Grid.Column="7"
-                            Content="Batches..."
-                            Width="90"
-                            Height="28"
-                            FontSize="11"
-                            IsEnabled="False"
-                            Background="{DynamicResource ControlBackground}"
-                            Foreground="{DynamicResource ForegroundColor}"
-                            BorderBrush="{DynamicResource SidebarButtonBorder}"
-                            BorderThickness="1"
-                            Click="BtnBatches_Click"
-                            ToolTip="Browse previously processed AI Takeoff batches"/>
+                    <TextBlock x:Name="txtSourceLabel"
+                               Grid.Column="3"
+                               Text="No file selected"
+                               Foreground="{DynamicResource ForegroundColor}"
+                               FontSize="11"
+                               Opacity="0.6"
+                               VerticalAlignment="Center"
+                               TextTrimming="CharacterEllipsis"/>
                 </Grid>
-
-                <!-- Source Label -->
-                <TextBlock x:Name="txtSourceLabel"
-                           Text="No file selected"
-                           Foreground="{DynamicResource ForegroundColor}"
-                           FontSize="11"
-                           Opacity="0.6"
-                           Margin="70,6,0,0"
-                           TextTrimming="CharacterEllipsis"/>
 
                 <!-- Output -->
                 <Grid Margin="0,12,0,0">

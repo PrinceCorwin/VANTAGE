@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using ClosedXML.Excel;
@@ -19,10 +20,14 @@ namespace VANTAGE.Dialogs
 {
     public partial class ImportTakeoffDialog : Window
     {
+        private const string ProfileIndexKey = "ImportProfiles.Index";
+        private const string ProfileDataPrefix = "ImportProfile.";
+
         private List<(string ProjectID, string SetName)> _rocSets = new();
         private string? _selectedFilePath;
-        private string? _selectedBatchId;
         private bool _isLoadingDropdowns;
+        private bool _isLoadingProfile;
+        private ImportProfile? _activeProfile;
         private ObservableCollection<ColumnMappingItem> _mappingItems = new();
         private ObservableCollection<MetadataFieldItem> _metadataItems = new();
 
@@ -127,6 +132,7 @@ namespace VANTAGE.Dialogs
 
         private async void ImportTakeoffDialog_Loaded(object sender, RoutedEventArgs e)
         {
+            LoadProfileDropdown();
             await LoadROCSetsAsync();
         }
 
@@ -160,23 +166,6 @@ namespace VANTAGE.Dialogs
             }
         }
 
-        // Toggle button enabled states based on radio selection
-        private void RbSource_Checked(object sender, RoutedEventArgs e)
-        {
-            if (btnSelectFile == null || btnBatches == null) return;
-
-            bool isFile = rbFromFile.IsChecked == true;
-            btnSelectFile.IsEnabled = isFile;
-            btnBatches.IsEnabled = !isFile;
-
-            // Clear previous selection and mapping when switching
-            _selectedFilePath = null;
-            _selectedBatchId = null;
-            txtSourceLabel.Text = isFile ? "No file selected" : "No batch selected";
-            txtSourceLabel.Opacity = 0.6;
-            ClearMappingGrid();
-        }
-
         // Open file picker for .xlsx, then populate column mapping
         private async void BtnSelectFile_Click(object sender, RoutedEventArgs e)
         {
@@ -190,48 +179,10 @@ namespace VANTAGE.Dialogs
             if (dialog.ShowDialog() != true) return;
 
             _selectedFilePath = dialog.FileName;
-            _selectedBatchId = null;
             txtSourceLabel.Text = System.IO.Path.GetFileName(_selectedFilePath);
             txtSourceLabel.Opacity = 1.0;
 
             await PopulateMappingFromFileAsync(_selectedFilePath);
-        }
-
-        // Open SelectBatchDialog to pick a batch
-        private async void BtnBatches_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                using var service = new TakeoffService();
-                var batches = await service.ListBatchesAsync();
-
-                if (batches.Count == 0)
-                {
-                    MessageBox.Show("No previous batches found.", "No Batches",
-                        MessageBoxButton.OK, MessageBoxImage.Information);
-                    return;
-                }
-
-                var dialog = new SelectBatchDialog(batches)
-                {
-                    Owner = this
-                };
-
-                if (dialog.ShowDialog() == true && dialog.SelectedBatchId != null)
-                {
-                    _selectedBatchId = dialog.SelectedBatchId;
-                    _selectedFilePath = null;
-                    txtSourceLabel.Text = $"Batch: {_selectedBatchId}";
-                    txtSourceLabel.Opacity = 1.0;
-                    // TODO: Download batch Excel and populate mapping
-                }
-            }
-            catch (Exception ex)
-            {
-                AppLogger.Error(ex, "ImportTakeoffDialog.BtnBatches_Click");
-                MessageBox.Show($"Error loading batches: {ex.Message}", "Error",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
-            }
         }
 
         // Show spinner, hide other mapping content
@@ -319,6 +270,10 @@ namespace VANTAGE.Dialogs
                 }
 
                 BuildMappingGrid(headers, samples);
+
+                // Re-apply active profile's column mappings and metadata now that rows exist
+                if (_activeProfile != null)
+                    ApplyProfileToUI(_activeProfile);
             }
             catch (Exception ex)
             {
@@ -608,7 +563,7 @@ namespace VANTAGE.Dialogs
             cboROCSet.SelectedIndex = 1;
             _isLoadingDropdowns = false;
 
-            var dialog = new ManageROCRatesDialog
+            var dialog = new ManageROCRatesDialog(openInNewSetMode: true)
             {
                 Owner = this
             };
@@ -954,17 +909,19 @@ namespace VANTAGE.Dialogs
             }
         }
 
-        // Generate UniqueIDs and set system tracking fields
+        // Generate UniqueIDs and set system tracking fields (matches ExcelImporter pattern)
         private static void SetSystemFields(List<Activity> activities)
         {
             string user = App.CurrentUser?.Username ?? Environment.UserName;
-            string timestamp = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
-            string userSuffix = user.Length >= 3 ? user[..3].ToUpper() : user.ToUpper();
+            var timestamp = DateTime.Now.ToString("yyMMddHHmmss");
+            var userSuffix = user.Length >= 3
+                ? user.Substring(user.Length - 3).ToLower()
+                : "usr";
             int sequence = 1;
 
             foreach (var a in activities)
             {
-                a.UniqueID = $"t{timestamp}{sequence}{userSuffix}";
+                a.UniqueID = $"i{timestamp}{sequence}{userSuffix}";
                 sequence++;
 
                 a.CreatedBy = user;
@@ -1286,6 +1243,263 @@ namespace VANTAGE.Dialogs
                 if (combo.DataContext is MetadataFieldItem item)
                     combo.SelectedItem = item.Mode;
             }
+        }
+
+        // ========================================
+        // IMPORT PROFILE MANAGEMENT
+        // ========================================
+
+        // Load saved profile names into the dropdown
+        private void LoadProfileDropdown()
+        {
+            _isLoadingProfile = true;
+            cboProfile.Items.Clear();
+            cboProfile.Items.Add("(None)");
+
+            var names = GetProfileNames();
+            foreach (var name in names)
+                cboProfile.Items.Add(name);
+
+            cboProfile.SelectedIndex = 0;
+            btnDeleteProfile.IsEnabled = false;
+            _isLoadingProfile = false;
+        }
+
+        // Get saved profile names from settings
+        private static List<string> GetProfileNames()
+        {
+            string json = SettingsManager.GetUserSetting(ProfileIndexKey);
+            if (string.IsNullOrEmpty(json)) return new List<string>();
+            try { return JsonSerializer.Deserialize<List<string>>(json) ?? new List<string>(); }
+            catch { return new List<string>(); }
+        }
+
+        // Save profile names index to settings
+        private static void SaveProfileNames(List<string> names)
+        {
+            SettingsManager.SetUserSetting(ProfileIndexKey, JsonSerializer.Serialize(names), "json");
+        }
+
+        // Build an ImportProfile from current dialog state
+        private ImportProfile BuildProfileFromUI()
+        {
+            var profile = new ImportProfile();
+
+            // Output mode
+            if (rbImportRecords.IsChecked == true) profile.OutputMode = "ImportRecords";
+            else if (rbCreateExcel.IsChecked == true) profile.OutputMode = "CreateExcel";
+            else if (rbImportAndExcel.IsChecked == true) profile.OutputMode = "ImportAndExcel";
+
+            // Handling
+            if (rbKeepPipe.IsChecked == true) profile.HandlingMode = "KeepPipe";
+            else if (rbKeepSpl.IsChecked == true) profile.HandlingMode = "KeepSpl";
+            else if (rbKeepPipeAndSpl.IsChecked == true) profile.HandlingMode = "KeepPipeAndSpl";
+
+            // Options
+            profile.RollUpBUHardware = chkRollUpBUHardware.IsChecked == true;
+            profile.RollUpFabPerDwg = chkRollUpFabPerDwg.IsChecked == true;
+
+            // ROC Set
+            profile.ROCSetSelection = cboROCSet.SelectedItem?.ToString() ?? "None";
+
+            // Column mappings
+            foreach (var item in _mappingItems)
+            {
+                profile.ColumnMappings.Add(new ColumnMappingEntry
+                {
+                    FileHeader = item.FileHeader,
+                    SelectedMapping = item.SelectedMapping
+                });
+            }
+
+            // Metadata
+            foreach (var meta in _metadataItems)
+            {
+                profile.MetadataFields.Add(new MetadataEntry
+                {
+                    FieldName = meta.FieldName,
+                    Mode = meta.Mode,
+                    EnteredValue = meta.EnteredValue
+                });
+            }
+
+            return profile;
+        }
+
+        // Apply a loaded profile to the dialog controls
+        private void ApplyProfileToUI(ImportProfile profile)
+        {
+            _isLoadingProfile = true;
+
+            // Output mode
+            rbImportRecords.IsChecked = profile.OutputMode == "ImportRecords";
+            rbCreateExcel.IsChecked = profile.OutputMode == "CreateExcel";
+            rbImportAndExcel.IsChecked = profile.OutputMode == "ImportAndExcel";
+
+            // Handling
+            rbKeepPipe.IsChecked = profile.HandlingMode == "KeepPipe";
+            rbKeepSpl.IsChecked = profile.HandlingMode == "KeepSpl";
+            rbKeepPipeAndSpl.IsChecked = profile.HandlingMode == "KeepPipeAndSpl";
+
+            // Options
+            chkRollUpBUHardware.IsChecked = profile.RollUpBUHardware;
+            chkRollUpFabPerDwg.IsChecked = profile.RollUpFabPerDwg;
+
+            // ROC Set — find matching item in dropdown
+            for (int i = 0; i < cboROCSet.Items.Count; i++)
+            {
+                if (string.Equals(cboROCSet.Items[i]?.ToString(), profile.ROCSetSelection, StringComparison.OrdinalIgnoreCase))
+                {
+                    _isLoadingDropdowns = true;
+                    cboROCSet.SelectedIndex = i;
+                    _isLoadingDropdowns = false;
+                    break;
+                }
+            }
+
+            // Column mappings — apply saved mappings to matching file headers
+            if (profile.ColumnMappings.Count > 0)
+            {
+                var savedMap = profile.ColumnMappings.ToDictionary(
+                    c => c.FileHeader, c => c.SelectedMapping, StringComparer.OrdinalIgnoreCase);
+
+                foreach (var item in _mappingItems)
+                {
+                    if (savedMap.TryGetValue(item.FileHeader, out string? mapping))
+                    {
+                        if (item.AvailableMappings.Contains(mapping))
+                            item.SelectedMapping = mapping;
+                    }
+                }
+            }
+
+            // Metadata
+            if (profile.MetadataFields.Count > 0)
+            {
+                var savedMeta = profile.MetadataFields.ToDictionary(
+                    m => m.FieldName, m => m, StringComparer.OrdinalIgnoreCase);
+
+                foreach (var meta in _metadataItems)
+                {
+                    if (savedMeta.TryGetValue(meta.FieldName, out var saved))
+                    {
+                        meta.Mode = saved.Mode;
+                        meta.EnteredValue = saved.EnteredValue;
+                    }
+                }
+            }
+
+            _isLoadingProfile = false;
+        }
+
+        // Profile dropdown selection changed — load the selected profile
+        private void CboProfile_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_isLoadingProfile || cboProfile.SelectedIndex < 0) return;
+
+            if (cboProfile.SelectedIndex == 0)
+            {
+                _activeProfile = null;
+                btnDeleteProfile.IsEnabled = false;
+                return;
+            }
+
+            string profileName = cboProfile.SelectedItem?.ToString() ?? "";
+            if (string.IsNullOrEmpty(profileName)) return;
+
+            btnDeleteProfile.IsEnabled = true;
+
+            string json = SettingsManager.GetUserSetting($"{ProfileDataPrefix}{profileName}");
+            if (string.IsNullOrEmpty(json)) return;
+
+            try
+            {
+                var profile = JsonSerializer.Deserialize<ImportProfile>(json);
+                if (profile != null)
+                {
+                    _activeProfile = profile;
+                    ApplyProfileToUI(profile);
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "ImportTakeoffDialog.CboProfile_SelectionChanged");
+            }
+        }
+
+        // Save current settings as a named profile
+        private void BtnSaveProfile_Click(object sender, RoutedEventArgs e)
+        {
+            // If a profile is selected, default to overwriting it
+            string defaultName = cboProfile.SelectedIndex > 0
+                ? cboProfile.SelectedItem?.ToString() ?? ""
+                : "";
+
+            var inputDialog = new InputDialog("Save Import Profile", "Profile name:", defaultName)
+            {
+                Owner = this
+            };
+
+            if (inputDialog.ShowDialog() != true) return;
+
+            string name = inputDialog.InputText.Trim();
+            if (string.IsNullOrEmpty(name))
+            {
+                MessageBox.Show("Profile name cannot be empty.", "Invalid Name",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var profile = BuildProfileFromUI();
+            profile.Name = name;
+
+            string json = JsonSerializer.Serialize(profile);
+            SettingsManager.SetUserSetting($"{ProfileDataPrefix}{name}", json, "json");
+
+            // Update index
+            var names = GetProfileNames();
+            if (!names.Contains(name, StringComparer.OrdinalIgnoreCase))
+                names.Add(name);
+            SaveProfileNames(names);
+
+            // Refresh dropdown and select the saved profile
+            _isLoadingProfile = true;
+            cboProfile.Items.Clear();
+            cboProfile.Items.Add("(None)");
+            foreach (var n in names)
+                cboProfile.Items.Add(n);
+
+            for (int i = 0; i < cboProfile.Items.Count; i++)
+            {
+                if (string.Equals(cboProfile.Items[i]?.ToString(), name, StringComparison.OrdinalIgnoreCase))
+                {
+                    cboProfile.SelectedIndex = i;
+                    break;
+                }
+            }
+            btnDeleteProfile.IsEnabled = cboProfile.SelectedIndex > 0;
+            _isLoadingProfile = false;
+        }
+
+        // Delete the selected profile
+        private void BtnDeleteProfile_Click(object sender, RoutedEventArgs e)
+        {
+            if (cboProfile.SelectedIndex <= 0) return;
+
+            string name = cboProfile.SelectedItem?.ToString() ?? "";
+            if (string.IsNullOrEmpty(name)) return;
+
+            var result = MessageBox.Show($"Delete profile \"{name}\"?", "Confirm Delete",
+                MessageBoxButton.YesNo, MessageBoxImage.Question);
+            if (result != MessageBoxResult.Yes) return;
+
+            SettingsManager.RemoveUserSetting($"{ProfileDataPrefix}{name}");
+
+            var names = GetProfileNames();
+            names.RemoveAll(n => string.Equals(n, name, StringComparison.OrdinalIgnoreCase));
+            SaveProfileNames(names);
+
+            LoadProfileDropdown();
         }
 
         private void BtnCancel_Click(object sender, RoutedEventArgs e)

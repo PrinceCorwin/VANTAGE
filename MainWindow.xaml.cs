@@ -1840,6 +1840,12 @@ namespace VANTAGE
             }
         }
 
+        private void MenuROCManager_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new Dialogs.ManageROCRatesDialog { Owner = this };
+            dialog.ShowDialog();
+        }
+
         // MODULE LOADING
 
         // Loads the Progress module, reusing the cached instance unless forceReload is true

@@ -347,9 +347,12 @@
                     <li><a href="#takeoff-unit-rates">Unit Rates</a></li>
                     <li><a href="#takeoff-batch-name">Batch Name</a></li>
                     <li><a href="#takeoff-processing">Processing Drawings</a></li>
-                    <li><a href="#takeoff-import">Import from AI Takeoff</a></li>
+                    <li><a href="#takeoff-blank-components">Blank Components</a></li>
+                    <li><a href="#takeoff-recalc">Recalc Excel</a></li>
                     <li><a href="#takeoff-previous-batches">Previous Batches</a></li>
                     <li><a href="#takeoff-excel-output">Excel Output</a></li>
+                    <li><a href="#takeoff-import">Import from AI Takeoff</a></li>
+                    <li><a href="#takeoff-roc-manager">ROC Manager</a></li>
                     <li><a href="#takeoff-manage-drawings">Manage Drawings</a></li>
                 </ul>
             </li>
@@ -455,7 +458,7 @@
         <li><strong>Import Activities (Combine)</strong> — Import activities from Excel, merging with existing data. Auto-detects file format.</li>
         <li><strong>Export Activities</strong> — Export your activities to an Excel file (Milestone format)</li>
         <li><strong>Export Activities Template</strong> — Download a blank Excel template for activity import</li>
-        <li><strong>Import from AI Takeoff</strong> — Open the Import Takeoff Manager to import activities from a takeoff Excel file or batch</li>
+        <li><strong>Import from AI Takeoff</strong> — Open the Import dialog to map takeoff Excel data to VANTAGE activities</li>
         <li><strong>Clear Local Activities</strong> — Delete all local activity data (requires re-sync)</li>
         <li><strong>Import From P6 File</strong> — Import schedule data from a P6 Primavera export file</li>
         <li><strong>Export To P6 File</strong> — Export schedule data for import into P6 Primavera</li>
@@ -472,6 +475,7 @@
         <li><strong>Prorate MHs</strong> — Distribute budgeted man-hours across filtered activities</li>
         <li><strong>Schedule Change Log</strong> — View and apply changes made in the Schedule detail grid to live Activities</li>
         <li><strong>Schedule UDF Mapping...</strong> — Configure custom P6 column mappings for the Schedule module UDF columns</li>
+        <li><strong>ROC Manager</strong> — Create, view, modify, or delete ROC rate sets and configure which components each set applies to</li>
         <li><em>Plugin menu items appear below</em> — Installed plugins may add additional menu items here</li>
     </ul>
 
@@ -2561,7 +2565,7 @@
     <ol>
         <li>Click <strong>Load Drawing...</strong> to open a sample PDF. The first page renders as a background image.</li>
         <li>Select <strong>BOM Region</strong> mode (green) and draw rectangle(s) around the BOM table area(s). You can draw multiple BOM regions if the table spans multiple areas.</li>
-        <li>Select <strong>Title Block</strong> mode (orange) and draw a rectangle around the title block. Only one title block region is allowed — drawing a new one replaces the previous.</li>
+        <li>Select <strong>Title Block</strong> mode (orange) and draw rectangle(s) around the title block section(s). You can draw multiple title block regions to capture separate sections (e.g., pipe info, project info) while excluding noise like logos and revision history. All title block regions are sent as separate images to the AI, which combines them into a single unified extraction.</li>
         <li>Use <strong>Undo Last</strong> or <strong>Clear All</strong> to adjust regions.</li>
         <li>Enter a <strong>Config Name</strong> (e.g., "Lilly LP1Y SWP Piping"). The S3 path is auto-generated from your username and the config name.</li>
         <li>Click <strong>Save Config</strong>. The config is saved to S3 and immediately available in the dropdown.</li>
@@ -2598,6 +2602,18 @@
 
     <p>The <strong>Send Missed Makeups and Rates to Admin</strong> checkbox (checked by default) automatically emails administrators when the batch has unmatched fitting makeups or rates. Only the missed data tabs are sent — not the full Excel.</p>
 
+    <h3 id="takeoff-blank-components">Blank Components</h3>
+    <p>After downloading or processing a batch, the system checks for Material tab rows with blank Component values. If any are found, the <strong>Blank Component Dialog</strong> prompts you to fill them in before post-processing. Each row shows the drawing number and raw description with an input field for the component name. This ensures all items can be properly categorized for labor generation and rate lookups.</p>
+
+    <h3 id="takeoff-recalc">Recalc Excel</h3>
+    <p>The <strong>RECALC EXCEL</strong> button recalculates Labor, Summary, and diagnostic tabs from an existing takeoff Excel file's Material tab without re-running the AWS extraction. This is useful when:</p>
+    <ul>
+        <li>Rate sheet entries have been updated and you want to re-apply rates</li>
+        <li>Fitting makeup tables have been expanded</li>
+        <li>You've manually edited the Material tab and want to regenerate labor rows</li>
+    </ul>
+    <p>Click the button, select an existing takeoff Excel file, and the post-processing pipeline will regenerate all calculated tabs. The original Material and Failed DWGs tabs are preserved.</p>
+
     <h3 id="takeoff-previous-batches">Previous Batches</h3>
     <p>Click <strong>Previous Batches</strong> to re-download results from earlier processing runs. The dropdown shows all past batches with:</p>
     <ul>
@@ -2609,6 +2625,7 @@
         <li><strong>Username</strong> — Who submitted the batch</li>
     </ul>
     <p>Select any completed batch to download its Excel output. Failed batches are grayed out and cannot be downloaded.</p>
+    <p><strong>Rename:</strong> Click <strong>Rename</strong> to change the batch name. This updates the name in S3 metadata.</p>
     <p><strong>Admin Delete:</strong> Administrators see <strong>Delete Selected</strong> and <strong>Delete All</strong> buttons to remove batch data from AWS. Deletions are permanent and cannot be undone.</p>
 
     <div class="warning">
@@ -2617,23 +2634,54 @@
     </div>
 
     <h3 id="takeoff-import">Import from AI Takeoff</h3>
-    <p>Open via <strong>File &gt; Import from AI Takeoff</strong>. This dialog is the bridge between raw takeoff Excel output and creating VANTAGE activities. It requires an Azure connection.</p>
+    <p>Open via <strong>File &gt; Import from AI Takeoff</strong>. This dialog maps takeoff Excel Labor tab data to VANTAGE activities, with options for filtering, rollups, column mapping, and metadata assignment.</p>
 
-    <p><strong>Source selection:</strong></p>
+    <p><strong>Profiles:</strong> The Profile dropdown (top-right) lets you save and load named import profiles. A profile stores all dialog settings — output mode, handling, options, ROC set, column mappings, and metadata values. Click <strong>Save</strong> to create or overwrite a profile, <strong>Delete</strong> to remove one. Profiles can be loaded before or after selecting a file — if loaded first, the saved column mappings are applied automatically when the file is selected.</p>
+
+    <p><strong>Source:</strong> Click <strong>Select File...</strong> to browse for a takeoff Excel (<code>.xlsx</code>) file. The file must have a <strong>Labor</strong> worksheet. After selection, the Column Mapping grid populates with the file's headers and sample values.</p>
+
+    <p><strong>Output:</strong></p>
     <ul>
-        <li><strong>From File</strong> (default) — Click <strong>Select File...</strong> to browse for a local <code>.xlsx</code> takeoff file.</li>
-        <li><strong>From Batch</strong> — Click <strong>Batches...</strong> to select a previously processed batch. A simplified batch picker shows available batches with Name, Config, Date, Drawings, User, and Status columns. Select a batch and click OK.</li>
+        <li><strong>Import Records</strong> — Insert activities directly into the local VANTAGE database.</li>
+        <li><strong>Create Excel</strong> — Generate a VANTAGE-formatted Excel file (83 columns matching the standard Activity export format) without importing. You choose the save location via a Save dialog.</li>
+        <li><strong>Import And Excel</strong> — Do both: import to the database and save an Excel backup.</li>
     </ul>
 
-    <p><strong>ROC Set:</strong> Select a ROC percentage split set for the import. Choose <strong>None</strong> to skip ROC splitting, or select a named set. <strong>+ Create New...</strong> opens the ROC Set Manager to create a new set.</p>
-
-    <p><strong>ROC Set Manager:</strong> The ROC Set Manager has two modes:</p>
+    <p><strong>Handling:</strong> Controls which PIPE/SPL rows to keep. All other component types are always kept.</p>
     <ul>
-        <li><strong>View mode</strong> — Select a set from the dropdown (shown as "ProjectID - SetName") to view its steps in a read-only grid. Use <strong>New Set</strong>, <strong>Modify</strong>, or <strong>Delete Set</strong> to manage sets.</li>
-        <li><strong>Edit mode</strong> — Select a project and enter a set name. The grid becomes editable with ROCStep, Percentage, ShopField, and SortOrder columns. Percentages must sum to 100%. Use <strong>Save</strong> to persist or <strong>Cancel</strong> to discard changes. Renaming a set (changing project or name) during Modify cleanly replaces the original.</li>
+        <li><strong>Keep PIPE</strong> — Keep PIPE rows, remove SPL rows.</li>
+        <li><strong>Keep SPL</strong> (default) — Keep SPL rows, remove PIPE rows.</li>
+        <li><strong>Keep PIPE and SPL</strong> — Keep both.</li>
     </ul>
 
-    <p>Click <strong>Import</strong> to process the selected source into VANTAGE activities, or <strong>Cancel</strong> to close.</p>
+    <p><strong>Options:</strong></p>
+    <ul>
+        <li><strong>Roll Up BU Hardware</strong> — Sums GSKT, WAS, HARD, and BOLT labor MHs per drawing and prorates them into the BU rows proportionally based on each BU row's original MHs. All hardware rows are removed afterward, including any from drawings with no BU rows.</li>
+        <li><strong>Roll Up Fab Per DWG</strong> — Collapses all ShopField=1 (Shop) rows per drawing into a single Fabrication row with ROCStep=FAB, description "Fabrication for DWG: {Drawing Number}", and summed BudgetMHs.</li>
+    </ul>
+
+    <p><strong>ROC Set:</strong> Select a ROC percentage split set to apply during import, or <strong>None</strong> to skip. <strong>+ Create New...</strong> opens the ROC Manager in New Set mode. ROC sets are managed via <strong>Tools &gt; ROC Manager</strong>.</p>
+
+    <p><strong>Metadata (Required Fields):</strong> Nine fields that must be populated on every imported activity (ProjectID, WorkPackage, PhaseCode, CompType, PhaseCategory, SchedActNO, Description, ROCStep, RespParty). Each field has a toggle:</p>
+    <ul>
+        <li><strong>Enter Value</strong> — Type a constant value that will be applied to every imported row.</li>
+        <li><strong>Use Source</strong> — Use the value from the mapped source column. This is set automatically when a column is mapped to one of these fields in the Column Mapping grid.</li>
+    </ul>
+
+    <p><strong>Column Mapping:</strong> Shows each file header with a sample value and a mapping dropdown. The system auto-maps 15 known Labor tab columns (Drawing Number to DwgNO, Component to UDF6, Size to PipeSize1, etc.). You can change any mapping or set columns to Unmapped. Duplicate mappings are prevented — each VANTAGE field can only be mapped once. Dual-size values (e.g., "6x4") in PipeSize columns are parsed automatically, using the larger value.</p>
+
+    <p><strong>Data Validation:</strong> Before importing, numeric column mappings are validated. If a file column mapped to a numeric field contains non-numeric values, a warning shows the first offending row.</p>
+
+    <h3 id="takeoff-roc-manager">ROC Manager</h3>
+    <p>Access via <strong>Tools &gt; ROC Manager</strong> or <strong>+ Create New...</strong> in the Import dialog's ROC Set dropdown. ROC sets define how labor rows are split by percentage across different ROC steps (e.g., 60% Pipe / 40% Steel). Sets are stored in Azure and shared across users.</p>
+
+    <p>The dialog has two modes:</p>
+    <ul>
+        <li><strong>View mode</strong> — Select a set from the dropdown (shown as "ProjectID - SetName") to view its steps and applicable components in a read-only grid. Use <strong>New Set</strong>, <strong>Modify</strong>, or <strong>Delete Set</strong> buttons to manage sets.</li>
+        <li><strong>Edit mode</strong> — Select a project and enter a set name. The grid becomes editable with ROCStep, Percentage, ShopField (1=Shop, 2=Field), and SortOrder columns. Percentages must sum to 100%. Use <strong>Save</strong> to persist or <strong>Cancel</strong> to discard changes. Renaming a set (changing project or name) during Modify cleanly replaces the original.</li>
+    </ul>
+
+    <p><strong>Applicable Components:</strong> The right panel shows a checklist of all component types from the rate sheet. Check the components that this ROC set should apply to during import. Use the <strong>All</strong> and <strong>None</strong> buttons for quick selection. The count display shows how many are selected (e.g., "12 / 95"). Component selections are enabled only in edit mode and are saved with the ROC set. The component list is built dynamically from the current rate sheet, so newly added components appear automatically.</p>
 
     <h3 id="takeoff-excel-output">Excel Output</h3>
     <p>When you download the output spreadsheet, it contains the following tabs:</p>
