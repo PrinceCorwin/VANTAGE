@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.1.42",
-  "releaseDate": "2026-03-31T16:18:12Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.1.42/VANTAGE-26.1.42.zip",
-  "zipSizeBytes": 150142291,
-  "sha256": "1F844D43116E5C08CE8A495C3B23E91E203B8FC91B2F324AFF5EAD5A9A24773D",
-  "releaseNotes": "Block Delete/Backspace on read-only columns, Takeoff dual-size matching, STR makeup, rename batches"
+  "currentVersion": "26.2.1",
+  "releaseDate": "2026-04-03T18:36:02Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.2.1/VANTAGE-26.2.1.zip",
+  "zipSizeBytes": 150179986,
+  "sha256": "20A666B66C95B1A1B359D3E33092567EF9DB021F0331DCE566437109193DE561",
+  "releaseNotes": "AI Takeoff open to all Estimators, Import profiles, ROC splits, ROC Manager with component checklist"
 }

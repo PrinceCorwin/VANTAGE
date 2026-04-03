@@ -1,6 +1,23 @@
 {
   "releases": [
     {
+      "version": "26.2.1",
+      "date": "2026-04-03",
+      "highlights": [
+        "AI Takeoff — Now available to all Estimators (no longer restricted to specific users)",
+        "Import from AI Takeoff — Save/load named import profiles for column mappings, metadata, and options",
+        "Import from AI Takeoff — ROC percentage splits applied during import based on component and ShopField matching",
+        "Import from AI Takeoff — Output modes: Import Records, Create Excel, or both",
+        "Import from AI Takeoff — Handling filter (Keep PIPE, Keep SPL, or both), BU Hardware and Fab Per DWG rollup options",
+        "ROC Manager — New Tools menu item with applicable components checklist from rate sheet",
+        "Fix — UniqueID generation now matches standard import pattern",
+        "Fix — SPL rows set to ShopField=2 (Field) during takeoff post-processing",
+        "Fix — AzureUploadUtcDate column now displays correctly in Progress grid",
+        "Takeoff — FS material group auto-correction to match pipe material on same drawing",
+        "Takeoff — ShopField post-processing corrects Shop/Field assignments on Material tab"
+      ]
+    },
+    {
       "version": "26.1.42",
       "date": "2026-03-31",
       "highlights": [
