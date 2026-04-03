@@ -674,6 +674,7 @@ namespace VANTAGE.Services.AI
                     spl["Component"] = "SPL";
                     spl["Quantity"] = Math.Round(splQuantity, 3);
                     spl["Description"] = GetString(pipe, "Raw Description") + " - Spool Handling";
+                    spl["ShopField"] = 2; // SPL is field work
                     spl["BudgetMHs"] = null;
 
                     splRows.Add(spl);

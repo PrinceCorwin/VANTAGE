@@ -621,6 +621,9 @@ namespace VANTAGE.Dialogs
                 // Step 6: Apply metadata overrides
                 ApplyMetadata(activities);
 
+                // Step 6b: Apply ROC splits if a set is selected
+                activities = await ApplyROCSplitsAsync(activities);
+
                 // Step 7: Generate UniqueIDs and set system fields
                 SetSystemFields(activities);
 
@@ -907,6 +910,87 @@ namespace VANTAGE.Dialogs
                     catch { }
                 }
             }
+        }
+
+        // Apply ROC percentage splits if a ROC set is selected.
+        // For each activity whose component (UDF6) is in the applicable components list
+        // and whose ShopField (UDF1) matches a ROC step's ShopField:
+        // - Modify the original row with the first matching ROC step and its percentage of BudgetMHs
+        // - Clone additional rows for remaining matching ROC steps
+        // Activities whose component isn't in the list or ShopField doesn't match pass through unchanged.
+        private async System.Threading.Tasks.Task<List<Activity>> ApplyROCSplitsAsync(List<Activity> activities)
+        {
+            // Determine selected ROC set
+            if (cboROCSet.SelectedIndex <= 1) return activities; // "None" or "+ Create New..."
+
+            int setIdx = cboROCSet.SelectedIndex - 2;
+            if (setIdx < 0 || setIdx >= _rocSets.Count) return activities;
+
+            var (projectId, setName) = _rocSets[setIdx];
+
+            var (steps, components) = await System.Threading.Tasks.Task.Run(() =>
+                ProjectRateRepository.GetROCSetDataAsync(projectId, setName).Result);
+
+            if (steps.Count == 0 || components.Count == 0) return activities;
+
+            var result = new List<Activity>();
+
+            foreach (var activity in activities)
+            {
+                string component = activity.UDF6 ?? "";
+
+                // Not in applicable components — pass through unchanged
+                if (!components.Contains(component))
+                {
+                    result.Add(activity);
+                    continue;
+                }
+
+                // Parse activity ShopField
+                int actShopField = 0;
+                if (int.TryParse(activity.UDF1, out int sf))
+                    actShopField = sf;
+
+                // Find ROC steps matching this row's ShopField
+                var matchingSteps = steps.Where(s => s.ShopField == actShopField).ToList();
+
+                if (matchingSteps.Count == 0)
+                {
+                    // No matching ShopField — pass through unchanged
+                    result.Add(activity);
+                    continue;
+                }
+
+                double originalMHs = activity.BudgetMHs;
+
+                // First matching step modifies the original row
+                activity.ROCStep = matchingSteps[0].ROCStep;
+                activity.BudgetMHs = NumericHelper.RoundToPlaces(originalMHs * matchingSteps[0].Percentage / 100.0);
+                result.Add(activity);
+
+                // Remaining steps create cloned rows
+                for (int i = 1; i < matchingSteps.Count; i++)
+                {
+                    var clone = CloneActivity(activity);
+                    clone.ROCStep = matchingSteps[i].ROCStep;
+                    clone.BudgetMHs = NumericHelper.RoundToPlaces(originalMHs * matchingSteps[i].Percentage / 100.0);
+                    result.Add(clone);
+                }
+            }
+
+            return result;
+        }
+
+        // Shallow clone an Activity for ROC splits
+        private static Activity CloneActivity(Activity source)
+        {
+            var clone = new Activity();
+            foreach (var prop in typeof(Activity).GetProperties(BindingFlags.Public | BindingFlags.Instance))
+            {
+                if (prop.CanWrite && prop.CanRead)
+                    prop.SetValue(clone, prop.GetValue(source));
+            }
+            return clone;
         }
 
         // Generate UniqueIDs and set system tracking fields (matches ExcelImporter pattern)

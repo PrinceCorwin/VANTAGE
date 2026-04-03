@@ -230,6 +230,58 @@ namespace VANTAGE.Data
                 return list;
             });
         }
+        // Load full ROC set data (steps + applicable components) for a specific project/set
+        public static async Task<(List<ROCStepInfo> Steps, HashSet<string> Components)> GetROCSetDataAsync(
+            string projectId, string setName)
+        {
+            return await Task.Run(() =>
+            {
+                var steps = new List<ROCStepInfo>();
+                string? componentsStr = null;
+
+                using var conn = AzureDbManager.GetConnection();
+                conn.Open();
+                using var cmd = conn.CreateCommand();
+                cmd.CommandText = @"
+                    SELECT ROCStep, Percentage, ShopField, SortOrder, Components
+                    FROM VMS_ROCRates
+                    WHERE ProjectID = @ProjectID AND SetName = @SetName
+                    ORDER BY SortOrder, ROCStep";
+                cmd.Parameters.AddWithValue("@ProjectID", projectId);
+                cmd.Parameters.AddWithValue("@SetName", setName);
+                using var reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    steps.Add(new ROCStepInfo
+                    {
+                        ROCStep = reader.GetString(0),
+                        Percentage = reader.GetDouble(1),
+                        ShopField = reader.GetInt32(2),
+                        SortOrder = reader.GetInt32(3)
+                    });
+                    if (componentsStr == null && !reader.IsDBNull(4))
+                        componentsStr = reader.GetString(4);
+                }
+
+                var components = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                if (!string.IsNullOrEmpty(componentsStr))
+                {
+                    foreach (var c in componentsStr.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                        components.Add(c);
+                }
+
+                return (steps, components);
+            });
+        }
+    }
+
+    // ROC step info for import pipeline
+    public class ROCStepInfo
+    {
+        public string ROCStep { get; set; } = "";
+        public double Percentage { get; set; }
+        public int ShopField { get; set; }
+        public int SortOrder { get; set; }
     }
 
     // Summary info for a project rate set
