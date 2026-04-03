@@ -1206,7 +1206,7 @@ namespace VANTAGE.Services.AI
             var explicitColumns = new List<string>
             {
                 "Drawing Number", "Component", "Size", "Connection Size",
-                "Thickness", "Class Rating", "Matl_Grp",
+                "Thickness", "Class Rating", "Matl_Grp", "Matl_Grp_Desc",
                 "Commodity Code", "Description", "Quantity",
                 "ShopField", "ROCStep", "Confidence", "Flag", "RateSheet", "RollupMult", "MatlMult", "CutAdd", "BevelAdd", "BudgetMHs", "UOM", "RateSource"
             };

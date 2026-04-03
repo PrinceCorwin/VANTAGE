@@ -179,6 +179,9 @@ if (!AzureDbManager.CheckConnection(out string errorMessage))
 }
 ```
 
+## Loading Indicators
+- For any operation that may take noticeable time, use the Syncfusion `SfBusyIndicator` with `DualRing` animation and `AccentColor` foreground — this is the standard loading spinner pattern throughout the app (see `SyncDialog.xaml` for reference)
+
 ## Syncfusion Notes
 - SfDataGrid: Use `sfGrid.View.Filter` for custom filtering (not ICollectionView.Filter)
 - FluentDark theme requires SfSkinManager on dialogs

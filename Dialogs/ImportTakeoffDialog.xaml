@@ -3,8 +3,9 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
         Title="Import from AI Takeoff"
-        Height="300"
-        Width="550"
+        Width="1200"
+        SizeToContent="Height"
+        MaxHeight="850"
         WindowStartupLocation="CenterOwner"
         Background="{DynamicResource BackgroundColor}"
         ResizeMode="NoResize"
@@ -13,13 +14,9 @@
     <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="16"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="8"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="16"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="14"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="14"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
@@ -30,104 +27,494 @@
                    FontSize="16"
                    Foreground="{DynamicResource ForegroundColor}"/>
 
-        <!-- Source Selection -->
+        <!-- Main content: two columns -->
         <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="60"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="20"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="20"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="12"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-
-            <TextBlock Grid.Column="0" Text="Source:"
-                       Foreground="{DynamicResource ForegroundColor}"
-                       VerticalAlignment="Center"
-                       FontSize="13"
-                       FontWeight="SemiBold"/>
-
-            <RadioButton x:Name="rbFromFile"
-                         Grid.Column="1"
-                         Content="From File"
-                         IsChecked="True"
-                         Foreground="{DynamicResource ForegroundColor}"
-                         VerticalAlignment="Center"
-                         Checked="RbSource_Checked"
-                         ToolTip="Import from a local Excel file"/>
-
-            <RadioButton x:Name="rbFromBatch"
-                         Grid.Column="3"
-                         Content="From Batch"
-                         Foreground="{DynamicResource ForegroundColor}"
-                         VerticalAlignment="Center"
-                         Checked="RbSource_Checked"
-                         ToolTip="Import from a previously processed AI Takeoff batch"/>
-
-            <Button x:Name="btnSelectFile"
-                    Grid.Column="5"
-                    Content="Select File..."
-                    Width="90"
-                    Height="28"
-                    FontSize="11"
-                    Background="{DynamicResource ControlBackground}"
-                    Foreground="{DynamicResource ForegroundColor}"
-                    BorderBrush="{DynamicResource SidebarButtonBorder}"
-                    BorderThickness="1"
-                    Click="BtnSelectFile_Click"
-                    ToolTip="Browse for an Excel (.xlsx) takeoff file"/>
-
-            <Button x:Name="btnBatches"
-                    Grid.Column="7"
-                    Content="Batches..."
-                    Width="90"
-                    Height="28"
-                    FontSize="11"
-                    IsEnabled="False"
-                    Background="{DynamicResource ControlBackground}"
-                    Foreground="{DynamicResource ForegroundColor}"
-                    BorderBrush="{DynamicResource SidebarButtonBorder}"
-                    BorderThickness="1"
-                    Click="BtnBatches_Click"
-                    ToolTip="Browse previously processed AI Takeoff batches"/>
-        </Grid>
-
-        <!-- Source Label -->
-        <TextBlock x:Name="txtSourceLabel"
-                   Grid.Row="4"
-                   Text="No file selected"
-                   Foreground="{DynamicResource ForegroundColor}"
-                   FontSize="11"
-                   Opacity="0.6"
-                   Margin="60,0,0,0"
-                   TextTrimming="CharacterEllipsis"/>
-
-        <!-- ROC Set Selection -->
-        <Grid Grid.Row="6">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="60"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <TextBlock Grid.Column="0" Text="ROC Set:"
-                       Foreground="{DynamicResource ForegroundColor}"
-                       VerticalAlignment="Center"
-                       FontSize="13"
-                       FontWeight="SemiBold"/>
+            <!-- Left column: Source, Output, Options, ROC Set, Metadata -->
+            <StackPanel Grid.Column="0" Width="500">
 
-            <syncfusion:ComboBoxAdv x:Name="cboROCSet"
-                       Grid.Column="1"
-                       Height="28"
-                       FontSize="12"
-                       IsEditable="False"
-                       SelectionChanged="CboROCSet_SelectionChanged"
-                       ToolTip="Select a ROC percentage split set for the import"/>
+                <!-- Source Selection -->
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="70"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="12"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0" Text="Source:"
+                               Foreground="{DynamicResource ForegroundColor}"
+                               VerticalAlignment="Center"
+                               FontSize="13"
+                               FontWeight="SemiBold"/>
+
+                    <RadioButton x:Name="rbFromFile"
+                                 Grid.Column="1"
+                                 Content="From File"
+                                 IsChecked="True"
+                                 Foreground="{DynamicResource ForegroundColor}"
+                                 VerticalAlignment="Center"
+                                 GroupName="Source"
+                                 Checked="RbSource_Checked"
+                                 ToolTip="Import from a local Excel file"/>
+
+                    <RadioButton x:Name="rbFromBatch"
+                                 Grid.Column="3"
+                                 Content="From Batch"
+                                 Foreground="{DynamicResource ForegroundColor}"
+                                 VerticalAlignment="Center"
+                                 GroupName="Source"
+                                 Checked="RbSource_Checked"
+                                 ToolTip="Import from a previously processed AI Takeoff batch"/>
+
+                    <Button x:Name="btnSelectFile"
+                            Grid.Column="5"
+                            Content="Select File..."
+                            Width="90"
+                            Height="28"
+                            FontSize="11"
+                            Background="{DynamicResource ControlBackground}"
+                            Foreground="{DynamicResource ForegroundColor}"
+                            BorderBrush="{DynamicResource SidebarButtonBorder}"
+                            BorderThickness="1"
+                            Click="BtnSelectFile_Click"
+                            ToolTip="Browse for an Excel (.xlsx) takeoff file"/>
+
+                    <Button x:Name="btnBatches"
+                            Grid.Column="7"
+                            Content="Batches..."
+                            Width="90"
+                            Height="28"
+                            FontSize="11"
+                            IsEnabled="False"
+                            Background="{DynamicResource ControlBackground}"
+                            Foreground="{DynamicResource ForegroundColor}"
+                            BorderBrush="{DynamicResource SidebarButtonBorder}"
+                            BorderThickness="1"
+                            Click="BtnBatches_Click"
+                            ToolTip="Browse previously processed AI Takeoff batches"/>
+                </Grid>
+
+                <!-- Source Label -->
+                <TextBlock x:Name="txtSourceLabel"
+                           Text="No file selected"
+                           Foreground="{DynamicResource ForegroundColor}"
+                           FontSize="11"
+                           Opacity="0.6"
+                           Margin="70,6,0,0"
+                           TextTrimming="CharacterEllipsis"/>
+
+                <!-- Output -->
+                <Grid Margin="0,12,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="70"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0" Text="Output:"
+                               Foreground="{DynamicResource ForegroundColor}"
+                               VerticalAlignment="Center"
+                               FontSize="13"
+                               FontWeight="SemiBold"/>
+
+                    <RadioButton x:Name="rbImportRecords"
+                                 Grid.Column="1"
+                                 Content="Import Records"
+                                 IsChecked="True"
+                                 Foreground="{DynamicResource ForegroundColor}"
+                                 VerticalAlignment="Center"
+                                 GroupName="Output"
+                                 ToolTip="Import activities into VANTAGE database"/>
+
+                    <RadioButton x:Name="rbCreateExcel"
+                                 Grid.Column="3"
+                                 Content="Create Excel"
+                                 Foreground="{DynamicResource ForegroundColor}"
+                                 VerticalAlignment="Center"
+                                 GroupName="Output"
+                                 ToolTip="Create a VANTAGE-formatted Excel file without importing"/>
+
+                    <RadioButton x:Name="rbImportAndExcel"
+                                 Grid.Column="5"
+                                 Content="Import And Excel"
+                                 Foreground="{DynamicResource ForegroundColor}"
+                                 VerticalAlignment="Center"
+                                 GroupName="Output"
+                                 ToolTip="Import activities and also create a VANTAGE-formatted Excel backup"/>
+                </Grid>
+
+                <!-- Handling -->
+                <Grid Margin="0,12,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="70"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0" Text="Handling:"
+                               Foreground="{DynamicResource ForegroundColor}"
+                               VerticalAlignment="Center"
+                               FontSize="13"
+                               FontWeight="SemiBold"/>
+
+                    <RadioButton x:Name="rbKeepPipe"
+                                 Grid.Column="1"
+                                 Content="Keep PIPE"
+                                 Foreground="{DynamicResource ForegroundColor}"
+                                 VerticalAlignment="Center"
+                                 GroupName="Handling"
+                                 ToolTip="Keep only PIPE rows from the source"/>
+
+                    <RadioButton x:Name="rbKeepSpl"
+                                 Grid.Column="3"
+                                 Content="Keep SPL"
+                                 IsChecked="True"
+                                 Foreground="{DynamicResource ForegroundColor}"
+                                 VerticalAlignment="Center"
+                                 GroupName="Handling"
+                                 ToolTip="Keep only SPL rows from the source"/>
+
+                    <RadioButton x:Name="rbKeepPipeAndSpl"
+                                 Grid.Column="5"
+                                 Content="Keep PIPE and SPL"
+                                 Foreground="{DynamicResource ForegroundColor}"
+                                 VerticalAlignment="Center"
+                                 GroupName="Handling"
+                                 ToolTip="Keep both PIPE and SPL rows from the source"/>
+                </Grid>
+
+                <!-- Options -->
+                <StackPanel Margin="0,12,0,0">
+                    <TextBlock Text="Options:"
+                               Foreground="{DynamicResource ForegroundColor}"
+                               FontSize="13"
+                               FontWeight="SemiBold"
+                               Margin="0,0,0,6"/>
+
+                    <StackPanel Orientation="Horizontal" Margin="70,0,0,0">
+                        <CheckBox x:Name="chkRollUpBUHardware"
+                                  Content="Roll Up BU Hardware"
+                                  Foreground="{DynamicResource ForegroundColor}"
+                                  VerticalAlignment="Center"
+                                  ToolTip="Sum GSKT, WAS, HARD, BOLT labor MHs per drawing and prorate into BU labor rows, then remove source rows"/>
+
+                        <CheckBox x:Name="chkRollUpFabPerDwg"
+                                  Content="Roll Up Fab Per DWG"
+                                  Foreground="{DynamicResource ForegroundColor}"
+                                  VerticalAlignment="Center"
+                                  Margin="24,0,0,0"
+                                  ToolTip="Roll up all ShopField=1 labor rows into one Fabrication row per drawing, then remove source rows"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- ROC Set Selection -->
+                <Grid Margin="0,12,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="70"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0" Text="ROC Set:"
+                               Foreground="{DynamicResource ForegroundColor}"
+                               VerticalAlignment="Center"
+                               FontSize="13"
+                               FontWeight="SemiBold"/>
+
+                    <syncfusion:ComboBoxAdv x:Name="cboROCSet"
+                               Grid.Column="1"
+                               Height="28"
+                               FontSize="12"
+                               IsEditable="False"
+                               SelectionChanged="CboROCSet_SelectionChanged"
+                               ToolTip="Select a ROC percentage split set for the import"/>
+                </Grid>
+
+                <!-- Metadata Section -->
+                <Border Margin="0,12,0,0"
+                        BorderBrush="{DynamicResource SidebarButtonBorder}"
+                        BorderThickness="1"
+                        CornerRadius="4"
+                        Padding="12">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="8"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Text="Metadata (Required Fields)"
+                                   Foreground="{DynamicResource ForegroundColor}"
+                                   FontSize="13"
+                                   FontWeight="SemiBold"/>
+
+                        <Grid Grid.Row="2">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="4"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <Grid Grid.Row="0" Margin="0,0,0,2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="130"/>
+                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="120"/>
+                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Grid.Column="0" Text="Field"
+                                           Foreground="{DynamicResource ForegroundColor}"
+                                           FontSize="11" FontWeight="SemiBold" Opacity="0.7"/>
+                                <TextBlock Grid.Column="2" Text="Source"
+                                           Foreground="{DynamicResource ForegroundColor}"
+                                           FontSize="11" FontWeight="SemiBold" Opacity="0.7"/>
+                                <TextBlock Grid.Column="4" Text="Value"
+                                           Foreground="{DynamicResource ForegroundColor}"
+                                           FontSize="11" FontWeight="SemiBold" Opacity="0.7"/>
+                            </Grid>
+
+                            <ItemsControl x:Name="icMetadataRows" Grid.Row="2">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="0,2,0,2">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="130"/>
+                                                <ColumnDefinition Width="8"/>
+                                                <ColumnDefinition Width="120"/>
+                                                <ColumnDefinition Width="8"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock Grid.Column="0"
+                                                       Text="{Binding FieldName}"
+                                                       Foreground="{DynamicResource ForegroundColor}"
+                                                       FontSize="12"
+                                                       VerticalAlignment="Center"/>
+
+                                            <ComboBox Grid.Column="2"
+                                                      SelectedItem="{Binding Mode, Mode=TwoWay}"
+                                                      Height="26"
+                                                      FontSize="11"
+                                                      ToolTip="Enter Value: type a value for all rows. Use Source: use the mapped source column."
+                                                      Loaded="MetadataComboBox_Loaded"/>
+
+                                            <TextBox Grid.Column="4"
+                                                     Text="{Binding EnteredValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                     IsEnabled="{Binding IsTextEnabled}"
+                                                     Height="26"
+                                                     FontSize="11"
+                                                     VerticalContentAlignment="Center"
+                                                     Padding="4,0"
+                                                     Background="{DynamicResource ControlBackground}"
+                                                     Foreground="{DynamicResource ForegroundColor}"
+                                                     BorderBrush="{DynamicResource SidebarButtonBorder}"
+                                                     ToolTip="Value to apply to every imported row"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Grid>
+                    </Grid>
+                </Border>
+            </StackPanel>
+
+            <!-- Right column: Column Mapping -->
+            <Border Grid.Column="2"
+                    BorderBrush="{DynamicResource SidebarButtonBorder}"
+                    BorderThickness="1"
+                    CornerRadius="4"
+                    Padding="12">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="8"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Text="Column Mapping"
+                               Foreground="{DynamicResource ForegroundColor}"
+                               FontSize="13"
+                               FontWeight="SemiBold"/>
+
+                    <!-- Placeholder shown before file/batch selection -->
+                    <TextBlock x:Name="txtMappingPlaceholder"
+                               Grid.Row="2"
+                               Text="Select File or Batch for column mapping"
+                               Foreground="{DynamicResource ForegroundColor}"
+                               Opacity="0.5"
+                               FontSize="12"
+                               FontStyle="Italic"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               Margin="0,16,0,16"/>
+
+                    <!-- Loading spinner -->
+                    <StackPanel x:Name="pnlMappingSpinner"
+                                Grid.Row="2"
+                                Visibility="Collapsed"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center">
+                        <syncfusion:SfBusyIndicator IsBusy="True"
+                                                    AnimationType="DualRing"
+                                                    ViewboxWidth="50"
+                                                    ViewboxHeight="50"
+                                                    Foreground="{DynamicResource AccentColor}"/>
+                        <TextBlock Text="Loading columns..."
+                                   FontSize="13"
+                                   Foreground="{DynamicResource ForegroundColor}"
+                                   HorizontalAlignment="Center"
+                                   Opacity="0.7"
+                                   Margin="0,12,0,0"/>
+                    </StackPanel>
+
+                    <!-- Mapping grid shown after file/batch selection -->
+                    <Grid x:Name="gridMappingContent"
+                          Grid.Row="2"
+                          Visibility="Collapsed">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="4"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Column Headers -->
+                        <Grid Grid.Row="0" Margin="0,0,0,2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="160"/>
+                                <ColumnDefinition Width="8"/>
+                                <ColumnDefinition Width="160"/>
+                                <ColumnDefinition Width="8"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Grid.Column="0" Text="File Header"
+                                       Foreground="{DynamicResource ForegroundColor}"
+                                       FontSize="11" FontWeight="SemiBold" Opacity="0.7"/>
+                            <TextBlock Grid.Column="2" Text="Sample"
+                                       Foreground="{DynamicResource ForegroundColor}"
+                                       FontSize="11" FontWeight="SemiBold" Opacity="0.7"/>
+                            <TextBlock Grid.Column="4" Text="Mapping"
+                                       Foreground="{DynamicResource ForegroundColor}"
+                                       FontSize="11" FontWeight="SemiBold" Opacity="0.7"/>
+                        </Grid>
+
+                        <!-- Scrollable mapping rows with custom scrollbar -->
+                        <ScrollViewer Grid.Row="2"
+                                      VerticalScrollBarVisibility="Auto"
+                                      HorizontalScrollBarVisibility="Disabled">
+                            <ScrollViewer.Resources>
+                                <ControlTemplate x:Key="MappingThumbTemplate" TargetType="Thumb">
+                                    <Border x:Name="thumbBorder"
+                                            Background="{DynamicResource ScrollBarThumbColor}"
+                                            BorderBrush="{DynamicResource ScrollBarBorderColor}"
+                                            BorderThickness="1"
+                                            CornerRadius="2"/>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="thumbBorder" Property="Background" Value="{DynamicResource ScrollBarThumbHoverColor}"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                                <ControlTemplate x:Key="MappingVerticalScrollBarTemplate" TargetType="ScrollBar">
+                                    <Grid Background="{DynamicResource ScrollBarTrackColor}">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="*"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+                                        <RepeatButton Grid.Row="0" Command="ScrollBar.LineUpCommand"
+                                                      Height="14" Opacity="0">
+                                            <RepeatButton.Template>
+                                                <ControlTemplate><Border Height="14"/></ControlTemplate>
+                                            </RepeatButton.Template>
+                                        </RepeatButton>
+                                        <Track Grid.Row="1" x:Name="PART_Track" IsDirectionReversed="True">
+                                            <Track.Thumb>
+                                                <Thumb Template="{StaticResource MappingThumbTemplate}"/>
+                                            </Track.Thumb>
+                                        </Track>
+                                        <RepeatButton Grid.Row="2" Command="ScrollBar.LineDownCommand"
+                                                      Height="14" Opacity="0">
+                                            <RepeatButton.Template>
+                                                <ControlTemplate><Border Height="14"/></ControlTemplate>
+                                            </RepeatButton.Template>
+                                        </RepeatButton>
+                                    </Grid>
+                                </ControlTemplate>
+                                <Style TargetType="ScrollBar">
+                                    <Style.Triggers>
+                                        <Trigger Property="Orientation" Value="Vertical">
+                                            <Setter Property="Width" Value="14"/>
+                                            <Setter Property="MinWidth" Value="14"/>
+                                            <Setter Property="Template" Value="{StaticResource MappingVerticalScrollBarTemplate}"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ScrollViewer.Resources>
+                            <ItemsControl x:Name="icMappingRows">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="0,2,0,2">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="160"/>
+                                                <ColumnDefinition Width="8"/>
+                                                <ColumnDefinition Width="160"/>
+                                                <ColumnDefinition Width="8"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock Grid.Column="0"
+                                                       Text="{Binding FileHeader}"
+                                                       Foreground="{DynamicResource ForegroundColor}"
+                                                       FontSize="12"
+                                                       VerticalAlignment="Center"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       ToolTip="{Binding FileHeader}"/>
+
+                                            <TextBlock Grid.Column="2"
+                                                       Text="{Binding SampleValue}"
+                                                       Foreground="{DynamicResource ForegroundColor}"
+                                                       FontSize="12"
+                                                       Opacity="0.7"
+                                                       VerticalAlignment="Center"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       ToolTip="{Binding SampleValue}"/>
+
+                                            <ComboBox Grid.Column="4"
+                                                      ItemsSource="{Binding AvailableMappings}"
+                                                      SelectedItem="{Binding SelectedMapping, Mode=TwoWay}"
+                                                      Height="26"
+                                                      FontSize="11"
+                                                      ToolTip="Select the Vantage Activity column to map this file column to"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Grid>
+                </Grid>
+            </Border>
         </Grid>
 
         <!-- Import / Cancel Buttons -->
-        <StackPanel Grid.Row="8"
+        <StackPanel Grid.Row="4"
                     Orientation="Horizontal"
                     HorizontalAlignment="Right">
             <Button x:Name="btnCancel"
@@ -146,6 +533,7 @@
                     Height="30"
                     Margin="10,0,0,0"
                     FontSize="12"
+                    IsEnabled="False"
                     Background="{DynamicResource StatusGreenBgBtn}"
                     Foreground="{DynamicResource StatusGreenFgBtn}"
                     BorderThickness="0"

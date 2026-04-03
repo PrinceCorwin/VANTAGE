@@ -6,6 +6,23 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### April 3, 2026 (Import from AI Takeoff — Dialog & Import/Export Logic)
+- **Import Takeoff Dialog redesigned:** Two-column layout (1200px wide, SizeToContent height). Left column: Source, Output, Handling, Options, ROC Set, Metadata. Right column: Column Mapping with SfBusyIndicator spinner during file loading.
+- **Source selection:** From File (local .xlsx) or From Batch (S3, TODO: wire up download). File picker populates column mapping grid with headers and first non-blank sample values.
+- **Output modes:** Import Records (DB only), Create Excel (Vantage-formatted .xlsx with SaveFileDialog), Import And Excel (both).
+- **Handling filter:** Keep PIPE, Keep SPL (default), or Keep PIPE and SPL. Only affects PIPE/SPL rows — all other component types always kept.
+- **Options checkboxes:** Roll Up BU Hardware (prorates GSKT/WAS/HARD/BOLT MHs into BU rows per drawing proportionally, removes ALL hardware rows including unclaimed). Roll Up Fab Per DWG (collapses ShopField=1 rows into one FAB row per drawing with ROCStep=FAB).
+- **Metadata section:** 9 required fields (ProjectID, WorkPackage, PhaseCode, CompType, PhaseCategory, SchedActNO, Description, ROCStep, RespParty) with Enter Value / Use Source toggle. Two-way sync with column mapping — mapping a column auto-sets metadata to Use Source; changing metadata to Enter Value unmaps the column.
+- **Column Mapping:** 15 static default mappings for Labor tab columns (Drawing Number→DwgNO, Component→UDF6, Size→PipeSize1, etc.). Available mappings exclude read-only, calculated, date, and display fields. Comboboxes dynamically update to prevent duplicate mappings.
+- **Dual size handling:** `ResolveNumericValue()` parses "6x4" format for PipeSize columns, takes larger value. Data type validation allows dual sizes for PipeSize fields.
+- **Import pipeline:** Read Labor rows → Handling filter → BU Hardware rollup → Fab Per DWG rollup → Map to Activities via reflection → Apply metadata overrides → Generate UniqueIDs + system fields → Insert to SQLite / Create Excel.
+- **Vantage Excel export:** Full template with 83 columns matching the standard Activity export format, styled headers, auto-fit columns, frozen header row. User chooses save location via SaveFileDialog.
+- **Matl_Grp_Desc column ordering fix:** Added `Matl_Grp_Desc` to explicit columns list in `TakeoffPostProcessor.WriteLaborTab()` — was previously falling into alphabetically-sorted title block fields at the end. Now placed right after `Matl_Grp`.
+- **CLAUDE.md:** Added Loading Indicators convention (SfBusyIndicator with DualRing animation).
+- **New models:** `ColumnMappingItem.cs`, `MetadataFieldItem.cs`
+- **TODOs added:** Multi-drawing documents (multi-page PDFs), Second Size in AI extraction output, UniqueID generation alignment with ExcelImporter pattern.
+- **Key files:** `Dialogs/ImportTakeoffDialog.xaml`, `Dialogs/ImportTakeoffDialog.xaml.cs`, `Models/ColumnMappingItem.cs`, `Models/MetadataFieldItem.cs`, `Services/AI/TakeoffPostProcessor.cs`, `CLAUDE.md`
+
 ### April 2, 2026 (Takeoff FS Material Group Correction)
 - **FS Matl_Grp auto-correction:** New post-processing step (A5) corrects field support (FS) component `Matl_Grp` values to match the pipe of the same size in the same drawing. AI often defaults FS to CS because material isn't in the description. When multiple pipe materials exist, picks the non-CS value. No matching pipe leaves FS unchanged.
 - **Matl_Grp_Desc column:** Corrected FS rows get a `Matl_Grp_Desc` column populated with the full material group description. Column is inserted right after `Matl_Grp` in the Material tab.

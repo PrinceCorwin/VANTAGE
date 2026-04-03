@@ -112,6 +112,12 @@
 
 **Lambda Deployed:** Updated `extraction_lambda_function.py` deployed to AWS Lambda (March 2026). Testing complete.
 
+### AI Takeoff — Multi-Drawing Documents
+- **TODO:** Support drawing documents (PDFs) that contain multiple drawings per document (multiple pages). Currently each uploaded PDF is treated as a single drawing. Need to handle cases where one PDF contains several pages, each representing a different drawing.
+
+### AI Takeoff — Second Size in Extraction Output
+- **TODO:** Add a "Second Size" field to the AI extraction output for dual-size components (e.g., 6x4 reducers, tees). Currently only one Size field is extracted, requiring post-processing to parse dual sizes like "6x4". Having the Lambda/Claude output both sizes directly would eliminate the need for `ParseDualSize()` logic in `TakeoffPostProcessor`.
+
 ## Temporary Restrictions
 
 ### AI Takeoff Module (MainWindow.xaml.cs)
@@ -139,7 +145,7 @@
 
 ### Medium Priority
 - **Theme System Refactor** — Phases 1-7 complete. Live switching works, tokens split, guide written. Theme generator script and `/create-theme` skill complete. See `Themes/THEME_GUIDE.md`.
-- **Import from AI Takeoff** — Import Takeoff Manager dialog shell complete (source selection, ROC set dropdown, Import/Cancel buttons). Import logic not yet implemented. Replaces old "Create Activities" placeholder.
+- **Import from AI Takeoff** — Dialog and import/export logic implemented. Column mapping, metadata, handling filter, BU hardware rollup, fab per DWG rollup, Create Excel output all functional. **TODO:** Fix UniqueID generation in `ImportTakeoffDialog.SetSystemFields()` — currently uses `t` prefix with `yyyyMMddHHmmss` and first 3 chars of username uppercased. Should match `ExcelImporter` pattern: `i` prefix, `yyMMddHHmmss`, last 3 chars of username lowercased, `"usr"` fallback.
 - **MSI/MSIX installer** — Replace custom installer with MSI (WiX Toolset) or MSIX packaging to get genuine Windows install integration. Current custom installer registers via registry but Windows Search won't execute `UninstallString` directly — only MSI and UWP/MSIX apps get direct uninstall from search context menu. Current setup works via Settings > Apps.
 - **User-editable header template for WP** — Allow customizing header layout
 - **Complete RateEquiv mappings** — Finish adding all component-to-EstGrp mappings in `RateSheetService.cs` (ComponentToEstGrp dictionary). Currently has valve types, fittings, GGLASS, METER, HOSE, HEAT→INST, etc.
