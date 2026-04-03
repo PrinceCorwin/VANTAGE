@@ -6,6 +6,12 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### April 3, 2026 (ROC Split Logic, SPL ShopField Fix)
+- **ROC split logic in import pipeline:** When a ROC set is selected in Import from AI Takeoff, rows whose component is in the set's applicable components list and whose ShopField matches a ROC step's ShopField are split. Original row is modified with the first matching step's ROCStep and percentage of BudgetMHs; additional rows are cloned for remaining matching steps. Non-matching rows pass through unchanged. Runs as the last data transformation before UniqueID generation.
+- **SPL ShopField = 2 (Field):** SPL (spool handling) rows in takeoff post-processing now explicitly set ShopField=2. Previously inherited ShopField=1 from parent PIPE row.
+- **GetROCSetDataAsync:** New method in `ProjectRateRepository` loads ROC set steps and applicable components from Azure for the import pipeline.
+- **Key files:** `Dialogs/ImportTakeoffDialog.xaml.cs`, `Data/ProjectRateRepository.cs`, `Services/AI/TakeoffPostProcessor.cs`
+
 ### April 3, 2026 (Import Profiles, ROC Manager Components, UniqueID Fix)
 - **UniqueID generation fixed:** `SetSystemFields()` now matches `ExcelImporter` pattern — `i` prefix, `yyMMddHHmmss` (local time), last 3 chars of username lowercased, `"usr"` fallback. Previously used `t` prefix with `yyyyMMddHHmmss` (UTC) and first 3 chars uppercased.
 - **Import profiles:** Save/load/delete named presets in the Import from AI Takeoff dialog. Profiles store output mode, handling, options, ROC set, column mappings, and metadata values. Stored in UserSettings as JSON (same pattern as GridLayouts). Profiles can be loaded before file selection — saved column mappings re-apply automatically when file loads.
