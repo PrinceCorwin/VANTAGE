@@ -6,6 +6,10 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### April 3, 2026 (Lift AI Takeoff User Restriction)
+- **AI Takeoff open to all Estimators:** Removed hardcoded `IsTakeoffAllowed()` method that restricted the Takeoff module to users `steve` and `Steve.Amalfitano`. Takeoff button visibility and Import from AI Takeoff menu item now use standard `App.CurrentUser.IsEstimator` role check. Removed all TEMPORARY/TO REVERT comments from `MainWindow.xaml` and `MainWindow.xaml.cs`.
+- **Key files:** `MainWindow.xaml`, `MainWindow.xaml.cs`
+
 ### April 3, 2026 (ROC Split Logic, SPL ShopField Fix)
 - **ROC split logic in import pipeline:** When a ROC set is selected in Import from AI Takeoff, rows whose component is in the set's applicable components list and whose ShopField matches a ROC step's ShopField are split. Original row is modified with the first matching step's ROCStep and percentage of BudgetMHs; additional rows are cloned for remaining matching steps. Non-matching rows pass through unchanged. Runs as the last data transformation before UniqueID generation.
 - **SPL ShopField = 2 (Field):** SPL (spool handling) rows in takeoff post-processing now explicitly set ShopField=2. Previously inherited ShopField=1 from parent PIPE row.
