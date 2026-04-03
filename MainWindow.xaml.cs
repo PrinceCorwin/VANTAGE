@@ -320,13 +320,10 @@ namespace VANTAGE
                 btnAdmin.Visibility = Visibility.Collapsed;
             }
 
-            // Hide TAKEOFFS button unless user is allowed
-            // TEMPORARY: Restricted to specific users during development
-            // TO REVERT: Replace IsTakeoffAllowed() call with: App.CurrentUser.IsEstimator
-            if (App.CurrentUser == null || !IsTakeoffAllowed())
+            // Hide TAKEOFFS button unless user has Estimator role
+            if (App.CurrentUser == null || !App.CurrentUser.IsEstimator)
             {
                 btnTakeoff.Visibility = Visibility.Collapsed;
-                menuImportTakeoff.Visibility = Visibility.Collapsed;
             }
 
             // Restore last visited view (default to Progress)
@@ -346,7 +343,7 @@ namespace VANTAGE
                     BtnAnalysis_Click(this, new RoutedEventArgs());
                     break;
                 case "Takeoffs":
-                    if (IsTakeoffAllowed())
+                    if (App.CurrentUser?.IsEstimator == true)
                         BtnTakeoff_Click(this, new RoutedEventArgs());
                     else
                         LoadProgressModule();
@@ -355,16 +352,6 @@ namespace VANTAGE
                     LoadProgressModule();
                     break;
             }
-        }
-
-        // TEMPORARY: Restrict Takeoff access to specific users during development
-        // TO REVERT: Delete this method and replace IsTakeoffAllowed() calls with App.CurrentUser.IsEstimator
-        private bool IsTakeoffAllowed()
-        {
-            if (App.CurrentUser == null) return false;
-            var username = App.CurrentUser.Username;
-            return username.Equals("steve", StringComparison.OrdinalIgnoreCase) ||
-                   username.Equals("Steve.Amalfitano", StringComparison.OrdinalIgnoreCase);
         }
 
         // TOOLBAR BUTTON HANDLERS

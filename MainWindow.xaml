@@ -74,9 +74,7 @@
                             <syncfusion:DropDownMenuItem Header="Export Activities" Click="ExcelExportActivities_Click"/>
                             <syncfusion:DropDownMenuItem Header="Export Activities Template" Click="ExcelExportTemplate_Click"/>
                             <Separator Background="{DynamicResource BorderColor}" Margin="5,2"/>
-                            <!-- TEMPORARY: Restricted to specific users during development -->
-                            <!-- TO REVERT: Remove x:Name and Visibility will default to Visible -->
-                            <syncfusion:DropDownMenuItem x:Name="menuImportTakeoff" Header="Import from AI Takeoff" Click="BtnCreate_Click" ToolTip="Import activities from an AI Takeoff Excel file or batch"/>
+                            <syncfusion:DropDownMenuItem Header="Import from AI Takeoff" Click="BtnCreate_Click" ToolTip="Import activities from an AI Takeoff Excel file or batch"/>
                             <syncfusion:DropDownMenuItem Header="Clear Local Activities" Click="MenuClearLocalActivities_Click"/>
                             <Separator Background="{DynamicResource BorderColor}" Margin="5,2"/>
                             <!-- P6 Files -->

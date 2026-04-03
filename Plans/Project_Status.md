@@ -118,20 +118,6 @@
 ### AI Takeoff — Second Size in Extraction Output
 - **TODO:** Add a "Second Size" field to the AI extraction output for dual-size components (e.g., 6x4 reducers, tees). Currently only one Size field is extracted, requiring post-processing to parse dual sizes like "6x4". Having the Lambda/Claude output both sizes directly would eliminate the need for `ParseDualSize()` logic in `TakeoffPostProcessor`.
 
-## Temporary Restrictions
-
-### AI Takeoff Module (MainWindow.xaml.cs)
-**Status:** Restricted to users `steve` and `Steve.Amalfitano` only
-
-**To revert to Estimator role check:**
-1. Delete the `IsTakeoffAllowed()` method (~line 340)
-2. Line ~326: Change `!IsTakeoffAllowed()` to `!App.CurrentUser.IsEstimator`
-3. Line ~1093: Change `(granted && IsTakeoffAllowed())` to just `granted`
-4. Remove `menuImportTakeoff.Visibility = Visibility.Collapsed;` line (below btnTakeoff collapse)
-5. `MainWindow.xaml`: Remove `x:Name="menuImportTakeoff"` and the TEMPORARY/TO REVERT comments from the Import from AI Takeoff menu item
-6. Remove the remaining `// TEMPORARY` and `// TO REVERT` comments
-7. **Add AI Takeoff module to release notes** — When releasing the version that lifts this restriction, add AI Takeoff feature to ReleaseNotes.json highlights
-
 ## Feature Backlog
 
 ### High Priority
@@ -140,12 +126,12 @@
   1. Fabrication item generation — Connection rows, BOM fab records, PIPE/SPL records, ROCStep column complete. CUT/BEV no longer separate rows — their rates are folded into BW/SW/THRD connection rows. GSKT/BOLT excluded from labor. FLGLJ excluded from makeup. Fitting makeup lookup complete with olet support (WOL/SOL/TOL/ELB/LOL/NOL), class as string, Thickness fallback for olets. RED/SWG fallback to smaller pipe if unclaimed by larger. Missed Makeups tab has Reason column (No Makeup Found / Unclaimed). No Conns tab shows material items with no connections. **Dual-size matching:** All components try `ParseDualSize()` first; TEE/REDT match either size, others match larger size only. **STR makeup:** Strainers lookup as TEE using larger size, 2x multiplier (drain is not a pipe connection). **ShopField post-processing:** Lambda sets all material rows to 1 (Shop); post-processor corrects to Field (2) for: BU/SCRD-only connection types, FS/BOLT/GSKT/WAS/INST/GAUGE components, and items with no connections. PIPE stays Shop. Mixed connection types (e.g., BW+SCRD) stay Shop. Written back to Material worksheet.
   2. **Rate application** — Core implementation complete. Rate sheet keys shortened to match component names directly. Per-project rate overrides with management dialog, upload from Excel, RateSource column. Admin email notification for missed data. Simplified rate lookup: thickness as-is → toggle leading S → class rating → size-only. Dual-size parsing for all components (not just olets). Missed rates tab shows both thickness and class keys attempted. Material multipliers (MatlMult) and rollup multipliers (RollupMult) applied to labor MHs. BudgetMHs = (RateSheet × RollupMult × max(RollupMult, MatlMult) + CutAdd + BevelAdd) × Qty. Audit columns (RateSheet, RollupMult, MatlMult, CutAdd, BevelAdd) in Excel for user verification. **FS commodity code support:** Field supports (FS) now copy Commodity Code to Class Rating for rate lookup, enabling specialized rates like `SPT-4:A1234` with fallback to `SPT-4`. **THRD labor generation:** Every SCRD connection now generates a companion THRD labor row for threading labor. SCRD consolidated to 11 size-only entries, THRD has 44 entries (33 schedule-specific + 11 fallbacks).
   3. **ROC splits** — VMS_ROCRates table complete (Components column added for applicable component checklist). ROC Set Manager redesigned with view/edit modes, applicable components checklist panel, accessible via Tools menu. ROC set dropdown in ImportTakeoffDialog. Split logic implemented in import pipeline: matches rows by component (applicable list) + ShopField, original row gets first matching step, clones for remaining steps, BudgetMHs distributed by percentage. SPL rows set to ShopField=2 (Field) during takeoff post-processing.
-  4. VANTAGE tab — Column rename for direct import into Activities. Optional "Rollup Labor" mode: creates one FAB row per drawing (component=FAB, description="Fabrication of DWG# - {Drawing Number}") that sums all ShopField=1 labor MHs. FAB row gets split by selected ROC percentages (or stays as-is if no ROC profile selected). UI location for the rollup option TBD.
+  4. ~~VANTAGE tab~~ — Complete. Column mapping and Rollup Fab Per DWG handled in Import from AI Takeoff dialog.
 
 
 ### Medium Priority
 - **Theme System Refactor** — Phases 1-7 complete. Live switching works, tokens split, guide written. Theme generator script and `/create-theme` skill complete. See `Themes/THEME_GUIDE.md`.
-- **Import from AI Takeoff** — Dialog and import/export logic implemented. Column mapping, metadata, handling filter, BU hardware rollup, fab per DWG rollup, Create Excel output all functional. UniqueID generation fixed. Import profiles (save/load/delete named presets). Batch source removed (file-only). **TODO:** Wire up ROC split application during import pipeline.
+- **Import from AI Takeoff** — Dialog and import/export logic implemented. Column mapping, metadata, handling filter, BU hardware rollup, fab per DWG rollup, Create Excel output, ROC split application all functional. UniqueID generation fixed. Import profiles (save/load/delete named presets). Batch source removed (file-only).
 - **MSI/MSIX installer** — Replace custom installer with MSI (WiX Toolset) or MSIX packaging to get genuine Windows install integration. Current custom installer registers via registry but Windows Search won't execute `UninstallString` directly — only MSI and UWP/MSIX apps get direct uninstall from search context menu. Current setup works via Settings > Apps.
 - **User-editable header template for WP** — Allow customizing header layout
 - **Complete RateEquiv mappings** — Finish adding all component-to-EstGrp mappings in `RateSheetService.cs` (ComponentToEstGrp dictionary). Currently has valve types, fittings, GGLASS, METER, HOSE, HEAT→INST, etc.
