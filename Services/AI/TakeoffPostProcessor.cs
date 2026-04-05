@@ -1036,7 +1036,7 @@ namespace VANTAGE.Services.AI
             labor["Size"] = sizeStr;
             labor["Thickness"] = thickness;
             labor["Quantity"] = 1;
-            labor["ShopField"] = connType == "BU" ? 2 : 1;
+            labor["ShopField"] = (connType == "BU" || connType == "SCRD") ? 2 : 1;
             string descSuffix = connType == "BU" ? "BU - One Flange" : connType;
             labor["Description"] = BuildConcatDescription(sizeStr, thickness, classRating, pipeSpec, material, descSuffix);
             labor["BudgetMHs"] = null;

@@ -6,6 +6,10 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### April 5, 2026 (SCRD ShopField Fix)
+- **SCRD labor rows set to ShopField=2 (Field):** SCRD connection rows generated during takeoff post-processing now set ShopField=2 (Field) instead of 1 (Shop). BU was already Field; SCRD now matches. Other connection types (BW, SW, etc.) remain Shop.
+- **Key files:** `Services/AI/TakeoffPostProcessor.cs`
+
 ### April 3, 2026 (Lift AI Takeoff User Restriction)
 - **AI Takeoff open to all Estimators:** Removed hardcoded `IsTakeoffAllowed()` method that restricted the Takeoff module to users `steve` and `Steve.Amalfitano`. Takeoff button visibility and Import from AI Takeoff menu item now use standard `App.CurrentUser.IsEstimator` role check. Removed all TEMPORARY/TO REVERT comments from `MainWindow.xaml` and `MainWindow.xaml.cs`.
 - **Key files:** `MainWindow.xaml`, `MainWindow.xaml.cs`
