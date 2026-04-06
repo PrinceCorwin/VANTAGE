@@ -197,6 +197,9 @@
 | TreeGrid (SfTreeGrid) | Hierarchical WBS display with parent/child relationships |
 | Critical Path Highlighting | Auto-highlight critical path activities (P6 provides float data) |
 
+### Dev Tooling
+- **Sync Claude Code skill files across machines** — `~/.claude/skills/` is local-only and doesn't live in a git repo, so skill edits on one machine don't propagate to the other. Need to: (1) merge/reconcile current skill files across both machines, (2) set up an automatic sync mechanism (e.g., symlink to a synced folder, git repo for skills, or a copy script)
+
 ### Shelved
 - Find-Replace in Schedule Detail Grid - deferred to V2; may need redesign of main/detail grid interaction
 - Offline Indicator in status bar - clickable to retry connection

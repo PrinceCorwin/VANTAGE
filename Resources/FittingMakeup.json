@@ -1952,6 +1952,12 @@
   {
     "Connection_Type": "BW",
     "Component": "90LSR",
+    "Run_Size": 1.25,
+    "Makeup_Run_In": 1.25
+  },
+  {
+    "Connection_Type": "BW",
+    "Component": "90LSR",
     "Run_Size": 1.5,
     "Makeup_Run_In": 1.5
   },
@@ -1960,6 +1966,12 @@
     "Component": "90LSR",
     "Run_Size": 2,
     "Makeup_Run_In": 2
+  },
+  {
+    "Connection_Type": "BW",
+    "Component": "90LSR",
+    "Run_Size": 2.5,
+    "Makeup_Run_In": 2.5
   },
   {
     "Connection_Type": "BW",
@@ -4453,6 +4465,27 @@
   {
     "Connection_Type": "BW",
     "Component": "FLG",
+    "Class": "150",
+    "Run_Size": 2.5,
+    "Makeup_Run_In": 2.75
+  },
+  {
+    "Connection_Type": "BW",
+    "Component": "FLG",
+    "Class": "300",
+    "Run_Size": 2.5,
+    "Makeup_Run_In": 3.0
+  },
+  {
+    "Connection_Type": "BW",
+    "Component": "FLG",
+    "Class": "600",
+    "Run_Size": 2.5,
+    "Makeup_Run_In": 3.125
+  },
+  {
+    "Connection_Type": "BW",
+    "Component": "FLG",
     "Class": "600",
     "Run_Size": 3,
     "Makeup_Run_In": 3.5
@@ -5114,6 +5147,27 @@
     "Class": "300",
     "Run_Size": 2,
     "Makeup_Run_In": 0.75
+  },
+  {
+    "Connection_Type": "SW",
+    "Component": "FLG",
+    "Class": "150",
+    "Run_Size": 2.5,
+    "Makeup_Run_In": 1.125
+  },
+  {
+    "Connection_Type": "SW",
+    "Component": "FLG",
+    "Class": "300",
+    "Run_Size": 2.5,
+    "Makeup_Run_In": 1.5
+  },
+  {
+    "Connection_Type": "SW",
+    "Component": "FLG",
+    "Class": "600",
+    "Run_Size": 2.5,
+    "Makeup_Run_In": 1.625
   },
   {
     "Connection_Type": "BW",
@@ -17486,6 +17540,12 @@
     "Component": "FLG",
     "Run_Size": 2,
     "Makeup_Run_In": 0.4375
+  },
+  {
+    "Connection_Type": "SW",
+    "Component": "FLG",
+    "Run_Size": 2.5,
+    "Makeup_Run_In": 1.125
   },
   {
     "Connection_Type": "SCRD",

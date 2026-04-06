@@ -6,6 +6,12 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### April 6, 2026 (Completed_Work Monthly Archiving)
+- **Monthly archiving for Completed_Work.md:** Set up `Plans/Archives/` directory and automated archiving workflow. At the start of each new month, the finisher skill moves previous month's entries to `Plans/Archives/Completed_Work_YYYY-MM.md` and resets the file. Prevents infinite file growth.
+- **Finisher skill updated:** Step 2 now includes an archive check before adding new entries — detects entries from previous months and archives them automatically.
+- **CLAUDE.md updated:** Added "Completed_Work.md Monthly Archiving" section documenting the convention.
+- **Dev Tooling backlog item added:** Task to sync Claude Code skill files (`~/.claude/skills/`) across machines — currently local-only with no sync mechanism.
+
 ### April 5, 2026 (SCRD ShopField Fix)
 - **SCRD labor rows set to ShopField=2 (Field):** SCRD connection rows generated during takeoff post-processing now set ShopField=2 (Field) instead of 1 (Shop). BU was already Field; SCRD now matches. Other connection types (BW, SW, etc.) remain Shop.
 - **Key files:** `Services/AI/TakeoffPostProcessor.cs`

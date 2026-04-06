@@ -68,6 +68,12 @@ WPF application for Summit Industrial replacing the legacy MS Access system ("Ol
 **All paths are relative to the repository root. NEVER use absolute paths.**
 **This is NOT optional. Failure to update status docs before committing is a workflow violation.**
 
+### Completed_Work.md Monthly Archiving
+- `Completed_Work.md` is archived monthly to prevent infinite growth
+- At the start of each new month, when finisher runs, entries from previous months are moved to `Plans/Archives/Completed_Work_YYYY-MM.md` (e.g., `Completed_Work_2026-04.md`)
+- `Completed_Work.md` is then reset to just the header and empty `## Unreleased` section
+- The finisher skill handles this automatically — no manual intervention needed
+
 ### Status Doc Timing
 - **Do NOT update Project_Status.md or Completed_Work.md until user confirms the work is tested and complete**
 - Making code changes does not mean the work is done - user must test first
