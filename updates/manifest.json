@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.2.1",
-  "releaseDate": "2026-04-03T18:36:02Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.2.1/VANTAGE-26.2.1.zip",
-  "zipSizeBytes": 150179986,
-  "sha256": "20A666B66C95B1A1B359D3E33092567EF9DB021F0331DCE566437109193DE561",
-  "releaseNotes": "AI Takeoff open to all Estimators, Import profiles, ROC splits, ROC Manager with component checklist"
+  "currentVersion": "26.2.2",
+  "releaseDate": "2026-04-06T16:34:04Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.2.2/VANTAGE-26.2.2.zip",
+  "zipSizeBytes": 150178875,
+  "sha256": "A2453CD0A24F6F47106247207835C569F25BDADAE5C68E66F529D36AD3EDDDB0",
+  "releaseNotes": "Fix multi-cell copy/paste, arrow key navigation in date cells, sync edit safety, date paste validation"
 }

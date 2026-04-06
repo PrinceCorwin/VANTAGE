@@ -1,6 +1,16 @@
 {
   "releases": [
     {
+      "version": "26.2.2",
+      "date": "2026-04-06",
+      "highlights": [
+        "Fix — Multi-cell copy/paste restored (was completely broken by prior edit-mode check)",
+        "Fix — Arrow keys in date cells now navigate to next cell instead of scrolling the date value",
+        "Fix — Sync button commits active cell edit before syncing (prevents data loss)",
+        "Fix — Pasting dates to ActStart/ActFin validates percent rules, skips violating rows with summary message"
+      ]
+    },
+    {
       "version": "26.2.1",
       "date": "2026-04-03",
       "highlights": [
