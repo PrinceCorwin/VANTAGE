@@ -6,6 +6,12 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### April 6, 2026 (Copy/Paste Fix, Arrow Key Navigation, Sync Safety)
+- **Fixed multi-cell copy/paste:** Ctrl+V paste was completely broken due to `IsEditing` bail-out checks added in a prior commit. When `EditTrigger="OnTap"` put cells into edit mode, both paste handlers (`UserControl_PreviewKeyDown` and `SfActivities_PreviewKeyDown`) would exit early without pasting. Fix: removed the bail-outs, added smart routing — multi-value clipboard or multi-cell selection triggers the custom paste handler, single-value + single-cell lets the built-in editor handle it (paste at cursor).
+- **Arrow keys always navigate cells:** Up/Down/Left/Right arrow keys in edit mode now always commit the edit and move to the next cell. Previously, date columns (GridDateTimeColumn) would scroll the date value when pressing arrows. New handler at the top of `SfActivities_PreviewKeyDown` intercepts arrows before the date picker sees them.
+- **Sync EndEdit safety:** Added `EndEdit()` + `await Task.Delay(250)` at the top of `BtnSync_Click` to commit any active cell edit before syncing. Prevents data loss when user clicks Sync while still editing a cell.
+- **Key files:** `Views/ProgressView.xaml.cs`
+
 ### April 6, 2026 (Completed_Work Monthly Archiving)
 - **Monthly archiving for Completed_Work.md:** Set up `Plans/Archives/` directory and automated archiving workflow. At the start of each new month, the finisher skill moves previous month's entries to `Plans/Archives/Completed_Work_YYYY-MM.md` and resets the file. Prevents infinite file growth.
 - **Finisher skill updated:** Step 2 now includes an archive check before adding new entries — detects entries from previous months and archives them automatically.

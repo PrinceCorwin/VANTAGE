@@ -1193,16 +1193,18 @@ namespace VANTAGE.Views
                 // Let filter popup search fields handle their own paste
                 if (IsFocusInsidePopup()) return;
 
-                // If cell is in edit mode, let the TextBox handle paste naturally (insert at cursor)
-                var currentCell = sfActivities.SelectionController.CurrentCellManager.CurrentCell;
-                if (currentCell != null && currentCell.IsEditing)
-                    return;
+                // Single value + single cell = let built-in editor handle it (paste at cursor)
+                var clipboardValues = GetClipboardFirstColumn();
+                if (clipboardValues == null || clipboardValues.Count <= 1)
+                {
+                    if (sfActivities.SelectedItems.Count <= 1)
+                        return;
+                }
+
 
                 // Check: multiple rows selected via SelectedItems (keyboard selection like Ctrl+Shift+Down)
                 if (sfActivities.SelectedItems.Count > 1 && sfActivities.CurrentColumn != null)
                 {
-                    var clipboardValues = GetClipboardFirstColumn();
-
                     // Only handle if SINGLE clipboard value being pasted to MULTIPLE rows
                     if (clipboardValues != null && clipboardValues.Count == 1)
                     {
@@ -1225,6 +1227,22 @@ namespace VANTAGE.Views
             // Let filter popup search fields handle their own copy/paste
             if (IsFocusInsidePopup()) return;
 
+            // Arrow keys always navigate to next cell — prevents date picker from scrolling values
+            if (Keyboard.Modifiers == ModifierKeys.None &&
+                (e.Key == Key.Up || e.Key == Key.Down || e.Key == Key.Left || e.Key == Key.Right))
+            {
+                var currentCell = sfActivities.SelectionController.CurrentCellManager.CurrentCell;
+                if (currentCell != null && currentCell.IsEditing)
+                {
+                    sfActivities.SelectionController.CurrentCellManager.EndEdit();
+                    e.Handled = true;
+                    sfActivities.SelectionController.HandleKeyDown(
+                        new KeyEventArgs(Keyboard.PrimaryDevice, PresentationSource.FromVisual(sfActivities), 0, e.Key)
+                        { RoutedEvent = Keyboard.KeyDownEvent });
+                    return;
+                }
+            }
+
             // Handle Ctrl+C for multi-cell copy
             if (e.Key == Key.C && Keyboard.Modifiers == ModifierKeys.Control)
             {
@@ -1240,15 +1258,15 @@ namespace VANTAGE.Views
             // Handle Ctrl+V for multi-cell paste
             else if (e.Key == Key.V && Keyboard.Modifiers == ModifierKeys.Control)
             {
-                // If cell is in edit mode, let the TextBox handle paste naturally (insert at cursor)
-                var currentCell = sfActivities.SelectionController.CurrentCellManager.CurrentCell;
-                if (currentCell != null && currentCell.IsEditing)
-                    return;
-
                 var selectedCells = sfActivities.GetSelectedCells();
                 var clipboardValues = GetClipboardFirstColumn();
 
-                // Handle multi-row clipboard (even with single cell selected)
+                // Single value + single cell = let built-in editor handle it (paste at cursor)
+                if (clipboardValues != null && clipboardValues.Count <= 1 &&
+                    selectedCells != null && selectedCells.Count <= 1)
+                    return;
+
+
                 if (clipboardValues != null && clipboardValues.Count > 0 && selectedCells != null && selectedCells.Count > 0)
                 {
                     e.Handled = true;
@@ -3833,6 +3851,11 @@ namespace VANTAGE.Views
         {
             try
             {
+                // Commit any active cell edit before syncing — prevents data loss
+                // when user clicks Sync while still editing a cell
+                sfActivities.SelectionController.CurrentCellManager.EndEdit();
+                await Task.Delay(250); // Allow async CurrentCellEndEdit handler to save to DB
+
                 // Check Azure connection with retry option
                 bool isConnected = false;
                 while (!isConnected)
