@@ -198,7 +198,12 @@
 | Critical Path Highlighting | Auto-highlight critical path activities (P6 provides float data) |
 
 ### Dev Tooling
-- **Sync Claude Code skill files across machines** — `~/.claude/skills/` is local-only and doesn't live in a git repo, so skill edits on one machine don't propagate to the other. Need to: (1) merge/reconcile current skill files across both machines, (2) set up an automatic sync mechanism (e.g., symlink to a synced folder, git repo for skills, or a copy script)
+- **WORK PC: One-time setup for Claude skills sync repo** — On 2026-04-06 the home PC's `~/.claude/skills/` was converted into a git working tree backed by the new private repo `PrinceCorwin/claude-skills` (https://github.com/PrinceCorwin/claude-skills). The work PC still has the old plain folder with stale skill files. **First time you run Claude Code on the work PC after this date, do this:**
+  ```bash
+  mv ~/.claude/skills ~/.claude/skills.bak
+  git clone https://github.com/PrinceCorwin/claude-skills.git ~/.claude/skills
+  ```
+  Then verify a skill works (try `/finisher` or `/speedup` description in the skills list), and `rm -rf ~/.claude/skills.bak`. After that, daily workflow is: `git pull` before editing skills, `git add -A && git commit && git push` after editing. The merged `finisher/skill.md` (with `"commit"` as a trigger word, full month-rollover archive logic, Step 3.5 for plan docs, etc.) is in the repo. The old `Plans/WorkPcSkills/` folder was removed from VANTAGE in commit `2246210` since it's no longer needed. Remove this todo from Project_Status.md once setup is complete on the work PC.
 
 ### Shelved
 - Find-Replace in Schedule Detail Grid - deferred to V2; may need redesign of main/detail grid interaction
