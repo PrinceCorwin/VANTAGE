@@ -6,6 +6,13 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### April 6, 2026 (PercentEntry Decimal Input Fix)
+- **Decimals now accepted in PercentEntry:** Users reported entering `0.5` resulted in `5` — the leading `0.` was being dropped. Two bugs combined: (1) the auto-BeginEdit handler in `SfActivities_KeyDown` only triggered on digit keys, so typing `.` from a non-editing cell was silently lost; (2) the `<TextBox>` in the `PercentEntry` GridTemplateColumn EditTemplate used `UpdateSourceTrigger=PropertyChanged`, which raced against the `Activity.PercentEntry` setter on every keystroke (clamp/round/multi-PropertyChanged/`UpdateEarnedQtyFromPercComplete` chain).
+- **Fix 1:** Added `Key.OemPeriod` and `Key.Decimal` to the auto-BeginEdit key check so typing `.5` enters edit mode like digits do.
+- **Fix 2:** Changed the EditTemplate TextBox binding to `UpdateSourceTrigger=LostFocus`. The value commits when editing ends (Tab/Enter/arrow nav/click-away), eliminating per-keystroke parsing races. Existing `EndEdit()` calls in `PercentEntryEditBox_PreviewKeyDown` still commit values during keyboard navigation because EndEdit causes the textbox to lose focus.
+- **Why EarnQtyEntry was unaffected:** It uses Syncfusion's native `GridNumericColumn`, which has built-in decimal handling. Only PercentEntry uses a custom `GridTemplateColumn` (because of the progress-bar visual overlay), so it required a hand-rolled edit textbox.
+- **Key files:** `Views/ProgressView.xaml`, `Views/ProgressView.xaml.cs`
+
 ### April 6, 2026 (Copy/Paste Fix, Arrow Key Navigation, Sync Safety, Date Paste Validation)
 - **Fixed multi-cell copy/paste:** Ctrl+V paste was completely broken due to `IsEditing` bail-out checks added in a prior commit. When `EditTrigger="OnTap"` put cells into edit mode, both paste handlers (`UserControl_PreviewKeyDown` and `SfActivities_PreviewKeyDown`) would exit early without pasting. Fix: removed the bail-outs, added smart routing — multi-value clipboard or multi-cell selection triggers the custom paste handler, single-value + single-cell lets the built-in editor handle it (paste at cursor).
 - **Arrow keys always navigate cells:** Up/Down/Left/Right arrow keys in edit mode now always commit the edit and move to the next cell. Previously, date columns (GridDateTimeColumn) would scroll the date value when pressing arrows. New handler at the top of `SfActivities_PreviewKeyDown` intercepts arrows before the date picker sees them.

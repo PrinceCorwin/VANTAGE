@@ -1294,7 +1294,7 @@
                             </syncfusion:GridTemplateColumn.CellTemplate>
                             <syncfusion:GridTemplateColumn.EditTemplate>
                                 <DataTemplate>
-                                    <TextBox Text="{Binding PercentEntry, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    <TextBox Text="{Binding PercentEntry, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
                                              VerticalAlignment="Center"
                                              Padding="4,0,4,0"
                                              Loaded="PercentEntryEditBox_Loaded"
