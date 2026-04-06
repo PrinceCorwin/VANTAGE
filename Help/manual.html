@@ -1044,7 +1044,10 @@
         <li>Target column must be editable (not read-only or calculated)</li>
         <li>You must own all affected records (AssignedTo must match your username)</li>
         <li>Values must be valid for the column type (numbers, dates, etc.)</li>
+        <li><strong>ActStart</strong> — Rows with 0% Complete are skipped (% must be greater than 0)</li>
+        <li><strong>ActFin</strong> — Rows with less than 100% Complete are skipped (% must equal 100)</li>
     </ul>
+    <p>When pasting dates, valid rows are pasted and violating rows are skipped. A summary message shows how many were pasted vs skipped.</p>
 
     <div class="note">
         <div class="note-title">Required Date Fields</div>

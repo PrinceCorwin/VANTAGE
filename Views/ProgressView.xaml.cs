@@ -1516,6 +1516,27 @@ namespace VANTAGE.Views
                 return;
             }
 
+            // Filter out date column rows that violate percent rules
+            int skippedCount = 0;
+            if (columnName == "ActStart" || columnName == "ActFin")
+            {
+                var originalCount = rowBasedCells.Count;
+                if (columnName == "ActStart")
+                    rowBasedCells = rowBasedCells.Where(r => r.activity.PercentEntry > 0).ToList();
+                else
+                    rowBasedCells = rowBasedCells.Where(r => r.activity.PercentEntry >= 100).ToList();
+
+                skippedCount = originalCount - rowBasedCells.Count;
+                if (rowBasedCells.Count == 0)
+                {
+                    string reason = columnName == "ActStart"
+                        ? "All target records have 0% Complete — set % Complete greater than 0 first."
+                        : "All target records have % Complete less than 100 — set % Complete to 100 first.";
+                    MessageBox.Show(reason, "Paste Blocked", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+            }
+
             // Single value to paste to all rows
             string clipboardValue = clipboardValues[0];
             var now = DateTime.UtcNow;
@@ -1578,6 +1599,14 @@ namespace VANTAGE.Views
                 sfActivities.View?.Refresh();
                 UpdateSummaryPanel();
                 await CalculateMetadataErrorCount();
+
+                if (skippedCount > 0)
+                {
+                    string reason = columnName == "ActStart"
+                        ? $"Pasted to {rowBasedCells.Count} row(s). Skipped {skippedCount} row(s) with 0% Complete."
+                        : $"Pasted to {rowBasedCells.Count} row(s). Skipped {skippedCount} row(s) with % Complete less than 100.";
+                    MessageBox.Show(reason, "Partial Paste", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
             }
             catch (Exception ex)
             {
@@ -1685,6 +1714,27 @@ namespace VANTAGE.Views
                     return;
                 }
 
+                // Filter out date column rows that violate percent rules
+                int skippedCount = 0;
+                if (columnName == "ActStart" || columnName == "ActFin")
+                {
+                    var originalCount = targetCells.Count;
+                    if (columnName == "ActStart")
+                        targetCells = targetCells.Where(t => t.activity.PercentEntry > 0).ToList();
+                    else
+                        targetCells = targetCells.Where(t => t.activity.PercentEntry >= 100).ToList();
+
+                    skippedCount = originalCount - targetCells.Count;
+                    if (targetCells.Count == 0)
+                    {
+                        string reason = columnName == "ActStart"
+                            ? "All target records have 0% Complete — set % Complete greater than 0 first."
+                            : "All target records have % Complete less than 100 — set % Complete to 100 first.";
+                        MessageBox.Show(reason, "Paste Blocked", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
+                    }
+                }
+
                 // Capture old values for undo, then paste
                 int pasteCount = Math.Min(clipboardValues.Count, targetCells.Count);
                 var modifiedActivities = new List<Activity>();
@@ -1740,6 +1790,14 @@ namespace VANTAGE.Views
                 sfActivities.View?.Refresh();
                 UpdateSummaryPanel();
                 await CalculateMetadataErrorCount();
+
+                if (skippedCount > 0)
+                {
+                    string reason = columnName == "ActStart"
+                        ? $"Pasted to {pasteCount} row(s). Skipped {skippedCount} row(s) with 0% Complete."
+                        : $"Pasted to {pasteCount} row(s). Skipped {skippedCount} row(s) with % Complete less than 100.";
+                    MessageBox.Show(reason, "Partial Paste", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
             }
             catch (Exception ex)
             {

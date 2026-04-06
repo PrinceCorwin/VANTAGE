@@ -6,10 +6,11 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
-### April 6, 2026 (Copy/Paste Fix, Arrow Key Navigation, Sync Safety)
+### April 6, 2026 (Copy/Paste Fix, Arrow Key Navigation, Sync Safety, Date Paste Validation)
 - **Fixed multi-cell copy/paste:** Ctrl+V paste was completely broken due to `IsEditing` bail-out checks added in a prior commit. When `EditTrigger="OnTap"` put cells into edit mode, both paste handlers (`UserControl_PreviewKeyDown` and `SfActivities_PreviewKeyDown`) would exit early without pasting. Fix: removed the bail-outs, added smart routing — multi-value clipboard or multi-cell selection triggers the custom paste handler, single-value + single-cell lets the built-in editor handle it (paste at cursor).
 - **Arrow keys always navigate cells:** Up/Down/Left/Right arrow keys in edit mode now always commit the edit and move to the next cell. Previously, date columns (GridDateTimeColumn) would scroll the date value when pressing arrows. New handler at the top of `SfActivities_PreviewKeyDown` intercepts arrows before the date picker sees them.
 - **Sync EndEdit safety:** Added `EndEdit()` + `await Task.Delay(250)` at the top of `BtnSync_Click` to commit any active cell edit before syncing. Prevents data loss when user clicks Sync while still editing a cell.
+- **Date paste validation:** Multi-cell paste to ActStart/ActFin columns now enforces the same percent-based rules as single-cell editing. ActStart blocked for rows with 0% Complete; ActFin blocked for rows with less than 100%. Valid rows are pasted, violating rows are skipped, and a summary message shows how many were pasted vs skipped. Both paste handlers (multi-cell and single-value-to-multiple-rows) are covered.
 - **Key files:** `Views/ProgressView.xaml.cs`
 
 ### April 6, 2026 (Completed_Work Monthly Archiving)
