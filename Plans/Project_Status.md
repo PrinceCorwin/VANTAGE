@@ -118,6 +118,19 @@
 ### AI Takeoff — Second Size in Extraction Output
 - **TODO:** Add a "Second Size" field to the AI extraction output for dual-size components (e.g., 6x4 reducers, tees). Currently only one Size field is extracted, requiring post-processing to parse dual sizes like "6x4". Having the Lambda/Claude output both sizes directly would eliminate the need for `ParseDualSize()` logic in `TakeoffPostProcessor`.
 
+## Tutorial Videos
+
+Series of short tutorial videos for end users. Each item below needs a plan and script developed in its corresponding folder under `Plans/Tutorials/`.
+
+- [ ] **Intro Video** (`Plans/Tutorials/Intro/`) — Installation, updates, plugins, and the other MainWindow menu items (Tools, Settings, Help, status bar, etc.)
+- [ ] **Progress Module Video** (`Plans/Tutorials/Progress/`) — Grid basics, sorting/grouping/filtering, editing, copy/paste, find/replace, sync, snapshots
+- [ ] **Schedule Module Video** (`Plans/Tutorials/Schedule/`) — Master/detail layout, P6 import/export, editing, quick filters, UDF mapping, change log
+- [ ] **Work Packages Video** (`Plans/Tutorials/WorkPackages/`) — Templates (WP and Form), tokens, generate tab, PDF output
+- [ ] **Progress Books Video** (`Plans/Tutorials/ProgressBooks/`) — Layout configuration, column selection, generation, AI Progress Scan
+- [ ] **Analyse Module Video** (`Plans/Tutorials/Analyse/`) — Summary grid, group by, user/project filters, metrics, conditional coloring
+- [ ] **Takeoffs Module Video** (`Plans/Tutorials/Takeoffs/`) — AI-powered piping takeoff extraction, configs, regions, batches, downloads
+- [ ] **Admin Video** (`Plans/Tutorials/Admin/`) — Edit Users, Edit Projects, Manage Snapshots, Progress Log, Project Rates, S3 Drawings (admin-only features)
+
 ## Feature Backlog
 
 ### High Priority
@@ -196,14 +209,6 @@
 |---------|-------------|
 | TreeGrid (SfTreeGrid) | Hierarchical WBS display with parent/child relationships |
 | Critical Path Highlighting | Auto-highlight critical path activities (P6 provides float data) |
-
-### Dev Tooling
-- **WORK PC: One-time setup for Claude skills sync repo** — On 2026-04-06 the home PC's `~/.claude/skills/` was converted into a git working tree backed by the new private repo `PrinceCorwin/claude-skills` (https://github.com/PrinceCorwin/claude-skills). The work PC still has the old plain folder with stale skill files. **First time you run Claude Code on the work PC after this date, do this:**
-  ```bash
-  mv ~/.claude/skills ~/.claude/skills.bak
-  git clone https://github.com/PrinceCorwin/claude-skills.git ~/.claude/skills
-  ```
-  Then verify a skill works (try `/finisher` or `/speedup` description in the skills list), and `rm -rf ~/.claude/skills.bak`. After that, daily workflow is: `git pull` before editing skills, `git add -A && git commit && git push` after editing. The merged `finisher/skill.md` (with `"commit"` as a trigger word, full month-rollover archive logic, Step 3.5 for plan docs, etc.) is in the repo. The old `Plans/WorkPcSkills/` folder was removed from VANTAGE in commit `2246210` since it's no longer needed. Remove this todo from Project_Status.md once setup is complete on the work PC.
 
 ### Shelved
 - Find-Replace in Schedule Detail Grid - deferred to V2; may need redesign of main/detail grid interaction

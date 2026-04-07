@@ -6,6 +6,13 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### April 7, 2026 (Tutorial Video Planning, Claude Skills Sync Setup)
+- **Tutorial video series scaffolded:** New `Plans/Tutorials/` folder with subfolders for Intro, Progress, Schedule, WorkPackages, ProgressBooks, Analyse, Takeoffs, and Admin. Each video gets its own folder for plans, scripts, and assets.
+- **Intro video plan + script complete:** `Plans/Tutorials/Intro/Plan.md` and `Plans/Tutorials/Intro/Script.md`. Twelve sections covering installation (with SmartScreen warning walkthrough), first launch / login (no self-service — call admin if rejected), main window tour (toolbar / nav / settings), auto-updates, plugins, status bar, and F1 help sidebar. Two-column script format: on-screen action / voiceover. Demo project: 99.999 (Sandbox).
+- **Takeoffs video plan complete:** `Plans/Tutorials/Takeoffs/Plan.md`. Covers AI Takeoff end-to-end — config concept, Config Creator (BOM/title block crop regions), batch setup, processing, Excel output tabs, Previous Batches, Recalc Excel, send-to-admin, and brief handoff to the Import from AI Takeoff dialog. Open questions logged for sample drawings, live-vs-prerecorded processing, and config creator depth.
+- **Project_Status.md:** Added "Tutorial Videos" section with todo items for all eight planned videos (Intro, Progress, Schedule, Work Pkgs, Prog Books, Analyse, Takeoffs, Admin). Decisions captured: TAKEOFFS gets its own video, Admin menu is briefly mentioned in Intro and gets its own dedicated video.
+- **Work PC Claude skills sync setup complete:** Replaced stale `~/.claude/skills/` folder with a clone of `PrinceCorwin/claude-skills`. Now in sync with the home PC. New skills available: `create-theme`, `finisher` (with merged improvements — `commit` trigger word, month-rollover archive logic, plan doc check), and `speedup`. Removed the one-time setup todo from Project_Status.md.
+
 ### April 6, 2026 (PercentEntry Decimal Input Fix)
 - **Decimals now accepted in PercentEntry:** Users reported entering `0.5` resulted in `5` — the leading `0.` was being dropped. Two bugs combined: (1) the auto-BeginEdit handler in `SfActivities_KeyDown` only triggered on digit keys, so typing `.` from a non-editing cell was silently lost; (2) the `<TextBox>` in the `PercentEntry` GridTemplateColumn EditTemplate used `UpdateSourceTrigger=PropertyChanged`, which raced against the `Activity.PercentEntry` setter on every keystroke (clamp/round/multi-PropertyChanged/`UpdateEarnedQtyFromPercComplete` chain).
 - **Fix 1:** Added `Key.OemPeriod` and `Key.Decimal` to the auto-BeginEdit key check so typing `.5` enters edit mode like digits do.
