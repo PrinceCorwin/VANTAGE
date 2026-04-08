@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.2.3",
-  "releaseDate": "2026-04-06T18:52:40Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.2.3/VANTAGE-26.2.3.zip",
-  "zipSizeBytes": 150181360,
-  "sha256": "DCD80E268BA29302EDDB8B0D6293001AD0579DB326E960901788E8377E1E2897",
-  "releaseNotes": "Fix decimal entry in % Complete column (typing 0.5 was committing as 5)"
+  "currentVersion": "26.2.4",
+  "releaseDate": "2026-04-08T16:30:47Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.2.4/VANTAGE-26.2.4.zip",
+  "zipSizeBytes": 150185145,
+  "sha256": "77D820F2FAD509ED7346E09CB5A53E9E2BA1031EEF8E59969F0C011A7915FD79",
+  "releaseNotes": "Schedule Module — major performance improvement: snapshot data now mirrored locally on P6 import for instant grid rendering. Detail grid edits sync to both central and local copies. Snapshot retention reduced from 28 to 21 days."
 }
