@@ -567,12 +567,38 @@ namespace VANTAGE
                         new Progress<string>(msg => busyDialog.UpdateStatus(msg))
                     );
 
+                    // Step 3b: Refill local ProgressSnapshots mirror for the imported week.
+                    // The Schedule module reads snapshot rollups from this local table for fast
+                    // grid rendering. Best-effort — log on failure but don't block the import.
+                    busyDialog.UpdateStatus("Loading snapshot data for Schedule comparison...");
+                    int snapshotRows = -1;
+                    try
+                    {
+                        snapshotRows = await VANTAGE.Repositories.ScheduleRepository
+                            .RefillLocalSnapshotsForWeekAsync(
+                                p6Dialog.SelectedWeekEndDate,
+                                App.CurrentUser?.Username ?? string.Empty);
+                    }
+                    catch (Exception refillEx)
+                    {
+                        AppLogger.Warning(
+                            $"Local snapshot refill failed after P6 import: {refillEx.Message}",
+                            "MainWindow.ImportP6File_Click");
+                    }
+
                     busyDialog.Close();
 
                     // Step 4: Show results
+                    string snapshotMsg = snapshotRows < 0
+                        ? "\n\nNote: Could not load snapshot data for Schedule comparison. The Schedule view may show no progress data until you re-import the P6 file."
+                        : snapshotRows == 0
+                            ? "\n\nNo snapshot data was found for this week."
+                            : $"\n\nLoaded {snapshotRows} snapshot rows for Schedule comparison.";
+
                     MessageBox.Show(
                         $"Successfully imported {imported} schedule activities for week ending {p6Dialog.SelectedWeekEndDate:yyyy-MM-dd}\n\n" +
-                        $"Projects: {string.Join(", ", p6Dialog.SelectedProjectIDs)}",
+                        $"Projects: {string.Join(", ", p6Dialog.SelectedProjectIDs)}" +
+                        snapshotMsg,
                         "Import Complete",
                         MessageBoxButton.OK,
                         MessageBoxImage.None);

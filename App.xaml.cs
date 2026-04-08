@@ -294,6 +294,17 @@ namespace VANTAGE
                     ActivityRepository.InitializeMappings(null);
                 });
 
+                // Step 6b: One-time backfill of local ProgressSnapshots mirror.
+                // If the user already has an imported P6 file but the local snapshot mirror is empty
+                // (e.g. first launch after upgrade), pull the matching week's snapshots from Azure
+                // so the Schedule module is fast immediately. Best-effort — silent if Azure offline.
+                if (azureOnline && CurrentUser != null)
+                {
+                    _splashWindow.UpdateStatus("Preparing Schedule data...");
+                    await VANTAGE.Repositories.ScheduleRepository
+                        .BackfillLocalSnapshotsIfNeededAsync(CurrentUser.Username);
+                }
+
                 // Step 8: Open main window
                 _splashWindow.UpdateStatus("Preparing Workspace...");
                 try

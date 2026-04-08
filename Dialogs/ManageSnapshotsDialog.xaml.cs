@@ -191,6 +191,37 @@ namespace VANTAGE.Dialogs
                         deleted += cmd.ExecuteNonQuery();
                     }
 
+                    // Mirror the delete to the local ProgressSnapshots table so the Schedule
+                    // module doesn't show phantom data for a week the user just deleted.
+                    // Best-effort: if local fails, log and continue — Azure is authoritative
+                    // and local will self-heal on the next P6 import.
+                    // Note: no ProgDate filter on local since the local mirror only ever holds
+                    // one ProgDate per week+project (the most recent refill).
+                    try
+                    {
+                        using var localConn = new Microsoft.Data.Sqlite.SqliteConnection($"Data Source={DatabaseSetup.DbPath}");
+                        localConn.Open();
+                        foreach (var week in selectedWeeks)
+                        {
+                            var localCmd = localConn.CreateCommand();
+                            localCmd.CommandText = @"
+                                DELETE FROM ProgressSnapshots
+                                WHERE AssignedTo = @username
+                                  AND ProjectID = @projectId
+                                  AND WeekEndDate = @weekEndDate";
+                            localCmd.Parameters.AddWithValue("@username", App.CurrentUser!.Username);
+                            localCmd.Parameters.AddWithValue("@projectId", week.ProjectID);
+                            localCmd.Parameters.AddWithValue("@weekEndDate", week.WeekEndDateStr);
+                            localCmd.ExecuteNonQuery();
+                        }
+                    }
+                    catch (Exception localEx)
+                    {
+                        AppLogger.Warning(
+                            $"Local snapshot mirror delete failed (Azure delete succeeded): {localEx.Message}",
+                            "ManageSnapshotsDialog.BtnDelete_Click");
+                    }
+
                     return deleted;
                 });
 

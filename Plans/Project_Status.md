@@ -1,49 +1,21 @@
 # MILESTONE - Project Status
 
-**Last Updated:** April 3, 2026
+**Last Updated:** April 8, 2026
 
-## V1 Testing Scope
-
-### In Scope
-| Feature | Status |
-|---------|--------|
-| Progress Module | Ready for testing |
-| Schedule Module | Ready for testing |
-| Sync | Complete |
-| Admin | Complete |
-| Work Package (PDF generation) | Ready for testing (drawings hidden) |
-| Help Sidebar | Complete for V1 |
-| Progress Book creation | Ready for testing |
-| AI Progress Scan | Complete - AWS Textract, 100% accuracy |
-
-### Deferred to Post-V1
+## Deferred to Post-V1
 | Feature | Reason |
 |---------|--------|
 | Drawings in Work Packages | Per-WP location architecture needs design |
 | AI Features (other than Progress Scan) | Lower priority for V1 |
 | Procore Integration | Can develop while users test |
 
-## Module Status
-
+## In Progress / Not Started
 | Module | Status | Notes |
 |--------|--------|-------|
-| Progress | READY FOR TESTING | Core features complete |
-| Schedule | READY FOR TESTING | Core features complete |
 | Analysis | IN PROGRESS | 4x2 grid layout with summary metrics, Excel export |
-| Sync | COMPLETE | Bidirectional sync working |
-| Admin | COMPLETE | User/project/snapshot management |
-| Work Package | READY FOR TESTING | PDF generation working; Drawings deferred to post-v1 |
-| Help Sidebar | COMPLETE | All V1 sections written; Troubleshooting deferred to post-V1 |
-| AI Progress Scan | COMPLETE | AWS Textract implementation - 100% accuracy |
-| AI Takeoff | READY FOR TESTING | Auto-download on completion, Previous Batches dropdown for re-downloading past results (admin can delete/rename batches). Metadata (username, config, drawing count) stored in S3. Multi title block regions supported (see Active Development section). |
 | AI Features (other) | NOT STARTED | Error Assistant, Description Analysis, etc. |
 
 ## Active Development
-
-### Logging & Snapshot Retention - Codex
-- App startup log maintenance now purges AppLogger file/database logs older than 15 days. - Codex
-- Schedule change log JSON files now purge entries older than 15 days at startup. - Codex
-- VMS_ProgressSnapshots retention remains global at submit-time purge for any rows older than 28 days. - Codex
 
 ### Plugin System (Complete)
 - Plugin Manager dialog in top-right settings menu (`⋮`) with Installed and Available tabs.
@@ -143,6 +115,7 @@ Series of short tutorial videos for end users. Each item below needs a plan and 
 
 
 ### Medium Priority
+- **Clean up Project_Status.md** — Sweep the doc and move every "Complete" / finished narrative section out to `Completed_Work.md` (or delete if already represented there). Sections to review include Plugin System, Multi-Theme System, Progress Book Module, AI Progress Scan, Work Package Module, Help Sidebar, AI Takeoff Multi Title Block Regions, and any other "Complete"-flagged blocks. Status doc should only contain in-progress work, todos, and the backlog — not narration of finished features (that's what `Completed_Work.md` is for, per CLAUDE.md workflow).
 - **Theme System Refactor** — Phases 1-7 complete. Live switching works, tokens split, guide written. Theme generator script and `/create-theme` skill complete. See `Themes/THEME_GUIDE.md`.
 - **Import from AI Takeoff** — Dialog and import/export logic implemented. Column mapping, metadata, handling filter, BU hardware rollup, fab per DWG rollup, Create Excel output, ROC split application all functional. UniqueID generation fixed. Import profiles (save/load/delete named presets). Batch source removed (file-only).
 - **MSI/MSIX installer** — Replace custom installer with MSI (WiX Toolset) or MSIX packaging to get genuine Windows install integration. Current custom installer registers via registry but Windows Search won't execute `UninstallString` directly — only MSI and UWP/MSIX apps get direct uninstall from search context menu. Current setup works via Settings > Apps.

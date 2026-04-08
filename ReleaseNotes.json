@@ -1,6 +1,16 @@
 {
   "releases": [
     {
+      "version": "26.2.4",
+      "date": "2026-04-08",
+      "highlights": [
+        "Schedule Module — Major performance improvement: snapshot data now mirrored locally on P6 import for instant grid rendering and detail interactions",
+        "Schedule Module — Detail grid edits sync to both central database and local copy automatically",
+        "Schedule Module — Submit Week refreshes local snapshot copy when the submitted week matches the loaded P6 schedule",
+        "Snapshot retention — Cutoff reduced from 28 days to 21 days"
+      ]
+    },
+    {
       "version": "26.2.3",
       "date": "2026-04-06",
       "highlights": [

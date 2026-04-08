@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
 using VANTAGE.Models;
@@ -28,8 +29,8 @@ namespace VANTAGE.Repositories
                         return masterRows;
                     }
 
-                    // Step 2: Query Azure for MS rollups FIRST - this determines which activities to show
-                    var rollupDict = GetMSRollupsFromAzure(weekEndDate, projectIds);
+                    // Step 2: Query local ProgressSnapshots for MS rollups FIRST - this determines which activities to show
+                    var rollupDict = GetMSRollups(weekEndDate, projectIds);
                     if (rollupDict.Count == 0)
                     {
                         AppLogger.Info($"No ProgressSnapshots found for WeekEndDate {weekEndDate:yyyy-MM-dd}", "ScheduleRepository.GetScheduleMasterRowsAsync");
@@ -141,7 +142,7 @@ namespace VANTAGE.Repositories
                 }
             });
         }
-        private static Dictionary<string, (DateTime? Start, DateTime? Finish, double Percent, double MHs)> GetMSRollupsFromAzure(
+        private static Dictionary<string, (DateTime? Start, DateTime? Finish, double Percent, double MHs)> GetMSRollups(
     DateTime weekEndDate,
     List<string> projectIds)
         {
@@ -149,18 +150,18 @@ namespace VANTAGE.Repositories
 
             try
             {
-                using var azureConn = AzureDbManager.GetConnection();
-                azureConn.Open();
+                using var connection = new SqliteConnection($"Data Source={DatabaseSetup.DbPath}");
+                connection.Open();
 
-                var cmd = azureConn.CreateCommand();
+                var cmd = connection.CreateCommand();
 
                 // Build ProjectID IN clause
                 string projectIdList = "'" + string.Join("','", projectIds) + "'";
 
-                // ONE query to calculate rollups for ALL SchedActNOs
-                // Calculate weighted average directly in SQL (stays in 0-100 scale)
-                // V_Start = min ActStart (NULLIF handles empty strings stored instead of NULL)
-                // V_Finish = max ActFin only if ALL activities are 100% complete
+                // ONE query to calculate rollups for ALL SchedActNOs from the local mirror.
+                // Calculate weighted average directly in SQL (stays in 0-100 scale).
+                // V_Start = min ActStart (NULLIF handles empty strings stored instead of NULL).
+                // V_Finish = max ActFin only if ALL activities are 100% complete.
                 cmd.CommandText = $@"
             SELECT
                 SchedActNO,
@@ -176,7 +177,7 @@ namespace VANTAGE.Repositories
                     ELSE 0
                 END as MS_PercentComplete,
                 SUM(BudgetMHs) as MS_BudgetMHs
-            FROM VMS_ProgressSnapshots
+            FROM ProgressSnapshots
             WHERE WeekEndDate = @weekEndDate
               AND ProjectID IN ({projectIdList})
               AND AssignedTo = @username
@@ -190,7 +191,7 @@ namespace VANTAGE.Repositories
                 {
                     string schedActNo = reader.GetString(0);
 
-                    // ActStart and ActFin are stored as TEXT (VARCHAR) in Azure, not DATETIME
+                    // ActStart and ActFin are stored as TEXT
                     DateTime? msStart = null;
                     if (!reader.IsDBNull(1))
                     {
@@ -213,11 +214,11 @@ namespace VANTAGE.Repositories
                     rollupDict[schedActNo] = (msStart, msFinish, msPercent, msBudgetMHs);
                 }
 
-                AppLogger.Info($"Retrieved MS rollups for {rollupDict.Count} SchedActNOs from Azure", "ScheduleRepository.GetMSRollupsFromAzure");
+                AppLogger.Info($"Retrieved MS rollups for {rollupDict.Count} SchedActNOs from local mirror", "ScheduleRepository.GetMSRollups");
             }
             catch (Exception ex)
             {
-                AppLogger.Error(ex, "ScheduleRepository.GetMSRollupsFromAzure");
+                AppLogger.Error(ex, "ScheduleRepository.GetMSRollups");
                 // Return empty dict - don't throw, let caller handle empty result
             }
 
@@ -239,28 +240,25 @@ namespace VANTAGE.Repositories
                     if (projectIds.Count == 0)
                         return results;
 
-                    // Get all SchedActNOs that have MS data (from Azure)
+                    // Get all SchedActNOs that have MS data (from local mirror)
                     var msSchedActNOs = new HashSet<string>();
-                    using (var azureConn = AzureDbManager.GetConnection())
                     {
-                        azureConn.Open();
-
                         string projectIdList = "'" + string.Join("','", projectIds) + "'";
 
-                        var azureCmd = azureConn.CreateCommand();
-                        azureCmd.CommandText = $@"
+                        var msCmd = connection.CreateCommand();
+                        msCmd.CommandText = $@"
                     SELECT DISTINCT SchedActNO
-                    FROM VMS_ProgressSnapshots
+                    FROM ProgressSnapshots
                     WHERE WeekEndDate = @weekEndDate
                       AND ProjectID IN ({projectIdList})
                       AND AssignedTo = @username";
-                        azureCmd.Parameters.AddWithValue("@weekEndDate", weekEndDate.ToString("yyyy-MM-dd"));
-                        azureCmd.Parameters.AddWithValue("@username", App.CurrentUser?.Username ?? "");
+                        msCmd.Parameters.AddWithValue("@weekEndDate", weekEndDate.ToString("yyyy-MM-dd"));
+                        msCmd.Parameters.AddWithValue("@username", App.CurrentUser?.Username ?? "");
 
-                        using var azureReader = azureCmd.ExecuteReader();
-                        while (azureReader.Read())
+                        using var msReader = msCmd.ExecuteReader();
+                        while (msReader.Read())
                         {
-                            msSchedActNOs.Add(azureReader.GetString(0));
+                            msSchedActNOs.Add(msReader.GetString(0));
                         }
                     }
 
@@ -333,26 +331,25 @@ namespace VANTAGE.Repositories
                         }
                     }
 
-                    // Query Azure for SchedActNOs in ProgressSnapshots
+                    // Query local ProgressSnapshots for distinct SchedActNOs
+                    // Note: local mirror only contains current user's rows, so this naturally filters
+                    // to current-user MS data — a behavior change from the previous all-users Azure query.
                     string projectIdList = "'" + string.Join("','", projectIds) + "'";
 
-                    using var azureConn = AzureDbManager.GetConnection();
-                    azureConn.Open();
-
-                    var azureCmd = azureConn.CreateCommand();
-                    azureCmd.CommandText = $@"
+                    var msCmd = connection.CreateCommand();
+                    msCmd.CommandText = $@"
                 SELECT DISTINCT SchedActNO
-                FROM VMS_ProgressSnapshots
+                FROM ProgressSnapshots
                 WHERE WeekEndDate = @weekEndDate
                   AND ProjectID IN ({projectIdList})
                   AND SchedActNO IS NOT NULL
                   AND SchedActNO <> ''";
-                    azureCmd.Parameters.AddWithValue("@weekEndDate", weekEndDate.ToString("yyyy-MM-dd"));
+                    msCmd.Parameters.AddWithValue("@weekEndDate", weekEndDate.ToString("yyyy-MM-dd"));
 
-                    using var azureReader = azureCmd.ExecuteReader();
-                    while (azureReader.Read())
+                    using var msReader = msCmd.ExecuteReader();
+                    while (msReader.Read())
                     {
-                        string actNo = azureReader.GetString(0);
+                        string actNo = msReader.GetString(0);
                         if (!p6ActNOs.Contains(actNo))
                         {
                             results.Add(actNo);
@@ -477,6 +474,46 @@ namespace VANTAGE.Repositories
 
                     AppLogger.Info($"Updated snapshot: {snapshot.UniqueID}",
                         "ScheduleRepository.UpdateSnapshotAsync", username);
+
+                    // Mirror the same UPDATE to local ProgressSnapshots so the Schedule grid
+                    // reflects the edit immediately on the next read. Best-effort: if local
+                    // fails, the Azure write is still authoritative and local will self-heal
+                    // on the next P6 import. Date format must match the Azure write above so
+                    // that any subsequent rollup MIN/MAX comparisons stay consistent.
+                    try
+                    {
+                        using var localConn = new SqliteConnection($"Data Source={DatabaseSetup.DbPath}");
+                        localConn.Open();
+
+                        var localCmd = localConn.CreateCommand();
+                        localCmd.CommandText = @"
+                            UPDATE ProgressSnapshots
+                            SET PercentEntry = @percentEntry,
+                                BudgetMHs = @budgetMHs,
+                                ActStart = @schStart,
+                                ActFin = @schFinish,
+                                UpdatedBy = @updatedBy,
+                                UpdatedUtcDate = @updatedUtcDate
+                            WHERE UniqueID = @uniqueId
+                              AND WeekEndDate = @weekEndDate";
+                        localCmd.Parameters.AddWithValue("@percentEntry", snapshot.PercentEntry);
+                        localCmd.Parameters.AddWithValue("@budgetMHs", snapshot.BudgetMHs);
+                        localCmd.Parameters.AddWithValue("@schStart",
+                            snapshot.ActStart?.ToString("yyyy-MM-dd HH:mm:ss") ?? (object)DBNull.Value);
+                        localCmd.Parameters.AddWithValue("@schFinish",
+                            snapshot.ActFin?.ToString("yyyy-MM-dd HH:mm:ss") ?? (object)DBNull.Value);
+                        localCmd.Parameters.AddWithValue("@updatedBy", username);
+                        localCmd.Parameters.AddWithValue("@updatedUtcDate", DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"));
+                        localCmd.Parameters.AddWithValue("@uniqueId", snapshot.UniqueID);
+                        localCmd.Parameters.AddWithValue("@weekEndDate", snapshot.WeekEndDate.ToString("yyyy-MM-dd"));
+                        localCmd.ExecuteNonQuery();
+                    }
+                    catch (Exception localEx)
+                    {
+                        AppLogger.Warning(
+                            $"Local snapshot mirror update failed (Azure write succeeded): {localEx.Message}",
+                            "ScheduleRepository.UpdateSnapshotAsync");
+                    }
 
                     return true;
                 }
@@ -748,7 +785,7 @@ namespace VANTAGE.Repositories
         }
 
 
-        // Get ProgressSnapshots for a specific SchedActNO (for detail grid)
+        // Get ProgressSnapshots for a specific SchedActNO (for detail grid) — reads local mirror
         public static async Task<List<ProgressSnapshot>> GetSnapshotsBySchedActNOAsync(string schedActNO, DateTime weekEndDate)
         {
             return await Task.Run(() =>
@@ -757,12 +794,10 @@ namespace VANTAGE.Repositories
 
                 try
                 {
-                    // First get ProjectIDs for this week
-                    using var localConn = new SqliteConnection($"Data Source={DatabaseSetup.DbPath}");
-                    localConn.Open();
-                    var projectIds = GetProjectIDsForWeek(localConn, weekEndDate);
-                    localConn.Close();
+                    using var connection = new SqliteConnection($"Data Source={DatabaseSetup.DbPath}");
+                    connection.Open();
 
+                    var projectIds = GetProjectIDsForWeek(connection, weekEndDate);
                     if (projectIds.Count == 0)
                     {
                         AppLogger.Warning($"No ProjectIDs mapped for WeekEndDate {weekEndDate:yyyy-MM-dd}",
@@ -770,19 +805,15 @@ namespace VANTAGE.Repositories
                         return snapshots;
                     }
 
-                    // Query Azure for snapshots
-                    using var azureConn = AzureDbManager.GetConnection();
-                    azureConn.Open();
-
                     string projectIdList = "'" + string.Join("','", projectIds) + "'";
 
-                    var cmd = azureConn.CreateCommand();
+                    var cmd = connection.CreateCommand();
                     cmd.CommandText = $@"
                             SELECT
                                 UniqueID, WeekEndDate, SchedActNO, Description,
                                 PercentEntry, BudgetMHs, ActStart, ActFin,
                                 AssignedTo, ProjectID, UpdatedBy, UpdatedUtcDate
-                            FROM VMS_ProgressSnapshots
+                            FROM ProgressSnapshots
                             WHERE SchedActNO = @schedActNO
                               AND WeekEndDate = @weekEndDate
                               AND ProjectID IN ({projectIdList})
@@ -840,6 +871,217 @@ namespace VANTAGE.Repositories
                 }
             });
         }
+        // Column list for the local ProgressSnapshots mirror table — must stay in sync with
+        // the CREATE TABLE in DatabaseSetup.cs / SchemaMigrator.Migration_v11. Used by the
+        // refill helpers to bulk-copy current-user snapshot rows from Azure into local SQLite.
+        // TRIMMED to the 12 columns the Schedule module actually reads. Azure
+        // VMS_ProgressSnapshots still has all 89 columns and is unchanged.
+        private const string ProgressSnapshotsColumns =
+            "UniqueID, WeekEndDate, SchedActNO, Description, PercentEntry, BudgetMHs, " +
+            "ActStart, ActFin, AssignedTo, ProjectID, UpdatedBy, UpdatedUtcDate";
+
+        private const int ProgressSnapshotsColumnCount = 12;
+
+        // Wipes the local ProgressSnapshots table and refills it with the given user's snapshot
+        // rows for the given week from Azure. Called by the P6 import flow and by Submit Week
+        // (when the submitted week matches what's currently mirrored locally).
+        // Returns row count on success, -1 on failure. Best-effort — caller should not block on it.
+        public static async Task<int> RefillLocalSnapshotsForWeekAsync(DateTime weekEndDate, string username)
+        {
+            return await Task.Run(() =>
+            {
+                var totalSw = System.Diagnostics.Stopwatch.StartNew();
+                long azureMs = 0, deleteMs = 0, dropIdxMs = 0, insertMs = 0, createIdxMs = 0, commitMs = 0;
+                try
+                {
+                    // Step 1: Read all 89 columns from Azure for this user/week
+                    var stepSw = System.Diagnostics.Stopwatch.StartNew();
+                    var azureRows = new List<object?[]>();
+                    using (var azureConn = AzureDbManager.GetConnection())
+                    {
+                        azureConn.Open();
+                        var cmd = azureConn.CreateCommand();
+                        cmd.CommandTimeout = 0;
+                        cmd.CommandText = $@"
+                            SELECT {ProgressSnapshotsColumns}
+                            FROM VMS_ProgressSnapshots
+                            WHERE WeekEndDate = @weekEndDate
+                              AND AssignedTo = @username";
+                        cmd.Parameters.AddWithValue("@weekEndDate", weekEndDate.ToString("yyyy-MM-dd"));
+                        cmd.Parameters.AddWithValue("@username", username);
+
+                        using var reader = cmd.ExecuteReader();
+                        while (reader.Read())
+                        {
+                            var arr = new object?[ProgressSnapshotsColumnCount];
+                            for (int i = 0; i < ProgressSnapshotsColumnCount; i++)
+                            {
+                                arr[i] = reader.IsDBNull(i) ? null : reader.GetValue(i);
+                            }
+                            azureRows.Add(arr);
+                        }
+                    }
+                    azureMs = stepSw.ElapsedMilliseconds;
+
+                    // Step 2: Wipe + bulk insert into local SQLite in a single transaction
+                    using var localConn = new SqliteConnection($"Data Source={DatabaseSetup.DbPath}");
+                    localConn.Open();
+
+                    // Per-connection PRAGMAs to speed up bulk write. These only affect this
+                    // connection (and only for its lifetime), so they don't impact other queries.
+                    using (var pragmaCmd = localConn.CreateCommand())
+                    {
+                        pragmaCmd.CommandText = @"
+                            PRAGMA synchronous = OFF;
+                            PRAGMA temp_store = MEMORY;
+                            PRAGMA cache_size = -200000;";
+                        pragmaCmd.ExecuteNonQuery();
+                    }
+
+                    using var tx = localConn.BeginTransaction();
+
+                    // Wipe existing rows
+                    stepSw.Restart();
+                    using (var deleteCmd = localConn.CreateCommand())
+                    {
+                        deleteCmd.Transaction = tx;
+                        deleteCmd.CommandText = "DELETE FROM ProgressSnapshots";
+                        deleteCmd.ExecuteNonQuery();
+                    }
+                    deleteMs = stepSw.ElapsedMilliseconds;
+
+                    // Drop indexes before bulk insert. Maintaining indexes during a bulk load
+                    // is dramatically slower than dropping them, inserting, and rebuilding.
+                    stepSw.Restart();
+                    using (var dropIdxCmd = localConn.CreateCommand())
+                    {
+                        dropIdxCmd.Transaction = tx;
+                        dropIdxCmd.CommandText = @"
+                            DROP INDEX IF EXISTS idx_progsnap_week_proj;
+                            DROP INDEX IF EXISTS idx_progsnap_schedactno;";
+                        dropIdxCmd.ExecuteNonQuery();
+                    }
+                    dropIdxMs = stepSw.ElapsedMilliseconds;
+
+                    // Bulk insert using a prepared statement, executed once per row.
+                    // For SQLite in-process, this is consistently the fastest pattern when
+                    // wrapped in a transaction with indexes dropped: SQLite parses+plans the
+                    // statement once and just rebinds parameters per row. The big speedup
+                    // vs the original implementation comes from the dropped indexes (above)
+                    // and the PRAGMAs (synchronous=OFF, etc.) — not from batching SQL.
+                    stepSw.Restart();
+                    if (azureRows.Count > 0)
+                    {
+                        var paramPlaceholders = string.Join(", ",
+                            Enumerable.Range(0, ProgressSnapshotsColumnCount).Select(i => "@p" + i));
+
+                        using var insertCmd = localConn.CreateCommand();
+                        insertCmd.Transaction = tx;
+                        insertCmd.CommandText =
+                            $"INSERT INTO ProgressSnapshots ({ProgressSnapshotsColumns}) VALUES ({paramPlaceholders})";
+
+                        for (int i = 0; i < ProgressSnapshotsColumnCount; i++)
+                        {
+                            insertCmd.Parameters.Add(new SqliteParameter("@p" + i, DBNull.Value));
+                        }
+                        insertCmd.Prepare();
+
+                        foreach (var row in azureRows)
+                        {
+                            for (int i = 0; i < ProgressSnapshotsColumnCount; i++)
+                            {
+                                insertCmd.Parameters[i].Value = row[i] ?? DBNull.Value;
+                            }
+                            insertCmd.ExecuteNonQuery();
+                        }
+                    }
+                    insertMs = stepSw.ElapsedMilliseconds;
+
+                    // Recreate indexes after bulk insert
+                    stepSw.Restart();
+                    using (var createIdxCmd = localConn.CreateCommand())
+                    {
+                        createIdxCmd.Transaction = tx;
+                        createIdxCmd.CommandText = @"
+                            CREATE INDEX IF NOT EXISTS idx_progsnap_week_proj ON ProgressSnapshots(WeekEndDate, ProjectID, AssignedTo);
+                            CREATE INDEX IF NOT EXISTS idx_progsnap_schedactno ON ProgressSnapshots(SchedActNO);";
+                        createIdxCmd.ExecuteNonQuery();
+                    }
+                    createIdxMs = stepSw.ElapsedMilliseconds;
+
+                    stepSw.Restart();
+                    tx.Commit();
+                    commitMs = stepSw.ElapsedMilliseconds;
+
+                    totalSw.Stop();
+                    AppLogger.Info(
+                        $"Refilled local ProgressSnapshots: {azureRows.Count} rows for {weekEndDate:yyyy-MM-dd} in {totalSw.ElapsedMilliseconds}ms " +
+                        $"[azure={azureMs}ms delete={deleteMs}ms dropIdx={dropIdxMs}ms insert={insertMs}ms createIdx={createIdxMs}ms commit={commitMs}ms]",
+                        "ScheduleRepository.RefillLocalSnapshotsForWeekAsync", username);
+                    return azureRows.Count;
+                }
+                catch (Exception ex)
+                {
+                    AppLogger.Error(ex, "ScheduleRepository.RefillLocalSnapshotsForWeekAsync");
+                    return -1;
+                }
+            });
+        }
+
+
+        // One-time post-login backfill: if the local ProgressSnapshots table is empty AND the
+        // local Schedule table has an imported P6 file, pull the matching week's snapshot for
+        // the current user from Azure. Lets existing users get instant Schedule performance
+        // after upgrading without having to re-import their P6 file.
+        // Best-effort — silent no-op if Azure unreachable or any other failure.
+        public static async Task BackfillLocalSnapshotsIfNeededAsync(string username)
+        {
+            await Task.Run(() =>
+            {
+                try
+                {
+                    DateTime? scheduleWeek = null;
+                    using (var localConn = new SqliteConnection($"Data Source={DatabaseSetup.DbPath}"))
+                    {
+                        localConn.Open();
+
+                        // If local mirror already has data, nothing to do
+                        var countCmd = localConn.CreateCommand();
+                        countCmd.CommandText = "SELECT COUNT(*) FROM ProgressSnapshots";
+                        long existing = Convert.ToInt64(countCmd.ExecuteScalar() ?? 0);
+                        if (existing > 0) return;
+
+                        // Find the imported P6 week (if any)
+                        var weekCmd = localConn.CreateCommand();
+                        weekCmd.CommandText = "SELECT WeekEndDate FROM Schedule LIMIT 1";
+                        var weekResult = weekCmd.ExecuteScalar();
+                        if (weekResult == null || weekResult == DBNull.Value) return;
+
+                        if (DateTime.TryParse(weekResult.ToString(), out DateTime parsedWeek))
+                        {
+                            scheduleWeek = parsedWeek;
+                        }
+                    }
+
+                    if (scheduleWeek == null) return;
+
+                    AppLogger.Info(
+                        $"Backfilling local ProgressSnapshots for week {scheduleWeek:yyyy-MM-dd}",
+                        "ScheduleRepository.BackfillLocalSnapshotsIfNeededAsync", username);
+
+                    // Reuse the refill helper (synchronous wait is fine — we're already on a Task.Run)
+                    RefillLocalSnapshotsForWeekAsync(scheduleWeek.Value, username).GetAwaiter().GetResult();
+                }
+                catch (Exception ex)
+                {
+                    // Best-effort — never fail startup over this
+                    AppLogger.Warning(
+                        $"Local snapshot backfill failed (will retry on next P6 import): {ex.Message}",
+                        "ScheduleRepository.BackfillLocalSnapshotsIfNeededAsync");
+                }
+            });
+        }
+
         // Get distinct WeekEndDates available in Schedule table
         public static async Task<List<DateTime>> GetAvailableWeekEndDatesAsync()
         {

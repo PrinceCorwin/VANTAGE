@@ -3698,7 +3698,7 @@ namespace VANTAGE.Views
                         int skipped = skippedList.Count;
                         AppLogger.Info($"Created {snapshots} snapshots for week ending {weekEndDateStr} ({skipped} skipped)", "ProgressView.BtnSubmit_Click", currentUser);
 
-                        // Step 9: Purge old snapshots (older than 4 weeks from today)
+                        // Step 9: Purge old snapshots (older than 21 days from today)
                         reporter.Report("Cleaning up old snapshots...");
 
                         using (var purgeConn = AzureDbManager.GetConnection())
@@ -3709,15 +3709,54 @@ namespace VANTAGE.Views
                             purgeCmd.CommandText = @"
                                 DELETE FROM VMS_ProgressSnapshots
                                 WHERE WeekEndDate < @cutoffDate";
-                            purgeCmd.Parameters.AddWithValue("@cutoffDate", DateTime.Now.AddDays(-28).ToString("yyyy-MM-dd"));
+                            purgeCmd.Parameters.AddWithValue("@cutoffDate", DateTime.Now.AddDays(-21).ToString("yyyy-MM-dd"));
 
                             int purgedCount = purgeCmd.ExecuteNonQuery();
 
                             if (purgedCount > 0)
                             {
-                                AppLogger.Info($"Purged {purgedCount} old snapshots (before {DateTime.Now.AddDays(-28):yyyy-MM-dd})",
+                                AppLogger.Info($"Purged {purgedCount} old snapshots (before {DateTime.Now.AddDays(-21):yyyy-MM-dd})",
                                     "ProgressView.BtnSubmit_Click", currentUser);
                             }
+                        }
+
+                        // Step 9b: If the submitted week+project matches what's currently in the
+                        // local ProgressSnapshots mirror (used by the Schedule module), refresh
+                        // the local mirror so the Schedule grid shows the latest values.
+                        // The refill helper wipes the local table and re-pulls for the matching
+                        // week, which is fine because it pulls all of the current user's rows
+                        // for that week (preserving multi-project state).
+                        try
+                        {
+                            bool needsRefresh = false;
+                            using (var localCheck = new Microsoft.Data.Sqlite.SqliteConnection($"Data Source={DatabaseSetup.DbPath}"))
+                            {
+                                localCheck.Open();
+                                var checkCmd = localCheck.CreateCommand();
+                                checkCmd.CommandText = @"
+                                    SELECT 1 FROM ProgressSnapshots
+                                    WHERE WeekEndDate = @weekEndDate AND ProjectID = @projectId
+                                    LIMIT 1";
+                                checkCmd.Parameters.AddWithValue("@weekEndDate", weekEndDateStr);
+                                checkCmd.Parameters.AddWithValue("@projectId", selectedProject);
+                                needsRefresh = checkCmd.ExecuteScalar() != null;
+                            }
+
+                            if (needsRefresh)
+                            {
+                                reporter.Report("Refreshing Schedule comparison data...");
+                                int refreshed = await VANTAGE.Repositories.ScheduleRepository
+                                    .RefillLocalSnapshotsForWeekAsync(selectedWeekEndDate, currentUser);
+                                AppLogger.Info(
+                                    $"Refreshed local snapshot mirror after Submit Week ({refreshed} rows)",
+                                    "ProgressView.BtnSubmit_Click", currentUser);
+                            }
+                        }
+                        catch (Exception refreshEx)
+                        {
+                            AppLogger.Warning(
+                                $"Local snapshot mirror refresh after Submit Week failed: {refreshEx.Message}",
+                                "ProgressView.BtnSubmit_Click");
                         }
 
                         // Step 10: Update local Activities.WeekEndDate and ProgDate

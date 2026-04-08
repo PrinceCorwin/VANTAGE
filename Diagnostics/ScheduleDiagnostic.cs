@@ -91,23 +91,23 @@ namespace VANTAGE.Diagnostics
                 }
                 sb.AppendLine();
 
-                // 3. Check ProgressSnapshots
-                sb.AppendLine("3. PROGRESS SNAPSHOTS (Azure SQL)");
+                // 3. Check ProgressSnapshots (local mirror — what the Schedule module actually reads)
+                sb.AppendLine("3. PROGRESS SNAPSHOTS (Local SQLite Mirror)");
                 sb.AppendLine("-".PadRight(60, '-'));
 
-                using (var azureConn = AzureDbManager.GetConnection())
+                using (var localConn = new SqliteConnection($"Data Source={DatabaseSetup.DbPath}"))
                 {
-                    azureConn.Open();
+                    localConn.Open();
 
                     // Query 1: Counts
-                    var snapCmd = azureConn.CreateCommand();
+                    var snapCmd = localConn.CreateCommand();
                     snapCmd.CommandText = @"
-                        SELECT 
+                        SELECT
                             COUNT(*) as TotalSnapshots,
                             COUNT(DISTINCT WeekEndDate) as UniqueWeekEndDates,
                             COUNT(DISTINCT ProjectID) as UniqueProjectIDs,
                             COUNT(DISTINCT SchedActNO) as UniqueSchedActNOs
-                        FROM VMS_ProgressSnapshots";
+                        FROM ProgressSnapshots";
 
                     using (var snapReader = snapCmd.ExecuteReader())
                     {
@@ -121,14 +121,13 @@ namespace VANTAGE.Diagnostics
                     } // Reader closed here
 
                     // Query 2: Distinct WeekEndDates
-                    var datesCmd = azureConn.CreateCommand();
-                    datesCmd.CommandText = "SELECT DISTINCT WeekEndDate FROM VMS_ProgressSnapshots ORDER BY WeekEndDate";
+                    var datesCmd = localConn.CreateCommand();
+                    datesCmd.CommandText = "SELECT DISTINCT WeekEndDate FROM ProgressSnapshots ORDER BY WeekEndDate";
                     var weekEndDates = new List<string>();
                     using (var datesReader = datesCmd.ExecuteReader())
                     {
                         while (datesReader.Read())
                         {
-                            // WeekEndDate is stored as VARCHAR in Azure, not DATETIME
                             if (!datesReader.IsDBNull(0))
                             {
                                 weekEndDates.Add(datesReader.GetString(0));
@@ -143,8 +142,8 @@ namespace VANTAGE.Diagnostics
                     }
 
                     // Query 3: Distinct ProjectIDs
-                    var projectsCmd = azureConn.CreateCommand();
-                    projectsCmd.CommandText = "SELECT DISTINCT ProjectID FROM VMS_ProgressSnapshots ORDER BY ProjectID";
+                    var projectsCmd = localConn.CreateCommand();
+                    projectsCmd.CommandText = "SELECT DISTINCT ProjectID FROM ProgressSnapshots ORDER BY ProjectID";
                     var projectIds = new List<string>();
                     using (var projectsReader = projectsCmd.ExecuteReader())
                     {
@@ -160,9 +159,9 @@ namespace VANTAGE.Diagnostics
                         sb.AppendLine($"  - {projectId}");
                     }
 
-                    // Query 4: Sample SchedActNOs
-                    var actnoCmd = azureConn.CreateCommand();
-                    actnoCmd.CommandText = "SELECT TOP 5 SchedActNO FROM VMS_ProgressSnapshots WHERE SchedActNO IS NOT NULL AND SchedActNO != ''";
+                    // Query 4: Sample SchedActNOs (SQLite uses LIMIT not TOP)
+                    var actnoCmd = localConn.CreateCommand();
+                    actnoCmd.CommandText = "SELECT SchedActNO FROM ProgressSnapshots WHERE SchedActNO IS NOT NULL AND SchedActNO != '' LIMIT 5";
                     var sampleActNos = new List<string>();
                     using (var actnoReader = actnoCmd.ExecuteReader())
                     {
@@ -226,39 +225,34 @@ namespace VANTAGE.Diagnostics
 
                         sb.AppendLine($"  Mapped ProjectIDs: {string.Join(", ", projectIds)}");
 
-                        // Check Azure for matching snapshots
-                        using (var azureConn2 = AzureDbManager.GetConnection())
-                        {
-                            azureConn2.Open();
-
-                            var checkCmd = azureConn2.CreateCommand();
-                            checkCmd.CommandText = $@"
-                                SELECT COUNT(*) 
-                                FROM VMS_ProgressSnapshots 
+                        // Check local mirror for matching snapshots (this is what the Schedule
+                        // module actually queries during grid rendering).
+                        var checkCmd = localConn2.CreateCommand();
+                        checkCmd.CommandText = $@"
+                                SELECT COUNT(*)
+                                FROM ProgressSnapshots
                                 WHERE WeekEndDate = @weekEndDate
                                   AND ProjectID IN ({string.Join(",", projectIds.Select((p, i) => $"@p{i}"))})
-                                  AND SchedActNO IS NOT NULL 
+                                  AND SchedActNO IS NOT NULL
                                   AND SchedActNO != ''";
 
-                            // WeekEndDate is stored as TEXT in Azure, so pass it as-is
-                            checkCmd.Parameters.AddWithValue("@weekEndDate", weekEndDate);
-                            for (int i = 0; i < projectIds.Count; i++)
-                            {
-                                checkCmd.Parameters.AddWithValue($"@p{i}", projectIds[i]);
-                            }
+                        checkCmd.Parameters.AddWithValue("@weekEndDate", weekEndDate);
+                        for (int i = 0; i < projectIds.Count; i++)
+                        {
+                            checkCmd.Parameters.AddWithValue($"@p{i}", projectIds[i]);
+                        }
 
-                            var matchingSnapshots = Convert.ToInt32(checkCmd.ExecuteScalar() ?? 0);
-                            sb.AppendLine($"  Matching ProgressSnapshots: {matchingSnapshots}");
+                        var matchingSnapshots = Convert.ToInt32(checkCmd.ExecuteScalar() ?? 0);
+                        sb.AppendLine($"  Matching ProgressSnapshots: {matchingSnapshots}");
 
-                            if (matchingSnapshots == 0)
-                            {
-                                sb.AppendLine($"  ❌ NO matching snapshots found for this week/project combination!");
-                            }
-                            else
-                            {
-                                sb.AppendLine($"  ✓ {matchingSnapshots} snapshots available for MS rollup");
-                            }
-                        } // Azure connection closed here
+                        if (matchingSnapshots == 0)
+                        {
+                            sb.AppendLine($"  ❌ NO matching snapshots found for this week/project combination!");
+                        }
+                        else
+                        {
+                            sb.AppendLine($"  ✓ {matchingSnapshots} snapshots available for MS rollup");
+                        }
                     }
                 }
                 sb.AppendLine();
@@ -271,6 +265,8 @@ namespace VANTAGE.Diagnostics
                 sb.AppendLine("2. Ensure P6 import ProjectIDs match your Activity ProjectIDs");
                 sb.AppendLine("3. Ensure Activity.SchedActNO matches P6 task_code values");
                 sb.AppendLine("4. Submit Progress AFTER importing P6 (or re-submit)");
+                sb.AppendLine("5. If local ProgressSnapshots is empty, re-import the P6 file —");
+                sb.AppendLine("   the import refills the local snapshot mirror used by this module.");
 
             }
             catch (Exception ex)

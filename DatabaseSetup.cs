@@ -360,6 +360,27 @@ namespace VANTAGE
                 XRay                  REAL NOT NULL DEFAULT 0,
                 SyncVersion           INTEGER NOT NULL DEFAULT 0
             );
+            -- ProgressSnapshots table (local mirror of Azure VMS_ProgressSnapshots).
+            -- Holds the current user's snapshot rows for the week matching the imported P6 file.
+            -- Wiped and refilled on P6 import; used by the Schedule module for fast grid rendering.
+            -- TRIMMED to the 12 columns the Schedule module actually reads. Azure
+            -- VMS_ProgressSnapshots keeps all 89 columns; the revert flow reads from Azure.
+            CREATE TABLE IF NOT EXISTS ProgressSnapshots (
+                UniqueID              TEXT NOT NULL,
+                WeekEndDate           TEXT NOT NULL,
+                SchedActNO            TEXT NOT NULL DEFAULT '',
+                Description           TEXT NOT NULL DEFAULT '',
+                PercentEntry          REAL NOT NULL DEFAULT 0,
+                BudgetMHs             REAL NOT NULL DEFAULT 0,
+                ActStart              TEXT,
+                ActFin                TEXT,
+                AssignedTo            TEXT NOT NULL DEFAULT '',
+                ProjectID             TEXT NOT NULL DEFAULT '',
+                UpdatedBy             TEXT NOT NULL DEFAULT '',
+                UpdatedUtcDate        TEXT,
+                PRIMARY KEY (UniqueID, WeekEndDate)
+            );
+
             -- FormTemplates table (local only - Work Package form definitions)
             CREATE TABLE IF NOT EXISTS FormTemplates (
                 TemplateID TEXT PRIMARY KEY,
@@ -410,6 +431,8 @@ namespace VANTAGE
             CREATE INDEX IF NOT EXISTS idx_wptemplate_name ON WPTemplates(WPTemplateName);
             CREATE INDEX IF NOT EXISTS idx_pblayout_projectid ON ProgressBookLayouts(ProjectId);
             CREATE INDEX IF NOT EXISTS idx_pblayout_name ON ProgressBookLayouts(Name);
+            CREATE INDEX IF NOT EXISTS idx_progsnap_week_proj ON ProgressSnapshots(WeekEndDate, ProjectID, AssignedTo);
+            CREATE INDEX IF NOT EXISTS idx_progsnap_schedactno ON ProgressSnapshots(SchedActNO);
         ";
 
                 command.ExecuteNonQuery();

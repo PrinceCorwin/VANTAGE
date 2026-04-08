@@ -22,7 +22,7 @@ namespace VANTAGE.Utilities
         private const string SchemaVersionKey = "SchemaVersion";
 
         // Increment this when adding new migrations
-        public const int CurrentSchemaVersion = 9;
+        public const int CurrentSchemaVersion = 11;
 
         // Runs all pending migrations sequentially
         // progressCallback is invoked with status messages for UI updates
@@ -100,6 +100,12 @@ namespace VANTAGE.Utilities
                     break;
                 case 9:
                     Migration_v9_CleanupStaleDates(connection);
+                    break;
+                case 10:
+                    Migration_v10_CreateLocalProgressSnapshots(connection);
+                    break;
+                case 11:
+                    Migration_v11_TrimLocalProgressSnapshots(connection);
                     break;
                 default:
                     throw new ArgumentException($"Unknown migration version: {version}");
@@ -380,6 +386,146 @@ namespace VANTAGE.Utilities
                     AppLogger.Info($"Cleared ActFin on {cleared} records with <100% progress",
                         "SchemaMigrator.Migration_v9");
             }
+        }
+
+        // v10: Create local ProgressSnapshots table for the Schedule module
+        // Mirrors Azure VMS_ProgressSnapshots; holds only the current user's snapshot rows
+        // for the week matching the imported P6 file. Wiped/refilled on P6 import.
+        // The one-time backfill from Azure runs post-login from App.xaml.cs (after CurrentUser is set).
+        private static void Migration_v10_CreateLocalProgressSnapshots(SqliteConnection connection)
+        {
+            using var cmd = connection.CreateCommand();
+            cmd.CommandText = @"
+                CREATE TABLE IF NOT EXISTS ProgressSnapshots (
+                    UniqueID              TEXT NOT NULL,
+                    WeekEndDate           TEXT NOT NULL,
+                    Area                  TEXT NOT NULL DEFAULT '',
+                    AssignedTo            TEXT NOT NULL DEFAULT '',
+                    AzureUploadUtcDate    TEXT,
+                    Aux1                  TEXT NOT NULL DEFAULT '',
+                    Aux2                  TEXT NOT NULL DEFAULT '',
+                    Aux3                  TEXT NOT NULL DEFAULT '',
+                    BaseUnit              REAL NOT NULL DEFAULT 0,
+                    BudgetHoursGroup      REAL NOT NULL DEFAULT 0,
+                    BudgetHoursROC        REAL NOT NULL DEFAULT 0,
+                    BudgetMHs             REAL NOT NULL DEFAULT 0,
+                    ChgOrdNO              TEXT NOT NULL DEFAULT '',
+                    ClientBudget          REAL NOT NULL DEFAULT 0,
+                    ClientCustom3         REAL NOT NULL DEFAULT 0,
+                    ClientEquivQty        REAL NOT NULL DEFAULT 0,
+                    CompType              TEXT NOT NULL DEFAULT '',
+                    CreatedBy             TEXT NOT NULL DEFAULT '',
+                    DateTrigger           INTEGER NOT NULL DEFAULT 0,
+                    Description           TEXT NOT NULL DEFAULT '',
+                    DwgNO                 TEXT NOT NULL DEFAULT '',
+                    EarnQtyEntry          REAL NOT NULL DEFAULT 0,
+                    EarnedMHsRoc          REAL NOT NULL DEFAULT 0,
+                    EqmtNO                TEXT NOT NULL DEFAULT '',
+                    EquivQTY              TEXT NOT NULL DEFAULT '',
+                    EquivUOM              TEXT NOT NULL DEFAULT '',
+                    Estimator             TEXT NOT NULL DEFAULT '',
+                    HexNO                 INTEGER NOT NULL DEFAULT 0,
+                    HtTrace               TEXT NOT NULL DEFAULT '',
+                    InsulType             TEXT NOT NULL DEFAULT '',
+                    LineNumber            TEXT NOT NULL DEFAULT '',
+                    MtrlSpec              TEXT NOT NULL DEFAULT '',
+                    Notes                 TEXT NOT NULL DEFAULT '',
+                    PaintCode             TEXT NOT NULL DEFAULT '',
+                    PercentEntry          REAL NOT NULL DEFAULT 0,
+                    PhaseCategory         TEXT NOT NULL DEFAULT '',
+                    PhaseCode             TEXT NOT NULL DEFAULT '',
+                    PipeGrade             TEXT NOT NULL DEFAULT '',
+                    PipeSize1             REAL NOT NULL DEFAULT 0,
+                    PipeSize2             REAL NOT NULL DEFAULT 0,
+                    PrevEarnMHs           REAL NOT NULL DEFAULT 0,
+                    PrevEarnQTY           REAL NOT NULL DEFAULT 0,
+                    ProgDate              TEXT,
+                    ProjectID             TEXT NOT NULL DEFAULT '',
+                    Quantity              REAL NOT NULL DEFAULT 0,
+                    RevNO                 TEXT NOT NULL DEFAULT '',
+                    RFINO                 TEXT NOT NULL DEFAULT '',
+                    ROCBudgetQTY          REAL NOT NULL DEFAULT 0,
+                    ROCID                 REAL NOT NULL DEFAULT 0,
+                    ROCPercent            REAL NOT NULL DEFAULT 0,
+                    ROCStep               TEXT NOT NULL DEFAULT '',
+                    SchedActNO            TEXT NOT NULL DEFAULT '',
+                    ActFin                TEXT,
+                    ActStart              TEXT,
+                    SecondActno           TEXT NOT NULL DEFAULT '',
+                    SecondDwgNO           TEXT NOT NULL DEFAULT '',
+                    Service               TEXT NOT NULL DEFAULT '',
+                    ShopField             TEXT NOT NULL DEFAULT '',
+                    ShtNO                 TEXT NOT NULL DEFAULT '',
+                    SubArea               TEXT NOT NULL DEFAULT '',
+                    PjtSystem             TEXT NOT NULL DEFAULT '',
+                    PjtSystemNo           TEXT NOT NULL DEFAULT '',
+                    TagNO                 TEXT NOT NULL DEFAULT '',
+                    UDF1                  TEXT NOT NULL DEFAULT '',
+                    UDF2                  TEXT NOT NULL DEFAULT '',
+                    UDF3                  TEXT NOT NULL DEFAULT '',
+                    UDF4                  TEXT NOT NULL DEFAULT '',
+                    UDF5                  TEXT NOT NULL DEFAULT '',
+                    UDF6                  TEXT NOT NULL DEFAULT '',
+                    UDF7                  TEXT NOT NULL DEFAULT '',
+                    UDF8                  TEXT NOT NULL DEFAULT '',
+                    UDF9                  TEXT NOT NULL DEFAULT '',
+                    UDF10                 TEXT NOT NULL DEFAULT '',
+                    UDF11                 TEXT NOT NULL DEFAULT '',
+                    UDF12                 TEXT NOT NULL DEFAULT '',
+                    UDF13                 TEXT NOT NULL DEFAULT '',
+                    UDF14                 TEXT NOT NULL DEFAULT '',
+                    UDF15                 TEXT NOT NULL DEFAULT '',
+                    UDF16                 TEXT NOT NULL DEFAULT '',
+                    UDF17                 TEXT NOT NULL DEFAULT '',
+                    RespParty             TEXT NOT NULL DEFAULT '',
+                    UDF20                 TEXT NOT NULL DEFAULT '',
+                    UpdatedBy             TEXT NOT NULL DEFAULT '',
+                    UpdatedUtcDate        TEXT,
+                    UOM                   TEXT NOT NULL DEFAULT '',
+                    WorkPackage           TEXT NOT NULL DEFAULT '',
+                    XRay                  REAL NOT NULL DEFAULT 0,
+                    ExportedBy            TEXT,
+                    ExportedDate          TEXT,
+                    PRIMARY KEY (UniqueID, WeekEndDate)
+                );
+                CREATE INDEX IF NOT EXISTS idx_progsnap_week_proj ON ProgressSnapshots(WeekEndDate, ProjectID, AssignedTo);
+                CREATE INDEX IF NOT EXISTS idx_progsnap_schedactno ON ProgressSnapshots(SchedActNO);
+            ";
+            cmd.ExecuteNonQuery();
+            AppLogger.Info("Created local ProgressSnapshots table and indexes", "SchemaMigrator.Migration_v10");
+        }
+
+        // v11: Trim local ProgressSnapshots from 89 columns to the 12 the Schedule module
+        // actually reads. Massive perf win on the refill from Azure (~7x less data shipped).
+        // Drops the table and recreates with the trimmed schema; the next P6 import or
+        // post-login backfill will repopulate from Azure with only the 12 needed columns.
+        // Azure VMS_ProgressSnapshots is unchanged and still has all 89 columns — the revert
+        // flow in ManageSnapshotsDialog reads from Azure and continues to work.
+        private static void Migration_v11_TrimLocalProgressSnapshots(SqliteConnection connection)
+        {
+            using var cmd = connection.CreateCommand();
+            cmd.CommandText = @"
+                DROP TABLE IF EXISTS ProgressSnapshots;
+                CREATE TABLE ProgressSnapshots (
+                    UniqueID              TEXT NOT NULL,
+                    WeekEndDate           TEXT NOT NULL,
+                    SchedActNO            TEXT NOT NULL DEFAULT '',
+                    Description           TEXT NOT NULL DEFAULT '',
+                    PercentEntry          REAL NOT NULL DEFAULT 0,
+                    BudgetMHs             REAL NOT NULL DEFAULT 0,
+                    ActStart              TEXT,
+                    ActFin                TEXT,
+                    AssignedTo            TEXT NOT NULL DEFAULT '',
+                    ProjectID             TEXT NOT NULL DEFAULT '',
+                    UpdatedBy             TEXT NOT NULL DEFAULT '',
+                    UpdatedUtcDate        TEXT,
+                    PRIMARY KEY (UniqueID, WeekEndDate)
+                );
+                CREATE INDEX IF NOT EXISTS idx_progsnap_week_proj ON ProgressSnapshots(WeekEndDate, ProjectID, AssignedTo);
+                CREATE INDEX IF NOT EXISTS idx_progsnap_schedactno ON ProgressSnapshots(SchedActNO);
+            ";
+            cmd.ExecuteNonQuery();
+            AppLogger.Info("Trimmed local ProgressSnapshots to 12 columns", "SchemaMigrator.Migration_v11");
         }
     }
 }
