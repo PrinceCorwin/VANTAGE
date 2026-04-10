@@ -6,6 +6,19 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### April 10, 2026 (Analysis Module — Dynamic Charts, Chart Filters, Nav Button Hover Fix)
+- **Analysis module — dynamic chart sections:** Section 1,2 now hosts a configurable chart with three dropdowns: Visual Type (Bar, Column, Doughnut, Line, Pie), X Axis (all text fields alphabetical), and Y Axis (16 numeric fields including BudgetMHs, EarnedMHs, ClientBudget, % Complete, etc.). Charts query their own data independently from the summary grid, grouped by the selected X axis field. Selections persist in UserSettings.
+- **Analysis module — chart filter panel:** Section 1,1 contains 12 multi-select filter dropdowns in a scrollable panel (Area, Aux1, Aux2, Aux3, CompType, DwgNO, PhaseCategory, PhaseCode, ProjectID, ROCStep, SchedActNO, WorkPackage). Filters apply to all chart sections but not the summary table. Includes `(blank)` option for records with null/empty values. No selection = no filter (all records).
+- **Analysis module — layout change:** Bottom row reduced from 4 sections to 3 (removed Section 2,4). Summary grid moved from Section 2,2 to Section 2,1. Saved layout `BottomCol3` gracefully ignored on restore.
+- **Syncfusion chart/gauge packages added:** `Syncfusion.SfChart.WPF` and `Syncfusion.SfGauge.WPF` (v33.1.47). Removed stale packages accidentally added to Installer and Updater projects (SfSmithChart, SfSunburstChart, SfSpreadsheetHelper, Xamarin.SfChart).
+- **Light theme nav button hover fix:** Nav buttons (PROGRESS, SCHEDULE, etc.) were unreadable on hover in Light theme — both the hover background and text color were light. Added `NavButtonStyle` ControlTemplate to MainWindow that uses `ToolbarHoverBackground` and `ToolbarHoverForeground` theme keys for hover state.
+- **ChartDataPoint model:** New `Models/ChartDataPoint.cs` — simple Label/Value pair for chart data binding.
+- **Key files:** `Views/AnalysisView.xaml`, `Views/AnalysisView.xaml.cs`, `Models/ChartDataPoint.cs`, `MainWindow.xaml`, `Themes/LightTheme.xaml`, `VANTAGE.csproj`, `VANTAGE.Installer/VANTAGE.Installer.csproj`, `VANTAGE.Updater/VANTAGE.Updater.csproj`
+
+### April 10, 2026 (Rate Sheet Size-Only Fallback Entries)
+- **Added size-only fallback entries for PIPE, SPL, and BW in RateSheet.json:** These three EST_GRPs only had schedule-qualified keys (e.g., `SPL-2.5:STD`, `PIPE-2.5:40`) but no bare size-only keys (e.g., `SPL-2.5`). When takeoff data had empty Thickness and Class Rating, the size-only fallback lookup failed with a missed rate. Added 99 size-only entries (38 BW, 24 PIPE, 37 SPL) using STD rates as defaults. Other EST_GRPs (FTG, VLV, GSKT, etc.) already had size-only entries.
+- **Key files:** `Resources/RateSheet.json`
+
 ### April 10, 2026 (Snapshot Upload Tracking Fix, Timeout Hardening, Sync Dialog Sort)
 - **Fixed snapshot upload tracking silently failing:** The tracking INSERT to `VMS_ProgressLogUploads` (which drives the "Uploaded" column in AdminSnapshotsDialog) was timing out on large snapshot groups (130K+ records). The `respCmd` and `trackCmd` had default 30-second timeouts while the main ProgressLog INSERT used unlimited. Set both to unlimited (`CommandTimeout = 0`).
 - **Fixed Uploaded column date format mismatch:** The LEFT JOIN comparing `VMS_ProgressLogUploads.WeekEndDate` to `VMS_ProgressSnapshots.WeekEndDate` used raw string comparison, which failed when formats differed (e.g., `"4/8/2026"` vs `"2026-04-08"`). Changed to `TRY_CONVERT(datetime, ...)` date comparison.

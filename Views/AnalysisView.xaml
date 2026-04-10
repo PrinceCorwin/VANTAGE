@@ -114,14 +114,100 @@
                           DragCompleted="GridSplitter_DragCompleted"
                           ToolTip="Drag to resize columns"/>
 
-            <!-- Section (1,1) -->
+            <!-- Section (1,1) - Chart Filters -->
             <Border Grid.Column="0" Style="{StaticResource SectionBorderStyle}">
-                <TextBlock Text="Section 1,1" Opacity="0.3" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Text="Chart Filters" FontWeight="SemiBold" FontSize="13"
+                               Foreground="{DynamicResource ForegroundColor}" Margin="8,6,8,4"/>
+
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="8,0,8,8">
+                        <StackPanel>
+                            <TextBlock Text="Area" Foreground="{DynamicResource ForegroundColor}" Margin="0,4,0,2" FontSize="11"/>
+                            <syncfusion:ComboBoxAdv x:Name="cmbFilter_Area" AllowMultiSelect="True" EnableOKCancel="False"
+                                                    SelectionChanged="ChartFilter_SelectionChanged" ToolTip="Filter charts by Area"/>
+
+                            <TextBlock Text="Aux1" Foreground="{DynamicResource ForegroundColor}" Margin="0,6,0,2" FontSize="11"/>
+                            <syncfusion:ComboBoxAdv x:Name="cmbFilter_Aux1" AllowMultiSelect="True" EnableOKCancel="False"
+                                                    SelectionChanged="ChartFilter_SelectionChanged" ToolTip="Filter charts by Aux1"/>
+
+                            <TextBlock Text="Aux2" Foreground="{DynamicResource ForegroundColor}" Margin="0,6,0,2" FontSize="11"/>
+                            <syncfusion:ComboBoxAdv x:Name="cmbFilter_Aux2" AllowMultiSelect="True" EnableOKCancel="False"
+                                                    SelectionChanged="ChartFilter_SelectionChanged" ToolTip="Filter charts by Aux2"/>
+
+                            <TextBlock Text="Aux3" Foreground="{DynamicResource ForegroundColor}" Margin="0,6,0,2" FontSize="11"/>
+                            <syncfusion:ComboBoxAdv x:Name="cmbFilter_Aux3" AllowMultiSelect="True" EnableOKCancel="False"
+                                                    SelectionChanged="ChartFilter_SelectionChanged" ToolTip="Filter charts by Aux3"/>
+
+                            <TextBlock Text="CompType" Foreground="{DynamicResource ForegroundColor}" Margin="0,6,0,2" FontSize="11"/>
+                            <syncfusion:ComboBoxAdv x:Name="cmbFilter_CompType" AllowMultiSelect="True" EnableOKCancel="False"
+                                                    SelectionChanged="ChartFilter_SelectionChanged" ToolTip="Filter charts by CompType"/>
+
+                            <TextBlock Text="DwgNO" Foreground="{DynamicResource ForegroundColor}" Margin="0,6,0,2" FontSize="11"/>
+                            <syncfusion:ComboBoxAdv x:Name="cmbFilter_DwgNO" AllowMultiSelect="True" EnableOKCancel="False"
+                                                    SelectionChanged="ChartFilter_SelectionChanged" ToolTip="Filter charts by DwgNO"/>
+
+                            <TextBlock Text="PhaseCategory" Foreground="{DynamicResource ForegroundColor}" Margin="0,6,0,2" FontSize="11"/>
+                            <syncfusion:ComboBoxAdv x:Name="cmbFilter_PhaseCategory" AllowMultiSelect="True" EnableOKCancel="False"
+                                                    SelectionChanged="ChartFilter_SelectionChanged" ToolTip="Filter charts by PhaseCategory"/>
+
+                            <TextBlock Text="PhaseCode" Foreground="{DynamicResource ForegroundColor}" Margin="0,6,0,2" FontSize="11"/>
+                            <syncfusion:ComboBoxAdv x:Name="cmbFilter_PhaseCode" AllowMultiSelect="True" EnableOKCancel="False"
+                                                    SelectionChanged="ChartFilter_SelectionChanged" ToolTip="Filter charts by PhaseCode"/>
+
+                            <TextBlock Text="ProjectID" Foreground="{DynamicResource ForegroundColor}" Margin="0,6,0,2" FontSize="11"/>
+                            <syncfusion:ComboBoxAdv x:Name="cmbFilter_ProjectID" AllowMultiSelect="True" EnableOKCancel="False"
+                                                    SelectionChanged="ChartFilter_SelectionChanged" ToolTip="Filter charts by ProjectID"/>
+
+                            <TextBlock Text="ROCStep" Foreground="{DynamicResource ForegroundColor}" Margin="0,6,0,2" FontSize="11"/>
+                            <syncfusion:ComboBoxAdv x:Name="cmbFilter_ROCStep" AllowMultiSelect="True" EnableOKCancel="False"
+                                                    SelectionChanged="ChartFilter_SelectionChanged" ToolTip="Filter charts by ROCStep"/>
+
+                            <TextBlock Text="SchedActNO" Foreground="{DynamicResource ForegroundColor}" Margin="0,6,0,2" FontSize="11"/>
+                            <syncfusion:ComboBoxAdv x:Name="cmbFilter_SchedActNO" AllowMultiSelect="True" EnableOKCancel="False"
+                                                    SelectionChanged="ChartFilter_SelectionChanged" ToolTip="Filter charts by SchedActNO"/>
+
+                            <TextBlock Text="WorkPackage" Foreground="{DynamicResource ForegroundColor}" Margin="0,6,0,2" FontSize="11"/>
+                            <syncfusion:ComboBoxAdv x:Name="cmbFilter_WorkPackage" AllowMultiSelect="True" EnableOKCancel="False"
+                                                    SelectionChanged="ChartFilter_SelectionChanged" ToolTip="Filter charts by WorkPackage"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
             </Border>
 
-            <!-- Section (1,2) -->
+            <!-- Section (1,2) - Dynamic Visual -->
             <Border Grid.Column="2" Style="{StaticResource SectionBorderStyle}">
-                <TextBlock Text="Section 1,2" Opacity="0.3" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Visual selection controls -->
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="8,6" VerticalAlignment="Center">
+                        <ComboBox x:Name="cmbVisualType_1_1"
+                                  MinWidth="110"
+                                  SelectionChanged="CmbVisualType_1_1_SelectionChanged"
+                                  ToolTip="Select visualization type"/>
+                        <ComboBox x:Name="cmbXAxis_1_1"
+                                  MinWidth="100"
+                                  Margin="8,0,0,0"
+                                  SelectionChanged="CmbXAxis_1_1_SelectionChanged"
+                                  ToolTip="Select grouping field for X axis"/>
+                        <ComboBox x:Name="cmbDataField_1_1"
+                                  MinWidth="100"
+                                  Margin="8,0,0,0"
+                                  SelectionChanged="CmbDataField_1_1_SelectionChanged"
+                                  ToolTip="Select numeric field for Y axis"/>
+                    </StackPanel>
+
+                    <!-- Dynamic visual content -->
+                    <ContentControl x:Name="visualHost_1_1" Grid.Row="1"/>
+                </Grid>
             </Border>
 
             <!-- Section (1,3) -->
@@ -141,7 +227,7 @@
                       DragCompleted="GridSplitter_DragCompleted"
                       ToolTip="Drag to resize rows"/>
 
-        <!-- Bottom Row Grid - independent column sizing -->
+        <!-- Bottom Row Grid - independent column sizing (3 sections) -->
         <Grid x:Name="bottomRowGrid" Grid.Row="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition x:Name="bottomCol0" Width="*"/>
@@ -149,8 +235,6 @@
                 <ColumnDefinition x:Name="bottomCol1" Width="*"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition x:Name="bottomCol2" Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition x:Name="bottomCol3" Width="*"/>
             </Grid.ColumnDefinitions>
 
             <!-- Bottom Row Vertical GridSplitters -->
@@ -162,18 +246,9 @@
                           Style="{StaticResource VerticalGridSplitterStyle}"
                           DragCompleted="GridSplitter_DragCompleted"
                           ToolTip="Drag to resize columns"/>
-            <GridSplitter Grid.Column="5"
-                          Style="{StaticResource VerticalGridSplitterStyle}"
-                          DragCompleted="GridSplitter_DragCompleted"
-                          ToolTip="Drag to resize columns"/>
 
-            <!-- Section (2,1) -->
+            <!-- Section (2,1) - SUMMARY GRID -->
             <Border Grid.Column="0" Style="{StaticResource SectionBorderStyle}">
-                <TextBlock Text="Section 2,1" Opacity="0.3" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-            </Border>
-
-            <!-- Section (2,2) - SUMMARY GRID VISUAL -->
-            <Border Grid.Column="2" Style="{StaticResource SectionBorderStyle}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -320,14 +395,14 @@
                 </Grid>
             </Border>
 
+            <!-- Section (2,2) -->
+            <Border Grid.Column="2" Style="{StaticResource SectionBorderStyle}">
+                <TextBlock Text="Section 2,2" Opacity="0.3" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+
             <!-- Section (2,3) -->
             <Border Grid.Column="4" Style="{StaticResource SectionBorderStyle}">
                 <TextBlock Text="Section 2,3" Opacity="0.3" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-            </Border>
-
-            <!-- Section (2,4) -->
-            <Border Grid.Column="6" Style="{StaticResource SectionBorderStyle}">
-                <TextBlock Text="Section 2,4" Opacity="0.3" HorizontalAlignment="Center" VerticalAlignment="Center"/>
             </Border>
         </Grid>
     </Grid>

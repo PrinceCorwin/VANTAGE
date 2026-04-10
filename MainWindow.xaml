@@ -19,6 +19,35 @@
         RenderOptions.ClearTypeHint="Enabled"
         UseLayoutRounding="True"
         SnapsToDevicePixels="True">
+
+    <syncfusion:ChromelessWindow.Resources>
+        <!-- Nav button style with themed hover colors -->
+        <Style x:Key="NavButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource ToolbarForeground}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="navBorder"
+                                Background="{TemplateBinding Background}"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="navBorder" Property="Background" Value="{DynamicResource ToolbarHoverBackground}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource ToolbarHoverForeground}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </syncfusion:ChromelessWindow.Resources>
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="40"/>
@@ -159,11 +188,7 @@
                         <Button x:Name="btnProgress"
                                 Content="PROGRESS"
                                 Padding="15,0,15,6"
-                                Background="Transparent"
-                                Foreground="{DynamicResource ToolbarForeground}"
-                                BorderThickness="0"
-                                FontSize="12"
-                                FontWeight="Bold"
+                                Style="{StaticResource NavButtonStyle}"
                                 Click="BtnProgress_Click"
                                 ToolTip="Track activity completion and earned values"/>
                         <Border x:Name="borderProgress"
@@ -176,11 +201,7 @@
                         <Button x:Name="btnSchedule"
                                 Content="SCHEDULE"
                                 Padding="15,0,15,6"
-                                Background="Transparent"
-                                Foreground="{DynamicResource ToolbarForeground}"
-                                BorderThickness="0"
-                                FontSize="12"
-                                FontWeight="Bold"
+                                Style="{StaticResource NavButtonStyle}"
                                 Click="BtnSchedule_Click"
                                 ToolTip="View and edit P6 schedule data"/>
                         <Border x:Name="borderSchedule"
@@ -193,11 +214,7 @@
                         <Button x:Name="btnPbook"
                                 Content="PROG BOOKS"
                                 Padding="15,0,15,6"
-                                Background="Transparent"
-                                Foreground="{DynamicResource ToolbarForeground}"
-                                BorderThickness="0"
-                                FontSize="12"
-                                FontWeight="Bold"
+                                Style="{StaticResource NavButtonStyle}"
                                 Click="BtnPbook_Click"
                                 ToolTip="Generate progress books"/>
                         <Border x:Name="ProgBookBorder"
@@ -210,11 +227,7 @@
                         <Button x:Name="btnWorkPackage"
                                 Content="WORK PKGS"
                                 Padding="15,0,15,6"
-                                Background="Transparent"
-                                Foreground="{DynamicResource ToolbarForeground}"
-                                BorderThickness="0"
-                                FontSize="12"
-                                FontWeight="Bold"
+                                Style="{StaticResource NavButtonStyle}"
                                 Click="BtnWorkPackage_Click"
                                 ToolTip="Manage work packages"/>
                         <Border x:Name="WorkPackageBorder"
@@ -227,11 +240,7 @@
                         <Button x:Name="btnAnalysis"
                                 Content="ANALYSIS"
                                 Padding="15,0,15,6"
-                                Background="Transparent"
-                                Foreground="{DynamicResource ToolbarForeground}"
-                                BorderThickness="0"
-                                FontSize="12"
-                                FontWeight="Bold"
+                                Style="{StaticResource NavButtonStyle}"
                                 Click="BtnAnalysis_Click"
                                 ToolTip="View project analytics and dashboards"/>
                         <Border x:Name="AnalysisBorder"
@@ -244,11 +253,7 @@
                         <Button x:Name="btnTakeoff"
                                 Content="TAKEOFFS"
                                 Padding="15,0,15,6"
-                                Background="Transparent"
-                                Foreground="{DynamicResource ToolbarForeground}"
-                                BorderThickness="0"
-                                FontSize="12"
-                                FontWeight="Bold"
+                                Style="{StaticResource NavButtonStyle}"
                                 Click="BtnTakeoff_Click"
                                 ToolTip="AI-powered piping takeoff extraction"/>
                         <Border x:Name="TakeoffBorder"

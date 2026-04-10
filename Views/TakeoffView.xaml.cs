@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -130,6 +131,17 @@ namespace VANTAGE.Views
             string configKey = _configs[configIndex].Key;
             string timestamp = DateTime.UtcNow.ToString("yyyyMMdd-HHmmss");
             string? customName = txtBatchName.Text?.Trim();
+
+            // Validate batch name before starting the expensive agent run
+            if (!string.IsNullOrEmpty(customName) && !Regex.IsMatch(customName, @"^[a-zA-Z0-9\-_]+$"))
+            {
+                MessageBox.Show(
+                    "Batch name can only contain letters, numbers, hyphens, and underscores (no spaces or special characters).",
+                    "Invalid Batch Name", MessageBoxButton.OK, MessageBoxImage.Warning);
+                txtBatchName.Focus();
+                return;
+            }
+
             if (string.IsNullOrEmpty(customName))
                 _currentBatchId = $"AwsDwgTakeoff-{timestamp}";
             else

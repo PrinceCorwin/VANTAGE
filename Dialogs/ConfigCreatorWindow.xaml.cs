@@ -585,6 +585,17 @@ namespace VANTAGE.Dialogs
                 return;
             }
 
+            // Validate config name characters before saving
+            string trimmedName = txtConfigName.Text.Trim();
+            if (!Regex.IsMatch(trimmedName, @"^[a-zA-Z0-9\-_ ]+$"))
+            {
+                MessageBox.Show(
+                    "Config name can only contain letters, numbers, hyphens, underscores, and spaces.",
+                    "Invalid Config Name", MessageBoxButton.OK, MessageBoxImage.Warning);
+                txtConfigName.Focus();
+                return;
+            }
+
             int bomCount = _drawnRegions.Count(r => r.Mode == DrawMode.Bom);
             int tbCount = _drawnRegions.Count(r => r.Mode == DrawMode.TitleBlock);
 

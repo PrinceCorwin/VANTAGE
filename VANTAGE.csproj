@@ -82,6 +82,8 @@
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
 		<PackageReference Include="SharpVectors.Wpf" Version="1.8.5" />
 		<PackageReference Include="Syncfusion.PdfToImageConverter.WPF" Version="33.1.45" />
+		<PackageReference Include="Syncfusion.SfChart.WPF" Version="33.1.47" />
+		<PackageReference Include="Syncfusion.SfGauge.WPF" Version="33.1.47" />
 		<PackageReference Include="Syncfusion.SfProgressBar.WPF" Version="33.1.45" />
 		<PackageReference Include="Syncfusion.Themes.FluentLight.WPF" Version="33.1.45" />
 		<PackageReference Include="System.Drawing.Common" Version="10.0.5" />

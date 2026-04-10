@@ -75,7 +75,7 @@
                              Background="{DynamicResource ControlBackground}"
                              Foreground="{DynamicResource ForegroundColor}"
                              BorderBrush="{DynamicResource BorderColor}"
-                             ToolTip="Optional batch name — leave blank for auto-generated name"/>
+                             ToolTip="Optional batch name — letters, numbers, hyphens, underscores only (no spaces). Leave blank for auto-generated name."/>
 
                     <!-- Config Selection -->
                     <TextBlock Grid.Row="2" Grid.Column="0"

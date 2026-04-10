@@ -178,6 +178,15 @@ namespace VANTAGE.Dialogs
             string newName = inputDialog.InputText.Trim();
             if (newName == item.BatchName) return;
 
+            // Validate batch name characters
+            if (!System.Text.RegularExpressions.Regex.IsMatch(newName, @"^[a-zA-Z0-9\-_]+$"))
+            {
+                MessageBox.Show(
+                    "Batch name can only contain letters, numbers, hyphens, and underscores (no spaces or special characters).",
+                    "Invalid Batch Name", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
             try
             {
                 SetButtonsEnabled(false);

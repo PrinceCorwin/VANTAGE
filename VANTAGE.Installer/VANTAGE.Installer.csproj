@@ -18,7 +18,6 @@
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
     <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
   </PropertyGroup>
-
   <ItemGroup>
     <Resource Include="..\Images\AppIcon.ico" Link="Images\AppIcon.ico" />
     <Resource Include="..\Images\SummitLogoNoText.jpg" Link="Images\SummitLogoNoText.jpg" />

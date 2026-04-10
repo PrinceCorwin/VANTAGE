@@ -5,8 +5,10 @@ using System.Linq;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using ClosedXML.Excel;
 using Syncfusion.SfSkinManager;
+using Syncfusion.UI.Xaml.Charts;
 using VANTAGE.Data;
 using VANTAGE.Models;
 using VANTAGE.Utilities;
@@ -26,13 +28,14 @@ namespace VANTAGE.Views
         private static readonly string[] AllTextFields = new[]
         {
             "Area", "AssignedTo", "Aux1", "Aux2", "Aux3", "ChgOrdNO", "CompType",
-            "Description", "DwgNO", "EqmtNO", "Estimator", "HtTrace", "InsulType",
-            "LineNumber", "MtrlSpec", "Notes", "PaintCode", "PhaseCategory", "PhaseCode",
-            "PipeGrade", "PjtSystem", "PjtSystemNo", "ProjectID", "RFINO", "RespParty",
-            "RevNO", "SchedActNO", "SecondActno", "SecondDwgNO", "Service", "ShopField",
-            "ShtNO", "SubArea", "TagNO", "UDF1", "UDF10", "UDF11", "UDF12",
-            "UDF13", "UDF14", "UDF15", "UDF16", "UDF17", "UDF2", "UDF20", "UDF3", "UDF4",
-            "UDF5", "UDF6", "UDF8", "UDF9", "WorkPackage"
+            "CreatedBy", "Description", "DwgNO", "EqmtNO", "EquivUOM", "Estimator",
+            "HtTrace", "InsulType", "LineNumber", "MtrlSpec", "Notes", "PaintCode",
+            "PhaseCategory", "PhaseCode", "PipeGrade", "PjtSystem", "PjtSystemNo",
+            "ProjectID", "RFINO", "RespParty", "RevNO", "ROCStep", "SchedActNO",
+            "SecondActno", "SecondDwgNO", "Service", "ShopField", "ShtNO", "SubArea",
+            "TagNO", "UDF1", "UDF10", "UDF11", "UDF12", "UDF13", "UDF14", "UDF15",
+            "UDF16", "UDF17", "UDF2", "UDF20", "UDF3", "UDF4", "UDF5", "UDF6",
+            "UDF8", "UDF9", "UOM", "WorkPackage"
         };
 
         private bool _isInitializing = true;
@@ -54,6 +57,8 @@ namespace VANTAGE.Views
             {
                 PopulateGroupByDropdown();
                 PopulateProjectsDropdown();
+                PopulateChartFilters();
+                InitializeSection_1_1();
                 RestoreSettings();
                 RestoreGridLayout();
             }
@@ -63,6 +68,7 @@ namespace VANTAGE.Views
             }
 
             LoadSummaryData();
+            UpdateVisual_1_1();
         }
 
         private void AnalysisView_Unloaded(object sender, RoutedEventArgs e)
@@ -79,6 +85,7 @@ namespace VANTAGE.Views
             {
                 var sfTheme = new Theme(ThemeManager.GetSyncfusionThemeName());
                 SfSkinManager.SetTheme(summaryGrid, sfTheme);
+                UpdateVisual_1_1();
             });
         }
 
@@ -189,7 +196,6 @@ namespace VANTAGE.Views
                     BottomCol0 = bottomCol0.Width.Value,
                     BottomCol1 = bottomCol1.Width.Value,
                     BottomCol2 = bottomCol2.Width.Value,
-                    BottomCol3 = bottomCol3.Width.Value,
                     // Row heights
                     Row0 = row0.Height.Value,
                     Row1 = row1.Height.Value
@@ -222,7 +228,6 @@ namespace VANTAGE.Views
                 if (root.TryGetProperty("BottomCol0", out var bc0)) bottomCol0.Width = new GridLength(bc0.GetDouble(), GridUnitType.Star);
                 if (root.TryGetProperty("BottomCol1", out var bc1)) bottomCol1.Width = new GridLength(bc1.GetDouble(), GridUnitType.Star);
                 if (root.TryGetProperty("BottomCol2", out var bc2)) bottomCol2.Width = new GridLength(bc2.GetDouble(), GridUnitType.Star);
-                if (root.TryGetProperty("BottomCol3", out var bc3)) bottomCol3.Width = new GridLength(bc3.GetDouble(), GridUnitType.Star);
                 // Row heights
                 if (root.TryGetProperty("Row0", out var r0)) row0.Height = new GridLength(r0.GetDouble(), GridUnitType.Star);
                 if (root.TryGetProperty("Row1", out var r1)) row1.Height = new GridLength(r1.GetDouble(), GridUnitType.Star);
@@ -337,12 +342,331 @@ namespace VANTAGE.Views
         {
             if (_isInitializing) return;
             LoadSummaryData();
+            UpdateVisual_1_1();
         }
 
         private void CmbProjects_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (_isInitializing) return;
             LoadSummaryData();
+            UpdateVisual_1_1();
+        }
+
+        // Chart filter fields and their corresponding ComboBoxAdv controls
+        private static readonly string[] ChartFilterFields = new[]
+        {
+            "Area", "Aux1", "Aux2", "Aux3", "CompType", "DwgNO",
+            "PhaseCategory", "PhaseCode", "ProjectID", "ROCStep", "SchedActNO", "WorkPackage"
+        };
+
+        // Populate all chart filter dropdowns with distinct values from Activities
+        private void PopulateChartFilters()
+        {
+            try
+            {
+                using var connection = DatabaseSetup.GetConnection();
+                connection.Open();
+
+                foreach (var field in ChartFilterFields)
+                {
+                    var combo = GetChartFilterCombo(field);
+                    if (combo == null) continue;
+
+                    var cmd = connection.CreateCommand();
+                    cmd.CommandText = $"SELECT DISTINCT COALESCE([{field}], '') FROM Activities ORDER BY COALESCE([{field}], '')";
+
+                    var values = new List<string>();
+                    using var reader = cmd.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        values.Add(reader.GetString(0));
+                    }
+
+                    // Ensure blank option exists and is labeled
+                    if (values.Contains(""))
+                    {
+                        values.Remove("");
+                        values.Insert(0, "(blank)");
+                    }
+
+                    combo.ItemsSource = values;
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "AnalysisView.PopulateChartFilters");
+            }
+        }
+
+        // Map field name to its ComboBoxAdv control
+        private Syncfusion.Windows.Tools.Controls.ComboBoxAdv? GetChartFilterCombo(string field)
+        {
+            return field switch
+            {
+                "Area" => cmbFilter_Area,
+                "Aux1" => cmbFilter_Aux1,
+                "Aux2" => cmbFilter_Aux2,
+                "Aux3" => cmbFilter_Aux3,
+                "CompType" => cmbFilter_CompType,
+                "DwgNO" => cmbFilter_DwgNO,
+                "PhaseCategory" => cmbFilter_PhaseCategory,
+                "PhaseCode" => cmbFilter_PhaseCode,
+                "ProjectID" => cmbFilter_ProjectID,
+                "ROCStep" => cmbFilter_ROCStep,
+                "SchedActNO" => cmbFilter_SchedActNO,
+                "WorkPackage" => cmbFilter_WorkPackage,
+                _ => null
+            };
+        }
+
+        // Refresh all charts when any chart filter changes
+        private void ChartFilter_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_isInitializing) return;
+            UpdateVisual_1_1();
+        }
+
+        // Build WHERE clauses from active chart filters
+        private void AppendChartFilterClauses(List<string> whereClauses, Microsoft.Data.Sqlite.SqliteCommand cmd, ref int paramIndex)
+        {
+            foreach (var field in ChartFilterFields)
+            {
+                var combo = GetChartFilterCombo(field);
+                if (combo?.SelectedItems == null) continue;
+
+                var selected = combo.SelectedItems.Cast<string>().ToList();
+                if (selected.Count == 0) continue;
+
+                // Convert "(blank)" back to empty string for SQL
+                bool includesBlank = selected.Remove("(blank)");
+
+                var conditions = new List<string>();
+
+                if (selected.Count > 0)
+                {
+                    var paramNames = new List<string>();
+                    foreach (var val in selected)
+                    {
+                        var paramName = $"@cf{paramIndex++}";
+                        cmd.Parameters.AddWithValue(paramName, val);
+                        paramNames.Add(paramName);
+                    }
+                    conditions.Add($"[{field}] IN ({string.Join(",", paramNames)})");
+                }
+
+                if (includesBlank)
+                {
+                    conditions.Add($"([{field}] IS NULL OR [{field}] = '')");
+                }
+
+                whereClauses.Add($"({string.Join(" OR ", conditions)})");
+            }
+        }
+
+        // Visual type options for section dropdowns
+        private static readonly string[] VisualTypes = new[]
+        {
+            "Bar Chart", "Column Chart", "Doughnut Chart", "Line Chart", "Pie Chart"
+        };
+
+        // Numeric fields available for Y axis (alphabetical)
+        private static readonly string[] DataFields = new[]
+        {
+            "% Complete", "BaseUnit", "BudgetHoursGroup", "BudgetHoursROC", "BudgetMHs",
+            "ClientBudget", "ClientCustom3", "ClientEquivQty", "EarnedMHs", "EarnedMHsRoc",
+            "EquivQTY", "PrevEarnMHs", "PrevEarnQTY", "Quantity", "QtyEarned", "ROCBudgetQTY"
+        };
+
+        // Populate section 1,1 dropdowns and restore saved selections
+        private void InitializeSection_1_1()
+        {
+            cmbVisualType_1_1.ItemsSource = VisualTypes;
+            cmbXAxis_1_1.ItemsSource = AllTextFields.OrderBy(f => f).ToArray();
+            cmbDataField_1_1.ItemsSource = DataFields;
+
+            var savedVisual = SettingsManager.GetUserSetting("AnalysisVisual_1_1", "Column Chart");
+            var savedXAxis = SettingsManager.GetUserSetting("AnalysisXAxis_1_1", "PhaseCode");
+            var savedField = SettingsManager.GetUserSetting("AnalysisField_1_1", "BudgetMHs");
+
+            cmbVisualType_1_1.SelectedItem = VisualTypes.Contains(savedVisual) ? savedVisual : "Column Chart";
+            cmbXAxis_1_1.SelectedItem = AllTextFields.Contains(savedXAxis) ? savedXAxis : "PhaseCode";
+            cmbDataField_1_1.SelectedItem = DataFields.Contains(savedField) ? savedField : "BudgetMHs";
+        }
+
+        private void CmbVisualType_1_1_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_isInitializing) return;
+            SettingsManager.SetUserSetting("AnalysisVisual_1_1", cmbVisualType_1_1.SelectedItem?.ToString() ?? "Column Chart");
+            UpdateVisual_1_1();
+        }
+
+        private void CmbXAxis_1_1_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_isInitializing) return;
+            SettingsManager.SetUserSetting("AnalysisXAxis_1_1", cmbXAxis_1_1.SelectedItem?.ToString() ?? "PhaseCode");
+            UpdateVisual_1_1();
+        }
+
+        private void CmbDataField_1_1_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_isInitializing) return;
+            SettingsManager.SetUserSetting("AnalysisField_1_1", cmbDataField_1_1.SelectedItem?.ToString() ?? "BudgetMHs");
+            UpdateVisual_1_1();
+        }
+
+        // Query data grouped by the chart's own X axis, then build the visual
+        private void UpdateVisual_1_1()
+        {
+            var xAxisField = cmbXAxis_1_1.SelectedItem?.ToString();
+            var dataField = cmbDataField_1_1.SelectedItem?.ToString() ?? "BudgetMHs";
+            var visualType = cmbVisualType_1_1.SelectedItem?.ToString() ?? "Column Chart";
+
+            if (string.IsNullOrEmpty(xAxisField)) return;
+
+            var rows = QueryChartData(xAxisField, dataField);
+            if (rows == null || rows.Count == 0)
+            {
+                visualHost_1_1.Content = null;
+                return;
+            }
+
+            visualHost_1_1.Content = CreateChart(visualType, dataField, rows);
+        }
+
+        // Query the database for chart data, filtered by chart filters
+        private List<ChartDataPoint>? QueryChartData(string groupField, string valueField)
+        {
+            // Map display names to database expressions
+            string sqlExpr = valueField switch
+            {
+                "% Complete" => "CASE WHEN COALESCE(SUM(BudgetMHs), 0) > 0 THEN (COALESCE(SUM(CASE WHEN PercentEntry >= 100 THEN BudgetMHs ELSE PercentEntry / 100.0 * BudgetMHs END), 0) / SUM(BudgetMHs)) * 100.0 ELSE 0 END",
+                "EarnedMHs" => "COALESCE(SUM(CASE WHEN PercentEntry >= 100 THEN BudgetMHs ELSE PercentEntry / 100.0 * BudgetMHs END), 0)",
+                "QtyEarned" => "COALESCE(SUM(EarnQtyEntry), 0)",
+                _ => $"COALESCE(SUM([{valueField}]), 0)"
+            };
+
+            try
+            {
+                using var connection = DatabaseSetup.GetConnection();
+                connection.Open();
+
+                var cmd = connection.CreateCommand();
+                var whereClauses = new List<string>();
+                int paramIndex = 0;
+
+                // Apply chart filter selections
+                AppendChartFilterClauses(whereClauses, cmd, ref paramIndex);
+
+                var whereSQL = whereClauses.Count > 0 ? "WHERE " + string.Join(" AND ", whereClauses) : "";
+
+                cmd.CommandText = $@"
+                    SELECT [{groupField}], {sqlExpr} as Value
+                    FROM Activities
+                    {whereSQL}
+                    GROUP BY [{groupField}]
+                    ORDER BY [{groupField}]";
+
+                var rows = new List<ChartDataPoint>();
+                using var reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    rows.Add(new ChartDataPoint
+                    {
+                        Label = reader.IsDBNull(0) ? "(blank)" : reader.GetString(0),
+                        Value = NumericHelper.RoundToPlaces(reader.GetDouble(1))
+                    });
+                }
+
+                return rows;
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "AnalysisView.QueryChartData");
+                return null;
+            }
+        }
+
+        // Factory: creates a Syncfusion chart
+        private FrameworkElement CreateChart(string visualType, string dataField, List<ChartDataPoint> rows)
+        {
+            if (visualType == "Pie Chart" || visualType == "Doughnut Chart")
+                return CreateCircularChart(visualType, rows);
+
+            return CreateCartesianChart(visualType, dataField, rows);
+        }
+
+        // Column, Bar, Line charts
+        private SfChart CreateCartesianChart(string visualType, string label, List<ChartDataPoint> rows)
+        {
+            var chart = new SfChart { Margin = new Thickness(4) };
+            SfSkinManager.SetTheme(chart, new Theme(ThemeManager.GetSyncfusionThemeName()));
+
+            var foreground = TryFindResource("ForegroundColor") as SolidColorBrush ?? new SolidColorBrush(Colors.White);
+
+            var xAxis = new CategoryAxis
+            {
+                LabelPlacement = LabelPlacement.BetweenTicks,
+                ShowGridLines = false,
+                LabelsIntersectAction = AxisLabelsIntersectAction.Auto
+            };
+            xAxis.LabelStyle = new LabelStyle { Foreground = foreground, FontSize = 10 };
+            chart.PrimaryAxis = xAxis;
+
+            var yAxis = new NumericalAxis { ShowGridLines = true };
+            yAxis.LabelStyle = new LabelStyle { Foreground = foreground, FontSize = 11 };
+            chart.SecondaryAxis = yAxis;
+
+            XyDataSeries series = visualType switch
+            {
+                "Bar Chart" => new BarSeries(),
+                "Line Chart" => new LineSeries(),
+                _ => new ColumnSeries()
+            };
+
+            series.ItemsSource = rows;
+            series.XBindingPath = "Label";
+            series.YBindingPath = "Value";
+            series.Label = label;
+            series.ShowTooltip = true;
+
+            chart.Palette = ChartColorPalette.Metro;
+            chart.Series.Add(series);
+
+            return chart;
+        }
+
+        // Pie and Doughnut charts
+        private SfChart CreateCircularChart(string visualType, List<ChartDataPoint> rows)
+        {
+            var chart = new SfChart { Margin = new Thickness(4) };
+            SfSkinManager.SetTheme(chart, new Theme(ThemeManager.GetSyncfusionThemeName()));
+
+            if (visualType == "Doughnut Chart")
+            {
+                var series = new DoughnutSeries
+                {
+                    ItemsSource = rows,
+                    XBindingPath = "Label",
+                    YBindingPath = "Value",
+                    ShowTooltip = true
+                };
+                chart.Palette = ChartColorPalette.Metro;
+                chart.Series.Add(series);
+            }
+            else
+            {
+                var series = new PieSeries
+                {
+                    ItemsSource = rows,
+                    XBindingPath = "Label",
+                    YBindingPath = "Value",
+                    ShowTooltip = true
+                };
+                chart.Palette = ChartColorPalette.Metro;
+                chart.Series.Add(series);
+            }
+
+            return chart;
         }
 
         // Export current filtered grid contents to Excel
