@@ -1,6 +1,16 @@
 {
   "releases": [
     {
+      "version": "26.2.5",
+      "date": "2026-04-10",
+      "highlights": [
+        "Fix — Snapshot upload tracking records no longer silently fail on large datasets (130K+ records)",
+        "Fix — Uploaded column now matches tracking records regardless of date format differences",
+        "Fix — Submit Week and Assign To operations no longer time out on large record sets",
+        "Sync dialog — Projects now sort newest-first (highest project numbers at top)"
+      ]
+    },
+    {
       "version": "26.2.4",
       "date": "2026-04-08",
       "highlights": [

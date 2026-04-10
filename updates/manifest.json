@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.2.4",
-  "releaseDate": "2026-04-08T16:30:47Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.2.4/VANTAGE-26.2.4.zip",
-  "zipSizeBytes": 150185145,
-  "sha256": "77D820F2FAD509ED7346E09CB5A53E9E2BA1031EEF8E59969F0C011A7915FD79",
-  "releaseNotes": "Schedule Module — major performance improvement: snapshot data now mirrored locally on P6 import for instant grid rendering. Detail grid edits sync to both central and local copies. Snapshot retention reduced from 28 to 21 days."
+  "currentVersion": "26.2.5",
+  "releaseDate": "2026-04-10T12:44:48Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.2.5/VANTAGE-26.2.5.zip",
+  "zipSizeBytes": 150185392,
+  "sha256": "031104D19ABC2EC150DC60A6C7DFC37179D464CB7557D1A79CC31FA8B14948D8",
+  "releaseNotes": "Fix snapshot upload tracking timeouts on large datasets. Fix Submit Week and Assign To timeouts. Sync dialog sorts newest projects first."
 }
