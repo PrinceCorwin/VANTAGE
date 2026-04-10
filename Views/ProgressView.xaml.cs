@@ -3403,6 +3403,7 @@ namespace VANTAGE.Views
                             azureConn.Open();
 
                             var existingCmd = azureConn.CreateCommand();
+                            existingCmd.CommandTimeout = 0;
                             existingCmd.CommandText = @"
                                 SELECT UniqueID, AssignedTo, ProjectID
                                 FROM VMS_ProgressSnapshots
@@ -5755,6 +5756,7 @@ namespace VANTAGE.Views
                         using (var bulkCopy = new Microsoft.Data.SqlClient.SqlBulkCopy(azureConn))
                         {
                             bulkCopy.DestinationTableName = "#CheckOwnership";
+                            bulkCopy.BulkCopyTimeout = 0;
 
                             var dt = new System.Data.DataTable();
                             dt.Columns.Add("UniqueID", typeof(string));
@@ -5768,7 +5770,7 @@ namespace VANTAGE.Views
                         // Query all ownerships in one call
                         var ownershipMap = new Dictionary<string, string>();
                         var ownerQuery = azureConn.CreateCommand();
-                        ownerQuery.CommandTimeout = 120;
+                        ownerQuery.CommandTimeout = 0;
                         ownerQuery.CommandText = @"
             SELECT a.UniqueID, a.AssignedTo
             FROM VMS_Activities a
@@ -5835,6 +5837,7 @@ namespace VANTAGE.Views
                         using (var bulkCopy = new Microsoft.Data.SqlClient.SqlBulkCopy(azureConn))
                         {
                             bulkCopy.DestinationTableName = "#UpdateBatch";
+                            bulkCopy.BulkCopyTimeout = 0;
 
                             var dt = new System.Data.DataTable();
                             dt.Columns.Add("UniqueID", typeof(string));
@@ -5846,7 +5849,7 @@ namespace VANTAGE.Views
                         }
 
                         var updateCmd = azureConn.CreateCommand();
-                        updateCmd.CommandTimeout = 120;
+                        updateCmd.CommandTimeout = 0;
                         updateCmd.CommandText = @"
             UPDATE a
             SET AssignedTo = @newOwner,

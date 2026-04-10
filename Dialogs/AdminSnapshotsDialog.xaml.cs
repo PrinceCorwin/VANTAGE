@@ -52,7 +52,8 @@ namespace VANTAGE.Dialogs
                         LEFT JOIN (
                             SELECT DISTINCT Username, ProjectID, WeekEndDate
                             FROM VMS_ProgressLogUploads
-                        ) u ON u.Username = s.AssignedTo AND u.ProjectID = s.ProjectID AND u.WeekEndDate = s.WeekEndDate
+                        ) u ON u.Username = s.AssignedTo AND u.ProjectID = s.ProjectID
+                             AND CAST(TRY_CONVERT(datetime, u.WeekEndDate) AS DATE) = CAST(TRY_CONVERT(datetime, s.WeekEndDate) AS DATE)
                         GROUP BY s.AssignedTo, s.ProjectID, s.WeekEndDate
                         ORDER BY s.AssignedTo, s.ProjectID, s.WeekEndDate DESC";
 
@@ -425,6 +426,7 @@ namespace VANTAGE.Dialogs
                     var respGroups = new List<(string RespParty, int Count)>();
                     using (var respCmd = azureConn.CreateCommand())
                     {
+                        respCmd.CommandTimeout = 0;
                         respCmd.CommandText = @"
                             SELECT RespParty, COUNT(*) as RecordCount
                             FROM VMS_ProgressSnapshots
@@ -450,6 +452,7 @@ namespace VANTAGE.Dialogs
                     foreach (var (respParty, count) in respGroups)
                     {
                         using var trackCmd = azureConn.CreateCommand();
+                        trackCmd.CommandTimeout = 0;
                         trackCmd.CommandText = @"
                             INSERT INTO VMS_ProgressLogUploads
                                 (ProjectID, RespParty, WeekEndDate, UploadUtcDate, RecordCount, Username, UploadedBy)

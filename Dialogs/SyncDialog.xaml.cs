@@ -43,7 +43,7 @@ namespace VANTAGE.Dialogs
 
                 // Get all projects from Projects table
                 var projectCmd = connection.CreateCommand();
-                projectCmd.CommandText = "SELECT ProjectID, Description FROM Projects ORDER BY ProjectID";
+                projectCmd.CommandText = "SELECT ProjectID, Description FROM Projects ORDER BY ProjectID DESC";
 
                 using var projectReader = projectCmd.ExecuteReader();
                 while (projectReader.Read())

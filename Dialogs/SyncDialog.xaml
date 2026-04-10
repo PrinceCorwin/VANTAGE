@@ -4,7 +4,7 @@
         xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
         Title="Sync with Azure Database"
         Icon="pack://application:,,,/images/AppIcon.ico"
-        Height="500"
+        Height="642"
         Width="600"
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource WindowBackground}"

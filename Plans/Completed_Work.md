@@ -6,6 +6,15 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### April 10, 2026 (Snapshot Upload Tracking Fix, Timeout Hardening, Sync Dialog Sort)
+- **Fixed snapshot upload tracking silently failing:** The tracking INSERT to `VMS_ProgressLogUploads` (which drives the "Uploaded" column in AdminSnapshotsDialog) was timing out on large snapshot groups (130K+ records). The `respCmd` and `trackCmd` had default 30-second timeouts while the main ProgressLog INSERT used unlimited. Set both to unlimited (`CommandTimeout = 0`).
+- **Fixed Uploaded column date format mismatch:** The LEFT JOIN comparing `VMS_ProgressLogUploads.WeekEndDate` to `VMS_ProgressSnapshots.WeekEndDate` used raw string comparison, which failed when formats differed (e.g., `"4/8/2026"` vs `"2026-04-08"`). Changed to `TRY_CONVERT(datetime, ...)` date comparison.
+- **Submit Week timeout fix:** The `existingCmd` query (checking for existing snapshots across all users for a week) had default 30-second timeout. Set to unlimited since this scans potentially hundreds of thousands of rows.
+- **AssignTo timeout fix:** Both `SqlBulkCopy` operations (ownership check temp table and update batch temp table) had default 30-second `BulkCopyTimeout`. Set to unlimited. Also set `ownerQuery` and `updateCmd` to unlimited (were 120s).
+- **Sync dialog project sort reversed:** Projects in "Select Projects to Sync" dialog now sort by ProjectID descending so newest projects (highest year numbers) appear at the top.
+- **Project_Status.md cleanup:** Removed 7 completed feature narratives that were sitting in the status doc (Plugin System, Multi-Theme, Progress Books, AI Progress Scan, Help Sidebar, AI Takeoff Multi Title Block, Theme System Refactor, Import from AI Takeoff). All were already documented in Completed_Work archives.
+- **Key files:** `Dialogs/AdminSnapshotsDialog.xaml.cs`, `Views/ProgressView.xaml.cs`, `Dialogs/SyncDialog.xaml.cs`
+
 ### April 8, 2026 (Schedule Module — Local Snapshot Mirror, 21-Day Retention)
 - **Schedule Module — Local snapshot mirror for fast grid rendering:** All snapshot reads in the Schedule module (master rollups, detail grid, P6/MS discrepancy reports) now query a local SQLite mirror instead of Azure. This eliminates the long lag users were experiencing when interacting with the master and detail grids.
 - **New local table `ProgressSnapshots`:** Trimmed 12-column mirror of Azure `VMS_ProgressSnapshots` (UniqueID, WeekEndDate, SchedActNO, Description, PercentEntry, BudgetMHs, ActStart, ActFin, AssignedTo, ProjectID, UpdatedBy, UpdatedUtcDate). Holds only the current user's rows for the week matching the imported P6 file. Azure stays at 89 columns and is unchanged — the revert flow in ManageSnapshotsDialog continues to read from Azure.

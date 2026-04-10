@@ -1,6 +1,6 @@
 # MILESTONE - Project Status
 
-**Last Updated:** April 8, 2026
+**Last Updated:** April 10, 2026
 
 ## Deferred to Post-V1
 | Feature | Reason |
@@ -17,72 +17,9 @@
 
 ## Active Development
 
-### Plugin System (Complete)
-- Plugin Manager dialog in top-right settings menu (`⋮`) with Installed and Available tabs.
-- Feed-based discovery from `VANTAGE-Plugins` repo (`plugins-index.json`), install via GitHub release assets.
-- Startup auto-update: installed plugins checked against feed, newer versions installed automatically.
-- Plugin execution framework: `IVantagePlugin` interface, `IPluginHost` for app capabilities, `PluginLoaderService` loads assemblies at startup.
-- Plugins can add menu items to Tools menu dynamically via `host.AddToolsMenuItem()`.
-- `IPluginHost` includes `RefreshProgressViewAsync()` for plugins that modify activity data.
-- First plugin published: `ptp-tfs-mech-updater` v1.0.2 (PTP vendor shipping report importer for TFS Mechanical, ROCStep 4.SHP). v1.0.2: matches on UDF2 (CWP) instead of Description field.
-- Second plugin published: `const-tfs-mech-updater` v1.0.0 (Constellation vendor spool report importer for TFS Mechanical). 1:1 spool tracking by Piece Mark, progress = (WLD % All × 80%) + (shipped? 20%), auto-deletion detection for removed spools.
-
-### Multi-Theme System
-
-**Current state:** Dark, Light, Orchid, and Dark Forest themes with live switching (no restart). 103 keys per theme. Full token reference in `Themes/THEME_GUIDE.md`.
-
-**Architecture:** DynamicResource bindings throughout, `ThemeManager.ApplyTheme()` swaps dictionaries at runtime, fires `ThemeChanged` event. Views with Syncfusion grids re-apply `SfSkinManager.SetTheme()` on their grid controls via the event. See THEME_GUIDE.md for full details on creating new themes and technical constraints.
-
-**Theme Generator:** `Scripts/Generate-Theme.ps1` generates a complete theme XAML from 4 hex colors (Primary, Accent, Secondary, Surface) + dark/light base. Claude Code skill `/create-theme` automates the full workflow. Status button colors are hardcoded per base type (dark/light) to stay consistent. Independent highlight keys (`ScanButtonForeground`, `SummaryBudgetForeground`, `SummaryEarnedForeground`, `SummaryPercentForeground`, `SidebarButtonHoverBorder`, `SidebarButtonHoverBackground`) allow per-theme tuning without affecting other themes.
-
-### Progress Book Module
-- Phases 1-6 complete: Data models, repository, layout builder UI, PDF generator, live preview, generate dialog
-- PDF features: Auto-fit column widths, description wrapping, project description in header
-- Layout features: Separate grouping and sorting, up to 10 levels each, exclude completed option
-
-### AI Progress Scan (COMPLETE)
-- AWS Textract for table extraction, 100% accuracy on PDF and JPEG scans
-- PDF layout: `| ID | [user cols] | MHs | QTY | REM MH | CUR % | % ENTRY |`
-- Image preprocessing with contrast adjustment (slider, default 1.2)
-- OCR heuristic: "00" auto-converts to "100" (handles missed leading 1)
-- Key files: `TextractService.cs`, `PdfToImageConverter.cs`, `ProgressScanService.cs`, `ProgressBookPdfGenerator.cs`
-
 ### Work Package Module
 - Template editors testing
 - PDF preview testing
-
-### Help Sidebar (Complete for V1)
-- All 8 sections written (Getting Started, Main Interface, Progress, Schedule, Progress Books, Work Packages, Administration, Reference)
-- 20 screenshots, Build Action: Content / Copy if newer
-- WebView2 virtual host mapping (`https://help.local/manual.html`) — see `SidePanelView.xaml.cs`
-- VS sometimes re-adds PNGs as `<Resource Include>` — always verify Content / Copy if newer
-- Troubleshooting section deferred to post-V1
-
-### AI Takeoff Module - Multi Title Block Regions
-
-**Purpose:** Allow users to draw multiple boxes around different sections of a drawing's title block (e.g., PIPE INFO section, Project info section) to exclude noise like logos and revision history. All regions are sent as separate images to Claude, which extracts them into ONE unified `title_block` object.
-
-**Key difference from BOM multi-box:** BOM regions are stitched into one tall image. Title block regions stay as separate images but produce a single combined extraction.
-
-**Files Modified:**
-
-| File | Changes |
-|------|---------|
-| `Models/AI/CropRegionConfig.cs` | Changed `TitleBlockRegion` (single) to `TitleBlockRegions` (list). Backward compat: `TitleBlockRegion` setter auto-populates list when deserializing old configs. |
-| `Dialogs/ConfigCreatorWindow.xaml.cs` | Removed replace logic that limited to one title block. Labels now show "Title Block", "Title Block 2", etc. Save builds list with labels `title_block`, `title_block_2`. Load iterates over `TitleBlockRegions` list. |
-| `Plans/AWS Agent/extraction_lambda_function.py` | Checks for `title_block_regions` (list) first, falls back to `title_block_region` (single). Crops each region separately. Labels: "Title block section 1", "Title block section 2". Prompt instructs Claude to combine all sections into single `title_block` object. |
-
-**Config JSON Format:**
-```json
-{
-  "title_block_regions": [
-    { "label": "title_block", "x_pct": 75.2, "y_pct": 80.1, "width_pct": 24.5, "height_pct": 19.2 },
-    { "label": "title_block_2", "x_pct": 0.5, "y_pct": 85.0, "width_pct": 20.0, "height_pct": 14.5 }
-  ]
-}
-```
-
-**Lambda Deployed:** Updated `extraction_lambda_function.py` deployed to AWS Lambda (March 2026). Testing complete.
 
 ### AI Takeoff — Multi-Drawing Documents
 - **TODO:** Support drawing documents (PDFs) that contain multiple drawings per document (multiple pages). Currently each uploaded PDF is treated as a single drawing. Need to handle cases where one PDF contains several pages, each representing a different drawing.
@@ -116,8 +53,6 @@ Series of short tutorial videos for end users. Each item below needs a plan and 
 
 ### Medium Priority
 - **Clean up Project_Status.md** — Sweep the doc and move every "Complete" / finished narrative section out to `Completed_Work.md` (or delete if already represented there). Sections to review include Plugin System, Multi-Theme System, Progress Book Module, AI Progress Scan, Work Package Module, Help Sidebar, AI Takeoff Multi Title Block Regions, and any other "Complete"-flagged blocks. Status doc should only contain in-progress work, todos, and the backlog — not narration of finished features (that's what `Completed_Work.md` is for, per CLAUDE.md workflow).
-- **Theme System Refactor** — Phases 1-7 complete. Live switching works, tokens split, guide written. Theme generator script and `/create-theme` skill complete. See `Themes/THEME_GUIDE.md`.
-- **Import from AI Takeoff** — Dialog and import/export logic implemented. Column mapping, metadata, handling filter, BU hardware rollup, fab per DWG rollup, Create Excel output, ROC split application all functional. UniqueID generation fixed. Import profiles (save/load/delete named presets). Batch source removed (file-only).
 - **MSI/MSIX installer** — Replace custom installer with MSI (WiX Toolset) or MSIX packaging to get genuine Windows install integration. Current custom installer registers via registry but Windows Search won't execute `UninstallString` directly — only MSI and UWP/MSIX apps get direct uninstall from search context menu. Current setup works via Settings > Apps.
 - **User-editable header template for WP** — Allow customizing header layout
 - **Complete RateEquiv mappings** — Finish adding all component-to-EstGrp mappings in `RateSheetService.cs` (ComponentToEstGrp dictionary). Currently has valve types, fittings, GGLASS, METER, HOSE, HEAT→INST, etc.
