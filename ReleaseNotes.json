@@ -1,6 +1,17 @@
 {
   "releases": [
     {
+      "version": "26.2.6",
+      "date": "2026-04-11",
+      "highlights": [
+        "Fix — Sync no longer silently reverts your changes when the push to Azure fails (pull is skipped, changes preserved for retry)",
+        "Fix — Sync dialog now shows clear error message when push encounters a problem",
+        "Performance — Removed ownership check from sync flow (was causing timeouts on large projects)",
+        "Fix — Resolved race condition that could skip records pushed by other users between syncs",
+        "New — ActNO Split Ownership Check tool in the Tools menu for schedulers to check for split ownership on demand"
+      ]
+    },
+    {
       "version": "26.2.5",
       "date": "2026-04-10",
       "highlights": [

@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.2.5",
-  "releaseDate": "2026-04-10T12:44:48Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.2.5/VANTAGE-26.2.5.zip",
-  "zipSizeBytes": 150185392,
-  "sha256": "031104D19ABC2EC150DC60A6C7DFC37179D464CB7557D1A79CC31FA8B14948D8",
-  "releaseNotes": "Fix snapshot upload tracking timeouts on large datasets. Fix Submit Week and Assign To timeouts. Sync dialog sorts newest projects first."
+  "currentVersion": "26.2.6",
+  "releaseDate": "2026-04-11T09:26:01Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.2.6/VANTAGE-26.2.6.zip",
+  "zipSizeBytes": 150934320,
+  "sha256": "F1D6E58786FBA0B87BBC1D1E9578CC49B9A4F684AFED03ACA68A6396B67005B9",
+  "releaseNotes": "Fix sync data revert issue. Skip pull on push failure to protect local changes. Remove ownership check from sync flow. Add ActNO Split Ownership Check tool."
 }
