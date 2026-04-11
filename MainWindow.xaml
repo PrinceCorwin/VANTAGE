@@ -144,6 +144,7 @@
                             <syncfusion:DropDownMenuItem Header="Schedule Change Log" Click="MenuScheduleChangeLog_Click" ToolTip="View and apply changes made in the Schedule detail grid"/>
                             <syncfusion:DropDownMenuItem Header="Schedule UDF Mapping..." Click="MenuScheduleUDFMapping_Click" ToolTip="Configure custom P6 UDF column mappings"/>
                             <syncfusion:DropDownMenuItem Header="ROC Manager" Click="MenuROCManager_Click" ToolTip="Create, view, modify, or delete ROC rate sets"/>
+                            <syncfusion:DropDownMenuItem Header="ActNO Split Ownership Check" Click="MenuOwnershipCheck_Click" ToolTip="Check for split ActNO ownership across users in a project"/>
                             <!-- Plugin menu items are added dynamically below this point -->
                         </syncfusion:DropDownMenuGroup>
                     </syncfusion:DropDownButtonAdv>

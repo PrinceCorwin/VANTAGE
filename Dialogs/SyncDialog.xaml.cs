@@ -218,7 +218,6 @@ namespace VANTAGE.Dialogs
                 int localRecordsRemoved = 0;
 
                 // Run sync operations on background thread to keep UI responsive
-                // Run sync operations on background thread to keep UI responsive
                 var (pushResult, pullResult) = await Task.Run(() =>
                 {
                     // Mirror reference tables
@@ -226,6 +225,12 @@ namespace VANTAGE.Dialogs
 
                     // Push dirty records (always push ALL dirty, regardless of MyRecordsOnly)
                     var push = SyncManager.PushRecordsAsync(selectedProjects).Result;
+
+                    // Skip pull if push had an error — pulling would overwrite local changes with old Azure data
+                    if (!string.IsNullOrEmpty(push.ErrorMessage))
+                    {
+                        return (push, new SyncManager.SyncResult());
+                    }
 
                     // Pull updates with optional owner filter
                     var pull = SyncManager.PullRecordsAsync(selectedProjects, myRecordsOnly ? currentUsername : null).Result;
@@ -263,6 +268,11 @@ namespace VANTAGE.Dialogs
                     message += "\n\n(Full sync performed)";
                 }
 
+                if (!string.IsNullOrEmpty(pushResult.ErrorMessage))
+                {
+                    message += $"\n\nPush error (pull skipped to protect your changes):\n{pushResult.ErrorMessage}";
+                }
+
                 if (pushResult.FailedRecords.Count > 0)
                 {
                     message += $"\n\nFailed to push {pushResult.FailedRecords.Count} records:\n" +
@@ -274,7 +284,9 @@ namespace VANTAGE.Dialogs
                 AppLogger.Info($"Sync completed: {pushResult.PushedRecords} pushed, {pullResult.PulledRecords} pulled, {localRecordsRemoved} removed (MyRecordsOnly={myRecordsOnly})",
                     "SyncDialog.BtnConfirmSync_Click", App.CurrentUser?.Username);
 
-                MessageBox.Show(message, "Sync Complete", MessageBoxButton.OK, MessageBoxImage.None);
+                var messageTitle = string.IsNullOrEmpty(pushResult.ErrorMessage) ? "Sync Complete" : "Sync Incomplete";
+                var messageIcon = string.IsNullOrEmpty(pushResult.ErrorMessage) ? MessageBoxImage.None : MessageBoxImage.Warning;
+                MessageBox.Show(message, messageTitle, MessageBoxButton.OK, messageIcon);
 
                 DialogResult = true;
                 Close();

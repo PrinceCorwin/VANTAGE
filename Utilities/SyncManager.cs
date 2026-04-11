@@ -66,8 +66,8 @@ namespace VANTAGE.Utilities
                 "ROCPercent" => activity.ROCPercent,
                 "ROCStep" => activity.ROCStep,
                 "SchedActNO" => activity.SchedActNO,
-                "ActFin" => activity.ActFin,
-                "ActStart" => activity.ActStart,
+                "ActFin" => activity.ActFin?.ToString("yyyy-MM-dd HH:mm:ss"),
+                "ActStart" => activity.ActStart?.ToString("yyyy-MM-dd HH:mm:ss"),
                 "PlanStart" => activity.PlanStart?.ToString("yyyy-MM-dd HH:mm:ss"),
                 "PlanFin" => activity.PlanFin?.ToString("yyyy-MM-dd HH:mm:ss"),
                 "SecondActno" => activity.SecondActno,
@@ -306,6 +306,12 @@ namespace VANTAGE.Utilities
                         int updatedCount = updateFromStagingCmd.ExecuteNonQuery();
 
                         updateSuccessIds.AddRange(validUpdates.Select(r => r.UniqueID));
+
+                        if (updatedCount != validUpdates.Count)
+                        {
+                            AppLogger.Warning($"Push update count mismatch: expected {validUpdates.Count}, actual {updatedCount}", "SyncManager.PushRecords");
+                        }
+
                         AppLogger.Info($"Step 3 complete ({stopwatch.Elapsed.TotalSeconds:F1}s): Bulk updated {updatedCount} records", "SyncManager.PushRecords");
                     }
                 }
@@ -757,15 +763,11 @@ namespace VANTAGE.Utilities
                         result.PulledRecords += recordsToPull.Count;
                     }
 
-                    // Update LastPulledSyncVersion to Azure's max for this project
-                    var maxVersionCmd = azureConn.CreateCommand();
-                    maxVersionCmd.CommandText = "SELECT ISNULL(MAX(SyncVersion), 0) FROM VMS_Activities WHERE [ProjectID] = @projectId";
-                    maxVersionCmd.Parameters.AddWithValue("@projectId", projectId);
-                    long azureMaxVersion = Convert.ToInt64(maxVersionCmd.ExecuteScalar());
-
+                    // Update LastPulledSyncVersion to the max version we actually pulled
+                    // (avoids race condition where another user pushes between our pull query and a MAX query)
                     SettingsManager.SetAppSetting(
                         $"LastPulledSyncVersion_{projectId}",
-                        azureMaxVersion.ToString(),
+                        maxVersionPulled.ToString(),
                         "int"
                     );
                 }

@@ -1859,6 +1859,12 @@ namespace VANTAGE
             dialog.ShowDialog();
         }
 
+        private void MenuOwnershipCheck_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new Dialogs.OwnershipCheckDialog { Owner = this };
+            dialog.ShowDialog();
+        }
+
         // MODULE LOADING
 
         // Loads the Progress module, reusing the cached instance unless forceReload is true
