@@ -6,6 +6,11 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### April 12, 2026 (Analysis Filter Panel — Custom Scrollbar, First-ComboBox Theme Fix)
+- **Custom themed scrollbar for Analysis filter panel:** Replaced default Syncfusion scrollbar in the Chart Filters section with the same custom scrollbar used in the Progress grid — themed thumb with hover effect, 14px width, theme-aware colors (cyan/blue/orchid/green depending on theme). Scrollbar is embedded in a custom `ScrollViewer` template (`FilterScrollViewerStyle`) to avoid implicit style leaking into ComboBoxAdv dropdown internals.
+- **Fixed first ComboBoxAdv broken on startup:** When the Analysis tab loaded as the initial tab on app startup, the first filter ComboBoxAdv rendered with default Windows styling (light gradient, old dropdown arrow) and was non-functional. Root cause: `SfSkinManager.SetTheme` was called in the AnalysisView constructor before the control was in the visual tree. Moved to the `Loaded` event handler where the theme can properly cascade to all child controls.
+- **Key files:** `Views/AnalysisView.xaml`, `Views/AnalysisView.xaml.cs`
+
 ### April 12, 2026 (Email Service Migration to Azure ACS, Remove Split Ownership Check from Assignment)
 - **Email service migrated to new Azure Communication Services resource:** Replaced the old ACS connection (from deleted personal Azure account) with a new ACS resource (`milestone-comms`). Updated connection string, access key, and sender address (`DoNotReply@d7f8380a-bb3f-4f0b-a1d4-47143b8f4ee8.azurecomm.net`) in `appsettings.json`, `Credentials.cs`, and `CredentialService.cs`. All email-sending features (assignment notifications, access requests, admin alerts, feedback board) use the same `EmailService` class and work with the new credentials.
 - **Removed ActNO split ownership check from record assignment flow:** The assignment dialog (`MenuAssignToUser_Click`) previously checked if selected activities shared a SchedActNO with unselected activities and forced users to include all related records. This check has been removed — users can now reassign any selection of records without the split validation. The standalone "ActNO Split Ownership Check" tool remains available in the Tools menu for on-demand use.

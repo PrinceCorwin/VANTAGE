@@ -78,6 +78,73 @@
             <Setter Property="Background" Value="{DynamicResource BackgroundColor}"/>
             <Setter Property="Margin" Value="4"/>
         </Style>
+
+        <!-- Custom scrollbar thumb for filter panel -->
+        <ControlTemplate x:Key="FilterThumbTemplate" TargetType="Thumb">
+            <Border x:Name="thumbBorder"
+                    Background="{DynamicResource ScrollBarThumbColor}"
+                    BorderBrush="{DynamicResource ScrollBarBorderColor}"
+                    BorderThickness="1"
+                    CornerRadius="2"/>
+            <ControlTemplate.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter TargetName="thumbBorder" Property="Background" Value="{DynamicResource ScrollBarThumbHoverColor}"/>
+                </Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate>
+
+        <!-- Custom ScrollViewer with themed scrollbar -->
+        <Style x:Key="FilterScrollViewerStyle" TargetType="ScrollViewer">
+            <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ScrollViewer">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <ScrollContentPresenter Grid.Column="0"/>
+                            <ScrollBar x:Name="PART_VerticalScrollBar" Grid.Column="1"
+                                       Orientation="Vertical" Width="14" MinWidth="14"
+                                       Value="{TemplateBinding VerticalOffset}"
+                                       Maximum="{TemplateBinding ScrollableHeight}"
+                                       ViewportSize="{TemplateBinding ViewportHeight}"
+                                       Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}">
+                                <ScrollBar.Template>
+                                    <ControlTemplate TargetType="ScrollBar">
+                                        <Grid Background="{DynamicResource ScrollBarTrackColor}">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="*"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+                                            <RepeatButton Grid.Row="0" Command="ScrollBar.LineUpCommand"
+                                                          Height="14" Opacity="0">
+                                                <RepeatButton.Template>
+                                                    <ControlTemplate><Border Height="14"/></ControlTemplate>
+                                                </RepeatButton.Template>
+                                            </RepeatButton>
+                                            <Track Grid.Row="1" x:Name="PART_Track" IsDirectionReversed="True">
+                                                <Track.Thumb>
+                                                    <Thumb Template="{StaticResource FilterThumbTemplate}"/>
+                                                </Track.Thumb>
+                                            </Track>
+                                            <RepeatButton Grid.Row="2" Command="ScrollBar.LineDownCommand"
+                                                          Height="14" Opacity="0">
+                                                <RepeatButton.Template>
+                                                    <ControlTemplate><Border Height="14"/></ControlTemplate>
+                                                </RepeatButton.Template>
+                                            </RepeatButton>
+                                        </Grid>
+                                    </ControlTemplate>
+                                </ScrollBar.Template>
+                            </ScrollBar>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </UserControl.Resources>
 
     <!-- Main Grid with independent row grids -->
@@ -125,7 +192,7 @@
                     <TextBlock Grid.Row="0" Text="Chart Filters" FontWeight="SemiBold" FontSize="13"
                                Foreground="{DynamicResource ForegroundColor}" Margin="8,6,8,4"/>
 
-                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="8,0,8,8">
+                    <ScrollViewer Grid.Row="1" Style="{StaticResource FilterScrollViewerStyle}" Margin="8,0,8,8">
                         <StackPanel>
                             <TextBlock Text="Area" Foreground="{DynamicResource ForegroundColor}" Margin="0,4,0,2" FontSize="11"/>
                             <syncfusion:ComboBoxAdv x:Name="cmbFilter_Area" AllowMultiSelect="True" EnableOKCancel="False"

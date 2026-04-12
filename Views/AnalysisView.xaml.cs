@@ -43,13 +43,13 @@ namespace VANTAGE.Views
         public AnalysisView()
         {
             InitializeComponent();
-            SfSkinManager.SetTheme(this, new Theme(ThemeManager.GetSyncfusionThemeName()));
             Loaded += AnalysisView_Loaded;
             Unloaded += AnalysisView_Unloaded;
         }
 
         private void AnalysisView_Loaded(object sender, RoutedEventArgs e)
         {
+            SfSkinManager.SetTheme(this, new Theme(ThemeManager.GetSyncfusionThemeName()));
             ThemeManager.ThemeChanged += OnThemeChanged;
             _isInitializing = true;
 
