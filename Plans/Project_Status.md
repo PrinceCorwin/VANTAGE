@@ -1,6 +1,6 @@
 # MILESTONE - Project Status
 
-**Last Updated:** April 11, 2026
+**Last Updated:** April 12, 2026
 
 ## Deferred to Post-V1
 | Feature | Reason |
@@ -52,6 +52,7 @@ Series of short tutorial videos for end users. Each item below needs a plan and 
 
 
 ### Medium Priority
+- **Help manual screenshots audit** — Review all sections of `Help/manual.html`, update outdated screenshots to reflect current UI, and add missing screenshots for features that have none (e.g., ActNO Split Ownership Check dialog, Sync Incomplete warning, any other recently added dialogs or UI changes).
 - **Clean up Project_Status.md** — Sweep the doc and move every "Complete" / finished narrative section out to `Completed_Work.md` (or delete if already represented there). Sections to review include Plugin System, Multi-Theme System, Progress Book Module, AI Progress Scan, Work Package Module, Help Sidebar, AI Takeoff Multi Title Block Regions, and any other "Complete"-flagged blocks. Status doc should only contain in-progress work, todos, and the backlog — not narration of finished features (that's what `Completed_Work.md` is for, per CLAUDE.md workflow).
 - **MSI/MSIX installer** — Replace custom installer with MSI (WiX Toolset) or MSIX packaging to get genuine Windows install integration. Current custom installer registers via registry but Windows Search won't execute `UninstallString` directly — only MSI and UWP/MSIX apps get direct uninstall from search context menu. Current setup works via Settings > Apps.
 - **User-editable header template for WP** — Allow customizing header layout

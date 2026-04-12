@@ -45,7 +45,7 @@ namespace VANTAGE.Utilities
         public static string AzureUserId => Config.Azure.UserId;
         public static string AzurePassword => Config.Azure.Password;
 
-        // Email
+        // Email (Azure Communication Services)
         public static string AzureEmailConnectionString => Config.Email.ConnectionString;
         public static string AzureEmailSenderAddress => Config.Email.SenderAddress;
 

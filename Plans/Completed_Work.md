@@ -6,6 +6,11 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### April 12, 2026 (Email Service Migration to Azure ACS, Remove Split Ownership Check from Assignment)
+- **Email service migrated to new Azure Communication Services resource:** Replaced the old ACS connection (from deleted personal Azure account) with a new ACS resource (`milestone-comms`). Updated connection string, access key, and sender address (`DoNotReply@d7f8380a-bb3f-4f0b-a1d4-47143b8f4ee8.azurecomm.net`) in `appsettings.json`, `Credentials.cs`, and `CredentialService.cs`. All email-sending features (assignment notifications, access requests, admin alerts, feedback board) use the same `EmailService` class and work with the new credentials.
+- **Removed ActNO split ownership check from record assignment flow:** The assignment dialog (`MenuAssignToUser_Click`) previously checked if selected activities shared a SchedActNO with unselected activities and forced users to include all related records. This check has been removed — users can now reassign any selection of records without the split validation. The standalone "ActNO Split Ownership Check" tool remains available in the Tools menu for on-demand use.
+- **Key files:** `Utilities/EmailService.cs`, `Utilities/CredentialService.cs`, `Models/AppConfig.cs`, `Credentials.cs`, `appsettings.json`, `Views/ProgressView.xaml.cs`, `VANTAGE.csproj`
+
 ### April 11, 2026 (Sync Reliability Fixes, Ownership Check Moved to Tools Menu)
 - **Fixed silent push error causing data revert:** When the push to Azure failed (timeout, connection drop, etc.), the exception was caught silently and the pull ran anyway — overwriting local changes with old Azure data and clearing LocalDirty flags. Users saw their edits revert after sync with no error shown. Fix: if push has an error, the pull is now skipped to protect local changes. Sync dialog shows "Sync Incomplete" with warning icon and the error message. Local dirty records are preserved for retry.
 - **Removed ownership check from sync flow:** The `CheckSplitOwnershipAsync` query (JOIN on SchedActNO across 65K+ records with no index) ran on every sync click before the SyncDialog opened. This caused timeouts and blocked syncing. Removed entirely from the sync path.

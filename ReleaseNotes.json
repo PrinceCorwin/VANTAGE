@@ -1,6 +1,14 @@
 {
   "releases": [
     {
+      "version": "26.2.7",
+      "date": "2026-04-12",
+      "highlights": [
+        "Fix — Email notifications restored (migrated to new Azure Communication Services resource)",
+        "Improvement — Record assignment no longer requires all activities sharing a SchedActNO to be selected together"
+      ]
+    },
+    {
       "version": "26.2.6",
       "date": "2026-04-11",
       "highlights": [
