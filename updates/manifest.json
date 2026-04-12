@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.2.6",
-  "releaseDate": "2026-04-11T09:26:01Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.2.6/VANTAGE-26.2.6.zip",
-  "zipSizeBytes": 150934320,
-  "sha256": "F1D6E58786FBA0B87BBC1D1E9578CC49B9A4F684AFED03ACA68A6396B67005B9",
-  "releaseNotes": "Fix sync data revert issue. Skip pull on push failure to protect local changes. Remove ownership check from sync flow. Add ActNO Split Ownership Check tool."
+  "currentVersion": "26.2.7",
+  "releaseDate": "2026-04-12T13:38:06Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.2.7/VANTAGE-26.2.7.zip",
+  "zipSizeBytes": 150931953,
+  "sha256": "DC8033CF05631C1BE907972B87E0B2DF8B15A6E39DD7DD9C2A701861FFB59E83",
+  "releaseNotes": "Restore email notifications with new Azure Communication Services resource. Remove split ownership check from record assignment."
 }
