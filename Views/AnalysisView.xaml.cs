@@ -168,6 +168,29 @@ namespace VANTAGE.Views
                         selectedItems.Add(item);
                 }
             }
+
+            // Restore chart filter selections
+            foreach (var field in ChartFilterFields)
+            {
+                var combo = GetChartFilterCombo(field);
+                if (combo == null) continue;
+
+                var saved = SettingsManager.GetUserSetting($"AnalysisFilter_{field}", "");
+                if (string.IsNullOrEmpty(saved)) continue;
+
+                var savedValues = saved.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                var comboItems = combo.SelectedItems as System.Collections.IList;
+                if (comboItems == null) continue;
+
+                var available = combo.ItemsSource as List<string>;
+                if (available == null) continue;
+
+                foreach (var val in savedValues)
+                {
+                    if (available.Contains(val))
+                        comboItems.Add(val);
+                }
+            }
         }
 
         // Save current settings
@@ -191,7 +214,6 @@ namespace VANTAGE.Views
                     TopCol0 = topCol0.Width.Value,
                     TopCol1 = topCol1.Width.Value,
                     TopCol2 = topCol2.Width.Value,
-                    TopCol3 = topCol3.Width.Value,
                     // Bottom row columns
                     BottomCol0 = bottomCol0.Width.Value,
                     BottomCol1 = bottomCol1.Width.Value,
@@ -223,7 +245,6 @@ namespace VANTAGE.Views
                 if (root.TryGetProperty("TopCol0", out var tc0)) topCol0.Width = new GridLength(tc0.GetDouble(), GridUnitType.Star);
                 if (root.TryGetProperty("TopCol1", out var tc1)) topCol1.Width = new GridLength(tc1.GetDouble(), GridUnitType.Star);
                 if (root.TryGetProperty("TopCol2", out var tc2)) topCol2.Width = new GridLength(tc2.GetDouble(), GridUnitType.Star);
-                if (root.TryGetProperty("TopCol3", out var tc3)) topCol3.Width = new GridLength(tc3.GetDouble(), GridUnitType.Star);
                 // Bottom row columns
                 if (root.TryGetProperty("BottomCol0", out var bc0)) bottomCol0.Width = new GridLength(bc0.GetDouble(), GridUnitType.Star);
                 if (root.TryGetProperty("BottomCol1", out var bc1)) bottomCol1.Width = new GridLength(bc1.GetDouble(), GridUnitType.Star);
@@ -424,6 +445,40 @@ namespace VANTAGE.Views
         {
             if (_isInitializing) return;
             UpdateVisual_1_1();
+            SaveChartFilterSelections();
+        }
+
+        // Clear all chart filter selections
+        private void BtnResetFilters_Click(object sender, RoutedEventArgs e)
+        {
+            _isInitializing = true;
+            try
+            {
+                foreach (var field in ChartFilterFields)
+                {
+                    var combo = GetChartFilterCombo(field);
+                    if (combo == null) continue;
+                    (combo.SelectedItems as System.Collections.IList)?.Clear();
+                }
+            }
+            finally
+            {
+                _isInitializing = false;
+            }
+
+            SaveChartFilterSelections();
+            UpdateVisual_1_1();
+        }
+
+        // Persist chart filter selections to UserSettings
+        private void SaveChartFilterSelections()
+        {
+            foreach (var field in ChartFilterFields)
+            {
+                var combo = GetChartFilterCombo(field);
+                var selected = combo?.SelectedItems?.Cast<string>().ToList() ?? new List<string>();
+                SettingsManager.SetUserSetting($"AnalysisFilter_{field}", string.Join(",", selected), "string");
+            }
         }
 
         // Build WHERE clauses from active chart filters
@@ -641,6 +696,26 @@ namespace VANTAGE.Views
             var chart = new SfChart { Margin = new Thickness(4) };
             SfSkinManager.SetTheme(chart, new Theme(ThemeManager.GetSyncfusionThemeName()));
 
+            var foreground = TryFindResource("ForegroundColor") as SolidColorBrush ?? new SolidColorBrush(Colors.White);
+
+            var adornments = new ChartAdornmentInfo
+            {
+                ShowLabel = true,
+                SegmentLabelContent = LabelContent.LabelContentPath,
+                ShowConnectorLine = true,
+                ConnectorHeight = 20,
+                LabelPosition = AdornmentsLabelPosition.Outer,
+                Foreground = foreground,
+                FontSize = 11
+            };
+
+            chart.Legend = new ChartLegend
+            {
+                DockPosition = ChartDock.Bottom,
+                Foreground = foreground,
+                FontSize = 11
+            };
+
             if (visualType == "Doughnut Chart")
             {
                 var series = new DoughnutSeries
@@ -648,7 +723,8 @@ namespace VANTAGE.Views
                     ItemsSource = rows,
                     XBindingPath = "Label",
                     YBindingPath = "Value",
-                    ShowTooltip = true
+                    ShowTooltip = true,
+                    AdornmentsInfo = adornments
                 };
                 chart.Palette = ChartColorPalette.Metro;
                 chart.Series.Add(series);
@@ -660,7 +736,8 @@ namespace VANTAGE.Views
                     ItemsSource = rows,
                     XBindingPath = "Label",
                     YBindingPath = "Value",
-                    ShowTooltip = true
+                    ShowTooltip = true,
+                    AdornmentsInfo = adornments
                 };
                 chart.Palette = ChartColorPalette.Metro;
                 chart.Series.Add(series);

@@ -6,9 +6,13 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
-### April 12, 2026 (Analysis Filter Panel — Custom Scrollbar, First-ComboBox Theme Fix)
-- **Custom themed scrollbar for Analysis filter panel:** Replaced default Syncfusion scrollbar in the Chart Filters section with the same custom scrollbar used in the Progress grid — themed thumb with hover effect, 14px width, theme-aware colors (cyan/blue/orchid/green depending on theme). Scrollbar is embedded in a custom `ScrollViewer` template (`FilterScrollViewerStyle`) to avoid implicit style leaking into ComboBoxAdv dropdown internals.
-- **Fixed first ComboBoxAdv broken on startup:** When the Analysis tab loaded as the initial tab on app startup, the first filter ComboBoxAdv rendered with default Windows styling (light gradient, old dropdown arrow) and was non-functional. Root cause: `SfSkinManager.SetTheme` was called in the AnalysisView constructor before the control was in the visual tree. Moved to the `Loaded` event handler where the theme can properly cascade to all child controls.
+### April 12, 2026 (Analysis Module — Filter Persistence, Reset, Scrollbar, Pie/Doughnut Labels, Layout Trim)
+- **Chart filter selections now persist:** All 12 filter dropdowns save their selections to UserSettings immediately on change and restore on tab load. Previously, filter selections were lost when navigating away.
+- **Reset button:** Added "Reset" button next to the "Chart Filters" header to clear all filter selections in one click.
+- **Custom themed scrollbar for filter panel:** Replaced default Syncfusion scrollbar with the same custom scrollbar used in the Progress grid — themed thumb with hover effect, 14px width. Uses a custom `ScrollViewer` template (`FilterScrollViewerStyle`) to avoid implicit style leaking into ComboBoxAdv dropdown internals.
+- **Fixed first ComboBoxAdv broken on startup:** When the Analysis tab loaded as the initial tab on app startup, the first filter ComboBoxAdv was non-functional with default Windows styling. Root cause: `SfSkinManager.SetTheme` was called in the constructor before the control was in the visual tree. Moved to the `Loaded` event handler.
+- **Pie and Doughnut chart labels:** Added outer labels with connector lines showing category names, and a bottom-docked legend with color-coded entries.
+- **Top row reduced to 3 sections:** Removed Section 1,4 (empty placeholder). Top row now has Chart Filters, Dynamic Visual, and one placeholder section. Grid layout save/restore updated accordingly.
 - **Key files:** `Views/AnalysisView.xaml`, `Views/AnalysisView.xaml.cs`
 
 ### April 12, 2026 (Email Service Migration to Azure ACS, Remove Split Ownership Check from Assignment)

@@ -12,7 +12,7 @@
 ## In Progress / Not Started
 | Module | Status | Notes |
 |--------|--------|-------|
-| Analysis | IN PROGRESS | 4x1+3 grid layout, chart filters panel, dynamic chart sections with selectable visual type/X axis/Y axis, summary grid with independent filters, Excel export |
+| Analysis | IN PROGRESS | 3x1+3 grid layout, chart filters panel with persistence and Reset button, dynamic chart sections with selectable visual type/X axis/Y axis, pie/doughnut labels and legends, summary grid with independent filters, Excel export |
 | AI Features (other) | NOT STARTED | Error Assistant, Description Analysis, etc. |
 
 ## Active Development
