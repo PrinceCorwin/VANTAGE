@@ -1,6 +1,15 @@
 {
   "releases": [
     {
+      "version": "26.2.8",
+      "date": "2026-04-14",
+      "highlights": [
+        "Fix — Arrow key navigation no longer crashes when rapidly scrolling across grid columns",
+        "Fix — Analysis tab summary table now reliably renders data after clearing and re-syncing",
+        "Fix — Analysis tab initialization errors no longer silently prevent the summary table from loading"
+      ]
+    },
+    {
       "version": "26.2.7",
       "date": "2026-04-12",
       "highlights": [

@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.2.7",
-  "releaseDate": "2026-04-12T13:38:06Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.2.7/VANTAGE-26.2.7.zip",
-  "zipSizeBytes": 150931953,
-  "sha256": "DC8033CF05631C1BE907972B87E0B2DF8B15A6E39DD7DD9C2A701861FFB59E83",
-  "releaseNotes": "Restore email notifications with new Azure Communication Services resource. Remove split ownership check from record assignment."
+  "currentVersion": "26.2.8",
+  "releaseDate": "2026-04-14T13:22:35Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.2.8/VANTAGE-26.2.8.zip",
+  "zipSizeBytes": 150931616,
+  "sha256": "A8DF16E34B369C71F1C39D1040530EB07107248D36082F54369D2DB96CC6E292",
+  "releaseNotes": "Fix grid navigation crash, Analysis table rendering after sync, and initialization error handling."
 }
