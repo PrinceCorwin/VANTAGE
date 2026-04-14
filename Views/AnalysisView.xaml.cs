@@ -43,13 +43,13 @@ namespace VANTAGE.Views
         public AnalysisView()
         {
             InitializeComponent();
+            SfSkinManager.SetTheme(this, new Theme(ThemeManager.GetSyncfusionThemeName()));
             Loaded += AnalysisView_Loaded;
             Unloaded += AnalysisView_Unloaded;
         }
 
         private void AnalysisView_Loaded(object sender, RoutedEventArgs e)
         {
-            SfSkinManager.SetTheme(this, new Theme(ThemeManager.GetSyncfusionThemeName()));
             ThemeManager.ThemeChanged += OnThemeChanged;
             _isInitializing = true;
 
@@ -61,6 +61,10 @@ namespace VANTAGE.Views
                 InitializeSection_1_1();
                 RestoreSettings();
                 RestoreGridLayout();
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "AnalysisView.AnalysisView_Loaded.Init");
             }
             finally
             {
@@ -143,52 +147,40 @@ namespace VANTAGE.Views
             rbCurrentUser.IsChecked = currentUserOnly;
             rbAllUsers.IsChecked = !currentUserOnly;
 
-            // Selected projects - use SelectedItems as IList
+            // Auto-select first project from whatever is currently in local
             var selectedItems = cmbProjects.SelectedItems as System.Collections.IList;
-            if (selectedItems == null) return;
-
-            var savedProjects = SettingsManager.GetAnalysisSelectedProjects();
-            if (!string.IsNullOrEmpty(savedProjects))
+            if (selectedItems != null && cmbProjects.ItemsSource is List<string> projects && projects.Count > 0)
             {
-                var projectList = savedProjects.Split(',', StringSplitOptions.RemoveEmptyEntries);
-                foreach (var project in projectList)
-                {
-                    if (cmbProjects.ItemsSource is List<string> items && items.Contains(project))
-                    {
-                        selectedItems.Add(project);
-                    }
-                }
-            }
-            else
-            {
-                // Default: select all projects
-                if (cmbProjects.ItemsSource is List<string> items)
-                {
-                    foreach (var item in items)
-                        selectedItems.Add(item);
-                }
+                selectedItems.Add(projects[0]);
             }
 
             // Restore chart filter selections
             foreach (var field in ChartFilterFields)
             {
-                var combo = GetChartFilterCombo(field);
-                if (combo == null) continue;
-
-                var saved = SettingsManager.GetUserSetting($"AnalysisFilter_{field}", "");
-                if (string.IsNullOrEmpty(saved)) continue;
-
-                var savedValues = saved.Split(',', StringSplitOptions.RemoveEmptyEntries);
-                var comboItems = combo.SelectedItems as System.Collections.IList;
-                if (comboItems == null) continue;
-
-                var available = combo.ItemsSource as List<string>;
-                if (available == null) continue;
-
-                foreach (var val in savedValues)
+                try
                 {
-                    if (available.Contains(val))
-                        comboItems.Add(val);
+                    var combo = GetChartFilterCombo(field);
+                    if (combo == null) continue;
+
+                    var saved = SettingsManager.GetUserSetting($"AnalysisFilter_{field}", "");
+                    if (string.IsNullOrEmpty(saved)) continue;
+
+                    var savedValues = saved.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                    var comboItems = combo.SelectedItems as System.Collections.IList;
+                    if (comboItems == null) continue;
+
+                    var available = combo.ItemsSource as List<string>;
+                    if (available == null) continue;
+
+                    foreach (var val in savedValues)
+                    {
+                        if (available.Contains(val))
+                            comboItems.Add(val);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    AppLogger.Error(ex, $"AnalysisView.RestoreSettings.ChartFilter_{field}");
                 }
             }
         }
@@ -198,9 +190,6 @@ namespace VANTAGE.Views
         {
             SettingsManager.SetAnalysisGroupField(cmbGroupBy.SelectedItem?.ToString() ?? "PhaseCode");
             SettingsManager.SetAnalysisCurrentUserOnly(rbCurrentUser.IsChecked == true);
-
-            var selectedProjects = cmbProjects.SelectedItems?.Cast<string>().ToList() ?? new List<string>();
-            SettingsManager.SetAnalysisSelectedProjects(string.Join(",", selectedProjects));
         }
 
         // Save GridSplitter positions

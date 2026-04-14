@@ -6,6 +6,13 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### April 14, 2026 (Bug Fixes — Grid Crash, Analysis Table Not Rendering, Project Selection)
+- **Fixed arrow key navigation crash in Progress grid:** Holding left/right arrow key to navigate across columns crashed the app after ~20 columns. Root cause: `ClientEquivEarnQTY` column had `AllowEditing="True"` but the property has a `private set`, causing Syncfusion to create a TwoWay binding that threw `InvalidOperationException`. Changed to `AllowEditing="False"`.
+- **Fixed Analysis tab summary table not rendering after sync:** After clearing local activities and syncing a different project, the Analysis table appeared empty even though the query returned data. Root cause: `SfSkinManager.SetTheme(this, ...)` was moved from the constructor to the `Loaded` event in a prior commit. When applied in `Loaded` on a second instance, Syncfusion's theme application interfered with the SfDataGrid's rendering pipeline. Moved back to the constructor.
+- **Analysis tab initialization hardened:** Added try-catch around the initialization block in `AnalysisView_Loaded` so that errors in chart filter restoration or section initialization no longer silently prevent `LoadSummaryData()` from running. Per-field catch in chart filter restoration logs exactly which filter field fails.
+- **Analysis project selection simplified:** Removed saved project selection persistence — the dropdown now auto-selects the first project from whatever data is currently in the local database, eliminating stale project filter issues after clearing/re-syncing.
+- **Key files:** `Views/ProgressView.xaml`, `Views/AnalysisView.xaml.cs`
+
 ### April 12, 2026 (Analysis Module — Filter Persistence, Reset, Scrollbar, Pie/Doughnut Labels, Layout Trim)
 - **Chart filter selections now persist:** All 12 filter dropdowns save their selections to UserSettings immediately on change and restore on tab load. Previously, filter selections were lost when navigating away.
 - **Reset button:** Added "Reset" button next to the "Chart Filters" header to clear all filter selections in one click.
