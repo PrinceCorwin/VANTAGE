@@ -39,12 +39,6 @@ namespace VANTAGE.Views
 
         private async void TakeoffView_Loaded(object sender, RoutedEventArgs e)
         {
-            // Restore saved preference (default to checked), then wire save handler
-            var saved = SettingsManager.GetUserSetting("TakeoffSendMissedToAdmin", "true");
-            chkSendMissedToAdmin.IsChecked = !saved.Equals("false", StringComparison.OrdinalIgnoreCase);
-            chkSendMissedToAdmin.Checked += ChkSendMissedToAdmin_Changed;
-            chkSendMissedToAdmin.Unchecked += ChkSendMissedToAdmin_Changed;
-
             await LoadConfigsAsync();
             await LoadRateOptionsAsync();
         }
@@ -183,8 +177,9 @@ namespace VANTAGE.Views
 
                 // Start execution
                 SetStatus("Starting AI extraction...");
+                bool revBubbleOnly = chkRevBubbleOnly.IsChecked == true;
                 _currentExecutionArn = await _service.StartBatchAsync(
-                    _currentBatchId, configKey, drawingKeys, token);
+                    _currentBatchId, configKey, drawingKeys, revBubbleOnly, token);
 
                 // Poll until done
                 SetStatus("Processing — polling for completion...");
@@ -551,14 +546,6 @@ namespace VANTAGE.Views
             }
 
             return true;
-        }
-
-        // Send only Missed Makeups and Missed Rates tabs to all admins
-        // Save preference when toggled
-        private void ChkSendMissedToAdmin_Changed(object sender, RoutedEventArgs e)
-        {
-            SettingsManager.SetUserSetting("TakeoffSendMissedToAdmin",
-                (chkSendMissedToAdmin.IsChecked == true).ToString().ToLower());
         }
 
         private async System.Threading.Tasks.Task SendMissedToAdminsAsync(

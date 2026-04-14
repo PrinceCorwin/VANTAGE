@@ -2614,7 +2614,11 @@
 
     <p><strong>Cancelling:</strong> While processing, the PROCESS BATCH button changes to a red <strong>CANCEL</strong> button. Click it to abort the current batch. The AWS Step Functions execution will be stopped (any in-flight Lambda invocations will complete, but no further processing occurs). Uploaded drawings are cleaned up from S3.</p>
 
-    <p>The <strong>Send Missed Makeups and Rates to Admin</strong> checkbox (checked by default) automatically emails administrators when the batch has unmatched fitting makeups or rates. Only the missed data tabs are sent — not the full Excel.</p>
+    <p><strong>Options (below buttons):</strong></p>
+    <ul>
+        <li><strong>Rev Bubble Items Only</strong> — When checked, extraction is limited to BOM items inside revision bubbles (cloud-shaped annotation borders) on the drawings. Useful for extracting only revised items. Unchecked by default (extracts all BOM items).</li>
+        <li><strong>Send Missed Makeups and Rates to Admin</strong> — When checked, automatically emails administrators when the batch has unmatched fitting makeups or rates. Only the missed data tabs are sent — not the full Excel. Unchecked by default.</li>
+    </ul>
 
     <h3 id="takeoff-blank-components">Blank Components</h3>
     <p>After downloading or processing a batch, the system checks for Material tab rows with blank Component values. If any are found, the <strong>Blank Component Dialog</strong> prompts you to fill them in before post-processing. Each row shows the drawing number and raw description with an input field for the component name. This ensures all items can be properly categorized for labor generation and rate lookups.</p>

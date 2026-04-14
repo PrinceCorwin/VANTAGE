@@ -6,6 +6,13 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### April 14, 2026 (Rev Bubble Takeoff Filter, Takeoff Options Cleanup, Decisions Doc)
+- **Rev Bubble Items Only:** New checkbox on the Takeoff tab that passes `rev_bubble_only` to the Step Functions extraction pipeline. When checked, only BOM items inside revision bubbles (cloud annotations) are extracted. Unchecked by default. Lambda change was already deployed; this adds the Vantage UI and Step Functions parameter pass-through.
+- **Send Missed to Admin default changed:** Checkbox now defaults to unchecked with no saved persistence. Previously defaulted to checked and persisted the user's choice, causing unintentional admin emails.
+- **Takeoff options reorganized:** Both checkboxes (Rev Bubble Items Only, Send Missed Makeups and Rates to Admin) moved below the action buttons in a stacked layout.
+- **Decisions.md created:** New permanent document (`Plans/Decisions.md`) recording 48+ architectural choices, design rationale, and implementation decisions mined from all completed work archives. Finisher skill updated with Step 3.5 to maintain it going forward.
+- **Key files:** `Services/AI/TakeoffService.cs`, `Views/TakeoffView.xaml`, `Views/TakeoffView.xaml.cs`, `Plans/Decisions.md`
+
 ### April 14, 2026 (Bug Fixes — Grid Crash, Analysis Table Not Rendering, Project Selection)
 - **Fixed arrow key navigation crash in Progress grid:** Holding left/right arrow key to navigate across columns crashed the app after ~20 columns. Root cause: `ClientEquivEarnQTY` column had `AllowEditing="True"` but the property has a `private set`, causing Syncfusion to create a TwoWay binding that threw `InvalidOperationException`. Changed to `AllowEditing="False"`.
 - **Fixed Analysis tab summary table not rendering after sync:** After clearing local activities and syncing a different project, the Analysis table appeared empty even though the query returned data. Root cause: `SfSkinManager.SetTheme(this, ...)` was moved from the constructor to the `Loaded` event in a prior commit. When applied in `Loaded` on a second instance, Syncfusion's theme application interfered with the SfDataGrid's rendering pipeline. Moved back to the constructor.

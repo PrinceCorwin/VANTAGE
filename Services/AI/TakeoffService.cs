@@ -56,13 +56,15 @@ namespace VANTAGE.Services.AI
             string batchId,
             string configPath,
             List<string> drawingKeys,
+            bool revBubbleOnly = false,
             CancellationToken cancellationToken = default)
         {
             var input = new
             {
                 config_path = configPath,
                 bucket = CredentialService.TakeoffDrawingsBucket,
-                drawing_keys = drawingKeys
+                drawing_keys = drawingKeys,
+                rev_bubble_only = revBubbleOnly
             };
 
             string inputJson = JsonSerializer.Serialize(input);

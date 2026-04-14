@@ -86,6 +86,11 @@ Permanent record of architectural choices, design rationale, and implementation 
 **Why:** Simpler Lambda logic. Correction rules are data-driven and easier to maintain in the post-processor. PIPE always stays Shop. Mixed connection types stay Shop.
 **Date:** April 2026
 
+### Send Missed to Admin: Default Unchecked, No Persistence
+**Decision:** "Send Missed Makeups and Rates to Admin" checkbox defaults to unchecked on every tab load. No saved preference.
+**Why:** Users were unintentionally emailing admins on every batch because the checkbox persisted as checked. Default-off makes the email an intentional opt-in action each time.
+**Date:** April 2026
+
 ### S3 Drawings Deleted After Processing
 **Decision:** Uploaded drawings automatically deleted from S3 after takeoff processing completes.
 **Why:** Drawings were being overwritten on each run anyway (to support new revisions with same filename), so persisting them served no purpose.
