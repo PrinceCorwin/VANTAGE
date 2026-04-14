@@ -17,6 +17,10 @@
 
 ## Active Development
 
+### Dev Tooling
+- **TODO:** Pull claude-skills repo on other machines (finisher skill updated with Decisions.md step)
+- **TODO:** Copy updated `appsettings.json` to other dev machines (ACS credentials updated April 14)
+
 ### Work Package Module
 - Template editors testing
 - PDF preview testing
