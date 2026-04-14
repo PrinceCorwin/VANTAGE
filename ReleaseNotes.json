@@ -1,6 +1,14 @@
 {
   "releases": [
     {
+      "version": "26.2.9",
+      "date": "2026-04-14",
+      "highlights": [
+        "New — Rev Bubble Items Only option for AI takeoff extraction (extracts only items inside revision bubbles)",
+        "Change — Send Missed Makeups and Rates to Admin now defaults to unchecked"
+      ]
+    },
+    {
       "version": "26.2.8",
       "date": "2026-04-14",
       "highlights": [
