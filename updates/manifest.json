@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.2.9",
-  "releaseDate": "2026-04-14T16:23:34Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.2.9/VANTAGE-26.2.9.zip",
-  "zipSizeBytes": 150931950,
-  "sha256": "B46E3B55655C3F91D45623539A2C937846D9BEEDDFC1EFF9B7CEF2140F2B2186",
-  "releaseNotes": "Add Rev Bubble takeoff filter, default Send Missed to unchecked."
+  "currentVersion": "26.2.10",
+  "releaseDate": "2026-04-16T10:19:27Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.2.10/VANTAGE-26.2.10.zip",
+  "zipSizeBytes": 150932615,
+  "sha256": "5B51D1D43569C7AD9106428852E2EED4B385322A865E9B434F77DC32DD9D0F41",
+  "releaseNotes": "Fix sync timeouts, fix pasted values reverting after sync."
 }

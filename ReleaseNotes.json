@@ -1,6 +1,15 @@
 {
   "releases": [
     {
+      "version": "26.2.10",
+      "date": "2026-04-16",
+      "highlights": [
+        "Fix — Sync no longer times out for users with slow internet connections",
+        "Fix — Pasted values (BudgetMHs, etc.) no longer silently revert to old values after sync",
+        "Improvement — Push now verifies exactly which rows Azure updated; missed rows automatically retry"
+      ]
+    },
+    {
       "version": "26.2.9",
       "date": "2026-04-14",
       "highlights": [
