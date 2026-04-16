@@ -181,6 +181,7 @@ namespace VANTAGE.Utilities
                 using (var bulkCopy = new SqlBulkCopy(azureConn))
                 {
                     bulkCopy.DestinationTableName = "#SyncBatch";
+                    bulkCopy.BulkCopyTimeout = 0;
                     bulkCopy.WriteToServer(uniqueIdTable);
                 }
 
@@ -290,29 +291,60 @@ namespace VANTAGE.Utilities
                         using (var bulkCopy = new SqlBulkCopy(azureConn))
                         {
                             bulkCopy.DestinationTableName = "#UpdateStaging";
-                            bulkCopy.BulkCopyTimeout = 120;
+                            bulkCopy.BulkCopyTimeout = 0;
                             bulkCopy.WriteToServer(updateTable);
                         }
 
-                        // Single UPDATE statement using JOIN
+                        // Verify staging table row count matches expected
+                        var stagingCountCmd = azureConn.CreateCommand();
+                        stagingCountCmd.CommandText = "SELECT COUNT(*) FROM #UpdateStaging";
+                        int stagingCount = Convert.ToInt32(stagingCountCmd.ExecuteScalar() ?? 0);
+                        if (stagingCount != validUpdates.Count)
+                        {
+                            AppLogger.Warning($"Staging table has {stagingCount} rows, expected {validUpdates.Count} — SqlBulkCopy may have lost rows", "SyncManager.PushRecords");
+                        }
+
+                        // Create temp table to capture which rows were actually updated
+                        // (OUTPUT INTO required because the Azure trigger blocks bare OUTPUT)
+                        var createOutputCmd = azureConn.CreateCommand();
+                        createOutputCmd.CommandText = "IF OBJECT_ID('tempdb..#UpdatedIds') IS NOT NULL DROP TABLE #UpdatedIds; CREATE TABLE #UpdatedIds (UniqueID NVARCHAR(100))";
+                        createOutputCmd.ExecuteNonQuery();
+
                         var updateFromStagingCmd = azureConn.CreateCommand();
-                        updateFromStagingCmd.CommandTimeout = 120;
+                        updateFromStagingCmd.CommandTimeout = 0;
                         var setClause = string.Join(", ", syncColumns.Select(c => $"a.[{c}] = s.[{c}]"));
                         updateFromStagingCmd.CommandText = $@"
                     UPDATE a
                     SET {setClause}
+                    OUTPUT INSERTED.[UniqueID] INTO #UpdatedIds
                     FROM VMS_Activities a
                     INNER JOIN #UpdateStaging s ON a.[UniqueID] = s.[UniqueID]";
-                        int updatedCount = updateFromStagingCmd.ExecuteNonQuery();
+                        updateFromStagingCmd.ExecuteNonQuery();
 
-                        updateSuccessIds.AddRange(validUpdates.Select(r => r.UniqueID));
-
-                        if (updatedCount != validUpdates.Count)
+                        // Read back which rows were actually updated
+                        var actuallyUpdatedIds = new HashSet<string>();
+                        var readUpdatedCmd = azureConn.CreateCommand();
+                        readUpdatedCmd.CommandText = "SELECT UniqueID FROM #UpdatedIds";
+                        using (var updateReader = readUpdatedCmd.ExecuteReader())
                         {
-                            AppLogger.Warning($"Push update count mismatch: expected {validUpdates.Count}, actual {updatedCount}", "SyncManager.PushRecords");
+                            while (updateReader.Read())
+                            {
+                                actuallyUpdatedIds.Add(updateReader.GetString(0));
+                            }
                         }
 
-                        AppLogger.Info($"Step 3 complete ({stopwatch.Elapsed.TotalSeconds:F1}s): Bulk updated {updatedCount} records", "SyncManager.PushRecords");
+                        updateSuccessIds.AddRange(actuallyUpdatedIds);
+
+                        if (actuallyUpdatedIds.Count != validUpdates.Count)
+                        {
+                            var missedIds = validUpdates
+                                .Where(r => !actuallyUpdatedIds.Contains(r.UniqueID))
+                                .Select(r => r.UniqueID)
+                                .ToList();
+                            AppLogger.Warning($"Push update mismatch: expected {validUpdates.Count}, actual {actuallyUpdatedIds.Count}. Missed UniqueIDs (will retry): {string.Join(", ", missedIds.Take(10))}", "SyncManager.PushRecords");
+                        }
+
+                        AppLogger.Info($"Step 3 complete ({stopwatch.Elapsed.TotalSeconds:F1}s): Bulk updated {actuallyUpdatedIds.Count} records", "SyncManager.PushRecords");
                     }
                 }
 
@@ -377,7 +409,7 @@ namespace VANTAGE.Utilities
                         {
                             bulkCopy.DestinationTableName = "VMS_Activities";
                             bulkCopy.BatchSize = 5000;
-                            bulkCopy.BulkCopyTimeout = 120;
+                            bulkCopy.BulkCopyTimeout = 0;
 
                             // Map columns explicitly
                             bulkCopy.ColumnMappings.Add("UniqueID", "UniqueID");
@@ -425,6 +457,7 @@ namespace VANTAGE.Utilities
                     using (var bulkCopy = new SqlBulkCopy(azureConn))
                     {
                         bulkCopy.DestinationTableName = "#SyncBatch";
+                        bulkCopy.BulkCopyTimeout = 0;
                         bulkCopy.WriteToServer(successIdTable);
                     }
 
@@ -526,6 +559,7 @@ namespace VANTAGE.Utilities
                         using (var bulkCopy = new SqlBulkCopy(azureConn))
                         {
                             bulkCopy.DestinationTableName = "#SyncBatch";
+                            bulkCopy.BulkCopyTimeout = 0;
                             bulkCopy.WriteToServer(failedIdTable);
                         }
 
@@ -642,7 +676,7 @@ namespace VANTAGE.Utilities
                     );
 
                     var pullCmd = azureConn.CreateCommand();
-                    pullCmd.CommandTimeout = 120;
+                    pullCmd.CommandTimeout = 0;
 
                     // Build query with optional owner filter
                     var sql = @"

@@ -1,6 +1,6 @@
 # MILESTONE - Project Status
 
-**Last Updated:** April 14, 2026
+**Last Updated:** April 16, 2026
 
 ## Deferred to Post-V1
 | Feature | Reason |
@@ -43,6 +43,7 @@ Series of short tutorial videos for end users. Each item below needs a plan and 
 ## Feature Backlog
 
 ### High Priority
+- **Remove Logs database table** — AppLogger writes to both a SQLite Logs table and a flat log file redundantly. Remove the table, purge logic, and structured queries. Export Logs dialog should just read/send the raw log file directly. Simplifies codebase and removes duplicate writes.
 - **Mobile/iOS Version (iPad)** — Execs want iPad app for field supes to submit progress. Needs architecture discussion: native iOS, cross-platform framework, web app, API design, offline sync, etc.
 - **Takeoff Post-Processing Pipeline** — All operate on the downloaded Excel, no AWS changes needed. See `summit-takeoff-integration-guide.md` for details.
   1. Fabrication item generation — Connection rows, BOM fab records, PIPE/SPL records, ROCStep column complete. CUT/BEV no longer separate rows — their rates are folded into BW/SW/THRD connection rows. GSKT/BOLT excluded from labor. FLGLJ excluded from makeup. Fitting makeup lookup complete with olet support (WOL/SOL/TOL/ELB/LOL/NOL), class as string, Thickness fallback for olets. RED/SWG fallback to smaller pipe if unclaimed by larger. Missed Makeups tab has Reason column (No Makeup Found / Unclaimed). No Conns tab shows material items with no connections. **Dual-size matching:** All components try `ParseDualSize()` first; TEE/REDT match either size, others match larger size only. **STR makeup:** Strainers lookup as TEE using larger size, 2x multiplier (drain is not a pipe connection). **ShopField post-processing:** Lambda sets all material rows to 1 (Shop); post-processor corrects to Field (2) for: BU/SCRD-only connection types, FS/BOLT/GSKT/WAS/INST/GAUGE components, and items with no connections. PIPE stays Shop. Mixed connection types (e.g., BW+SCRD) stay Shop. Written back to Material worksheet.
@@ -51,6 +52,7 @@ Series of short tutorial videos for end users. Each item below needs a plan and 
 
 
 ### Medium Priority
+- **Viewpoint Budget Comparison** — Import a Viewpoint export file and generate a comparison report of Viewpoint budgets vs Vantage budgets
 - **Help manual screenshots audit** — Review all sections of `Help/manual.html`, update outdated screenshots to reflect current UI, and add missing screenshots for features that have none (e.g., ActNO Split Ownership Check dialog, Sync Incomplete warning, any other recently added dialogs or UI changes).
 - **MSI/MSIX installer** — Replace custom installer with MSI (WiX Toolset) or MSIX packaging to get genuine Windows install integration. Current custom installer registers via registry but Windows Search won't execute `UninstallString` directly — only MSI and UWP/MSIX apps get direct uninstall from search context menu. Current setup works via Settings > Apps.
 - **User-editable header template for WP** — Allow customizing header layout

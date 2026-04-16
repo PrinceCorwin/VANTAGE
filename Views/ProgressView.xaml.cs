@@ -1781,6 +1781,9 @@ namespace VANTAGE.Views
                     await ActivityRepository.UpdateActivityInDatabase(activity);
                 }
 
+                AppLogger.Info($"Pasted {columnName} to {modifiedActivities.Count} rows",
+                    "ProgressView.PasteToSelectedCells", App.CurrentUser?.Username ?? "Unknown");
+
                 // Record undo action
                 _undoManager.RecordAction(new EditAction
                 {

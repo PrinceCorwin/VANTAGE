@@ -37,6 +37,16 @@ Permanent record of architectural choices, design rationale, and implementation 
 **Why:** The query had no index and caused timeouts, blocking syncing entirely. The check is useful but doesn't need to run on every sync.
 **Date:** April 2026
 
+### Push Verifies Actual Rows Updated via OUTPUT INTO
+**Decision:** The Azure UPDATE in push Step 3 uses `OUTPUT INSERTED.[UniqueID] INTO #UpdatedIds` to capture exactly which rows were updated. Only confirmed rows get LocalDirty cleared. Previously, all records were blindly marked as successfully pushed regardless of actual update count.
+**Why:** If the UPDATE affected fewer rows than expected (transient Azure issue, staging table mismatch), unverified records had LocalDirty cleared and the pull overwrote local data with old Azure values. Users saw pasted values revert after sync with no error. Now missed rows keep LocalDirty=1 and retry on next sync.
+**Date:** April 2026
+
+### Unlimited SQL Timeouts in Sync Flow
+**Decision:** All CommandTimeout and BulkCopyTimeout values in push/pull set to 0 (unlimited). Azure ConnectTimeout also 0.
+**Why:** Users with slow internet were hitting 30-second default timeouts, causing "Execution Timeout Expired" errors. The sync operations must complete regardless of connection speed — there's no benefit to aborting partway through.
+**Date:** April 2026
+
 ### LastPulledSyncVersion Tracks Pulled Records, Not Live MAX
 **Decision:** After pulling, use the max SyncVersion from records actually pulled — not a separate query for current MAX.
 **Why:** Race condition — if another user pushed between the pull query and the MAX query, those records would be permanently skipped on future pulls.

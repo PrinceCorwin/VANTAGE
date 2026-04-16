@@ -22,7 +22,7 @@ namespace VANTAGE.Utilities
                 Password = CredentialService.AzurePassword,
                 Encrypt = true,
                 TrustServerCertificate = false,
-                ConnectTimeout = 30,
+                ConnectTimeout = 0,
                 MultipleActiveResultSets = false,
                 PersistSecurityInfo = false
             };

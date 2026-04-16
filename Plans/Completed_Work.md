@@ -6,6 +6,13 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### April 16, 2026 (Sync Timeout Fix, Push Verification, Paste Logging)
+- **Eliminated sync timeouts:** All `CommandTimeout` and `BulkCopyTimeout` values in the push/pull flow set to 0 (unlimited). Azure connection timeout also set to unlimited. Previously, several operations used default 30-second timeouts or 120-second limits — users with slow internet hit these, causing "Execution Timeout Expired" errors with 0 pushed/0 pulled.
+- **Push now verifies actual rows updated:** The Azure UPDATE in push Step 3 previously marked ALL records as successfully pushed regardless of the actual UPDATE row count. Now uses `OUTPUT INTO #UpdatedIds` to capture exactly which UniqueIDs were updated. Only confirmed rows get LocalDirty cleared. Missed rows keep LocalDirty=1 and retry on next sync, preventing silent data loss where old Azure values overwrote pasted local values.
+- **Staging table verification:** After SqlBulkCopy writes to the update staging table, a COUNT(*) check verifies the expected number of rows arrived. Logs a warning if SqlBulkCopy lost rows.
+- **Paste operations now logged:** `PasteToSelectedCells` logs column name and row count to AppLogger for sync debugging traceability.
+- **Key files:** `Utilities/SyncManager.cs`, `Utilities/AzureDbManager.cs`, `Views/ProgressView.xaml.cs`
+
 ### April 14, 2026 (Rev Bubble Takeoff Filter, Takeoff Options Cleanup, Decisions Doc)
 - **Rev Bubble Items Only:** New checkbox on the Takeoff tab that passes `rev_bubble_only` to the Step Functions extraction pipeline. When checked, only BOM items inside revision bubbles (cloud annotations) are extracted. Unchecked by default. Lambda change was already deployed; this adds the Vantage UI and Step Functions parameter pass-through.
 - **Send Missed to Admin default changed:** Checkbox now defaults to unchecked with no saved persistence. Previously defaulted to checked and persisted the user's choice, causing unintentional admin emails.
