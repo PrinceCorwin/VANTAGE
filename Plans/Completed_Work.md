@@ -6,6 +6,12 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### April 16, 2026 (Import From AI Takeoff — ROC Split fix)
+- **Fixed ROC split reading wrong fields:** `ApplyROCSplitsAsync` was hardcoded to read `activity.UDF1` for ShopField and `activity.UDF6` for Component when matching against ROC rate set steps. These Activity properties depend on how the user configured their column mappings in the import profile — if the user mapped the Excel's "ShopField" column to `ShopField` instead of `UDF1`, or left it unmapped, the ROC split silently failed (0 matches, all rows passed through unsplit).
+- **Fix:** Changed `ApplyROCSplitsAsync` to accept the raw takeoff row data (`List<Dictionary<string, string>>`) alongside the Activity list. It now reads `Component` and `ShopField` directly from the raw Excel row by column name, making ROC splitting independent of the user's column mapping choices. Falls back to Activity properties if raw data is unavailable.
+- **Status:** Needs testing with different column mapping configurations.
+- **Key files:** `Dialogs/ImportTakeoffDialog.xaml.cs`
+
 ### April 16, 2026 (Sync Timeout Fix, Push Verification, Paste Logging)
 - **Eliminated sync timeouts:** All `CommandTimeout` and `BulkCopyTimeout` values in the push/pull flow set to 0 (unlimited). Azure connection timeout also set to unlimited. Previously, several operations used default 30-second timeouts or 120-second limits — users with slow internet hit these, causing "Execution Timeout Expired" errors with 0 pushed/0 pulled.
 - **Push now verifies actual rows updated:** The Azure UPDATE in push Step 3 previously marked ALL records as successfully pushed regardless of the actual UPDATE row count. Now uses `OUTPUT INTO #UpdatedIds` to capture exactly which UniqueIDs were updated. Only confirmed rows get LocalDirty cleared. Missed rows keep LocalDirty=1 and retry on next sync, preventing silent data loss where old Azure values overwrote pasted local values.

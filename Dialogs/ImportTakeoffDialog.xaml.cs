@@ -622,7 +622,7 @@ namespace VANTAGE.Dialogs
                 ApplyMetadata(activities);
 
                 // Step 6b: Apply ROC splits if a set is selected
-                activities = await ApplyROCSplitsAsync(activities);
+                activities = await ApplyROCSplitsAsync(activities, rawRows);
 
                 // Step 7: Generate UniqueIDs and set system fields
                 SetSystemFields(activities);
@@ -913,12 +913,10 @@ namespace VANTAGE.Dialogs
         }
 
         // Apply ROC percentage splits if a ROC set is selected.
-        // For each activity whose component (UDF6) is in the applicable components list
-        // and whose ShopField (UDF1) matches a ROC step's ShopField:
-        // - Modify the original row with the first matching ROC step and its percentage of BudgetMHs
-        // - Clone additional rows for remaining matching ROC steps
-        // Activities whose component isn't in the list or ShopField doesn't match pass through unchanged.
-        private async System.Threading.Tasks.Task<List<Activity>> ApplyROCSplitsAsync(List<Activity> activities)
+        // Reads Component and ShopField directly from the raw takeoff row data so the
+        // logic works regardless of how the user mapped columns in their import profile.
+        private async System.Threading.Tasks.Task<List<Activity>> ApplyROCSplitsAsync(
+            List<Activity> activities, List<Dictionary<string, string>> rawRows)
         {
             // Determine selected ROC set
             if (cboROCSet.SelectedIndex <= 1) return activities; // "None" or "+ Create New..."
@@ -935,9 +933,14 @@ namespace VANTAGE.Dialogs
 
             var result = new List<Activity>();
 
-            foreach (var activity in activities)
+            for (int idx = 0; idx < activities.Count; idx++)
             {
-                string component = activity.UDF6 ?? "";
+                var activity = activities[idx];
+                var raw = idx < rawRows.Count ? rawRows[idx] : null;
+
+                // Read Component and ShopField from the raw takeoff row
+                string component = raw?.GetValueOrDefault("Component", "") ?? activity.UDF6 ?? "";
+                string shopFieldStr = raw?.GetValueOrDefault("ShopField", "") ?? "";
 
                 // Not in applicable components — pass through unchanged
                 if (!components.Contains(component))
@@ -946,9 +949,9 @@ namespace VANTAGE.Dialogs
                     continue;
                 }
 
-                // Parse activity ShopField
+                // Parse ShopField from raw takeoff data
                 int actShopField = 0;
-                if (int.TryParse(activity.UDF1, out int sf))
+                if (int.TryParse(shopFieldStr, out int sf))
                     actShopField = sf;
 
                 // Find ROC steps matching this row's ShopField
