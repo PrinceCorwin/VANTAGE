@@ -1865,6 +1865,69 @@ namespace VANTAGE
             dialog.ShowDialog();
         }
 
+        // Augments a JC Labor Productivity report with Vtg Earned / Vtg Budget columns from Azure
+        private async void MenuVPvsVtgReport_Click(object sender, RoutedEventArgs e)
+        {
+            if (!AzureDbManager.CheckConnection(out string connError))
+            {
+                MessageBox.Show($"Cannot connect to Azure database:\n\n{connError}",
+                    "Connection Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            var openDlg = new Microsoft.Win32.OpenFileDialog
+            {
+                Filter = "Excel Files|*.xlsx",
+                Title = "Select JC Labor Productivity Report"
+            };
+            if (openDlg.ShowDialog() != true) return;
+            string inputPath = openDlg.FileName;
+
+            string suggestedName = System.IO.Path.GetFileNameWithoutExtension(inputPath) + " (with Vtg).xlsx";
+            var saveDlg = new Microsoft.Win32.SaveFileDialog
+            {
+                Filter = "Excel Files|*.xlsx",
+                Title = "Save Augmented Report",
+                FileName = suggestedName,
+                InitialDirectory = System.IO.Path.GetDirectoryName(inputPath)
+            };
+            if (saveDlg.ShowDialog() != true) return;
+            string outputPath = saveDlg.FileName;
+
+            var busyDialog = new Dialogs.BusyDialog(this, "Generating VP vs Vtg Report...");
+            busyDialog.Show();
+
+            try
+            {
+                var result = await System.Threading.Tasks.Task.Run(() =>
+                    Utilities.VPvsVtgReportAugmenter.Augment(inputPath, outputPath));
+                busyDialog.Close();
+
+                AppLogger.Info(
+                    $"VP vs Vtg Report: rows={result.DataRows}, matched={result.MatchedRows}, notFound={result.NotFoundRows}, budgetMismatches={result.BudgetMismatchRows}, earnedMismatches={result.EarnedMismatchRows} -> {result.OutputPath}",
+                    "MainWindow.MenuVPvsVtgReport_Click",
+                    App.CurrentUser?.Username);
+
+                MessageBox.Show(
+                    $"Report saved:\n{result.OutputPath}\n\n" +
+                    $"Data rows: {result.DataRows}\n" +
+                    $"Matched: {result.MatchedRows}\n" +
+                    $"Not Found: {result.NotFoundRows}\n" +
+                    $"Budget mismatches > 1%: {result.BudgetMismatchRows}\n" +
+                    $"Earned mismatches > 1%: {result.EarnedMismatchRows}",
+                    "VP vs Vtg Report Complete",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                busyDialog.Close();
+                AppLogger.Error(ex, "MainWindow.MenuVPvsVtgReport_Click");
+                MessageBox.Show($"Failed to generate report:\n\n{ex.Message}",
+                    "Report Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
         // MODULE LOADING
 
         // Loads the Progress module, reusing the cached instance unless forceReload is true

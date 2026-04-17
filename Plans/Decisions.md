@@ -128,6 +128,25 @@ Permanent record of architectural choices, design rationale, and implementation 
 
 ---
 
+## VP vs Vtg Report
+
+### JC Cost Code Normalization: Strip Whitespace + Per-Segment Leading Zeros
+**Decision:** When comparing JC cost codes (ProjectID, PhaseCode) between the JC Labor Productivity report and Vantage `VMS_Activities`, both sides are normalized by: stripping all whitespace, splitting on `.`, trimming leading zeros from each segment (preserving `0` for all-zero segments), dropping trailing empty segments, rejoining with `.`. Implemented in `Utilities/VPvsVtgReportAugmenter.NormalizeKey`.
+**Why:** JC codes appear in multiple equivalent forms across systems — `26.001.001`, `26.001.  1.`, and `26.001.1` are all meant to represent the same phase but differ in zero-padding, whitespace padding, and trailing separators. A naive string match would split them into separate buckets and produce spurious "Not Found" results. Normalization is applied symmetrically so match rates are insensitive to whichever cosmetic format each side happens to use.
+**Date:** April 2026
+
+### Color Coding Scoped to Added Columns Only
+**Decision:** Only the two generated columns (`Vtg Budget`, `Vtg Earned`) receive conditional fill (green within 1%, red over 1%, orange `Not Found`). The companion Excel columns (`Est Hours`, `JTD ERN`) are left untouched.
+**Why:** Initial implementation paired the red fill across both cells of a mismatch. User preferred minimizing modifications to the source report and keeping the visual signal scoped to the Vantage-sourced values. Every data row gets a color on the two new columns so mismatches are never ambiguous with "not yet checked".
+**Date:** April 2026
+
+### Trust the Admin on Snapshot Re-Upload (Not Implemented, Decision Logged)
+**Decision:** Deferred adding a WeekEndDate override to the Admin Snapshots upload dialog. If users want to re-upload an older unchanged snapshot under a new week, they instead take a fresh snapshot.
+**Why:** Considered adding an override so admins could reuse old snapshots for weeks where nothing changed, avoiding re-snapshotting closed-out activities. User ultimately judged the complexity not worth the bug surface for the small workflow gain, and preferred to keep the current simple invariant (WeekEndDate = when the snapshot was taken). Filed here so the conversation doesn't get re-litigated if the idea comes up again.
+**Date:** April 2026
+
+---
+
 ## Schedule Module
 
 ### P6 Current Schedule Dates, Not Baseline Dates

@@ -1,6 +1,6 @@
 # MILESTONE - Project Status
 
-**Last Updated:** April 16, 2026
+**Last Updated:** April 17, 2026
 
 ## Deferred to Post-V1
 | Feature | Reason |
@@ -52,7 +52,6 @@ Series of short tutorial videos for end users. Each item below needs a plan and 
 
 
 ### Medium Priority
-- **Viewpoint Budget Comparison** — Import a Viewpoint export file and generate a comparison report of Viewpoint budgets vs Vantage budgets
 - **Help manual screenshots audit** — Review all sections of `Help/manual.html`, update outdated screenshots to reflect current UI, and add missing screenshots for features that have none (e.g., ActNO Split Ownership Check dialog, Sync Incomplete warning, any other recently added dialogs or UI changes).
 - **MSI/MSIX installer** — Replace custom installer with MSI (WiX Toolset) or MSIX packaging to get genuine Windows install integration. Current custom installer registers via registry but Windows Search won't execute `UninstallString` directly — only MSI and UWP/MSIX apps get direct uninstall from search context menu. Current setup works via Settings > Apps.
 - **User-editable header template for WP** — Allow customizing header layout

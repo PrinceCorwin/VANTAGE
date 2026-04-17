@@ -6,6 +6,21 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### April 17, 2026 (VP vs Vtg Report Tool)
+- **New Tools menu item: "VP vs Vtg Report":** Augments a JC Labor Productivity report (Excel) with two new columns on the Summary sheet — `Vtg Budget` and `Vtg Earned` — sourced from Azure `VMS_Activities` aggregated by ProjectID and PhaseCode. User selects an input `.xlsx` and a save-as location; the original is never modified.
+- **Key normalization handles JC Cost code variants:** Project and Phase keys are normalized so `26.001.001`, `26.001.  1.`, and `26.001.1` all match. Rule: strip all whitespace, split on `.`, strip leading zeros from each segment (preserving `0` for all-zero segments), trim empty trailing segments, rejoin. Applied to both Excel cells and Azure rows before lookup.
+- **Header detection is resilient:** Column positions are resolved by case-insensitive header name (`Job`, `Phase`, `Est Hours`, `JTD ERN`), so a user who deletes empty leading columns in the source report doesn't break the tool. Missing required headers produce a clear error instead of silently writing to wrong cells.
+- **Earned formula matches app convention:** `Earned = Σ ((PercentEntry / 100) × BudgetMHs)` and `Budget = Σ BudgetMHs`, aggregated per (normalized ProjectID, normalized PhaseCode). `PercentEntry` is stored 0–100 in both local SQLite and Azure, so the `/100` is required.
+- **Azure filter:** `WHERE ISNULL(IsDeleted, 0) = 0` excludes logically-deleted rows. Connection check (`AzureDbManager.CheckConnection`) gates the whole operation with a clear error if Azure is unreachable.
+- **Color coding on the two added columns (every data row filled):**
+  - Green `#63BE7B` — Vtg value is within 1% of the corresponding `Est Hours` or `JTD ERN`.
+  - Red `#FF8989` — Vtg value differs from the corresponding cell by more than 1%.
+  - Orange `#FFC000` — no matching Vantage activities found (cell shows `Not Found`).
+- **Existing columns are not recolored:** earlier iteration paired the red fill onto `Est Hours` / `JTD ERN` too; reverted per user preference so only the two new columns carry formatting.
+- **Help manual updated:** New Tools-menu entry documents the feature and color legend.
+- **Backlog cleanup:** Removed "Viewpoint Budget Comparison" from the Medium Priority backlog in `Project_Status.md` — this feature fulfills it.
+- **Key files:** `MainWindow.xaml`, `MainWindow.xaml.cs`, `Utilities/VPvsVtgReportAugmenter.cs` (new), `Help/manual.html`
+
 ### April 17, 2026 (Import From AI Takeoff — ROC Split fix)
 - **Fixed ROC split reading wrong fields:** `ApplyROCSplitsAsync` was hardcoded to read `activity.UDF1` for ShopField and `activity.UDF6` for Component when matching against ROC rate set steps. These Activity properties depend on how the user configured their column mappings in the import profile — if the user mapped the Excel's "ShopField" column to `ShopField` instead of `UDF1`, or left it unmapped, the ROC split silently failed (0 matches, all rows passed through unsplit).
 - **Fix:** Changed `ApplyROCSplitsAsync` to accept the raw takeoff row data (`List<Dictionary<string, string>>`) alongside the Activity list. It now reads `Component` and `ShopField` directly from the raw Excel row by column name, making ROC splitting independent of the user's column mapping choices.

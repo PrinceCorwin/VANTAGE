@@ -477,6 +477,7 @@
         <li><strong>Schedule UDF Mapping...</strong> — Configure custom P6 column mappings for the Schedule module UDF columns</li>
         <li><strong>ROC Manager</strong> — Create, view, modify, or delete ROC rate sets and configure which components each set applies to</li>
         <li><strong>ActNO Split Ownership Check</strong> — Query Azure for any SchedActNOs assigned to multiple users within a project. Select a project from the dropdown, click Check, and review the results. Useful for schedulers to identify and resolve ownership conflicts.</li>
+        <li><strong>VP vs Vtg Report</strong> — Augments a JC Labor Productivity report (Excel) with two new columns on the Summary sheet: <em>Vtg Budget</em> and <em>Vtg Earned</em>, aggregated from Azure <code>VMS_Activities</code> by ProjectID and PhaseCode. Keys are normalized so <code>26.001.001</code>, <code>26.001.&nbsp;&nbsp;1.</code>, and <code>26.001.1</code> all match. Each <em>Vtg Budget</em> or <em>Vtg Earned</em> cell is color-coded: green when within 1% of the corresponding <em>Est Hours</em> or <em>JTD ERN</em> value, red when it differs by more than 1%, and orange when no matching Vantage activities were found (cell shows <em>Not Found</em>). Pick the input file, then choose a location to save the augmented copy — the original is not modified.</li>
         <li><em>Plugin menu items appear below</em> — Installed plugins may add additional menu items here</li>
     </ul>
 
