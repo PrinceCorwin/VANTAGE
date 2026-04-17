@@ -21,12 +21,6 @@
 - Template editors testing
 - PDF preview testing
 
-### Import From AI Takeoff — ROC Split reads raw takeoff data (NEEDS TESTING)
-- **Issue:** `ApplyROCSplitsAsync` was reading `activity.UDF1` and `activity.UDF6` to get ShopField and Component values for ROC matching. But these Activity properties depend on whatever the user mapped in their import profile. If the user mapped the Excel's "ShopField" column to `ShopField` instead of `UDF1` (or didn't map it at all), the ROC split logic silently failed — no rows matched, everything passed through unsplit.
-- **Fix applied:** Changed `ApplyROCSplitsAsync` to accept the raw takeoff rows (`List<Dictionary<string, string>>`) alongside the Activity list. It now reads `Component` and `ShopField` directly from the raw Excel row data by column name, falling back to Activity properties only if the raw row is unavailable. This makes ROC splitting work regardless of how the user configured their column mappings.
-- **Files changed:** `Dialogs/ImportTakeoffDialog.xaml.cs` — method signature updated to take `rawRows` parameter, call site updated to pass `rawRows`, inner loop changed from `foreach` to indexed `for` to pair activities with their raw rows.
-- **Status:** Code complete, needs testing. Verify ROC splits work correctly with different column mapping configurations (ShopField mapped to UDF1, ShopField mapped to ShopField, ShopField unmapped).
-
 ### AI Takeoff — Multi-Drawing Documents
 - **TODO:** Support drawing documents (PDFs) that contain multiple drawings per document (multiple pages). Currently each uploaded PDF is treated as a single drawing. Need to handle cases where one PDF contains several pages, each representing a different drawing.
 

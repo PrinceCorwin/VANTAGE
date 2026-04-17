@@ -121,6 +121,11 @@ Permanent record of architectural choices, design rationale, and implementation 
 **Why:** Performance — most lookups succeed on direct match. Two-pass also makes the lookup hierarchy explicit and predictable.
 **Date:** March 2026
 
+### ROC Splits Read Raw Takeoff Data, Not Mapped Activity Properties
+**Decision:** `ApplyROCSplitsAsync` reads ShopField and Component directly from the raw takeoff Excel row data instead of from the mapped Activity object properties (UDF1/UDF6).
+**Why:** Users configure column mappings in their import profile — ShopField might map to `UDF1`, `ShopField`, or be unmapped entirely. Hardcoding to `activity.UDF1` made ROC splits silently fail if the mapping didn't match. Reading from raw data makes the feature work regardless of mapping configuration. Also added text value support ("Shop"/"Field") alongside numeric ("1"/"2").
+**Date:** April 2026
+
 ---
 
 ## Schedule Module

@@ -949,10 +949,14 @@ namespace VANTAGE.Dialogs
                     continue;
                 }
 
-                // Parse ShopField from raw takeoff data
+                // Parse ShopField from raw takeoff data (supports "1"/"2" or "Shop"/"Field")
                 int actShopField = 0;
                 if (int.TryParse(shopFieldStr, out int sf))
                     actShopField = sf;
+                else if (shopFieldStr.Equals("Shop", StringComparison.OrdinalIgnoreCase))
+                    actShopField = 1;
+                else if (shopFieldStr.Equals("Field", StringComparison.OrdinalIgnoreCase))
+                    actShopField = 2;
 
                 // Find ROC steps matching this row's ShopField
                 var matchingSteps = steps.Where(s => s.ShopField == actShopField).ToList();

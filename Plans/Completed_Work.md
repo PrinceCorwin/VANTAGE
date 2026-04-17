@@ -6,10 +6,10 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
-### April 16, 2026 (Import From AI Takeoff — ROC Split fix)
+### April 17, 2026 (Import From AI Takeoff — ROC Split fix)
 - **Fixed ROC split reading wrong fields:** `ApplyROCSplitsAsync` was hardcoded to read `activity.UDF1` for ShopField and `activity.UDF6` for Component when matching against ROC rate set steps. These Activity properties depend on how the user configured their column mappings in the import profile — if the user mapped the Excel's "ShopField" column to `ShopField` instead of `UDF1`, or left it unmapped, the ROC split silently failed (0 matches, all rows passed through unsplit).
-- **Fix:** Changed `ApplyROCSplitsAsync` to accept the raw takeoff row data (`List<Dictionary<string, string>>`) alongside the Activity list. It now reads `Component` and `ShopField` directly from the raw Excel row by column name, making ROC splitting independent of the user's column mapping choices. Falls back to Activity properties if raw data is unavailable.
-- **Status:** Needs testing with different column mapping configurations.
+- **Fix:** Changed `ApplyROCSplitsAsync` to accept the raw takeoff row data (`List<Dictionary<string, string>>`) alongside the Activity list. It now reads `Component` and `ShopField` directly from the raw Excel row by column name, making ROC splitting independent of the user's column mapping choices.
+- **Added text ShopField support:** ShopField parsing now accepts "Shop"/"Field" text values in addition to numeric "1"/"2", case-insensitive. Users can use either format in their takeoff data.
 - **Key files:** `Dialogs/ImportTakeoffDialog.xaml.cs`
 
 ### April 16, 2026 (Sync Timeout Fix, Push Verification, Paste Logging)
