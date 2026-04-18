@@ -271,7 +271,14 @@
                 <ul>
                     <li><a href="#ui-layout">Layout</a></li>
                     <li><a href="#ui-navigation">Navigation</a></li>
-                    <li><a href="#ui-menus">Menus</a></li>
+                    <li><a href="#ui-menus">Menus</a>
+                        <ul>
+                            <li><a href="#ui-menus-file">File Menu</a></li>
+                            <li><a href="#ui-menus-tools">Tools Menu</a></li>
+                            <li><a href="#ui-menus-admin">Admin Menu</a></li>
+                            <li><a href="#ui-menus-settings">Settings Menu</a></li>
+                        </ul>
+                    </li>
                     <li><a href="#ui-status-bar">Status Bar</a></li>
                     <li><a href="#ui-help-sidebar">Help Sidebar</a></li>
                     <li><a href="#ui-shortcuts">Keyboard Shortcuts</a></li>
@@ -452,7 +459,7 @@
     <h3 id="ui-menus">Menus</h3>
     <p>The toolbar contains several menus:</p>
 
-    <h4>File Menu</h4>
+    <h4 id="ui-menus-file">File Menu</h4>
     <ul>
         <li><strong>Import Activities (Replace)</strong> — Import activities from Excel, replacing all existing local data. Auto-detects Legacy (OldVantage) or Milestone format based on column headers.</li>
         <li><strong>Import Activities (Combine)</strong> — Import activities from Excel, merging with existing data. Auto-detects file format.</li>
@@ -469,7 +476,7 @@
         <li><strong>Legacy Export Template</strong> — Export empty template with OldVantage column headers</li>
     </ul>
 
-    <h4>Tools Menu</h4>
+    <h4 id="ui-menus-tools">Tools Menu</h4>
     <ul>
         <li><strong>Help Sidebar</strong> — Open the help documentation sidebar (also F1)</li>
         <li><strong>Prorate MHs</strong> — Distribute budgeted man-hours across filtered activities</li>
@@ -477,11 +484,54 @@
         <li><strong>Schedule UDF Mapping...</strong> — Configure custom P6 column mappings for the Schedule module UDF columns</li>
         <li><strong>ROC Manager</strong> — Create, view, modify, or delete ROC rate sets and configure which components each set applies to</li>
         <li><strong>ActNO Split Ownership Check</strong> — Query Azure for any SchedActNOs assigned to multiple users within a project. Select a project from the dropdown, click Check, and review the results. Useful for schedulers to identify and resolve ownership conflicts.</li>
-        <li><strong>VP vs Vtg Report</strong> — Augments a JC Labor Productivity report (Excel) with two new columns on the Summary sheet: <em>Vtg Budget</em> and <em>Vtg Earned</em>, aggregated from Azure <code>VMS_Activities</code> by ProjectID and PhaseCode. Matches require the ProjectID and PhaseCode in Vantage to be a character-for-character match of the values in the report after leading and trailing whitespace is trimmed from both sides (no leading-zero stripping, no internal space collapsing) — any other difference results in <em>Not Found</em>, which flags the Vantage records as needing correction. Each <em>Vtg Budget</em> or <em>Vtg Earned</em> cell is color-coded: green when within 1% of the corresponding <em>Est Hours</em> or <em>JTD ERN</em> value, red when it differs by more than 1%, and orange when no matching Vantage activities were found. A prep dialog appears first with an annotated screenshot showing exactly which rows and columns must be deleted from the source report before import (delete everything above the phase-code summary table, and any leading blank columns so the <em>Job</em> header sits in column A). The dialog has a <em>Do not show this dialog again</em> checkbox which persists via UserSettings; you can re-enable it by resetting user settings. Pick the input file, then choose a location to save the augmented copy — the original is not modified.</li>
+        <li><strong>VP vs Vtg Report</strong> — Adds two new columns, <em>Vtg Budget</em> and <em>Vtg Earned</em>, to the weekly <em>JC Labor Productivity Analysis</em> report, populated from the central Azure Vantage database (all projects, all records — not limited to what's in your local copy). Each added value is color-coded against the matching VP value so you can immediately see where Vantage and Viewpoint disagree.
+            <p style="margin:8px 0;"><strong>Run this report each week to verify your project's Earned, Budget, and Phase Code values.</strong> The goal is to keep Vantage and VP aligned so executive reports and dashboards reflect reality.</p>
+
+            <p style="margin:8px 0 4px 0;"><strong>Preparing the source file.</strong> Before running the tool, the JC Labor Productivity Analysis report needs to be trimmed down to the phase-code summary table:</p>
+            <ol>
+                <li>Open the weekly JC Labor Productivity Analysis report in Excel.</li>
+                <li>Delete all rows above the phase-code summary table — the report header, the top pivot, and any blank rows. The row containing the <em>Job</em> header must become row 1.</li>
+                <li>Delete any leading blank columns so the <em>Job</em> column sits in column A.</li>
+                <li>Save the file.</li>
+            </ol>
+            <p style="margin:8px 0;">The in-app prep dialog includes an annotated screenshot showing exactly what to remove:</p>
+            <img src="../Assets/Images/Dialogs/vp-vtg-prep.png" alt="Annotated screenshot showing which rows to delete and which row should become row 1 in the JC Labor Productivity report" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+
+            <div class="note" style="margin:8px 0;">
+                <div class="note-title">Prep Dialog Reminder</div>
+                <p>The prep dialog has a <em>Do not show this dialog again</em> checkbox. If you've dismissed it and want it back, open <strong>Settings → Reset User Settings...</strong> and check <em>Re-show "don't show again" dialogs</em>.</p>
+            </div>
+
+            <p style="margin:8px 0 4px 0;"><strong>Running the report.</strong></p>
+            <ol>
+                <li>Click <strong>Tools → VP vs Vtg Report</strong>.</li>
+                <li>Review the prep reminder (if shown) and click OK.</li>
+                <li>Pick the prepared input <code>.xlsx</code> file.</li>
+                <li>Choose a location to save the augmented copy. The original file is never modified.</li>
+                <li>A summary dialog reports row counts, matches, not-found entries, and how many rows have budget or earned mismatches greater than 1%.</li>
+            </ol>
+
+            <p style="margin:8px 0 4px 0;"><strong>Reading the color codes.</strong> Every data row gets a color on the two new columns (<em>Vtg Budget</em> and <em>Vtg Earned</em>):</p>
+            <ul>
+                <li><strong style="color:#63BE7B;">Green</strong> — the Vantage value is within 1% of the corresponding VP value (<em>Est Hours</em> for budget, <em>JTD ERN</em> for earned). Aligned.</li>
+                <li><strong style="color:#E04B4B;">Red</strong> — the Vantage value differs from VP by more than 1%. Review these.</li>
+                <li><strong style="color:#E09A3B;">Orange (Not Found)</strong> — no matching phase code in Vantage for this Job + Phase combination. Review these.</li>
+            </ul>
+
+            <p style="margin:8px 0 4px 0;"><strong>Acting on Red rows.</strong> A red cell means the Vantage and VP values for that phase are out of sync by more than 1%. Review the specific row and <strong>coordinate with your PM / PCM</strong> to determine the correct values and which side needs updating. Don't silently overwrite without discussing — the source of truth varies by situation.</p>
+
+            <p style="margin:8px 0 4px 0;"><strong>Acting on Orange "Not Found" rows.</strong> Orange means Vantage has no records for that Job + Phase Code combination. Two common causes:</p>
+            <ul>
+                <li><strong>Phase Code is misspelled in Vantage.</strong> The VP value (shown in the <em>Phase</em> column of the report) is the canonical spelling. Fix Vantage by right-clicking the <em>PhaseCode</em> column header in Progress view, choosing Find &amp; Replace, and replacing the incorrect Vantage value with the VP value.</li>
+                <li><strong>The phase truly doesn't exist in Vantage yet.</strong> Coordinate with your PM / PCM to decide whether buckets or activity records need to be added to cover this phase.</li>
+            </ul>
+
+            <p style="margin:8px 0;"><strong>How the match works.</strong> Matching uses <em>Job</em> / <em>Phase</em> in the report and <em>ProjectID</em> / <em>PhaseCode</em> in Vantage. Leading and trailing whitespace is trimmed from both sides, then the values are compared character-for-character. There is no leading-zero stripping or internal whitespace collapsing — differences like <code>26.001.001</code> vs <code>26.001.1</code> are treated as distinct and show up as <em>Not Found</em> so you can correct them. Earned is calculated as <code>Σ ((PercentEntry / 100) × BudgetMHs)</code> aggregated by (ProjectID, PhaseCode); Budget is <code>Σ BudgetMHs</code> with the same grouping. Logically-deleted Vantage records are excluded.</p>
+        </li>
         <li><em>Plugin menu items appear below</em> — Installed plugins may add additional menu items here</li>
     </ul>
 
-    <h4>Admin Menu (administrators only)</h4>
+    <h4 id="ui-menus-admin">Admin Menu (administrators only)</h4>
     <ul>
         <li><strong>Toggle User Admin</strong> — Grant or revoke admin privileges for any user</li>
         <li><strong>Edit Users</strong> — Manage user accounts and permissions</li>
@@ -491,7 +541,7 @@
         <li><strong>Deleted Records UI</strong> — View and restore soft-deleted records</li>
     </ul>
 
-    <h4>Settings Menu (three-dot icon, top right)</h4>
+    <h4 id="ui-menus-settings">Settings Menu (three-dot icon, top right)</h4>
     <ul>
         <li><strong>Help Sidebar</strong> — Open the help documentation sidebar (also F1)</li>
         <li><strong>Feedback Board</strong> — Submit ideas or report bugs to the development team. The grid supports sorting and filtering on all columns. A Notes column shows admin status updates visible to all users. The Notes field is only editable by admins.</li>
@@ -638,7 +688,7 @@
         </tr>
         <tr>
             <td><strong>SUBMIT WEEK</strong></td>
-            <td>Submit your weekly progress and create a snapshot. Use this at the end of each reporting period.</td>
+            <td>Submit your weekly progress and create a snapshot. Use this at the end of each reporting period. <strong>A current-week snapshot is required</strong> before the Schedule module can finalize and generate the <em>Export to P6</em> file — and the snapshot's <em>Week End Date</em> must match the Week End Date you selected when importing the P6 file in the Schedule module. If the dates don't match, the Schedule module will not see your progress in its comparisons and the P6 export will be incomplete.</td>
         </tr>
     </table>
 

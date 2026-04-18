@@ -77,7 +77,6 @@
 		<Resource Include="Assets\Images\System\summitLogo_largeText.png" />
 		<Resource Include="Assets\Images\System\SummitLogoNoText.jpg" />
 		<Resource Include="Assets\Images\System\SummitS-Full Summit Peak Logo.jpg" />
-		<Resource Include="Assets\Images\Dialogs\vp-vtg-prep.png" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -109,6 +108,9 @@
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
 	  <Content Include="Assets\Images\System\MilestoneLogoPngTransparentBG.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Assets\Images\Dialogs\vp-vtg-prep.png">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
 	</ItemGroup>
