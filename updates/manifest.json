@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.2.10",
-  "releaseDate": "2026-04-16T10:19:27Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.2.10/VANTAGE-26.2.10.zip",
-  "zipSizeBytes": 150932615,
-  "sha256": "5B51D1D43569C7AD9106428852E2EED4B385322A865E9B434F77DC32DD9D0F41",
-  "releaseNotes": "Fix sync timeouts, fix pasted values reverting after sync."
+  "currentVersion": "26.2.11",
+  "releaseDate": "2026-04-18T10:37:43Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.2.11/VANTAGE-26.2.11.zip",
+  "zipSizeBytes": 151199870,
+  "sha256": "EDD87B40928773CBC1AA39F0523C19D66109EB3B52AAC64EE2503487E1D9FB48",
+  "releaseNotes": "New: VP vs Vtg Report tool, Reset User Settings dialog. Fix: Schedule UDF dialog scrolling."
 }

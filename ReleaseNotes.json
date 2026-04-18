@@ -1,6 +1,17 @@
 {
   "releases": [
     {
+      "version": "26.2.11",
+      "date": "2026-04-18",
+      "highlights": [
+        "New — VP vs Vtg Report tool in the Tools menu: augments a JC Labor Productivity report with Vtg Budget / Vtg Earned columns aggregated from Vantage, color-coded green/red/orange for within-1% / over-1% / not-found matches",
+        "New — Reset User Settings dialog in the Settings popup: selectively clear grid layouts, splitter positions, dialog sizes, and re-enable 'don't show again' dismissed dialogs",
+        "Fix — Schedule UDF Column Mappings dialog now shows all rows and is resizable (previously cut off the last row with no scrollbar)",
+        "Fix — ROC split now reads ShopField and Component directly from takeoff data; also accepts 'Shop'/'Field' text values in addition to 1/2",
+        "Change — AI Assistant tab removed from the Help sidebar (was a 'Coming soon' placeholder)"
+      ]
+    },
+    {
       "version": "26.2.10",
       "date": "2026-04-16",
       "highlights": [
