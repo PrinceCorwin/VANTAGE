@@ -27,7 +27,7 @@ namespace VANTAGE.Utilities
             public string OutputPath { get; set; } = string.Empty;
         }
 
-        // Reads Azure VMS_Activities, aggregates by normalized (ProjectID, PhaseCode),
+        // Reads Azure VMS_Activities, aggregates by (ProjectID, PhaseCode) with exact string match,
         // writes two new columns to the Summary sheet, and saves to outputPath.
         public static Result Augment(string inputPath, string outputPath)
         {
@@ -73,17 +73,15 @@ namespace VANTAGE.Utilities
             int lastRow = sheet.LastRowUsed()?.RowNumber() ?? headerRow;
             for (int row = headerRow + 1; row <= lastRow; row++)
             {
-                string projectRaw = sheet.Cell(row, jobCol).GetString();
-                string phaseRaw = sheet.Cell(row, phaseCol).GetString();
+                string projectRaw = sheet.Cell(row, jobCol).GetString().Trim();
+                string phaseRaw = sheet.Cell(row, phaseCol).GetString().Trim();
 
                 if (string.IsNullOrWhiteSpace(projectRaw) && string.IsNullOrWhiteSpace(phaseRaw))
                     continue;
 
                 result.DataRows++;
 
-                string projectKey = NormalizeKey(projectRaw);
-                string phaseKey = NormalizeKey(phaseRaw);
-                var key = (projectKey, phaseKey);
+                var key = (projectRaw, phaseRaw);
 
                 var vtgBudgetCell = sheet.Cell(row, vtgBudgetCol);
                 var vtgEarnedCell = sheet.Cell(row, vtgEarnedCol);
@@ -180,7 +178,7 @@ namespace VANTAGE.Utilities
             return diff > MismatchThreshold * Math.Abs(excelValue);
         }
 
-        // Aggregates Azure VMS_Activities rows (IsDeleted = 0) by normalized (ProjectID, PhaseCode).
+        // Aggregates Azure VMS_Activities rows (IsDeleted = 0) by (ProjectID, PhaseCode) using exact string match.
         // Budget = sum(BudgetMHs); Earned = sum((PercentEntry / 100) * BudgetMHs).
         private static Dictionary<(string, string), (double Budget, double Earned)> LoadAggregatesFromAzure()
         {
@@ -198,14 +196,12 @@ namespace VANTAGE.Utilities
             using var reader = cmd.ExecuteReader();
             while (reader.Read())
             {
-                string projectRaw = reader.IsDBNull(0) ? "" : reader.GetString(0);
-                string phaseRaw = reader.IsDBNull(1) ? "" : reader.GetString(1);
+                string projectRaw = reader.IsDBNull(0) ? "" : reader.GetString(0).Trim();
+                string phaseRaw = reader.IsDBNull(1) ? "" : reader.GetString(1).Trim();
                 double budget = reader.IsDBNull(2) ? 0 : Convert.ToDouble(reader.GetValue(2));
                 double percent = reader.IsDBNull(3) ? 0 : Convert.ToDouble(reader.GetValue(3));
 
-                string projectKey = NormalizeKey(projectRaw);
-                string phaseKey = NormalizeKey(phaseRaw);
-                var key = (projectKey, phaseKey);
+                var key = (projectRaw, phaseRaw);
                 double earned = (percent / 100.0) * budget;
 
                 if (map.TryGetValue(key, out var cur))
@@ -215,34 +211,6 @@ namespace VANTAGE.Utilities
             }
 
             return map;
-        }
-
-        // Normalizes a key segment so that "26.001.001", "26.001.  1.", and "26.001.1" all match.
-        // Rules: strip all whitespace; split on '.'; per segment, strip leading zeros (keep "0" if all zeros
-        // or empty-after-strip-but-was-all-zeros); drop trailing empty segments; rejoin with '.'.
-        public static string NormalizeKey(string? s)
-        {
-            if (string.IsNullOrWhiteSpace(s)) return string.Empty;
-            var compact = new string(s.Where(c => !char.IsWhiteSpace(c)).ToArray());
-            var parts = compact.Split('.');
-            var normalized = new List<string>(parts.Length);
-            foreach (var raw in parts)
-            {
-                if (raw.Length == 0)
-                {
-                    normalized.Add("");
-                    continue;
-                }
-                if (raw.All(ch => ch == '0'))
-                {
-                    normalized.Add("0");
-                    continue;
-                }
-                string trimmed = raw.TrimStart('0');
-                normalized.Add(trimmed.Length == 0 ? "0" : trimmed);
-            }
-            while (normalized.Count > 0 && normalized[^1] == "") normalized.RemoveAt(normalized.Count - 1);
-            return string.Join(".", normalized);
         }
     }
 }

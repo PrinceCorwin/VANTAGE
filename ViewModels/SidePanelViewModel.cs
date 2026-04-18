@@ -88,8 +88,8 @@ namespace VANTAGE.ViewModels
                     return "about:blank";
                 }
 
-                // Use virtual host mapping so images load correctly
-                return "https://help.local/manual.html";
+                // Use virtual host mapping so images load correctly (mapped to app base dir)
+                return "https://help.local/Help/manual.html";
             }
         }
 

@@ -130,10 +130,10 @@ Permanent record of architectural choices, design rationale, and implementation 
 
 ## VP vs Vtg Report
 
-### JC Cost Code Normalization: Strip Whitespace + Per-Segment Leading Zeros
-**Decision:** When comparing JC cost codes (ProjectID, PhaseCode) between the JC Labor Productivity report and Vantage `VMS_Activities`, both sides are normalized by: stripping all whitespace, splitting on `.`, trimming leading zeros from each segment (preserving `0` for all-zero segments), dropping trailing empty segments, rejoining with `.`. Implemented in `Utilities/VPvsVtgReportAugmenter.NormalizeKey`.
-**Why:** JC codes appear in multiple equivalent forms across systems — `26.001.001`, `26.001.  1.`, and `26.001.1` are all meant to represent the same phase but differ in zero-padding, whitespace padding, and trailing separators. A naive string match would split them into separate buckets and produce spurious "Not Found" results. Normalization is applied symmetrically so match rates are insensitive to whichever cosmetic format each side happens to use.
-**Date:** April 2026
+### JC Cost Code: Exact Match After Outer-Whitespace Trim Only
+**Decision:** ProjectID and PhaseCode matching between the JC Labor Productivity report and Vantage `VMS_Activities` uses `String.Trim()` on both sides (stripping only leading and trailing whitespace), then compares as an exact string. No leading-zero stripping, no internal whitespace collapsing, no trailing-separator trimming. The previous `NormalizeKey` helper was removed.
+**Why:** Reversed an earlier decision that normalized both sides to match cosmetic variants like `26.001.001` ↔ `26.1.1`. The normalization was hiding a real data-quality problem: Vantage phase codes should match VP's canonical format exactly. "Not Found" is now a useful signal — it tells the user which Vantage records have drift from VP and need their codes corrected to match VP. Outer-whitespace trim is the only concession, because Excel cell formatting and SQL CHAR padding can introduce leading/trailing spaces that aren't user-meaningful differences; everything else (internal spaces, digits, punctuation, zero-padding) must match character-for-character or the row is reported as `Not Found`.
+**Date:** April 2026 (reversed same month it was introduced)
 
 ### Color Coding Scoped to Added Columns Only
 **Decision:** Only the two generated columns (`Vtg Budget`, `Vtg Earned`) receive conditional fill (green within 1%, red over 1%, orange `Not Found`). The companion Excel columns (`Est Hours`, `JTD ERN`) are left untouched.
@@ -309,14 +309,14 @@ Permanent record of architectural choices, design rationale, and implementation 
 **Decision:** Disabled with `Visibility="Collapsed"` and code filters. Re-enable instructions documented in Project_Status.md.
 **Why:** Per-WP drawing location architecture needs design (token paths, per-WP config, or Drawings Manager). The feature works but the architecture isn't settled.
 
-### Asset Folder Structure: `Assets/Images/{System, HelpSidebar, Dialogs}`
-**Decision:** All image resources live under a single top-level `Assets/Images/` tree with purpose-named subfolders — `System/` (app icons, logos, cover art), `HelpSidebar/` (help manual screenshots), `Dialogs/` (one-off dialog imagery). Previously split across `Images/` and `Help/*.png`.
-**Why:** One discoverable home for every image file, with semantic grouping that tells a developer where a new image should land without having to ask. A flat `Assets/HelpSidebar/` + `Assets/System/` structure was rejected because future one-off dialog images (like `vp-vtg-prep.png`) wouldn't have an obvious home and the top level would grow noisily with each new image category.
+### Asset Folder Structure: `Assets/Images/{System, Sidebar, Dialogs}`
+**Decision:** All image resources live under a single top-level `Assets/Images/` tree with purpose-named subfolders — `System/` (app icons, logos, cover art), `Sidebar/` (help sidebar screenshots), `Dialogs/` (one-off dialog imagery). Applies to source tree AND build output — no `Link` indirection. Previously split across `Images/` and `Help/*.png`.
+**Why:** One discoverable home for every image file, with semantic grouping that tells a developer where a new image should land without having to ask. `Help/` retains only `manual.html`, not the 30 screenshots it consumes. Flat sibling folders under `Assets/` (without the `Images/` parent) were rejected because future one-off dialog images wouldn't have an obvious home and the top level would grow noisily. An earlier iteration used MSBuild's `Link` attribute to keep output at `Help/*.png` while source lived at `Assets/Images/Sidebar/` — reversed because it defeated the point of organizing: the user saw images "back in the Help folder" in the build output.
 **Date:** April 2026
 
-### csproj `Link` Attribute Decouples Source Layout from Output Layout
-**Decision:** When reorganizing the source tree of asset files, the csproj uses `<Content Include="Assets\Images\HelpSidebar\*.png" Link="Help\%(Filename)%(Extension)">` so the files live in the new source location but get copied to the legacy output path at build time.
-**Why:** The WebView2 virtual host mapping (`help.local` → `{baseDir}/Help`) and manual.html's sibling-relative `<img src>` tags expect the runtime output to have `Help/*.png`. Using `Link` lets us reorganize source freely without touching any runtime code or risking WebView2 behavior changes. Also collapses 25 `<None Remove>` + 29 `<Content Include>` entries into a single glob line, so adding a new help screenshot is zero-config.
+### WebView2 Virtual Host Maps to App Base Dir, Not Help/
+**Decision:** The help sidebar's WebView2 virtual host `help.local` is mapped to the app base directory (`{baseDir}`), not the `Help` subfolder. Navigation URL is `https://help.local/Help/manual.html`, and `manual.html` references images via `<img src="../Assets/Images/Sidebar/xxx.png">`.
+**Why:** When images moved to `Assets/Images/Sidebar/`, manual.html still lives at `Help/manual.html` — the sibling-relative `<img src>` pattern no longer works because the images are no longer siblings. Rooting the virtual host at the app base dir lets a single host cover both the HTML and the separately-located image folder. Alternative considered: duplicate the host mapping (one for `Help/`, one for `Assets/Images/Sidebar/`). Rejected because one mapping at the base dir is simpler and won't need further changes if the folder tree grows.
 **Date:** April 2026
 
 ---

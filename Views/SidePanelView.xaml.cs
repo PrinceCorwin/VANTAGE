@@ -69,10 +69,11 @@ namespace VANTAGE.Views
                 var env = await CoreWebView2Environment.CreateAsync(null, userDataFolder);
                 await webViewHelp.EnsureCoreWebView2Async(env);
 
-                // Map the Help folder to a virtual host so images load correctly
-                string helpFolder = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Help");
+                // Map the app base directory to a virtual host so manual.html can reach both
+                // its own folder (Help/) and the sidebar image folder (Assets/Images/Sidebar/)
+                string appBaseFolder = AppDomain.CurrentDomain.BaseDirectory;
                 webViewHelp.CoreWebView2.SetVirtualHostNameToFolderMapping(
-                    "help.local", helpFolder, CoreWebView2HostResourceAccessKind.Allow);
+                    "help.local", appBaseFolder, CoreWebView2HostResourceAccessKind.Allow);
 
                 // Configure WebView2 settings
                 webViewHelp.CoreWebView2.Settings.IsStatusBarEnabled = false;

@@ -415,7 +415,7 @@
     <!-- ============================================ -->
 
     <h3 id="ui-layout">Layout</h3>
-    <img src="start-main-interface.png" alt="Main interface" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <img src="../Assets/Images/Sidebar/start-main-interface.png" alt="Main interface" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
     <p>The main window has three sections:</p>
     <ul>
         <li><strong>Toolbar</strong> — Menus (File, Tools, Admin) on the left, module navigation buttons in the center, settings menu on the right</li>
@@ -424,7 +424,7 @@
     </ul>
 
     <h3 id="ui-navigation">Navigation</h3>
-    <img src="start-toolbar-detail.png" alt="Toolbar module buttons" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <img src="../Assets/Images/Sidebar/start-toolbar-detail.png" alt="Toolbar module buttons" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
     <p>Four module buttons are displayed in the center of the toolbar. The active module is highlighted with a colored underline.</p>
     <table>
         <tr>
@@ -477,7 +477,7 @@
         <li><strong>Schedule UDF Mapping...</strong> — Configure custom P6 column mappings for the Schedule module UDF columns</li>
         <li><strong>ROC Manager</strong> — Create, view, modify, or delete ROC rate sets and configure which components each set applies to</li>
         <li><strong>ActNO Split Ownership Check</strong> — Query Azure for any SchedActNOs assigned to multiple users within a project. Select a project from the dropdown, click Check, and review the results. Useful for schedulers to identify and resolve ownership conflicts.</li>
-        <li><strong>VP vs Vtg Report</strong> — Augments a JC Labor Productivity report (Excel) with two new columns on the Summary sheet: <em>Vtg Budget</em> and <em>Vtg Earned</em>, aggregated from Azure <code>VMS_Activities</code> by ProjectID and PhaseCode. Keys are normalized so <code>26.001.001</code>, <code>26.001.&nbsp;&nbsp;1.</code>, and <code>26.001.1</code> all match. Each <em>Vtg Budget</em> or <em>Vtg Earned</em> cell is color-coded: green when within 1% of the corresponding <em>Est Hours</em> or <em>JTD ERN</em> value, red when it differs by more than 1%, and orange when no matching Vantage activities were found (cell shows <em>Not Found</em>). A prep dialog appears first with an annotated screenshot showing exactly which rows and columns must be deleted from the source report before import (delete everything above the phase-code summary table, and any leading blank columns so the <em>Job</em> header sits in column A). The dialog has a <em>Do not show this dialog again</em> checkbox which persists via UserSettings; you can re-enable it by resetting user settings. Pick the input file, then choose a location to save the augmented copy — the original is not modified.</li>
+        <li><strong>VP vs Vtg Report</strong> — Augments a JC Labor Productivity report (Excel) with two new columns on the Summary sheet: <em>Vtg Budget</em> and <em>Vtg Earned</em>, aggregated from Azure <code>VMS_Activities</code> by ProjectID and PhaseCode. Matches require the ProjectID and PhaseCode in Vantage to be a character-for-character match of the values in the report after leading and trailing whitespace is trimmed from both sides (no leading-zero stripping, no internal space collapsing) — any other difference results in <em>Not Found</em>, which flags the Vantage records as needing correction. Each <em>Vtg Budget</em> or <em>Vtg Earned</em> cell is color-coded: green when within 1% of the corresponding <em>Est Hours</em> or <em>JTD ERN</em> value, red when it differs by more than 1%, and orange when no matching Vantage activities were found. A prep dialog appears first with an annotated screenshot showing exactly which rows and columns must be deleted from the source report before import (delete everything above the phase-code summary table, and any leading blank columns so the <em>Job</em> header sits in column A). The dialog has a <em>Do not show this dialog again</em> checkbox which persists via UserSettings; you can re-enable it by resetting user settings. Pick the input file, then choose a location to save the augmented copy — the original is not modified.</li>
         <li><em>Plugin menu items appear below</em> — Installed plugins may add additional menu items here</li>
     </ul>
 
@@ -505,8 +505,8 @@
     </ul>
 
     <h3 id="ui-status-bar">Status Bar</h3>
-    <img src="start-status-bar-left.png" alt="Status bar left" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
-    <img src="start-status-bar-right.png" alt="Status bar right" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <img src="../Assets/Images/Sidebar/start-status-bar-left.png" alt="Status bar left" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <img src="../Assets/Images/Sidebar/start-status-bar-right.png" alt="Status bar right" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
     <p>The status bar at the bottom displays:</p>
     <ul>
         <li><strong>Version</strong> — Current VANTAGE: Milestone version</li>
@@ -515,7 +515,7 @@
     </ul>
 
     <h3 id="ui-help-sidebar">Help Sidebar</h3>
-    <img src="start-help-sidebar.png" alt="Help sidebar" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <img src="../Assets/Images/Sidebar/start-help-sidebar.png" alt="Help sidebar" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
     <p>Open the Help sidebar by pressing <span class="keyboard-shortcut">F1</span> or from the settings menu (three-dot icon in the top right corner). The sidebar shows context-sensitive help based on your current module. Use the search field to find specific topics.</p>
 
     <h3 id="ui-shortcuts">Keyboard Shortcuts</h3>
@@ -549,7 +549,7 @@
     <h3 id="prog-overview">Overview</h3>
     <p>The Progress Module is where you track construction activity completion. This is the primary workspace for field engineers entering daily progress and reviewing assigned work.</p>
 
-    <img src="progress-full-view.png" alt="Progress module" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <img src="../Assets/Images/Sidebar/progress-full-view.png" alt="Progress module" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
 
     <h3 id="prog-workflow">Typical Workflow</h3>
     <p>The standard daily workflow is:</p>
@@ -591,7 +591,7 @@
     <h3 id="prog-toolbar">Toolbar</h3>
 
     <h4>Left Section — Quick Actions</h4>
-    <img src="progress-toolbar-left.png" alt="Progress toolbar left section" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <img src="../Assets/Images/Sidebar/progress-toolbar-left.png" alt="Progress toolbar left section" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
     <table>
         <tr>
             <th>Control</th>
@@ -625,7 +625,7 @@
     </div>
 
     <h4>Center Section — Sync Controls</h4>
-    <img src="progress-toolbar-center.png" alt="Progress toolbar center section" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <img src="../Assets/Images/Sidebar/progress-toolbar-center.png" alt="Progress toolbar center section" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
     <table>
         <tr>
             <th>Button</th>
@@ -642,7 +642,7 @@
     </table>
 
     <h4>Right Section — Summary Panel</h4>
-    <img src="progress-toolbar-right.png" alt="Progress toolbar right section" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <img src="../Assets/Images/Sidebar/progress-toolbar-right.png" alt="Progress toolbar right section" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
     <p>Displays real-time totals for the currently filtered records:</p>
     <ul>
         <li><strong>Budget</strong> — Click the column name to choose which field to use as the budget total. Options include BudgetMHs (default), Quantity, ClientBudget, and others. Your selection persists between sessions.</li>
@@ -651,7 +651,7 @@
     </ul>
 
     <h3 id="prog-filters">Sidebar Filters</h3>
-    <img src="progress-sidebar.png" alt="Progress sidebar filters" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <img src="../Assets/Images/Sidebar/progress-sidebar.png" alt="Progress sidebar filters" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
     <p>Active filters display a highlighted border so you can easily see which filters are currently applied.</p>
 
     <h4>Progress Filters</h4>
@@ -698,7 +698,7 @@
 
     <h4>User Filters</h4>
     <p>Click the <strong>USER</strong> dropdown to apply saved custom filters. Select <strong>Manage Filters</strong> to open the filter manager dialog.</p>
-    <img src="progress-manage-filters.png" alt="Manage Filters dialog" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <img src="../Assets/Images/Sidebar/progress-manage-filters.png" alt="Manage Filters dialog" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
     <p><strong>Creating a filter:</strong></p>
     <ol>
         <li>Click <strong>New</strong> to start a new filter</li>
@@ -1073,7 +1073,7 @@
         <p>If no P6 file has been imported, the header displays "(No schedule loaded)". Without both P6 data and a snapshot for the same week, the grid will be empty.</p>
     </div>
 
-    <img src="schedule-full-view.png" alt="Schedule module" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <img src="../Assets/Images/Sidebar/schedule-full-view.png" alt="Schedule module" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
 
     <h3 id="sched-layout">Layout</h3>
     <p>The Schedule view uses a master/detail layout:</p>
@@ -1110,7 +1110,7 @@
     <p>The status bar shows a legend: red square = required fields, yellow square = discrepancies.</p>
 
     <h3 id="sched-toolbar">Toolbar</h3>
-    <img src="schedule-toolbar.png" alt="Schedule toolbar" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <img src="../Assets/Images/Sidebar/schedule-toolbar.png" alt="Schedule toolbar" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
 
     <h4>Week Selection</h4>
     <p>The header displays the current "Week Ending" date. Schedule data is filtered to show snapshots for this week.</p>
@@ -1661,7 +1661,7 @@
     <h3 id="pb-overview">Overview</h3>
     <p>Progress Books are printable checklists showing activities grouped by user-selected columns (e.g., Area, Module, or Drawing). Field crews use these to mark completed progress percentages by hand, which can then be scanned and automatically applied to VANTAGE: Milestone using the AI Progress Scan feature.</p>
 
-    <img src="pb-full-view.png" alt="Progress Books view" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <img src="../Assets/Images/Sidebar/pb-full-view.png" alt="Progress Books view" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
 
     <p>The Progress Books workflow:</p>
     <ol>
@@ -1673,8 +1673,8 @@
     </ol>
 
     <h3 id="pb-generating">Progress Book Editor</h3>
-    <img src="pb-editor-top.png" alt="Progress Book editor - top" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
-    <img src="pb-editor-bottom.png" alt="Progress Book editor - bottom" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <img src="../Assets/Images/Sidebar/pb-editor-top.png" alt="Progress Book editor - top" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <img src="../Assets/Images/Sidebar/pb-editor-bottom.png" alt="Progress Book editor - bottom" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
     <p>The editor is split into a configuration panel on the left and a PDF preview panel on the right. Configure the layout settings below, then click <strong>GENERATE</strong> in the top-right corner to create the PDF.</p>
 
     <div class="note">
@@ -1744,7 +1744,7 @@
     </ul>
 
     <h4>Preview Panel</h4>
-    <img src="pb-preview.png" alt="Progress Book preview panel" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <img src="../Assets/Images/Sidebar/pb-preview.png" alt="Progress Book preview panel" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
     <p>The right side of the editor shows a live PDF preview of the progress book.</p>
     <ul>
         <li><strong>Refresh Preview</strong> — Click to render a preview using sample data from your current settings</li>
@@ -1778,7 +1778,7 @@
     <p>The AI Progress Scan feature uses AWS Textract to automatically read handwritten progress percentages from scanned progress books. This eliminates manual data entry and reduces transcription errors.</p>
 
     <h4>Starting a Scan</h4>
-    <img src="progress-toolbar-left.png" alt="Progress toolbar showing SCAN button" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <img src="../Assets/Images/Sidebar/progress-toolbar-left.png" alt="Progress toolbar showing SCAN button" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
     <ol>
         <li>Click the <strong>SCAN</strong> button on the Progress module toolbar</li>
         <li>In the dialog, click <strong>Select Files</strong> to choose scanned images</li>
@@ -1786,7 +1786,7 @@
         <li>You can select multiple files at once</li>
         <li>Click <strong>Start Processing</strong> to begin the scan</li>
     </ol>
-    <img src="pb-scan-dialog.png" alt="AI Progress Scan dialog" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <img src="../Assets/Images/Sidebar/pb-scan-dialog.png" alt="AI Progress Scan dialog" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
 
     <h4>File Requirements</h4>
     <table>
@@ -1822,7 +1822,7 @@
     <p>You can click <strong>Cancel</strong> to stop processing at any time.</p>
 
     <h3 id="pb-scan-results">Scan Results Dialog</h3>
-    <img src="pb-scan-results.png" alt="Scan results dialog" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <img src="../Assets/Images/Sidebar/pb-scan-results.png" alt="Scan results dialog" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
     <p>After processing completes, the results dialog displays all extracted entries for review.</p>
 
     <h4>Results Grid Columns</h4>
@@ -1987,7 +1987,7 @@
     <h3 id="wp-generate">Generate Tab</h3>
     <p>The Generate tab is where you create work package PDFs.</p>
 
-    <img src="wp-generate-tab.png" alt="Generate tab" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <img src="../Assets/Images/Sidebar/wp-generate-tab.png" alt="Generate tab" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
 
     <h4>Generation Settings</h4>
     <table>
@@ -2070,7 +2070,7 @@
     <h3 id="wp-templates">WP Templates Tab</h3>
     <p>Work Package Templates define which forms are included in a work package and their order.</p>
 
-    <img src="wp-templates-tab.png" alt="WP Templates tab" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <img src="../Assets/Images/Sidebar/wp-templates-tab.png" alt="WP Templates tab" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
 
     <h4>Template Controls</h4>
     <table>
@@ -2126,14 +2126,14 @@
     <h3 id="wp-form-templates">Form Templates Tab</h3>
     <p>Form Templates define individual pages in a work package. Each template produces one type of PDF page. Select the <strong>Form Templates</strong> tab to manage them.</p>
 
-    <img src="wp-form-templates-tab.png" alt="Form Templates tab initial view" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <img src="../Assets/Images/Sidebar/wp-form-templates-tab.png" alt="Form Templates tab initial view" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
 
     <p>When you first open this tab, the editor area is empty. Use the <strong>Form Template</strong> dropdown to select an existing template to view or edit, or choose <strong>"+ Add New"</strong> to create one from scratch.</p>
 
     <h4>Creating a New Template</h4>
     <p>Selecting "+ Add New" from the dropdown opens a type selection dialog:</p>
 
-    <img src="wp-form-type-dialog.png" alt="Template type selection dialog" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <img src="../Assets/Images/Sidebar/wp-form-type-dialog.png" alt="Template type selection dialog" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
 
     <p>Choose one of the four template types. A new template is created with default settings and the editor loads for that type. You can also select any existing template, change the name, and save to create a copy.</p>
 
@@ -2220,7 +2220,7 @@
     </ul>
 
     <h4>Cover Form</h4>
-    <img src="wp-form-cover.png" alt="Cover form editor" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <img src="../Assets/Images/Sidebar/wp-form-cover.png" alt="Cover form editor" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
     <table>
         <tr>
             <th>Setting</th>
@@ -2245,7 +2245,7 @@
     </table>
 
     <h4>List Form</h4>
-    <img src="wp-form-list.png" alt="List form editor" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <img src="../Assets/Images/Sidebar/wp-form-list.png" alt="List form editor" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
     <table>
         <tr>
             <th>Setting</th>
@@ -2292,8 +2292,8 @@
     </ul>
 
     <h4>Form Type</h4>
-    <img src="wp-form-form-top.png" alt="Form editor - top" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
-    <img src="wp-form-form-bottom.png" alt="Form editor - bottom" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <img src="../Assets/Images/Sidebar/wp-form-form-top.png" alt="Form editor - top" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <img src="../Assets/Images/Sidebar/wp-form-form-bottom.png" alt="Form editor - bottom" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
     <table>
         <tr>
             <th>Setting</th>
@@ -2344,8 +2344,8 @@
     </ul>
 
     <h4>Grid Form</h4>
-    <img src="wp-form-grid-top.png" alt="Grid form editor - top" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
-    <img src="wp-form-grid-bottom.png" alt="Grid form editor - bottom" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <img src="../Assets/Images/Sidebar/wp-form-grid-top.png" alt="Grid form editor - top" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <img src="../Assets/Images/Sidebar/wp-form-grid-bottom.png" alt="Grid form editor - bottom" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
     <table>
         <tr>
             <th>Setting</th>
@@ -2543,7 +2543,7 @@
     <h3 id="wp-previewing">Previewing Templates</h3>
     <p>The right panel displays a live preview of your templates. A context label at the top shows what is being previewed. The panel shows placeholder text until you click <strong>Refresh Preview</strong>.</p>
 
-    <img src="wp-preview-panel.png" alt="Template preview panel" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <img src="../Assets/Images/Sidebar/wp-preview-panel.png" alt="Template preview panel" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
 
     <h4>To Preview a Template</h4>
     <ol>
