@@ -198,6 +198,11 @@ Permanent record of architectural choices, design rationale, and implementation 
 **Why:** Simplified the scan form and improved AI accuracy by reducing distinct columns to parse. Color-coded entry fields were also removed — AI relies on text labels, not colors.
 **Date:** January 2026
 
+### Sidebar AI Assistant Tab Shelved
+**Decision:** Removed the two-tab (Help / AI Assistant) layout from the Help sidebar and deleted the AI tab scaffolding (button, placeholder content grid, tab-switching code in view and view-model). Kept `Plans/Sidebar_AI_Assistant_Plan.md` in the repo.
+**Why:** The AI chat feature was never wired past a "Coming soon" placeholder and had no roadmap date. Carrying the empty tab in the UI misled users into thinking the feature was imminent, and the tab-switching code was dead weight. Shelving is preferred over leaving stubs; plan doc retained in case the feature is revived later.
+**Date:** April 2026
+
 ---
 
 ## UI / UX

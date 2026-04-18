@@ -1,6 +1,6 @@
 # MILESTONE - Project Status
 
-**Last Updated:** April 17, 2026
+**Last Updated:** April 17, 2026 (later)
 
 ## Deferred to Post-V1
 | Feature | Reason |
@@ -71,14 +71,6 @@ Series of short tutorial videos for end users. Each item below needs a plan and 
 | AI MissedReason Assistant | Not Started |
 | AI Schedule Analysis | Deferred |
 
-### AI Sidebar Chat (see Sidebar_AI_Assistant_Plan.md)
-| Phase | Status |
-|-------|--------|
-| Chat UI | Not Started |
-| Conversation Management | Not Started |
-| Tool Definitions | Not Started |
-| Tool Execution | Not Started |
-
 ### Post-V1: Drawings Architecture
 - Design per-WP drawing location system (options: token paths, per-WP config, Drawings Manager)
 - Fix preview display
@@ -123,6 +115,7 @@ Series of short tutorial videos for end users. Each item below needs a plan and 
 - Offline Indicator in status bar - clickable to retry connection
 - Disable Tooltips setting (see DisableTooltips_Plan.md)
 - Interactive Help Mode - click UI controls to navigate to documentation (see Sidebar_Help_Plan.md)
+- AI Sidebar Chat (see Sidebar_AI_Assistant_Plan.md) - conversational AI tab in the sidebar; UI scaffolding removed April 2026, plan doc retained for possible future revival
 
 ## Test Scenarios Validated
 

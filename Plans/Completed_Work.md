@@ -6,6 +6,13 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### April 17, 2026 (Help Sidebar — Remove AI Assistant Tab, Fix Encoding Mojibake)
+- **Removed AI Assistant tab from Help sidebar:** The sidebar's two-tab layout (Help / AI Assistant) is collapsed to a single Help panel. The "Coming soon…" placeholder, tab buttons, and tab-switching code are deleted. `Sidebar_AI_Assistant_Plan.md` is retained under `Plans/` as a reference in case the feature is revived.
+- **Dead code cleanup:** `btnAiTab` / `gridAiContent` XAML removed. `BtnAiTab_Click`, `BtnHelpTab_Click`, `UpdateTabVisuals`, and the `ActiveTab` PropertyChanged branch removed from `SidePanelView.xaml.cs`. `ActiveTab`, `IsHelpTabActive`, `IsAiTabActive`, `ShowAiAssistant`, `SetActiveTab`, the `_activeTab` field, and the `SidePanel.ActiveTab` user-setting persistence removed from `SidePanelViewModel.cs`. Unused `System.Windows.Media` using removed.
+- **Fixed encoding mojibake in manual.html:** Two places rendered `â‹®` instead of the intended Syncfusion three-dot settings icon (U+22EE) — line 494 (`Settings Menu` header) and line 519 (Help Sidebar paragraph). Replaced with plain-English "three-dot icon, top right" / "three-dot icon in the top right corner" to eliminate encoding risk entirely.
+- **Project status:** "AI Sidebar Chat" section moved from Active development to Shelved in `Project_Status.md`.
+- **Key files:** `Views/SidePanelView.xaml`, `Views/SidePanelView.xaml.cs`, `ViewModels/SidePanelViewModel.cs`, `Help/manual.html`, `Plans/Project_Status.md`
+
 ### April 17, 2026 (VP vs Vtg Report Tool)
 - **New Tools menu item: "VP vs Vtg Report":** Augments a JC Labor Productivity report (Excel) with two new columns on the Summary sheet — `Vtg Budget` and `Vtg Earned` — sourced from Azure `VMS_Activities` aggregated by ProjectID and PhaseCode. User selects an input `.xlsx` and a save-as location; the original is never modified.
 - **Key normalization handles JC Cost code variants:** Project and Phase keys are normalized so `26.001.001`, `26.001.  1.`, and `26.001.1` all match. Rule: strip all whitespace, split on `.`, strip leading zeros from each segment (preserving `0` for all-zero segments), trim empty trailing segments, rejoin. Applied to both Excel cells and Azure rows before lookup.

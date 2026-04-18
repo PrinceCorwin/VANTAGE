@@ -24,28 +24,13 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- Tab Buttons -->
-                <StackPanel Grid.Column="0" Orientation="Horizontal">
-                    <Button x:Name="btnHelpTab"
-                            Content="Help"
-                            Padding="15,6"
-                            Margin="0,0,5,0"
-                            Background="{DynamicResource AccentColor}"
-                            Foreground="White"
-                            BorderThickness="0"
-                            FontWeight="SemiBold"
-                            Click="BtnHelpTab_Click"
-                            Cursor="Hand"/>
-                    <Button x:Name="btnAiTab"
-                            Content="AI Assistant"
-                            Padding="15,6"
-                            Background="Transparent"
-                            Foreground="{DynamicResource ForegroundColor}"
-                            BorderBrush="{DynamicResource BorderColor}"
-                            BorderThickness="1"
-                            Click="BtnAiTab_Click"
-                            Cursor="Hand"/>
-                </StackPanel>
+                <!-- Title -->
+                <TextBlock Grid.Column="0"
+                           Text="Help"
+                           FontSize="14"
+                           FontWeight="SemiBold"
+                           Foreground="{DynamicResource ForegroundColor}"
+                           VerticalAlignment="Center"/>
 
                 <!-- Close Button -->
                 <Button Grid.Column="1"
@@ -256,24 +241,5 @@
             </Border>
         </Grid>
 
-        <!-- AI Content (placeholder) -->
-        <Grid x:Name="gridAiContent" Grid.Row="3" Visibility="Collapsed">
-            <Border Background="{DynamicResource ControlBackground}"
-                    Padding="20">
-                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                    <TextBlock Text="AI Assistant"
-                               FontSize="18"
-                               FontWeight="SemiBold"
-                               Foreground="{DynamicResource ForegroundColor}"
-                               HorizontalAlignment="Center"
-                               Margin="0,0,0,10"/>
-                    <TextBlock Text="Coming soon..."
-                               FontSize="13"
-                               Foreground="{DynamicResource ForegroundColor}"
-                               Opacity="0.6"
-                               HorizontalAlignment="Center"/>
-                </StackPanel>
-            </Border>
-        </Grid>
     </Grid>
 </UserControl>

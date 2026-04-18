@@ -19,7 +19,6 @@ namespace VANTAGE.ViewModels
         // ========================================
         private bool _isOpen;
         private double _panelWidth;
-        private string _activeTab;
         private readonly string _helpHtmlPath = null!;
 
         // Search fields
@@ -34,7 +33,6 @@ namespace VANTAGE.ViewModels
         {
             _isOpen = false;
             _panelWidth = DefaultWidth;
-            _activeTab = "Help";
 
             // Build path to help HTML file
             string appDir = AppDomain.CurrentDomain.BaseDirectory;
@@ -78,25 +76,6 @@ namespace VANTAGE.ViewModels
                 }
             }
         }
-
-        public string ActiveTab
-        {
-            get => _activeTab;
-            set
-            {
-                if (_activeTab != value)
-                {
-                    _activeTab = value;
-                    OnPropertyChanged(nameof(ActiveTab));
-                    OnPropertyChanged(nameof(IsHelpTabActive));
-                    OnPropertyChanged(nameof(IsAiTabActive));
-                    SaveUserPreferences();
-                }
-            }
-        }
-
-        public bool IsHelpTabActive => ActiveTab == "Help";
-        public bool IsAiTabActive => ActiveTab == "AI";
 
         // URL for WebView2 navigation
         public string HelpNavigationUrl
@@ -219,22 +198,7 @@ namespace VANTAGE.ViewModels
 
         public void ShowHelp()
         {
-            ActiveTab = "Help";
             Open();
-        }
-
-        public void ShowAiAssistant()
-        {
-            ActiveTab = "AI";
-            Open();
-        }
-
-        public void SetActiveTab(string tab)
-        {
-            if (tab == "Help" || tab == "AI")
-            {
-                ActiveTab = tab;
-            }
         }
 
         // ========================================
@@ -252,9 +216,6 @@ namespace VANTAGE.ViewModels
                     _panelWidth = Math.Max(MinWidth, width);
                 }
 
-                string tabStr = SettingsManager.GetUserSetting("SidePanel.ActiveTab", "Help");
-                _activeTab = tabStr == "AI" ? "AI" : "Help";
-
                 // Don't restore IsOpen - always start closed
             }
             catch (Exception ex)
@@ -270,7 +231,6 @@ namespace VANTAGE.ViewModels
                 if (App.CurrentUser == null) return;
 
                 SettingsManager.SetUserSetting("SidePanel.Width", _panelWidth.ToString(), "string");
-                SettingsManager.SetUserSetting("SidePanel.ActiveTab", _activeTab, "string");
             }
             catch (Exception ex)
             {

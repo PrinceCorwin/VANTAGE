@@ -2,7 +2,6 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Threading;
 using Microsoft.Web.WebView2.Core;
 using VANTAGE.Utilities;
@@ -41,20 +40,14 @@ namespace VANTAGE.Views
             {
                 _viewModel = newVm;
                 _viewModel.PropertyChanged += ViewModel_PropertyChanged;
-                UpdateTabVisuals();
             }
         }
 
         private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            switch (e.PropertyName)
+            if (e.PropertyName == nameof(SidePanelViewModel.HelpNavigationUrl))
             {
-                case nameof(SidePanelViewModel.ActiveTab):
-                    UpdateTabVisuals();
-                    break;
-                case nameof(SidePanelViewModel.HelpNavigationUrl):
-                    NavigateToHelp();
-                    break;
+                NavigateToHelp();
             }
         }
 
@@ -180,50 +173,6 @@ namespace VANTAGE.Views
             {
                 AppLogger.Error(ex, "SidePanelView.NavigateToHelp");
             }
-        }
-
-        private void UpdateTabVisuals()
-        {
-            if (_viewModel == null) return;
-
-            if (_viewModel.IsHelpTabActive)
-            {
-                btnHelpTab.Background = (Brush)FindResource("AccentColor");
-                btnHelpTab.Foreground = Brushes.White;
-                btnHelpTab.BorderThickness = new Thickness(0);
-
-                btnAiTab.Background = Brushes.Transparent;
-                btnAiTab.Foreground = (Brush)FindResource("ForegroundColor");
-                btnAiTab.BorderThickness = new Thickness(1);
-
-                gridHelpContent.Visibility = Visibility.Visible;
-                gridAiContent.Visibility = Visibility.Collapsed;
-                searchFieldRow.Visibility = Visibility.Visible;
-            }
-            else
-            {
-                btnAiTab.Background = (Brush)FindResource("AccentColor");
-                btnAiTab.Foreground = Brushes.White;
-                btnAiTab.BorderThickness = new Thickness(0);
-
-                btnHelpTab.Background = Brushes.Transparent;
-                btnHelpTab.Foreground = (Brush)FindResource("ForegroundColor");
-                btnHelpTab.BorderThickness = new Thickness(1);
-
-                gridHelpContent.Visibility = Visibility.Collapsed;
-                gridAiContent.Visibility = Visibility.Visible;
-                searchFieldRow.Visibility = Visibility.Collapsed;
-            }
-        }
-
-        private void BtnHelpTab_Click(object sender, RoutedEventArgs e)
-        {
-            _viewModel?.SetActiveTab("Help");
-        }
-
-        private void BtnAiTab_Click(object sender, RoutedEventArgs e)
-        {
-            _viewModel?.SetActiveTab("AI");
         }
 
         private void BtnClose_Click(object sender, RoutedEventArgs e)
