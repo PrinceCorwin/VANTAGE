@@ -223,8 +223,13 @@ namespace VANTAGE.Dialogs
                 var updates = new List<(string UniqueID, object? NewValue)>();
                 var derivedColumns = new Dictionary<string, List<(string UniqueID, object? Value)>>();
                 bool isProgressField = _columnMappingName is "PercentEntry" or "EarnQtyEntry" or "Quantity" or "BudgetMHs";
+                bool requiresValidation = _columnMappingName is "PercentEntry" or "EarnQtyEntry" or "ActStart" or "ActFin";
                 string currentUser = App.CurrentUser?.Username ?? "Unknown";
                 var now = DateTime.UtcNow;
+
+                // Snapshots let us roll every mutated row back to its original state if any row violates a rule.
+                var snapshots = new List<(Activity activity, object? origValue, double origPercent, DateTime? origActStart, DateTime? origActFin)>();
+                var failures = new List<(Activity activity, string error)>();
 
                 foreach (var activity in editableActivities)
                 {
@@ -283,6 +288,11 @@ namespace VANTAGE.Dialogs
                         var propertyType = currentValue?.GetType() ?? typeof(Activity).GetProperty(_columnMappingName)?.PropertyType ?? typeof(string);
                         object? newValue = ConvertToPropertyType(newTextValue, propertyType);
 
+                        if (requiresValidation)
+                        {
+                            snapshots.Add((activity, currentValue, activity.PercentEntry, activity.ActStart, activity.ActFin));
+                        }
+
                         // Update in-memory object
                         provider.SetValue(activity, _columnMappingName, newValue);
 
@@ -303,12 +313,28 @@ namespace VANTAGE.Dialogs
                                 // >0 but <100 → clear ActFin only
                                 activity.ActFin = null;
                             }
+                        }
+                        else if (_columnMappingName == "ActFin" && activity.ActFin != null && activity.PercentEntry < 100)
+                        {
+                            // Setting a Finish date implies the activity is complete — auto-bump % to 100.
+                            activity.PercentEntry = 100;
+                        }
 
-                            // Collect derived field values for DB update
-                            // EarnMHsCalc is a computed property (not a DB column) — skip it
+                        if (requiresValidation)
+                        {
+                            string? error = ActivityValidator.Validate(activity.PercentEntry, activity.ActStart, activity.ActFin);
+                            if (error != null)
+                            {
+                                failures.Add((activity, error));
+                                continue;
+                            }
+                        }
+
+                        // Collect derived field values for DB update when the mutation touched percent/dates
+                        if (isProgressField || _columnMappingName == "ActFin")
+                        {
                             CollectDerivedValue(derivedColumns, "EarnQtyEntry", activity.UniqueID, activity.EarnQtyEntry);
                             CollectDerivedValue(derivedColumns, "PercentEntry", activity.UniqueID, activity.PercentEntry);
-                            // Dates stored as TEXT in DB — empty string for null
                             CollectDerivedValue(derivedColumns, "ActStart", activity.UniqueID,
                                 activity.ActStart?.ToString("yyyy-MM-dd HH:mm:ss") ?? (object)"");
                             CollectDerivedValue(derivedColumns, "ActFin", activity.UniqueID,
@@ -325,6 +351,33 @@ namespace VANTAGE.Dialogs
                     {
                         conversionFailures++;
                     }
+                }
+
+                if (failures.Count > 0)
+                {
+                    // Roll every mutated row back to its pre-edit state and abort without writing to the DB.
+                    foreach (var s in snapshots)
+                    {
+                        provider.SetValue(s.activity, _columnMappingName, s.origValue);
+                        s.activity.PercentEntry = s.origPercent;
+                        s.activity.ActStart = s.origActStart;
+                        s.activity.ActFin = s.origActFin;
+                    }
+
+                    busyDialog.Close();
+
+                    var preview = failures.Take(10)
+                        .Select(f => $"  • {f.activity.ActivityID}: {f.error}");
+                    string detail = string.Join("\n", preview);
+                    if (failures.Count > 10)
+                        detail += $"\n  …and {failures.Count - 10:N0} more";
+
+                    MessageBox.Show(
+                        $"Replace aborted: {failures.Count:N0} row(s) would violate validation rules. No changes were saved.\n\n{detail}",
+                        "Validation Failed",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+                    return;
                 }
 
                 if (updates.Count == 0)
@@ -351,9 +404,9 @@ namespace VANTAGE.Dialogs
                     currentUser,
                     filteredDerived.Count > 0 ? filteredDerived : null);
 
-                // Phase C: Refresh grid
-                _dataGrid.View.Refresh();
-
+                // Phase C: INotifyPropertyChanged propagates the new values to the grid cells. We deliberately
+                // skip View.Refresh() here so rows that no longer match the active filter remain visible until
+                // the user explicitly re-applies filters or hits the Refresh button.
                 busyDialog.Close();
 
                 int skippedCount = allActivities.Count - editableActivities.Count;

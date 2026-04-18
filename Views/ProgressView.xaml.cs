@@ -1332,7 +1332,6 @@ namespace VANTAGE.Views
             var (success, description) = await _undoManager.UndoAsync(FindActivityByUniqueID);
             if (success)
             {
-                sfActivities.View?.Refresh();
                 UpdateSummaryPanel();
                 await CalculateMetadataErrorCount();
                 txtFilteredCount.Text = $"Undid: {description}";
@@ -1347,7 +1346,6 @@ namespace VANTAGE.Views
             var (success, description) = await _undoManager.RedoAsync(FindActivityByUniqueID);
             if (success)
             {
-                sfActivities.View?.Refresh();
                 UpdateSummaryPanel();
                 await CalculateMetadataErrorCount();
                 txtFilteredCount.Text = $"Redid: {description}";
@@ -1518,33 +1516,18 @@ namespace VANTAGE.Views
                 return;
             }
 
-            // Filter out date column rows that violate percent rules
-            int skippedCount = 0;
-            if (columnName == "ActStart" || columnName == "ActFin")
-            {
-                var originalCount = rowBasedCells.Count;
-                if (columnName == "ActStart")
-                    rowBasedCells = rowBasedCells.Where(r => r.activity.PercentEntry > 0).ToList();
-                else
-                    rowBasedCells = rowBasedCells.Where(r => r.activity.PercentEntry >= 100).ToList();
-
-                skippedCount = originalCount - rowBasedCells.Count;
-                if (rowBasedCells.Count == 0)
-                {
-                    string reason = columnName == "ActStart"
-                        ? "All target records have 0% Complete — set % Complete greater than 0 first."
-                        : "All target records have % Complete less than 100 — set % Complete to 100 first.";
-                    MessageBox.Show(reason, "Paste Blocked", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    return;
-                }
-            }
-
             // Single value to paste to all rows
             string clipboardValue = clipboardValues[0];
             var now = DateTime.UtcNow;
 
+            bool requiresValidation = columnName is "PercentEntry" or "EarnQtyEntry" or "ActStart" or "ActFin";
+
             try
             {
+                // Snapshot pre-paste state on validation-relevant columns so we can roll back if any row fails.
+                var snapshots = new List<(Activity activity, object? origValue, double origPercent, DateTime? origActStart, DateTime? origActFin)>();
+                var failures = new List<(Activity activity, string error)>();
+
                 // Capture old values for undo before modifying
                 var undoChanges = new List<CellChange>();
                 foreach (var (activity, _) in rowBasedCells)
@@ -1565,12 +1548,32 @@ namespace VANTAGE.Views
                 {
                     var (activity, _) = rowBasedCells[i];
 
+                    if (requiresValidation)
+                    {
+                        snapshots.Add((activity, property.GetValue(activity), activity.PercentEntry, activity.ActStart, activity.ActFin));
+                    }
+
                     // Try to convert and set value on in-memory object
                     if (!TrySetPropertyValue(activity, property, columnName, clipboardValue, out string? errorMessage))
                     {
+                        RollbackPasteSnapshots(snapshots, property);
                         MessageBox.Show(errorMessage ?? $"Invalid value '{clipboardValue}' for column '{columnHeader}'.",
                             "Paste Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                         return;
+                    }
+
+                    // Setting a Finish date implies the activity is complete — auto-bump % to 100.
+                    if (columnName == "ActFin" && activity.ActFin != null && activity.PercentEntry < 100)
+                        activity.PercentEntry = 100;
+
+                    if (requiresValidation)
+                    {
+                        string? error = ActivityValidator.Validate(activity.PercentEntry, activity.ActStart, activity.ActFin);
+                        if (error != null)
+                        {
+                            failures.Add((activity, error));
+                            continue;
+                        }
                     }
 
                     // Mark as modified in-memory
@@ -1582,6 +1585,13 @@ namespace VANTAGE.Views
                     var newValue = property.GetValue(activity);
                     updates.Add((activity.UniqueID, newValue));
                     undoChanges[i].NewValue = newValue;
+                }
+
+                if (failures.Count > 0)
+                {
+                    RollbackPasteSnapshots(snapshots, property);
+                    ShowPasteValidationFailures(failures);
+                    return;
                 }
 
                 // Single bulk update to database
@@ -1597,18 +1607,10 @@ namespace VANTAGE.Views
                     Changes = undoChanges
                 });
 
-                // Refresh grid
-                sfActivities.View?.Refresh();
+                // INPC propagates values to the grid; filters only re-evaluate when the user clicks a filter
+                // button or the Refresh button.
                 UpdateSummaryPanel();
                 await CalculateMetadataErrorCount();
-
-                if (skippedCount > 0)
-                {
-                    string reason = columnName == "ActStart"
-                        ? $"Pasted to {rowBasedCells.Count} row(s). Skipped {skippedCount} row(s) with 0% Complete."
-                        : $"Pasted to {rowBasedCells.Count} row(s). Skipped {skippedCount} row(s) with % Complete less than 100.";
-                    MessageBox.Show(reason, "Partial Paste", MessageBoxButton.OK, MessageBoxImage.Information);
-                }
             }
             catch (Exception ex)
             {
@@ -1716,31 +1718,14 @@ namespace VANTAGE.Views
                     return;
                 }
 
-                // Filter out date column rows that violate percent rules
-                int skippedCount = 0;
-                if (columnName == "ActStart" || columnName == "ActFin")
-                {
-                    var originalCount = targetCells.Count;
-                    if (columnName == "ActStart")
-                        targetCells = targetCells.Where(t => t.activity.PercentEntry > 0).ToList();
-                    else
-                        targetCells = targetCells.Where(t => t.activity.PercentEntry >= 100).ToList();
-
-                    skippedCount = originalCount - targetCells.Count;
-                    if (targetCells.Count == 0)
-                    {
-                        string reason = columnName == "ActStart"
-                            ? "All target records have 0% Complete — set % Complete greater than 0 first."
-                            : "All target records have % Complete less than 100 — set % Complete to 100 first.";
-                        MessageBox.Show(reason, "Paste Blocked", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        return;
-                    }
-                }
-
                 // Capture old values for undo, then paste
                 int pasteCount = Math.Min(clipboardValues.Count, targetCells.Count);
                 var modifiedActivities = new List<Activity>();
                 var undoChanges = new List<CellChange>();
+
+                bool requiresValidation = columnName is "PercentEntry" or "EarnQtyEntry" or "ActStart" or "ActFin";
+                var snapshots = new List<(Activity activity, object? origValue, double origPercent, DateTime? origActStart, DateTime? origActFin)>();
+                var failures = new List<(Activity activity, string error)>();
 
                 for (int i = 0; i < pasteCount; i++)
                 {
@@ -1751,12 +1736,32 @@ namespace VANTAGE.Views
                     var oldValue = property.GetValue(activity);
                     var derivedOldValues = UndoManager.CaptureDerivedFields(activity, columnName);
 
+                    if (requiresValidation)
+                    {
+                        snapshots.Add((activity, oldValue, activity.PercentEntry, activity.ActStart, activity.ActFin));
+                    }
+
                     // Try to convert and set value
                     if (!TrySetPropertyValue(activity, property, columnName, clipboardValue, out string? errorMessage))
                     {
+                        RollbackPasteSnapshots(snapshots, property);
                         MessageBox.Show(errorMessage ?? $"Invalid value '{clipboardValue}' for column '{columnHeader}'.",
                             "Paste Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                         return;
+                    }
+
+                    // Setting a Finish date implies the activity is complete — auto-bump % to 100.
+                    if (columnName == "ActFin" && activity.ActFin != null && activity.PercentEntry < 100)
+                        activity.PercentEntry = 100;
+
+                    if (requiresValidation)
+                    {
+                        string? error = ActivityValidator.Validate(activity.PercentEntry, activity.ActStart, activity.ActFin);
+                        if (error != null)
+                        {
+                            failures.Add((activity, error));
+                            continue;
+                        }
                     }
 
                     // Mark as modified
@@ -1775,6 +1780,13 @@ namespace VANTAGE.Views
                     });
                 }
 
+                if (failures.Count > 0)
+                {
+                    RollbackPasteSnapshots(snapshots, property);
+                    ShowPasteValidationFailures(failures);
+                    return;
+                }
+
                 // Save all modified activities to database
                 foreach (var activity in modifiedActivities)
                 {
@@ -1791,24 +1803,46 @@ namespace VANTAGE.Views
                     Changes = undoChanges
                 });
 
-                // Refresh grid
-                sfActivities.View?.Refresh();
+                // INPC propagates values to the grid; filters only re-evaluate when the user clicks a filter
+                // button or the Refresh button.
                 UpdateSummaryPanel();
                 await CalculateMetadataErrorCount();
-
-                if (skippedCount > 0)
-                {
-                    string reason = columnName == "ActStart"
-                        ? $"Pasted to {pasteCount} row(s). Skipped {skippedCount} row(s) with 0% Complete."
-                        : $"Pasted to {pasteCount} row(s). Skipped {skippedCount} row(s) with % Complete less than 100.";
-                    MessageBox.Show(reason, "Partial Paste", MessageBoxButton.OK, MessageBoxImage.Information);
-                }
             }
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "PasteToSelectedCells", App.CurrentUser?.Username ?? "Unknown");
                 MessageBox.Show($"Paste failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+        // Restore rows to their pre-paste state when a paste has to be aborted mid-loop.
+        private static void RollbackPasteSnapshots(
+            List<(Activity activity, object? origValue, double origPercent, DateTime? origActStart, DateTime? origActFin)> snapshots,
+            PropertyInfo property)
+        {
+            foreach (var s in snapshots)
+            {
+                property.SetValue(s.activity, s.origValue);
+                s.activity.PercentEntry = s.origPercent;
+                s.activity.ActStart = s.origActStart;
+                s.activity.ActFin = s.origActFin;
+            }
+        }
+
+        // Show a summary of paste rows that violated validation rules, capped to the first 10 entries.
+        private static void ShowPasteValidationFailures(List<(Activity activity, string error)> failures)
+        {
+            var preview = failures.Take(10)
+                .Select(f => $"  \u2022 {f.activity.ActivityID}: {f.error}");
+            string detail = string.Join("\n", preview);
+            if (failures.Count > 10)
+                detail += $"\n  \u2026and {failures.Count - 10:N0} more";
+
+            MessageBox.Show(
+                $"Paste aborted: {failures.Count:N0} row(s) would violate validation rules. No changes were saved.\n\n{detail}",
+                "Validation Failed",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
         }
 
         // Try to set a property value with type conversion, returns false if conversion fails
@@ -2554,10 +2588,10 @@ namespace VANTAGE.Views
             return filtered;
         }
 
-        // Refreshes the grid and summary panel after external changes
+        // Updates summary panel after Prorate. INPC propagates value changes to grid cells;
+        // filters only re-evaluate when the user clicks a filter button or the Refresh button.
         public void RefreshAfterProrate()
         {
-            sfActivities.View.Refresh();
             UpdateSummaryPanel();
         }
 
@@ -4760,83 +4794,24 @@ namespace VANTAGE.Views
                     }
                     // Note: No auto-set of dates - user must enter ActStart/ActFin manually
                 }
-                else if (columnName == "ActStart")
+                else if (columnName == "ActStart" || columnName == "ActFin")
                 {
-                    // Can't set start if percent is 0
-                    if (editedActivity.ActStart != null && editedActivity.PercentEntry == 0)
-                    {
-                        MessageBox.Show("Cannot set Start date when % Complete is 0.\n\nSet % Complete to greater than 0 first.",
-                            "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        editedActivity.ActStart = null;
-                        sfActivities.View?.Refresh();
-                        return;
-                    }
+                    // Setting a Finish date implies the activity is complete — bump % to 100 before validating.
+                    // Snapshot the pre-bump percent so a failed validation can revert it along with the edited cell.
+                    double prePercent = editedActivity.PercentEntry;
+                    if (columnName == "ActFin" && editedActivity.ActFin != null && editedActivity.PercentEntry < 100)
+                        editedActivity.PercentEntry = 100;
 
-                    // Can't set start in the future
-                    if (editedActivity.ActStart != null && editedActivity.ActStart.Value.Date > DateTime.Today)
-                    {
-                        MessageBox.Show("Start date cannot be in the future.",
-                            "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        editedActivity.ActStart = DateTime.Today;
-                        sfActivities.View?.Refresh();
-                    }
-                    // Can't set start after finish
-                    if (editedActivity.ActStart != null && editedActivity.ActFin != null &&
-                        editedActivity.ActStart.Value.Date > editedActivity.ActFin.Value.Date)
-                    {
-                        MessageBox.Show("Start date cannot be after Finish date.\n\nFinish date has been updated to match Start date.",
-                            "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        editedActivity.ActFin = editedActivity.ActStart;
-                        sfActivities.View?.Refresh();
-                    }
-                    // Can't clear start if percent > 0
-                    if (editedActivity.ActStart == null && editedActivity.PercentEntry > 0)
-                    {
-                        MessageBox.Show("Cannot clear Start date when % Complete is greater than 0.\n\nSet % Complete to 0 first.",
-                            "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        editedActivity.ActStart = DateTime.Today;
-                        sfActivities.View?.Refresh();
-                        return;
-                    }
-                }
-                else if (columnName == "ActFin")
-                {
-                    // Can't set finish if percent < 100
-                    if (editedActivity.ActFin != null && editedActivity.PercentEntry < 100)
-                    {
-                        MessageBox.Show("Cannot set Finish date when % Complete is less than 100.\n\nSet % Complete to 100 first.",
-                            "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        editedActivity.ActFin = null;
-                        sfActivities.View?.Refresh();
-                        return;
-                    }
+                    string? violation = ActivityValidator.Validate(
+                        editedActivity.PercentEntry,
+                        editedActivity.ActStart,
+                        editedActivity.ActFin);
 
-                    // Can't set finish in the future
-                    if (editedActivity.ActFin != null && editedActivity.ActFin.Value.Date > DateTime.Today)
+                    if (violation != null)
                     {
-                        MessageBox.Show("Finish date cannot be in the future.",
-                            "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        editedActivity.ActFin = DateTime.Today;
-                        sfActivities.View?.Refresh();
-                    }
-
-                    // Can't set finish before start
-                    if (editedActivity.ActFin != null && editedActivity.ActStart != null &&
-                        editedActivity.ActFin.Value.Date < editedActivity.ActStart.Value.Date)
-                    {
-                        MessageBox.Show("Finish date cannot be before Start date.",
-                            "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        editedActivity.ActFin = editedActivity.ActStart;
-                        sfActivities.View?.Refresh();
-                    }
-
-                    // Can't clear finish if percent is 100
-                    if (editedActivity.ActFin == null && editedActivity.PercentEntry >= 100)
-                    {
-                        MessageBox.Show("Cannot clear Finish date when % Complete is 100.\n\nSet % Complete to less than 100 first.",
-                            "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        editedActivity.ActFin = DateTime.Today;
-                        sfActivities.View?.Refresh();
+                        MessageBox.Show(violation, "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        property.SetValue(editedActivity, _originalCellValue);
+                        editedActivity.PercentEntry = prePercent;
                         return;
                     }
                 }
@@ -4946,7 +4921,6 @@ namespace VANTAGE.Views
                         }
                     });
 
-                    sfActivities.View?.Refresh();
                     UpdateSummaryPanel();
                     await CalculateMetadataErrorCount();
                 }

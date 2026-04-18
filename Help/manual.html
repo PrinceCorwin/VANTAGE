@@ -463,7 +463,7 @@
     <ul>
         <li><strong>Import Activities (Replace)</strong> — Import activities from Excel, replacing all existing local data. Auto-detects Legacy (OldVantage) or Milestone format based on column headers.</li>
         <li><strong>Import Activities (Combine)</strong> — Import activities from Excel, merging with existing data. Auto-detects file format.</li>
-        <li><strong>Export Activities</strong> — Export your activities to an Excel file (Milestone format)</li>
+        <li><strong>Export Activities</strong> — Export activities to an Excel file (Milestone format). When filters are active in the Progress view, a themed <em>Export Options</em> dialog appears with <strong>Filtered</strong>, <strong>All</strong>, and <strong>Cancel</strong> buttons so you can pick which set to export. When launched from another view, it exports every record without asking.</li>
         <li><strong>Export Activities Template</strong> — Download a blank Excel template for activity import</li>
         <li><strong>Import from AI Takeoff</strong> — Open the Import dialog to map takeoff Excel data to VANTAGE activities</li>
         <li><strong>Clear Local Activities</strong> — Delete all local activity data (requires re-sync)</li>
@@ -705,6 +705,11 @@
     <img src="../Assets/Images/Sidebar/progress-sidebar.png" alt="Progress sidebar filters" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
     <p>Active filters display a highlighted border so you can easily see which filters are currently applied.</p>
 
+    <div class="note">
+        <div class="note-title">Filters Don't Re-Apply on Their Own</div>
+        <p>When you edit a record (single cell, bulk paste, Find &amp; Replace, Prorate, etc.) and the new value no longer matches the active filter, the row <strong>stays visible</strong> so you can see what you just changed. Filters only re-evaluate when you click a filter button, toggle a filter off, or press the <strong>Refresh</strong> button. This prevents rows from silently disappearing mid-edit.</p>
+    </div>
+
     <h4>Progress Filters</h4>
     <p>These three filters are mutually exclusive — only one can be active at a time:</p>
     <table>
@@ -894,6 +899,8 @@
         <li><strong>Count</strong> — Show how many cells match without making changes</li>
         <li><strong>Replace All</strong> — Replace all matching cells</li>
     </ul>
+
+    <p><strong>Logical rule validation:</strong> When replacing into PercentEntry, ActStart, or ActFin, every prospective change is checked against the same hard rules as single-cell edits. If <em>any</em> row would violate a rule (future date, Finish before Start, etc.), the <strong>entire replace is aborted</strong>, no changes are saved, and a dialog lists the offending ActivityIDs and reasons. Replacing into ActFin also auto-bumps % Complete to 100 on any rows that were below 100.</p>
 
     <h3 id="prog-metadata">Required Metadata Fields</h3>
     <p>Nine fields are required for sync. Records missing any of these fields will be highlighted in red and cannot be synced until corrected.</p>
@@ -1092,19 +1099,20 @@
         <li><strong>Multi-column clipboard</strong> — Only the first column of clipboard data is used</li>
     </ul>
 
-    <p><strong>Validation rules (paste is blocked if any fail):</strong></p>
+    <p><strong>Prerequisite checks (paste is blocked if any fail):</strong></p>
     <ul>
         <li>Target column must be editable (not read-only or calculated)</li>
         <li>You must own all affected records (AssignedTo must match your username)</li>
         <li>Values must be valid for the column type (numbers, dates, etc.)</li>
-        <li><strong>ActStart</strong> — Rows with 0% Complete are skipped (% must be greater than 0)</li>
-        <li><strong>ActFin</strong> — Rows with less than 100% Complete are skipped (% must equal 100)</li>
     </ul>
-    <p>When pasting dates, valid rows are pasted and violating rows are skipped. A summary message shows how many were pasted vs skipped.</p>
+
+    <p><strong>Logical rule validation:</strong> Before saving, every row the paste touches is checked against the same hard rules as single-cell edits (future dates, date order, Start with %=0, Finish with %&lt;100). If <em>any</em> row would violate a rule, the <strong>entire paste is aborted</strong>, no changes are saved, and a dialog lists the offending ActivityIDs and reasons. Fix the data and try again.</p>
+
+    <p><strong>Pasting ActFin auto-bumps % to 100:</strong> When you paste a Finish date into a row with %&lt;100, the row's % Complete is automatically set to 100. This matches single-cell behavior so bulk date entry works without a separate % step.</p>
 
     <div class="note">
         <div class="note-title">Required Date Fields</div>
-        <p>When PercentEntry is greater than 0, ActStart is required. When PercentEntry equals 100%, ActFin is also required. Missing required dates show red cell backgrounds and must be filled before syncing.</p>
+        <p>When PercentEntry is greater than 0, ActStart is required. When PercentEntry equals 100%, ActFin is also required. These are <em>required metadata</em>, not hard rules — missing values are flagged with a red cell background and block sync, but you can still edit or paste into other fields without entering them first.</p>
     </div>
 
     <!-- ============================================ -->

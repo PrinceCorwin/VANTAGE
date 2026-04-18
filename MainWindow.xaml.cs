@@ -922,78 +922,7 @@ namespace VANTAGE
 
         private async void ExcelExportActivities_Click(object sender, RoutedEventArgs e)
         {
-            // Get current ProgressView instance
-            var progressView = ContentArea.Content as ProgressView;
-            if (progressView == null)
-            {
-                MessageBox.Show("Progress module not loaded.", "Export", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            // Get the ViewModel
-            var viewModel = progressView.DataContext as ViewModels.ProgressViewModel;
-            if (viewModel == null)
-            {
-                MessageBox.Show("Unable to access progress data.", "Export", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            try
-            {
-                // Get all activities from ViewModel
-                var allActivities = viewModel.Activities?.ToList();
-                if (allActivities == null || allActivities.Count == 0)
-                {
-                    MessageBox.Show("No activities to export.", "Export", MessageBoxButton.OK, MessageBoxImage.None);
-                    return;
-                }
-
-                // Get filtered activities from the grid's view
-                var gridField = progressView.GetType().GetField("sfActivities",
-                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-
-                List<Activity>? filteredActivities = null;
-                bool hasActiveFilters = false;
-
-                if (gridField != null)
-                {
-                    var grid = gridField.GetValue(progressView) as Syncfusion.UI.Xaml.Grid.SfDataGrid;
-                    if (grid?.View != null)
-                    {
-                        filteredActivities = grid.View.Records
-                            .Select(r => r.Data as Activity)
-                            .Where(a => a != null)
-                            .Cast<Activity>()
-                            .ToList();
-
-                        hasActiveFilters = filteredActivities.Count < allActivities.Count;
-                    }
-                }
-
-                if (filteredActivities == null)
-                {
-                    filteredActivities = allActivities;
-                    hasActiveFilters = false;
-                }
-
-                // Show progress bar during export
-                viewModel.IsLoading = true;
-
-                await ExportHelper.ExportActivitiesWithOptionsAsync(
-                    this,
-                    allActivities,
-                    filteredActivities,
-                    hasActiveFilters);
-            }
-            catch (Exception ex)
-            {
-                AppLogger.Error(ex, "Export Activities Click", App.CurrentUser?.Username ?? "Unknown");
-                MessageBox.Show($"An error occurred: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-            finally
-            {
-                viewModel.IsLoading = false;
-            }
+            await RunExportActivitiesAsync(ExportFormat.NewVantage, "Export Activities Click");
         }
 
         private async void ExcelExportTemplate_Click(object sender, RoutedEventArgs e)
@@ -1005,71 +934,73 @@ namespace VANTAGE
 
         private async void MenuLegacyExportActivities_Click(object sender, RoutedEventArgs e)
         {
-            var progressView = ContentArea.Content as ProgressView;
-            if (progressView == null)
-            {
-                MessageBox.Show("Progress module not loaded.", "Export", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
+            await RunExportActivitiesAsync(ExportFormat.Legacy, "Legacy Export Activities Click");
+        }
 
-            var viewModel = progressView.DataContext as ViewModels.ProgressViewModel;
-            if (viewModel == null)
-            {
-                MessageBox.Show("Unable to access progress data.", "Export", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
+        // Shared export flow. If the Progress view is active, respect its filters;
+        // otherwise pull all activities from the database and export them directly.
+        private async Task RunExportActivitiesAsync(ExportFormat format, string logContext)
+        {
+            var progressView = ContentArea.Content as ProgressView;
+            var viewModel = progressView?.DataContext as ViewModels.ProgressViewModel;
 
             try
             {
-                var allActivities = viewModel.Activities?.ToList();
-                if (allActivities == null || allActivities.Count == 0)
+                List<Activity> allActivities;
+                List<Activity> filteredActivities;
+                bool hasActiveFilters = false;
+
+                if (progressView != null && viewModel != null)
+                {
+                    allActivities = viewModel.Activities?.ToList() ?? new List<Activity>();
+                    filteredActivities = allActivities;
+
+                    var gridField = progressView.GetType().GetField("sfActivities",
+                        System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+
+                    if (gridField != null)
+                    {
+                        var grid = gridField.GetValue(progressView) as Syncfusion.UI.Xaml.Grid.SfDataGrid;
+                        if (grid?.View != null)
+                        {
+                            filteredActivities = grid.View.Records
+                                .Select(r => r.Data as Activity)
+                                .Where(a => a != null)
+                                .Cast<Activity>()
+                                .ToList();
+
+                            hasActiveFilters = filteredActivities.Count < allActivities.Count;
+                        }
+                    }
+
+                    viewModel.IsLoading = true;
+                }
+                else
+                {
+                    // Progress view not loaded — fetch everything from the DB and skip the filter prompt
+                    var (dbActivities, _) = await ActivityRepository.GetAllActivitiesAsync();
+                    allActivities = dbActivities;
+                    filteredActivities = dbActivities;
+                }
+
+                if (allActivities.Count == 0)
                 {
                     MessageBox.Show("No activities to export.", "Export", MessageBoxButton.OK, MessageBoxImage.None);
                     return;
                 }
 
-                // Get filtered activities
-                var gridField = progressView.GetType().GetField("sfActivities",
-                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-
-                List<Activity>? filteredActivities = null;
-                bool hasActiveFilters = false;
-
-                if (gridField != null)
-                {
-                    var grid = gridField.GetValue(progressView) as Syncfusion.UI.Xaml.Grid.SfDataGrid;
-                    if (grid?.View != null)
-                    {
-                        filteredActivities = grid.View.Records
-                            .Select(r => r.Data as Activity)
-                            .Where(a => a != null)
-                            .Cast<Activity>()
-                            .ToList();
-
-                        hasActiveFilters = filteredActivities.Count < allActivities.Count;
-                    }
-                }
-
-                if (filteredActivities == null)
-                {
-                    filteredActivities = allActivities;
-                    hasActiveFilters = false;
-                }
-
-                // Show progress bar during export
-                viewModel.IsLoading = true;
-
                 await ExportHelper.ExportActivitiesWithOptionsAsync(
-                    this, allActivities, filteredActivities, hasActiveFilters, ExportFormat.Legacy);
+                    this, allActivities, filteredActivities, hasActiveFilters, format);
             }
             catch (Exception ex)
             {
-                AppLogger.Error(ex, "Legacy Export Activities Click", App.CurrentUser?.Username ?? "Unknown");
+                AppLogger.Error(ex, logContext, App.CurrentUser?.Username ?? "Unknown");
                 MessageBox.Show($"An error occurred: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {
-                viewModel.IsLoading = false;
+                if (viewModel != null)
+                    viewModel.IsLoading = false;
             }
         }
 

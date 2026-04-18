@@ -215,6 +215,40 @@ Permanent record of architectural choices, design rationale, and implementation 
 
 ---
 
+## Edit Rules & Bulk Operations
+
+### Hard Rules vs. Required Metadata
+**Decision:** Activity date/percent rules are split into two tiers. Hard rules (future dates, ActFin before ActStart, ActStart set with %=0, ActFin set with %&lt;100) block the edit and revert. Required metadata (ActStart needed when %&gt;0, ActFin needed when %=100) does NOT block — the cell is flagged red and sync is gated.
+**Why:** Treating "required metadata" as a hard block creates deadlocks when raising a record's progress before dates are known, or when bulk-setting % to 100 on records that still need ActFin. Users expressed frustration with being unable to move records forward. Red highlighting + sync gate still enforces data completeness, without blocking the in-progress edit.
+**Date:** April 2026
+
+### Single Validator as Source of Truth (`ActivityValidator.Validate`)
+**Decision:** All edit paths — single-cell CurrentCellEndEdit, Find &amp; Replace, and both multi-row paste flows — call `ActivityValidator.Validate(percent, actStart, actFin)` to check the prospective state. The function returns the first violation message or null.
+**Why:** Previously the same rules were re-implemented in three places and drifted. Centralising prevents new bulk paths from forgetting a rule.
+**Date:** April 2026
+
+### Bulk Operations Abort on Any Violation, Not Partial Apply
+**Decision:** When Find &amp; Replace or a multi-row paste encounters a hard-rule violation on <em>any</em> affected row, the entire operation is rolled back in memory, nothing is written to the DB, and a dialog lists up to 10 offending ActivityIDs plus a "…and N more" footer.
+**Why:** Silent partial apply (paste some rows, skip others) was reported as confusing — users couldn't tell what actually changed. Abort-on-any forces the user to correct the source data and re-run, which is more predictable than picking which rows to commit.
+**Date:** April 2026
+
+### Entering ActFin Auto-Bumps % Complete to 100
+**Decision:** Single-cell edit, Find &amp; Replace, and paste all auto-set `PercentEntry = 100` on any row where a non-null Finish date was entered and current % is below 100.
+**Why:** Users always have to follow a Finish-date entry with a %=100 update (ActFin requires %=100). The auto-bump saves a step. If ActStart is null when ActFin is entered, the record is still written — ActStart turns red as required metadata, consistent with the hard-rule / required-metadata split.
+**Date:** April 2026
+
+### Filter Does Not Auto-Refresh After Edits
+**Decision:** Removed every `View.Refresh()` call that fired after a data mutation (paste success and rollback, Find &amp; Replace success, Prorate, single-cell rollback, Undo/Redo, ClearCurrentCell). Filters only re-evaluate when the user clicks a filter toggle or the Refresh button. Grid set to `LiveDataUpdateMode="Default"` so Syncfusion also doesn't re-shape data on property changes.
+**Why:** Users reported frustration at rows silently disappearing from a filtered view the moment their edit made the row no longer match (e.g., raising % to 100 while viewing "In Progress"). They want to see the value they just changed before deciding to re-apply the filter. `INotifyPropertyChanged` on `Activity` still propagates value changes to grid cells; only the filter predicate stays stale until an explicit refresh.
+**Date:** April 2026
+
+### Paste Into ActStart/ActFin Validates Instead of Silently Skipping Rows
+**Decision:** Removed the pre-filter that skipped rows failing the date-percent rules during multi-cell paste (both "single value to multiple rows" and "multi-value paste" flows). Paste is now abort-all-on-any-violation with a detailed error dialog.
+**Why:** The silent-skip behavior (with a post-paste "N rows skipped" message) let users think a paste succeeded broadly when significant portions were dropped. Consistent abort-all semantics match Find &amp; Replace and single-cell edits.
+**Date:** April 2026
+
+---
+
 ## UI / UX
 
 ### ProgressView Cached for Instant Navigation

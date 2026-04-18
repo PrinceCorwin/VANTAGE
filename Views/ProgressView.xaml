@@ -881,7 +881,7 @@
                     AllowSorting="True"
                     SortClickAction="DoubleClick"
                     AllowFiltering="True"
-                    LiveDataUpdateMode="AllowSummaryUpdate"
+                    LiveDataUpdateMode="Default"
                     SelectionMode="Extended"
                     SelectionUnit="Any"
                     ColumnSizer="Auto"

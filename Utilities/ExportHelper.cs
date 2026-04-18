@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
+using VANTAGE.Dialogs;
 using VANTAGE.Models;
 
 namespace VANTAGE.Utilities
@@ -48,22 +49,17 @@ namespace VANTAGE.Utilities
                 // If filters are active, ask user which set to export
                 if (hasActiveFilters && filteredActivities != null && filteredActivities.Count < allActivities.Count)
                 {
-                    var result = MessageBox.Show(
-                        owner,
-                        $"Choose which records to export:\n\n" +
-                        $"• All Records: {allActivities.Count:N0} activities\n" +
-                        $"• Filtered Records: {filteredActivities.Count:N0} activities\n\n" +
-                        $"Export filtered records only?",
-                        "Export Options",
-                        MessageBoxButton.YesNoCancel,
-                        MessageBoxImage.Question,
-                        MessageBoxResult.No);
+                    var dialog = new ExportOptionsDialog(allActivities.Count, filteredActivities.Count)
+                    {
+                        Owner = owner
+                    };
+                    dialog.ShowDialog();
 
-                    if (result == MessageBoxResult.Cancel)
+                    if (dialog.Choice == ExportChoice.Cancel)
                         return;
 
-                    activitiesToExport = result == MessageBoxResult.Yes ? filteredActivities : allActivities;
-                    exportType = result == MessageBoxResult.Yes ? "Filtered Activities" : "All Activities";
+                    activitiesToExport = dialog.Choice == ExportChoice.Filtered ? filteredActivities : allActivities;
+                    exportType = dialog.Choice == ExportChoice.Filtered ? "Filtered Activities" : "All Activities";
                 }
                 else
                 {
