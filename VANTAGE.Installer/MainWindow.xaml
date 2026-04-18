@@ -58,7 +58,7 @@
 
         <!-- Header: Summit logo and title -->
         <StackPanel Grid.Row="0" HorizontalAlignment="Center">
-            <Image Source="/Images/SummitLogoNoText.jpg"
+            <Image Source="/Assets/Images/System/SummitLogoNoText.jpg"
                    Width="80" Height="80"
                    RenderOptions.BitmapScalingMode="HighQuality"
                    Margin="0,0,0,10"/>
@@ -85,7 +85,7 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <Image Grid.Column="0"
-                       Source="/Images/MilestoneLogoPngTransparentBG.png"
+                       Source="/Assets/Images/System/MilestoneLogoPngTransparentBG.png"
                        Width="40" Height="40"
                        RenderOptions.BitmapScalingMode="HighQuality"/>
                 <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="8,0,0,0">

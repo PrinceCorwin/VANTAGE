@@ -13,7 +13,7 @@ namespace VANTAGE.Services.PdfRenderers
     // Renderer for Cover type templates (header + centered image + optional footer)
     public class CoverRenderer : BaseRenderer
     {
-        private const string DefaultCoverImagePath = "pack://application:,,,/Images/CoverPic.png";
+        private const string DefaultCoverImagePath = "pack://application:,,,/Assets/Images/System/CoverPic.png";
 
         public override PdfDocument Render(string structureJson, TokenContext context, string? logoPath = null)
         {

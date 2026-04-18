@@ -5,7 +5,7 @@
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<UseWPF>true</UseWPF>
-		<ApplicationIcon>images\AppIcon.ico</ApplicationIcon>
+		<ApplicationIcon>Assets\Images\System\AppIcon.ico</ApplicationIcon>
 
 		<!-- Version Information -->
 		<Version>26.2.10</Version>
@@ -17,39 +17,12 @@
 		<Description>Construction Progress Tracking Application</Description>
 	</PropertyGroup>
 	<ItemGroup>
-	  <None Remove="Help\pb-editor-bottom.png" />
-	  <None Remove="Help\pb-editor-top.png" />
-	  <None Remove="Help\pb-scan-dialog.png" />
-	  <None Remove="Help\pb-scan-results.png" />
-	  <None Remove="Help\progress-full-view.png" />
-	  <None Remove="Help\progress-manage-filters.png" />
-	  <None Remove="Help\progress-sidebar.png" />
-	  <None Remove="Help\progress-toolbar-center.png" />
-	  <None Remove="Help\progress-toolbar-right.png" />
-	  <None Remove="Help\schedule-full-view.png" />
-	  <None Remove="Help\schedule-toolbar.png" />
-	  <None Remove="Help\start-help-sidebar.png" />
-	  <None Remove="Help\start-main-interface.png" />
-	  <None Remove="Help\start-toolbar-detail.png" />
-	  <None Remove="Help\wp-form-cover.png" />
-	  <None Remove="Help\wp-form-form-bottom.png" />
-	  <None Remove="Help\wp-form-form-top.png" />
-	  <None Remove="Help\wp-form-grid-bottom.png" />
-	  <None Remove="Help\wp-form-grid-top.png" />
-	  <None Remove="Help\wp-form-list.png" />
-	  <None Remove="Help\wp-form-templates-tab.png" />
-	  <None Remove="Help\wp-form-type-dialog.png" />
-	  <None Remove="Help\wp-generate-tab.png" />
-	  <None Remove="Help\wp-preview-panel.png" />
-	  <None Remove="Help\wp-templates-tab.png" />
-	  <None Remove="Images\MilestoneLogoPngTransparentBG.png" />
+	  <None Remove="Assets\Images\HelpSidebar\*.png" />
+	  <None Remove="Assets\Images\System\MilestoneLogoPngTransparentBG.png" />
 	  <None Remove="nul" />
 	</ItemGroup>
 	<ItemGroup>
 		<None Update="Help\manual.html">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-		<None Update="Help\*.png">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
 		<None Update="ReleaseNotes.json">
@@ -99,11 +72,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Resource Include="Images\AppIcon.ico" />
-		<Resource Include="Images\CoverPic.png" />
-		<Resource Include="Images\summitLogo_largeText.png" />
-		<Resource Include="Images\SummitLogoNoText.jpg" />
-		<Resource Include="Images\SummitS-Full Summit Peak Logo.jpg" />
+		<Resource Include="Assets\Images\System\AppIcon.ico" />
+		<Resource Include="Assets\Images\System\CoverPic.png" />
+		<Resource Include="Assets\Images\System\summitLogo_largeText.png" />
+		<Resource Include="Assets\Images\System\SummitLogoNoText.jpg" />
+		<Resource Include="Assets\Images\System\SummitS-Full Summit Peak Logo.jpg" />
+		<Resource Include="Assets\Images\Dialogs\vp-vtg-prep.png" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -131,94 +105,10 @@
 		<Resource Remove="VANTAGE.Installer\**" />
 	</ItemGroup>
 	<ItemGroup>
-	  <Content Include="Help\pb-editor-bottom.png">
+	  <Content Include="Assets\Images\HelpSidebar\*.png" Link="Help\%(Filename)%(Extension)">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
-	  <Content Include="Help\pb-editor-top.png">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Help\pb-full-view.png">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Help\pb-scan-dialog.png">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Help\pb-scan-results.png">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Help\progress-full-view.png">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Help\progress-manage-filters.png">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Help\progress-sidebar.png">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Help\progress-toolbar-center.png">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Help\progress-toolbar-left.png">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Help\progress-toolbar-right.png">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Help\schedule-full-view.png">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Help\schedule-toolbar.png">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Help\start-help-sidebar.png">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Help\start-main-interface.png">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Help\start-toolbar-detail.png">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Help\start-status-bar-left.png">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Help\start-status-bar-right.png">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Help\wp-form-cover.png">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Help\wp-form-form-bottom.png">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Help\wp-form-form-top.png">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Help\wp-form-grid-bottom.png">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Help\wp-form-grid-top.png">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Help\wp-form-list.png">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Help\wp-form-templates-tab.png">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Help\wp-form-type-dialog.png">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Help\wp-generate-tab.png">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Help\wp-preview-panel.png">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Help\wp-templates-tab.png">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Images\MilestoneLogoPngTransparentBG.png">
+	  <Content Include="Assets\Images\System\MilestoneLogoPngTransparentBG.png">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
 	</ItemGroup>

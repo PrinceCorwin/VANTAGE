@@ -13,7 +13,7 @@
         Width="1920"
         WindowState="Maximized"
         Background="{DynamicResource BackgroundColor}"
-        Icon="pack://application:,,,/images/AppIcon.ico"
+        Icon="pack://application:,,,/Assets/Images/System/AppIcon.ico"
         TextOptions.TextFormattingMode="Display"
         TextOptions.TextRenderingMode="ClearType"
         RenderOptions.ClearTypeHint="Enabled"
@@ -77,7 +77,7 @@
                 <StackPanel Grid.Column="0" Orientation="Horizontal">
                     <Image Width="35" 
                            Margin="10,0,20,0"
-                           Source="pack://application:,,,/images/MilestoneLogoPngTransparentBG.png" 
+                           Source="pack://application:,,,/Assets/Images/System/MilestoneLogoPngTransparentBG.png"
                            Stretch="Uniform" />
 
                     <syncfusion:DropDownButtonAdv x:Name="btnFile"

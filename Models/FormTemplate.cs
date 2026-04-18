@@ -67,13 +67,13 @@ namespace VANTAGE.Models
     }
 
     // JSON structure for Cover type templates
-    // Default image: images/CoverPic.png (null means use default)
+    // Default image: Assets/Images/System/CoverPic.png (null means use default)
     public class CoverStructure
     {
         [JsonPropertyName("title")]
         public string Title { get; set; } = "COVER SHEET";
 
-        // null = use default images/CoverPic.png; otherwise absolute path to custom image
+        // null = use default Assets/Images/System/CoverPic.png; otherwise absolute path to custom image
         [JsonPropertyName("imagePath")]
         public string? ImagePath { get; set; }
 

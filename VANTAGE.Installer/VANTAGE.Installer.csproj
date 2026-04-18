@@ -7,7 +7,7 @@
     <AssemblyName>VANTAGE.Installer</AssemblyName>
     <RootNamespace>VANTAGE.Installer</RootNamespace>
     <UseWPF>true</UseWPF>
-    <ApplicationIcon>..\Images\AppIcon.ico</ApplicationIcon>
+    <ApplicationIcon>..\Assets\Images\System\AppIcon.ico</ApplicationIcon>
   </PropertyGroup>
 
   <!-- Publish as self-contained single-file (one exe, no dependencies) -->
@@ -19,8 +19,8 @@
     <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
   </PropertyGroup>
   <ItemGroup>
-    <Resource Include="..\Images\AppIcon.ico" Link="Images\AppIcon.ico" />
-    <Resource Include="..\Images\SummitLogoNoText.jpg" Link="Images\SummitLogoNoText.jpg" />
-    <Resource Include="..\Images\MilestoneLogoPngTransparentBG.png" Link="Images\MilestoneLogoPngTransparentBG.png" />
+    <Resource Include="..\Assets\Images\System\AppIcon.ico" Link="Assets\Images\System\AppIcon.ico" />
+    <Resource Include="..\Assets\Images\System\SummitLogoNoText.jpg" Link="Assets\Images\System\SummitLogoNoText.jpg" />
+    <Resource Include="..\Assets\Images\System\MilestoneLogoPngTransparentBG.png" Link="Assets\Images\System\MilestoneLogoPngTransparentBG.png" />
   </ItemGroup>
 </Project>

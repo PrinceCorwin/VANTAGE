@@ -140,6 +140,16 @@ Permanent record of architectural choices, design rationale, and implementation 
 **Why:** Initial implementation paired the red fill across both cells of a mismatch. User preferred minimizing modifications to the source report and keeping the visual signal scoped to the Vantage-sourced values. Every data row gets a color on the two new columns so mismatches are never ambiguous with "not yet checked".
 **Date:** April 2026
 
+### Prep Dialog + Native File Picker, Not a Custom Combined Picker
+**Decision:** Before the `OpenFileDialog`, show a custom WPF verification dialog (`VPvsVtgPrepDialog`) with instructions and an annotated screenshot. On OK, the standard Windows file picker opens. Two separate dialogs, not one custom combined picker.
+**Why:** Considered building a custom file browser to bundle the prep instructions into one screen. Rejected — the native `OpenFileDialog` is a Windows OS control users already understand, and replicating it would be significant work with no payoff. The only thing the OS picker can't do is show an image or rich text; a small pre-dialog is the right tool for that single gap.
+**Date:** April 2026
+
+### Prep Dialog Skip Flag Persists to UserSettings, Not AppSettings
+**Decision:** The "Do not show this dialog again" checkbox writes `SkipVPvsVtgPrepDialog=true` to the `UserSettings` table (per-user), not `AppSettings` (app-wide).
+**Why:** The prep step is a user-learning concern — once a user has read the instructions, they don't need to see them again. Other users on the same machine haven't necessarily learned yet. User-scoped persistence mirrors how other dismissible UI state is stored (grid layouts, filter selections, analysis group field, etc.).
+**Date:** April 2026
+
 ### Trust the Admin on Snapshot Re-Upload (Not Implemented, Decision Logged)
 **Decision:** Deferred adding a WeekEndDate override to the Admin Snapshots upload dialog. If users want to re-upload an older unchanged snapshot under a new week, they instead take a fresh snapshot.
 **Why:** Considered adding an override so admins could reuse old snapshots for weeks where nothing changed, avoiding re-snapshotting closed-out activities. User ultimately judged the complexity not worth the bug surface for the small workflow gain, and preferred to keep the current simple invariant (WeekEndDate = when the snapshot was taken). Filed here so the conversation doesn't get re-litigated if the idea comes up again.
@@ -298,6 +308,16 @@ Permanent record of architectural choices, design rationale, and implementation 
 ### Drawings Module Deferred to Post-V1
 **Decision:** Disabled with `Visibility="Collapsed"` and code filters. Re-enable instructions documented in Project_Status.md.
 **Why:** Per-WP drawing location architecture needs design (token paths, per-WP config, or Drawings Manager). The feature works but the architecture isn't settled.
+
+### Asset Folder Structure: `Assets/Images/{System, HelpSidebar, Dialogs}`
+**Decision:** All image resources live under a single top-level `Assets/Images/` tree with purpose-named subfolders — `System/` (app icons, logos, cover art), `HelpSidebar/` (help manual screenshots), `Dialogs/` (one-off dialog imagery). Previously split across `Images/` and `Help/*.png`.
+**Why:** One discoverable home for every image file, with semantic grouping that tells a developer where a new image should land without having to ask. A flat `Assets/HelpSidebar/` + `Assets/System/` structure was rejected because future one-off dialog images (like `vp-vtg-prep.png`) wouldn't have an obvious home and the top level would grow noisily with each new image category.
+**Date:** April 2026
+
+### csproj `Link` Attribute Decouples Source Layout from Output Layout
+**Decision:** When reorganizing the source tree of asset files, the csproj uses `<Content Include="Assets\Images\HelpSidebar\*.png" Link="Help\%(Filename)%(Extension)">` so the files live in the new source location but get copied to the legacy output path at build time.
+**Why:** The WebView2 virtual host mapping (`help.local` → `{baseDir}/Help`) and manual.html's sibling-relative `<img src>` tags expect the runtime output to have `Help/*.png`. Using `Link` lets us reorganize source freely without touching any runtime code or risking WebView2 behavior changes. Also collapses 25 `<None Remove>` + 29 `<Content Include>` entries into a single glob line, so adding a new help screenshot is zero-config.
+**Date:** April 2026
 
 ---
 

@@ -47,7 +47,7 @@ namespace VANTAGE.Services.PdfRenderers
         private const float FooterMinHeight = 40f;   // Minimum footer text area height
 
         // Path to default logo (embedded resource)
-        protected const string DefaultLogoPath = "pack://application:,,,/Images/SummitLogoNoText.jpg";
+        protected const string DefaultLogoPath = "pack://application:,,,/Assets/Images/System/SummitLogoNoText.jpg";
 
         // Create a new PDF document with standard settings
         protected PdfDocument CreateDocument()

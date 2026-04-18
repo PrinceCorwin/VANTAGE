@@ -135,18 +135,8 @@ namespace VANTAGE.Views
         // Gets the default logo path if it exists, otherwise null
         private string? GetDefaultLogoPath()
         {
-            var possiblePaths = new[]
-            {
-                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Images", "SummitS-Full Summit Peak Logo.jpg"),
-                @"C:\Users\steve\source\repos\PrinceCorwin\VANTAGE\Images\SummitS-Full Summit Peak Logo.jpg"
-            };
-
-            foreach (var path in possiblePaths)
-            {
-                if (File.Exists(path))
-                    return path;
-            }
-            return null;
+            var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Images", "System", "SummitS-Full Summit Peak Logo.jpg");
+            return File.Exists(path) ? path : null;
         }
 
         // Resolves the logo path - converts "(default)" to actual path

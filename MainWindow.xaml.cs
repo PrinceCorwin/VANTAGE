@@ -43,7 +43,7 @@ namespace VANTAGE
                 HighlightNavigationButton(_activeNavButton ?? btnProgress);
 
                 // Force taskbar icon refresh (fixes first-run icon not showing)
-                var iconPath = new Uri("pack://application:,,,/images/AppIcon.ico", UriKind.Absolute);
+                var iconPath = new Uri("pack://application:,,,/Assets/Images/System/AppIcon.ico", UriKind.Absolute);
                 this.Icon = BitmapFrame.Create(iconPath);
 
                 // Load installed plugins
@@ -1873,6 +1873,15 @@ namespace VANTAGE
                 MessageBox.Show($"Cannot connect to Azure database:\n\n{connError}",
                     "Connection Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
+            }
+
+            // Show the prep/verification dialog unless the user has opted out
+            bool skip = SettingsManager.GetUserSetting(Dialogs.VPvsVtgPrepDialog.SkipSettingName, "false")
+                .Equals("true", StringComparison.OrdinalIgnoreCase);
+            if (!skip)
+            {
+                var prepDialog = new Dialogs.VPvsVtgPrepDialog { Owner = this };
+                if (prepDialog.ShowDialog() != true) return;
             }
 
             var openDlg = new Microsoft.Win32.OpenFileDialog

@@ -504,7 +504,7 @@
                     VerticalAlignment="Bottom"
                     Margin="0">
                             <Image HorizontalAlignment="Stretch"
-                                Source="pack://application:,,,/Images/summitLogo_largeText.png"
+                                Source="pack://application:,,,/Assets/Images/System/summitLogo_largeText.png"
                                 Stretch="Uniform" />
                 </Border>
             </Grid>

@@ -12,7 +12,7 @@
         ResizeMode="NoResize"
         ShowInTaskbar="True"
         Topmost="True"
-        Icon="pack://application:,,,/images/AppIcon.ico">
+        Icon="pack://application:,,,/Assets/Images/System/AppIcon.ico">
 
     <Border Background="#FF1C1C1C"
             BorderBrush="#FF1C1C1C"
@@ -28,7 +28,7 @@
 
             <!-- App Title -->
             <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,20">
-                <Image Source="pack://application:,,,/images/MilestoneLogoPngTransparentBG.png"
+                <Image Source="pack://application:,,,/Assets/Images/System/MilestoneLogoPngTransparentBG.png"
                        Height="32"
                        Margin="0,0,12,0"/>
                 <TextBlock Text="VANTAGE: MILESTONE"

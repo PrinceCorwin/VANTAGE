@@ -95,7 +95,7 @@ namespace VANTAGE.Services.ProgressBook
         private List<(string FieldName, string Value, int Level)> _activeGroups = new();
 
         // Default logo path
-        private const string DefaultLogoPath = "pack://application:,,,/Images/SummitLogoNoText.jpg";
+        private const string DefaultLogoPath = "pack://application:,,,/Assets/Images/System/SummitLogoNoText.jpg";
 
         // Generate a progress book PDF
         public PdfDocument Generate(

@@ -481,7 +481,7 @@ namespace VANTAGE
                 var coverStructure = new CoverStructure
                 {
                     Title = "COVER SHEET",
-                    ImagePath = null, // null = use default images/CoverPic.png
+                    ImagePath = null, // null = use default Assets/Images/System/CoverPic.png
                     ImageWidthPercent = 80,
                     FooterText = null
                 };
