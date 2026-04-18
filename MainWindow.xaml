@@ -329,6 +329,15 @@
                                         Click="MenuExportSettings_Click"
                                         Cursor="Hand"
                                         ToolTip="Export application settings to file"/>
+                                <Button Content="Reset User Settings..."
+                                        Background="Transparent"
+                                        Foreground="{DynamicResource ForegroundColor}"
+                                        BorderThickness="0"
+                                        Padding="12,8"
+                                        HorizontalContentAlignment="Left"
+                                        Click="MenuResetUserSettings_Click"
+                                        Cursor="Hand"
+                                        ToolTip="Clear selected user preferences (dismissed dialogs, grid layouts, splitters, etc.)"/>
                                 <Button Content="Grid Layouts..."
                                         Background="Transparent"
                                         Foreground="{DynamicResource ForegroundColor}"

@@ -1565,6 +1565,41 @@ namespace VANTAGE
             }
         }
 
+        private void MenuResetUserSettings_Click(object sender, RoutedEventArgs e)
+        {
+            popupSettings.IsOpen = false;
+
+            var dialog = new Dialogs.ResetUserSettingsDialog { Owner = this };
+            if (dialog.ShowDialog() != true || dialog.ResetKeys.Count == 0) return;
+
+            AppLogger.Info(
+                $"Reset {dialog.ResetKeys.Count} user settings: {string.Join(", ", dialog.ResetKeys)}",
+                "MainWindow.MenuResetUserSettings_Click",
+                App.CurrentUser?.Username ?? "Unknown");
+
+            // Grid settings must be reapplied by recreating the currently-loaded view,
+            // otherwise the view's Unload handler will re-save its in-memory column state
+            // back to UserSettings and silently undo the reset.
+            bool progressGridReset = dialog.ResetKeys.Contains("ProgressGrid.PreferencesJson")
+                                  || dialog.ResetKeys.Contains("ProgressGrid.FrozenColumnCount");
+            bool scheduleGridReset = dialog.ResetKeys.Contains("ScheduleGrid.PreferencesJson")
+                                  || dialog.ResetKeys.Contains("ScheduleDetailGrid.PreferencesJson")
+                                  || dialog.ResetKeys.Contains("ScheduleView_MasterGridHeight")
+                                  || dialog.ResetKeys.Contains("ScheduleView_DetailGridHeight");
+
+            if (progressGridReset && ContentArea.Content is Views.ProgressView currentProgressView)
+            {
+                currentProgressView.SkipSaveOnClose();
+                LoadProgressModule(forceReload: true);
+            }
+            else if (scheduleGridReset && ContentArea.Content is Views.ScheduleView currentScheduleView)
+            {
+                currentScheduleView.SkipSaveOnClose();
+                ContentArea.Content = null;
+                ContentArea.Content = new Views.ScheduleView();
+            }
+        }
+
         private void MenuExportLogs_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new Dialogs.ExportLogsDialog();
