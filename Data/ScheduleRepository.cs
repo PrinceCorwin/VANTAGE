@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -582,49 +582,37 @@ namespace VANTAGE.Repositories
                 }
             });
         }
-        // Save all editable fields for all rows in one transaction
-        public static async Task<int> SaveAllScheduleRowsAsync(IEnumerable<ScheduleMasterRow> rows, string username)
+        // Save a single Schedule row + its scoped Activities.PlanStart/PlanFin bounds update.
+        // Called by the dynamic-save flow on every master grid cell commit.
+        public static async Task<bool> SaveScheduleRowAsync(ScheduleMasterRow row, string username)
         {
+            if (row == null)
+                return false;
+
             return await Task.Run(() =>
             {
-                int savedCount = 0;
                 try
                 {
                     using var connection = new SqliteConnection($"Data Source={DatabaseSetup.DbPath}");
                     connection.Open();
                     using var transaction = connection.BeginTransaction();
 
-                    // Get first ProjectID for this WeekEndDate (for Activities updates)
-                    var firstRow = rows.FirstOrDefault();
-                    if (firstRow == null)
-                        return 0;
+                    string? projectId = GetFirstProjectIDForWeek(row.WeekEndDate);
 
-                    string? projectId = GetFirstProjectIDForWeek(firstRow.WeekEndDate);
-                    if (string.IsNullOrEmpty(projectId))
+                    // Update Schedule table with lookahead dates and MissedReasons
+                    using (var scheduleCmd = connection.CreateCommand())
                     {
-                        AppLogger.Warning("No ProjectID found for WeekEndDate, cannot save 3WLA dates",
-                            "ScheduleRepository.SaveAllScheduleRowsAsync");
-                        return 0;
-                    }
-
-                    // Command for updating Schedule table (3WLA dates and MissedReasons)
-                    var scheduleCmd = connection.CreateCommand();
-                    scheduleCmd.Transaction = transaction;
-                    scheduleCmd.CommandText = @"
-                UPDATE Schedule
-                SET ThreeWeekStart = @threeWeekStart,
-                    ThreeWeekFinish = @threeWeekFinish,
-                    MissedStartReason = @missedStartReason,
-                    MissedFinishReason = @missedFinishReason,
-                    UpdatedBy = @updatedBy,
-                    UpdatedUtcDate = @updatedUtcDate
-                WHERE SchedActNO = @schedActNo
-                  AND WeekEndDate = @weekEndDate";
-
-                    foreach (var row in rows)
-                    {
-                        // Update Schedule table with 3WLA dates and MissedReasons
-                        scheduleCmd.Parameters.Clear();
+                        scheduleCmd.Transaction = transaction;
+                        scheduleCmd.CommandText = @"
+                            UPDATE Schedule
+                            SET ThreeWeekStart = @threeWeekStart,
+                                ThreeWeekFinish = @threeWeekFinish,
+                                MissedStartReason = @missedStartReason,
+                                MissedFinishReason = @missedFinishReason,
+                                UpdatedBy = @updatedBy,
+                                UpdatedUtcDate = @updatedUtcDate
+                            WHERE SchedActNO = @schedActNo
+                              AND WeekEndDate = @weekEndDate";
                         scheduleCmd.Parameters.AddWithValue("@threeWeekStart",
                             row.ThreeWeekStart?.ToString("yyyy-MM-dd") ?? (object)DBNull.Value);
                         scheduleCmd.Parameters.AddWithValue("@threeWeekFinish",
@@ -638,14 +626,16 @@ namespace VANTAGE.Repositories
                         scheduleCmd.Parameters.AddWithValue("@schedActNo", row.SchedActNO);
                         scheduleCmd.Parameters.AddWithValue("@weekEndDate", row.WeekEndDate.ToString("yyyy-MM-dd"));
                         scheduleCmd.ExecuteNonQuery();
+                    }
 
-                        // Update Activities.PlanStart/PlanFin with bounds logic
-                        // PlanStart: update if NULL or earlier than 3WLA start
+                    // Activities bounds updates — only applicable when we have a ProjectID and a lookahead date
+                    if (!string.IsNullOrEmpty(projectId))
+                    {
+                        // PlanStart: update if NULL or earlier than ThreeWeekStart
                         if (row.ThreeWeekStart.HasValue)
                         {
                             string planStartStr = row.ThreeWeekStart.Value.ToString("yyyy-MM-dd");
 
-                            // First check if any activity already has this exact date (skip if so)
                             using var exactMatchCmd = connection.CreateCommand();
                             exactMatchCmd.Transaction = transaction;
                             exactMatchCmd.CommandText = @"
@@ -671,8 +661,6 @@ namespace VANTAGE.Repositories
                                 planStartCmd.Parameters.AddWithValue("@projectId", projectId);
                                 int rowsAffected = planStartCmd.ExecuteNonQuery();
 
-                                // If nothing was updated, find the next closest date and update those
-                                // (earliest PlanStart that is later than the new date)
                                 if (rowsAffected == 0)
                                 {
                                     using var fallbackCmd = connection.CreateCommand();
@@ -694,12 +682,11 @@ namespace VANTAGE.Repositories
                             }
                         }
 
-                        // PlanFin: update if NULL or later than 3WLA finish
+                        // PlanFin: update if NULL or later than ThreeWeekFinish
                         if (row.ThreeWeekFinish.HasValue)
                         {
                             string planFinStr = row.ThreeWeekFinish.Value.ToString("yyyy-MM-dd");
 
-                            // First check if any activity already has this exact date (skip if so)
                             using var exactMatchCmd = connection.CreateCommand();
                             exactMatchCmd.Transaction = transaction;
                             exactMatchCmd.CommandText = @"
@@ -725,8 +712,6 @@ namespace VANTAGE.Repositories
                                 planFinCmd.Parameters.AddWithValue("@projectId", projectId);
                                 int rowsAffected = planFinCmd.ExecuteNonQuery();
 
-                                // If nothing was updated, find the next closest date and update those
-                                // (latest PlanFin that is earlier than the new date)
                                 if (rowsAffected == 0)
                                 {
                                     using var fallbackCmd = connection.CreateCommand();
@@ -747,21 +732,19 @@ namespace VANTAGE.Repositories
                                 }
                             }
                         }
-
-                        savedCount++;
                     }
 
                     transaction.Commit();
-                    AppLogger.Info($"Batch saved {savedCount} schedule rows", "ScheduleRepository.SaveAllScheduleRowsAsync", username);
-                    return savedCount;
+                    return true;
                 }
                 catch (Exception ex)
                 {
-                    AppLogger.Error(ex, "ScheduleRepository.SaveAllScheduleRowsAsync");
-                    throw;
+                    AppLogger.Error(ex, "ScheduleRepository.SaveScheduleRowAsync");
+                    return false;
                 }
             });
         }
+
 
         // Get ProjectIDs that this schedule covers
         private static List<string> GetProjectIDsForWeek(SqliteConnection connection, DateTime weekEndDate)

@@ -43,6 +43,7 @@ Series of short tutorial videos for end users. Each item below needs a plan and 
 ## Feature Backlog
 
 ### High Priority
+- **Bug: Delete Row(s) context menu hangs on large selections** — Right-clicking ~17k selected rows in the Progress grid and picking "Delete Row(s)" locks the app. Collecting UniqueIDs from the selection should be a trivial operation; investigate why it's slow. Likely candidates: iterating `sfActivities.SelectedItems` row-by-row on the UI thread, or a per-record query fired inside the loop. Compare to `GetSelectedUserUniqueIdsChunkedAsync` / the Set %-buttons bulk path which already handles large selections without locking. Path to investigate: the `MenuDelete*`/`DeleteSelectedActivities_Click` handler in `Views/ProgressView.xaml.cs`.
 - **Remove Logs database table** — AppLogger writes to both a SQLite Logs table and a flat log file redundantly. Remove the table, purge logic, and structured queries. Export Logs dialog should just read/send the raw log file directly. Simplifies codebase and removes duplicate writes.
 - **Mobile/iOS Version (iPad)** — Execs want iPad app for field supes to submit progress. Needs architecture discussion: native iOS, cross-platform framework, web app, API design, offline sync, etc.
 - **Takeoff Post-Processing Pipeline** — All operate on the downloaded Excel, no AWS changes needed. See `summit-takeoff-integration-guide.md` for details.

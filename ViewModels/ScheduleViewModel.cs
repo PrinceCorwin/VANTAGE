@@ -25,7 +25,6 @@ namespace VANTAGE.ViewModels
         private bool _filter3WLA;
         private DiscrepancyFilterType _discrepancyFilter = DiscrepancyFilterType.None;
         private string? _selectedSchedActNO;
-        private bool _hasUnsavedChanges;
         private CancellationTokenSource? _detailLoadCts;
 
         // IScheduleCellIndicators - always false on ViewModel (only meaningful on ScheduleMasterRow)
@@ -39,19 +38,6 @@ namespace VANTAGE.ViewModels
         public bool HasFinishVariance => false;
         public bool HasBudgetMHsVariance => false;
         public bool HasPercentCompleteVariance => false;
-
-        public bool HasUnsavedChanges
-        {
-            get => _hasUnsavedChanges;
-            set
-            {
-                if (_hasUnsavedChanges != value)
-                {
-                    _hasUnsavedChanges = value;
-                    OnPropertyChanged(nameof(HasUnsavedChanges));
-                }
-            }
-        }
 
         public string RequiredFieldsButtonText => $"{RequiredFieldsCount} Required Fields";
 
@@ -206,6 +192,38 @@ namespace VANTAGE.ViewModels
                 OnPropertyChanged(nameof(IsLoading));
             }
         }
+
+        // Lookahead window (3 / 6 / 9 weeks). User-selectable via the Schedule toolbar ComboBox
+        // and persisted per-user as Schedule.LookaheadWeeks. Drives the red-highlight rules in
+        // ScheduleMasterRow.IsThreeWeek*Required via the shared static LookaheadDays.
+        private int _lookaheadWeeks = 3;
+        public int LookaheadWeeks
+        {
+            get => _lookaheadWeeks;
+            set
+            {
+                if (_lookaheadWeeks == value) return;
+                if (value != 3 && value != 6 && value != 9) return;
+
+                _lookaheadWeeks = value;
+                ScheduleMasterRow.LookaheadDays = value * 7;
+                SettingsManager.SetUserSetting("Schedule.LookaheadWeeks", value.ToString());
+
+                OnPropertyChanged(nameof(LookaheadWeeks));
+                OnPropertyChanged(nameof(LookaheadLabel));
+
+                // Re-evaluate the Is*Required bindings on every loaded row.
+                foreach (var row in _allMasterRows)
+                    row.RaiseLookaheadChanged();
+
+                ApplyFilter();
+                UpdateRequiredFieldsCount();
+            }
+        }
+
+        public string LookaheadLabel => $"{_lookaheadWeeks}WLA";
+
+        public IReadOnlyList<int> LookaheadOptions { get; } = new[] { 3, 6, 9 };
 
         private int _requiredFieldsCount;
         public int RequiredFieldsCount
@@ -458,6 +476,17 @@ namespace VANTAGE.ViewModels
             {
                 IsLoading = true;
 
+                // Load the saved lookahead selection (default 3) before any schedule rows materialize
+                // so the first-pass IsThreeWeek*Required evaluations use the user's window.
+                var savedLookahead = SettingsManager.GetUserSetting("Schedule.LookaheadWeeks", "3");
+                if (int.TryParse(savedLookahead, out var weeks) && (weeks == 3 || weeks == 6 || weeks == 9))
+                    _lookaheadWeeks = weeks;
+                else
+                    _lookaheadWeeks = 3;
+                ScheduleMasterRow.LookaheadDays = _lookaheadWeeks * 7;
+                OnPropertyChanged(nameof(LookaheadWeeks));
+                OnPropertyChanged(nameof(LookaheadLabel));
+
                 var dates = await ScheduleRepository.GetAvailableWeekEndDatesAsync();
 
                 AvailableWeekEndDates.Clear();
@@ -516,9 +545,6 @@ namespace VANTAGE.ViewModels
                 _allMasterRows = masterRows;
                 ApplyFilter();
                 UpdateRequiredFieldsCount();
-
-                // Reset unsaved changes flag when fresh data loads
-                HasUnsavedChanges = false;
 
                 AppLogger.Info($"Loaded {_allMasterRows.Count} schedule activities for {weekEndDate:yyyy-MM-dd}",
                     "ScheduleViewModel.LoadScheduleDataAsync");

@@ -210,7 +210,7 @@ if (!AzureDbManager.CheckConnection(out string errorMessage))
 - Prepared statements for repeated queries
 
 ## Testing
-- Test datasets: 13-row (quick validation), 4,802-row (stress/performance)
+- Real-world datasets are **100,000+ rows**; write every bulk/grid/DB path with that in mind, not with small-test assumptions
 - Test after EVERY change before proceeding
 - Multi-user scenarios require Azure connection
 - Don't assume database is clean - may have test data

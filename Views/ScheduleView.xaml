@@ -259,6 +259,25 @@
                 <Run Text="{Binding SelectedWeekEndDate, StringFormat='MM-dd-yyyy', TargetNullValue='(No schedule loaded)'}"/>
                 </TextBlock>
 
+                <ComboBox x:Name="cmbLookahead"
+                          Width="95"
+                          Height="32"
+                          Margin="0,0,15,0"
+                          VerticalContentAlignment="Center"
+                          Background="{DynamicResource ControlBackground}"
+                          Foreground="{DynamicResource ForegroundColor}"
+                          BorderBrush="{DynamicResource ControlBorder}"
+                          BorderThickness="1"
+                          ItemsSource="{Binding LookaheadOptions}"
+                          SelectedItem="{Binding LookaheadWeeks, Mode=TwoWay}"
+                          ToolTip="Lookahead window size: 3, 6, or 9 weeks">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding StringFormat={}{0}WLA}"/>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+
                 <Button x:Name="btnRefresh"
                         Content="Refresh"
                         Width="80"
@@ -314,11 +333,11 @@
                              ToolTip="Show activities that missed their planned finish date"/>
 
                 <ToggleButton x:Name="btnFilter3WLA"
-                             Content="3WLA"
+                             Content="Lookahead"
                              IsChecked="{Binding Filter3WLA, Mode=TwoWay}"
                              Style="{StaticResource FilterToggleButtonStyle}"
                              Margin="0,0,15,0"
-                             ToolTip="Show activities in 3-week lookahead window"/>
+                             ToolTip="Filter to records that require a lookahead Start or Finish date within the selected window."/>
 
                 <ToggleButton x:Name="btnFilterRequiredFields"
                              Content="{Binding RequiredFieldsButtonText}"
@@ -379,8 +398,8 @@
                             </ContextMenu.Resources>
                             <MenuItem Header="Clear Filter" Click="FilterDiscrepancy_Clear_Click"/>
                             <MenuItem Header="% Complete" Click="FilterDiscrepancy_Percent_Click"/>
-                            <MenuItem Header="3WLA Finish" Click="FilterDiscrepancy_3WLAFinish_Click"/>
-                            <MenuItem Header="3WLA Start" Click="FilterDiscrepancy_3WLAStart_Click"/>
+                            <MenuItem x:Name="mnuDiscrepancyLookaheadFinish" Header="3WLA Finish" Click="FilterDiscrepancy_3WLAFinish_Click"/>
+                            <MenuItem x:Name="mnuDiscrepancyLookaheadStart" Header="3WLA Start" Click="FilterDiscrepancy_3WLAStart_Click"/>
                             <MenuItem Header="Actual Finish" Click="FilterDiscrepancy_Finish_Click"/>
                             <MenuItem Header="Actual Start" Click="FilterDiscrepancy_Start_Click"/>
                             <MenuItem Header="MHs" Click="FilterDiscrepancy_MHs_Click"/>
@@ -430,61 +449,6 @@
                     </Button.Template>
                 </Button>
 
-                <!-- Separator -->
-                <Border Width="1" Background="{DynamicResource ControlBorder}" Margin="15,6,15,6"/>
-
-                <Button x:Name="btnSave"
-                        Content="SAVE"
-                        Width="80"
-                        Height="32"
-                        BorderThickness="1"
-                        FontSize="11"
-                        Click="btnSave_Click"
-                        ToolTip="Save all pending changes to database">
-                    <Button.Effect>
-                        <DropShadowEffect ShadowDepth="4" BlurRadius="6" Direction="315"
-                                          Opacity="{DynamicResource ButtonShadowOpacity}"
-                                          Color="{DynamicResource ButtonShadowColor}"/>
-                    </Button.Effect>
-                    <Button.Style>
-                        <Style TargetType="Button">
-                            <Setter Property="Background" Value="{DynamicResource ControlBackground}"/>
-                            <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
-                            <Setter Property="BorderBrush" Value="{DynamicResource ControlBorder}"/>
-                            <Setter Property="Cursor" Value="Hand"/>
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="Button">
-                                        <Border x:Name="border"
-                                                Background="{TemplateBinding Background}"
-                                                BorderBrush="{TemplateBinding BorderBrush}"
-                                                BorderThickness="{TemplateBinding BorderThickness}"
-                                                CornerRadius="3">
-                                            <ContentPresenter HorizontalAlignment="Center"
-                                                            VerticalAlignment="Center"/>
-                                        </Border>
-                                        <ControlTemplate.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter TargetName="border" Property="Background" Value="{DynamicResource ControlHoverBackground}"/>
-                                                <Setter Property="Foreground" Value="{DynamicResource ButtonHoverForeground}"/>
-                                            </Trigger>
-                                            <Trigger Property="IsPressed" Value="True">
-                                                <Setter TargetName="border" Property="Background" Value="{DynamicResource ControlPressedBackground}"/>
-                                            </Trigger>
-                                        </ControlTemplate.Triggers>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding HasUnsavedChanges}" Value="True">
-                                    <Setter Property="Background" Value="{DynamicResource StatusRed}"/>
-                                    <Setter Property="BorderBrush" Value="{DynamicResource StatusRed}"/>
-                                    <Setter Property="FontWeight" Value="SemiBold"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Button.Style>
-                </Button>
                 </StackPanel>
 
                 <!-- COLUMNS button (right-aligned) -->

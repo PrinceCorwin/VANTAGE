@@ -651,28 +651,14 @@ namespace VANTAGE
                     return;
                 }
 
-                // Check for unsaved changes
-                if (viewModel.HasUnsavedChanges)
-                {
-                    var saveResult = MessageBox.Show(
-                        "You have unsaved changes that must be saved before exporting.\n\nSave now and continue with export?",
-                        "Save Required",
-                        MessageBoxButton.OKCancel,
-                        MessageBoxImage.None);
-
-                    if (saveResult == MessageBoxResult.Cancel)
-                        return;
-
-                    // Save before proceeding
-                    scheduleView.SaveChanges();
-                }
+                // Dynamic save persists every master grid edit on commit — no unsaved-changes gate needed.
 
                 // Check required fields count
                 if (viewModel.RequiredFieldsCount > 0)
                 {
                     MessageBox.Show(
                         $"Cannot export: {viewModel.RequiredFieldsCount} required field(s) are incomplete.\n\n" +
-                        "Please complete all Missed Reason and 3WLA fields before exporting.\n\n" +
+                        $"Please complete all Missed Reason and {viewModel.LookaheadLabel} fields before exporting.\n\n" +
                         "Click the 'Required Fields' button in the status bar to see which rows need attention.",
                         "Export Blocked",
                         MessageBoxButton.OK,
@@ -709,8 +695,8 @@ namespace VANTAGE
                 var reportsSaveDialog = new Microsoft.Win32.SaveFileDialog
                 {
                     Filter = "Excel Files|*.xlsx",
-                    Title = "Save 3WLA File",
-                    FileName = $"3WLA_{dateStamp}.xlsx",
+                    Title = $"Save {viewModel.LookaheadLabel} File",
+                    FileName = $"{viewModel.LookaheadLabel}_{dateStamp}.xlsx",
                     InitialDirectory = System.IO.Path.GetDirectoryName(p6FilePath)
                 };
 
@@ -741,6 +727,7 @@ namespace VANTAGE
                         allRows,
                         weekEndDate,
                         reportsFilePath,
+                        viewModel.LookaheadLabel,
                         new Progress<string>(msg => busyDialog.UpdateStatus(msg)));
                     busyDialog.Close();
 

@@ -189,6 +189,16 @@ Permanent record of architectural choices, design rationale, and implementation 
 **Why:** Reduced data volume while still covering 3 full weekly cycles.
 **Date:** April 2026
 
+### Schedule Module: Dynamic Per-Cell Save, No SAVE Button
+**Decision:** Removed the explicit SAVE button from the Schedule module. Every master-grid cell commit (Missed Reasons, lookahead Start/Finish, and cell-clear via Delete/Backspace) now saves immediately via a new `ScheduleRepository.SaveScheduleRowAsync(row, username)` — per-row equivalent of the old `SaveAllScheduleRowsAsync`, wrapping the single Schedule-row update plus the PlanStart/PlanFin bounds update scoped to that one SchedActNO. The `NotifyActivitiesModifiedAsync` callback (which reloads the Progress grid) is debounced with a 1-second trailing `DispatcherTimer` so rapid editing doesn't hammer the 100k+ row reload path. `HasUnsavedChanges`, the exit prompt, the "save first" export gate, and `SaveAllScheduleRowsAsync` are all deleted. Detail-grid edits were already auto-saving — the refactor brings the master grid up to that same pattern.
+**Why:** The SAVE button introduced a bug class: clicking Refresh while edits were pending silently discarded them. Eliminating the unsaved state eliminates that bug by design and matches the Progress module's long-standing pattern.
+**Date:** April 2026
+
+### Lookahead Window Is User-Configurable (3 / 6 / 9 Weeks)
+**Decision:** The Schedule lookahead window is selectable per-user via a ComboBox in the Schedule toolbar (3WLA / 6WLA / 9WLA; default 3WLA). Stored in UserSettings as `Schedule.LookaheadWeeks`. A single static `ScheduleMasterRow.LookaheadDays` is the source of truth for the 21-/42-/63-day threshold consumed by `IsThreeWeekStartRequired` / `IsThreeWeekFinishRequired`. Property and DB column names like `ThreeWeekStart` / `ThreeWeekFinish` are retained — the "3" is historical, not structural. Excel import/export file formats are unchanged; only in-app UI strings, the `AddDays(…)` highlighting threshold, and the Schedule Reports worksheet name + filename + dialog title adapt.
+**Why:** Different trades and project phases need different forecast horizons. Hardcoding 21 days forced everyone into the same window. Per-user persistence lets each user set their own preference without affecting teammates.
+**Date:** April 2026
+
 ---
 
 ## AI / Progress Scan

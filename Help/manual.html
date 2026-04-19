@@ -308,7 +308,7 @@
                     <li><a href="#sched-toolbar">Toolbar</a></li>
                     <li><a href="#sched-master-grid">Master Grid Columns</a></li>
                     <li><a href="#sched-detail-grid">Detail Grid</a></li>
-                    <li><a href="#sched-3wla">Three-Week Lookahead (3WLA)</a></li>
+                    <li><a href="#sched-3wla">Lookahead Window (3WLA / 6WLA / 9WLA)</a></li>
                     <li><a href="#sched-missed-reasons">Missed Reasons</a></li>
                     <li><a href="#sched-discrepancies">Discrepancies</a></li>
                     <li><a href="#sched-p6-import">P6 Import</a></li>
@@ -1158,7 +1158,7 @@
         <tr>
             <td style="background-color: #ff6b6b; color: #000; text-align: center;"><strong>Red</strong></td>
             <td>Required field is empty</td>
-            <td>Enter the required value (Missed Reason or 3WLA date)</td>
+            <td>Enter the required value (Missed Reason or lookahead date)</td>
         </tr>
         <tr>
             <td style="background-color: #ffd93d; color: #000; text-align: center;"><strong>Yellow</strong></td>
@@ -1189,12 +1189,12 @@
             <td>Activities where P6 planned finish has passed but MS hasn't finished (or finished late)</td>
         </tr>
         <tr>
-            <td><strong>3WLA</strong></td>
-            <td>Activities in the three-week lookahead window needing forecast dates</td>
+            <td><strong>3WLA / 6WLA / 9WLA</strong></td>
+            <td>Activities in the selected lookahead window needing forecast dates. The button label matches the Lookahead ComboBox selection.</td>
         </tr>
         <tr>
             <td><strong>Discrepancies</strong></td>
-            <td>Dropdown that filters to activities where VANTAGE and P6 Schedule values don't match. Options: % Complete, 3WLA Finish, 3WLA Start, Actual Finish, Actual Start, MHs. Button turns green when a filter is active.</td>
+            <td>Dropdown that filters to activities where VANTAGE and P6 Schedule values don't match. Options: % Complete, Lookahead Finish, Lookahead Start, Actual Finish, Actual Start, MHs. The lookahead options carry the active label (3WLA/6WLA/9WLA). Button turns green when a filter is active.</td>
         </tr>
         <tr>
             <td><strong>Required Fields</strong></td>
@@ -1204,10 +1204,15 @@
 
     <h4>Action Buttons</h4>
     <ul>
+        <li><strong>Lookahead ComboBox</strong> — Select the lookahead window: 3WLA, 6WLA, or 9WLA. Drives which activities are flagged red, what the Lookahead filter button shows, and what label appears on the two lookahead date columns and the Schedule Reports export.</li>
         <li><strong>Refresh</strong> — Reload schedule data and clear all filters</li>
         <li><strong>Clear Filters</strong> — Remove active filter without reloading data</li>
-        <li><strong>SAVE</strong> — Save pending changes (turns red when unsaved changes exist)</li>
     </ul>
+
+    <div class="note">
+        <div class="note-title">No SAVE Button — Edits Save Automatically</div>
+        <p>The Schedule module auto-saves every cell edit the moment you leave the cell (tab, enter, click away). Master-grid edits (Missed Reasons, lookahead Start/Finish) and detail-grid edits (percent, dates, budget hours) all commit immediately. There is no "unsaved changes" state and no prompt when you leave the module or click Refresh.</p>
+    </div>
 
     <h4>Column Header Filtering</h4>
     <p>Each column header has a filter icon that opens Excel-like filtering options. Use these to filter by specific values, text patterns, numeric ranges, or date ranges. Column filters work alongside the toolbar filter buttons.</p>
@@ -1238,8 +1243,8 @@
     <ul>
         <li><strong>Missed Start Reason</strong> — Explanation for missed start deadline</li>
         <li><strong>Missed Finish Reason</strong> — Explanation for missed finish deadline</li>
-        <li><strong>3WLA Start</strong> — Forecast start date</li>
-        <li><strong>3WLA Finish</strong> — Forecast finish date</li>
+        <li><strong>Lookahead Start</strong> (labeled 3WLA/6WLA/9WLA Start) — Forecast start date</li>
+        <li><strong>Lookahead Finish</strong> (labeled 3WLA/6WLA/9WLA Finish) — Forecast finish date</li>
     </ul>
 
     <h3 id="sched-detail-grid">Detail Grid</h3>
@@ -1278,42 +1283,45 @@
         <p>When percent is greater than 0, ActStart is required and shows red if missing. When percent equals 100%, ActFin is also required. These dates are auto-populated when you change PercentEntry: ActStart is set to the WeekEndDate when percent goes from 0 to any positive value, and ActFin is set when percent reaches 100.</p>
     </div>
 
-    <h3 id="sched-3wla">Three-Week Lookahead (3WLA)</h3>
-    <p>The three-week lookahead forecasts which activities will start or finish in the next 21 days. This helps with planning and resource allocation.</p>
+    <h3 id="sched-3wla">Lookahead Window (3WLA / 6WLA / 9WLA)</h3>
+    <p>The lookahead window forecasts which activities will start or finish in the next 3, 6, or 9 weeks. This helps with planning and resource allocation.</p>
 
-    <h4>When 3WLA Dates Are Required</h4>
-    <p>A 3WLA date is required (red highlight) when:</p>
+    <h4>Choosing the Lookahead Window</h4>
+    <p>The Schedule toolbar has a <strong>Lookahead</strong> ComboBox with three options: <strong>3WLA</strong>, <strong>6WLA</strong>, and <strong>9WLA</strong>. The default is 3WLA. Your selection persists per user — it will be remembered the next time you open the app. When you change the selection, the filter button label, column headers, context menu items, export dialog title, export filename, and the internal worksheet name in the Schedule Reports file all update to match.</p>
+
+    <h4>When Lookahead Dates Are Required</h4>
+    <p>A lookahead date is required (red highlight) when:</p>
     <ul>
-        <li>P6 planned date is within 21 days of the week ending date, OR</li>
+        <li>P6 planned date is within the selected window (21, 42, or 63 days) of the week ending date, OR</li>
         <li>P6 planned date has passed but no actual date exists yet</li>
     </ul>
 
     <h4>Date Validation</h4>
-    <p>3WLA dates are forecasts — they represent when you expect an activity <em>will</em> start or finish. Dates earlier than the week ending date are not allowed.</p>
-    <p>If an activity actually started or finished before the week ending date, do not enter a past 3WLA date. Instead, expand the row and edit the <strong>detail activities</strong> below to set the actual Start or Finish date. This creates the actual date in the system and removes the 3WLA requirement for that activity.</p>
+    <p>Lookahead dates are forecasts — they represent when you expect an activity <em>will</em> start or finish. Dates earlier than the week ending date are not allowed.</p>
+    <p>If an activity actually started or finished before the week ending date, do not enter a past lookahead date. Instead, expand the row and edit the <strong>detail activities</strong> below to set the actual Start or Finish date. This creates the actual date in the system and removes the lookahead requirement for that activity.</p>
 
-    <h4>When 3WLA Dates Are Locked</h4>
+    <h4>When Lookahead Dates Are Locked</h4>
     <p>Once an actual date is recorded in VANTAGE: Milestone:</p>
     <ul>
-        <li>3WLA Start becomes read-only when MS has an actual start</li>
-        <li>3WLA Finish becomes read-only when MS has an actual finish</li>
+        <li>Lookahead Start becomes read-only when MS has an actual start</li>
+        <li>Lookahead Finish becomes read-only when MS has an actual finish</li>
     </ul>
 
     <h4>Auto-Clear Behavior</h4>
-    <p>When you record an actual start or finish in the detail grid, the corresponding 3WLA forecast date is automatically cleared (no longer needed).</p>
+    <p>When you record an actual start or finish in the detail grid, the corresponding lookahead forecast date is automatically cleared (no longer needed).</p>
 
     <h4>Pre-Population from Activities</h4>
-    <p>3WLA dates are pre-populated from your Activities data when you load the Schedule module. The system finds the earliest PlanStart and latest PlanFin dates across all activities linked to each schedule activity.</p>
+    <p>Lookahead dates are pre-populated from your Activities data when you load the Schedule module. The system finds the earliest PlanStart and latest PlanFin dates across all activities linked to each schedule activity.</p>
 
     <h4>Yellow Highlighting</h4>
     <p>Yellow cells indicate a forecast date that differs from the P6 planned date. This highlights where your forecast diverges from the original schedule. Red cells take priority — if a cell is both required and has a different forecast, it shows red.</p>
 
-    <h4>3WLA Workflow</h4>
+    <h4>Lookahead Workflow</h4>
     <ol>
-        <li>Click the <strong>3WLA</strong> filter button to see activities needing forecasts</li>
+        <li>Pick a lookahead window (3WLA / 6WLA / 9WLA) from the toolbar ComboBox</li>
+        <li>Click the <strong>lookahead</strong> filter button (labeled 3WLA/6WLA/9WLA to match your choice) to see activities needing forecasts</li>
         <li>Red cells indicate required forecast dates; yellow cells indicate forecasts that differ from P6</li>
-        <li>Enter your forecast dates for 3WLA Start and/or 3WLA Finish (must be on or after the week ending date)</li>
-        <li>Click <strong>SAVE</strong> to save your forecasts (saved to Activities.PlanStart/PlanFin)</li>
+        <li>Enter your forecast dates for Start and/or Finish (must be on or after the week ending date). Dates save automatically on cell commit and are written through to Activities.PlanStart/PlanFin.</li>
     </ol>
 
     <h3 id="sched-missed-reasons">Missed Reasons</h3>
@@ -1347,8 +1355,7 @@
     <ol>
         <li>Click <strong>Missed Start</strong> or <strong>Missed Finish</strong> filter</li>
         <li>Red cells indicate rows needing explanation</li>
-        <li>Enter the reason for the delay</li>
-        <li>Click <strong>SAVE</strong></li>
+        <li>Enter the reason for the delay — it saves automatically on cell commit</li>
     </ol>
 
     <h3 id="sched-discrepancies">Discrepancies</h3>
@@ -1363,12 +1370,12 @@
             <td>P6 percent is higher than VANTAGE percent (P6 ahead of reality)</td>
         </tr>
         <tr>
-            <td><strong>3WLA Finish</strong></td>
-            <td>3WLA forecast finish date differs from P6 planned finish date</td>
+            <td><strong>Lookahead Finish</strong></td>
+            <td>Lookahead forecast finish date differs from P6 planned finish date (filter label carries the active 3WLA/6WLA/9WLA)</td>
         </tr>
         <tr>
-            <td><strong>3WLA Start</strong></td>
-            <td>3WLA forecast start date differs from P6 planned start date</td>
+            <td><strong>Lookahead Start</strong></td>
+            <td>Lookahead forecast start date differs from P6 planned start date (filter label carries the active 3WLA/6WLA/9WLA)</td>
         </tr>
         <tr>
             <td><strong>Actual Finish</strong></td>
@@ -1470,7 +1477,7 @@
 
     <div class="warning">
         <div class="warning-title">Import Replaces Data</div>
-        <p>P6 import replaces all existing schedule data. Your 3WLA forecast dates are preserved via the Activities PlanStart/PlanFin fields and will reload automatically. Missed reasons are cleared on import since they apply to the previous schedule data.</p>
+        <p>P6 import replaces all existing schedule data. Your lookahead forecast dates are preserved via the Activities PlanStart/PlanFin fields and will reload automatically. Missed reasons are cleared on import since they apply to the previous schedule data.</p>
     </div>
 
     <h3 id="sched-udf-mapping">UDF Column Mapping</h3>
@@ -1533,13 +1540,13 @@
     </ul>
 
     <h3 id="sched-saving">Saving Changes</h3>
-    <p>The <strong>SAVE</strong> button turns red when you have unsaved changes. Changes that require saving:</p>
+    <p>The Schedule module auto-saves every cell edit the moment you leave the cell (tab, enter, click away). There is no SAVE button and no "unsaved changes" state. Edits that commit automatically:</p>
     <ul>
-        <li>Missed Start/Finish Reason edits</li>
-        <li>3WLA Start/Finish date edits</li>
+        <li>Missed Start / Missed Finish Reason edits</li>
+        <li>Lookahead Start / Lookahead Finish date edits</li>
         <li>Detail grid edits (percent, dates, budget hours)</li>
     </ul>
-    <p>If you try to leave the Schedule module with unsaved changes, you'll be prompted to save or discard.</p>
+    <p>Each master-grid edit also updates Activities.PlanStart / PlanFin for the affected SchedActNO. The Progress module refreshes in the background after a short pause in editing.</p>
 
     <h3 id="sched-change-log">Schedule Change Log</h3>
     <p>When you edit values in the Schedule detail grid (percent, budget hours, start/finish dates), those changes are saved to the weekly snapshot but do not automatically update your live Activities in the Progress module. The Schedule Change Log tracks these edits and lets you optionally apply them to your live Activities.</p>

@@ -39,9 +39,11 @@ namespace VANTAGE.Views
         public ScheduleView()
         {
             InitializeComponent();
-            // Apply Syncfusion theme to grids only (not entire UserControl) to avoid overriding custom foreground colors
+            // Apply Syncfusion theme to grids only (not entire UserControl) to avoid overriding custom foreground colors.
+            // The Lookahead ComboBox is themed individually so its popup + chrome match FluentDark.
             SfSkinManager.SetTheme(sfScheduleMaster, new Theme(ThemeManager.GetSyncfusionThemeName()));
             SfSkinManager.SetTheme(sfScheduleDetail, new Theme(ThemeManager.GetSyncfusionThemeName()));
+            SfSkinManager.SetTheme(cmbLookahead, new Theme(ThemeManager.GetSyncfusionThemeName()));
             Loaded += (_, __) => ThemeManager.ThemeChanged += OnThemeChanged;
             Unloaded += (_, __) => ThemeManager.ThemeChanged -= OnThemeChanged;
 
@@ -70,6 +72,7 @@ namespace VANTAGE.Views
                     LoadDetailColumnState();
                     LoadSplitterState();
                     UpdateUDFColumnHeaders();
+                    UpdateLookaheadHeaders();
                     sfScheduleMaster.Opacity = 1;
                     sfScheduleDetail.Opacity = 1;
                 }), DispatcherPriority.ContextIdle);
@@ -211,10 +214,15 @@ namespace VANTAGE.Views
         }
 
         // ========================================
-        // MASTER GRID EDIT - TRACK UNSAVED CHANGES
+        // MASTER GRID EDIT - DYNAMIC SAVE
         // ========================================
 
-        private void SfScheduleMaster_CurrentCellEndEdit(object? sender, Syncfusion.UI.Xaml.Grid.CurrentCellEndEditEventArgs e)
+        // Debounces the Progress-grid refresh callback so it fires once the user pauses editing
+        // instead of on every keystroke — important because NotifyActivitiesModifiedAsync reloads
+        // the Progress grid's 100k+ row in-memory collection.
+        private DispatcherTimer? _notifyActivitiesDebounce;
+
+        private async void SfScheduleMaster_CurrentCellEndEdit(object? sender, Syncfusion.UI.Xaml.Grid.CurrentCellEndEditEventArgs e)
         {
             try
             {
@@ -223,44 +231,79 @@ namespace VANTAGE.Views
 
                 string columnName = sfScheduleMaster.CurrentColumn.MappingName;
 
-                // Only track editable columns
-                if (columnName == "MissedStartReason" || columnName == "MissedFinishReason" ||
-                    columnName == "ThreeWeekStart" || columnName == "ThreeWeekFinish")
+                if (columnName != "MissedStartReason" && columnName != "MissedFinishReason" &&
+                    columnName != "ThreeWeekStart" && columnName != "ThreeWeekFinish")
+                    return;
+
+                var row = sfScheduleMaster.CurrentItem as ScheduleMasterRow;
+                if (row == null)
+                    return;
+
+                // Block lookahead dates earlier than the week ending date — revert before saving
+                if (columnName == "ThreeWeekStart" || columnName == "ThreeWeekFinish")
                 {
-                    // Block 3WLA dates earlier than the week ending date
-                    if (columnName == "ThreeWeekStart" || columnName == "ThreeWeekFinish")
+                    DateTime? dateValue = columnName == "ThreeWeekStart" ? row.ThreeWeekStart : row.ThreeWeekFinish;
+                    if (dateValue.HasValue && dateValue.Value.Date < row.WeekEndDate.Date)
                     {
-                        var row = sfScheduleMaster.CurrentItem as ScheduleMasterRow;
-                        if (row != null)
-                        {
-                            DateTime? dateValue = columnName == "ThreeWeekStart" ? row.ThreeWeekStart : row.ThreeWeekFinish;
-                            if (dateValue.HasValue && dateValue.Value.Date < row.WeekEndDate.Date)
-                            {
-                                MessageBox.Show(
-                                    $"3WLA dates cannot be earlier than the week ending date ({row.WeekEndDate:M/d/yyyy}).\n\n" +
-                                    "If the activity started or finished before this date, edit the detail activities below to set actual start/finish dates.",
-                                    "Invalid Date", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        MessageBox.Show(
+                            $"{_viewModel.LookaheadLabel} dates cannot be earlier than the week ending date ({row.WeekEndDate:M/d/yyyy}).\n\n" +
+                            "If the activity started or finished before this date, edit the detail activities below to set actual start/finish dates.",
+                            "Invalid Date", MessageBoxButton.OK, MessageBoxImage.Warning);
 
-                                // Revert to null and update required fields count
-                                if (columnName == "ThreeWeekStart")
-                                    row.ThreeWeekStart = null;
-                                else
-                                    row.ThreeWeekFinish = null;
+                        if (columnName == "ThreeWeekStart")
+                            row.ThreeWeekStart = null;
+                        else
+                            row.ThreeWeekFinish = null;
 
-                                _viewModel.UpdateRequiredFieldsCount();
-                                return;
-                            }
-                        }
+                        _viewModel.UpdateRequiredFieldsCount();
+                        return;
                     }
-
-                    _viewModel.HasUnsavedChanges = true;
-                    _viewModel.UpdateRequiredFieldsCount();
                 }
+
+                _viewModel.UpdateRequiredFieldsCount();
+                await SaveRowAndNotifyAsync(row);
             }
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "ScheduleView.SfScheduleMaster_CurrentCellEndEdit");
             }
+        }
+
+        // Persist a single master row to the DB and schedule a (debounced) Progress-grid refresh.
+        private async Task SaveRowAndNotifyAsync(ScheduleMasterRow row)
+        {
+            string username = App.CurrentUser?.Username ?? "Unknown";
+            txtStatus.Text = "Saving...";
+
+            bool success = await ScheduleRepository.SaveScheduleRowAsync(row, username);
+            if (!success)
+            {
+                txtStatus.Text = "Save failed";
+                return;
+            }
+
+            txtStatus.Text = "Saved";
+            AppLogger.Info($"Saved schedule row {row.SchedActNO}", "ScheduleView.SaveRowAndNotifyAsync", username);
+
+            ScheduleActivitiesRefreshDebounced();
+        }
+
+        // Schedules a one-second trailing Progress-grid refresh; every new edit restarts the countdown.
+        private void ScheduleActivitiesRefreshDebounced()
+        {
+            if (_notifyActivitiesDebounce == null)
+            {
+                _notifyActivitiesDebounce = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(1000) };
+                _notifyActivitiesDebounce.Tick += async (_, _) =>
+                {
+                    _notifyActivitiesDebounce!.Stop();
+                    if (Window.GetWindow(this) is MainWindow mainWindow)
+                        await mainWindow.NotifyActivitiesModifiedAsync();
+                };
+            }
+
+            _notifyActivitiesDebounce.Stop();
+            _notifyActivitiesDebounce.Start();
         }
 
         // Handles paste in master grid - ensures CurrentCellEndEdit fires to update required fields count
@@ -284,7 +327,7 @@ namespace VANTAGE.Views
         }
 
         // Handle Delete/Backspace to clear cell when not in edit mode
-        private void SfScheduleMaster_PreviewKeyDown(object sender, KeyEventArgs e)
+        private async void SfScheduleMaster_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             if ((e.Key == Key.Delete || e.Key == Key.Back) && Keyboard.Modifiers == ModifierKeys.None)
             {
@@ -306,15 +349,15 @@ namespace VANTAGE.Views
                     columnName != "ThreeWeekStart" && columnName != "ThreeWeekFinish")
                     return;
 
-                // Check if 3WLA columns are editable (not locked by actuals)
+                // Check if lookahead date columns are editable (not locked by actuals)
                 if (columnName == "ThreeWeekStart" && !row.IsThreeWeekStartEditable)
                 {
-                    txtStatus.Text = "3WLA Start is locked (actual start exists)";
+                    txtStatus.Text = $"{_viewModel.LookaheadLabel} Start is locked (actual start exists)";
                     return;
                 }
                 if (columnName == "ThreeWeekFinish" && !row.IsThreeWeekFinishEditable)
                 {
-                    txtStatus.Text = "3WLA Finish is locked (actual finish exists)";
+                    txtStatus.Text = $"{_viewModel.LookaheadLabel} Finish is locked (actual finish exists)";
                     return;
                 }
 
@@ -337,14 +380,14 @@ namespace VANTAGE.Views
                         break;
                 }
 
-                _viewModel.HasUnsavedChanges = true;
                 _viewModel.UpdateRequiredFieldsCount();
                 sfScheduleMaster.View?.Refresh();
+                await SaveRowAndNotifyAsync(row);
             }
         }
 
         // ========================================
-        // EXIT HANDLING - PROMPT FOR UNSAVED CHANGES
+        // BEGIN-EDIT GUARD
         // ========================================
         private void SfScheduleMaster_CurrentCellBeginEdit(object sender, Syncfusion.UI.Xaml.Grid.CurrentCellBeginEditEventArgs e)
         {
@@ -361,12 +404,12 @@ namespace VANTAGE.Views
             if (columnName == "ThreeWeekStart" && !row.IsThreeWeekStartEditable)
             {
                 e.Cancel = true;
-                txtStatus.Text = "3WLA Start is locked (actual start exists)";
+                txtStatus.Text = $"{_viewModel.LookaheadLabel} Start is locked (actual start exists)";
             }
             else if (columnName == "ThreeWeekFinish" && !row.IsThreeWeekFinishEditable)
             {
                 e.Cancel = true;
-                txtStatus.Text = "3WLA Finish is locked (actual finish exists)";
+                txtStatus.Text = $"{_viewModel.LookaheadLabel} Finish is locked (actual finish exists)";
             }
         }
         private void ScheduleView_Unloaded(object sender, RoutedEventArgs e)
@@ -379,33 +422,10 @@ namespace VANTAGE.Views
 
         public bool TryClose()
         {
-            if (!_viewModel.HasUnsavedChanges)
-                return true;
-
-            var result = MessageBox.Show(
-                "You have unsaved changes to the schedule.\n\nDo you want to save before leaving?",
-                "Unsaved Changes",
-                MessageBoxButton.YesNoCancel,
-                MessageBoxImage.Question);
-
-            if (result == MessageBoxResult.Yes)
-            {
-                // Save synchronously
-                btnSave_Click(this, new RoutedEventArgs());
-                return true;
-            }
-            else if (result == MessageBoxResult.No)
-            {
-                // Discard changes
-                _viewModel.HasUnsavedChanges = false;
-                return true;
-            }
-            else
-            {
-                // Cancel - stay on this view
-                return false;
-            }
+            // Nothing is ever unsaved — dynamic save persists every cell commit.
+            return true;
         }
+
         // ========================================
         // DETAIL GRID EDIT HANDLER
         // ========================================
@@ -641,8 +661,12 @@ namespace VANTAGE.Views
                                 if (finishCreated)
                                     masterRow.ThreeWeekFinish = null;
 
-                                string cleared = (startCreated && finishCreated) ? "3WLA Start and Finish" :
-                                                 startCreated ? "3WLA Start" : "3WLA Finish";
+                                // Persist the auto-cleared lookahead dates (dynamic save — no SAVE button).
+                                await ScheduleRepository.SaveScheduleRowAsync(masterRow, username);
+
+                                string label = _viewModel.LookaheadLabel;
+                                string cleared = (startCreated && finishCreated) ? $"{label} Start and Finish" :
+                                                 startCreated ? $"{label} Start" : $"{label} Finish";
                                 txtStatus.Text = $"Saved - {cleared} cleared";
                             }
                             else
@@ -715,7 +739,6 @@ namespace VANTAGE.Views
             _viewModel.MasterRows.Clear();
             _viewModel.DetailActivities.Clear();
             _viewModel.SelectedWeekEndDate = null;
-            _viewModel.HasUnsavedChanges = false;
             txtDetailHeader.Text = "Select a row above to view detail activities";
             txtStatus.Text = "Schedule cleared";
         }
@@ -759,44 +782,6 @@ namespace VANTAGE.Views
             await _viewModel.InitializeAsync();
         }
 
-        private async void btnSave_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                var allRows = _viewModel.GetAllMasterRows();
-                if (allRows == null || allRows.Count == 0)
-                {
-                    MessageBox.Show("No data to save.", "Save", MessageBoxButton.OK, MessageBoxImage.None);
-                    return;
-                }
-
-                btnSave.IsEnabled = false;
-                txtStatus.Text = "Saving...";
-
-                string username = App.CurrentUser?.Username ?? "Unknown";
-                int savedCount = await ScheduleRepository.SaveAllScheduleRowsAsync(_viewModel.GetAllMasterRows(), username);
-
-                txtStatus.Text = $"Saved {savedCount} rows";
-                AppLogger.Info($"Saved {savedCount} schedule rows", "ScheduleView.btnSave_Click", username);
-                _viewModel.HasUnsavedChanges = false;
-
-                // Notify MainWindow to refresh Progress module (PlanStart/PlanFin may have changed)
-                if (Window.GetWindow(this) is MainWindow mainWindow)
-                {
-                    await mainWindow.NotifyActivitiesModifiedAsync();
-                }
-            }
-            catch (Exception ex)
-            {
-                AppLogger.Error(ex, "ScheduleView.btnSave_Click");
-                MessageBox.Show($"Error saving: {ex.Message}", "Save Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                txtStatus.Text = "Save failed";
-            }
-            finally
-            {
-                btnSave.IsEnabled = true;
-            }
-        }
         private async void btnRefresh_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -826,48 +811,6 @@ namespace VANTAGE.Views
                 txtStatus.Text = "Refresh failed";
             }
         }
-        // Public method for MainWindow to call when exporting
-        public void SaveChanges()
-        {
-            btnSave_Click(this, new RoutedEventArgs());
-        }
-
-        private async Task SaveChangesAsync()
-        {
-            try
-            {
-                var allRows = _viewModel.GetAllMasterRows();
-                if (allRows == null || allRows.Count == 0)
-                    return;
-
-                btnSave.IsEnabled = false;
-                txtStatus.Text = "Saving...";
-
-                string username = App.CurrentUser?.Username ?? "Unknown";
-                int savedCount = await ScheduleRepository.SaveAllScheduleRowsAsync(_viewModel.GetAllMasterRows(), username);
-
-                txtStatus.Text = $"Saved {savedCount} rows";
-                AppLogger.Info($"Saved {savedCount} schedule rows", "ScheduleView.SaveChanges", username);
-                _viewModel.HasUnsavedChanges = false;
-
-                // Notify MainWindow to refresh Progress module (PlanStart/PlanFin may have changed)
-                if (Window.GetWindow(this) is MainWindow mainWindow)
-                {
-                    await mainWindow.NotifyActivitiesModifiedAsync();
-                }
-            }
-            catch (Exception ex)
-            {
-                AppLogger.Error(ex, "ScheduleView.SaveChanges");
-                MessageBox.Show($"Error saving: {ex.Message}", "Save Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                txtStatus.Text = "Save failed";
-            }
-            finally
-            {
-                btnSave.IsEnabled = true;
-            }
-        }
-
         // ========================================
         // COLUMN STATE PERSISTENCE
         // ========================================
@@ -1372,26 +1315,26 @@ namespace VANTAGE.Views
             UpdateClearFiltersBorder();
         }
 
-        // Filter by 3WLA Start variance (3WLA Start != P6 Start)
+        // Filter by lookahead Start variance (forecast != P6 Start)
         private void FilterDiscrepancy_3WLAStart_Click(object sender, RoutedEventArgs e)
         {
             _viewModel.DiscrepancyFilter = _viewModel.DiscrepancyFilter == DiscrepancyFilterType.ThreeWeekStart
                 ? DiscrepancyFilterType.None
                 : DiscrepancyFilterType.ThreeWeekStart;
             txtStatus.Text = _viewModel.DiscrepancyFilter == DiscrepancyFilterType.ThreeWeekStart
-                ? "Filtered: 3WLA Start differs from P6"
+                ? $"Filtered: {_viewModel.LookaheadLabel} Start differs from P6"
                 : "Filter cleared";
             UpdateClearFiltersBorder();
         }
 
-        // Filter by 3WLA Finish variance (3WLA Finish != P6 Finish)
+        // Filter by lookahead Finish variance (forecast != P6 Finish)
         private void FilterDiscrepancy_3WLAFinish_Click(object sender, RoutedEventArgs e)
         {
             _viewModel.DiscrepancyFilter = _viewModel.DiscrepancyFilter == DiscrepancyFilterType.ThreeWeekFinish
                 ? DiscrepancyFilterType.None
                 : DiscrepancyFilterType.ThreeWeekFinish;
             txtStatus.Text = _viewModel.DiscrepancyFilter == DiscrepancyFilterType.ThreeWeekFinish
-                ? "Filtered: 3WLA Finish differs from P6"
+                ? $"Filtered: {_viewModel.LookaheadLabel} Finish differs from P6"
                 : "Filter cleared";
             UpdateClearFiltersBorder();
         }
@@ -1449,6 +1392,33 @@ namespace VANTAGE.Views
             {
                 UpdateClearFiltersBorder();
             }
+            else if (e.PropertyName == nameof(_viewModel.LookaheadLabel))
+            {
+                UpdateLookaheadHeaders();
+            }
+        }
+
+        // Keep the two Syncfusion column HeaderTexts and the two Discrepancy MenuItem Headers
+        // in sync with the ViewModel's LookaheadLabel. Syncfusion column HeaderText can't bind
+        // from ViewModel cleanly, and ContextMenu items live outside the visual tree's DataContext.
+        private void UpdateLookaheadHeaders()
+        {
+            var label = _viewModel.LookaheadLabel;
+
+            if (sfScheduleMaster?.Columns?["ThreeWeekStart"] is { } startCol)
+                startCol.HeaderText = $"{label} Start";
+            if (sfScheduleMaster?.Columns?["ThreeWeekFinish"] is { } finishCol)
+                finishCol.HeaderText = $"{label} Finish";
+
+            if (mnuDiscrepancyLookaheadStart != null)
+                mnuDiscrepancyLookaheadStart.Header = $"{label} Start";
+            if (mnuDiscrepancyLookaheadFinish != null)
+                mnuDiscrepancyLookaheadFinish.Header = $"{label} Finish";
+
+            // Re-run cell-style triggers that depend on IsThreeWeek*Required — this is a legitimate
+            // filter re-evaluation because it's a user-initiated action (ComboBox change), consistent
+            // with the "filters refresh only on explicit user events" rule.
+            sfScheduleMaster?.View?.Refresh();
         }
 
         // ========================================

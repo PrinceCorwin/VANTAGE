@@ -177,6 +177,7 @@ namespace VANTAGE.Utilities
         //   UserFilters.Progress           — Manage Filters dialog
         //   AnalysisFilter_*  (12 keys)    — Reset button on Analysis chart filters panel
         //   Schedule.UDFMappings           — Schedule UDF Column Mappings dialog
+        //   Schedule.LookaheadWeeks        — Lookahead ComboBox in the Schedule toolbar
         //   AnalysisGroupField             — dropdown in the Analysis tab
         //   AnalysisCurrentUserOnly        — checkbox in the Analysis tab
         //   AnalysisSelectedProjects       — project picker in the Analysis tab

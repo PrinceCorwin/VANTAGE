@@ -16,6 +16,7 @@ namespace VANTAGE.Utilities
             List<ScheduleMasterRow> masterRows,
             DateTime weekEndDate,
             string filePath,
+            string lookaheadLabel,
             IProgress<string>? progress = null)
         {
             // Get NotIn data before entering Task.Run (async calls)
@@ -27,8 +28,8 @@ namespace VANTAGE.Utilities
             {
                 using var workbook = new XLWorkbook();
 
-                // Single combined Schedule tab
-                CreateScheduleSheet(workbook, masterRows, p6NotInMS, msNotInP6, progress);
+                // Single combined Schedule tab; sheet name mirrors the active lookahead label.
+                CreateScheduleSheet(workbook, masterRows, p6NotInMS, msNotInP6, lookaheadLabel, progress);
 
                 // Save workbook
                 progress?.Report("Saving report...");
@@ -41,11 +42,12 @@ namespace VANTAGE.Utilities
     List<ScheduleMasterRow> masterRows,
     List<(string SchedActNO, string Description, string WbsId)> p6NotInMS,
     List<string> msNotInP6,
+    string lookaheadLabel,
     IProgress<string>? progress)
         {
             progress?.Report("Creating Schedule report...");
 
-            var sheet = workbook.Worksheets.Add("3WLA");
+            var sheet = workbook.Worksheets.Add(lookaheadLabel);
             var redFill = XLColor.FromHtml("#FFC7CE");
 
             // Headers (22 columns)

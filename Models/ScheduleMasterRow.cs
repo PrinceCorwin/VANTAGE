@@ -7,6 +7,12 @@ namespace VANTAGE.Models
     // ViewModel row combining P6 data + MS rollups for Schedule Module master grid
     public class ScheduleMasterRow : INotifyPropertyChanged, IScheduleCellIndicators
     {
+        // Lookahead window in days, driving the IsThreeWeek*Required cell-highlight rules.
+        // Default 21 (3 weeks). ScheduleViewModel sets this at load and when the user changes
+        // the Lookahead ComboBox in the Schedule toolbar. Property names below retain
+        // "ThreeWeek" for historical reasons — the window is now user-configurable.
+        public static int LookaheadDays = 21;
+
         // ========================================
         // P6 DATA (from Schedule table)
         // ========================================
@@ -312,8 +318,8 @@ namespace VANTAGE.Models
                 if (!P6_Start.HasValue)
                     return false; // No P6 start date
 
-                // Required if P6_Start is past-due or within 3-week lookahead
-                return P6_Start.Value.Date <= WeekEndDate.Date.AddDays(21);
+                // Required if P6_Start is past-due or within the active lookahead window
+                return P6_Start.Value.Date <= WeekEndDate.Date.AddDays(LookaheadDays);
             }
         }
 
@@ -331,9 +337,17 @@ namespace VANTAGE.Models
                 if (!P6_Finish.HasValue)
                     return false; // No P6 finish date
 
-                // Required if P6_Finish is past-due or within 3-week lookahead
-                return P6_Finish.Value.Date <= WeekEndDate.Date.AddDays(21);
+                // Required if P6_Finish is past-due or within the active lookahead window
+                return P6_Finish.Value.Date <= WeekEndDate.Date.AddDays(LookaheadDays);
             }
+        }
+
+        // Forces the two Is*Required bindings to re-evaluate. Called per-row by
+        // ScheduleViewModel when the user changes the Lookahead ComboBox.
+        public void RaiseLookaheadChanged()
+        {
+            OnPropertyChanged(nameof(IsThreeWeekStartRequired));
+            OnPropertyChanged(nameof(IsThreeWeekFinishRequired));
         }
 
         // Gold highlight: 3WLA Start has a forecast different from P6
