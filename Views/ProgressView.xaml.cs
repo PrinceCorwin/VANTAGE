@@ -70,10 +70,12 @@ namespace VANTAGE.Views
         private Dictionary<string, PropertyInfo?> _propertyCache = new Dictionary<string, PropertyInfo?>();
         private async void DeleteSelectedActivities_Click(object sender, RoutedEventArgs e)
         {
+            var mainWindow = Application.Current.Windows.OfType<VANTAGE.MainWindow>().FirstOrDefault();
+
             try
             {
-                var selected = sfActivities.SelectedItems?.Cast<Activity>().ToList();
-                if (selected == null || selected.Count == 0)
+                int selectedCount = sfActivities.SelectedItems?.Count ?? 0;
+                if (selectedCount == 0)
                 {
                     MessageBox.Show("Please select one or more records to delete.",
                         "No Selection", MessageBoxButton.OK, MessageBoxImage.None);
@@ -82,8 +84,8 @@ namespace VANTAGE.Views
 
                 var currentUser = App.CurrentUser;
                 bool isAdmin = currentUser?.IsAdmin ?? false;
+                string currentUsername = currentUser?.Username ?? "Unknown";
 
-                // Check connection to Azure
                 if (!AzureDbManager.CheckConnection(out string connectionError))
                 {
                     MessageBox.Show($"Deletion requires connection to Azure database.\n\n{connectionError}\n\nPlease try again when connected.",
@@ -91,43 +93,76 @@ namespace VANTAGE.Views
                     return;
                 }
 
-                // Verify ownership for each record (Azure if exists, local if not)
-                using var azureConn = AzureDbManager.GetConnection();
-                azureConn.Open();
+                mainWindow?.ShowLoadingOverlay($"Checking {selectedCount:N0} selected records...");
+                await Task.Delay(10);
 
-                var ownedRecords = new List<Activity>();
-                var localOnlyRecords = new HashSet<string>(); // Records not yet in Azure
-                var deniedRecords = new List<string>();
+                // Enumerate SelectedItems in chunks so the UI thread keeps the overlay animated
+                var selected = await GetSelectedActivitiesChunkedAsync();
 
-                foreach (var activity in selected)
+                // Batch ownership check: one Azure round-trip per 500 IDs instead of one per record
+                var (ownedRecords, localOnlyRecords, deniedRecords) = await Task.Run(() =>
                 {
-                    var checkCmd = azureConn.CreateCommand();
-                    checkCmd.CommandText = "SELECT AssignedTo FROM VMS_Activities WHERE UniqueID = @id";
-                    checkCmd.Parameters.AddWithValue("@id", activity.UniqueID);
-                    var azureOwner = checkCmd.ExecuteScalar()?.ToString();
+                    var owned = new List<Activity>();
+                    var localOnly = new HashSet<string>();
+                    var denied = new List<string>();
+                    var azureAssignments = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
 
-                    if (azureOwner == null)
+                    using var azureConn = AzureDbManager.GetConnection();
+                    azureConn.Open();
+
+                    const int chunkSize = 500;
+                    for (int i = 0; i < selected.Count; i += chunkSize)
                     {
-                        // Record doesn't exist in Azure yet — check local ownership
-                        if (isAdmin || string.Equals(activity.AssignedTo, currentUser?.Username, StringComparison.OrdinalIgnoreCase))
+                        int end = Math.Min(i + chunkSize, selected.Count);
+                        using var cmd = azureConn.CreateCommand();
+                        var sb = new StringBuilder("SELECT UniqueID, AssignedTo FROM VMS_Activities WHERE UniqueID IN (");
+                        for (int j = i; j < end; j++)
                         {
-                            ownedRecords.Add(activity);
-                            localOnlyRecords.Add(activity.UniqueID);
+                            if (j > i) sb.Append(',');
+                            string p = "@p" + (j - i);
+                            sb.Append(p);
+                            cmd.Parameters.AddWithValue(p, selected[j].UniqueID);
+                        }
+                        sb.Append(')');
+                        cmd.CommandText = sb.ToString();
+                        using var reader = cmd.ExecuteReader();
+                        while (reader.Read())
+                        {
+                            string uid = reader.GetString(0);
+                            string? owner = reader.IsDBNull(1) ? null : reader.GetString(1);
+                            azureAssignments[uid] = owner;
+                        }
+                    }
+
+                    foreach (var activity in selected)
+                    {
+                        bool inAzure = azureAssignments.TryGetValue(activity.UniqueID, out var azureOwner);
+                        if (!inAzure)
+                        {
+                            if (isAdmin || string.Equals(activity.AssignedTo, currentUsername, StringComparison.OrdinalIgnoreCase))
+                            {
+                                owned.Add(activity);
+                                localOnly.Add(activity.UniqueID);
+                            }
+                            else
+                            {
+                                denied.Add(activity.UniqueID);
+                            }
+                        }
+                        else if (isAdmin || string.Equals(azureOwner, currentUsername, StringComparison.OrdinalIgnoreCase))
+                        {
+                            owned.Add(activity);
                         }
                         else
                         {
-                            deniedRecords.Add(activity.UniqueID);
+                            denied.Add(activity.UniqueID);
                         }
                     }
-                    else if (isAdmin || string.Equals(azureOwner, currentUser?.Username, StringComparison.OrdinalIgnoreCase))
-                    {
-                        ownedRecords.Add(activity);
-                    }
-                    else
-                    {
-                        deniedRecords.Add(activity.UniqueID);
-                    }
-                }
+
+                    return (owned, localOnly, denied);
+                });
+
+                mainWindow?.HideLoadingOverlay();
 
                 if (deniedRecords.Any())
                 {
@@ -142,7 +177,6 @@ namespace VANTAGE.Views
                         return;
                 }
 
-                // Confirm deletion
                 string preview = string.Join(", ", ownedRecords.Take(5).Select(a => a.UniqueID));
                 if (ownedRecords.Count > 5) preview += ", …";
 
@@ -153,56 +187,85 @@ namespace VANTAGE.Views
                     MessageBoxImage.Question);
 
                 if (confirm != MessageBoxResult.Yes)
-                {
-                    azureConn.Close();
                     return;
-                }
 
-                // Delete from local
-                using var localConn = DatabaseSetup.GetConnection();
-                localConn.Open();
+                mainWindow?.ShowLoadingOverlay($"Deleting {ownedRecords.Count:N0} records...");
+                await Task.Delay(10);
 
-                var uniqueIds = ownedRecords.Select(a => a.UniqueID).ToList();
-                string uniqueIdList = string.Join(",", uniqueIds.Select(id => $"'{id}'"));
-
-                var deleteLocalCmd = localConn.CreateCommand();
-                deleteLocalCmd.CommandText = $"DELETE FROM Activities WHERE UniqueID IN ({uniqueIdList})";
-                int localDeleted = deleteLocalCmd.ExecuteNonQuery();
-
-                // Soft-delete in Azure only for records that exist there
-                int azureDeleted = 0;
-                var azureIds = uniqueIds.Where(id => !localOnlyRecords.Contains(id)).ToList();
-                if (azureIds.Count > 0)
+                // Chunked deletes off the UI thread
+                var (localDeleted, azureDeleted) = await Task.Run(() =>
                 {
-                    string azureIdList = string.Join(",", azureIds.Select(id => $"'{id}'"));
-                    var deleteAzureCmd = azureConn.CreateCommand();
-                    deleteAzureCmd.CommandText = $@"
-                        UPDATE VMS_Activities
-                        SET IsDeleted = 1,
-                            UpdatedBy = @user,
-                            UpdatedUtcDate = @date
-                        WHERE UniqueID IN ({azureIdList})";
-                    deleteAzureCmd.Parameters.AddWithValue("@user", currentUser?.Username ?? "Unknown");
-                    deleteAzureCmd.Parameters.AddWithValue("@date", DateTime.UtcNow.ToString("o"));
-                    azureDeleted = deleteAzureCmd.ExecuteNonQuery();
-                }
+                    int localCount = 0;
+                    int azureCount = 0;
+                    var uniqueIds = ownedRecords.Select(a => a.UniqueID).ToList();
+                    var azureIds = uniqueIds.Where(id => !localOnlyRecords.Contains(id)).ToList();
+                    const int chunkSize = 500;
 
-                azureConn.Close();
+                    using (var localConn = DatabaseSetup.GetConnection())
+                    {
+                        localConn.Open();
+                        using var tx = localConn.BeginTransaction();
+                        for (int i = 0; i < uniqueIds.Count; i += chunkSize)
+                        {
+                            int end = Math.Min(i + chunkSize, uniqueIds.Count);
+                            using var cmd = localConn.CreateCommand();
+                            cmd.Transaction = tx;
+                            var sb = new StringBuilder("DELETE FROM Activities WHERE UniqueID IN (");
+                            for (int j = i; j < end; j++)
+                            {
+                                if (j > i) sb.Append(',');
+                                string p = "@p" + (j - i);
+                                sb.Append(p);
+                                cmd.Parameters.AddWithValue(p, uniqueIds[j]);
+                            }
+                            sb.Append(')');
+                            cmd.CommandText = sb.ToString();
+                            localCount += cmd.ExecuteNonQuery();
+                        }
+                        tx.Commit();
+                    }
 
-                // Refresh grid and totals
+                    if (azureIds.Count > 0)
+                    {
+                        using var azureConn = AzureDbManager.GetConnection();
+                        azureConn.Open();
+                        string utcNow = DateTime.UtcNow.ToString("o");
+
+                        for (int i = 0; i < azureIds.Count; i += chunkSize)
+                        {
+                            int end = Math.Min(i + chunkSize, azureIds.Count);
+                            using var cmd = azureConn.CreateCommand();
+                            cmd.Parameters.AddWithValue("@user", currentUsername);
+                            cmd.Parameters.AddWithValue("@date", utcNow);
+                            var sb = new StringBuilder("UPDATE VMS_Activities SET IsDeleted = 1, UpdatedBy = @user, UpdatedUtcDate = @date WHERE UniqueID IN (");
+                            for (int j = i; j < end; j++)
+                            {
+                                if (j > i) sb.Append(',');
+                                string p = "@p" + (j - i);
+                                sb.Append(p);
+                                cmd.Parameters.AddWithValue(p, azureIds[j]);
+                            }
+                            sb.Append(')');
+                            cmd.CommandText = sb.ToString();
+                            azureCount += cmd.ExecuteNonQuery();
+                        }
+                    }
+
+                    return (localCount, azureCount);
+                });
+
                 if (ViewModel != null)
                 {
                     await ViewModel.RefreshAsync();
                     await ViewModel.UpdateTotalsAsync();
                 }
 
-                // Update metadata error count (deleted rows may have had errors)
                 await CalculateMetadataErrorCount();
 
                 AppLogger.Info(
                     $"User deleted {localDeleted} activities (IsDeleted=1 set in Azure for {azureDeleted} records).",
                     "ProgressView.DeleteSelectedActivities_Click",
-                    currentUser?.Username ?? "UnknownUser"
+                    currentUsername
                 );
 
                 MessageBox.Show(
@@ -217,6 +280,34 @@ namespace VANTAGE.Views
                 MessageBox.Show($"Delete failed:\n{ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
+            finally
+            {
+                mainWindow?.HideLoadingOverlay();
+            }
+        }
+
+        // Enumerate sfActivities.SelectedItems in chunks, yielding between chunks to keep the UI overlay animating
+        private async Task<List<Activity>> GetSelectedActivitiesChunkedAsync()
+        {
+            var result = new List<Activity>();
+            var items = sfActivities.SelectedItems;
+            int count = items.Count;
+            const int chunkSize = 500;
+
+            for (int processed = 0; processed < count; processed += chunkSize)
+            {
+                int endIndex = Math.Min(processed + chunkSize, count);
+                for (int i = processed; i < endIndex; i++)
+                {
+                    if (items[i] is Activity a)
+                        result.Add(a);
+                }
+
+                if (processed + chunkSize < count)
+                    await Task.Delay(1);
+            }
+
+            return result;
         }
 
         private async void BtnMetadataErrors_Click(object sender, RoutedEventArgs e)
@@ -3261,6 +3352,7 @@ namespace VANTAGE.Views
                     azureConn.Open();
 
                     var checkCmd = azureConn.CreateCommand();
+                    checkCmd.CommandTimeout = 60;
                     checkCmd.CommandText = @"
                 SELECT TOP 1 ExportedBy
                 FROM VMS_ProgressSnapshots
@@ -3318,6 +3410,7 @@ namespace VANTAGE.Views
                         azureConn.Open();
 
                         var countCmd = azureConn.CreateCommand();
+                        countCmd.CommandTimeout = 60;
                         countCmd.CommandText = @"
                     SELECT COUNT(*)
                     FROM VMS_ProgressSnapshots

@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.2.11",
-  "releaseDate": "2026-04-18T10:37:43Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.2.11/VANTAGE-26.2.11.zip",
-  "zipSizeBytes": 151199870,
-  "sha256": "EDD87B40928773CBC1AA39F0523C19D66109EB3B52AAC64EE2503487E1D9FB48",
-  "releaseNotes": "New: VP vs Vtg Report tool, Reset User Settings dialog. Fix: Schedule UDF dialog scrolling."
+  "currentVersion": "26.2.12",
+  "releaseDate": "2026-04-19T11:12:44Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.2.12/VANTAGE-26.2.12.zip",
+  "zipSizeBytes": 151209533,
+  "sha256": "5A23BF230C34D69F31B8871B7112DADD9FE6F6B5787804944C453B80B79B93FB",
+  "releaseNotes": "Fix: Delete Row(s) on large selections no longer hangs (chunked + batched). Fix: Submit Week queries now have a 60s timeout."
 }

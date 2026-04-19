@@ -1,6 +1,14 @@
 {
   "releases": [
     {
+      "version": "26.2.12",
+      "date": "2026-04-19",
+      "highlights": [
+        "Fix — Delete Row(s) on the Progress grid no longer locks up on large selections; loading overlay shows progress while the records are checked and deleted",
+        "Fix — Submit Week's Azure lookups now have a 60-second timeout instead of waiting indefinitely if the database is slow"
+      ]
+    },
+    {
       "version": "26.2.11",
       "date": "2026-04-18",
       "highlights": [
