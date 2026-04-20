@@ -2855,7 +2855,7 @@
                 <li><strong>ClientEquivEarnQTY</strong> — (PercentEntry / 100) x ClientEquivQty</li>
             </ul>
         </li>
-        <li><strong>UserID</strong> is set to the admin performing the upload</li>
+        <li><strong>UserID</strong> is a concatenation of the admin performing the upload and the original record owner, separated by a pipe character (format: <code>uploader|assignedto</code>, e.g. <code>steve|Grant.Gilbert</code>). This lets you distinguish records when multiple users' snapshots were uploaded together at the same Timestamp + ProjectID. Query by <code>UserID LIKE '%|Grant.Gilbert'</code> to find records originally owned by Grant regardless of uploader, or <code>UserID LIKE 'steve|%'</code> to find everything Steve uploaded regardless of owner.</li>
         <li><strong>Timestamp</strong> is set to the upload time (identical for all records in a batch)</li>
         <li>After upload, <strong>AzureUploadUtcDate</strong> is updated on VMS_Activities for all uploaded records so users can see when their data was last uploaded</li>
         <li>If records for the same Project/Week have already been uploaded, a <strong>duplicate warning</strong> is shown before proceeding</li>

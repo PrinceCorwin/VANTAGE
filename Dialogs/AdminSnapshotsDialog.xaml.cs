@@ -396,8 +396,16 @@ namespace VANTAGE.Dialogs
             insertCols.Add("[Val_Client_Earned_EQ-QTY]");
             selectExprs.Add("CASE WHEN ISNULL(BudgetMHs, 0) > 0 AND ISNULL(PercentEntry, 0) > 0 THEN CAST(ROUND((ISNULL(PercentEntry, 0) / 100.0) * ISNULL(ClientEquivQty, 0), 3) AS NVARCHAR(50)) ELSE '0' END");
 
+            // UserID captures BOTH who uploaded and whose records they are:
+            // format is "uploader|assignedto" (e.g. "steve|Grant.Gilbert"). Pipe is used
+            // because it cannot appear in a Windows username. This lets us distinguish
+            // records when multiple users' snapshots are uploaded together under the
+            // same Timestamp + ProjectID — otherwise they'd be indistinguishable.
             insertCols.Add("[UserID]");
-            selectExprs.Add("@userId");
+            string userIdExpr = "@userId + '|' + ISNULL([AssignedTo], '')";
+            if (columnMaxLengths.TryGetValue("UserID", out int userIdMaxLen) && userIdMaxLen > 0)
+                userIdExpr = $"LEFT(CAST({userIdExpr} AS NVARCHAR(MAX)), {userIdMaxLen})";
+            selectExprs.Add(userIdExpr);
             insertCmd.Parameters.AddWithValue("@userId", currentUser);
 
             insertCols.Add("[Timestamp]");
