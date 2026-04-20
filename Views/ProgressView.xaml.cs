@@ -3116,6 +3116,9 @@ namespace VANTAGE.Views
             Dialogs.BusyDialog? busyDialog = null;
             try
             {
+                // Track for close-guard: warn the user if they try to quit mid-submit.
+                using var _opTracker = VANTAGE.Utilities.LongRunningOps.Begin();
+
                 // Step 1: Check Azure connection with retry option
                 bool isConnected = false;
                 while (!isConnected)
@@ -3283,6 +3286,11 @@ namespace VANTAGE.Views
                 busyDialog = new Dialogs.BusyDialog(Window.GetWindow(this), "Validating...");
                 busyDialog.Show();
 
+                // Lock the grid while we capture the snapshot. Released as soon as the
+                // SELECT finishes loading the DataTable below; any edits after that point
+                // are the user's next-week progress and intentionally not in this snapshot.
+                sfActivities.IsEnabled = false;
+
                 // Check for dates that are after the selected WeekEndDate
                 var futureStartDates = _viewModel.Activities
                     .Where(a => a.AssignedTo == App.CurrentUser?.Username &&
@@ -3352,7 +3360,7 @@ namespace VANTAGE.Views
                     azureConn.Open();
 
                     var checkCmd = azureConn.CreateCommand();
-                    checkCmd.CommandTimeout = 60;
+                    checkCmd.CommandTimeout = 600;
                     checkCmd.CommandText = @"
                 SELECT TOP 1 ExportedBy
                 FROM VMS_ProgressSnapshots
@@ -3410,7 +3418,7 @@ namespace VANTAGE.Views
                         azureConn.Open();
 
                         var countCmd = azureConn.CreateCommand();
-                        countCmd.CommandTimeout = 60;
+                        countCmd.CommandTimeout = 600;
                         countCmd.CommandText = @"
                     SELECT COUNT(*)
                     FROM VMS_ProgressSnapshots
@@ -3460,33 +3468,11 @@ namespace VANTAGE.Views
                         var skippedList = new List<(string UniqueID, string SchedActNO, string Description)>();
                         var reporter = (IProgress<string>)progress;
 
-                        // Step 6: Delete existing snapshots if needed
-                        if (needsDelete)
-                        {
-                            reporter.Report("Deleting existing snapshots...");
-
-                            using var deleteConn = AzureDbManager.GetConnection();
-                            deleteConn.Open();
-
-                            var deleteCmd = deleteConn.CreateCommand();
-                            deleteCmd.CommandTimeout = 0;
-                            deleteCmd.CommandText = @"
-                        DELETE FROM VMS_ProgressSnapshots
-                        WHERE AssignedTo = @username
-                          AND ProjectID = @projectId
-                          AND WeekEndDate = @weekEndDate";
-                            deleteCmd.Parameters.AddWithValue("@username", currentUser);
-                            deleteCmd.Parameters.AddWithValue("@projectId", selectedProject);
-                            deleteCmd.Parameters.AddWithValue("@weekEndDate", weekEndDateStr);
-                            var deletedCount = deleteCmd.ExecuteNonQuery();
-
-                            AppLogger.Info($"Deleted {deletedCount} existing snapshots for overwrite", "ProgressView.BtnSubmit_Click", currentUser);
-                        }
-
-                        // Step 7: Read local activities and check for existing snapshots
+                        // Step 7: Read local activities FIRST so we can release the grid
+                        // before the slow Azure DELETE runs. The snapshot is frozen at this
+                        // point; any later edits are intentionally not captured.
                         reporter.Report("Reading local activities...");
 
-                        // Read local activities for this user/project
                         var localActivities = new System.Data.DataTable();
                         using (var localConn = DatabaseSetup.GetConnection())
                         {
@@ -3517,9 +3503,41 @@ namespace VANTAGE.Views
                             localActivities.Load(reader);
                         }
 
+                        // Snapshot is captured in memory — re-enable the grid so the user
+                        // can keep working while the remaining Azure work (DELETE, bulk
+                        // copy, purge) runs in the background.
+                        await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+                        {
+                            sfActivities.IsEnabled = true;
+                        });
+
                         if (localActivities.Rows.Count == 0)
                         {
                             return (false, "No local activities found for this user/project.", 0, 0, skippedList);
+                        }
+
+                        // Step 6: Delete existing snapshots if the user chose to overwrite.
+                        // Runs after the SELECT so the grid is already unlocked.
+                        if (needsDelete)
+                        {
+                            reporter.Report("Deleting existing snapshots...");
+
+                            using var deleteConn = AzureDbManager.GetConnection();
+                            deleteConn.Open();
+
+                            var deleteCmd = deleteConn.CreateCommand();
+                            deleteCmd.CommandTimeout = 600;
+                            deleteCmd.CommandText = @"
+                        DELETE FROM VMS_ProgressSnapshots
+                        WHERE AssignedTo = @username
+                          AND ProjectID = @projectId
+                          AND WeekEndDate = @weekEndDate";
+                            deleteCmd.Parameters.AddWithValue("@username", currentUser);
+                            deleteCmd.Parameters.AddWithValue("@projectId", selectedProject);
+                            deleteCmd.Parameters.AddWithValue("@weekEndDate", weekEndDateStr);
+                            var deletedCount = deleteCmd.ExecuteNonQuery();
+
+                            AppLogger.Info($"Deleted {deletedCount} existing snapshots for overwrite", "ProgressView.BtnSubmit_Click", currentUser);
                         }
 
                         reporter.Report("Checking for existing snapshots...");
@@ -3533,7 +3551,7 @@ namespace VANTAGE.Views
                             azureConn.Open();
 
                             var existingCmd = azureConn.CreateCommand();
-                            existingCmd.CommandTimeout = 0;
+                            existingCmd.CommandTimeout = 600;
                             existingCmd.CommandText = @"
                                 SELECT UniqueID, AssignedTo, ProjectID
                                 FROM VMS_ProgressSnapshots
@@ -3814,7 +3832,7 @@ namespace VANTAGE.Views
 
                             using var bulkCopy = new Microsoft.Data.SqlClient.SqlBulkCopy(azureConn);
                             bulkCopy.DestinationTableName = "VMS_ProgressSnapshots";
-                            bulkCopy.BulkCopyTimeout = 0;
+                            bulkCopy.BulkCopyTimeout = 600;
 
                             // Map columns
                             foreach (System.Data.DataColumn col in snapshotTable.Columns)
@@ -3836,7 +3854,7 @@ namespace VANTAGE.Views
                         {
                             purgeConn.Open();
                             var purgeCmd = purgeConn.CreateCommand();
-                            purgeCmd.CommandTimeout = 0;
+                            purgeCmd.CommandTimeout = 600;
                             purgeCmd.CommandText = @"
                                 DELETE FROM VMS_ProgressSnapshots
                                 WHERE WeekEndDate < @cutoffDate";
@@ -4019,6 +4037,12 @@ namespace VANTAGE.Views
                     "Error",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
+            }
+            finally
+            {
+                // Safety net: re-enable the grid if any early return or exception
+                // left it locked. Idempotent — no-op if already re-enabled after SELECT.
+                sfActivities.IsEnabled = true;
             }
         }
 

@@ -368,6 +368,11 @@ Permanent record of architectural choices, design rationale, and implementation 
 **Why:** The Progress and Schedule views save their in-memory column state to `UserSettings` on unload. If we only deleted the row and left the view in place, closing the app would trigger the Unload handler and re-save the in-memory widths back over our reset — a silent no-op. The view must be recreated so its Unload handler fires while the row is empty (and the new instance loads default columns).
 **Date:** April 2026
 
+### App-Close Guard via Single Counter, Not Per-Op Flags
+**Decision:** One static counter in `Utilities/LongRunningOps.cs` tracks any critical operation via `using (LongRunningOps.Begin()) { ... }`. `MainWindow_Closing` reads `LongRunningOps.IsRunning` and warns the user before exiting if true. Six call sites currently wrap the scope: Submit Week, user snapshot delete, user snapshot revert, admin delete selected, admin delete all, admin upload-to-ProgressLog.
+**Why:** Submit Week's Step 10 (local UPDATEs to WeekEndDate/ProgDate/PrevEarnMHs/PrevEarnQTY) and similar post-commit housekeeping can leave local SQLite in a partially updated state if the app process dies mid-sequence. A single counter with `Interlocked` increment/decrement is ~40ns per op (imperceptible overhead on second-scale operations), works across threads, and doesn't require per-op plumbing. Alternatives considered: (1) per-op boolean flags on MainWindow — rejected as six flags is worse than one counter, (2) service registry pattern with event notifications — rejected as overkill for a boolean "anything running?" check, (3) relocking the grid during Step 10 — rejected because the user explicitly wanted the grid usable after the snapshot was captured.
+**Date:** April 2026
+
 ### WebView2 Virtual Host Maps to App Base Dir, Not Help/
 **Decision:** The help sidebar's WebView2 virtual host `help.local` is mapped to the app base directory (`{baseDir}`), not the `Help` subfolder. Navigation URL is `https://help.local/Help/manual.html`, and `manual.html` references images via `<img src="../Assets/Images/Sidebar/xxx.png">`.
 **Why:** When images moved to `Assets/Images/Sidebar/`, manual.html still lives at `Help/manual.html` — the sibling-relative `<img src>` pattern no longer works because the images are no longer siblings. Rooting the virtual host at the app base dir lets a single host cover both the HTML and the separately-located image folder. Alternative considered: duplicate the host mapping (one for `Help/`, one for `Assets/Images/Sidebar/`). Rejected because one mapping at the base dir is simpler and won't need further changes if the folder tree grows.
@@ -404,3 +409,18 @@ Permanent record of architectural choices, design rationale, and implementation 
 **Decision:** Upload batches grouped by (Username, ProjectID, WeekEndDate, UploadUtcDate) instead of per-RespParty rows.
 **Why:** Snapshots are always created as a unit across all RespParty values. Per-RespParty tracking added complexity with no practical benefit.
 **Date:** February 2026
+
+### Snapshot Dialogs Kept Open + Modeless, Not Detached Background Work
+**Decision:** Both `ManageSnapshotsDialog` (user) and `AdminSnapshotsDialog` were converted from modal (`ShowDialog`) to modeless (`Show`). The dialog stays open with its own spinner during long deletes/uploads; the user drags it aside and keeps working in the main window. `DialogResult = true/false` patterns replaced with a public `NeedsRefresh` property the caller reads in the `Closed` event. Re-entrancy guards on both menu items focus the existing instance instead of opening a second.
+**Why:** Initial plan was to extract delete logic into services, close the dialog immediately on confirm, and show a non-modal status toast pinned to MainWindow. User picked the simpler approach: keep the dialog intact with its existing spinner, just remove the modal-ness so MainWindow stays interactive. Four lines per dialog instead of a service refactor.
+**Date:** April 2026
+
+### Submit Week Snapshot Is Frozen at SELECT, Not at Click
+**Decision:** The Progress grid is locked (`sfActivities.IsEnabled = false`) the instant the busy dialog appears, then unlocked via `Dispatcher.InvokeAsync` the instant the local SELECT into the in-memory DataTable completes inside the background task. The SELECT was also moved ahead of the Azure DELETE step so the grid re-enables faster on the overwrite path.
+**Why:** Before this change, the grid stayed live throughout an async submit, so edits made after clicking Submit could or could not end up in the snapshot depending on micro-timing of Azure pre-checks. Now the snapshot boundary is explicit: everything up to the SELECT is captured; everything after the SELECT is intentionally the NEXT week's progress. Users stay productive during the slow Azure writes (DELETE/bulk-copy/purge) that happen after the snapshot is already frozen in memory. No data loss either way — post-SELECT edits still set `LocalDirty=1` and push on next sync.
+**Date:** April 2026
+
+### Dedup Check After DELETE, Not Before
+**Decision:** In Submit Week, the order inside the background Task is now: SELECT local → unlock grid → DELETE old Azure snapshots (if overwriting) → dedup check (existing UniqueIDs for the week) → bulk copy.
+**Why:** The dedup check only needs to skip records already submitted by *other* users for the same week. If we check before the DELETE, our own prior snapshots would match and incorrectly flag every row as a duplicate. Running the dedup after the DELETE leaves only other-user entries — which is exactly the conflict set we want to report. The DELETE scope is narrow (AssignedTo + ProjectID + WeekEndDate), so no risk of removing other users' data.
+**Date:** April 2026

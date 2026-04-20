@@ -983,6 +983,8 @@
 
     <p><strong>Conflict Handling:</strong> If another user has already submitted a snapshot containing records with the same UniqueID for the selected week, those records are automatically skipped (not overwritten). You'll see a message showing how many records were skipped. You can optionally export the skipped records to Excel to see which records were affected and who originally submitted them.</p>
 
+    <p><strong>Grid Lock During Snapshot Capture:</strong> When you click SUBMIT WEEK, the grid is briefly disabled (usually a second or two) while your current activity state is captured to memory. Once captured, the grid re-enables and you can keep editing. Any edits you make after that point are <strong>not</strong> included in the snapshot that was just submitted — they belong to the next week's progress. The remaining submit work (Azure upload, cleanup) runs in the background with a busy indicator you can drag out of the way.</p>
+
     <h3 id="prog-layouts">Column Layouts</h3>
     <p>Your column widths, order, and visibility are automatically saved and persist across app updates. To customize:</p>
     <ul>
@@ -2825,6 +2827,8 @@
 
     <h3 id="admin-snapshots">Snapshot Management (Admin > Manage Snapshots)</h3>
     <p>The Admin Snapshots dialog allows administrators to view, delete, and upload weekly progress snapshots. Snapshots are grouped by User, Project, and Week End Date.</p>
+
+    <p><strong>Non-blocking dialog:</strong> This dialog is modeless — while a large delete or Progress Log upload is running, you can drag it aside and keep using the rest of the app (edit in Progress, switch modules, etc.). The main window stays responsive. If you try to close the entire app while a snapshot operation is still finishing, you'll get a warning prompt — close anyway at your own risk, since an interrupted operation can leave local data in a partially updated state.</p>
 
     <h4>Selecting Snapshots</h4>
     <ul>

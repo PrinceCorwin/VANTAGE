@@ -18,6 +18,9 @@ namespace VANTAGE.Dialogs
 {
     public partial class ManageSnapshotsDialog : Window
     {
+        // Modeless: MainWindow reads this on Closed to decide whether to refresh views.
+        public bool NeedsRefresh { get; private set; }
+
         private List<SnapshotWeekItem> _weeks = new();
 
         public ManageSnapshotsDialog()
@@ -166,6 +169,8 @@ namespace VANTAGE.Dialogs
 
             try
             {
+                using var _opTracker = LongRunningOps.Begin();
+
                 int deletedTotal = await System.Threading.Tasks.Task.Run(() =>
                 {
                     int deleted = 0;
@@ -238,7 +243,7 @@ namespace VANTAGE.Dialogs
                     MessageBoxButton.OK,
                     MessageBoxImage.None);
 
-                DialogResult = true;
+                NeedsRefresh = true;
                 Close();
             }
             catch (Exception ex)
@@ -255,7 +260,6 @@ namespace VANTAGE.Dialogs
 
         private void BtnCancel_Click(object sender, RoutedEventArgs e)
         {
-            DialogResult = false;
             Close();
         }
 
@@ -295,6 +299,8 @@ namespace VANTAGE.Dialogs
 
             try
             {
+                using var _opTracker = LongRunningOps.Begin();
+
                 var busyDialog = new BusyDialog(this, "Preparing revert...");
                 busyDialog.Show();
 
@@ -352,7 +358,7 @@ namespace VANTAGE.Dialogs
                 ShowRevertResultsDialog(revertResult);
 
                 // Refresh ProgressView if loaded (MainWindow handles this on dialog close)
-                DialogResult = true;
+                NeedsRefresh = true;
                 Close();
             }
             catch (Exception ex)

@@ -74,16 +74,21 @@ namespace VANTAGE.Dialogs
                     using var connection = AzureDbManager.GetConnection();
                     connection.Open();
 
-                    // Get distinct ProjectIDs from user's snapshots, join with Projects table for names
+                    // Dedup ProjectIDs first (1-5 rows per user), then join to VMS_Projects for names.
+                    // Avoids joining every snapshot row before dedup on large snapshot tables.
                     var cmd = connection.CreateCommand();
+                    cmd.CommandTimeout = 600;
                     cmd.CommandText = @"
-                        SELECT DISTINCT
-                            ps.ProjectID,
-                            COALESCE(p.Description, ps.ProjectID) as ProjectName
-                        FROM VMS_ProgressSnapshots ps
-                        LEFT JOIN VMS_Projects p ON ps.ProjectID = p.ProjectID
-                        WHERE ps.AssignedTo = @username
-                        ORDER BY ps.ProjectID";
+                        ;WITH UserProjects AS (
+                            SELECT DISTINCT ProjectID
+                            FROM VMS_ProgressSnapshots
+                            WHERE AssignedTo = @username
+                        )
+                        SELECT up.ProjectID,
+                               COALESCE(p.Description, up.ProjectID) AS ProjectName
+                        FROM UserProjects up
+                        LEFT JOIN VMS_Projects p ON up.ProjectID = p.ProjectID
+                        ORDER BY up.ProjectID";
                     cmd.Parameters.AddWithValue("@username", App.CurrentUser.Username);
 
                     using var reader = cmd.ExecuteReader();

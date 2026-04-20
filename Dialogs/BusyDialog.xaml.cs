@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using System.Windows.Input;
 
 namespace VANTAGE.Dialogs
 {
@@ -14,6 +15,13 @@ namespace VANTAGE.Dialogs
         public void UpdateStatus(string message)
         {
             txtStatus.Text = message;
+        }
+
+        // Chromeless window — let the user drag it out of the way by clicking anywhere.
+        private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Left)
+                DragMove();
         }
     }
 }

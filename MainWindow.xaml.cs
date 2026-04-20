@@ -26,6 +26,10 @@ namespace VANTAGE
         private Button? _activeNavButton;
         private PluginLoaderService? _pluginLoader;
 
+        // Modeless snapshot dialogs — tracked so repeat menu clicks just focus the existing window.
+        private Dialogs.ManageSnapshotsDialog? _manageSnapshotsDialog;
+        private Dialogs.AdminSnapshotsDialog? _adminSnapshotsDialog;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -255,6 +259,25 @@ namespace VANTAGE
 
         private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
         {
+            // Warn if a long-running operation (Submit Week, snapshot delete, etc.)
+            // is still finishing — killing the process mid-op can leave local DB state inconsistent.
+            if (LongRunningOps.IsRunning)
+            {
+                var result = MessageBox.Show(
+                    "An operation is still finishing (Submit Week or snapshot delete).\n\n" +
+                    "Closing now may leave your local data in an inconsistent state.\n\n" +
+                    "Quit anyway?",
+                    "Operation In Progress",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning);
+
+                if (result != MessageBoxResult.Yes)
+                {
+                    e.Cancel = true;
+                    return;
+                }
+            }
+
             // Check for unsaved Schedule changes
             if (ContentArea.Content is ScheduleView scheduleView)
             {
@@ -1015,6 +1038,13 @@ namespace VANTAGE
 
         private void MenuEditSnapshots_Click(object sender, RoutedEventArgs e)
         {
+            // Modeless: if already open, just bring it to front.
+            if (_adminSnapshotsDialog != null)
+            {
+                _adminSnapshotsDialog.Activate();
+                return;
+            }
+
             // Check admin status
             if (App.CurrentUser == null || !App.CurrentUser.IsAdmin)
             {
@@ -1034,19 +1064,28 @@ namespace VANTAGE
                 return;
             }
 
-            var dialog = new Dialogs.AdminSnapshotsDialog();
-            dialog.Owner = this;
-            dialog.ShowDialog();
+            var dialog = new Dialogs.AdminSnapshotsDialog { Owner = this };
+            _adminSnapshotsDialog = dialog;
 
-            // Refresh ScheduleView if loaded (snapshots may have been deleted)
-            if (ContentArea.Content is Views.ScheduleView scheduleView)
+            dialog.Closed += (s, args) =>
             {
-                var viewModel = scheduleView.DataContext as ViewModels.ScheduleViewModel;
-                if (viewModel?.SelectedWeekEndDate != null)
+                bool needsRefresh = dialog.NeedsRefresh;
+                _adminSnapshotsDialog = null;
+
+                if (!needsRefresh) return;
+
+                // Refresh ScheduleView if loaded (snapshots were deleted)
+                if (ContentArea.Content is Views.ScheduleView scheduleView)
                 {
-                    _ = viewModel.LoadScheduleDataAsync(viewModel.SelectedWeekEndDate.Value);
+                    var viewModel = scheduleView.DataContext as ViewModels.ScheduleViewModel;
+                    if (viewModel?.SelectedWeekEndDate != null)
+                    {
+                        _ = viewModel.LoadScheduleDataAsync(viewModel.SelectedWeekEndDate.Value);
+                    }
                 }
-            }
+            };
+
+            dialog.Show();
         }
 
         // Open the Manage Progress Log dialog
@@ -1189,6 +1228,13 @@ namespace VANTAGE
 
         private void MenuManageSnapshots_Click(object sender, RoutedEventArgs e)
         {
+            // Modeless: if already open, just bring it to front.
+            if (_manageSnapshotsDialog != null)
+            {
+                _manageSnapshotsDialog.Activate();
+                return;
+            }
+
             // Check Azure connection first
             if (!AzureDbManager.CheckConnection(out string errorMessage))
             {
@@ -1200,11 +1246,16 @@ namespace VANTAGE
                 return;
             }
 
-            var dialog = new Dialogs.ManageSnapshotsDialog();
-            dialog.Owner = this;
+            var dialog = new Dialogs.ManageSnapshotsDialog { Owner = this };
+            _manageSnapshotsDialog = dialog;
 
-            if (dialog.ShowDialog() == true)
+            dialog.Closed += (s, args) =>
             {
+                bool needsRefresh = dialog.NeedsRefresh;
+                _manageSnapshotsDialog = null;
+
+                if (!needsRefresh) return;
+
                 // Snapshots were deleted or reverted - refresh views if loaded
                 if (ContentArea.Content is Views.ScheduleView scheduleView)
                 {
@@ -1218,7 +1269,9 @@ namespace VANTAGE
                 {
                     _ = progressView.RefreshData();
                 }
-            }
+            };
+
+            dialog.Show();
         }
 
         private async void MenuClearLocalActivities_Click(object sender, RoutedEventArgs e)

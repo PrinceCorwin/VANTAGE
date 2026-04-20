@@ -13,6 +13,9 @@ namespace VANTAGE.Dialogs
 {
     public partial class AdminSnapshotsDialog : Window
     {
+        // Modeless: MainWindow reads this on Closed to decide whether to refresh views.
+        public bool NeedsRefresh { get; private set; }
+
         private ObservableCollection<SnapshotGroupItem> _groups = new();
 
         public AdminSnapshotsDialog()
@@ -240,6 +243,8 @@ namespace VANTAGE.Dialogs
 
             try
             {
+                using var _opTracker = LongRunningOps.Begin();
+
                 var stopwatch = System.Diagnostics.Stopwatch.StartNew();
                 int uploadedCount = await System.Threading.Tasks.Task.Run(() =>
                     UploadSnapshotsToProgressLog(selectedGroups, currentUser));
@@ -545,6 +550,8 @@ namespace VANTAGE.Dialogs
 
             try
             {
+                using var _opTracker = LongRunningOps.Begin();
+
                 int deletedTotal = await System.Threading.Tasks.Task.Run(() =>
                 {
                     int deleted = 0;
@@ -575,6 +582,8 @@ namespace VANTAGE.Dialogs
                     $"Admin deleted {deletedTotal} snapshots from {selectedGroups.Count} group(s)",
                     "AdminSnapshotsDialog.BtnDelete_Click",
                     App.CurrentUser?.Username);
+
+                NeedsRefresh = true;
 
                 MessageBox.Show(
                     $"Successfully deleted {deletedTotal} snapshot(s).",
@@ -624,6 +633,8 @@ namespace VANTAGE.Dialogs
 
             try
             {
+                using var _opTracker = LongRunningOps.Begin();
+
                 int deletedTotal = await System.Threading.Tasks.Task.Run(() =>
                 {
                     using var azureConn = AzureDbManager.GetConnection();
@@ -639,6 +650,8 @@ namespace VANTAGE.Dialogs
                     $"Admin deleted ALL snapshots: {deletedTotal} total",
                     "AdminSnapshotsDialog.BtnDeleteAll_Click",
                     App.CurrentUser?.Username);
+
+                NeedsRefresh = true;
 
                 MessageBox.Show(
                     $"Successfully deleted all {deletedTotal} snapshot(s).",
@@ -677,7 +690,6 @@ namespace VANTAGE.Dialogs
 
         private void BtnCancel_Click(object sender, RoutedEventArgs e)
         {
-            DialogResult = true;
             Close();
         }
 

@@ -11,7 +11,8 @@
         Background="Transparent"
         ResizeMode="NoResize"
         ShowInTaskbar="False"
-        Topmost="True">
+        Topmost="True"
+        MouseLeftButtonDown="Window_MouseLeftButtonDown">
     <Border Background="{DynamicResource WindowBackground}"
             BorderBrush="{DynamicResource AccentColor}"
             BorderThickness="1"
