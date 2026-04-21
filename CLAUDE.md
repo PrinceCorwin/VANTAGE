@@ -11,7 +11,7 @@ WPF application for Summit Industrial replacing the legacy MS Access system ("Ol
   - Always use "Summit Industrial" wherever the company name appears in code, UI, docs, or installer
 - Do NOT refer to the app as just "Milestone" or "MILESTONE" in new code, UI text, or documentation. Always refer to it as "VANTAGE: Milestone" or "Vantage" for short. The full name should be used in formal contexts (UI titles, documentation headers, README), while "Vantage" can be used in casual references (variable names, comments, informal docs). Avoid using "Milestone" alone to prevent confusion with the schedule module or generic milestones.
 
-**See also:** `Project_Status.md` (todos, backlog), `Completed_Work.md` (changelog), `Milestone_Project_plan.md` (architecture), `Schedule_Module_plan.md` (schedule module details), `WorkPackage_Module_Plan.md` (work package module)
+**See also:** `Project_Status.md` (todos, backlog), `Completed_Work.md` (changelog), `Milestone_Project_plan.md` (architecture), `Decisions.md` (design decisions)
 
 ## Tech Stack
 - WPF .NET 8, Syncfusion 31.2.12 (FluentDark theme)
@@ -20,6 +20,11 @@ WPF application for Summit Industrial replacing the legacy MS Access system ("Ol
 - **App is LIVE with active users** - treat all changes as production changes
 - Schema migrations must be backward-compatible (use SchemaMigrator for local DB changes)
 - Local database contains user data - never suggest deleting it; migrations handle schema updates
+
+## Workflow Skills
+- **Commits / end-of-session docs:** Invoke `/finisher`. Handles Project_Status.md, Completed_Work.md (with monthly archiving), manual.html check, Decisions.md, plan file cleanup, commit, and push.
+- **Releases:** Invoke `/publisher`. Handles version bump, ReleaseNotes.json, publish script, manifest.json, GitHub Release, and verification.
+- NEVER commit or publish outside these skills.
 
 ## Development Approach
 - Never modify the AGENTS.md file or add it to gitignore file.
@@ -30,6 +35,7 @@ WPF application for Summit Industrial replacing the legacy MS Access system ("Ol
 - After completing a feature: identify improvements, check for dead code, suggest refactoring
 - Add brief intuitive tool tips to all created controls
 - ALWAYS run `dotnet build` after code changes and fix any errors before reporting completion
+- Do NOT add AI attribution comments in code
 
 ### Help Sidebar Maintenance
 - When features are added, deleted, or modified, update `Help/manual.html` to keep documentation current
@@ -37,92 +43,14 @@ WPF application for Summit Industrial replacing the legacy MS Access system ("Ol
 - Remove documentation for deleted features
 - Update existing documentation when feature behavior changes
 - Alert user to update or add screenshots if UI changes affect or would benefit from visual updates in the help manual
-
-## Git Commits
-- **NEVER commit without explicit user permission** - user needs to test changes first
-  - "Update X" or "Add Y" means make the change, NOT commit it
-  - Wait for explicit "commit" instruction before running git commit
-- ALWAYS push to remote after committing, unless user instructs otherwise
-- **ALWAYS commit ALL uncommitted changes** when user says "commit":
-  - Use `git add -A` to stage EVERYTHING — no exceptions
-  - NEVER selectively choose files based on what you worked on
-  - NEVER skip files because they were "already modified" or "unrelated to current work"
-  - If a file shows up in `git status`, it gets committed. Period.
-  - The ONLY exception is if user explicitly says "commit only X" or "don't commit Y"
-- Do NOT add "Generated with Claude" or "Co-Authored-By: Claude" to commit messages
-- Do NOT add AI attribution comments in code
-- Write clear, concise commit messages describing the change
-- Watch for `nul` file in git status - this is a Windows artifact that gets created accidentally. Delete it immediately with `rm -f nul` when spotted.
-
-### MANDATORY Pre-Commit Checklist
-**When user says "commit", invoke the `/finisher` skill.** If the skill file is unavailable, follow these steps manually:
-
-1. Update `Plans/Project_Status.md` - Remove completed items from the backlog
-2. Update `Plans/Completed_Work.md` - Add entry describing what was completed (with date header)
-3. **HELP MANUAL CHECK (frequently missed!):**
-   - Ask: "Did this work change anything a user would see or interact with?"
-   - If YES: Update `Help/manual.html` (add/update/remove sections, update TOC if needed)
-   - If NO: Confirm why not (e.g., "internal refactor only, no UI change")
-4. Update any other relevant plan docs if the work relates to a specific feature plan
-5. ONLY THEN proceed with `git add -A` and `git commit`
-
-**All paths are relative to the repository root. NEVER use absolute paths.**
-**This is NOT optional. Failure to update status docs before committing is a workflow violation.**
-
-### Completed_Work.md Monthly Archiving
-- `Completed_Work.md` is archived monthly to prevent infinite growth
-- At the start of each new month, when finisher runs, entries from previous months are moved to `Plans/Archives/Completed_Work_YYYY-MM.md` (e.g., `Completed_Work_2026-04.md`)
-- `Completed_Work.md` is then reset to just the header and empty `## Unreleased` section
-- The finisher skill handles this automatically — no manual intervention needed
-
-### Status Doc Timing
-- **Do NOT update Project_Status.md or Completed_Work.md until user confirms the work is tested and complete**
-- Making code changes does not mean the work is done - user must test first
-- Only move items to Completed_Work.md after explicit user confirmation that testing passed
-
-### Plan File Management
-- Plan files in the `Plans/` folder should be deleted once fully implemented
-- Before deleting: ensure Project_Status.md and any related docs are updated
-- **ALWAYS ask the user before deleting plan files, even if accept edits is enabled**
-
-## Publishing Updates
-Updates are distributed via GitHub Releases. The auto-updater checks `updates/manifest.json` for new versions.
-
-### Version Numbering
-Format: `YY.Q.N` where:
-- **YY** = 2-digit year (e.g., 26 for 2026)
-- **Q** = quarter (1 = Jan-Mar, 2 = Apr-Jun, 3 = Jul-Sep, 4 = Oct-Dec)
-- **N** = sequential release number within that quarter, resets to 1 each new quarter
-
-Example: `26.1.40` = year 2026, Q1, 40th release. On April 1st, the next release becomes `26.2.1`.
-
-### Release Process
-1. Bump version in `VANTAGE.csproj` (Version, AssemblyVersion, FileVersion)
-2. **Update `ReleaseNotes.json`** — Add a new entry at the top of the `releases` array with the version, date, and user-facing highlights. This file is embedded in the app and shown in the "See Release Notes" dialog. Must be updated BEFORE the publish script runs so the new entry is included in the build.
-3. Run: `powershell -ExecutionPolicy Bypass -File "Scripts\publish-update.ps1" -Version "X.Y.Z"`
-4. Script outputs: ZIP path, size, and SHA-256 hash
-5. Update `updates/manifest.json` with:
-   - `currentVersion`: the new version
-   - `downloadUrl`: `https://github.com/PrinceCorwin/VANTAGE/releases/download/vX.Y.Z/VANTAGE-X.Y.Z.zip`
-   - `zipSizeBytes`: from script output
-   - `sha256`: from script output
-   - `releaseNotes`: brief description
-6. Commit and push the manifest update
-7. Create GitHub Release using `gh`:
-   ```
-   gh release create vX.Y.Z path/to/VANTAGE-X.Y.Z.zip --title "VANTAGE: Milestone vX.Y.Z" --notes "description"
-   ```
-
-### GitHub Release Title Convention
-Always use the format: `VANTAGE: Milestone vX.Y.Z` — the title is the version, NOT a description.
-The description/body of the release contains the change details.
+- (Note: `/finisher` handles this at commit time — proactive mid-session updates are welcome but not required)
 
 ## C# Code Conventions
 
 ### Comments
 - Use ONLY `//` style comments
 - NEVER use `/// <summary>` XML documentation
-- Add brief but intuitive desriptive comments for added methods, complex logic, or non-obvious decisions
+- Add brief but intuitive descriptive comments for added methods, complex logic, or non-obvious decisions
 
 ### Nullable Reference Types
 ```csharp
@@ -197,11 +125,9 @@ if (!AzureDbManager.CheckConnection(out string errorMessage))
 - CommonMark: blank line required before lists and after headers
 
 ## Edit Validation Rules
-- PercentEntry changes auto-adjust SchStart/SchFinish dates
-- SchStart: cannot be future, cannot be after SchFinish, cannot clear if PercentEntry > 0
-- SchFinish: requires PercentEntry = 100, cannot be before SchStart
-- Metadata errors (9 required fields) block sync operations
-- Required fields: WorkPackage, PhaseCode, CompType, PhaseCategory, ProjectID, SchedActNO, Description, ROCStep, RespParty
+- See `Utilities/ActivityValidator.cs` — single source of truth for Activity date/percent rules.
+- Metadata errors (9 required fields) block sync operations.
+- Required fields: WorkPackage, PhaseCode, CompType, PhaseCategory, ProjectID, SchedActNO, Description, ROCStep, RespParty.
 
 ## Performance Rules
 - NO Debug.WriteLine in loops
@@ -234,17 +160,21 @@ if (!AzureDbManager.CheckConnection(out string errorMessage))
 | `ActivityRepository.cs` | Activity CRUD operations |
 | `ScheduleRepository.cs` | Schedule data access |
 | `NumericHelper.cs` | 3 decimal place rounding for all double values |
+| `ActivityValidator.cs` | Single source of truth for Activity date/percent edit rules |
+| `UserSettingsRegistry.cs` | Central registry of user-facing UserSettings keys (labels, defaults, groupings) — `/finisher` syncs against this |
+| `LongRunningOps.cs` | App-close guard counter used by Submit Week, snapshot delete, ProgressLog upload, etc. |
 | `ProgressView.xaml.cs` | Progress module UI, edit validation |
 | `ScheduleView.xaml.cs` | Schedule module UI |
 | `ScheduleExcelImporter.cs` | P6 import logic |
 | `ScheduleExcelExporter.cs` | P6 export logic |
 | `ProjectCache.cs` | Valid ProjectID validation cache |
 | `EmailService.cs` | Azure Communication Services |
-| `FeedbackDialog.cs` | Feedback Board (Ideas/Bugs) with Azure sync |
-| `ManageFiltersDialog.cs` | User-defined filters dialog |
-| `ManageLayoutsDialog.cs` | Named grid layouts dialog |
-| `ManageSnapshotsDialog.cs` | Delete/Revert snapshot weeks |
-| `ProrateDialog.cs` | Prorate BudgetMHs across filtered activities |
+| `FeedbackDialog.xaml.cs` | Feedback Board (Ideas/Bugs) with Azure sync |
+| `ManageFiltersDialog.xaml.cs` | User-defined filters dialog |
+| `ManageLayoutsDialog.xaml.cs` | Named grid layouts dialog |
+| `ManageSnapshotsDialog.xaml.cs` | User-facing Delete/Revert snapshot weeks |
+| `AdminSnapshotsDialog.xaml.cs` | Admin snapshot ops — delete all, upload to ProgressLog |
+| `ProrateDialog.xaml.cs` | Prorate BudgetMHs across filtered activities |
 | `Credentials.cs` | Connection strings (gitignored) |
 | `WorkPackageView.xaml.cs` | Work Package module UI |
 | `TemplateRepository.cs` | Form/WP template CRUD |

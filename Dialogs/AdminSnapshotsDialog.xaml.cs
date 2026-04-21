@@ -412,7 +412,9 @@ namespace VANTAGE.Dialogs
             selectExprs.Add("@uploadTimestamp");
             insertCmd.Parameters.AddWithValue("@uploadTimestamp", uploadTimestamp);
 
-            insertCmd.CommandTimeout = 0;
+            // 1 hour ceiling — large INSERT...SELECT on 150k+ rows routinely exceeds 10 min.
+            // Not here to abort legitimate work, only to recover if the TCP socket drops.
+            insertCmd.CommandTimeout = 3600;
             string sql = $@"
                 INSERT INTO VANTAGE_global_ProgressLog ({string.Join(", ", insertCols)})
                 SELECT {string.Join(", ", selectExprs)}
@@ -427,59 +429,30 @@ namespace VANTAGE.Dialogs
             if (insertedCount == 0)
                 return 0;
 
-            // Insert tracking records into VMS_ProgressLogUploads
-            // One row per unique RespParty within each selected snapshot group
+            // Insert tracking records into VMS_ProgressLogUploads — one row per selected group.
+            // RespParty is written as empty string; the column is retained in schema for legacy
+            // rows but nothing in the app reads it (grid + REFRESH + DELETE paths all ignore it).
             try
             {
                 string uploadUtcDateStr = uploadTimestamp.ToString("M/d/yyyy h:mm:ss tt");
 
                 foreach (var group in selectedGroups)
                 {
-                    // Query distinct RespParty values and counts for this group's snapshots
-                    var respGroups = new List<(string RespParty, int Count)>();
-                    using (var respCmd = azureConn.CreateCommand())
-                    {
-                        respCmd.CommandTimeout = 0;
-                        respCmd.CommandText = @"
-                            SELECT RespParty, COUNT(*) as RecordCount
-                            FROM VMS_ProgressSnapshots
-                            WHERE AssignedTo = @username
-                              AND ProjectID = @projectId
-                              AND WeekEndDate = @weekEndDate
-                            GROUP BY RespParty";
-                        respCmd.Parameters.AddWithValue("@username", group.Username);
-                        respCmd.Parameters.AddWithValue("@projectId", group.ProjectID);
-                        respCmd.Parameters.AddWithValue("@weekEndDate", group.WeekEndDateStr);
-
-                        using (var respReader = respCmd.ExecuteReader())
-                        {
-                            while (respReader.Read())
-                            {
-                                string respParty = respReader.IsDBNull(0) ? "" : respReader.GetString(0);
-                                int count = respReader.GetInt32(1);
-                                respGroups.Add((respParty, count));
-                            }
-                        }
-                    }
-
-                    foreach (var (respParty, count) in respGroups)
-                    {
-                        using var trackCmd = azureConn.CreateCommand();
-                        trackCmd.CommandTimeout = 0;
-                        trackCmd.CommandText = @"
-                            INSERT INTO VMS_ProgressLogUploads
-                                (ProjectID, RespParty, WeekEndDate, UploadUtcDate, RecordCount, Username, UploadedBy)
-                            VALUES
-                                (@projectId, @respParty, @weekEndDate, @uploadUtcDate, @recordCount, @username, @uploadedBy)";
-                        trackCmd.Parameters.AddWithValue("@projectId", group.ProjectID);
-                        trackCmd.Parameters.AddWithValue("@respParty", respParty);
-                        trackCmd.Parameters.AddWithValue("@weekEndDate", group.WeekEndDateStr);
-                        trackCmd.Parameters.AddWithValue("@uploadUtcDate", uploadUtcDateStr);
-                        trackCmd.Parameters.AddWithValue("@recordCount", count);
-                        trackCmd.Parameters.AddWithValue("@username", group.Username);
-                        trackCmd.Parameters.AddWithValue("@uploadedBy", currentUser);
-                        trackCmd.ExecuteNonQuery();
-                    }
+                    using var trackCmd = azureConn.CreateCommand();
+                    trackCmd.CommandTimeout = 60;
+                    trackCmd.CommandText = @"
+                        INSERT INTO VMS_ProgressLogUploads
+                            (ProjectID, RespParty, WeekEndDate, UploadUtcDate, RecordCount, Username, UploadedBy)
+                        VALUES
+                            (@projectId, @respParty, @weekEndDate, @uploadUtcDate, @recordCount, @username, @uploadedBy)";
+                    trackCmd.Parameters.AddWithValue("@projectId", group.ProjectID);
+                    trackCmd.Parameters.AddWithValue("@respParty", "");
+                    trackCmd.Parameters.AddWithValue("@weekEndDate", group.WeekEndDateStr);
+                    trackCmd.Parameters.AddWithValue("@uploadUtcDate", uploadUtcDateStr);
+                    trackCmd.Parameters.AddWithValue("@recordCount", group.SnapshotCount);
+                    trackCmd.Parameters.AddWithValue("@username", group.Username);
+                    trackCmd.Parameters.AddWithValue("@uploadedBy", currentUser);
+                    trackCmd.ExecuteNonQuery();
                 }
             }
             catch (Exception ex)
@@ -492,7 +465,9 @@ namespace VANTAGE.Dialogs
             // Server-side update using same WHERE clause - no client-side ID tracking needed
             using (var updateCmd = azureConn.CreateCommand())
             {
-                updateCmd.CommandTimeout = 0;
+                // 1 hour ceiling — UPDATE fires TR_VMS_Activities_SyncVersion on 150k+ rows.
+                // This is the call that wedged on 2026-04-18 when the socket dropped mid-trigger.
+                updateCmd.CommandTimeout = 3600;
 
                 // Rebuild parameters for the subquery
                 int upIdx = 0;
@@ -570,7 +545,8 @@ namespace VANTAGE.Dialogs
                     foreach (var group in selectedGroups)
                     {
                         var cmd = azureConn.CreateCommand();
-                        cmd.CommandTimeout = 0;
+                        // 1 hour ceiling — a single group can be 150k+ rows.
+                        cmd.CommandTimeout = 3600;
                         cmd.CommandText = @"
                             DELETE FROM VMS_ProgressSnapshots
                             WHERE AssignedTo = @username
@@ -649,7 +625,8 @@ namespace VANTAGE.Dialogs
                     azureConn.Open();
 
                     var cmd = azureConn.CreateCommand();
-                    cmd.CommandTimeout = 0;
+                    // 1 hour ceiling — potentially millions of rows on a full nuke.
+                    cmd.CommandTimeout = 3600;
                     cmd.CommandText = "DELETE FROM VMS_ProgressSnapshots";
                     return cmd.ExecuteNonQuery();
                 });
