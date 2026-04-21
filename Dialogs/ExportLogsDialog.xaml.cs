@@ -11,7 +11,13 @@ namespace VANTAGE.Dialogs
 {
     public partial class ExportLogsDialog : Window
     {
-        private List<LogEntry> _logs = new();
+        // Flat-file-backed since schema v12. ReadLogFilesAsText returns the pre-filtered
+        // export text; the preview just shows counts.
+        private string _logText = string.Empty;
+        private int _totalEntries = 0;
+        private int _errorCount = 0;
+        private int _warningCount = 0;
+
         private List<UserItem> _users = new();
 
         public ExportLogsDialog()
@@ -66,17 +72,10 @@ namespace VANTAGE.Dialogs
             var (fromDate, toDate) = GetDateRange();
             var minLevel = GetMinLevel();
 
-            _logs = AppLogger.GetLogs(fromDate, toDate, minLevel);
+            _logText = AppLogger.ReadLogFilesAsText(fromDate, toDate, minLevel);
+            AppLogger.CountEntriesByLevel(_logText, out _totalEntries, out _errorCount, out _warningCount);
 
-            int errorCount = 0;
-            int warningCount = 0;
-            foreach (var log in _logs)
-            {
-                if (log.Level == "Error") errorCount++;
-                else if (log.Level == "Warning") warningCount++;
-            }
-
-            txtPreview.Text = $"{_logs.Count} log entries found ({errorCount} errors, {warningCount} warnings)";
+            txtPreview.Text = $"{_totalEntries} log entries found ({_errorCount} errors, {_warningCount} warnings)";
         }
 
         private (DateTime? from, DateTime? to) GetDateRange()
@@ -135,7 +134,7 @@ namespace VANTAGE.Dialogs
 
         private void BtnExport_Click(object sender, RoutedEventArgs e)
         {
-            if (_logs.Count == 0)
+            if (_totalEntries == 0)
             {
                 MessageBox.Show("No logs to export.", "Export Logs",
                     MessageBoxButton.OK, MessageBoxImage.None);
@@ -147,20 +146,19 @@ namespace VANTAGE.Dialogs
                 Title = "Export Logs",
                 Filter = "Text Files (*.txt)|*.txt|All Files (*.*)|*.*",
                 DefaultExt = ".txt",
-                FileName = $"MILESTONE_Logs_{DateTime.Now:yyyy-MM-dd_HHmmss}.txt"
+                FileName = $"VANTAGE_Logs_{DateTime.Now:yyyy-MM-dd_HHmmss}.txt"
             };
 
             if (dialog.ShowDialog() == true)
             {
                 try
                 {
-                    var content = AppLogger.ExportLogsToText(_logs);
-                    System.IO.File.WriteAllText(dialog.FileName, content);
+                    System.IO.File.WriteAllText(dialog.FileName, _logText);
 
-                    AppLogger.Info($"Exported {_logs.Count} logs to {dialog.FileName}",
+                    AppLogger.Info($"Exported {_totalEntries} logs to {dialog.FileName}",
                         "ExportLogsDialog.BtnExport_Click", App.CurrentUser?.Username ?? "Unknown");
 
-                    MessageBox.Show($"Exported {_logs.Count} log entries.", "Export Logs",
+                    MessageBox.Show($"Exported {_totalEntries} log entries.", "Export Logs",
                         MessageBoxButton.OK, MessageBoxImage.None);
 
                     DialogResult = true;
@@ -185,7 +183,7 @@ namespace VANTAGE.Dialogs
                 return;
             }
 
-            if (_logs.Count == 0)
+            if (_totalEntries == 0)
             {
                 MessageBox.Show("No logs to send.", "Send Email",
                     MessageBoxButton.OK, MessageBoxImage.None);
@@ -197,9 +195,8 @@ namespace VANTAGE.Dialogs
 
             try
             {
-                var content = AppLogger.ExportLogsToText(_logs);
-                var bytes = Encoding.UTF8.GetBytes(content);
-                var fileName = $"MILESTONE_Logs_{DateTime.Now:yyyy-MM-dd_HHmmss}.txt";
+                var bytes = Encoding.UTF8.GetBytes(_logText);
+                var fileName = $"VANTAGE_Logs_{DateTime.Now:yyyy-MM-dd_HHmmss}.txt";
 
                 var htmlBody = $@"
 <!DOCTYPE html>
@@ -216,19 +213,21 @@ namespace VANTAGE.Dialogs
 <body>
     <div class='container'>
         <div class='header'>
-            <h2 style='margin: 0;'>MILESTONE Log Export</h2>
+            <h2 style='margin: 0;'>VANTAGE: Milestone Log Export</h2>
         </div>
         <div class='content'>
             <p>Hello {user.FullName ?? user.Username},</p>
-            <p>Please find attached the MILESTONE application logs.</p>
+            <p>Please find attached the VANTAGE: Milestone application logs.</p>
             <p><strong>Log Summary:</strong></p>
             <ul>
-                <li>Total entries: {_logs.Count}</li>
+                <li>Total entries: {_totalEntries}</li>
+                <li>Errors: {_errorCount}</li>
+                <li>Warnings: {_warningCount}</li>
                 <li>Exported by: {App.CurrentUser?.Username ?? "Unknown"}</li>
                 <li>Date: {DateTime.Now:MMMM d, yyyy h:mm tt}</li>
             </ul>
             <div class='footer'>
-                <p>This is an automated message from MILESTONE.</p>
+                <p>This is an automated message from VANTAGE: Milestone.</p>
             </div>
         </div>
     </div>
@@ -238,7 +237,7 @@ namespace VANTAGE.Dialogs
                 bool success = await EmailService.SendEmailWithAttachmentAsync(
                     user.Email,
                     user.FullName ?? user.Username,
-                    $"MILESTONE Logs - {DateTime.Now:yyyy-MM-dd}",
+                    $"VANTAGE: Milestone Logs - {DateTime.Now:yyyy-MM-dd}",
                     htmlBody,
                     fileName,
                     bytes);

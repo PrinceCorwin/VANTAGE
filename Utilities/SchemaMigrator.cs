@@ -22,7 +22,7 @@ namespace VANTAGE.Utilities
         private const string SchemaVersionKey = "SchemaVersion";
 
         // Increment this when adding new migrations
-        public const int CurrentSchemaVersion = 11;
+        public const int CurrentSchemaVersion = 12;
 
         // Runs all pending migrations sequentially
         // progressCallback is invoked with status messages for UI updates
@@ -106,6 +106,9 @@ namespace VANTAGE.Utilities
                     break;
                 case 11:
                     Migration_v11_TrimLocalProgressSnapshots(connection);
+                    break;
+                case 12:
+                    Migration_v12_RemoveLogsTable(connection);
                     break;
                 default:
                     throw new ArgumentException($"Unknown migration version: {version}");
@@ -526,6 +529,21 @@ namespace VANTAGE.Utilities
             ";
             cmd.ExecuteNonQuery();
             AppLogger.Info("Trimmed local ProgressSnapshots to 12 columns", "SchemaMigrator.Migration_v11");
+        }
+
+        // v12: Drop the Logs table and its index. Replaced by flat-file-only logging —
+        // AppLogger no longer writes to SQLite. Flat files live in %LocalAppData%\VANTAGE\Logs
+        // and are the sole source for Export Logs. The Logs table was only ever created
+        // inline by AppLogger (never via SchemaMigrator), so its removal is straightforward.
+        private static void Migration_v12_RemoveLogsTable(SqliteConnection connection)
+        {
+            using var cmd = connection.CreateCommand();
+            cmd.CommandText = @"
+                DROP INDEX IF EXISTS IX_Logs_TimestampUtc;
+                DROP TABLE IF EXISTS Logs;
+            ";
+            cmd.ExecuteNonQuery();
+            AppLogger.Info("Dropped Logs table and IX_Logs_TimestampUtc index", "SchemaMigrator.Migration_v12");
         }
     }
 }
