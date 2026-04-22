@@ -1,7 +1,9 @@
 import json
+import re
 import boto3
 import io
 import logging
+from collections import Counter
 from datetime import datetime, timezone
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Border, Side
@@ -18,7 +20,8 @@ PROCESSING_BUCKET = "summit-takeoff-processing"
 def lambda_handler(event, context):
     """
     Aggregation Lambda — combines per-drawing extraction JSONs into Excel output.
-    Outputs 2 tabs: Material (all BOM items), Flagged (low/medium confidence items).
+    Outputs 3 tabs: Material (all BOM items), Flagged (low/medium confidence items),
+    Failed DWGs (drawings that failed extraction).
     All business logic (Labor generation, summary, rates) handled by app.
     """
     try:
@@ -46,12 +49,17 @@ def lambda_handler(event, context):
         if not extractions:
             raise ValueError("No valid extractions to aggregate")
         
+        # Consensus backfill: use batch-wide majority to fill missing class_rating values
+        consensus_backfill_class_rating(extractions)
+        
         material_rows = build_material_rows(extractions)
         flagged_rows = build_flagged_rows(extractions)
+        failed_rows = load_failure_markers(batch_id)
         
-        logger.info(f"Built {len(material_rows)} material rows, {len(flagged_rows)} flagged rows")
+        logger.info(f"Built {len(material_rows)} material rows, {len(flagged_rows)} flagged rows, "
+                    f"{len(failed_rows)} failed drawings")
         
-        excel_bytes = generate_excel(material_rows, flagged_rows)
+        excel_bytes = generate_excel(material_rows, flagged_rows, failed_rows)
         
         excel_key = f"batches/{batch_id}/output/takeoff_{batch_id}.xlsx"
         s3.put_object(
@@ -71,6 +79,7 @@ def lambda_handler(event, context):
             "total_drawings": len(extractions),
             "total_material_rows": len(material_rows),
             "total_flagged_rows": len(flagged_rows),
+            "total_failed_drawings": len(failed_rows),
             "processing_time_ms": elapsed_ms
         }
         
@@ -81,6 +90,63 @@ def lambda_handler(event, context):
             "error": str(e)
         }
 
+
+# ---------------------------------------------------------------------------
+# Consensus backfill
+# ---------------------------------------------------------------------------
+
+def consensus_backfill_class_rating(extractions):
+    """
+    Batch-wide consensus backfill for class_rating.
+    Groups all BOM items by raw description. For each description group,
+    if any items have class_rating and others don't, the majority value
+    is used to fill the gaps. Mutates bom_items in place.
+    """
+    # Pass 1: collect all class_rating values grouped by raw description
+    desc_ratings = {}
+    for extraction in extractions:
+        for item in extraction.get("bom_items", []):
+            desc = item.get("description", "")
+            if not desc:
+                continue
+            if desc not in desc_ratings:
+                desc_ratings[desc] = []
+            rating = item.get("class_rating")
+            if rating:
+                desc_ratings[desc].append(str(rating))
+
+    # Build majority lookup — only for descriptions that have at least one rating
+    majority_lookup = {}
+    for desc, ratings in desc_ratings.items():
+        if not ratings:
+            continue
+        counter = Counter(ratings)
+        winner, count = counter.most_common(1)[0]
+        majority_lookup[desc] = winner
+        # Log conflicts where the model returned different values for the same description
+        if len(counter) > 1:
+            logger.warning(f"CLASS_RATING_CONFLICT: Description '{desc[:80]}...' has conflicting values: "
+                           f"{dict(counter)} — using majority '{winner}'")
+
+    # Pass 2: backfill missing class_rating values
+    backfill_count = 0
+    for extraction in extractions:
+        for item in extraction.get("bom_items", []):
+            if item.get("class_rating"):
+                continue
+            desc = item.get("description", "")
+            if desc in majority_lookup:
+                item["class_rating"] = majority_lookup[desc]
+                backfill_count += 1
+
+    if backfill_count > 0:
+        logger.info(f"CLASS_RATING_BACKFILL: Filled {backfill_count} missing values "
+                    f"across {len(majority_lookup)} unique descriptions using batch consensus")
+
+
+# ---------------------------------------------------------------------------
+# Extraction loading
+# ---------------------------------------------------------------------------
 
 def load_batch_extraction_keys(batch_id):
     prefix = f"batches/{batch_id}/extractions/"
@@ -118,6 +184,47 @@ def load_extraction(key):
         return None
 
 
+# ---------------------------------------------------------------------------
+# Failure marker loading
+# ---------------------------------------------------------------------------
+
+def load_failure_markers(batch_id):
+    """
+    Load failure markers written by the extraction Lambda for drawings that failed.
+    Returns list of dicts suitable for writing to the Failed DWGs tab.
+    Safe to return [] if prefix is empty or doesn't exist.
+    """
+    prefix = f"batches/{batch_id}/failures/"
+    paginator = s3.get_paginator("list_objects_v2")
+    failure_rows = []
+    
+    try:
+        for page in paginator.paginate(Bucket=PROCESSING_BUCKET, Prefix=prefix):
+            for obj in page.get("Contents", []):
+                key = obj["Key"]
+                if not key.endswith(".json"):
+                    continue
+                try:
+                    response = s3.get_object(Bucket=PROCESSING_BUCKET, Key=key)
+                    data = json.loads(response["Body"].read().decode("utf-8"))
+                    failure_rows.append({
+                        "drawing_name": data.get("drawing_name", ""),
+                        "source_key": data.get("source_key", ""),
+                        "error": data.get("error", ""),
+                        "timestamp": data.get("timestamp", ""),
+                    })
+                except Exception as e:
+                    logger.error(f"Failed to load failure marker {key}: {e}")
+    except Exception as e:
+        logger.warning(f"Could not list failure markers at {prefix}: {e}")
+    
+    return failure_rows
+
+
+# ---------------------------------------------------------------------------
+# Data cleaning
+# ---------------------------------------------------------------------------
+
 def clean_quantity(qty):
     """
     Convert quantity to decimal number, stripping ' and " marks.
@@ -136,85 +243,114 @@ def clean_quantity(qty):
         return qty  # Return original if can't parse
 
 
+def normalize_size(raw_size):
+    """Convert raw size string from drawing to decimal format.
+    Handles fractions, mixed numbers, and reducing sizes with X separator.
+    Examples: "3/4" -> "0.75", "1-1/2" -> "1.5", "3/4X1/2" -> "0.75x0.5"
+    """
+    if not raw_size:
+        return raw_size
+
+    s = str(raw_size).strip()
+
+    # Handle reducing sizes — split on X/x with optional spaces
+    if re.search(r'[xX]', s):
+        parts = re.split(r'\s*[xX]\s*', s, maxsplit=1)
+        if len(parts) == 2:
+            return "x".join(normalize_single_size(p.strip()) for p in parts)
+
+    return normalize_single_size(s)
+
+
+def normalize_single_size(s):
+    """Convert a single size value (whole, fraction, or mixed) to decimal string."""
+    s = s.strip()
+
+    # Already a plain number — pass through
+    try:
+        float(s)
+        return s
+    except ValueError:
+        pass
+
+    # Mixed number: 1-1/2, 1 1/2, 2-3/4, 2 3/4, 10-3/4, etc.
+    mixed_match = re.match(r'^(\d+)[-\s](\d+)/(\d+)$', s)
+    if mixed_match:
+        whole = int(mixed_match.group(1))
+        num = int(mixed_match.group(2))
+        den = int(mixed_match.group(3))
+        if den != 0:
+            result = whole + num / den
+            return format_decimal(result)
+
+    # Pure fraction: 3/4, 1/2, etc.
+    frac_match = re.match(r'^(\d+)/(\d+)$', s)
+    if frac_match:
+        num = int(frac_match.group(1))
+        den = int(frac_match.group(2))
+        if den != 0:
+            return format_decimal(num / den)
+
+    return s
+
+
+def format_decimal(value):
+    """Format a float to clean decimal string — no trailing zeros."""
+    formatted = f"{value:.4f}".rstrip('0').rstrip('.')
+    return formatted
+
+
+# ---------------------------------------------------------------------------
+# Row builders
+# ---------------------------------------------------------------------------
+
 def build_material_rows(extractions):
     """
     Build material rows — one row per BOM item.
-    ShopField: 1 = shop, 2 = field
-    Rule: BU connections OR zero-connection items = field (2), else shop (1)
-    Includes both concatenated description and raw_description.
+    ShopField hardcoded to 1. C# app assigns real Shop/Field values post-download.
     """
     rows = []
-    
+
     for extraction in extractions:
         drawing_number = extraction.get("drawing_number", "UNKNOWN")
-        title_block = extraction.get("title_block", {})
+        title_block = {k.rstrip(":").strip(): v for k, v in extraction.get("title_block", {}).items()}
         bom_items = extraction.get("bom_items", [])
-        
-        # Get pipe spec from title block
-        pipe_spec = (
-            title_block.get("Pipe Spec") or
-            title_block.get("PIPE SPEC") or
-            title_block.get("Piping Spec") or
-            title_block.get("PIPING SPEC") or
-            title_block.get("Spec") or
-            title_block.get("SPEC") or
-            ""
-        )
         
         for item in bom_items:
             conn_type = item.get("connection_type") or ""
             conn_qty = item.get("connection_qty", 0) or 0
-            
-            if conn_qty == 0:
-                shop_field = 2
-            elif "BU" in str(conn_type).upper():
-                shop_field = 2
-            else:
-                shop_field = 1
+            component = item.get("component") or ""
+
+            shop_field = 1  # C# post-processing assigns real values
             
             # Build concatenated description
             # Format: size IN - component - thickness - class - pipe spec - material - length
             size = item.get("size") or ""
             thickness = item.get("thickness") or ""
-            material = item.get("material") or ""
+            matl_grp = item.get("matl_grp") or ""
             component = item.get("component") or ""
             commodity_code = item.get("commodity_code") or ""
             class_rating = item.get("class_rating") or ""
             length = item.get("length") or ""
-            
-            desc_parts = []
-            if size:
-                desc_parts.append(f"{size} IN")
-            if component:
-                desc_parts.append(component)
-            if thickness:
-                desc_parts.append(thickness)
-            if class_rating:
-                desc_parts.append(class_rating)
-            if pipe_spec:
-                desc_parts.append(pipe_spec)
-            if material:
-                desc_parts.append(material)
-            if length:
-                desc_parts.append(length)
-            
-            concat_description = " - ".join(desc_parts)
-            
+
+            normalized_conn_size = normalize_size(item.get("connection_size"))
+            normalized_size = normalize_size(size)
+
             row = {
                 "drawing_number": drawing_number,
                 "item_id": item.get("item_id"),
                 "component": component,
-                "size": size,
-                "description": concat_description,
+                "size": normalized_size,
                 "raw_description": item.get("description"),
                 "quantity": clean_quantity(item.get("quantity")),
                 "connection_qty": conn_qty,
                 "connection_type": conn_type,
-                "connection_size": item.get("connection_size"),
+                "connection_size": normalized_conn_size,
                 "thickness": thickness,
                 "class_rating": item.get("class_rating"),
                 "length": item.get("length"),
-                "material": material,
+                "matl_grp": item.get("matl_grp"),
+                "matl_grp_desc": item.get("matl_grp_desc"),
                 "commodity_code": commodity_code,
                 "shop_field": shop_field,
                 "confidence": item.get("confidence"),
@@ -231,7 +367,7 @@ def build_flagged_rows(extractions):
     
     for extraction in extractions:
         drawing_number = extraction.get("drawing_number", "UNKNOWN")
-        title_block = extraction.get("title_block", {})
+        title_block = {k.rstrip(":").strip(): v for k, v in extraction.get("title_block", {}).items()}
         bom_items = extraction.get("bom_items", [])
         
         for item in bom_items:
@@ -243,12 +379,13 @@ def build_flagged_rows(extractions):
             row = {
                 "drawing_number": drawing_number,
                 "item_id": item.get("item_id"),
-                "size": item.get("size"),
+                "size": normalize_size(item.get("size")),
                 "description": item.get("description"),
                 "component": item.get("component"),
                 "connection_qty": item.get("connection_qty"),
                 "connection_type": item.get("connection_type"),
-                "material": item.get("material"),
+                "matl_grp": item.get("matl_grp"),
+                "matl_grp_desc": item.get("matl_grp_desc"),
                 "thickness": item.get("thickness"),
                 "class_rating": item.get("class_rating"),
                 "confidence": confidence,
@@ -256,20 +393,18 @@ def build_flagged_rows(extractions):
                 "override_component": "",
                 "override_connection_qty": "",
                 "override_connection_type": "",
-                "override_notes": "",
-                "pipe_spec": (
-                    title_block.get("Pipe Spec") or
-                    title_block.get("PIPE SPEC") or
-                    title_block.get("Piping Spec") or
-                    ""
-                )
+                "override_notes": ""
             }
             rows.append(row)
     
     return rows
 
 
-def generate_excel(material_rows, flagged_rows):
+# ---------------------------------------------------------------------------
+# Excel generation
+# ---------------------------------------------------------------------------
+
+def generate_excel(material_rows, flagged_rows, failed_rows):
     wb = Workbook()
     
     header_font = Font(bold=True)
@@ -287,6 +422,9 @@ def generate_excel(material_rows, flagged_rows):
     
     ws_flagged = wb.create_sheet("Flagged")
     write_flagged_tab(ws_flagged, flagged_rows, header_font, header_fill, thin_border)
+    
+    ws_failed = wb.create_sheet("Failed DWGs")
+    write_failed_tab(ws_failed, failed_rows, header_font, header_fill, thin_border)
     
     buffer = io.BytesIO()
     wb.save(buffer)
@@ -311,7 +449,6 @@ def write_material_tab(ws, material_rows, header_font, header_fill, thin_border)
         ("item_id", "Item ID"),
         ("component", "Component"),
         ("size", "Size"),
-        ("description", "Description"),
         ("raw_description", "Raw Description"),
         ("quantity", "Quantity"),
         ("connection_qty", "Connection Qty"),
@@ -320,7 +457,8 @@ def write_material_tab(ws, material_rows, header_font, header_fill, thin_border)
         ("thickness", "Thickness"),
         ("class_rating", "Class Rating"),
         ("length", "Length"),
-        ("material", "Material"),
+        ("matl_grp", "Matl_Grp"),
+        ("matl_grp_desc", "Matl_Grp_Desc"),
         ("commodity_code", "Commodity Code"),
         ("shop_field", "ShopField"),
         ("confidence", "Confidence"),
@@ -366,10 +504,10 @@ def write_flagged_tab(ws, flagged_rows, header_font, header_fill, thin_border):
         ("component", "Component"),
         ("connection_qty", "Connection Qty"),
         ("connection_type", "Connection Type"),
-        ("material", "Material"),
+        ("matl_grp", "Matl_Grp"),
+        ("matl_grp_desc", "Matl_Grp_Desc"),
         ("thickness", "Thickness"),
         ("class_rating", "Class Rating"),
-        ("pipe_spec", "Pipe Spec"),
         ("confidence", "Confidence"),
         ("flag", "Flag Reason"),
         ("override_component", "Override Component"),
@@ -401,6 +539,42 @@ def write_flagged_tab(ws, flagged_rows, header_font, header_fill, thin_border):
             if val_len > max_len:
                 max_len = val_len
         width = min(max(max_len + 2, 10), 50)
+        ws.column_dimensions[get_column_letter(col_idx)].width = width
+    
+    ws.freeze_panes = "A2"
+
+
+def write_failed_tab(ws, failed_rows, header_font, header_fill, thin_border):
+    if not failed_rows:
+        ws.cell(row=1, column=1, value="No failed drawings — all drawings extracted successfully")
+        return
+    
+    columns = [
+        ("drawing_name", "Drawing Name"),
+        ("source_key", "Source Key"),
+        ("error", "Error"),
+        ("timestamp", "Timestamp (UTC)"),
+    ]
+    
+    for col_idx, (key, label) in enumerate(columns, start=1):
+        cell = ws.cell(row=1, column=col_idx, value=label)
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.border = thin_border
+    
+    for row_idx, row_data in enumerate(failed_rows, start=2):
+        for col_idx, (key, label) in enumerate(columns, start=1):
+            value = row_data.get(key, "")
+            cell = ws.cell(row=row_idx, column=col_idx, value=value)
+            cell.border = thin_border
+    
+    for col_idx, (key, label) in enumerate(columns, start=1):
+        max_len = len(label)
+        for row_data in failed_rows[:100]:
+            val_len = len(str(row_data.get(key, "")))
+            if val_len > max_len:
+                max_len = val_len
+        width = min(max(max_len + 2, 10), 80)
         ws.column_dimensions[get_column_letter(col_idx)].width = width
     
     ws.freeze_panes = "A2"

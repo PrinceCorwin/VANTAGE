@@ -149,9 +149,9 @@ namespace VANTAGE.Services.AI
         // Main entry point - processes the downloaded Excel file in place
         // Returns counts of missed makeups and missed rates for caller use
         // Optional projectRateCache provides per-project rate overrides
+        // The "Failed DWGs" tab is written by the Aggregation Lambda and preserved here untouched.
         public static (int MissedMakeups, int MissedRates) GenerateLaborAndSummary(
-            string excelPath, Dictionary<string, (double MH, string Unit)>? projectRateCache = null,
-            List<string>? failedDrawings = null)
+            string excelPath, Dictionary<string, (double MH, string Unit)>? projectRateCache = null)
         {
             try
             {
@@ -244,16 +244,7 @@ namespace VANTAGE.Services.AI
                     workbook.Worksheets.Delete("No Conns");
                 }
 
-                // Step J: Write or remove Failed DWGs tab
-                if (failedDrawings != null && failedDrawings.Count > 0)
-                {
-                    WriteFailedDrawingsTab(workbook, failedDrawings);
-                    AppLogger.Info($"Logged {failedDrawings.Count} failed drawing(s)", "TakeoffPostProcessor");
-                }
-                else if (workbook.TryGetWorksheet("Failed DWGs", out _))
-                {
-                    workbook.Worksheets.Delete("Failed DWGs");
-                }
+                // Failed DWGs tab is written by the Aggregation Lambda — we do not touch it here.
 
                 // Step K: Reorder tabs
                 ReorderTabs(workbook);
@@ -1609,28 +1600,6 @@ namespace VANTAGE.Services.AI
                 ws.Cell(row, 9).Value = GetString(m, "Connection Type");
                 ws.Cell(row, 10).Value = GetString(m, "Raw Description");
             }
-
-            ws.Columns().AdjustToContents(1, 100);
-            ws.SheetView.FreezeRows(1);
-        }
-
-        // Write Failed DWGs tab — drawings that failed AI extraction
-        private static void WriteFailedDrawingsTab(XLWorkbook workbook, List<string> failedDrawings)
-        {
-            if (workbook.TryGetWorksheet("Failed DWGs", out _))
-                workbook.Worksheets.Delete("Failed DWGs");
-
-            var ws = workbook.Worksheets.Add("Failed DWGs");
-
-            // Header
-            ws.Cell(1, 1).Value = "Drawing File";
-            var headerRange = ws.Range(1, 1, 1, 1);
-            headerRange.Style.Font.Bold = true;
-            headerRange.Style.Fill.BackgroundColor = XLColor.FromHtml("#F4CCCC");
-
-            // Data rows
-            for (int i = 0; i < failedDrawings.Count; i++)
-                ws.Cell(i + 2, 1).Value = failedDrawings[i];
 
             ws.Columns().AdjustToContents(1, 100);
             ws.SheetView.FreezeRows(1);

@@ -126,6 +126,16 @@ Permanent record of architectural choices, design rationale, and implementation 
 **Why:** Users configure column mappings in their import profile — ShopField might map to `UDF1`, `ShopField`, or be unmapped entirely. Hardcoding to `activity.UDF1` made ROC splits silently fail if the mapping didn't match. Reading from raw data makes the feature work regardless of mapping configuration. Also added text value support ("Shop"/"Field") alongside numeric ("1"/"2").
 **Date:** April 2026
 
+### Failed DWGs Tab Owned by Aggregation Lambda, Not the App
+**Decision:** The "Failed DWGs" tab in the batch Excel is written exclusively by the AWS Aggregation Lambda from S3 failure markers (one `failures/{drawing}.json` per failed drawing, emitted by the extraction Lambda's exception handler and by its zero-BOM-row guard). The WPF app does not create, overwrite, or delete this tab on any path — not on initial download, not on Recalc Excel, not on re-download from Previous Batches. `TakeoffPostProcessor.GenerateLaborAndSummary` was modified to drop its `failedDrawings` parameter and remove the write/delete branch entirely; the tab flows through untouched on every post-processing pass.
+**Why:** The prior app-side `WriteFailedDrawingsTab` helper wrote a 1-column tab from an in-memory list (`_failedDrawings`) captured during SFN polling. The new Lambda schema carries 4 columns with diagnostic depth the app can't reconstruct: Drawing Name, Source Key (full S3 path), Error (the actual exception message or "Zero BOM items extracted"), and a UTC timestamp. Reading failures from S3 markers also means re-runs and Recalc Excel present a stable, full history rather than "whatever we captured in RAM this session." Keeping the write responsibility in one place (Aggregation Lambda) eliminates the class of bug where a null/empty `failedDrawings` parameter silently destroyed the existing tab.
+**Date:** April 2026
+
+### Failed Drawing Counts Come from the Excel, Not the Step Functions Output
+**Decision:** The WPF polling loop no longer attempts to parse per-drawing counts from the Step Functions execution output. It only checks the top-level `status` field for aggregation-level failure. The actual success/failure counts are computed after download by counting the data rows in the batch Excel's "Failed DWGs" tab (`LastRowUsed.RowNumber() - 1` when populated, `0` when the tab is missing or carries the Aggregation Lambda's "No failed drawings…" sentinel in cell A1). `succeeded = totalSubmitted - failedDrawings`.
+**Why:** The state machine's `BatchComplete` Pass state only forwards `status` / `batch_id` / `excel_path` — it strips the Aggregation Lambda's rich return payload (`total_drawings`, `total_failed_drawings`, etc.). Both naive fixes have downsides: modifying the Pass state requires AWS Console coordination and still leaves the app dependent on SFN output shape; reading the Excel leverages data the app already has after download and works no matter how the Pass state is later reconfigured. Tradeoff: the "N succeeded, M failed" status message now appears after the Excel save completes (not before), which added a small UX change — preliminary "Completed in {elapsed} — downloading results..." status bridges the gap.
+**Date:** April 2026
+
 ---
 
 ## VP vs Vtg Report

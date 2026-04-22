@@ -9,13 +9,23 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 s3 = boto3.client("s3")
-bedrock = boto3.client("bedrock-runtime", region_name="us-east-1")
+from botocore.config import Config
+
+bedrock = boto3.client(
+    "bedrock-runtime",
+    region_name="us-east-1",
+    config=Config(
+        retries={"mode": "adaptive", "max_attempts": 10},
+        read_timeout=300
+    )
+)
 
 CONFIG_BUCKET = "summit-takeoff-config"
 PROCESSING_BUCKET = "summit-takeoff-processing"
 PROMPT_KEY = "extraction_prompt.txt"
 REF_TABLE_KEY = "CompRefTable.xlsx"
-MODEL_ID = "us.anthropic.claude-sonnet-4-20250514-v1:0"
+MAT_REF_TABLE_KEY = "MatRefTable.xlsx"
+MODEL_ID = "us.anthropic.claude-sonnet-4-5-20250929-v1:0"
 MAX_TOKENS = 16384
 
 
@@ -29,15 +39,33 @@ def lambda_handler(event, context):
             drawing_bucket = event.get("bucket", "summit-takeoff-drawings")
             drawing_key = event["drawing_key"]
             batch_id = event.get("batch_id")
+            rev_bubble_only = event.get("rev_bubble_only", False)
 
             logger.info(f"Processing drawing: s3://{drawing_bucket}/{drawing_key}")
             logger.info(f"Using config: {config_path}")
+            if rev_bubble_only:
+                logger.info("Rev bubble filter ENABLED — extracting only revision-clouded items")
 
             # Load config, prompt, and reference table
             config = load_client_config(config_path)
             prompt_text = load_text_from_s3(CONFIG_BUCKET, PROMPT_KEY)
             ref_table_text = load_reference_table(CONFIG_BUCKET, REF_TABLE_KEY)
-            full_prompt = prompt_text + "\n" + ref_table_text
+            mat_ref_text = load_material_reference_table(CONFIG_BUCKET, MAT_REF_TABLE_KEY)
+            full_prompt = prompt_text + "\n" + ref_table_text + "\n\n## MATERIAL REFERENCE TABLE\n\nMatlGrp|GRP_DESC|Alternate Text\n" + mat_ref_text
+
+            # Rev bubble filter — prepend to system prompt so it overrides default "extract all" behavior
+            if rev_bubble_only:
+                rev_bubble_instruction = (
+                    "CRITICAL OVERRIDE: Only extract BOM line items that are inside or partially inside "
+                    "revision bubbles (cloud-shaped or scalloped annotation borders drawn around "
+                    "changed/revised items). If ANY part of a BOM row is touched by a revision bubble — "
+                    "even if only one cell such as the quantity, description, or size is inside the bubble — "
+                    "extract the ENTIRE row. "
+                    "Skip all BOM items that are completely outside all revision bubbles. "
+                    "If no revision bubbles are visible in the BOM area, return an empty bom_items array "
+                    "with bom_row_count of 0.\n\n"
+                )
+                full_prompt = rev_bubble_instruction + full_prompt
 
             # Inject BOM column info into prompt
             column_hint = build_column_hint(config)
@@ -103,7 +131,8 @@ def lambda_handler(event, context):
 
             prompt_text = load_text_from_s3(CONFIG_BUCKET, PROMPT_KEY)
             ref_table_text = load_reference_table(CONFIG_BUCKET, REF_TABLE_KEY)
-            full_prompt = prompt_text + "\n" + ref_table_text
+            mat_ref_text = load_material_reference_table(CONFIG_BUCKET, MAT_REF_TABLE_KEY)
+            full_prompt = prompt_text + "\n" + ref_table_text + "\n\n## MATERIAL REFERENCE TABLE\n\nMatlGrp|GRP_DESC|Alternate Text\n" + mat_ref_text
 
             image_bytes, media_type = load_drawing_as_image(drawing_bucket, drawing_key)
 
@@ -115,6 +144,39 @@ def lambda_handler(event, context):
         extraction_json = parse_extraction_response(raw_response)
         logger.info(f"Extraction complete: {extraction_json.get('bom_row_count', '?')} BOM items "
                     f"in {processing_time_ms}ms")
+
+        # Treat zero-BOM-item extractions as failures so the drawing surfaces on Failed DWGs tab.
+        # Covers: blank crop regions, misaligned configs, rev-bubble runs with no rev items,
+        # drawings where Bedrock couldn't read the BOM.
+        bom_row_count = extraction_json.get("bom_row_count", 0)
+        if bom_row_count == 0 and batch_id:
+            drawing_name = os.path.splitext(os.path.basename(drawing_key))[0]
+            failure_key = f"batches/{batch_id}/failures/{drawing_name}.json"
+            extraction_notes = extraction_json.get("extraction_notes", "")
+            error_msg = "Zero BOM items extracted"
+            if extraction_notes:
+                error_msg += f" — {extraction_notes[:500]}"
+            failure_body = {
+                "source_key": drawing_key,
+                "drawing_name": drawing_name,
+                "status": "failed",
+                "error": error_msg,
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+            }
+            s3.put_object(
+                Bucket=PROCESSING_BUCKET,
+                Key=failure_key,
+                Body=json.dumps(failure_body, indent=2),
+                ContentType="application/json",
+            )
+            logger.info(f"Zero-BOM failure marker written to s3://{PROCESSING_BUCKET}/{failure_key}")
+
+            return {
+                "statusCode": 200,
+                "status": "failed",
+                "error": error_msg,
+                "source_key": drawing_key,
+            }
 
         # Write result to processing bucket
         drawing_name = os.path.splitext(os.path.basename(drawing_key))[0]
@@ -161,13 +223,41 @@ def lambda_handler(event, context):
 
     except Exception as e:
         logger.error(f"Extraction failed: {str(e)}", exc_info=True)
+        
+        batch_id = event.get("batch_id")
+        drawing_key = event.get("drawing_key", "unknown")
+        error_message = str(e)
+        
+        # Write failure marker to S3 so aggregation can surface failed drawings
+        if batch_id and drawing_key != "unknown":
+            try:
+                drawing_name = os.path.splitext(os.path.basename(drawing_key))[0]
+                failure_key = f"batches/{batch_id}/failures/{drawing_name}.json"
+                failure_body = {
+                    "source_key": drawing_key,
+                    "drawing_name": drawing_name,
+                    "status": "failed",
+                    "error": error_message,
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                }
+                s3.put_object(
+                    Bucket=PROCESSING_BUCKET,
+                    Key=failure_key,
+                    Body=json.dumps(failure_body, indent=2),
+                    ContentType="application/json",
+                )
+                logger.info(f"Failure marker written to s3://{PROCESSING_BUCKET}/{failure_key}")
+            except Exception as marker_error:
+                # Never let marker-writing failure mask the real error
+                logger.error(f"Failed to write failure marker: {marker_error}")
+        
         error_result = {
             "statusCode": 500,
-            "error": str(e),
+            "error": error_message,
         }
-        if event.get("batch_id"):
+        if batch_id:
             error_result["status"] = "failed"
-            error_result["source_key"] = event.get("drawing_key", "unknown")
+            error_result["source_key"] = drawing_key
         return error_result
 
 
@@ -241,6 +331,18 @@ def render_pdf_page(pdf_bytes, filename, dpi=300):
     pix = page.get_pixmap(matrix=matrix, alpha=False)
 
     logger.info(f"PDF rendered: {pix.width}x{pix.height} pixels at {dpi} DPI")
+
+    # Memory guard: if rendered image is very large, re-render at lower DPI
+    estimated_bytes = pix.width * pix.height * 3
+    if estimated_bytes > 200_000_000:
+        logger.warning(f"Rendered image estimated at {estimated_bytes // 1_000_000}MB, re-rendering at 200 DPI")
+        doc.close()
+        doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+        page = doc[0]
+        zoom = 200 / 72
+        matrix = fitz.Matrix(zoom, zoom)
+        pix = page.get_pixmap(matrix=matrix, alpha=False)
+        logger.info(f"Re-rendered at 200 DPI: {pix.width}x{pix.height} pixels")
 
     # Convert to PIL Image for cropping operations
     img = Image.frombytes("RGB", (pix.width, pix.height), pix.samples)
@@ -529,6 +631,30 @@ def load_reference_table(bucket, key):
     logger.info(f"Reference table loaded: {len(lines)} rows")
     return "\n".join(lines)
 
+def load_material_reference_table(bucket, key):
+    """Load MatRefTable.xlsx from S3, convert to pipe-delimited text for prompt injection."""
+    import openpyxl
+
+    response = s3.get_object(Bucket=bucket, Key=key)
+    xlsx_bytes = response["Body"].read()
+    wb = openpyxl.load_workbook(io.BytesIO(xlsx_bytes), read_only=True, data_only=True)
+
+    ws = wb["MatRef"]
+
+    lines = []
+    for row in ws.iter_rows(min_row=2, values_only=True):
+        matl_grp = str(row[0] or "").strip()
+        grp_desc = str(row[1] or "").strip()
+        alt_text = str(row[2] or "").strip()
+
+        if not matl_grp:
+            continue
+
+        lines.append(f"{matl_grp}|{grp_desc}|{alt_text}")
+
+    wb.close()
+    logger.info(f"Material reference table loaded: {len(lines)} rows")
+    return "\n".join(lines)
 
 def load_drawing_as_image(bucket, key):
     """Legacy: load drawing file and return image bytes + media type."""

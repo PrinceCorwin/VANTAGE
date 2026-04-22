@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
+using ClosedXML.Excel;
 using Microsoft.Win32;
 using VANTAGE.Data;
 using VANTAGE.Dialogs;
@@ -25,7 +26,6 @@ namespace VANTAGE.Views
         private TakeoffService? _service;
         private bool _isLoadingConfigs;
         private CancellationTokenSource? _processCts;
-        private List<string> _failedDrawings = new();
 
         // Dropdown data for unit rates and ROC sets
         private List<(string ProjectID, string SetName)> _rateSets = new();
@@ -201,11 +201,10 @@ namespace VANTAGE.Views
 
                     if (status == "SUCCEEDED")
                     {
-                        // Parse the output to get per-drawing results
+                        // Step Functions output only carries status/batch_id/excel_path (no counts).
+                        // The Failed DWGs tab in the batch Excel is authoritative — counts come from it
+                        // after download. Here we only check whether the aggregation Lambda itself failed.
                         bool appFailed = false;
-                        int succeededCount = 0;
-                        int failedCount = _selectedFiles.Count;
-
                         if (!string.IsNullOrEmpty(output))
                         {
                             try
@@ -214,31 +213,6 @@ namespace VANTAGE.Views
                                 if (check.RootElement.TryGetProperty("status", out var appStatus)
                                     && appStatus.GetString()?.Equals("failed", StringComparison.OrdinalIgnoreCase) == true)
                                     appFailed = true;
-
-                                // Count per-drawing results from extraction_results array
-                                _failedDrawings.Clear();
-                                if (check.RootElement.TryGetProperty("extraction_results", out var results))
-                                {
-                                    foreach (var item in results.EnumerateArray())
-                                    {
-                                        if (item.TryGetProperty("status", out var s)
-                                            && s.GetString()?.Equals("success", StringComparison.OrdinalIgnoreCase) == true)
-                                        {
-                                            succeededCount++;
-                                        }
-                                        else
-                                        {
-                                            // Extract filename from drawing_key (e.g. "steve/config/filename.pdf" -> "filename.pdf")
-                                            string drawingName = "Unknown";
-                                            if (item.TryGetProperty("drawing_key", out var dk))
-                                                drawingName = System.IO.Path.GetFileName(dk.GetString() ?? "Unknown");
-                                            _failedDrawings.Add(drawingName);
-                                        }
-                                    }
-                                }
-
-                                failedCount = _selectedFiles.Count - succeededCount;
-                                if (failedCount < 0) failedCount = 0;
                             }
                             catch { /* parse error — show download anyway */ }
                         }
@@ -249,13 +223,8 @@ namespace VANTAGE.Views
                         }
                         else
                         {
-                            string resultSummary = failedCount > 0
-                                ? $"Completed in {elapsed} — {succeededCount} succeeded, {failedCount} failed ({_selectedFiles.Count} total)"
-                                : $"Completed in {elapsed} — all {_selectedFiles.Count} drawing(s) succeeded";
-                            SetStatus(resultSummary);
-
-                            // Auto-download the Excel
-                            await DownloadBatchExcelAsync(_currentBatchId);
+                            SetStatus($"Completed in {elapsed} — downloading results...");
+                            await DownloadBatchExcelAsync(_currentBatchId, totalSubmitted: _selectedFiles.Count, elapsed: elapsed);
                         }
                     }
                     else
@@ -333,8 +302,11 @@ namespace VANTAGE.Views
             _processCts.Cancel();
         }
 
-        // Download batch Excel, run post-processor, and open the file
-        private async System.Threading.Tasks.Task DownloadBatchExcelAsync(string batchId, string? batchName = null)
+        // Download batch Excel, run post-processor, and open the file.
+        // When totalSubmitted is provided (initial download path), the final status reports
+        // per-drawing success/failure counts from the Failed DWGs tab.
+        private async System.Threading.Tasks.Task DownloadBatchExcelAsync(
+            string batchId, string? batchName = null, int? totalSubmitted = null, string? elapsed = null)
         {
             if (_service == null) return;
 
@@ -363,11 +335,28 @@ namespace VANTAGE.Views
 
                 // Load project rate cache if selected
                 var projectRateCache = await GetSelectedProjectRateCacheAsync();
-                // Pass null for failedDrawings to preserve existing Failed DWGs tab from S3
                 var (missedMakeups, missedRates) = await System.Threading.Tasks.Task.Run(() =>
-                    TakeoffPostProcessor.GenerateLaborAndSummary(dialog.FileName, projectRateCache, failedDrawings: null));
+                    TakeoffPostProcessor.GenerateLaborAndSummary(dialog.FileName, projectRateCache));
 
-                AppendStatus($"Downloaded to {dialog.FileName}");
+                int failedDrawings = CountFailedDwgRows(dialog.FileName);
+
+                if (totalSubmitted.HasValue)
+                {
+                    int succeeded = Math.Max(0, totalSubmitted.Value - failedDrawings);
+                    string prefix = !string.IsNullOrEmpty(elapsed) ? $"Completed in {elapsed} — " : "";
+                    string summary = failedDrawings > 0
+                        ? $"{prefix}{succeeded} succeeded, {failedDrawings} failed ({totalSubmitted.Value} total)"
+                        : $"{prefix}all {totalSubmitted.Value} drawing(s) succeeded";
+                    SetStatus(summary);
+                    AppendStatus($"Downloaded to {dialog.FileName}");
+                }
+                else
+                {
+                    string summary = failedDrawings > 0
+                        ? $"Downloaded to {dialog.FileName} — {failedDrawings} failed drawing(s)"
+                        : $"Downloaded to {dialog.FileName}";
+                    SetStatus(summary);
+                }
 
                 // Send missed data to admins if checkbox checked and there are misses
                 if (chkSendMissedToAdmin.IsChecked == true && (missedMakeups > 0 || missedRates > 0))
@@ -384,6 +373,34 @@ namespace VANTAGE.Views
             {
                 AppLogger.Error(ex, "TakeoffView.DownloadBatchExcelAsync");
                 SetStatus($"Download error: {ex.Message}");
+            }
+        }
+
+        // Count data rows in the batch Excel's "Failed DWGs" tab.
+        // Returns 0 if the tab is missing or contains only the aggregation Lambda's
+        // "No failed drawings..." sentinel in cell A1.
+        private static int CountFailedDwgRows(string excelPath)
+        {
+            try
+            {
+                using var workbook = new XLWorkbook(excelPath);
+                if (!workbook.TryGetWorksheet("Failed DWGs", out var ws))
+                    return 0;
+
+                var lastRow = ws.LastRowUsed();
+                if (lastRow == null) return 0;
+
+                string cellA1 = ws.Cell(1, 1).GetString() ?? "";
+                if (cellA1.StartsWith("No failed drawings", StringComparison.OrdinalIgnoreCase))
+                    return 0;
+
+                // Header row + N data rows — LastRowUsed includes the header, so subtract 1.
+                return Math.Max(0, lastRow.RowNumber() - 1);
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "TakeoffView.CountFailedDwgRows");
+                return 0;
             }
         }
 
@@ -504,7 +521,7 @@ namespace VANTAGE.Views
                 var projectRateCache = await GetSelectedProjectRateCacheAsync();
 
                 var (missedMakeups, missedRates) = await System.Threading.Tasks.Task.Run(() =>
-                    TakeoffPostProcessor.GenerateLaborAndSummary(filePath, projectRateCache, failedDrawings: null));
+                    TakeoffPostProcessor.GenerateLaborAndSummary(filePath, projectRateCache));
 
                 SetStatus($"Recalculated: {missedMakeups} missed makeups, {missedRates} missed rates");
 
