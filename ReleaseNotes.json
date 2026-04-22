@@ -1,6 +1,15 @@
 {
   "releases": [
     {
+      "version": "26.2.14",
+      "date": "2026-04-22",
+      "highlights": [
+        "Fix — AI Takeoff status now reports accurate succeeded / failed counts; earlier builds reported every drawing as failed after recent AWS aggregation changes",
+        "Improvement — Failed DWGs tab in the takeoff Excel now has four columns (Drawing Name, Source Key, Error message, UTC timestamp) written by the AWS aggregation step, replacing the old single-column list",
+        "Improvement — Failed DWGs tab is preserved when you run Recalc Excel or re-download a previous batch (previously it could be lost on those passes)"
+      ]
+    },
+    {
       "version": "26.2.13",
       "date": "2026-04-22",
       "highlights": [

@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.2.13",
-  "releaseDate": "2026-04-22T07:51:05Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.2.13/VANTAGE-26.2.13.zip",
-  "zipSizeBytes": 151211540,
-  "sha256": "BFAB917B04A15688F73CA5B289379DBDD7EAF6D531BC3F14BC31ADB6C1F6E33F",
-  "releaseNotes": "Non-blocking snapshot dialogs, draggable busy dialog, app-close guard, Progress Log upload fixes, flat-file logging."
+  "currentVersion": "26.2.14",
+  "releaseDate": "2026-04-22T16:00:25Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.2.14/VANTAGE-26.2.14.zip",
+  "zipSizeBytes": 151211893,
+  "sha256": "28721344A122B569C7EFD8257534152325811732DA6473039820D84DA8D4FE8C",
+  "releaseNotes": "AI Takeoff: accurate succeeded/failed counts, richer Failed DWGs tab, preserved across Recalc and re-download."
 }
