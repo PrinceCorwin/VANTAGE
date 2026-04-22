@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.2.12",
-  "releaseDate": "2026-04-19T11:12:44Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.2.12/VANTAGE-26.2.12.zip",
-  "zipSizeBytes": 151209533,
-  "sha256": "5A23BF230C34D69F31B8871B7112DADD9FE6F6B5787804944C453B80B79B93FB",
-  "releaseNotes": "Fix: Delete Row(s) on large selections no longer hangs (chunked + batched). Fix: Submit Week queries now have a 60s timeout."
+  "currentVersion": "26.2.13",
+  "releaseDate": "2026-04-22T07:51:05Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.2.13/VANTAGE-26.2.13.zip",
+  "zipSizeBytes": 151211540,
+  "sha256": "BFAB917B04A15688F73CA5B289379DBDD7EAF6D531BC3F14BC31ADB6C1F6E33F",
+  "releaseNotes": "Non-blocking snapshot dialogs, draggable busy dialog, app-close guard, Progress Log upload fixes, flat-file logging."
 }

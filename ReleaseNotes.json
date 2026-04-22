@@ -1,6 +1,19 @@
 {
   "releases": [
     {
+      "version": "26.2.13",
+      "date": "2026-04-22",
+      "highlights": [
+        "Improvement — Manage Snapshots and Admin Manage Snapshots dialogs are now non-blocking; the main window stays usable while deletes and uploads run in the background",
+        "Improvement — Busy dialogs are now click-draggable so you can move them aside to see the grid underneath",
+        "Improvement — App warns before closing if a critical operation (Submit Week, snapshot delete, Progress Log upload) is still running",
+        "Improvement — Submit Week locks the grid only during the brief snapshot capture; edits made afterward correctly belong to next week",
+        "Improvement — Progress Log uploads tuned to handle 150k+ row batches without timing out",
+        "Fix — Progress Log uploads now preserve the original record owner in the UserID field (format: 'uploader|assignedto'), so admins can tell whose records were uploaded even when multiple users submit in the same batch",
+        "Change — Log exports now read from the daily log files in %LocalAppData%\\VANTAGE\\Logs (same dialog, same filters); exported filename prefix changed from MILESTONE_Logs_ to VANTAGE_Logs_"
+      ]
+    },
+    {
       "version": "26.2.12",
       "date": "2026-04-19",
       "highlights": [
