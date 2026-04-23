@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Text.RegularExpressions;
 using ClosedXML.Excel;
 using VANTAGE.Utilities;
 
@@ -18,6 +20,9 @@ namespace VANTAGE.Services.AI
 
         // Accumulates material items that had no connections to explode (reset each run)
         private static List<Dictionary<string, object?>> _noConns = new();
+
+        // Accumulates material items whose Size contains an unbalanced 'X' (reset each run)
+        private static List<Dictionary<string, object?>> _malformedSizes = new();
 
         // Columns to exclude from Labor tab (material-only fields)
         private static readonly HashSet<string> ExcludeFromLabor = new(StringComparer.OrdinalIgnoreCase)
@@ -161,10 +166,17 @@ namespace VANTAGE.Services.AI
                 _missedMakeups = new List<MissedMakeup>();
                 _missedRates = new List<MissedRate>();
                 _noConns = new List<Dictionary<string, object?>>();
+                _malformedSizes = new List<Dictionary<string, object?>>();
 
                 // Step A: Read Material tab
                 var materialRows = ReadMaterialTab(workbook);
                 AppLogger.Info($"Read {materialRows.Count} material rows", "TakeoffPostProcessor");
+
+                // Step A1: Normalize Size values (fractions, mixed numbers, unicode fractions → decimals)
+                // so all downstream consumers (TEE normalization, makeup lookup, ParseDualSize) read clean
+                // decimal form. Lambda passes raw-as-printed values; conversion happens here.
+                NormalizeMaterialSizes(materialRows);
+                WriteMaterialSizes(workbook, materialRows);
 
                 // Step A2: Normalize TEE sizes (convert single sizes like "4" to "4x4")
                 NormalizeTeeSizes(materialRows);
@@ -250,6 +262,17 @@ namespace VANTAGE.Services.AI
                     workbook.Worksheets.Delete("No Conns");
                 }
 
+                // Step J: Write or remove Malformed Sizes tab
+                if (_malformedSizes.Count > 0)
+                {
+                    WriteMalformedSizesTab(workbook);
+                    AppLogger.Info($"Logged {_malformedSizes.Count} material items with malformed sizes", "TakeoffPostProcessor");
+                }
+                else if (workbook.TryGetWorksheet("Malformed Sizes", out _))
+                {
+                    workbook.Worksheets.Delete("Malformed Sizes");
+                }
+
                 // Failed DWGs tab is written by the Aggregation Lambda — we do not touch it here.
 
                 // Step K: Reorder tabs
@@ -271,7 +294,7 @@ namespace VANTAGE.Services.AI
         // Reorder tabs: Summary, Material, Labor, Flagged
         private static void ReorderTabs(XLWorkbook workbook)
         {
-            var desiredOrder = new[] { "Summary", "Material", "Labor", "Flagged", "Failed DWGs", "Missed Makeups", "Missed Rates", "No Conns" };
+            var desiredOrder = new[] { "Summary", "Material", "Labor", "Flagged", "Failed DWGs", "Malformed Sizes", "Missed Makeups", "Missed Rates", "No Conns" };
             int position = 1;
 
             foreach (var name in desiredOrder)
@@ -420,6 +443,167 @@ namespace VANTAGE.Services.AI
             {
                 ws.Cell(i + 2, shopFieldCol).Value = GetInt(materialRows[i], "ShopField");
             }
+        }
+
+        // Unicode vulgar fractions mapped to ASCII fraction equivalents (with leading space so they
+        // attach as the fractional part of a mixed number — "1½" → "1 1/2").
+        private static readonly Dictionary<string, string> UnicodeFractions = new()
+        {
+            { "½", " 1/2" }, { "¼", " 1/4" }, { "¾", " 3/4" },
+            { "⅛", " 1/8" }, { "⅜", " 3/8" }, { "⅝", " 5/8" }, { "⅞", " 7/8" },
+            { "⅓", " 1/3" }, { "⅔", " 2/3" },
+        };
+
+        private static readonly Regex SizeMixedNumberRegex = new(@"^(\d+)[-\s](\d+)/(\d+)$", RegexOptions.Compiled);
+        private static readonly Regex SizeFractionRegex = new(@"^(\d+)/(\d+)$", RegexOptions.Compiled);
+        private static readonly Regex SizeReducerSplitRegex = new(@"\s*[xX]\s*", RegexOptions.Compiled);
+        private static readonly Regex SizeWhitespaceAroundHyphenRegex = new(@"\s*-\s*", RegexOptions.Compiled);
+        private static readonly Regex SizeWhitespaceCollapseRegex = new(@"\s+", RegexOptions.Compiled);
+
+        // Step A1: Normalize Size values in place. Lambda passes raw-as-printed values from the model
+        // (whole numbers, fractions like "3/4", mixed numbers like "1 1/2" or "1-1/2", unicode fractions
+        // like "1½", reducer formats like "2 1/2X1/2"). Convert each to decimal form ("0.75", "1.5",
+        // "2.5x0.5") so every downstream consumer reads a single canonical form. On failure, leave the
+        // raw value so the malformed-size guard in ExplodeMaterialRow can surface it.
+        private static void NormalizeMaterialSizes(List<Dictionary<string, object?>> materialRows)
+        {
+            foreach (var row in materialRows)
+            {
+                string raw = GetString(row, "Size");
+                if (string.IsNullOrEmpty(raw)) continue;
+
+                if (TryNormalizeSize(raw, out string normalized))
+                {
+                    row["Size"] = normalized;
+                }
+                else
+                {
+                    string dwg = GetString(row, "Drawing Number");
+                    string item = GetString(row, "Item ID");
+                    AppLogger.Info(
+                        $"SIZE_NORMALIZATION_FAILED: Drawing={dwg}, Item={item}, raw='{raw}' — left as-is for malformed-size guard",
+                        "TakeoffPostProcessor.NormalizeMaterialSizes");
+                }
+            }
+        }
+
+        // Write normalized Size values back to the Excel Material tab so the saved workbook
+        // shows clean decimal values. Mirrors WriteMaterialQuantities. Failed conversions leave
+        // the in-memory value as raw text — write that text back too so what the user sees in
+        // Excel matches what the post-processor saw.
+        private static void WriteMaterialSizes(XLWorkbook workbook, List<Dictionary<string, object?>> materialRows)
+        {
+            if (!workbook.TryGetWorksheet("Material", out var ws)) return;
+
+            int sizeCol = 0;
+            int lastCol = ws.RangeUsed()?.LastColumn().ColumnNumber() ?? 0;
+            for (int col = 1; col <= lastCol; col++)
+            {
+                if (ws.Cell(1, col).GetString().Trim().Equals("Size", StringComparison.OrdinalIgnoreCase))
+                {
+                    sizeCol = col;
+                    break;
+                }
+            }
+            if (sizeCol == 0) return;
+
+            for (int i = 0; i < materialRows.Count; i++)
+            {
+                string val = GetString(materialRows[i], "Size");
+                ws.Cell(i + 2, sizeCol).Value = val;
+            }
+        }
+
+        // Convert a raw size string to decimal form. Returns true on success; on failure, normalized
+        // is set to the original raw input so the caller can preserve it for malformed-size handling.
+        // Reducer format (containing X/x) requires BOTH halves to normalize independently.
+        private static bool TryNormalizeSize(string raw, out string normalized)
+        {
+            normalized = raw ?? "";
+            if (string.IsNullOrWhiteSpace(raw)) return true;
+
+            string s = raw.Trim();
+
+            // Reducer split on X/x (with optional surrounding whitespace).
+            // Must produce exactly 2 parts; "5x5x5" or "x5" or "5x" all fail this test.
+            if (s.IndexOf('x', StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                var parts = SizeReducerSplitRegex.Split(s);
+                if (parts.Length != 2) return false;
+                if (!TryNormalizeSingleSize(parts[0], out string left)) return false;
+                if (!TryNormalizeSingleSize(parts[1], out string right)) return false;
+                normalized = $"{left}x{right}";
+                return true;
+            }
+
+            return TryNormalizeSingleSize(s, out normalized);
+        }
+
+        // Normalize a single size token (no X). Handles whole numbers, decimals, fractions ("3/4"),
+        // mixed numbers ("1 1/2", "1-1/2"), unicode fractions ("1½"), and en/em dashes ("1 – 1/2").
+        // Returns false when the input doesn't match any recognized form.
+        private static bool TryNormalizeSingleSize(string input, out string result)
+        {
+            result = input ?? "";
+            if (string.IsNullOrWhiteSpace(input)) return false;
+
+            string s = input.Trim().Trim('\'', '"').Trim();
+
+            // Unicode vulgar fractions → ASCII (e.g., "1½" → "1 1/2")
+            foreach (var (uni, asciiFrac) in UnicodeFractions)
+                s = s.Replace(uni, asciiFrac);
+
+            // En/em dashes → ASCII hyphen
+            s = s.Replace('\u2013', '-').Replace('\u2014', '-');
+
+            // Collapse whitespace around hyphen: "1 - 1/2" → "1-1/2"
+            s = SizeWhitespaceAroundHyphenRegex.Replace(s, "-");
+
+            // Collapse any remaining whitespace runs to a single space
+            s = SizeWhitespaceCollapseRegex.Replace(s, " ").Trim();
+
+            // Already a plain number?
+            if (double.TryParse(s, NumberStyles.Float, CultureInfo.InvariantCulture, out double plain))
+            {
+                result = FormatSizeDecimal(plain);
+                return true;
+            }
+
+            // Mixed number: "1 1/2" or "1-1/2"
+            var mixed = SizeMixedNumberRegex.Match(s);
+            if (mixed.Success)
+            {
+                int whole = int.Parse(mixed.Groups[1].Value, CultureInfo.InvariantCulture);
+                int num = int.Parse(mixed.Groups[2].Value, CultureInfo.InvariantCulture);
+                int den = int.Parse(mixed.Groups[3].Value, CultureInfo.InvariantCulture);
+                if (den != 0)
+                {
+                    result = FormatSizeDecimal(whole + (double)num / den);
+                    return true;
+                }
+            }
+
+            // Pure fraction: "3/4"
+            var frac = SizeFractionRegex.Match(s);
+            if (frac.Success)
+            {
+                int num = int.Parse(frac.Groups[1].Value, CultureInfo.InvariantCulture);
+                int den = int.Parse(frac.Groups[2].Value, CultureInfo.InvariantCulture);
+                if (den != 0)
+                {
+                    result = FormatSizeDecimal((double)num / den);
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        // Format a normalized size value: up to 4 decimal places, trailing zeros trimmed.
+        // Mirrors the Lambda's format_decimal so existing Material tab values are preserved on re-runs.
+        private static string FormatSizeDecimal(double value)
+        {
+            return value.ToString("0.####", CultureInfo.InvariantCulture);
         }
 
         // Step A4b: Normalize Quantity values in place.
@@ -901,6 +1085,16 @@ namespace VANTAGE.Services.AI
             string commodityCode = GetString(mat, "Commodity Code");
             string rawDesc = GetString(mat, "Raw Description");
 
+            // Malformed size guard: if size contains X but ParseDualSize can't make sense of it,
+            // the row's connection sizes are unrecoverable. Skip labor and surface to Malformed Sizes tab.
+            if (!string.IsNullOrEmpty(sizeStr)
+                && sizeStr.IndexOf('x', StringComparison.OrdinalIgnoreCase) >= 0
+                && FittingMakeupService.ParseDualSize(sizeStr) == null)
+            {
+                _malformedSizes.Add(mat);
+                return result;
+            }
+
             // Parse dual size if present (e.g., "4x2" → larger=4, smaller=2)
             var dualSize = FittingMakeupService.ParseDualSize(sizeStr);
             double largerSize = dualSize?.Larger ?? FittingMakeupService.GetDouble(mat, "Size");
@@ -1250,7 +1444,7 @@ namespace VANTAGE.Services.AI
             // Define column order (explicit columns first, then dynamic title block fields)
             var explicitColumns = new List<string>
             {
-                "Drawing Number", "Component", "Size", "Connection Size",
+                "Drawing Number", "Component", "Size",
                 "Thickness", "Class Rating", "Matl_Grp", "Matl_Grp_Desc",
                 "Commodity Code", "Description", "Quantity",
                 "ShopField", "ROCStep", "Confidence", "Flag", "RateSheet", "RollupMult", "MatlMult", "CutAdd", "BevelAdd", "BudgetMHs", "UOM", "RateSource"
@@ -1337,6 +1531,7 @@ namespace VANTAGE.Services.AI
             WriteSummaryRow(ws, row++, "Flagged Items", lowConf + medConf);
             WriteSummaryRow(ws, row++, "Low Confidence", lowConf);
             WriteSummaryRow(ws, row++, "Medium Confidence", medConf);
+            WriteSummaryRow(ws, row++, "Malformed Sizes", _malformedSizes.Count);
             row++;
 
             // Section: COMPONENTS BY TYPE (from Material tab)
@@ -1382,7 +1577,7 @@ namespace VANTAGE.Services.AI
             ws.Cell(row, 3).Style.Font.Bold = true;
             row++;
 
-            var bySize = connectionRows.GroupBy(r => GetString(r, "Connection Size"))
+            var bySize = connectionRows.GroupBy(r => GetString(r, "Size"))
                                        .OrderBy(g => ParseSizeForSort(g.Key));
             foreach (var g in bySize)
             {
@@ -1613,6 +1808,46 @@ namespace VANTAGE.Services.AI
                 ws.Cell(row, 5).Value = m.ClassRating;
                 ws.Cell(row, 6).Value = m.LookupKey;
                 ws.Cell(row, 7).Value = m.Description;
+            }
+
+            ws.Columns().AdjustToContents(1, 100);
+            ws.SheetView.FreezeRows(1);
+        }
+
+        // Write Malformed Sizes tab — material items whose Size contains an unbalanced 'X'.
+        // Labor generation was skipped for these rows; the user must verify against the drawing.
+        private static void WriteMalformedSizesTab(XLWorkbook workbook)
+        {
+            if (workbook.TryGetWorksheet("Malformed Sizes", out _))
+                workbook.Worksheets.Delete("Malformed Sizes");
+
+            var ws = workbook.Worksheets.Add("Malformed Sizes");
+
+            var columns = new[] { "Drawing Number", "Item ID", "Component", "Size", "Quantity", "Connection Type", "Raw Description", "Reason" };
+
+            // Header
+            for (int i = 0; i < columns.Length; i++)
+                ws.Cell(1, i + 1).Value = columns[i];
+
+            var headerRange = ws.Range(1, 1, 1, columns.Length);
+            headerRange.Style.Font.Bold = true;
+            headerRange.Style.Fill.BackgroundColor = XLColor.FromHtml("#F8CBAD");
+
+            const string reason = "Size contains unbalanced 'X' — labor generation skipped. Verify against drawing.";
+
+            // Data rows
+            for (int i = 0; i < _malformedSizes.Count; i++)
+            {
+                var m = _malformedSizes[i];
+                int row = i + 2;
+                ws.Cell(row, 1).Value = GetString(m, "Drawing Number");
+                ws.Cell(row, 2).Value = GetString(m, "Item ID");
+                ws.Cell(row, 3).Value = GetString(m, "Component");
+                ws.Cell(row, 4).Value = GetString(m, "Size");
+                ws.Cell(row, 5).Value = GetString(m, "Quantity");
+                ws.Cell(row, 6).Value = GetString(m, "Connection Type");
+                ws.Cell(row, 7).Value = GetString(m, "Raw Description");
+                ws.Cell(row, 8).Value = reason;
             }
 
             ws.Columns().AdjustToContents(1, 100);

@@ -1,5 +1,4 @@
 import json
-import re
 import boto3
 import io
 import logging
@@ -238,95 +237,6 @@ def clean_quantity(qty):
     return qty
 
 
-def normalize_size(raw_size):
-    """Convert raw size string from drawing to decimal format.
-    Handles fractions, mixed numbers, and reducing sizes with X separator.
-    Examples: "3/4" -> "0.75", "1-1/2" -> "1.5", "3/4X1/2" -> "0.75x0.5"
-    """
-    if not raw_size:
-        return raw_size
-
-    s = str(raw_size).strip()
-
-    # Handle reducing sizes — split on X/x with optional spaces
-    if re.search(r'[xX]', s):
-        parts = re.split(r'\s*[xX]\s*', s, maxsplit=1)
-        if len(parts) == 2:
-            return "x".join(normalize_single_size(p.strip()) for p in parts)
-
-    return normalize_single_size(s)
-
-
-def normalize_single_size(s):
-    """Convert a single size value (whole, fraction, or mixed) to decimal string.
-
-    Pre-normalizes common output variants (unicode fractions, en/em dashes,
-    stray whitespace, trailing inch marks) before matching so we don't silently
-    pass non-numeric strings through to the C# app (which would treat them as 0).
-    Logs a warning whenever normalization fails so drift in Claude's output is
-    visible in CloudWatch.
-    """
-    original = s
-    s = s.strip().strip('"').strip("'").strip()
-
-    # Unicode fractions → ASCII equivalents (e.g., "1½" → "1 1/2")
-    unicode_fractions = {
-        '½': ' 1/2', '¼': ' 1/4', '¾': ' 3/4',
-        '⅛': ' 1/8', '⅜': ' 3/8', '⅝': ' 5/8', '⅞': ' 7/8',
-        '⅓': ' 1/3', '⅔': ' 2/3',
-    }
-    for uni, ascii_frac in unicode_fractions.items():
-        s = s.replace(uni, ascii_frac)
-
-    # En-dash / em-dash → ASCII hyphen
-    s = s.replace('–', '-').replace('—', '-')
-
-    # Collapse whitespace around a hyphen: "1 - 1/2" → "1-1/2"
-    s = re.sub(r'\s*-\s*', '-', s)
-
-    # Collapse any remaining whitespace runs to a single space
-    s = re.sub(r'\s+', ' ', s).strip()
-
-    # Already a plain number — pass through
-    try:
-        float(s)
-        return s
-    except ValueError:
-        pass
-
-    # Mixed number: 1-1/2, 1 1/2, 2-3/4, 2 3/4, 10-3/4, etc.
-    mixed_match = re.match(r'^(\d+)[-\s](\d+)/(\d+)$', s)
-    if mixed_match:
-        whole = int(mixed_match.group(1))
-        num = int(mixed_match.group(2))
-        den = int(mixed_match.group(3))
-        if den != 0:
-            result = whole + num / den
-            return format_decimal(result)
-
-    # Pure fraction: 3/4, 1/2, etc.
-    frac_match = re.match(r'^(\d+)/(\d+)$', s)
-    if frac_match:
-        num = int(frac_match.group(1))
-        den = int(frac_match.group(2))
-        if den != 0:
-            return format_decimal(num / den)
-
-    # Conversion failed — surface it so drift is catchable in CloudWatch
-    # instead of silently becoming 0 in the C# app.
-    logger.warning(
-        f"SIZE_NORMALIZATION_FAILED: Could not convert size value to decimal. "
-        f"Original='{original}', post-normalize='{s}'. Passing through as-is."
-    )
-    return s
-
-
-def format_decimal(value):
-    """Format a float to clean decimal string — no trailing zeros."""
-    formatted = f"{value:.4f}".rstrip('0').rstrip('.')
-    return formatted
-
-
 # ---------------------------------------------------------------------------
 # Row builders
 # ---------------------------------------------------------------------------
@@ -352,19 +262,15 @@ def build_material_rows(extractions):
             commodity_code = item.get("commodity_code") or ""
             shop_field = 1  # C# post-processing assigns real values
 
-            normalized_conn_size = normalize_size(item.get("connection_size"))
-            normalized_size = normalize_size(size)
-
             row = {
                 "drawing_number": drawing_number,
                 "item_id": item.get("item_id"),
                 "component": component,
-                "size": normalized_size,
+                "size": size,
                 "raw_description": item.get("description"),
                 "quantity": clean_quantity(item.get("quantity")),
                 "connection_qty": conn_qty,
                 "connection_type": conn_type,
-                "connection_size": normalized_conn_size,
                 "thickness": thickness,
                 "class_rating": item.get("class_rating"),
                 "length": item.get("length"),
@@ -398,7 +304,7 @@ def build_flagged_rows(extractions):
             row = {
                 "drawing_number": drawing_number,
                 "item_id": item.get("item_id"),
-                "size": normalize_size(item.get("size")),
+                "size": item.get("size"),
                 "description": item.get("description"),
                 "component": item.get("component"),
                 "connection_qty": item.get("connection_qty"),
@@ -468,7 +374,6 @@ def write_material_tab(ws, material_rows, header_font, header_fill, thin_border)
         ("quantity", "Quantity"),
         ("connection_qty", "Connection Qty"),
         ("connection_type", "Connection Type"),
-        ("connection_size", "Connection Size"),
         ("thickness", "Thickness"),
         ("class_rating", "Class Rating"),
         ("length", "Length"),
