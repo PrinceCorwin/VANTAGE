@@ -11,62 +11,106 @@ Find the title block area(s) at the bottom of the drawing. Extract EVERY field y
 
 Find the BOM table on the drawing. It may be labeled "Bill of Materials", "BOM", "Material List", "Bill of Materials - Erection", or similar. The BOM is a table with columns that typically include: a row identifier (Mark, Item, No., etc.), a size column, a description column, and a quantity column. Column names vary by client — identify them by their content, not their labels.
 
+### CRITICAL — QTY COLUMN AND WRAPPED DESCRIPTIONS:
+
+Each BOM row has ONE quantity value in the QTY column. Read that cell as the quantity field — even when the value looks like text (e.g. "17'0\"", "27'10\"", "5'-6\""). These are lengths, not descriptions.
+
+Descriptions often wrap to multiple visual lines. When they do:
+- Combine all wrap lines into ONE description string for ONE BOM row.
+- The QTY column cell for that row may appear next to ANY of the wrapped lines — top, middle, or bottom. Wherever it sits, it still belongs to that single row.
+- Do not create a second BOM row from wrap lines.
+- Do not copy the QTY column text into the description field.
+
+The description field describes WHAT the item is (material, spec, grade, schedule). It never contains quantity values like "17'0\"", "8 EA", or similar.
+
 For each BOM row, extract:
 - item_id: The row identifier number (whatever the first column is called)
-- size: The nominal pipe size (may include reducing sizes like "30x2" or "6x4")
+- size: Return the nominal pipe size EXACTLY as printed on the drawing. Do NOT convert fractions to decimals — return "3/4", "1-1/2", "3/4X1/2" exactly as shown. Downstream code handles all conversion. For reducing components, preserve the full "runXoutlet" format as printed (e.g., "6X4", "3/4X1/2", "2-1/2X3/4"). If the drawing shows "4X4", return "4X4" — do NOT simplify equal sizes.
 - description: The FULL text description exactly as written on the drawing. If a description wraps to multiple lines, combine them into one string.
-- quantity: The quantity value (may be a count like "2" or a length like "41.3'")
-- thickness: The schedule/thickness designation extracted from the description (e.g., "SCH 10S", "SCH 40", "SCH 80S", "SCH STD", "SCH 160", "SCH XXS"). Look for "SCH", "SCHEDULE", or "S/" followed by the thickness class. Also look for fractional thickness values such as "1/16" THK", "1/8" THK", "3/32" THK" — these are common on gaskets. If no schedule/thickness is present in the description, return null.
-- class_rating: The pressure class or rating extracted from the description. Look for patterns such as "150#", "#150", "CL150", "CL 150", "300#", "2000#", "2500#", "CL2000", "CLASS 150", etc. The "#" symbol may appear before or after the number. "CL" is short for "Class". Extract just the numeric value as a string (e.g., "150", "300", "2000"). All flanges should have a class rating. Most valves also have a class rating (e.g., "CL150 RF" means class 150). If no class/rating is found, return null. Note: class_rating and thickness are independent fields — a component can have both (e.g., "FLG WN 150# RF STL 40 BORE" has class_rating "150" AND thickness "40").
+- quantity: Return the quantity EXACTLY as printed on the drawing. Do NOT convert units — downstream code handles all conversion.
+  - For COUNT items (elbows, tees, valves, flanges, fittings, bolts, gaskets, etc.): return the integer as printed (e.g., 2, 5, 12).
+  - For LENGTH items (pipe, tubing, cable tray, hose): return the value with its unit markers preserved exactly as shown (e.g., "27'10\"", "10'-6\"", "10 FT 2 IN", "5.5 ft", "41.3'", "6\"", "10'").
+  - Do NOT do arithmetic or conversion on the drawing's value. Echo what you see.
+  - If the quantity is illegible or unreadable, return the raw text as best you can read it and set confidence to "low" with a flag explaining why.
+- thickness: The schedule or wall thickness designation, cleaned and normalized:
+  - Extract the core thickness value only. Strip all noise words — do not include SCH, SCHEDULE, S/, SC, WT, WALL, or WEIGHT in the returned value.
+  - Return only the standardized abbreviation: STD, XS, XXS, 10, 10S, 20, 30, 40, 40S, 60, 80, 80S, 100, 120, 140, 160, or a numeric value.
+  - Examples: "STD WT" → "STD", "SCH 40" → "40", "SCH 10S" → "10S", "XS WT" → "XS", "SCH STD" → "STD", "SC 80" → "80"
+  - For GSKT and other items with fractional thickness (e.g., "1/8 THK", "3/32 THK", "1/16 THK"): convert to decimal inches — "1/8" → "0.125", "3/32" → "0.094", "1/16" → "0.0625". Return the decimal value only, no units.
+  - If no schedule or thickness is present in the description, return null.
+- class_rating: CRITICAL FIELD — extract with extra care for valves and flanges. The pressure class or rating extracted from the description. Search the ENTIRE description thoroughly for any of these patterns: "150#", "#150", "CL150", "CL 150", "300#", "1000#", "2000#", "CL2000", "CLASS 150", "3000 PSI", "1000# CWP", etc. The "#" symbol may appear before or after the number. "CL" is short for "Class". "CWP" (Cold Working Pressure) after "#" confirms this is a class rating. "PSI" after a number also indicates a class rating (e.g., "3000 PSI" → "3000"). Extract just the numeric value as a string (e.g., "150", "300", "1000", "2000"). ALL flanges MUST have a class rating — if you cannot find one, set confidence to "low" and flag it. ALL valves (BALL, GATE, GLOBE, CHECK, PLUG, BUTTERFLY, etc.) almost always have a class rating — look carefully for "#" followed or preceded by a number anywhere in the description. If no class/rating is found, return null. Note: class_rating and thickness are independent fields — a component can have both (e.g., "FLG WN 150# RF STL 40 BORE" has class_rating "150" AND thickness "40", and "BALL 1000# CWP BW" has class_rating "1000").
 - length: The length of the item extracted from the description. Common on bolts and studs. Look for patterns such as "3 in. Length", "3.1/4 IN LG", "6 IN. LG", "4-1/2 IN LG", or a length value at the end of a bolt/stud description. Convert fractions to decimals (e.g., "3.1/4" = "3.25", "4-1/2" = "4.5"). Return as a string with units normalized to inches (e.g., "3", "3.25", "6"). If no length is present, return null.
 - commodity_code: The client's material code or commodity code from the dedicated column (if present). This may be labeled "CMDTY CODE", "COMMODITY CODE", "CLASS/ITEMCODE", "MATERIAL CODE", or similar. Extract the exact value from this column. If no commodity code column exists, return null.
+- matl_grp: The material group code matched from the Material Reference Table (e.g., "CS", "SS", "CR1", "HAST"). See Material Group Matching Rule. Return null if no match is found.
+- matl_grp_desc: The material group description from the Material Reference Table (e.g., "CARBON STL", "STAINLESS"). See Material Group Matching Rule. Return null if no match is found.
 
 ## COMPONENT MATCHING
 
 For each BOM line item, match the description against the Component Reference Table provided below. Determine:
 - component: The component type abbreviation (ELL, RED, VLV, TEE, FLG, etc.)
 - connection_qty: Number of connections per fitting
-- connection_type: Type(s) of connection (BW, SW, THRD, BU, GRV, OLW, or combinations)
-- material: The material specification extracted from the description (e.g., "CS, ASTM A234", "316/316L SS", "MI BLACK, ASTM A197")
+- connection_type: Type(s) of connection (BW, SW, SCRD, BU, GRV, OLW, or combinations)
+- matl_grp: See Material Group Matching Rule below.
+
+### CRITICAL — Connection Type Output Rule:
+When a drawing description indicates a threaded connection (using terms like THRD, SCRD, FNPT, MNPT, TBE, TOE, TE, or any threaded indicator), ALWAYS output "SCRD" as the connection_type value. Never output "THRD" as a connection type — the correct output value is always "SCRD".
 
 ### Matching Rules:
 1. Use the "alternate abbreviations" column to identify the component type from the description.
 2. Use the "DESCRIPTION" column examples to find the closest match for connection quantity and type.
 3. If an exact match exists in the reference table, use its Connection Qty and ConnType directly.
-4. If no exact match exists, match to the closest entry of the same component type with the same connection method (BW, SW, THRD, etc.) — infer the connection method from the BOM description.
+4. If no exact match exists, match to the closest entry of the same component type with the same connection method (BW, SW, SCRD, etc.) — infer the connection method from the BOM description.
 
 ### End Type Decoding Rules:
 These acronyms in BOM descriptions indicate connection types per end. They appear in both three-letter and two-letter forms — treat them identically:
 
 **Both-ends indicators (all connections are the same type):**
-- TBE = Threaded Both Ends → both connections are THRD
+- TBE = Threaded Both Ends → both connections are SCRD
 - PBE = Plain Both Ends → both connections are SW (socket weld)
 - BBE = Beveled Both Ends → both connections are BW (butt weld)
 
 **One-end indicators (three-letter and two-letter forms are equivalent):**
 - BOE or BE = Beveled One End / Beveled End → that end is BW
-- TOE or TE = Threaded One End / Threaded End → that end is THRD
+- TOE or TE = Threaded One End / Threaded End → that end is SCRD
 - POE or PE = Plain One End / Plain End → that end is SW
 
 **Combinations — any mix of the above separated by "x", "/", or spaces:**
-- "BOE x TOE" or "BE/TE" or "BE x TE" = one end BW + one end THRD
-- "TOE x POE" or "TE/PE" or "TE x PE" = one end THRD + one end SW
+- "BOE x TOE" or "BE/TE" or "BE x TE" = one end BW + one end SCRD
+- "TOE x POE" or "TE/PE" or "TE x PE" = one end SCRD + one end SW
 - "BOE x POE" or "BE/PE" or "BE x PE" = one end BW + one end SW
-- "THRD x POE" or "THRD x PE" = one end THRD + one end SW
+- "THRD x POE" or "THRD x PE" = one end SCRD + one end SW
 
-When a fitting has two different connection types per end, report them as comma-separated (e.g., "BW, THRD").
+When a fitting has two different connection types per end, report them as comma-separated (e.g., "BW, SCRD").
 
 ### Olet Rule:
-For ALL olet-type fittings (SOL, TOL, LOL, WOL), BOTH connections are at the BRANCH size, not the header size. The size field may show "30x2" meaning 30" header x 2" branch — but both connections are 2" (the branch size). Report the connection_size as the branch size only.
+For ALL olet-type fittings (SOL, TOL, LOL, WOL, ELB — note: ELB here means ELBOLET / ELBOWLET, not a standard elbow), BOTH connections are at the BRANCH size, not the header size. The size field may show "30x2" meaning 30" header x 2" branch — but both connections are 2" (the branch size). Report the connection_size as the branch size only, exactly as printed on the drawing (e.g., "2", "3/4").
+
+### Connection Size Rule:
+For all non-olet fittings, report connection_size as the value in the size field, exactly as written — fractions are OK, downstream code handles conversion. For reducers (REDC, REDE, REDT), the size field will contain both run and outlet sizes separated by "X" — report the full reducing size string as connection_size exactly as written (e.g., "6X4", "3/4X1/2") — do not split it. C# downstream will parse the run and outlet sizes from this value.
+
+### Material Group Matching Rule:
+Match the material specification in each BOM description against the Material Reference Table provided below. Return:
+- matl_grp: The MatlGrp code from the matching row (e.g., "CS", "SS", "CR1", "HAST")
+- matl_grp_desc: The GRP_DESC value from the matching row (e.g., "CARBON STL", "STAINLESS")
+
+Use the "Alternate Text" column to identify which group the description's material belongs to. Match the most specific group first — for example, "321 SS" matches SSX (not SS), and "A333-GR6" matches A333 (not CR3).
+
+If no match is found, return matl_grp: null and matl_grp_desc: null. Do NOT guess or default to CS — leaving it null lets the downstream app surface unknown-material rows to the user for manual review (FS items get their material inferred app-side from matching pipe on the same drawing, so null is the correct signal there too).
 
 ### Valve Default Rule:
-If a valve (VLV) description does not specify a connection type (no BW, SW, THRD, FNPT, MNPT, GRV, or flanged indicator), apply this default:
+If a valve description does not specify a connection type (no BW, SW, THRD, SCRD, FNPT, MNPT, GRV, or flanged indicator), apply this default to any component beginning with "V" (VBL, VGT, VGL, VCK, VSW, VYG, VPL, VPRV, VPSV, VRLF, VSPL, VVNT, VSOL, etc.):
 - Size 2" and under → default to SW
 - Size over 2" → default to BW
 - Set confidence to "low" and add flag: "Connection type inferred from size default — verify against drawing"
 
+### Unrecognized Component Fallback Rule:
+If a BOM description cannot be matched to any entry in the Component Reference Table and does not resemble any known component type, apply the following fallback logic:
+- If the description is an opaque alphanumeric code (e.g., "H44A-30-2.5-1-LP", "L21B-30-2.5-1-LP") optionally followed by "SEE DETAIL" or a detail reference number, classify as FS (field support). These are client-specific support item codes that will not appear in the reference table.
+- Do NOT classify unknown items as INST unless the description clearly references an instrument, meter, gauge, sensor, transmitter, analyzer, or control device.
+- Set confidence to "medium" and flag: "Component not in reference table — classified as FS by fallback rule"
+
 ### Zero-Connection Items:
-Components with 0 connections (BOLT, COVER, DRIP PAN, FS, GSKT, PIPE, TUBE, WAS) still get extracted as line items but with connection_qty: 0 and connection_type: null. Note: Some PIPE entries in the reference table DO have connections (e.g., PTFE-lined pipe with BU connections) — match against the reference table to determine the correct count.
+Components with 0 connections (BOLT, COVER, DRIP PAN, GSKT, PIPE, TUBE, WAS) still get extracted as line items but with connection_qty: 0 and connection_type: null.
 
 ## CONFIDENCE SCORING
 
@@ -89,18 +133,19 @@ Return a single JSON object with this exact structure:
   "bom_items": [
     {
       "item_id": "string or number",
-      "size": "string",
+      "size": "string — raw format as printed on drawing, fractions preserved (e.g. \"3/4\", \"1-1/2\", \"6\", \"6x4\") or null for BOLT/GSKT with no explicit size. Do NOT convert fractions to decimals — downstream code handles that.",
       "description": "string — full raw description from drawing",
-      "quantity": "string or number",
+      "quantity": "number or string — raw format as printed on drawing, unit markers preserved (e.g. 12, \"27'10\\\"\", \"5.5 ft\", \"41.3'\"). Do NOT convert to decimal feet.",
       "component": "string — component abbreviation from reference table",
       "connection_qty": number,
-      "connection_type": "string or null — e.g. BW, SW, THRD, BU, GRV, or comma-separated for mixed",
-      "connection_size": "string — the size at which connections are made",
-      "thickness": "string or null — schedule/thickness from description (e.g. SCH 10S, SCH 40, 1/16 IN)",
+      "connection_type": "string or null — e.g. BW, SW, SCRD, BU, GRV, or comma-separated for mixed",
+      "connection_size": "string — same raw format as size field, fractions preserved (e.g. \"3/4\", \"6\", \"6x4\" for reducers). Do NOT convert fractions to decimals.",
+      "thickness": "string or null — cleaned schedule/thickness (e.g. STD, XS, 40, 10S, 0.125 for gaskets)",
       "class_rating": "string or null — pressure class/rating (e.g. 150, 300, 2000)",
       "length": "string or null — item length in inches (e.g. 3, 3.25, 6) for bolts/studs",
       "commodity_code": "string or null — client's material/commodity code from BOM",
-      "material": "string — material extracted from description",
+      "matl_grp": "string or null — material group code from Material Reference Table (e.g. CS, SS, CR1, HAST). null if no match found.",
+      "matl_grp_desc": "string or null — material group description from Material Reference Table. null if no match found.",
       "confidence": "high|medium|low",
       "flag": "string or null — explanation if not high confidence"
     }

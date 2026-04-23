@@ -404,16 +404,16 @@ namespace VANTAGE.Services.AI
             return 1;
         }
 
-        // Parse pipe length in feet from Quantity field (e.g., "41.3'" → 41.3)
+        // Parse pipe length in feet. After TakeoffPostProcessor.NormalizeMaterialQuantities, Quantity is
+        // a double; the string/TryParse path is a safety net for rows whose normalization failed.
         public static double ParsePipeLengthFeet(Dictionary<string, object?> row)
         {
             var val = row.GetValueOrDefault("Quantity");
-            if (val == null) return 0;
-
-            string s = val.ToString()?.Trim() ?? "";
-            s = s.TrimEnd('\'', '"');
-            if (double.TryParse(s, out double d))
-                return d;
+            if (val is double d) return d;
+            if (val is int i) return i;
+            if (val is long l) return l;
+            string s = val?.ToString()?.Trim().TrimEnd('\'', '"') ?? "";
+            if (double.TryParse(s, out double parsed)) return parsed;
             return 0;
         }
     }

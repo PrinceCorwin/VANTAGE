@@ -26,7 +26,7 @@ def lambda_handler(event, context):
     """
     try:
         start_time = datetime.now(timezone.utc)
-        
+
         if "extraction_keys" in event:
             extraction_keys = event["extraction_keys"]
             batch_id = event.get("batch_id", f"test-{start_time.strftime('%Y%m%d-%H%M%S')}")
@@ -37,30 +37,31 @@ def lambda_handler(event, context):
             logger.info(f"Batch mode: {len(extraction_keys)} extractions found for {batch_id}")
         else:
             raise ValueError("Event must contain either 'extraction_keys' or 'batch_id'")
-        
+
         extractions = []
         for key in extraction_keys:
             extraction = load_extraction(key)
             if extraction:
                 extractions.append(extraction)
-        
+
         logger.info(f"Loaded {len(extractions)} successful extractions")
-        
-        if not extractions:
-            raise ValueError("No valid extractions to aggregate")
-        
+
+        failed_rows = load_failure_markers(batch_id)
+
+        if not extractions and not failed_rows:
+            raise ValueError("No valid extractions or failures to aggregate")
+
         # Consensus backfill: use batch-wide majority to fill missing class_rating values
         consensus_backfill_class_rating(extractions)
-        
+
         material_rows = build_material_rows(extractions)
         flagged_rows = build_flagged_rows(extractions)
-        failed_rows = load_failure_markers(batch_id)
-        
+
         logger.info(f"Built {len(material_rows)} material rows, {len(flagged_rows)} flagged rows, "
                     f"{len(failed_rows)} failed drawings")
-        
+
         excel_bytes = generate_excel(material_rows, flagged_rows, failed_rows)
-        
+
         excel_key = f"batches/{batch_id}/output/takeoff_{batch_id}.xlsx"
         s3.put_object(
             Bucket=PROCESSING_BUCKET,
@@ -69,9 +70,9 @@ def lambda_handler(event, context):
             ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
         logger.info(f"Excel written to s3://{PROCESSING_BUCKET}/{excel_key}")
-        
+
         elapsed_ms = int((datetime.now(timezone.utc) - start_time).total_seconds() * 1000)
-        
+
         return {
             "status": "completed",
             "batch_id": batch_id,
@@ -82,7 +83,7 @@ def lambda_handler(event, context):
             "total_failed_drawings": len(failed_rows),
             "processing_time_ms": elapsed_ms
         }
-        
+
     except Exception as e:
         logger.error(f"Aggregation failed: {str(e)}", exc_info=True)
         return {
@@ -152,13 +153,16 @@ def load_batch_extraction_keys(batch_id):
     prefix = f"batches/{batch_id}/extractions/"
     paginator = s3.get_paginator("list_objects_v2")
     keys = []
-    
-    for page in paginator.paginate(Bucket=PROCESSING_BUCKET, Prefix=prefix):
-        for obj in page.get("Contents", []):
-            key = obj["Key"]
-            if key.endswith(".json"):
-                keys.append(key)
-    
+
+    try:
+        for page in paginator.paginate(Bucket=PROCESSING_BUCKET, Prefix=prefix):
+            for obj in page.get("Contents", []):
+                key = obj["Key"]
+                if key.endswith(".json"):
+                    keys.append(key)
+    except Exception as e:
+        logger.warning(f"Could not list extractions at {prefix}: {e}")
+
     return keys
 
 
@@ -166,7 +170,7 @@ def load_extraction(key):
     try:
         response = s3.get_object(Bucket=PROCESSING_BUCKET, Key=key)
         data = json.loads(response["Body"].read().decode("utf-8"))
-        
+
         if "extraction" in data and "status" in data:
             if data["status"] != "success":
                 logger.warning(f"Skipping failed extraction: {key}")
@@ -176,9 +180,9 @@ def load_extraction(key):
         else:
             extraction = data
             extraction["_source_key"] = key
-        
+
         return extraction
-        
+
     except Exception as e:
         logger.error(f"Failed to load extraction {key}: {e}")
         return None
@@ -197,7 +201,7 @@ def load_failure_markers(batch_id):
     prefix = f"batches/{batch_id}/failures/"
     paginator = s3.get_paginator("list_objects_v2")
     failure_rows = []
-    
+
     try:
         for page in paginator.paginate(Bucket=PROCESSING_BUCKET, Prefix=prefix):
             for obj in page.get("Contents", []):
@@ -217,7 +221,7 @@ def load_failure_markers(batch_id):
                     logger.error(f"Failed to load failure marker {key}: {e}")
     except Exception as e:
         logger.warning(f"Could not list failure markers at {prefix}: {e}")
-    
+
     return failure_rows
 
 
@@ -227,20 +231,11 @@ def load_failure_markers(batch_id):
 
 def clean_quantity(qty):
     """
-    Convert quantity to decimal number, stripping ' and " marks.
-    "41.3'" -> 41.3
-    "12" -> 12
-    "5.5\"" -> 5.5
+    Pass-through — quantity normalization is handled app-side (C# TakeoffPostProcessor.NormalizeMaterialQuantities).
+    The raw value from Claude (number or string like "27'10\"", "41.3'", "5.5 ft") flows through to the Excel
+    Material tab unchanged, and the app converts it to decimal in one place before generating Labor rows.
     """
-    if qty is None:
-        return None
-    
-    qty_str = str(qty).replace("'", "").replace('"', "").strip()
-    
-    try:
-        return float(qty_str)
-    except (ValueError, TypeError):
-        return qty  # Return original if can't parse
+    return qty
 
 
 def normalize_size(raw_size):
@@ -263,8 +258,34 @@ def normalize_size(raw_size):
 
 
 def normalize_single_size(s):
-    """Convert a single size value (whole, fraction, or mixed) to decimal string."""
-    s = s.strip()
+    """Convert a single size value (whole, fraction, or mixed) to decimal string.
+
+    Pre-normalizes common output variants (unicode fractions, en/em dashes,
+    stray whitespace, trailing inch marks) before matching so we don't silently
+    pass non-numeric strings through to the C# app (which would treat them as 0).
+    Logs a warning whenever normalization fails so drift in Claude's output is
+    visible in CloudWatch.
+    """
+    original = s
+    s = s.strip().strip('"').strip("'").strip()
+
+    # Unicode fractions → ASCII equivalents (e.g., "1½" → "1 1/2")
+    unicode_fractions = {
+        '½': ' 1/2', '¼': ' 1/4', '¾': ' 3/4',
+        '⅛': ' 1/8', '⅜': ' 3/8', '⅝': ' 5/8', '⅞': ' 7/8',
+        '⅓': ' 1/3', '⅔': ' 2/3',
+    }
+    for uni, ascii_frac in unicode_fractions.items():
+        s = s.replace(uni, ascii_frac)
+
+    # En-dash / em-dash → ASCII hyphen
+    s = s.replace('–', '-').replace('—', '-')
+
+    # Collapse whitespace around a hyphen: "1 - 1/2" → "1-1/2"
+    s = re.sub(r'\s*-\s*', '-', s)
+
+    # Collapse any remaining whitespace runs to a single space
+    s = re.sub(r'\s+', ' ', s).strip()
 
     # Already a plain number — pass through
     try:
@@ -291,6 +312,12 @@ def normalize_single_size(s):
         if den != 0:
             return format_decimal(num / den)
 
+    # Conversion failed — surface it so drift is catchable in CloudWatch
+    # instead of silently becoming 0 in the C# app.
+    logger.warning(
+        f"SIZE_NORMALIZATION_FAILED: Could not convert size value to decimal. "
+        f"Original='{original}', post-normalize='{s}'. Passing through as-is."
+    )
     return s
 
 
@@ -315,23 +342,15 @@ def build_material_rows(extractions):
         drawing_number = extraction.get("drawing_number", "UNKNOWN")
         title_block = {k.rstrip(":").strip(): v for k, v in extraction.get("title_block", {}).items()}
         bom_items = extraction.get("bom_items", [])
-        
+
         for item in bom_items:
             conn_type = item.get("connection_type") or ""
             conn_qty = item.get("connection_qty", 0) or 0
             component = item.get("component") or ""
-
-            shop_field = 1  # C# post-processing assigns real values
-            
-            # Build concatenated description
-            # Format: size IN - component - thickness - class - pipe spec - material - length
             size = item.get("size") or ""
             thickness = item.get("thickness") or ""
-            matl_grp = item.get("matl_grp") or ""
-            component = item.get("component") or ""
             commodity_code = item.get("commodity_code") or ""
-            class_rating = item.get("class_rating") or ""
-            length = item.get("length") or ""
+            shop_field = 1  # C# post-processing assigns real values
 
             normalized_conn_size = normalize_size(item.get("connection_size"))
             normalized_size = normalize_size(size)
@@ -358,24 +377,24 @@ def build_material_rows(extractions):
                 **{f"tb_{k}": v for k, v in title_block.items()}
             }
             rows.append(row)
-    
+
     return rows
 
 
 def build_flagged_rows(extractions):
     rows = []
-    
+
     for extraction in extractions:
         drawing_number = extraction.get("drawing_number", "UNKNOWN")
         title_block = {k.rstrip(":").strip(): v for k, v in extraction.get("title_block", {}).items()}
         bom_items = extraction.get("bom_items", [])
-        
+
         for item in bom_items:
             confidence = item.get("confidence", "high")
-            
+
             if confidence.lower() not in ("low", "medium"):
                 continue
-            
+
             row = {
                 "drawing_number": drawing_number,
                 "item_id": item.get("item_id"),
@@ -390,13 +409,9 @@ def build_flagged_rows(extractions):
                 "class_rating": item.get("class_rating"),
                 "confidence": confidence,
                 "flag": item.get("flag"),
-                "override_component": "",
-                "override_connection_qty": "",
-                "override_connection_type": "",
-                "override_notes": ""
             }
             rows.append(row)
-    
+
     return rows
 
 
@@ -406,7 +421,7 @@ def build_flagged_rows(extractions):
 
 def generate_excel(material_rows, flagged_rows, failed_rows):
     wb = Workbook()
-    
+
     header_font = Font(bold=True)
     header_fill = PatternFill(start_color="DAEEF3", end_color="DAEEF3", fill_type="solid")
     thin_border = Border(
@@ -415,17 +430,17 @@ def generate_excel(material_rows, flagged_rows, failed_rows):
         top=Side(style="thin"),
         bottom=Side(style="thin")
     )
-    
+
     ws_material = wb.active
     ws_material.title = "Material"
     write_material_tab(ws_material, material_rows, header_font, header_fill, thin_border)
-    
+
     ws_flagged = wb.create_sheet("Flagged")
     write_flagged_tab(ws_flagged, flagged_rows, header_font, header_fill, thin_border)
-    
+
     ws_failed = wb.create_sheet("Failed DWGs")
     write_failed_tab(ws_failed, failed_rows, header_font, header_fill, thin_border)
-    
+
     buffer = io.BytesIO()
     wb.save(buffer)
     buffer.seek(0)
@@ -436,14 +451,14 @@ def write_material_tab(ws, material_rows, header_font, header_fill, thin_border)
     if not material_rows:
         ws.cell(row=1, column=1, value="No material data")
         return
-    
+
     tb_fields = set()
     for row in material_rows:
         for key in row.keys():
             if key.startswith("tb_"):
                 tb_fields.add(key)
     tb_fields = sorted(list(tb_fields))
-    
+
     fixed_columns = [
         ("drawing_number", "Drawing Number"),
         ("item_id", "Item ID"),
@@ -464,21 +479,21 @@ def write_material_tab(ws, material_rows, header_font, header_fill, thin_border)
         ("confidence", "Confidence"),
         ("flag", "Flag"),
     ]
-    
+
     columns = fixed_columns + [(tb, tb.replace("tb_", "")) for tb in tb_fields]
-    
+
     for col_idx, (key, label) in enumerate(columns, start=1):
         cell = ws.cell(row=1, column=col_idx, value=label)
         cell.font = header_font
         cell.fill = header_fill
         cell.border = thin_border
-    
+
     for row_idx, row_data in enumerate(material_rows, start=2):
         for col_idx, (key, label) in enumerate(columns, start=1):
             value = row_data.get(key, "")
             cell = ws.cell(row=row_idx, column=col_idx, value=value)
             cell.border = thin_border
-    
+
     for col_idx, (key, label) in enumerate(columns, start=1):
         max_len = len(label)
         for row_data in material_rows[:100]:
@@ -487,7 +502,7 @@ def write_material_tab(ws, material_rows, header_font, header_fill, thin_border)
                 max_len = val_len
         width = min(max(max_len + 2, 10), 50)
         ws.column_dimensions[get_column_letter(col_idx)].width = width
-    
+
     ws.freeze_panes = "A2"
 
 
@@ -495,7 +510,7 @@ def write_flagged_tab(ws, flagged_rows, header_font, header_fill, thin_border):
     if not flagged_rows:
         ws.cell(row=1, column=1, value="No flagged items — all extractions high confidence")
         return
-    
+
     columns = [
         ("drawing_number", "Drawing Number"),
         ("item_id", "Item ID"),
@@ -510,28 +525,20 @@ def write_flagged_tab(ws, flagged_rows, header_font, header_fill, thin_border):
         ("class_rating", "Class Rating"),
         ("confidence", "Confidence"),
         ("flag", "Flag Reason"),
-        ("override_component", "Override Component"),
-        ("override_connection_qty", "Override Conn Qty"),
-        ("override_connection_type", "Override Conn Type"),
-        ("override_notes", "Override Notes"),
     ]
-    
-    override_fill = PatternFill(start_color="FFFFCC", end_color="FFFFCC", fill_type="solid")
-    
+
     for col_idx, (key, label) in enumerate(columns, start=1):
         cell = ws.cell(row=1, column=col_idx, value=label)
         cell.font = header_font
-        cell.fill = header_fill if not key.startswith("override_") else override_fill
+        cell.fill = header_fill
         cell.border = thin_border
-    
+
     for row_idx, row_data in enumerate(flagged_rows, start=2):
         for col_idx, (key, label) in enumerate(columns, start=1):
             value = row_data.get(key, "")
             cell = ws.cell(row=row_idx, column=col_idx, value=value)
             cell.border = thin_border
-            if key.startswith("override_"):
-                cell.fill = override_fill
-    
+
     for col_idx, (key, label) in enumerate(columns, start=1):
         max_len = len(label)
         for row_data in flagged_rows[:100]:
@@ -540,7 +547,7 @@ def write_flagged_tab(ws, flagged_rows, header_font, header_fill, thin_border):
                 max_len = val_len
         width = min(max(max_len + 2, 10), 50)
         ws.column_dimensions[get_column_letter(col_idx)].width = width
-    
+
     ws.freeze_panes = "A2"
 
 
@@ -548,26 +555,26 @@ def write_failed_tab(ws, failed_rows, header_font, header_fill, thin_border):
     if not failed_rows:
         ws.cell(row=1, column=1, value="No failed drawings — all drawings extracted successfully")
         return
-    
+
     columns = [
         ("drawing_name", "Drawing Name"),
         ("source_key", "Source Key"),
         ("error", "Error"),
         ("timestamp", "Timestamp (UTC)"),
     ]
-    
+
     for col_idx, (key, label) in enumerate(columns, start=1):
         cell = ws.cell(row=1, column=col_idx, value=label)
         cell.font = header_font
         cell.fill = header_fill
         cell.border = thin_border
-    
+
     for row_idx, row_data in enumerate(failed_rows, start=2):
         for col_idx, (key, label) in enumerate(columns, start=1):
             value = row_data.get(key, "")
             cell = ws.cell(row=row_idx, column=col_idx, value=value)
             cell.border = thin_border
-    
+
     for col_idx, (key, label) in enumerate(columns, start=1):
         max_len = len(label)
         for row_data in failed_rows[:100]:
@@ -576,5 +583,5 @@ def write_failed_tab(ws, failed_rows, header_font, header_fill, thin_border):
                 max_len = val_len
         width = min(max(max_len + 2, 10), 80)
         ws.column_dimensions[get_column_letter(col_idx)].width = width
-    
+
     ws.freeze_panes = "A2"

@@ -184,6 +184,12 @@ namespace VANTAGE.Services.AI
                 AssignMaterialShopField(materialRows);
                 WriteMaterialShopField(workbook, materialRows);
 
+                // Step A4b: Normalize Quantity values to decimals in-place (and in Excel)
+                // so all downstream consumers see a single numeric type. Raw-as-printed values
+                // like "27'10\"", "41.3'", "10 FT 2 IN" become decimals here.
+                NormalizeMaterialQuantities(materialRows);
+                WriteMaterialQuantities(workbook, materialRows);
+
                 // Step A5: Correct FS Matl_Grp to match pipe material in same drawing+size
                 var fsCorrections = CorrectFsMaterial(materialRows);
                 if (fsCorrections.Count > 0)
@@ -414,6 +420,117 @@ namespace VANTAGE.Services.AI
             {
                 ws.Cell(i + 2, shopFieldCol).Value = GetInt(materialRows[i], "ShopField");
             }
+        }
+
+        // Step A4b: Normalize Quantity values in place.
+        // Lambda passes raw-as-printed values from the drawing (numbers, or strings like "27'10\"", "41.3'",
+        // "10 FT 2 IN"). Convert each to a decimal so every downstream consumer (connection explosion, SPL,
+        // PIPE fab, ApplyRates) reads a single numeric type. On failure, leave the raw value so a human
+        // reviewer can spot and correct the cell in Material and rerun.
+        private static void NormalizeMaterialQuantities(List<Dictionary<string, object?>> materialRows)
+        {
+            foreach (var row in materialRows)
+            {
+                var val = row.GetValueOrDefault("Quantity");
+                if (val == null) continue;
+
+                double? converted = ConvertQuantityToDecimal(val);
+                if (converted.HasValue)
+                {
+                    row["Quantity"] = converted.Value;
+                }
+                else
+                {
+                    string dwg = GetString(row, "Drawing Number");
+                    string item = GetString(row, "Item ID");
+                    AppLogger.Info(
+                        $"QUANTITY_PARSE_FAILED: Drawing={dwg}, Item={item}, raw='{val}' — left as-is for manual review",
+                        "TakeoffPostProcessor.NormalizeMaterialQuantities");
+                }
+            }
+        }
+
+        // Write normalized decimal Quantity values back to the Excel Material tab so the saved workbook
+        // shows clean numbers. Mirrors WriteMaterialShopField. When conversion failed the in-memory value
+        // is still a string; we leave the Excel cell untouched in that case so the user sees the raw text.
+        private static void WriteMaterialQuantities(XLWorkbook workbook, List<Dictionary<string, object?>> materialRows)
+        {
+            if (!workbook.TryGetWorksheet("Material", out var ws)) return;
+
+            int qtyCol = 0;
+            int lastCol = ws.RangeUsed()?.LastColumn().ColumnNumber() ?? 0;
+            for (int col = 1; col <= lastCol; col++)
+            {
+                if (ws.Cell(1, col).GetString().Trim().Equals("Quantity", StringComparison.OrdinalIgnoreCase))
+                {
+                    qtyCol = col;
+                    break;
+                }
+            }
+            if (qtyCol == 0) return;
+
+            for (int i = 0; i < materialRows.Count; i++)
+            {
+                var val = materialRows[i].GetValueOrDefault("Quantity");
+                if (val is double d)
+                    ws.Cell(i + 2, qtyCol).Value = d;
+            }
+        }
+
+        // Convert a raw Quantity value (number or string) to a decimal. Handles plain numbers,
+        // feet+inches ("27'10\"", "27'-10\"", "27' 10\"", "27'"), inches-only ("6\""), decimals with
+        // trailing prime/quote ("41.3'", "5.5\""), and textual unit markers ("10 FT 2 IN", "5.5 ft").
+        // Returns null when the value can't be parsed so the caller can surface it for manual review.
+        private static double? ConvertQuantityToDecimal(object? val)
+        {
+            if (val == null) return null;
+            if (val is double dv) return dv;
+            if (val is int iv) return iv;
+            if (val is long lv) return lv;
+            if (val is float fv) return fv;
+            if (val is decimal decv) return (double)decv;
+
+            string s = val.ToString()?.Trim() ?? "";
+            if (string.IsNullOrEmpty(s)) return null;
+
+            // Normalize textual unit markers to primes/quotes so one regex covers every shape.
+            string n = System.Text.RegularExpressions.Regex.Replace(
+                s, @"\s*(ft|FT|Ft)\b\.?", "'",
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            n = System.Text.RegularExpressions.Regex.Replace(
+                n, @"\s*(in|IN|In)\b\.?", "\"",
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            n = n.Trim();
+
+            var invariant = System.Globalization.CultureInfo.InvariantCulture;
+
+            // Feet + optional inches: 27'10", 27' 10", 27'-10", 27'
+            var feetInches = System.Text.RegularExpressions.Regex.Match(
+                n, @"^(\d+(?:\.\d+)?)\s*'\s*[-\s]?\s*(\d+(?:\.\d+)?)?\s*""?\s*$");
+            if (feetInches.Success)
+            {
+                double feet = double.Parse(feetInches.Groups[1].Value, invariant);
+                double inches = 0;
+                if (feetInches.Groups[2].Success && !string.IsNullOrEmpty(feetInches.Groups[2].Value))
+                    inches = double.Parse(feetInches.Groups[2].Value, invariant);
+                return Math.Round(feet + inches / 12.0, 4);
+            }
+
+            // Inches only: 6"
+            var inchesOnly = System.Text.RegularExpressions.Regex.Match(
+                n, @"^(\d+(?:\.\d+)?)\s*""\s*$");
+            if (inchesOnly.Success)
+            {
+                double inches = double.Parse(inchesOnly.Groups[1].Value, invariant);
+                return Math.Round(inches / 12.0, 4);
+            }
+
+            // Plain number — strip any stray primes/quotes and try parse
+            string stripped = n.Replace("'", "").Replace("\"", "").Trim();
+            if (double.TryParse(stripped, System.Globalization.NumberStyles.Float, invariant, out double result))
+                return result;
+
+            return null;
         }
 
         // Step A5: Correct FS (field support) Matl_Grp to match pipe of same size in same drawing.
@@ -780,7 +897,6 @@ namespace VANTAGE.Services.AI
             int quantity = ParseQuantity(mat);
             string sizeStr = GetString(mat, "Size");
             string thickness = GetString(mat, "Thickness");
-            string pipeSpec = FindPipeSpec(mat);
             string material = GetString(mat, "Matl_Grp");
             string commodityCode = GetString(mat, "Commodity Code");
             string rawDesc = GetString(mat, "Raw Description");
@@ -894,13 +1010,13 @@ namespace VANTAGE.Services.AI
                     // SPT connections don't get labor rows — MHs come from the FS fab record
                     if (connType == "SPT") continue;
 
-                    var labor = CreateLaborRow(mat, connType, connSize, thickness, pipeSpec, material, allMaterialRows);
+                    var labor = CreateLaborRow(mat, connType, connSize, thickness, material, allMaterialRows);
                     result.Add(labor);
 
                     // SCRD connections also generate a THRD labor row for threading labor
                     if (connType == "SCRD")
                     {
-                        var thrdLabor = CreateLaborRow(mat, "THRD", connSize, thickness, pipeSpec, material, allMaterialRows);
+                        var thrdLabor = CreateLaborRow(mat, "THRD", connSize, thickness, material, allMaterialRows);
                         result.Add(thrdLabor);
                     }
                 }
@@ -1001,7 +1117,7 @@ namespace VANTAGE.Services.AI
         // check the matching PIPE entry. If no pipe found, default to "40".
         private static Dictionary<string, object?> CreateLaborRow(
             Dictionary<string, object?> mat, string connType, double size,
-            string thickness, string pipeSpec, string material,
+            string thickness, string material,
             List<Dictionary<string, object?>>? allMaterialRows = null)
         {
             // Ensure thickness is populated
@@ -1029,34 +1145,10 @@ namespace VANTAGE.Services.AI
             labor["Quantity"] = 1;
             labor["ShopField"] = (connType == "BU" || connType == "SCRD") ? 2 : 1;
             string descSuffix = connType == "BU" ? "BU - One Flange" : connType;
-            labor["Description"] = BuildConcatDescription(sizeStr, thickness, classRating, pipeSpec, material, descSuffix);
+            labor["Description"] = BuildConcatDescription(sizeStr, thickness, classRating, material, descSuffix);
             labor["BudgetMHs"] = null;
 
             return labor;
-        }
-
-        // Create a fabrication row (CUT or BEV)
-        private static Dictionary<string, object?> CreateFabRow(
-            Dictionary<string, object?> mat, string fabType, double size,
-            string thickness, string pipeSpec, string material)
-        {
-            var fab = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
-            foreach (var (key, value) in mat)
-            {
-                if (!ExcludeFromLabor.Contains(key))
-                    fab[key] = value;
-            }
-
-            string sizeStr = size.ToString("0.###");
-            string classRating = GetString(mat, "Class Rating");
-            fab["Component"] = fabType;
-            fab["Size"] = sizeStr;
-            fab["Quantity"] = 1;
-            fab["ShopField"] = 1;
-            fab["Description"] = BuildFabDescription(sizeStr, thickness, classRating, pipeSpec, material, fabType);
-            fab["BudgetMHs"] = null;
-
-            return fab;
         }
 
         // Find a PIPE material row matching the connection size and material on the same drawing.
@@ -1098,81 +1190,42 @@ namespace VANTAGE.Services.AI
             return null;
         }
 
-        // Parse quantity - handles formats like "2", "41.3'", etc.
+        // Parse quantity as an integer count. After NormalizeMaterialQuantities, row["Quantity"] is a
+        // double; the string/TryParse path is a safety net for rows where normalization could not parse
+        // (conversion failed and the raw value was left in place for manual review).
         private static int ParseQuantity(Dictionary<string, object?> mat)
         {
-            var qtyVal = mat.GetValueOrDefault("Quantity");
-            if (qtyVal == null) return 1;
-
-            string qtyStr = qtyVal.ToString()?.Trim() ?? "1";
-
-            // Strip trailing quote (feet marker)
-            qtyStr = qtyStr.TrimEnd('\'', '"');
-
-            if (double.TryParse(qtyStr, out double d))
-                return Math.Max(1, (int)Math.Floor(d));
-
+            var val = mat.GetValueOrDefault("Quantity");
+            if (val is double d) return Math.Max(1, (int)Math.Floor(d));
+            if (val is int i) return Math.Max(1, i);
+            if (val is long l) return Math.Max(1, (int)l);
+            string s = val?.ToString()?.Trim().TrimEnd('\'', '"') ?? "";
+            if (double.TryParse(s, out double parsed)) return Math.Max(1, (int)Math.Floor(parsed));
             return 1;
         }
 
-        // Parse quantity preserving decimal value (for PIPE fab labor rows)
+        // Parse quantity preserving decimal value (for PIPE fab labor rows). Same safety-net pattern.
         private static double ParseExactQuantity(Dictionary<string, object?> mat)
         {
-            var qtyVal = mat.GetValueOrDefault("Quantity");
-            if (qtyVal == null) return 1;
-
-            string qtyStr = qtyVal.ToString()?.Trim() ?? "1";
-            qtyStr = qtyStr.TrimEnd('\'', '"');
-
-            if (double.TryParse(qtyStr, out double d))
-                return Math.Max(0.001, d);
-
+            var val = mat.GetValueOrDefault("Quantity");
+            if (val is double d) return Math.Max(0.001, d);
+            if (val is int i) return Math.Max(0.001, i);
+            if (val is long l) return Math.Max(0.001, l);
+            string s = val?.ToString()?.Trim().TrimEnd('\'', '"') ?? "";
+            if (double.TryParse(s, out double parsed)) return Math.Max(0.001, parsed);
             return 1;
-        }
-
-        // Find pipe spec from title block fields (various naming conventions)
-        private static string FindPipeSpec(Dictionary<string, object?> mat)
-        {
-            foreach (var (key, val) in mat)
-            {
-                if (val == null) continue;
-                if (key.Contains("spec", StringComparison.OrdinalIgnoreCase))
-                {
-                    string s = val.ToString()?.Trim() ?? "";
-                    if (!string.IsNullOrEmpty(s)) return s;
-                }
-            }
-            return "";
-        }
-
-        // Build description for fabrication items (CUT/BEVEL)
-        private static string BuildFabDescription(
-            string size, string thickness, string classRating,
-            string pipeSpec, string material, string fabType)
-        {
-            var parts = new List<string>();
-
-            if (!string.IsNullOrEmpty(size)) parts.Add($"{size} IN");
-            if (!string.IsNullOrEmpty(thickness)) parts.Add(thickness);
-            if (!string.IsNullOrEmpty(classRating)) parts.Add(classRating);
-            if (!string.IsNullOrEmpty(pipeSpec)) parts.Add(pipeSpec);
-            if (!string.IsNullOrEmpty(material)) parts.Add(material);
-            parts.Add(fabType);
-
-            return string.Join(" - ", parts);
         }
 
         // Build concatenated description for connection rows
         private static string BuildConcatDescription(
             string size, string thickness, string classRating,
-            string pipeSpec, string material, string connType)
+            string material, string connType)
         {
             var parts = new List<string>();
 
             if (!string.IsNullOrEmpty(size)) parts.Add($"{size} IN");
             if (!string.IsNullOrEmpty(thickness)) parts.Add(thickness);
             if (!string.IsNullOrEmpty(classRating)) parts.Add(classRating);
-            if (!string.IsNullOrEmpty(pipeSpec)) parts.Add(pipeSpec);
             if (!string.IsNullOrEmpty(material)) parts.Add(material);
             if (!string.IsNullOrEmpty(connType)) parts.Add(connType);
 

@@ -31,129 +31,117 @@ MAX_TOKENS = 16384
 
 def lambda_handler(event, context):
     try:
-        # Determine input format: new (config-based) or legacy (direct image)
+        # Event shape (sent by Step Functions via TakeoffService.StartBatchAsync):
+        # { config_path, bucket, drawing_key, batch_id, rev_bubble_only? }
         config_path = event.get("config_path")
+        if not config_path:
+            raise ValueError("Event must contain 'config_path' (legacy direct-image mode has been removed)")
 
-        if config_path:
-            # New format: PDF + client config → crop → extract
-            drawing_bucket = event.get("bucket", "summit-takeoff-drawings")
-            drawing_key = event["drawing_key"]
-            batch_id = event.get("batch_id")
-            rev_bubble_only = event.get("rev_bubble_only", False)
+        rev_bubble_only = event.get("rev_bubble_only", False)
+        drawing_bucket = event.get("bucket", "summit-takeoff-drawings")
+        drawing_key = event["drawing_key"]
+        batch_id = event.get("batch_id")
 
-            logger.info(f"Processing drawing: s3://{drawing_bucket}/{drawing_key}")
-            logger.info(f"Using config: {config_path}")
-            if rev_bubble_only:
-                logger.info("Rev bubble filter ENABLED — extracting only revision-clouded items")
+        logger.info(f"Processing drawing: s3://{drawing_bucket}/{drawing_key}")
+        logger.info(f"Using config: {config_path}")
+        if rev_bubble_only:
+            logger.info("Rev bubble filter ENABLED — extracting only revision-clouded items")
 
-            # Load config, prompt, and reference table
-            config = load_client_config(config_path)
-            prompt_text = load_text_from_s3(CONFIG_BUCKET, PROMPT_KEY)
-            ref_table_text = load_reference_table(CONFIG_BUCKET, REF_TABLE_KEY)
-            mat_ref_text = load_material_reference_table(CONFIG_BUCKET, MAT_REF_TABLE_KEY)
-            full_prompt = prompt_text + "\n" + ref_table_text + "\n\n## MATERIAL REFERENCE TABLE\n\nMatlGrp|GRP_DESC|Alternate Text\n" + mat_ref_text
+        # Load config, prompt, and reference table
+        config = load_client_config(config_path)
+        prompt_text = load_text_from_s3(CONFIG_BUCKET, PROMPT_KEY)
+        ref_table_text = load_reference_table(CONFIG_BUCKET, REF_TABLE_KEY)
+        mat_ref_text = load_material_reference_table(CONFIG_BUCKET, MAT_REF_TABLE_KEY)
+        full_prompt = prompt_text + "\n" + ref_table_text + "\n\n## MATERIAL REFERENCE TABLE\n\nMatlGrp|GRP_DESC|Alternate Text\n" + mat_ref_text
 
-            # Rev bubble filter — prepend to system prompt so it overrides default "extract all" behavior
-            if rev_bubble_only:
-                rev_bubble_instruction = (
-                    "CRITICAL OVERRIDE: Only extract BOM line items that are inside or partially inside "
-                    "revision bubbles (cloud-shaped or scalloped annotation borders drawn around "
-                    "changed/revised items). If ANY part of a BOM row is touched by a revision bubble — "
-                    "even if only one cell such as the quantity, description, or size is inside the bubble — "
-                    "extract the ENTIRE row. "
-                    "Skip all BOM items that are completely outside all revision bubbles. "
-                    "If no revision bubbles are visible in the BOM area, return an empty bom_items array "
-                    "with bom_row_count of 0.\n\n"
-                )
-                full_prompt = rev_bubble_instruction + full_prompt
+        # Rev bubble filter — prepend to system prompt so it overrides default "extract all" behavior
+        if rev_bubble_only:
+            rev_bubble_instruction = (
+                "CRITICAL OVERRIDE: Only extract BOM line items that are inside or partially inside "
+                "revision bubbles (cloud-shaped or scalloped annotation borders drawn around "
+                "changed/revised items). If ANY part of a BOM row is touched by a revision bubble — "
+                "even if only one cell such as the quantity, description, or size is inside the bubble — "
+                "extract the ENTIRE row. "
+                "Skip all BOM items that are completely outside all revision bubbles. "
+                "If no revision bubbles are visible in the BOM area, return an empty bom_items array "
+                "with bom_row_count of 0.\n\n"
+            )
+            full_prompt = rev_bubble_instruction + full_prompt
 
-            # Inject BOM column info into prompt
-            column_hint = build_column_hint(config)
-            if column_hint:
-                full_prompt = full_prompt.replace(
-                    "## BOM EXTRACTION",
-                    f"## BOM EXTRACTION\n\n{column_hint}"
-                )
+        # Inject BOM column info into prompt
+        column_hint = build_column_hint(config)
+        if column_hint:
+            full_prompt = full_prompt.replace(
+                "## BOM EXTRACTION",
+                f"## BOM EXTRACTION\n\n{column_hint}"
+            )
 
-            # Render PDF to full-page image
-            render_dpi = config.get("render_dpi", 300)
-            drawing_bytes = load_file_from_s3(drawing_bucket, drawing_key)
-            page_image = render_pdf_page(drawing_bytes, drawing_key, render_dpi)
+        # Render PDF to full-page image
+        render_dpi = config.get("render_dpi", 300)
+        drawing_bytes = load_file_from_s3(drawing_bucket, drawing_key)
+        page_image = render_pdf_page(drawing_bytes, drawing_key, render_dpi)
 
-            # Crop BOM region(s)
-            bom_regions = config.get("bom_regions", [])
-            if not bom_regions:
-                raise ValueError("Client config has no bom_regions defined")
+        # Crop BOM region(s)
+        bom_regions = config.get("bom_regions", [])
+        if not bom_regions:
+            raise ValueError("Client config has no bom_regions defined")
 
-            bom_crops = []
-            for i, region in enumerate(bom_regions):
-                crop = crop_region(page_image, region)
-                logger.info(f"BOM crop {i+1}: {crop['width']}x{crop['height']} pixels")
-                bom_crops.append(crop["image_bytes"])
+        bom_crops = []
+        for i, region in enumerate(bom_regions):
+            crop = crop_region(page_image, region)
+            logger.info(f"BOM crop {i+1}: {crop['width']}x{crop['height']} pixels")
+            bom_crops.append(crop["image_bytes"])
 
-            # Stitch multi-wrap BOM crops into one tall image
-            if len(bom_crops) > 1:
-                bom_image = stitch_images(bom_crops)
-                logger.info("Stitched multi-wrap BOM crops")
-            else:
-                bom_image = bom_crops[0]
-
-            # Clamp stitched image to Bedrock's 8000px max dimension limit
-            bom_image = clamp_image_dimensions(bom_image, max_dim=8000)
-
-            # Crop title block region(s) - supports multiple sections (e.g., PIPE INFO + Project info)
-            # Check for new format (title_block_regions list) first, fall back to old format (title_block_region)
-            tb_regions = config.get("title_block_regions", [])
-            if not tb_regions:
-                old_tb = config.get("title_block_region")
-                if old_tb:
-                    tb_regions = [old_tb]
-
-            images_for_claude = [{"bytes": bom_image, "type": "image/png", "label": "BOM table"}]
-
-            for i, tb_region in enumerate(tb_regions):
-                tb_crop = crop_region(page_image, tb_region)
-                label = f"Title block section {i + 1}" if len(tb_regions) > 1 else "Title block"
-                logger.info(f"{label} crop: {tb_crop['width']}x{tb_crop['height']} pixels")
-                tb_image = clamp_image_dimensions(tb_crop["image_bytes"], max_dim=8000)
-                images_for_claude.append({"bytes": tb_image, "type": "image/png", "label": label})
-
-            # Call Bedrock with cropped images
-            start_time = datetime.now(timezone.utc)
-            raw_response = call_bedrock_multi_image(full_prompt, images_for_claude)
-            processing_time_ms = int((datetime.now(timezone.utc) - start_time).total_seconds() * 1000)
-
+        # Stitch multi-wrap BOM crops into one tall image
+        if len(bom_crops) > 1:
+            bom_image = stitch_images(bom_crops)
+            logger.info("Stitched multi-wrap BOM crops")
         else:
-            # Legacy format: direct image file (pre-cropped BOM)
-            drawing_bucket, drawing_key = parse_input(event)
-            batch_id = None
-            logger.info(f"Legacy mode — processing: s3://{drawing_bucket}/{drawing_key}")
+            bom_image = bom_crops[0]
 
-            prompt_text = load_text_from_s3(CONFIG_BUCKET, PROMPT_KEY)
-            ref_table_text = load_reference_table(CONFIG_BUCKET, REF_TABLE_KEY)
-            mat_ref_text = load_material_reference_table(CONFIG_BUCKET, MAT_REF_TABLE_KEY)
-            full_prompt = prompt_text + "\n" + ref_table_text + "\n\n## MATERIAL REFERENCE TABLE\n\nMatlGrp|GRP_DESC|Alternate Text\n" + mat_ref_text
+        # Clamp stitched image to Bedrock's 8000px max dimension limit
+        bom_image = clamp_image_dimensions(bom_image, max_dim=8000)
 
-            image_bytes, media_type = load_drawing_as_image(drawing_bucket, drawing_key)
+        # Crop title block region(s) - supports multiple sections (e.g., PIPE INFO + Project info)
+        # Check for new format (title_block_regions list) first, fall back to old format (title_block_region)
+        tb_regions = config.get("title_block_regions", [])
+        if not tb_regions:
+            old_tb = config.get("title_block_region")
+            if old_tb:
+                tb_regions = [old_tb]
 
-            start_time = datetime.now(timezone.utc)
-            raw_response = call_bedrock(full_prompt, image_bytes, media_type)
-            processing_time_ms = int((datetime.now(timezone.utc) - start_time).total_seconds() * 1000)
+        images_for_claude = [{"bytes": bom_image, "type": "image/png", "label": "BOM table"}]
+
+        for i, tb_region in enumerate(tb_regions):
+            tb_crop = crop_region(page_image, tb_region)
+            label = f"Title block section {i + 1}" if len(tb_regions) > 1 else "Title block"
+            logger.info(f"{label} crop: {tb_crop['width']}x{tb_crop['height']} pixels")
+            tb_image = clamp_image_dimensions(tb_crop["image_bytes"], max_dim=8000)
+            images_for_claude.append({"bytes": tb_image, "type": "image/png", "label": label})
+
+        # Call Bedrock with cropped images
+        start_time = datetime.now(timezone.utc)
+        raw_response = call_bedrock_multi_image(full_prompt, images_for_claude)
+        processing_time_ms = int((datetime.now(timezone.utc) - start_time).total_seconds() * 1000)
 
         # Parse JSON response
         extraction_json = parse_extraction_response(raw_response)
         logger.info(f"Extraction complete: {extraction_json.get('bom_row_count', '?')} BOM items "
                     f"in {processing_time_ms}ms")
 
-        # Treat zero-BOM-item extractions as failures so the drawing surfaces on Failed DWGs tab.
-        # Covers: blank crop regions, misaligned configs, rev-bubble runs with no rev items,
-        # drawings where Bedrock couldn't read the BOM.
+        # Treat zero-BOM-item extractions as failures so the drawing surfaces on Failed DWGs tab
+        # (covers blank crops, misaligned configs, unreadable BOMs, and rev-bubble runs with no revs).
+        # Use different wording for rev-bubble runs so expected-empty drawings are distinguishable
+        # on the Failed DWGs tab from real extraction problems.
         bom_row_count = extraction_json.get("bom_row_count", 0)
         if bom_row_count == 0 and batch_id:
             drawing_name = os.path.splitext(os.path.basename(drawing_key))[0]
             failure_key = f"batches/{batch_id}/failures/{drawing_name}.json"
             extraction_notes = extraction_json.get("extraction_notes", "")
-            error_msg = "Zero BOM items extracted"
+            if rev_bubble_only:
+                error_msg = "No revision-bubbled items found on drawing"
+            else:
+                error_msg = "No items found in BOM"
             if extraction_notes:
                 error_msg += f" — {extraction_notes[:500]}"
             failure_body = {
@@ -223,11 +211,11 @@ def lambda_handler(event, context):
 
     except Exception as e:
         logger.error(f"Extraction failed: {str(e)}", exc_info=True)
-        
+
         batch_id = event.get("batch_id")
         drawing_key = event.get("drawing_key", "unknown")
         error_message = str(e)
-        
+
         # Write failure marker to S3 so aggregation can surface failed drawings
         if batch_id and drawing_key != "unknown":
             try:
@@ -237,7 +225,9 @@ def lambda_handler(event, context):
                     "source_key": drawing_key,
                     "drawing_name": drawing_name,
                     "status": "failed",
-                    "error": error_message,
+                    # Cap at 500 chars to match the zero-BOM failure path (keeps the
+                    # Failed DWGs tab Error column readable even for verbose stack traces).
+                    "error": error_message[:500],
                     "timestamp": datetime.now(timezone.utc).isoformat(),
                 }
                 s3.put_object(
@@ -250,7 +240,7 @@ def lambda_handler(event, context):
             except Exception as marker_error:
                 # Never let marker-writing failure mask the real error
                 logger.error(f"Failed to write failure marker: {marker_error}")
-        
+
         error_result = {
             "statusCode": 500,
             "error": error_message,
@@ -516,82 +506,6 @@ def call_bedrock_multi_image(system_prompt, images):
     return full_text
 
 
-def call_bedrock(full_prompt, image_bytes, media_type):
-    """Legacy single-image Bedrock call for backward compatibility."""
-    response = bedrock.converse(
-        modelId=MODEL_ID,
-        messages=[
-            {
-                "role": "user",
-                "content": [
-                    {
-                        "image": {
-                            "format": media_type.split("/")[1],
-                            "source": {
-                                "bytes": image_bytes,
-                            },
-                        },
-                    },
-                    {
-                        "text": "Extract the title block metadata and BOM data from this ISO drawing. "
-                                "Return the JSON as specified in your instructions.",
-                    },
-                ],
-            },
-        ],
-        system=[{"text": full_prompt}],
-        inferenceConfig={
-            "maxTokens": MAX_TOKENS,
-            "temperature": 0,
-        },
-    )
-
-    output = response.get("output", {})
-    message = output.get("message", {})
-    content = message.get("content", [])
-
-    text_parts = [block["text"] for block in content if "text" in block]
-    if not text_parts:
-        raise ValueError("Bedrock returned no text content in response")
-
-    full_text = "\n".join(text_parts)
-
-    usage = response.get("usage", {})
-    logger.info(f"Bedrock usage — input tokens: {usage.get('inputTokens', '?')}, "
-                f"output tokens: {usage.get('outputTokens', '?')}")
-
-    stop_reason = response.get("stopReason", "unknown")
-    if stop_reason == "max_tokens":
-        logger.error("TRUNCATED_RESPONSE: Claude hit max_tokens limit — JSON will be incomplete. "
-                     f"Increase MAX_TOKENS (currently {MAX_TOKENS}) or reduce drawing complexity.")
-        raise ValueError(f"TRUNCATED_RESPONSE: Bedrock response cut off at {MAX_TOKENS} tokens. "
-                         "Increase MAX_TOKENS constant.")
-
-    return full_text
-
-
-# ---------------------------------------------------------------------------
-# Legacy helper functions
-# ---------------------------------------------------------------------------
-
-def parse_input(event):
-    """Parse legacy event format (direct bucket/key or s3:// URI)."""
-    if "s3_path" in event:
-        path = event["s3_path"]
-        if not path.startswith("s3://"):
-            raise ValueError(f"Invalid s3_path format: {path}. Expected s3://bucket/key")
-        parts = path[5:].split("/", 1)
-        if len(parts) != 2 or not parts[1]:
-            raise ValueError(f"Invalid s3_path format: {path}. Expected s3://bucket/key")
-        return parts[0], parts[1]
-
-    bucket = event.get("bucket")
-    key = event.get("key")
-    if not bucket or not key:
-        raise ValueError("Event must contain either 's3_path' or both 'bucket' and 'key'")
-    return bucket, key
-
-
 def load_text_from_s3(bucket, key):
     """Load a text file from S3."""
     response = s3.get_object(Bucket=bucket, Key=key)
@@ -655,68 +569,6 @@ def load_material_reference_table(bucket, key):
     wb.close()
     logger.info(f"Material reference table loaded: {len(lines)} rows")
     return "\n".join(lines)
-
-def load_drawing_as_image(bucket, key):
-    """Legacy: load drawing file and return image bytes + media type."""
-    response = s3.get_object(Bucket=bucket, Key=key)
-    file_bytes = response["Body"].read()
-    lower_key = key.lower()
-
-    if lower_key.endswith(".pdf"):
-        return convert_pdf_to_png(file_bytes), "image/png"
-    elif lower_key.endswith(".png"):
-        return file_bytes, "image/png"
-    elif lower_key.endswith((".jpg", ".jpeg")):
-        return file_bytes, "image/jpeg"
-    elif lower_key.endswith((".tiff", ".tif")):
-        return convert_tiff_to_png(file_bytes), "image/png"
-    else:
-        logger.warning(f"Unknown file extension for {key}, attempting as PNG")
-        return file_bytes, "image/png"
-
-
-def convert_pdf_to_png(pdf_bytes):
-    """Legacy: convert PDF to full-page PNG for direct image mode."""
-    import fitz
-
-    doc = fitz.open(stream=pdf_bytes, filetype="pdf")
-    if doc.page_count == 0:
-        raise ValueError("PDF has no pages")
-    if doc.page_count > 1:
-        logger.warning(f"PDF has {doc.page_count} pages, using page 1 only")
-
-    page = doc[0]
-    zoom = 300 / 72
-    matrix = fitz.Matrix(zoom, zoom)
-    pix = page.get_pixmap(matrix=matrix, alpha=False)
-    png_bytes = pix.tobytes("png")
-    doc.close()
-
-    logger.info(f"PDF converted to PNG: {pix.width}x{pix.height}, {len(png_bytes)} bytes")
-
-    if len(png_bytes) > 20_000_000:
-        logger.warning("PNG exceeds 20MB, retrying at 200 DPI")
-        doc = fitz.open(stream=pdf_bytes, filetype="pdf")
-        page = doc[0]
-        zoom = 200 / 72
-        matrix = fitz.Matrix(zoom, zoom)
-        pix = page.get_pixmap(matrix=matrix, alpha=False)
-        png_bytes = pix.tobytes("png")
-        doc.close()
-        logger.info(f"Reduced PNG: {pix.width}x{pix.height}, {len(png_bytes)} bytes")
-
-    return png_bytes
-
-
-def convert_tiff_to_png(tiff_bytes):
-    """Convert TIFF to PNG bytes."""
-    from PIL import Image
-
-    img = Image.open(io.BytesIO(tiff_bytes))
-    buf = io.BytesIO()
-    img.save(buf, format="PNG")
-    return buf.getvalue()
-
 
 def parse_extraction_response(raw_text):
     """Parse JSON from Claude's response, stripping markdown fences if present."""
