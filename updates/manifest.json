@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.2.14",
-  "releaseDate": "2026-04-22T16:00:25Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.2.14/VANTAGE-26.2.14.zip",
-  "zipSizeBytes": 151211893,
-  "sha256": "28721344A122B569C7EFD8257534152325811732DA6473039820D84DA8D4FE8C",
-  "releaseNotes": "AI Takeoff: accurate succeeded/failed counts, richer Failed DWGs tab, preserved across Recalc and re-download."
+  "currentVersion": "26.2.15",
+  "releaseDate": "2026-04-23T20:31:43Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.2.15/VANTAGE-26.2.15.zip",
+  "zipSizeBytes": 151214156,
+  "sha256": "B43C4F36DE1D21CAC0C1D09CF4796A603479468AA94D0051B9833A3D962E8798",
+  "releaseNotes": "AI Takeoff: new Malformed Sizes tab, Material Size and Quantity normalized to decimals, Connection Size column removed, slimmer Flagged tab."
 }

@@ -1,6 +1,20 @@
 {
   "releases": [
     {
+      "version": "26.2.15",
+      "date": "2026-04-23",
+      "highlights": [
+        "New — AI Takeoff Excel has a new \"Malformed Sizes\" tab that surfaces rows where the model returned an unbalanced size (e.g., \"0.5x\"); labor rows for those items are skipped so zero-rate rows no longer sneak into the Labor tab",
+        "Improvement — Material tab Size values are normalized to clean decimals on every row (fractions like 1/2 become 0.5; mixed numbers like 2 1/2X2 become 2.5x2)",
+        "Improvement — Material tab Quantity values are normalized to clean decimals on every row (feet-inches and raw text with unit markers are converted)",
+        "Improvement — Summary tab \"CONNECTIONS BY SIZE\" now buckets reducers by each actual connection size instead of lumping the whole reducer size into one bucket",
+        "Change — AI Takeoff Excel no longer includes the Connection Size column on Material or Labor (it was unused)",
+        "Change — Labor tab Description for connection rows is one token shorter (pipe-spec piece removed — users still see it as a dedicated title-block column)",
+        "Change — Flagged tab is narrower: four unused Override columns and the yellow highlight have been removed (cross-reference the Material tab by Drawing Number + Item ID instead)",
+        "Improvement — Failed DWGs tab distinguishes \"no revision-bubbled items found\" (expected on rev-bubble runs with no revisions) from \"no items found in BOM\" (likely a real extraction problem)"
+      ]
+    },
+    {
       "version": "26.2.14",
       "date": "2026-04-22",
       "highlights": [
