@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
 using VANTAGE.Models;
@@ -524,6 +525,113 @@ namespace VANTAGE.Repositories
                 }
             });
         }
+        // Cached reflection for UpdateSnapshotFullAsync. SnapshotData properties that are
+        // editable per SnapshotEditableColumns, excluding UniqueID (used in WHERE clause).
+        private static readonly PropertyInfo[] _snapshotEditableProps =
+            typeof(SnapshotData).GetProperties()
+                .Where(p => SnapshotEditableColumns.IsEditable(p.Name))
+                .ToArray();
+
+        // Full-column snapshot update used by ModifySnapshotDialog. Writes every editable
+        // SnapshotData property to Azure VMS_ProgressSnapshots for one (UniqueID, WeekEndDate)
+        // key, plus UpdatedBy/UpdatedUtcDate. Never touches Activities, LocalDirty, SyncVersion,
+        // or AzureUploadUtcDate. Returns the count of Azure rows affected so callers can
+        // detect the Submit-Week-overwrite race (caller sees 0 if the snapshot was
+        // regenerated externally).
+        public static async Task<int> UpdateSnapshotFullAsync(SnapshotData row, string weekEndDateStr, string username)
+        {
+            return await Task.Run(() =>
+            {
+                try
+                {
+                    var setClauses = _snapshotEditableProps.Select(p => $"{p.Name} = @{p.Name}").ToList();
+                    setClauses.Add("UpdatedBy = @UpdatedBy");
+                    setClauses.Add("UpdatedUtcDate = @UpdatedUtcDate");
+
+                    string sql = $@"
+                        UPDATE VMS_ProgressSnapshots
+                        SET {string.Join(",\n                            ", setClauses)}
+                        WHERE UniqueID = @UniqueID
+                          AND WeekEndDate = @WeekEndDate";
+
+                    using var azureConn = AzureDbManager.GetConnection();
+                    azureConn.Open();
+                    var cmd = azureConn.CreateCommand();
+                    cmd.CommandTimeout = 120;
+                    cmd.CommandText = sql;
+
+                    foreach (var prop in _snapshotEditableProps)
+                    {
+                        object? value = prop.GetValue(row);
+                        cmd.Parameters.AddWithValue($"@{prop.Name}", value ?? (object)DBNull.Value);
+                    }
+                    cmd.Parameters.AddWithValue("@UpdatedBy", username);
+                    cmd.Parameters.AddWithValue("@UpdatedUtcDate", DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"));
+                    cmd.Parameters.AddWithValue("@UniqueID", row.UniqueID);
+                    cmd.Parameters.AddWithValue("@WeekEndDate", weekEndDateStr);
+
+                    int affected = cmd.ExecuteNonQuery();
+
+                    if (affected == 0)
+                    {
+                        AppLogger.Warning(
+                            $"Snapshot UPDATE affected 0 rows (UniqueID={row.UniqueID}, WeekEndDate={weekEndDateStr}) " +
+                            "— snapshot may have been regenerated externally",
+                            "ScheduleRepository.UpdateSnapshotFullAsync");
+                        return 0;
+                    }
+
+                    // Best-effort: mirror the 12-column subset to local ProgressSnapshots so
+                    // the Schedule module reflects edits immediately. Columns covered must
+                    // match the local mirror's schema (see DatabaseSetup.cs).
+                    try
+                    {
+                        using var localConn = new SqliteConnection($"Data Source={DatabaseSetup.DbPath}");
+                        localConn.Open();
+                        var localCmd = localConn.CreateCommand();
+                        localCmd.CommandText = @"
+                            UPDATE ProgressSnapshots
+                            SET SchedActNO = @SchedActNO,
+                                Description = @Description,
+                                PercentEntry = @PercentEntry,
+                                BudgetMHs = @BudgetMHs,
+                                ActStart = @ActStart,
+                                ActFin = @ActFin,
+                                ProjectID = @ProjectID,
+                                UpdatedBy = @UpdatedBy,
+                                UpdatedUtcDate = @UpdatedUtcDate
+                            WHERE UniqueID = @UniqueID
+                              AND WeekEndDate = @WeekEndDate";
+                        localCmd.Parameters.AddWithValue("@SchedActNO", row.SchedActNO);
+                        localCmd.Parameters.AddWithValue("@Description", row.Description);
+                        localCmd.Parameters.AddWithValue("@PercentEntry", row.PercentEntry);
+                        localCmd.Parameters.AddWithValue("@BudgetMHs", row.BudgetMHs);
+                        localCmd.Parameters.AddWithValue("@ActStart", (object?)row.ActStart ?? DBNull.Value);
+                        localCmd.Parameters.AddWithValue("@ActFin", (object?)row.ActFin ?? DBNull.Value);
+                        localCmd.Parameters.AddWithValue("@ProjectID", row.ProjectID);
+                        localCmd.Parameters.AddWithValue("@UpdatedBy", username);
+                        localCmd.Parameters.AddWithValue("@UpdatedUtcDate", DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"));
+                        localCmd.Parameters.AddWithValue("@UniqueID", row.UniqueID);
+                        localCmd.Parameters.AddWithValue("@WeekEndDate", weekEndDateStr);
+                        localCmd.ExecuteNonQuery();
+                    }
+                    catch (Exception localEx)
+                    {
+                        AppLogger.Warning(
+                            $"Local snapshot mirror update failed (Azure write succeeded): {localEx.Message}",
+                            "ScheduleRepository.UpdateSnapshotFullAsync");
+                    }
+
+                    return affected;
+                }
+                catch (Exception ex)
+                {
+                    AppLogger.Error(ex, "ScheduleRepository.UpdateSnapshotFullAsync");
+                    return 0;
+                }
+            });
+        }
+
         // Update editable fields in Schedule table (local SQLite)
         // Only updates: ThreeWeekStart, ThreeWeekFinish, MissedStartReason, MissedFinishReason
         public static async Task<bool> UpdateScheduleRowAsync(ScheduleMasterRow row, string username)

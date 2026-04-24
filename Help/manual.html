@@ -295,6 +295,8 @@
                     <li><a href="#prog-editing">Grid Editing</a></li>
                     <li><a href="#prog-metadata">Required Metadata Fields</a></li>
                     <li><a href="#prog-syncing">Syncing Data</a></li>
+                    <li><a href="#manage-my-snapshots">Manage My Snapshots</a></li>
+                    <li><a href="#modify-snapshot">Modify Snapshot</a></li>
                     <li><a href="#prog-layouts">Column Layouts</a></li>
                     <li><a href="#prog-shortcuts">Keyboard Shortcuts</a></li>
                     <li><a href="#prog-copying">Copying Data</a></li>
@@ -471,7 +473,7 @@
         <li><strong>Export To P6 File</strong> — Export schedule data for import into P6 Primavera</li>
         <li><strong>Clear Local Schedule</strong> — Delete all local schedule data</li>
         <li><strong>Export Logs</strong> — Save application logs to a file or email for troubleshooting</li>
-        <li><strong>Manage My Snapshots</strong> — View, delete, or revert to previous weekly snapshots of your data</li>
+        <li><strong>Manage My Snapshots</strong> — View, delete, modify, or revert to previous weekly snapshots of your data</li>
         <li><strong>Legacy Export Activities</strong> — Export to OldVantage format with 0-1 decimal percentages</li>
         <li><strong>Legacy Export Template</strong> — Export empty template with OldVantage column headers</li>
     </ul>
@@ -989,6 +991,28 @@
     <p><strong>Conflict Handling:</strong> If another user has already submitted a snapshot containing records with the same UniqueID for the selected week, those records are automatically skipped (not overwritten). You'll see a message showing how many records were skipped. You can optionally export the skipped records to Excel to see which records were affected and who originally submitted them.</p>
 
     <p><strong>Grid Lock During Snapshot Capture:</strong> When you click SUBMIT WEEK, the grid is briefly disabled (usually a second or two) while your current activity state is captured to memory. Once captured, the grid re-enables and you can keep editing. Any edits you make after that point are <strong>not</strong> included in the snapshot that was just submitted — they belong to the next week's progress. The remaining submit work (Azure upload, cleanup) runs in the background with a busy indicator you can drag out of the way.</p>
+
+    <h4 id="manage-my-snapshots">Manage My Snapshots</h4>
+    <p>Opened from the <strong>File</strong> menu. Lists every weekly snapshot group (Project + Week Ending + Submitted date) you've ever submitted. Select one or more rows to enable the action buttons:</p>
+    <ul>
+        <li><strong>Delete Selected</strong> — Permanently removes the selected snapshot weeks from Azure. One or more weeks can be selected at once.</li>
+        <li><strong>Modify Selected</strong> — Opens an editable grid of the selected week's snapshot rows so you can correct values and save them back to Azure <em>without affecting</em> your current live activity data. Requires exactly one week selected. See the Modify Snapshot section below.</li>
+        <li><strong>Revert To Selected</strong> — Overwrites your current local activities with the values from the selected snapshot. Intended for "take me back to that week's state and continue from there." Requires exactly one week selected. Offers an optional backup of current state before reverting.</li>
+    </ul>
+
+    <h4 id="modify-snapshot">Modify Snapshot</h4>
+    <p>Opens a new window showing every row in the selected week's snapshot in an editable grid. Use this when you need to correct a value that was already submitted (for example, a percent complete that should have been higher, or a date that was wrong) without disturbing the live work you've done since.</p>
+    <ul>
+        <li>Every field that's editable on the Progress view is editable here, including the 9 required-metadata fields (Project ID, Work Package, Phase Code, Comp Type, Phase Category, Sched Act No, Description, ROC Step, Resp Party).</li>
+        <li>System and calculated columns (identity, sync version, previous-week tracking, Azure upload date, P6 plan dates) are hidden from the grid.</li>
+        <li>Date and percent rules are enforced per-cell as you edit: <em>Start date cannot be in the future, Finish date only when % Complete is 100, etc.</em> Invalid values revert automatically.</li>
+        <li>Required-metadata cells <em>can</em> be cleared temporarily while you shuffle between cells, but Save will abort with a list of the offending rows if any required field is left blank.</li>
+        <li>The <strong>Save</strong> button writes every edited row back to the Azure snapshot and also updates the local Schedule-module mirror so your Schedule view reflects the changes. <strong>Your live Activities are not modified.</strong> The change is invisible to the sync system — no sync push happens, and your current progress continues unaffected.</li>
+    </ul>
+    <div class="warning">
+        <div class="warning-title">Snapshot Regenerated Externally</div>
+        <p>If someone (you or another user) runs Submit Week for the same project and week while the Modify dialog is open, the snapshot rows are replaced and your pending edits cannot be applied to them. Save will tell you if this happened — close Modify and reopen it to edit the current version.</p>
+    </div>
 
     <h3 id="prog-layouts">Column Layouts</h3>
     <p>Your column widths, order, and visibility are automatically saved and persist across app updates. To customize:</p>

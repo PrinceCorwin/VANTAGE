@@ -11,6 +11,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Data.Sqlite;
 using VANTAGE.Data;
 using Syncfusion.SfSkinManager;
+using VANTAGE.Models;
 using VANTAGE.Utilities;
 using VANTAGE.Views;
 
@@ -20,6 +21,14 @@ namespace VANTAGE.Dialogs
     {
         // Modeless: MainWindow reads this on Closed to decide whether to refresh views.
         public bool NeedsRefresh { get; private set; }
+
+        // Called by child dialogs (e.g., ModifySnapshotDialog) after a successful write
+        // to signal that the parent should report a refresh on close.
+        internal void SetNeedsRefresh() => NeedsRefresh = true;
+
+        // Tracks an open child Modify dialog so repeated button clicks focus rather than
+        // open duplicates.
+        private ModifySnapshotDialog? _openModifyDialog;
 
         private List<SnapshotWeekItem> _weeks = new();
 
@@ -134,7 +143,36 @@ namespace VANTAGE.Dialogs
 
             txtSelectionSummary.Text = $"{weekCount} group(s) selected ({snapshotCount:N0} snapshots)";
             btnDelete.IsEnabled = weekCount > 0;    // 1 or more weeks selected
+            btnModify.IsEnabled = weekCount == 1;   // exactly 1 week selected
             btnRevert.IsEnabled = weekCount == 1;   // exactly 1 week selected
+        }
+
+        // Open (or focus) the modeless ModifySnapshotDialog for the selected week.
+        private void BtnModify_Click(object sender, RoutedEventArgs e)
+        {
+            var selectedWeeks = _weeks.Where(w => w.IsSelected).ToList();
+            if (selectedWeeks.Count != 1)
+            {
+                MessageBox.Show("Please select exactly one snapshot week to modify.",
+                    "Select One Week", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (App.CurrentUser == null) return;
+
+            // If a Modify dialog is already open, focus it instead of opening a duplicate.
+            if (_openModifyDialog != null && _openModifyDialog.IsVisible)
+            {
+                _openModifyDialog.Activate();
+                return;
+            }
+
+            _openModifyDialog = new ModifySnapshotDialog(selectedWeeks[0], App.CurrentUser.Username)
+            {
+                Owner = this
+            };
+            _openModifyDialog.Closed += (_, _) => _openModifyDialog = null;
+            _openModifyDialog.Show();
         }
 
         private async void BtnDelete_Click(object sender, RoutedEventArgs e)
@@ -678,8 +716,9 @@ namespace VANTAGE.Dialogs
             return result;
         }
 
-        // Loads snapshot data from Azure
-        private async Task<List<SnapshotData>> LoadSnapshotsFromAzureAsync(SnapshotWeekItem selectedWeek, string username)
+        // Loads snapshot data from Azure. Internal static so ModifySnapshotDialog can reuse
+        // the same 85-column SELECT without duplicating the shape.
+        internal static async Task<List<SnapshotData>> LoadSnapshotsFromAzureAsync(SnapshotWeekItem selectedWeek, string username)
         {
             return await Task.Run(() =>
             {
@@ -1171,96 +1210,6 @@ namespace VANTAGE.Dialogs
         public int RestoredCount { get; set; }
         public List<SkippedRecordItem> SkippedRecords { get; set; } = new();
         public string? ErrorMessage { get; set; }
-    }
-
-    // Data container for snapshot fields to restore
-    public class SnapshotData
-    {
-        public string UniqueID { get; set; } = string.Empty;
-        public string Area { get; set; } = string.Empty;
-        public string? AzureUploadUtcDate { get; set; }
-        public string Aux1 { get; set; } = string.Empty;
-        public string Aux2 { get; set; } = string.Empty;
-        public string Aux3 { get; set; } = string.Empty;
-        public double BaseUnit { get; set; }
-        public double BudgetHoursGroup { get; set; }
-        public double BudgetHoursROC { get; set; }
-        public double BudgetMHs { get; set; }
-        public string ChgOrdNO { get; set; } = string.Empty;
-        public double ClientBudget { get; set; }
-        public double ClientCustom3 { get; set; }
-        public double ClientEquivQty { get; set; }
-        public string CompType { get; set; } = string.Empty;
-        public string CreatedBy { get; set; } = string.Empty;
-        public int DateTrigger { get; set; }
-        public string Description { get; set; } = string.Empty;
-        public string DwgNO { get; set; } = string.Empty;
-        public double EarnQtyEntry { get; set; }
-        public double EarnedMHsRoc { get; set; }
-        public string EqmtNO { get; set; } = string.Empty;
-        public string EquivQTY { get; set; } = string.Empty;
-        public string EquivUOM { get; set; } = string.Empty;
-        public string Estimator { get; set; } = string.Empty;
-        public int HexNO { get; set; }
-        public string HtTrace { get; set; } = string.Empty;
-        public string InsulType { get; set; } = string.Empty;
-        public string LineNumber { get; set; } = string.Empty;
-        public string MtrlSpec { get; set; } = string.Empty;
-        public string Notes { get; set; } = string.Empty;
-        public string PaintCode { get; set; } = string.Empty;
-        public double PercentEntry { get; set; }
-        public string PhaseCategory { get; set; } = string.Empty;
-        public string PhaseCode { get; set; } = string.Empty;
-        public string PipeGrade { get; set; } = string.Empty;
-        public double PipeSize1 { get; set; }
-        public double PipeSize2 { get; set; }
-        public double PrevEarnMHs { get; set; }
-        public double PrevEarnQTY { get; set; }
-        public string? ProgDate { get; set; }
-        public string ProjectID { get; set; } = string.Empty;
-        public double Quantity { get; set; }
-        public string RevNO { get; set; } = string.Empty;
-        public string RFINO { get; set; } = string.Empty;
-        public double ROCBudgetQTY { get; set; }
-        public string ROCID { get; set; } = string.Empty;
-        public double ROCPercent { get; set; }
-        public string ROCStep { get; set; } = string.Empty;
-        public string SchedActNO { get; set; } = string.Empty;
-        public string? ActFin { get; set; }
-        public string? ActStart { get; set; }
-        public string? PlanStart { get; set; }
-        public string? PlanFin { get; set; }
-        public string SecondActno { get; set; } = string.Empty;
-        public string SecondDwgNO { get; set; } = string.Empty;
-        public string Service { get; set; } = string.Empty;
-        public string ShopField { get; set; } = string.Empty;
-        public string ShtNO { get; set; } = string.Empty;
-        public string SubArea { get; set; } = string.Empty;
-        public string PjtSystem { get; set; } = string.Empty;
-        public string PjtSystemNo { get; set; } = string.Empty;
-        public string TagNO { get; set; } = string.Empty;
-        public string UDF1 { get; set; } = string.Empty;
-        public string UDF2 { get; set; } = string.Empty;
-        public string UDF3 { get; set; } = string.Empty;
-        public string UDF4 { get; set; } = string.Empty;
-        public string UDF5 { get; set; } = string.Empty;
-        public string UDF6 { get; set; } = string.Empty;
-        public string UDF7 { get; set; } = string.Empty;
-        public string UDF8 { get; set; } = string.Empty;
-        public string UDF9 { get; set; } = string.Empty;
-        public string UDF10 { get; set; } = string.Empty;
-        public string UDF11 { get; set; } = string.Empty;
-        public string UDF12 { get; set; } = string.Empty;
-        public string UDF13 { get; set; } = string.Empty;
-        public string UDF14 { get; set; } = string.Empty;
-        public string UDF15 { get; set; } = string.Empty;
-        public string UDF16 { get; set; } = string.Empty;
-        public string UDF17 { get; set; } = string.Empty;
-        public string RespParty { get; set; } = string.Empty;
-        public string UDF20 { get; set; } = string.Empty;
-        public string UOM { get; set; } = string.Empty;
-        public string WorkPackage { get; set; } = string.Empty;
-        public string XRay { get; set; } = string.Empty;
     }
 
     #endregion
