@@ -57,7 +57,7 @@ Backlog of small issues surfaced during the 2026-04-22 Lambda review. None are b
 ### 8. App-level retry around `bedrock.converse`
 **Where:** `call_bedrock_multi_image()`.
 **What:** Currently only botocore adaptive retries (max_attempts=10) handle throttling/5xx. No application-level retry with backoff on transient errors.
-**Why:** Only worth adding if batch reliability ever becomes a problem at higher concurrency (e.g., after the Bedrock quota increase lands). Not needed at MaxConcurrency=3.
+**Why:** Only worth adding if batch reliability ever becomes a problem at higher concurrency (e.g., after the Bedrock quota increase lands). Not needed at MaxConcurrency=40 under current quota.
 **Effort:** Medium. Defer until it's a real problem.
 
 ### 9. `render_pdf_page` memory guard assumes RGB

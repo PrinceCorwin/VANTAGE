@@ -24,6 +24,7 @@ WPF application for Summit Industrial replacing the legacy MS Access system ("Ol
 ## Workflow Skills
 - **Commits / end-of-session docs:** Invoke `/finisher`. Handles Project_Status.md, Completed_Work.md (with monthly archiving), manual.html check, Decisions.md, plan file cleanup, commit, and push.
 - **Releases:** Invoke `/publisher`. Handles version bump, ReleaseNotes.json, publish script, manifest.json, GitHub Release, and verification.
+- **AWS / Lambda / S3 / ECR / Step Functions work:** Read `Plans/claude-code-aws-deployment-guide.md` BEFORE proposing or running any AWS operation. Contains SHA verification patterns, deploy recipes, failure modes, and rollback references.
 - NEVER commit or publish outside these skills.
 
 ## Development Approach

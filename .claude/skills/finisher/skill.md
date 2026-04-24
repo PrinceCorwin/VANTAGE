@@ -89,6 +89,23 @@ Before adding entries, scan ALL `###` date headers in `Completed_Work.md` — no
 - If the session's work relates to a specific feature that has its own plan document in `Plans/` (e.g., `WorkPackage_Module_Plan.md`, `Schedule_Module_plan.md`), review and update that document as needed
 - If not applicable, skip this step
 
+## Step 3.7: UserSettings Registry Sync
+
+If the session's changes did any of the following to user settings, update `Utilities/UserSettingsRegistry.cs` before commit:
+- **Added** a new `SetUserSetting` / `GetUserSetting` / `RemoveUserSetting` call with a new key name
+- **Removed** the last call site of a key (the key is now dead)
+- **Renamed** a key
+- **Changed the default value** passed to `GetUserSetting(name, default)`
+
+When updating the registry:
+- Decide whether the key belongs to an existing group, needs a new group, or should be added to the deny-list comment (system/bookkeeping keys, or keys already managed by a dedicated dialog — e.g. Theme submenu, Grid Layouts dialog, Manage Filters dialog, the Analysis chart filter Reset button, etc.).
+- Keep the natural-language label and Description accurate.
+- Keep the default value in the registry synced with what call sites pass to `GetUserSetting(name, default)`.
+
+Rule of thumb for exclusion: if a user can already modify, add, or delete the setting via a UI control or a dedicated manager dialog, it does NOT belong in the Reset dialog — list it in the deny-list comment at the bottom of `UserSettingsRegistry.cs` with a reason.
+
+Skip this step if the session only read user settings without adding/removing/renaming/redefaulting keys.
+
 ## Step 4: Commit and Push
 
 - Run `git add -A` to stage everything
