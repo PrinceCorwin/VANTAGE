@@ -6,15 +6,13 @@ WPF application for Summit Industrial replacing the legacy MS Access system ("Ol
 - **Official name:** VANTAGE: Milestone (use this in UI, docs, README)
 - **Casual references:** Vantage, VMS, newVantage — all refer to this application
 - **Legacy system:** OldVantage — the predecessor MS Access/VBA application
-- **Company name:** Summit Industrial — this is the ONLY correct name for the company
-  - NEVER use "Summit Constructors", "Summit Industrial Constructors", or any other variation
-  - Always use "Summit Industrial" wherever the company name appears in code, UI, docs, or installer
-- Do NOT refer to the app as just "Milestone" or "MILESTONE" in new code, UI text, or documentation. Always refer to it as "VANTAGE: Milestone" or "Vantage" for short. The full name should be used in formal contexts (UI titles, documentation headers, README), while "Vantage" can be used in casual references (variable names, comments, informal docs). Avoid using "Milestone" alone to prevent confusion with the schedule module or generic milestones.
+- **Company name:** Summit Industrial — the ONLY correct form. Never "Summit Constructors", "Summit Industrial Constructors", or any other variation. Applies everywhere: code, UI, docs, installer.
+- **App name in text:** always "VANTAGE: Milestone" (formal) or "Vantage" (casual). Never "Milestone" alone — conflicts with the schedule module and generic milestones.
 
-**See also:** `Project_Status.md` (todos, backlog), `Completed_Work.md` (changelog), `Milestone_Project_plan.md` (architecture), `Decisions.md` (design decisions)
+**See also:** `Plans/Project_Status.md` (todos, backlog), `Plans/Completed_Work.md` (changelog), `Plans/Milestone_Project_plan.md` (architecture), `Plans/Decisions.md` (design decisions)
 
 ## Tech Stack
-- WPF .NET 8, Syncfusion 31.2.12 (FluentDark theme)
+- WPF .NET 8, Syncfusion 33.1.45 (FluentDark / FluentLight base themes; see `Utilities/ThemeManager.cs`)
 - SQLite (local) + Azure SQL Server (central sync)
 - MVVM with async/await
 - **App is LIVE with active users** - treat all changes as production changes
@@ -120,15 +118,16 @@ if (!AzureDbManager.CheckConnection(out string errorMessage))
 
 ## Syncfusion Notes
 - SfDataGrid: Use `sfGrid.View.Filter` for custom filtering (not ICollectionView.Filter)
-- FluentDark theme requires SfSkinManager on dialogs
+- Dialogs must apply SfSkinManager so the active theme propagates (see `Utilities/ThemeManager.cs` for theme names)
 - Column persistence: width, order, visibility stored in UserSettings
 - Virtualization is automatic - don't implement manual
 - CommonMark: blank line required before lists and after headers
 
 ## Edit Validation Rules
-- See `Utilities/ActivityValidator.cs` — single source of truth for Activity date/percent rules.
-- Metadata errors (9 required fields) block sync operations.
-- Required fields: WorkPackage, PhaseCode, CompType, PhaseCategory, ProjectID, SchedActNO, Description, ROCStep, RespParty.
+- `Utilities/ActivityValidator.cs` is the single source of truth for Activity date/percent rules.
+- `Utilities/ActivityValidator.cs` → `ActivityRequiredMetadata` is the single source of truth for the 9 required-metadata field names. Add/remove a field there and every call site (Import Takeoff dialog, sync-gate SQL, reassign check, user-facing error messages) updates in lockstep via `Fields`, `FieldsDisplay`, and `BuildMissingFieldSql(alias)`.
+- Metadata errors block sync and reassign operations.
+- Conditional rules (ActStart required when % > 0, ActFin required when % = 100) and the `ProjectID` existence check against the `Projects` table remain hand-coded alongside the generated fragments — they aren't part of the simple 9-field list.
 
 ## Performance Rules
 - NO Debug.WriteLine in loops

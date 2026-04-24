@@ -62,12 +62,10 @@ namespace VANTAGE.Dialogs
             "ClientEquivQty", "ClientBudget", "ClientCustom3"
         };
 
-        // Required metadata fields that must be populated for every imported record
-        private static readonly string[] RequiredMetadataFields = new[]
-        {
-            "ProjectID", "WorkPackage", "PhaseCode", "CompType",
-            "PhaseCategory", "SchedActNO", "Description", "ROCStep", "RespParty"
-        };
+        // Required metadata fields that must be populated for every imported record.
+        // Sourced from the canonical list in Utilities/ActivityValidator.cs so the
+        // Import dialog UI, sync gate, and error messages stay in lockstep.
+        private static string[] RequiredMetadataFields => ActivityRequiredMetadata.Fields;
 
         // Vantage Excel backup template column order
         public static readonly string[] VantageExcelColumns = new[]

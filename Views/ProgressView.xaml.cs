@@ -318,17 +318,9 @@ namespace VANTAGE.Views
                 _viewModel.ClearFiltersWithoutReload();
 
                 // Apply metadata error filter - records missing required fields
-                var errorFilter = @"(
-                        WorkPackage IS NULL OR WorkPackage = '' OR
-                        PhaseCode IS NULL OR PhaseCode = '' OR
-                        CompType IS NULL OR CompType = '' OR
-                        PhaseCategory IS NULL OR PhaseCategory = '' OR
-                        ProjectID IS NULL OR ProjectID = '' OR
+                var errorFilter = $@"(
+                        {ActivityRequiredMetadata.BuildMissingFieldSql()} OR
                         NOT EXISTS (SELECT 1 FROM Projects p WHERE p.ProjectID = Activities.ProjectID) OR
-                        SchedActNO IS NULL OR SchedActNO = '' OR
-                        Description IS NULL OR Description = '' OR
-                        ROCStep IS NULL OR ROCStep = '' OR
-                        RespParty IS NULL OR RespParty = '' OR
                         (PercentEntry > 0 AND (ActStart IS NULL OR ActStart = '')) OR
                         (PercentEntry >= 100 AND (ActFin IS NULL OR ActFin = ''))
                     )";
@@ -357,20 +349,12 @@ namespace VANTAGE.Views
                     connection.Open();
 
                     var cmd = connection.CreateCommand();
-                    cmd.CommandText = @"
+                    cmd.CommandText = $@"
                 SELECT COUNT(*) FROM Activities a
                 WHERE a.AssignedTo = @currentUser
                   AND (
-                    a.WorkPackage IS NULL OR a.WorkPackage = '' OR
-                    a.PhaseCode IS NULL OR a.PhaseCode = '' OR
-                    a.CompType IS NULL OR a.CompType = '' OR
-                    a.PhaseCategory IS NULL OR a.PhaseCategory = '' OR
-                    a.ProjectID IS NULL OR a.ProjectID = '' OR
+                    {ActivityRequiredMetadata.BuildMissingFieldSql("a.")} OR
                     NOT EXISTS (SELECT 1 FROM Projects p WHERE p.ProjectID = a.ProjectID) OR
-                    a.SchedActNO IS NULL OR a.SchedActNO = '' OR
-                    a.Description IS NULL OR a.Description = '' OR
-                    a.ROCStep IS NULL OR a.ROCStep = '' OR
-                    a.RespParty IS NULL OR a.RespParty = '' OR
                     (a.PercentEntry > 0 AND (a.ActStart IS NULL OR a.ActStart = '')) OR
                     (a.PercentEntry >= 100 AND (a.ActFin IS NULL OR a.ActFin = ''))
                   )";
@@ -388,6 +372,34 @@ namespace VANTAGE.Views
             {
                 AppLogger.Error(ex, "ProgressView.CalculateMetadataErrorCount");
             }
+        }
+
+        // Project-scoped metadata error count for Submit Week (does NOT mutate viewmodel state).
+        // Returns the number of the current user's activities in the given project that fail
+        // required-metadata, ProjectID-exists, or conditional date rules.
+        private async Task<int> CountMetadataErrorsForProject(string projectId)
+        {
+            return await Task.Run(() =>
+            {
+                using var connection = DatabaseSetup.GetConnection();
+                connection.Open();
+
+                var cmd = connection.CreateCommand();
+                cmd.CommandText = $@"
+                SELECT COUNT(*) FROM Activities a
+                WHERE a.AssignedTo = @currentUser
+                  AND a.ProjectID = @projectId
+                  AND (
+                    {ActivityRequiredMetadata.BuildMissingFieldSql("a.")} OR
+                    NOT EXISTS (SELECT 1 FROM Projects p WHERE p.ProjectID = a.ProjectID) OR
+                    (a.PercentEntry > 0 AND (a.ActStart IS NULL OR a.ActStart = '')) OR
+                    (a.PercentEntry >= 100 AND (a.ActFin IS NULL OR a.ActFin = ''))
+                  )";
+                cmd.Parameters.AddWithValue("@currentUser", App.CurrentUser?.Username ?? "");
+                cmd.Parameters.AddWithValue("@projectId", projectId);
+
+                return Convert.ToInt32(cmd.ExecuteScalar());
+            });
         }
 
         // Navigate to first row in grid
@@ -3231,6 +3243,22 @@ namespace VANTAGE.Views
                     selectedProject = projectCombo.SelectedItem as string ?? userProjects[0];
                 }
 
+                // Step 3b: Block Submit if the selected project has any metadata errors.
+                // Scoped to selectedProject so errors in other projects don't block this submit.
+                var projectErrorCount = await CountMetadataErrorsForProject(selectedProject);
+                if (projectErrorCount > 0)
+                {
+                    MessageBox.Show(
+                        $"Cannot submit. {projectErrorCount} record(s) in project {selectedProject} have missing required metadata.\n\n" +
+                        "Click 'Metadata Errors' button to view and fix these records.\n\n" +
+                        $"Required fields: {ActivityRequiredMetadata.FieldsDisplay}\n" +
+                        "Conditional: ActStart (when % > 0), ActFin (when % = 100)",
+                        "Metadata Errors",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+                    return;
+                }
+
                 // Step 4: Date picker dialog (default to previous Sunday)
                 var today = DateTime.Today;
                 var daysSinceSunday = (int)today.DayOfWeek;
@@ -4149,7 +4177,7 @@ namespace VANTAGE.Views
                     MessageBox.Show(
                         $"Cannot sync. You have {_viewModel.MetadataErrorCount} record(s) with missing required metadata.\n\n" +
                         "Click 'Metadata Errors' button to view and fix these records.\n\n" +
-                        "Required fields: WorkPackage, PhaseCode, CompType, PhaseCategory, ProjectID, SchedActNO, Description, ROCStep, RespParty\n" +
+                        $"Required fields: {ActivityRequiredMetadata.FieldsDisplay}\n" +
                         "Conditional: ActStart (when % > 0), ActFin (when % = 100)",
                         "Metadata Errors",
                         MessageBoxButton.OK,
@@ -5485,17 +5513,17 @@ namespace VANTAGE.Views
                     return;
             }
 
-            // Check for metadata errors in allowed records
+            // Check for metadata errors in allowed records.
+            // Iterate the canonical required-metadata list via reflection, but skip ProjectID
+            // because HasInvalidProjectID already covers "empty OR not in Projects table".
+            var requiredStringProps = ActivityRequiredMetadata.Fields
+                .Where(f => !string.Equals(f, "ProjectID", StringComparison.Ordinal))
+                .Select(f => typeof(Activity).GetProperty(f)!)
+                .ToArray();
+
             var recordsWithErrors = allowedActivities.Where(a =>
-                string.IsNullOrWhiteSpace(a.WorkPackage) ||
-                string.IsNullOrWhiteSpace(a.PhaseCode) ||
-                string.IsNullOrWhiteSpace(a.CompType) ||
-                string.IsNullOrWhiteSpace(a.PhaseCategory) ||
+                requiredStringProps.Any(p => string.IsNullOrWhiteSpace((string?)p.GetValue(a))) ||
                 a.HasInvalidProjectID ||
-                string.IsNullOrWhiteSpace(a.SchedActNO) ||
-                string.IsNullOrWhiteSpace(a.Description) ||
-                string.IsNullOrWhiteSpace(a.ROCStep) ||
-                string.IsNullOrWhiteSpace(a.RespParty) ||
                 a.HasMissingActStart ||
                 a.HasMissingActFin
             ).ToList();
@@ -5505,7 +5533,7 @@ namespace VANTAGE.Views
                 MessageBox.Show(
                     $"Cannot reassign. {recordsWithErrors.Count} selected record(s) have missing required metadata.\n\n" +
                     "Click 'Metadata Errors' button to view and fix these records.\n\n" +
-                    "Required fields: WorkPackage, PhaseCode, CompType, PhaseCategory, ProjectID, SchedActNO, Description, ROCStep, RespParty\n" +
+                    $"Required fields: {ActivityRequiredMetadata.FieldsDisplay}\n" +
                     "Conditional: ActStart (when % > 0), ActFin (when % = 100)",
                     "Metadata Errors",
                     MessageBoxButton.OK,
