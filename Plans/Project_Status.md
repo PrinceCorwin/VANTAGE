@@ -1,6 +1,6 @@
 # MILESTONE - Project Status
 
-**Last Updated:** April 24, 2026 (later)
+**Last Updated:** April 25, 2026
 
 ## Deferred to Post-V1
 | Feature | Reason |

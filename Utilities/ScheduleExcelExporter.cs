@@ -63,7 +63,7 @@ namespace VANTAGE.Utilities
             sheet.Cell(2, 4).Value = "Activity Name";
             sheet.Cell(2, 5).Value = "Actual Start";
             sheet.Cell(2, 6).Value = "Actual Finish";
-            sheet.Cell(2, 7).Value = "Activity % Complete";
+            sheet.Cell(2, 7).Value = "Activity % Complete(%)";
 
             // Style header rows
             var headerRange = sheet.Range(1, 1, 2, 7);
@@ -125,7 +125,7 @@ namespace VANTAGE.Utilities
             if (percentComplete <= 0)
                 return "Not Started";
             if (percentComplete >= 100)
-                return "Complete";
+                return "Completed";
             return "In Progress";
         }
 
