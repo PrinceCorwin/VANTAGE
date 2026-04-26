@@ -1,6 +1,17 @@
 {
   "releases": [
     {
+      "version": "26.2.17",
+      "date": "2026-04-26",
+      "highlights": [
+        "New — Row actions (Select All, Delete, Copy, Duplicate, Add Blank Row, Export Selected) live in a new Actions dropdown in the Progress filter sidebar instead of the grid's right-click menu. Multi-row selection survives — selecting 50 rows and choosing Delete actually deletes all 50, where right-clicking the grid would have cleared your selection down to a single row first.",
+        "Improvement — Right-clicking on a column header still opens the column menu (Find & Replace, Copy Column, Freeze, etc.) — only the row-action menu moved.",
+        "Improvement — Dropdown menus close automatically when you move the cursor away. Applies to the Actions and USER buttons in the Progress sidebar and the File / Tools / Admin menus in the top toolbar.",
+        "Improvement — Select All in the Actions menu shows a loading spinner while it processes large selections, so you can see the app is working through the operation instead of wondering if it's frozen.",
+        "Fix — Delete confirmation dialog appears immediately on click; the brief loading-overlay flicker before the prompt is gone."
+      ]
+    },
+    {
       "version": "26.2.16",
       "date": "2026-04-26",
       "highlights": [

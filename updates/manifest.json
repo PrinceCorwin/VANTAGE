@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.2.16",
-  "releaseDate": "2026-04-26T08:16:18Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.2.16/VANTAGE-26.2.16.zip",
-  "zipSizeBytes": 151226710,
-  "sha256": "016F44A660416CDDDE8C1F663AEF8211160EB3854DB4E04DB2C69C1977503BA3",
-  "releaseNotes": "New Modify Snapshot dialog, Submit Week metadata gate, Schedule Reports AssignedTo column, P6 export status_code/header fixes."
+  "currentVersion": "26.2.17",
+  "releaseDate": "2026-04-26T16:08:11Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.2.17/VANTAGE-26.2.17.zip",
+  "zipSizeBytes": 151233125,
+  "sha256": "859FA82BF6A7ECF3EDAE9B90A944E36E9B5FEDF954572BC896AB56A05C298A76",
+  "releaseNotes": "Row actions moved to a new Actions dropdown in the Progress sidebar — multi-row selection survives. Hover-out auto-close on Actions / USER / File / Tools / Admin menus. Loading spinner during Select All."
 }
