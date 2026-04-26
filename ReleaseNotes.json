@@ -1,6 +1,17 @@
 {
   "releases": [
     {
+      "version": "26.2.16",
+      "date": "2026-04-26",
+      "highlights": [
+        "New — Modify Snapshot button on Manage My Snapshots dialog: edit historical snapshot rows (percent, dates, budget hours, etc.) without disturbing your live Activities. Useful for correcting a past week after an admin or scheduler flags an issue.",
+        "New — Submit Week is now blocked when records on the selected project are missing required metadata (WorkPackage, PhaseCode, CompType, PhaseCategory, ProjectID, SchedActNO, Description, ROCStep, RespParty) — same rule as the sync gate, scoped to the selected project. Click the Metadata Errors footer button to find and fix the offending rows.",
+        "New — Schedule Reports export (3WLA / 6WLA / 9WLA) now includes an AssignedTo column at the far right, stamped with the username of whoever ran the export. Helps schedulers receiving exports from multiple users tell whose file is whose even after renaming, sorting, or merging.",
+        "Fix — P6 export now writes status_code \"Completed\" instead of \"Complete\" to match P6's expected enum value for finished activities.",
+        "Improvement — Activity % Complete header in the P6 export gained a (%) unit suffix to match P6's standard secondary-header convention (Budgeted Labor Units(h), date columns (d), etc.). Round-trip with VANTAGE's importer is unaffected."
+      ]
+    },
+    {
       "version": "26.2.15",
       "date": "2026-04-23",
       "highlights": [

@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.2.15",
-  "releaseDate": "2026-04-23T20:31:43Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.2.15/VANTAGE-26.2.15.zip",
-  "zipSizeBytes": 151214156,
-  "sha256": "B43C4F36DE1D21CAC0C1D09CF4796A603479468AA94D0051B9833A3D962E8798",
-  "releaseNotes": "AI Takeoff: new Malformed Sizes tab, Material Size and Quantity normalized to decimals, Connection Size column removed, slimmer Flagged tab."
+  "currentVersion": "26.2.16",
+  "releaseDate": "2026-04-26T08:16:18Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.2.16/VANTAGE-26.2.16.zip",
+  "zipSizeBytes": 151226710,
+  "sha256": "016F44A660416CDDDE8C1F663AEF8211160EB3854DB4E04DB2C69C1977503BA3",
+  "releaseNotes": "New Modify Snapshot dialog, Submit Week metadata gate, Schedule Reports AssignedTo column, P6 export status_code/header fixes."
 }
