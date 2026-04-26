@@ -23,6 +23,7 @@ WPF application for Summit Industrial replacing the legacy MS Access system ("Ol
 - **Commits / end-of-session docs:** Invoke `/finisher`. Handles Project_Status.md, Completed_Work.md (with monthly archiving), manual.html check, Decisions.md, plan file cleanup, commit, and push.
 - **Releases:** Invoke `/publisher`. Handles version bump, ReleaseNotes.json, publish script, manifest.json, GitHub Release, and verification.
 - **AWS / Lambda / S3 / ECR / Step Functions work:** Read `Plans/claude-code-aws-deployment-guide.md` BEFORE proposing or running any AWS operation. Contains SHA verification patterns, deploy recipes, failure modes, and rollback references.
+- **Security-sensitive code paths:** Read `Plans/Security_Guidelines.md` BEFORE writing or modifying: CSV/XLSX exports (`ScheduleExcelExporter`), code that builds filenames/paths from user input (WorkPackage → PDF, ProjectID → folder), AI Takeoff prompt construction or response parsing, exception/AI logging behavior, or `FeedbackDialog` submission. Contains formula-injection sanitizer, Windows-reserved-name filename guard, AI input/output validation rules, and logging hygiene patterns.
 - NEVER commit or publish outside these skills.
 
 ## Development Approach
@@ -84,6 +85,7 @@ Log these user actions with username parameter:
 - Sync: UniqueID matching, SyncVersion monotonic integers
 - Azure PK: ActivityID (auto-increment); Local PK: UniqueID
 - ExecuteScalar can return null: `Convert.ToInt64(cmd.ExecuteScalar() ?? 0)`
+- ALL user-influenced values use parameterized queries (`@param` for both `SqlCommand` and `SqliteCommand`) — never string-concat user input into SQL. Audit smell: any `$"..."` or `+` building a SQL command literal. Column/table names that must be dynamic go through an allowlist, never raw user input.
 
 ## Data Patterns
 
@@ -91,6 +93,8 @@ Log these user actions with username parameter:
 - Activities have `AssignedTo` field - users only edit their own records
 - Admins bypass ownership checks: `AzureDbManager.IsUserAdmin(username)`
 - Always verify ownership before edits/deletes
+- For destructive operations (delete, bulk reassign, ProgressLog upload), the Azure-side check is authoritative — don't rely solely on in-memory ownership state.
+- Admin status comes from the Azure `Admins` table ONLY — never from local config, registry, env vars, or username pattern matching.
 
 ### Sync System
 - `LocalDirty = 1` marks records for push to Azure
@@ -128,6 +132,7 @@ if (!AzureDbManager.CheckConnection(out string errorMessage))
 - `Utilities/ActivityValidator.cs` → `ActivityRequiredMetadata` is the single source of truth for the 9 required-metadata field names. Add/remove a field there and every call site (Import Takeoff dialog, sync-gate SQL, reassign check, user-facing error messages) updates in lockstep via `Fields`, `FieldsDisplay`, and `BuildMissingFieldSql(alias)`.
 - Metadata errors block sync and reassign operations.
 - Conditional rules (ActStart required when % > 0, ActFin required when % = 100) and the `ProjectID` existence check against the `Projects` table remain hand-coded alongside the generated fragments — they aren't part of the simple 9-field list.
+- New editable text fields in XAML should set explicit `MaxLength` matching the underlying column width — defends against paste-bomb scenarios at 100k-row scale and matches DB constraints in the UI.
 
 ## Performance Rules
 - NO Debug.WriteLine in loops
@@ -150,6 +155,7 @@ if (!AzureDbManager.CheckConnection(out string errorMessage))
 - DATETIME types for dates - always TEXT
 - Assuming Azure tables match local schema exactly (Azure has IsDeleted, Admins table)
 - **Modifying `Credentials.cs`** - this file is gitignored and shared across branches; only modify when explicitly instructed
+- **Surfacing secrets in UI or logs** — never echo `Credentials.cs` values, connection strings, or API keys in error dialogs, status bar text, or feedback submissions. Surface generic wording ("Database error — see log"); log details via `AppLogger`. `SqlException.Message` can echo parameter values, so never string-format `ex.Message` into a user-visible MessageBox.
 
 ## Key Files
 | File | Purpose |
