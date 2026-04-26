@@ -343,6 +343,11 @@ namespace VANTAGE
                 btnAdmin.Visibility = Visibility.Collapsed;
             }
 
+            // Hover-out auto-close on the toolbar dropdowns.
+            VANTAGE.Utilities.MenuAutoClose.Attach(btnFile);
+            VANTAGE.Utilities.MenuAutoClose.Attach(btnTools);
+            VANTAGE.Utilities.MenuAutoClose.Attach(btnAdmin);
+
             // Hide TAKEOFFS button unless user has Estimator role
             if (App.CurrentUser == null || !App.CurrentUser.IsEstimator)
             {

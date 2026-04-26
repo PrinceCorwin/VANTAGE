@@ -495,6 +495,188 @@
                         </Button.Effect>
                     </Button>
 
+                    <Border Height="1"
+                            Background="{DynamicResource ControlBorder}"
+                            Margin="0,20,0,20"/>
+
+                    <Button x:Name="btnActions"
+                            Style="{StaticResource SidebarButtonStyle}"
+                            Height="35"
+                            Margin="0,0,0,0"
+                            Background="{DynamicResource ControlBackground}"
+                            Foreground="{DynamicResource ForegroundColor}"
+                            BorderBrush="{DynamicResource SidebarButtonBorder}"
+                            BorderThickness="1"
+                            HorizontalContentAlignment="Center"
+                            Padding="5,0"
+                            FontSize="11"
+                            Click="BtnActions_Click"
+                            ToolTip="Row actions: Select All, Delete, Copy, Duplicate, Add Blank, Export">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Actions" VerticalAlignment="Center"/>
+                            <TextBlock Text=" &#x25BC;" FontSize="8" VerticalAlignment="Center" Margin="3,1,0,0"/>
+                        </StackPanel>
+                        <Button.ContextMenu>
+                            <ContextMenu x:Name="ctxActions"
+                                         Background="{DynamicResource ControlBackground}"
+                                         Foreground="{DynamicResource ForegroundColor}"
+                                         BorderBrush="{DynamicResource ControlBorder}"
+                                         BorderThickness="1"
+                                         Padding="0"
+                                         Opened="CtxActions_Opened"
+                                         Closed="CtxActions_Closed">
+                                <ContextMenu.ItemContainerStyle>
+                                    <Style TargetType="MenuItem">
+                                        <Setter Property="Background" Value="{DynamicResource ControlBackground}"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="MenuItem">
+                                                    <Border x:Name="Border"
+                                                            Background="{TemplateBinding Background}"
+                                                            BorderThickness="0"
+                                                            Padding="14,8">
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="*"/>
+                                                                <ColumnDefinition Width="Auto"/>
+                                                            </Grid.ColumnDefinitions>
+                                                            <ContentPresenter Grid.Column="0"
+                                                                              ContentSource="Header"
+                                                                              VerticalAlignment="Center"
+                                                                              RecognizesAccessKey="True"/>
+                                                            <Path x:Name="SubmenuArrow"
+                                                                  Grid.Column="1"
+                                                                  Data="M 0 0 L 4 4 L 0 8 Z"
+                                                                  Fill="{TemplateBinding Foreground}"
+                                                                  VerticalAlignment="Center"
+                                                                  Margin="12,0,0,0"
+                                                                  Visibility="Collapsed"/>
+                                                            <Popup x:Name="PART_Popup"
+                                                                   Grid.Column="0"
+                                                                   Grid.ColumnSpan="2"
+                                                                   AllowsTransparency="True"
+                                                                   Focusable="False"
+                                                                   IsOpen="{TemplateBinding IsSubmenuOpen}"
+                                                                   Placement="Right"
+                                                                   PopupAnimation="Fade">
+                                                                <Border Background="{DynamicResource ControlBackground}"
+                                                                        BorderBrush="{DynamicResource ControlBorder}"
+                                                                        BorderThickness="1">
+                                                                    <StackPanel IsItemsHost="True"
+                                                                                KeyboardNavigation.DirectionalNavigation="Cycle"/>
+                                                                </Border>
+                                                            </Popup>
+                                                        </Grid>
+                                                    </Border>
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsHighlighted" Value="True">
+                                                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource ControlHoverBackground}"/>
+                                                        </Trigger>
+                                                        <Trigger Property="IsEnabled" Value="False">
+                                                            <Setter Property="Foreground" Value="{DynamicResource DisabledText}"/>
+                                                        </Trigger>
+                                                        <Trigger Property="HasItems" Value="True">
+                                                            <Setter TargetName="SubmenuArrow" Property="Visibility" Value="Visible"/>
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </ContextMenu.ItemContainerStyle>
+
+                                <!-- Select All — icon inline in the Header so we don't need WPF's Icon gutter.
+                                     Click handler does the work + reopens the menu via Dispatcher.BeginInvoke
+                                     since WPF's ButtonBase processes MouseLeftButtonUp with HandledEventsToo,
+                                     so no Preview-event trick can prevent menu close. Brief flicker accepted. -->
+                                <MenuItem Click="MenuSelectAll_Click"
+                                          ToolTip="Select all filtered rows (Ctrl+A)">
+                                    <MenuItem.Header>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="&#x2611;" FontSize="14" Width="22" VerticalAlignment="Center"/>
+                                            <TextBlock Text="Select All" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </MenuItem.Header>
+                                </MenuItem>
+
+                                <!-- Delete Row(s) — red foreground for destructive action -->
+                                <MenuItem Click="DeleteSelectedActivities_Click"
+                                          Foreground="{DynamicResource ErrorText}">
+                                    <MenuItem.Header>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="&#x1F5D1;&#xFE0F;" FontSize="14" Width="22" VerticalAlignment="Center"/>
+                                            <TextBlock Text="Delete Row(s)" VerticalAlignment="Center" Foreground="{DynamicResource ErrorText}"/>
+                                        </StackPanel>
+                                    </MenuItem.Header>
+                                </MenuItem>
+
+                                <!-- Copy Row(s) parent + submenu -->
+                                <MenuItem>
+                                    <MenuItem.Header>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="&#x1F4CB;" FontSize="14" Width="22" VerticalAlignment="Center"/>
+                                            <TextBlock Text="Copy Row(s)" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </MenuItem.Header>
+                                    <MenuItem Click="MenuCopyVisibleColumns_Click">
+                                        <MenuItem.Header>
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Width="22"/>
+                                                <TextBlock Text="Copy (Visible Columns)" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </MenuItem.Header>
+                                    </MenuItem>
+                                    <MenuItem Click="MenuCopyAllColumns_Click">
+                                        <MenuItem.Header>
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Width="22"/>
+                                                <TextBlock Text="Copy (All Columns)" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </MenuItem.Header>
+                                    </MenuItem>
+                                </MenuItem>
+
+                                <!-- Duplicate Row(s) -->
+                                <MenuItem Click="MenuDuplicateRows_Click">
+                                    <MenuItem.Header>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="&#x2795;" FontSize="14" Width="22" VerticalAlignment="Center"/>
+                                            <TextBlock Text="Duplicate Row(s)" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </MenuItem.Header>
+                                </MenuItem>
+
+                                <!-- Add Blank Row -->
+                                <MenuItem Click="MenuAddBlankRow_Click"
+                                          ToolTip="Create a new blank activity row assigned to you">
+                                    <MenuItem.Header>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="&#x1F4DD;" FontSize="14" Width="22" VerticalAlignment="Center"/>
+                                            <TextBlock Text="Add Blank Row" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </MenuItem.Header>
+                                </MenuItem>
+
+                                <!-- Export Selected -->
+                                <MenuItem Click="MenuExportSelected_Click">
+                                    <MenuItem.Header>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="&#x1F4E4;" FontSize="14" Width="22" VerticalAlignment="Center"/>
+                                            <TextBlock Text="Export Selected" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </MenuItem.Header>
+                                </MenuItem>
+
+                            </ContextMenu>
+                        </Button.ContextMenu>
+                        <Button.Effect>
+                            <DropShadowEffect ShadowDepth="4" BlurRadius="6" Direction="315"
+                                              Opacity="{DynamicResource ButtonShadowOpacity}"
+                                              Color="{DynamicResource ButtonShadowColor}"/>
+                        </Button.Effect>
+                    </Button>
+
                 </StackPanel>
                 <!-- Spacer (pushes logo to bottom) -->
                 <Border Grid.Row="1" Height="20"/>
@@ -1038,87 +1220,6 @@
                         </Style>
                     </syncfusion:SfDataGrid.Resources>
 
-                    <syncfusion:SfDataGrid.RecordContextMenu>
-                        <ContextMenu
-                             Background="{DynamicResource ControlBackground}"
-                             Foreground="{DynamicResource ForegroundColor}"
-                             BorderBrush="{DynamicResource ControlBorder}">
-
-                            <!-- Select All Filtered Rows -->
-                            <MenuItem Header="Select All"
-                                      Click="MenuSelectAll_Click"
-                                      ToolTip="Select all filtered rows (Ctrl+A)"
-                                      Background="{DynamicResource ControlBackground}"
-                                      Foreground="{DynamicResource ForegroundColor}">
-                                <MenuItem.Icon>
-                                    <TextBlock Text="☑" FontSize="14"/>
-                                </MenuItem.Icon>
-                            </MenuItem>
-
-                            <Separator/>
-
-                            <!-- Delete Row(s) -->
-                            <MenuItem Header="Delete Row(s)"
-                                      Click="DeleteSelectedActivities_Click"
-                                      Background="{DynamicResource ControlBackground}"
-                                      Foreground="{DynamicResource ErrorText}">
-                                <MenuItem.Icon>
-                                    <TextBlock Text="🗑️" FontSize="14"/>
-                                </MenuItem.Icon>
-                            </MenuItem>
-
-                            <!-- Placeholder 1 -->
-                            <MenuItem Header="Copy Row(s)"
-                                      Background="{DynamicResource ControlBackground}"
-                                      Foreground="{DynamicResource ForegroundColor}">
-                                <MenuItem.Icon>
-                                    <TextBlock Text="📋" FontSize="14"/>
-                                </MenuItem.Icon>
-                                <MenuItem Header="Copy (Visible Columns)"
-                                          Click="MenuCopyVisibleColumns_Click"
-                                          Background="{DynamicResource ControlBackground}"
-                                          Foreground="{DynamicResource ForegroundColor}"/>
-                                <MenuItem Header="Copy (All Columns)"
-                                          Click="MenuCopyAllColumns_Click"
-                                          Background="{DynamicResource ControlBackground}"
-                                          Foreground="{DynamicResource ForegroundColor}"/>
-                            </MenuItem>
-
-                            <!-- Placeholder 2 -->
-                            <MenuItem Header="Duplicate Row(s)"
-                                      Click="MenuDuplicateRows_Click"
-                                      Background="{DynamicResource ControlBackground}"
-                                      Foreground="{DynamicResource ForegroundColor}"
-                                      IsEnabled="True">
-                                <MenuItem.Icon>
-                                    <TextBlock Text="➕" FontSize="14"/>
-                                </MenuItem.Icon>
-                            </MenuItem>
-
-                            <!-- Add Blank Row -->
-                            <MenuItem Header="Add Blank Row"
-                                      Click="MenuAddBlankRow_Click"
-                                      Background="{DynamicResource ControlBackground}"
-                                      Foreground="{DynamicResource ForegroundColor}"
-                                      ToolTip="Create a new blank activity row assigned to you">
-                                <MenuItem.Icon>
-                                    <TextBlock Text="📝" FontSize="14"/>
-                                </MenuItem.Icon>
-                            </MenuItem>
-
-                            <!-- Placeholder 3 -->
-                            <MenuItem Header="Export Selected"
-                                      Click="MenuExportSelected_Click"
-                                      Background="{DynamicResource ControlBackground}"
-                                      Foreground="{DynamicResource ForegroundColor}"
-                                      IsEnabled="True">
-                                <MenuItem.Icon>
-                                    <TextBlock Text="📤" FontSize="14"/>
-                                </MenuItem.Icon>
-                            </MenuItem>
-
-                        </ContextMenu>
-                    </syncfusion:SfDataGrid.RecordContextMenu>
                     <syncfusion:SfDataGrid.HeaderContextMenu>
                         <ContextMenu Background="{DynamicResource ControlBackground}"
                                      Foreground="{DynamicResource ForegroundColor}"

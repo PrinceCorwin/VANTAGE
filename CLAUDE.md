@@ -127,6 +127,18 @@ if (!AzureDbManager.CheckConnection(out string errorMessage))
 - Virtualization is automatic - don't implement manual
 - CommonMark: blank line required before lists and after headers
 
+## Progress View Toolbar State Sync
+When adding or modifying code in `Views/ProgressView.*` that changes selection, filtering, grid data, or the underlying Activities, audit whether the bottom toolbar elements still reflect correct state. These do NOT auto-refresh from direct `SelectedItems` mutation — `sfActivities_SelectionChanged` is what normally drives them. Any code path that bypasses or detaches that handler (bulk Add/Remove, programmatic selection, mutating Activities outside the sync path) MUST call the refresh methods explicitly:
+
+| Toolbar element | XAML location | Refresh method |
+|---|---|---|
+| `txtFilteredCount` (filtered/total record count + "N selected" suffix) | `ProgressView.xaml` line ~2151 | `UpdateRecordCount()` |
+| `btnMetadataErrors` (metadata-error count badge) | `ProgressView.xaml` line ~2158 | `await CalculateMetadataErrorCount()` |
+| `pnlSelectionStats` (multi-cell Count / Sum / Avg) | `ProgressView.xaml` line ~2214 | `UpdateSelectionStats(sfActivities.GetSelectedCells())` |
+| Project summary stats (Budget column rollup, top-right) | `ProgressView.xaml` line ~929 (`<Viewbox Grid.Column="2">`) | `UpdateSummaryPanel()` or `DebouncedUpdateSummary()` |
+
+Common triggers: bulk operations (Select All, Delete Row(s), Duplicate, Add Blank Row), filter/sort changes, sync push/pull completion, ROC split application, ActNO ownership reassignment. If the change is data-only (no selection or filter shift), `UpdateSummaryPanel` + `CalculateMetadataErrorCount` are usually sufficient.
+
 ## Edit Validation Rules
 - `Utilities/ActivityValidator.cs` is the single source of truth for Activity date/percent rules.
 - `Utilities/ActivityValidator.cs` → `ActivityRequiredMetadata` is the single source of truth for the 9 required-metadata field names. Add/remove a field there and every call site (Import Takeoff dialog, sync-gate SQL, reassign check, user-facing error messages) updates in lockstep via `Fields`, `FieldsDisplay`, and `BuildMissingFieldSql(alias)`.

@@ -93,10 +93,9 @@ namespace VANTAGE.Views
                     return;
                 }
 
-                mainWindow?.ShowLoadingOverlay($"Checking {selectedCount:N0} selected records...");
-                await Task.Delay(10);
-
-                // Enumerate SelectedItems in chunks so the UI thread keeps the overlay animated
+                // Pre-confirmation ownership check runs without an overlay — for typical
+                // selection sizes the check is fast and the overlay just flickers before
+                // the confirmation dialog. Overlay shows only AFTER the user confirms.
                 var selected = await GetSelectedActivitiesChunkedAsync();
 
                 // Batch ownership check: one Azure round-trip per 500 IDs instead of one per record
@@ -161,8 +160,6 @@ namespace VANTAGE.Views
 
                     return (owned, localOnly, denied);
                 });
-
-                mainWindow?.HideLoadingOverlay();
 
                 if (deniedRecords.Any())
                 {
@@ -1199,6 +1196,9 @@ namespace VANTAGE.Views
             };
             _resizeSaveTimer.Tick += ResizeSaveTimer_Tick;
             SetupColumnResizeSave();
+
+            // Hover-out auto-close on the USER filter dropdown (mirrors the Actions menu).
+            VANTAGE.Utilities.MenuAutoClose.Attach(ctxUserFilters);
         }
 
         // Re-apply Syncfusion skin to grid when theme changes
@@ -5317,18 +5317,178 @@ namespace VANTAGE.Views
             return null;
         }
 
-        // Selects all rows currently visible in the filtered view
-        private void SelectAllFilteredRows()
+        // Selects all rows currently visible in the filtered view.
+        // sfActivities.SelectAll() is required for the visual row highlight, but it fires
+        // SelectionChanged whose handler does a slow Clear+Add on SelectedItems based on
+        // GetSelectedCells() — that handler call is the actual UI-thread blocker. We
+        // detach the handler around SelectAll() so the visual highlight is applied
+        // quickly, then manually populate SelectedItems in small chunks so the overlay's
+        // DualRing animation has 16ms windows between chunks to render frames.
+        private async Task SelectAllFilteredRowsAsync()
         {
+            await Task.Delay(10);
+
             var records = sfActivities.View?.Records;
             if (records == null || records.Count == 0) return;
 
-            sfActivities.SelectAll();
+            sfActivities.SelectionChanged -= sfActivities_SelectionChanged;
+            try
+            {
+                sfActivities.SelectAll();
+            }
+            finally
+            {
+                sfActivities.SelectionChanged += sfActivities_SelectionChanged;
+            }
+
+            // Populate SelectedItems for the action handlers (Delete/Copy/Export) to read.
+            // GetSelectedCells inside the handler only returns viewport cells, so without
+            // this manual fill, SelectedItems would have just the focused row.
+            sfActivities.SelectedItems.Clear();
+            const int chunkSize = 100;
+            int counter = 0;
+            int total = records.Count;
+            foreach (var record in records)
+            {
+                if (record.Data is Activity activity)
+                {
+                    sfActivities.SelectedItems.Add(activity);
+                }
+                counter++;
+                if (counter % chunkSize == 0 && counter < total)
+                {
+                    await Task.Delay(1);
+                }
+            }
+
+            // Modifying SelectedItems directly doesn't raise SelectionChanged, so the
+            // bottom-toolbar selected-count label needs an explicit refresh.
+            UpdateRecordCount();
         }
 
-        private void MenuSelectAll_Click(object sender, RoutedEventArgs e)
+        // Select All: WPF closes the parent ContextMenu on click and there's no clean
+        // way to suppress that without subclassing MenuItem (ButtonBase processes the click
+        // with HandledEventsToo=true, so Handled flags are ignored). Instead we let the menu
+        // close, run the work with the loading bar visible, then reopen the menu so the user
+        // can chain another action. Brief flicker is the cost.
+        private async void MenuSelectAll_Click(object sender, RoutedEventArgs e)
         {
-            SelectAllFilteredRows();
+            // Use the fullscreen LoadingOverlay (DualRing SfBusyIndicator) instead of the
+            // inline progress bar — the DualRing's RenderTransform animation runs on WPF's
+            // composition thread, so it animates smoothly even when sfActivities.SelectAll()
+            // blocks the UI thread. The bar's animation depends on the UI thread and freezes.
+            var mainWindow = Application.Current.Windows.OfType<VANTAGE.MainWindow>().FirstOrDefault();
+            try
+            {
+                mainWindow?.ShowLoadingOverlay("Selecting all rows...");
+                await SelectAllFilteredRowsAsync();
+            }
+            finally
+            {
+                mainWindow?.HideLoadingOverlay();
+            }
+
+            if (btnActions.ContextMenu != null)
+            {
+                _ = Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    btnActions.ContextMenu.PlacementTarget = btnActions;
+                    btnActions.ContextMenu.IsOpen = true;
+                }), DispatcherPriority.Background);
+            }
+        }
+
+        // Sidebar Actions button — opens the row-action ContextMenu anchored to the button.
+        private void BtnActions_Click(object sender, RoutedEventArgs e)
+        {
+            if (btnActions.ContextMenu != null)
+            {
+                btnActions.ContextMenu.PlacementTarget = btnActions;
+                btnActions.ContextMenu.IsOpen = true;
+            }
+        }
+
+        // Auto-close the Actions menu based on cursor position. Two distinct delays:
+        //   InitialOpenGraceMs = 1500: from menu open until the cursor first enters the menu.
+        //     Gives the user time to move from the Actions button into the menu without it
+        //     vanishing under them.
+        //   CursorLeftDelayMs  =  400: after the cursor has been in the menu and then leaves,
+        //     close after this delay. Keeps the responsive feel for "I'm done with this menu".
+        //
+        // Poll every 150ms while the menu is open. Hit-test uses Mouse.GetPosition relative
+        // to the menu (more reliable than ContextMenu.IsMouseOver, which doesn't propagate
+        // across the Popup boundary into submenus). If any submenu is open the user is mid-
+        // interaction and we suppress the close countdown.
+        private const int InitialOpenGraceMs = 1500;
+        private const int CursorLeftDelayMs = 400;
+
+        private DispatcherTimer? _ctxActionsHoverPoll;
+        private DateTime? _ctxActionsLeftAt;
+        private bool _ctxActionsHasBeenOver;
+
+        private void CtxActions_Opened(object sender, RoutedEventArgs e)
+        {
+            _ctxActionsLeftAt = null;
+            _ctxActionsHasBeenOver = false;
+            _ctxActionsHoverPoll?.Stop();
+            _ctxActionsHoverPoll = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(150) };
+            _ctxActionsHoverPoll.Tick += (_, _) =>
+            {
+                var menu = btnActions.ContextMenu;
+                if (menu == null || !menu.IsOpen)
+                {
+                    _ctxActionsHoverPoll?.Stop();
+                    return;
+                }
+
+                bool over = IsCursorOverContextMenu(menu) || HasOpenSubmenu(menu);
+                if (over)
+                {
+                    _ctxActionsHasBeenOver = true;
+                    _ctxActionsLeftAt = null;
+                }
+                else
+                {
+                    _ctxActionsLeftAt ??= DateTime.UtcNow;
+                    int delay = _ctxActionsHasBeenOver ? CursorLeftDelayMs : InitialOpenGraceMs;
+                    if ((DateTime.UtcNow - _ctxActionsLeftAt.Value).TotalMilliseconds >= delay)
+                    {
+                        menu.IsOpen = false;
+                        _ctxActionsHoverPoll?.Stop();
+                    }
+                }
+            };
+            _ctxActionsHoverPoll.Start();
+        }
+
+        private void CtxActions_Closed(object sender, RoutedEventArgs e)
+        {
+            _ctxActionsHoverPoll?.Stop();
+            _ctxActionsLeftAt = null;
+            _ctxActionsHasBeenOver = false;
+        }
+
+        private static bool IsCursorOverContextMenu(ContextMenu menu)
+        {
+            try
+            {
+                Point p = Mouse.GetPosition(menu);
+                return p.X >= 0 && p.X <= menu.ActualWidth
+                    && p.Y >= 0 && p.Y <= menu.ActualHeight;
+            }
+            catch
+            {
+                return true;
+            }
+        }
+
+        private static bool HasOpenSubmenu(ContextMenu menu)
+        {
+            foreach (var item in menu.Items)
+            {
+                if (item is MenuItem mi && mi.IsSubmenuOpen) return true;
+            }
+            return false;
         }
 
         private void sfActivities_GridContextMenuOpening(object sender, Syncfusion.UI.Xaml.Grid.GridContextMenuEventArgs e)
@@ -5369,7 +5529,7 @@ namespace VANTAGE.Views
                 }
             }
         }
-        private void sfActivities_SelectionChanged(object sender, Syncfusion.UI.Xaml.Grid.GridSelectionChangedEventArgs e)
+        private void sfActivities_SelectionChanged(object? sender, Syncfusion.UI.Xaml.Grid.GridSelectionChangedEventArgs e)
 		{
 			// With SelectionUnit="Any", row header clicks select all cells in the row
 			// but don't populate SelectedItems. We need to manually populate it.

@@ -387,6 +387,31 @@ Permanent record of architectural choices, design rationale, and implementation 
 **Why:** When applied in Loaded on a second instance, Syncfusion's theme engine interfered with SfDataGrid rendering, causing the grid not to display data.
 **Date:** April 2026
 
+### Progress Row Actions: Sidebar Dropdown, Not Grid Right-Click
+**Decision:** Row-action commands for the Progress grid (Select All, Delete, Copy [submenu], Duplicate, Add Blank, Export Selected) live under an "Actions" button in the left filter sidebar, not on the grid's right-click context menu. The grid's `RecordContextMenu` was removed entirely. The column-header `HeaderContextMenu` (Find & Replace, Copy Column, Freeze) is unaffected.
+**Why:** Syncfusion `SfDataGrid`'s default right-click behavior clears the existing multi-row selection and reduces it to the single row under the cursor (unless Shift is held). Users routinely selected 50+ rows, right-clicked Delete, and got only one row deleted. Sidebar buttons don't touch grid selection at all, so multi-row operations behave the way users expect by construction. Trade-off: standard right-click doesn't open a row menu anymore, requiring a brief retraining; the discoverability cost is small because the Actions button is always visible and labeled.
+**Date:** April 2026
+
+### Menu Item Icons Inline in Header, Not `<MenuItem.Icon>`
+**Decision:** Menu items that need icons (Actions menu items in the Progress sidebar) render the icon as a TextBlock inside the `MenuItem.Header` StackPanel, with a fixed 22px-wide icon column so labels align. The `<MenuItem.Icon>` slot is not used.
+**Why:** WPF MenuItem's default template renders an "icon column gutter" rail above and below items even when the visual is overridden via a custom `ItemContainerStyle` template. The chrome leaked through every workaround attempted: keyed `MenuItem.SeparatorStyleKey` overrides, custom `ControlTemplate` with explicit Grid columns, etc. Switching to inline-icon-in-Header bypasses the gutter rendering path entirely — the template only sees a Header content presenter and a submenu arrow, no icon-related chrome to suppress. Same approach is what the existing toolbar `DropDownMenuItem` controls effectively do internally.
+**Date:** April 2026
+
+### Hover-Out Auto-Close: Custom Polling, Two Distinct Hit-Test Strategies
+**Decision:** All app dropdowns (Progress sidebar Actions and USER, MainWindow toolbar File/Tools/Admin) auto-close when the cursor leaves them. WPF doesn't support this natively for top-level menus (only submenus), so `Utilities/MenuAutoClose.cs` implements it via a 150ms polling DispatcherTimer with two timing constants: `InitialOpenGraceMs = 1500` (long delay before close if cursor never enters the menu) and `CursorLeftDelayMs = 400` (faster close once cursor has been in and then left). A `hasBeenOver` flag chooses which delay applies.
+**Why:** Different control types need different hit-test approaches. ContextMenu (Actions, USER) is a popup-hosted single-rect element — `Mouse.GetPosition(menu)` against `menu.ActualWidth/ActualHeight` is reliable. DropDownButtonAdv (File, Tools, Admin) is harder: dropdown popup lives in a separate visual tree from the button, so `button.IsMouseOver` doesn't propagate from items, walking up from `Mouse.DirectlyOver` doesn't reliably find the button or the popup, and the logical-tree walk catches a stuck `IsMouseOver=true` flag on the button while the dropdown is open. Final approach for DropDownButtonAdv: `Mouse.GetPosition(button)` plus a generous-rect bounds check covering the button rect AND a 240×600 area below it where the dropdown is rendered. Toolbar dropdowns always open downward, so the bounds-below approach is reliable without trying to enumerate Syncfusion internals. Open submenus (Copy Row(s)) suppress the close countdown so navigating into a submenu doesn't kill the parent.
+**Date:** April 2026
+
+### Menu Item Stays Open on Click: Dispatcher.BeginInvoke Reopen, Not Preview-Event Trick
+**Decision:** Select All in the Actions menu uses a regular `Click` handler that performs the work, then schedules `ContextMenu.IsOpen = true` via `Dispatcher.BeginInvoke` at `Background` priority to reopen the menu after WPF's `MenuItem.OnClick` closes it. Brief flicker is the cost.
+**Why:** WPF `MenuItem.OnClick` closes the parent menu unconditionally for non-`SubmenuHeader` role items, and there is no clean way to suppress it from XAML or a derived class without subclassing `MenuItem`. Tried `IsCheckable="True"` (toggles `IsChecked` but doesn't suppress the close in a `ContextMenu` context); tried `PreviewMouseLeftButtonUp` with `Handled=true` (ignored because `ButtonBase.OnMouseLeftButtonUp` is registered with `HandledEventsToo=true`). Dispatcher reopen is the canonical workaround across the WPF community.
+**Date:** April 2026
+
+### Loading Overlay for Slow Bulk Operations: Fullscreen DualRing, Not Inline Bar
+**Decision:** Slow bulk operations on the Progress grid (Select All, Delete after confirmation) use the fullscreen `LoadingOverlay` Grid with `SfBusyIndicator` (`AnimationType="DualRing"`), not the inline `SfLinearProgressBar` bound to `viewModel.IsLoading`. The inline bar is reserved for background data loads where the operation isn't user-initiated.
+**Why:** Both the DualRing animation and the linear progress bar's animation tick on the UI thread (Syncfusion's animations are dispatcher-driven, not composition-thread). For long-running synchronous operations like populating `SelectedItems` with 100k+ rows, both animations freeze unless the UI thread gets regular yield windows. The DualRing is more visually prominent and signals "wait, work is happening" more clearly than a thin bar at the bottom of the grid that's easy to miss. Chunked work with `Task.Delay(1)` between chunks of 100 keeps either animation moving, but the overlay's larger visual real estate is the better fit for user-initiated bulk actions. Pre-confirmation overlays for fast operations (e.g., Delete's ownership pre-check on a small selection) were removed because they flickered before the confirmation dialog and added no signal.
+**Date:** April 2026
+
 ---
 
 ## Architecture
