@@ -751,6 +751,7 @@ namespace VANTAGE
                         weekEndDate,
                         reportsFilePath,
                         viewModel.LookaheadLabel,
+                        App.CurrentUser!.Username,
                         new Progress<string>(msg => busyDialog.UpdateStatus(msg)));
                     busyDialog.Close();
 

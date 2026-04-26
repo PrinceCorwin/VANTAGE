@@ -17,6 +17,7 @@ namespace VANTAGE.Utilities
             DateTime weekEndDate,
             string filePath,
             string lookaheadLabel,
+            string assignedTo,
             IProgress<string>? progress = null)
         {
             // Get NotIn data before entering Task.Run (async calls)
@@ -29,7 +30,7 @@ namespace VANTAGE.Utilities
                 using var workbook = new XLWorkbook();
 
                 // Single combined Schedule tab; sheet name mirrors the active lookahead label.
-                CreateScheduleSheet(workbook, masterRows, p6NotInMS, msNotInP6, lookaheadLabel, progress);
+                CreateScheduleSheet(workbook, masterRows, p6NotInMS, msNotInP6, lookaheadLabel, assignedTo, progress);
 
                 // Save workbook
                 progress?.Report("Saving report...");
@@ -43,6 +44,7 @@ namespace VANTAGE.Utilities
     List<(string SchedActNO, string Description, string WbsId)> p6NotInMS,
     List<string> msNotInP6,
     string lookaheadLabel,
+    string assignedTo,
     IProgress<string>? progress)
         {
             progress?.Report("Creating Schedule report...");
@@ -50,14 +52,14 @@ namespace VANTAGE.Utilities
             var sheet = workbook.Worksheets.Add(lookaheadLabel);
             var redFill = XLColor.FromHtml("#FFC7CE");
 
-            // Headers (22 columns)
+            // Headers (23 columns)
             var headers = new[]
             {
             "SchedActNO", "NotInP6", "NotInMS", "Description", "MS_%", "P6_%", "%_Mismatch",
             "V_Start", "V_Finish", "P6_ActualStart", "P6_ActualFinish", "Actual_Mismatch",
             "MS_BudgetMHs", "P6_BudgetMHs", "MH_Mismatch",
             "P6_Start", "P6_Finish", "ThreeWeekStart", "ThreeWeekFinish",
-            "MissedStartReason", "MissedFinishReason", "Changed"
+            "MissedStartReason", "MissedFinishReason", "Changed", "AssignedTo"
 };
 
             for (int col = 0; col < headers.Length; col++)
@@ -72,6 +74,7 @@ namespace VANTAGE.Utilities
             sheet.Range(1, 8, 1, 12).Style.Fill.BackgroundColor = XLColor.FromHtml("#BDD7EE");  // Actuals
             sheet.Range(1, 13, 1, 15).Style.Fill.BackgroundColor = XLColor.FromHtml("#C6EFCE"); // MHs
             sheet.Range(1, 16, 1, 22).Style.Fill.BackgroundColor = XLColor.FromHtml("#FFEB9C"); // 3WLA/Planning
+            sheet.Cell(1, 23).Style.Fill.BackgroundColor = XLColor.FromHtml("#D9D9D9");         // AssignedTo (file-origin metadata)
 
             int row = 2;
 
@@ -106,6 +109,7 @@ namespace VANTAGE.Utilities
                 sheet.Cell(row, 20).Value = masterRow.MissedStartReason ?? string.Empty;
                 sheet.Cell(row, 21).Value = masterRow.MissedFinishReason ?? string.Empty;
                 sheet.Cell(row, 22).Value = changed ? "True" : "False";
+                sheet.Cell(row, 23).Value = assignedTo;
 
                 // Apply red fill only where True
                 if (pctMismatch) sheet.Cell(row, 7).Style.Fill.BackgroundColor = redFill;
@@ -128,6 +132,7 @@ namespace VANTAGE.Utilities
                 sheet.Cell(row, 12).Value = "False";
                 sheet.Cell(row, 15).Value = "False";
                 sheet.Cell(row, 22).Value = "False";
+                sheet.Cell(row, 23).Value = assignedTo;
 
                 row++;
             }
@@ -143,6 +148,7 @@ namespace VANTAGE.Utilities
                 sheet.Cell(row, 12).Value = "False";
                 sheet.Cell(row, 15).Value = "False";
                 sheet.Cell(row, 22).Value = "False";
+                sheet.Cell(row, 23).Value = assignedTo;
 
                 row++;
             }
