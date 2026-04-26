@@ -54,7 +54,7 @@ Proceed? (yes/no)
 - Source the highlights from the most recent entries in `Plans/Completed_Work.md`, translated to user-facing language
   - Example: "Fixed sync deadlock in ActivityRepository" → "Improved reliability of data sync"
   - Example: "Refactored TokenResolver to use dictionary lookup" → (skip — internal refactor, no user impact)
-- Show the user the proposed entry and **wait for confirmation** before writing the file
+- Print the proposed entry inline so the user can see what's shipping, but do NOT wait for confirmation — write the file immediately and continue. The user already approved the release at Step 1; second approval is friction. If they spot something wrong they can interrupt.
 - This file is embedded in the app — it must be updated BEFORE the publish script runs
 
 ## Step 3: Bump Version in VANTAGE.csproj
@@ -131,7 +131,6 @@ After the release is created:
 ## Important Rules
 
 - All file paths are relative to the repository root — NEVER use absolute paths
-- NEVER proceed past Step 1 without explicit user confirmation of the version number
-- NEVER proceed past Step 2 without explicit user confirmation of the release notes
+- NEVER proceed past Step 1 without explicit user confirmation of the version number — this is the ONE approval gate. Once the version is confirmed, run all remaining steps end-to-end without further prompts.
 - If any step fails, STOP and report — do not attempt to continue or partially recover without user direction
 - The publish script modifies the `bin/` output — do not run it unless the version bump has been completed
