@@ -77,7 +77,7 @@ namespace VANTAGE.Views
                 int selectedCount = sfActivities.SelectedItems?.Count ?? 0;
                 if (selectedCount == 0)
                 {
-                    MessageBox.Show("Please select one or more records to delete.",
+                    AppMessageBox.Show("Please select one or more records to delete.",
                         "No Selection", MessageBoxButton.OK, MessageBoxImage.None);
                     return;
                 }
@@ -88,7 +88,7 @@ namespace VANTAGE.Views
 
                 if (!AzureDbManager.CheckConnection(out string connectionError))
                 {
-                    MessageBox.Show($"Deletion requires connection to Azure database.\n\n{connectionError}\n\nPlease try again when connected.",
+                    AppMessageBox.Show($"Deletion requires connection to Azure database.\n\n{connectionError}\n\nPlease try again when connected.",
                         "Connection Required", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
@@ -163,7 +163,7 @@ namespace VANTAGE.Views
 
                 if (deniedRecords.Any())
                 {
-                    MessageBox.Show(
+                    AppMessageBox.Show(
                         $"{deniedRecords.Count} record(s) could not be deleted - you do not own them.\n\n" +
                         $"First few: {string.Join(", ", deniedRecords.Take(3))}",
                         "Permission Denied",
@@ -177,7 +177,7 @@ namespace VANTAGE.Views
                 string preview = string.Join(", ", ownedRecords.Take(5).Select(a => a.UniqueID));
                 if (ownedRecords.Count > 5) preview += ", …";
 
-                var confirm = MessageBox.Show(
+                var confirm = AppMessageBox.Show(
                     $"Delete {ownedRecords.Count} record(s)?\n\nFirst few: {preview}\n\nThis action cannot be undone.",
                     "Confirm Deletion",
                     MessageBoxButton.YesNo,
@@ -265,7 +265,7 @@ namespace VANTAGE.Views
                     currentUsername
                 );
 
-                MessageBox.Show(
+                AppMessageBox.Show(
                     $"{localDeleted} record(s) deleted successfully.",
                     "Delete Complete",
                     MessageBoxButton.OK,
@@ -274,7 +274,7 @@ namespace VANTAGE.Views
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "ProgressView.DeleteSelectedActivities_Click");
-                MessageBox.Show($"Delete failed:\n{ex.Message}", "Error",
+                AppMessageBox.Show($"Delete failed:\n{ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
@@ -332,7 +332,7 @@ namespace VANTAGE.Views
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "ProgressView.BtnMetadataErrors_Click");
-                MessageBox.Show($"Error filtering metadata errors: {ex.Message}", "Error",
+                AppMessageBox.Show($"Error filtering metadata errors: {ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -449,7 +449,7 @@ namespace VANTAGE.Views
                 var selected = sfActivities.SelectedItems?.Cast<Activity>().ToList();
                 if (selected == null || selected.Count == 0)
                 {
-                    MessageBox.Show("Please select one or more records to copy.",
+                    AppMessageBox.Show("Please select one or more records to copy.",
                         "No Selection", MessageBoxButton.OK, MessageBoxImage.None);
                     return;
                 }
@@ -506,7 +506,7 @@ namespace VANTAGE.Views
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "Copy Visible Columns", App.CurrentUser?.Username ?? "Unknown");
-                MessageBox.Show($"Copy failed: {ex.Message}", "Error",
+                AppMessageBox.Show($"Copy failed: {ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -520,7 +520,7 @@ namespace VANTAGE.Views
                 var selected = sfActivities.SelectedItems?.Cast<Activity>().ToList();
                 if (selected == null || selected.Count == 0)
                 {
-                    MessageBox.Show("Please select one or more records to copy.",
+                    AppMessageBox.Show("Please select one or more records to copy.",
                         "No Selection", MessageBoxButton.OK, MessageBoxImage.None);
                     return;
                 }
@@ -572,7 +572,7 @@ namespace VANTAGE.Views
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "Copy All Columns", App.CurrentUser?.Username ?? "Unknown");
-                MessageBox.Show($"Copy failed: {ex.Message}", "Error",
+                AppMessageBox.Show($"Copy failed: {ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -584,12 +584,12 @@ namespace VANTAGE.Views
                 var selected = sfActivities.SelectedItems?.Cast<Activity>().ToList();
                 if (selected == null || selected.Count == 0)
                 {
-                    MessageBox.Show("Please select one or more records to duplicate.",
+                    AppMessageBox.Show("Please select one or more records to duplicate.",
                         "No Selection", MessageBoxButton.OK, MessageBoxImage.None);
                     return;
                 }
 
-                var result = MessageBox.Show(
+                var result = AppMessageBox.Show(
                     $"This will create {selected.Count} duplicate record(s).\n\nContinue?",
                     "Confirm Duplication",
                     MessageBoxButton.YesNo,
@@ -846,21 +846,21 @@ namespace VANTAGE.Views
                     await _viewModel.RefreshAsync();
                     UpdateRecordCount();
 
-                    MessageBox.Show($"Successfully duplicated {successCount} record(s).\n\nThe new records are assigned to you and marked for sync.",
+                    AppMessageBox.Show($"Successfully duplicated {successCount} record(s).\n\nThe new records are assigned to you and marked for sync.",
                         "Duplication Complete", MessageBoxButton.OK, MessageBoxImage.None);
                 }
                 catch (Exception ex)
                 {
                     transaction.Rollback();
                     AppLogger.Error(ex, "Duplicate Rows", currentUser);
-                    MessageBox.Show($"Duplication failed: {ex.Message}", "Error",
+                    AppMessageBox.Show($"Duplication failed: {ex.Message}", "Error",
                         MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "Duplicate Rows", App.CurrentUser?.Username ?? "Unknown");
-                MessageBox.Show($"Duplication failed: {ex.Message}", "Error",
+                AppMessageBox.Show($"Duplication failed: {ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -1062,7 +1062,7 @@ namespace VANTAGE.Views
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "ProgressView.MenuAddBlankRow_Click");
-                MessageBox.Show($"Failed to add blank row: {ex.Message}", "Error",
+                AppMessageBox.Show($"Failed to add blank row: {ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -1076,7 +1076,7 @@ namespace VANTAGE.Views
 
                 if (selectedRecords.Count == 0)
                 {
-                    MessageBox.Show(
+                    AppMessageBox.Show(
                         "No records selected. Please select one or more rows to export.",
                         "Export Selected",
                         MessageBoxButton.OK,
@@ -1092,7 +1092,7 @@ namespace VANTAGE.Views
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "Export Selected Click", App.CurrentUser?.Username ?? "Unknown");
-                MessageBox.Show($"Export failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                AppMessageBox.Show($"Export failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -1593,7 +1593,7 @@ namespace VANTAGE.Views
             // Validate: column must be editable
             if (VANTAGE.Utilities.ColumnPermissions.IsReadOnly(columnName))
             {
-                MessageBox.Show($"Cannot paste to '{columnHeader}' - this column is read-only.",
+                AppMessageBox.Show($"Cannot paste to '{columnHeader}' - this column is read-only.",
                     "Paste Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
@@ -1602,7 +1602,7 @@ namespace VANTAGE.Views
             var property = typeof(Activity).GetProperty(columnName);
             if (property == null)
             {
-                MessageBox.Show($"Column '{columnName}' not found.", "Paste Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                AppMessageBox.Show($"Column '{columnName}' not found.", "Paste Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
@@ -1614,7 +1614,7 @@ namespace VANTAGE.Views
 
             if (nonOwnedRecords.Count > 0)
             {
-                MessageBox.Show("Cannot paste - some rows are owned by other users.",
+                AppMessageBox.Show("Cannot paste - some rows are owned by other users.",
                     "Paste Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
@@ -1660,7 +1660,7 @@ namespace VANTAGE.Views
                     if (!TrySetPropertyValue(activity, property, columnName, clipboardValue, out string? errorMessage))
                     {
                         RollbackPasteSnapshots(snapshots, property);
-                        MessageBox.Show(errorMessage ?? $"Invalid value '{clipboardValue}' for column '{columnHeader}'.",
+                        AppMessageBox.Show(errorMessage ?? $"Invalid value '{clipboardValue}' for column '{columnHeader}'.",
                             "Paste Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                         return;
                     }
@@ -1718,7 +1718,7 @@ namespace VANTAGE.Views
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "PasteToSelectedCells(RowBased)", App.CurrentUser?.Username ?? "Unknown");
-                MessageBox.Show($"Paste failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                AppMessageBox.Show($"Paste failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -1743,7 +1743,7 @@ namespace VANTAGE.Views
                 // Validate: column must be editable
                 if (VANTAGE.Utilities.ColumnPermissions.IsReadOnly(columnName))
                 {
-                    MessageBox.Show($"Cannot paste to '{columnHeader}' - this column is read-only.",
+                    AppMessageBox.Show($"Cannot paste to '{columnHeader}' - this column is read-only.",
                         "Paste Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
@@ -1808,7 +1808,7 @@ namespace VANTAGE.Views
 
                 if (nonOwnedRecords.Count > 0)
                 {
-                    MessageBox.Show("Cannot paste - rows owned by other users would be affected.\n\nSelect only your own rows or change the copied content.",
+                    AppMessageBox.Show("Cannot paste - rows owned by other users would be affected.\n\nSelect only your own rows or change the copied content.",
                         "Paste Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
@@ -1817,7 +1817,7 @@ namespace VANTAGE.Views
                 var property = typeof(Activity).GetProperty(columnName);
                 if (property == null)
                 {
-                    MessageBox.Show($"Column '{columnName}' not found.", "Paste Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    AppMessageBox.Show($"Column '{columnName}' not found.", "Paste Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
 
@@ -1848,7 +1848,7 @@ namespace VANTAGE.Views
                     if (!TrySetPropertyValue(activity, property, columnName, clipboardValue, out string? errorMessage))
                     {
                         RollbackPasteSnapshots(snapshots, property);
-                        MessageBox.Show(errorMessage ?? $"Invalid value '{clipboardValue}' for column '{columnHeader}'.",
+                        AppMessageBox.Show(errorMessage ?? $"Invalid value '{clipboardValue}' for column '{columnHeader}'.",
                             "Paste Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                         return;
                     }
@@ -1914,7 +1914,7 @@ namespace VANTAGE.Views
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "PasteToSelectedCells", App.CurrentUser?.Username ?? "Unknown");
-                MessageBox.Show($"Paste failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                AppMessageBox.Show($"Paste failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -1941,7 +1941,7 @@ namespace VANTAGE.Views
             if (failures.Count > 10)
                 detail += $"\n  \u2026and {failures.Count - 10:N0} more";
 
-            MessageBox.Show(
+            AppMessageBox.Show(
                 $"Paste aborted: {failures.Count:N0} row(s) would violate validation rules. No changes were saved.\n\n{detail}",
                 "Validation Failed",
                 MessageBoxButton.OK,
@@ -2401,7 +2401,7 @@ namespace VANTAGE.Views
             var button = sender as Button;
             if (button == null)
             {
-                MessageBox.Show(
+                AppMessageBox.Show(
                     "Button source was not recognized.",
                     "Error",
                     MessageBoxButton.OK,
@@ -2421,7 +2421,7 @@ namespace VANTAGE.Views
             // Expect content like "0%", "50%", "100%"
             if (!int.TryParse(buttonContent.TrimEnd('%'), out int percent))
             {
-                MessageBox.Show(
+                AppMessageBox.Show(
                     "Invalid percent value.",
                     "Error",
                     MessageBoxButton.OK,
@@ -2439,12 +2439,12 @@ namespace VANTAGE.Views
             int selectedCount = sfActivities.SelectedItems.Count;
             if (selectedCount == 0)
             {
-                MessageBox.Show("Please select one or more records.",
+                AppMessageBox.Show("Please select one or more records.",
                     "No Selection", MessageBoxButton.OK, MessageBoxImage.None);
                 return;
             }
 
-            var result = MessageBox.Show(
+            var result = AppMessageBox.Show(
                 $"Update {selectedCount:N0} selected record(s) to {percent}%?",
                 "Confirm Bulk Update",
                 MessageBoxButton.OKCancel,
@@ -2477,7 +2477,7 @@ namespace VANTAGE.Views
 
             if (!int.TryParse(menuItem.Tag?.ToString() ?? "", out int defaultValue))
             {
-                MessageBox.Show("Invalid default value.", "Error",
+                AppMessageBox.Show("Invalid default value.", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
@@ -2497,7 +2497,7 @@ namespace VANTAGE.Views
                 defaultValue.ToString(),
                 "int");
 
-            MessageBox.Show($"Button reset to {defaultValue}%", "Success",
+            AppMessageBox.Show($"Button reset to {defaultValue}%", "Success",
                 MessageBoxButton.OK, MessageBoxImage.None);
         }
 
@@ -2519,7 +2519,7 @@ namespace VANTAGE.Views
             var tagParts = (button.Tag?.ToString() ?? "").Split('|');
             if (tagParts.Length != 3)
             {
-                MessageBox.Show("Button configuration error.", "Error",
+                AppMessageBox.Show("Button configuration error.", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
@@ -2547,7 +2547,7 @@ namespace VANTAGE.Views
                     "int"
                 );
 
-                MessageBox.Show($"{buttonName} updated to {newPercent}%",
+                AppMessageBox.Show($"{buttonName} updated to {newPercent}%",
                     "Success",
                     MessageBoxButton.OK,
                     MessageBoxImage.None);
@@ -2600,7 +2600,7 @@ namespace VANTAGE.Views
 
                 if (selectedCount == 0)
                 {
-                    MessageBox.Show("Please select one or more records.",
+                    AppMessageBox.Show("Please select one or more records.",
                         "No Selection", MessageBoxButton.OK, MessageBoxImage.None);
                     return;
                 }
@@ -2630,7 +2630,7 @@ namespace VANTAGE.Views
 
                 if (idsToUpdate.Count == 0)
                 {
-                    MessageBox.Show("None of the selected records are assigned to you.",
+                    AppMessageBox.Show("None of the selected records are assigned to you.",
                         "No Editable Records", MessageBoxButton.OK, MessageBoxImage.None);
                     return;
                 }
@@ -2646,14 +2646,14 @@ namespace VANTAGE.Views
 
                 if (successCount > 0)
                 {
-                    MessageBox.Show($"Set {successCount:N0} record(s) to {percent}%.",
+                    AppMessageBox.Show($"Set {successCount:N0} record(s) to {percent}%.",
                         "Success", MessageBoxButton.OK, MessageBoxImage.None);
                 }
             }
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "ProgressView.SetSelectedRecordsPercent");
-                MessageBox.Show($"Error updating records: {ex.Message}",
+                AppMessageBox.Show($"Error updating records: {ex.Message}",
                     "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
@@ -3009,7 +3009,7 @@ namespace VANTAGE.Views
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "ProgressView.ApplyUserFilter");
-                MessageBox.Show($"Error applying filter: {ex.Message}", "Error",
+                AppMessageBox.Show($"Error applying filter: {ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -3152,7 +3152,7 @@ namespace VANTAGE.Views
                     }
                     else
                     {
-                        var retryResult = MessageBox.Show(
+                        var retryResult = AppMessageBox.Show(
                             $"Submit Progress requires connection to Azure.\n\n{connError}\n\nWould you like to retry?",
                             "Connection Failed",
                             MessageBoxButton.YesNo,
@@ -3186,7 +3186,7 @@ namespace VANTAGE.Views
 
                 if (!userProjects.Any())
                 {
-                    MessageBox.Show(
+                    AppMessageBox.Show(
                         "You have no activities assigned to submit.",
                         "No Activities",
                         MessageBoxButton.OK,
@@ -3248,7 +3248,7 @@ namespace VANTAGE.Views
                 var projectErrorCount = await CountMetadataErrorsForProject(selectedProject);
                 if (projectErrorCount > 0)
                 {
-                    MessageBox.Show(
+                    AppMessageBox.Show(
                         $"Cannot submit. {projectErrorCount} record(s) in project {selectedProject} have missing required metadata.\n\n" +
                         "Click 'Metadata Errors' button to view and fix these records.\n\n" +
                         $"Required fields: {ActivityRequiredMetadata.FieldsDisplay}\n" +
@@ -3303,7 +3303,7 @@ namespace VANTAGE.Views
 
                 if (!datePicker.SelectedDate.HasValue)
                 {
-                    MessageBox.Show("Please select a valid date.", "Invalid Date", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    AppMessageBox.Show("Please select a valid date.", "Invalid Date", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
@@ -3346,7 +3346,7 @@ namespace VANTAGE.Views
                     message += $"\nWould you like to set these dates to {selectedWeekEndDate:MM/dd/yyyy} and continue?";
 
                     busyDialog.Hide();
-                    var dateFixResult = MessageBox.Show(message, "Adjust Dates?",
+                    var dateFixResult = AppMessageBox.Show(message, "Adjust Dates?",
                         MessageBoxButton.YesNo, MessageBoxImage.Question);
 
                     if (dateFixResult != MessageBoxResult.Yes)
@@ -3411,7 +3411,7 @@ namespace VANTAGE.Views
                     if (!exportedByUser.Equals(App.CurrentUser!.Username, StringComparison.OrdinalIgnoreCase))
                     {
                         busyDialog.Close();
-                        MessageBox.Show(
+                        AppMessageBox.Show(
                             $"Progress for week ending {weekEndDateStr} has already been exported by {exportedByUser}.\n\n" +
                             "You cannot overwrite snapshots exported by another user.",
                             "Already Exported",
@@ -3421,7 +3421,7 @@ namespace VANTAGE.Views
                     }
 
                     busyDialog.Hide();
-                    var overwriteResult = MessageBox.Show(
+                    var overwriteResult = AppMessageBox.Show(
                         $"You already exported progress for week ending {weekEndDateStr}.\n\n" +
                         "Do you want to overwrite with current progress?\n\n" +
                         "Note: This will clear the export lock.",
@@ -3463,7 +3463,7 @@ namespace VANTAGE.Views
                     if (existingCount > 0)
                     {
                         busyDialog.Hide();
-                        var overwriteResult = MessageBox.Show(
+                        var overwriteResult = AppMessageBox.Show(
                             $"You already have {existingCount} snapshots for week ending {weekEndDateStr}.\n\n" +
                             "Do you want to overwrite them with current progress?",
                             "Overwrite Existing?",
@@ -3643,7 +3643,7 @@ namespace VANTAGE.Views
                             {
                                 busyDialog.Hide();
 
-                                var result = MessageBox.Show(
+                                var result = AppMessageBox.Show(
                                     ownerWindow,
                                     $"{conflictCount} of your assigned records were already submitted for this week by other users:\n\n" +
                                     $"{conflictDetails}\n\n" +
@@ -4001,7 +4001,7 @@ namespace VANTAGE.Views
                         busyDialog.Close();
                         if (submitError != "Cancelled by user")
                         {
-                            MessageBox.Show(submitError, "Sync Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                            AppMessageBox.Show(submitError, "Sync Error", MessageBoxButton.OK, MessageBoxImage.Error);
                         }
                         return;
                     }
@@ -4021,7 +4021,7 @@ namespace VANTAGE.Views
                         msg += $"\n\n{skippedCount:N0} records were skipped (already existed in snapshots).";
                         msg += "\n\nWould you like to export the skipped records to Excel?";
 
-                        var exportResult = MessageBox.Show(msg, "Progress Submitted", MessageBoxButton.YesNo, MessageBoxImage.None);
+                        var exportResult = AppMessageBox.Show(msg, "Progress Submitted", MessageBoxButton.YesNo, MessageBoxImage.None);
                         if (exportResult == MessageBoxResult.Yes)
                         {
                             ExportSkippedRecordsToExcel(skippedRecords, weekEndDateStr);
@@ -4030,11 +4030,11 @@ namespace VANTAGE.Views
                     else if (skippedCount > 0)
                     {
                         msg += $"\n\n{skippedCount:N0} records were skipped (already existed in snapshots).";
-                        MessageBox.Show(msg, "Progress Submitted", MessageBoxButton.OK, MessageBoxImage.None);
+                        AppMessageBox.Show(msg, "Progress Submitted", MessageBoxButton.OK, MessageBoxImage.None);
                     }
                     else
                     {
-                        MessageBox.Show(msg, "Progress Submitted", MessageBoxButton.OK, MessageBoxImage.None);
+                        AppMessageBox.Show(msg, "Progress Submitted", MessageBoxButton.OK, MessageBoxImage.None);
                     }
                 }
                 catch
@@ -4060,7 +4060,7 @@ namespace VANTAGE.Views
                     userMessage = ex.Message;
                 }
 
-                MessageBox.Show(
+                AppMessageBox.Show(
                     $"Error submitting progress:\n\n{userMessage}",
                     "Error",
                     MessageBoxButton.OK,
@@ -4118,13 +4118,13 @@ namespace VANTAGE.Views
 
                 workbook.SaveAs(saveDialog.FileName);
 
-                MessageBox.Show($"Exported {skippedRecords.Count} skipped records to:\n\n{saveDialog.FileName}",
+                AppMessageBox.Show($"Exported {skippedRecords.Count} skipped records to:\n\n{saveDialog.FileName}",
                     "Export Complete", MessageBoxButton.OK, MessageBoxImage.None);
             }
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "ProgressView.ExportSkippedRecordsToExcel");
-                MessageBox.Show($"Error exporting skipped records:\n\n{ex.Message}",
+                AppMessageBox.Show($"Error exporting skipped records:\n\n{ex.Message}",
                     "Export Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -4159,7 +4159,7 @@ namespace VANTAGE.Views
                     }
                     else
                     {
-                        var retryResult = MessageBox.Show(
+                        var retryResult = AppMessageBox.Show(
                             $"Cannot sync - Azure database unavailable:\n\n{connError}\n\nWould you like to retry?",
                             "Connection Failed",
                             MessageBoxButton.YesNo,
@@ -4174,7 +4174,7 @@ namespace VANTAGE.Views
                 await CalculateMetadataErrorCount();
                 if (_viewModel.MetadataErrorCount > 0)
                 {
-                    MessageBox.Show(
+                    AppMessageBox.Show(
                         $"Cannot sync. You have {_viewModel.MetadataErrorCount} record(s) with missing required metadata.\n\n" +
                         "Click 'Metadata Errors' button to view and fix these records.\n\n" +
                         $"Required fields: {ActivityRequiredMetadata.FieldsDisplay}\n" +
@@ -4208,7 +4208,7 @@ namespace VANTAGE.Views
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Sync error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                AppMessageBox.Show($"Sync error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 AppLogger.Error(ex, "ProgressView.BtnSync_Click");
             }
         }
@@ -4282,7 +4282,7 @@ namespace VANTAGE.Views
             };
             defaultButton.Click += (s, args) =>
             {
-                var result = MessageBox.Show(
+                var result = AppMessageBox.Show(
                     "This will restore column visibility to default settings.\n\nDo you want to continue?",
                     "Restore Defaults",
                     MessageBoxButton.OKCancel,
@@ -4954,7 +4954,7 @@ namespace VANTAGE.Views
 
                     if (violation != null)
                     {
-                        MessageBox.Show(violation, "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        AppMessageBox.Show(violation, "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                         property.SetValue(editedActivity, _originalCellValue);
                         editedActivity.PercentEntry = prePercent;
                         return;
@@ -4991,7 +4991,7 @@ namespace VANTAGE.Views
                 }
                 else
                 {
-                    MessageBox.Show(
+                    AppMessageBox.Show(
                         $"Failed to save changes for Activity {editedActivity.ActivityID}.\nPlease try again.",
                         "Save Error",
                         MessageBoxButton.OK,
@@ -5001,7 +5001,7 @@ namespace VANTAGE.Views
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "sfActivities_CurrentCellEndEdit", App.CurrentUser?.Username ?? "Unknown");
-                MessageBox.Show(
+                AppMessageBox.Show(
                     $"Error saving changes: {ex.Message}",
                     "Save Error",
                     MessageBoxButton.OK,
@@ -5084,7 +5084,7 @@ namespace VANTAGE.Views
             var contextMenuInfo = menuItem.DataContext as Syncfusion.UI.Xaml.Grid.GridColumnContextMenuInfo;
             if (contextMenuInfo == null)
             {
-                MessageBox.Show("Could not determine which column was clicked.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                AppMessageBox.Show("Could not determine which column was clicked.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
@@ -5127,7 +5127,7 @@ namespace VANTAGE.Views
                 var contextMenuInfo = menuItem.DataContext as Syncfusion.UI.Xaml.Grid.GridColumnContextMenuInfo;
                 if (contextMenuInfo == null)
                 {
-                    MessageBox.Show("Could not determine which column was clicked.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    AppMessageBox.Show("Could not determine which column was clicked.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
 
@@ -5143,7 +5143,7 @@ namespace VANTAGE.Views
 
                 if (visibleRecords == null || visibleRecords.Count == 0)
                 {
-                    MessageBox.Show("No visible records to copy.", "No Data", MessageBoxButton.OK, MessageBoxImage.None);
+                    AppMessageBox.Show("No visible records to copy.", "No Data", MessageBoxButton.OK, MessageBoxImage.None);
                     return;
                 }
 
@@ -5159,7 +5159,7 @@ namespace VANTAGE.Views
                 var property = typeof(Activity).GetProperty(columnName);
                 if (property == null)
                 {
-                    MessageBox.Show($"Column '{columnName}' not found on Activity.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    AppMessageBox.Show($"Column '{columnName}' not found on Activity.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
 
@@ -5192,7 +5192,7 @@ namespace VANTAGE.Views
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "CopyColumnValues", App.CurrentUser?.Username ?? "Unknown");
-                MessageBox.Show($"Copy failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                AppMessageBox.Show($"Copy failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -5642,7 +5642,7 @@ namespace VANTAGE.Views
             var selectedActivities = sfActivities.SelectedItems.Cast<Activity>().ToList();
             if (!selectedActivities.Any())
             {
-                MessageBox.Show("Please select one or more records to assign.", "No Selection", MessageBoxButton.OK, MessageBoxImage.None);
+                AppMessageBox.Show("Please select one or more records to assign.", "No Selection", MessageBoxButton.OK, MessageBoxImage.None);
                 return;
             }
 
@@ -5655,14 +5655,14 @@ namespace VANTAGE.Views
 
             if (!allowedActivities.Any())
             {
-                MessageBox.Show("You can only assign your own records.\n\nAdmins and Managers can assign any record.",
+                AppMessageBox.Show("You can only assign your own records.\n\nAdmins and Managers can assign any record.",
                     "Permission Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             if (allowedActivities.Count < selectedActivities.Count)
             {
-                var result = MessageBox.Show(
+                var result = AppMessageBox.Show(
                     $"You can only assign {allowedActivities.Count} of {selectedActivities.Count} selected records.\n\n" +
                     $"Records assigned to other users cannot be reassigned.\n\nContinue with allowed records?",
                     "Partial Assignment",
@@ -5690,7 +5690,7 @@ namespace VANTAGE.Views
 
             if (recordsWithErrors.Any())
             {
-                MessageBox.Show(
+                AppMessageBox.Show(
                     $"Cannot reassign. {recordsWithErrors.Count} selected record(s) have missing required metadata.\n\n" +
                     "Click 'Metadata Errors' button to view and fix these records.\n\n" +
                     $"Required fields: {ActivityRequiredMetadata.FieldsDisplay}\n" +
@@ -5704,7 +5704,7 @@ namespace VANTAGE.Views
             var dirtyRecords = allowedActivities.Where(a => a.LocalDirty == 1).ToList();
             if (dirtyRecords.Any())
             {
-                var syncResult = MessageBox.Show(
+                var syncResult = AppMessageBox.Show(
                     $"{dirtyRecords.Count} of the selected records have unsaved changes.\n\n" +
                     $"You must sync these records as the current owner before reassigning.\n\n" +
                     $"Sync now?",
@@ -5715,7 +5715,7 @@ namespace VANTAGE.Views
                 if (syncResult != MessageBoxResult.Yes)
                     return;
 
-                MessageBox.Show("Please use the SYNC button to sync your changes first, then try reassignment again.",
+                AppMessageBox.Show("Please use the SYNC button to sync your changes first, then try reassignment again.",
                     "Sync Required", MessageBoxButton.OK, MessageBoxImage.None);
                 return;
             }
@@ -5741,7 +5741,7 @@ namespace VANTAGE.Views
                 {
                     connectDialog.Close();
 
-                    var retryResult = MessageBox.Show(
+                    var retryResult = AppMessageBox.Show(
                         $"Cannot connect to Azure database.\n\n{connError}\n\nWould you like to retry?",
                         "Connection Failed",
                         MessageBoxButton.YesNo,
@@ -5761,7 +5761,7 @@ namespace VANTAGE.Views
             connectDialog.Close();
             if (!allUsers.Any())
             {
-                MessageBox.Show("No users found in the database.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                AppMessageBox.Show("No users found in the database.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
@@ -5991,7 +5991,7 @@ namespace VANTAGE.Views
                     if (!success)
                     {
                         busyDialog.Close();
-                        MessageBox.Show(resultMessage, "Assignment Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        AppMessageBox.Show(resultMessage, "Assignment Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                         return;
                     }
 
@@ -6048,7 +6048,7 @@ namespace VANTAGE.Views
                         ? "\n\nEmail notification sent."
                         : "\n\nEmail notification could not be sent.";
 
-                    MessageBox.Show(
+                    AppMessageBox.Show(
                         successMessage,
                         "Success",
                         MessageBoxButton.OK,
@@ -6057,7 +6057,7 @@ namespace VANTAGE.Views
                 catch (Exception ex)
                 {
                     busyDialog.Close();
-                    MessageBox.Show($"Error assigning records: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    AppMessageBox.Show($"Error assigning records: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     AppLogger.Error(ex, "ProgressView.MenuAssignToUser_Click");
                 }
             }

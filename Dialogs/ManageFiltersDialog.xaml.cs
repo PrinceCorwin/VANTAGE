@@ -109,7 +109,7 @@ namespace VANTAGE.Dialogs
         {
             if (pnlConditions.Children.Count >= MaxConditions)
             {
-                MessageBox.Show($"Maximum of {MaxConditions} conditions allowed.", "Limit Reached",
+                AppMessageBox.Show($"Maximum of {MaxConditions} conditions allowed.", "Limit Reached",
                     MessageBoxButton.OK, MessageBoxImage.None);
                 return;
             }
@@ -251,13 +251,13 @@ namespace VANTAGE.Dialogs
         {
             if (lstFilters.SelectedIndex < 0)
             {
-                MessageBox.Show("Please select a filter to delete.", "No Selection",
+                AppMessageBox.Show("Please select a filter to delete.", "No Selection",
                     MessageBoxButton.OK, MessageBoxImage.None);
                 return;
             }
 
             var filterName = _filters[lstFilters.SelectedIndex].Name;
-            var result = MessageBox.Show($"Delete filter '{filterName}'?", "Confirm Delete",
+            var result = AppMessageBox.Show($"Delete filter '{filterName}'?", "Confirm Delete",
                 MessageBoxButton.YesNo, MessageBoxImage.Question);
 
             if (result == MessageBoxResult.Yes)
@@ -274,7 +274,7 @@ namespace VANTAGE.Dialogs
             var filterName = txtFilterName.Text.Trim();
             if (string.IsNullOrEmpty(filterName))
             {
-                MessageBox.Show("Please enter a filter name.", "Name Required",
+                AppMessageBox.Show("Please enter a filter name.", "Name Required",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 txtFilterName.Focus();
                 return;
@@ -284,7 +284,7 @@ namespace VANTAGE.Dialogs
             var existingIndex = _filters.FindIndex(f => f.Name.Equals(filterName, StringComparison.OrdinalIgnoreCase));
             if (existingIndex >= 0 && (_isNewFilter || _filters[existingIndex] != _currentFilter))
             {
-                MessageBox.Show("A filter with this name already exists.", "Duplicate Name",
+                AppMessageBox.Show("A filter with this name already exists.", "Duplicate Name",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
@@ -325,7 +325,7 @@ namespace VANTAGE.Dialogs
             }
             if (conditions.Count == 0)
             {
-                MessageBox.Show("Please add at least one valid condition.", "No Conditions",
+                AppMessageBox.Show("Please add at least one valid condition.", "No Conditions",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
@@ -351,7 +351,7 @@ namespace VANTAGE.Dialogs
             if (savedIndex >= 0)
                 lstFilters.SelectedIndex = savedIndex;
 
-            MessageBox.Show("Filter saved.", "Success", MessageBoxButton.OK, MessageBoxImage.None);
+            AppMessageBox.Show("Filter saved.", "Success", MessageBoxButton.OK, MessageBoxImage.None);
         }
 
         private void BtnClose_Click(object sender, RoutedEventArgs e)

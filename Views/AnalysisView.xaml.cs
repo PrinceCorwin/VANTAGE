@@ -333,7 +333,7 @@ namespace VANTAGE.Views
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "AnalysisView.LoadSummaryData");
-                MessageBox.Show($"Error loading summary data: {ex.Message}", "Error",
+                AppMessageBox.Show($"Error loading summary data: {ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -741,7 +741,7 @@ namespace VANTAGE.Views
             var rows = summaryGrid.ItemsSource as List<AnalysisSummaryRow>;
             if (rows == null || rows.Count == 0)
             {
-                MessageBox.Show("No data to export.", "Export", MessageBoxButton.OK, MessageBoxImage.Information);
+                AppMessageBox.Show("No data to export.", "Export", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
@@ -753,7 +753,7 @@ namespace VANTAGE.Views
 
             if (visibleRows == null || visibleRows.Count == 0)
             {
-                MessageBox.Show("No data to export.", "Export", MessageBoxButton.OK, MessageBoxImage.Information);
+                AppMessageBox.Show("No data to export.", "Export", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
@@ -799,18 +799,18 @@ namespace VANTAGE.Views
                 ws.Columns().AdjustToContents();
                 workbook.SaveAs(dialog.FileName);
 
-                MessageBox.Show($"Exported {visibleRows.Count} rows to Excel.", "Export Complete",
+                AppMessageBox.Show($"Exported {visibleRows.Count} rows to Excel.", "Export Complete",
                     MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (IOException)
             {
-                MessageBox.Show("Cannot save — the file may be open in another application.", "Export Error",
+                AppMessageBox.Show("Cannot save — the file may be open in another application.", "Export Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "AnalysisView.BtnExport_Click");
-                MessageBox.Show($"Export failed: {ex.Message}", "Export Error",
+                AppMessageBox.Show($"Export failed: {ex.Message}", "Export Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }

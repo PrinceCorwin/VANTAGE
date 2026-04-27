@@ -69,7 +69,7 @@ namespace VANTAGE.Dialogs
 
             if (selected.Count == 0)
             {
-                MessageBox.Show("No groups selected.", "Reset User Settings",
+                AppMessageBox.Show("No groups selected.", "Reset User Settings",
                     MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
@@ -81,7 +81,7 @@ namespace VANTAGE.Dialogs
                 ? $"Reset \"{selected[0].Label}\"?\n\nThis will clear {totalKeys} setting{(totalKeys == 1 ? "" : "s")} and cannot be undone."
                 : $"Reset {selected.Count} groups?\n\nThis will clear {totalKeys} settings total and cannot be undone.";
 
-            var result = MessageBox.Show(this, message, "Reset User Settings",
+            var result = AppMessageBox.Show(this, message, "Reset User Settings",
                 MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No);
             if (result != MessageBoxResult.Yes) return;
 
@@ -97,7 +97,7 @@ namespace VANTAGE.Dialogs
 
             ResetKeys = removed;
 
-            MessageBox.Show(this,
+            AppMessageBox.Show(this,
                 "Settings reset. Grid layouts reload right away; other settings (splitters, dialog sizes, dismissed dialogs) apply the next time you open each affected view or restart Vantage.",
                 "Reset User Settings",
                 MessageBoxButton.OK,

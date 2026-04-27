@@ -35,7 +35,7 @@ namespace VANTAGE.Utilities
                 // Validate inputs
                 if (allActivities == null || allActivities.Count == 0)
                 {
-                    MessageBox.Show(
+                    AppMessageBox.Show(
                         "No activities to export.",
                         "Export",
                         MessageBoxButton.OK,
@@ -81,7 +81,7 @@ namespace VANTAGE.Utilities
                 LogExport($"{exportType} ({format})", activitiesToExport.Count, filePath);
 
                 // Show success message
-                MessageBox.Show(
+                AppMessageBox.Show(
                     owner,
                     $"Successfully exported {activitiesToExport.Count:N0} activities to:\n\n{filePath}",
                     "Export Complete",
@@ -106,7 +106,7 @@ namespace VANTAGE.Utilities
                 // Validate inputs
                 if (selectedActivities == null || selectedActivities.Count == 0)
                 {
-                    MessageBox.Show(
+                    AppMessageBox.Show(
                         owner,
                         "No activities selected to export.",
                         "Export Selected",
@@ -127,7 +127,7 @@ namespace VANTAGE.Utilities
                 LogExport("Export Selected", selectedActivities.Count, filePath);
 
                 // Show success message
-                MessageBox.Show(
+                AppMessageBox.Show(
                     owner,
                     $"Successfully exported {selectedActivities.Count:N0} selected activities to:\n\n{filePath}",
                     "Export Complete",
@@ -152,7 +152,7 @@ namespace VANTAGE.Utilities
                 // Validate inputs
                 if (deletedActivities == null || deletedActivities.Count == 0)
                 {
-                    MessageBox.Show(
+                    AppMessageBox.Show(
                         owner,
                         "No deleted records to export.",
                         "Export Deleted Records",
@@ -173,7 +173,7 @@ namespace VANTAGE.Utilities
                 LogExport("Export Deleted Records", deletedActivities.Count, filePath);
 
                 // Show success message
-                MessageBox.Show(
+                AppMessageBox.Show(
                     owner,
                     $"Successfully exported {deletedActivities.Count:N0} deleted records to:\n\n{filePath}",
                     "Export Complete",
@@ -213,7 +213,7 @@ namespace VANTAGE.Utilities
                     App.CurrentUser?.Username ?? "Unknown");
 
                 // Show success message
-                MessageBox.Show(
+                AppMessageBox.Show(
                     owner,
                     $"Successfully exported template to:\n\n{filePath}",
                     "Export Complete",
@@ -281,7 +281,7 @@ namespace VANTAGE.Utilities
             }
 
             // Show error message to user
-            MessageBox.Show(
+            AppMessageBox.Show(
                 owner,
                 $"Export failed:\n\n{ex.Message}\n\nPlease check that:\n" +
                 $"• The file is not already open in Excel\n" +

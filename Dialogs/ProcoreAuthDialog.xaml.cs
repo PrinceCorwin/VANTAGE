@@ -27,7 +27,7 @@ public partial class ProcoreAuthDialog : Window
         catch (Exception ex)
         {
             AppLogger.Error(ex, "ProcoreAuthDialog.BtnOpenBrowser_Click");
-            MessageBox.Show("Failed to open browser. Please try again.", "Error",
+            AppMessageBox.Show("Failed to open browser. Please try again.", "Error",
                 MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
@@ -62,7 +62,7 @@ public partial class ProcoreAuthDialog : Window
             }
             else
             {
-                MessageBox.Show(
+                AppMessageBox.Show(
                     "Failed to connect to Procore. The authorization code may have expired.\n\n" +
                     "Please click 'Open Procore Login' to get a new code.",
                     "Connection Failed",
@@ -79,7 +79,7 @@ public partial class ProcoreAuthDialog : Window
         catch (Exception ex)
         {
             AppLogger.Error(ex, "ProcoreAuthDialog.BtnConnect_Click");
-            MessageBox.Show("An error occurred while connecting to Procore.", "Error",
+            AppMessageBox.Show("An error occurred while connecting to Procore.", "Error",
                 MessageBoxButton.OK, MessageBoxImage.Error);
 
             btnConnect.Content = "Connect";

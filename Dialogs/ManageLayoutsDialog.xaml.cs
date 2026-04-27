@@ -60,7 +60,7 @@ namespace VANTAGE.Dialogs
 
             var layoutName = _layoutNames[lstLayouts.SelectedIndex];
 
-            var result = MessageBox.Show(
+            var result = AppMessageBox.Show(
                 $"Current grid layout will be replaced by '{layoutName}'.\n\nClick Cancel to save your current layout first.",
                 "Apply Layout",
                 MessageBoxButton.OKCancel,
@@ -82,7 +82,7 @@ namespace VANTAGE.Dialogs
             }
             else
             {
-                MessageBox.Show("Failed to load layout.", "Error",
+                AppMessageBox.Show("Failed to load layout.", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -101,7 +101,7 @@ namespace VANTAGE.Dialogs
             // Check for duplicate
             if (_layoutNames.Contains(newName))
             {
-                MessageBox.Show("A layout with this name already exists.", "Duplicate Name",
+                AppMessageBox.Show("A layout with this name already exists.", "Duplicate Name",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
@@ -135,7 +135,7 @@ namespace VANTAGE.Dialogs
                 return;
 
             var layoutName = _layoutNames[lstLayouts.SelectedIndex];
-            var result = MessageBox.Show($"Delete layout '{layoutName}'?", "Confirm Delete",
+            var result = AppMessageBox.Show($"Delete layout '{layoutName}'?", "Confirm Delete",
                 MessageBoxButton.YesNo, MessageBoxImage.Question);
 
             if (result == MessageBoxResult.Yes)
@@ -157,7 +157,7 @@ namespace VANTAGE.Dialogs
             var layoutName = txtNewLayoutName.Text.Trim();
             if (string.IsNullOrWhiteSpace(layoutName))
             {
-                MessageBox.Show("Please enter a layout name.", "Name Required",
+                AppMessageBox.Show("Please enter a layout name.", "Name Required",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 txtNewLayoutName.Focus();
                 return;
@@ -167,7 +167,7 @@ namespace VANTAGE.Dialogs
             {
                 txtNewLayoutName.Clear();
                 LoadLayoutsList();
-                MessageBox.Show($"Layout '{layoutName}' saved.", "Success",
+                AppMessageBox.Show($"Layout '{layoutName}' saved.", "Success",
                     MessageBoxButton.OK, MessageBoxImage.None);
             }
         }
@@ -177,7 +177,7 @@ namespace VANTAGE.Dialogs
             // Check limit
             if (_layoutNames.Count >= SettingsManager.MaxLayouts)
             {
-                MessageBox.Show($"Maximum of {SettingsManager.MaxLayouts} layouts allowed. Delete one first.",
+                AppMessageBox.Show($"Maximum of {SettingsManager.MaxLayouts} layouts allowed. Delete one first.",
                     "Limit Reached", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return false;
             }
@@ -185,7 +185,7 @@ namespace VANTAGE.Dialogs
             // Check for duplicate
             if (_layoutNames.Contains(layoutName))
             {
-                MessageBox.Show("A layout with this name already exists.", "Duplicate Name",
+                AppMessageBox.Show("A layout with this name already exists.", "Duplicate Name",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return false;
             }
@@ -211,7 +211,7 @@ namespace VANTAGE.Dialogs
 
         private void BtnDefault_Click(object sender, RoutedEventArgs e)
         {
-            var result = MessageBox.Show(
+            var result = AppMessageBox.Show(
                 "Reset grid layouts to application defaults?\n\nYour saved layouts will not be affected.",
                 "Reset to Default",
                 MessageBoxButton.OKCancel,

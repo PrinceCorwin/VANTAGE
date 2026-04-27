@@ -61,7 +61,7 @@ namespace VANTAGE.Dialogs
             {
                 pnlLoading.Visibility = Visibility.Collapsed;
                 AppLogger.Error(ex, "ScheduleChangeLogDialog.LoadChanges");
-                MessageBox.Show($"Error loading changes: {ex.Message}", "Error",
+                AppMessageBox.Show($"Error loading changes: {ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -110,7 +110,7 @@ namespace VANTAGE.Dialogs
             var selected = _changes.Where(c => c.IsSelected).ToList();
             if (selected.Count == 0)
             {
-                MessageBox.Show("No changes selected.", "Apply Changes",
+                AppMessageBox.Show("No changes selected.", "Apply Changes",
                     MessageBoxButton.OK, MessageBoxImage.None);
                 return;
             }
@@ -128,7 +128,7 @@ namespace VANTAGE.Dialogs
                 confirmMessage += $"\n\n({skippedCount} older duplicate change(s) will be skipped)";
             confirmMessage += "\n\nThis will overwrite the current values in the Activities table. This action cannot be undone.";
 
-            var result = MessageBox.Show(confirmMessage, "Confirm Apply",
+            var result = AppMessageBox.Show(confirmMessage, "Confirm Apply",
                 MessageBoxButton.YesNo, MessageBoxImage.Warning);
 
             if (result != MessageBoxResult.Yes)
@@ -166,7 +166,7 @@ namespace VANTAGE.Dialogs
                 if (failCount > 0)
                     message += $"\n{failCount} change(s) failed (activity may not exist).";
 
-                MessageBox.Show(message, "Apply Complete",
+                AppMessageBox.Show(message, "Apply Complete",
                     MessageBoxButton.OK, MessageBoxImage.None);
 
                 // Reload to show remaining changes
@@ -175,7 +175,7 @@ namespace VANTAGE.Dialogs
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "ScheduleChangeLogDialog.BtnApply_Click");
-                MessageBox.Show($"Error applying changes: {ex.Message}", "Error",
+                AppMessageBox.Show($"Error applying changes: {ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally

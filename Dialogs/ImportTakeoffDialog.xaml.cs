@@ -262,7 +262,7 @@ namespace VANTAGE.Dialogs
 
                 if (error != null)
                 {
-                    MessageBox.Show(error, "File Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    AppMessageBox.Show(error, "File Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                     ClearMappingGrid();
                     return;
                 }
@@ -277,7 +277,7 @@ namespace VANTAGE.Dialogs
             {
                 HideMappingSpinner();
                 AppLogger.Error(ex, "ImportTakeoffDialog.PopulateMappingFromFileAsync");
-                MessageBox.Show($"Error reading file:\n{ex.Message}", "File Error",
+                AppMessageBox.Show($"Error reading file:\n{ex.Message}", "File Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
                 ClearMappingGrid();
             }
@@ -536,7 +536,7 @@ namespace VANTAGE.Dialogs
                     string message = "Data type validation failed:\n\n" +
                         string.Join("\n\n", errors) +
                         "\n\nPlease fix the mappings or correct the source data.";
-                    MessageBox.Show(message, "Data Type Mismatch",
+                    AppMessageBox.Show(message, "Data Type Mismatch",
                         MessageBoxButton.OK, MessageBoxImage.Warning);
                     return false;
                 }
@@ -544,7 +544,7 @@ namespace VANTAGE.Dialogs
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "ImportTakeoffDialog.ValidateDataTypes");
-                MessageBox.Show($"Error validating data types:\n{ex.Message}", "Validation Error",
+                AppMessageBox.Show($"Error validating data types:\n{ex.Message}", "Validation Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
                 return false;
             }
@@ -577,7 +577,7 @@ namespace VANTAGE.Dialogs
 
             if (_selectedFilePath == null)
             {
-                MessageBox.Show("No file selected.", "No Source", MessageBoxButton.OK, MessageBoxImage.Warning);
+                AppMessageBox.Show("No file selected.", "No Source", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -590,7 +590,7 @@ namespace VANTAGE.Dialogs
                 var rawRows = await System.Threading.Tasks.Task.Run(() => ReadLaborRows(_selectedFilePath));
                 if (rawRows.Count == 0)
                 {
-                    MessageBox.Show("No data rows found in the Labor worksheet.", "Empty Data",
+                    AppMessageBox.Show("No data rows found in the Labor worksheet.", "Empty Data",
                         MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
@@ -608,7 +608,7 @@ namespace VANTAGE.Dialogs
 
                 if (rawRows.Count == 0)
                 {
-                    MessageBox.Show("No rows remain after applying filters and rollups.", "No Data",
+                    AppMessageBox.Show("No rows remain after applying filters and rollups.", "No Data",
                         MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
@@ -657,7 +657,7 @@ namespace VANTAGE.Dialogs
                 if (doImport) parts.Add($"{importedCount} activities imported");
                 if (doExcel && excelPath != null) parts.Add($"Excel saved to:\n{excelPath}");
 
-                MessageBox.Show(string.Join("\n\n", parts), "Import Complete",
+                AppMessageBox.Show(string.Join("\n\n", parts), "Import Complete",
                     MessageBoxButton.OK, MessageBoxImage.Information);
 
                 DialogResult = doImport;
@@ -666,7 +666,7 @@ namespace VANTAGE.Dialogs
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "ImportTakeoffDialog.BtnImport_Click");
-                MessageBox.Show($"Import failed:\n{ex.Message}", "Error",
+                AppMessageBox.Show($"Import failed:\n{ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
@@ -1534,7 +1534,7 @@ namespace VANTAGE.Dialogs
             string name = inputDialog.InputText.Trim();
             if (string.IsNullOrEmpty(name))
             {
-                MessageBox.Show("Profile name cannot be empty.", "Invalid Name",
+                AppMessageBox.Show("Profile name cannot be empty.", "Invalid Name",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
@@ -1578,7 +1578,7 @@ namespace VANTAGE.Dialogs
             string name = cboProfile.SelectedItem?.ToString() ?? "";
             if (string.IsNullOrEmpty(name)) return;
 
-            var result = MessageBox.Show($"Delete profile \"{name}\"?", "Confirm Delete",
+            var result = AppMessageBox.Show($"Delete profile \"{name}\"?", "Confirm Delete",
                 MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (result != MessageBoxResult.Yes) return;
 

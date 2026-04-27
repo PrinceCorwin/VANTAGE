@@ -608,14 +608,14 @@ namespace VANTAGE.Views
             var drawingItems = dgDrawings.ItemsSource as List<DrawingItem>;
             if (drawingItems == null || drawingItems.Count == 0)
             {
-                MessageBox.Show("No drawings to fetch. Select work packages with drawing numbers first.",
+                AppMessageBox.Show("No drawings to fetch. Select work packages with drawing numbers first.",
                     "No Drawings", MessageBoxButton.OK, MessageBoxImage.None);
                 return;
             }
 
             if (string.IsNullOrEmpty(txtOutputFolder.Text))
             {
-                MessageBox.Show("Please select an output folder first.",
+                AppMessageBox.Show("Please select an output folder first.",
                     "Output Folder Required", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
@@ -638,7 +638,7 @@ namespace VANTAGE.Views
             var folderPath = txtDrawingsLocalPath.Text;
             if (string.IsNullOrEmpty(folderPath))
             {
-                MessageBox.Show("Please enter or browse for a drawings folder path.",
+                AppMessageBox.Show("Please enter or browse for a drawings folder path.",
                     "Folder Path Required", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
@@ -754,14 +754,14 @@ namespace VANTAGE.Views
                 lblDrawingsCount.Text = $"{drawingItems.Count} drawing(s)";
 
                 lblStatus.Text = $"Fetch complete: {found} found, {notFound} not found, {notInDb} not in DB";
-                MessageBox.Show($"Drawings fetch complete.\n\nMatched: {found}\nNot found: {notFound}\nNot in DB: {notInDb}",
+                AppMessageBox.Show($"Drawings fetch complete.\n\nMatched: {found}\nNot found: {notFound}\nNot in DB: {notInDb}",
                     "Fetch Complete", MessageBoxButton.OK,
                     notFound > 0 ? MessageBoxImage.Warning : MessageBoxImage.None);
             }
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "WorkPackageView.FetchDrawingsFromLocalAsync");
-                MessageBox.Show($"Error fetching drawings: {ex.Message}",
+                AppMessageBox.Show($"Error fetching drawings: {ex.Message}",
                     "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
@@ -788,7 +788,7 @@ namespace VANTAGE.Views
         {
             // TODO: Implement Procore fetch with company/project selection dialog
             await Task.CompletedTask;
-            MessageBox.Show("Procore fetch is not yet implemented.",
+            AppMessageBox.Show("Procore fetch is not yet implemented.",
                 "Coming Soon", MessageBoxButton.OK, MessageBoxImage.None);
         }
 
@@ -980,26 +980,26 @@ namespace VANTAGE.Views
             // Validate inputs
             if (cboProject.SelectedValue is not string projectId)
             {
-                MessageBox.Show("Please select a project.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                AppMessageBox.Show("Please select a project.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             var selectedWPs = lstWorkPackages.SelectedItems.Cast<string>().ToList();
             if (!selectedWPs.Any())
             {
-                MessageBox.Show("Please select at least one work package.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                AppMessageBox.Show("Please select at least one work package.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             if (cboWPTemplate.SelectedValue is not string wpTemplateId)
             {
-                MessageBox.Show("Please select a WP Template.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                AppMessageBox.Show("Please select a WP Template.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(txtOutputFolder.Text))
             {
-                MessageBox.Show("Please select an output folder.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                AppMessageBox.Show("Please select an output folder.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -1033,28 +1033,28 @@ namespace VANTAGE.Views
                 {
                     lblStatus.Text = $"Generated {successCount} work package(s) successfully.";
                     var paths = string.Join("\n", results.Where(r => r.Success && !string.IsNullOrEmpty(r.MergedPdfPath)).Select(r => r.MergedPdfPath));
-                    MessageBox.Show($"Successfully generated {successCount} work package(s).\n\nFiles saved to:\n{paths}",
+                    AppMessageBox.Show($"Successfully generated {successCount} work package(s).\n\nFiles saved to:\n{paths}",
                         "Generation Complete", MessageBoxButton.OK, MessageBoxImage.None);
                 }
                 else if (successCount == 0 && failCount == 0)
                 {
                     lblStatus.Text = "No work packages generated";
                     var errors = string.Join("\n", results.Select(r => r.ErrorMessage ?? "Unknown error"));
-                    MessageBox.Show($"No work packages were generated.\n\nErrors:\n{errors}",
+                    AppMessageBox.Show($"No work packages were generated.\n\nErrors:\n{errors}",
                         "Generation Failed", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
                 else
                 {
                     lblStatus.Text = $"Generated {successCount} work package(s), {failCount} failed.";
                     var errors = string.Join("\n", results.Where(r => !r.Success).Select(r => r.ErrorMessage));
-                    MessageBox.Show($"Generated {successCount} of {results.Count} work packages.\n\nErrors:\n{errors}",
+                    AppMessageBox.Show($"Generated {successCount} of {results.Count} work packages.\n\nErrors:\n{errors}",
                         "Generation Complete with Errors", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
             }
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "WorkPackageView.BtnGenerate_Click");
-                MessageBox.Show($"Error generating work packages: {ex.Message}",
+                AppMessageBox.Show($"Error generating work packages: {ex.Message}",
                     "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 lblStatus.Text = "Error during generation";
             }
@@ -1298,11 +1298,11 @@ namespace VANTAGE.Views
 
             if (_selectedWPTemplate.IsBuiltIn)
             {
-                MessageBox.Show("Built-in templates cannot be deleted.", "Cannot Delete", MessageBoxButton.OK, MessageBoxImage.Warning);
+                AppMessageBox.Show("Built-in templates cannot be deleted.", "Cannot Delete", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            var result = MessageBox.Show($"Are you sure you want to delete '{_selectedWPTemplate.WPTemplateName}'?",
+            var result = AppMessageBox.Show($"Are you sure you want to delete '{_selectedWPTemplate.WPTemplateName}'?",
                 "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Question);
 
             if (result == MessageBoxResult.Yes)
@@ -1320,7 +1320,7 @@ namespace VANTAGE.Views
         {
             if (string.IsNullOrWhiteSpace(txtWPTemplateName.Text))
             {
-                MessageBox.Show("Please enter a template name.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                AppMessageBox.Show("Please enter a template name.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -1334,7 +1334,7 @@ namespace VANTAGE.Views
 
                 if (duplicate != null)
                 {
-                    MessageBox.Show($"A template named '{newName}' already exists. Please choose a different name.",
+                    AppMessageBox.Show($"A template named '{newName}' already exists. Please choose a different name.",
                         "Duplicate Name", MessageBoxButton.OK, MessageBoxImage.Warning);
                     txtWPTemplateName.Focus();
                     txtWPTemplateName.SelectAll();
@@ -1350,7 +1350,7 @@ namespace VANTAGE.Views
 
                 if (duplicate != null)
                 {
-                    MessageBox.Show($"A template named '{newName}' already exists. Please choose a different name.",
+                    AppMessageBox.Show($"A template named '{newName}' already exists. Please choose a different name.",
                         "Duplicate Name", MessageBoxButton.OK, MessageBoxImage.Warning);
                     txtWPTemplateName.Focus();
                     txtWPTemplateName.SelectAll();
@@ -1410,13 +1410,13 @@ namespace VANTAGE.Views
                     _selectedWPTemplate = savedTemplate;
                 }
 
-                MessageBox.Show($"WP template '{newName}' saved.", "Saved",
+                AppMessageBox.Show($"WP template '{newName}' saved.", "Saved",
                     MessageBoxButton.OK, MessageBoxImage.None);
             }
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "WorkPackageView.BtnSaveWPTemplate_Click");
-                MessageBox.Show($"Error saving template: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                AppMessageBox.Show($"Error saving template: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -1558,11 +1558,11 @@ namespace VANTAGE.Views
 
             if (_selectedFormTemplate.IsBuiltIn)
             {
-                MessageBox.Show("Built-in templates cannot be deleted.", "Cannot Delete", MessageBoxButton.OK, MessageBoxImage.Warning);
+                AppMessageBox.Show("Built-in templates cannot be deleted.", "Cannot Delete", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            var result = MessageBox.Show($"Are you sure you want to delete '{_selectedFormTemplate.TemplateName}'?",
+            var result = AppMessageBox.Show($"Are you sure you want to delete '{_selectedFormTemplate.TemplateName}'?",
                 "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Question);
 
             if (result != MessageBoxResult.Yes) return;
@@ -1571,7 +1571,7 @@ namespace VANTAGE.Views
 
             if (!success && blockingTemplates.Any())
             {
-                MessageBox.Show($"Cannot delete this form template. It is used by the following WP templates:\n\n{string.Join("\n", blockingTemplates)}",
+                AppMessageBox.Show($"Cannot delete this form template. It is used by the following WP templates:\n\n{string.Join("\n", blockingTemplates)}",
                     "Cannot Delete", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
@@ -1612,7 +1612,7 @@ namespace VANTAGE.Views
 
                 if (builtInTemplates.Count == 0)
                 {
-                    MessageBox.Show("No built-in template found for this type.", "Cannot Reset",
+                    AppMessageBox.Show("No built-in template found for this type.", "Cannot Reset",
                         MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
@@ -1641,7 +1641,7 @@ namespace VANTAGE.Views
                 }
 
                 // Confirm the reset
-                var result = MessageBox.Show(
+                var result = AppMessageBox.Show(
                     $"Reset '{_selectedFormTemplate.TemplateName}' to match '{sourceTemplate.TemplateName}' defaults?\n\nThis will replace all current settings.",
                     "Confirm Reset", MessageBoxButton.YesNo, MessageBoxImage.Question);
 
@@ -1662,7 +1662,7 @@ namespace VANTAGE.Views
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "WorkPackageView.BtnResetFormTemplateDefaults_Click");
-                MessageBox.Show($"Error resetting template: {ex.Message}", "Error",
+                AppMessageBox.Show($"Error resetting template: {ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -1672,7 +1672,7 @@ namespace VANTAGE.Views
         {
             if (string.IsNullOrWhiteSpace(txtFormTemplateName.Text))
             {
-                MessageBox.Show("Please enter a template name.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                AppMessageBox.Show("Please enter a template name.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -1686,7 +1686,7 @@ namespace VANTAGE.Views
 
                 if (duplicate != null)
                 {
-                    MessageBox.Show($"A template named '{newName}' already exists. Please choose a different name.",
+                    AppMessageBox.Show($"A template named '{newName}' already exists. Please choose a different name.",
                         "Duplicate Name", MessageBoxButton.OK, MessageBoxImage.Warning);
                     txtFormTemplateName.Focus();
                     txtFormTemplateName.SelectAll();
@@ -1702,7 +1702,7 @@ namespace VANTAGE.Views
 
                 if (duplicate != null)
                 {
-                    MessageBox.Show($"A template named '{newName}' already exists. Please choose a different name.",
+                    AppMessageBox.Show($"A template named '{newName}' already exists. Please choose a different name.",
                         "Duplicate Name", MessageBoxButton.OK, MessageBoxImage.Warning);
                     txtFormTemplateName.Focus();
                     txtFormTemplateName.SelectAll();
@@ -1731,7 +1731,7 @@ namespace VANTAGE.Views
 
                     if (string.IsNullOrEmpty(templateType) || string.IsNullOrEmpty(structureJson))
                     {
-                        MessageBox.Show("Please select a template first.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        AppMessageBox.Show("Please select a template first.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
                         return;
                     }
 
@@ -1781,13 +1781,13 @@ namespace VANTAGE.Views
                 }
 
                 lblStatus.Text = "Template saved";
-                MessageBox.Show($"Form template '{newName}' saved.", "Saved",
+                AppMessageBox.Show($"Form template '{newName}' saved.", "Saved",
                     MessageBoxButton.OK, MessageBoxImage.None);
             }
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "WorkPackageView.BtnSaveFormTemplate_Click");
-                MessageBox.Show($"Error saving template: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                AppMessageBox.Show($"Error saving template: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -1805,7 +1805,7 @@ namespace VANTAGE.Views
 
                 if (userForms.Count == 0 && userWPs.Count == 0)
                 {
-                    MessageBox.Show("No user-created templates to export. Built-in templates are already available on every installation.",
+                    AppMessageBox.Show("No user-created templates to export. Built-in templates are already available on every installation.",
                         "Nothing to Export", MessageBoxButton.OK, MessageBoxImage.None);
                     return;
                 }
@@ -1863,13 +1863,13 @@ namespace VANTAGE.Views
                 if (dialog.ShowDialog() != true) return;
 
                 await File.WriteAllTextAsync(dialog.FileName, json);
-                MessageBox.Show($"Exported {userForms.Count} form template(s) and {userWPs.Count} WP template(s).",
+                AppMessageBox.Show($"Exported {userForms.Count} form template(s) and {userWPs.Count} WP template(s).",
                     "Export Complete", MessageBoxButton.OK, MessageBoxImage.None);
             }
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "WorkPackageView.BtnExport_Click");
-                MessageBox.Show($"Error exporting templates: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                AppMessageBox.Show($"Error exporting templates: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -1893,7 +1893,7 @@ namespace VANTAGE.Views
                 // Validate version
                 if (!root.TryGetProperty("version", out var versionEl) || versionEl.GetInt32() != 1)
                 {
-                    MessageBox.Show("Unrecognized template file format.", "Import Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    AppMessageBox.Show("Unrecognized template file format.", "Import Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
 
@@ -1990,17 +1990,17 @@ namespace VANTAGE.Views
                 PopulateFormTemplateEditDropdown();
                 _suppressTypeDialog = false;
 
-                MessageBox.Show($"Imported {formCount} form template(s) and {wpCount} WP template(s).",
+                AppMessageBox.Show($"Imported {formCount} form template(s) and {wpCount} WP template(s).",
                     "Import Complete", MessageBoxButton.OK, MessageBoxImage.None);
             }
             catch (JsonException)
             {
-                MessageBox.Show("The selected file is not a valid template JSON file.", "Import Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                AppMessageBox.Show("The selected file is not a valid template JSON file.", "Import Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "WorkPackageView.BtnImport_Click");
-                MessageBox.Show($"Error importing templates: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                AppMessageBox.Show($"Error importing templates: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -2009,7 +2009,7 @@ namespace VANTAGE.Views
         {
             if (!_hasUnsavedChanges) return true;
 
-            var result = MessageBox.Show("You have unsaved changes. Save as a new template?",
+            var result = AppMessageBox.Show("You have unsaved changes. Save as a new template?",
                 "Unsaved Changes", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
 
             if (result == MessageBoxResult.Cancel) return false;
@@ -2887,7 +2887,7 @@ namespace VANTAGE.Views
             {
                 if (string.IsNullOrWhiteSpace(_gridNewColumnNameBox.Text))
                 {
-                    MessageBox.Show("Please enter a column name.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    AppMessageBox.Show("Please enter a column name.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
@@ -2935,7 +2935,7 @@ namespace VANTAGE.Views
             {
                 if (string.IsNullOrWhiteSpace(_gridColumnEditNameBox.Text))
                 {
-                    MessageBox.Show("Please enter a column name.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    AppMessageBox.Show("Please enter a column name.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
@@ -3518,7 +3518,7 @@ namespace VANTAGE.Views
             {
                 if (string.IsNullOrWhiteSpace(_formNewColumnNameBox.Text))
                 {
-                    MessageBox.Show("Please enter a column name.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    AppMessageBox.Show("Please enter a column name.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
@@ -3561,7 +3561,7 @@ namespace VANTAGE.Views
             }
             else
             {
-                MessageBox.Show("Please select a column to edit.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                AppMessageBox.Show("Please select a column to edit.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
 
@@ -3628,7 +3628,7 @@ namespace VANTAGE.Views
             {
                 if (string.IsNullOrWhiteSpace(_formColumnEditNameBox.Text))
                 {
-                    MessageBox.Show("Column name cannot be empty.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    AppMessageBox.Show("Column name cannot be empty.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
@@ -3690,7 +3690,7 @@ namespace VANTAGE.Views
             {
                 if (string.IsNullOrWhiteSpace(_formNewSectionBox.Text))
                 {
-                    MessageBox.Show("Please enter a section name.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    AppMessageBox.Show("Please enter a section name.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
                 _formSections.Add(new SectionDefinition { Name = _formNewSectionBox.Text });
@@ -3715,7 +3715,7 @@ namespace VANTAGE.Views
             }
             else
             {
-                MessageBox.Show("Please select a section to edit.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                AppMessageBox.Show("Please select a section to edit.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
 
@@ -3735,7 +3735,7 @@ namespace VANTAGE.Views
             {
                 if (string.IsNullOrWhiteSpace(_formSectionEditBox.Text))
                 {
-                    MessageBox.Show("Section name cannot be empty.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    AppMessageBox.Show("Section name cannot be empty.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
@@ -3816,7 +3816,7 @@ namespace VANTAGE.Views
             {
                 if (string.IsNullOrWhiteSpace(_formNewItemBox.Text))
                 {
-                    MessageBox.Show("Please enter an item text.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    AppMessageBox.Show("Please enter an item text.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
                 section.Items.Add(_formNewItemBox.Text);
@@ -3830,7 +3830,7 @@ namespace VANTAGE.Views
             }
             else
             {
-                MessageBox.Show("Please select a section first.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                AppMessageBox.Show("Please select a section first.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
 
@@ -3850,7 +3850,7 @@ namespace VANTAGE.Views
             }
             else
             {
-                MessageBox.Show("Please select an item to edit.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                AppMessageBox.Show("Please select an item to edit.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
 
@@ -3870,7 +3870,7 @@ namespace VANTAGE.Views
             {
                 if (string.IsNullOrWhiteSpace(_formItemEditBox.Text))
                 {
-                    MessageBox.Show("Item text cannot be empty.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    AppMessageBox.Show("Item text cannot be empty.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 

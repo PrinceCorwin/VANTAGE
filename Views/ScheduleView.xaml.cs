@@ -245,7 +245,7 @@ namespace VANTAGE.Views
                     DateTime? dateValue = columnName == "ThreeWeekStart" ? row.ThreeWeekStart : row.ThreeWeekFinish;
                     if (dateValue.HasValue && dateValue.Value.Date < row.WeekEndDate.Date)
                     {
-                        MessageBox.Show(
+                        AppMessageBox.Show(
                             $"{_viewModel.LookaheadLabel} dates cannot be earlier than the week ending date ({row.WeekEndDate:M/d/yyyy}).\n\n" +
                             "If the activity started or finished before this date, edit the detail activities below to set actual start/finish dates.",
                             "Invalid Date", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -556,7 +556,7 @@ namespace VANTAGE.Views
                     // Can't set start if percent is 0
                     if (editedSnapshot.ActStart != null && editedSnapshot.PercentEntry == 0)
                     {
-                        MessageBox.Show("Cannot set Start date when % Complete is 0.\n\nSet % Complete first.",
+                        AppMessageBox.Show("Cannot set Start date when % Complete is 0.\n\nSet % Complete first.",
                             "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                         editedSnapshot.ActStart = null;
                         sfScheduleDetail.View?.Refresh();
@@ -566,7 +566,7 @@ namespace VANTAGE.Views
                     // Can't set start in the future
                     if (editedSnapshot.ActStart != null && editedSnapshot.ActStart.Value.Date > weekEndDate.Date)
                     {
-                        MessageBox.Show($"Start date cannot be after Week End Date ({weekEndDate:M/d/yyyy}).\n\nActual dates must be in the past.",
+                        AppMessageBox.Show($"Start date cannot be after Week End Date ({weekEndDate:M/d/yyyy}).\n\nActual dates must be in the past.",
                             "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                         editedSnapshot.ActStart = weekEndDate;
                         sfScheduleDetail.View?.Refresh();
@@ -575,7 +575,7 @@ namespace VANTAGE.Views
                     // Can't clear start if percent > 0
                     if (editedSnapshot.ActStart == null && editedSnapshot.PercentEntry > 0)
                     {
-                        MessageBox.Show("Cannot clear Start date when % Complete is greater than 0.\n\nSet % Complete to 0 first.",
+                        AppMessageBox.Show("Cannot clear Start date when % Complete is greater than 0.\n\nSet % Complete to 0 first.",
                             "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                         editedSnapshot.ActStart = weekEndDate;
                         sfScheduleDetail.View?.Refresh();
@@ -589,7 +589,7 @@ namespace VANTAGE.Views
                     // Can't set finish if percent is not 100
                     if (editedSnapshot.ActFin != null && editedSnapshot.PercentEntry < 100)
                     {
-                        MessageBox.Show("Cannot set Finish date when % Complete is less than 100.\n\nSet % Complete to 100 first.",
+                        AppMessageBox.Show("Cannot set Finish date when % Complete is less than 100.\n\nSet % Complete to 100 first.",
                             "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                         editedSnapshot.ActFin = null;
                         sfScheduleDetail.View?.Refresh();
@@ -599,7 +599,7 @@ namespace VANTAGE.Views
                     // Can't set finish in the future
                     if (editedSnapshot.ActFin != null && editedSnapshot.ActFin.Value.Date > weekEndDate.Date)
                     {
-                        MessageBox.Show($"Finish date cannot be after Week End Date ({weekEndDate:M/d/yyyy}).\n\nActual dates must be in the past.",
+                        AppMessageBox.Show($"Finish date cannot be after Week End Date ({weekEndDate:M/d/yyyy}).\n\nActual dates must be in the past.",
                             "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                         editedSnapshot.ActFin = weekEndDate;
                         sfScheduleDetail.View?.Refresh();
@@ -609,7 +609,7 @@ namespace VANTAGE.Views
                     if (editedSnapshot.ActFin != null && editedSnapshot.ActStart != null &&
                         editedSnapshot.ActFin.Value.Date < editedSnapshot.ActStart.Value.Date)
                     {
-                        MessageBox.Show("Finish date cannot be before Start date.",
+                        AppMessageBox.Show("Finish date cannot be before Start date.",
                             "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                         editedSnapshot.ActFin = editedSnapshot.ActStart;
                         sfScheduleDetail.View?.Refresh();
@@ -618,7 +618,7 @@ namespace VANTAGE.Views
                     // Can't clear finish if percent is 100
                     if (editedSnapshot.ActFin == null && editedSnapshot.PercentEntry >= 100)
                     {
-                        MessageBox.Show("Cannot clear Finish date when % Complete is 100.\n\nSet % Complete to less than 100 first.",
+                        AppMessageBox.Show("Cannot clear Finish date when % Complete is 100.\n\nSet % Complete to less than 100 first.",
                             "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                         editedSnapshot.ActFin = weekEndDate;
                         sfScheduleDetail.View?.Refresh();
@@ -721,7 +721,7 @@ namespace VANTAGE.Views
                 else
                 {
                     txtStatus.Text = "Save failed";
-                    MessageBox.Show("Failed to save changes. Please try again.",
+                    AppMessageBox.Show("Failed to save changes. Please try again.",
                         "Save Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
             }
@@ -729,7 +729,7 @@ namespace VANTAGE.Views
             {
                 AppLogger.Error(ex, "ScheduleView.SfScheduleDetail_CurrentCellEndEdit");
                 txtStatus.Text = "Save failed";
-                MessageBox.Show($"Error saving: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                AppMessageBox.Show($"Error saving: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

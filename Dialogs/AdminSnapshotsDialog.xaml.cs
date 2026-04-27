@@ -110,7 +110,7 @@ namespace VANTAGE.Dialogs
             {
                 pnlLoading.Visibility = Visibility.Collapsed;
                 AppLogger.Error(ex, "AdminSnapshotsDialog.LoadSnapshotsAsync");
-                MessageBox.Show($"Error loading snapshots:\n{ex.Message}", "Error",
+                AppMessageBox.Show($"Error loading snapshots:\n{ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -157,7 +157,7 @@ namespace VANTAGE.Dialogs
 
             if (selectedGroups.Count == 0)
             {
-                MessageBox.Show("Please select at least one group to upload.", "No Selection",
+                AppMessageBox.Show("Please select at least one group to upload.", "No Selection",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
@@ -165,7 +165,7 @@ namespace VANTAGE.Dialogs
             // Check Azure connection
             if (!AzureDbManager.CheckConnection(out string errorMessage))
             {
-                MessageBox.Show($"Cannot connect to Azure database:\n\n{errorMessage}",
+                AppMessageBox.Show($"Cannot connect to Azure database:\n\n{errorMessage}",
                     "Connection Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
@@ -206,7 +206,7 @@ namespace VANTAGE.Dialogs
                 if (duplicateWarnings.Count > 0)
                 {
                     string warningList = string.Join("\n", duplicateWarnings);
-                    var dupResult = MessageBox.Show(
+                    var dupResult = AppMessageBox.Show(
                         $"The following groups have already been uploaded to the Progress Log:\n\n{warningList}\n\n" +
                         "Uploading again will create duplicate records in the Progress Log. Continue?",
                         "Duplicate Upload Warning",
@@ -224,7 +224,7 @@ namespace VANTAGE.Dialogs
             }
 
             // Confirm upload
-            var confirmResult = MessageBox.Show(
+            var confirmResult = AppMessageBox.Show(
                 $"Upload {totalSnapshots} snapshot(s) to VANTAGE_global_ProgressLog?\n\n" +
                 $"Continue?",
                 "Confirm Upload",
@@ -250,7 +250,7 @@ namespace VANTAGE.Dialogs
                     UploadSnapshotsToProgressLog(selectedGroups, currentUser));
                 stopwatch.Stop();
 
-                MessageBox.Show(
+                AppMessageBox.Show(
                     $"Successfully uploaded {uploadedCount} snapshot(s) to Progress Log.\n\n" +
                     $"Elapsed: {stopwatch.Elapsed.TotalSeconds:F1} seconds",
                     "Upload Complete",
@@ -269,7 +269,7 @@ namespace VANTAGE.Dialogs
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "AdminSnapshotsDialog.BtnUploadToProgressLog_Click");
-                MessageBox.Show($"Error uploading snapshots:\n{ex.Message}", "Error",
+                AppMessageBox.Show($"Error uploading snapshots:\n{ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
@@ -501,7 +501,7 @@ namespace VANTAGE.Dialogs
 
             if (selectedGroups.Count == 0)
             {
-                MessageBox.Show("Please select at least one group to delete.", "No Selection",
+                AppMessageBox.Show("Please select at least one group to delete.", "No Selection",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
@@ -515,7 +515,7 @@ namespace VANTAGE.Dialogs
 
             string summaryText = string.Join("\n", groupSummary);
 
-            var confirmResult = MessageBox.Show(
+            var confirmResult = AppMessageBox.Show(
                 $"Are you sure you want to delete {totalSnapshots} snapshot(s)?\n\n" +
                 $"By user:\n{summaryText}\n\n" +
                 "This action cannot be undone.",
@@ -569,7 +569,7 @@ namespace VANTAGE.Dialogs
 
                 NeedsRefresh = true;
 
-                MessageBox.Show(
+                AppMessageBox.Show(
                     $"Successfully deleted {deletedTotal} snapshot(s).",
                     "Delete Complete",
                     MessageBoxButton.OK,
@@ -581,7 +581,7 @@ namespace VANTAGE.Dialogs
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "AdminSnapshotsDialog.BtnDelete_Click");
-                MessageBox.Show($"Error deleting snapshots:\n{ex.Message}", "Error",
+                AppMessageBox.Show($"Error deleting snapshots:\n{ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
@@ -595,7 +595,7 @@ namespace VANTAGE.Dialogs
         {
             int totalSnapshots = _groups.Sum(g => g.SnapshotCount);
 
-            var confirmResult = MessageBox.Show(
+            var confirmResult = AppMessageBox.Show(
                 $"⚠️ DANGER: This will delete ALL {totalSnapshots} snapshot(s) from ALL users!\n\n" +
                 "This action cannot be undone.\n\n" +
                 "Are you absolutely sure?",
@@ -638,7 +638,7 @@ namespace VANTAGE.Dialogs
 
                 NeedsRefresh = true;
 
-                MessageBox.Show(
+                AppMessageBox.Show(
                     $"Successfully deleted all {deletedTotal} snapshot(s).",
                     "Delete Complete",
                     MessageBoxButton.OK,
@@ -650,7 +650,7 @@ namespace VANTAGE.Dialogs
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "AdminSnapshotsDialog.BtnDeleteAll_Click");
-                MessageBox.Show($"Error deleting snapshots:\n{ex.Message}", "Error",
+                AppMessageBox.Show($"Error deleting snapshots:\n{ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
@@ -748,7 +748,7 @@ namespace VANTAGE.Dialogs
                 }
                 else
                 {
-                    MessageBox.Show("You must type DELETE exactly.", "Invalid",
+                    AppMessageBox.Show("You must type DELETE exactly.", "Invalid",
                         MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
             };

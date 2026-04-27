@@ -373,6 +373,7 @@
                     <li><a href="#admin-snapshots">Snapshot Management</a></li>
                     <li><a href="#admin-upload-progress-log">Upload to Progress Log</a></li>
                     <li><a href="#admin-progress-log">Manage Progress Log</a></li>
+                    <li><a href="#admin-deleted-records">Deleted Records</a></li>
                     <li><a href="#admin-project-rates">Project Rates</a></li>
                     <li><a href="#admin-sync">Database Sync</a></li>
                 </ul>
@@ -2926,6 +2927,42 @@
         <li>A confirmation dialog requires typing <strong>DELETE</strong> to proceed (prevents accidental deletion)</li>
         <li>This permanently removes the matching records from both <code>VANTAGE_global_ProgressLog</code> and the tracking table</li>
         <li>Use this when progress data needs to be corrected and re-uploaded for a given week</li>
+    </ul>
+
+    <h3 id="admin-deleted-records">Deleted Records (Admin > Deleted Records UI)</h3>
+    <p>VANTAGE uses soft-delete for activities — deleted rows stay in <code>VMS_Activities</code> with <code>IsDeleted=1</code> rather than being physically removed. This dialog lets administrators view, restore, or permanently purge those soft-deleted rows.</p>
+
+    <h4>Loading Records</h4>
+    <ul>
+        <li>The left sidebar lists every project that currently has at least one deleted record. Check one or more projects.</li>
+        <li>Click <strong>REFRESH</strong> to load the deleted records into the main grid.</li>
+        <li>The status bar at the bottom shows the loaded count (and "filtered of total" when grid filters are active).</li>
+    </ul>
+
+    <h4>Selecting Rows</h4>
+    <ul>
+        <li>The grid supports standard multi-select (Ctrl+click, Shift+click, Ctrl+A in the grid).</li>
+        <li>The <strong>SELECT ALL</strong> button selects every loaded record. If column-header filters are active, only the filtered subset is selected.</li>
+        <li>Apply column-header filters first to narrow the set, then SELECT ALL to scope a Restore or Purge precisely.</li>
+    </ul>
+
+    <h4>Restore</h4>
+    <ul>
+        <li><strong>RESTORE</strong> sets <code>IsDeleted=0</code> on the selected records. Users will receive them on their next sync.</li>
+        <li>Restore runs as a single bulk operation against Azure — thousands of records take seconds, not minutes.</li>
+        <li>The restored records re-appear in the assigned user's Progress grid on next sync. Ownership (<code>AssignedTo</code>) is preserved as it was at the time of deletion.</li>
+    </ul>
+
+    <h4>Purge (Permanent Delete)</h4>
+    <ul>
+        <li><strong>PURGE</strong> physically deletes the selected records from <code>VMS_Activities</code>. This action cannot be undone.</li>
+        <li>Two confirmation prompts are required before the delete runs.</li>
+        <li>Use Purge only for records that should never be recovered (e.g., test data, abandoned projects). Routine cleanup is not necessary — soft-deleted rows are inexpensive to keep.</li>
+    </ul>
+
+    <h4>Export to Excel</h4>
+    <ul>
+        <li><strong>EXPORT TO EXCEL</strong> writes the currently loaded records to an Excel file. Use this to archive or audit before purging.</li>
     </ul>
 
     <h3 id="admin-project-rates">Project Rates (Admin > Project Rates)</h3>

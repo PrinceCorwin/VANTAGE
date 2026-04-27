@@ -218,7 +218,7 @@ namespace VANTAGE.Views
                     await webViewHelp.CoreWebView2.PrintToPdfAsync(saveDialog.FileName);
 
                     // Ask if user wants to open the PDF
-                    var result = MessageBox.Show(
+                    var result = AppMessageBox.Show(
                         $"PDF saved to:\n{saveDialog.FileName}\n\nOpen now?",
                         "PDF Saved",
                         MessageBoxButton.YesNo,
@@ -237,7 +237,7 @@ namespace VANTAGE.Views
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "SidePanelView.BtnPrintPdf_Click");
-                MessageBox.Show($"Failed to save PDF: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                AppMessageBox.Show($"Failed to save PDF: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -260,13 +260,13 @@ namespace VANTAGE.Views
                 }
                 else
                 {
-                    MessageBox.Show("Help file not found.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    AppMessageBox.Show("Help file not found.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
             }
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "SidePanelView.BtnViewInBrowser_Click");
-                MessageBox.Show($"Failed to open browser: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                AppMessageBox.Show($"Failed to open browser: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

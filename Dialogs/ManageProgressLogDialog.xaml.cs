@@ -89,7 +89,7 @@ namespace VANTAGE.Dialogs
             {
                 pnlLoading.Visibility = Visibility.Collapsed;
                 AppLogger.Error(ex, "ManageProgressLogDialog.LoadUploadsAsync");
-                MessageBox.Show($"Error loading upload records:\n{ex.Message}", "Error",
+                AppMessageBox.Show($"Error loading upload records:\n{ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -127,7 +127,7 @@ namespace VANTAGE.Dialogs
         // REFRESH menu handlers
         private async void MenuRefresh7Days_Click(object sender, RoutedEventArgs e)
         {
-            if (MessageBox.Show("Scan Progress Log for uploads from the last 7 days?\n\nThis will import any batches not already tracked.",
+            if (AppMessageBox.Show("Scan Progress Log for uploads from the last 7 days?\n\nThis will import any batches not already tracked.",
                 "Confirm Refresh", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
             {
                 await RefreshFromProgressLogAsync(7);
@@ -136,7 +136,7 @@ namespace VANTAGE.Dialogs
 
         private async void MenuRefresh30Days_Click(object sender, RoutedEventArgs e)
         {
-            if (MessageBox.Show("Scan Progress Log for uploads from the last 30 days?\n\nThis will import any batches not already tracked.",
+            if (AppMessageBox.Show("Scan Progress Log for uploads from the last 30 days?\n\nThis will import any batches not already tracked.",
                 "Confirm Refresh", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
             {
                 await RefreshFromProgressLogAsync(30);
@@ -145,7 +145,7 @@ namespace VANTAGE.Dialogs
 
         private async void MenuRefreshAll_Click(object sender, RoutedEventArgs e)
         {
-            if (MessageBox.Show("Scan Progress Log for ALL uploads?\n\nThis may take several minutes for large datasets.",
+            if (AppMessageBox.Show("Scan Progress Log for ALL uploads?\n\nThis may take several minutes for large datasets.",
                 "Confirm Refresh", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
             {
                 await RefreshFromProgressLogAsync(null);
@@ -259,7 +259,7 @@ namespace VANTAGE.Dialogs
                     currentUser);
 
                 HideOperationLoading();
-                MessageBox.Show(
+                AppMessageBox.Show(
                     $"Refresh complete ({rangeText}):\n\n" +
                     $"• {result.added:N0} new batch(es) imported\n" +
                     $"• {result.existing:N0} batch(es) already tracked\n" +
@@ -272,7 +272,7 @@ namespace VANTAGE.Dialogs
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "ManageProgressLogDialog.RefreshFromProgressLogAsync");
-                MessageBox.Show($"Error refreshing from Progress Log:\n{ex.Message}", "Error",
+                AppMessageBox.Show($"Error refreshing from Progress Log:\n{ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
@@ -288,7 +288,7 @@ namespace VANTAGE.Dialogs
             var selected = _uploads.Where(u => u.IsSelected).ToList();
             if (selected.Count == 0)
             {
-                MessageBox.Show("Please select at least one upload batch to delete.", "No Selection",
+                AppMessageBox.Show("Please select at least one upload batch to delete.", "No Selection",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
@@ -378,13 +378,13 @@ namespace VANTAGE.Dialogs
                 if (result.failedBatches.Count > 0)
                 {
                     string failList = string.Join("\n", result.failedBatches);
-                    MessageBox.Show(
+                    AppMessageBox.Show(
                         $"Deleted {result.totalDeleted:N0} record(s), but {result.failedBatches.Count} batch(es) failed:\n\n{failList}\n\nElapsed: {elapsed}",
                         "Partial Delete", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
                 else
                 {
-                    MessageBox.Show(
+                    AppMessageBox.Show(
                         $"Successfully deleted {result.totalDeleted:N0} record(s) from {selected.Count} batch(es).\n\nElapsed: {elapsed}",
                         "Delete Complete", MessageBoxButton.OK, MessageBoxImage.None);
                 }
@@ -394,7 +394,7 @@ namespace VANTAGE.Dialogs
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "ManageProgressLogDialog.BtnDelete_Click");
-                MessageBox.Show($"Error deleting records:\n{ex.Message}", "Error",
+                AppMessageBox.Show($"Error deleting records:\n{ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally

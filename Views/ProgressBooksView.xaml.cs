@@ -647,7 +647,7 @@ namespace VANTAGE.Views
 
             if (_hasUnsavedChanges)
             {
-                var result = MessageBox.Show(
+                var result = AppMessageBox.Show(
                     "You have unsaved changes. Discard and switch layouts?",
                     "Unsaved Changes",
                     MessageBoxButton.YesNo,
@@ -935,7 +935,7 @@ namespace VANTAGE.Views
             var col = _columns[index];
             if (col.IsRequired)
             {
-                MessageBox.Show($"{col.FieldName} is required and cannot be removed.",
+                AppMessageBox.Show($"{col.FieldName} is required and cannot be removed.",
                     "Required Column", MessageBoxButton.OK, MessageBoxImage.None);
                 return;
             }
@@ -962,7 +962,7 @@ namespace VANTAGE.Views
         {
             if (_groups.Count >= MaxGroups)
             {
-                MessageBox.Show($"Maximum of {MaxGroups} grouping levels allowed.",
+                AppMessageBox.Show($"Maximum of {MaxGroups} grouping levels allowed.",
                     "Limit Reached", MessageBoxButton.OK, MessageBoxImage.None);
                 return;
             }
@@ -990,7 +990,7 @@ namespace VANTAGE.Views
         {
             if (_sortFields.Count >= MaxSorts)
             {
-                MessageBox.Show($"Maximum of {MaxSorts} sort levels allowed.",
+                AppMessageBox.Show($"Maximum of {MaxSorts} sort levels allowed.",
                     "Limit Reached", MessageBoxButton.OK, MessageBoxImage.None);
                 return;
             }
@@ -1018,12 +1018,12 @@ namespace VANTAGE.Views
         {
             if (_currentLayout == null)
             {
-                MessageBox.Show("Default Layout cannot be deleted.", "Cannot Delete",
+                AppMessageBox.Show("Default Layout cannot be deleted.", "Cannot Delete",
                     MessageBoxButton.OK, MessageBoxImage.None);
                 return;
             }
 
-            var result = MessageBox.Show($"Delete layout '{_currentLayout.Name}'?",
+            var result = AppMessageBox.Show($"Delete layout '{_currentLayout.Name}'?",
                 "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Question);
 
             if (result == MessageBoxResult.Yes)
@@ -1051,7 +1051,7 @@ namespace VANTAGE.Views
             var layoutName = txtLayoutName.Text.Trim();
             if (string.IsNullOrEmpty(layoutName))
             {
-                MessageBox.Show("Please enter a layout name.", "Name Required",
+                AppMessageBox.Show("Please enter a layout name.", "Name Required",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 txtLayoutName.Focus();
                 return;
@@ -1059,7 +1059,7 @@ namespace VANTAGE.Views
 
             if (layoutName.Equals(DefaultLayoutName, StringComparison.OrdinalIgnoreCase))
             {
-                MessageBox.Show("Cannot save as 'Default Layout'. Please use a different name.",
+                AppMessageBox.Show("Cannot save as 'Default Layout'. Please use a different name.",
                     "Reserved Name", MessageBoxButton.OK, MessageBoxImage.Warning);
                 txtLayoutName.Focus();
                 txtLayoutName.SelectAll();
@@ -1068,7 +1068,7 @@ namespace VANTAGE.Views
 
             if (App.CurrentUser == null)
             {
-                MessageBox.Show("Please ensure you are logged in.",
+                AppMessageBox.Show("Please ensure you are logged in.",
                     "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
@@ -1090,7 +1090,7 @@ namespace VANTAGE.Views
                         _hasUnsavedChanges = false;
                         await LoadSavedLayoutsAsync();
                         SelectLayoutInDropdown(_currentLayout.Id);
-                        MessageBox.Show($"Layout '{layoutName}' updated.", "Saved",
+                        AppMessageBox.Show($"Layout '{layoutName}' updated.", "Saved",
                             MessageBoxButton.OK, MessageBoxImage.None);
                     }
                 }
@@ -1109,7 +1109,7 @@ namespace VANTAGE.Views
                             _hasUnsavedChanges = false;
                             await LoadSavedLayoutsAsync();
                             SelectLayoutInDropdown(existingLayout.Id);
-                            MessageBox.Show($"Layout '{layoutName}' updated.", "Saved",
+                            AppMessageBox.Show($"Layout '{layoutName}' updated.", "Saved",
                                 MessageBoxButton.OK, MessageBoxImage.None);
                         }
                     }
@@ -1132,7 +1132,7 @@ namespace VANTAGE.Views
                             _hasUnsavedChanges = false;
                             await LoadSavedLayoutsAsync();
                             SelectLayoutInDropdown(newId);
-                            MessageBox.Show($"Layout '{layoutName}' saved.", "Saved",
+                            AppMessageBox.Show($"Layout '{layoutName}' saved.", "Saved",
                                 MessageBoxButton.OK, MessageBoxImage.None);
                         }
                     }
@@ -1141,7 +1141,7 @@ namespace VANTAGE.Views
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "ProgressBooksView.BtnSaveLayout_Click");
-                MessageBox.Show($"Error saving layout: {ex.Message}", "Error",
+                AppMessageBox.Show($"Error saving layout: {ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -1302,7 +1302,7 @@ namespace VANTAGE.Views
 
                 if (string.IsNullOrEmpty(config.FilterValue))
                 {
-                    MessageBox.Show("Please select a Progress Book value to generate.",
+                    AppMessageBox.Show("Please select a Progress Book value to generate.",
                         "No Selection", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
@@ -1314,7 +1314,7 @@ namespace VANTAGE.Views
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "ProgressBooksView.BtnGenerateBook_Click");
-                MessageBox.Show($"Error opening generate dialog: {ex.Message}",
+                AppMessageBox.Show($"Error opening generate dialog: {ex.Message}",
                     "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }

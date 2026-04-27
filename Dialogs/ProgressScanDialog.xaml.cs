@@ -288,7 +288,7 @@ namespace VANTAGE.Dialogs
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "ProgressScanDialog.BtnStartProcessing_Click");
-                MessageBox.Show($"Error during processing: {ex.Message}",
+                AppMessageBox.Show($"Error during processing: {ex.Message}",
                     "Processing Error", MessageBoxButton.OK, MessageBoxImage.Error);
 
                 panelProcessing.Visibility = Visibility.Collapsed;
@@ -545,7 +545,7 @@ namespace VANTAGE.Dialogs
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "ProgressScanDialog.BtnRescan_Click");
-                MessageBox.Show($"Error during rescan: {ex.Message}",
+                AppMessageBox.Show($"Error during rescan: {ex.Message}",
                     "Processing Error", MessageBoxButton.OK, MessageBoxImage.Error);
 
                 panelProcessing.Visibility = Visibility.Collapsed;
@@ -561,12 +561,12 @@ namespace VANTAGE.Dialogs
 
             if (selectedItems.Count == 0)
             {
-                MessageBox.Show("No items selected to apply.", "No Selection", MessageBoxButton.OK, MessageBoxImage.None);
+                AppMessageBox.Show("No items selected to apply.", "No Selection", MessageBoxButton.OK, MessageBoxImage.None);
                 return;
             }
 
             // Confirmation
-            var result = MessageBox.Show(
+            var result = AppMessageBox.Show(
                 $"You are about to update {selectedItems.Count} records.\n\nThis action will:\n• Update progress percentages for selected records\n• Mark records as modified for next sync\n\nContinue?",
                 "Confirm Progress Update",
                 MessageBoxButton.YesNo,
@@ -626,12 +626,12 @@ namespace VANTAGE.Dialogs
                 if (skippedReasons.Count > 10)
                     reasons += $"\n... and {skippedReasons.Count - 10} more";
 
-                MessageBox.Show($"Updated {successCount} records.\n\n{skipCount} records skipped:\n{reasons}",
+                AppMessageBox.Show($"Updated {successCount} records.\n\n{skipCount} records skipped:\n{reasons}",
                     "Partial Success", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
             else
             {
-                MessageBox.Show($"Successfully updated {successCount} records.",
+                AppMessageBox.Show($"Successfully updated {successCount} records.",
                     "Update Complete", MessageBoxButton.OK, MessageBoxImage.None);
             }
 

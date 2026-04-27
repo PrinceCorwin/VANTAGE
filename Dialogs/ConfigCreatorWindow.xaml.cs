@@ -79,7 +79,7 @@ namespace VANTAGE.Dialogs
                 var config = await _service.GetConfigAsync(_editConfigKey);
                 if (config == null)
                 {
-                    MessageBox.Show("Could not load config from S3.", "Load Error",
+                    AppMessageBox.Show("Could not load config from S3.", "Load Error",
                         MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
@@ -136,7 +136,7 @@ namespace VANTAGE.Dialogs
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "ConfigCreatorWindow.ConfigCreatorWindow_Loaded");
-                MessageBox.Show($"Error loading config: {ex.Message}", "Load Error",
+                AppMessageBox.Show($"Error loading config: {ex.Message}", "Load Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -524,7 +524,7 @@ namespace VANTAGE.Dialogs
 
             string prefix = TakeoffService.GetDrawingPrefix(_editConfigKey);
 
-            var result = MessageBox.Show(
+            var result = AppMessageBox.Show(
                 $"Delete this config?\n\n" +
                 $"Config: {_editConfigKey}\n" +
                 $"Drawings folder: {prefix}/\n\n" +
@@ -557,7 +557,7 @@ namespace VANTAGE.Dialogs
                 AppLogger.Info($"Config deleted: {_editConfigKey}",
                     "ConfigCreatorWindow.BtnDeleteConfig_Click", App.CurrentUser?.Username);
 
-                MessageBox.Show("Config and associated drawings deleted.",
+                AppMessageBox.Show("Config and associated drawings deleted.",
                     "Deleted", MessageBoxButton.OK, MessageBoxImage.Information);
 
                 DialogResult = true;
@@ -566,7 +566,7 @@ namespace VANTAGE.Dialogs
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "ConfigCreatorWindow.BtnDeleteConfig_Click");
-                MessageBox.Show($"Error deleting config: {ex.Message}", "Delete Error",
+                AppMessageBox.Show($"Error deleting config: {ex.Message}", "Delete Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
                 btnDeleteConfig.IsEnabled = true;
                 btnSaveConfig.IsEnabled = true;
@@ -579,7 +579,7 @@ namespace VANTAGE.Dialogs
             // Validate
             if (string.IsNullOrWhiteSpace(txtConfigName.Text))
             {
-                MessageBox.Show("Please enter a config name.", "Validation",
+                AppMessageBox.Show("Please enter a config name.", "Validation",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 txtConfigName.Focus();
                 return;
@@ -589,7 +589,7 @@ namespace VANTAGE.Dialogs
             string trimmedName = txtConfigName.Text.Trim();
             if (!Regex.IsMatch(trimmedName, @"^[a-zA-Z0-9\-_ ]+$"))
             {
-                MessageBox.Show(
+                AppMessageBox.Show(
                     "Config name can only contain letters, numbers, hyphens, underscores, and spaces.",
                     "Invalid Config Name", MessageBoxButton.OK, MessageBoxImage.Warning);
                 txtConfigName.Focus();
@@ -601,14 +601,14 @@ namespace VANTAGE.Dialogs
 
             if (bomCount == 0)
             {
-                MessageBox.Show("Draw at least one BOM region on the drawing.", "Validation",
+                AppMessageBox.Show("Draw at least one BOM region on the drawing.", "Validation",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             if (tbCount == 0)
             {
-                MessageBox.Show("Draw a Title Block region on the drawing.", "Validation",
+                AppMessageBox.Show("Draw a Title Block region on the drawing.", "Validation",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
@@ -672,7 +672,7 @@ namespace VANTAGE.Dialogs
                 AppLogger.Info($"Config saved: {s3Key}",
                     "ConfigCreatorWindow.BtnSaveConfig_Click", App.CurrentUser?.Username);
 
-                MessageBox.Show($"Config saved to S3:\n{s3Key}",
+                AppMessageBox.Show($"Config saved to S3:\n{s3Key}",
                     "Config Saved", MessageBoxButton.OK, MessageBoxImage.Information);
 
                 DialogResult = true;
@@ -681,7 +681,7 @@ namespace VANTAGE.Dialogs
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "ConfigCreatorWindow.BtnSaveConfig_Click");
-                MessageBox.Show($"Error saving config: {ex.Message}", "Save Error",
+                AppMessageBox.Show($"Error saving config: {ex.Message}", "Save Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally

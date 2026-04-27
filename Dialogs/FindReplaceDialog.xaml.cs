@@ -82,13 +82,13 @@ namespace VANTAGE.Dialogs
 
             if (!findBlanks && string.IsNullOrEmpty(txtFind.Text))
             {
-                MessageBox.Show("Please enter text to find, or check 'Find blanks' to find empty cells.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                AppMessageBox.Show("Please enter text to find, or check 'Find blanks' to find empty cells.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             if (_dataGrid == null || string.IsNullOrEmpty(_columnMappingName))
             {
-                MessageBox.Show("No column selected.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                AppMessageBox.Show("No column selected.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
@@ -153,7 +153,7 @@ namespace VANTAGE.Dialogs
             if (editableMatches > 0)
                 message += $"\n\n{editableMatches:N0} can be replaced.";
 
-            MessageBox.Show(message, "Find Results", MessageBoxButton.OK, MessageBoxImage.None);
+            AppMessageBox.Show(message, "Find Results", MessageBoxButton.OK, MessageBoxImage.None);
         }
 
         private async void BtnReplaceAll_Click(object sender, RoutedEventArgs e)
@@ -163,20 +163,20 @@ namespace VANTAGE.Dialogs
 
             if (!replaceAllCells && !findBlanks && string.IsNullOrEmpty(txtFind.Text))
             {
-                MessageBox.Show("Please enter text to find, check 'Find blanks', or check 'Replace ALL cells'.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                AppMessageBox.Show("Please enter text to find, check 'Find blanks', or check 'Replace ALL cells'.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             if (_dataGrid == null || string.IsNullOrEmpty(_columnMappingName))
             {
-                MessageBox.Show("No column selected.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                AppMessageBox.Show("No column selected.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
             // Confirm Replace All Cells operation
             if (replaceAllCells)
             {
-                var confirmResult = MessageBox.Show(
+                var confirmResult = AppMessageBox.Show(
                     $"This will replace ALL values in column '{_columnMappingName}' with '{txtReplace.Text}'.\n\n" +
                     "This cannot be undone. Continue?",
                     "Confirm Replace All",
@@ -213,7 +213,7 @@ namespace VANTAGE.Dialogs
                 if (column == null)
                 {
                     busyDialog.Close();
-                    MessageBox.Show("Column not found.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    AppMessageBox.Show("Column not found.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
 
@@ -372,7 +372,7 @@ namespace VANTAGE.Dialogs
                     if (failures.Count > 10)
                         detail += $"\n  …and {failures.Count - 10:N0} more";
 
-                    MessageBox.Show(
+                    AppMessageBox.Show(
                         $"Replace aborted: {failures.Count:N0} row(s) would violate validation rules. No changes were saved.\n\n{detail}",
                         "Validation Failed",
                         MessageBoxButton.OK,
@@ -386,7 +386,7 @@ namespace VANTAGE.Dialogs
                     string noMatchMsg = matchCount == 0
                         ? "No matches found."
                         : $"Found {matchCount} match(es) but all failed type conversion.";
-                    MessageBox.Show(noMatchMsg, "Replace Complete", MessageBoxButton.OK, MessageBoxImage.None);
+                    AppMessageBox.Show(noMatchMsg, "Replace Complete", MessageBoxButton.OK, MessageBoxImage.None);
                     return;
                 }
 
@@ -418,7 +418,7 @@ namespace VANTAGE.Dialogs
                 if (conversionFailures > 0)
                     message += $"\n\n{conversionFailures:N0} match(es) skipped (conversion failed).";
 
-                MessageBox.Show(message, "Replace Complete", MessageBoxButton.OK, MessageBoxImage.None);
+                AppMessageBox.Show(message, "Replace Complete", MessageBoxButton.OK, MessageBoxImage.None);
 
                 this.DialogResult = true;
                 this.Close();
@@ -426,7 +426,7 @@ namespace VANTAGE.Dialogs
             catch (System.Exception ex)
             {
                 busyDialog.Close();
-                MessageBox.Show($"Error during replace: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                AppMessageBox.Show($"Error during replace: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {

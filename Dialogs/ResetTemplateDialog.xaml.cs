@@ -35,7 +35,7 @@ namespace VANTAGE.Dialogs
         {
             if (cboTemplates.SelectedItem == null)
             {
-                MessageBox.Show("Please select a template.", "Selection Required",
+                AppMessageBox.Show("Please select a template.", "Selection Required",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }

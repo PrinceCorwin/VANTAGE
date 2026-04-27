@@ -93,7 +93,7 @@ namespace VANTAGE.Dialogs
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "ModifySnapshotDialog.LoadSnapshotRowsAsync");
-                MessageBox.Show($"Failed to load snapshot:\n{ex.Message}", "Load Error",
+                AppMessageBox.Show($"Failed to load snapshot:\n{ex.Message}", "Load Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
                 Close();
             }
@@ -147,7 +147,7 @@ namespace VANTAGE.Dialogs
                 if (!parseOk)
                 {
                     // Invalid date text — tell user and revert the cell to its last committed value.
-                    MessageBox.Show("Dates must be in a recognized format (e.g. yyyy-MM-dd).",
+                    AppMessageBox.Show("Dates must be in a recognized format (e.g. yyyy-MM-dd).",
                         "Invalid Date", MessageBoxButton.OK, MessageBoxImage.Warning);
                     RevertRow(record);
                     return;
@@ -156,7 +156,7 @@ namespace VANTAGE.Dialogs
                 string? violation = ActivityValidator.Validate(record.PercentEntry, actStart, actFin);
                 if (violation != null)
                 {
-                    MessageBox.Show(violation, "Validation Error",
+                    AppMessageBox.Show(violation, "Validation Error",
                         MessageBoxButton.OK, MessageBoxImage.Warning);
                     RevertRow(record);
                     return;
@@ -214,7 +214,7 @@ namespace VANTAGE.Dialogs
             {
                 string preview = string.Join("\n", failures.Take(10));
                 string footer = failures.Count > 10 ? $"\n…and {failures.Count - 10} more" : string.Empty;
-                MessageBox.Show(
+                AppMessageBox.Show(
                     $"Cannot save. {failures.Count} validation error(s):\n\n{preview}{footer}\n\n" +
                     $"Required fields: {ActivityRequiredMetadata.FieldsDisplay}\n" +
                     "Conditional: ActStart (when % > 0), ActFin (when % = 100)",
@@ -265,7 +265,7 @@ namespace VANTAGE.Dialogs
 
             if (firstEx != null)
             {
-                MessageBox.Show(
+                AppMessageBox.Show(
                     $"Save failed: {firstEx.Message}\n\nPartial progress: {saved} row(s) saved before the error.",
                     "Save Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 btnSave.IsEnabled = true;
@@ -274,7 +274,7 @@ namespace VANTAGE.Dialogs
 
             if (zeroAffected.Count == dirtyRows.Count)
             {
-                MessageBox.Show(
+                AppMessageBox.Show(
                     "None of your edits were applied. The snapshot appears to have been regenerated " +
                     "externally (most likely by a Submit Week for the same project and week).\n\n" +
                     "Close this dialog and reopen Modify to edit the current version.",
@@ -292,7 +292,7 @@ namespace VANTAGE.Dialogs
             {
                 string preview = string.Join("\n  ", zeroAffected.Take(10));
                 string footer = zeroAffected.Count > 10 ? $"\n  …and {zeroAffected.Count - 10} more" : string.Empty;
-                MessageBox.Show(
+                AppMessageBox.Show(
                     $"Saved {saved} row(s).\n\n" +
                     $"{zeroAffected.Count} row(s) were not found on Azure and were not updated " +
                     "(the snapshot may have been partially regenerated externally):\n  " +
@@ -301,7 +301,7 @@ namespace VANTAGE.Dialogs
             }
             else
             {
-                MessageBox.Show(
+                AppMessageBox.Show(
                     $"Successfully saved {saved} row(s) to the snapshot.",
                     "Save Complete", MessageBoxButton.OK, MessageBoxImage.None);
             }
@@ -326,7 +326,7 @@ namespace VANTAGE.Dialogs
         {
             if (!_savedSuccessfully && _dirtyUniqueIds.Count > 0)
             {
-                var result = MessageBox.Show(
+                var result = AppMessageBox.Show(
                     $"You have {_dirtyUniqueIds.Count} unsaved edit(s). Discard and close?",
                     "Unsaved Edits", MessageBoxButton.YesNo, MessageBoxImage.Warning);
                 if (result != MessageBoxResult.Yes)

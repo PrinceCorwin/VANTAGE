@@ -110,14 +110,14 @@ namespace VANTAGE.Views
             int configIndex = cboConfig.SelectedIndex - 1;
             if (configIndex < 0 || configIndex >= _configs.Count)
             {
-                MessageBox.Show("Please select a config.", "No Config Selected",
+                AppMessageBox.Show("Please select a config.", "No Config Selected",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             if (_selectedFiles.Count == 0)
             {
-                MessageBox.Show("Please select drawing files.", "No Files Selected",
+                AppMessageBox.Show("Please select drawing files.", "No Files Selected",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
@@ -129,7 +129,7 @@ namespace VANTAGE.Views
             // Validate batch name before starting the expensive agent run
             if (!string.IsNullOrEmpty(customName) && !Regex.IsMatch(customName, @"^[a-zA-Z0-9\-_]+$"))
             {
-                MessageBox.Show(
+                AppMessageBox.Show(
                     "Batch name can only contain letters, numbers, hyphens, and underscores (no spaces or special characters).",
                     "Invalid Batch Name", MessageBoxButton.OK, MessageBoxImage.Warning);
                 txtBatchName.Focus();

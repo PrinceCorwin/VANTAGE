@@ -99,7 +99,7 @@ namespace VANTAGE.Dialogs
                 ? $"Delete \"{selected[0].FileName}\" from S3?\n\nThis cannot be undone."
                 : $"Delete {selected.Count} drawings from S3?\n\nThis cannot be undone.";
 
-            if (MessageBox.Show(message, "Confirm Delete",
+            if (AppMessageBox.Show(message, "Confirm Delete",
                 MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
                 return;
 

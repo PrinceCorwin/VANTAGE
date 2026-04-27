@@ -95,7 +95,7 @@ namespace VANTAGE.Dialogs
             {
                 pnlLoading.Visibility = Visibility.Collapsed;
                 AppLogger.Error(ex, "AdminProjectsDialog.LoadProjectsAsync");
-                MessageBox.Show($"Error loading projects:\n{ex.Message}", "Error",
+                AppMessageBox.Show($"Error loading projects:\n{ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -178,7 +178,7 @@ namespace VANTAGE.Dialogs
 
             if (string.IsNullOrEmpty(projectId))
             {
-                MessageBox.Show("Project ID is required.", "Validation Error",
+                AppMessageBox.Show("Project ID is required.", "Validation Error",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 txtProjectID.Focus();
                 return;
@@ -189,7 +189,7 @@ namespace VANTAGE.Dialogs
             {
                 if (_projects.Any(p => p.ProjectID.Equals(projectId, StringComparison.OrdinalIgnoreCase)))
                 {
-                    MessageBox.Show("A project with this Project ID already exists.", "Duplicate Project ID",
+                    AppMessageBox.Show("A project with this Project ID already exists.", "Duplicate Project ID",
                         MessageBoxButton.OK, MessageBoxImage.Warning);
                     txtProjectID.Focus();
                     return;
@@ -252,7 +252,7 @@ namespace VANTAGE.Dialogs
                     AppLogger.Info($"Added new project: {projectId}",
                         "AdminProjectsDialog.BtnSave_Click", App.CurrentUser?.Username);
 
-                    MessageBox.Show($"Project '{projectId}' added successfully.", "Project Added",
+                    AppMessageBox.Show($"Project '{projectId}' added successfully.", "Project Added",
                         MessageBoxButton.OK, MessageBoxImage.None);
                 }
                 else
@@ -310,7 +310,7 @@ namespace VANTAGE.Dialogs
                     AppLogger.Info($"Updated project: {projectId}",
                         "AdminProjectsDialog.BtnSave_Click", App.CurrentUser?.Username);
 
-                    MessageBox.Show($"Project '{projectId}' updated successfully.", "Project Updated",
+                    AppMessageBox.Show($"Project '{projectId}' updated successfully.", "Project Updated",
                         MessageBoxButton.OK, MessageBoxImage.None);
                 }
 
@@ -324,7 +324,7 @@ namespace VANTAGE.Dialogs
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "AdminProjectsDialog.BtnSave_Click");
-                MessageBox.Show($"Error saving project:\n{ex.Message}", "Error",
+                AppMessageBox.Show($"Error saving project:\n{ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
@@ -361,7 +361,7 @@ namespace VANTAGE.Dialogs
             if (_selectedProject == null)
                 return;
 
-            var result = MessageBox.Show(
+            var result = AppMessageBox.Show(
                 $"Are you sure you want to delete project '{_selectedProject.ProjectID}'?\n\n" +
                 "WARNING: This may cause issues if activities reference this project.\n\n" +
                 "This action cannot be undone.",
@@ -394,7 +394,7 @@ namespace VANTAGE.Dialogs
                 AppLogger.Info($"Deleted project: {projectId}",
                     "AdminProjectsDialog.BtnDelete_Click", App.CurrentUser?.Username);
 
-                MessageBox.Show($"Project '{projectId}' deleted successfully.", "Project Deleted",
+                AppMessageBox.Show($"Project '{projectId}' deleted successfully.", "Project Deleted",
                     MessageBoxButton.OK, MessageBoxImage.None);
 
                 lvProjects.Items.Refresh();
@@ -407,7 +407,7 @@ namespace VANTAGE.Dialogs
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "AdminProjectsDialog.BtnDelete_Click");
-                MessageBox.Show($"Error deleting project:\n{ex.Message}", "Error",
+                AppMessageBox.Show($"Error deleting project:\n{ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally

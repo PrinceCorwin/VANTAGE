@@ -286,7 +286,7 @@ namespace VANTAGE.Dialogs
         {
             if (cboSet.SelectedIndex < 0 || _allSets.Count == 0)
             {
-                MessageBox.Show("Select a set to modify.", "No Selection",
+                AppMessageBox.Show("Select a set to modify.", "No Selection",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
@@ -324,14 +324,14 @@ namespace VANTAGE.Dialogs
 
             if (string.IsNullOrEmpty(projectId) || string.IsNullOrEmpty(setName))
             {
-                MessageBox.Show("Select a project and enter a set name.", "Missing Info",
+                AppMessageBox.Show("Select a project and enter a set name.", "Missing Info",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             if (_items.Count == 0)
             {
-                MessageBox.Show("Add at least one ROC step.", "No Steps",
+                AppMessageBox.Show("Add at least one ROC step.", "No Steps",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
@@ -340,7 +340,7 @@ namespace VANTAGE.Dialogs
             double totalPct = _items.Sum(i => i.Percentage);
             if (Math.Abs(totalPct - 100.0) > 0.01)
             {
-                MessageBox.Show($"Percentages must sum to 100%. Current total: {totalPct:F2}%",
+                AppMessageBox.Show($"Percentages must sum to 100%. Current total: {totalPct:F2}%",
                     "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
@@ -350,7 +350,7 @@ namespace VANTAGE.Dialogs
                 .Where(g => g.Count() > 1).Select(g => g.Key).ToList();
             if (dupes.Count > 0)
             {
-                MessageBox.Show($"Duplicate ROC Step names: {string.Join(", ", dupes)}",
+                AppMessageBox.Show($"Duplicate ROC Step names: {string.Join(", ", dupes)}",
                     "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
@@ -450,7 +450,7 @@ namespace VANTAGE.Dialogs
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "ManageROCRatesDialog.BtnSave_Click");
-                MessageBox.Show($"Error saving: {ex.Message}", "Save Error",
+                AppMessageBox.Show($"Error saving: {ex.Message}", "Save Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
@@ -464,14 +464,14 @@ namespace VANTAGE.Dialogs
         {
             if (cboSet.SelectedIndex < 0 || _allSets.Count == 0)
             {
-                MessageBox.Show("Select a set to delete.", "No Selection",
+                AppMessageBox.Show("Select a set to delete.", "No Selection",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             var (projectId, setName) = _allSets[cboSet.SelectedIndex];
 
-            var result = MessageBox.Show($"Delete the entire set '{setName}' for project '{projectId}'?\n\nThis cannot be undone.",
+            var result = AppMessageBox.Show($"Delete the entire set '{setName}' for project '{projectId}'?\n\nThis cannot be undone.",
                 "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning);
             if (result != MessageBoxResult.Yes) return;
 
@@ -501,7 +501,7 @@ namespace VANTAGE.Dialogs
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "ManageROCRatesDialog.BtnDeleteSet_Click");
-                MessageBox.Show($"Error deleting: {ex.Message}", "Delete Error",
+                AppMessageBox.Show($"Error deleting: {ex.Message}", "Delete Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -531,7 +531,7 @@ namespace VANTAGE.Dialogs
         {
             if (_isEditMode)
             {
-                var result = MessageBox.Show("You have unsaved changes. Close anyway?",
+                var result = AppMessageBox.Show("You have unsaved changes. Close anyway?",
                     "Unsaved Changes", MessageBoxButton.YesNo, MessageBoxImage.Warning);
                 if (result != MessageBoxResult.Yes) return;
             }

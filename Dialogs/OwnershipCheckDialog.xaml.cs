@@ -55,7 +55,7 @@ namespace VANTAGE.Dialogs
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "OwnershipCheckDialog.LoadProjectsAsync");
-                MessageBox.Show($"Error loading projects: {ex.Message}", "Error",
+                AppMessageBox.Show($"Error loading projects: {ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
 
@@ -69,7 +69,7 @@ namespace VANTAGE.Dialogs
             var selected = cboProject.SelectedItem as ProjectItem;
             if (selected == null)
             {
-                MessageBox.Show("Please select a project.", "Ownership Check",
+                AppMessageBox.Show("Please select a project.", "Ownership Check",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }

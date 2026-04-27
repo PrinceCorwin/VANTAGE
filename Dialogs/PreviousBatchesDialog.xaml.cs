@@ -86,7 +86,7 @@ namespace VANTAGE.Dialogs
         {
             if (lstBatches.SelectedItem is not BatchDisplayItem item) return;
 
-            var result = MessageBox.Show(
+            var result = AppMessageBox.Show(
                 $"Delete batch '{item.ConfigName}' from {item.DateDisplay}?\n\nThis cannot be undone.",
                 "Delete Batch", MessageBoxButton.YesNo, MessageBoxImage.Warning);
 
@@ -125,7 +125,7 @@ namespace VANTAGE.Dialogs
             var items = lstBatches.ItemsSource as List<BatchDisplayItem>;
             if (items == null || items.Count == 0) return;
 
-            var result = MessageBox.Show(
+            var result = AppMessageBox.Show(
                 $"Delete ALL {items.Count} batches?\n\nThis cannot be undone.",
                 "Delete All Batches", MessageBoxButton.YesNo, MessageBoxImage.Warning);
 
@@ -181,7 +181,7 @@ namespace VANTAGE.Dialogs
             // Validate batch name characters
             if (!System.Text.RegularExpressions.Regex.IsMatch(newName, @"^[a-zA-Z0-9\-_]+$"))
             {
-                MessageBox.Show(
+                AppMessageBox.Show(
                     "Batch name can only contain letters, numbers, hyphens, and underscores (no spaces or special characters).",
                     "Invalid Batch Name", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;

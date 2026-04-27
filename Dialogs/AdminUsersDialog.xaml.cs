@@ -145,7 +145,7 @@ namespace VANTAGE.Dialogs
             {
                 pnlLoading.Visibility = Visibility.Collapsed;
                 AppLogger.Error(ex, "AdminUsersDialog.LoadUsersAsync");
-                MessageBox.Show($"Error loading users:\n{ex.Message}", "Error",
+                AppMessageBox.Show($"Error loading users:\n{ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -206,7 +206,7 @@ namespace VANTAGE.Dialogs
 
             if (string.IsNullOrEmpty(username))
             {
-                MessageBox.Show("Username is required.", "Validation Error",
+                AppMessageBox.Show("Username is required.", "Validation Error",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 txtUsername.Focus();
                 return;
@@ -217,7 +217,7 @@ namespace VANTAGE.Dialogs
             {
                 if (_users.Any(u => u.Username.Equals(username, StringComparison.OrdinalIgnoreCase)))
                 {
-                    MessageBox.Show("A user with this username already exists.", "Duplicate Username",
+                    AppMessageBox.Show("A user with this username already exists.", "Duplicate Username",
                         MessageBoxButton.OK, MessageBoxImage.Warning);
                     txtUsername.Focus();
                     return;
@@ -317,7 +317,7 @@ namespace VANTAGE.Dialogs
                     AppLogger.Info($"Added new user: {username} (ID: {newId})",
                         "AdminUsersDialog.BtnSave_Click", App.CurrentUser?.Username);
 
-                    MessageBox.Show($"User '{username}' added successfully.", "User Added",
+                    AppMessageBox.Show($"User '{username}' added successfully.", "User Added",
                         MessageBoxButton.OK, MessageBoxImage.None);
                 }
                 else
@@ -448,7 +448,7 @@ namespace VANTAGE.Dialogs
                         }
                     }
 
-                    MessageBox.Show($"User '{username}' updated successfully.", "User Updated",
+                    AppMessageBox.Show($"User '{username}' updated successfully.", "User Updated",
                         MessageBoxButton.OK, MessageBoxImage.None);
                 }
 
@@ -463,7 +463,7 @@ namespace VANTAGE.Dialogs
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "AdminUsersDialog.BtnSave_Click");
-                MessageBox.Show($"Error saving user:\n{ex.Message}", "Error",
+                AppMessageBox.Show($"Error saving user:\n{ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
@@ -480,12 +480,12 @@ namespace VANTAGE.Dialogs
             // Prevent deleting yourself
             if (_selectedUser.Username.Equals(App.CurrentUser?.Username, StringComparison.OrdinalIgnoreCase))
             {
-                MessageBox.Show("You cannot delete your own user account.", "Cannot Delete",
+                AppMessageBox.Show("You cannot delete your own user account.", "Cannot Delete",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            var result = MessageBox.Show(
+            var result = AppMessageBox.Show(
                 $"Are you sure you want to delete user '{_selectedUser.Username}'?\n\n" +
                 "This will NOT delete their activities or snapshots.\n\n" +
                 "This action cannot be undone.",
@@ -519,7 +519,7 @@ namespace VANTAGE.Dialogs
                 AppLogger.Info($"Deleted user: {username} (ID: {userId})",
                     "AdminUsersDialog.BtnDelete_Click", App.CurrentUser?.Username);
 
-                MessageBox.Show($"User '{username}' deleted successfully.", "User Deleted",
+                AppMessageBox.Show($"User '{username}' deleted successfully.", "User Deleted",
                     MessageBoxButton.OK, MessageBoxImage.None);
 
                 lvUsers.Items.Refresh();
@@ -532,7 +532,7 @@ namespace VANTAGE.Dialogs
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "AdminUsersDialog.BtnDelete_Click");
-                MessageBox.Show($"Error deleting user:\n{ex.Message}", "Error",
+                AppMessageBox.Show($"Error deleting user:\n{ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally

@@ -1,12 +1,7 @@
 ﻿using Microsoft.Data.SqlClient;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Data;
 using System.Windows;
-using System.Windows.Controls;
-using VANTAGE.Data;
 using VANTAGE.Models;
 using Syncfusion.SfSkinManager;
 using VANTAGE.Utilities;
@@ -25,6 +20,22 @@ namespace VANTAGE.Views
             ThemeManager.ThemeChanged += OnThemeChanged;
             Closed += (_, __) => ThemeManager.ThemeChanged -= OnThemeChanged;
             Loaded += OnViewLoaded;
+            sfDeletedActivities.FilterChanged += SfDeletedActivities_FilterChanged;
+        }
+
+        private void SfDeletedActivities_FilterChanged(object? sender, Syncfusion.UI.Xaml.Grid.GridFilterEventArgs e)
+        {
+            UpdateRecordCount();
+        }
+
+        private void UpdateRecordCount()
+        {
+            int total = _deletedActivities?.Count ?? 0;
+            int filtered = sfDeletedActivities.View?.Records?.Count ?? total;
+
+            txtRecordCount.Text = filtered == total
+                ? $"{total:N0} deleted records"
+                : $"{filtered:N0} of {total:N0} deleted records";
         }
 
         private async void OnViewLoaded(object sender, RoutedEventArgs e)
@@ -49,7 +60,7 @@ namespace VANTAGE.Views
                 // Check connection to Azure
                 if (!AzureDbManager.CheckConnection(out string errorMessage))
                 {
-                    MessageBox.Show(
+                    AppMessageBox.Show(
                         $"Cannot load projects - Azure database unavailable:\n\n{errorMessage}\n\n" +
                         "Please check your internet connection and try again.",
                         "Connection Error",
@@ -94,9 +105,25 @@ namespace VANTAGE.Views
             {
                 loadingOverlay.Visibility = Visibility.Collapsed;
                 mainContent.IsEnabled = true;
-                MessageBox.Show($"Error loading projects: {ex.Message}",
+                AppMessageBox.Show("Error loading projects. See log for details.",
                     "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 AppLogger.Error(ex, "DeletedRecordsView.LoadProjectsFromAzureAsync");
+            }
+        }
+
+        // Show/hide the main-grid action overlay with the supplied header text.
+        private void SetActionBusy(bool busy, string header = "")
+        {
+            if (busy)
+            {
+                actionBusyIndicator.Header = header;
+                actionBusyIndicator.IsBusy = true;
+                actionBusyOverlay.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                actionBusyIndicator.IsBusy = false;
+                actionBusyOverlay.Visibility = Visibility.Collapsed;
             }
         }
 
@@ -104,12 +131,9 @@ namespace VANTAGE.Views
         {
             try
             {
-                busyIndicator.IsBusy = true;
-
-                // Check connection to Azure
                 if (!AzureDbManager.CheckConnection(out string errorMessage))
                 {
-                    MessageBox.Show(
+                    AppMessageBox.Show(
                         $"Cannot refresh - Azure database unavailable:\n\n{errorMessage}\n\n" +
                         "Please try again when connected.",
                         "Connection Error",
@@ -118,12 +142,11 @@ namespace VANTAGE.Views
                     return;
                 }
 
-                // Get selected projects
                 var selectedProjects = _projects?.Where(p => p.IsSelected).Select(p => p.ProjectID).ToList();
 
                 if (selectedProjects == null || !selectedProjects.Any())
                 {
-                    MessageBox.Show(
+                    AppMessageBox.Show(
                         "Please select at least one project to view deleted records.",
                         "No Projects Selected",
                         MessageBoxButton.OK,
@@ -131,6 +154,7 @@ namespace VANTAGE.Views
                     return;
                 }
 
+                SetActionBusy(true, "Loading deleted records...");
                 txtStatus.Text = "Loading deleted records from Azure...";
 
                 _deletedActivities = await Task.Run(() =>
@@ -142,8 +166,14 @@ namespace VANTAGE.Views
 
                     var projectParams = string.Join(",", selectedProjects.Select((p, i) => $"@p{i}"));
                     var cmd = connection.CreateCommand();
+                    cmd.CommandTimeout = 300;
+                    // Explicit column list — matches MapReaderToActivity (avoids pulling unused
+                    // columns over Azure latency for large result sets).
                     cmd.CommandText = $@"
-                SELECT * FROM VMS_Activities
+                SELECT ActivityID, UniqueID, CompType, PhaseCategory, ROCStep, Description,
+                       PhaseCode, SchedActNO, UDF1, UDF2, Quantity, BudgetMHs, PercentEntry,
+                       UpdatedBy, UpdatedUtcDate
+                FROM VMS_Activities
                 WHERE IsDeleted = 1
                   AND ProjectID IN ({projectParams})
                 ORDER BY UpdatedUtcDate DESC";
@@ -156,27 +186,26 @@ namespace VANTAGE.Views
                     using var reader = cmd.ExecuteReader();
                     while (reader.Read())
                     {
-                        var activity = MapReaderToActivity(reader);
-                        results.Add(activity);
+                        results.Add(MapReaderToActivity(reader));
                     }
 
                     return results;
                 });
 
                 sfDeletedActivities.ItemsSource = _deletedActivities;
-                txtRecordCount.Text = $"{_deletedActivities.Count} deleted records";
+                UpdateRecordCount();
                 txtStatus.Text = "Ready";
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading deleted records: {ex.Message}",
+                AppMessageBox.Show("Error loading deleted records. See log for details.",
                     "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 AppLogger.Error(ex, "DeletedRecordsView.BtnRefresh_Click");
                 txtStatus.Text = "Error loading records";
             }
             finally
             {
-                busyIndicator.IsBusy = false;
+                SetActionBusy(false);
             }
         }
 
@@ -246,19 +275,32 @@ namespace VANTAGE.Views
             };
         }
 
+        private void BtnSelectAll_Click(object sender, RoutedEventArgs e)
+        {
+            if (_deletedActivities == null || _deletedActivities.Count == 0)
+            {
+                AppMessageBox.Show("No records loaded. Click REFRESH first.",
+                    "Nothing to Select", MessageBoxButton.OK, MessageBoxImage.None);
+                return;
+            }
+
+            sfDeletedActivities.SelectAll();
+            sfDeletedActivities.Focus();
+        }
+
         private async void BtnRestore_Click(object sender, RoutedEventArgs e)
         {
             var selectedActivities = sfDeletedActivities.SelectedItems.Cast<Activity>().ToList();
 
             if (!selectedActivities.Any())
             {
-                MessageBox.Show("Please select one or more records to restore.",
+                AppMessageBox.Show("Please select one or more records to restore.",
                     "No Selection", MessageBoxButton.OK, MessageBoxImage.None);
                 return;
             }
 
-            var result = MessageBox.Show(
-                $"Restore {selectedActivities.Count} record(s)?\n\n" +
+            var result = AppMessageBox.Show(
+                $"Restore {selectedActivities.Count:N0} record(s)?\n\n" +
                 "Records will be set to IsDeleted=0 and users will receive them on next sync.",
                 "Confirm Restore",
                 MessageBoxButton.YesNo,
@@ -269,58 +311,79 @@ namespace VANTAGE.Views
 
             try
             {
-                busyIndicator.IsBusy = true;
+                SetActionBusy(true, $"Restoring {selectedActivities.Count:N0} record(s)...");
                 txtStatus.Text = "Restoring records...";
 
                 var uniqueIds = selectedActivities.Select(a => a.UniqueID).ToList();
                 var username = App.CurrentUser?.Username ?? "Admin";
+                var utcDate = DateTime.UtcNow.ToString("o");
 
-                int restored = await Task.Run(() =>
-                {
-                    using var connection = AzureDbManager.GetConnection();
-                    connection.Open();
+                int restored = await Task.Run(() => BulkUpdateIsDeletedFlag(uniqueIds, username, utcDate, restoring: true));
 
-                    var uniqueIdParams = string.Join(",", uniqueIds.Select((id, i) => $"@uid{i}"));
-
-                    var cmd = connection.CreateCommand();
-                    cmd.CommandText = $@"
-                UPDATE VMS_Activities
-                SET IsDeleted = 0,
-                    UpdatedBy = @user,
-                    UpdatedUtcDate = @date
-                WHERE UniqueID IN ({uniqueIdParams})";
-
-                    cmd.Parameters.AddWithValue("@user", username);
-                    cmd.Parameters.AddWithValue("@date", DateTime.UtcNow.ToString("o"));
-
-                    for (int i = 0; i < uniqueIds.Count; i++)
-                    {
-                        cmd.Parameters.AddWithValue($"@uid{i}", uniqueIds[i]);
-                    }
-
-                    return cmd.ExecuteNonQuery();
-                });
-
-                MessageBox.Show($"Successfully restored {restored} record(s).\n\nUsers will receive them on next sync.",
+                AppMessageBox.Show($"Successfully restored {restored:N0} record(s).\n\nUsers will receive them on next sync.",
                     "Restore Complete", MessageBoxButton.OK, MessageBoxImage.None);
 
                 AppLogger.Info($"Admin restored {restored} records", "DeletedRecordsView.BtnRestore_Click", App.CurrentUser?.Username);
 
-                // Refresh grid
-                await Task.Run(() => { }); // Yield to UI
                 BtnRefresh_Click(sender, e);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error restoring records: {ex.Message}",
+                AppMessageBox.Show("Error restoring records. See log for details.",
                     "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 AppLogger.Error(ex, "DeletedRecordsView.BtnRestore_Click");
             }
             finally
             {
-                busyIndicator.IsBusy = false;
+                SetActionBusy(false);
                 txtStatus.Text = "Ready";
             }
+        }
+
+        // Single-statement bulk update via temp table + SqlBulkCopy + INNER JOIN.
+        // Why: WHERE UniqueID IN (@u0..@uN) hits SQL Server's 2100-parameter ceiling
+        // and produces poor query plans at scale. SqlBulkCopy + JOIN is the same
+        // pattern SyncManager uses for thousands-of-rows operations.
+        private static int BulkUpdateIsDeletedFlag(List<string> uniqueIds, string username, string utcDate, bool restoring)
+        {
+            using var connection = AzureDbManager.GetConnection();
+            connection.Open();
+
+            var tempTable = "#RestoreBatch";
+            var createTempCmd = connection.CreateCommand();
+            createTempCmd.CommandText = $@"
+                IF OBJECT_ID('tempdb..{tempTable}') IS NOT NULL DROP TABLE {tempTable};
+                CREATE TABLE {tempTable} (UniqueID NVARCHAR(100) PRIMARY KEY)";
+            createTempCmd.ExecuteNonQuery();
+
+            var idTable = new DataTable();
+            idTable.Columns.Add("UniqueID", typeof(string));
+            foreach (var id in uniqueIds)
+            {
+                idTable.Rows.Add(id);
+            }
+
+            using (var bulkCopy = new SqlBulkCopy(connection))
+            {
+                bulkCopy.DestinationTableName = tempTable;
+                bulkCopy.BulkCopyTimeout = 0;
+                bulkCopy.WriteToServer(idTable);
+            }
+
+            var newFlag = restoring ? 0 : 1;
+            var updateCmd = connection.CreateCommand();
+            updateCmd.CommandTimeout = 600;
+            updateCmd.CommandText = $@"
+                UPDATE a
+                SET IsDeleted = {newFlag},
+                    UpdatedBy = @user,
+                    UpdatedUtcDate = @date
+                FROM VMS_Activities a
+                INNER JOIN {tempTable} s ON a.UniqueID = s.UniqueID";
+            updateCmd.Parameters.AddWithValue("@user", username);
+            updateCmd.Parameters.AddWithValue("@date", utcDate);
+
+            return updateCmd.ExecuteNonQuery();
         }
 
         private async void BtnPurge_Click(object sender, RoutedEventArgs e)
@@ -329,13 +392,13 @@ namespace VANTAGE.Views
 
             if (!selectedActivities.Any())
             {
-                MessageBox.Show("Please select one or more records to purge.",
+                AppMessageBox.Show("Please select one or more records to purge.",
                     "No Selection", MessageBoxButton.OK, MessageBoxImage.None);
                 return;
             }
 
-            var result = MessageBox.Show(
-                $"PERMANENTLY DELETE {selectedActivities.Count} record(s)?\n\n" +
+            var result = AppMessageBox.Show(
+                $"PERMANENTLY DELETE {selectedActivities.Count:N0} record(s)?\n\n" +
                 "⚠️ WARNING: This action CANNOT be undone!\n" +
                 "⚠️ Records will be DELETED from Azure database FOREVER!\n\n" +
                 "Are you absolutely sure?",
@@ -346,8 +409,7 @@ namespace VANTAGE.Views
             if (result != MessageBoxResult.Yes)
                 return;
 
-            // Double confirmation
-            var doubleCheck = MessageBox.Show(
+            var doubleCheck = AppMessageBox.Show(
                 "FINAL WARNING: Click YES to PERMANENTLY DELETE.",
                 "Final Confirmation",
                 MessageBoxButton.YesNo,
@@ -358,51 +420,71 @@ namespace VANTAGE.Views
 
             try
             {
-                busyIndicator.IsBusy = true;
+                SetActionBusy(true, $"Purging {selectedActivities.Count:N0} record(s)...");
                 txtStatus.Text = "Purging records...";
 
                 var uniqueIds = selectedActivities.Select(a => a.UniqueID).ToList();
 
-                int purged = await Task.Run(() =>
-                {
-                    using var connection = AzureDbManager.GetConnection();
-                    connection.Open();
+                int purged = await Task.Run(() => BulkPurge(uniqueIds));
 
-                    var uniqueIdParams = string.Join(",", uniqueIds.Select((id, i) => $"@uid{i}"));
-
-                    var cmd = connection.CreateCommand();
-                    cmd.CommandText = $@"
-                DELETE FROM VMS_Activities
-                WHERE UniqueID IN ({uniqueIdParams})
-                  AND IsDeleted = 1";
-
-                    for (int i = 0; i < uniqueIds.Count; i++)
-                    {
-                        cmd.Parameters.AddWithValue($"@uid{i}", uniqueIds[i]);
-                    }
-
-                    return cmd.ExecuteNonQuery();
-                });
-
-                MessageBox.Show($"Permanently deleted {purged} record(s) from Azure database.",
+                AppMessageBox.Show($"Permanently deleted {purged:N0} record(s) from Azure database.",
                     "Purge Complete", MessageBoxButton.OK, MessageBoxImage.None);
 
                 AppLogger.Warning($"Admin purged {purged} records permanently", "DeletedRecordsView.BtnPurge_Click", App.CurrentUser?.Username);
 
-                // Refresh grid
                 BtnRefresh_Click(sender, e);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error purging records: {ex.Message}",
+                AppMessageBox.Show("Error purging records. See log for details.",
                     "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 AppLogger.Error(ex, "DeletedRecordsView.BtnPurge_Click");
             }
             finally
             {
-                busyIndicator.IsBusy = false;
+                SetActionBusy(false);
                 txtStatus.Text = "Ready";
             }
+        }
+
+        // Single-statement bulk delete via temp table + SqlBulkCopy + INNER JOIN.
+        // Same rationale as BulkUpdateIsDeletedFlag — avoids the 2100-parameter
+        // limit and gets a clean index-seek plan.
+        private static int BulkPurge(List<string> uniqueIds)
+        {
+            using var connection = AzureDbManager.GetConnection();
+            connection.Open();
+
+            var tempTable = "#PurgeBatch";
+            var createTempCmd = connection.CreateCommand();
+            createTempCmd.CommandText = $@"
+                IF OBJECT_ID('tempdb..{tempTable}') IS NOT NULL DROP TABLE {tempTable};
+                CREATE TABLE {tempTable} (UniqueID NVARCHAR(100) PRIMARY KEY)";
+            createTempCmd.ExecuteNonQuery();
+
+            var idTable = new DataTable();
+            idTable.Columns.Add("UniqueID", typeof(string));
+            foreach (var id in uniqueIds)
+            {
+                idTable.Rows.Add(id);
+            }
+
+            using (var bulkCopy = new SqlBulkCopy(connection))
+            {
+                bulkCopy.DestinationTableName = tempTable;
+                bulkCopy.BulkCopyTimeout = 0;
+                bulkCopy.WriteToServer(idTable);
+            }
+
+            var deleteCmd = connection.CreateCommand();
+            deleteCmd.CommandTimeout = 600;
+            deleteCmd.CommandText = $@"
+                DELETE a
+                FROM VMS_Activities a
+                INNER JOIN {tempTable} s ON a.UniqueID = s.UniqueID
+                WHERE a.IsDeleted = 1";
+
+            return deleteCmd.ExecuteNonQuery();
         }
 
         private async void BtnExport_Click(object sender, RoutedEventArgs e)
@@ -411,7 +493,7 @@ namespace VANTAGE.Views
             {
                 if (_deletedActivities == null || _deletedActivities.Count == 0)
                 {
-                    MessageBox.Show("No deleted records to export.", "Export Deleted Records",
+                    AppMessageBox.Show("No deleted records to export.", "Export Deleted Records",
                         MessageBoxButton.OK, MessageBoxImage.None);
                     return;
                 }
@@ -421,7 +503,7 @@ namespace VANTAGE.Views
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "Export Deleted Records Click", App.CurrentUser?.Username ?? "Unknown");
-                MessageBox.Show($"Export failed: {ex.Message}", "Error",
+                AppMessageBox.Show("Export failed. See log for details.", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }

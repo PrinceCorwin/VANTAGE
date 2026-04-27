@@ -85,7 +85,7 @@ namespace VANTAGE.Dialogs
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "SyncDialog.LoadProjects");
-                MessageBox.Show($"Error loading projects: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                AppMessageBox.Show($"Error loading projects: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -114,14 +114,14 @@ namespace VANTAGE.Dialogs
 
                 if (selectedProjects.Count == 0)
                 {
-                    MessageBox.Show("Please select at least one project to sync.", "No Projects Selected", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    AppMessageBox.Show("Please select at least one project to sync.", "No Projects Selected", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
                 // Check Azure connection
                 if (!AzureDbManager.CheckConnection(out string errorMessage))
                 {
-                    MessageBox.Show($"MILESTONE could not establish connection:\n\n{errorMessage}\n\nPlease try again later.",
+                    AppMessageBox.Show($"MILESTONE could not establish connection:\n\n{errorMessage}\n\nPlease try again later.",
                         "Connection Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
@@ -132,7 +132,7 @@ namespace VANTAGE.Dialogs
 
                 if (needsFullPull)
                 {
-                    var confirmResult = MessageBox.Show(
+                    var confirmResult = AppMessageBox.Show(
                         "You previously synced with 'My Records Only' enabled.\n\n" +
                         "Disabling this option requires a full re-sync to restore all records.\n\n" +
                         "This may take longer than usual. Continue?",
@@ -286,7 +286,7 @@ namespace VANTAGE.Dialogs
 
                 var messageTitle = string.IsNullOrEmpty(pushResult.ErrorMessage) ? "Sync Complete" : "Sync Incomplete";
                 var messageIcon = string.IsNullOrEmpty(pushResult.ErrorMessage) ? MessageBoxImage.None : MessageBoxImage.Warning;
-                MessageBox.Show(message, messageTitle, MessageBoxButton.OK, messageIcon);
+                AppMessageBox.Show(message, messageTitle, MessageBoxButton.OK, messageIcon);
 
                 DialogResult = true;
                 Close();
@@ -294,7 +294,7 @@ namespace VANTAGE.Dialogs
             catch (Exception ex)
             {
                 HideLoadingOverlay();
-                MessageBox.Show($"Sync error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                AppMessageBox.Show($"Sync error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 AppLogger.Error(ex, "SyncDialog.BtnConfirmSync_Click");
             }
             finally

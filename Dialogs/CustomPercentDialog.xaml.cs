@@ -2,6 +2,7 @@
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Input;
+using VANTAGE.Utilities;
 
 namespace VANTAGE.Dialogs
 {
@@ -21,14 +22,14 @@ namespace VANTAGE.Dialogs
         {
             if (string.IsNullOrWhiteSpace(txtPercent.Text))
             {
-                MessageBox.Show("Please enter a value.", "Validation",
+                AppMessageBox.Show("Please enter a value.", "Validation",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             if (!int.TryParse(txtPercent.Text, out int value) || value < 0 || value > 100)
             {
-                MessageBox.Show("Please enter a valid number between 0 and 100.",
+                AppMessageBox.Show("Please enter a valid number between 0 and 100.",
                     "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }

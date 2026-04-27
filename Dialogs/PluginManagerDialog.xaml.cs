@@ -39,7 +39,7 @@ namespace VANTAGE.Dialogs
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "PluginManagerDialog.LoadInstalledPlugins");
-                MessageBox.Show(
+                AppMessageBox.Show(
                     $"Error loading plugins:\n\n{ex.Message}",
                     "Plugin Manager",
                     MessageBoxButton.OK,
@@ -99,12 +99,12 @@ namespace VANTAGE.Dialogs
         {
             if (sfAvailable.SelectedItem is not AvailablePluginDisplay selected)
             {
-                MessageBox.Show("Select an available plugin first.", "Plugin Manager",
+                AppMessageBox.Show("Select an available plugin first.", "Plugin Manager",
                     MessageBoxButton.OK, MessageBoxImage.None);
                 return;
             }
 
-            var confirm = MessageBox.Show(
+            var confirm = AppMessageBox.Show(
                 $"Install '{selected.Name}' v{selected.Version}?",
                 "Install Plugin",
                 MessageBoxButton.YesNo,
@@ -138,7 +138,7 @@ namespace VANTAGE.Dialogs
                     ? $"{result.Message}\n\nRestart VANTAGE for the plugin to become active."
                     : result.Message;
 
-                MessageBox.Show(
+                AppMessageBox.Show(
                     message,
                     result.Success ? "Install Complete" : "Install Failed",
                     MessageBoxButton.OK,
@@ -158,12 +158,12 @@ namespace VANTAGE.Dialogs
         {
             if (sfInstalled.SelectedItem is not InstalledPluginInfo selected)
             {
-                MessageBox.Show("Select a plugin first.", "Plugin Manager",
+                AppMessageBox.Show("Select a plugin first.", "Plugin Manager",
                     MessageBoxButton.OK, MessageBoxImage.None);
                 return;
             }
 
-            var confirm = MessageBox.Show(
+            var confirm = AppMessageBox.Show(
                 $"Uninstall '{selected.Name}' v{selected.Version}?",
                 "Uninstall Plugin",
                 MessageBoxButton.YesNo,
@@ -187,7 +187,7 @@ namespace VANTAGE.Dialogs
                     ? $"{result.Message}\n\nRestart VANTAGE for the plugin to be fully removed."
                     : result.Message;
 
-                MessageBox.Show(
+                AppMessageBox.Show(
                     uninstallMessage,
                     result.Success ? "Uninstall Complete" : "Uninstall Failed",
                     MessageBoxButton.OK,

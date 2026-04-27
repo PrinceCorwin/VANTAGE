@@ -78,7 +78,7 @@ namespace VANTAGE.Dialogs
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "ManageProjectRatesDialog.BtnUpload_Click");
-                MessageBox.Show($"Upload error: {ex.Message}", "Error",
+                AppMessageBox.Show($"Upload error: {ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -87,12 +87,12 @@ namespace VANTAGE.Dialogs
         {
             if (sfGrid.SelectedItem is not ProjectRateSetDisplay selected)
             {
-                MessageBox.Show("Select a rate set to delete.", "No Selection",
+                AppMessageBox.Show("Select a rate set to delete.", "No Selection",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            var result = MessageBox.Show(
+            var result = AppMessageBox.Show(
                 $"Delete rate set '{selected.SetName}' for project '{selected.ProjectID}'?\n\n({selected.RowCount} rate(s) will be removed)\n\nThis cannot be undone.",
                 "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning);
             if (result != MessageBoxResult.Yes) return;
@@ -108,7 +108,7 @@ namespace VANTAGE.Dialogs
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "ManageProjectRatesDialog.BtnDelete_Click");
-                MessageBox.Show($"Error deleting: {ex.Message}", "Delete Error",
+                AppMessageBox.Show($"Error deleting: {ex.Message}", "Delete Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -160,7 +160,7 @@ namespace VANTAGE.Dialogs
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "ManageProjectRatesDialog.BtnExportTemplate_Click");
-                MessageBox.Show($"Error exporting template: {ex.Message}", "Export Error",
+                AppMessageBox.Show($"Error exporting template: {ex.Message}", "Export Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }

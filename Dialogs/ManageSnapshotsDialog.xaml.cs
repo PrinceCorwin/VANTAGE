@@ -43,7 +43,7 @@ namespace VANTAGE.Dialogs
         {
             if (App.CurrentUser == null)
             {
-                MessageBox.Show("No user logged in.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                AppMessageBox.Show("No user logged in.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 Close();
                 return;
             }
@@ -122,7 +122,7 @@ namespace VANTAGE.Dialogs
             {
                 pnlLoading.Visibility = Visibility.Collapsed;
                 AppLogger.Error(ex, "ManageSnapshotsDialog.LoadSnapshotsAsync");
-                MessageBox.Show($"Error loading snapshots:\n{ex.Message}", "Error",
+                AppMessageBox.Show($"Error loading snapshots:\n{ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -153,7 +153,7 @@ namespace VANTAGE.Dialogs
             var selectedWeeks = _weeks.Where(w => w.IsSelected).ToList();
             if (selectedWeeks.Count != 1)
             {
-                MessageBox.Show("Please select exactly one snapshot week to modify.",
+                AppMessageBox.Show("Please select exactly one snapshot week to modify.",
                     "Select One Week", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
@@ -181,7 +181,7 @@ namespace VANTAGE.Dialogs
 
             if (selectedWeeks.Count == 0)
             {
-                MessageBox.Show("Please select at least one week to delete.", "No Selection",
+                AppMessageBox.Show("Please select at least one week to delete.", "No Selection",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
@@ -189,7 +189,7 @@ namespace VANTAGE.Dialogs
             int totalSnapshots = selectedWeeks.Sum(w => w.SnapshotCount);
             string weekList = string.Join("\n", selectedWeeks.Select(w => $"  - {w.DisplayText} ({w.SnapshotCount:N0} records)"));
 
-            var confirmResult = MessageBox.Show(
+            var confirmResult = AppMessageBox.Show(
                 $"Are you sure you want to delete {totalSnapshots} snapshot(s) from the following weeks?\n\n{weekList}\n\nThis action cannot be undone.",
                 "Confirm Delete",
                 MessageBoxButton.YesNo,
@@ -275,7 +275,7 @@ namespace VANTAGE.Dialogs
                     "ManageSnapshotsDialog.BtnDelete_Click",
                     App.CurrentUser?.Username);
 
-                MessageBox.Show(
+                AppMessageBox.Show(
                     $"Successfully deleted {deletedTotal} snapshot(s).",
                     "Delete Complete",
                     MessageBoxButton.OK,
@@ -288,7 +288,7 @@ namespace VANTAGE.Dialogs
             {
                 busyDialog.Close();
                 AppLogger.Error(ex, "ManageSnapshotsDialog.BtnDelete_Click");
-                MessageBox.Show($"Error deleting snapshots:\n{ex.Message}", "Error",
+                AppMessageBox.Show($"Error deleting snapshots:\n{ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
 
                 btnCancel.IsEnabled = true;
@@ -310,14 +310,14 @@ namespace VANTAGE.Dialogs
 
             if (selectedWeeks.Count == 0)
             {
-                MessageBox.Show("Please select a snapshot week to revert to.", "No Selection",
+                AppMessageBox.Show("Please select a snapshot week to revert to.", "No Selection",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             if (selectedWeeks.Count > 1)
             {
-                MessageBox.Show("Please select only one snapshot week to revert to.", "Multiple Selection",
+                AppMessageBox.Show("Please select only one snapshot week to revert to.", "Multiple Selection",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
@@ -351,7 +351,7 @@ namespace VANTAGE.Dialogs
                     if (!backupResult.Success)
                     {
                         busyDialog.Close();
-                        MessageBox.Show($"Failed to create backup snapshot:\n{backupResult.ErrorMessage}\n\nRevert cancelled.",
+                        AppMessageBox.Show($"Failed to create backup snapshot:\n{backupResult.ErrorMessage}\n\nRevert cancelled.",
                             "Backup Failed", MessageBoxButton.OK, MessageBoxImage.Error);
                         return;
                     }
@@ -365,7 +365,7 @@ namespace VANTAGE.Dialogs
                 if (!AzureDbManager.CheckConnection(out string connError))
                 {
                     busyDialog.Close();
-                    MessageBox.Show($"Cannot connect to Azure:\n{connError}\n\nRevert cancelled.",
+                    AppMessageBox.Show($"Cannot connect to Azure:\n{connError}\n\nRevert cancelled.",
                         "Connection Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
@@ -385,7 +385,7 @@ namespace VANTAGE.Dialogs
                 if (!revertResult.Success)
                 {
                     busyDialog.Close();
-                    MessageBox.Show($"Revert failed:\n{revertResult.ErrorMessage}",
+                    AppMessageBox.Show($"Revert failed:\n{revertResult.ErrorMessage}",
                         "Revert Failed", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
@@ -402,7 +402,7 @@ namespace VANTAGE.Dialogs
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "ManageSnapshotsDialog.BtnRevert_Click");
-                MessageBox.Show($"Error during revert:\n{ex.Message}", "Error",
+                AppMessageBox.Show($"Error during revert:\n{ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
@@ -1173,7 +1173,7 @@ namespace VANTAGE.Dialogs
 
                 message += "\n\nWould you like to view the skipped records?";
 
-                var viewResult = MessageBox.Show(message, "Revert Complete",
+                var viewResult = AppMessageBox.Show(message, "Revert Complete",
                     MessageBoxButton.YesNo, MessageBoxImage.None);
 
                 if (viewResult == MessageBoxResult.Yes)
@@ -1185,7 +1185,7 @@ namespace VANTAGE.Dialogs
             }
             else
             {
-                MessageBox.Show(message, "Revert Complete",
+                AppMessageBox.Show(message, "Revert Complete",
                     MessageBoxButton.OK, MessageBoxImage.None);
             }
         }

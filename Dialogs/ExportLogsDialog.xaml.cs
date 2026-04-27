@@ -136,7 +136,7 @@ namespace VANTAGE.Dialogs
         {
             if (_totalEntries == 0)
             {
-                MessageBox.Show("No logs to export.", "Export Logs",
+                AppMessageBox.Show("No logs to export.", "Export Logs",
                     MessageBoxButton.OK, MessageBoxImage.None);
                 return;
             }
@@ -158,7 +158,7 @@ namespace VANTAGE.Dialogs
                     AppLogger.Info($"Exported {_totalEntries} logs to {dialog.FileName}",
                         "ExportLogsDialog.BtnExport_Click", App.CurrentUser?.Username ?? "Unknown");
 
-                    MessageBox.Show($"Exported {_totalEntries} log entries.", "Export Logs",
+                    AppMessageBox.Show($"Exported {_totalEntries} log entries.", "Export Logs",
                         MessageBoxButton.OK, MessageBoxImage.None);
 
                     DialogResult = true;
@@ -167,7 +167,7 @@ namespace VANTAGE.Dialogs
                 catch (Exception ex)
                 {
                     AppLogger.Error(ex, "ExportLogsDialog.BtnExport_Click");
-                    MessageBox.Show($"Export failed: {ex.Message}", "Error",
+                    AppMessageBox.Show($"Export failed: {ex.Message}", "Error",
                         MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
@@ -178,14 +178,14 @@ namespace VANTAGE.Dialogs
             var user = cboUsers.SelectedItem as UserItem;
             if (user == null || string.IsNullOrWhiteSpace(user.Email))
             {
-                MessageBox.Show("Please select a user with an email address.", "Send Email",
+                AppMessageBox.Show("Please select a user with an email address.", "Send Email",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             if (_totalEntries == 0)
             {
-                MessageBox.Show("No logs to send.", "Send Email",
+                AppMessageBox.Show("No logs to send.", "Send Email",
                     MessageBoxButton.OK, MessageBoxImage.None);
                 return;
             }
@@ -244,7 +244,7 @@ namespace VANTAGE.Dialogs
 
                 if (success)
                 {
-                    MessageBox.Show($"Logs sent to {user.Email}", "Send Email",
+                    AppMessageBox.Show($"Logs sent to {user.Email}", "Send Email",
                         MessageBoxButton.OK, MessageBoxImage.None);
                     DialogResult = true;
                     Close();
@@ -252,14 +252,14 @@ namespace VANTAGE.Dialogs
                 }
                 else
                 {
-                    MessageBox.Show("Failed to send email. Check logs for details.", "Send Email",
+                    AppMessageBox.Show("Failed to send email. Check logs for details.", "Send Email",
                         MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "ExportLogsDialog.BtnEmail_Click");
-                MessageBox.Show($"Failed to send email: {ex.Message}", "Error",
+                AppMessageBox.Show($"Failed to send email: {ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally

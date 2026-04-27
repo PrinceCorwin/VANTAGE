@@ -79,6 +79,9 @@ Log these user actions with username parameter:
 - Delete operations
 - Bulk updates
 
+### User-Facing Dialogs
+- ALWAYS use `AppMessageBox.Show(...)` (in `VANTAGE.Utilities`) — never `MessageBox.Show(...)` directly. The wrapper finds the active window, activates it, and toggles topmost so dialogs appear in front instead of getting hidden behind the owning window after long-running awaits. Signatures match `MessageBox.Show` 1:1.
+
 ## Database Conventions
 - Dates: TEXT/VARCHAR (P6 exports text) - use string parsing, not DATETIME
 - Percentages: 0-100 format (not 0-1 decimal)

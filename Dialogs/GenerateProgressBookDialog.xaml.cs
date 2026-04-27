@@ -181,7 +181,7 @@ namespace VANTAGE.Dialogs
             {
                 if (_activities.Count == 0)
                 {
-                    MessageBox.Show("No records to generate.", "No Records",
+                    AppMessageBox.Show("No records to generate.", "No Records",
                         MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
@@ -225,7 +225,7 @@ namespace VANTAGE.Dialogs
                 AppLogger.Info($"Progress Book generated: {bookName}, {_activities.Count} records, saved to {saveDialog.FileName}",
                     "GenerateProgressBookDialog.BtnGenerate_Click", App.CurrentUser?.Username ?? "Unknown");
 
-                MessageBox.Show($"Progress Book saved to:\n{saveDialog.FileName}",
+                AppMessageBox.Show($"Progress Book saved to:\n{saveDialog.FileName}",
                     "Generated", MessageBoxButton.OK, MessageBoxImage.None);
 
                 DialogResult = true;
@@ -234,7 +234,7 @@ namespace VANTAGE.Dialogs
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "GenerateProgressBookDialog.BtnGenerate_Click");
-                MessageBox.Show($"Error generating PDF:\n{ex.Message}",
+                AppMessageBox.Show($"Error generating PDF:\n{ex.Message}",
                     "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 btnGenerate.IsEnabled = true;
                 txtStatus.Text = "";

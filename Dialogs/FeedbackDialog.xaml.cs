@@ -138,7 +138,7 @@ namespace VANTAGE.Dialogs
             {
                 pnlLoading.Visibility = Visibility.Collapsed;
                 AppLogger.Error(ex, "FeedbackDialog.LoadFeedbackAsync");
-                MessageBox.Show($"Error loading feedback:\n{ex.Message}", "Error",
+                AppMessageBox.Show($"Error loading feedback:\n{ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -286,7 +286,7 @@ namespace VANTAGE.Dialogs
 
             if (string.IsNullOrEmpty(title) || title.Length < 5)
             {
-                MessageBox.Show("Title is required and must be at least 5 characters.", "Validation Error",
+                AppMessageBox.Show("Title is required and must be at least 5 characters.", "Validation Error",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 txtTitle.Focus();
                 return;
@@ -344,7 +344,7 @@ namespace VANTAGE.Dialogs
                     // Notify admins
                     await NotifyAdminsAsync(newFeedback);
 
-                    MessageBox.Show($"Feedback submitted successfully.", "Submitted",
+                    AppMessageBox.Show($"Feedback submitted successfully.", "Submitted",
                         MessageBoxButton.OK, MessageBoxImage.None);
                 }
                 else
@@ -395,7 +395,7 @@ namespace VANTAGE.Dialogs
                         await NotifyUserStatusChangeAsync(_selectedFeedback, oldStatus, status);
                     }
 
-                    MessageBox.Show($"Feedback updated successfully.", "Updated",
+                    AppMessageBox.Show($"Feedback updated successfully.", "Updated",
                         MessageBoxButton.OK, MessageBoxImage.None);
                 }
 
@@ -408,7 +408,7 @@ namespace VANTAGE.Dialogs
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "FeedbackDialog.BtnSave_Click");
-                MessageBox.Show($"Error saving feedback:\n{ex.Message}", "Error",
+                AppMessageBox.Show($"Error saving feedback:\n{ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
@@ -667,7 +667,7 @@ namespace VANTAGE.Dialogs
                 AppLogger.Info($"Restored feedback: {title} (ID: {feedbackId})",
                     "FeedbackDialog.BtnRestore_Click", currentUser);
 
-                MessageBox.Show("Feedback restored successfully.", "Restored",
+                AppMessageBox.Show("Feedback restored successfully.", "Restored",
                     MessageBoxButton.OK, MessageBoxImage.None);
 
                 // Reload to refresh the list
@@ -677,7 +677,7 @@ namespace VANTAGE.Dialogs
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "FeedbackDialog.BtnRestore_Click");
-                MessageBox.Show($"Error restoring feedback:\n{ex.Message}", "Error",
+                AppMessageBox.Show($"Error restoring feedback:\n{ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
@@ -697,7 +697,7 @@ namespace VANTAGE.Dialogs
                 ? "This will PERMANENTLY remove the item from the database."
                 : "This will mark the item as deleted. Admins can restore or permanently delete it later.";
 
-            var result = MessageBox.Show(
+            var result = AppMessageBox.Show(
                 $"Are you sure you want to {deleteType} this feedback?\n\n\"{_selectedFeedback.Title}\"\n\n{warning}",
                 isPermanentDelete ? "Confirm Permanent Delete" : "Confirm Delete",
                 MessageBoxButton.YesNo,
@@ -745,7 +745,7 @@ namespace VANTAGE.Dialogs
                 AppLogger.Info($"{action} feedback: {title} (ID: {feedbackId})",
                     "FeedbackDialog.BtnDelete_Click", App.CurrentUser?.Username);
 
-                MessageBox.Show($"Feedback {action.ToLower()} successfully.", action,
+                AppMessageBox.Show($"Feedback {action.ToLower()} successfully.", action,
                     MessageBoxButton.OK, MessageBoxImage.None);
 
                 ApplyFilters();
@@ -756,7 +756,7 @@ namespace VANTAGE.Dialogs
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "FeedbackDialog.BtnDelete_Click");
-                MessageBox.Show($"Error deleting feedback:\n{ex.Message}", "Error",
+                AppMessageBox.Show($"Error deleting feedback:\n{ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally

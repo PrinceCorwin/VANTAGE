@@ -182,7 +182,7 @@ namespace VANTAGE.Dialogs
                 int placeholderCount = CountPlaceholders();
                 if (placeholderCount > 0)
                 {
-                    var result = MessageBox.Show(
+                    var result = AppMessageBox.Show(
                         $"{placeholderCount} activities have < 0.01 MHs and may be placeholders.\n\nInclude them in the prorate?",
                         "Placeholder Activities",
                         MessageBoxButton.YesNo,
@@ -195,7 +195,7 @@ namespace VANTAGE.Dialogs
                     // Re-check if we still have eligible activities
                     if (_eligibleActivities.Count == 0)
                     {
-                        MessageBox.Show("No eligible activities to prorate.", "No Activities",
+                        AppMessageBox.Show("No eligible activities to prorate.", "No Activities",
                             MessageBoxButton.OK, MessageBoxImage.None);
                         return;
                     }
@@ -204,7 +204,7 @@ namespace VANTAGE.Dialogs
 
             if (!double.TryParse(txtAmount.Text, out double amount) || amount <= 0)
             {
-                MessageBox.Show("Please enter a valid positive amount.", "Invalid Amount",
+                AppMessageBox.Show("Please enter a valid positive amount.", "Invalid Amount",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 txtAmount.Focus();
                 return;
@@ -223,7 +223,7 @@ namespace VANTAGE.Dialogs
             // Validate new total
             if (newTotal <= 0)
             {
-                MessageBox.Show("Cannot reduce total to zero or negative.", "Invalid Operation",
+                AppMessageBox.Show("Cannot reduce total to zero or negative.", "Invalid Operation",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
@@ -236,7 +236,7 @@ namespace VANTAGE.Dialogs
                               (rbAdd.IsChecked == true ? "add" : "subtract");
             string preserve = rbKeepPercent.IsChecked == true ? "Keep Percent Complete" : "Keep Earned MHs";
 
-            var confirmResult = MessageBox.Show(
+            var confirmResult = AppMessageBox.Show(
                 $"Prorate {_eligibleActivities.Count} activities?\n\n" +
                 $"Operation: {operation} {amount:N3} MHs\n" +
                 $"Current Total: {currentTotal:N3} MHs\n" +
@@ -322,7 +322,7 @@ namespace VANTAGE.Dialogs
                 if (clampedCount > 0)
                     message += $"\n\n{clampedCount} activities were clamped to minimum 0.001 MHs.";
 
-                MessageBox.Show(message, "Prorate Complete",
+                AppMessageBox.Show(message, "Prorate Complete",
                     MessageBoxButton.OK, MessageBoxImage.None);
 
                 // Refresh the grid
@@ -334,7 +334,7 @@ namespace VANTAGE.Dialogs
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "ProrateDialog.BtnApply_Click");
-                MessageBox.Show($"Error applying prorate:\n{ex.Message}", "Error",
+                AppMessageBox.Show($"Error applying prorate:\n{ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally

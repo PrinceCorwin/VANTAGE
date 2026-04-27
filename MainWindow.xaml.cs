@@ -135,7 +135,7 @@ namespace VANTAGE
         private void MenuAbout_Click(object sender, RoutedEventArgs e)
         {
             var version = Assembly.GetExecutingAssembly().GetName().Version;
-            MessageBox.Show(
+            AppMessageBox.Show(
                 $"Vantage: Milestone\n\n" +
                 $"Version: {version?.Major}.{version?.Minor}.{version?.Build}\n\n" +
                 $"Construction Project Management System\n\n" +
@@ -263,7 +263,7 @@ namespace VANTAGE
             // is still finishing — killing the process mid-op can leave local DB state inconsistent.
             if (LongRunningOps.IsRunning)
             {
-                var result = MessageBox.Show(
+                var result = AppMessageBox.Show(
                     "An operation is still finishing (Submit Week or snapshot delete).\n\n" +
                     "Closing now may leave your local data in an inconsistent state.\n\n" +
                     "Quit anyway?",
@@ -551,7 +551,7 @@ namespace VANTAGE
         {
             if (!AzureDbManager.CheckConnection(out string error))
             {
-                MessageBox.Show(
+                AppMessageBox.Show(
                     $"Cannot connect to Azure database:\n\n{error}\n\nThis feature requires an active connection.",
                     "Connection Required", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
@@ -623,7 +623,7 @@ namespace VANTAGE
                             ? "\n\nNo snapshot data was found for this week."
                             : $"\n\nLoaded {snapshotRows} snapshot rows for Schedule comparison.";
 
-                    MessageBox.Show(
+                    AppMessageBox.Show(
                         $"Successfully imported {imported} schedule activities for week ending {p6Dialog.SelectedWeekEndDate:yyyy-MM-dd}\n\n" +
                         $"Projects: {string.Join(", ", p6Dialog.SelectedProjectIDs)}" +
                         snapshotMsg,
@@ -645,7 +645,7 @@ namespace VANTAGE
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "MainWindow.ImportP6File_Click", App.CurrentUser?.Username);
-                MessageBox.Show(
+                AppMessageBox.Show(
                     $"Import failed: {ex.Message}",
                     "Import Error",
                     MessageBoxButton.OK,
@@ -660,7 +660,7 @@ namespace VANTAGE
                 // Check if we're in Schedule view
                 if (!(ContentArea.Content is Views.ScheduleView scheduleView))
                 {
-                    MessageBox.Show(
+                    AppMessageBox.Show(
                         "Please navigate to the Schedule module first.",
                         "Export to P6",
                         MessageBoxButton.OK,
@@ -671,7 +671,7 @@ namespace VANTAGE
                 var viewModel = scheduleView.DataContext as ViewModels.ScheduleViewModel;
                 if (viewModel == null || viewModel.MasterRows == null || viewModel.MasterRows.Count == 0)
                 {
-                    MessageBox.Show(
+                    AppMessageBox.Show(
                         "No schedule data loaded. Please select a Week Ending date first.",
                         "Export to P6",
                         MessageBoxButton.OK,
@@ -684,7 +684,7 @@ namespace VANTAGE
                 // Check required fields count
                 if (viewModel.RequiredFieldsCount > 0)
                 {
-                    MessageBox.Show(
+                    AppMessageBox.Show(
                         $"Cannot export: {viewModel.RequiredFieldsCount} required field(s) are incomplete.\n\n" +
                         $"Please complete all Missed Reason and {viewModel.LookaheadLabel} fields before exporting.\n\n" +
                         "Click the 'Required Fields' button in the status bar to see which rows need attention.",
@@ -770,7 +770,7 @@ namespace VANTAGE
                         "MainWindow.ExportP6File_Click",
                         App.CurrentUser?.Username);
 
-                    MessageBox.Show(
+                    AppMessageBox.Show(
                         $"Successfully exported {exported} activities.\n\n" +
                         $"P6 File:\n{p6FilePath}\n\n" +
                         $"Schedule Reports:\n{reportsFilePath}",
@@ -787,7 +787,7 @@ namespace VANTAGE
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "MainWindow.ExportP6File_Click", App.CurrentUser?.Username);
-                MessageBox.Show(
+                AppMessageBox.Show(
                     $"Export failed: {ex.Message}",
                     "Export Error",
                     MessageBoxButton.OK,
@@ -810,7 +810,7 @@ namespace VANTAGE
                 if (openFileDialog.ShowDialog() == true)
                 {
                     // Confirm replace action
-                    var result = MessageBox.Show(
+                    var result = AppMessageBox.Show(
                         "This will REPLACE all existing activities with data from the Excel file.\n\nAre you sure you want to continue?",
                         "Confirm Replace",
                         MessageBoxButton.YesNo,
@@ -844,7 +844,7 @@ namespace VANTAGE
                         // Hide loading overlay
                         HideLoadingOverlay();
 
-                        MessageBox.Show(
+                        AppMessageBox.Show(
                             $"Successfully imported {imported} activities.\n\nAll previous data has been replaced.",
                             "Import Complete",
                             MessageBoxButton.OK,
@@ -862,7 +862,7 @@ namespace VANTAGE
             catch (Exception ex)
             {
                 HideLoadingOverlay();
-                MessageBox.Show(
+                AppMessageBox.Show(
                     $"Error importing Excel file:\n\n{ex.Message}",
                     "Import Error",
                     MessageBoxButton.OK,
@@ -910,7 +910,7 @@ namespace VANTAGE
                     // Hide loading overlay
                     HideLoadingOverlay();
 
-                    MessageBox.Show(
+                    AppMessageBox.Show(
                         $"Successfully imported {imported} new activities.\n\nExisting activities were preserved (duplicates skipped).",
                         "Import Complete",
                         MessageBoxButton.OK,
@@ -927,7 +927,7 @@ namespace VANTAGE
             catch (Exception ex)
             {
                 HideLoadingOverlay();
-                MessageBox.Show(
+                AppMessageBox.Show(
                     $"Error importing Excel file:\n\n{ex.Message}",
                     "Import Error",
                     MessageBoxButton.OK,
@@ -1001,7 +1001,7 @@ namespace VANTAGE
 
                 if (allActivities.Count == 0)
                 {
-                    MessageBox.Show("No activities to export.", "Export", MessageBoxButton.OK, MessageBoxImage.None);
+                    AppMessageBox.Show("No activities to export.", "Export", MessageBoxButton.OK, MessageBoxImage.None);
                     return;
                 }
 
@@ -1011,7 +1011,7 @@ namespace VANTAGE
             catch (Exception ex)
             {
                 AppLogger.Error(ex, logContext, App.CurrentUser?.Username ?? "Unknown");
-                MessageBox.Show($"An error occurred: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                AppMessageBox.Show($"An error occurred: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {
@@ -1032,7 +1032,7 @@ namespace VANTAGE
             // Security check
             if (App.CurrentUser == null || !App.CurrentUser.IsAdmin)
             {
-                MessageBox.Show("This feature is only available to administrators.",
+                AppMessageBox.Show("This feature is only available to administrators.",
                     "Access Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
@@ -1054,7 +1054,7 @@ namespace VANTAGE
             // Check admin status
             if (App.CurrentUser == null || !App.CurrentUser.IsAdmin)
             {
-                MessageBox.Show("You do not have admin privileges.", "Access Denied",
+                AppMessageBox.Show("You do not have admin privileges.", "Access Denied",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
@@ -1062,7 +1062,7 @@ namespace VANTAGE
             // Check Azure connection first
             if (!AzureDbManager.CheckConnection(out string errorMessage))
             {
-                MessageBox.Show(
+                AppMessageBox.Show(
                     $"Cannot connect to Azure database:\n\n{errorMessage}\n\nThis feature requires an active connection.",
                     "Connection Required",
                     MessageBoxButton.OK,
@@ -1099,14 +1099,14 @@ namespace VANTAGE
         {
             if (App.CurrentUser == null || !App.CurrentUser.IsAdmin)
             {
-                MessageBox.Show("You do not have admin privileges.", "Access Denied",
+                AppMessageBox.Show("You do not have admin privileges.", "Access Denied",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             if (!AzureDbManager.CheckConnection(out string errorMessage))
             {
-                MessageBox.Show(
+                AppMessageBox.Show(
                     $"Cannot connect to Azure database:\n\n{errorMessage}\n\nThis feature requires an active connection.",
                     "Connection Required",
                     MessageBoxButton.OK,
@@ -1124,7 +1124,7 @@ namespace VANTAGE
         {
             if (App.CurrentUser == null || !App.CurrentUser.IsAdmin)
             {
-                MessageBox.Show("You do not have admin privileges.", "Access Denied",
+                AppMessageBox.Show("You do not have admin privileges.", "Access Denied",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
@@ -1136,7 +1136,7 @@ namespace VANTAGE
 
                 if (configs.Count == 0)
                 {
-                    MessageBox.Show("No takeoff configs found in S3.", "No Configs",
+                    AppMessageBox.Show("No takeoff configs found in S3.", "No Configs",
                         MessageBoxButton.OK, MessageBoxImage.Information);
                     return;
                 }
@@ -1148,7 +1148,7 @@ namespace VANTAGE
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "MainWindow.MenuManageS3Drawings_Click");
-                MessageBox.Show($"Error loading configs: {ex.Message}", "Error",
+                AppMessageBox.Show($"Error loading configs: {ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -1157,7 +1157,7 @@ namespace VANTAGE
         {
             if (!AzureDbManager.CheckConnection(out string prError))
             {
-                MessageBox.Show(
+                AppMessageBox.Show(
                     $"Cannot connect to Azure database:\n\n{prError}\n\nThis feature requires an active connection.",
                     "Connection Required", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
@@ -1173,7 +1173,7 @@ namespace VANTAGE
             // Check admin status
             if (App.CurrentUser == null || !App.CurrentUser.IsAdmin)
             {
-                MessageBox.Show("You do not have admin privileges.", "Access Denied",
+                AppMessageBox.Show("You do not have admin privileges.", "Access Denied",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
@@ -1181,7 +1181,7 @@ namespace VANTAGE
             // Check Azure connection first
             if (!AzureDbManager.CheckConnection(out string errorMessage))
             {
-                MessageBox.Show(
+                AppMessageBox.Show(
                     $"Cannot connect to Azure database:\n\n{errorMessage}\n\nThis feature requires an active connection.",
                     "Connection Required",
                     MessageBoxButton.OK,
@@ -1199,7 +1199,7 @@ namespace VANTAGE
             // Check admin status
             if (App.CurrentUser == null || !App.CurrentUser.IsAdmin)
             {
-                MessageBox.Show("You do not have admin privileges.", "Access Denied",
+                AppMessageBox.Show("You do not have admin privileges.", "Access Denied",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
@@ -1207,7 +1207,7 @@ namespace VANTAGE
             // Check Azure connection first
             if (!AzureDbManager.CheckConnection(out string errorMessage))
             {
-                MessageBox.Show(
+                AppMessageBox.Show(
                     $"Cannot connect to Azure database:\n\n{errorMessage}\n\nThis feature requires an active connection.",
                     "Connection Required",
                     MessageBoxButton.OK,
@@ -1244,7 +1244,7 @@ namespace VANTAGE
             // Check Azure connection first
             if (!AzureDbManager.CheckConnection(out string errorMessage))
             {
-                MessageBox.Show(
+                AppMessageBox.Show(
                     $"Cannot connect to Azure database:\n\n{errorMessage}\n\nThis feature requires an active connection.",
                     "Connection Required",
                     MessageBoxButton.OK,
@@ -1282,7 +1282,7 @@ namespace VANTAGE
 
         private async void MenuClearLocalActivities_Click(object sender, RoutedEventArgs e)
         {
-            var result = MessageBox.Show(
+            var result = AppMessageBox.Show(
                 "This will DELETE ALL ACTIVITIES from your local database.\n\n" +
                 "This does NOT affect the Azure database.\n" +
                 "You can restore data by syncing from Azure.\n\n" +
@@ -1328,7 +1328,7 @@ namespace VANTAGE
                     _cachedProgressView = null;
                 }
 
-                MessageBox.Show(
+                AppMessageBox.Show(
                     $"Successfully deleted {deletedCount:N0} activities from local database.\n\n" +
                     "LastPulledSyncVersion has been reset.\n" +
                     "Sync to restore data from Azure.",
@@ -1339,14 +1339,14 @@ namespace VANTAGE
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "MainWindow.MenuClearLocalActivities_Click");
-                MessageBox.Show($"Error clearing activities:\n{ex.Message}", "Error",
+                AppMessageBox.Show($"Error clearing activities:\n{ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
         private async void MenuClearLocalSchedule_Click(object sender, RoutedEventArgs e)
         {
-            var result = MessageBox.Show(
+            var result = AppMessageBox.Show(
                 "This will DELETE ALL SCHEDULE DATA from your local database:\n\n" +
                 "• Schedule table (P6 import data)\n" +
                 "• ScheduleProjectMappings\n" +
@@ -1405,7 +1405,7 @@ namespace VANTAGE
                     scheduleView.ClearScheduleDisplay();
                 }
 
-                MessageBox.Show(
+                AppMessageBox.Show(
                     $"Successfully cleared local schedule data:\n\n" +
                     $"• Schedule rows: {scheduleCount:N0}\n" +
                     $"• Project mappings: {mappingsCount:N0}\n" +
@@ -1418,7 +1418,7 @@ namespace VANTAGE
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "MainWindow.MenuClearLocalSchedule_Click");
-                MessageBox.Show($"Error clearing schedule:\n{ex.Message}", "Error",
+                AppMessageBox.Show($"Error clearing schedule:\n{ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -1431,7 +1431,7 @@ namespace VANTAGE
 
                 if (settings.Count == 0)
                 {
-                    MessageBox.Show("No settings to export.", "Export Settings",
+                    AppMessageBox.Show("No settings to export.", "Export Settings",
                         MessageBoxButton.OK, MessageBoxImage.None);
                     return;
                 }
@@ -1461,14 +1461,14 @@ namespace VANTAGE
                     AppLogger.Info($"Exported {settings.Count} settings to {dialog.FileName}",
                         "MainWindow.MenuExportSettings_Click", App.CurrentUser?.Username ?? "Unknown");
 
-                    MessageBox.Show($"Exported {settings.Count} settings successfully.",
+                    AppMessageBox.Show($"Exported {settings.Count} settings successfully.",
                         "Export Settings", MessageBoxButton.OK, MessageBoxImage.None);
                 }
             }
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "MainWindow.MenuExportSettings_Click");
-                MessageBox.Show($"Export failed:\n{ex.Message}", "Error",
+                AppMessageBox.Show($"Export failed:\n{ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -1492,12 +1492,12 @@ namespace VANTAGE
 
                 if (importFile == null || importFile.Settings == null || importFile.Settings.Count == 0)
                 {
-                    MessageBox.Show("No settings found in file.", "Import Settings",
+                    AppMessageBox.Show("No settings found in file.", "Import Settings",
                         MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
-                var result = MessageBox.Show(
+                var result = AppMessageBox.Show(
                     $"Found {importFile.Settings.Count} settings exported by '{importFile.ExportedBy}' on {importFile.ExportedDate}.\n\n" +
                     "Choose import mode:\n" +
                     "YES = Replace all (delete existing, import new)\n" +
@@ -1523,7 +1523,7 @@ namespace VANTAGE
                     scheduleView.ReloadColumnSettings();
                 }
 
-                MessageBox.Show(
+                AppMessageBox.Show(
                     $"Imported {imported} settings.\n\nSettings applied to current view.",
                     "Import Settings",
                     MessageBoxButton.OK,
@@ -1531,13 +1531,13 @@ namespace VANTAGE
             }
             catch (System.Text.Json.JsonException)
             {
-                MessageBox.Show("Invalid settings file format.", "Import Settings",
+                AppMessageBox.Show("Invalid settings file format.", "Import Settings",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "MainWindow.MenuImportSettings_Click");
-                MessageBox.Show($"Import failed:\n{ex.Message}", "Error",
+                AppMessageBox.Show($"Import failed:\n{ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -1797,7 +1797,7 @@ namespace VANTAGE
             // Check Azure connection first
             if (!AzureDbManager.CheckConnection(out string errorMessage))
             {
-                MessageBox.Show(
+                AppMessageBox.Show(
                     $"Cannot connect to Azure database:\n\n{errorMessage}\n\nFeedback Board requires an active connection.",
                     "Connection Required",
                     MessageBoxButton.OK,
@@ -1816,7 +1816,7 @@ namespace VANTAGE
             // Check if Progress view is active
             if (ContentArea.Content is not Views.ProgressView progressView)
             {
-                MessageBox.Show("Prorate MHs is only available in the Progress view.",
+                AppMessageBox.Show("Prorate MHs is only available in the Progress view.",
                     "Wrong View", MessageBoxButton.OK, MessageBoxImage.None);
                 return;
             }
@@ -1825,7 +1825,7 @@ namespace VANTAGE
             var filteredActivities = progressView.GetFilteredActivities();
             if (filteredActivities.Count == 0)
             {
-                MessageBox.Show("No activities to prorate. Import or filter activities first.",
+                AppMessageBox.Show("No activities to prorate. Import or filter activities first.",
                     "No Activities", MessageBoxButton.OK, MessageBoxImage.None);
                 return;
             }
@@ -1882,7 +1882,7 @@ namespace VANTAGE
         {
             if (!AzureDbManager.CheckConnection(out string connError))
             {
-                MessageBox.Show($"Cannot connect to Azure database:\n\n{connError}",
+                AppMessageBox.Show($"Cannot connect to Azure database:\n\n{connError}",
                     "Connection Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
@@ -1929,7 +1929,7 @@ namespace VANTAGE
                     "MainWindow.MenuVPvsVtgReport_Click",
                     App.CurrentUser?.Username);
 
-                MessageBox.Show(
+                AppMessageBox.Show(
                     $"Report saved:\n{result.OutputPath}\n\n" +
                     $"Data rows: {result.DataRows}\n" +
                     $"Matched: {result.MatchedRows}\n" +
@@ -1944,7 +1944,7 @@ namespace VANTAGE
             {
                 busyDialog.Close();
                 AppLogger.Error(ex, "MainWindow.MenuVPvsVtgReport_Click");
-                MessageBox.Show($"Failed to generate report:\n\n{ex.Message}",
+                AppMessageBox.Show($"Failed to generate report:\n\n{ex.Message}",
                     "Report Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }

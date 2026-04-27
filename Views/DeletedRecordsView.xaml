@@ -59,6 +59,8 @@
                         BorderBrush="{DynamicResource SidebarBorder}"
                         BorderThickness="1"
                         Margin="15,0,15,15"
+                        MaxHeight="400"
+                        VerticalAlignment="Top"
                         CornerRadius="4">
                     <Grid>
                         <!-- Busy Indicator Overlay -->
@@ -107,6 +109,22 @@
                             <ToolTip Content="Load deleted records for selected projects"/>
                         </syncfusion:ButtonAdv.ToolTip>
                     </syncfusion:ButtonAdv>
+
+                    <!-- Select All Button -->
+                    <syncfusion:ButtonAdv x:Name="btnSelectAll"
+                                         Label="SELECT ALL"
+                                         SmallIcon="{x:Null}"
+                                         Height="42"
+                                         Margin="0,0,0,8"
+                                         SizeMode="Normal"
+                                         Background="{DynamicResource SidebarBorder}"
+                                         Foreground="{DynamicResource OverlayText}"
+                                         Click="BtnSelectAll_Click">
+                        <syncfusion:ButtonAdv.ToolTip>
+                            <ToolTip Content="Select all loaded records (respects active filters)"/>
+                        </syncfusion:ButtonAdv.ToolTip>
+                    </syncfusion:ButtonAdv>
+
                     <!-- Restore Button -->
                     <syncfusion:ButtonAdv x:Name="btnRestore"
                                          Label="RESTORE"
@@ -161,8 +179,8 @@
         </Border>
 
         <!-- MAIN GRID AREA -->
-        <Border Grid.Column="1" Grid.Row="0"
-                Background="{DynamicResource BackgroundColor}">
+        <Grid Grid.Column="1" Grid.Row="0">
+        <Border Background="{DynamicResource BackgroundColor}">
             <syncfusion:SfDataGrid x:Name="sfDeletedActivities"
                                    AutoGenerateColumns="False"
                                    AllowEditing="False"
@@ -222,6 +240,20 @@
                 </syncfusion:SfDataGrid.Columns>
             </syncfusion:SfDataGrid>
         </Border>
+
+            <!-- ACTION BUSY OVERLAY (Refresh / Restore / Purge) -->
+            <Border x:Name="actionBusyOverlay"
+                    Background="#A0000000"
+                    Visibility="Collapsed">
+                <syncfusion:SfBusyIndicator x:Name="actionBusyIndicator"
+                                           AnimationType="DualRing"
+                                           IsBusy="False"
+                                           Foreground="{DynamicResource AccentColor}"
+                                           Header="Working..."
+                                           ViewboxHeight="100"
+                                           ViewboxWidth="100"/>
+            </Border>
+        </Grid>
 
         <!-- STATUS BAR -->
         <Border Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1"

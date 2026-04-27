@@ -32,7 +32,7 @@ namespace VANTAGE.Dialogs
 
             Clipboard.SetText(sb.ToString());
 
-            MessageBox.Show(
+            AppMessageBox.Show(
                 $"Copied {_records.Count} records to clipboard.",
                 "Copied",
                 MessageBoxButton.OK,

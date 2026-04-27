@@ -48,20 +48,20 @@ namespace VANTAGE.Services.AI
             catch (InvalidOperationException ex)
             {
                 AppLogger.Error(ex, "ProjectRateUploader.UploadAsync.Validate");
-                MessageBox.Show(ex.Message, "Invalid Format", MessageBoxButton.OK, MessageBoxImage.Warning);
+                AppMessageBox.Show(ex.Message, "Invalid Format", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return false;
             }
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "ProjectRateUploader.UploadAsync.Parse");
-                MessageBox.Show($"Error reading file: {ex.Message}", "Read Error",
+                AppMessageBox.Show($"Error reading file: {ex.Message}", "Read Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
                 return false;
             }
 
             if (parsed.Count == 0)
             {
-                MessageBox.Show("No valid data rows found in the file.", "Empty File",
+                AppMessageBox.Show("No valid data rows found in the file.", "Empty File",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return false;
             }
@@ -78,7 +78,7 @@ namespace VANTAGE.Services.AI
             AppLogger.Info($"Project='{projectId}', SetName='{setName}'", "ProjectRateUploader.UploadAsync");
 
             // Step 4: Confirm and upload
-            var confirm = MessageBox.Show(
+            var confirm = AppMessageBox.Show(
                 $"Upload {parsed.Count} rate(s) as '{setName}' for project '{projectId}'?\n\nIf a set with this name already exists for this project, it will be replaced.",
                 "Confirm Upload", MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (confirm != MessageBoxResult.Yes)
@@ -93,7 +93,7 @@ namespace VANTAGE.Services.AI
                 AppLogger.Info($"Starting import of {parsed.Count} rates...", "ProjectRateUploader.UploadAsync");
                 await ProjectRateRepository.ImportProjectRatesAsync(projectId, setName, parsed, username);
 
-                MessageBox.Show($"Uploaded {parsed.Count} rate(s) as '{setName}' for project '{projectId}'.",
+                AppMessageBox.Show($"Uploaded {parsed.Count} rate(s) as '{setName}' for project '{projectId}'.",
                     "Upload Complete", MessageBoxButton.OK, MessageBoxImage.Information);
                 AppLogger.Info($"Uploaded {parsed.Count} project rate(s) '{setName}' for '{projectId}'",
                     "ProjectRateUploader.UploadAsync", username);
@@ -102,7 +102,7 @@ namespace VANTAGE.Services.AI
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "ProjectRateUploader.UploadAsync.Import");
-                MessageBox.Show($"Upload error: {ex.Message}", "Upload Error",
+                AppMessageBox.Show($"Upload error: {ex.Message}", "Upload Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
                 return false;
             }
@@ -294,13 +294,13 @@ namespace VANTAGE.Services.AI
             {
                 if (cboProject.SelectedItem == null)
                 {
-                    MessageBox.Show("Select a Project ID.", "Missing Field",
+                    AppMessageBox.Show("Select a Project ID.", "Missing Field",
                         MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
                 if (string.IsNullOrWhiteSpace(txtSetName.Text))
                 {
-                    MessageBox.Show("Rate Set Name is required.", "Missing Field",
+                    AppMessageBox.Show("Rate Set Name is required.", "Missing Field",
                         MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }

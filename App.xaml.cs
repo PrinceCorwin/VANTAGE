@@ -105,7 +105,7 @@ namespace VANTAGE
                 {
                     _splashWindow?.Close();
 
-                    var result = MessageBox.Show(
+                    var result = AppMessageBox.Show(
                         $"Database migration failed during upgrade to version {ex.FailedVersion}.\n\n" +
                         $"Error: {ex.InnerException?.Message}\n\n" +
                         "Options:\n" +
@@ -209,7 +209,7 @@ namespace VANTAGE
                     catch (Exception mirrorEx)
                     {
                         AppLogger.Error(mirrorEx, "App.OnStartup - MirrorTablesFromAzure");
-                        MessageBox.Show(
+                        AppMessageBox.Show(
                             $"Failed to sync reference tables from Azure database:\n\n{mirrorEx.Message}\n\n" +
                             "The application will continue, but some data may be outdated.",
                             "Sync Warning",
@@ -244,7 +244,7 @@ namespace VANTAGE
                     _splashWindow.Close();
 
                     // Show access denied with option to request access
-                    var result = MessageBox.Show(
+                    var result = AppMessageBox.Show(
                         $"User '{windowsUsername}' is not authorized to use MILESTONE.\n\n" +
                         "Would you like to submit an access request to the administrators?",
                         "Access Denied",
@@ -326,14 +326,14 @@ namespace VANTAGE
                 catch (Exception mainWindowEx)
                 {
                     _splashWindow?.Close();
-                    MessageBox.Show($"Failed to open main window: {mainWindowEx.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    AppMessageBox.Show($"Failed to open main window: {mainWindowEx.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     throw;
                 }
             }
             catch (Exception ex)
             {
                 _splashWindow?.Close();
-                MessageBox.Show($"Application startup error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                AppMessageBox.Show($"Application startup error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 this.Shutdown();
             }
         }
@@ -379,7 +379,7 @@ namespace VANTAGE
             // Check if Azure is available for sending email
             if (!azureOnline)
             {
-                MessageBox.Show(
+                AppMessageBox.Show(
                     "Cannot submit access request while offline.\n\n" +
                     "Please check your internet connection and try again later, " +
                     "or contact your administrator directly.",
@@ -408,7 +408,7 @@ namespace VANTAGE
 
                 if (sent)
                 {
-                    MessageBox.Show(
+                    AppMessageBox.Show(
                         "Your access request has been sent to the administrators.\n\n" +
                         "You will receive a response at the email address you provided.",
                         "Request Sent",
@@ -417,7 +417,7 @@ namespace VANTAGE
                 }
                 else
                 {
-                    MessageBox.Show(
+                    AppMessageBox.Show(
                         "Failed to send access request.\n\n" +
                         "Please contact your administrator directly.",
                         "Send Failed",
@@ -428,7 +428,7 @@ namespace VANTAGE
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "App.HandleAccessRequestAsync");
-                MessageBox.Show(
+                AppMessageBox.Show(
                     $"Error sending access request:\n\n{ex.Message}\n\n" +
                     "Please contact your administrator directly.",
                     "Error",
