@@ -27,7 +27,7 @@
 ### MCAA Ratesheet Integration (replaces embedded Summit rates)
 - **PRD:** `Plans/MCAA_Ratesheet_Plan.md`. Producer (the Python pipeline that scrapes MCAA WebLEM) lives in an external Synology Drive folder, not in this repo. Consumer is VANTAGE: a new `MCAARateSheetService` sibling to `RateSheetService`, a new MCAA labor creation service for actions/connections, and a local SQLite shipped in AppData. Embedded `Resources/RateSheet.json` stays as a takeoff rate-source option until parity-tested across 5 real projects, then sunsets.
 - **Current phase:** manual abbreviation review on the producer side (~73K of 174K rows still need user-driven `newComp` assignments). VANTAGE-side work (`MCAARateSheetService`, MCAA labor service, xlsx → SQLite exporter) starts when abbreviation review is "done" per user.
-- **Open todos** (mirrored from PRD for visibility): final column-set walkthrough against representative rows, xlsx → SQLite exporter, `MCAARateSheetService`, MCAA labor creation service, parity-test plan against 5 real projects.
+- **Open todos** (mirrored from PRD for visibility): Reducer `body_type` populated on all rows so reducers can be labeled `RED` (concentric/eccentric agnostic) rather than split into `REDCON`/`REDECC`, final column-set walkthrough against representative rows, xlsx → SQLite exporter, `MCAARateSheetService`, MCAA labor creation service, parity-test plan against 5 real projects.
 
 ## Tutorial Videos
 

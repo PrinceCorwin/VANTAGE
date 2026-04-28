@@ -78,11 +78,12 @@ Three vocabulary sources interact:
 
 ## Open todos
 
-1. **Final column-set walkthrough** — when locking the schema for the production SQLite, validate against 10–15 representative rows.
-2. **xlsx → SQLite exporter** — single script, idempotent, produces `weblem_rates.db` from the locked workbook with CHECK constraints on required fields and indexes on `(newComp, material, size_1)` and `(method, leaf_id)`.
-3. **MCAA labor creation service** (VANTAGE-side) — design and build after the SQLite exporter is in place.
-4. **`MCAARateSheetService`** (VANTAGE-side) — sibling to existing `RateSheetService`, queries the local SQLite by facet columns.
-5. **Parity-test plan** — pick 5 real recent projects, re-price under both rate sheets, document divergence cases.
+1. **Reducer `body_type` populated for all rows** (producer-side, during abbreviation review). Ensure every Reducer rate has a `body_type` value so all reducers can be labeled `RED` (concentric/eccentric agnostic) rather than split into `REDCON` (concentric) and `REDECC` (eccentric). Some MCAA rates apply to either type — distinct codes would force false splits where a single rate must serve both shapes.
+2. **Final column-set walkthrough** — when locking the schema for the production SQLite, validate against 10–15 representative rows.
+3. **xlsx → SQLite exporter** — single script, idempotent, produces `weblem_rates.db` from the locked workbook with CHECK constraints on required fields and indexes on `(newComp, material, size_1)` and `(method, leaf_id)`.
+4. **MCAA labor creation service** (VANTAGE-side) — design and build after the SQLite exporter is in place.
+5. **`MCAARateSheetService`** (VANTAGE-side) — sibling to existing `RateSheetService`, queries the local SQLite by facet columns.
+6. **Parity-test plan** — pick 5 real recent projects, re-price under both rate sheets, document divergence cases.
 
 ## Collaboration model
 
