@@ -106,6 +106,24 @@ Rule of thumb for exclusion: if a user can already modify, add, or delete the se
 
 Skip this step if the session only read user settings without adding/removing/renaming/redefaulting keys.
 
+## Step 3.8: Update README.md
+
+- Read the current `README.md`
+- Determine if the session's work changed anything the README claims:
+  - New module / view / dialog of significance, or removal of one
+  - Theme added or removed (theme list and count)
+  - New top-level service folder under `Services/` (Plugins, Procore, etc.)
+  - Module status change (e.g., In Development → Production, or vice versa)
+  - Technology stack change (new SDK, AWS service, integration)
+  - Major feature added/removed within an existing module that contradicts the bullets listed
+- If YES:
+  - Update only the affected section(s) — preserve voice, structure, and ordering
+  - Keep "Current Features" vs "In Development / Planned" buckets honest with the codebase
+  - Update the Module Status table at the bottom when a module's status changes
+  - Update the Project Structure tree only when a top-level folder is added or removed
+- If NO (routine bug fixes, small UX tweaks, internal refactors, doc-only sessions): skip this step
+- Do NOT rewrite untouched sections — bullet edits, not prose rewrites
+
 ## Step 4: Commit and Push
 
 - Run `git add -A` to stage everything

@@ -1,11 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Text.Json;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using ClosedXML.Excel;
@@ -21,11 +18,12 @@ namespace VANTAGE.Views
     {
         private List<string> _selectedFiles = new();
         private List<(string Key, string DisplayName)> _configs = new();
-        private string? _currentBatchId;
-        private string? _currentExecutionArn;
         private TakeoffService? _service;
         private bool _isLoadingConfigs;
-        private CancellationTokenSource? _processCts;
+
+        // Currently-subscribed session (set when this view fires off a batch).
+        // Phase 2 will also subscribe in Loaded for nav-and-return.
+        private TakeoffSession? _subscribedSession;
 
         // Dropdown data for unit rates and ROC sets
         private List<(string ProjectID, string SetName)> _rateSets = new();
@@ -35,12 +33,72 @@ namespace VANTAGE.Views
         {
             InitializeComponent();
             Loaded += TakeoffView_Loaded;
+            Unloaded += TakeoffView_Unloaded;
         }
 
         private async void TakeoffView_Loaded(object sender, RoutedEventArgs e)
         {
             await LoadConfigsAsync();
             await LoadRateOptionsAsync();
+            await RestoreFromSessionIfActive();
+        }
+
+        private void TakeoffView_Unloaded(object sender, RoutedEventArgs e)
+        {
+            // Detach from any in-flight session so its events don't fire on a
+            // detached view. Do NOT cancel or dispose the session — that's
+            // exactly the state the next view instance will restore from.
+            UnsubscribeFromSession();
+        }
+
+        // If a takeoff session is in flight (or recently completed) when this
+        // view is constructed, subscribe and rebuild the UI to reflect that
+        // session's state. Lets a batch survive a tab switch.
+        // If the session completed while the user was on another tab and the
+        // download has not been consumed yet, the SaveFileDialog opens here.
+        private async System.Threading.Tasks.Task RestoreFromSessionIfActive()
+        {
+            var session = App.CurrentTakeoff;
+            if (session == null) return;
+
+            SubscribeToSession(session);
+            SetStatus(session.LastStatus);
+
+            // Restore the file list AND the local _selectedFiles field so a
+            // subsequent Process click sees the same set the session used.
+            // Without this sync, txtFileCount would say "1 file(s) selected"
+            // but BtnProcess_Click's _selectedFiles.Count == 0 check would
+            // reject the click.
+            _selectedFiles = new List<string>(session.SubmittedFiles);
+            txtFileCount.Text = $"{_selectedFiles.Count} file(s) selected";
+            txtFileCount.Opacity = 1.0;
+            chkRevBubbleOnly.IsChecked = session.RevBubbleOnly;
+
+            if (session.IsRunning)
+            {
+                btnProcess.Visibility = Visibility.Collapsed;
+                btnCancel.Visibility = Visibility.Visible;
+                btnCancel.IsEnabled = true;
+                btnSelectFiles.IsEnabled = false;
+                btnPreviousBatches.IsEnabled = false;
+                btnRecalcExcel.IsEnabled = false;
+                return;
+            }
+
+            // Session completed while we were away — auto-open SaveFileDialog.
+            // ClearPendingDownload first so a cancelled dialog doesn't reopen
+            // on the next nav-and-return; user falls back to Previous Batches.
+            if (!string.IsNullOrEmpty(session.PendingDownloadBatchId))
+            {
+                string pendingBatchId = session.PendingDownloadBatchId;
+                int totalSubmitted = session.SubmittedFiles.Count;
+                string elapsed = FormatElapsed(session.Elapsed);
+
+                session.ClearPendingDownload();
+
+                await DownloadBatchExcelAsync(
+                    pendingBatchId, totalSubmitted: totalSubmitted, elapsed: elapsed);
+            }
         }
 
         private async System.Threading.Tasks.Task LoadConfigsAsync()
@@ -62,7 +120,24 @@ namespace VANTAGE.Views
                 }
 
                 if (_configs.Count > 0)
-                    cboConfig.SelectedIndex = 1;
+                {
+                    // Restore last-selected config; fall back to first config if the
+                    // saved key no longer exists (config deleted) or never existed.
+                    string? savedKey = SettingsManager.GetUserSetting("Takeoff.LastConfigKey");
+                    int savedIndex = -1;
+                    if (!string.IsNullOrEmpty(savedKey))
+                    {
+                        for (int i = 0; i < _configs.Count; i++)
+                        {
+                            if (_configs[i].Key == savedKey)
+                            {
+                                savedIndex = i + 1;  // +1 because index 0 is "+ Create New Config..."
+                                break;
+                            }
+                        }
+                    }
+                    cboConfig.SelectedIndex = savedIndex > 0 ? savedIndex : 1;
+                }
 
                 btnEditConfig.IsEnabled = cboConfig.SelectedIndex > 0;
                 SetStatus($"Loaded {_configs.Count} config(s). Select a config and drawing files to begin.");
@@ -105,7 +180,7 @@ namespace VANTAGE.Views
             SetStatus($"Selected {_selectedFiles.Count} drawing(s):\n    {fileList}");
         }
 
-        private async void BtnProcess_Click(object sender, RoutedEventArgs e)
+        private void BtnProcess_Click(object sender, RoutedEventArgs e)
         {
             int configIndex = cboConfig.SelectedIndex - 1;
             if (configIndex < 0 || configIndex >= _configs.Count)
@@ -123,6 +198,7 @@ namespace VANTAGE.Views
             }
 
             string configKey = _configs[configIndex].Key;
+            string configName = _configs[configIndex].DisplayName;
             string timestamp = DateTime.UtcNow.ToString("yyyyMMdd-HHmmss");
             string? customName = txtBatchName.Text?.Trim();
 
@@ -136,170 +212,102 @@ namespace VANTAGE.Views
                 return;
             }
 
-            if (string.IsNullOrEmpty(customName))
-                _currentBatchId = $"AwsDwgTakeoff-{timestamp}";
-            else
-                _currentBatchId = $"{customName}-{timestamp}";
+            string batchId = string.IsNullOrEmpty(customName)
+                ? $"AwsDwgTakeoff-{timestamp}"
+                : $"{customName}-{timestamp}";
 
-            // Set up cancellation and UI state
-            _processCts?.Dispose();
-            _processCts = new CancellationTokenSource();
-            var token = _processCts.Token;
+            bool revBubbleOnly = chkRevBubbleOnly.IsChecked == true;
 
+            var session = new TakeoffSession(
+                batchId, configKey, configName,
+                _selectedFiles.ToList(), revBubbleOnly);
+
+            SubscribeToSession(session);
+            App.SetCurrentTakeoff(session);
+
+            // UI state for in-progress run
             btnProcess.Visibility = Visibility.Collapsed;
             btnCancel.Visibility = Visibility.Visible;
             btnSelectFiles.IsEnabled = false;
 
-            List<string>? drawingKeys = null;
+            // Fire-and-forget; the session raises events the view subscribes to.
+            _ = session.RunAsync();
+        }
+
+        private void SubscribeToSession(TakeoffSession session)
+        {
+            UnsubscribeFromSession();
+            _subscribedSession = session;
+            session.StatusChanged += OnSessionStatusChanged;
+            session.RunningChanged += OnSessionRunningChanged;
+            session.Completed += OnSessionCompleted;
+        }
+
+        private void UnsubscribeFromSession()
+        {
+            if (_subscribedSession == null) return;
+            _subscribedSession.StatusChanged -= OnSessionStatusChanged;
+            _subscribedSession.RunningChanged -= OnSessionRunningChanged;
+            _subscribedSession.Completed -= OnSessionCompleted;
+            _subscribedSession = null;
+        }
+
+        private void OnSessionStatusChanged(object? sender, EventArgs e)
+        {
+            if (sender is TakeoffSession s)
+                SetStatus(s.LastStatus);
+        }
+
+        private void OnSessionRunningChanged(object? sender, EventArgs e)
+        {
+            // Disable Previous Batches + Recalc Excel while a takeoff is in
+            // flight (each spawns its own TakeoffService, but greying out
+            // avoids the user kicking off competing S3/Bedrock work mid-batch).
+            // Re-enabled when the session ends — fires from the same finally
+            // block in TakeoffSession.RunAsync that flips IsRunning to false.
+            if (sender is TakeoffSession s)
+            {
+                btnPreviousBatches.IsEnabled = !s.IsRunning;
+                btnRecalcExcel.IsEnabled = !s.IsRunning;
+            }
+        }
+
+        private async void OnSessionCompleted(object? sender, EventArgs e)
+        {
+            if (sender is not TakeoffSession s) return;
 
             try
             {
-                _service?.Dispose();
-                _service = new TakeoffService();
-
-                // Upload drawings to config-based prefix (overwrites existing)
-                string drawingPrefix = TakeoffService.GetDrawingPrefix(configKey);
-                SetStatus($"Uploading {_selectedFiles.Count} drawing(s) to S3...");
-                var progress = new Progress<(int current, int total)>(p =>
+                if (s.CompletedSuccessfully && !string.IsNullOrEmpty(s.PendingDownloadBatchId))
                 {
-                    SetStatus($"Uploading drawing {p.current} of {p.total}...");
-                });
+                    string pendingBatchId = s.PendingDownloadBatchId;
+                    int totalSubmitted = s.SubmittedFiles.Count;
+                    string elapsed = FormatElapsed(s.Elapsed);
 
-                drawingKeys = await _service.UploadDrawingsAsync(
-                    drawingPrefix, _selectedFiles, progress, token);
+                    SetStatus($"Completed in {elapsed} — downloading results...");
+                    s.ClearPendingDownload();
 
-                token.ThrowIfCancellationRequested();
-
-                // Write metadata for Previous Batches listing
-                string username = App.CurrentUser?.Username ?? "Unknown";
-                string configName = _configs[configIndex].DisplayName;
-                await _service.WriteMetadataAsync(_currentBatchId, _selectedFiles.Count, username, configName, _currentBatchId, token);
-
-                // Start execution
-                SetStatus("Starting AI extraction...");
-                bool revBubbleOnly = chkRevBubbleOnly.IsChecked == true;
-                _currentExecutionArn = await _service.StartBatchAsync(
-                    _currentBatchId, configKey, drawingKeys, revBubbleOnly, token);
-
-                // Poll until done
-                SetStatus("Processing — polling for completion...");
-                var stopwatch = Stopwatch.StartNew();
-
-                while (true)
-                {
-                    await System.Threading.Tasks.Task.Delay(3000, token);
-
-                    var (status, output) = await _service.PollExecutionAsync(_currentExecutionArn, token);
-                    string elapsed = FormatElapsed(stopwatch.Elapsed);
-
-                    SetStatus($"Status: {status}  ({elapsed} elapsed, {_selectedFiles.Count} drawing(s))");
-
-                    if (status == "RUNNING")
-                        continue;
-
-                    stopwatch.Stop();
-
-                    if (status == "SUCCEEDED")
-                    {
-                        // Step Functions output only carries status/batch_id/excel_path (no counts).
-                        // The Failed DWGs tab in the batch Excel is authoritative — counts come from it
-                        // after download. Here we only check whether the aggregation Lambda itself failed.
-                        bool appFailed = false;
-                        if (!string.IsNullOrEmpty(output))
-                        {
-                            try
-                            {
-                                using var check = JsonDocument.Parse(output);
-                                if (check.RootElement.TryGetProperty("status", out var appStatus)
-                                    && appStatus.GetString()?.Equals("failed", StringComparison.OrdinalIgnoreCase) == true)
-                                    appFailed = true;
-                            }
-                            catch { /* parse error — show download anyway */ }
-                        }
-
-                        if (appFailed)
-                        {
-                            SetStatus($"Processing failed — {_selectedFiles.Count} drawing(s) in {elapsed}. No Excel output generated.");
-                        }
-                        else
-                        {
-                            SetStatus($"Completed in {elapsed} — downloading results...");
-                            await DownloadBatchExcelAsync(_currentBatchId, totalSubmitted: _selectedFiles.Count, elapsed: elapsed);
-                        }
-                    }
-                    else
-                    {
-                        SetStatus($"Execution {status} after {elapsed}");
-                    }
-
-                    // Clean up uploaded drawings from S3
-                    CleanupDrawings(drawingKeys);
-                    break;
+                    await DownloadBatchExcelAsync(pendingBatchId, totalSubmitted: totalSubmitted, elapsed: elapsed);
                 }
-            }
-            catch (OperationCanceledException)
-            {
-                SetStatus("Processing cancelled by user.");
-                AppLogger.Info("Batch processing cancelled by user", "TakeoffView.BtnProcess_Click");
-
-                // Clean up uploaded drawings if cancellation occurred after upload
-                if (drawingKeys != null)
-                    CleanupDrawings(drawingKeys);
-            }
-            catch (Exception ex)
-            {
-                AppLogger.Error(ex, "TakeoffView.BtnProcess_Click");
-                SetStatus($"Error: {ex.Message}");
             }
             finally
             {
-                _currentExecutionArn = null;
                 btnProcess.Visibility = Visibility.Visible;
                 btnCancel.Visibility = Visibility.Collapsed;
                 btnCancel.IsEnabled = true;
                 btnSelectFiles.IsEnabled = true;
+
+                UnsubscribeFromSession();
             }
         }
 
-        // Clean up uploaded drawings from S3 (fire-and-forget helper)
-        private async void CleanupDrawings(List<string> drawingKeys)
-        {
-            if (_service == null || drawingKeys.Count == 0) return;
-
-            try
-            {
-                await _service.DeleteDrawingsAsync(drawingKeys);
-                AppLogger.Info($"Cleaned up {drawingKeys.Count} drawing(s) from S3", "TakeoffView.CleanupDrawings");
-            }
-            catch (Exception ex)
-            {
-                AppLogger.Error(ex, "TakeoffView.CleanupDrawings");
-            }
-        }
-
-        // Cancel button handler - stops the Step Functions execution and cancels local polling
         private async void BtnCancel_Click(object sender, RoutedEventArgs e)
         {
-            if (_processCts == null || _processCts.IsCancellationRequested) return;
+            var session = App.CurrentTakeoff;
+            if (session == null || !session.IsRunning) return;
 
             btnCancel.IsEnabled = false;
-            SetStatus("Cancelling...");
-
-            // Stop the Step Functions execution if running
-            if (_service != null && !string.IsNullOrEmpty(_currentExecutionArn))
-            {
-                try
-                {
-                    await _service.StopExecutionAsync(_currentExecutionArn, "User cancelled batch");
-                }
-                catch (Exception ex)
-                {
-                    AppLogger.Error(ex, "TakeoffView.BtnCancel_Click.StopExecution");
-                }
-            }
-
-            // Cancel the local polling loop
-            _processCts.Cancel();
+            await session.CancelAsync();
         }
 
         // Download batch Excel, run post-processor, and open the file.
@@ -437,6 +445,14 @@ namespace VANTAGE.Views
 
             // Enable Edit button only when a real config is selected
             btnEditConfig.IsEnabled = cboConfig.SelectedIndex > 0;
+
+            // Persist last-selected config across tab navigations and sessions
+            int configIdx = cboConfig.SelectedIndex - 1;
+            if (configIdx >= 0 && configIdx < _configs.Count)
+            {
+                SettingsManager.SetUserSetting(
+                    "Takeoff.LastConfigKey", _configs[configIdx].Key, "string");
+            }
         }
 
         private void BtnEditConfig_Click(object sender, RoutedEventArgs e)

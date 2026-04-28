@@ -176,6 +176,26 @@ Permanent record of architectural choices, design rationale, and implementation 
 **Why:** The Flagged tab's purpose is to surface the rows that need human review — it's a worklist, not an editor. The override columns were decorative only (full repo grep found zero C# consumers; if a reviewer filled them in, nothing happened). Wiring them up would duplicate editing functionality that already exists on the Material tab — users correct values there directly, the Material tab is the single source of truth for BOM data, and any "Recalc Excel" pass regenerates the Labor and Summary tabs from whatever is on Material. Keeping Flagged minimal prevents drift between the two tabs and communicates clearly which tab is authoritative.
 **Date:** April 2026
 
+### Takeoff Lifecycle Lives in App-Level `TakeoffSession`, Not the View
+**Decision:** The upload → start → poll lifecycle of an AI Takeoff batch is owned by `Services/AI/TakeoffSession.cs` held at `App.CurrentTakeoff` (mirroring the `App.CurrentUser` pattern), not by `TakeoffView.xaml.cs`. The view becomes a thin subscriber that rebuilds itself from session state on `Loaded` and unsubscribes on `Unloaded`. The session also owns its own `TakeoffService`, `CancellationTokenSource`, and any future timer.
+**Why:** `MainWindow.BtnTakeoff_Click` destroys and recreates the `TakeoffView` instance on every navigation. Before this lift, switching to Schedule mid-batch orphaned the view but left its async state machine running invisibly — the polling loop kept writing to a `txtStatus` the user could no longer see, and a deferred `SaveFileDialog` could pop from a detached view. Hoisting state above the view lifecycle lets the user navigate freely while a takeoff is in flight; the next view instance restores the in-progress UI and picks up event subscriptions where the previous one left off.
+**Date:** April 2026
+
+### Sticky "Takeoff: Complete" Bottom-Bar Indicator; Cancellation Does Not Set It
+**Decision:** `App.HasCompletedTakeoffSinceStartup` is set the first time a takeoff session raises `Completed` with `CompletedSuccessfully == true`. It stays set until the next batch starts (flips to Running) or the app closes. Cancelled or failed batches do not set the flag — they leave the bottom bar at "Not Running."
+**Why:** The bottom-bar indicator is a quiet acknowledgment that a takeoff actually happened in this app session. After the user has saved the Excel and moved on to other work, glancing at the bar should confirm "yes, you ran a batch." A cancelled batch is not a completion in any meaningful sense; reusing the Complete state for it would dilute the signal and could mask user mistakes (cancel-by-accident on a long batch, then walk away thinking it succeeded). Per-app-session lifetime (not persisted to disk) keeps the indicator scoped to "what you did right now."
+**Date:** April 2026
+
+### Auto-Open SaveFileDialog on Return; Cancelled Dialog Does Not Reopen
+**Decision:** When a takeoff completes successfully while the user is on another tab, `TakeoffSession.PendingDownloadBatchId` is set. On returning to the Takeoffs tab, `RestoreFromSessionIfActive` calls `ClearPendingDownload()` first and then opens the SaveFileDialog. Whether the user saves or cancels, the flag is already cleared — a subsequent nav-and-return will not re-pop the dialog. Recovery from a cancelled save is via the Previous Batches button.
+**Why:** The user explicitly asked for a frictionless on-return experience: dialog opens directly, no inline confirm. Re-popping the dialog on every navigation would punish the user for cancelling once. Clearing before the await also defends against a SaveFileDialog crash leaving the flag set indefinitely. Previous Batches is already the documented recovery path for downloading a completed batch you didn't save the first time, so leaning on it for the cancel-on-return case avoids a parallel flow.
+**Date:** April 2026
+
+### Persist Last Config by Key, Not Index; Don't Persist Rates / Bubble / Send-Missed
+**Decision:** `Takeoff.LastConfigKey` UserSetting persists the last-selected config across tab navigations and app sessions. Lookup is by `_configs[i].Key` so dropdown order changes don't break the restore; if the saved key no longer exists (config deleted), fall back to the first available config. The Unit Rates dropdown, Rev Bubble Items Only checkbox, and Send Missed Makeups to Admin checkbox are intentionally NOT persisted — they always default to "Default (Embedded)" / unchecked / unchecked.
+**Why:** Config selection is high-friction to re-pick from a dropdown each session and almost always the same one. Index-based persistence breaks the moment a user adds, deletes, or renames a config; key-based persistence survives. The other three controls are deliberately friction by design — Unit Rates and the two checkboxes change the meaning of the resulting Excel (project-specific rates, scope of extraction, who gets emailed), and the user wants to make a fresh decision each session rather than have a stale opt-in survive a restart.
+**Date:** April 2026
+
 ---
 
 ## VP vs Vtg Report

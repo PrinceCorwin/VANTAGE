@@ -30,6 +30,9 @@ namespace VANTAGE
         private Dialogs.ManageSnapshotsDialog? _manageSnapshotsDialog;
         private Dialogs.AdminSnapshotsDialog? _adminSnapshotsDialog;
 
+        // Currently-watched takeoff session for the bottom-bar status label.
+        private TakeoffSession? _watchedTakeoffSession;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -41,6 +44,11 @@ namespace VANTAGE
             LoadInitialModule();
 
             UpdateStatusBar();
+
+            // Bottom-bar Takeoff: Not Running / Running / Complete indicator.
+            App.CurrentTakeoffChanged += OnCurrentTakeoffChanged;
+            WatchTakeoffSession(App.CurrentTakeoff);
+            RefreshTakeoffStatusLabel();
 
             this.Loaded += (s, e) =>
             {
@@ -57,6 +65,65 @@ namespace VANTAGE
 
             // Re-apply nav button colors when theme changes
             ThemeManager.ThemeChanged += OnThemeChanged;
+        }
+
+        // App.CurrentTakeoff was replaced (or set to null) — rewire local
+        // event handlers and refresh the bottom-bar label.
+        private void OnCurrentTakeoffChanged(object? sender, EventArgs e)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                WatchTakeoffSession(App.CurrentTakeoff);
+                RefreshTakeoffStatusLabel();
+            });
+        }
+
+        // Detach from any previously-watched session and attach to the new one.
+        private void WatchTakeoffSession(TakeoffSession? session)
+        {
+            if (_watchedTakeoffSession != null)
+            {
+                _watchedTakeoffSession.RunningChanged -= OnTakeoffRunningOrCompleted;
+                _watchedTakeoffSession.Completed -= OnTakeoffRunningOrCompleted;
+            }
+
+            _watchedTakeoffSession = session;
+
+            if (session != null)
+            {
+                session.RunningChanged += OnTakeoffRunningOrCompleted;
+                session.Completed += OnTakeoffRunningOrCompleted;
+            }
+        }
+
+        private void OnTakeoffRunningOrCompleted(object? sender, EventArgs e)
+        {
+            Dispatcher.Invoke(RefreshTakeoffStatusLabel);
+        }
+
+        // Update the bottom-bar Takeoff label text + color.
+        // Running color tracks SummaryEarnedForeground (green Earned-MHs in
+        // Project Summary) so theme changes flow through automatically.
+        private void RefreshTakeoffStatusLabel()
+        {
+            if (txtTakeoffStatus == null) return;
+
+            var session = App.CurrentTakeoff;
+            if (session != null && session.IsRunning)
+            {
+                txtTakeoffStatus.Text = "Takeoff: Running";
+                txtTakeoffStatus.SetResourceReference(ForegroundProperty, "SummaryEarnedForeground");
+            }
+            else if (App.HasCompletedTakeoffSinceStartup)
+            {
+                txtTakeoffStatus.Text = "Takeoff: Complete";
+                txtTakeoffStatus.SetResourceReference(ForegroundProperty, "StatusBarForeground");
+            }
+            else
+            {
+                txtTakeoffStatus.Text = "Takeoff: Not Running";
+                txtTakeoffStatus.SetResourceReference(ForegroundProperty, "StatusBarForeground");
+            }
         }
 
         private void OnThemeChanged(string themeName)
@@ -259,12 +326,13 @@ namespace VANTAGE
 
         private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
         {
-            // Warn if a long-running operation (Submit Week, snapshot delete, etc.)
-            // is still finishing — killing the process mid-op can leave local DB state inconsistent.
+            // Warn if a long-running operation (Submit Week, snapshot delete,
+            // AI Takeoff, etc.) is still finishing — killing the process mid-op
+            // can leave local DB state inconsistent.
             if (LongRunningOps.IsRunning)
             {
                 var result = AppMessageBox.Show(
-                    "An operation is still finishing (Submit Week or snapshot delete).\n\n" +
+                    "An operation is still finishing.\n\n" +
                     "Closing now may leave your local data in an inconsistent state.\n\n" +
                     "Quit anyway?",
                     "Operation In Progress",

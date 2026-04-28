@@ -174,6 +174,7 @@ namespace VANTAGE.Utilities
         //   GridLayouts.ActiveLayout       — Grid Layouts dialog
         //   ImportProfiles.Index           — Import from AI Takeoff dialog
         //   ImportProfile.{name}           — Import from AI Takeoff dialog
+        //   Takeoff.LastConfigKey          — config dropdown in the AI Takeoff view
         //   UserFilters.Progress           — Manage Filters dialog
         //   AnalysisFilter_*  (12 keys)    — Reset button on Analysis chart filters panel
         //   Schedule.UDFMappings           — Schedule UDF Column Mappings dialog

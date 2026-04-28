@@ -473,6 +473,7 @@
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
                 <TextBlock Grid.Column="0"
@@ -493,6 +494,15 @@
                    Margin="0,0,20,0"/>
 
                 <TextBlock Grid.Column="3"
+                   x:Name="txtTakeoffStatus"
+                   Text="Takeoff: Not Running"
+                   Foreground="{DynamicResource StatusBarForeground}"
+                   FontSize="11"
+                   VerticalAlignment="Center"
+                   Margin="0,0,20,0"
+                   ToolTip="AI Takeoff session state — visible from any tab"/>
+
+                <TextBlock Grid.Column="4"
                    x:Name="txtLastSyncsd"
                    Text="Last Sync: Never"
                    Foreground="{DynamicResource StatusBarForeground}"

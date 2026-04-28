@@ -2,14 +2,14 @@
 
 Construction progress tracking and project management application built with WPF and .NET 8. Designed for field engineers and project managers in industrial construction (pharmaceutical, microchip, data center facilities). Replaces the legacy MS Access/VBA system (OldVantage) used by Summit Industrial.
 
-VANTAGE: Milestone provides activity tracking, P6 Primavera schedule integration, AI-powered progress scanning, PDF work package generation, and multi-user cloud synchronization.
+VANTAGE: Milestone provides activity tracking, P6 Primavera schedule integration, AI-powered drawing takeoff, AI-assisted progress scanning, PDF work package generation, a plugin extensibility model, and multi-user cloud synchronization.
 
 ---
 
 ## Current Features
 
 ### Progress Tracking Module
-- Activity monitoring with Syncfusion SfDataGrid (90+ columns, 200k+ record virtualization)
+- Activity monitoring with Syncfusion SfDataGrid (90+ columns, designed for 100k+ row datasets)
 - Earned value management with automatic calculations (EarnMHs, PercentComplete, EarnedQty)
 - Bidirectional updates between percent complete and earned quantities
 - User-defined multi-condition filters (AND/OR logic) with saved presets
@@ -19,17 +19,39 @@ VANTAGE: Milestone provides activity tracking, P6 Primavera schedule integration
 - Prorate BudgetMHs across filtered activities with proportional distribution
 - Activity assignment with email notifications via Azure Communication Services
 - DIY summary panel with weighted progress calculations
+- Row Actions sidebar dropdown (Select All, Delete, Copy, Duplicate, Add Blank Row, Export Selected) preserving multi-row selection
 
 ### Schedule Module
 - **P6 Primavera Integration:** Import current schedule dates, export 3WLA updates
 - **Discrepancy Detection:** Filter by % Complete, 3WLA Finish, 3WLA Start, Actual Finish, Actual Start, or MHs variances between P6 and VANTAGE
 - **MS Rollups:** Automatic MIN(start), MAX(finish), weighted % average from detail ProgressSnapshots
 - **Three-Week Lookahead (3WLA):** Forecast dates for activities starting/finishing within 21 days
-- **3WLA Excel Report:** Export with mismatch highlighting (Actuals, MHs, % Complete, date changes)
+- **Schedule Reports (3WLA / 6WLA / 9WLA):** Excel export with mismatch highlighting and AssignedTo audit column
 - **Required Fields Tracking:** Count and filter for missing MissedReasons and 3WLA dates
 - **Visual Variance Highlighting:** Red/yellow conditional formatting for missed deadlines and variances
 - Master/detail grid layout with editable detail ProgressSnapshots
 - Schedule Change Log for tracking detail grid edits
+
+### AI Takeoff Module
+- AI-powered piping takeoff extraction from PDF/image drawing sets (Claude Sonnet 4.6 via AWS Bedrock)
+- Lambda-based parallel drawing processing with S3-backed batch storage and per-batch download
+- BOM extraction, connection inference, and dual-size component matching (TEE, REDT, REDC, SWG, etc.)
+- Automatic labor row generation with rate-sheet lookup (size + thickness + class fallback chain)
+- Per-project rate overrides with `Manage Project Rates` dialog and Excel upload
+- ROC (Rule of Credit) splits via `Manage ROC Rates` dialog with applicable-component checklist
+- Fitting makeup lookup with olet support and equivalence mappings
+- Field/Shop classification (ShopField post-processing) with mixed-connection-type rules
+- Audit columns (RateSheet, RollupMult, MatlMult, CutAdd, BevelAdd) for user verification
+- Diagnostic worksheets (Missed Makeups, Missed Rates, No Conns, Malformed Sizes, Failed DWGs) with reason classification
+- Recalc Excel and re-download support that preserves diagnostic tabs
+
+### AI Progress Scan
+- AWS Textract-based table extraction from scanned progress sheets
+- High accuracy on both PDF and JPEG scans
+- Simplified scan layout: ID first, single % ENTRY column at far right
+- Image preprocessing with adjustable contrast (slider, default 1.2)
+- OCR heuristic: "00" auto-converts to "100" for missed leading digits
+- Results grid with filtering, Select All / Select Ready / Clear buttons
 
 ### Progress Books
 - Custom PDF report generation from ProgressSnapshot data
@@ -37,14 +59,6 @@ VANTAGE: Milestone provides activity tracking, P6 Primavera schedule integration
 - Auto-fit column widths, description wrapping, project description in header
 - Exclude completed activities option
 - Live preview during configuration
-
-### AI Progress Scan
-- AWS Textract-based table extraction from scanned progress sheets
-- 100% accuracy on both PDF and JPEG scans
-- Simplified scan layout: ID first, single % ENTRY column at far right
-- Image preprocessing with adjustable contrast (slider, default 1.2)
-- OCR heuristic: "00" auto-converts to "100" for missed leading digits
-- Results grid with filtering, Select All/Select Ready/Clear buttons
 
 ### Work Package Module
 - PDF generation for construction work packages
@@ -56,33 +70,41 @@ VANTAGE: Milestone provides activity tracking, P6 Primavera schedule integration
 - Live PDF preview panel
 - Drawings deferred to post-V1 (per-WP location architecture needs design)
 
+### Plugin System
+- In-app `Plugin Manager` dialog for installing, updating, and removing optional plugins
+- Catalog-driven plugin feed with auto-update support
+- `IVantagePlugin` / `IPluginHost` contract for third-party or internal extensions
+- Plugin manifest with version, dependency, and signature metadata
+
 ### Synchronization
 - **Hybrid Architecture:** Local SQLite for offline work + Azure SQL Server as central authority
 - **SyncVersion-Based Tracking:** Monotonic integers, no clock drift issues
 - **Conflict Resolution:** Ownership-based editing, Azure always wins
-- **Performance:** 5k records sync in ~6 seconds via SqlBulkCopy
+- **Performance:** SqlBulkCopy on push, prepared statements on pull (5k records ~6 seconds)
 - Soft delete propagation with restore capability
 - My Records Only mode (toggle on/off, full re-pull on disable)
 
 ### Administration
 - Windows authentication integration
-- Role-based access control with admin privileges (Azure Admins table)
-- Manage Users, Projects, Snapshots, Deleted Records dialogs
+- Role-based access control with admin privileges (Azure `Admins` table)
+- Manage Users, Projects, Snapshots, Project Rates, ROC Rates dialogs
 - Snapshot management: delete multiple weeks, revert with/without backup, grouped by Project + WeekEnd + Submission
-- Feedback Board with Ideas/Bug Reports and admin moderation
+- Admin snapshot ops: delete all, upload to ProgressLog
+- Deleted Records view with bulk Restore / Purge
+- Feedback Board with Ideas / Bug Reports and admin moderation
 - Activity Import with auto-detection of Legacy/Milestone format
+- Submit Week metadata gate (blocks submission when required fields are missing on the selected project)
 
 ### Help Sidebar
 - Integrated help panel accessible via F1 or Settings menu
 - WebView2 rendering with virtual host mapping
-- 8 sections: Getting Started, Main Interface, Progress, Schedule, Progress Books, Work Packages, Administration, Reference
-- 20 screenshots with context-specific navigation
+- Context-specific navigation with screenshots throughout
 
 ### Multi-Theme System
-- Three themes: Dark (default), Light, Orchid
-- Live switching without restart via ThemeManager
-- Syncfusion SfSkinManager integration across all dialogs/views
-- Architecture supports adding new themes (see Themes/THEME_GUIDE.md)
+- Four themes: Dark (default), Light, Orchid, Dark Forest
+- Live switching without restart via `ThemeManager`
+- Syncfusion `SfSkinManager` integration across all dialogs/views
+- Architecture supports adding new themes (see `Themes/THEME_GUIDE.md`)
 
 ### Tools & Utilities
 - Export logs with optional email attachment
@@ -93,7 +115,19 @@ VANTAGE: Milestone provides activity tracking, P6 Primavera schedule integration
 
 ---
 
-## Planned Features
+## In Development / Planned
+
+### Analysis Module (In Progress)
+- 3x1+3 grid layout with chart filters panel and persistent filter state
+- Dynamic chart sections with selectable visual type, X axis, Y axis
+- Pie / doughnut labels and legends
+- Summary grid with independent filters
+- Excel export
+
+### Procore Integration (In Development)
+- OAuth 2.0 authentication with token management (auth dialog and services in place)
+- Production and sandbox environment support
+- Targeted use: fetch construction drawings for the Work Package DWG Log
 
 ### AI Features (Post-V1)
 | Feature | Purpose |
@@ -105,16 +139,8 @@ VANTAGE: Milestone provides activity tracking, P6 Primavera schedule integration
 | **AI Schedule Analysis** | Flag relationship violations, sequence errors, progress anomalies |
 | **AI Sidebar Chat** | Conversational interface with tool-based data access |
 
-### Procore Integration (Post-V1)
-- OAuth 2.0 authentication with token management
-- Fetch construction drawings for Work Package DWG Log
-- Production and sandbox environment support
-
-### Dashboard Module (Post-V1)
-- Column/stacked charts for activity completion trends
-- S-curve for planned vs actual progress
-- Pie/doughnut charts for distribution by WorkPackage, PhaseCode, RespParty
-- Radial gauge for overall project % complete
+### Mobile / iOS (Post-V1)
+- iPad app for field supervisors to submit progress; architecture TBD (native iOS, cross-platform, or web)
 
 ---
 
@@ -124,15 +150,17 @@ VANTAGE: Milestone provides activity tracking, P6 Primavera schedule integration
 |-----------|------------|
 | **Framework** | .NET 8.0 (Windows) |
 | **UI** | WPF with Syncfusion |
-| **Themes** | FluentDark, FluentLight (Dark, Light, Orchid) |
+| **Themes** | FluentDark / FluentLight base (Dark, Light, Orchid, Dark Forest) |
 | **Local Database** | SQLite |
 | **Cloud Database** | Azure SQL Server |
 | **Architecture** | MVVM with async/await |
 | **Excel** | ClosedXML |
 | **PDF** | Syncfusion.Pdf |
-| **AI/OCR** | AWS Textract |
+| **AI — Takeoff** | AWS Bedrock (Claude Sonnet 4.6) + AWS Lambda + S3 |
+| **AI — Progress Scan** | AWS Textract |
 | **Email** | Azure Communication Services |
 | **Help** | WebView2 |
+| **Plugins** | In-process `IVantagePlugin` contract with catalog feed |
 
 ---
 
@@ -145,7 +173,7 @@ VANTAGE: Milestone provides activity tracking, P6 Primavera schedule integration
 ### For Development
 - Visual Studio 2022
 - Syncfusion License (community or commercial)
-- AWS credentials (for AI Progress Scan)
+- AWS credentials (for AI Progress Scan and AI Takeoff)
 
 ---
 
@@ -168,25 +196,33 @@ VANTAGE: Milestone provides activity tracking, P6 Primavera schedule integration
 
 ```
 VANTAGE/
+├── Assets/               # Images, icons, sidebar artwork
+├── Converters/           # WPF value converters
 ├── Data/                 # Repositories and database access
 │   ├── ActivityRepository.cs
 │   ├── ScheduleRepository.cs
 │   ├── TemplateRepository.cs
 │   └── AzureDbManager.cs
-├── Dialogs/              # Modal dialogs (20+)
+├── Diagnostics/          # Logging, error capture
+├── Dialogs/              # Modal dialogs (90+)
 ├── Help/                 # manual.html + screenshots
-├── Models/               # Data models
-├── Plans/                # Development documentation
+├── Models/               # Data models (Activity, Schedule, Plugin manifests, etc.)
+├── Plans/                # Development documentation, PRDs, archives
+├── Resources/            # Shared XAML resources
+├── Scripts/              # Build/publish/utility scripts
 ├── Services/
-│   ├── AI/              # TextractService, ProgressScanService
-│   ├── ProgressBook/    # Progress Book PDF generation
-│   └── PdfRenderers/    # Work Package PDF renderers
-├── Themes/              # DarkTheme.xaml, LightTheme.xaml, OrchidTheme.xaml
-├── Utilities/           # Helpers, exporters, importers
-├── ViewModels/          # MVVM view models
-├── Views/               # Main module views
-├── VANTAGE.Installer/   # Branded installer
-└── VANTAGE.Updater/     # Auto-update mechanism
+│   ├── AI/               # TextractService, ProgressScanService, TakeoffService, RateSheetService, FittingMakeupService
+│   ├── PdfRenderers/     # Work Package PDF renderers
+│   ├── Plugins/          # Plugin loader, catalog, install, auto-update
+│   ├── Procore/          # Procore API + auth services
+│   └── ProgressBook/     # Progress Book PDF generation
+├── Styles/               # Shared XAML styles
+├── Themes/               # DarkTheme, LightTheme, OrchidTheme, DarkForestTheme
+├── Utilities/            # Helpers, exporters, importers, validators
+├── ViewModels/           # MVVM view models
+├── Views/                # Module views (Progress, Schedule, Takeoff, WorkPackage, ProgressBooks, Analysis, DeletedRecords, SidePanel)
+├── VANTAGE.Installer/    # Branded installer
+└── VANTAGE.Updater/      # Auto-update mechanism
 ```
 
 ---
@@ -195,13 +231,17 @@ VANTAGE/
 
 | Module | Status | Notes |
 |--------|--------|-------|
-| **Progress** | Ready for Testing | Core features complete |
-| **Schedule** | Ready for Testing | P6 import/export, 3WLA, discrepancies |
-| **Sync** | Complete | Bidirectional Azure sync |
-| **Admin** | Complete | Users, projects, snapshots, feedback |
-| **Work Packages** | Ready for Testing | PDF generation; drawings deferred |
-| **Progress Books** | Ready for Testing | Custom PDF reports with layout builder |
-| **AI Progress Scan** | Complete | AWS Textract, 100% accuracy |
-| **Help Sidebar** | Complete | 8-section manual with screenshots |
-| **Themes** | Complete | Dark, Light, Orchid |
-| **Installer/Updater** | Complete | Auto-update validated |
+| **Progress** | Production | Core features complete, in active use |
+| **Schedule** | Production | P6 import/export, 3WLA, discrepancies, change log |
+| **Sync** | Production | Bidirectional Azure sync |
+| **Admin** | Production | Users, projects, snapshots, rates, deleted records, feedback |
+| **Work Packages** | Production | PDF generation; drawings deferred |
+| **Progress Books** | Production | Custom PDF reports with layout builder |
+| **AI Progress Scan** | Production | AWS Textract |
+| **AI Takeoff** | Production | Bedrock + Lambda + S3 pipeline with rate / ROC / makeup post-processing |
+| **Plugins** | Production | Plugin Manager, catalog feed, auto-update |
+| **Help Sidebar** | Production | Multi-section manual with screenshots |
+| **Themes** | Production | Dark, Light, Orchid, Dark Forest |
+| **Installer / Updater** | Production | Auto-update validated |
+| **Analysis** | In Development | Charts, summary grid, Excel export |
+| **Procore** | In Development | OAuth + service layer scaffolded |

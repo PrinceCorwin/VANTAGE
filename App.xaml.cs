@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using VANTAGE.Data;
 using VANTAGE.Dialogs;
 using VANTAGE.Models;
+using VANTAGE.Services.AI;
 using VANTAGE.Services.Plugins;
 using VANTAGE.Utilities;
 using System.IO;
@@ -17,6 +18,40 @@ namespace VANTAGE
         // Current user info (global for app)
         public static User? CurrentUser { get; set; }
         public static int CurrentUserID { get; set; }
+
+        // Active AI Takeoff session (lifted from TakeoffView so the user can
+        // navigate away mid-batch and return to a live view).
+        public static TakeoffSession? CurrentTakeoff { get; private set; }
+
+        // Sticky "any non-cancelled takeoff has finished since startup" flag.
+        // Drives the bottom-bar "Takeoff: Complete" indicator.
+        public static bool HasCompletedTakeoffSinceStartup { get; private set; }
+
+        // Raised whenever CurrentTakeoff is replaced (including set -> null).
+        public static event EventHandler? CurrentTakeoffChanged;
+
+        // Replace the active takeoff session. Wires the new session's Completed
+        // event so HasCompletedTakeoffSinceStartup latches on the first
+        // successfully-finished batch since app launch.
+        public static void SetCurrentTakeoff(TakeoffSession? session)
+        {
+            var previous = CurrentTakeoff;
+            if (previous != null)
+                previous.Completed -= OnTakeoffSessionCompleted;
+
+            CurrentTakeoff = session;
+
+            if (session != null)
+                session.Completed += OnTakeoffSessionCompleted;
+
+            CurrentTakeoffChanged?.Invoke(null, EventArgs.Empty);
+        }
+
+        private static void OnTakeoffSessionCompleted(object? sender, EventArgs e)
+        {
+            if (sender is TakeoffSession s && s.CompletedSuccessfully)
+                HasCompletedTakeoffSinceStartup = true;
+        }
 
         // Loading splash window
         private LoadingSplashWindow? _splashWindow;

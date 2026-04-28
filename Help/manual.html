@@ -565,6 +565,7 @@
     <ul>
         <li><strong>Version</strong> — Current VANTAGE: Milestone version</li>
         <li><strong>User</strong> — Your Windows username</li>
+        <li><strong>Takeoff</strong> — AI Takeoff session state, visible from any tab. <em>Not Running</em> when idle, <em>Running</em> (green) while a batch is in flight, <em>Complete</em> after a successful batch finishes (sticky for the rest of the app session). Cancellation does not set Complete.</li>
         <li><strong>Last Sync</strong> — When you last synced with the central database</li>
     </ul>
 
@@ -2718,6 +2719,12 @@
     </ol>
 
     <p><strong>Cancelling:</strong> While processing, the PROCESS BATCH button changes to a red <strong>CANCEL</strong> button. Click it to abort the current batch. The AWS Step Functions execution will be stopped (any in-flight Lambda invocations will complete, but no further processing occurs). Uploaded drawings are cleaned up from S3.</p>
+
+    <p><strong>Switching tabs during a batch:</strong> A takeoff continues running when you navigate to another tab. The bottom status bar shows <em>Takeoff: Running</em> (green) so you can monitor progress from any module. Returning to the Takeoffs tab restores the in-progress view (status, elapsed time, file count, Cancel button) — nothing is lost. If the batch finishes while you are on another tab, the bottom bar flips to <em>Takeoff: Complete</em> and the Save dialog opens automatically the moment you return to Takeoffs. Cancelling that Save dialog falls back to the <strong>Previous Batches</strong> button as the recovery path.</p>
+
+    <p><strong>Closing the app mid-batch:</strong> If you try to close VANTAGE while a takeoff is in flight, a confirmation prompt appears. Choose <em>No</em> to keep the app open and let the batch finish. Choose <em>Yes</em> to quit anyway — the AWS Step Functions execution continues server-side regardless, and the batch remains recoverable via Previous Batches on the next launch.</p>
+
+    <p><strong>Selected config remembered between sessions:</strong> The Config dropdown remembers the last config you used and re-selects it on next launch (or after switching tabs). If the saved config has been deleted, it falls back to the first available config.</p>
 
     <p><strong>Options (below buttons):</strong></p>
     <ul>

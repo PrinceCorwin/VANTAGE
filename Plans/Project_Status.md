@@ -1,18 +1,18 @@
 # MILESTONE - Project Status
 
-**Last Updated:** April 25, 2026
+**Last Updated:** April 27, 2026
 
 ## Deferred to Post-V1
 | Feature | Reason |
 |---------|--------|
 | Drawings in Work Packages | Per-WP location architecture needs design |
 | AI Features (other than Progress Scan) | Lower priority for V1 |
-| Procore Integration | Can develop while users test |
 
 ## In Progress / Not Started
 | Module | Status | Notes |
 |--------|--------|-------|
 | Analysis | IN PROGRESS | 3x1+3 grid layout, chart filters panel with persistence and Reset button, dynamic chart sections with selectable visual type/X axis/Y axis, pie/doughnut labels and legends, summary grid with independent filters, Excel export |
+| Procore | IN PROGRESS | OAuth + auth dialog + service layer scaffolded; targeted at WP DWG Log fetch |
 | AI Features (other) | NOT STARTED | Error Assistant, Description Analysis, etc. |
 
 ## Active Development
@@ -23,9 +23,6 @@
 
 ### AI Takeoff — Multi-Drawing Documents
 - **TODO:** Support drawing documents (PDFs) that contain multiple drawings per document (multiple pages). Currently each uploaded PDF is treated as a single drawing. Need to handle cases where one PDF contains several pages, each representing a different drawing.
-
-### AI Takeoff — Tab Navigation Persistence (TakeoffSession)
-- **PARKED:** PRD at `Plans/Takeoff_Session_PRD.md`. Lift in-flight takeoff state out of `TakeoffView` into an app-level `TakeoffSession` singleton so navigating between tabs preserves the elapsed counter, status, and disabled-input state. Add a bottom-status-bar indicator ("Takeoff: Not Running / Running / Complete") visible from any tab. Plan and decisions captured; defer implementation until current AI Takeoff bug triage stabilizes.
 
 ## Tutorial Videos
 

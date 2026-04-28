@@ -1,6 +1,6 @@
 # AI Takeoff — Survive Tab Navigation (PRD)
 
-**Status:** Approved, deferred — return after critical bug triage
+**Status:** Implemented April 27, 2026 — see `Plans/Completed_Work.md` entry "AI Takeoff — Tab Navigation Persistence + Bottom-Bar Indicator + Config Persistence" for the implementation summary. Retained for historical context (problem statement, design decisions, acceptance criteria).
 **Priority:** Medium-High (UX-critical for long-running takeoffs)
 **Source plan (detailed):** `C:\Users\Steve.Amalfitano\.claude\plans\write-up-a-plan-memoized-dolphin.md`
 
