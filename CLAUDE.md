@@ -9,7 +9,14 @@ WPF application for Summit Industrial replacing the legacy MS Access system ("Ol
 - **Company name:** Summit Industrial — the ONLY correct form. Never "Summit Constructors", "Summit Industrial Constructors", or any other variation. Applies everywhere: code, UI, docs, installer.
 - **App name in text:** always "VANTAGE: Milestone" (formal) or "Vantage" (casual). Never "Milestone" alone — conflicts with the schedule module and generic milestones.
 
-**See also:** `Plans/Project_Status.md` (todos, backlog), `Plans/Completed_Work.md` (changelog), `Plans/Milestone_Project_plan.md` (architecture), `Plans/Decisions.md` (design decisions)
+**See also:** `Plans/Project_Status.md` (todos, backlog), `Plans/Completed_Work.md` (changelog), `Plans/Milestone_Project_plan.md` (architecture), `Plans/Decisions.md` (design decisions), `Plans/MCAA_Ratesheet_Plan.md` (MCAA integration PRD)
+
+## Sister Project: SkySkraper (MCAA Ratesheet)
+- **External folder:** `C:\Users\Steve.Amalfitano\source\repos\PrinceCorwin\SkySkraper\SynologyDrive` — Synology Drive synced, **NOT in this Git repo**. Never suggest moving it into the VANTAGE tree, copying its files here, git-tracking it, or adding it to `.gitignore`.
+- **Purpose:** Python pipeline that scrapes MCAA WebLEM and produces the local SQLite ratesheet that VANTAGE will consume to replace `Resources/RateSheet.json`.
+- **Canonical PRD lives here:** `Plans/MCAA_Ratesheet_Plan.md`. Status and completed work for the MCAA effort track in this repo's `Plans/Project_Status.md` and `Plans/Completed_Work.md`.
+- **Before starting MCAA-related work in the SkySkraper folder, read its own `CLAUDE.md` and `Plans/cdx_Project_Status.md` (Codex's working journal) for current state.**
+- **File ownership inside the SkySkraper folder:** files prefixed `cdx_` are Codex's; everything else is Claude's. Either side reads either's files; neither modifies the other's. Make your own copy if you need to change something.
 
 ## Tech Stack
 - WPF .NET 8, Syncfusion 33.1.45 (FluentDark / FluentLight base themes; see `Utilities/ThemeManager.cs`)
