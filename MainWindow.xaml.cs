@@ -291,11 +291,28 @@ namespace VANTAGE
                 WindowState = WindowState == WindowState.Maximized
                     ? WindowState.Normal
                     : WindowState.Maximized;
+                btnMaximize.Content = WindowState == WindowState.Maximized ? "❐" : "☐";
+                return;
             }
-            else
+
+            // Drag-from-maximized: restore the window first, then position it under
+            // the cursor at the same horizontal proportion, so the title bar appears
+            // "ripped off" the top edge of the screen and follows the mouse normally.
+            if (WindowState == WindowState.Maximized)
             {
-                DragMove();
+                Point clickInWindow = e.GetPosition(this);
+                Point screenPos = PointToScreen(clickInWindow);
+                double propX = clickInWindow.X / ActualWidth;
+
+                WindowState = WindowState.Normal;
+                btnMaximize.Content = "☐";
+
+                Left = screenPos.X - (RestoreBounds.Width * propX);
+                Top  = screenPos.Y - 5;
             }
+
+            if (e.LeftButton == MouseButtonState.Pressed)
+                DragMove();
         }
 
         private void BtnClose_Click(object sender, RoutedEventArgs e)

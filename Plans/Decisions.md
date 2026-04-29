@@ -71,6 +71,11 @@ Permanent record of architectural choices, design rationale, and implementation 
 **Why:** These are material-only items. Their labor is accounted for in the BU (bolt-up) connection rows.
 **Date:** March 2026
 
+### FLGB and FLGLJ Now Generate Per-Item Install (Fab) Labor Rows
+**Decision:** Blind flanges (`FLGB`) and lap-joint flanges (`FLGLJ`) now produce one fab/install labor row per physical item with `ShopField=2` (field-installed). Reverses an earlier exclusion in `TakeoffPostProcessor.ExplodeMaterialRow` (line ~1138) that skipped these two components from the fab-record loop on the assumption their labor was "covered by their BU connection row." Connection (BU) explosion behavior is unchanged — partner-flange BU rows still count the bolt-up labor.
+**Why:** The earlier comment was wrong. The BU bolt-up labor and the per-item handling/install labor (rigging, hauling, positioning the disc) are separate effort categories. Per-item handling for blinds and lap-joint flanges has always existed in real fabrication; producing zero labor rows for hundreds or thousands of FLGB/FLGLJ BOM items systematically under-counted MH on every project with these components. `ExcludeFromMakeupLookup` (line 80) still excludes them from spool-makeup length calculations — that's a separate concern (pipe-spool fab length doesn't depend on whether the flange end is a blind or a slip-on; the blind contributes no makeup-length the way a fitting does). The two exclusions were conflated in the original code.
+**Date:** April 29, 2026
+
 ### Rate Lookup: Simplified 4-Step Fallback Chain
 **Decision:** Removed OLW/SW class rating tier fallback system. New chain: try thickness as-is → toggle leading "S" → try class rating → try size-only.
 **Why:** The tier system (40/S40/STD/2000 equivalence groups) was complex. The S-toggle approach handles the same edge cases more simply. Dual-size parsing for all components further reduced misses.

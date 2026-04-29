@@ -1135,10 +1135,10 @@ namespace VANTAGE.Services.AI
                 pipeFab["BudgetMHs"] = null;
                 result.Add(pipeFab);
             }
-            // FLGLJ and FLGB don't get fab records — labor is covered by their BU connection row
-            else if (component != "FLGLJ" && component != "FLGB")
+            else
             {
-                // Non-PIPE items: add fab record with original component and raw description
+                // Non-PIPE items: add fab/install record with original component and raw description.
+                // Connection (BU/BW/etc.) rows are still generated separately below.
                 for (int q = 0; q < quantity; q++)
                 {
                     var fab = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
@@ -1153,6 +1153,10 @@ namespace VANTAGE.Services.AI
                         : $"{rawDesc} - {commodityCode}";
                     fab["BudgetMHs"] = null;
 
+                    // FLGB (blind) and FLGLJ (lap joint) install is field handling only.
+                    if (component == "FLGB" || component == "FLGLJ")
+                        fab["ShopField"] = 2;
+
                     // FS (field supports): use Commodity Code as Class Rating for rate lookup
                     // Allows lookup as SPT-{size}:{commodityCode} with fallback to SPT-{size}
                     if (component == "FS" && !string.IsNullOrEmpty(commodityCode))
@@ -1161,7 +1165,6 @@ namespace VANTAGE.Services.AI
                     result.Add(fab);
                 }
             }
-            // else: FLGLJ/FLGB — skip fab record, continue to connection explosion
 
             // NIP and PLG don't create connection rows — their connections are
             // always to another fitting and get counted from that fitting instead
