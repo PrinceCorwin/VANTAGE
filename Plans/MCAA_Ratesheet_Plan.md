@@ -23,7 +23,7 @@ This document is the canonical PRD. Project status and completed work for the MC
 
 ## Current state of the producer
 
-- WebLEM scrape complete: 1,671 leaves cached as HTML in `raw_cache/`. Quarterly refresh cadence; WebLEM updates rarely.
+- WebLEM scrape complete: full corpus (1,926 leaves across all 10 top-level sections) cached as HTML in `raw_cache/`, organized one folder per section (`html_piping_systems/` 1,671, `html_hvac_equipment/` 80, `html_plumbing_equipment/` 47, `html_hangers_sleeves_inserts/` 38, `html_treatment_plant_equipment/` 36, `html_refrigeration_equipment/` 19, `html_miscellaneous_labor_operations/` 13, `html_instrumentation/` 11, `html_excavation_backfill/` 9, `html_plumbing_fixtures/` 2). Quarterly refresh cadence; WebLEM updates rarely.
 - Extraction working: Codex's `cdx_build_rates_review.py` produces `output/cdx_rates_review.xlsx` with 174,175 rate rows.
 - **Canonical workbook for the abbreviation review:** `output/cdx_rates_review_WORKING.xlsx`. The user maintains a `_WORKING` copy alongside the script-generated `cdx_rates_review.xlsx` so script regenerations don't overwrite manual edits.
 - ~101K rows have abbreviations carried forward from earlier vocab work; ~73K rows still need user-driven `newComp` (lookup component) assignments.
@@ -33,12 +33,12 @@ This document is the canonical PRD. Project status and completed work for the MC
 
 Four-stage Python pipeline. Detail lives in the SkySkraper folder; outline:
 
-1. **Discover** — DOM-extract leaf list from WebLEM via JS snippet → `discovery/leaves.json` (1,671 entries)
-2. **Fetch** — HTML cache via `?mode=wam` (1,671 leaves) + `?mode=component` (66 leaves where WAM is empty)
-3. **Survey** — schema discovery (matrix, keydata, flat) and vocabulary scan
+1. **Discover** — DOM-extract leaf list from WebLEM via JS snippet → `dom_leaves.json` (1,926 entries) → filtered into per-section `discovery/leaves_<section>.json` files (PIPING SYSTEMS in the original `discovery/leaves.json`, others in sibling files)
+2. **Fetch** — HTML cache via `?mode=wam` (1,926 leaves total, one folder per section) + `?mode=component` (66 PIPING SYSTEMS leaves where WAM is empty)
+3. **Survey** — schema discovery (matrix, keydata, flat) and vocabulary scan (currently piping-only; non-piping sections need their own survey pass)
 4. **Build** — extract HTML → xlsx review surface; eventually, xlsx → SQLite
 
-Per-leaf workbooks for human review at `output/cdx_workbooks/` (1,671 XLSX), plus the master `cdx_rates_review.xlsx` / `cdx_rates_review_WORKING.xlsx`.
+Per-leaf workbooks for human review at `output/cdx_workbooks/` (1,671 PIPING SYSTEMS XLSX so far; non-piping section workbooks generate when those parsers come online), plus the master `cdx_rates_review.xlsx` / `cdx_rates_review_WORKING.xlsx`.
 
 ## Vocabulary architecture
 

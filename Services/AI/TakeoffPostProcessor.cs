@@ -80,6 +80,14 @@ namespace VANTAGE.Services.AI
             "FS", "GSKT", "BOLT", "WAS", "HEAT", "HOSE", "INST", "NIP", "PLG", "SAFSHW", "F8B", "DPAN", "ACT", "FLGB", "PIPET", "FLGLJ", "GAUGE"
         };
 
+        // Footage components: Quantity is footage, not a count of items. One labor
+        // row per BOM row (not per quantity), no per-unit explosion. PIPE was the
+        // original member; TUBE follows the same convention.
+        private static readonly HashSet<string> FootageComponents = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "PIPE", "TUBE"
+        };
+
         // Find Material tab rows with blank Component values
         // Returns list of (excelRow, drawingNumber, rawDescription) for UI prompt
         public static List<(int ExcelRow, string DrawingNumber, string RawDescription)> GetBlankComponentRows(string excelPath)
@@ -1120,20 +1128,23 @@ namespace VANTAGE.Services.AI
                 return result;
             }
 
-            // PIPE items: one PIPE fab labor record per BOM item
-            if (component.Equals("PIPE", StringComparison.OrdinalIgnoreCase))
+            // Footage items (PIPE, TUBE): one fab labor record per BOM item.
+            // Quantity is footage on these rows, not item count, so we don't
+            // explode them per-unit the way fittings/flanges get exploded.
+            if (FootageComponents.Contains(component))
             {
-                var pipeFab = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+                var footageFab = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
                 foreach (var (key, value) in mat)
                 {
                     if (!ExcludeFromLabor.Contains(key))
-                        pipeFab[key] = value;
+                        footageFab[key] = value;
                 }
-                pipeFab["Component"] = "PIPE";
-                pipeFab["Quantity"] = ParseExactQuantity(mat);
-                pipeFab["Description"] = rawDesc + " - Fab Pipe Handling";
-                pipeFab["BudgetMHs"] = null;
-                result.Add(pipeFab);
+                footageFab["Component"] = component;
+                footageFab["Quantity"] = ParseExactQuantity(mat);
+                string label = component.Equals("PIPE", StringComparison.OrdinalIgnoreCase) ? "Pipe" : "Tube";
+                footageFab["Description"] = $"{rawDesc} - Fab {label} Handling";
+                footageFab["BudgetMHs"] = null;
+                result.Add(footageFab);
             }
             else
             {
@@ -1178,7 +1189,7 @@ namespace VANTAGE.Services.AI
             int connQty = GetInt(mat, "Connection Qty");
             if (connQty <= 0)
             {
-                if (!component.Equals("PIPE", StringComparison.OrdinalIgnoreCase))
+                if (!FootageComponents.Contains(component))
                     _noConns.Add(mat);
                 return result;
             }
@@ -1186,7 +1197,7 @@ namespace VANTAGE.Services.AI
             string connTypes = GetString(mat, "Connection Type");
             if (string.IsNullOrWhiteSpace(connTypes))
             {
-                if (!component.Equals("PIPE", StringComparison.OrdinalIgnoreCase))
+                if (!FootageComponents.Contains(component))
                     _noConns.Add(mat);
                 return result;
             }
@@ -1215,6 +1226,16 @@ namespace VANTAGE.Services.AI
                     {
                         var thrdLabor = CreateLaborRow(mat, "THRD", connSize, thickness, material, allMaterialRows);
                         result.Add(thrdLabor);
+                    }
+
+                    // BW and SW connections also generate a CUT labor row, one per parent.
+                    // Existing CUT fold-in via the CutAdd column on the BW/SW row is left
+                    // alone — the standalone CUT row is here so the upcoming MCAA-rate
+                    // pass can price cut labor row-by-row instead of as an add-on.
+                    if (connType == "BW" || connType == "SW")
+                    {
+                        var cutLabor = CreateLaborRow(mat, "CUT", connSize, thickness, material, allMaterialRows);
+                        result.Add(cutLabor);
                     }
                 }
             }
