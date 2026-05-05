@@ -24,11 +24,36 @@
 ### AI Takeoff — Multi-Drawing Documents
 - **TODO:** Support drawing documents (PDFs) that contain multiple drawings per document (multiple pages). Currently each uploaded PDF is treated as a single drawing. Need to handle cases where one PDF contains several pages, each representing a different drawing.
 
-### AI Takeoff — Rate Mode Toggle (Summit / MCAA), Phase 1
-- **PRD:** `Plans/Takeoff_Rate_Mode_PRD.md`. **Critical:** main is currently NOT publishable until Phase 1 ships — the cherry-picked branch commits put the BOLT/GSKT/WAS labor-row skip and the CUT companion rows on BW/SW unconditionally, which double-counts cut labor under Summit pricing.
-- **Phase 1 scope:** new `Takeoff.RateMode` UserSetting (default `"Summit"`), radio control in `ImportTakeoffDialog`, hardcoded-username gate restricting MCAA selection to one user (Steve) until MCAA is GA, plumbing through `TakeoffSession` to `TakeoffPostProcessor`, gate the two divergent behaviors (BOLT/GSKT/WAS skip, CUT companion rows on BW/SW) behind the mode flag, and record the mode into the workbook output.
-- **Verification gate:** Summit-mode parity vs `v26.2.17` — same project produces identical Labor sheet (row count, BudgetMHs, BOLT/GSKT/WAS rows present, no CUT companions, FS rows at 1.0 multipliers).
-- **Open questions** (answer before Phase 1 implementation): exact username string for the gate; where `RateMode` lives in the workbook (Summary tab cell? file-level custom property? both?); dialog-vs-tab placement of the radio control; whether Previous Batches list shows a Mode column.
+### AI Takeoff — Rate Mode Toggle (Summit / MCAA), Phase 1 — TONIGHT
+- **PRD:** `Plans/Takeoff_Rate_Mode_PRD.md`. Full session context for how we got here: `Plans/Completed_Work.md` May 5, 2026 entry.
+
+#### What we did 2026-05-05
+- **FS multiplier fix shipped on main** (`Services/AI/TakeoffPostProcessor.cs:ApplyRates`). Field Support rows had RollupMult and MatlMult applied on top of a Summit FS rate that already includes those factors — pure double-count. Fix forces both factors to 1.0 for FS only, so audit columns honestly show "no multiplier applied" and `BudgetMHs = mhu × qty`. Other components unchanged.
+- **Tried branching strategy, abandoned same day.** Created `feature/mcaa-takeoff` from commit `907b591` to isolate in-progress MCAA-prep changes; reset main to `860c474` so main was publishable; planted backup tag `backup/pre-split-2026-05-05` at the original tip. Added a branch-only commit skipping BOLT/GSKT/WAS labor rows. Briefly added a "doc updates live on main only" CLAUDE.md rule, walked it back the same session because it didn't fit a long-running MCAA branch where Decisions/Plans need to evolve continuously. Per user direction, abandoned the whole branching approach and cherry-picked everything back to main: `907b591` → `7985886` (TUBE handling + CUT companion rows on BW/SW), `b6aa2d2` → `9e582fc` (BOLT/GSKT/WAS labor-row skip).
+- **New PRD created** for the in-app rate-mode toggle that replaces the branching strategy. Toggle is needed long-term anyway — Summit ratesheet has a 6–12 month sunset window after MCAA parity is proven.
+- **Branch + backup tag retained.** `feature/mcaa-takeoff` is now redundant (all its content is on main) but kept until Phase 1 is verified. `backup/pre-split-2026-05-05` tag stays permanently as a recovery anchor pointing at `907b591`.
+
+#### CRITICAL: main is NOT publishable until Phase 1 ships
+The cherry-picked branch commits put the BOLT/GSKT/WAS labor-row skip AND the CUT companion rows on BW/SW unconditionally on main. Under Summit pricing this double-counts cut labor (existing `CutAdd` fold-in PLUS new standalone CUT row's `BudgetMHs`) and removes hardware labor lines that should still be priced. **Do not run `/publisher` until Phase 1 ships.**
+
+#### Phase 1 scope (single sitting target — tonight)
+- New `Takeoff.RateMode` UserSetting (string, default `"Summit"`). Register in `Utilities/UserSettingsRegistry.cs`.
+- Radio control on `ImportTakeoffDialog`. Two options: `Summit Rates` (default) and `MCAA Rates`.
+- **Hardcoded-username gate** restricting MCAA selection to one user (Steve) until MCAA is GA. The dialog-load handler must force the setting back to `Summit` if a non-gated user has somehow set it to `MCAA` (UserSettings export/import, registry edit). Defense in depth, not a security boundary.
+- Plumb the selected mode from `ImportTakeoffDialog` → `TakeoffSession` → `TakeoffPostProcessor`. Mode gets captured at takeoff start (parameter or session field) and used throughout that batch.
+- **Behavior gates in `TakeoffPostProcessor`** — two surgical conditionals:
+  - **BOLT/GSKT/WAS labor row** (around line 1106): Summit → create row (current code from before the cherry-pick); MCAA → return early (current cherry-picked behavior).
+  - **CUT companion row on BW/SW** (in connection-explosion loop, ~line 1230): Summit → skip companion CUT (pre-cherry-pick behavior); MCAA → emit CUT companion (current cherry-picked behavior).
+- **Mode in workbook output.** Record the active mode somewhere visible — Summary tab cell, file-level custom property, or both. So a future you can tell at a glance whether a saved Excel was produced under Summit or MCAA pricing.
+
+#### Verification gate before publishing
+Summit-mode parity vs the published `v26.2.17` reference takeoff. Same source drawings + Summit selected → identical Labor sheet: same row count, same BudgetMHs, BOLT/GSKT/WAS rows present and priced, no CUT companions on BW/SW, FS rows showing 1.0 multipliers. If that passes, main is publishable again.
+
+#### Open questions (answer before Phase 1 implementation)
+1. **Exact username string for the gate.** Steve's Vantage username — where to source it (`App.CurrentUser?.Username`?), exact spelling.
+2. **Where does `RateMode` live in the workbook?** Summary tab labeled cell? File-level custom property? Both?
+3. **Dialog vs tab placement of the radio.** `ImportTakeoffDialog` (per-batch) is the obvious spot, but a tab-level control on the Takeoffs view would be more visible. PRD currently leans dialog.
+4. **Mode column on Previous Batches list?** Helps avoid re-running a download under the wrong mode.
 
 ### Pending Testing — FLGB/FLGLJ Install Rows in AI Takeoff
 - **TODO (added 2026-04-30):** Run AI Takeoff on a project containing Blind Flanges (FLGB) and/or Lap Joint Flanges (FLGLJ) to verify the 2026-04-29 fix in `Services/AI/TakeoffPostProcessor.cs:1138-1162`. Expected output per FLGB/FLGLJ BOM row: one fab/install row per physical item (`ShopField=2` field) AND the existing `"BU - One Flange"` connection row. At a flange-to-blind joint, the mating FLG and the FLGB should each contribute 1 fab row + 1 BU row. Verify spool-makeup length calc still excludes them (unchanged). Verify total MHs come out higher than the pre-fix workbook on the same drawings (per-item handling labor was previously missing).
