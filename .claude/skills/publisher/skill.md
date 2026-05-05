@@ -23,6 +23,10 @@ Before running publisher, confirm:
 
 If any of these are not confirmed, ask the user before proceeding.
 
+## Publishability Gate (read first, before anything else)
+
+Read the top of `Plans/Project_Status.md`. If you find an active **CRITICAL** banner (currently a `**CRITICAL — main is NOT publishable...**` block between the "Last Updated" line and the first `## ` section), STOP. Surface the banner to the user verbatim. Do not proceed with version bump, do not run the publish script, do not edit `ReleaseNotes.json` or `manifest.json`. Confirm with the user that the underlying issue has been resolved (and the banner removed from `Project_Status.md`) before continuing — even if the user explicitly invoked `/publisher`. The banner exists precisely because main has known-broken behavior the next release must not ship.
+
 ## Step 1: Determine Next Version
 
 Read the current version from `VANTAGE.csproj` (the `<Version>` element).

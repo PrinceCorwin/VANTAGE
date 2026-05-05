@@ -1,8 +1,8 @@
 # AI Takeoff — Rate Mode Selector (Summit / MCAA) PRD
 
-**Status:** Proposed 2026-05-05. Replaces the short-lived `feature/mcaa-takeoff` branching strategy.
-**Priority:** High — unblocks publishing while MCAA work continues.
-**Related:** `Plans/MCAA_Ratesheet_Plan.md` (the larger MCAA integration PRD).
+**Status:** Phase 1 in progress (proposed 2026-05-05). Replaces the short-lived `feature/mcaa-takeoff` branching strategy.
+**Priority:** **CRITICAL — main is NOT publishable until Phase 1 ships.** Cherry-picked MCAA-prep changes are active unconditionally on `main` and double-count cut labor under Summit pricing. Do not run `/publisher` until Phase 1 toggle is in place AND Summit-mode parity vs `v26.2.17` is verified.
+**Related:** `Plans/MCAA_Ratesheet_Plan.md` (the larger MCAA integration PRD), `Plans/Project_Status.md` (top-of-file banner + Phase 1 entry under Active Development), `Plans/Completed_Work.md` 2026-05-05 entry (full session context for how we got here).
 
 ## Problem
 

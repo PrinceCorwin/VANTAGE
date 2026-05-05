@@ -2,6 +2,12 @@
 
 **Last Updated:** May 5, 2026
 
+---
+
+**CRITICAL — main is NOT publishable as of 2026-05-05.** Cherry-picked MCAA-prep changes (BOLT/GSKT/WAS labor-row skip, CUT companion rows on BW/SW) are unconditionally active in `Services/AI/TakeoffPostProcessor.cs` and double-count cut labor under Summit pricing. **Do not run `/publisher`** until the rate-mode toggle described under "AI Takeoff — Rate Mode Toggle (Summit / MCAA), Phase 1 — TONIGHT" ships AND Summit-mode parity vs `v26.2.17` is verified. PRD: `Plans/Takeoff_Rate_Mode_PRD.md`. Recovery anchor if needed: tag `backup/pre-split-2026-05-05`.
+
+---
+
 ## Deferred to Post-V1
 | Feature | Reason |
 |---------|--------|

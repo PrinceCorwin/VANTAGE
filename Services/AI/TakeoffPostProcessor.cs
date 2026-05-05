@@ -1109,6 +1109,11 @@ namespace VANTAGE.Services.AI
             double smallerSize = dualSize?.Smaller ?? largerSize;
             bool isDualSize = dualSize != null;
 
+            // TODO Phase 1 (Plans/Takeoff_Rate_Mode_PRD.md): gate this skip behind RateMode == MCAA.
+            // Under Summit, this block must instead create the aggregated hardware labor row
+            // (the pre-cherry-pick behavior — see commit 9e582fc and its parent for the diff).
+            // Until the toggle ships, this skip is unconditional and main is NOT publishable.
+            //
             // Hardware items (BOLT, GSKT, WAS): no labor rows under MCAA pricing.
             // MCAA captures bolt-up labor via the joint rate on the connected flange/fitting,
             // not as a separate hardware line. Items still appear on the Material tab.
@@ -1217,6 +1222,12 @@ namespace VANTAGE.Services.AI
                         result.Add(thrdLabor);
                     }
 
+                    // TODO Phase 1 (Plans/Takeoff_Rate_Mode_PRD.md): gate this companion CUT row
+                    // behind RateMode == MCAA. Under Summit, this block must NOT execute — the
+                    // existing CutAdd fold-in on the BW/SW row already prices cut labor, so
+                    // emitting a standalone CUT row here double-counts. Until the toggle ships,
+                    // this generation is unconditional and main is NOT publishable.
+                    //
                     // BW and SW connections also generate a CUT labor row, one per parent.
                     // Existing CUT fold-in via the CutAdd column on the BW/SW row is left
                     // alone — the standalone CUT row is here so the upcoming MCAA-rate
