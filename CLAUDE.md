@@ -33,12 +33,6 @@ WPF application for Summit Industrial replacing the legacy MS Access system ("Ol
 - **Security-sensitive code paths:** Read `Plans/Security_Guidelines.md` BEFORE writing or modifying: CSV/XLSX exports (`ScheduleExcelExporter`), code that builds filenames/paths from user input (WorkPackage → PDF, ProjectID → folder), AI Takeoff prompt construction or response parsing, exception/AI logging behavior, or `FeedbackDialog` submission. Contains formula-injection sanitizer, Windows-reserved-name filename guard, AI input/output validation rules, and logging hygiene patterns.
 - NEVER commit or publish outside these skills.
 
-### Doc Updates Live on Main Only
-- **All status, completed-work, decisions, plan, and `CLAUDE.md` updates happen on `main` only.** This includes `Plans/Project_Status.md`, `Plans/Completed_Work.md`, `Plans/Decisions.md`, `Plans/MCAA_Ratesheet_Plan.md`, any other `Plans/*.md`, `Help/manual.html`, `README.md`, and `CLAUDE.md` itself.
-- **Never edit these files on a feature branch** (e.g., `feature/mcaa-takeoff`). Code changes on a feature branch are fine; doc changes are not. If a feature-branch commit logically needs a doc update, save it for when the branch merges back to main, or update the doc on main directly in a separate commit.
-- **Why:** doc files diverge fast across branches and create painful merge conflicts that obscure the real code diff. Keeping all narrative docs on a single linear timeline (main) avoids that entirely.
-- This rule applies retroactively — if the branch CLAUDE.md is missing this instruction because the branch predates it, that's expected; do not "fix" it by syncing.
-
 ## Development Approach
 - Never modify the AGENTS.md file or add it to gitignore file.
 - **All generated/written files must use CRLF line endings** — Visual Studio shows an annoying "Inconsistent Line Endings" dialog when files have mixed or LF-only endings. When writing files via PowerShell, use `[System.IO.File]::WriteAllText()` with CRLF-normalized content, not `Out-File`. When using the Write tool, ensure content uses `\r\n`.
