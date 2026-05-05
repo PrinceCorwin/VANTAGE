@@ -1109,22 +1109,11 @@ namespace VANTAGE.Services.AI
             double smallerSize = dualSize?.Smaller ?? largerSize;
             bool isDualSize = dualSize != null;
 
-            // Hardware items (BOLT, GSKT, WAS): one aggregated labor row per material row
-            // Preserves original quantity for MH calculation (rate × qty)
+            // Hardware items (BOLT, GSKT, WAS): no labor rows under MCAA pricing.
+            // MCAA captures bolt-up labor via the joint rate on the connected flange/fitting,
+            // not as a separate hardware line. Items still appear on the Material tab.
             if (component == "BOLT" || component == "GSKT" || component == "WAS")
             {
-                var hardware = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
-                foreach (var (key, value) in mat)
-                {
-                    if (!ExcludeFromLabor.Contains(key))
-                        hardware[key] = value;
-                }
-                hardware["Quantity"] = quantity;
-                hardware["Description"] = string.IsNullOrEmpty(commodityCode)
-                    ? rawDesc
-                    : $"{rawDesc} - {commodityCode}";
-                hardware["BudgetMHs"] = null;
-                result.Add(hardware);
                 return result;
             }
 
