@@ -1,6 +1,6 @@
 # MILESTONE - Project Status
 
-**Last Updated:** April 30, 2026
+**Last Updated:** May 5, 2026
 
 ## Deferred to Post-V1
 | Feature | Reason |
@@ -23,6 +23,12 @@
 
 ### AI Takeoff — Multi-Drawing Documents
 - **TODO:** Support drawing documents (PDFs) that contain multiple drawings per document (multiple pages). Currently each uploaded PDF is treated as a single drawing. Need to handle cases where one PDF contains several pages, each representing a different drawing.
+
+### AI Takeoff — Rate Mode Toggle (Summit / MCAA), Phase 1
+- **PRD:** `Plans/Takeoff_Rate_Mode_PRD.md`. **Critical:** main is currently NOT publishable until Phase 1 ships — the cherry-picked branch commits put the BOLT/GSKT/WAS labor-row skip and the CUT companion rows on BW/SW unconditionally, which double-counts cut labor under Summit pricing.
+- **Phase 1 scope:** new `Takeoff.RateMode` UserSetting (default `"Summit"`), radio control in `ImportTakeoffDialog`, hardcoded-username gate restricting MCAA selection to one user (Steve) until MCAA is GA, plumbing through `TakeoffSession` to `TakeoffPostProcessor`, gate the two divergent behaviors (BOLT/GSKT/WAS skip, CUT companion rows on BW/SW) behind the mode flag, and record the mode into the workbook output.
+- **Verification gate:** Summit-mode parity vs `v26.2.17` — same project produces identical Labor sheet (row count, BudgetMHs, BOLT/GSKT/WAS rows present, no CUT companions, FS rows at 1.0 multipliers).
+- **Open questions** (answer before Phase 1 implementation): exact username string for the gate; where `RateMode` lives in the workbook (Summary tab cell? file-level custom property? both?); dialog-vs-tab placement of the radio control; whether Previous Batches list shows a Mode column.
 
 ### Pending Testing — FLGB/FLGLJ Install Rows in AI Takeoff
 - **TODO (added 2026-04-30):** Run AI Takeoff on a project containing Blind Flanges (FLGB) and/or Lap Joint Flanges (FLGLJ) to verify the 2026-04-29 fix in `Services/AI/TakeoffPostProcessor.cs:1138-1162`. Expected output per FLGB/FLGLJ BOM row: one fab/install row per physical item (`ShopField=2` field) AND the existing `"BU - One Flange"` connection row. At a flange-to-blind joint, the mating FLG and the FLGB should each contribute 1 fab row + 1 BU row. Verify spool-makeup length calc still excludes them (unchanged). Verify total MHs come out higher than the pre-fix workbook on the same drawings (per-item handling labor was previously missing).
