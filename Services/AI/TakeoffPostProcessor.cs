@@ -1735,6 +1735,15 @@ namespace VANTAGE.Services.AI
                     double rollupMult = GetRollupMultiplier(component);
                     string matlGrp = GetString(row, "Matl_Grp");
                     double matlMult = GetMaterialMultiplier(matlGrp);
+
+                    // FS rates already include rollup/material multipliers in the published Summit rate.
+                    // Applying them again would double-count, so neutralize for FS only.
+                    if (component.Equals("FS", StringComparison.OrdinalIgnoreCase))
+                    {
+                        rollupMult = 1.0;
+                        matlMult = 1.0;
+                    }
+
                     row["RateSheet"] = mhu;
                     row["RollupMult"] = rollupMult;
                     row["MatlMult"] = matlMult;
