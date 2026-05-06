@@ -1918,7 +1918,7 @@
                            AllowSorting="True" />
 
                         <syncfusion:GridTextColumn MappingName="SyncVersion"
-                           HeaderText="Sync Version" Padding="4,0,4,0"
+                           HeaderText="SyncVersion" Padding="4,0,4,0"
                            Width="120"
                            DisplayBinding="{Binding SyncVersion}"
                            IsHidden="False"
@@ -2079,7 +2079,7 @@
                            AllowSorting="True" />
 
                         <syncfusion:GridTextColumn MappingName="RespParty"
-                           HeaderText="Resp Party" Padding="4,0,4,0"
+                           HeaderText="RespParty" Padding="4,0,4,0"
                            Width="100"
                            IsHidden="False"
                            AllowEditing="True"
