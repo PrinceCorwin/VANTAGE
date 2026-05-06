@@ -17,6 +17,12 @@
 
 ## Active Development
 
+### Progress Module — Manage UDF Names Dialog (planned, not started)
+- **Plan:** `Plans/Manage_UDF_Names_Plan.md` (cross-machine handoff doc, drafted 2026-05-06).
+- **Goal:** per-user dialog letting users rename UDF1–UDF17 and UDF20 column headers on the Activities grid, save named mappings, and import/export them as JSON. Launched from Settings menu. Apply and Save Map are separate actions (per user decision during planning).
+- **Storage shape:** mirrors `ManageLayoutsDialog` — `ProgressUDFNames.Active` JSON snapshot + `ProgressUDFNames.Index` + per-name `ProgressUDFNames.{name}.Data` rows.
+- **TODO (next session):** Review the plan, then implement per its "Recommended approach" section. Verification steps are listed at the bottom of the plan. v1 scope is UDFs only — required-metadata fields stay non-renameable until a centralized error-message helper is built.
+
 ### Work Package Module
 - Template editors testing
 - PDF preview testing
