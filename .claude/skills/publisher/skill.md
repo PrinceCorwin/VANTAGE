@@ -58,6 +58,7 @@ Proceed? (yes/no)
 - Source the highlights from the most recent entries in `Plans/Completed_Work.md`, translated to user-facing language
   - Example: "Fixed sync deadlock in ActivityRepository" → "Improved reliability of data sync"
   - Example: "Refactored TokenResolver to use dictionary lookup" → (skip — internal refactor, no user impact)
+- **Order: non-Takeoff items first, AI Takeoff items last.** Only a small number of users use the AI Takeoff module; everyone else uses Progress / Schedule / Work Packages / Sync / etc. The first highlights a typical user reads should be the changes they'll actually notice. Group all AI Takeoff highlights together at the bottom of the list. If a release has only Takeoff changes, that's fine — list them as-is. Same ordering applies to the GitHub release notes body in Step 8.
 - Print the proposed entry inline so the user can see what's shipping, but do NOT wait for confirmation — write the file immediately and continue. The user already approved the release at Step 1; second approval is friction. If they spot something wrong they can interrupt.
 - This file is embedded in the app — it must be updated BEFORE the publish script runs
 

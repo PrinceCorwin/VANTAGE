@@ -6,6 +6,9 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### May 5, 2026 (Publisher Skill — Non-Takeoff Items First in Release Notes)
+- **`.claude/skills/publisher/skill.md` Step 2 gained a changelog ordering rule.** When drafting `ReleaseNotes.json` highlights (and the matching GitHub release body in Step 8), non-Takeoff items lead, AI Takeoff items go last. Rationale: only a small number of users use the AI Takeoff module; the typical user opens release notes hoping to see what changed in Progress / Schedule / Work Packages / Sync. Putting the changes they'll actually notice at the top respects that. Releases that are 100% Takeoff are fine to list as-is.
+
 ### May 5, 2026 (Rate Mode Phase 1 Shipped — Toggle Infrastructure + MCAA Behavior Gating + Uniform ShopField Rule)
 - **Cross-machine merge resolved by reset to origin/main.** Started session with 4 conflicted files (`Plans/Completed_Work.md`, `Plans/Decisions.md`, `Plans/Project_Status.md`, `Services/AI/TakeoffPostProcessor.cs`) after `git pull` on the laptop. Local `907b591 Treat TUBE as footage component, add CUT companion rows for BW/SW` had already been cherry-picked onto a rewritten origin/main as `7985886` from the work machine. Verified via `git patch-id` — both commits produced patch ID `eee5807ac0f3cb...`, confirming identical content. Aborted the merge and `git reset --hard origin/main` since the local commit's content was fully preserved on origin (just under a different SHA). No work lost; linear history maintained.
 - **`Takeoff.RateMode` UserSetting registered on the deny-list** in `Utilities/UserSettingsRegistry.cs`, matching the precedent of `Takeoff.LastConfigKey` (its own UI control, default hardcoded at the read site). Default `"Summit"` is set inline in `LoadRateModeSetting()` rather than via the registry.
