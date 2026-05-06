@@ -9,7 +9,7 @@ WPF application for Summit Industrial replacing the legacy MS Access system ("Ol
 - **Company name:** Summit Industrial — the ONLY correct form. Never "Summit Constructors", "Summit Industrial Constructors", or any other variation. Applies everywhere: code, UI, docs, installer.
 - **App name in text:** always "VANTAGE: Milestone" (formal) or "Vantage" (casual). Never "Milestone" alone — conflicts with the schedule module and generic milestones.
 
-**See also:** `Plans/Project_Status.md` (todos, backlog), `Plans/Completed_Work.md` (changelog), `Plans/Milestone_Project_plan.md` (architecture), `Plans/Decisions.md` (design decisions), `Plans/MCAA_Ratesheet_Plan.md` (MCAA integration PRD), `Plans/Takeoff_Rate_Mode_PRD.md` (Summit/MCAA rate-mode toggle — Phase 1 in progress; main is unpublishable until it ships)
+**See also:** `Plans/Project_Status.md` (todos, backlog), `Plans/Completed_Work.md` (changelog), `Plans/Milestone_Project_plan.md` (architecture), `Plans/Decisions.md` (design decisions), `Plans/MCAA_Ratesheet_Plan.md` (MCAA integration PRD), `Plans/Takeoff_Rate_Mode_PRD.md` (Summit/MCAA rate-mode toggle)
 
 ## Sister Project: SkySkraper (MCAA Ratesheet)
 - **External folder:** `C:\Users\Steve.Amalfitano\source\repos\PrinceCorwin\SkySkraper\SynologyDrive` — Synology Drive synced, **NOT in this Git repo**. Never suggest moving it into the VANTAGE tree, copying its files here, git-tracking it, or adding it to `.gitignore`.

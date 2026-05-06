@@ -354,6 +354,7 @@
                     <li><a href="#takeoff-overview">Overview</a></li>
                     <li><a href="#takeoff-configs">Configs</a></li>
                     <li><a href="#takeoff-unit-rates">Unit Rates</a></li>
+                    <li><a href="#takeoff-rate-mode">Rate Mode</a></li>
                     <li><a href="#takeoff-batch-name">Batch Name</a></li>
                     <li><a href="#takeoff-processing">Processing Drawings</a></li>
                     <li><a href="#takeoff-blank-components">Blank Components</a></li>
@@ -2701,6 +2702,14 @@
         <li><strong>+ Upload New...</strong> — Opens the Project Rates management dialog where you can upload, view, and delete rate sets.</li>
     </ul>
     <p>Project rate sets can be managed via <strong>Admin &gt; Project Rates</strong> (see <a href="#admin-project-rates">Project Rates</a> in the Administration section).</p>
+
+    <h3 id="takeoff-rate-mode">Rate Mode</h3>
+    <p>The <strong>Rate Mode</strong> radio group (between the action buttons and the options checkboxes) selects the pricing strategy used during post-processing.</p>
+    <ul>
+        <li><strong>Summit Rates</strong> (default) — The standard Summit pricing model. Hardware items (BOLT, GSKT, WAS) generate aggregated labor rows, spool handling (SPL) rows are emitted for each pipe with computed makeup quantity, and BW/SW/SCRD rows have cut and bevel labor folded into the parent row's BudgetMHs via the <code>CutAdd</code> and <code>BevelAdd</code> modifiers. PIPE and TUBE rows are tagged as shop work.</li>
+        <li><strong>MCAA Rates</strong> — The MCAA pricing model. No hardware labor rows, no spool handling rows, every BW or SW connection gets a standalone CUT companion labor row, and rate modifiers (<code>RollupMult</code>, <code>MatlMult</code>, <code>CutAdd</code>, <code>BevelAdd</code>) are all neutralized so each row's <code>BudgetMHs = RateSheet × Quantity</code>. Currently restricted to specific users while the MCAA integration is in development; the radio is greyed out otherwise.</li>
+    </ul>
+    <p>The active mode is recorded in the workbook on the Summary tab's first data row (<code>Rate Mode: Summit</code> or <code>Rate Mode: MCAA</code>) so a saved Excel can be identified at a glance. Re-downloading a Previous Batch or running RECALC EXCEL regenerates labor rows under whichever mode is currently selected — not the mode used originally.</p>
 
     <h3 id="takeoff-batch-name">Batch Name</h3>
     <p>The <strong>Batch Name</strong> field (above the Config dropdown) lets you give a custom name to the batch before processing. If left blank, it defaults to <code>AwsDwgTakeoff</code>. A UTC timestamp is always appended (e.g., <code>MyProject-20260315-143022</code>).</p>

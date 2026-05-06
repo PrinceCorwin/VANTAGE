@@ -29,6 +29,17 @@ namespace VANTAGE.Views
         private List<(string ProjectID, string SetName)> _rateSets = new();
         private bool _isLoadingRateDropdowns;
 
+        // Rate mode: Summit (default, all users) or MCAA (gated). Guard prevents the
+        // Checked handler from writing back the value while the radios are being set
+        // programmatically during view load.
+        private bool _isLoadingRateMode;
+
+        // Allowlist of usernames permitted to select MCAA mode while the MCAA
+        // implementation is partial. Case-insensitive. Will move to admin-only
+        // (or be removed) once MCAA goes GA.
+        private static readonly HashSet<string> McaaAllowedUsers =
+            new(StringComparer.OrdinalIgnoreCase) { "steve", "steve.amalfitano" };
+
         public TakeoffView()
         {
             InitializeComponent();
@@ -40,6 +51,7 @@ namespace VANTAGE.Views
         {
             await LoadConfigsAsync();
             await LoadRateOptionsAsync();
+            LoadRateModeSetting();
             await RestoreFromSessionIfActive();
         }
 
@@ -343,8 +355,11 @@ namespace VANTAGE.Views
 
                 // Load project rate cache if selected
                 var projectRateCache = await GetSelectedProjectRateCacheAsync();
+                var rateMode = rbMcaaRates.IsChecked == true
+                    ? TakeoffPostProcessor.RateMode.MCAA
+                    : TakeoffPostProcessor.RateMode.Summit;
                 var (missedMakeups, missedRates) = await System.Threading.Tasks.Task.Run(() =>
-                    TakeoffPostProcessor.GenerateLaborAndSummary(dialog.FileName, projectRateCache));
+                    TakeoffPostProcessor.GenerateLaborAndSummary(dialog.FileName, projectRateCache, rateMode));
 
                 int failedDrawings = CountFailedDwgRows(dialog.FileName);
 
@@ -455,6 +470,62 @@ namespace VANTAGE.Views
             }
         }
 
+        // Whether the current user is allowed to select MCAA mode. Gate is
+        // case-insensitive against the allowlist; non-allowed users see the
+        // MCAA radio disabled with a tooltip explaining why.
+        private static bool IsCurrentUserMcaaAllowed()
+            => !string.IsNullOrEmpty(App.CurrentUser?.Username)
+               && McaaAllowedUsers.Contains(App.CurrentUser!.Username);
+
+        // Load Takeoff.RateMode from UserSettings and wire the radios. Defaults
+        // to Summit. If a non-allowed user has somehow stored MCAA (export/import,
+        // registry edit), force-reset to Summit on load — defense in depth.
+        private void LoadRateModeSetting()
+        {
+            bool allowed = IsCurrentUserMcaaAllowed();
+            rbMcaaRates.IsEnabled = allowed;
+            if (!allowed)
+            {
+                rbMcaaRates.ToolTip = "MCAA Rates is restricted while the MCAA integration is in development.";
+            }
+
+            string? saved = SettingsManager.GetUserSetting("Takeoff.RateMode");
+            bool wantMcaa = string.Equals(saved, "MCAA", StringComparison.OrdinalIgnoreCase) && allowed;
+
+            _isLoadingRateMode = true;
+            try
+            {
+                if (wantMcaa)
+                {
+                    rbMcaaRates.IsChecked = true;
+                }
+                else
+                {
+                    rbSummitRates.IsChecked = true;
+                }
+            }
+            finally
+            {
+                _isLoadingRateMode = false;
+            }
+
+            // Force-reset stored value to Summit if the saved value was MCAA but
+            // the current user isn't allowed. Keeps the storage in sync with the
+            // effective UI state so the next launch starts clean.
+            if (string.Equals(saved, "MCAA", StringComparison.OrdinalIgnoreCase) && !allowed)
+            {
+                SettingsManager.SetUserSetting("Takeoff.RateMode", "Summit", "string");
+            }
+        }
+
+        private void RbRateMode_Checked(object sender, RoutedEventArgs e)
+        {
+            if (_isLoadingRateMode) return;
+            if (sender is not RadioButton rb) return;
+            string mode = rb.Name == "rbMcaaRates" ? "MCAA" : "Summit";
+            SettingsManager.SetUserSetting("Takeoff.RateMode", mode, "string");
+        }
+
         private void BtnEditConfig_Click(object sender, RoutedEventArgs e)
         {
             int configIndex = cboConfig.SelectedIndex - 1;
@@ -535,9 +606,12 @@ namespace VANTAGE.Views
 
                 // Load project rate cache if selected
                 var projectRateCache = await GetSelectedProjectRateCacheAsync();
+                var rateMode = rbMcaaRates.IsChecked == true
+                    ? TakeoffPostProcessor.RateMode.MCAA
+                    : TakeoffPostProcessor.RateMode.Summit;
 
                 var (missedMakeups, missedRates) = await System.Threading.Tasks.Task.Run(() =>
-                    TakeoffPostProcessor.GenerateLaborAndSummary(filePath, projectRateCache));
+                    TakeoffPostProcessor.GenerateLaborAndSummary(filePath, projectRateCache, rateMode));
 
                 SetStatus($"Recalculated: {missedMakeups} missed makeups, {missedRates} missed rates");
 

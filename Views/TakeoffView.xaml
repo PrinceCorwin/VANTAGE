@@ -23,6 +23,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <!-- Header -->
@@ -279,8 +280,35 @@
 
         </StackPanel>
 
+        <!-- Rate Mode -->
+        <StackPanel Grid.Row="4" Orientation="Horizontal" Margin="0,0,0,16">
+            <TextBlock Text="Rate Mode:"
+                       FontSize="13"
+                       FontWeight="SemiBold"
+                       VerticalAlignment="Center"
+                       Foreground="{DynamicResource ForegroundColor}"
+                       Margin="0,0,12,0"/>
+            <RadioButton x:Name="rbSummitRates"
+                         Content="Summit Rates"
+                         GroupName="RateMode"
+                         FontSize="12"
+                         VerticalAlignment="Center"
+                         Foreground="{DynamicResource ForegroundColor}"
+                         Margin="0,0,16,0"
+                         Checked="RbRateMode_Checked"
+                         ToolTip="Use the embedded Summit Industrial rate sheet"/>
+            <RadioButton x:Name="rbMcaaRates"
+                         Content="MCAA Rates"
+                         GroupName="RateMode"
+                         FontSize="12"
+                         VerticalAlignment="Center"
+                         Foreground="{DynamicResource ForegroundColor}"
+                         Checked="RbRateMode_Checked"
+                         ToolTip="Use the MCAA WebLEM rate sheet (gated to specific users while in development)"/>
+        </StackPanel>
+
         <!-- Options -->
-        <StackPanel Grid.Row="4" Margin="0,0,0,16">
+        <StackPanel Grid.Row="5" Margin="0,0,0,16">
             <CheckBox x:Name="chkRevBubbleOnly"
                       Content="Rev Bubble Items Only"
                       FontSize="12"
@@ -295,7 +323,7 @@
         </StackPanel>
 
         <!-- Status -->
-        <Border Grid.Row="5"
+        <Border Grid.Row="6"
                 Background="{DynamicResource ControlBackground}"
                 BorderBrush="{DynamicResource BorderColor}"
                 BorderThickness="1"

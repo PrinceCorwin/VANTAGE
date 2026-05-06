@@ -3,7 +3,7 @@
 **Owner:** Steve Amalfitano
 **Status:** In progress — manual abbreviation review ongoing in the producer project (SkySkraper)
 **Producer project folder (external, NOT in this repo):** `C:\Users\Steve.Amalfitano\source\repos\PrinceCorwin\SkySkraper\SynologyDrive`
-**See also:** `Plans/Takeoff_Rate_Mode_PRD.md` — the in-app rate-mode toggle (Summit / MCAA) that gates which lookup service this PRD's `MCAARateSheetService` plugs into. Phase 1 of that PRD (toggle infrastructure) is the prerequisite for VANTAGE-side MCAA work being merge-safe on main.
+**See also:** `Plans/Takeoff_Rate_Mode_PRD.md` — the in-app rate-mode toggle (Summit / MCAA) that gates which lookup service this PRD's `MCAARateSheetService` plugs into.
 
 ---
 

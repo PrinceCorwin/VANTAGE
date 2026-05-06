@@ -34,7 +34,8 @@ namespace VANTAGE.Services.AI
             "Raw Description",
             "raw_description",
             "length",
-            "Item ID"
+            "Item ID",
+            "ShopField"
         };
 
         // Material group multipliers for labor MH calculations
@@ -87,6 +88,14 @@ namespace VANTAGE.Services.AI
         {
             "PIPE", "TUBE"
         };
+
+        // Selectable rate-pricing strategy for a takeoff run. Captured from the
+        // Rate Mode radio group on TakeoffView at Process or Recalc time, plumbed
+        // through GenerateLaborAndSummary, and read by ExplodeMaterialRow,
+        // GenerateSplRows skip, and ApplyRates modifier neutralization.
+        public enum RateMode { Summit, MCAA }
+
+        private static RateMode _currentRateMode = RateMode.Summit;
 
         // Find Material tab rows with blank Component values
         // Returns list of (excelRow, drawingNumber, rawDescription) for UI prompt
@@ -164,11 +173,15 @@ namespace VANTAGE.Services.AI
         // Optional projectRateCache provides per-project rate overrides
         // The "Failed DWGs" tab is written by the Aggregation Lambda and preserved here untouched.
         public static (int MissedMakeups, int MissedRates) GenerateLaborAndSummary(
-            string excelPath, Dictionary<string, (double MH, string Unit)>? projectRateCache = null)
+            string excelPath,
+            Dictionary<string, (double MH, string Unit)>? projectRateCache = null,
+            RateMode rateMode = RateMode.Summit)
         {
             try
             {
                 using var workbook = new XLWorkbook(excelPath);
+
+                _currentRateMode = rateMode;
 
                 // Reset missed lookups for this run
                 _missedMakeups = new List<MissedMakeup>();
@@ -227,6 +240,21 @@ namespace VANTAGE.Services.AI
                 // Step B: Generate Labor rows
                 var laborRows = GenerateLaborRows(materialRows);
                 AppLogger.Info($"Generated {laborRows.Count} labor rows", "TakeoffPostProcessor");
+
+                // Step B1: ShopField rule for labor rows. Single source of truth.
+                //   BW, SW              → 1 (shop)  in both modes
+                //   PIPE, TUBE          → 1 (shop)  under Summit only
+                //   everything else     → 2 (field)
+                foreach (var row in laborRows)
+                {
+                    string comp = GetString(row, "Component");
+                    bool isShop = comp.Equals("BW", StringComparison.OrdinalIgnoreCase)
+                               || comp.Equals("SW", StringComparison.OrdinalIgnoreCase)
+                               || (_currentRateMode == RateMode.Summit
+                                   && (comp.Equals("PIPE", StringComparison.OrdinalIgnoreCase)
+                                    || comp.Equals("TUBE", StringComparison.OrdinalIgnoreCase)));
+                    row["ShopField"] = isShop ? 1 : 2;
+                }
 
                 // Step C: Apply rates to labor rows (with optional project overrides)
                 ApplyRates(laborRows, projectRateCache);
@@ -860,9 +888,13 @@ namespace VANTAGE.Services.AI
                 laborRows.AddRange(rows);
             }
 
-            // Generate SPL (Spool Handling) records for PIPE items with fitting makeup
-            var splRows = GenerateSplRows(materialRows);
-            laborRows.AddRange(splRows);
+            // Generate SPL (Spool Handling) records for PIPE items with fitting makeup.
+            // Summit-only — MCAA does not separately price spool handling.
+            if (_currentRateMode == RateMode.Summit)
+            {
+                var splRows = GenerateSplRows(materialRows);
+                laborRows.AddRange(splRows);
+            }
 
             return laborRows;
         }
@@ -974,7 +1006,6 @@ namespace VANTAGE.Services.AI
                     spl["Component"] = "SPL";
                     spl["Quantity"] = Math.Round(splQuantity, 3);
                     spl["Description"] = GetString(pipe, "Raw Description") + " - Spool Handling";
-                    spl["ShopField"] = 2; // SPL is field work
                     spl["BudgetMHs"] = null;
 
                     splRows.Add(spl);
@@ -1109,16 +1140,25 @@ namespace VANTAGE.Services.AI
             double smallerSize = dualSize?.Smaller ?? largerSize;
             bool isDualSize = dualSize != null;
 
-            // TODO Phase 1 (Plans/Takeoff_Rate_Mode_PRD.md): gate this skip behind RateMode == MCAA.
-            // Under Summit, this block must instead create the aggregated hardware labor row
-            // (the pre-cherry-pick behavior — see commit 9e582fc and its parent for the diff).
-            // Until the toggle ships, this skip is unconditional and main is NOT publishable.
-            //
-            // Hardware items (BOLT, GSKT, WAS): no labor rows under MCAA pricing.
-            // MCAA captures bolt-up labor via the joint rate on the connected flange/fitting,
-            // not as a separate hardware line. Items still appear on the Material tab.
+            // Hardware items (BOLT, GSKT, WAS): one aggregated labor row per material row
+            // under Summit. MCAA captures bolt-up labor in the joint rate, no separate row.
             if (component == "BOLT" || component == "GSKT" || component == "WAS")
             {
+                if (_currentRateMode == RateMode.MCAA)
+                    return result;
+
+                var hardware = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+                foreach (var (key, value) in mat)
+                {
+                    if (!ExcludeFromLabor.Contains(key))
+                        hardware[key] = value;
+                }
+                hardware["Quantity"] = quantity;
+                hardware["Description"] = string.IsNullOrEmpty(commodityCode)
+                    ? rawDesc
+                    : $"{rawDesc} - {commodityCode}";
+                hardware["BudgetMHs"] = null;
+                result.Add(hardware);
                 return result;
             }
 
@@ -1157,10 +1197,6 @@ namespace VANTAGE.Services.AI
                         ? rawDesc
                         : $"{rawDesc} - {commodityCode}";
                     fab["BudgetMHs"] = null;
-
-                    // FLGB (blind) and FLGLJ (lap joint) install is field handling only.
-                    if (component == "FLGB" || component == "FLGLJ")
-                        fab["ShopField"] = 2;
 
                     // FS (field supports): use Commodity Code as Class Rating for rate lookup
                     // Allows lookup as SPT-{size}:{commodityCode} with fallback to SPT-{size}
@@ -1222,17 +1258,9 @@ namespace VANTAGE.Services.AI
                         result.Add(thrdLabor);
                     }
 
-                    // TODO Phase 1 (Plans/Takeoff_Rate_Mode_PRD.md): gate this companion CUT row
-                    // behind RateMode == MCAA. Under Summit, this block must NOT execute — the
-                    // existing CutAdd fold-in on the BW/SW row already prices cut labor, so
-                    // emitting a standalone CUT row here double-counts. Until the toggle ships,
-                    // this generation is unconditional and main is NOT publishable.
-                    //
-                    // BW and SW connections also generate a CUT labor row, one per parent.
-                    // Existing CUT fold-in via the CutAdd column on the BW/SW row is left
-                    // alone — the standalone CUT row is here so the upcoming MCAA-rate
-                    // pass can price cut labor row-by-row instead of as an add-on.
-                    if (connType == "BW" || connType == "SW")
+                    // MCAA prices cut labor as a separate row per BW/SW joint (Summit folds
+                    // it into the parent row's CutAdd modifier instead — see ApplyRates).
+                    if (_currentRateMode == RateMode.MCAA && (connType == "BW" || connType == "SW"))
                     {
                         var cutLabor = CreateLaborRow(mat, "CUT", connSize, thickness, material, allMaterialRows);
                         result.Add(cutLabor);
@@ -1361,7 +1389,6 @@ namespace VANTAGE.Services.AI
             labor["Size"] = sizeStr;
             labor["Thickness"] = thickness;
             labor["Quantity"] = 1;
-            labor["ShopField"] = (connType == "BU" || connType == "SCRD") ? 2 : 1;
             string descSuffix = connType == "BU" ? "BU - One Flange" : connType;
             labor["Description"] = BuildConcatDescription(sizeStr, thickness, classRating, material, descSuffix);
             labor["BudgetMHs"] = null;
@@ -1545,6 +1572,15 @@ namespace VANTAGE.Services.AI
 
             // Total MHs across all labor rows
             double totalMHs = laborRows.Sum(r => GetBudgetMHs(r));
+
+            // Rate mode used to generate this workbook (Summit / MCAA). Captured at takeoff
+            // time from the radio group on TakeoffView. Lets a future reader tell at a glance
+            // which pricing strategy produced the BudgetMHs values without inferring from the
+            // labor row counts.
+            ws.Cell(row, 1).Value = "Rate Mode";
+            ws.Cell(row, 2).Value = _currentRateMode.ToString();
+            ws.Cell(row, 2).Style.Font.Bold = true;
+            row++;
 
             WriteSummaryRow(ws, row++, "Total Drawings", drawingNumbers.Count);
             WriteSummaryRow(ws, row++, "Total BOM Items", materialRows.Count);
@@ -1757,10 +1793,17 @@ namespace VANTAGE.Services.AI
                     string matlGrp = GetString(row, "Matl_Grp");
                     double matlMult = GetMaterialMultiplier(matlGrp);
 
-                    // FS rates already include rollup/material multipliers in the published Summit rate.
-                    // Applying them again would double-count, so neutralize for FS only.
-                    if (component.Equals("FS", StringComparison.OrdinalIgnoreCase))
+                    if (_currentRateMode == RateMode.MCAA)
                     {
+                        // MCAA pricing: no rate modifiers — RateSheet × Quantity is the row total.
+                        // Cut/bevel labor is priced as separate companion rows, not folded in.
+                        rollupMult = 1.0;
+                        matlMult = 1.0;
+                    }
+                    else if (component.Equals("FS", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // FS rates already include rollup/material multipliers in the published Summit rate.
+                        // Applying them again would double-count, so neutralize for FS only.
                         rollupMult = 1.0;
                         matlMult = 1.0;
                     }
@@ -1770,20 +1813,24 @@ namespace VANTAGE.Services.AI
                     row["MatlMult"] = matlMult;
 
                     // BW: add CUT + BEV rates (unmultiplied). SW/SCRD: add CUT rate only.
+                    // Summit-only — under MCAA, cut/bevel is priced via standalone CUT companion rows.
                     double cutAdd = 0;
                     double bevAdd = 0;
-                    if (component.Equals("BW", StringComparison.OrdinalIgnoreCase))
+                    if (_currentRateMode == RateMode.Summit)
                     {
-                        var cutRate = RateSheetService.FindRate("CUT", size, thickness, classRating);
-                        var bevRate = RateSheetService.FindRate("BEV", size, thickness, classRating);
-                        if (cutRate.FldMhu.HasValue) cutAdd = cutRate.FldMhu.Value;
-                        if (bevRate.FldMhu.HasValue) bevAdd = bevRate.FldMhu.Value;
-                    }
-                    else if (component.Equals("SW", StringComparison.OrdinalIgnoreCase) ||
-                             component.Equals("SCRD", StringComparison.OrdinalIgnoreCase))
-                    {
-                        var cutRate = RateSheetService.FindRate("CUT", size, thickness, classRating);
-                        if (cutRate.FldMhu.HasValue) cutAdd = cutRate.FldMhu.Value;
+                        if (component.Equals("BW", StringComparison.OrdinalIgnoreCase))
+                        {
+                            var cutRate = RateSheetService.FindRate("CUT", size, thickness, classRating);
+                            var bevRate = RateSheetService.FindRate("BEV", size, thickness, classRating);
+                            if (cutRate.FldMhu.HasValue) cutAdd = cutRate.FldMhu.Value;
+                            if (bevRate.FldMhu.HasValue) bevAdd = bevRate.FldMhu.Value;
+                        }
+                        else if (component.Equals("SW", StringComparison.OrdinalIgnoreCase) ||
+                                 component.Equals("SCRD", StringComparison.OrdinalIgnoreCase))
+                        {
+                            var cutRate = RateSheetService.FindRate("CUT", size, thickness, classRating);
+                            if (cutRate.FldMhu.HasValue) cutAdd = cutRate.FldMhu.Value;
+                        }
                     }
                     row["CutAdd"] = cutAdd;
                     row["BevelAdd"] = bevAdd;

@@ -40,7 +40,8 @@ VANTAGE: Milestone provides activity tracking, P6 Primavera schedule integration
 - Per-project rate overrides with `Manage Project Rates` dialog and Excel upload
 - ROC (Rule of Credit) splits via `Manage ROC Rates` dialog with applicable-component checklist
 - Fitting makeup lookup with olet support and equivalence mappings
-- Field/Shop classification (ShopField post-processing) with mixed-connection-type rules
+- Rate Mode selector (Summit / MCAA) on the AI Takeoff view that gates pricing-strategy divergences in post-processing
+- Field/Shop classification: BW and SW are shop work in both modes; PIPE and TUBE are shop work under Summit; everything else is field work
 - Audit columns (RateSheet, RollupMult, MatlMult, CutAdd, BevelAdd) for user verification
 - Diagnostic worksheets (Missed Makeups, Missed Rates, No Conns, Malformed Sizes, Failed DWGs) with reason classification
 - Recalc Excel and re-download support that preserves diagnostic tabs
