@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.Data.Sqlite;
 using VANTAGE.Utilities;
@@ -107,58 +108,109 @@ namespace VANTAGE.Services
             }
         }
 
-        // Load distinct values from Activities for the given WorkPackage
-        private static void LoadActivityTokens(SqliteConnection connection, TokenContext context)
+        // Fields that resolve to a comma-joined list of all distinct non-empty values
+        // for the work package. Every other Activities column resolves to the first
+        // distinct value (alphabetical), suitable for header titles.
+        private static readonly HashSet<string> CommaSeparatedFields =
+            new(StringComparer.OrdinalIgnoreCase) { "SchedActNO", "PhaseCode" };
+
+        // Cached list of Activities table column names. Populated once per process from
+        // PRAGMA table_info. Used as the allowlist of token names that map to columns,
+        // so users can reference any column from the grid (Estimator, DwgNO, UDF11, etc.)
+        // without the resolver hardcoding a list.
+        private static List<string>? _activityColumns;
+        private static readonly object _activityColumnsLock = new();
+
+        private static List<string> GetActivityColumns(SqliteConnection connection)
         {
-            // SchedActNO - comma-separated list of all distinct values
-            var schedActNOs = LoadDistinctValues(connection, "SchedActNO", context.WorkPackage);
-            context.ResolvedTokens["SchedActNO"] = string.Join(", ", schedActNOs);
+            if (_activityColumns != null) return _activityColumns;
 
-            // PhaseCode - comma-separated list of all distinct values
-            var phaseCodes = LoadDistinctValues(connection, "PhaseCode", context.WorkPackage);
-            context.ResolvedTokens["PhaseCode"] = string.Join(", ", phaseCodes);
-
-            // Load first distinct value for other activity fields (for WP Name pattern)
-            var singleValueFields = new[] { "Area", "PjtSystemNo", "UDF1", "UDF2", "UDF3", "UDF4", "UDF5",
-                "UDF6", "UDF7", "UDF8", "UDF9", "UDF10", "CompType", "PhaseCategory", "SubArea" };
-
-            foreach (var field in singleValueFields)
+            lock (_activityColumnsLock)
             {
-                var values = LoadDistinctValues(connection, field, context.WorkPackage);
-                context.ResolvedTokens[field] = values.Count > 0 ? values[0] : "";
+                if (_activityColumns != null) return _activityColumns;
+
+                var cols = new List<string>();
+                try
+                {
+                    var cmd = connection.CreateCommand();
+                    cmd.CommandText = "PRAGMA table_info('Activities')";
+                    using var reader = cmd.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        cols.Add(reader.GetString(1));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    AppLogger.Error(ex, "TokenResolver.GetActivityColumns");
+                }
+
+                _activityColumns = cols;
+                return cols;
             }
         }
 
-        // Load distinct values for a field from Activities table
-        private static List<string> LoadDistinctValues(SqliteConnection connection, string fieldName, string workPackage)
+        // Load distinct values for every Activities column for the given WorkPackage.
+        // Single wide query instead of one query per field — better for large datasets.
+        private static void LoadActivityTokens(SqliteConnection connection, TokenContext context)
         {
-            var values = new List<string>();
+            var columns = GetActivityColumns(connection);
+            if (columns.Count == 0) return;
+
+            // Column names come from PRAGMA (trusted) but we still bracket-quote defensively.
+            var bracketed = string.Join(", ", columns.Select(c => $"[{c}]"));
+
             try
             {
                 var cmd = connection.CreateCommand();
-                cmd.CommandText = $@"
-                    SELECT DISTINCT {fieldName}
-                    FROM Activities
-                    WHERE WorkPackage = @workPackage
-                      AND {fieldName} IS NOT NULL
-                      AND {fieldName} != ''
-                    ORDER BY {fieldName}";
-                cmd.Parameters.AddWithValue("@workPackage", workPackage);
+                cmd.CommandText = $"SELECT {bracketed} FROM Activities WHERE WorkPackage = @wp";
+                cmd.Parameters.AddWithValue("@wp", context.WorkPackage);
+
+                // Per-column distinct sets (case-sensitive, preserve insertion order)
+                var seen = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
+                var values = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+                foreach (var col in columns)
+                {
+                    seen[col] = new HashSet<string>(StringComparer.Ordinal);
+                    values[col] = new List<string>();
+                }
 
                 using var reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {
-                    if (!reader.IsDBNull(0))
+                    for (int i = 0; i < columns.Count; i++)
                     {
-                        values.Add(reader.GetString(0));
+                        if (reader.IsDBNull(i)) continue;
+                        var val = reader.GetValue(i)?.ToString();
+                        if (string.IsNullOrEmpty(val)) continue;
+
+                        if (seen[columns[i]].Add(val))
+                        {
+                            values[columns[i]].Add(val);
+                        }
+                    }
+                }
+
+                // Sort each column's values for deterministic resolution
+                foreach (var col in columns)
+                {
+                    var sorted = values[col];
+                    sorted.Sort(StringComparer.Ordinal);
+
+                    if (CommaSeparatedFields.Contains(col))
+                    {
+                        context.ResolvedTokens[col] = string.Join(", ", sorted);
+                    }
+                    else
+                    {
+                        context.ResolvedTokens[col] = sorted.Count > 0 ? sorted[0] : "";
                     }
                 }
             }
             catch (Exception ex)
             {
-                AppLogger.Error(ex, $"TokenResolver.LoadDistinctValues({fieldName})");
+                AppLogger.Error(ex, "TokenResolver.LoadActivityTokens");
             }
-            return values;
         }
 
         // Resolve a single token

@@ -155,11 +155,18 @@ namespace VANTAGE.Services.PdfRenderers
             return y;
         }
 
-        // Load an image from file path or embedded resource
+        // Load an image from file path or embedded resource.
+        // Pass "(none)" as the sentinel to skip drawing the image entirely.
         protected PdfImage? LoadImage(string? imagePath)
         {
             try
             {
+                // Sentinel for "no image" — caller wants the slot empty, not a default
+                if (imagePath == "(none)")
+                {
+                    return null;
+                }
+
                 if (string.IsNullOrEmpty(imagePath))
                 {
                     // Load default logo from embedded resource

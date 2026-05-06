@@ -77,6 +77,10 @@ namespace VANTAGE.ViewModels
             }
         }
 
+        // Currently requested anchor in manual.html (e.g., "wp-name-pattern").
+        // Null/empty means navigate to top of manual.
+        public string? CurrentAnchor { get; private set; }
+
         // URL for WebView2 navigation
         public string HelpNavigationUrl
         {
@@ -89,7 +93,8 @@ namespace VANTAGE.ViewModels
                 }
 
                 // Use virtual host mapping so images load correctly (mapped to app base dir)
-                return "https://help.local/Help/manual.html";
+                var baseUrl = "https://help.local/Help/manual.html";
+                return string.IsNullOrEmpty(CurrentAnchor) ? baseUrl : $"{baseUrl}#{CurrentAnchor}";
             }
         }
 
@@ -198,6 +203,18 @@ namespace VANTAGE.ViewModels
 
         public void ShowHelp()
         {
+            Open();
+        }
+
+        // Open the help panel and navigate to a specific manual anchor.
+        // Passing null/empty leaves the current scroll position alone.
+        public void ShowHelp(string? anchor)
+        {
+            if (!string.IsNullOrEmpty(anchor))
+            {
+                CurrentAnchor = anchor;
+                OnPropertyChanged(nameof(HelpNavigationUrl));
+            }
             Open();
         }
 

@@ -28,13 +28,17 @@ namespace VANTAGE.Services.PdfRenderers
         private readonly GridRenderer _gridRenderer = new();
         private readonly DrawingsRenderer _drawingsRenderer = new();
 
-        // Generate PDFs for a single work package
+        // Generate PDFs for a single work package.
+        // noSubfolders=true drops every PDF directly into the project's "Work Pkgs"
+        // folder (no per-WP subfolder). Mutually exclusive with includeIndividualPdfs
+        // at the UI level.
         public async Task<GenerationResult> GenerateAsync(
             string wpTemplateId,
             TokenContext context,
             string outputFolder,
             bool includeIndividualPdfs,
-            string? logoPath = null)
+            string? logoPath = null,
+            bool noSubfolders = false)
         {
             var result = new GenerationResult();
 
@@ -66,8 +70,14 @@ namespace VANTAGE.Services.PdfRenderers
                 // Set output folder in context for renderers that need it (e.g., DrawingsRenderer)
                 context.OutputFolder = outputFolder;
 
-                // Create output folder structure
-                string wpFolder = Path.Combine(outputFolder, context.ProjectID, SanitizeFileName(context.WorkPackage));
+                // Create output folder structure.
+                // Default: {outputFolder}/{ProjectID} - Work Pkgs/{WorkPackage}/
+                // No Subfolders: {outputFolder}/{ProjectID} - Work Pkgs/  (all PDFs flat)
+                string projectFolderName = $"{SanitizeFileName(context.ProjectID)} - Work Pkgs";
+                string sanitizedWP = SanitizeFileName(context.WorkPackage);
+                string wpFolder = noSubfolders
+                    ? Path.Combine(outputFolder, projectFolderName)
+                    : Path.Combine(outputFolder, projectFolderName, sanitizedWP);
                 Directory.CreateDirectory(wpFolder);
 
                 // Generate each form PDF
@@ -88,10 +98,11 @@ namespace VANTAGE.Services.PdfRenderers
                     string formName = SanitizeFileName(formTemplate.TemplateName);
                     formDocuments.Add((formDoc, formName));
 
-                    // Save individual PDF if requested
+                    // Save individual PDF if requested. Prefixed with WorkPackage so multiple
+                    // WPs writing to the same flat folder don't overwrite each other's files.
                     if (includeIndividualPdfs)
                     {
-                        string individualPath = Path.Combine(wpFolder, $"{formIndex}_{formName}.pdf");
+                        string individualPath = Path.Combine(wpFolder, $"{sanitizedWP}-{formIndex}_{formName}.pdf");
                         using var fileStream = new FileStream(individualPath, FileMode.Create, FileAccess.Write);
                         formDoc.Save(fileStream);
                         result.IndividualPdfPaths.Add(individualPath);
@@ -110,7 +121,7 @@ namespace VANTAGE.Services.PdfRenderers
                 PdfDocument mergedDoc = MergeDocuments(formDocuments);
 
                 // Save merged PDF
-                string mergedFileName = $"{SanitizeFileName(context.WorkPackage)}-WorkPackage.pdf";
+                string mergedFileName = $"{sanitizedWP}-WorkPackage.pdf";
                 string mergedPath = Path.Combine(wpFolder, mergedFileName);
                 using (var mergedStream = new FileStream(mergedPath, FileMode.Create, FileAccess.Write))
                 {
@@ -153,7 +164,8 @@ namespace VANTAGE.Services.PdfRenderers
             string wpNamePattern,
             string outputFolder,
             bool includeIndividualPdfs,
-            string? logoPath = null)
+            string? logoPath = null,
+            bool noSubfolders = false)
         {
             var results = new List<GenerationResult>();
 
@@ -170,7 +182,7 @@ namespace VANTAGE.Services.PdfRenderers
                     WPNamePattern = wpNamePattern
                 };
 
-                var result = await GenerateAsync(wpTemplateId, context, outputFolder, includeIndividualPdfs, logoPath);
+                var result = await GenerateAsync(wpTemplateId, context, outputFolder, includeIndividualPdfs, logoPath, noSubfolders);
                 results.Add(result);
             }
 

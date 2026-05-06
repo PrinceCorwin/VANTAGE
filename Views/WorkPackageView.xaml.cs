@@ -10,8 +10,10 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
+using System.Windows.Threading;
 using Microsoft.Win32;
 using Syncfusion.Windows.Tools.Controls;
 using VANTAGE.Models;
@@ -50,6 +52,8 @@ namespace VANTAGE.Views
         // Cover editor controls
         private TextBox? _coverTitleBox;
         private TextBox? _coverImagePathBox;
+        private Button? _coverImageBrowseBtn;
+        private CheckBox? _coverNoImageBox;
         private Slider? _coverImageWidthSlider;
         private TextBox? _coverFooterTextBox;
 
@@ -139,9 +143,13 @@ namespace VANTAGE.Views
             return File.Exists(path) ? path : null;
         }
 
-        // Resolves the logo path - converts "(default)" to actual path
+        // Resolves the logo path. Returns "(none)" sentinel when "No Image" is checked
+        // (renderer treats this as "skip drawing"); otherwise resolves "(default)" or
+        // returns the user-picked path.
         private string? GetResolvedLogoPath()
         {
+            if (chkLogoNoImage?.IsChecked == true)
+                return "(none)";
             if (string.IsNullOrEmpty(txtLogoPath.Text) || txtLogoPath.Text == "(default)")
                 return GetDefaultLogoPath();
             return txtLogoPath.Text;
@@ -205,6 +213,20 @@ namespace VANTAGE.Views
                 {
                     txtLogoPath.Text = "(default)";
                 }
+
+                // Load last "Logo No Image" preference and apply enabled state to path/browse
+                var lastNoLogo = SettingsManager.GetUserSetting("WorkPackage.LogoNoImage");
+                chkLogoNoImage.IsChecked = string.Equals(lastNoLogo, "True", StringComparison.OrdinalIgnoreCase);
+                ApplyLogoNoImageEnabledState();
+
+                // Load last "No Subfolders" / "Individual PDFs" preferences. Both default false.
+                // The Changed handlers enforce the mutex, so if a prior session left both
+                // somehow true, loading IndividualPdfs second auto-corrects NoSubfolders.
+                var lastNoSubfolders = SettingsManager.GetUserSetting("WorkPackage.NoSubfolders");
+                chkNoSubfolders.IsChecked = string.Equals(lastNoSubfolders, "True", StringComparison.OrdinalIgnoreCase);
+
+                var lastIndividualPdfs = SettingsManager.GetUserSetting("WorkPackage.IndividualPdfs");
+                chkIndividualPdfs.IsChecked = string.Equals(lastIndividualPdfs, "True", StringComparison.OrdinalIgnoreCase);
 
                 // Load last used WP Name Pattern from settings
                 var lastPattern = SettingsManager.GetUserSetting("WorkPackage.WPNamePattern");
@@ -849,6 +871,102 @@ namespace VANTAGE.Views
             SettingsManager.SetUserSetting("WorkPackage.WPNamePattern", txtWPNamePattern.Text, "string");
         }
 
+        // "No Image" toggle for the logo — persist preference and gate path/browse controls
+        private void ChkLogoNoImage_Changed(object sender, RoutedEventArgs e)
+        {
+            SettingsManager.SetUserSetting("WorkPackage.LogoNoImage",
+                (chkLogoNoImage.IsChecked == true).ToString(), "string");
+            ApplyLogoNoImageEnabledState();
+        }
+
+        private void ApplyLogoNoImageEnabledState()
+        {
+            bool noImage = chkLogoNoImage.IsChecked == true;
+            txtLogoPath.IsEnabled = !noImage;
+            btnBrowseLogo.IsEnabled = !noImage;
+        }
+
+        // No Subfolders / Individual PDFs are mutually exclusive. Each handler
+        // persists its own setting; when one auto-unchecks the other, the other's
+        // Unchecked event fires and persists that setting too — no manual cascade
+        // or suppress flag needed. The mutex if-block fails on the cascaded call
+        // because that side is now false.
+        private void ChkNoSubfolders_Changed(object sender, RoutedEventArgs e)
+        {
+            SettingsManager.SetUserSetting("WorkPackage.NoSubfolders",
+                (chkNoSubfolders.IsChecked == true).ToString(), "string");
+
+            if (chkNoSubfolders.IsChecked == true && chkIndividualPdfs.IsChecked == true)
+            {
+                chkIndividualPdfs.IsChecked = false;
+            }
+        }
+
+        private void ChkIndividualPdfs_Changed(object sender, RoutedEventArgs e)
+        {
+            SettingsManager.SetUserSetting("WorkPackage.IndividualPdfs",
+                (chkIndividualPdfs.IsChecked == true).ToString(), "string");
+
+            if (chkIndividualPdfs.IsChecked == true && chkNoSubfolders.IsChecked == true)
+            {
+                chkNoSubfolders.IsChecked = false;
+            }
+        }
+
+        // Open help sidebar at the WP Name Pattern section
+        private void BtnWPNamePatternHelp_Click(object sender, RoutedEventArgs e)
+        {
+            popupWPNamePatternHelp.IsOpen = false;
+            HelpService.OpenAt(HelpAnchors.WPNamePattern);
+        }
+
+        // Hover popup for WP Name Pattern help icon. The popup must stay open while
+        // the mouse is over either the icon or the popup itself, so we use a short
+        // close timer that gets cancelled if the mouse re-enters either region.
+        private DispatcherTimer? _wpNamePatternHelpCloseTimer;
+
+        private void BtnWPNamePatternHelp_MouseEnter(object sender, MouseEventArgs e)
+        {
+            _wpNamePatternHelpCloseTimer?.Stop();
+            popupWPNamePatternHelp.IsOpen = true;
+        }
+
+        private void BtnWPNamePatternHelp_MouseLeave(object sender, MouseEventArgs e)
+        {
+            StartWPNamePatternHelpCloseTimer();
+        }
+
+        private void PopupWPNamePatternHelp_MouseEnter(object sender, MouseEventArgs e)
+        {
+            _wpNamePatternHelpCloseTimer?.Stop();
+        }
+
+        private void PopupWPNamePatternHelp_MouseLeave(object sender, MouseEventArgs e)
+        {
+            StartWPNamePatternHelpCloseTimer();
+        }
+
+        private void StartWPNamePatternHelpCloseTimer()
+        {
+            if (_wpNamePatternHelpCloseTimer == null)
+            {
+                _wpNamePatternHelpCloseTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(200) };
+                _wpNamePatternHelpCloseTimer.Tick += (s, args) =>
+                {
+                    _wpNamePatternHelpCloseTimer.Stop();
+                    popupWPNamePatternHelp.IsOpen = false;
+                };
+            }
+            _wpNamePatternHelpCloseTimer.Stop();
+            _wpNamePatternHelpCloseTimer.Start();
+        }
+
+        private void HyperlinkWPNamePatternHelp_Click(object sender, RoutedEventArgs e)
+        {
+            popupWPNamePatternHelp.IsOpen = false;
+            HelpService.OpenAt(HelpAnchors.WPNamePattern);
+        }
+
         // Browse for logo
         private void BtnBrowseLogo_Click(object sender, RoutedEventArgs e)
         {
@@ -1023,7 +1141,8 @@ namespace VANTAGE.Views
                     txtWPNamePattern.Text,
                     txtOutputFolder.Text,
                     chkIndividualPdfs.IsChecked == true,
-                    GetResolvedLogoPath()
+                    GetResolvedLogoPath(),
+                    chkNoSubfolders.IsChecked == true
                 );
 
                 int successCount = results.Count(r => r.Success);
@@ -2063,6 +2182,7 @@ namespace VANTAGE.Views
             var imagePathGrid = new Grid { Margin = new Thickness(0, 0, 0, 15) };
             imagePathGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             imagePathGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            imagePathGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
             _coverImagePathBox = new TextBox
             {
@@ -2074,17 +2194,31 @@ namespace VANTAGE.Views
             Grid.SetColumn(_coverImagePathBox, 0);
             imagePathGrid.Children.Add(_coverImagePathBox);
 
-            var browseBtn = new Button
+            _coverImageBrowseBtn = new Button
             {
                 Content = "Browse",
                 Padding = new Thickness(8, 4, 8, 4),
                 Margin = new Thickness(5, 0, 0, 0)
             };
-            browseBtn.Click += BrowseCoverImage_Click;
-            Grid.SetColumn(browseBtn, 1);
-            imagePathGrid.Children.Add(browseBtn);
+            _coverImageBrowseBtn.Click += BrowseCoverImage_Click;
+            Grid.SetColumn(_coverImageBrowseBtn, 1);
+            imagePathGrid.Children.Add(_coverImageBrowseBtn);
+
+            _coverNoImageBox = new CheckBox
+            {
+                Content = "No Image",
+                IsChecked = structure.NoImage,
+                VerticalAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(10, 0, 0, 0),
+                ToolTip = "Render the cover sheet with no image"
+            };
+            _coverNoImageBox.Checked += CoverNoImage_Changed;
+            _coverNoImageBox.Unchecked += CoverNoImage_Changed;
+            Grid.SetColumn(_coverNoImageBox, 2);
+            imagePathGrid.Children.Add(_coverNoImageBox);
 
             panel.Children.Add(imagePathGrid);
+            ApplyCoverNoImageEnabledState();
 
             // Image Width Percent
             panel.Children.Add(new TextBlock
@@ -2154,6 +2288,21 @@ namespace VANTAGE.Views
                     _hasUnsavedChanges = true;
                 }
             }
+        }
+
+        // "No Image" toggle on the cover template editor — saves with template,
+        // disables path/browse so the user understands the path is being ignored.
+        private void CoverNoImage_Changed(object sender, RoutedEventArgs e)
+        {
+            _hasUnsavedChanges = true;
+            ApplyCoverNoImageEnabledState();
+        }
+
+        private void ApplyCoverNoImageEnabledState()
+        {
+            bool noImage = _coverNoImageBox?.IsChecked == true;
+            if (_coverImagePathBox != null) _coverImagePathBox.IsEnabled = !noImage;
+            if (_coverImageBrowseBtn != null) _coverImageBrowseBtn.IsEnabled = !noImage;
         }
 
         // Build and display the List type editor
@@ -2572,6 +2721,7 @@ namespace VANTAGE.Views
                 Title = _coverTitleBox?.Text ?? "COVER SHEET",
                 ImagePath = _coverImagePathBox?.Text == "(default)" ? null : _coverImagePathBox?.Text,
                 ImageWidthPercent = (int)(_coverImageWidthSlider?.Value ?? 80),
+                NoImage = _coverNoImageBox?.IsChecked == true,
                 FooterText = string.IsNullOrWhiteSpace(_coverFooterTextBox?.Text) ? null : _coverFooterTextBox.Text
             };
             return JsonSerializer.Serialize(structure);

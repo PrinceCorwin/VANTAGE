@@ -2123,7 +2123,7 @@
         </tr>
         <tr>
             <td><strong>WP Name Pattern</strong></td>
-            <td>Define the output filename pattern using tokens. Example: <code>{WorkPackage}-{Area}</code></td>
+            <td>Optional. Sets the title text shown in the top-right corner of every generated form page. Tokens like <code>{WorkPackage}</code>, <code>{Area}</code>, <code>{UDF2}</code> are resolved per work package. Leaving this blank shows the work package ID. Example: <code>{PhaseCategory} {WorkPackage} for {Area} {PhaseCode}</code> might resolve to <code>PIP 50.TK103-M.F for TFS 50.TFS.201.1</code> depending on the values in those columns.</td>
         </tr>
         <tr>
             <td><strong>Logo</strong></td>
@@ -2139,15 +2139,43 @@
         </tr>
     </table>
 
-    <div class="note">
+    <div id="wp-name-pattern" class="note">
         <div class="note-title">WP Name Pattern</div>
+        <p>A <strong>token</strong> is a placeholder wrapped in curly braces (e.g., <code>{Area}</code>) that gets replaced with a real value when the PDF is generated. Most tokens map directly to a column in the Activities grid — for example, <code>{WorkPackage}</code> resolves to the work package ID, <code>{Area}</code> resolves to the Area column value, and so on.</p>
+        <p>A few tokens don't come from columns and are useful in headers. The most common are:</p>
+        <ul>
+            <li><code>{PrintedDate}</code> — Date the PDF was generated (MM/dd/yyyy)</li>
+            <li><code>{ExpirationDate}</code> — Printed date plus the WP template's Expiration Days</li>
+            <li><code>{CurrentUser}</code> — Full name of the user running Generate</li>
+            <li><code>{PKGManager}</code> / <code>{Scheduler}</code> — Full names of the users selected in those dropdowns</li>
+            <li><code>{ProjectName}</code>, <code>{ProjectManager}</code>, <code>{SiteManager}</code>, <code>{Phone}</code>, <code>{Fax}</code> — Project-level values</li>
+        </ul>
+        <p>Example: <code>{PhaseCategory} {WorkPackage} for {Area} {PhaseCode}</code> might resolve to <code>PIP 50.TK103-M.F for TFS 50.TFS.201.1</code> depending on the values in those columns.</p>
+        <p>See the <a href="#wp-tokens">Token System</a> section for the complete list, including all activity column tokens and UDFs.</p>
         <p>Click the <strong>+ Field</strong> button to insert tokens at the cursor position. The dropdown shows commonly used fields at the top (Area, CompType, PhaseCategory, PhaseCode, PjtSystemNo, SchedActNO, UDF2, WorkPackage), followed by all remaining activity fields alphabetically. You can also type plain text alongside tokens. Examples:</p>
         <ul>
             <li><code>{WorkPackage}</code> — Just the work package ID</li>
             <li><code>{WorkPackage}-{Area}</code> — Work package with area suffix</li>
             <li><code>{Area}-{WorkPackage}-{UDF2}</code> — Custom combination</li>
             <li><code>Pipe Installation for Mod {UDF2}</code> — Descriptive text with a token</li>
+            <li><code>Printed {PrintedDate} by {CurrentUser}</code> — Mix of plain text and non-column tokens</li>
         </ul>
+    </div>
+
+    <div class="note">
+        <div class="note-title">Output File Naming</div>
+        <p>Output filenames are fixed; folder structure depends on the <strong>No Subfolders</strong> checkbox under the Output Folder field.</p>
+        <p><strong>Default (No Subfolders unchecked):</strong> each work package gets its own subfolder.</p>
+        <ul>
+            <li><code>{OutputFolder}/{ProjectID} - Work Pkgs/{WorkPackage}/{WorkPackage}-WorkPackage.pdf</code> — merged work package PDF</li>
+            <li><code>{OutputFolder}/{ProjectID} - Work Pkgs/{WorkPackage}/{WorkPackage}-{n}_{FormName}.pdf</code> — individual form PDFs (when "Also output individual form PDFs" is checked)</li>
+        </ul>
+        <p><strong>No Subfolders checked:</strong> all merged PDFs from all selected work packages drop directly into the project's "Work Pkgs" folder.</p>
+        <ul>
+            <li><code>{OutputFolder}/{ProjectID} - Work Pkgs/{WorkPackage}-WorkPackage.pdf</code> — merged work package PDF</li>
+        </ul>
+        <p><strong>No Subfolders</strong> and <strong>Also output individual form PDFs</strong> cannot be selected at the same time — checking one automatically unchecks the other.</p>
+        <p>The WP Name Pattern only affects the title text inside the PDF, not the filename on disk.</p>
     </div>
 
     <div class="note">
@@ -2161,7 +2189,7 @@
         <li>Check the <strong>Work Packages</strong> you want to generate</li>
         <li>Select a <strong>WP Template</strong> that defines which forms to include</li>
         <li>Optionally set <strong>PKG Manager</strong> and <strong>Scheduler</strong> for token replacement</li>
-        <li>Configure the <strong>WP Name Pattern</strong> for output filenames</li>
+        <li>Configure the <strong>WP Name Pattern</strong> for the on-page title shown in form headers (optional)</li>
         <li>Confirm or browse for a <strong>Logo</strong></li>
         <li>Set the <strong>Output Folder</strong></li>
         <li>Click <strong>GENERATE</strong></li>
@@ -2601,49 +2629,30 @@
     </table>
 
     <h4>Activity Tokens</h4>
-    <p>These tokens pull values from activities in the selected work package:</p>
+    <p><strong>Any column from the Activities grid</strong> can be used as a token by wrapping its column name in curly braces — for example, <code>{Estimator}</code>, <code>{DwgNO}</code>, <code>{UDF15}</code>, <code>{RespParty}</code>. The <strong>+ Field</strong> button on the WP Name Pattern field shows the available column names.</p>
+    <p>How activity-column tokens resolve depends on the column:</p>
     <table>
         <tr>
-            <th>Token</th>
-            <th>Value</th>
+            <th>Column</th>
+            <th>Resolution</th>
         </tr>
         <tr>
             <td><code>{SchedActNO}</code></td>
-            <td>Comma-separated list of distinct schedule activity numbers</td>
+            <td>Comma-separated list of all distinct values found in the work package</td>
         </tr>
         <tr>
             <td><code>{PhaseCode}</code></td>
-            <td>Comma-separated list of distinct phase codes</td>
+            <td>Comma-separated list of all distinct values found in the work package</td>
         </tr>
         <tr>
-            <td><code>{Area}</code></td>
-            <td>Area value (first distinct value)</td>
-        </tr>
-        <tr>
-            <td><code>{PjtSystemNo}</code></td>
-            <td>System number</td>
-        </tr>
-        <tr>
-            <td><code>{SubArea}</code></td>
-            <td>Sub-area value</td>
-        </tr>
-        <tr>
-            <td><code>{CompType}</code></td>
-            <td>Component type</td>
-        </tr>
-        <tr>
-            <td><code>{PhaseCategory}</code></td>
-            <td>Phase category</td>
-        </tr>
-        <tr>
-            <td><code>{UDF1}</code> through <code>{UDF10}</code></td>
-            <td>User-defined fields 1-10</td>
+            <td>All other Activity columns</td>
+            <td>First distinct non-empty value found in the work package (alphabetical). If every row has the same value for that column, that single value is used.</td>
         </tr>
     </table>
 
     <div class="note">
         <div class="note-title">Token Resolution</div>
-        <p>Tokens are case-insensitive. If a token cannot be resolved, it appears as-is in the output (e.g., <code>{UnknownToken}</code>) so you can identify issues.</p>
+        <p>Tokens are case-insensitive. If a token cannot be resolved (e.g., the column doesn't exist or the work package has no non-empty values for it), it appears as-is in the output (e.g., <code>{UnknownToken}</code>) so you can identify issues.</p>
     </div>
 
     <h3 id="wp-previewing">Previewing Templates</h3>

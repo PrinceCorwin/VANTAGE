@@ -80,6 +80,10 @@ namespace VANTAGE.Models
         [JsonPropertyName("imageWidthPercent")]
         public int ImageWidthPercent { get; set; } = 80;
 
+        // When true, the cover renders with no image at all (overrides ImagePath).
+        [JsonPropertyName("noImage")]
+        public bool NoImage { get; set; }
+
         [JsonPropertyName("footerText")]
         public string? FooterText { get; set; }
     }

@@ -199,6 +199,13 @@ namespace VANTAGE
             _sidePanelViewModel.ShowHelp();
         }
 
+        // Open the help sidebar at a specific anchor in manual.html.
+        // Called by HelpService.OpenAt() — info icons throughout the app route here.
+        public void OpenHelpAt(string anchor)
+        {
+            _sidePanelViewModel.ShowHelp(anchor);
+        }
+
         private void MenuAbout_Click(object sender, RoutedEventArgs e)
         {
             var version = Assembly.GetExecutingAssembly().GetName().Version;

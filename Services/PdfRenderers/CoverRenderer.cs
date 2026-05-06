@@ -43,8 +43,8 @@ namespace VANTAGE.Services.PdfRenderers
 
                 y += 20f; // Add some spacing after header
 
-                // Load and draw the cover image
-                PdfImage? coverImage = LoadCoverImage(structure.ImagePath);
+                // Load and draw the cover image (skipped entirely when NoImage is set)
+                PdfImage? coverImage = structure.NoImage ? null : LoadCoverImage(structure.ImagePath);
                 if (coverImage != null)
                 {
                     // Calculate image dimensions based on imageWidthPercent

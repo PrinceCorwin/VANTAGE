@@ -162,7 +162,46 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
-                                <TextBlock Text="WP Name Pattern" FontWeight="Bold" Margin="0,0,0,5"/>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                                    <TextBlock Text="WP Name Pattern (Top Right Of Each Form)" FontWeight="Bold" VerticalAlignment="Center"/>
+                                    <Button x:Name="btnWPNamePatternHelp"
+                                            Content="&#xE946;"
+                                            FontFamily="Segoe MDL2 Assets"
+                                            FontSize="14"
+                                            Width="20" Height="20"
+                                            Padding="0"
+                                            Margin="6,0,0,0"
+                                            Background="Transparent"
+                                            BorderThickness="0"
+                                            Cursor="Hand"
+                                            MouseEnter="BtnWPNamePatternHelp_MouseEnter"
+                                            MouseLeave="BtnWPNamePatternHelp_MouseLeave"
+                                            Click="BtnWPNamePatternHelp_Click"/>
+                                    <Popup x:Name="popupWPNamePatternHelp"
+                                           PlacementTarget="{Binding ElementName=btnWPNamePatternHelp}"
+                                           Placement="Bottom"
+                                           StaysOpen="True"
+                                           AllowsTransparency="True"
+                                           PopupAnimation="Fade">
+                                        <Border Background="{DynamicResource ControlBackground}"
+                                                BorderBrush="{DynamicResource BorderColor}"
+                                                BorderThickness="1"
+                                                Padding="12"
+                                                MouseEnter="PopupWPNamePatternHelp_MouseEnter"
+                                                MouseLeave="PopupWPNamePatternHelp_MouseLeave">
+                                            <StackPanel MaxWidth="460">
+                                                <TextBlock Text="WP Name Pattern" FontWeight="Bold" FontSize="15" Margin="0,0,0,6"/>
+                                                <TextBlock TextWrapping="Wrap" FontSize="13" Margin="0,0,0,6">
+                                                    Sets the title text shown in the top-right corner of every generated form page.
+                                                    Use {tokens} like {WorkPackage}, {Area}, {PrintedDate} to insert dynamic values per work package.
+                                                </TextBlock>
+                                                <TextBlock FontSize="13" TextWrapping="Wrap">
+                                                    <Hyperlink Foreground="#7DB6FF" Click="HyperlinkWPNamePatternHelp_Click">Click for more detailed instructions and complete token list</Hyperlink>
+                                                </TextBlock>
+                                            </StackPanel>
+                                        </Border>
+                                    </Popup>
+                                </StackPanel>
                                 <TextBox x:Name="txtWPNamePattern"
                                          Grid.Row="1"
                                          LostFocus="TxtWPNamePattern_LostFocus"
@@ -182,10 +221,18 @@
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 <TextBox x:Name="txtLogoPath" IsReadOnly="True" ToolTip="Leave as (default) to use the built-in Summit logo, or browse to select a custom logo"/>
-                                <Button Grid.Column="1" Content="Browse" Click="BtnBrowseLogo_Click" Padding="8,4" Margin="5,0,0,0"/>
+                                <Button x:Name="btnBrowseLogo" Grid.Column="1" Content="Browse" Click="BtnBrowseLogo_Click" Padding="8,4" Margin="5,0,0,0"/>
+                                <CheckBox Grid.Column="2"
+                                          x:Name="chkLogoNoImage"
+                                          Content="No Image"
+                                          VerticalAlignment="Center"
+                                          Margin="10,0,0,0"
+                                          Checked="ChkLogoNoImage_Changed"
+                                          Unchecked="ChkLogoNoImage_Changed"
+                                          ToolTip="Skip the logo on every form page"/>
                             </Grid>
 
                             <!-- Drawings Section - Hidden for v1 (per-WP location architecture needs design) -->
@@ -278,7 +325,7 @@
 
                             <!-- Output Folder with Generate Button -->
                             <TextBlock Text="Output Folder" FontWeight="Bold" Margin="0,0,0,5"/>
-                            <Grid Margin="0,0,0,10">
+                            <Grid Margin="0,0,0,5">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
@@ -293,6 +340,8 @@
                                               Foreground="{DynamicResource ForegroundColor}"
                                               VerticalAlignment="Center"
                                               Margin="0,0,15,0"
+                                              Checked="ChkIndividualPdfs_Changed"
+                                              Unchecked="ChkIndividualPdfs_Changed"
                                               ToolTip="Save each form as a separate PDF in addition to the merged document"/>
                                     <Button x:Name="btnGenerate"
                                             Content="GENERATE"
@@ -301,6 +350,13 @@
                                             MinWidth="120"/>
                                 </StackPanel>
                             </Grid>
+                            <CheckBox x:Name="chkNoSubfolders"
+                                      Content="No Subfolders (drop all PDFs in one folder)"
+                                      Foreground="{DynamicResource ForegroundColor}"
+                                      Margin="0,0,0,10"
+                                      Checked="ChkNoSubfolders_Changed"
+                                      Unchecked="ChkNoSubfolders_Changed"
+                                      ToolTip="Skip the per-work-package subfolder. All generated PDFs land directly in {ProjectID} - Work Pkgs."/>
                         </StackPanel>
                     </ScrollViewer>
                 </TabItem>
