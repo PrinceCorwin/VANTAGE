@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.2.17",
-  "releaseDate": "2026-04-26T16:08:11Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.2.17/VANTAGE-26.2.17.zip",
-  "zipSizeBytes": 151233125,
-  "sha256": "859FA82BF6A7ECF3EDAE9B90A944E36E9B5FEDF954572BC896AB56A05C298A76",
-  "releaseNotes": "Row actions moved to a new Actions dropdown in the Progress sidebar — multi-row selection survives. Hover-out auto-close on Actions / USER / File / Tools / Admin menus. Loading spinner during Select All."
+  "currentVersion": "26.2.18",
+  "releaseDate": "2026-05-07T00:00:00Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.2.18/VANTAGE-26.2.18.zip",
+  "zipSizeBytes": 151257838,
+  "sha256": "B1A01683C12A4403CAB7444924626C9422CF88092E1BF5A5F5DBCA23D6C25EB4",
+  "releaseNotes": "Manage UDF Names dialog (rename Progress UDF column headers). Work Package tokens resolve for any Activities-grid column. WP Name Pattern info icon. Logo / Cover \"No Image\" options. Drag-from-maximized window fix on high-DPI monitors. AI Takeoff Rate Mode toggle (Phase 1)."
 }

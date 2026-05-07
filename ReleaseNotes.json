@@ -1,6 +1,21 @@
 {
   "releases": [
     {
+      "version": "26.2.18",
+      "date": "2026-05-07",
+      "highlights": [
+        "New — Settings → Manage UDF Names: rename UDF1–UDF17 and UDF20 column headers on the Progress grid to whatever labels make sense for your project. Per-user, per-machine. Save to apply, Reset Defaults to revert, Export/Import to share labels with teammates as a JSON file. Renames affect only the displayed header — sync, exports, and Work Package tokens still resolve against the original field name.",
+        "New — Work Package tokens now resolve for any column on the Activities grid, not just a fixed set of ~17 hardcoded fields. {Estimator}, {DwgNO}, {UDF15}, {RespParty}, {UDF20}, etc. all produce real values now.",
+        "New — Work Package WP Name Pattern field has a hoverable info icon next to the label. Hover for inline guidance with a clickable link that opens the manual at the matching section. The label was also clarified to \"WP Name Pattern (Top Right Of Each Form)\" so it's clear the pattern controls the on-page header text, not the output filename.",
+        "New — Logo \"No Image\" option (Generate tab) and Cover \"No Image\" option (template editor) skip the image entirely while keeping header text and footer.",
+        "New — \"No Subfolders\" option in the Work Package Generate tab drops every PDF directly in the project output folder instead of one subfolder per work package. Mutually exclusive with \"Individual PDFs\".",
+        "Change — Work Package output folder renamed from {ProjectID} to {ProjectID} - Work Pkgs so the contents are clear at a glance.",
+        "Fix — Dragging the maximized app window down from the title bar to undock it now restores under your cursor correctly on high-DPI / scaled monitors. Previously the window could jump off-screen and only be recovered with Alt+Space → Move.",
+        "New — AI Takeoff has a Rate Mode toggle above the Options panel: Summit Rates (default, existing behavior) or MCAA Rates (restricted to specific users while the MCAA integration is in development). Phase 1 ships the toggle infrastructure; mode-specific rate logic lands in a follow-up release.",
+        "Improvement — AI Takeoff Summary tab shows the rate mode used for each row."
+      ]
+    },
+    {
       "version": "26.2.17",
       "date": "2026-04-26",
       "highlights": [
