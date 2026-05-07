@@ -298,6 +298,7 @@
                     <li><a href="#manage-my-snapshots">Manage My Snapshots</a></li>
                     <li><a href="#modify-snapshot">Modify Snapshot</a></li>
                     <li><a href="#prog-layouts">Column Layouts</a></li>
+                    <li><a href="#prog-udf-names">UDF Column Names</a></li>
                     <li><a href="#prog-shortcuts">Keyboard Shortcuts</a></li>
                     <li><a href="#prog-copying">Copying Data</a></li>
                 </ul>
@@ -1027,6 +1028,17 @@
         <li><strong>Hide/show columns</strong> — Click the <strong>Columns</strong> button in the sidebar. Use the <strong>Default</strong> button to restore column visibility to the built-in defaults</li>
     </ul>
     <p>Use <strong>Settings (â‹®) â†’ Grid Layouts</strong> to save named layouts or switch between different column configurations.</p>
+
+    <h3 id="prog-udf-names">UDF Column Names</h3>
+    <p>The Activities grid exposes 18 user-defined fields (UDF1â€“UDF17 and UDF20). Different projects use these fields for different purposes, so you can rename their column headers to whatever labels make sense for your work.</p>
+    <p>Open <strong>Settings (â‹®) â†’ Manage UDF Names</strong> to:</p>
+    <ul>
+        <li>Type a custom <strong>Visible Name</strong> for any UDF (max 50 characters). Leave blank to use the default header.</li>
+        <li>Click <strong>Save</strong> to apply the names to the Progress grid.</li>
+        <li><strong>Export</strong> the current names to a <code>.udfmap.json</code> file and <strong>Import</strong> it on another machine to share labels with teammates. After importing, click Save to apply.</li>
+        <li><strong>Reset Defaults</strong> reverts all UDF headers to their built-in names.</li>
+    </ul>
+    <p>Renames are per-user and per-machine. They affect only the displayed column header â€” underlying data, sync, exports, and Work Package tokens still reference the original UDF field name.</p>
 
     <h3 id="prog-shortcuts">Keyboard Shortcuts</h3>
     <table>

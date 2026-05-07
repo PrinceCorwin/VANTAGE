@@ -172,6 +172,7 @@ namespace VANTAGE.Utilities
         //   GridLayouts.Index              — Grid Layouts dialog
         //   GridLayout.{name}.Data         — Grid Layouts dialog
         //   GridLayouts.ActiveLayout       — Grid Layouts dialog
+        //   ProgressUDFNames.Active        — Manage UDF Names dialog
         //   ImportProfiles.Index           — Import from AI Takeoff dialog
         //   ImportProfile.{name}           — Import from AI Takeoff dialog
         //   Takeoff.LastConfigKey          — config dropdown in the AI Takeoff view

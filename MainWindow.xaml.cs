@@ -308,14 +308,20 @@ namespace VANTAGE
             if (WindowState == WindowState.Maximized)
             {
                 Point clickInWindow = e.GetPosition(this);
-                Point screenPos = PointToScreen(clickInWindow);
+
+                // Keep everything in WPF device-independent units. PointToScreen
+                // returns physical pixels on high-DPI displays, but Left/Top are
+                // DIPs — using it here put the restored window off-screen on
+                // scaled monitors.
+                double cursorScreenX = this.Left + clickInWindow.X;
+                double cursorScreenY = this.Top + clickInWindow.Y;
                 double propX = clickInWindow.X / ActualWidth;
 
                 WindowState = WindowState.Normal;
                 btnMaximize.Content = "☐";
 
-                Left = screenPos.X - (RestoreBounds.Width * propX);
-                Top  = screenPos.Y - 5;
+                Left = cursorScreenX - (RestoreBounds.Width * propX);
+                Top  = cursorScreenY - 5;
             }
 
             if (e.LeftButton == MouseButtonState.Pressed)
@@ -1689,6 +1695,18 @@ namespace VANTAGE
                 getCurrentLayout: GatherCurrentLayout,
                 applyLayout: ApplyLayout,
                 resetToDefault: ResetGridLayoutsToDefault);
+            dialog.Owner = this;
+            dialog.ShowDialog();
+        }
+
+        private void MenuManageUDFNames_Click(object sender, RoutedEventArgs e)
+        {
+            popupSettings.IsOpen = false;
+
+            // Dialog stays open across user actions; the callback fires every time it
+            // mutates ProgressUDFNames.Active so the cached ProgressView updates live.
+            var dialog = new Dialogs.ManageUDFNamesDialog(
+                onActiveChanged: () => _cachedProgressView?.ApplyUDFNames());
             dialog.Owner = this;
             dialog.ShowDialog();
         }

@@ -444,6 +444,53 @@ namespace VANTAGE.Utilities
             }
         }
 
+        // === UDF NAME MAPPINGS (Manage UDF Names dialog) ===
+
+        // Storage key for the Manage UDF Names feature.
+        //   ProgressUDFNames.Active — JSON Dictionary<string,string> of currently-applied overrides
+        private const string ActiveUDFNamesKey = "ProgressUDFNames.Active";
+
+        // Get the currently-applied UDF column-header overrides.
+        // Empty/missing key for a UDF means "use default header (MappingName)".
+        public static Dictionary<string, string> GetActiveUDFNames()
+        {
+            try
+            {
+                var json = GetUserSetting(ActiveUDFNamesKey);
+                if (!string.IsNullOrWhiteSpace(json))
+                {
+                    return System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(json)
+                        ?? new Dictionary<string, string>();
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "SettingsManager.GetActiveUDFNames");
+            }
+            return new Dictionary<string, string>();
+        }
+
+        // Set the currently-applied UDF column-header overrides
+        public static void SetActiveUDFNames(Dictionary<string, string> names)
+        {
+            try
+            {
+                var json = System.Text.Json.JsonSerializer.Serialize(names);
+                SetUserSetting(ActiveUDFNamesKey, json, "json");
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "SettingsManager.SetActiveUDFNames");
+            }
+        }
+
+        // Clear the active UDF overrides (revert all UDF headers to defaults).
+        // Saved maps are not affected.
+        public static void ClearActiveUDFNames()
+        {
+            RemoveUserSetting(ActiveUDFNamesKey);
+        }
+
         // === ANALYSIS VIEW SETTINGS ===
 
         // Group By field selection (default: PhaseCode)

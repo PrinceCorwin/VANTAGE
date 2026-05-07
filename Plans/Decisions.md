@@ -369,6 +369,18 @@ Permanent record of architectural choices, design rationale, and implementation 
 
 ## UI / UX
 
+### Manage UDF Names â€” Single Mapping, No Saved Map Library
+**Decision:** The Manage UDF Names dialog stores exactly one set of UDF column-header overrides at `ProgressUDFNames.Active`. There is no saved-mappings list, no per-mapping `Apply`/`Rename`/`Delete`, no `Save Map` with collision prompts. The user types values, clicks Save, the headers update.
+**Why:** The first iteration mirrored `ManageLayoutsDialog` â€” saved-mapping list with Apply/Rename/Delete + a separate Save Map button + name-collision prompts. After living with it for a session it became clear the named-mapping concept was overkill: most users have one set of UDF labels per project, switching mappings is rare, and the extra UI (right pane, Map Name field, list selection enabling Apply, etc.) made common operations slower. Simplified design: editor + Save = apply, Reset Defaults, Export/Import for cross-machine sharing. Renaming UDFs is now a one-click flow instead of a save-then-select-then-apply flow. Storage simplified to a single key.
+**Why this matters for future changes:** If anyone proposes adding back named mappings, ask whether the user actually wants to switch sets often. The previous design supported it and was deliberately removed.
+**Date:** May 2026
+
+### Drag-from-Maximized Title-Bar Drag Uses DIPs, Not `PointToScreen`
+**Decision:** `MainWindow.TitleBar_MouseLeftButtonDown` computes the cursor's screen position as `this.Left + clickInWindow.X` rather than calling `PointToScreen(clickInWindow)`.
+**Why:** `PointToScreen` returns physical pixels on high-DPI displays while `Window.Left`/`Top` use device-independent units. The original code mixed the two, which on any non-100% scaled monitor positioned the restored window off-screen by the scale factor (e.g., at 150% scaling the window jumped 50% further than the cursor). Symptom: window vanished on undock, taskbar thumbnail showed it but clicking didn't bring it back. Direct DIP math avoids the conversion entirely â€” a maximized window is at screen origin in DIPs, so window-local coordinates are screen coordinates.
+**Why this matters for future changes:** Any other place in the codebase that mixes `PointToScreen` results with `Window.Left`/`Top` is suspect. Either keep everything in DIPs or apply `PresentationSource.CompositionTarget.TransformFromDevice` before the assignment.
+**Date:** May 2026
+
 ### ProgressView Cached for Instant Navigation
 **Decision:** Cache the ProgressView instance in MainWindow and reuse on subsequent navigations.
 **Why:** First load unchanged, but every subsequent navigation is instant. Force-reloads only on Excel import and Reset Grid Layouts.

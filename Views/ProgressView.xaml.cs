@@ -1163,6 +1163,7 @@ namespace VANTAGE.Views
                 {
                     LoadColumnState();
                     LoadFrozenColumnCount();
+                    ApplyUDFNames();
                     // Disable auto column sizing after initial load for performance
                     sfActivities.ColumnSizer = Syncfusion.UI.Xaml.Grid.GridLengthUnitType.None;
                     sfActivities.Opacity = 1; // Show grid after state is loaded
@@ -2248,6 +2249,7 @@ namespace VANTAGE.Views
         public void ReloadColumnSettings()
         {
             LoadColumnState();
+            ApplyUDFNames();
         }
 
         // Get current grid preferences for layout save
@@ -2311,9 +2313,43 @@ namespace VANTAGE.Views
                     byName[p.Name].Width = Math.Max(MinWidth, p.Width);
 
                 sfActivities.UpdateLayout();
+
+                // Layout apply may have replaced columns / reset HeaderText — re-assert UDF overrides.
+                ApplyUDFNames();
             }
             catch
             {
+            }
+        }
+
+        // Re-applies the user's saved UDF column-header overrides to the grid.
+        // Empty/missing override for a UDF falls back to the column's MappingName.
+        // Safe to call any time after columns are realized.
+        public void ApplyUDFNames()
+        {
+            try
+            {
+                if (sfActivities?.Columns == null) return;
+
+                var active = SettingsManager.GetActiveUDFNames();
+                foreach (var col in sfActivities.Columns)
+                {
+                    if (!ProgressRenameableColumns.UDFs.Contains(col.MappingName)) continue;
+
+                    if (active.TryGetValue(col.MappingName, out var custom)
+                        && !string.IsNullOrWhiteSpace(custom))
+                    {
+                        col.HeaderText = custom;
+                    }
+                    else
+                    {
+                        col.HeaderText = col.MappingName;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "ProgressView.ApplyUDFNames");
             }
         }
 

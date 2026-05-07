@@ -347,6 +347,15 @@
                                         Click="MenuGridLayouts_Click"
                                         Cursor="Hand"
                                         ToolTip="Save and apply custom column layouts"/>
+                                <Button Content="Manage UDF Names..."
+                                        Background="Transparent"
+                                        Foreground="{DynamicResource ForegroundColor}"
+                                        BorderThickness="0"
+                                        Padding="12,8"
+                                        HorizontalContentAlignment="Left"
+                                        Click="MenuManageUDFNames_Click"
+                                        Cursor="Hand"
+                                        ToolTip="Rename UDF column headers in the Progress grid (per-user)"/>
                                 <Button Content="Plugin Manager..."
                                         Background="Transparent"
                                         Foreground="{DynamicResource ForegroundColor}"
