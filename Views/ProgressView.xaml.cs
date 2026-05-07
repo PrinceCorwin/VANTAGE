@@ -1220,6 +1220,8 @@ namespace VANTAGE.Views
                 var selector = sfActivities.RowStyleSelector;
                 sfActivities.RowStyleSelector = null;
                 sfActivities.RowStyleSelector = selector;
+                // RowSelectionBrush updates with the theme — keep our bulk-select trigger in sync.
+                SyncBulkSelectionBrushFromGrid();
                 sfActivities.Opacity = 1;
             });
         }
@@ -1288,6 +1290,19 @@ namespace VANTAGE.Views
             {
                 e.Handled = true;
                 _ = PerformRedoAsync();
+                return;
+            }
+
+            // Ctrl+A: bulk-select every filtered row WITHOUT engaging Syncfusion's
+            // per-cell selection model. The native Ctrl+A under SelectionUnit="Any"
+            // allocates one GridCellInfo per (row × column) — synchronous on the UI
+            // thread, freezes the app at 36k+ rows. Our path flips the IsBulkSelected
+            // flag on each Activity (the RowStyleSelector paints the row from that
+            // flag) and populates SelectedItems for the bulk action handlers.
+            if (e.Key == Key.A && Keyboard.Modifiers == ModifierKeys.Control)
+            {
+                e.Handled = true;
+                _ = RunSelectAllWithOverlayAsync();
                 return;
             }
 
@@ -2799,6 +2814,11 @@ namespace VANTAGE.Views
 
         private async void OnViewLoaded(object sender, RoutedEventArgs e)
         {
+            // Hand the row-style selector the same brush Syncfusion uses for its native
+            // mouse-row selection so the bulk-select highlight matches the look the user
+            // already knows.
+            SyncBulkSelectionBrushFromGrid();
+
             // Skip reload if data is already in memory (cached view re-navigation)
             if (_dataLoaded) return;
 
@@ -2811,6 +2831,18 @@ namespace VANTAGE.Views
             await CalculateMetadataErrorCount();
 
             _dataLoaded = true;
+        }
+
+        // Reads sfActivities.RowSelectionBrush (theme-driven) and assigns it to the
+        // RowStyleSelector so the IsBulkSelected DataTrigger paints rows with the
+        // same brush as a native mouse-row selection. Called on view load and any
+        // time the theme changes.
+        private void SyncBulkSelectionBrushFromGrid()
+        {
+            if (sfActivities.RowStyleSelector is Styles.RecordOwnershipRowStyleSelector selector)
+            {
+                selector.BulkSelectionBrush = sfActivities.RowSelectionBrush;
+            }
         }
 
         private static IEnumerable<T> FindVisualChildren<T>(DependencyObject depObj) where T : DependencyObject
@@ -5353,13 +5385,22 @@ namespace VANTAGE.Views
             return null;
         }
 
+        // Tracks rows currently flagged with IsBulkSelected so ClearBulkSelection can
+        // unflag exactly the same set without re-iterating Activities.
+        private readonly System.Collections.Generic.List<Activity> _bulkSelectedRows = new();
+
         // Selects all rows currently visible in the filtered view.
-        // sfActivities.SelectAll() is required for the visual row highlight, but it fires
-        // SelectionChanged whose handler does a slow Clear+Add on SelectedItems based on
-        // GetSelectedCells() — that handler call is the actual UI-thread blocker. We
-        // detach the handler around SelectAll() so the visual highlight is applied
-        // quickly, then manually populate SelectedItems in small chunks so the overlay's
-        // DualRing animation has 16ms windows between chunks to render frames.
+        //
+        // Does NOT call sfActivities.SelectAll(). Under SelectionUnit="Any", that call
+        // forces Syncfusion to materialize one GridCellInfo per (row × column) — at
+        // 36k rows × ~30 columns ≈ 1M cells, which is a synchronous UI-thread blocker
+        // inside Syncfusion's own code (handler detachment doesn't help).
+        //
+        // Instead we flip Activity.IsBulkSelected (transient INPC property) on each
+        // filtered row. The DataTrigger added to RecordOwnershipRowStyleSelector paints
+        // the row's background from that flag — pure binding, no per-cell allocation.
+        // We also populate sfActivities.SelectedItems so existing bulk action handlers
+        // (Assign, Delete, Reassign, Export Selected, etc.) still read the same set.
         private async Task SelectAllFilteredRowsAsync()
         {
             await Task.Delay(10);
@@ -5367,34 +5408,34 @@ namespace VANTAGE.Views
             var records = sfActivities.View?.Records;
             if (records == null || records.Count == 0) return;
 
+            // Detach to keep the cell-level handler quiet during the SelectedItems fill.
             sfActivities.SelectionChanged -= sfActivities_SelectionChanged;
             try
             {
-                sfActivities.SelectAll();
+                ClearBulkSelectionInternal();
+                sfActivities.SelectedItems.Clear();
+
+                const int chunkSize = 500;
+                int counter = 0;
+                int total = records.Count;
+                foreach (var record in records)
+                {
+                    if (record.Data is Activity activity)
+                    {
+                        activity.IsBulkSelected = true;
+                        _bulkSelectedRows.Add(activity);
+                        sfActivities.SelectedItems.Add(activity);
+                    }
+                    counter++;
+                    if (counter % chunkSize == 0 && counter < total)
+                    {
+                        await Task.Delay(1);
+                    }
+                }
             }
             finally
             {
                 sfActivities.SelectionChanged += sfActivities_SelectionChanged;
-            }
-
-            // Populate SelectedItems for the action handlers (Delete/Copy/Export) to read.
-            // GetSelectedCells inside the handler only returns viewport cells, so without
-            // this manual fill, SelectedItems would have just the focused row.
-            sfActivities.SelectedItems.Clear();
-            const int chunkSize = 100;
-            int counter = 0;
-            int total = records.Count;
-            foreach (var record in records)
-            {
-                if (record.Data is Activity activity)
-                {
-                    sfActivities.SelectedItems.Add(activity);
-                }
-                counter++;
-                if (counter % chunkSize == 0 && counter < total)
-                {
-                    await Task.Delay(1);
-                }
             }
 
             // Modifying SelectedItems directly doesn't raise SelectionChanged, so the
@@ -5402,17 +5443,25 @@ namespace VANTAGE.Views
             UpdateRecordCount();
         }
 
-        // Select All: WPF closes the parent ContextMenu on click and there's no clean
-        // way to suppress that without subclassing MenuItem (ButtonBase processes the click
-        // with HandledEventsToo=true, so Handled flags are ignored). Instead we let the menu
-        // close, run the work with the loading bar visible, then reopen the menu so the user
-        // can chain another action. Brief flicker is the cost.
-        private async void MenuSelectAll_Click(object sender, RoutedEventArgs e)
+        // Clears IsBulkSelected on every row currently flagged. Cheap because we
+        // tracked the exact set in _bulkSelectedRows — no full-grid scan needed.
+        // Called automatically when the user starts a fresh cell-click interaction.
+        private void ClearBulkSelectionInternal()
         {
-            // Use the fullscreen LoadingOverlay (DualRing SfBusyIndicator) instead of the
-            // inline progress bar — the DualRing's RenderTransform animation runs on WPF's
-            // composition thread, so it animates smoothly even when sfActivities.SelectAll()
-            // blocks the UI thread. The bar's animation depends on the UI thread and freezes.
+            if (_bulkSelectedRows.Count == 0) return;
+            foreach (var row in _bulkSelectedRows)
+            {
+                row.IsBulkSelected = false;
+            }
+            _bulkSelectedRows.Clear();
+        }
+
+        // Shared by Ctrl+A and the Actions → Select All menu. Shows the fullscreen
+        // LoadingOverlay (SfBusyIndicator with DualRing animation on the composition
+        // thread, so it stays animated even if the UI thread briefly blocks) and runs
+        // the bulk-select fill.
+        private async Task RunSelectAllWithOverlayAsync()
+        {
             var mainWindow = Application.Current.Windows.OfType<VANTAGE.MainWindow>().FirstOrDefault();
             try
             {
@@ -5423,6 +5472,16 @@ namespace VANTAGE.Views
             {
                 mainWindow?.HideLoadingOverlay();
             }
+        }
+
+        // Select All: WPF closes the parent ContextMenu on click and there's no clean
+        // way to suppress that without subclassing MenuItem (ButtonBase processes the click
+        // with HandledEventsToo=true, so Handled flags are ignored). Instead we let the menu
+        // close, run the work with the loading bar visible, then reopen the menu so the user
+        // can chain another action. Brief flicker is the cost.
+        private async void MenuSelectAll_Click(object sender, RoutedEventArgs e)
+        {
+            await RunSelectAllWithOverlayAsync();
 
             if (btnActions.ContextMenu != null)
             {
@@ -5566,41 +5625,45 @@ namespace VANTAGE.Views
             }
         }
         private void sfActivities_SelectionChanged(object? sender, Syncfusion.UI.Xaml.Grid.GridSelectionChangedEventArgs e)
-		{
-			// With SelectionUnit="Any", row header clicks select all cells in the row
-			// but don't populate SelectedItems. We need to manually populate it.
+        {
+            // Any cell-level interaction means the bulk-selection state is no longer
+            // what the user wants — fresh cell click resets the row-highlight set.
+            ClearBulkSelectionInternal();
 
-			var selectedCells = sfActivities.GetSelectedCells();
+            // With SelectionUnit="Any", row header clicks select all cells in the row
+            // but don't populate SelectedItems. We need to manually populate it.
 
-			if (selectedCells.Count > 0)
-			{
-				// Group cells by row to identify which rows are fully or partially selected
-				var rowsWithSelectedCells = selectedCells
-					.GroupBy(cell => cell.RowData)
-					.Select(g => g.Key as Activity)
-					.Where(activity => activity != null)
-					.Distinct()
-					.ToList();
+            var selectedCells = sfActivities.GetSelectedCells();
 
-				// Clear and repopulate SelectedItems with rows that have selected cells
-				sfActivities.SelectedItems.Clear();
-				foreach (var row in rowsWithSelectedCells)
-				{
-					sfActivities.SelectedItems.Add(row);
-				}
-			}
-			else if (sfActivities.SelectedItems.Count > 0)
-			{
-				// No cells selected, clear SelectedItems
-				sfActivities.SelectedItems.Clear();
-			}
+            if (selectedCells.Count > 0)
+            {
+                // Group cells by row to identify which rows are fully or partially selected
+                var rowsWithSelectedCells = selectedCells
+                    .GroupBy(cell => cell.RowData)
+                    .Select(g => g.Key as Activity)
+                    .Where(activity => activity != null)
+                    .Distinct()
+                    .ToList();
 
-			// Update record count display to show selection info
-			UpdateRecordCount();
+                // Clear and repopulate SelectedItems with rows that have selected cells
+                sfActivities.SelectedItems.Clear();
+                foreach (var row in rowsWithSelectedCells)
+                {
+                    sfActivities.SelectedItems.Add(row);
+                }
+            }
+            else if (sfActivities.SelectedItems.Count > 0)
+            {
+                // No cells selected, clear SelectedItems
+                sfActivities.SelectedItems.Clear();
+            }
 
-			// Update selection stats (Count, Sum, Avg)
-			UpdateSelectionStats(selectedCells);
-		}
+            // Update record count display to show selection info
+            UpdateRecordCount();
+
+            // Update selection stats (Count, Sum, Avg)
+            UpdateSelectionStats(selectedCells);
+        }
 
         // Updates Count/Sum/Avg stats for selected cells in the bottom toolbar
         private void UpdateSelectionStats(IList<Syncfusion.UI.Xaml.Grid.GridCellInfo> selectedCells)

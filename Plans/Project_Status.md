@@ -147,6 +147,7 @@ Series of short tutorial videos for end users. Each item below needs a plan and 
 | Critical Path Highlighting | Auto-highlight critical path activities (P6 provides float data) |
 
 ### Shelved
+- **Mouse Shift+Click first→last row on Progress grid at 100k-row scale** — still freezes the UI. Ctrl+A and `Actions → Select All` were refactored 2026-05-07 to bypass Syncfusion's per-cell selection model entirely (transient `IsBulkSelected` flag + `RecordOwnershipRowStyleSelector` data trigger), but Shift+Click is Syncfusion's own range-extend gesture and we can't intercept it from outside the grid without replacing the selection controller. User said "deal with it another time, if ever." Ctrl+A is the supported scale-safe path.
 - Find-Replace in Schedule Detail Grid - deferred to V2; may need redesign of main/detail grid interaction
 - Offline Indicator in status bar - clickable to retry connection
 - Disable Tooltips setting (see DisableTooltips_Plan.md)

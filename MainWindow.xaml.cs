@@ -893,6 +893,139 @@ namespace VANTAGE
             }
         }
 
+        private async void MenuExportScheduleToExcel_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (!(ContentArea.Content is Views.ScheduleView scheduleView))
+                {
+                    AppMessageBox.Show(
+                        "Please navigate to the Schedule module first.",
+                        "Export Schedule to Excel",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.None);
+                    return;
+                }
+
+                var viewModel = scheduleView.DataContext as ViewModels.ScheduleViewModel;
+                if (viewModel == null || viewModel.MasterRows == null || viewModel.MasterRows.Count == 0)
+                {
+                    AppMessageBox.Show(
+                        "No schedule data loaded. Please select a Week Ending date first.",
+                        "Export Schedule to Excel",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.None);
+                    return;
+                }
+
+                var allRows = viewModel.GetAllMasterRows();
+                List<ScheduleMasterRow> filteredRows = allRows;
+                bool hasActiveFilters = false;
+
+                // Pull the live grid via reflection — same pattern as RunExportActivitiesAsync
+                var gridField = scheduleView.GetType().GetField("sfScheduleMaster",
+                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                var grid = gridField?.GetValue(scheduleView) as Syncfusion.UI.Xaml.Grid.SfDataGrid;
+
+                if (grid?.View != null)
+                {
+                    filteredRows = grid.View.Records
+                        .Select(r => r.Data as ScheduleMasterRow)
+                        .Where(r => r != null)
+                        .Cast<ScheduleMasterRow>()
+                        .ToList();
+                    hasActiveFilters = filteredRows.Count < allRows.Count;
+                }
+
+                List<ScheduleMasterRow> rowsToExport;
+                string exportType;
+                if (hasActiveFilters)
+                {
+                    var dialog = new Dialogs.ExportOptionsDialog(allRows.Count, filteredRows.Count) { Owner = this };
+                    dialog.ShowDialog();
+                    if (dialog.Choice == Dialogs.ExportChoice.Cancel)
+                        return;
+                    rowsToExport = dialog.Choice == Dialogs.ExportChoice.Filtered ? filteredRows : allRows;
+                    exportType = dialog.Choice == Dialogs.ExportChoice.Filtered ? "Filtered Schedule" : "All Schedule";
+                }
+                else
+                {
+                    rowsToExport = allRows;
+                    exportType = "All Schedule";
+                }
+
+                // Capture columns on the UI thread before kicking off the worker
+                var columnDefs = grid != null
+                    ? Utilities.ScheduleMasterExporter.CaptureColumns(grid)
+                    : new List<object>();
+
+                if (columnDefs.Count == 0)
+                {
+                    AppMessageBox.Show(
+                        "No visible columns to export.",
+                        "Export Schedule to Excel",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.None);
+                    return;
+                }
+
+                var saveDialog = new Microsoft.Win32.SaveFileDialog
+                {
+                    Title = "Export Schedule to Excel",
+                    Filter = "Excel Files (*.xlsx)|*.xlsx|All Files (*.*)|*.*",
+                    FilterIndex = 1,
+                    DefaultExt = ".xlsx",
+                    AddExtension = true,
+                    OverwritePrompt = true,
+                    FileName = $"Schedule_Export_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx"
+                };
+
+                if (saveDialog.ShowDialog() != true)
+                    return;
+
+                string filePath = saveDialog.FileName;
+
+                var busyDialog = new Dialogs.BusyDialog(this, "Exporting Schedule to Excel...");
+                busyDialog.Show();
+
+                try
+                {
+                    int exported = await Utilities.ScheduleMasterExporter.ExportAsync(
+                        rowsToExport,
+                        columnDefs,
+                        filePath,
+                        new Progress<string>(msg => busyDialog.UpdateStatus(msg)));
+
+                    busyDialog.Close();
+
+                    AppLogger.Info(
+                        $"Exported {exported:N0} schedule activities ({exportType}) to {Path.GetFileName(filePath)}",
+                        "MainWindow.MenuExportScheduleToExcel_Click",
+                        App.CurrentUser?.Username);
+
+                    AppMessageBox.Show(
+                        $"Successfully exported {exported:N0} schedule activities to:\n\n{filePath}",
+                        "Export Complete",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.None);
+                }
+                catch
+                {
+                    busyDialog.Close();
+                    throw;
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "MainWindow.MenuExportScheduleToExcel_Click", App.CurrentUser?.Username);
+                AppMessageBox.Show(
+                    $"Export failed: {ex.Message}",
+                    "Export Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
         private async void MenuExcelImportReplace_Click(object sender, RoutedEventArgs e)
         {
             try

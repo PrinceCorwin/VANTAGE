@@ -2,6 +2,7 @@ using Syncfusion.UI.Xaml.Grid;
 using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Media;
 using VANTAGE.Models;
 
@@ -9,6 +10,11 @@ namespace VANTAGE.Styles
 {
     public class RecordOwnershipRowStyleSelector : StyleSelector
     {
+        // Set by the host view after grid load — the same brush Syncfusion paints
+        // selected rows with on mouse-select. Used for the IsBulkSelected highlight
+        // so the visual matches the native row-selection color.
+        public Brush? BulkSelectionBrush { get; set; }
+
         public override Style? SelectStyle(object item, DependencyObject container)
         {
             // Extract the Activity from Syncfusion's DataRow wrapper
@@ -57,6 +63,23 @@ namespace VANTAGE.Styles
             };
             hoverTrigger.Setters.Add(new Setter(VirtualizingCellsControl.BackgroundProperty, Application.Current.Resources["GridRowHoverBackground"]));
             style.Triggers.Add(hoverTrigger);
+
+            // Bulk-selection highlight — driven by Activity.IsBulkSelected (transient,
+            // INPC). Replaces engagement of Syncfusion's per-cell selection model for
+            // Ctrl+A / Actions → Select All on large grids. The DataTrigger binds to the
+            // row's data context so flipping the flag re-evaluates this style on the fly
+            // without any grid-level invalidation call.
+            var bulkSelectedTrigger = new DataTrigger
+            {
+                Binding = new Binding(nameof(Activity.IsBulkSelected)),
+                Value = true
+            };
+            // Match Syncfusion's native row-selection brush if the host view supplied
+            // it; otherwise fall back to the theme accent so we always paint something.
+            object bulkBrush = BulkSelectionBrush
+                ?? Application.Current.Resources["AccentColor"];
+            bulkSelectedTrigger.Setters.Add(new Setter(VirtualizingCellsControl.BackgroundProperty, bulkBrush));
+            style.Triggers.Add(bulkSelectedTrigger);
 
             return style;
         }

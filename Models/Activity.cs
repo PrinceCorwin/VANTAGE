@@ -564,6 +564,29 @@ namespace VANTAGE.Models
         }
 
         // ========================================
+        // TRANSIENT VIEW STATE (not persisted, not synced)
+        // ========================================
+
+        // Flags whether this row is part of a bulk row-selection on the Progress grid.
+        // Driven by Ctrl+A / Actions → Select All. Read by RecordOwnershipRowStyleSelector
+        // to paint the row's highlight without engaging Syncfusion's per-cell selection
+        // model (which materializes rows × columns GridCellInfo objects and does not scale
+        // beyond a few thousand cells). NOT a database column — pure UI state.
+        private bool _isBulkSelected;
+        public bool IsBulkSelected
+        {
+            get => _isBulkSelected;
+            set
+            {
+                if (_isBulkSelected != value)
+                {
+                    _isBulkSelected = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        // ========================================
         // INOTIFYPROPERTYCHANGED IMPLEMENTATION
         // ========================================
 

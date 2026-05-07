@@ -109,6 +109,7 @@
                             <!-- P6 Files -->
                             <syncfusion:DropDownMenuItem Header="Import From P6 File" Click="ImportP6File_Click"/>
                             <syncfusion:DropDownMenuItem Header="Export To P6 File" Click="ExportP6File_Click"/>
+                            <syncfusion:DropDownMenuItem Header="Export Schedule to Excel" Click="MenuExportScheduleToExcel_Click" ToolTip="Export the Schedule master grid to Excel (with option to limit to filtered rows)"/>
                             <syncfusion:DropDownMenuItem Header="Clear Local Schedule" Click="MenuClearLocalSchedule_Click"/>
                             <Separator Background="{DynamicResource BorderColor}" Margin="5,2"/>
                             <!-- Other -->
