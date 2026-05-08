@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.2.18",
+  "currentVersion": "26.2.19",
   "releaseDate": "2026-05-07T00:00:00Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.2.18/VANTAGE-26.2.18.zip",
-  "zipSizeBytes": 151257838,
-  "sha256": "B1A01683C12A4403CAB7444924626C9422CF88092E1BF5A5F5DBCA23D6C25EB4",
-  "releaseNotes": "Manage UDF Names dialog (rename Progress UDF column headers). Work Package tokens resolve for any Activities-grid column. WP Name Pattern info icon. Logo / Cover \"No Image\" options. Drag-from-maximized window fix on high-DPI monitors. AI Takeoff Rate Mode toggle (Phase 1)."
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.2.19/VANTAGE-26.2.19.zip",
+  "zipSizeBytes": 151803041,
+  "sha256": "86460176EB774B3948CCB43A8C5CDF5C68232A297DAA721224319BC52DE7D319",
+  "releaseNotes": "File → Export Schedule to Excel. Ctrl+A on Progress grid no longer freezes at 100k+ rows."
 }

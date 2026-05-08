@@ -1,6 +1,14 @@
 {
   "releases": [
     {
+      "version": "26.2.19",
+      "date": "2026-05-07",
+      "highlights": [
+        "New — File → Export Schedule to Excel: exports the Schedule module master grid to an .xlsx file. When filters are active you'll see a Filtered / All / Cancel prompt; otherwise it exports everything. Honors current column order, skips hidden columns, and uses each column's current header text — so renamed UDF columns (set via Tools → Schedule UDF Mapping) carry through verbatim.",
+        "Improvement — Ctrl+A on the Progress grid (and Actions → Select All) no longer freezes the app on large projects. Bulk row selection now scales cleanly past 100,000 rows and shows a loading spinner while it processes, instead of locking the UI."
+      ]
+    },
+    {
       "version": "26.2.18",
       "date": "2026-05-07",
       "highlights": [
