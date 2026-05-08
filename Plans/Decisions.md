@@ -61,6 +61,11 @@ Permanent record of architectural choices, design rationale, and implementation 
 
 ## Takeoff Pipeline
 
+### Multi-Drawing PDFs Handled Upstream in Bluebeam, Not in AI Takeoff
+**Decision:** AI Takeoff continues to treat one uploaded PDF as one drawing. The "support PDFs containing multiple drawings (one per page)" item was shelved rather than implemented. Users that receive multi-drawing PDFs split them into per-drawing files in Bluebeam before uploading.
+**Why:** Bluebeam's page-extraction tooling is purpose-built and well-understood by the construction users who already own it. Detecting per-page drawing boundaries inside AI Takeoff intake (page-vs-drawing heuristics, title-block extraction per page, batch pre-processing, error handling for partial splits) is a meaningful rewrite for a workflow that's a few clicks in a tool the users already have. The upstream split is also lossless and reviewable, where an automated split would need its own QA pass. Net: not worth the build cost.
+**Date:** May 7, 2026
+
 ### CUT/BEV Folded into Connection Rows, Not Separate Labor
 **Decision:** CUT and BEV no longer generate separate labor rows. BW connections include CUT+BEV rate additions, SW/THRD include CUT.
 **Why:** Cut/bevel are always performed with the connection. Folding them in prevents row explosion in the Labor tab and matches how labor is actually performed.
