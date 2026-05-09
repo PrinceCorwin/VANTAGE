@@ -75,14 +75,63 @@ Before adding entries, scan ALL `###` date headers in `Completed_Work.md` — no
 
 ## Step 3.5: Update Plans/Decisions.md
 
-- Review the session's work for any design decisions, architectural choices, or implementation rationale
-- A "decision" is a choice between alternatives with reasoning — not routine bug fixes or feature additions
-- Examples: "chose X over Y because...", "removed X because...", "changed approach from X to Y because...", data format choices, things intentionally NOT done and why
-- If any decisions were made:
-  - Read `Plans/Decisions.md` and add new entries under the appropriate section
-  - Follow the existing format: `### Title`, `**Decision:**`, `**Why:**`, `**Date:**`
-  - If no existing section fits, create one
-- If no meaningful design decisions were made this session, skip this step
+`Plans/Decisions.md` is a **fact doc** — it describes how VANTAGE works today, not a chronological log of how it got there. Read every entry as something a new contributor can trust as currently true.
+
+### When to touch this doc
+
+- A new architectural rule, design invariant, or implementation choice was made that's expected to persist (data-format choices, edit-rule scoping, cross-cutting infra patterns).
+- An existing rule was changed — find the old entry and **rewrite it** to describe the new state. Never leave both versions; never append "previously this was X" or add a second entry that contradicts an earlier one.
+- A previously-documented rule no longer applies because the feature was removed — delete that entry.
+
+If the session was a routine bug fix, feature addition without architectural choices, or doc-only work with no rule change, skip this step.
+
+### What does NOT belong in this doc
+
+- **Dev/build/tooling workflow** (Claude Code settings, permission allowlists, repo conventions for tooling, build/release procedures used by humans). Those go in the (TBD) workflow doc tracked under "Documentation Backlog" in `Plans/Project_Status.md`.
+- **Open questions or undecided choices.** Those go in `Plans/Project_Status.md` or feature PRDs. Decisions.md is for things that are settled.
+- **Pure non-implementation deferrals** ("we considered X and didn't build it"). Those go in `Plans/Project_Status.md` under "Deferred / Considered, Not Built". Exception: if Vantage's current behavior reflects the deferral as a fact (e.g., "this column is in the schema but ignored on import"), that IS a fact about Vantage and belongs here.
+- **Step-by-step changelogs, release notes, dated activity narratives.** Those live in `Plans/Completed_Work.md`.
+
+### Required entry format
+
+Use **present-tense fact phrasing**. Never write "Removed X", "Changed from X to Y", "Switched from", "Replaced X with Y", "Reverses an earlier...". Describe how things ARE today; the **Why** captures the reasoning.
+
+```
+### {Title — fact form, e.g., "ActStart and ActFin Are Required When PercentEntry > 0"}
+**Rule:** {one or two sentences stating the current invariant or behavior}
+**Why:** {the reasoning — what would break without this rule, what alternatives were considered, why the chosen approach won}
+**Date:** {when this rule became true — month/year or YYYY-MM-DD format, used for staleness detection}
+```
+
+`**Rule:**` replaces the older `**Decision:**` heading. Keep `**Why:**` and `**Date:**` as-is.
+
+### Section structure (canonical order — do not reorder)
+
+Add new entries to the section that matches where the rule applies in the app. Sections follow VANTAGE's nav structure top to bottom; do NOT invent ad-hoc sections without first asking the user.
+
+1. **Foundation** — Cross-cutting data model, edit/validation rules used everywhere, app-level infrastructure (auto-update, credentials, schema migrations, logging, asset structure, settings reset, app-close guard)
+2. **Sync** — Push/pull invariants, conflict handling, LocalDirty / IsDeleted / SyncVersion semantics, timeouts, ownership checks
+3. **Main Window** — Title bar, theme system, side panel/help, top menus, dialog wrappers, app-wide UI infrastructure (scrollbars, view caching, hover/popup patterns, info-icon routing)
+4. **Progress Module** — Progress nav tab: grid behavior, edit rules specific to Progress, bulk selection, find/replace, prorate, sidebar actions, paste rules, metadata-error gates, custom column types
+5. **Schedule Module** — Schedule nav tab: master/detail layout, P6 import/export, change log, UDF mapping, lookahead window, auto-stamp logic, schedule-only edit rules
+6. **Work Packages Module** — WP nav tab: templates, tokens, generation, output layout, deferred Drawings architecture, no-image / no-subfolders sentinels
+7. **Progress Books Module** — Progress Books nav tab: layout, AI Progress Scan, VP-vs-Vtg report
+8. **Analysis Module** — Analysis nav tab: chart filters, summary grid, persistence
+9. **Takeoffs** — Takeoffs nav tab. Use these subsections (in this order):
+   - *Common* — cross-mode infrastructure (lifecycle, parsing, S3, Lambda, normalization, Failed DWGs, Flagged tab, ShopField pipeline, etc.)
+   - *Summit Rate Mode* — Summit-only behaviors (rate lookup chain, FS multiplier neutralization, CUT/BEV fold-in, etc.)
+   - *MCAA Rate Mode* — MCAA-only behaviors (mode toggle, username gate, divergence points, modifier neutralization, mode marker)
+   - *MCAA Ratesheet (Storage / Producer)* — SkySkraper, schema design, lookup implementation, CompRefTable scope
+10. **Admin Tools** — Admin menu items: Edit Users, Edit Projects, Manage Snapshots, Modify Snapshot, Deleted Records, Project Rates, Progress Log, S3 Drawings
+11. **Settings Menu** — Settings menu items: Reset User Settings registry, Manage UDF Names, Manage Filters, Manage Layouts, theme submenu
+12. **Plugins** — Plugin host contract, auto-update behavior, per-plugin invariants (PTP, CONST, etc.)
+
+### Before writing or updating an entry
+
+1. **Search for an existing entry** on the same topic. If yes, update it in place; do NOT add a parallel entry.
+2. **Search for entries this would supersede.** If your new rule contradicts an existing entry, delete the existing entry as part of the same edit. Never leave both.
+3. **Verify the section** — drop the entry into the section that matches where the rule applies, even if that means doing a small reorganization. Do not stash entries in convenient places to avoid restructuring.
+4. **Reword to fact form before saving.** If the natural phrasing is "We changed X to Y", rewrite to "Y is how it works" with the change history living only in `Completed_Work.md`.
 
 ## Step 3.6: Check Feature-Specific Plan Docs
 

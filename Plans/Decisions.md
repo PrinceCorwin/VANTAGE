@@ -1,802 +1,743 @@
 # VANTAGE: Milestone — Design Decisions
 
-Permanent record of architectural choices, design rationale, and implementation decisions. Consult this when asking "why did we do X?" before changing existing behavior.
+How VANTAGE works today. Each entry states a current rule or invariant; the **Why** captures the reasoning behind it. Every line should be true right now — if a rule changes, the existing entry is rewritten in place rather than appended to.
+
+Sections follow VANTAGE's nav structure top to bottom. See `.claude/skills/finisher/skill.md` Step 3.5 for the full maintenance contract.
 
 ---
 
-## Data Model
+## Foundation
 
 ### Dates Stored as TEXT, Not DATETIME
-**Decision:** All date columns use TEXT/VARCHAR in both SQLite and Azure SQL.
-**Why:** P6 Primavera exports dates as text strings. Using TEXT avoids conversion issues and format mismatches during import/export cycles.
+**Rule:** All date columns use TEXT/VARCHAR in both SQLite and Azure SQL. Code paths read and write date strings; parsing happens at the consumer.
+**Why:** P6 Primavera exports dates as text strings. TEXT storage avoids conversion issues and format mismatches during import/export cycles.
 
-### ActStart/ActFin Are Required Metadata, Not Auto-Populated
-**Decision:** Removed auto-set behavior. ActStart required when % > 0, ActFin required when % = 100. Red cell highlights and sync blocking enforce compliance.
-**Why:** Auto-populating dates was silently overriding user intent. Explicit control ensures data completeness without surprises.
+### ActStart and ActFin Are Required Metadata, Not Auto-Populated
+**Rule:** ActStart is required when `PercentEntry > 0`; ActFin is required when `PercentEntry = 100`. Missing values are flagged with red cell highlights and block sync, but do not block in-progress edits. VANTAGE does not auto-fill either date on bulk-write paths (sync, plugins, imports).
+**Why:** Auto-populating dates silently overrode user intent in earlier iterations. The required-metadata gate enforces data completeness without trapping users mid-edit when they raise a record's progress before dates are known. The auto-stamp logic that does exist (Schedule detail grid edits) only fires from explicit user cell edits, not bulk paths.
 **Date:** February 2026
 
 ### AzureUploadUtcDate Is Pull-Only
-**Decision:** Removed from SyncManager push columns. Admin sets value on Azure during upload; users receive on pull but cannot overwrite.
+**Rule:** `AzureUploadUtcDate` is set on Azure during admin Progress Log upload and received by users on pull. The push path does not include it — users cannot overwrite it.
 **Why:** Prevents users from accidentally corrupting the upload timestamp that only admins should set during Progress Log upload.
 **Date:** January 2026
 
-### V2 Data Model: ClientEarnedEquivQty Deferred
-**Decision:** Column exists in OldVantage (`VAL_Client_Earned_EQ-QTY`) but is ignored during import. Will be added to Activities, Azure VMS_Activities, and ColumnMappings in V2.
+### V2 Data Model: ClientEarnedEquivQty Is Read but Not Written
+**Rule:** The `VAL_Client_Earned_EQ-QTY` column exists in OldVantage Excel imports but is currently ignored. Activities, Azure `VMS_Activities`, and ColumnMappings will gain the corresponding column in V2.
+**Why:** Documented as a known gap so the column doesn't get treated as an unknown extra field on import. V2 work hasn't started, so plumbing it now would land dead code.
+
+### Activity Validator Is the Single Source of Truth for Date/Percent Rules
+**Rule:** Every edit path — single-cell `CurrentCellEndEdit`, Find &amp; Replace, both multi-row paste flows — calls `ActivityValidator.Validate(percent, actStart, actFin)`. The function returns the first violation message or null. New bulk paths must call it; do not reimplement.
+**Why:** Before centralisation the same rules existed in three locations and drifted. One source eliminates that class of bug.
+**Date:** April 2026
+
+### Hard Rules vs. Required Metadata Are Two Tiers
+**Rule:** Activity date/percent rules split into two tiers. **Hard rules** (future dates, ActFin before ActStart, ActStart populated with `%=0`, ActFin populated with `%<100`) block the edit and revert it. **Required metadata** (ActStart needed when `%>0`, ActFin needed when `%=100`) does NOT block — the cell turns red and sync is gated until corrected.
+**Why:** Treating "required metadata" as a hard block creates deadlocks when raising progress before dates are known or when bulk-setting `%=100` on records that still need an ActFin. Red highlight + sync gate still enforces completeness without trapping the user mid-edit.
+**Date:** April 2026
+
+### Bulk Operations Abort On Any Violation
+**Rule:** When Find &amp; Replace or a multi-row paste encounters a hard-rule violation on any affected row, the entire operation rolls back in memory, nothing writes to the DB, and a dialog lists up to 10 offending ActivityIDs plus a "...and N more" footer. There is no partial apply.
+**Why:** Silent partial apply (commit some rows, skip others) was reported as confusing — users couldn't tell what actually changed. Abort-on-any forces the source data to be corrected and re-run, which is more predictable.
+**Date:** April 2026
+
+### Entering ActFin Auto-Bumps PercentEntry to 100
+**Rule:** Single-cell edit, Find &amp; Replace, and paste all auto-set `PercentEntry = 100` on any row where a non-null Finish date is entered while current `%` is below 100.
+**Why:** Users always have to follow a Finish-date entry with `%=100` (ActFin requires `%=100`). The auto-bump saves a step. If ActStart is null when ActFin is entered, the record still writes — ActStart turns red as required metadata, consistent with the hard-rule / required-metadata split.
+**Date:** April 2026
+
+### Paste Into ActStart/ActFin Validates, Does Not Silently Skip
+**Rule:** Multi-cell paste into ActStart or ActFin runs the same validator as single-cell edits. Any violation aborts the whole paste with a detailed error dialog. There is no pre-filter that quietly drops offending rows.
+**Why:** Earlier silent-skip behavior (with a "N rows skipped" message after) let users think a paste succeeded when significant portions were dropped. Consistent abort-all matches Find &amp; Replace and single-cell edits.
+**Date:** April 2026
+
+### Filter Does Not Auto-Refresh After Edits
+**Rule:** Filters re-evaluate only when the user clicks a filter toggle or the Refresh button. Data mutations (paste, Find &amp; Replace, Prorate, Undo/Redo, single-cell rollback, ClearCurrentCell) do NOT call `View.Refresh()`. The grid uses `LiveDataUpdateMode="Default"` so Syncfusion also does not re-shape data on property changes.
+**Why:** Users were frustrated by rows disappearing from a filtered view the moment their edit made the row no longer match (e.g., raising `%` to 100 while viewing "In Progress"). Showing the value before re-applying the filter is what they want. `INotifyPropertyChanged` still propagates value changes to grid cells; only the filter predicate stays stale until explicit refresh.
+**Date:** April 2026
+
+### `ActivityRequiredMetadata` Is the Single Source for the 9 Required Fields
+**Rule:** The 9 required-metadata field names (`ProjectID`, `WorkPackage`, `PhaseCode`, `CompType`, `PhaseCategory`, `SchedActNO`, `Description`, `ROCStep`, `RespParty`) live in `Utilities/ActivityValidator.cs` as `ActivityRequiredMetadata`. Three helpers expose them: `Fields` (the array, ProjectID-first), `FieldsDisplay` (comma-joined for user messages), and `BuildMissingFieldSql(alias)` (generates `"X IS NULL OR X = '' OR Y IS NULL OR Y = '' ..."` for either unqualified or aliased columns). All call sites — sync-gate filter SQL, `CalculateMetadataErrorCount`, `CountMetadataErrorsForProject`, sync-block MessageBox, reassign-check in-memory filter, reassign-block MessageBox, `ImportTakeoffDialog.RequiredMetadataFields` — pull from this single list. Conditional rules (ActStart at `%>0`, ActFin at `%=100`) and the ProjectID existence check remain hand-coded alongside the generated fragments.
+**Why:** Before consolidation the list was duplicated across 5 locations with two ordering variants; adding or removing a field would have required lockstep edits across all of them. One array with a SQL generator makes drift impossible. ProjectID-first canonical order preserves the Import Takeoff dialog's row order (the only interactive UI touching this list).
+**Date:** 2026-04-24
+
+### Auto-Update Uses a Host-Agnostic Manifest with SHA-256 Verification
+**Rule:** A custom auto-updater checks `manifest.json` for a newer version, downloads the ZIP, verifies its SHA-256, and hands off to a separate `VANTAGE.Updater` console app to swap files. The manifest URL is configurable; current default points at GitHub raw URLs. The updater is self-contained so users don't need .NET runtime.
+**Why:** Works against GitHub today, can switch to Azure Blob with one URL change. Graceful failure if offline. Self-contained publish keeps the update path identical for all users regardless of their machine state.
+**Date:** January 2026
+
+### Credentials Live in Encrypted Config, Not Compiled Constants
+**Rule:** `CredentialService.cs` reads from `appsettings.json` in dev or AES-256-encrypted `appsettings.enc` in production. Connection strings and API keys are not embedded in source. The publish script handles encryption automatically.
+**Why:** Published builds carry credentials without hardcoding them in the assembly. Same code path for dev and prod; only the file form differs.
+**Date:** February 2026
+
+### Schema Migrations Are Numbered and Idempotent
+**Rule:** `SchemaMigrator.cs` runs numbered sequential migrations on local SQLite startup. Migrations are backward-compatible (additive where possible) and idempotent (safe to re-run). Failed migrations offer to delete the local DB and re-sync from Azure as recovery. Ad-hoc column existence checks scattered through the codebase are not allowed.
+**Why:** Local SQLite holds user data that can't be silently deleted on schema change. Numbered sequential migrations prevent missed or double-applied changes. Backward-compatible additions also let older app versions tolerate a database last touched by a newer version.
+**Date:** February 2026
+
+### Logging Writes to Flat Files Only
+**Rule:** `AppLogger` writes to `%LocalAppData%\VANTAGE\Logs\app-yyyyMMdd.log` (one file per UTC day, daily rotation, 15-day retention). There is no SQLite `Logs` table. The Export Logs dialog reads the flat files via `AppLogger.ReadLogFilesAsText(fromDate, toDate, minLevel)`, which parses the `[timestamp] Level ...` line prefix to apply level filters and groups multi-line exception stack traces with their owning log line.
+**Why:** A parallel SQLite logs table added I/O on every log call (`CREATE TABLE IF NOT EXISTS` + `INSERT`) and duplicated content for one reader. Flat files are easier to grep/tail externally and survive SQLite corruption. Multi-line exception parsing uses a simple rule: any line not starting with `[timestamp] Level` continues the previous entry, so stack traces stay attached to their headers without a structured parser.
+**Date:** April 2026
+
+### Asset Folder Tree: `Assets/Images/{System,Sidebar,Dialogs}`
+**Rule:** All image resources live under a single `Assets/Images/` tree with purpose-named subfolders: `System/` (app icons, logos, cover art), `Sidebar/` (help sidebar screenshots), `Dialogs/` (one-off dialog imagery). Source and build output match — no MSBuild `Link` indirection. `Help/` contains `manual.html` only.
+**Why:** One discoverable home with semantic grouping tells a developer where a new image should land. Flat sibling folders directly under `Assets/` were rejected because future one-off dialog images had no obvious home.
+**Date:** April 2026
+
+### Reset User Settings Uses a Registry-Based Whitelist
+**Rule:** The Reset User Settings dialog reads exposed groups and member keys from `Utilities/UserSettingsRegistry.cs`. Anything not in the registry is excluded by policy. Settings already managed through their own UI (Theme submenu, Grid Layouts dialog, Manage Filters, Manage UDF Names, Schedule UDF dialog, Analysis chart filter Reset, in-view dropdowns/checkboxes/paths) are listed in the deny-list comment with a reason and do NOT appear in the Reset dialog. System bookkeeping keys (`LastSyncUtcDate`, `LastSeenVersion`) are also excluded.
+**Why:** A naive "reset all" would delete sync-state keys (forcing costly full re-sync), wipe named layouts the user deliberately created, and duplicate functionality already accessible via dedicated dialogs. The curated registry also gives a single source of truth for natural-language labels and defaults that the finisher skill keeps in sync.
+**Date:** April 2026
+
+### Resetting Grid Preferences Recreates the Current View
+**Rule:** When the Reset dialog clears `ProgressGrid.PreferencesJson` or `ScheduleGrid.PreferencesJson`, the handler calls `SkipSaveOnClose()` on the currently-loaded view and force-recreates it (`LoadProgressModule(forceReload: true)` or nulling `ContentArea.Content` and instantiating a new `ScheduleView`).
+**Why:** The Progress and Schedule views save in-memory column state to `UserSettings` on unload. If only the row is deleted, closing the app would re-save the in-memory widths over the reset. Recreating the view ensures Unload fires while the row is empty and the new instance loads default columns.
+**Date:** April 2026
+
+### App-Close Guard Uses a Single Counter, Not Per-Op Flags
+**Rule:** `Utilities/LongRunningOps.cs` exposes `Begin()` (returns `IDisposable`) and `IsRunning`. Critical operations wrap their work in `using (LongRunningOps.Begin()) { ... }`. `MainWindow_Closing` reads `IsRunning` and warns the user before exiting if true. Six call sites currently use it: Submit Week, user snapshot delete, user snapshot revert, admin delete selected, admin delete all, admin upload-to-ProgressLog.
+**Why:** A single `Interlocked` counter (~40ns per op) handles "is anything critical running?" across threads without per-op plumbing. Per-op booleans on MainWindow would scale poorly; service-registry plus event notifications was overkill for a boolean check.
+**Date:** April 2026
 
 ---
 
 ## Sync
 
-### Push Failure Blocks Pull to Protect Local Data
-**Decision:** If push to Azure fails, the pull is skipped entirely. Local dirty records are preserved for retry.
-**Why:** Previously, push failures were silent — the pull ran anyway, overwriting local changes with old Azure data and clearing LocalDirty flags. Users saw edits revert with no error shown.
+### Push Failure Blocks Pull
+**Rule:** If push to Azure fails, the pull does not run. Local dirty records remain marked `LocalDirty=1` for the next attempt.
+**Why:** Earlier behavior ran the pull regardless of push outcome — pulling old Azure data over local edits and silently clearing `LocalDirty` flags. Users saw edits revert with no error. Blocking the pull on push failure preserves local work for retry.
 **Date:** April 2026
 
-### Ownership Check Removed from Sync, Moved to Tools Menu
-**Decision:** Removed `CheckSplitOwnershipAsync` (JOIN on SchedActNO across 65K+ records) from the sync path. Created standalone "ActNO Split Ownership Check" tool under Tools menu.
-**Why:** The query had no index and caused timeouts, blocking syncing entirely. The check is useful but doesn't need to run on every sync.
+### SchedActNO Ownership Check Is a Tools Menu Action, Not a Sync Step
+**Rule:** Sync does not run a SchedActNO ownership check. The standalone "ActNO Split Ownership Check" action under the Tools menu performs this check on demand.
+**Why:** The check joined `VMS_Activities` against itself on `SchedActNO` across 65K+ records with no supporting index — minutes-long timeouts that blocked sync entirely. Useful information, but not on every sync.
 **Date:** April 2026
 
-### Push Verifies Actual Rows Updated via OUTPUT INTO
-**Decision:** The Azure UPDATE in push Step 3 uses `OUTPUT INSERTED.[UniqueID] INTO #UpdatedIds` to capture exactly which rows were updated. Only confirmed rows get LocalDirty cleared. Previously, all records were blindly marked as successfully pushed regardless of actual update count.
-**Why:** If the UPDATE affected fewer rows than expected (transient Azure issue, staging table mismatch), unverified records had LocalDirty cleared and the pull overwrote local data with old Azure values. Users saw pasted values revert after sync with no error. Now missed rows keep LocalDirty=1 and retry on next sync.
+### Push Verifies Updates via OUTPUT INTO
+**Rule:** The Azure UPDATE in push Step 3 captures actually-updated UniqueIDs via `OUTPUT INSERTED.[UniqueID] INTO #UpdatedIds`. Only UniqueIDs in that temp table get `LocalDirty` cleared locally. Records the UPDATE missed keep `LocalDirty=1` and retry on the next sync.
+**Why:** A trigger or transient Azure issue can cause an UPDATE to affect fewer rows than expected. Without verification, unverified records had `LocalDirty` cleared and the subsequent pull silently overwrote local data with old Azure values. The OUTPUT-INTO pattern guarantees the local clear matches the actual server-side mutation.
 **Date:** April 2026
 
-### Unlimited SQL Timeouts in Sync Flow
-**Decision:** All CommandTimeout and BulkCopyTimeout values in push/pull set to 0 (unlimited). Azure ConnectTimeout also 0.
-**Why:** Users with slow internet were hitting 30-second default timeouts, causing "Execution Timeout Expired" errors. The sync operations must complete regardless of connection speed — there's no benefit to aborting partway through.
+### Sync Uses Unlimited SQL Timeouts
+**Rule:** All `CommandTimeout` and `BulkCopyTimeout` values in the push and pull paths are set to 0 (unlimited). `ConnectTimeout` on the Azure connection is also 0.
+**Why:** Users on slow internet hit 30-second default timeouts mid-sync. Aborting partway through corrupts the LocalDirty/SyncVersion state — there is no partial-sync recovery. The sync must run to completion regardless of connection speed. Compare with the admin Progress Log upload path, which uses tiered timeouts because it has SfBusyIndicator and a dead-socket guard makes more sense there.
 **Date:** April 2026
 
-### LastPulledSyncVersion Tracks Pulled Records, Not Live MAX
-**Decision:** After pulling, use the max SyncVersion from records actually pulled — not a separate query for current MAX.
-**Why:** Race condition — if another user pushed between the pull query and the MAX query, those records would be permanently skipped on future pulls.
+### LastPulledSyncVersion Comes From Records Pulled, Not a Live MAX Query
+**Rule:** After a pull, `LastPulledSyncVersion_{ProjectID}` is set to the maximum SyncVersion among records actually pulled — not from a separate `SELECT MAX(SyncVersion)` query.
+**Why:** A separate MAX query opens a race window: another user can push between the pull and the MAX query, advancing the server-side max past records that didn't yet exist when the pull ran. Those records would be permanently skipped on future pulls. Reading max-of-pulled records guarantees the cursor advances only over rows actually received.
 **Date:** April 2026
 
-### Submit Week Snapshots from Local Data, Not Forced Sync
-**Decision:** Removed forced sync and split ownership check from Submit Week. Snapshots capture local data directly.
-**Why:** Enables historical snapshot scenarios (e.g., restore a backup and snapshot that point-in-time state). Faster submits with fewer network round-trips.
+### Submit Week Snapshots From Local Data, No Forced Sync
+**Rule:** Submit Week reads from local SQLite directly. It does not force a sync first and does not run the SchedActNO ownership check.
+**Why:** Decoupling Submit Week from sync enables historical-snapshot scenarios (restore a backup, snapshot that point-in-time state without pulling current Azure data over it). Also faster — fewer network round-trips on a frequent operation.
 **Date:** February 2026
 
+### Activity Import Auto-Detects Legacy vs NewVantage by Column Headers
+**Rule:** A single import path detects legacy vs NewVantage Excel format by inspecting the column header set. `UDFNineteen` indicates Legacy; `UniqueID` indicates NewVantage. The user does not pick a format.
+**Why:** Earlier threshold-based percent detection (1.5 cutoff to guess 0-1 vs 0-100 format) had edge cases that produced silently wrong values. Header-based detection is definitive: each format has its own diagnostic column, and the presence/absence is unambiguous.
+**Date:** January 2026
+
 ---
 
-## Takeoff Pipeline
+## Main Window
 
-### Multi-Drawing PDFs Handled Upstream in Bluebeam, Not in AI Takeoff
-**Decision:** AI Takeoff continues to treat one uploaded PDF as one drawing. The "support PDFs containing multiple drawings (one per page)" item was shelved rather than implemented. Users that receive multi-drawing PDFs split them into per-drawing files in Bluebeam before uploading.
-**Why:** Bluebeam's page-extraction tooling is purpose-built and well-understood by the construction users who already own it. Detecting per-page drawing boundaries inside AI Takeoff intake (page-vs-drawing heuristics, title-block extraction per page, batch pre-processing, error handling for partial splits) is a meaningful rewrite for a workflow that's a few clicks in a tool the users already have. The upstream split is also lossless and reviewable, where an automated split would need its own QA pass. Net: not worth the build cost.
-**Date:** May 7, 2026
+### Title-Bar Drag-from-Maximized Uses DIPs, Not `PointToScreen`
+**Rule:** `MainWindow.TitleBar_MouseLeftButtonDown` computes the cursor's screen position as `this.Left + clickInWindow.X` rather than calling `PointToScreen(clickInWindow)`. The window position is then assigned in DIPs.
+**Why:** `PointToScreen` returns physical pixels on high-DPI displays while `Window.Left`/`Top` use device-independent units. Mixing the two positioned the restored window off-screen by the scale factor (e.g., at 150% scaling, the window jumped 50% further than the cursor). Direct DIP math avoids the conversion entirely — a maximized window is at screen origin in DIPs, so window-local coordinates are screen coordinates. Any future code that mixes `PointToScreen` results with `Window.Left`/`Top` is suspect.
+**Date:** May 2026
 
-### CUT/BEV Folded into Connection Rows, Not Separate Labor
-**Decision:** CUT and BEV no longer generate separate labor rows. BW connections include CUT+BEV rate additions, SW/THRD include CUT.
-**Why:** Cut/bevel are always performed with the connection. Folding them in prevents row explosion in the Labor tab and matches how labor is actually performed.
-**Date:** March 2026
+### Theme System Uses DynamicResource and Role-Based Token Names
+**Rule:** All theme-aware brushes/colors are referenced via `{DynamicResource ...}` (~1,119 instances). Resource keys are role-based (`ToolbarForeground`, `GridHeaderForeground`) rather than color-named (`DarkBlue`, `LightGray`).
+**Why:** DynamicResource enables live theme switching without app restart. Role-based names keep the brush set stable as new themes are added beyond the initial Dark/Light pair.
+**Date:** February 2026
 
-### GSKT/BOLT Excluded from Labor Generation
-**Decision:** GSKT and BOLT material items no longer create any labor records.
-**Why:** These are material-only items. Their labor is accounted for in the BU (bolt-up) connection rows.
-**Date:** March 2026
-
-### FLGB and FLGLJ Now Generate Per-Item Install (Fab) Labor Rows
-**Decision:** Blind flanges (`FLGB`) and lap-joint flanges (`FLGLJ`) now produce one fab/install labor row per physical item with `ShopField=2` (field-installed). Reverses an earlier exclusion in `TakeoffPostProcessor.ExplodeMaterialRow` (line ~1138) that skipped these two components from the fab-record loop on the assumption their labor was "covered by their BU connection row." Connection (BU) explosion behavior is unchanged — partner-flange BU rows still count the bolt-up labor.
-**Why:** The earlier comment was wrong. The BU bolt-up labor and the per-item handling/install labor (rigging, hauling, positioning the disc) are separate effort categories. Per-item handling for blinds and lap-joint flanges has always existed in real fabrication; producing zero labor rows for hundreds or thousands of FLGB/FLGLJ BOM items systematically under-counted MH on every project with these components. `ExcludeFromMakeupLookup` (line 80) still excludes them from spool-makeup length calculations — that's a separate concern (pipe-spool fab length doesn't depend on whether the flange end is a blind or a slip-on; the blind contributes no makeup-length the way a fitting does). The two exclusions were conflated in the original code.
-**Date:** April 29, 2026
-
-### TUBE Treated as Footage Component, Mirroring PIPE
-**Decision:** TUBE is now grouped with PIPE in a new `FootageComponents` HashSet at the top of `TakeoffPostProcessor.cs`. Both produce one labor row per BOM row with `Quantity = ParseExactQuantity(mat)` preserving the original footage value, instead of the per-quantity explosion that fittings/flanges get. Description suffix swaps dynamically (`" - Fab Pipe Handling"` for PIPE, `" - Fab Tube Handling"` for TUBE). The two `_noConns` early-return guards switched from hardcoded `!= "PIPE"` to `!FootageComponents.Contains(component)` so TUBE rows with blank Connection Qty / Connection Type stay out of the No Conns diagnostic tab the same way PIPE does.
-**Why:** TUBE quantity in the BOM is footage (linear feet), not item count — same as PIPE. Exploding a 100-ft tube run into 100 labor rows of `Quantity=1` was systematically wrong. Tube doesn't list its own connections (analogous to pipe; tube joints are tracked at the fitting side), so it shouldn't appear in the No Conns review tab either.
-**Date:** April 30, 2026
-
-### Companion CUT Labor Row Per BW or SW Connection (Pure Additive, No Rate Touch)
-**Decision:** Each BW or SW connection labor row now spawns a companion CUT row alongside it via the same `CreateLaborRow` helper (size, thickness, material, class inherited from the parent connection; ShopField=1 Shop; Quantity=1; description ends in `CUT`). Mirrors the existing SCRD→THRD precedent directly above it in `TakeoffPostProcessor.cs:1224-1239`. Existing CUT fold-in via the `CutAdd` column on BW/SW rows is intentionally left alone — all multipliers untouched, BudgetMHs formula on existing rows unchanged. SCRD does not get a companion CUT row (only BW and SW were specified).
-**Why:** Stand-alone CUT rows let the upcoming MCAA-rate cross-examination price cut labor row-by-row. MCAA prices CUT independently per connection, not as an add-on to the joint rate. Keeping the existing Summit fold-in untouched means the existing Summit-priced workbook stays numerically identical — useful for back-to-back A/B comparison when MCAA rates are eventually applied. Yes, this means cut labor is double-counted in the totals when the same workbook is priced under Summit (once via CutAdd fold-in, once via the new CUT row's BudgetMHs). The user accepted that trade-off because they're treating the new CUT rows as a comparison artifact, not a Summit-pricing change.
-**Date:** April 30, 2026
-**Date:** April 29, 2026
-
-### Rate Lookup: Simplified 4-Step Fallback Chain
-**Decision:** Removed OLW/SW class rating tier fallback system. New chain: try thickness as-is → toggle leading "S" → try class rating → try size-only.
-**Why:** The tier system (40/S40/STD/2000 equivalence groups) was complex. The S-toggle approach handles the same edge cases more simply. Dual-size parsing for all components further reduced misses.
-**Date:** March 2026
-
-### Rate Sheet Keys Match Component Names Directly
-**Decision:** Renamed all 56 EstGrp keys to short names. Components like INST, PIPE, SPL, BEV match rate keys directly. Only valve types (VBL/VGT→VLV) and fittings (90L/TEE→FTG) need the mapping dictionary.
-**Why:** Eliminates indirection. The `DirectMatchComponents` set was redundant when `ResolveEstGrp` can just use the component name as the key.
-**Date:** March 2026
-
-### BudgetMHs Formula: RateSheet × RollupMult × MatlMult
-**Decision:** Changed from `RateSheet × RollupMult × max(RollupMult, MatlMult)` to simple multiplication.
-**Why:** The max() approach double-counted the rollup multiplier when it exceeded the material multiplier. Simple multiplication is more transparent and matches industry conventions.
-**Date:** March 2026
-
-### FS Labor Rows: RollupMult and MatlMult Neutralized to 1.0 (Already Baked Into Summit Rate)
-**Decision:** In `TakeoffPostProcessor.ApplyRates`, when `component == "FS"`, both `RollupMult` and `MatlMult` are forced to 1.0 in the audit columns and the BudgetMHs computation. Effective formula for FS rows: `BudgetMHs = mhu × qty` (no multipliers applied). Other components unchanged.
-**Why:** The published Summit FS rates in `Resources/RateSheet.json` already have rollup and material-group multipliers baked into the rate value. The general-purpose rate-application pass was applying them again, double-counting on every FS row. Setting the audit columns to 1.0 (rather than just skipping the multiplication silently) makes it visually obvious in the workbook that no multiplier was applied to FS rows — reviewers don't have to remember the special case. Bug was longstanding under Summit pricing; surfaced during MCAA parity-test scoping.
-**Date:** May 5, 2026
-
-### FS Material Group Auto-Corrected from Pipe Material
-**Decision:** Field support (FS) `Matl_Grp` values are auto-corrected to match the pipe of the same size on the same drawing.
-**Why:** AI often defaults FS to CS (carbon steel) because material isn't in the FS description. When multiple pipe materials exist, picks the non-CS value since CS is the assumed default.
+### `SfSkinManager.SetTheme` Runs in Constructor, Not Loaded Event
+**Rule:** Every dialog and view that participates in theming calls `SfSkinManager.SetTheme(this, new Theme(themeName))` in its constructor, before the control enters the visual tree. Loaded-event application is forbidden.
+**Why:** When applied in Loaded on a second instance of the same control type, Syncfusion's theme engine interferes with `SfDataGrid` rendering and the grid does not display data. Constructor-time application is the only reliable path.
 **Date:** April 2026
 
-### ShopField Post-Processing: Lambda Sets All to Shop, Post-Processor Corrects
-**Decision:** Lambda sets all material rows to ShopField=1 (Shop). Post-processor corrects to Field (2) for: BU/SCRD-only connections, inherently field components (FS/BOLT/GSKT/WAS/INST/GAUGE), and items with zero connections.
-**Why:** Simpler Lambda logic. Correction rules are data-driven and easier to maintain in the post-processor. PIPE always stays Shop. Mixed connection types stay Shop.
+### Grid Filter Icons Are Custom Stroke-Based, Not Syncfusion Defaults
+**Rule:** `FilterToggleButton` is replaced by a custom stroke-based funnel icon template. Active/inactive states drive theme-aware stroke colors via `DynamicResource`.
+**Why:** Syncfusion's built-in filter icon colors are resolved from compiled BAML and cannot be overridden via resource dictionaries. Custom templates were the only path to theme-aware icons that respect the active theme's foreground color.
+**Date:** February 2026
+
+### Grids Require Double-Click to Sort
+**Rule:** All `SfDataGrid` instances require double-click on column headers to sort. Single-click does not sort.
+**Why:** Single-click sort triggered accidental resorts when users clicked headers for other reasons (right-click menu, text selection). Double-click is explicit.
+**Date:** February 2026
+
+### Column-Settings Schema Migration Is Graceful
+**Rule:** When the saved grid layout's column hash doesn't match the current grid's column set, preferences apply to matching columns rather than being rejected outright. New columns appear at the end with default widths; removed columns are ignored.
+**Why:** Hash-strict rejection meant adding or removing any column discarded all user column preferences across that grid. Graceful migration preserves user effort across schema evolution.
+**Date:** February 2026
+
+### Custom Scrollbar Templates Are Always-Visible 14px
+**Rule:** All app scrollbars use a custom 14px-wide always-visible template with theme-aware brushes. Auto-hide is disabled. The custom `ScrollViewer` template avoids implicit-style leakage into Syncfusion `ComboBoxAdv` dropdown internals.
+**Why:** Auto-hiding scrollbars were hard to find and interact with. Always-visible at 14px gives a stable target. Custom template scoping prevents the implicit style from breaking Syncfusion's internal scroll behavior.
+**Date:** March-April 2026
+
+### `ProgressView` Is Cached Across Navigations
+**Rule:** `MainWindow` caches the `ProgressView` instance and reuses it on every Progress-tab navigation. Force-reload happens only on Excel import and Reset Grid Layouts.
+**Why:** First load is unchanged in cost; every subsequent navigation is instant. Recreating the view on each nav was wasteful when the data hadn't changed.
+**Date:** February 2026
+
+### Notification Sounds Are Suppressed on Informational Dialogs
+**Rule:** All `MessageBox.Show` calls that previously used `MessageBoxImage.Information` now use `MessageBoxImage.None`. The OS notification chime does not play on informational confirmations.
+**Why:** The Windows information sound was disruptive on routine confirmations and added no signal users acted on.
+**Date:** February 2026
+
+### `AppMessageBox.Show` Wrapper Is Mandatory for All User-Facing Dialogs
+**Rule:** Every dialog goes through `Utilities/AppMessageBox.Show(...)`, never `MessageBox.Show(...)` directly. The wrapper finds the active window, calls `Activate()`, and toggles `Topmost` true→false to force the dialog to the front before parenting it. CLAUDE.md enforces this rule.
+**Why:** After long-running awaits or focus loss, a parameterless `MessageBox.Show` can render behind the owning window — a bulk operation appeared to hang because the success dialog was hidden under the grid. Centralised wrapper is the maintainable answer over per-callsite `Activate()` calls (480+ sites, easy to forget for new code).
 **Date:** April 2026
 
-### Send Missed to Admin: Default Unchecked, No Persistence
-**Decision:** "Send Missed Makeups and Rates to Admin" checkbox defaults to unchecked on every tab load. No saved preference.
-**Why:** Users were unintentionally emailing admins on every batch because the checkbox persisted as checked. Default-off makes the email an intentional opt-in action each time.
+### Top-Level Menus Auto-Close on Hover-Out via Custom Polling
+**Rule:** All app dropdowns (Progress sidebar Actions and USER, MainWindow toolbar File/Tools/Admin) auto-close when the cursor leaves them. `Utilities/MenuAutoClose.cs` implements this via a 150ms polling `DispatcherTimer` with `InitialOpenGraceMs = 1500` (long delay before close if cursor never enters) and `CursorLeftDelayMs = 400` (faster close once cursor has been in and then left). A `hasBeenOver` flag picks which delay applies. Open submenus suppress the parent close so navigating into a submenu doesn't kill the parent.
+**Why:** WPF supports auto-close natively only for submenus, not top-level menus. ContextMenu uses `Mouse.GetPosition(menu)` against the menu rect (single-rect popup, reliable). `DropDownButtonAdv` lives in a separate visual tree from its dropdown popup, so reliable bounds checking required `Mouse.GetPosition(button)` plus a 240×600 region below the button (toolbar dropdowns always open downward).
 **Date:** April 2026
 
-### S3 Drawings Deleted After Processing
-**Decision:** Uploaded drawings automatically deleted from S3 after takeoff processing completes.
-**Why:** Drawings were being overwritten on each run anyway (to support new revisions with same filename), so persisting them served no purpose.
-**Date:** March 2026
-
-### Config Naming by Username, Not Client/Project
-**Decision:** Config S3 path uses `clients/{username}/{config-name}.json` instead of separate client/project fields.
-**Why:** Each user gets their own namespace. Simpler than requiring a client/project hierarchy for configs.
-**Date:** March 2026
-
-### In-App Results Panel Removed, Excel Is the Deliverable
-**Decision:** Removed the in-app results summary panel from TakeoffView.
-**Why:** The same information is available in the downloaded Excel file. The in-app panel was redundant.
-**Date:** March 2026
-
-### MakeupEquiv Two-Pass Lookup
-**Decision:** `MakeupEquiv` dictionary (ADPT→FLG, FLGR→FLG) with two-pass lookup: direct match first, then equivalent component.
-**Why:** Performance — most lookups succeed on direct match. Two-pass also makes the lookup hierarchy explicit and predictable.
-**Date:** March 2026
-
-### ROC Splits Read Raw Takeoff Data, Not Mapped Activity Properties
-**Decision:** `ApplyROCSplitsAsync` reads ShopField and Component directly from the raw takeoff Excel row data instead of from the mapped Activity object properties (UDF1/UDF6).
-**Why:** Users configure column mappings in their import profile — ShopField might map to `UDF1`, `ShopField`, or be unmapped entirely. Hardcoding to `activity.UDF1` made ROC splits silently fail if the mapping didn't match. Reading from raw data makes the feature work regardless of mapping configuration. Also added text value support ("Shop"/"Field") alongside numeric ("1"/"2").
+### Click-and-Stay-Open Menu Items Use `Dispatcher.BeginInvoke` Reopen
+**Rule:** Menu items that stay open on click (e.g., Select All in the Progress Actions menu) perform their work in a regular `Click` handler and schedule `ContextMenu.IsOpen = true` via `Dispatcher.BeginInvoke` at `Background` priority to reopen the menu after WPF's `MenuItem.OnClick` closes it. Brief flicker is accepted.
+**Why:** WPF `MenuItem.OnClick` closes the parent menu unconditionally for non-`SubmenuHeader` items. `IsCheckable="True"` toggles `IsChecked` but doesn't suppress the close in a `ContextMenu`. `PreviewMouseLeftButtonUp` with `Handled=true` is ignored because `ButtonBase.OnMouseLeftButtonUp` is registered with `HandledEventsToo=true`. Dispatcher reopen is the canonical workaround.
 **Date:** April 2026
 
-### Failed DWGs Tab Owned by Aggregation Lambda, Not the App
-**Decision:** The "Failed DWGs" tab in the batch Excel is written exclusively by the AWS Aggregation Lambda from S3 failure markers (one `failures/{drawing}.json` per failed drawing, emitted by the extraction Lambda's exception handler and by its zero-BOM-row guard). The WPF app does not create, overwrite, or delete this tab on any path — not on initial download, not on Recalc Excel, not on re-download from Previous Batches. `TakeoffPostProcessor.GenerateLaborAndSummary` was modified to drop its `failedDrawings` parameter and remove the write/delete branch entirely; the tab flows through untouched on every post-processing pass.
-**Why:** The prior app-side `WriteFailedDrawingsTab` helper wrote a 1-column tab from an in-memory list (`_failedDrawings`) captured during SFN polling. The new Lambda schema carries 4 columns with diagnostic depth the app can't reconstruct: Drawing Name, Source Key (full S3 path), Error (the actual exception message or "Zero BOM items extracted"), and a UTC timestamp. Reading failures from S3 markers also means re-runs and Recalc Excel present a stable, full history rather than "whatever we captured in RAM this session." Keeping the write responsibility in one place (Aggregation Lambda) eliminates the class of bug where a null/empty `failedDrawings` parameter silently destroyed the existing tab.
+### Menu-Item Icons Render Inline in the Header, Not via `<MenuItem.Icon>`
+**Rule:** Menu items that need icons (Actions menu items in the Progress sidebar) render the icon as a `TextBlock` inside the `MenuItem.Header` `StackPanel`, with a fixed 22px-wide icon column so labels align. The `<MenuItem.Icon>` slot is not used.
+**Why:** WPF's default `MenuItem` template renders an "icon column gutter" rail above and below items even when overridden via custom `ItemContainerStyle`. Inline-icon-in-Header bypasses the gutter entirely — the template only sees a Header content presenter and a submenu arrow.
 **Date:** April 2026
 
-### Failed Drawing Counts Come from the Excel, Not the Step Functions Output
-**Decision:** The WPF polling loop no longer attempts to parse per-drawing counts from the Step Functions execution output. It only checks the top-level `status` field for aggregation-level failure. The actual success/failure counts are computed after download by counting the data rows in the batch Excel's "Failed DWGs" tab (`LastRowUsed.RowNumber() - 1` when populated, `0` when the tab is missing or carries the Aggregation Lambda's "No failed drawings…" sentinel in cell A1). `succeeded = totalSubmitted - failedDrawings`.
-**Why:** The state machine's `BatchComplete` Pass state only forwards `status` / `batch_id` / `excel_path` — it strips the Aggregation Lambda's rich return payload (`total_drawings`, `total_failed_drawings`, etc.). Both naive fixes have downsides: modifying the Pass state requires AWS Console coordination and still leaves the app dependent on SFN output shape; reading the Excel leverages data the app already has after download and works no matter how the Pass state is later reconfigured. Tradeoff: the "N succeeded, M failed" status message now appears after the Excel save completes (not before), which added a small UX change — preliminary "Completed in {elapsed} — downloading results..." status bridges the gap.
+### WebView2 Virtual Host Maps to App Base Dir, Not `Help/`
+**Rule:** The help sidebar's WebView2 virtual host `help.local` is mapped to the app base directory. `manual.html` lives at `Help/manual.html`; images live at `Assets/Images/Sidebar/...`. Image references in the manual use `<img src="../Assets/Images/Sidebar/xxx.png">` relative to the manual's location.
+**Why:** When images moved to `Assets/Images/Sidebar/`, the manual could no longer reach them via sibling-relative paths. Rooting the virtual host at the app base dir lets one mapping cover both locations. Two host mappings (one for `Help/`, one for the images folder) was rejected as needlessly complex.
 **Date:** April 2026
 
-### Size and Quantity Returned Raw-as-Printed; Conversion Centralized
-**Decision:** Claude returns both `size` and `quantity` exactly as printed on the drawing — fractions like `"3/4"` and `"1-1/2"`, reducing-size strings like `"6X4"`, and length strings like `"27'10\""`, `"10 FT 2 IN"`, `"5.5 ft"`, `"41.3'"` all flow through the extraction JSON unchanged. The aggregation Lambda's `normalize_size()` converts fractional sizes to decimals at the Excel write boundary; the C# app's `NormalizeMaterialQuantities()` (called once from `GenerateLaborAndSummary` right after `WriteMaterialShopField`) converts quantity strings to decimals and writes them back to the Excel Material tab. Downstream consumers (connection explosion, SPL generation, PIPE fab, `ApplyRates`, `ParsePipeLengthFeet`) read the already-normalized double.
-**Why:** Vision models are substantially more accurate when echoing printed text than when doing arithmetic on what they read. The original prompt asked Claude to convert feet+inches to decimal feet and fractions to decimals; in practice that produced silent wrong values when drawings used unusual unit forms. Centralizing conversion in one place per value type (Lambda for size, C# app for quantity) makes parse failures visible — both layers log a structured warning (`SIZE_NORMALIZATION_FAILED`, `QUANTITY_PARSE_FAILED`) and leave the raw text in place so a reviewer can correct the cell and rerun. Replaces a prior multi-layer silent-fallback design where Claude could return raw text, the Lambda could pass it through unconverted, and the C# side could default to `1` or `0` with no user-visible indicator that any step had failed.
-**Date:** April 2026
+### Info Icons Anchor Into the Help Manual via `HelpAnchors` Constants
+**Rule:** Info icons (clickable ⓘ buttons next to complex fields) call `HelpService.OpenAt(anchor)`, which routes through `MainWindow.OpenHelpAt(anchor)` → `SidePanelViewModel.ShowHelp(anchor)` → URL fragment in `HelpNavigationUrl` (`https://help.local/Help/manual.html#wp-name-pattern`). Same URL with a different fragment scrolls the WebView2 without a full reload. Anchor IDs live as `public const string` values in `Utilities/HelpAnchors.cs`. Raw anchor strings at call sites are forbidden.
+**Why:** HTML anchors are stable across manual growth — keyed to `id`, not file position. The `HelpAnchors` constants file makes anchor renames a compile error rather than a silent broken link. Centralised routing also lets info icons on dynamically built editors call one static method without knowing about MainWindow internals.
+**Date:** May 2026
 
-### Unmatched Material Returns Null, Not Default-CS
-**Decision:** When Claude can't match a BOM description's material to the Material Reference Table, `matl_grp` and `matl_grp_desc` are returned as `null` instead of defaulting to `"CS"` / `"CARBON STL"`. The C# app's `CorrectFsMaterial` step still inherits pipe material for FS (field support) rows on the same drawing, so FS behavior is unchanged. Non-FS rows with unmatched materials now surface as empty cells on the Material tab for manual review.
-**Why:** The old CS default masked two distinct problems. FS items whose descriptions don't mention material are always overwritten app-side by the pipe lookup regardless of what the Lambda returned — the CS guess did no work there. Non-FS items with exotic or non-standard materials (Monel, Inconel, chrome-moly variants outside the reference table) used to silently flow into rate calculations with the wrong material multiplier, with no indicator on the Material tab that anything was guessed. Returning null surfaces these cases as empty cells; reviewers spot them and fill in the correct value.
-**Date:** April 2026
+### Hover-Open Popups Hold a Hyperlink, Tooltips Don't
+**Rule:** Info icons that need a clickable hyperlink in their hover content use a `<Popup>` with `StaysOpen="True"` and `MouseEnter`/`MouseLeave` handlers on both the icon and the popup body. A 200ms `DispatcherTimer` close-handoff lets the cursor slide from icon to popup without dismissing.
+**Why:** Standard WPF `<ToolTip>` content can't host clickable controls — moving the mouse into a tooltip dismisses it before any click registers. Popups are the canonical interactive-tooltip pattern. The 200ms timer plus per-region MouseEnter/MouseLeave handlers are the standard hover-handoff dance.
+**Date:** May 2026
 
-### Labor Tab Description Does Not Include Pipe Spec
-**Decision:** The `Description` column on the Labor tab for connection rows (BW/SW/BU/SCRD/OLW/THRD) is built from `"{size} IN - {thickness} - {class} - {material} - {connType}"`. The pipe spec token was removed.
-**Why:** The prior `FindPipeSpec` heuristic picked the first title-block field whose key contained the substring "spec" — fragile on drawings with multiple spec fields (Pipe Spec, Coating Spec, Insulation Spec — it would sometimes latch onto Coating Spec) and silently broken on drawings that labeled the field something else entirely (e.g., "Pipe Schedule"). Every title-block field already flows to the Labor tab as a dedicated trailing column, so injecting a best-guess spec into the Description added no information — only confusion when the guess was wrong. Reviewers read the spec from its own column.
-**Date:** April 2026
-
-### Legacy Direct-Image Extraction Path Removed from Lambda
-**Decision:** The extraction Lambda's pre-config-based calling convention was deleted — the entire `else` branch of `lambda_handler` (accepting `s3_path` or `bucket`+`key` event shapes for pre-cropped images), the `parse_input` / `load_drawing_as_image` / `convert_pdf_to_png` / `convert_tiff_to_png` / `call_bedrock` single-image helpers, and the "Legacy helper functions" section header (~140 lines). `lambda_handler` now requires `config_path` in the event and raises `ValueError` if missing.
-**Why:** The legacy path predated the config-based cropping system. It accepted pre-cropped images (an operator manually isolated the BOM outside AWS) and ran Bedrock on them directly. Since `TakeoffService.StartBatchAsync` was wired up, every Step Functions execution sends the new-format payload (`{config_path, bucket, drawing_keys, rev_bubble_only}`) and no other caller remains — full repo audit confirmed no `AmazonLambdaClient` in the C# app, no `s3_path` references outside the Lambda itself, and no test harnesses using the legacy shape. Deleting removed ~140 lines of unexercised code and also closed a non-batch zero-BOM silent-success edge case for free (it only existed because the legacy path set `batch_id = None`).
-**Date:** April 2026
-
-### Size Normalization Moved Lambda → C# (Mirrors Quantity Pattern)
-**Decision:** Removed `normalize_size`, `normalize_single_size`, `format_decimal`, and the `import re` statement from the aggregation Lambda. Both `build_material_rows` and `build_flagged_rows` now pass `item.get("size")` through unchanged. Size normalization (fractions → decimals, mixed numbers, unicode fractions, en/em dashes, reducer "X" handling) is performed app-side in `TakeoffPostProcessor` as Step A1 — `NormalizeMaterialSizes` runs immediately after `ReadMaterialTab`, before `NormalizeTeeSizes`, and writes the normalized strings back to the Material worksheet via `WriteMaterialSizes` (mirror of `WriteMaterialQuantities`). Five compiled regex statics (`SizeMixedNumberRegex`, `SizeFractionRegex`, `SizeReducerSplitRegex`, `SizeWhitespaceAroundHyphenRegex`, `SizeWhitespaceCollapseRegex`) plus a `UnicodeFractions` dictionary back the new `TryNormalizeSize` / `TryNormalizeSingleSize` / `FormatSizeDecimal` helpers. Behavior is intentionally identical to the deleted Python — same regex patterns, same vulgar-fraction map, same 4-decimal-place truncation — verified via a 16-case Python parity harness during implementation.
-**Why:** Quantity already moved app-side in the 2026-04-22 review for exactly the same reasons; sizes had been left behind only because they were already "working." User raised the inconsistency: tweaking a Lambda regex requires an AWS deploy and only helps new takeoffs, while a C# change ships in the next app release and applies to every Recalc Excel pass on existing takeoffs. Centralizing both Lambda-side and app-side conversion eliminates the two-implementation maintenance burden (Python regex set + C# regex set, formerly required to agree). Defense-in-depth gain: when the C# normalizer fails on a malformed input, the row falls through to the new Malformed Sizes guard in `ExplodeMaterialRow` rather than getting silently passed through with a CloudWatch warning that nobody reads.
-**Date:** April 2026
-
-### Malformed-Size Rows Skipped from Labor and Surfaced to a Dedicated Tab (Loud Over Silent)
-**Decision:** When a material row's `Size` contains an unbalanced "X" — i.e., contains `x`/`X` AND `FittingMakeupService.ParseDualSize` returns null — `ExplodeMaterialRow` adds the row to a new `_malformedSizes` collection and returns immediately, skipping the entire labor-explosion path (no fab row, no connection rows, no THRD companions). A new "Malformed Sizes" worksheet is written from that collection with columns Drawing Number, Item ID, Component, Size, Quantity, Connection Type, Raw Description, and a fixed Reason string ("Size contains unbalanced 'X' — labor generation skipped. Verify against drawing."). The tab is added to `ReorderTabs` between "Failed DWGs" and "Missed Makeups", and the Summary tab now carries a "Malformed Sizes" count line under Low/Medium Confidence. The same trigger condition exists for "5x5x5" (three-part split → ParseDualSize null) and any non-numeric token on either side of the X.
-**Why:** Real bug observed in the 2026-04-23 takeoff: model emitted `Size = "0.5x"` for item 12 (a wrap-line miss on a TEE). `ParseDualSize` returned null, the fallback `GetDouble(mat, "Size")` parsed `"0.5x"` as 0 (the `x` made it non-numeric), and six connection labor rows (3 SCRD + 3 THRD companions) were silently emitted at size 0 with no rate, no `BudgetMHs`, and no signal beyond an obscure size-0 entry on Missed Rates. Two design options were considered: silent recovery (`ParseDualSize` returns the present side, e.g., `(0.5, 0.5)` for `"0.5x"`) or loud flag. Loud flag was chosen because the C# regex genuinely cannot infer the missing portion — only the drawing knows whether the outlet was 1/2 or 1 1/2 — and silently picking either is worse than skipping. The new prompt's size-validity contract should prevent the model from ever emitting unbalanced X again, but defense-in-depth catches future slips at the boundary instead of letting them silently degrade the takeoff.
-**Date:** April 2026
-
-### `connection_size` Field Removed End-to-End
-**Decision:** The `connection_size` field has been stripped from the extraction prompt JSON schema, the aggregation Lambda's row-build code (both Material and Flagged tab paths), the Lambda's column mapping list, and the Labor tab's `explicitColumns`. The Summary tab's "CONNECTIONS BY SIZE" section now groups by `Size` (the per-row connection size) instead of `Connection Size` (which carried the parent fitting's full dual-size string for reducers).
-**Why:** `connection_size` was a phantom field — the model emitted it, the Lambda passed it through, the Material and Labor tabs displayed it, but no C# code computed labor or makeup from it. The single remaining consumer was the "CONNECTIONS BY SIZE" Summary grouping, which was arguably buggy for reducers: a SCRD row at the run side (Size=2) and a SCRD row at the outlet side (Size=0.5) of a `2x0.5` REDT both grouped into bucket "2x0.5" because they shared the parent's `Connection Size`, instead of into the correct buckets "2" and "0.5". Switching the grouping to `Size` fixes that bucketing for free. Stripping the field saves prompt tokens, JSON bytes, and one more column the user has to scroll past on the Material tab. The Olet Rule and the connection_size-related portions of the SIZE VALIDITY CONTRACT were rewritten in the proposed new prompt; the historical `extraction_prompt.txt` (the version that produced the 2026-04-23 sample takeoff under investigation) was deliberately left untouched as evidence.
-**Date:** April 2026
-
-### Flagged Tab Kept Minimal; Material Tab Is the Review Target
-**Decision:** The Flagged tab is a minimal "rows to look at" view. It includes 13 columns (drawing number, item ID, size, description, component, connection qty/type, material group + desc, thickness, class rating, confidence, flag reason). It does NOT mirror Material — `connection_size`, `quantity`, `commodity_code`, `length`, `shop_field`, and all `tb_*` title-block columns are intentionally omitted. The four override columns (`Override Component`, `Override Conn Qty`, `Override Conn Type`, `Override Notes`) that used to sit on the right edge with yellow highlighting were deleted. Reviewers match by `(Drawing Number, Item ID)` back to the Material tab to see full context or to apply a correction.
-**Why:** The Flagged tab's purpose is to surface the rows that need human review — it's a worklist, not an editor. The override columns were decorative only (full repo grep found zero C# consumers; if a reviewer filled them in, nothing happened). Wiring them up would duplicate editing functionality that already exists on the Material tab — users correct values there directly, the Material tab is the single source of truth for BOM data, and any "Recalc Excel" pass regenerates the Labor and Summary tabs from whatever is on Material. Keeping Flagged minimal prevents drift between the two tabs and communicates clearly which tab is authoritative.
-**Date:** April 2026
-
-### Takeoff Lifecycle Lives in App-Level `TakeoffSession`, Not the View
-**Decision:** The upload → start → poll lifecycle of an AI Takeoff batch is owned by `Services/AI/TakeoffSession.cs` held at `App.CurrentTakeoff` (mirroring the `App.CurrentUser` pattern), not by `TakeoffView.xaml.cs`. The view becomes a thin subscriber that rebuilds itself from session state on `Loaded` and unsubscribes on `Unloaded`. The session also owns its own `TakeoffService`, `CancellationTokenSource`, and any future timer.
-**Why:** `MainWindow.BtnTakeoff_Click` destroys and recreates the `TakeoffView` instance on every navigation. Before this lift, switching to Schedule mid-batch orphaned the view but left its async state machine running invisibly — the polling loop kept writing to a `txtStatus` the user could no longer see, and a deferred `SaveFileDialog` could pop from a detached view. Hoisting state above the view lifecycle lets the user navigate freely while a takeoff is in flight; the next view instance restores the in-progress UI and picks up event subscriptions where the previous one left off.
-**Date:** April 2026
-
-### Sticky "Takeoff: Complete" Bottom-Bar Indicator; Cancellation Does Not Set It
-**Decision:** `App.HasCompletedTakeoffSinceStartup` is set the first time a takeoff session raises `Completed` with `CompletedSuccessfully == true`. It stays set until the next batch starts (flips to Running) or the app closes. Cancelled or failed batches do not set the flag — they leave the bottom bar at "Not Running."
-**Why:** The bottom-bar indicator is a quiet acknowledgment that a takeoff actually happened in this app session. After the user has saved the Excel and moved on to other work, glancing at the bar should confirm "yes, you ran a batch." A cancelled batch is not a completion in any meaningful sense; reusing the Complete state for it would dilute the signal and could mask user mistakes (cancel-by-accident on a long batch, then walk away thinking it succeeded). Per-app-session lifetime (not persisted to disk) keeps the indicator scoped to "what you did right now."
-**Date:** April 2026
-
-### Auto-Open SaveFileDialog on Return; Cancelled Dialog Does Not Reopen
-**Decision:** When a takeoff completes successfully while the user is on another tab, `TakeoffSession.PendingDownloadBatchId` is set. On returning to the Takeoffs tab, `RestoreFromSessionIfActive` calls `ClearPendingDownload()` first and then opens the SaveFileDialog. Whether the user saves or cancels, the flag is already cleared — a subsequent nav-and-return will not re-pop the dialog. Recovery from a cancelled save is via the Previous Batches button.
-**Why:** The user explicitly asked for a frictionless on-return experience: dialog opens directly, no inline confirm. Re-popping the dialog on every navigation would punish the user for cancelling once. Clearing before the await also defends against a SaveFileDialog crash leaving the flag set indefinitely. Previous Batches is already the documented recovery path for downloading a completed batch you didn't save the first time, so leaning on it for the cancel-on-return case avoids a parallel flow.
-**Date:** April 2026
-
-### Persist Last Config by Key, Not Index; Don't Persist Rates / Bubble / Send-Missed
-**Decision:** `Takeoff.LastConfigKey` UserSetting persists the last-selected config across tab navigations and app sessions. Lookup is by `_configs[i].Key` so dropdown order changes don't break the restore; if the saved key no longer exists (config deleted), fall back to the first available config. The Unit Rates dropdown, Rev Bubble Items Only checkbox, and Send Missed Makeups to Admin checkbox are intentionally NOT persisted — they always default to "Default (Embedded)" / unchecked / unchecked.
-**Why:** Config selection is high-friction to re-pick from a dropdown each session and almost always the same one. Index-based persistence breaks the moment a user adds, deletes, or renames a config; key-based persistence survives. The other three controls are deliberately friction by design — Unit Rates and the two checkboxes change the meaning of the resulting Excel (project-specific rates, scope of extraction, who gets emailed), and the user wants to make a fresh decision each session rather than have a stale opt-in survive a restart.
+### Sidebar Help Pane Has a Single Help Tab, No AI Assistant Tab
+**Rule:** The help sidebar shows the help manual only. There is no AI Assistant tab.
+**Why:** The AI Assistant tab was a placeholder with no implementation behind it; carrying empty UI misled users into thinking the feature was imminent. `Plans/Sidebar_AI_Assistant_Plan.md` is retained in the repo if the feature is ever revived.
 **Date:** April 2026
 
 ---
 
-## VP vs Vtg Report
+## Progress Module
 
-### JC Cost Code: Exact Match After Outer-Whitespace Trim Only
-**Decision:** ProjectID and PhaseCode matching between the JC Labor Productivity report and Vantage `VMS_Activities` uses `String.Trim()` on both sides (stripping only leading and trailing whitespace), then compares as an exact string. No leading-zero stripping, no internal whitespace collapsing, no trailing-separator trimming. The previous `NormalizeKey` helper was removed.
-**Why:** Reversed an earlier decision that normalized both sides to match cosmetic variants like `26.001.001` ↔ `26.1.1`. The normalization was hiding a real data-quality problem: Vantage phase codes should match VP's canonical format exactly. "Not Found" is now a useful signal — it tells the user which Vantage records have drift from VP and need their codes corrected to match VP. Outer-whitespace trim is the only concession, because Excel cell formatting and SQL CHAR padding can introduce leading/trailing spaces that aren't user-meaningful differences; everything else (internal spaces, digits, punctuation, zero-padding) must match character-for-character or the row is reported as `Not Found`.
-**Date:** April 2026 (reversed same month it was introduced)
+### Bulk Select Uses Transient `IsBulkSelected`, Not `SfDataGrid.SelectAll()`
+**Rule:** Ctrl+A and `Actions → Select All` flip a transient `Activity.IsBulkSelected` (INPC, not persisted, not synced) on each filtered row. `RecordOwnershipRowStyleSelector` paints the row Background from a `DataTrigger` bound to that flag, using `sfActivities.RowSelectionBrush` so the highlight matches Syncfusion's native mouse-row-select color. `SelectAllFilteredRowsAsync` populates `sfActivities.SelectedItems` for the bulk-action handlers but does NOT call `sfActivities.SelectAll()`. Any cell-level interaction (`sfActivities_SelectionChanged`) calls `ClearBulkSelectionInternal` to unflip the previously-marked rows. Future bulk-select code must follow this pattern; never call `SelectAll()` on this grid.
+**Why:** The grid is configured `SelectionMode="Extended" SelectionUnit="Any"` because cell-level features (multi-cell copy/paste, Count/Sum/Avg stats panel) require it. Under that configuration, `SelectAll()` materialises one `GridCellInfo` per (row × column) — at 36k rows × ~30 columns ≈ 1M `GridCellInfo` objects allocated synchronously inside Syncfusion on the UI thread. Stopping `SelectAll()` and driving the visual highlight from a row-style data trigger has zero `GridCellInfo` allocation, instant on 100k-row grids. Shift+Click first→last row at scale still freezes — that's Syncfusion's native gesture, deferred indefinitely. Ctrl+A is the supported scale-safe path.
+**Date:** May 2026
 
-### Color Coding Scoped to Added Columns Only
-**Decision:** Only the two generated columns (`Vtg Budget`, `Vtg Earned`) receive conditional fill (green within 1%, red over 1%, orange `Not Found`). The companion Excel columns (`Est Hours`, `JTD ERN`) are left untouched.
-**Why:** Initial implementation paired the red fill across both cells of a mismatch. User preferred minimizing modifications to the source report and keeping the visual signal scoped to the Vantage-sourced values. Every data row gets a color on the two new columns so mismatches are never ambiguous with "not yet checked".
+### Loading Overlay for Slow Bulk Ops Is Fullscreen DualRing, Not Inline Bar
+**Rule:** Slow user-initiated bulk operations on the Progress grid (Select All, Delete after confirmation) use the fullscreen `LoadingOverlay` Grid with `SfBusyIndicator AnimationType="DualRing"`. The inline `SfLinearProgressBar` bound to `viewModel.IsLoading` is reserved for background data loads where the operation isn't user-initiated.
+**Why:** Both animations tick on the UI thread. For long synchronous work like populating `SelectedItems` with 100k+ rows, both freeze unless the UI thread gets regular yields. Chunked work with `Task.Delay(1)` keeps either moving, but the overlay's larger visual real estate is the better fit for user-initiated bulk actions. Pre-confirmation overlays for fast operations (e.g., Delete's ownership pre-check on a small selection) are removed because they flickered before the confirmation dialog and added no signal.
 **Date:** April 2026
 
-### Prep Dialog + Native File Picker, Not a Custom Combined Picker
-**Decision:** Before the `OpenFileDialog`, show a custom WPF verification dialog (`VPvsVtgPrepDialog`) with instructions and an annotated screenshot. On OK, the standard Windows file picker opens. Two separate dialogs, not one custom combined picker.
-**Why:** Considered building a custom file browser to bundle the prep instructions into one screen. Rejected — the native `OpenFileDialog` is a Windows OS control users already understand, and replicating it would be significant work with no payoff. The only thing the OS picker can't do is show an image or rich text; a small pre-dialog is the right tool for that single gap.
+### DIY Toolbar Summary Panel Replaces Syncfusion `TableSummaryRow`
+**Rule:** The Progress grid's Count/Sum/Avg cell-selection stats render in a custom toolbar panel using cached `PropertyInfo` lookups and a 200ms debounce, not via Syncfusion's `TableSummaryRow`.
+**Why:** `TableSummaryRow` was too slow on large datasets (it re-evaluates aggregates on every selection change without debouncing). The DIY panel is faster and gives full control over which selection states trigger updates.
+**Date:** February 2026
+
+### `PercentEntry` Uses a Custom `GridTemplateColumn` with Progress-Bar Overlay
+**Rule:** `PercentEntry` renders via a custom `GridTemplateColumn` with a thin colored progress-bar overlay in each cell, not the native `GridNumericColumn`.
+**Why:** Native column types don't support the inline progress-bar visual. Trade-off accepted: decimal handling, arrow-key navigation, and auto-edit-on-type are hand-coded.
+
+### `PercentEntry` Edit Trigger Is `LostFocus`, Not `PropertyChanged`
+**Rule:** The `PercentEntry` `EditTemplate` `TextBox` binding uses `UpdateSourceTrigger=LostFocus`. Setter runs only when the user leaves the cell.
+**Why:** `PropertyChanged` triggered the setter on every keystroke, running clamp/round/multi-PropertyChanged chains that raced against input — `0.5` could become `5`. `LostFocus` commits exactly once per edit.
 **Date:** April 2026
 
-### Prep Dialog Skip Flag Persists to UserSettings, Not AppSettings
-**Decision:** The "Do not show this dialog again" checkbox writes `SkipVPvsVtgPrepDialog=true` to the `UserSettings` table (per-user), not `AppSettings` (app-wide).
-**Why:** The prep step is a user-learning concern — once a user has read the instructions, they don't need to see them again. Other users on the same machine haven't necessarily learned yet. User-scoped persistence mirrors how other dismissible UI state is stored (grid layouts, filter selections, analysis group field, etc.).
+### Progress Row Actions Live in the Sidebar Dropdown, Not Grid Right-Click
+**Rule:** Row-action commands (Select All, Delete, Copy submenu, Duplicate, Add Blank, Export Selected) live under the "Actions" button in the Progress filter sidebar. The grid's `RecordContextMenu` is removed. The column-header `HeaderContextMenu` (Find &amp; Replace, Copy Column, Freeze) is unaffected.
+**Why:** Syncfusion `SfDataGrid`'s default right-click clears multi-row selection and reduces it to the single row under the cursor (unless Shift is held). Users routinely selected 50+ rows, right-clicked Delete, and got only one row deleted. Sidebar buttons don't touch grid selection.
 **Date:** April 2026
 
-### Trust the Admin on Snapshot Re-Upload (Not Implemented, Decision Logged)
-**Decision:** Deferred adding a WeekEndDate override to the Admin Snapshots upload dialog. If users want to re-upload an older unchanged snapshot under a new week, they instead take a fresh snapshot.
-**Why:** Considered adding an override so admins could reuse old snapshots for weeks where nothing changed, avoiding re-snapshotting closed-out activities. User ultimately judged the complexity not worth the bug surface for the small workflow gain, and preferred to keep the current simple invariant (WeekEndDate = when the snapshot was taken). Filed here so the conversation doesn't get re-litigated if the idea comes up again.
-**Date:** April 2026
+### Submit Week Is Gated by Per-Project Metadata Errors, Not Per-User
+**Rule:** `BtnSubmit_Click` runs `CountMetadataErrorsForProject(selectedProject)` between project selection (Step 3) and the week-end date picker (Step 4). If the selected project has any records with missing required fields or conditional rule violations, the submit blocks with a MessageBox listing `ActivityRequiredMetadata.FieldsDisplay`. The helper does NOT mutate the viewmodel's `MetadataErrorCount` counter (which continues to reflect the user-wide total used by the sync gate).
+**Why:** The sync gate uses a user-wide count because sync pushes every dirty record the user has. Submit Week is always scoped to one project. Using the user-wide count would wrongly block submitting project A when project B has unrelated errors. Per-project scoping matches the user's mental model — "fix the project I'm submitting" — and avoids cross-project surprises.
+**Date:** 2026-04-24
+
+### Manage UDF Names Stores One Mapping, No Saved-Map Library
+**Rule:** The Manage UDF Names dialog stores exactly one set of UDF column-header overrides at `ProgressUDFNames.Active` (single JSON dictionary). There is no saved-mappings list, no per-mapping `Apply`/`Rename`/`Delete`, no `Save Map` with collision prompts. The dialog supports Save (apply to grid), Reset Defaults, Export, and Import. Renames affect only `HeaderText`; underlying data, sync, exports, and Work Package tokens still reference the original `MappingName` (`{UDF1}` keeps working).
+**Why:** Most users have one set of UDF labels per project; switching mappings is rare. The named-mapping UI added cost (right pane, Map Name field, list selection enabling Apply) without a workflow that justified it. Single-mapping makes rename a one-click flow. If named mappings are proposed again, ask whether the user actually wants to switch sets often.
+**Date:** May 2026
 
 ---
 
 ## Schedule Module
 
-### P6 Current Schedule Dates, Not Baseline Dates
-**Decision:** P6 import maps `start_date`/`end_date` (current schedule) instead of `target_start_date`/`target_end_date` (baseline).
-**Why:** 3WLA requirement logic and missed start/finish reasons need current schedule dates, not stale baselines.
+### P6 Import Maps Current Schedule Dates, Not Baseline
+**Rule:** P6 import maps `start_date` / `end_date` (current schedule) into the local Schedule table, not `target_start_date` / `target_end_date` (baseline).
+**Why:** 3WLA requirement logic and missed-start/missed-finish reasons need current schedule dates. Baselines are stale and not what the field uses for week-by-week planning.
 **Date:** February 2026
 
-### 3WLA Dates Stored in Activities Table, Not Separate Table
-**Decision:** Simplified from separate `ThreeWeekLookahead` table to `Activities.PlanStart/PlanFin` columns.
-**Why:** Pre-populated from MIN/MAX of plan dates per SchedActNO. Persists across P6 imports. Eliminates separate table management.
+### 3WLA Dates Live in Activities, Not a Separate Table
+**Rule:** 3-Week-Lookahead dates are stored on `Activities.PlanStart` / `Activities.PlanFin`. They are pre-populated from MIN/MAX of plan dates per `SchedActNO` and persist across P6 imports.
+**Why:** A separate `ThreeWeekLookahead` table required parallel management and stale-detection logic. Inlining onto Activities removes both.
 **Date:** February 2026
 
-### MissedReasons Are Session-Only, Not Persisted
-**Decision:** MissedReasons stored in Schedule table, cleared on P6 import.
-**Why:** Only required for P6 dates within the current week. Persisting required complex stale-detection logic for when underlying dates changed.
+### MissedReasons Are Session-Only
+**Rule:** `MissedReasons` are stored in the Schedule table and cleared on every P6 import. They are not persisted across imports.
+**Why:** They are only meaningful for P6 dates within the current week. Persisting required complex stale-detection when underlying dates changed; clearing on import sidesteps that entirely.
 **Date:** February 2026
 
-### Local SQLite Mirror for Snapshot Data
-**Decision:** Schedule module reads from a local 12-column mirror instead of Azure's 89-column table. Azure stays authoritative; edits write through to both.
-**Why:** Eliminated long lag on master/detail grid interactions. Local mirror self-heals on P6 import. Trimmed to 12 columns because that's all the Schedule module reads.
+### Schedule Module Reads From a Local 12-Column Mirror
+**Rule:** The Schedule module reads from a local 12-column mirror of the Azure 89-column snapshot table. Azure remains authoritative; edits write through to both. The mirror self-heals on P6 import.
+**Why:** Master/detail grid interactions over Azure latency had multi-second lag. Local mirroring eliminates the lag. 12 columns is exactly what the Schedule module reads — anything wider would copy unused data.
 **Date:** April 2026
 
-### MS Not In P6 Report: Per-User Only
-**Decision:** After conversion to local mirror, report shows only current user's data (was previously all users).
-**Why:** Matches the rest of the Schedule module's per-user filtering and is more intuitive for a per-user export.
+### "MS Not In P6" Report Is Per-User
+**Rule:** The "MS Not In P6" diagnostic in the Schedule module reports only the current user's data.
+**Why:** Matches the rest of the Schedule module's per-user filtering and is more intuitive for a per-user export. Cross-user reporting belongs to admin tools.
 **Date:** April 2026
 
-### Snapshot Retention: 21 Days
-**Decision:** Submit-time purge uses 21-day retention, not 28.
-**Why:** Reduced data volume while still covering 3 full weekly cycles.
+### Snapshot Retention Is 21 Days
+**Rule:** Submit-time purge uses 21-day retention on `VMS_ProgressSnapshots`.
+**Why:** Covers 3 full weekly cycles, which is enough for week-over-week comparisons; longer retention multiplied storage with no clear use.
 **Date:** April 2026
 
-### Schedule Module: Dynamic Per-Cell Save, No SAVE Button
-**Decision:** Removed the explicit SAVE button from the Schedule module. Every master-grid cell commit (Missed Reasons, lookahead Start/Finish, and cell-clear via Delete/Backspace) now saves immediately via a new `ScheduleRepository.SaveScheduleRowAsync(row, username)` — per-row equivalent of the old `SaveAllScheduleRowsAsync`, wrapping the single Schedule-row update plus the PlanStart/PlanFin bounds update scoped to that one SchedActNO. The `NotifyActivitiesModifiedAsync` callback (which reloads the Progress grid) is debounced with a 1-second trailing `DispatcherTimer` so rapid editing doesn't hammer the 100k+ row reload path. `HasUnsavedChanges`, the exit prompt, the "save first" export gate, and `SaveAllScheduleRowsAsync` are all deleted. Detail-grid edits were already auto-saving — the refactor brings the master grid up to that same pattern.
-**Why:** The SAVE button introduced a bug class: clicking Refresh while edits were pending silently discarded them. Eliminating the unsaved state eliminates that bug by design and matches the Progress module's long-standing pattern.
+### Schedule Saves Per-Cell, No SAVE Button
+**Rule:** Schedule master-grid cell commits (Missed Reasons, lookahead Start/Finish, cell-clear via Delete/Backspace) save immediately via `ScheduleRepository.SaveScheduleRowAsync(row, username)` — single-row update plus the PlanStart/PlanFin bounds update scoped to the affected SchedActNO. The `NotifyActivitiesModifiedAsync` callback (which reloads the Progress grid) is debounced with a 1-second trailing `DispatcherTimer` so rapid editing doesn't hammer the 100k-row reload path. There is no `HasUnsavedChanges` state, no exit prompt, no SAVE button, no save-first export gate. Detail-grid edits already auto-save.
+**Why:** A SAVE button created a bug class: clicking Refresh while edits were pending silently discarded them. Eliminating the unsaved state eliminates that bug by design and matches the Progress module's long-standing pattern.
 **Date:** April 2026
 
-### Lookahead Window Is User-Configurable (3 / 6 / 9 Weeks)
-**Decision:** The Schedule lookahead window is selectable per-user via a ComboBox in the Schedule toolbar (3WLA / 6WLA / 9WLA; default 3WLA). Stored in UserSettings as `Schedule.LookaheadWeeks`. A single static `ScheduleMasterRow.LookaheadDays` is the source of truth for the 21-/42-/63-day threshold consumed by `IsThreeWeekStartRequired` / `IsThreeWeekFinishRequired`. Property and DB column names like `ThreeWeekStart` / `ThreeWeekFinish` are retained — the "3" is historical, not structural. Excel import/export file formats are unchanged; only in-app UI strings, the `AddDays(…)` highlighting threshold, and the Schedule Reports worksheet name + filename + dialog title adapt.
-**Why:** Different trades and project phases need different forecast horizons. Hardcoding 21 days forced everyone into the same window. Per-user persistence lets each user set their own preference without affecting teammates.
+### Lookahead Window Is User-Configurable: 3 / 6 / 9 Weeks
+**Rule:** The Schedule lookahead window is selectable per-user via a ComboBox in the Schedule toolbar (3WLA / 6WLA / 9WLA, default 3WLA), stored in `UserSettings` as `Schedule.LookaheadWeeks`. The static `ScheduleMasterRow.LookaheadDays` is the single source of truth for the 21/42/63-day threshold consumed by `IsThreeWeekStartRequired` / `IsThreeWeekFinishRequired`. Property and DB column names like `ThreeWeekStart` / `ThreeWeekFinish` are retained — the "3" is historical, not structural. Excel import/export file formats are unchanged; only in-app UI strings, the highlighting threshold, and the Schedule Reports worksheet name + filename + dialog title adapt.
+**Why:** Different trades and project phases need different forecast horizons. Hardcoding 21 days forced everyone into the same window. Per-user persistence keeps preferences personal.
 **Date:** April 2026
 
-### Schedule Reports Export: AssignedTo as Last Column, Same Value on Every Row, Reports File Only
-**Decision:** The Schedule Reports export (3WLA / 6WLA / 9WLA workbook produced by `ScheduleReportExporter`) gained a 23rd `AssignedTo` column at the far right, populated with `App.CurrentUser!.Username` of the user who ran the export. The same username is written on every row across all three sections (master rows, P6-not-in-MS rows, MS-not-in-P6 rows). The header gets the grey `#D9D9D9` band that the Identity/Flags group (cols 1-3) uses, deliberately distinct from the yellow `#FFEB9C` 3WLA/Planning band (cols 16-22), to read visually as file-origin metadata rather than another planning field. The P6 export (the file headed back into Primavera) was deliberately NOT touched — only the Reports file. The `?? "Unknown"` defensive fallback was dropped because login is a hard gate at app startup (unrecognized users never reach the export menu); `App.CurrentUser!` is guaranteed non-null at the call site.
-**Why:** Schedulers receive Schedule Reports exports from multiple users for the same week and lose track of which file came from whom — especially after the file is renamed, merged, or sorted. Originally proposed filename stamp as the safer option (zero risk to file format), but schedulers explicitly asked for an in-file column because filenames get renamed during their workflow and they wanted the origin marker to survive sort, filter, paste, and merge operations. Same-value-on-every-row (instead of value-on-first-row-only or a metadata header row) was chosen for exactly this durability reason: any single row carries the origin marker even after the file is sliced. Schedulers also explicitly scoped this to the Reports file only — the P6 export stays clean because Primavera's column schema is strict (the recent `status_code` "Complete" → "Completed" fix is fresh evidence of how unforgiving P6 import can be), and an unknown column risks import warnings or rejection. Grey-not-yellow because the AssignedTo column is metadata about the file (origin), not metadata about an activity (planning data) — visual grouping should match semantic role.
+### Schedule Detail Grid Auto-Stamps Dates From PercentEntry Edits
+**Rule:** When the user edits a `PercentEntry` cell in the Schedule detail grid, `ActStart` is set to `WeekEndDate` if going from 0 to a positive value, and `ActFin` is set to `WeekEndDate` when reaching 100. Going backward clears the appropriate dates. This auto-stamp logic fires only on Schedule detail grid edits — sync, plugin, paste, and bulk paths do not trigger it.
+**Why:** Schedule users edit weekly snapshots, where the date IS the WeekEndDate by definition. Other write paths (sync, plugins) operate on values that originate elsewhere; auto-stamping there would silently overwrite real dates.
+**Date:** April 2026
+
+### Schedule Reports Export Carries an `AssignedTo` Origin Column
+**Rule:** The Schedule Reports export (3WLA / 6WLA / 9WLA workbook produced by `ScheduleReportExporter`) writes a 23rd `AssignedTo` column at the far right, populated with `App.CurrentUser!.Username` of the user running the export. The same value writes on every row across master rows, P6-not-in-MS rows, and MS-not-in-P6 rows. The header gets the grey `#D9D9D9` band that the Identity/Flags group (cols 1-3) uses, distinct from the yellow `#FFEB9C` 3WLA/Planning band (cols 16-22). The P6 export (the file headed back into Primavera) does NOT carry this column.
+**Why:** Schedulers receive Reports exports from multiple users for the same week and lose track of which file came from whom — especially after rename, merge, or sort. Filename stamps were considered safer but schedulers explicitly asked for an in-file column because filenames get renamed. Same-value-on-every-row preserves the origin marker through any slice/paste/merge. P6 stays clean because Primavera's import schema is strict and an unknown column risks rejection.
 **Date:** April 2026
 
 ---
 
-## AI / Progress Scan
+## Work Packages Module
 
-### Textract over Claude Vision for OCR
-**Decision:** Switched from Claude Vision API to AWS Textract for table extraction.
-**Why:** Textract provides proper table structure with row/column indices, yielding 100% accuracy. Claude Vision had inconsistent accuracy between PDF and JPEG. Tool Use (function calling) was tried first but Textract's native table detection was superior.
+### WP Name Pattern Drives the On-Page Header, Not the Output Filename
+**Rule:** The "WP Name Pattern" field controls the `{WPName}` token drawn top-right of every form page by `BaseRenderer.RenderHeader`. Output filenames are hardcoded: merged PDFs use `{WorkPackage}-WorkPackage.pdf`, individual form PDFs use `{WorkPackage}-{n}_{FormName}.pdf`.
+**Why:** A `TokenResolver.ResolveWPName(context)` helper exists and was clearly contemplated for filename use, but `WorkPackageGenerator.cs` was never wired to call it. Wiring it now would risk breaking downstream tooling that watches for the existing `{WorkPackage}-WorkPackage.pdf` pattern. The on-page header use-case is what users have been relying on; the manual was reworded to match.
+**Date:** May 2026
+
+### `TokenResolver` Uses a Dynamic Column Allowlist via PRAGMA
+**Rule:** `Services/TokenResolver.cs` loads the Activity column list once via `PRAGMA table_info('Activities')` and caches it under a lock. That list is the token-name allowlist. Per-WP token loading runs a single wide `SELECT [col1], [col2], ... FROM Activities WHERE WorkPackage = @wp` and computes per-column distinct sets in-process. `SchedActNO` and `PhaseCode` (defined in a `CommaSeparatedFields` set) resolve to comma-joined sorted lists; every other column resolves to the first distinct value alphabetically. Special tokens (`{PrintedDate}`, `{ExpirationDate}`, `{WorkPackage}`, `{WPName}`, `{PKGManager}`, `{Scheduler}`, `{CurrentUser}`, `{CurrentDate}`, `{CurrentTime}`) and project tokens are unchanged.
+**Why:** The earlier hardcoded 17-field allowlist meant `{Estimator}`, `{DwgNO}`, `{UDF11}`, etc. silently rendered as literal text in PDFs. Dynamic allowlist closes the gap automatically and stays in sync with future schema additions. One wide query is one round-trip and one prepared-statement plan instead of seventeen — material savings as the table grows.
+**Date:** May 2026
+
+### `"(none)"` Magic-String Sentinel Skips Image Drawing
+**Rule:** When a Generate-tab user checks "No Image" for the logo, `GetResolvedLogoPath()` returns the literal string `"(none)"`. `BaseRenderer.LoadImage()` recognises that exact string and returns null without falling back to the embedded default. Cover template "No Image" takes a different shape — `bool NoImage` on `CoverStructure` (persisted in template JSON) — because the cover image is part of the saved template definition, not a runtime Generate-tab preference.
+**Why:** Existing convention was `null/empty = use default embedded logo`, file path = use that file. Adding a third state ("skip entirely") via the sentinel uses the same single-string parameter end-to-end and only requires a one-line check in `LoadImage`. A `bool noLogo` parameter threaded through every renderer call would have been broader and more invasive.
+**Date:** May 2026
+
+### Mutually-Exclusive Output Checkboxes Cascade Naturally
+**Rule:** "No Subfolders" (`chkNoSubfolders`) and "Individual PDFs" (`chkIndividualPdfs`) cannot both be checked. When the user checks one, the handler clears the other by setting `IsChecked = false`. That synchronously fires the other checkbox's `Unchecked` event, whose handler persists its own setting normally. Each handler is symmetric and only knows its own setting. No suppress-flag, no manual cascade.
+**Why:** An earlier `_suppressOutputModeMutex` design left the auto-unchecked checkbox's setting unpersisted (the early-return guard skipped its `SetUserSetting` call), letting the two UserSettings drift from the actual checkbox state. Natural cascade is simpler and keeps both settings consistent: the mutex `if`-block (`own=true && other=true`) inherently fails on the cascaded inner call because the side that just got unchecked is now `false`.
+**Date:** May 2026
+
+### Drawings Module Is Disabled for V1
+**Rule:** The Work Packages Drawings section is `Visibility="Collapsed"` and code filters exclude `TemplateType.Drawings` from `WorkPackageView` menus and editors. Re-enable instructions live in `Plans/Project_Status.md` under "Post-V1: Drawings Architecture".
+**Why:** Per-WP drawing location architecture (token paths vs per-WP config vs Drawings Manager) needs design before shipping. The feature works internally but the architecture isn't settled, and shipping without one will paint the team into a workflow we don't want.
+
+---
+
+## Progress Books Module
+
+### Textract Beats Claude Vision for OCR
+**Rule:** Progress Book OCR uses AWS Textract for table extraction.
+**Why:** Textract returns proper table structure with row/column indices, yielding 100% accuracy. Claude Vision had inconsistent accuracy between PDF and JPEG inputs. Tool Use (function calling) was tried first; Textract's native table detection still won.
 **Date:** January 2026
 
-### ActivityID over UniqueID for OCR Identifier
-**Decision:** Progress Book uses ActivityID (integer) instead of UniqueID (long string) as the record identifier.
-**Why:** Shorter values are more reliable for OCR from scanned handwritten pages.
+### Progress Book Identifies Records by ActivityID, Not UniqueID
+**Rule:** The OCR pipeline reads `ActivityID` (integer) from each scan row, not `UniqueID` (long string).
+**Why:** Shorter integer values are more reliable to OCR from scanned handwritten pages. Long strings produced too many character-level errors.
 **Date:** January 2026
 
-### Eliminated Checkboxes, "Write 100" Means Done
-**Decision:** Removed Done checkbox concept entirely. Writing "100" in the % ENTRY box means done.
+### "Write 100" Means Done — No Done Checkbox
+**Rule:** Progress Book scan forms have no Done checkbox. Writing `100` in the `% ENTRY` box is the way to mark a record complete.
 **Why:** Simplified the scan form and improved AI accuracy by reducing distinct columns to parse. Color-coded entry fields were also removed — AI relies on text labels, not colors.
 **Date:** January 2026
 
-### Sidebar AI Assistant Tab Shelved
-**Decision:** Removed the two-tab (Help / AI Assistant) layout from the Help sidebar and deleted the AI tab scaffolding (button, placeholder content grid, tab-switching code in view and view-model). Kept `Plans/Sidebar_AI_Assistant_Plan.md` in the repo.
-**Why:** The AI chat feature was never wired past a "Coming soon" placeholder and had no roadmap date. Carrying the empty tab in the UI misled users into thinking the feature was imminent, and the tab-switching code was dead weight. Shelving is preferred over leaving stubs; plan doc retained in case the feature is revived later.
+### VP-vs-Vtg Match Uses Outer-Trim-Only Exact String Comparison
+**Rule:** ProjectID and PhaseCode matching between the JC Labor Productivity report and Vantage `VMS_Activities` uses `String.Trim()` on both sides (leading and trailing whitespace only) and compares the result as exact strings. No leading-zero stripping, no internal-whitespace collapsing, no trailing-separator trimming. The previous `NormalizeKey` helper does not exist.
+**Why:** Vantage phase codes should match VP's canonical format exactly. A `Not Found` result is now a useful signal — it identifies Vantage records whose codes need correction to match VP. Outer-whitespace trim is the only concession because Excel cell formatting and SQL CHAR padding can introduce spaces that aren't user-meaningful.
 **Date:** April 2026
 
----
-
-## Edit Rules & Bulk Operations
-
-### Hard Rules vs. Required Metadata
-**Decision:** Activity date/percent rules are split into two tiers. Hard rules (future dates, ActFin before ActStart, ActStart set with %=0, ActFin set with %&lt;100) block the edit and revert. Required metadata (ActStart needed when %&gt;0, ActFin needed when %=100) does NOT block — the cell is flagged red and sync is gated.
-**Why:** Treating "required metadata" as a hard block creates deadlocks when raising a record's progress before dates are known, or when bulk-setting % to 100 on records that still need ActFin. Users expressed frustration with being unable to move records forward. Red highlighting + sync gate still enforces data completeness, without blocking the in-progress edit.
+### VP-vs-Vtg Color Coding Stays on the Two Added Columns
+**Rule:** Only the two generated columns (`Vtg Budget`, `Vtg Earned`) receive conditional fill: green within 1% of source, red over 1%, orange `Not Found`. The companion source columns (`Est Hours`, `JTD ERN`) are not recolored. Every data row receives a color so mismatches are never ambiguous with "not yet checked".
+**Why:** Minimises modifications to the source report and keeps the visual signal scoped to Vantage-sourced values. Cross-cell pairing for mismatches was tried first; the user preferred narrower marking.
 **Date:** April 2026
 
-### Single Validator as Source of Truth (`ActivityValidator.Validate`)
-**Decision:** All edit paths — single-cell CurrentCellEndEdit, Find &amp; Replace, and both multi-row paste flows — call `ActivityValidator.Validate(percent, actStart, actFin)` to check the prospective state. The function returns the first violation message or null.
-**Why:** Previously the same rules were re-implemented in three places and drifted. Centralising prevents new bulk paths from forgetting a rule.
+### VP-vs-Vtg Prep Dialog Is Separate From the File Picker
+**Rule:** Before the standard Windows `OpenFileDialog`, a custom WPF verification dialog (`VPvsVtgPrepDialog`) shows instructions and an annotated screenshot. On OK, the native file picker opens. Two dialogs, not one custom combined picker.
+**Why:** The native `OpenFileDialog` is a Windows OS control users already understand; replicating it would be significant work for no gain. The OS picker can't show an image or rich text — a small pre-dialog is the right tool for that single gap.
 **Date:** April 2026
 
-### Bulk Operations Abort on Any Violation, Not Partial Apply
-**Decision:** When Find &amp; Replace or a multi-row paste encounters a hard-rule violation on <em>any</em> affected row, the entire operation is rolled back in memory, nothing is written to the DB, and a dialog lists up to 10 offending ActivityIDs plus a "…and N more" footer.
-**Why:** Silent partial apply (paste some rows, skip others) was reported as confusing — users couldn't tell what actually changed. Abort-on-any forces the user to correct the source data and re-run, which is more predictable than picking which rows to commit.
+### VP-vs-Vtg Skip-Dialog Flag Persists Per-User
+**Rule:** The "Do not show this dialog again" checkbox in the prep dialog writes `SkipVPvsVtgPrepDialog=true` to `UserSettings` (per-user), not `AppSettings` (app-wide).
+**Why:** Once a user has read the instructions, they don't need to see them again. Other users on the same machine haven't necessarily learned yet. Matches how other dismissible UI state is stored (grid layouts, filter selections, analysis group field).
 **Date:** April 2026
-
-### Entering ActFin Auto-Bumps % Complete to 100
-**Decision:** Single-cell edit, Find &amp; Replace, and paste all auto-set `PercentEntry = 100` on any row where a non-null Finish date was entered and current % is below 100.
-**Why:** Users always have to follow a Finish-date entry with a %=100 update (ActFin requires %=100). The auto-bump saves a step. If ActStart is null when ActFin is entered, the record is still written — ActStart turns red as required metadata, consistent with the hard-rule / required-metadata split.
-**Date:** April 2026
-
-### Filter Does Not Auto-Refresh After Edits
-**Decision:** Removed every `View.Refresh()` call that fired after a data mutation (paste success and rollback, Find &amp; Replace success, Prorate, single-cell rollback, Undo/Redo, ClearCurrentCell). Filters only re-evaluate when the user clicks a filter toggle or the Refresh button. Grid set to `LiveDataUpdateMode="Default"` so Syncfusion also doesn't re-shape data on property changes.
-**Why:** Users reported frustration at rows silently disappearing from a filtered view the moment their edit made the row no longer match (e.g., raising % to 100 while viewing "In Progress"). They want to see the value they just changed before deciding to re-apply the filter. `INotifyPropertyChanged` on `Activity` still propagates value changes to grid cells; only the filter predicate stays stale until an explicit refresh.
-**Date:** April 2026
-
-### Single Source of Truth for 9 Required-Metadata Field Names (`ActivityRequiredMetadata`)
-**Decision:** The 9 required-metadata field names (`ProjectID`, `WorkPackage`, `PhaseCode`, `CompType`, `PhaseCategory`, `SchedActNO`, `Description`, `ROCStep`, `RespParty`) live in one place: `ActivityRequiredMetadata.Fields` in `Utilities/ActivityValidator.cs`. Three helpers are exposed — `Fields` (the array, ProjectID-first), `FieldsDisplay` (comma-joined for user-facing messages), and `BuildMissingFieldSql(tableAlias)` (generates `"X IS NULL OR X = '' OR Y IS NULL OR Y = '' ..."` for either unqualified or aliased columns). Six call sites consume the canonical list: the sync-gate filter SQL, `CalculateMetadataErrorCount`, the new `CountMetadataErrorsForProject`, the sync-block MessageBox, the reassign-check in-memory filter (reflection-based, skipping ProjectID so `HasInvalidProjectID` covers that slot exactly as before), the reassign-block MessageBox, and `ImportTakeoffDialog.RequiredMetadataFields`. Conditional rules (ActStart required at % > 0, ActFin required at % = 100) and the ProjectID existence check remain hand-coded alongside the generated fragments — they are not part of the simple 9-field list.
-**Why:** Before this refactor, the list was duplicated across 5 locations — two SQL filter strings, two MessageBox display strings, one C# in-memory `string.IsNullOrWhiteSpace` chain, and one array in the Import Takeoff dialog — plus an additional ordering variant (ProjectID-first in the dialog vs. ProjectID-in-position-5 in SQL/messages). Adding or removing a required field would have required finding and editing every copy in lockstep; silent drift was a matter of time. One centralized array with a SQL generator makes drift impossible and keeps the wording of user-facing messages consistent with the actual enforced list. The ProjectID-first canonical order was chosen to preserve the interactive Import Takeoff dialog row order (the only interactive UI touching this list); the two MessageBox strings now display ProjectID first instead of in position 5 — purely cosmetic, no runtime impact (SQL `OR` is commutative). `ActivityValidator.cs` was explicitly chosen as the home because its existing file comment already pointed at "required-metadata highlighting / sync gate" as the owner of these rules.
-**Date:** 2026-04-24
-
-### Submit Week Gated by Per-Project Metadata Error Count, Not Per-User
-**Decision:** `BtnSubmit_Click` in `ProgressView.xaml.cs` runs a new `CountMetadataErrorsForProject(selectedProject)` check between Step 3 (project selection) and Step 4 (week-end date picker). If the selected project has any records with missing required fields (9-field list) or conditional rule violations (ProjectID-exists, ActStart-when-%>0, ActFin-when-%=100), the submit is blocked with a MessageBox reusing `ActivityRequiredMetadata.FieldsDisplay`. The helper runs the same SQL as `CalculateMetadataErrorCount` but with an added `AND a.ProjectID = @projectId` clause and does NOT mutate the viewmodel's `MetadataErrorCount` counter.
-**Why:** The existing sync gate uses `CalculateMetadataErrorCount` which counts errors across all the user's records (all projects), because sync pushes every dirty record the user has. Submit Week, by contrast, is always scoped to one project (user picks it at Step 3). Using the sync-wide count would wrongly block submitting project A when project B has unrelated errors. Two scoping options were considered: (1) per-user (matches sync, simpler) vs. (2) per-project (matches submit semantics). Per-project chosen because it matches the user's mental model — "fix the project I'm submitting" — and avoids cross-project surprises. Insertion point (after project selection, before date picker) chosen so single-project users still hit the check immediately, and multi-project users aren't forced through a date picker only to then learn they have errors. The project-scoped helper is intentionally separate from `CalculateMetadataErrorCount` so Submit Week's check doesn't pollute the viewmodel counter that the footer "Metadata Errors: X" button displays (that counter continues to reflect the user-wide total).
-**Date:** 2026-04-24
-
----
-
-### Paste Into ActStart/ActFin Validates Instead of Silently Skipping Rows
-**Decision:** Removed the pre-filter that skipped rows failing the date-percent rules during multi-cell paste (both "single value to multiple rows" and "multi-value paste" flows). Paste is now abort-all-on-any-violation with a detailed error dialog.
-**Why:** The silent-skip behavior (with a post-paste "N rows skipped" message) let users think a paste succeeded broadly when significant portions were dropped. Consistent abort-all semantics match Find &amp; Replace and single-cell edits.
-**Date:** April 2026
-
----
-
-## UI / UX
-
-### Progress Grid Bulk Select Uses Transient `IsBulkSelected` Flag, Not `SfDataGrid.SelectAll()`
-**Decision:** Ctrl+A and `Actions → Select All` on the Progress grid flip a transient `Activity.IsBulkSelected` (INPC, not persisted, not synced) on each filtered row. `RecordOwnershipRowStyleSelector` paints the row Background from a `DataTrigger` bound to that flag, using `sfActivities.RowSelectionBrush` so the highlight matches Syncfusion's native mouse-row-select color. `SelectAllFilteredRowsAsync` populates `sfActivities.SelectedItems` for the bulk action handlers but does **not** call `sfActivities.SelectAll()`. Any cell-level interaction (`sfActivities_SelectionChanged`) calls `ClearBulkSelectionInternal` to unflip the previously-marked rows.
-**Why:** The grid is configured `SelectionMode="Extended" SelectionUnit="Any"` because cell-level features (multi-cell copy/paste, the Count/Sum/Avg stats panel) require it. But under that configuration, `SfDataGrid.SelectAll()` materializes one `GridCellInfo` per (row × column) — at 36k rows × ~30 columns ≈ 1M `GridCellInfo` objects allocated synchronously inside Syncfusion's own code on the UI thread. This froze every Select-All path (Ctrl+A, Shift+Click first→last, Actions menu) for users with real-world datasets. Detaching `SelectionChanged` around the call only quieted our handler, not the underlying allocation. The fix: stop calling `SelectAll()` at all for the bulk path, drive the visual highlight from a row-style data trigger instead, and keep `SelectedItems` (the only thing every bulk action handler actually reads) populated manually. Zero `GridCellInfo` allocation, instant on 100k-row grids.
-**Why this matters for future changes:** Anyone tempted to use `sfActivities.SelectAll()` should resist — that path will freeze at scale. Bulk select must go through `SelectAllFilteredRowsAsync` (or a comparable path that flips `IsBulkSelected` and populates `SelectedItems` only). The `IsBulkSelected` flag has no use outside Progress's row-style trigger; do not start reading it elsewhere or persisting it. Shift+Click first→last row at scale still freezes — that's Syncfusion's native gesture and would need a different intercept path; deferred indefinitely. Ctrl+A is the supported way to select-all-at-scale.
-**Date:** May 2026
-
-### Manage UDF Names â€” Single Mapping, No Saved Map Library
-**Decision:** The Manage UDF Names dialog stores exactly one set of UDF column-header overrides at `ProgressUDFNames.Active`. There is no saved-mappings list, no per-mapping `Apply`/`Rename`/`Delete`, no `Save Map` with collision prompts. The user types values, clicks Save, the headers update.
-**Why:** The first iteration mirrored `ManageLayoutsDialog` â€” saved-mapping list with Apply/Rename/Delete + a separate Save Map button + name-collision prompts. After living with it for a session it became clear the named-mapping concept was overkill: most users have one set of UDF labels per project, switching mappings is rare, and the extra UI (right pane, Map Name field, list selection enabling Apply, etc.) made common operations slower. Simplified design: editor + Save = apply, Reset Defaults, Export/Import for cross-machine sharing. Renaming UDFs is now a one-click flow instead of a save-then-select-then-apply flow. Storage simplified to a single key.
-**Why this matters for future changes:** If anyone proposes adding back named mappings, ask whether the user actually wants to switch sets often. The previous design supported it and was deliberately removed.
-**Date:** May 2026
-
-### Drag-from-Maximized Title-Bar Drag Uses DIPs, Not `PointToScreen`
-**Decision:** `MainWindow.TitleBar_MouseLeftButtonDown` computes the cursor's screen position as `this.Left + clickInWindow.X` rather than calling `PointToScreen(clickInWindow)`.
-**Why:** `PointToScreen` returns physical pixels on high-DPI displays while `Window.Left`/`Top` use device-independent units. The original code mixed the two, which on any non-100% scaled monitor positioned the restored window off-screen by the scale factor (e.g., at 150% scaling the window jumped 50% further than the cursor). Symptom: window vanished on undock, taskbar thumbnail showed it but clicking didn't bring it back. Direct DIP math avoids the conversion entirely â€” a maximized window is at screen origin in DIPs, so window-local coordinates are screen coordinates.
-**Why this matters for future changes:** Any other place in the codebase that mixes `PointToScreen` results with `Window.Left`/`Top` is suspect. Either keep everything in DIPs or apply `PresentationSource.CompositionTarget.TransformFromDevice` before the assignment.
-**Date:** May 2026
-
-### ProgressView Cached for Instant Navigation
-**Decision:** Cache the ProgressView instance in MainWindow and reuse on subsequent navigations.
-**Why:** First load unchanged, but every subsequent navigation is instant. Force-reloads only on Excel import and Reset Grid Layouts.
-**Date:** February 2026
-
-### DIY Summary Panel Instead of Syncfusion TableSummaryRow
-**Decision:** Replaced Syncfusion's `TableSummaryRow` with custom toolbar summary panel.
-**Why:** TableSummaryRow was too slow on large datasets. DIY panel uses cached `PropertyInfo` lookups and 200ms debounce.
-**Date:** February 2026
-
-### DynamicResource + Role-Based Theme Token Names
-**Decision:** Converted ~1,119 StaticResource refs to DynamicResource. Renamed resources to role-based names (e.g., `ToolbarForeground`, `GridHeaderForeground`).
-**Why:** Enables live theme switching without app restart. Role-based names support future themes beyond Dark/Light.
-**Date:** February 2026
-
-### Custom Grid Filter Icons
-**Decision:** Replaced Syncfusion's built-in FilterToggleButton with custom stroke-based funnel icons.
-**Why:** Syncfusion's internal filter icon colors are resolved from compiled BAML and cannot be overridden via resource dictionaries. Custom template was the only option for theme-aware icons.
-**Date:** February 2026
-
-### Double-Click to Sort Grid Columns
-**Decision:** All grids require double-click on column headers to sort.
-**Why:** Prevents accidental sorting when clicking headers — users were inadvertently resorting data.
-**Date:** February 2026
-
-### Column Settings Graceful Schema Migration
-**Decision:** Column preferences apply to matching columns when schema changes, rather than being fully rejected on hash mismatch.
-**Why:** Previously, adding or removing any column discarded all user column preferences. Now new columns appear at end with defaults, removed columns are ignored.
-**Date:** February 2026
-
-### PercentEntry: Custom GridTemplateColumn with Progress Bar
-**Decision:** Uses a custom `GridTemplateColumn` with progress-bar overlay instead of native `GridNumericColumn`.
-**Why:** Enables the thin colored progress bar in each cell. Trade-off: decimal handling, arrow key navigation, and auto-edit-on-type all had to be hand-coded.
-
-### PercentEntry Edit: LostFocus Trigger, Not PropertyChanged
-**Decision:** EditTemplate TextBox binding uses `UpdateSourceTrigger=LostFocus` instead of `PropertyChanged`.
-**Why:** PropertyChanged triggered the setter on every keystroke, running clamp/round/multi-PropertyChanged chains. This raced against input, causing `0.5` to become `5`. LostFocus commits only when editing ends.
-**Date:** April 2026
-
-### Notification Sounds Removed from Informational Dialogs
-**Decision:** Changed ~90 `MessageBoxImage.Information` instances to `MessageBoxImage.None`.
-**Why:** Windows notification sounds were disruptive and unnecessary for informational confirmations.
-**Date:** February 2026
-
-### Clone Buttons Removed, Save-As Pattern Instead
-**Decision:** Removed Clone from WP Templates, Form Templates, and Prog Books layouts. To copy, change the name and save.
-**Why:** Simplified template management. Clone required a naming dialog. Save-with-new-name is simpler and matches common patterns.
-**Date:** February 2026
-
-### Custom Scrollbar Templates over Syncfusion Defaults
-**Decision:** Always-visible 14px custom scrollbar templates with theme-aware colors, replacing auto-hiding scrollbars.
-**Why:** Auto-hiding scrollbars were hard to find and interact with. Custom `ScrollViewer` template avoids implicit style leaking into ComboBoxAdv dropdown internals.
-**Date:** March-April 2026
-
-### SfSkinManager.SetTheme in Constructor, Not Loaded Event
-**Decision:** Theme application must happen in the constructor, before the control is in the visual tree.
-**Why:** When applied in Loaded on a second instance, Syncfusion's theme engine interfered with SfDataGrid rendering, causing the grid not to display data.
-**Date:** April 2026
-
-### Progress Row Actions: Sidebar Dropdown, Not Grid Right-Click
-**Decision:** Row-action commands for the Progress grid (Select All, Delete, Copy [submenu], Duplicate, Add Blank, Export Selected) live under an "Actions" button in the left filter sidebar, not on the grid's right-click context menu. The grid's `RecordContextMenu` was removed entirely. The column-header `HeaderContextMenu` (Find & Replace, Copy Column, Freeze) is unaffected.
-**Why:** Syncfusion `SfDataGrid`'s default right-click behavior clears the existing multi-row selection and reduces it to the single row under the cursor (unless Shift is held). Users routinely selected 50+ rows, right-clicked Delete, and got only one row deleted. Sidebar buttons don't touch grid selection at all, so multi-row operations behave the way users expect by construction. Trade-off: standard right-click doesn't open a row menu anymore, requiring a brief retraining; the discoverability cost is small because the Actions button is always visible and labeled.
-**Date:** April 2026
-
-### Menu Item Icons Inline in Header, Not `<MenuItem.Icon>`
-**Decision:** Menu items that need icons (Actions menu items in the Progress sidebar) render the icon as a TextBlock inside the `MenuItem.Header` StackPanel, with a fixed 22px-wide icon column so labels align. The `<MenuItem.Icon>` slot is not used.
-**Why:** WPF MenuItem's default template renders an "icon column gutter" rail above and below items even when the visual is overridden via a custom `ItemContainerStyle` template. The chrome leaked through every workaround attempted: keyed `MenuItem.SeparatorStyleKey` overrides, custom `ControlTemplate` with explicit Grid columns, etc. Switching to inline-icon-in-Header bypasses the gutter rendering path entirely — the template only sees a Header content presenter and a submenu arrow, no icon-related chrome to suppress. Same approach is what the existing toolbar `DropDownMenuItem` controls effectively do internally.
-**Date:** April 2026
-
-### Hover-Out Auto-Close: Custom Polling, Two Distinct Hit-Test Strategies
-**Decision:** All app dropdowns (Progress sidebar Actions and USER, MainWindow toolbar File/Tools/Admin) auto-close when the cursor leaves them. WPF doesn't support this natively for top-level menus (only submenus), so `Utilities/MenuAutoClose.cs` implements it via a 150ms polling DispatcherTimer with two timing constants: `InitialOpenGraceMs = 1500` (long delay before close if cursor never enters the menu) and `CursorLeftDelayMs = 400` (faster close once cursor has been in and then left). A `hasBeenOver` flag chooses which delay applies.
-**Why:** Different control types need different hit-test approaches. ContextMenu (Actions, USER) is a popup-hosted single-rect element — `Mouse.GetPosition(menu)` against `menu.ActualWidth/ActualHeight` is reliable. DropDownButtonAdv (File, Tools, Admin) is harder: dropdown popup lives in a separate visual tree from the button, so `button.IsMouseOver` doesn't propagate from items, walking up from `Mouse.DirectlyOver` doesn't reliably find the button or the popup, and the logical-tree walk catches a stuck `IsMouseOver=true` flag on the button while the dropdown is open. Final approach for DropDownButtonAdv: `Mouse.GetPosition(button)` plus a generous-rect bounds check covering the button rect AND a 240×600 area below it where the dropdown is rendered. Toolbar dropdowns always open downward, so the bounds-below approach is reliable without trying to enumerate Syncfusion internals. Open submenus (Copy Row(s)) suppress the close countdown so navigating into a submenu doesn't kill the parent.
-**Date:** April 2026
-
-### Menu Item Stays Open on Click: Dispatcher.BeginInvoke Reopen, Not Preview-Event Trick
-**Decision:** Select All in the Actions menu uses a regular `Click` handler that performs the work, then schedules `ContextMenu.IsOpen = true` via `Dispatcher.BeginInvoke` at `Background` priority to reopen the menu after WPF's `MenuItem.OnClick` closes it. Brief flicker is the cost.
-**Why:** WPF `MenuItem.OnClick` closes the parent menu unconditionally for non-`SubmenuHeader` role items, and there is no clean way to suppress it from XAML or a derived class without subclassing `MenuItem`. Tried `IsCheckable="True"` (toggles `IsChecked` but doesn't suppress the close in a `ContextMenu` context); tried `PreviewMouseLeftButtonUp` with `Handled=true` (ignored because `ButtonBase.OnMouseLeftButtonUp` is registered with `HandledEventsToo=true`). Dispatcher reopen is the canonical workaround across the WPF community.
-**Date:** April 2026
-
-### `AppMessageBox.Show` Wrapper Mandated for All User-Facing Dialogs
-**Decision:** Created `Utilities/AppMessageBox.cs` static helper that wraps `MessageBox.Show` and added a CLAUDE.md "User-Facing Dialogs" rule requiring its use everywhere instead of `MessageBox.Show` directly. Migrated all 452 production call sites across 41 files (`VANTAGE.Installer/` excluded — separate project that doesn't reference VANTAGE.Utilities).
-**Why:** After long-running awaits or focus loss, a parameterless `MessageBox.Show` can render behind the owning window — a 5,783-record restore appeared to hang because the success dialog was hidden under the Progress grid. The wrapper finds the active window, calls `Activate()`, and toggles `Topmost` true→false to force the z-order before parenting the dialog. Considered `MessageBoxOptions.DefaultDesktopOnly` (loses owner-modality, can render on the wrong desktop in multi-monitor setups) and per-callsite `this.Activate()` calls (480 sites, easy to forget for new code) — a centralized wrapper with mechanical migration is the maintainable answer.
-**Date:** April 2026
-
-### Bulk Restore/Purge: Temp Table + SqlBulkCopy + INNER JOIN, Not `WHERE IN (large param list)`
-**Decision:** `BtnRestore_Click` and `BtnPurge_Click` in `Views/DeletedRecordsView.xaml.cs` create a session-scoped `#RestoreBatch` / `#PurgeBatch` temp table, bulk-copy the UniqueIDs in via `SqlBulkCopy`, and run a single `UPDATE ... INNER JOIN` (or `DELETE ... INNER JOIN`) — same pattern as `Utilities/SyncManager.cs`. No more chunked loops, no transaction wrapping multiple statements.
-**Why:** First attempt used `WHERE UniqueID IN (@uid0, @uid1, ..., @uid999)` chunked into 1000-ID batches under a single transaction. This (a) hit SQL Server's 2100-parameter ceiling on the original unchunked version, (b) produced terrible query plans even after chunking — the optimizer expands large IN lists into OR-trees, parameter sniffing varies per batch, and plan reuse is unreliable, and (c) held write locks on every restored row across all batches in one transaction, blocking any concurrent user sync. SqlBulkCopy + INNER JOIN is one round-trip, gets a clean index-seek plan, and the implicit per-statement transaction is small. A 5,783-record restore that previously took several minutes now runs in seconds.
-**Date:** April 2026
-
-### Loading Overlay for Slow Bulk Operations: Fullscreen DualRing, Not Inline Bar
-**Decision:** Slow bulk operations on the Progress grid (Select All, Delete after confirmation) use the fullscreen `LoadingOverlay` Grid with `SfBusyIndicator` (`AnimationType="DualRing"`), not the inline `SfLinearProgressBar` bound to `viewModel.IsLoading`. The inline bar is reserved for background data loads where the operation isn't user-initiated.
-**Why:** Both the DualRing animation and the linear progress bar's animation tick on the UI thread (Syncfusion's animations are dispatcher-driven, not composition-thread). For long-running synchronous operations like populating `SelectedItems` with 100k+ rows, both animations freeze unless the UI thread gets regular yield windows. The DualRing is more visually prominent and signals "wait, work is happening" more clearly than a thin bar at the bottom of the grid that's easy to miss. Chunked work with `Task.Delay(1)` between chunks of 100 keeps either animation moving, but the overlay's larger visual real estate is the better fit for user-initiated bulk actions. Pre-confirmation overlays for fast operations (e.g., Delete's ownership pre-check on a small selection) were removed because they flickered before the confirmation dialog and added no signal.
-**Date:** April 2026
-
-### Info Icons Anchor Into the Help Manual via a Central HelpAnchors Constants File
-**Decision:** Info icons (clickable ⓘ buttons next to complex fields) route through `Utilities/HelpService.OpenAt(anchor)`, which calls `MainWindow.OpenHelpAt(anchor)`, which calls `SidePanelViewModel.ShowHelp(anchor)`. The view model exposes a `CurrentAnchor` property that becomes a URL fragment in `HelpNavigationUrl` (`https://help.local/Help/manual.html#wp-name-pattern`). The view's existing `HelpNavigationUrl` PropertyChanged subscriber re-navigates the WebView2 — same URL with a different fragment scrolls without a full page reload. Anchor IDs live as `public const string` values in `Utilities/HelpAnchors.cs`, never as raw strings at call sites.
-**Why:** HTML anchors are stable by design — they're keyed to the `id` attribute, not file position, so the manual can grow indefinitely above or below an anchor without breaking links. The user's worry was that growing the manual would invalidate clicks; HTML anchors solve that automatically. The HelpAnchors constants file is the second layer of defense: anchor renames become a compile error rather than a silent broken link, and a future DEBUG-mode self-test can scan `manual.html` once at startup to verify every constant resolves to a real `id="..."`. Centralized routing through HelpService also means info icons on any control (deep inside dialogs, dynamically built editors, etc.) can call one static method without knowing about MainWindow internals.
-**Date:** May 2026
-
-### Info Icon Hover Shows a Popup, Not a Tooltip — for a Clickable Hyperlink Inside
-**Decision:** The info icon next to "WP Name Pattern" uses a `<Popup>` with `StaysOpen="True"` plus `MouseEnter`/`MouseLeave` on both the icon and the popup body, with a 200ms `DispatcherTimer` close-handoff so the user can slide their cursor from the icon into the popup without it dismissing. Inside the popup is a real `<Hyperlink>` ("Click for more detailed instructions and complete token list") wired to the same `HelpService.OpenAt(...)` call as the icon's own click handler.
-**Why:** Standard WPF `<ToolTip>` content can't host clickable controls — moving the mouse into a tooltip dismisses it before any click registers. The user wanted both the icon and a visible "click here" link to be valid click targets. Popups are the canonical interactive-tooltip pattern in WPF. The 200ms timer plus per-region MouseEnter/MouseLeave handlers are the standard hover-handoff dance for keeping a popup open across multiple disjoint hit-test regions.
-**Date:** May 2026
-
-### Mutex Between "No Subfolders" and "Individual PDFs" via Natural Cascade, Not a Suppress Flag
-**Decision:** When the user checks one of the two mutually-exclusive output-mode checkboxes (`chkNoSubfolders` and `chkIndividualPdfs`), the handler clears the other by setting its `IsChecked = false`. That synchronously fires the other checkbox's `Unchecked` event, whose handler persists its own setting normally. No suppress flag, no manual cascading of settings updates. Each handler is symmetric and only knows about its own setting.
-**Why:** Initial implementation used a `_suppressOutputModeMutex` boolean to prevent the handlers from re-triggering each other; the side effect was that the auto-unchecked checkbox's setting never got persisted (the early-return guard skipped the `SetUserSetting` call). Result: the two UserSettings could drift out of sync with the actual checkbox state. The natural-cascade design works because the mutex `if`-block (`own.IsChecked == true && other.IsChecked == true`) inherently fails on the cascaded inner call — the side that just got unchecked is now `false`, so the inner handler skips its own clear-the-other branch. No recursion, both settings stay consistent, and the code is simpler.
-**Date:** May 2026
-
-### `"(none)"` Magic-String Sentinel for "Skip Drawing the Image"
-**Decision:** When a Generate-tab user checks "No Image" for the logo, `GetResolvedLogoPath()` returns the literal string `"(none)"` rather than a real file path or null. `BaseRenderer.LoadImage()` recognizes that exact string and returns null without falling back to the embedded default logo.
-**Why:** The existing convention was `null/empty` = use the default embedded logo, file path = use that file. Adding a third state ("skip entirely") could have meant threading a `bool noLogo` parameter through every renderer call. The sentinel approach uses the same single-string parameter end-to-end and only requires a one-line check in `LoadImage`. The Cover template's "No Image" took a different shape — `bool NoImage` on `CoverStructure` — because the cover image is part of the saved template definition (persisted in JSON), not a runtime Generate-tab preference; the `bool` slots into the model naturally and serializes cleanly.
-**Date:** May 2026
-
-### TokenResolver: Dynamic Column Allowlist via PRAGMA, One Wide Query Per WP
-**Decision:** `Services/TokenResolver.cs` no longer enumerates a hardcoded list of supported activity-column tokens (the prior 17-field allowlist was the cause of `{Estimator}`, `{DwgNO}`, `{UDF11}`, etc. silently rendering as literal `{Foo}` text in PDFs). Activity column names are loaded once from `PRAGMA table_info('Activities')` and cached statically. Per-WP token loading runs a single wide `SELECT [col1], [col2], ... FROM Activities WHERE WorkPackage = @wp` query and computes per-column distinct sets in-process. A small `CommaSeparatedFields` set (currently `SchedActNO`, `PhaseCode`) controls which columns resolve to comma-joined lists vs first-distinct values.
-**Why:** Two motivations. (1) The dropdown in the WP Name Pattern editor advertises ~50 Activity columns but the resolver only knew about 17 of them — users who picked an "extra" column saw their token render as literal text. Dynamic allowlist closes that gap automatically and stays in sync with future schema additions (UDF21, new fields, etc.). (2) The old code ran 17 separate `SELECT DISTINCT col FROM Activities WHERE WorkPackage = @wp ORDER BY col` queries per generation. One wide query is one round-trip and one prepared-statement plan instead of seventeen, which matters more as the Activities table grows. PRAGMA column names come from SQLite itself, so they're trusted as identifiers (no SQL injection concern); column names are bracket-quoted defensively anyway. WorkPackage and WPName retain their hardcoded special-case handling in `ResolveToken` because they short-circuit ahead of the dictionary lookup.
-**Date:** May 2026
-
-### WP Name Pattern Doesn't Drive Output Filenames — Documentation Fix Over Code Fix
-**Decision:** The WP Name Pattern field controls only the on-page header text (`{WPName}` token, drawn top-right of every form page by `BaseRenderer.RenderHeader`). It does NOT drive the output PDF filename, which is hardcoded as `{WorkPackage}-WorkPackage.pdf` (merged) and `{WorkPackage}-{n}_{FormName}.pdf` (individual). The manual previously claimed it was a "filename pattern," which was wrong. Resolved by rewording the field label, the manual entries, and adding a new "Output File Naming" note that explicitly documents the fixed filename convention.
-**Why:** A helper `TokenResolver.ResolveWPName(context)` exists in the codebase and was clearly contemplated for filename use, but `WorkPackageGenerator.cs:113` was never wired to call it — looks like an incomplete original implementation rather than an intentional design. Two paths to resolve: wire the helper into the filename (one-line change, gives users filename customization), or fix the documentation. User chose documentation fix because the on-page header text use-case is the actual current behavior users have been relying on, and changing filenames mid-stream would break downstream tooling that watches for the existing `{WorkPackage}-WorkPackage.pdf` pattern. Filename customization remains available as a future feature if requested.
-**Date:** May 2026
-
----
-
-## Architecture
-
-### Auto-Update: Host-Agnostic Manifest-Based System
-**Decision:** Custom auto-updater checking `manifest.json` with SHA-256 verified ZIP downloads and a separate Updater console app.
-**Why:** Works with GitHub raw URLs now, can switch to Azure Blob by changing one URL. Graceful failure if offline. Self-contained publish means users don't need .NET runtime.
-**Date:** January 2026
-
-### Credentials: Encrypted Config over Compiled Constants
-**Decision:** Replaced `Credentials.cs` with `CredentialService.cs` reading `appsettings.json` (dev) or AES-256 encrypted `appsettings.enc` (production).
-**Why:** Published builds carry credentials without embedding them in source code. Publish script handles encryption automatically.
-**Date:** February 2026
-
-### Schema Migrations: Formal Versioned System
-**Decision:** `SchemaMigrator.cs` with numbered sequential migrations, replacing ad-hoc column checks.
-**Why:** Local DB contains user data that can't be deleted. Migrations must be idempotent and backward-compatible. Failed migrations offer to delete local DB and re-sync. Formal versioning prevents missed or double-applied changes.
-**Date:** February 2026
-
-### Plugin Architecture: Dynamic Menu Injection
-**Decision:** Plugins inject their own Tools menu items via `host.AddToolsMenuItem()`. Each plugin has its own assembly loaded at startup with `IVantagePlugin` interface.
-**Why:** Plugins create their own UI dynamically. Replaced the static `ProjectSpecificFunctionsDialog`. Auto-update checks installed plugins against a feed index on startup.
-**Date:** March 2026
-
-### Import Format Auto-Detection by Column Headers
-**Decision:** Single import detects Legacy vs NewVantage format by column headers (`UDFNineteen` = Legacy, `UniqueID` = NewVantage).
-**Why:** Previous threshold-based percent detection (1.5 threshold to guess 0-1 vs 0-100 format) caused edge cases. Column headers are definitive.
-**Date:** January 2026
-
-### Drawings Module Deferred to Post-V1
-**Decision:** Disabled with `Visibility="Collapsed"` and code filters. Re-enable instructions documented in Project_Status.md.
-**Why:** Per-WP drawing location architecture needs design (token paths, per-WP config, or Drawings Manager). The feature works but the architecture isn't settled.
-
-### Asset Folder Structure: `Assets/Images/{System, Sidebar, Dialogs}`
-**Decision:** All image resources live under a single top-level `Assets/Images/` tree with purpose-named subfolders — `System/` (app icons, logos, cover art), `Sidebar/` (help sidebar screenshots), `Dialogs/` (one-off dialog imagery). Applies to source tree AND build output — no `Link` indirection. Previously split across `Images/` and `Help/*.png`.
-**Why:** One discoverable home for every image file, with semantic grouping that tells a developer where a new image should land without having to ask. `Help/` retains only `manual.html`, not the 30 screenshots it consumes. Flat sibling folders under `Assets/` (without the `Images/` parent) were rejected because future one-off dialog images wouldn't have an obvious home and the top level would grow noisily. An earlier iteration used MSBuild's `Link` attribute to keep output at `Help/*.png` while source lived at `Assets/Images/Sidebar/` — reversed because it defeated the point of organizing: the user saw images "back in the Help folder" in the build output.
-**Date:** April 2026
-
-### Reset User Settings: Registry-Based Whitelist, Not Nuclear Clear
-**Decision:** A "Reset User Settings" dialog in the Settings popup lets users selectively clear groups of preferences from the `UserSettings` table. Exposed groups and their member keys are declared in `Utilities/UserSettingsRegistry.cs`; anything not in the registry is excluded by policy. Rule: if a setting already has a manager UI where the user can modify/add/delete it (Theme submenu, Grid Layouts dialog, Manage Filters dialog, Analysis chart filter Reset button, Schedule UDF dialog, in-view dropdowns/checkboxes/paths), it does NOT appear in the Reset dialog. Only settings that have no other way to clear — grid column prefs, splitter ratios, dialog window dimensions, one-time skip flags — are included. System bookkeeping keys (`LastSyncUtcDate`, `LastSeenVersion`) are also excluded.
-**Why:** A naive "reset all" would delete `LastSyncUtcDate` (forcing a costly full re-sync), wipe named grid layouts that the user deliberately created, and duplicate functionality that's already accessible via dedicated dialogs. A curated registry also gives us a single source of truth for natural-language labels and defaults, which the finisher skill (Step 3.7) keeps in sync as new settings are added.
-**Date:** April 2026
-
-### Grid Reset Must Recreate the Current View, Not Just Delete the Row
-**Decision:** When the Reset dialog clears `ProgressGrid.PreferencesJson` / `ScheduleGrid.PreferencesJson`, `MenuResetUserSettings_Click` detects that case, calls `SkipSaveOnClose()` on the currently-loaded view, and force-recreates the view (`LoadProgressModule(forceReload: true)` or nulling `ContentArea.Content` + new `ScheduleView()`). Mirrors the existing `ResetGridLayoutsToDefault` pattern.
-**Why:** The Progress and Schedule views save their in-memory column state to `UserSettings` on unload. If we only deleted the row and left the view in place, closing the app would trigger the Unload handler and re-save the in-memory widths back over our reset — a silent no-op. The view must be recreated so its Unload handler fires while the row is empty (and the new instance loads default columns).
-**Date:** April 2026
-
-### App-Close Guard via Single Counter, Not Per-Op Flags
-**Decision:** One static counter in `Utilities/LongRunningOps.cs` tracks any critical operation via `using (LongRunningOps.Begin()) { ... }`. `MainWindow_Closing` reads `LongRunningOps.IsRunning` and warns the user before exiting if true. Six call sites currently wrap the scope: Submit Week, user snapshot delete, user snapshot revert, admin delete selected, admin delete all, admin upload-to-ProgressLog.
-**Why:** Submit Week's Step 10 (local UPDATEs to WeekEndDate/ProgDate/PrevEarnMHs/PrevEarnQTY) and similar post-commit housekeeping can leave local SQLite in a partially updated state if the app process dies mid-sequence. A single counter with `Interlocked` increment/decrement is ~40ns per op (imperceptible overhead on second-scale operations), works across threads, and doesn't require per-op plumbing. Alternatives considered: (1) per-op boolean flags on MainWindow — rejected as six flags is worse than one counter, (2) service registry pattern with event notifications — rejected as overkill for a boolean "anything running?" check, (3) relocking the grid during Step 10 — rejected because the user explicitly wanted the grid usable after the snapshot was captured.
-**Date:** April 2026
-
-### WebView2 Virtual Host Maps to App Base Dir, Not Help/
-**Decision:** The help sidebar's WebView2 virtual host `help.local` is mapped to the app base directory (`{baseDir}`), not the `Help` subfolder. Navigation URL is `https://help.local/Help/manual.html`, and `manual.html` references images via `<img src="../Assets/Images/Sidebar/xxx.png">`.
-**Why:** When images moved to `Assets/Images/Sidebar/`, manual.html still lives at `Help/manual.html` — the sibling-relative `<img src>` pattern no longer works because the images are no longer siblings. Rooting the virtual host at the app base dir lets a single host cover both the HTML and the separately-located image folder. Alternative considered: duplicate the host mapping (one for `Help/`, one for `Assets/Images/Sidebar/`). Rejected because one mapping at the base dir is simpler and won't need further changes if the folder tree grows.
-**Date:** April 2026
-
-### Flat-File-Only Logging; SQLite Logs Table Dropped
-**Decision:** `AppLogger` writes exclusively to `%LocalAppData%\VANTAGE\Logs\app-yyyyMMdd.log` (one file per UTC day, daily rotation). The parallel SQLite `Logs` table was dropped via schema migration v12. Export Logs dialog reads the flat files directly via `AppLogger.ReadLogFilesAsText(fromDate, toDate, minLevel)`, which parses the `[timestamp] Level ...` line prefix to apply the level filter and correctly groups multi-line exception stack traces with their owning log line.
-**Why:** The DB path added I/O on every log call (`CREATE TABLE IF NOT EXISTS` + `INSERT` per entry) and duplicated the flat file's content for one reader — the Export Logs dialog. Alternatives considered: (1) keep the table but stop querying it — rejected, leaves dead writes on every log call, (2) keep the table as primary and drop the flat file — rejected, flat files are easier for users to grep/tail externally and survive SQLite corruption, (3) keep both but make DB write async/batched — rejected, adds complexity for a path we're eliminating anyway. Dropping the table is a one-way migration (v12); legacy rows are lost but the flat files for the same period are still on disk up to the 15-day retention window. Multi-line exception parsing in `ReadLogFilesAsText` uses a simple rule: any line not starting with `[timestamp] Level` is a continuation of the previous log line, so it inherits the previous line's filter decision. This correctly keeps stack traces attached to their Error/Warning headers without needing a structured parser.
-**Date:** April 2026
-
-### Permission Allowlist: Project `.claude/settings.json`, Not `settings.local.json`
-**Decision:** Broadly-shareable permissions (git, dotnet, gh, PowerShell, file utilities, Skills, WebSearch, WebFetch domains) live in `.claude/settings.json` — versioned, committed, syncs across the user's machines via git. `.claude/settings.local.json` (gitignored) holds only genuinely machine-specific entries: absolute user-path `Read(...)`, one-off sed regexes, and personal overrides against team policy (e.g., `Bash(dotnet run)` when CLAUDE.md says never run the app from Claude Code). `.gitignore` narrowed from `.claude/` to `.claude/settings.local.json` so only the local file is ignored.
-**Why:** Claude Code's approve-and-remember dialog writes to `settings.local.json` by default. Every approval made on machine A was invisible to machine B, causing the user to repeatedly re-approve the same commands across machines. Alternatives considered: (1) global `~/.claude/settings.json` — rejected because these permissions are VANTAGE-specific; other projects don't need dotnet/gh/Syncfusion fetches, (2) keep everything in local and accept the re-approval tax — rejected, it was the problem, (3) sync `settings.local.json` via git — rejected because by convention local files belong to a single machine, and forcing them to sync would fight Claude Code's expectations and bleed personal overrides into the team set. The project settings.json is the path Claude Code's design actually intends.
-**Date:** April 2026
-
-### Claude Instruction Split: Inline Vigilance Rules in CLAUDE.md, Triggered Detail in `Plans/Security_Guidelines.md`
-**Decision:** Security and defensive-coding guidance for Claude Code is split into two locations. Vigilance rules with no clear trigger or that fire constantly (SQL parameterization, ownership/admin authority, secrets-must-not-surface-in-UI) live INLINE in CLAUDE.md as 1–3 line guards in their topical section. Detail rules with clear, infrequent triggers (CSV/Excel formula injection, filename / Windows-reserved-name guard, AI/Bedrock input bounds + response validation, logging hygiene specifics, FeedbackDialog secret-pattern check) live in `Plans/Security_Guidelines.md` with a one-line pointer in CLAUDE.md's Workflow Skills section. The pointer line itself names every trigger condition explicitly — the trigger list MUST live in CLAUDE.md (always loaded), never inside the referenced file.
-**Why:** CLAUDE.md is loaded into every conversation; pointer files are only loaded if Claude opens them. The cost of inline content is recurring context load on every turn; the cost of pointer files is silent-skip when the trigger is too quiet to notice (a 1-line SQL change feels too small to "go read the security file"). The split aligns each rule with its actual failure mode: vigilance rules can't tolerate silent-skip so they go inline; clear-trigger rules don't pay their inline rent on the 99% of conversations that don't touch their surface area. Pattern matches the existing AWS deployment guide pointer (`Plans/claude-code-aws-deployment-guide.md`), which uses the same trigger-list-in-CLAUDE.md / detail-in-file structure. Alternatives considered: (1) put everything inline — rejected, ~100 extra lines on every conversation for content most turns don't need, (2) put everything in a pointer file with a generic "read for security work" instruction — rejected, the trigger surface is too broad and too easy to skip without an explicit named-condition list, (3) put the trigger list inside the pointer file — rejected, it's circular (you'd have to open the file to learn that you should open it). Threat model framing in `Security_Guidelines.md` explicitly notes VANTAGE is internal Summit Industrial software so defenses are calibrated to accidental misuse / paste-bombs / Excel formula injection at the customer's desk — not a determined external attacker — to prevent over-engineering when applying the rules.
-**Date:** April 2026
-
----
-
-## MCAA Ratesheet
-
-### MCAA Ratesheet: Local SQLite in AppData, Not Embedded JSON or Azure
-**Decision:** The MCAA WebLEM ratesheet ships as a local SQLite file deployed to `%LocalAppData%\VANTAGE` alongside the existing user-data SQLite. Refreshed by the auto-updater when WebLEM updates upstream — independent of full VANTAGE releases. Not embedded as a JSON resource (the pattern the current `Resources/RateSheet.json` uses). Not hosted in Azure SQL.
-**Why:** Three constraints govern the choice. (1) Must work offline — a takeoff can't depend on an Azure round-trip per line, and there are dozens to hundreds of facet lookups per project. (2) Must support quarterly rate updates without releasing all of VANTAGE — WebLEM's update cadence and VANTAGE's release cadence are decoupled. (3) Size is significant — ~25 MB of working xlsx for 174K rates, the production SQLite will be similar order. Embedded JSON fails (1)+(2)+(3): bloats the assembly, locked to release cadence, large for an embedded resource. Azure-hosted SQL fails (1) and adds latency on every facet lookup. Local SQLite hits all three: queryable offline via existing `Microsoft.Data.Sqlite`, refreshable via the existing auto-updater file-replacement pattern, indexable on facet columns for sub-millisecond lookup. Multi-app consumability (Sandbox, Power BI) is not a constraint VANTAGE needs to solve right now — those consumers can read their own copy of the same `.db` file or the producer team can promote to Azure later if multi-app coordination becomes painful. Don't over-engineer for hypothetical future needs.
-**Date:** April 2026
-
-### MCAA Ratesheet: Facet-Column Queries, Defer `lookup_key` String Design
-**Decision:** The MCAA ratesheet SQLite is queried by facet columns (e.g., `WHERE component='ELB' AND material='CS' AND schedule='40' AND size_1=0.5`), not by composed string keys like `OLET-ELB-CS-3000-0_5-SW`. The `lookup_key` column the producer's original plan called for is deferred — possibly indefinitely. Indexes on `(component, material, size_1)` and `(method, leaf_id)`.
-**Why:** A composed string key forces a per-subcategory key-shape design (a flange's key has different facets than a tee's), and multi-port items (manifolds with 5–7 ports each carrying their own size and end-type) don't fit a flat dash-separated string cleanly without a positional or bracketed sub-key scheme. Facet queries skip both problems: VANTAGE's takeoff already knows the relevant facets (the AI takeoff agent emits component code, material, size; pressure / schedule / class come from the BOM). A facet query can be written today against whatever schema lands; a string key forces design decisions before they're needed. Adding a `lookup_key` later is straightforward (single migration, populate from existing facet columns) if a downstream consumer ever needs one for human-readable display or audit. Alternative considered: design `lookup_key` now and let multi-port items use a bracketed sub-key. Rejected because the multi-port encoding question alone could block the project for weeks of bikeshedding when no consumer actually needs a string key for runtime lookup.
-**Date:** April 2026
-
-### MCAA Ratesheet: Sibling `MCAARateSheetService`, No Refactor of Existing `RateSheetService`
-**Decision:** A new `Services/AI/MCAARateSheetService.cs` runs alongside the existing `Services/AI/RateSheetService.cs`. Each service owns its own data source (RateSheet owns the embedded `Resources/RateSheet.json`; MCAARateSheet owns the local SQLite). VANTAGE callers pick which one based on the takeoff line's existing rate-source dropdown. **No refactor of `RateSheetService`** to dispatch to MCAA internally.
-**Why:** The embedded `RateSheetService` is on a 6–12 month sunset path (deletion target after parity testing across 5 real projects shows no MCAA gaps). Refactoring it now to dispatch between Summit-embedded and MCAA-SQLite is throwaway work that gets deleted with the deprecation. Two side-by-side services is simpler: each is read-only and bounded; when MCAA wins parity, `RateSheetService` and `Resources/RateSheet.json` both delete cleanly and the dispatch logic at call sites flattens to "just call MCAA." If side-by-side comparison is needed during parity testing (run a lookup through both engines and diff the answer), that's a parity-test utility, not a production interface — it can live as a debug tool that calls both services and dies when parity testing finishes. Alternative considered: unified single service that dispatches internally on a `source` parameter. Rejected because the unified-service argument only wins if both backends survive long-term, and they won't.
-**Date:** April 2026
-
-### MCAA Ratesheet: CompRefTable for BOM Items, MCAA-Only Allowlist for Actions/Connections
-**Decision:** The takeoff AI agent's vocabulary source remains `CompRefTable.xlsx` — drawing-item → abbreviation. Items the AI must emit (everything that appears on a piping BOM: pipe, fittings, valves, flanges, branch connections, etc.) live in CompRefTable. Actions and connections (welds, bolts, cuts, bevels, hydrotest, threading, etc.) do NOT live in CompRefTable — they live only in the MCAA ratesheet. Their labor rows are derived at labor-creation time from BOM connection data, not extracted from drawings. New abbreviations the MCAA ratesheet introduces that aren't in CompRefTable (Cross, Lateral, Tangential Nozzle, Weld Neck variants, etc.) are tracked in a separate "MCAA-only abbreviations" list — the takeoff AI doesn't auto-emit them, but they exist for cases where an estimator manually adds a line for one of those items.
-**Why:** CompRefTable's job is to drive the takeoff AI's drawing-item recognition. Polluting it with action/connection codes (BW, SW, THRD, BEV, CUT, HYDRO, etc.) bloats the AI's prompt and confuses the recognition task — those concepts don't appear as items on drawing BOMs. A separate post-processing step (the future MCAA labor creation service) handles "BOM has an SCRD connection on a Carbon Steel pipe → emit a THRD labor row" and queries the MCAA ratesheet directly using the action's abbreviation. Keeping the two vocabularies separate also lets MCAA-only items (Cross, Lateral) exist in the ratesheet without forcing CompRefTable to learn them, which preserves CompRefTable as the AI's clean recognition vocabulary. Alternative considered: dump everything into CompRefTable. Rejected because it conflates "things the AI extracts from drawings" with "things that have a labor rate in the ratesheet" — these are different domains with overlapping but distinct vocabularies.
-**Date:** April 2026
-
-### SkySkraper Producer Project: External Synology Drive Folder, Not Git-Tracked
-**Decision:** The Python pipeline that scrapes MCAA WebLEM (project nickname "SkySkraper", canonical name "MCAA Ratesheet producer") lives at `C:\Users\Steve.Amalfitano\source\repos\PrinceCorwin\SkySkraper\SynologyDrive` — outside the VANTAGE Git repository. Synced across the user's machines via Synology Drive. Has its own `CLAUDE.md` (Python conventions for scrape-side work), `AGENTS.md` (Codex conventions), and Codex's working journal at `Plans/cdx_Project_Status.md`. The canonical PRD for the project lives in **this** repo at `Plans/MCAA_Ratesheet_Plan.md`; status and completed work for the MCAA effort track in this repo's `Plans/Project_Status.md` and `Plans/Completed_Work.md`. The producer folder is dual-author (Claude + Codex) with a strict file-ownership rule: files prefixed `cdx_` are Codex's; everything else is Claude's; either side reads either's files; neither modifies the other's. VANTAGE's `CLAUDE.md` carries an explicit "never git-track or move SkySkraper" guard.
-**Why:** The producer ships ~115 MB of cached HTML, 25 MB of working xlsx, two SQLite databases (~80 MB each), and per-leaf XLSX/CSV outputs (~14 MB) — none of which belongs in a git history. Synology Drive provides multi-machine sync and version history without polluting Git. The producer also runs on a quarterly cadence — long pauses between active development — so its tooling (Python venv, scraped HTML cache, working xlsx, audit reports) doesn't need the same versioning discipline VANTAGE demands. Codex's involvement adds another reason: Codex sessions don't have access to the VANTAGE Git context, and giving them their own folder lets them work without disturbing or being disturbed by VANTAGE's commit cadence. The PRD and status docs live in VANTAGE because the integration is what matters from VANTAGE's perspective; the producer is implementation detail. Alternative considered: include the producer as a git submodule or sibling repo. Rejected because submodules add complexity that doesn't pay off for a quarterly-cadence project, and the user's existing Synology workflow already gives him cross-machine sync at zero extra cost.
-**Date:** April 2026
-
-### MCAA Ratesheet: AI Takeoff Input Scope Bounds Schema Choices
-**Decision:** All MCAA schema and lookup design choices must fit what AI Takeoff actually produces. AI Takeoff extracts only two surfaces from each drawing PDF: the BOM table and the title block. There is no line drawing scan and no line list anywhere in the pipeline. Material lives in the BOM description. Component code, body style, size, connection type, schedule, class — anything VANTAGE wants for rate lookup must be extractable from the BOM description plus the title block, period.
-**Why:** Designing for an extraction surface that doesn't exist would invalidate every other MCAA decision. Recording this as a decision (not just a fact) so future MCAA work doesn't reason from a phantom line list. CompRefTable is also injected into every extraction prompt — token cost scales with its row count, which separately bounds how big CompRefTable can get and rules out one-key-per-rate-row schemes that would balloon it.
-**Date:** April 2026
-
-### MCAA Ratesheet: Lookup Implementation Reopened — Facet-Column vs Concatenated-Key
-**Decision:** The earlier "Facet-Column Queries, Defer `lookup_key` String Design" decision (above) is reopened. Two viable lookup implementations are now on the table; final pick deferred until the rate sheet is complete and we see how the second option's catches actually behave at scale. Option A (facet-column query): SQLite stores each property as a separate indexed column, lookup is `WHERE component = ? AND body_style = ? AND material = ? AND size_1 = ? ...`, native SQL handles NULL/optional properties and fallback rules. Option B (concatenated key): producer concatenates `component` + properties in canonical order into a single indexed key column, VANTAGE composes the same key from AI extraction and looks up by string equality. Cheap hedge available: SQLite can carry both columns indexed, so primary lookup can flip without a schema change.
-**Why:** A new use case appeared this session — a property-completeness check that requires the producer to build a synthetic concatenated key for each rate row anyway (see next decision). If that key exists, it could double as the production lookup mechanism. Same artifact serves both producer-side validation and runtime lookup, vs. maintaining two separate schemes. The earlier facet-column decision was made before this dual-use was on the table. Catches with Option B: producer and consumer must agree byte-perfectly on canonicalization (NULL slots, size formatting, casing); fallback rules (e.g., the CON/ECC reducer rule) require rebuilding the key and retrying instead of one OR clause. Catches with Option A: lookup signature has to grow when a property is added. Both solvable. Defer the call until we can evaluate against the actual completed rate sheet rather than abstract preference.
-**Date:** April 2026
-
-### MCAA Ratesheet: SR/LR Modifiers Fold Into the Component Code
-**Decision:** Short Radius (`SR`) and Long Radius (`LR`) for elbows are folded into the component code itself (`EL90SR`, `EL90LR`) rather than extracted as a separate body-style property. Apply the same approach to any other modifier the abbreviation can absorb without exploding the keyspace.
-**Why:** One less property the AI has to extract per item — simpler prompt, fewer independent extraction failures. Matches how `newComp` is already being assigned in the rate-table review. SR/LR is bounded (two values), so absorbing them into the component code doesn't blow up CompRefTable. The general rule "let the abbreviation carry low-cardinality modifiers; reserve body_style for ones it can't" gives a clean line for future modifier decisions. Alternative considered: extract `radius` as its own AI-extracted property. Rejected because every additional extracted property is another point of failure for the AI agent, and the AI already has to land on the component code anyway — bundling SR/LR into that decision is strictly cheaper than asking it to make a separate `radius=SR` decision.
-**Date:** April 2026
-
-### MCAA Ratesheet: Concentric/Eccentric Reducers — Store as CONCENTRIC, Lookup Falls Back
-**Decision:** Some MCAA reducer rates are body-style-agnostic ("either"); some are CONCENTRIC-specific; some are ECCENTRIC-specific. Storage rule: body-style-agnostic rows are stored with `body_style = CONCENTRIC`. Lookup rule: try the AI-extracted body_style first; if no match, retry as `CONCENTRIC`. Body-style-specific rows store their actual body style as expected.
-**Why:** The AI extracts `CONCENTRIC` or `ECCENTRIC` for reducers — that part stays. The question is how to store the "either" rows so a single rate can serve both body styles without duplicating rows in SQLite or introducing an EITHER sentinel + OR-clause SQL. The fallback approach keeps the AI's body-style enum to two values (CONC, ECC) and avoids row duplication. Tradeoff accepted: a missing ECCENTRIC-specific row falls through to CONCENTRIC silently — possible silent miscategorization if the SQLite is incomplete or wrong, vs. a returned-null miss with EITHER sentinel that would surface as a "missed rate" warning. The PRD's pivot escape hatch covers this case if it bites in practice. Alternative considered: store "either" rows with `body_style = EITHER` and use `WHERE (body_style = @style OR body_style = 'EITHER') ORDER BY ... LIMIT 1`. Rejected for now to keep the lookup surface uniform; revisit if silent fallback substitutes for a real miss.
-**Date:** April 2026
-
-### MCAA Ratesheet: Property-Completeness Check via Synthetic Key Uniqueness
-**Decision:** When the rate workbook is filled out, concatenate `component` + all property columns into a synthetic key per row and check for duplicates. Every row in the rate sheet represents a unique rated item or action, so duplicate synthetic keys prove a property is missing — the colliding rows are the same rated thing as the schema currently sees it. Iterate (add the missing property column, refill it) until all synthetic keys are unique. At that point the property set is complete and AI extraction can be tuned to produce exactly that set.
-**Why:** Falsifiable test for property completeness. Without this check, "do we have all the properties we need?" is judgment-based — unreliable at 174K rows. The synthetic-key uniqueness check turns it into a one-line SQL/pandas `groupby` query: any duplicate key proves a missing property column. Bonus: the same key-construction logic could become the production lookup mechanism (Option B from the lookup-implementation decision above) — final call deferred until the rate sheet is done.
-**Date:** April 2026
-
-### MCAA Ratesheet: Takeoff Rate Mode is an In-App Toggle, Not a Long-Lived Branch
-**Decision:** Summit-vs-MCAA divergence at takeoff time is gated by a user-selectable rate mode (`Takeoff.RateMode`) that lives in the app, not by maintaining a separate `feature/mcaa-takeoff` Git branch. A short-lived branch was created on 2026-05-05 to isolate the in-progress MCAA changes (TUBE handling + CUT companion rows on BW/SW + BOLT/GSKT/WAS labor-row skip) so main could publish; the branch was abandoned the same day in favor of the toggle approach and its commits cherry-picked back to main. New PRD: `Plans/Takeoff_Rate_Mode_PRD.md`.
-**Why:** A toggle is needed long-term anyway — Summit ratesheet is supposed to remain selectable for 6–12 months after MCAA parity is proven across 5 real projects, then sunset. Maintaining a parallel branch for that whole window would mean ongoing merge work, divergent docs, and constant context-switching. Toggle puts both code paths on a single trunk and gates the divergence at runtime. Walked back a brief "doc updates live on main only" rule that tried to make the branch workable, because it forced every Decisions/Plans update through a branch-switch and wouldn't have survived months of MCAA work. Tradeoff accepted: half-finished MCAA logic on main has to compile and not crash even when not selected — less forgiving than a branch where intermediate broken states are fine. Discipline-based, not enforced.
-**Date:** May 5, 2026
-
-### MCAA Ratesheet: Hardcoded-Username Gate on MCAA Mode During Rollout
-**Decision:** The `Takeoff.RateMode = "MCAA"` selection is restricted to a single hardcoded username (Steve) until MCAA is GA. Even an admin cannot select MCAA. The dialog forces the setting back to Summit on load if a non-gated user has somehow set it (export/import, registry edit). After GA the gate moves to admin-only or is removed entirely.
-**Why:** Tightest possible lock during the partial-implementation window. Half-finished MCAA logic on main means selecting MCAA could ship inflated/wrong numbers. An admin-table check would still let any admin flip it; a hardcoded gate prevents accidental enablement by anyone but the user actively building the MCAA path. The dialog-load force-reset is the second line of defense since a UserSetting can in theory be tampered with at the storage layer. The restriction is pure rollout-window protection, not a security boundary — once parity is signed off, the gate disappears.
-**Date:** May 5, 2026
-
-### MCAA Rate Mode Phase 1: Allowlist Implementation (Two Names) Instead of Single Username Constant
-**Decision:** The username gate is implemented as a static `HashSet<string>` (`McaaAllowedUsers = { "steve", "steve.amalfitano" }`, case-insensitive) rather than a single string constant. Allows adding/removing names without touching the gate's call sites — and `App.CurrentUser?.Username` can resolve to either form depending on how the user logged in.
-**Why:** Two known username spellings exist for the same person (`steve` and `steve.amalfitano`). A single-string check would accept one and reject the other, leading to a confusing "MCAA is greyed out for me on this machine" experience. The HashSet approach also future-proofs against adding a second tester during Phase 3 parity work without code changes to the read sites.
-**Date:** May 5, 2026
-
-### MCAA Rate Mode Phase 1: Four Behavior Divergence Points (Not Two)
-**Decision:** The mode-conditional gating in `TakeoffPostProcessor` covers four divergence points, not the two described in the original PRD: (1) BOLT/GSKT/WAS aggregated hardware row (Summit creates, MCAA skips); (2) SPL spool-handling row generation (Summit emits, MCAA skips entire `GenerateSplRows` call); (3) BW/SW companion CUT row (Summit skips, MCAA emits one CUT row per connection); (4) `ApplyRates` modifier neutralization under MCAA (`RollupMult = 1.0`, `MatlMult = 1.0`, `cutAdd = 0`, `bevAdd = 0` for all components, so `BudgetMHs = mhu × qty`).
-**Why:** The original two-point list ("hardware skip" + "CUT companion") came from the cherry-picked branch's two commits and didn't capture the full pricing-strategy divergence. Working through the actual MCAA behavior with the user surfaced two more: SPL is a Summit-specific concept (MCAA prices spool handling differently or not at all), and MCAA explicitly does not apply Summit's rate modifiers because cut/bevel/rollup get priced as separate joint or prep-op rate rows under MCAA's pricing model. Audit columns (`RollupMult`, `MatlMult`, `CutAdd`, `BevelAdd`) are kept in the workbook even under MCAA, set to 1.0/1.0/0/0, so reviewers can verify at a glance that no multiplier was applied.
-**Date:** May 5, 2026
-
-### Takeoff Labor Rows: Single Uniform ShopField Rule (Cross-Mode)
-**Decision:** All labor row `ShopField` values are written by a single uniform pass (Step B1) immediately after `GenerateLaborRows` returns. Rule applies to both Summit and MCAA: BW and SW → 1 (shop) in both modes; PIPE and TUBE → 1 (shop) under Summit only; everything else → 2 (field). All prior scattered ShopField allocations were removed: the `(BU || SCRD) ? 2 : 1` line in `CreateLaborRow`, the `FLGB || FLGLJ → 2` line in the fab loop, the `spl["ShopField"] = 2` line in `GenerateSplRows`, and inheritance from material rows (achieved by adding `"ShopField"` to `ExcludeFromLabor`). The Material-tab ShopField correction passes (`AssignMaterialShopField`, `WriteMaterialShopField`) remain — those drive the Summary tab's Shop/Field bin counts on Material rows.
-**Why:** The previous scattered allocation logic (per-creation-site rules, plus inheritance from AI-emitted material values) was hard to reason about and produced a mix of 1s and 2s on labor rows that didn't align with how the user actually wanted to bin shop vs field labor. A single uniform pass makes the rule trivial to audit, change, or extend. Tradeoff accepted: Summit-mode labor `ShopField` values diverge from `v26.2.17` for OLW, THRD, hardware, and inherited fab rows (some were 1, now uniformly 2 except the four explicitly-shop components). Numeric MH totals are unaffected — `ShopField` doesn't influence rate lookup; only Shop-vs-Field bin counts shift. The user explicitly accepted this divergence as the desired behavior, since the prior values were inconsistent. Future plan: when the AI agent stops emitting `ShopField` on material rows, the Material-tab correction passes can also come out and the column can be dropped entirely.
-**Date:** May 5, 2026
-
-### MCAA Rate Mode Phase 1: Rate-Source Lookup Stays on `RateSheetService` (Defer `MCAARateSheetService` Swap to Phase 2)
-**Decision:** Both Summit and MCAA modes call `RateSheetService.FindRate(...)` against the embedded `Resources/RateSheet.json` for the `RateSheet` (mhu) value. The `MCAARateSheetService` rate-source swap was deliberately deferred — it is the last code change planned before MCAA parity testing across 5 real projects.
-**Why:** Phase 1 is structural-only: the toggle, the gating, the audit columns, the workbook-mode marker. Pulling in the actual MCAA rate values requires the producer-side abbreviation review to complete and the xlsx → SQLite exporter to ship — both blocked on user-driven work. By keeping the rate source unchanged in Phase 1, we get the entire toggle apparatus tested and shipped against known-good rates before the rate values themselves change, isolating the variables. When `MCAARateSheetService` exists, the swap is a single conditional at the top of `ApplyRates()` and the rest of Phase 1's plumbing (mode-conditional gates, ShopField rule, audit columns) needs no changes.
-**Date:** May 5, 2026
-
-### MCAA Rate Mode Phase 1: Active Mode Recorded as Summary-Tab First Data Row, Not File-Level Custom Property
-**Decision:** The rate mode used to generate a takeoff workbook is written as the first data row of the Summary tab (`Rate Mode: Summit` or `Rate Mode: MCAA`, column 2 bolded), not as an Excel file-level custom property.
-**Why:** A Summary-tab cell is visible the moment the Summary tab is opened — no need to drill into File > Info > Properties. File-level custom properties are also fragile: easy to lose if the file is re-saved through a tool that doesn't preserve them (e.g., older Excel versions, `openpyxl`-based scripts that strip properties on write). The cell-based approach also keeps the marker visible in any rendering path (PDF export, screenshot, print). Alternative considered: both. Rejected as redundant — one clearly visible marker is enough.
-**Date:** May 5, 2026
-
-### SkySkraper Producer: Per-Section Sibling Cache Layout (Option B)
-**Decision:** SkySkraper's `raw_cache/` is organized one folder per WebLEM top-level section, sibling-style: `html_piping_systems/`, `html_instrumentation/`, `html_hvac_equipment/`, `html_plumbing_equipment/`, `html_plumbing_fixtures/`, `html_hangers_sleeves_inserts/`, `html_treatment_plant_equipment/`, `html_refrigeration_equipment/`, `html_miscellaneous_labor_operations/`, `html_excavation_backfill/`, plus the existing `html_component/` (PIPING SYSTEMS Component-mode HTML, Codex-owned). Each folder has a sibling `index_<section>.json`. `discovery/leaves.json` remains PIPING SYSTEMS only; new sections get sibling `discovery/leaves_<section>.json` files filtered from `dom_leaves.json` by `breadcrumb[0]`. `dom_leaves.json` itself is unchanged and remains the authoritative DOM extract for all 1,926 leaves.
-**Why:** Codex already established the sibling pattern with `html_component/` + `index_component.json`. Option A (nested `html/<section>/`) would diverge from that and force every existing script that reads `html_component/` directly to learn a new layout. Option B (sibling) lets future sections plug in by pure additive change — add a `RAW_HTML_<SECTION>_DIR` constant, an `index_<section>.json` sidecar, a row in `fetch.py:SECTIONS`, and a leaves file. Backward compatibility preserved via `config.RAW_HTML_DIR` aliasing the new piping path so Codex-owned scripts continue working without changes for the PIPING corpus. Alternative considered: keep everything in shared `html/` and let mixed-section files coexist with a section column in the index. Rejected because every parser in the codebase already reasons about "PIPING SYSTEMS WAM" implicitly when iterating `html/`; section-by-section sub-corpus runs (the parity-test workflow) want clean per-section directory iteration, and grouping by folder is the simplest way to give it to them.
-**Date:** April 30, 2026
 
 ---
 
 ## Analysis Module
 
-### Chart Filters Independent from Summary Grid
-**Decision:** Chart filter panel applies to charts only. Summary table has its own independent filters (Group By, My Records/All Users, Projects).
-**Why:** Different analytical needs — charts for visual exploration across many dimensions, summary table for its own grouping context.
+### Chart Filters Are Independent From the Summary Grid
+**Rule:** The chart-filter panel applies to charts only. The summary grid has its own independent filters (Group By, My Records / All Users, Projects).
+**Why:** Different analytical needs — charts for visual exploration across many dimensions, summary grid for its own grouping context. A shared filter set would force one to compromise.
 **Date:** April 2026
 
-### Project Selection Not Persisted
-**Decision:** Auto-selects first project from current local data instead of saving/restoring selections.
-**Why:** Stale saved selections pointed to projects no longer in local DB after clear/re-sync, causing the table to appear empty.
+### Project Selection Is Not Persisted
+**Rule:** Analysis auto-selects the first project from current local data on every load. No saved/restored selection.
+**Why:** Stale saved selections pointed to projects no longer in local DB after clear/re-sync, leaving the table empty with no obvious cause.
 **Date:** April 2026
 
 ---
 
-## Plugin System
+## Takeoffs
 
-### PTP Plugin: Match on UDF2, Not Description
-**Decision:** Changed matching from Description pattern (`FABRICATION - 4.SHP {CWP}`) to UDF2 field containing CWP value directly.
-**Why:** Users were editing the Description field after import, breaking update-vs-create detection. UDF2 is a stable identifier not typically modified.
+### Common
+
+#### Takeoff Lifecycle Lives in `App.CurrentTakeoff`, Not the View
+**Rule:** Upload, start, and poll lifecycle of an AI Takeoff batch are owned by `Services/AI/TakeoffSession.cs` held at `App.CurrentTakeoff` (mirroring `App.CurrentUser`), not by `TakeoffView.xaml.cs`. The view is a thin subscriber that rebuilds itself from session state on `Loaded` and unsubscribes on `Unloaded`. The session also owns its own `TakeoffService`, `CancellationTokenSource`, and any future timer.
+**Why:** `MainWindow.BtnTakeoff_Click` destroys and recreates the `TakeoffView` instance on every navigation. With state in the view, switching to Schedule mid-batch orphaned the view but left its async state machine running invisibly — the polling loop kept writing to a `txtStatus` the user could no longer see, and a deferred `SaveFileDialog` could pop from a detached view. Hoisting state above the view lifecycle lets the user navigate freely while a takeoff is in flight.
+**Date:** April 2026
+
+#### Bottom-Bar "Takeoff: Complete" Is Sticky; Cancellation Doesn't Set It
+**Rule:** `App.HasCompletedTakeoffSinceStartup` is set the first time a takeoff session raises `Completed` with `CompletedSuccessfully == true`. It stays set until the next batch starts (flips to Running) or the app closes. Cancelled or failed batches do not set the flag.
+**Why:** The bottom-bar indicator confirms a successful batch happened in this app session. Reusing the Complete state for cancellation would mask user mistakes (cancel-by-accident on a long batch, walk away thinking it succeeded). Per-app-session lifetime keeps the indicator scoped to "what you did right now".
+**Date:** April 2026
+
+#### SaveFileDialog Auto-Opens on Return; Cancel Doesn't Re-Pop
+**Rule:** When a takeoff completes successfully while the user is on another tab, `TakeoffSession.PendingDownloadBatchId` is set. On returning to the Takeoffs tab, `RestoreFromSessionIfActive` calls `ClearPendingDownload()` first and then opens the SaveFileDialog. Whether the user saves or cancels, the flag is already cleared. Recovery from a cancelled save is via the Previous Batches button.
+**Why:** Frictionless on-return: dialog opens directly, no inline confirm. Re-popping the dialog on every navigation would punish users for cancelling once. Clearing before the await also defends against a SaveFileDialog crash leaving the flag set indefinitely.
+**Date:** April 2026
+
+#### Last Config Persists by Key; Rates / Bubble / Send-Missed Don't Persist
+**Rule:** `Takeoff.LastConfigKey` UserSetting persists the last-selected config across tab navigations and app sessions. Lookup is by `_configs[i].Key`; if the saved key no longer exists, fall back to the first available config. The Unit Rates dropdown, Rev Bubble Items Only checkbox, and Send Missed Makeups to Admin checkbox are NOT persisted — each session defaults to "Default (Embedded)" / unchecked / unchecked.
+**Why:** Config selection is high-friction to re-pick from a dropdown each session and almost always the same one; key-based persistence survives reorder/rename/delete (index-based did not). The other three controls are deliberately friction by design — Unit Rates and the two checkboxes change the meaning of the resulting Excel (project-specific rates, scope of extraction, who gets emailed).
+**Date:** April 2026
+
+#### Uploaded Drawings Are Deleted From S3 After Processing
+**Rule:** S3 uploaded drawings are deleted automatically after takeoff processing completes.
+**Why:** Drawings are overwritten on each run anyway (to support new revisions with the same filename), so persisting them serves no purpose.
 **Date:** March 2026
 
-### CONST Plugin: Spools Missing From Report Are Zeroed Out, Not Force-Completed
-**Decision:** When a Piece Mark previously imported is no longer in a new weekly report, the CONST plugin sets `PercentEntry = 0`, clears both `ActStart` and `ActFin`, and tags the Notes column with `"DELETED"`. The user is responsible for actually deleting the row via VANTAGE's normal delete flow. The import-summary popup lists up to 20 affected Piece Marks (full list goes to the log) so the user knows what to investigate.
-**Why:** v1.0.0 instead force-completed missing spools (`PercentEntry = 100`, synthesized `ActFin = today`, "DELETED" in Notes). That poisoned `SchedActNO` rollups: any SchedActNO that contained a cancelled spool got a falsely advanced ActStart and an inflated earned-value contribution, even when none of the other spools had started. The plugin doesn't have authority to delete rows on the user's behalf (ownership semantics, sync coordination, undo paths all live in the main app's delete flow), but it does have authority to make the row inert so it can't pollute schedule reporting. Zeroing achieves that without touching the row's identity.
-**Date:** 2026-05-09
+#### Configs Are Namespaced by Username
+**Rule:** Config S3 path uses `clients/{username}/{config-name}.json`.
+**Why:** Each user gets their own namespace. A client/project hierarchy was overkill for what's effectively a personal config store.
+**Date:** March 2026
 
-### CONST Plugin: PhaseCategory Constant Is "PIPF"
-**Decision:** New CONST records insert with `PhaseCategory = "PIPF"`.
-**Why:** v1.0.0 used `"PIP"` which was incorrect for the project's phase-category scheme. PhaseCategory is in the insert-only group (not in the UPDATE statement), so existing rows from prior imports keep `"PIP"` until manually corrected; new records get `"PIPF"`.
-**Date:** 2026-05-09
+#### In-App Results Panel Does Not Exist
+**Rule:** `TakeoffView` does not show an in-app results summary after a batch. The Excel file is the deliverable.
+**Why:** The same information is available in the downloaded Excel. The in-app panel was redundant.
+**Date:** March 2026
 
-### CONST Plugin: Module PP-Suffix Stripped Before UDF2 / WorkPackage
-**Decision:** `Module` values from the Constellation report that end in `"PP"` (case insensitive) get the suffix stripped before flowing into both `UDF2` and `WorkPackage` (which both receive the same Module value).
-**Why:** Module names in the Constellation report carry a vendor-internal `"PP"` tag (e.g. `TFS00D002YSPP`) that isn't meaningful in VANTAGE's grouping/filtering context and clutters the grid. Stripping at the parse-time source means every downstream use sees the cleaned value uniformly. Insert-only field, so existing rows keep their original `PP`-suffixed values until re-imported.
-**Date:** 2026-05-09
+#### Failed DWGs Tab Is Owned by the Aggregation Lambda
+**Rule:** The "Failed DWGs" tab in the batch Excel is written exclusively by the AWS Aggregation Lambda from S3 failure markers (`failures/{drawing}.json`). The WPF app does not create, overwrite, or delete this tab on any path — initial download, Recalc Excel, or re-download from Previous Batches. The tab carries 4 columns: Drawing Name, Source Key, Error message, UTC timestamp.
+**Why:** The prior app-side `WriteFailedDrawingsTab` helper wrote a 1-column tab from an in-memory list captured during SFN polling. The Lambda's 4-column schema carries diagnostic depth the app can't reconstruct. Reading failures from S3 markers also means re-runs and Recalc Excel present a stable, full history. Single writer eliminates the class of bug where a null/empty `failedDrawings` parameter silently destroyed the tab.
+**Date:** April 2026
 
-### CONST Plugin: Reject Both ActStart and ActFin When RLS-to-Fab > Final Shipment
-**Decision:** When both `RLS to Fab date` and `Final Shipment` are populated in the report and the fab-start is strictly later than the ship date, the plugin writes empty strings for both `ActStart` and `ActFin`. The `+20` shipment-percent boost still triggers from `Final Shipment.HasValue` regardless — only the date writes are suppressed.
-**Why:** The data is contradictory at the source (a spool can't start fabrication after it shipped). Letting the dates through would create a Finish-before-Start violation downstream that VANTAGE would flag anyway, but with no clear pointer to *why*. Rejecting both surfaces the issue as a metadata error on the row (PercentEntry > 0 with no ActStart, PercentEntry = 100 with no ActFin) — clearly visible to the user, who can take the data quality issue back to Constellation. We could fall back to using `Final Shipment` for both ActStart and ActFin in this case, but the user explicitly preferred letting Vantage flag it so the underlying report-quality problem doesn't get silently masked.
-**Date:** 2026-05-09
+#### Failed-Drawing Counts Come From the Excel, Not the Step Functions Output
+**Rule:** The polling loop checks only the Step Functions `status` field for aggregation-level failure. Success/failure counts are computed after download by counting data rows in the batch Excel's "Failed DWGs" tab. `succeeded = totalSubmitted - failedDrawings`.
+**Why:** The state machine's `BatchComplete` Pass state strips the Aggregation Lambda's rich return payload. Modifying the Pass state requires AWS Console coordination and still leaves the app coupled to SFN output shape. Reading the Excel uses data the app already has after download and works regardless of how the Pass state evolves. The "N succeeded, M failed" status appears after Excel save rather than before — preliminary "Completed in {elapsed} — downloading results..." status bridges the gap.
+**Date:** April 2026
+
+#### Size and Quantity Are Returned Raw-as-Printed; Conversion Is Centralised
+**Rule:** Claude returns `size` and `quantity` exactly as printed on the drawing — fractions like `"3/4"` and `"1-1/2"`, reducing strings like `"6X4"`, length strings like `"27'10\""`, `"5.5 ft"`. The aggregation Lambda converts size to decimal at the Excel write boundary. The C# app's `NormalizeMaterialQuantities()` (called once from `GenerateLaborAndSummary` immediately after `WriteMaterialShopField`) converts quantity strings to decimals and writes them back to the Material tab. Size normalisation moved into C# as Step A1 (`NormalizeMaterialSizes` → `WriteMaterialSizes`), mirroring the quantity pattern. Downstream consumers read normalised doubles. Failures log `SIZE_NORMALIZATION_FAILED` / `QUANTITY_PARSE_FAILED` and leave the raw text in the cell for manual correction.
+**Why:** Vision models echo printed text more accurately than they convert it. The earlier prompt asked Claude to convert; results were silently wrong on uncommon unit forms. Centralising conversion makes parse failures visible at one well-known point per value type rather than hidden in a multi-layer silent-fallback chain. Size normalisation is in C# (rather than Lambda) because tweaking a regex in C# ships in the next app release and applies to every Recalc Excel pass on existing takeoffs; tweaking it in Lambda requires an AWS deploy and only helps new takeoffs.
+**Date:** April 2026
+
+#### Malformed-Size Rows Are Surfaced to a Dedicated Tab, Not Silently Priced at Zero
+**Rule:** When a material row's `Size` contains an unbalanced "X" — i.e., contains `x`/`X` and `FittingMakeupService.ParseDualSize` returns null — `ExplodeMaterialRow` adds the row to `_malformedSizes` and returns immediately, skipping all labor explosion (no fab row, no connection rows, no THRD companions). A "Malformed Sizes" worksheet is written from that collection with Drawing Number, Item ID, Component, Size, Quantity, Connection Type, Raw Description, and the fixed Reason `"Size contains unbalanced 'X' — labor generation skipped. Verify against drawing."`. The Summary tab carries a "Malformed Sizes" count line.
+**Why:** A real bug had the model emit `Size = "0.5x"` for a TEE outlet — `ParseDualSize` returned null, the fallback `GetDouble(mat, "Size")` parsed `"0.5x"` as 0, and six connection labor rows were silently emitted at size 0 with no rate. The C# regex genuinely cannot infer the missing portion (only the drawing knows the outlet size); silently picking either side is worse than skipping. The new prompt's size-validity contract should prevent the model from ever emitting unbalanced X again, but defense-in-depth catches future slips at the boundary.
+**Date:** April 2026
+
+#### `connection_size` Field Does Not Exist
+**Rule:** `connection_size` is not in the extraction prompt JSON schema, the aggregation Lambda's row-build code, the Lambda column mapping list, or the Labor tab's `explicitColumns`. The Summary tab's "CONNECTIONS BY SIZE" section groups by `Size` (per-row connection size).
+**Why:** `connection_size` was a phantom field — the model emitted it, the Lambda passed it through, the Material/Labor tabs displayed it, but no C# code computed labor or makeup from it. The single remaining consumer was a Summary grouping that bucketed reducer SCRDs incorrectly (a `2x0.5` REDT's run-side and outlet-side rows both grouped into bucket `"2x0.5"`). Switching the grouping to `Size` fixes that bucketing and saves prompt tokens, JSON bytes, and a column reviewers had to scroll past.
+**Date:** April 2026
+
+#### Unmatched Material Returns Null, Not Default-CS
+**Rule:** When Claude can't match a BOM description's material to the Material Reference Table, `matl_grp` and `matl_grp_desc` return as `null`. The C# app's `CorrectFsMaterial` step still inherits pipe material for FS rows on the same drawing. Non-FS rows with unmatched materials surface as empty cells on the Material tab for manual review.
+**Why:** A CS default masked two problems. FS items whose descriptions don't mention material are always overwritten app-side anyway — the CS guess did no work. Non-FS items with exotic materials silently flowed into rate calculations with the wrong multiplier. Returning null surfaces these cases for human review.
+**Date:** April 2026
+
+#### Labor-Tab Description Excludes Pipe Spec
+**Rule:** The Labor tab's `Description` column for connection rows is built from `"{size} IN - {thickness} - {class} - {material} - {connType}"`. Pipe spec is not injected.
+**Why:** The prior `FindPipeSpec` heuristic latched onto the first title-block field whose key contained "spec" — fragile on drawings with multiple spec fields (Pipe / Coating / Insulation), silently broken on drawings labelled "Pipe Schedule" instead. Every title-block field already flows to Labor as a dedicated trailing column, so injecting a best-guess spec into Description added no information — only confusion when wrong.
+**Date:** April 2026
+
+#### Flagged Tab Is Minimal; Material Is Authoritative
+**Rule:** The Flagged tab carries 13 columns (drawing number, item ID, size, description, component, connection qty/type, material group + desc, thickness, class rating, confidence, flag reason) and no override columns. It does NOT mirror Material — `connection_size`, `quantity`, `commodity_code`, `length`, `shop_field`, and all `tb_*` title-block columns are intentionally omitted. Reviewers match by `(Drawing Number, Item ID)` back to Material to see context or apply corrections.
+**Why:** Flagged is a worklist, not an editor. Earlier override columns were decorative — full repo grep found zero C# consumers — and wiring them up would duplicate Material editing. The Material tab is the single source of truth for BOM data; "Recalc Excel" regenerates Labor and Summary from whatever is on Material.
+**Date:** April 2026
+
+#### Send Missed to Admin Defaults Unchecked, Doesn't Persist
+**Rule:** "Send Missed Makeups and Rates to Admin" defaults to unchecked on every tab load. There is no saved preference.
+**Why:** Persisted as checked, users were unintentionally emailing admins on every batch. Default-off makes the email an intentional opt-in each time.
+**Date:** April 2026
+
+#### Material-Tab ShopField: Lambda Defaults to Shop, Post-Processor Corrects
+**Rule:** Lambda sets all material rows to `ShopField=1` (Shop). The post-processor corrects to Field (2) for: BU/SCRD-only connections, inherently field components (`FS`, `BOLT`, `GSKT`, `WAS`, `INST`, `GAUGE`, `NIP`, `PLG`), and items with zero connections. PIPE always stays Shop. Mixed connection types stay Shop.
+**Why:** Simpler Lambda logic; correction rules are data-driven and easier to maintain in C#. Material-tab ShopField drives Summary tab Shop/Field bin counts on materials.
+**Date:** April 2026
+
+#### Labor-Tab ShopField: Single Uniform Pass (Cross-Mode)
+**Rule:** All labor row `ShopField` values are written by a single uniform pass (Step B1) immediately after `GenerateLaborRows` returns. Rule applies to both Summit and MCAA: `BW` and `SW` → 1 (shop) in both modes; `PIPE` and `TUBE` → 1 (shop) under Summit only; everything else → 2 (field). All prior scattered ShopField allocations are removed (`(BU || SCRD) ? 2 : 1` in `CreateLaborRow`, `FLGB || FLGLJ → 2` in the fab loop, `spl["ShopField"] = 2` in `GenerateSplRows`, inheritance from material rows). `"ShopField"` is in `ExcludeFromLabor` so labor builders no longer copy the AI-emitted material value. The Material-tab correction passes (`AssignMaterialShopField`, `WriteMaterialShopField`) remain — they drive the Summary tab's Shop/Field bin counts on Material rows.
+**Why:** The previous scattered logic produced a mix of 1s and 2s on labor rows that didn't align with how Shop vs Field labor should bin. A single uniform pass is trivial to audit, change, or extend. Numeric MH totals are unaffected — `ShopField` doesn't influence rate lookup; only Shop-vs-Field bin counts shift. Future plan: when the AI agent stops emitting `ShopField` on material rows, the Material-tab correction passes can also come out and the column can be dropped entirely.
+**Date:** May 5, 2026
+
+#### TUBE Is a Footage Component (Like PIPE)
+**Rule:** `TUBE` is in the `FootageComponents` HashSet alongside `PIPE`. Both produce one labor row per BOM row with `Quantity = ParseExactQuantity(mat)` (preserving footage), not the per-quantity explosion fittings/flanges get. Description suffix swaps dynamically (`" - Fab Pipe Handling"` for PIPE, `" - Fab Tube Handling"` for TUBE). Both are excluded from the No Conns diagnostic tab via `!FootageComponents.Contains(component)` rather than hardcoded `!= "PIPE"`.
+**Why:** Tube quantity in the BOM is footage (linear feet), not item count — same as pipe. Exploding a 100-ft tube run into 100 labor rows of `Quantity=1` was systematically wrong. Tube doesn't list its own connections (joints are tracked at the fitting side), so it shouldn't appear in No Conns either.
+**Date:** April 30, 2026
+
+#### FLGB and FLGLJ Generate Per-Item Install (Fab) Labor Rows
+**Rule:** Blind flanges (`FLGB`) and lap-joint flanges (`FLGLJ`) produce one fab/install labor row per physical item with `ShopField=2` (field-installed). Connection (BU) explosion behaviour is unchanged — partner-flange BU rows still count the bolt-up labor. `ExcludeFromMakeupLookup` still excludes them from spool-makeup length calculations (a separate concern: pipe-spool fab length doesn't depend on whether the flange end is a blind or a slip-on).
+**Why:** Per-item handling labor (rigging, hauling, positioning the disc) is separate from BU bolt-up labor. Producing zero labor rows for hundreds or thousands of FLGB/FLGLJ BOM items systematically under-counted MH on every project with these components.
+**Date:** April 29, 2026
+
+#### FS Material Group Is Auto-Corrected From Pipe Material
+**Rule:** Field support (FS) `Matl_Grp` values are auto-corrected to match the pipe of the same size on the same drawing. When multiple pipe materials exist, the non-CS value wins.
+**Why:** AI defaults FS to CS (carbon steel) because material isn't in the FS description. Most FS supports stainless or alloy lines on real projects — picking non-CS when ambiguous matches reality.
+**Date:** April 2026
+
+#### MakeupEquiv Uses a Two-Pass Lookup
+**Rule:** Spool-makeup lookup uses `MakeupEquiv` (e.g., `ADPT→FLG`, `FLGR→FLG`) with two passes: direct match first, then equivalent-component match.
+**Why:** Performance — most lookups succeed on direct match. Two-pass also makes the lookup hierarchy explicit and predictable.
+**Date:** March 2026
+
+#### ROC Splits Read Raw Takeoff Data, Not Mapped Activity Properties
+**Rule:** `ApplyROCSplitsAsync` reads `ShopField` and `Component` directly from the raw takeoff Excel row data, not from mapped Activity object properties (`UDF1`/`UDF6`). Both numeric (`"1"`/`"2"`) and text (`"Shop"`/`"Field"`) values are accepted.
+**Why:** Users configure column mappings in their import profile — `ShopField` might map to `UDF1`, `ShopField`, or be unmapped entirely. Hardcoding to `activity.UDF1` made ROC splits silently fail if the mapping didn't match. Reading from raw data makes the feature work regardless of mapping configuration.
+**Date:** April 2026
+
+#### Lambda Accepts Only the Config-Based Event Shape
+**Rule:** The extraction Lambda's `lambda_handler` requires `config_path` in the event and raises `ValueError` if missing. The legacy direct-image event shape (`s3_path` or `bucket`+`key` for pre-cropped images) does not exist.
+**Why:** The legacy path predated the config-based cropping system and was never called from the C# app — `TakeoffService.StartBatchAsync` always sends the new format. Removing it deleted ~140 lines of unexercised code and closed a non-batch zero-BOM silent-success edge case for free.
+**Date:** April 2026
+
+### Summit Rate Mode
+
+#### Summit `BudgetMHs` Formula: RateSheet × RollupMult × MatlMult × Quantity
+**Rule:** Under Summit, `BudgetMHs = (mhu × RollupMult × MatlMult + CutAdd + BevelAdd) × Quantity`. Audit columns (`RateSheet`, `RollupMult`, `MatlMult`, `CutAdd`, `BevelAdd`) appear in the workbook for verification. FS rows neutralise `RollupMult` and `MatlMult` to 1.0 (see below).
+**Why:** Simple multiplication is transparent and matches industry conventions. An earlier `max(RollupMult, MatlMult)` formulation double-counted the rollup multiplier when it exceeded the material multiplier.
+**Date:** March 2026
+
+#### Summit Rate Lookup: 4-Step Fallback Chain
+**Rule:** Rate lookup tries thickness as-is → toggle leading "S" → class rating → size-only. The OLW/SW class-rating tier system (40/S40/STD/2000 equivalence groups) does not exist.
+**Why:** The tier system was complex and the S-toggle handles the same edge cases more simply. Dual-size parsing for all components further reduced misses.
+**Date:** March 2026
+
+#### Summit Rate Sheet Keys Match Component Names Directly
+**Rule:** All 56 EstGrp keys in `Resources/RateSheet.json` are short component names. `INST`, `PIPE`, `SPL`, `BEV` match rate keys directly. Only valve types (`VBL`/`VGT` → `VLV`) and fittings (`90L`/`TEE` → `FTG`) need the `ResolveEstGrp` mapping dictionary.
+**Why:** Removes indirection. The `DirectMatchComponents` set was redundant when `ResolveEstGrp` can use the component name as the key for the common case.
+**Date:** March 2026
+
+#### Summit FS Rows Neutralise RollupMult and MatlMult to 1.0
+**Rule:** In `TakeoffPostProcessor.ApplyRates`, when `component == "FS"`, both `RollupMult` and `MatlMult` are set to 1.0 in the audit columns and the BudgetMHs computation. Effective formula for FS rows: `BudgetMHs = mhu × Quantity`.
+**Why:** Published Summit FS rates in `Resources/RateSheet.json` already have rollup and material-group multipliers baked into the rate value. The general-purpose pass was applying them again, double-counting on every FS row. Setting audit columns to 1.0 (rather than skipping silently) makes it visually obvious in the workbook that no multiplier was applied.
+**Date:** May 5, 2026
+
+#### Summit Folds CUT and BEV Into Connection Rows
+**Rule:** Under Summit, BW connection rates include CUT+BEV add-ons (via `CutAdd`); SW and SCRD include CUT. `CUT` and `BEV` do not generate separate labor rows in Summit mode.
+**Why:** Cut and bevel are always performed with the connection. Folding them in matches how labor is performed and prevents row explosion in the Labor tab.
+**Date:** March 2026
+
+### MCAA Rate Mode
+
+#### MCAA-vs-Summit Divergence Is Gated by an In-App Toggle
+**Rule:** Summit-vs-MCAA divergence at takeoff time is gated by a user-selectable rate mode (`Takeoff.RateMode` UserSetting). The toggle is a radio control on `TakeoffView` between the Action Buttons row and the Options checkboxes row.
+**Why:** A toggle is needed long-term anyway — Summit ratesheet is supposed to remain selectable for 6–12 months after MCAA parity is proven across 5 real projects, then sunset. Toggle puts both code paths on a single trunk and gates the divergence at runtime, instead of maintaining a parallel branch with constant merge work and divergent docs.
+**Date:** May 5, 2026
+
+#### MCAA Mode Is Restricted to a Hardcoded Username Allowlist
+**Rule:** `Takeoff.RateMode = "MCAA"` is restricted to usernames in the `McaaAllowedUsers` HashSet (`"steve"`, `"steve.amalfitano"`, case-insensitive). Even an admin not in the allowlist cannot select MCAA. The dialog forces the setting back to Summit on load if a non-allowlisted user has somehow set it (export/import, registry edit). After GA the gate moves to admin-only or is removed entirely.
+**Why:** Tightest possible lock during the partial-implementation window. Half-finished MCAA logic on main means selecting MCAA could ship inflated/wrong numbers. An admin-table check would still let any admin flip it. The HashSet form (vs single string) covers both username spellings the same person logs in under and future-proofs adding a second tester during Phase 3.
+**Date:** May 5, 2026
+
+#### MCAA Mode Diverges From Summit at Four Points
+**Rule:** `TakeoffPostProcessor` mode-conditional gating covers:
+1. **BOLT/GSKT/WAS aggregated hardware row** — Summit creates one row per material item; MCAA skips (`return result;` early).
+2. **SPL spool-handling row generation** — Summit emits via `GenerateSplRows(materialRows)`; MCAA skips the entire call.
+3. **BW/SW companion CUT row** — Summit skips; MCAA emits one CUT row per BW or SW connection (size, thickness, material, class inherited; ShopField=1; Quantity=1; description ends in `CUT`).
+4. **`ApplyRates` modifier neutralisation** — Under MCAA, `RollupMult = 1.0`, `MatlMult = 1.0`, `cutAdd = 0`, `bevAdd = 0` for all components, so `BudgetMHs = mhu × Quantity`. Audit columns honestly show 1.0/1.0/0/0.
+**Why:** SPL is a Summit-specific concept (MCAA prices spool handling differently or not at all). MCAA does not apply Summit's rate modifiers because cut/bevel/rollup get priced as separate joint or prep-op rate rows under MCAA's pricing model. Standalone CUT rows let MCAA price cut labor row-by-row instead of as a connection-rate add-on. Audit columns kept under MCAA so reviewers verify at a glance that no multiplier was applied.
+**Date:** May 5, 2026
+
+#### MCAA Phase 1 Still Reads Summit's Embedded Ratesheet
+**Rule:** Both Summit and MCAA modes call `RateSheetService.FindRate(...)` against the embedded `Resources/RateSheet.json` for the rate value. The `MCAARateSheetService` swap is the last code change planned before MCAA parity testing across 5 real projects.
+**Why:** Phase 1 is structural-only: toggle, gating, audit columns, workbook-mode marker. Pulling in actual MCAA rate values requires the producer-side abbreviation review to complete and the xlsx → SQLite exporter to ship — both blocked on user-driven work. Keeping the rate source unchanged in Phase 1 ships the toggle apparatus tested against known-good rates, isolating variables. When `MCAARateSheetService` exists, the swap is a single conditional at the top of `ApplyRates()`.
+**Date:** May 5, 2026
+
+#### Active Rate Mode Is Recorded in the Summary Tab's First Data Row
+**Rule:** The rate mode used to generate a takeoff workbook writes as the first data row of the Summary tab: `Rate Mode: Summit` or `Rate Mode: MCAA` (column 2 bolded). It is NOT written as an Excel file-level custom property.
+**Why:** A Summary-tab cell is visible the moment the tab is opened — no drilling into File > Info > Properties. File-level custom properties are also fragile, lost when re-saved through tools that don't preserve them. The cell-based marker survives PDF export, screenshot, and print.
+**Date:** May 5, 2026
+
+### MCAA Ratesheet (Storage / Producer)
+
+#### MCAA Ratesheet Ships as Local SQLite, Refreshed by the Auto-Updater
+**Rule:** The MCAA WebLEM ratesheet ships as a local SQLite file in `%LocalAppData%\VANTAGE` alongside the user-data SQLite. The auto-updater refreshes it independently of full VANTAGE releases when WebLEM updates upstream. It is not embedded as a JSON resource and not hosted in Azure SQL.
+**Why:** Three constraints. (1) Must work offline — a takeoff can't depend on Azure round-trips per line for hundreds of facet lookups per project. (2) Must support quarterly rate updates without releasing all of VANTAGE — WebLEM cadence and VANTAGE cadence are decoupled. (3) Size is significant — ~25 MB working xlsx for 174K rates. Embedded JSON fails all three (assembly bloat, locked release cadence, large embedded resource). Azure-hosted SQL fails (1) and adds latency on every facet lookup. Local SQLite hits all three.
+**Date:** April 2026
+
+#### `MCAARateSheetService` Runs Alongside `RateSheetService`, Not Refactored Into It
+**Rule:** `Services/AI/MCAARateSheetService.cs` runs alongside the existing `Services/AI/RateSheetService.cs`. Each owns its own data source (RateSheet owns embedded `Resources/RateSheet.json`; MCAARateSheet owns local SQLite). Callers pick which one based on the takeoff's rate mode. There is no internal-dispatch refactor inside `RateSheetService`.
+**Why:** Embedded `RateSheetService` is on a 6–12 month sunset path (deletion target after parity testing). Refactoring it now to dispatch between Summit-embedded and MCAA-SQLite is throwaway work that gets deleted with the deprecation. Two side-by-side services keeps each read-only and bounded; when MCAA wins parity, both `RateSheetService` and `Resources/RateSheet.json` delete cleanly.
+**Date:** April 2026
+
+#### CompRefTable Holds BOM Items Only; Actions/Connections Are MCAA-Only
+**Rule:** The takeoff AI's vocabulary source is `CompRefTable.xlsx` — drawing-item → abbreviation. Items the AI emits (everything that appears on a piping BOM: pipe, fittings, valves, flanges, branch connections) live in CompRefTable. Actions and connections (welds, bolts, cuts, bevels, hydrotest, threading) do NOT live in CompRefTable — they live only in the MCAA ratesheet, derived at labor-creation time from BOM connection data. New abbreviations the MCAA ratesheet introduces that aren't in CompRefTable (Cross, Lateral, Tangential Nozzle, Weld Neck variants) are tracked in a separate "MCAA-only abbreviations" list — the AI doesn't auto-emit them.
+**Why:** CompRefTable's job is to drive AI drawing-item recognition. Polluting it with action/connection codes (BW, SW, THRD, BEV, CUT, HYDRO) bloats the prompt and confuses the recognition task — those concepts don't appear as items on drawing BOMs. A separate post-processing step handles "BOM has SCRD on CS pipe → emit a THRD labor row" and queries the ratesheet directly using the action's abbreviation.
+**Date:** April 2026
+
+#### MCAA Schema Is Bounded by AI Takeoff's Input Scope
+**Rule:** All MCAA schema and lookup design choices must fit what AI Takeoff actually produces. AI Takeoff extracts only two surfaces from each drawing PDF: the BOM table and the title block. There is no line-drawing scan and no line list anywhere in the pipeline. Material lives in the BOM description. Component code, body style, size, connection type, schedule, class — anything VANTAGE wants for rate lookup must be extractable from the BOM description plus the title block.
+**Why:** Designing for an extraction surface that doesn't exist would invalidate every other MCAA decision. Recording this as a bound (not just a fact) so future MCAA work doesn't reason from a phantom line list. CompRefTable is also injected into every extraction prompt — token cost scales with its row count, which separately bounds how big CompRefTable can get and rules out one-key-per-rate-row schemes that would balloon it.
+**Date:** April 2026
+
+#### SR / LR Modifiers Fold Into the Component Code
+**Rule:** Short Radius (`SR`) and Long Radius (`LR`) for elbows are folded into the component code itself: `EL90SR`, `EL90LR`. Any other modifier the abbreviation can absorb without exploding the keyspace is treated the same.
+**Why:** One less property the AI extracts per item — simpler prompt, fewer independent extraction failures. SR/LR is bounded (two values), so absorbing them into the component code doesn't blow up CompRefTable. General rule: low-cardinality modifiers ride in the abbreviation; reserve `body_style` for ones it can't.
+**Date:** April 2026
+
+#### CONCENTRIC/ECCENTRIC Reducer Lookup Falls Back to CONCENTRIC
+**Rule:** Body-style-agnostic reducer rates store `body_style = CONCENTRIC`. Lookup tries the AI-extracted body_style first; if no match, retries as `CONCENTRIC`. Body-style-specific rows store their actual body style as expected.
+**Why:** The AI extracts CONC or ECC for reducers. Storing "either" rows as CONCENTRIC + fallback keeps the AI's body-style enum to two values and avoids row duplication or an EITHER sentinel + OR-clause SQL. Trade-off accepted: a missing ECCENTRIC-specific row falls through to CONCENTRIC silently — possible silent miscategorisation if SQLite is incomplete or wrong, vs. a returned-null miss that would surface as a "missed rate" warning. The PRD's pivot escape hatch covers this case if it bites in practice.
+**Date:** April 2026
+
+#### Property-Completeness Is Verified by Synthetic-Key Uniqueness
+**Rule:** When the rate workbook is filled out, the producer concatenates `component` + all property columns into a synthetic key per row and checks for duplicates. Every row in the rate sheet represents a unique rated item or action; duplicate synthetic keys prove a property is missing — the colliding rows are the same rated thing as the schema currently sees it. Iterate (add the missing property column, refill it) until all synthetic keys are unique.
+**Why:** Falsifiable test for property completeness. Without this check, "do we have all the properties we need?" is judgment-based and unreliable at 174K rows. The synthetic-key check turns it into a one-line SQL/pandas `groupby` query.
+**Date:** April 2026
+
+#### SkySkraper Producer Is an External Synology Drive Folder
+**Rule:** The Python pipeline that scrapes MCAA WebLEM ("SkySkraper") lives at `C:\Users\Steve.Amalfitano\source\repos\PrinceCorwin\SkySkraper\SynologyDrive` — outside the VANTAGE Git repository. Synced across machines via Synology Drive. Has its own `CLAUDE.md`, `AGENTS.md`, and Codex's working journal at `Plans/cdx_Project_Status.md`. The canonical PRD lives in **this** repo at `Plans/MCAA_Ratesheet_Plan.md`; status and completed work track in this repo's `Plans/Project_Status.md` and `Plans/Completed_Work.md`. Files prefixed `cdx_` belong to Codex; everything else is Claude's. Either side reads either's files; neither modifies the other's. VANTAGE's `CLAUDE.md` carries an explicit "never git-track or move SkySkraper" guard.
+**Why:** The producer ships ~115 MB of cached HTML, 25 MB of working xlsx, two ~80 MB SQLite databases, and per-leaf XLSX/CSV outputs — none of which belongs in git history. Synology Drive provides multi-machine sync without polluting git. Quarterly cadence means long pauses between active development; the producer doesn't need VANTAGE's commit discipline. Codex's involvement adds another reason: Codex sessions don't have access to VANTAGE's git context.
+**Date:** April 2026
+
+#### SkySkraper Cache Layout: Per-Section Sibling Folders
+**Rule:** SkySkraper's `raw_cache/` is organised one folder per WebLEM top-level section, sibling-style: `html_piping_systems/`, `html_instrumentation/`, `html_hvac_equipment/`, `html_plumbing_equipment/`, `html_plumbing_fixtures/`, `html_hangers_sleeves_inserts/`, `html_treatment_plant_equipment/`, `html_refrigeration_equipment/`, `html_miscellaneous_labor_operations/`, `html_excavation_backfill/`, plus `html_component/` (PIPING SYSTEMS Component-mode HTML, Codex-owned). Each folder has a sibling `index_<section>.json`. `discovery/leaves.json` remains PIPING SYSTEMS only; new sections get sibling `discovery/leaves_<section>.json` files filtered from `dom_leaves.json` by `breadcrumb[0]`. `dom_leaves.json` is unchanged and remains the authoritative DOM extract for all 1,926 leaves.
+**Why:** Codex established the sibling pattern with `html_component/` + `index_component.json`. Nested `html/<section>/` would diverge from that and force every existing script that reads `html_component/` directly to learn a new layout. Sibling lets future sections plug in by pure additive change — add a `RAW_HTML_<SECTION>_DIR` constant, an `index_<section>.json` sidecar, a row in `fetch.py:SECTIONS`, and a leaves file. Backward compatibility preserved via `config.RAW_HTML_DIR` aliasing the new piping path.
+**Date:** April 30, 2026
 
 ---
 
-## Admin / Deleted Records
+## Admin Tools
 
-### Deleted Records Export: Full Record Fetched at Export Time, Not at Refresh
-**Decision:** The Deleted Records grid loads only 15 columns from `VMS_Activities` for fast scrolling/filtering; clicking **EXPORT TO EXCEL** triggers a separate `SELECT *` against Azure for just the rows visible after grid filters, mapped to full `Activity` objects, and exported in NewVantage format.
-**Why:** Exporting only the 15 grid-loaded columns left `Notes` (and most other Activity fields) blank in the workbook. The fix needed to either (a) load all columns at refresh time and accept slower grid loading, or (b) keep the grid lightweight and pay the full-fetch cost only on Export. Tested (a) first against a real deleted-records set (5,000+ rows) — refresh hung, slower than the Progress Log update at 100k rows. The Progress-Log path uses an explicit narrow projection; `SELECT *` on a wide Activity table over Azure latency for thousands of rows wasn't workable. Reverted to (b): grid stays at the original column-list speed, export does the heavy lift but only for filtered rows. Uses the same temp-table + `SqlBulkCopy` + `INNER JOIN` pattern as `BulkUpdateIsDeletedFlag`/`BulkPurge` so it scales past the 2100-parameter ceiling.
+### Bulk Restore/Purge Uses Temp Table + SqlBulkCopy + INNER JOIN
+**Rule:** `BtnRestore_Click` and `BtnPurge_Click` in `Views/DeletedRecordsView.xaml.cs` create a session-scoped `#RestoreBatch` / `#PurgeBatch` temp table, bulk-copy UniqueIDs in via `SqlBulkCopy`, and run a single `UPDATE ... INNER JOIN` (or `DELETE ... INNER JOIN`). Same pattern as `Utilities/SyncManager.cs`. No chunked loops; no transaction wrapping multiple statements.
+**Why:** Earlier `WHERE UniqueID IN (@uid0..@uid999)` chunked design hit SQL Server's 2100-parameter ceiling, produced terrible query plans (large IN lists become OR-trees with unreliable plan reuse), and held write locks across all batches in one transaction blocking concurrent user sync. SqlBulkCopy + INNER JOIN is one round-trip with a clean index-seek plan. A 5,783-record restore that used to take minutes now runs in seconds.
+**Date:** April 2026
+
+### Deleted Records Export Fetches Complete Records on Click, Not at Refresh
+**Rule:** The Deleted Records grid loads only 15 columns from `VMS_Activities` for fast scrolling/filtering. Clicking **EXPORT TO EXCEL** triggers a separate Azure fetch — temp-table + SqlBulkCopy + INNER JOIN against UniqueIDs of the rows visible after grid filters — to pull `SELECT a.* FROM VMS_Activities a INNER JOIN #ExportBatch s ON a.UniqueID = s.UniqueID WHERE a.IsDeleted = 1`. Results map to full `Activity` objects and export in NewVantage format.
+**Why:** Exporting only the 15 grid-loaded columns left `Notes` and most other Activity fields blank in the workbook. Loading the full row at refresh time hung against a real deleted-records set (5,000+ rows × wide columns × Azure latency). Refresh stays at original speed; export does the heavy lift only for filtered rows. NewVantage matches what the rest of the app exports today (Progress's Export Activities, etc.); Legacy was a leftover default from when the dialog was first written.
 **Date:** 2026-05-09
 
-### Deleted Records Export: Filtered Rows Only, Format Is NewVantage
-**Decision:** When grid column-header filters are active, only the filtered subset is exported. `ExportHelper.ExportDeletedRecordsAsync` calls `ExcelExporter.ExportActivities` with `ExportFormat.NewVantage` (was implicitly Legacy before).
-**Why:** Filtered-only export gives the admin precise control over what gets archived/audited — apply the filters needed (e.g. specific user, date range, project subset) and click Export, no separate scoping dialog needed. NewVantage format matches what the rest of the app exports today (Progress module's Export Activities, etc.); Legacy was a leftover default from when the Deleted Records dialog was first written.
-**Date:** 2026-05-09
-
----
-
-## Admin / Snapshots
-
-### ManageProgressLog: Rolled Up from Per-RespParty to Per-Batch
-**Decision:** Upload batches grouped by (Username, ProjectID, WeekEndDate, UploadUtcDate) instead of per-RespParty rows.
-**Why:** Snapshots are always created as a unit across all RespParty values. Per-RespParty tracking added complexity with no practical benefit.
-**Date:** February 2026
-
-### Snapshot Modify Is Sync-Inert; Never Touches Activities
-**Decision:** The new `ModifySnapshotDialog` writes edits only to Azure `VMS_ProgressSnapshots` (via `ScheduleRepository.UpdateSnapshotFullAsync`) and best-effort to the local 12-column `ProgressSnapshots` mirror. It explicitly excludes `SyncVersion`, `LocalDirty`, `AzureUploadUtcDate`, and `ActivityID` from the UPDATE, and never touches `Activities` / `VMS_Activities`. A subsequent sync push reports zero records for a Modify-only session.
-**Why:** Revert-to-Snapshot exists for "restore my world to that week's state" — it overwrites local Activities and sets `LocalDirty = 1`, which pushes the snapshot values to Azure on next sync, destroying current live work. Users expressed a different need: "I submitted 50% last week but should have said 60% — let me fix the snapshot without disturbing my current progress at 75%." Conflating the two flows would make Modify destructive by default; keeping them separate (with the same data-loading pattern but opposite write invariants) preserves Revert's semantics AND gives users a non-destructive correction path. Bonus: because the change is invisible to the sync system, multi-user concurrency isn't a concern — the sync push isn't pushing anything.
+### Snapshot Modify Is Sync-Inert
+**Rule:** `ModifySnapshotDialog` writes edits to Azure `VMS_ProgressSnapshots` (via `ScheduleRepository.UpdateSnapshotFullAsync`) and best-effort to the local 12-column `ProgressSnapshots` mirror. It explicitly excludes `SyncVersion`, `LocalDirty`, `AzureUploadUtcDate`, and `ActivityID` from the UPDATE, and never touches `Activities` / `VMS_Activities`. A subsequent sync push reports zero records for a Modify-only session.
+**Why:** Revert-to-Snapshot already exists for "restore my world to that week's state" — it overwrites local Activities and sets `LocalDirty = 1`, pushing snapshot values to Azure on next sync and destroying current live work. Modify covers a different need: "I submitted 50% last week but should have said 60% — fix the snapshot without disturbing my current 75%." Conflating the flows would make Modify destructive by default; keeping them separate (same data-loading pattern, opposite write invariants) preserves Revert's semantics and gives users a non-destructive correction path. Bonus: invisible to sync, so multi-user concurrency is not a concern.
 **Date:** 2026-04-24
 
-### Modify Save Detects Snapshot-Regenerated-Externally via 0-Rows-Affected
-**Decision:** `UpdateSnapshotFullAsync` returns `int` (rows affected) instead of `bool`. If every dirty row UPDATE returns 0, the dialog surfaces "Snapshot was regenerated externally (most likely by Submit Week)" and leaves the dialog open so the user can close and reopen to see the current version. Partial cases (some rows affected, others zero) list the missing UniqueIDs.
-**Why:** There's no row versioning on `VMS_ProgressSnapshots` today, so two concurrent flows (Modify open + Submit Week for the same week) can produce lost updates in Modify's favor on the old rows. Submit Week's path is a `DELETE` scoped to `(AssignedTo, ProjectID, WeekEndDate)` followed by bulk `INSERT` from live Activities — the UniqueIDs that come back may match, but values will have shifted. The affected-rows count is the cheapest signal we have that the snapshot has been regenerated under us. Alternatives considered: (1) add a `SyncVersion`-style column to `VMS_ProgressSnapshots` and version-check on UPDATE — rejected as a schema change that affects a shared table with millions of rows; (2) take a cross-dialog lock via `LongRunningOps` to block Submit Week while Modify is open — rejected because `LongRunningOps` today is an app-close guard, not a mutex between dialogs, and users can modeless-multitask by design. The 0-rows-affected check is the minimum-complexity defense that doesn't constrain the happy path.
+### Modify-Save Detects Externally-Regenerated Snapshots via 0-Rows-Affected
+**Rule:** `UpdateSnapshotFullAsync` returns `int` (rows affected). If every dirty row UPDATE returns 0, the dialog surfaces "Snapshot was regenerated externally (most likely by Submit Week)" and leaves itself open so the user can close and reopen to see the current version. Partial cases (some rows affected, others zero) list the missing UniqueIDs.
+**Why:** No row versioning on `VMS_ProgressSnapshots` today. Two concurrent flows (Modify open + Submit Week for the same week) can produce lost updates in Modify's favor on the old rows. Submit Week's path is `DELETE` scoped to `(AssignedTo, ProjectID, WeekEndDate)` followed by bulk `INSERT` from live Activities — UniqueIDs may match, but values shift. Affected-rows count is the cheapest signal that the snapshot was regenerated under us. Adding a `SyncVersion`-style column is a schema change on a shared table with millions of rows; cross-dialog mutex via `LongRunningOps` would change `LongRunningOps` from app-close guard to inter-dialog mutex. The 0-rows-affected check is minimum-complexity defense.
 **Date:** 2026-04-24
 
-### Canonical SnapshotEditableColumns Mirrors Progress-View Editable Baseline With Dates Added
-**Decision:** `Utilities/SnapshotEditableColumns.NonEditable` lists: `UniqueID`, `AzureUploadUtcDate`, `UpdatedBy`, `UpdatedUtcDate`, `CreatedBy`, `ProgDate`, `PrevEarnMHs`, `EarnedMHsRoc`, `PlanStart`, `PlanFin`. Every other `SnapshotData` property is editable — including the 9 required-metadata fields, which pass the non-empty check at Save. Mirrors `ImportTakeoffDialog.ExcludedColumns` (Progress-view editable baseline) with one intentional difference: `ActStart` and `ActFin` are editable here.
-**Why:** User specification was "everything editable in Progress view." ActStart/ActFin are excluded from ImportTakeoffDialog's mapping because takeoff imports shouldn't set them, not because they're inherently read-only — the Schedule module's detail grid edits those same fields today. Modify-snapshot's use case (correcting a historical submission) often requires correcting the associated dates, so re-admitting them to the editable set is right. Keeping PlanStart/PlanFin non-editable because they're P6-driven and users have no "correct the plan date in the snapshot" workflow today. Required-metadata columns stay editable (users need to correct them after the snapshot is already submitted) but must not be blank at Save — the check reuses `ActivityRequiredMetadata.Fields` and the existing bulk-abort pattern.
+### Snapshot Editable-Columns Mirror Progress Editable Baseline + Dates
+**Rule:** `Utilities/SnapshotEditableColumns.NonEditable` lists: `UniqueID`, `AzureUploadUtcDate`, `UpdatedBy`, `UpdatedUtcDate`, `CreatedBy`, `ProgDate`, `PrevEarnMHs`, `EarnedMHsRoc`, `PlanStart`, `PlanFin`. Every other `SnapshotData` property is editable — including the 9 required-metadata fields, which pass the non-empty check at Save. Mirrors `ImportTakeoffDialog.ExcludedColumns` (Progress-view editable baseline) with one intentional difference: `ActStart` and `ActFin` are editable here.
+**Why:** "Everything editable in Progress view" was the spec. ActStart/ActFin are excluded from `ImportTakeoffDialog` because takeoff imports shouldn't set them, not because they're inherently read-only. The Schedule module's detail grid edits the same fields today. Modify-snapshot's correction use case often needs date corrections, so re-admitting them is right. PlanStart/PlanFin stay non-editable because they're P6-driven and there's no "correct the plan date in the snapshot" workflow.
 **Date:** 2026-04-24
 
-### SfDataGrid ColumnSizer="SizeToHeader" on 77-Column Editable Grids
-**Decision:** `ModifySnapshotDialog`'s `SfDataGrid` uses `ColumnSizer="SizeToHeader"` rather than `ColumnSizer="Auto"` for its ~77 generated columns.
-**Why:** User-tested initial version with `ColumnSizer="Auto"` took 30+ seconds to render and initially looked frozen. Syncfusion's `Auto` sizer measures every visible cell across every row for each column on first render; at 77 columns × hundreds of rows that's O(rows × columns) of UI-thread measurement work. `SizeToHeader` sizes by header text only, near-instant. Columns are still user-resizable from there. Adding column-width persistence (`SfDataGrid` column preferences in `UserSettings`) is a possible future improvement if users frequently resize — not done yet because this dialog's value comes from correctness, not layout polish. Pattern worth copying to any future generated-column grid with wide schemas.
+### `ColumnSizer="SizeToHeader"` on 77-Column Editable Snapshot Grid
+**Rule:** `ModifySnapshotDialog`'s `SfDataGrid` uses `ColumnSizer="SizeToHeader"` rather than `ColumnSizer="Auto"` for its ~77 generated columns. Pattern applies to any future generated-column grid with a wide schema.
+**Why:** `ColumnSizer="Auto"` measures every visible cell across every row for each column on first render — at 77 columns × hundreds of rows that's O(rows × columns) of UI-thread measurement work, took 30+ seconds and looked frozen. `SizeToHeader` sizes by header text only, near-instant. Columns are still user-resizable.
 **Date:** 2026-04-24
 
----
-
-### Snapshot Dialogs Kept Open + Modeless, Not Detached Background Work
-**Decision:** Both `ManageSnapshotsDialog` (user) and `AdminSnapshotsDialog` were converted from modal (`ShowDialog`) to modeless (`Show`). The dialog stays open with its own spinner during long deletes/uploads; the user drags it aside and keeps working in the main window. `DialogResult = true/false` patterns replaced with a public `NeedsRefresh` property the caller reads in the `Closed` event. Re-entrancy guards on both menu items focus the existing instance instead of opening a second.
-**Why:** Initial plan was to extract delete logic into services, close the dialog immediately on confirm, and show a non-modal status toast pinned to MainWindow. User picked the simpler approach: keep the dialog intact with its existing spinner, just remove the modal-ness so MainWindow stays interactive. Four lines per dialog instead of a service refactor.
+### Snapshot Dialogs Are Modeless and Stay Open During Long Ops
+**Rule:** Both `ManageSnapshotsDialog` (user) and `AdminSnapshotsDialog` use `Show()`, not `ShowDialog()`. They stay open with their own spinner during long deletes/uploads; the user can drag aside and keep working in MainWindow. `DialogResult = true/false` patterns are replaced with a public `NeedsRefresh` property the caller reads in the `Closed` event. Re-entrancy guards focus the existing instance instead of opening a second.
+**Why:** Initial plan was to extract delete logic into services and show a non-modal status toast pinned to MainWindow. Simpler approach won: keep the dialog intact with its existing spinner, just remove modality. Four lines per dialog instead of a service refactor.
 **Date:** April 2026
 
 ### Submit Week Snapshot Is Frozen at SELECT, Not at Click
-**Decision:** The Progress grid is locked (`sfActivities.IsEnabled = false`) the instant the busy dialog appears, then unlocked via `Dispatcher.InvokeAsync` the instant the local SELECT into the in-memory DataTable completes inside the background task. The SELECT was also moved ahead of the Azure DELETE step so the grid re-enables faster on the overwrite path.
-**Why:** Before this change, the grid stayed live throughout an async submit, so edits made after clicking Submit could or could not end up in the snapshot depending on micro-timing of Azure pre-checks. Now the snapshot boundary is explicit: everything up to the SELECT is captured; everything after the SELECT is intentionally the NEXT week's progress. Users stay productive during the slow Azure writes (DELETE/bulk-copy/purge) that happen after the snapshot is already frozen in memory. No data loss either way — post-SELECT edits still set `LocalDirty=1` and push on next sync.
+**Rule:** When Submit Week runs, the Progress grid is locked (`sfActivities.IsEnabled = false`) the instant the busy dialog appears, then unlocked via `Dispatcher.InvokeAsync` the instant the local SELECT into the in-memory DataTable completes inside the background task. The SELECT also runs ahead of the Azure DELETE step so the grid re-enables faster on the overwrite path.
+**Why:** Earlier versions kept the grid live throughout the async submit, so edits made after clicking Submit could or could not end up in the snapshot depending on micro-timing. Now the snapshot boundary is explicit: everything up to the SELECT is captured; everything after is the NEXT week's progress. Users stay productive during the slow Azure writes that happen after the snapshot is already frozen in memory.
 **Date:** April 2026
 
-### ProgressLog UserID: Concat Uploader + AssignedTo Instead of Adding a Column
-**Decision:** The admin upload to `VANTAGE_global_ProgressLog` writes `UserID` as `"uploader|assignedto"` (pipe-separated), e.g. `"steve|Grant.Gilbert"`. Concatenation happens in the SQL expression `@userId + '|' + ISNULL([AssignedTo], '')` inside the existing `INSERT ... SELECT FROM VMS_ProgressSnapshots`. Wrapped in `LEFT(CAST(... AS NVARCHAR(MAX)), maxLen)` using the column's max length from `INFORMATION_SCHEMA`. Pipe chosen because it cannot appear in a Windows username.
-**Why:** Before this, `UserID` was hardcoded to the admin who ran the upload, and the two rows in `VMS_ColumnMappings` that were supposed to route `AssignedTo` through were both broken (each had one field empty, so the mapping loader silently skipped them). Result: when two users' snapshots were uploaded at the same Timestamp + ProjectID, their ProgressLog rows were indistinguishable. Alternatives considered: (1) `ALTER TABLE` to add a dedicated `AssignedTo` column — rejected for now because the ProgressLog table has 14.9M rows and schema changes require DBA approval the admin doesn't currently have; backlogged for later, (2) fix the `VMS_ColumnMappings` rows so `AssignedTo` writes to its own column — but there's no suitable empty column and would need the ALTER anyway, (3) leave `UserID` alone and pull original owner from the separate `VMS_ProgressLogUploads` tracking table — rejected because the tracking table records per-batch aggregates, not per-row identity. The concat packs both pieces of info into a single existing column at zero I/O cost. Legacy rows keep their old `"steve"`-style UserID and are distinguishable from new rows by the absence of `|`.
+### ProgressLog `UserID` Concatenates Uploader and AssignedTo
+**Rule:** Admin upload to `VANTAGE_global_ProgressLog` writes `UserID = "uploader|assignedto"` (pipe-separated) — e.g. `"steve|Grant.Gilbert"`. Concatenation happens in the SQL expression `@userId + '|' + ISNULL([AssignedTo], '')` inside the `INSERT ... SELECT FROM VMS_ProgressSnapshots`. Wrapped in `LEFT(CAST(... AS NVARCHAR(MAX)), maxLen)` using the column's max length from `INFORMATION_SCHEMA`. Pipe is chosen because it cannot appear in a Windows username. Legacy rows keep their old `"steve"`-style UserID and are distinguishable from new rows by the absence of `|`.
+**Why:** Before this change, two users' snapshots uploaded at the same Timestamp + ProjectID produced indistinguishable ProgressLog rows. `ALTER TABLE` to add a dedicated `AssignedTo` column was rejected for the moment because `ProgressLog` has 14.9M rows and schema changes need DBA coordination. Fixing `VMS_ColumnMappings` to route `AssignedTo` to its own column would have needed the ALTER anyway. The concat packs both pieces of identity into the existing column at zero I/O cost.
 **Date:** April 2026
 
-### Dedup Check After DELETE, Not Before
-**Decision:** In Submit Week, the order inside the background Task is now: SELECT local → unlock grid → DELETE old Azure snapshots (if overwriting) → dedup check (existing UniqueIDs for the week) → bulk copy.
-**Why:** The dedup check only needs to skip records already submitted by *other* users for the same week. If we check before the DELETE, our own prior snapshots would match and incorrectly flag every row as a duplicate. Running the dedup after the DELETE leaves only other-user entries — which is exactly the conflict set we want to report. The DELETE scope is narrow (AssignedTo + ProjectID + WeekEndDate), so no risk of removing other users' data.
+### Submit Week Dedup Check Runs After the DELETE
+**Rule:** Submit Week order inside the background task: SELECT local → unlock grid → DELETE old Azure snapshots (if overwriting) → dedup check (existing UniqueIDs for the week) → bulk copy.
+**Why:** Dedup needs to skip records already submitted by *other* users for the same week. Checking before the DELETE would match the user's own prior snapshots and incorrectly flag every row as duplicate. Running after the DELETE leaves only other-user entries — exactly the conflict set to report. DELETE scope is narrow (`AssignedTo + ProjectID + WeekEndDate`), so no risk of removing other users' data.
 **Date:** April 2026
 
-### ProgressLog Upload Timeouts: Tiered Ceilings, Not Unlimited
-**Decision:** Every `CommandTimeout = 0` in `AdminSnapshotsDialog.xaml.cs` replaced with a tiered ceiling sized per operation: 3600s on large INSERT/UPDATE/DELETE paths (main `INSERT ... SELECT`, `UPDATE VMS_Activities` that fires `TR_VMS_Activities_SyncVersion`, per-group `DELETE`, full-table `DELETE ALL`), 120s on the snapshot-groups aggregate query, 60s on the single-row tracking INSERT.
-**Why:** `CommandTimeout = 0` (infinite) was wedging the UI forever when a TCP socket dropped mid-operation — the ADO.NET client has no way to know the response isn't coming. On 2026-04-18 a 178,193-row upload committed all data on Azure, but the UI hung on the final `UPDATE VMS_Activities` because the trigger's response packet was lost. The timeout is not there to abort legitimate work; it's a dead-socket guard so the UI recovers. 3600s is well above the legitimate max (150k+ row uploads routinely exceed 10 minutes, so a 30-min ceiling would be too aggressive). Short ceilings make sense only on operations that can't legitimately take long. Note: this is the OPPOSITE choice from the Sync flow, which uses unlimited timeouts — see "Unlimited SQL Timeouts in Sync Flow". The difference: sync flow is a foreground operation blocking the user; this is an admin-triggered background operation where the UI sits on `SfBusyIndicator` — a dead socket is less tolerable here because the user has no signal anything is wrong. Consider applying the same tiered approach to the sync flow in the future.
+### ProgressLog Upload Uses Tiered Timeouts, Not Unlimited
+**Rule:** `AdminSnapshotsDialog.xaml.cs` uses tiered `CommandTimeout` ceilings sized per operation: 3600s on large `INSERT`/`UPDATE`/`DELETE` paths (main `INSERT ... SELECT`, `UPDATE VMS_Activities` that fires `TR_VMS_Activities_SyncVersion`, per-group DELETE, full-table DELETE), 120s on the snapshot-groups aggregate query, 60s on the single-row tracking INSERT. This is the OPPOSITE choice from the Sync flow's unlimited timeouts.
+**Why:** `CommandTimeout = 0` (infinite) wedged the UI forever when a TCP socket dropped mid-operation — the ADO.NET client has no way to know the response isn't coming. The timeout is a dead-socket guard so the UI recovers, not an abort of legitimate work. 3600s is well above the legitimate max (150K-row uploads routinely exceed 10 minutes). Compare with sync flow: sync is foreground and any partial-progress is recoverable on retry, and the user is staring at the dialog the whole time. ProgressLog upload runs behind `SfBusyIndicator` for a long time — a dead socket is less tolerable here because the user has no signal anything is wrong.
 **Date:** April 2026
 
-### RespParty Write Path Removed — Aligning Writer with Feb 2026 Decision
-**Decision:** `AdminSnapshotsDialog.UploadSnapshotsToProgressLog` no longer writes per-RespParty tracking rows to `VMS_ProgressLogUploads`. Writes one row per upload group (Username + ProjectID + WeekEndDate), with `RespParty = ""`. The column is retained in the schema, not dropped.
-**Why:** The February 2026 decision "ManageProgressLog: Rolled Up from Per-RespParty to Per-Batch" aligned the READER side — grid XAML, REFRESH path, and DELETE path in `ManageProgressLogDialog` all ignore `RespParty`. But the WRITER in `AdminSnapshotsDialog` continued fanning uploads into N per-RespParty rows per batch, producing data nothing could read. Every upload cost one extra `SELECT ... GROUP BY RespParty` round-trip per group and N extra tracking INSERTs for zero information gain. Column retention (vs `DROP COLUMN`) is intentional: the column contains legacy data and dropping it requires DBA coordination on a 14.9M-row adjacent table; an empty-string column on new rows is harmless and keeps this a pure code change.
+### ProgressLog Upload Writes One Row Per Batch, Not Per RespParty
+**Rule:** Upload batches in `ProgressLog` are grouped by `(Username, ProjectID, WeekEndDate, UploadUtcDate)`, one row per batch. The `RespParty` column in `VMS_ProgressLogUploads` is retained in the schema but written as `""` on new rows; the reader (`ManageProgressLogDialog` grid, REFRESH path, DELETE path) ignores it.
+**Why:** Snapshots are always created as a unit across all RespParty values. Per-RespParty fanning produced N rows per batch with no information gain — the reader didn't use the breakdown, and the extra `SELECT ... GROUP BY RespParty` round-trip plus N INSERTs cost time per upload. Column retention vs `DROP COLUMN`: legacy data lives in the column and dropping it requires DBA coordination on a 14.9M-row adjacent table; an empty-string column on new rows is harmless and keeps this a pure code change.
 **Date:** April 2026
+
+---
+
+## Settings Menu
+
+*(No Settings-menu-specific rules currently. Reset User Settings registry rules live in Foundation; Manage UDF Names lives in Progress Module. Add entries here when a Settings-menu-only rule emerges.)*
+
+---
+
+## Plugins
+
+### Plugins Inject Tools-Menu Items via `IPluginHost`
+**Rule:** Plugins implement `IVantagePlugin` and inject Tools-menu items via `host.AddToolsMenuItem()`. Each plugin has its own assembly loaded at startup. The auto-update service compares installed plugin versions against `plugins-index.json` on the feed and pulls updated builds — but it does NOT install plugins that aren't already on the local machine; first-install must come from the Plugin Manager UI.
+**Why:** Plugins create their own UI dynamically without the main app needing to know about them. Auto-update covers the 90% case (newer version of a plugin a user already runs) without the safety risk of silently installing plugins users never asked for.
+**Date:** March 2026
+
+### PTP Plugin Matches on UDF2, Not Description
+**Rule:** The PTP TFS MECH Updater matches existing Activities by `UDF2` (containing the CWP value), not by Description pattern.
+**Why:** Users were editing the Description field after import, breaking update-vs-create detection and producing duplicate rows. UDF2 is a stable identifier not typically modified.
+**Date:** March 2026
+
+### CONST Plugin: Spools Missing From the Report Are Zeroed Out, Not Force-Completed
+**Rule:** When a Piece Mark previously imported is no longer in a new weekly Constellation report, the CONST plugin sets `PercentEntry = 0`, clears `ActStart` and `ActFin`, and tags Notes with `"DELETED"`. The user is responsible for actually deleting the row via VANTAGE's normal delete flow. The import-summary popup lists up to 20 affected Piece Marks (full list goes to the log).
+**Why:** Force-completing missing spools (`PercentEntry = 100`, synthesised `ActFin = today`) poisoned `SchedActNO` rollups: any SchedActNO containing a cancelled spool got falsely advanced ActStart and inflated earned-value contribution. The plugin doesn't have authority to delete rows on the user's behalf (ownership semantics, sync coordination, undo paths all live in the main app's delete flow), but it does have authority to make the row inert so it can't pollute schedule reporting.
+**Date:** 2026-05-09
+
+### CONST Plugin: New Records Insert With `PhaseCategory = "PIPF"`
+**Rule:** New CONST records are inserted with `PhaseCategory = "PIPF"`. PhaseCategory is in the insert-only group (not in the UPDATE statement), so existing rows from prior imports keep their original value until manually corrected.
+**Why:** `"PIP"` was incorrect for the project's phase-category scheme.
+**Date:** 2026-05-09
+
+### CONST Plugin: Module's Trailing "PP" Is Stripped Before Storage
+**Rule:** `Module` values from the Constellation report ending in `"PP"` (case insensitive) have the suffix stripped before flowing into `UDF2` and `WorkPackage` (both columns receive the cleaned value). Insert-only field, so existing rows keep their `PP`-suffixed values until re-imported.
+**Why:** Module names carry a vendor-internal `"PP"` tag (e.g. `TFS00D002YSPP`) that isn't meaningful in VANTAGE's grouping/filtering context.
+**Date:** 2026-05-09
+
+### CONST Plugin: Both Dates Are Rejected When RLS-to-Fab > Final Shipment
+**Rule:** When both `RLS to Fab date` and `Final Shipment` are populated in the report and fab-start is strictly after ship date, the plugin writes empty strings for both `ActStart` and `ActFin`. The `+20` shipment-percent boost still triggers from `Final Shipment.HasValue` regardless — only the date writes are suppressed.
+**Why:** The data is contradictory at the source (a spool can't start fabrication after it shipped). Letting the dates through would create a Finish-before-Start violation in VANTAGE with no clear pointer to *why*. Rejecting both surfaces the issue as a metadata error on the row, which is a clearly visible cue for the user to take the data quality issue back to Constellation. Falling back to `Final Shipment` for both dates would silently mask the underlying report-quality problem.
+**Date:** 2026-05-09

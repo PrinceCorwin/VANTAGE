@@ -130,6 +130,12 @@ Series of short tutorial videos for end users. Each item below needs a plan and 
 | TreeGrid (SfTreeGrid) | Hierarchical WBS display with parent/child relationships |
 | Critical Path Highlighting | Auto-highlight critical path activities (P6 provides float data) |
 
+### Deferred / Considered, Not Built
+- **Admin Snapshots: WeekEndDate override on re-upload** — considered an admin override so old snapshots could be re-uploaded under a new week (avoiding re-snapshotting closed-out activities). Judged the complexity not worth the bug surface for a small workflow gain. Current invariant retained: `WeekEndDate` = when the snapshot was taken. Filed here so the conversation doesn't get re-litigated; if it comes up again, this is the prior call. (Was previously in `Plans/Decisions.md`.)
+
+### Documentation Backlog
+- **Discuss workflow / dev-setup doc format and content.** Decisions.md is for VANTAGE runtime facts only; dev workflow content (Claude Code settings split, CLAUDE.md / Security_Guidelines.md routing rationale, repo conventions, build/test/release procedures used by humans) should live somewhere else. Considering a new `Plans/Workflow.md` (or similar) that another developer could use to set up the VANTAGE dev environment from scratch. Need to discuss the right scope, format, and which existing scattered notes to consolidate.
+
 ### Shelved
 - **AI Takeoff — multi-drawing PDFs** — supporting PDFs that contain multiple drawings (one per page) was on the AI Takeoff backlog. Bluebeam already specializes in splitting multi-page PDFs into per-drawing files, and the workflow there is faster and lower-risk than rewriting the AI Takeoff intake to detect and split pages. Users do the split in Bluebeam before upload; AI Takeoff continues to treat one uploaded PDF as one drawing.
 - **Mouse Shift+Click first→last row on Progress grid at 100k-row scale** — still freezes the UI. Ctrl+A and `Actions → Select All` were refactored 2026-05-07 to bypass Syncfusion's per-cell selection model entirely (transient `IsBulkSelected` flag + `RecordOwnershipRowStyleSelector` data trigger), but Shift+Click is Syncfusion's own range-extend gesture and we can't intercept it from outside the grid without replacing the selection controller. User said "deal with it another time, if ever." Ctrl+A is the supported scale-safe path.

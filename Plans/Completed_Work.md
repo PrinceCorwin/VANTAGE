@@ -6,6 +6,39 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### May 9, 2026 (Decisions.md Fact-Doc Restructure + Finisher Step 3.5 + CLAUDE.md Portability)
+
+**`Plans/Decisions.md` — full restructure as a fact doc**
+- **New philosophy:** every entry describes how VANTAGE works *today*, not the chronological history of how it got there. When a rule changes, the existing entry is rewritten in place rather than appended to with a "previously this was X" trailer; superseded entries get deleted, not preserved.
+- **`**Rule:**` replaces `**Decision:**` as the heading for the current-state line. `**Why:**` and `**Date:**` retained.
+- **12-section canonical order matching VANTAGE's nav structure:** Foundation → Sync → Main Window → Progress Module → Schedule Module → Work Packages Module → Progress Books Module → Analysis Module → Takeoffs → Admin Tools → Settings Menu → Plugins. The Takeoffs section is subdivided into *Common* / *Summit Rate Mode* / *MCAA Rate Mode* / *MCAA Ratesheet (Storage / Producer)* so the Summit-vs-MCAA divergence is visible at a glance.
+- **Stale / contradicted entries removed:** "Companion CUT Labor Row Per BW or SW Connection (Pure Additive)" — superseded by the May 5 "Four Behavior Divergence Points" which says CUT is MCAA-only, not unconditional. "MCAA Ratesheet: Facet-Column Queries, Defer `lookup_key` String Design" + the "Reopened" entry that explicitly superseded it — open architectural questions don't belong in a fact doc.
+- **Meta-doc entries stripped:** "Permission Allowlist: Project `.claude/settings.json`" and "Claude Instruction Split" (security-rules-in-CLAUDE.md vs Plans/Security_Guidelines.md) — these are about *working on* VANTAGE, not how VANTAGE works. Moved out of Decisions.md per user direction.
+- **Snapshot re-upload deferral relocated:** "Trust the Admin on Snapshot Re-Upload (Not Implemented, Decision Logged)" was a pure non-implementation deferral; moved to `Plans/Project_Status.md` under a new "Deferred / Considered, Not Built" subsection so Decisions.md only carries facts, not deferrals.
+- **All "Removed X" / "Changed from X to Y" / "Reverses an earlier..." phrasings rewritten** as present-tense fact statements (~30 entries).
+- **Prior `## Data Model`, `## Sync`, `## VP vs Vtg Report`, `## AI / Progress Scan`, `## Edit Rules & Bulk Operations`, `## UI / UX`, `## Architecture`, `## MCAA Ratesheet`, `## Plugin System`, `## Admin / Snapshots` sections** consolidated and redistributed across the 12 canonical sections (e.g. Edit Rules global validators → Foundation; UI/UX entries split between Main Window and the relevant module section; MCAA Ratesheet → Takeoffs / MCAA Ratesheet subsection; Snapshot dialogs → Admin Tools).
+- **Settings Menu currently has a placeholder note** — no Settings-menu-specific rules exist today (Reset User Settings registry rules live in Foundation; Manage UDF Names lives in Progress Module). Section reserved for the canonical position; entries land here when a Settings-menu-only rule emerges.
+
+**`.claude/skills/finisher/skill.md` Step 3.5 rewritten** to enforce the new Decisions.md structure on all future entries:
+- Explicit fact-doc philosophy at the top (no chronological log; supersession is rewrite-in-place, not append).
+- Four exclusions called out: dev/build/tooling workflow, open questions / undecided choices, pure non-implementation deferrals (with the "exception: if Vantage's behavior reflects the deferral, that IS a fact and belongs here" carve-out), step-by-step changelogs.
+- Required entry format codified with `**Rule:**` / `**Why:**` / `**Date:**`.
+- Explicit ban on changelog-style phrasings ("Removed X", "Changed from", "Switched from", "Replaced X with Y", "Reverses an earlier...").
+- Canonical 12-section order embedded in the skill so future entries land in the right place; "do not invent ad-hoc sections" guard.
+- Pre-write checklist: search for an existing entry, search for entries to supersede, verify section, reword to fact form.
+
+**`CLAUDE.md` cross-machine portability**
+- New Workflow Skills bullet: **AI Takeoff — current deployed sources (NOT `Plans/AWS Agent/`)**. Lists the five Google-Drive-synced files under `%USERPROFILE%\My Drive\Conversion\` (extraction prompt, extraction Lambda, aggregation Lambda, CompRefTable, MatRefTable) and reiterates that `Plans/AWS Agent/*.py` is a reference snapshot, not the production code. Aligns with the existing `project_aws_agent_files_not_authoritative` memory.
+- Existing **Sister Project: SkySkraper** path migrated from absolute (`C:\Users\Steve.Amalfitano\source\repos\PrinceCorwin\SkySkraper\SynologyDrive`) to portable (`%USERPROFILE%\source\repos\PrinceCorwin\SkySkraper\SynologyDrive`) so it resolves correctly on home and work machines without editing per-machine.
+- Both pointers carry an explicit "expand `%USERPROFILE%` when reading; the username differs across machines" note.
+
+**`Plans/Project_Status.md`** gained two subsections under the Feature Backlog area:
+- **Deferred / Considered, Not Built:** holds the snapshot WeekEndDate-override-on-re-upload deferral pulled out of Decisions.md.
+- **Documentation Backlog:** holds the new TODO to discuss workflow / dev-setup doc format and content (single source for Claude Code settings split, CLAUDE.md / Security_Guidelines.md routing rationale, repo conventions, build/test/release procedures used by humans). Format and scope to be decided.
+
+**Doc-only session — no code changes.**
+- **Key files:** `Plans/Decisions.md` (full rewrite), `.claude/skills/finisher/skill.md` (Step 3.5), `CLAUDE.md` (Workflow Skills bullet + Sister Project path), `Plans/Project_Status.md` (Deferred + Documentation Backlog subsections, snapshot re-upload deferral).
+
 ### May 9, 2026 (Deleted Records UI — Full-Record Export at NewVantage Format + CONST Plugin v1.0.1)
 
 **Deleted Records UI — `Views/DeletedRecordsView.xaml.cs` and `Utilities/ExportHelper.cs`**
