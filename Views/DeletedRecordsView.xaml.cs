@@ -167,8 +167,7 @@ namespace VANTAGE.Views
                     var projectParams = string.Join(",", selectedProjects.Select((p, i) => $"@p{i}"));
                     var cmd = connection.CreateCommand();
                     cmd.CommandTimeout = 300;
-                    // Explicit column list — matches MapReaderToActivity (avoids pulling unused
-                    // columns over Azure latency for large result sets).
+                    // Limited column list keeps the grid fast — full record is fetched at export time.
                     cmd.CommandText = $@"
                 SELECT ActivityID, UniqueID, CompType, PhaseCategory, ROCStep, Description,
                        PhaseCode, SchedActNO, UDF1, UDF2, Quantity, BudgetMHs, PercentEntry,
@@ -209,39 +208,24 @@ namespace VANTAGE.Views
             }
         }
 
-        // Map database reader to Activity object
+        // Limited mapper for the grid — keeps refresh fast over Azure latency.
         private Activity MapReaderToActivity(SqlDataReader reader)
         {
             string GetStringSafe(string name)
             {
-                try
-                {
-                    int i = reader.GetOrdinal(name);
-                    return reader.IsDBNull(i) ? "" : reader.GetString(i);
-                }
+                try { int i = reader.GetOrdinal(name); return reader.IsDBNull(i) ? "" : reader.GetString(i); }
                 catch { return ""; }
             }
-
             int GetIntSafe(string name)
             {
-                try
-                {
-                    int i = reader.GetOrdinal(name);
-                    return reader.IsDBNull(i) ? 0 : reader.GetInt32(i);
-                }
+                try { int i = reader.GetOrdinal(name); return reader.IsDBNull(i) ? 0 : reader.GetInt32(i); }
                 catch { return 0; }
             }
-
             double GetDoubleSafe(string name)
             {
-                try
-                {
-                    int i = reader.GetOrdinal(name);
-                    return reader.IsDBNull(i) ? 0 : reader.GetDouble(i);
-                }
+                try { int i = reader.GetOrdinal(name); return reader.IsDBNull(i) ? 0 : reader.GetDouble(i); }
                 catch { return 0; }
             }
-
             DateTime? GetDateTimeSafe(string name)
             {
                 try
@@ -273,6 +257,152 @@ namespace VANTAGE.Views
                 UpdatedBy = GetStringSafe("UpdatedBy"),
                 UpdatedUtcDate = GetDateTimeSafe("UpdatedUtcDate")
             };
+        }
+
+        // Full mapper used only at export time — covers every Activity property. Skips LocalDirty (local-only).
+        private static Activity MapReaderToFullActivity(SqlDataReader reader)
+        {
+            string GetStringSafe(string name)
+            {
+                try { int i = reader.GetOrdinal(name); return reader.IsDBNull(i) ? "" : reader.GetString(i); }
+                catch { return ""; }
+            }
+
+            int GetIntSafe(string name)
+            {
+                try { int i = reader.GetOrdinal(name); return reader.IsDBNull(i) ? 0 : reader.GetInt32(i); }
+                catch { return 0; }
+            }
+
+            long GetLongSafe(string name)
+            {
+                try { int i = reader.GetOrdinal(name); return reader.IsDBNull(i) ? 0L : reader.GetInt64(i); }
+                catch { return 0L; }
+            }
+
+            // Tolerates float / real / decimal / int columns
+            double GetDoubleSafe(string name)
+            {
+                try
+                {
+                    int i = reader.GetOrdinal(name);
+                    if (reader.IsDBNull(i)) return 0;
+                    return Convert.ToDouble(reader.GetValue(i));
+                }
+                catch { return 0; }
+            }
+
+            DateTime? GetDateTimeSafe(string name)
+            {
+                try
+                {
+                    int i = reader.GetOrdinal(name);
+                    if (reader.IsDBNull(i)) return null;
+                    var s = reader.GetString(i);
+                    if (DateTime.TryParse(s, out var dt)) return dt;
+                    return null;
+                }
+                catch { return null; }
+            }
+
+            var activity = new Activity();
+            activity.BeginInit();
+
+            activity.ActivityID = GetIntSafe("ActivityID");
+            activity.UniqueID = GetStringSafe("UniqueID");
+            activity.SyncVersion = GetLongSafe("SyncVersion");
+
+            activity.Area = GetStringSafe("Area");
+            activity.AssignedTo = GetStringSafe("AssignedTo");
+            activity.AzureUploadUtcDate = GetDateTimeSafe("AzureUploadUtcDate");
+            activity.Aux1 = GetStringSafe("Aux1");
+            activity.Aux2 = GetStringSafe("Aux2");
+            activity.Aux3 = GetStringSafe("Aux3");
+            activity.BaseUnit = GetDoubleSafe("BaseUnit");
+            activity.BudgetMHs = GetDoubleSafe("BudgetMHs");
+            activity.BudgetHoursGroup = GetDoubleSafe("BudgetHoursGroup");
+            activity.BudgetHoursROC = GetDoubleSafe("BudgetHoursROC");
+            activity.ChgOrdNO = GetStringSafe("ChgOrdNO");
+            activity.ClientBudget = GetDoubleSafe("ClientBudget");
+            activity.ClientCustom3 = GetDoubleSafe("ClientCustom3");
+            activity.ClientEquivQty = GetDoubleSafe("ClientEquivQty");
+            activity.CompType = GetStringSafe("CompType");
+            activity.CreatedBy = GetStringSafe("CreatedBy");
+            activity.DateTrigger = GetIntSafe("DateTrigger");
+            activity.Description = GetStringSafe("Description");
+            activity.DwgNO = GetStringSafe("DwgNO");
+            activity.EarnedMHsRoc = GetDoubleSafe("EarnedMHsRoc");
+            activity.EarnQtyEntry = GetDoubleSafe("EarnQtyEntry");
+            activity.EqmtNO = GetStringSafe("EqmtNO");
+            activity.EquivQTY = GetDoubleSafe("EquivQTY");
+            activity.EquivUOM = GetStringSafe("EquivUOM");
+            activity.Estimator = GetStringSafe("Estimator");
+            activity.HexNO = GetIntSafe("HexNO");
+            activity.HtTrace = GetStringSafe("HtTrace");
+            activity.InsulType = GetStringSafe("InsulType");
+            activity.LineNumber = GetStringSafe("LineNumber");
+            activity.MtrlSpec = GetStringSafe("MtrlSpec");
+            activity.Notes = GetStringSafe("Notes");
+            activity.PaintCode = GetStringSafe("PaintCode");
+            activity.PercentEntry = GetDoubleSafe("PercentEntry");
+            activity.PhaseCategory = GetStringSafe("PhaseCategory");
+            activity.PhaseCode = GetStringSafe("PhaseCode");
+            activity.PipeGrade = GetStringSafe("PipeGrade");
+            activity.PipeSize1 = GetDoubleSafe("PipeSize1");
+            activity.PipeSize2 = GetDoubleSafe("PipeSize2");
+            activity.PrevEarnMHs = GetDoubleSafe("PrevEarnMHs");
+            activity.PrevEarnQTY = GetDoubleSafe("PrevEarnQTY");
+            activity.ProgDate = GetDateTimeSafe("ProgDate");
+            activity.ProjectID = GetStringSafe("ProjectID");
+            activity.Quantity = GetDoubleSafe("Quantity");
+            activity.RevNO = GetStringSafe("RevNO");
+            activity.RFINO = GetStringSafe("RFINO");
+            activity.ROCBudgetQTY = GetDoubleSafe("ROCBudgetQTY");
+            activity.ROCID = GetDoubleSafe("ROCID");
+            activity.ROCPercent = GetDoubleSafe("ROCPercent");
+            activity.ROCStep = GetStringSafe("ROCStep");
+            activity.SchedActNO = GetStringSafe("SchedActNO");
+            activity.ActFin = GetDateTimeSafe("ActFin");
+            activity.ActStart = GetDateTimeSafe("ActStart");
+            activity.PlanStart = GetDateTimeSafe("PlanStart");
+            activity.PlanFin = GetDateTimeSafe("PlanFin");
+            activity.SecondActno = GetStringSafe("SecondActno");
+            activity.SecondDwgNO = GetStringSafe("SecondDwgNO");
+            activity.Service = GetStringSafe("Service");
+            activity.ShopField = GetStringSafe("ShopField");
+            activity.ShtNO = GetStringSafe("ShtNO");
+            activity.SubArea = GetStringSafe("SubArea");
+            activity.PjtSystem = GetStringSafe("PjtSystem");
+            activity.PjtSystemNo = GetStringSafe("PjtSystemNo");
+            activity.TagNO = GetStringSafe("TagNO");
+            activity.UDF1 = GetStringSafe("UDF1");
+            activity.UDF2 = GetStringSafe("UDF2");
+            activity.UDF3 = GetStringSafe("UDF3");
+            activity.UDF4 = GetStringSafe("UDF4");
+            activity.UDF5 = GetStringSafe("UDF5");
+            activity.UDF6 = GetStringSafe("UDF6");
+            activity.UDF7 = GetIntSafe("UDF7");
+            activity.UDF8 = GetStringSafe("UDF8");
+            activity.UDF9 = GetStringSafe("UDF9");
+            activity.UDF10 = GetStringSafe("UDF10");
+            activity.UDF11 = GetStringSafe("UDF11");
+            activity.UDF12 = GetStringSafe("UDF12");
+            activity.UDF13 = GetStringSafe("UDF13");
+            activity.UDF14 = GetStringSafe("UDF14");
+            activity.UDF15 = GetStringSafe("UDF15");
+            activity.UDF16 = GetStringSafe("UDF16");
+            activity.UDF17 = GetStringSafe("UDF17");
+            activity.RespParty = GetStringSafe("RespParty");
+            activity.UDF20 = GetStringSafe("UDF20");
+            activity.UOM = GetStringSafe("UOM");
+            activity.UpdatedBy = GetStringSafe("UpdatedBy");
+            activity.UpdatedUtcDate = GetDateTimeSafe("UpdatedUtcDate");
+            activity.WeekEndDate = GetDateTimeSafe("WeekEndDate");
+            activity.WorkPackage = GetStringSafe("WorkPackage");
+            activity.XRay = GetDoubleSafe("XRay");
+
+            activity.EndInit();
+            return activity;
         }
 
         private void BtnSelectAll_Click(object sender, RoutedEventArgs e)
@@ -498,14 +628,98 @@ namespace VANTAGE.Views
                     return;
                 }
 
-                await ExportHelper.ExportDeletedRecordsAsync(this, _deletedActivities);
+                // Collect UniqueIDs of the rows visible after grid filters are applied
+                var filteredIds = new List<string>();
+                if (sfDeletedActivities?.View?.Records != null)
+                {
+                    foreach (var record in sfDeletedActivities.View.Records)
+                    {
+                        var dataProp = record.GetType().GetProperty("Data");
+                        if (dataProp?.GetValue(record) is Activity a && !string.IsNullOrEmpty(a.UniqueID))
+                            filteredIds.Add(a.UniqueID);
+                    }
+                }
+                if (filteredIds.Count == 0)
+                    filteredIds = _deletedActivities.Select(a => a.UniqueID).Where(id => !string.IsNullOrEmpty(id)).ToList();
+
+                if (filteredIds.Count == 0)
+                {
+                    AppMessageBox.Show("No deleted records to export.", "Export Deleted Records",
+                        MessageBoxButton.OK, MessageBoxImage.None);
+                    return;
+                }
+
+                if (!AzureDbManager.CheckConnection(out string azureError))
+                {
+                    AppMessageBox.Show(
+                        $"Cannot export - Azure database unavailable:\n\n{azureError}",
+                        "Connection Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                SetActionBusy(true, $"Fetching {filteredIds.Count:N0} full record(s) from Azure...");
+                txtStatus.Text = "Fetching full records from Azure...";
+
+                var fullRecords = await Task.Run(() => FetchFullActivitiesByUniqueIds(filteredIds));
+
+                SetActionBusy(false);
+                txtStatus.Text = "Ready";
+
+                await ExportHelper.ExportDeletedRecordsAsync(this, fullRecords);
             }
             catch (Exception ex)
             {
+                SetActionBusy(false);
+                txtStatus.Text = "Export error";
                 AppLogger.Error(ex, "Export Deleted Records Click", App.CurrentUser?.Username ?? "Unknown");
                 AppMessageBox.Show("Export failed. See log for details.", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+        // Pulls SELECT * for the given UniqueIDs via temp-table + JOIN — same pattern as
+        // BulkUpdateIsDeletedFlag/BulkPurge, avoids the 2100-parameter ceiling.
+        private static List<Activity> FetchFullActivitiesByUniqueIds(List<string> uniqueIds)
+        {
+            var results = new List<Activity>();
+            if (uniqueIds.Count == 0) return results;
+
+            using var connection = AzureDbManager.GetConnection();
+            connection.Open();
+
+            const string tempTable = "#ExportBatch";
+            var createTempCmd = connection.CreateCommand();
+            createTempCmd.CommandText = $@"
+                IF OBJECT_ID('tempdb..{tempTable}') IS NOT NULL DROP TABLE {tempTable};
+                CREATE TABLE {tempTable} (UniqueID NVARCHAR(100) PRIMARY KEY)";
+            createTempCmd.ExecuteNonQuery();
+
+            var idTable = new DataTable();
+            idTable.Columns.Add("UniqueID", typeof(string));
+            foreach (var id in uniqueIds) idTable.Rows.Add(id);
+
+            using (var bulkCopy = new SqlBulkCopy(connection))
+            {
+                bulkCopy.DestinationTableName = tempTable;
+                bulkCopy.BulkCopyTimeout = 0;
+                bulkCopy.WriteToServer(idTable);
+            }
+
+            var selectCmd = connection.CreateCommand();
+            selectCmd.CommandTimeout = 600;
+            selectCmd.CommandText = $@"
+                SELECT a.*
+                FROM VMS_Activities a
+                INNER JOIN {tempTable} s ON a.UniqueID = s.UniqueID
+                WHERE a.IsDeleted = 1";
+
+            using var reader = selectCmd.ExecuteReader();
+            while (reader.Read())
+            {
+                results.Add(MapReaderToFullActivity(reader));
+            }
+
+            return results;
         }
 
         // Helper class for project selection

@@ -3001,7 +3001,10 @@
 
     <h4>Export to Excel</h4>
     <ul>
-        <li><strong>EXPORT TO EXCEL</strong> writes the currently loaded records to an Excel file. Use this to archive or audit before purging.</li>
+        <li><strong>EXPORT TO EXCEL</strong> writes the deleted records to an Excel file. Use this to archive or audit before purging.</li>
+        <li><strong>Filtered rows only.</strong> If column-header filters are active in the grid, only the filtered subset is exported. Apply filters first to scope the export precisely.</li>
+        <li><strong>Complete record data is fetched at export time.</strong> The grid displays a small subset of columns for fast loading; on Export, every Activity column is fetched fresh from Azure for the rows being exported (Notes, AssignedTo, ActStart/ActFin, all UDFs, etc.). This is why a large export can take a moment after you click the button — narrow your filter beforehand if the deleted-records set is large.</li>
+        <li><strong>Format:</strong> the workbook uses the Milestone (NewVantage) layout — same column set as <em>Export Activities</em> from the Progress module.</li>
     </ul>
 
     <h3 id="admin-project-rates">Project Rates (Admin > Project Rates)</h3>

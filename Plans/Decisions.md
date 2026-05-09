@@ -706,6 +706,40 @@ Permanent record of architectural choices, design rationale, and implementation 
 **Why:** Users were editing the Description field after import, breaking update-vs-create detection. UDF2 is a stable identifier not typically modified.
 **Date:** March 2026
 
+### CONST Plugin: Spools Missing From Report Are Zeroed Out, Not Force-Completed
+**Decision:** When a Piece Mark previously imported is no longer in a new weekly report, the CONST plugin sets `PercentEntry = 0`, clears both `ActStart` and `ActFin`, and tags the Notes column with `"DELETED"`. The user is responsible for actually deleting the row via VANTAGE's normal delete flow. The import-summary popup lists up to 20 affected Piece Marks (full list goes to the log) so the user knows what to investigate.
+**Why:** v1.0.0 instead force-completed missing spools (`PercentEntry = 100`, synthesized `ActFin = today`, "DELETED" in Notes). That poisoned `SchedActNO` rollups: any SchedActNO that contained a cancelled spool got a falsely advanced ActStart and an inflated earned-value contribution, even when none of the other spools had started. The plugin doesn't have authority to delete rows on the user's behalf (ownership semantics, sync coordination, undo paths all live in the main app's delete flow), but it does have authority to make the row inert so it can't pollute schedule reporting. Zeroing achieves that without touching the row's identity.
+**Date:** 2026-05-09
+
+### CONST Plugin: PhaseCategory Constant Is "PIPF"
+**Decision:** New CONST records insert with `PhaseCategory = "PIPF"`.
+**Why:** v1.0.0 used `"PIP"` which was incorrect for the project's phase-category scheme. PhaseCategory is in the insert-only group (not in the UPDATE statement), so existing rows from prior imports keep `"PIP"` until manually corrected; new records get `"PIPF"`.
+**Date:** 2026-05-09
+
+### CONST Plugin: Module PP-Suffix Stripped Before UDF2 / WorkPackage
+**Decision:** `Module` values from the Constellation report that end in `"PP"` (case insensitive) get the suffix stripped before flowing into both `UDF2` and `WorkPackage` (which both receive the same Module value).
+**Why:** Module names in the Constellation report carry a vendor-internal `"PP"` tag (e.g. `TFS00D002YSPP`) that isn't meaningful in VANTAGE's grouping/filtering context and clutters the grid. Stripping at the parse-time source means every downstream use sees the cleaned value uniformly. Insert-only field, so existing rows keep their original `PP`-suffixed values until re-imported.
+**Date:** 2026-05-09
+
+### CONST Plugin: Reject Both ActStart and ActFin When RLS-to-Fab > Final Shipment
+**Decision:** When both `RLS to Fab date` and `Final Shipment` are populated in the report and the fab-start is strictly later than the ship date, the plugin writes empty strings for both `ActStart` and `ActFin`. The `+20` shipment-percent boost still triggers from `Final Shipment.HasValue` regardless — only the date writes are suppressed.
+**Why:** The data is contradictory at the source (a spool can't start fabrication after it shipped). Letting the dates through would create a Finish-before-Start violation downstream that VANTAGE would flag anyway, but with no clear pointer to *why*. Rejecting both surfaces the issue as a metadata error on the row (PercentEntry > 0 with no ActStart, PercentEntry = 100 with no ActFin) — clearly visible to the user, who can take the data quality issue back to Constellation. We could fall back to using `Final Shipment` for both ActStart and ActFin in this case, but the user explicitly preferred letting Vantage flag it so the underlying report-quality problem doesn't get silently masked.
+**Date:** 2026-05-09
+
+---
+
+## Admin / Deleted Records
+
+### Deleted Records Export: Full Record Fetched at Export Time, Not at Refresh
+**Decision:** The Deleted Records grid loads only 15 columns from `VMS_Activities` for fast scrolling/filtering; clicking **EXPORT TO EXCEL** triggers a separate `SELECT *` against Azure for just the rows visible after grid filters, mapped to full `Activity` objects, and exported in NewVantage format.
+**Why:** Exporting only the 15 grid-loaded columns left `Notes` (and most other Activity fields) blank in the workbook. The fix needed to either (a) load all columns at refresh time and accept slower grid loading, or (b) keep the grid lightweight and pay the full-fetch cost only on Export. Tested (a) first against a real deleted-records set (5,000+ rows) — refresh hung, slower than the Progress Log update at 100k rows. The Progress-Log path uses an explicit narrow projection; `SELECT *` on a wide Activity table over Azure latency for thousands of rows wasn't workable. Reverted to (b): grid stays at the original column-list speed, export does the heavy lift but only for filtered rows. Uses the same temp-table + `SqlBulkCopy` + `INNER JOIN` pattern as `BulkUpdateIsDeletedFlag`/`BulkPurge` so it scales past the 2100-parameter ceiling.
+**Date:** 2026-05-09
+
+### Deleted Records Export: Filtered Rows Only, Format Is NewVantage
+**Decision:** When grid column-header filters are active, only the filtered subset is exported. `ExportHelper.ExportDeletedRecordsAsync` calls `ExcelExporter.ExportActivities` with `ExportFormat.NewVantage` (was implicitly Legacy before).
+**Why:** Filtered-only export gives the admin precise control over what gets archived/audited — apply the filters needed (e.g. specific user, date range, project subset) and click Export, no separate scoping dialog needed. NewVantage format matches what the rest of the app exports today (Progress module's Export Activities, etc.); Legacy was a leftover default from when the Deleted Records dialog was first written.
+**Date:** 2026-05-09
+
 ---
 
 ## Admin / Snapshots

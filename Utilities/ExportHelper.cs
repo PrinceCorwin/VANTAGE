@@ -166,8 +166,8 @@ namespace VANTAGE.Utilities
                 if (string.IsNullOrEmpty(filePath))
                     return;
 
-                // Export asynchronously
-                await Task.Run(() => ExcelExporter.ExportActivities(filePath, deletedActivities));
+                // Export asynchronously (NewVantage format)
+                await Task.Run(() => ExcelExporter.ExportActivities(filePath, deletedActivities, ExportFormat.NewVantage));
 
                 // Log the export
                 LogExport("Export Deleted Records", deletedActivities.Count, filePath);
