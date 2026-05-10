@@ -54,17 +54,19 @@ Same pattern for `CompRefTable.xlsx` and `MatRefTable.xlsx` — swap filename an
 
 ### Pattern B — Aggregation Lambda deploy (zip)
 
-The aggregation Lambda is deployed as a zip. Its folder contains both the Python code and bundled dependencies (`openpyxl`, `et_xmlfile`, and their `.dist-info` folders). All files in that folder get zipped and uploaded.
+The aggregation Lambda is deployed as a zip. The deploy folder contains both the Python code and bundled dependencies (`openpyxl`, `et_xmlfile`, and their `.dist-info` folders), plus assorted local-only files (backups, test fixtures, the previous zip itself). The zip step uses an **explicit whitelist** so only the deployable artifacts ship — never `Compress-Archive -Path *`. A blacklist-by-default deploy has historically silently shipped stale duplicates and test fixtures to production for months.
+
+If a new dependency is added (`pip install --target . <pkg>`), add the package folder and its `.dist-info` folder to the `-Path` whitelist below before deploying.
 
 ```powershell
 # Capture current SHA for comparison
 $OldSha = aws lambda get-function --function-name summit-takeoff-aggregate --region us-east-1 --query "Configuration.CodeSha256" --output text
 Write-Host "Old SHA256: $OldSha"
 
-# Build zip
+# Build zip — explicit whitelist (NEVER use -Path *)
 cd "<AGGREGATE_DEPLOY_FOLDER>"
 Remove-Item aggregate-deploy.zip -ErrorAction SilentlyContinue
-Compress-Archive -Path * -DestinationPath aggregate-deploy.zip -Force
+Compress-Archive -Path lambda_function.py, et_xmlfile, openpyxl, et_xmlfile-2.0.0.dist-info, openpyxl-3.1.5.dist-info -DestinationPath aggregate-deploy.zip -Force
 Get-Item aggregate-deploy.zip | Select-Object Name, Length, LastWriteTime
 
 # Push to Lambda

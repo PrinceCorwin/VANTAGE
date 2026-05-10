@@ -422,15 +422,18 @@ namespace VANTAGE.Services.AI
             "FS", "BOLT", "GSKT", "WAS", "INST", "GAUGE"
         };
 
-        // Step A4: Correct ShopField on material rows
-        // Lambda defaults all rows to 1 (Shop). This sets Field (2) for:
-        // - Rows with BU connection type
-        // - Components that are inherently field work (FS, BOLT, GSKT, WAS, INST, GAUGE, NIP, PLG)
+        // Step A4: Assign ShopField on material rows. C# is the sole author — the AI/Lambda
+        // does not provide this value. Default every row to Shop (1); flip to Field (2) for:
+        // - Components that are inherently field work (FS, BOLT, GSKT, WAS, INST, GAUGE)
         // - Items with no connections (zero conn qty or empty connection type)
+        // - Items whose connections are all BU or SCRD
+        // PIPE always stays Shop. Mixed connection types (e.g. "BW, SCRD") stay Shop.
         private static void AssignMaterialShopField(List<Dictionary<string, object?>> materialRows)
         {
             foreach (var row in materialRows)
             {
+                row["ShopField"] = 1;
+
                 string component = GetString(row, "Component").ToUpper();
                 if (component == "PIPE") continue;
 
@@ -456,28 +459,35 @@ namespace VANTAGE.Services.AI
             }
         }
 
-        // Write corrected ShopField values back to the Material worksheet
+        // Normalize the ShopField column to position 5. Removes any Lambda-emitted ShopField
+        // wherever it sat, inserts a fresh blank column at position 5 (shifting later columns
+        // right), writes the header, and fills values from materialRows. Once the AI/Lambda
+        // stops emitting ShopField, the "remove existing" pass is a no-op.
         private static void WriteMaterialShopField(XLWorkbook workbook, List<Dictionary<string, object?>> materialRows)
         {
             if (!workbook.TryGetWorksheet("Material", out var ws)) return;
 
-            // Find the ShopField column
-            int shopFieldCol = 0;
+            const int TargetCol = 5;
+
+            // Drop any existing ShopField column (whatever position Lambda placed it at).
             int lastCol = ws.RangeUsed()?.LastColumn().ColumnNumber() ?? 0;
             for (int col = 1; col <= lastCol; col++)
             {
                 if (ws.Cell(1, col).GetString().Trim().Equals("ShopField", StringComparison.OrdinalIgnoreCase))
                 {
-                    shopFieldCol = col;
+                    ws.Column(col).Delete();
                     break;
                 }
             }
-            if (shopFieldCol == 0) return;
 
-            // Write updated values (data starts at row 2)
+            // Insert blank column at position 5 (shifts existing cols 5..N right by one).
+            ws.Column(TargetCol).InsertColumnsBefore(1);
+            ws.Cell(1, TargetCol).Value = "ShopField";
+
+            // Write values (data starts at row 2).
             for (int i = 0; i < materialRows.Count; i++)
             {
-                ws.Cell(i + 2, shopFieldCol).Value = GetInt(materialRows[i], "ShopField");
+                ws.Cell(i + 2, TargetCol).Value = GetInt(materialRows[i], "ShopField");
             }
         }
 

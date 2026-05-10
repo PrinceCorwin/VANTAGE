@@ -30,13 +30,12 @@ WPF application for Summit Industrial replacing the legacy MS Access system ("Ol
 - **Commits / end-of-session docs:** Invoke `/finisher`. Handles Project_Status.md, Completed_Work.md (with monthly archiving), manual.html check, Decisions.md, plan file cleanup, commit, and push.
 - **Releases:** Invoke `/publisher`. Handles version bump, ReleaseNotes.json, publish script, manifest.json, GitHub Release, and verification.
 - **AWS / Lambda / S3 / ECR / Step Functions work:** Read `Plans/claude-code-aws-deployment-guide.md` BEFORE proposing or running any AWS operation. Contains SHA verification patterns, deploy recipes, failure modes, and rollback references.
-- **AI Takeoff — current deployed sources (NOT `Plans/AWS Agent/`):** When discussing or modifying anything in the AI Takeoff pipeline (extraction prompt, BOM extraction Lambda, aggregation Lambda, CompRefTable, MatRefTable), the deployed/working copies live in Google Drive (synced locally) under `%USERPROFILE%\My Drive\Conversion\`. Expand `%USERPROFILE%` when reading — it's `C:\Users\<username>` and the username differs across machines. Read these for current state:
+- **AI Takeoff — current deployed sources:** When discussing or modifying anything in the AI Takeoff pipeline (extraction prompt, BOM extraction Lambda, aggregation Lambda, CompRefTable, MatRefTable), the deployed/working copies live in Google Drive (synced locally) under `%USERPROFILE%\My Drive\Conversion\`. Expand `%USERPROFILE%` when reading — it's `C:\Users\<username>` and the username differs across machines. Read these for current state:
   - Extraction prompt: `summit-takeoff-poc\extraction_prompt.txt`
   - Extraction Lambda: `summit-takeoff-poc\lambda_function.py`
   - Aggregation Lambda: `aggregate-deploy\lambda_function.py`
   - CompRefTable: `summit-takeoff-poc\CompRefTable.xlsx`
   - MatRefTable: `summit-takeoff-poc\MatRefTable.xlsx`
-  `Plans/AWS Agent/*.py` is a reference snapshot, not the production code — do not propose edits there as if they were live.
 - **Security-sensitive code paths:** Read `Plans/Security_Guidelines.md` BEFORE writing or modifying: CSV/XLSX exports (`ScheduleExcelExporter`), code that builds filenames/paths from user input (WorkPackage → PDF, ProjectID → folder), AI Takeoff prompt construction or response parsing, exception/AI logging behavior, or `FeedbackDialog` submission. Contains formula-injection sanitizer, Windows-reserved-name filename guard, AI input/output validation rules, and logging hygiene patterns.
 - NEVER commit or publish outside these skills.
 
