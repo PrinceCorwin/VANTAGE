@@ -6,6 +6,37 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### May 10, 2026 (MCAA Ratesheet Plan Reset — High-Level Spine, Pipeline Fork Approach, AI Takeoff Files Copied)
+
+**Reset to high-level intent.** Prior `Plans/MCAA_Ratesheet_Plan.md` (119 lines: producer architecture, vocabulary, schema decisions, AI extraction → lookup contract, integration plan, open todos) carried enough mid-design detail that it was injecting stale assumptions into planning. User chose to scrap and restart from a few statements of intent, adding detail section by section as work proceeds.
+
+**Pivot — "don't modify working paths for off-path features."** Mid-session reversal of the 2026-05-09 matl_grade plan: "extract for both modes, ignore in Summit rate lookup" → "extract ONLY when MCAA rate mode is selected; Summit takeoff path stays frozen." Touching the Summit prompt or Summit reference-table loader to add a field Summit ignores is regression risk for zero Summit-side benefit. Saved as new feedback memory `feedback_dont_modify_working_paths.md` (distinct from the existing "don't assume scope" memory — that one is about not silently widening one change; this is about not modifying parallel working paths to mirror a change).
+
+**Pipeline fork approach decided.** AI Takeoff for MCAA runs as a separate parallel pipeline rather than a mode-branched single Lambda. The AI-side divergence (different abbreviations, additional extracted properties, different reference vocabulary, different aggregation columns) makes branching one Lambda riskier than maintaining two. Mirrors the C#-side architectural choice already made (sibling `MCAARateSheetService` rather than refactoring `RateSheetService`).
+
+**MCAA AI Takeoff files copied** under `%USERPROFILE%\My Drive\Conversion\` (byte-identical to Summit at copy time):
+- `mcaa-takeoff-poc\extraction_prompt.txt` ← `summit-takeoff-poc\extraction_prompt.txt` (26,940 B)
+- `mcaa-takeoff-poc\lambda_function.py` ← `summit-takeoff-poc\lambda_function.py` (23,460 B)
+- `mcaa-aggregate-deploy\lambda_function.py` ← `aggregate-deploy\lambda_function.py` (18,727 B)
+
+Modifications going forward affect only the OUTPUT side (extracted properties, ref vocabularies, JSON schema). Input side stays functionally identical so user drawn-boxes configs continue to work without re-configuration — captured in the plan as a cross-cutting input-side invariant.
+
+**`Plans/MCAA_Ratesheet_Plan.md` restructured to ~70 lines:**
+- Header with Phase 1 shipped note (UserSetting `Takeoff.RateMode`, radio group, mode-conditional gating in `TakeoffPostProcessor`, uniform ShopField, Summary-tab mode marker — shipped 2026-05-05).
+- **High-level plan (8 steps):** fork AI Takeoff with three MCAA files copied from Summit; per-property ref sheets in S3 (component / connection_type / material / body_type — size is direct BOM string, no ref sheet); MCAA AI extracts component / material / matl_grade / body_type / size_string / connection_type per BOM item; MCAA aggregation Lambda emits those columns; C# composes lookup key with size normalized in code (`4x3x3x2 → 4332`, `4x1/2 → 40.5`); C# does exact key match against MCAA rate sheet (local SQLite, misses → missed-rates tab, fallback ladder tuned in testing); C# routes by rate mode at takeoff time (MCAA Lambda ARN when MCAA selected, Summit ARN otherwise); action/connection labor rows (welds, cuts, bevels, hydrotest) C#-synthesized from BOM connections, inheriting parent-item properties.
+- **Cross-cutting integration contract:** MCAA rate sheet (built by SkySkraper) must use byte-identical key composition with what C# composes.
+- **Cross-cutting input-side invariant:** drawn-boxes config compatibility between Summit and MCAA.
+- **Development sequence (4 steps):** curated 10–20-item CS/SS reference drawing exercising each extracted property → curate rate sheet rows + ref vocabularies via SkySkraper exporter on just the subset needed → iterate prompt and Lambdas until the drawing extracts cleanly and rates via exact key match → scale up. Outliers (sanitation/food-quality, 9-chrome, Hastelloy, belled end) deferred to ongoing rate-sheet expansion. Full automation explicitly NOT a goal — Material-tab → Recalc Excel correction workflow is the intended path for items that don't fit the rate sheet.
+- **Deferred details parking lot (9 items)** to surface at the right detail-section: letter-case normalization, bare-numeral body types, empty-field representation in key, fallback ladder design, missed-rate triage workflow, AI accuracy on matl_grade/body_type, connection-type abbreviation contract, BW disambiguation (user solving via disjoint namespaces at the data layer), AI-allowed-to-emit-blanks question (previously tried, AI over-used as escape hatch).
+
+**`Plans/Takeoff_Rate_Mode_PRD.md` retired and deleted.** Documented Phase 1 of the rate-mode toggle effort; Phase 1 shipped 2026-05-05 and git log + Completed_Work.md already cover that work. Phase 1 milestone preserved as a one-line note in the consolidated plan's header. Reference pruned from `CLAUDE.md` See-also list.
+
+**`Plans/Project_Status.md` MCAA section consolidated.** Three separate entries — "AI Takeoff — Rate Mode Toggle (Summit / MCAA), Phase 2", the recently-expanded "AI Takeoff — Material Grade (matl_grade) Extraction (MCAA-mode only)", and "MCAA Ratesheet Integration" — collapsed into one short pointer to the consolidated PRD plus the current producer-side blocker (~73K of 174K rows still need `newComp` assignments + xlsx → SQLite exporter). MCAA Proxy Mappings reference section left intact (different category — parity-test reference, not design noise).
+
+**`CLAUDE.md` AI Takeoff sources block restructured** to show Summit (frozen — read for reference, do NOT modify) and MCAA (active development — initial copies of Summit files; OUTPUT side diverges, INPUT side stays functionally identical) as parallel sub-sections, both citing the per-property ref-sheet plan and the cross-cutting input-side invariant.
+
+**Key files:** `Plans\MCAA_Ratesheet_Plan.md` (full rewrite), `Plans\Project_Status.md` (MCAA section collapsed), `Plans\Takeoff_Rate_Mode_PRD.md` (deleted), `CLAUDE.md` (See-also pruned + AI Takeoff sources restructured), `C:\Users\steve\My Drive\Conversion\mcaa-takeoff-poc\` (new folder, 2 copied files), `C:\Users\steve\My Drive\Conversion\mcaa-aggregate-deploy\` (new folder, 1 copied file). New user-memory file `feedback_dont_modify_working_paths.md` and updated `MEMORY.md` index.
+
 ### May 9, 2026 (AI Takeoff — ShopField Cleanup, Aggregation Lambda Junk Purged, Multi-X Size Rule, Deploy Guide Whitelist)
 
 **`Services/AI/TakeoffPostProcessor.cs` — C# is now sole author of the `ShopField` column on the Material tab**

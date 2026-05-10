@@ -9,7 +9,7 @@ WPF application for Summit Industrial replacing the legacy MS Access system ("Ol
 - **Company name:** Summit Industrial — the ONLY correct form. Never "Summit Constructors", "Summit Industrial Constructors", or any other variation. Applies everywhere: code, UI, docs, installer.
 - **App name in text:** always "VANTAGE: Milestone" (formal) or "Vantage" (casual). Never "Milestone" alone — conflicts with the schedule module and generic milestones.
 
-**See also:** `Plans/Project_Status.md` (todos, backlog), `Plans/Completed_Work.md` (changelog), `Plans/Milestone_Project_plan.md` (architecture), `Plans/Decisions.md` (design decisions), `Plans/MCAA_Ratesheet_Plan.md` (MCAA integration PRD), `Plans/Takeoff_Rate_Mode_PRD.md` (Summit/MCAA rate-mode toggle)
+**See also:** `Plans/Project_Status.md` (todos, backlog), `Plans/Completed_Work.md` (changelog), `Plans/Milestone_Project_plan.md` (architecture), `Plans/Decisions.md` (design decisions), `Plans/MCAA_Ratesheet_Plan.md` (MCAA integration PRD)
 
 ## Sister Project: SkySkraper (MCAA Ratesheet)
 - **External folder:** `%USERPROFILE%\source\repos\PrinceCorwin\SkySkraper\SynologyDrive` — Synology Drive synced, **NOT in this Git repo**. Expand `%USERPROFILE%` when reading; the username differs across machines. Never suggest moving it into the VANTAGE tree, copying its files here, git-tracking it, or adding it to `.gitignore`.
@@ -30,12 +30,20 @@ WPF application for Summit Industrial replacing the legacy MS Access system ("Ol
 - **Commits / end-of-session docs:** Invoke `/finisher`. Handles Project_Status.md, Completed_Work.md (with monthly archiving), manual.html check, Decisions.md, plan file cleanup, commit, and push.
 - **Releases:** Invoke `/publisher`. Handles version bump, ReleaseNotes.json, publish script, manifest.json, GitHub Release, and verification.
 - **AWS / Lambda / S3 / ECR / Step Functions work:** Read `Plans/claude-code-aws-deployment-guide.md` BEFORE proposing or running any AWS operation. Contains SHA verification patterns, deploy recipes, failure modes, and rollback references.
-- **AI Takeoff — current deployed sources:** When discussing or modifying anything in the AI Takeoff pipeline (extraction prompt, BOM extraction Lambda, aggregation Lambda, CompRefTable, MatRefTable), the deployed/working copies live in Google Drive (synced locally) under `%USERPROFILE%\My Drive\Conversion\`. Expand `%USERPROFILE%` when reading — it's `C:\Users\<username>` and the username differs across machines. Read these for current state:
+- **AI Takeoff — current deployed sources:** When discussing or modifying anything in the AI Takeoff pipeline (extraction prompt, BOM extraction Lambda, aggregation Lambda, CompRefTable, MatRefTable), the deployed/working copies live in Google Drive (synced locally) under `%USERPROFILE%\My Drive\Conversion\`. Expand `%USERPROFILE%` when reading — it's `C:\Users\<username>` and the username differs across machines.
+
+  **Summit (frozen — read for reference, do NOT modify):**
   - Extraction prompt: `summit-takeoff-poc\extraction_prompt.txt`
   - Extraction Lambda: `summit-takeoff-poc\lambda_function.py`
   - Aggregation Lambda: `aggregate-deploy\lambda_function.py`
   - CompRefTable: `summit-takeoff-poc\CompRefTable.xlsx`
   - MatRefTable: `summit-takeoff-poc\MatRefTable.xlsx`
+
+  **MCAA (active development — initial copies of the Summit files; OUTPUT side diverges, INPUT side stays functionally identical so drawn-boxes configs keep working — see `Plans/MCAA_Ratesheet_Plan.md`):**
+  - Extraction prompt: `mcaa-takeoff-poc\extraction_prompt.txt`
+  - Extraction Lambda: `mcaa-takeoff-poc\lambda_function.py`
+  - Aggregation Lambda: `mcaa-aggregate-deploy\lambda_function.py`
+  - Per-property ref sheets (TBD, net-new structure, will be uploaded to S3): `mcaa-CompRefTable`, `mcaa-ConnRefTable`, `mcaa-MatRefTable`, `mcaa-BodyTypeRefTable`
 - **Security-sensitive code paths:** Read `Plans/Security_Guidelines.md` BEFORE writing or modifying: CSV/XLSX exports (`ScheduleExcelExporter`), code that builds filenames/paths from user input (WorkPackage → PDF, ProjectID → folder), AI Takeoff prompt construction or response parsing, exception/AI logging behavior, or `FeedbackDialog` submission. Contains formula-injection sanitizer, Windows-reserved-name filename guard, AI input/output validation rules, and logging hygiene patterns.
 - NEVER commit or publish outside these skills.
 
