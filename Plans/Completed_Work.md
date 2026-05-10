@@ -6,6 +6,32 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### May 10, 2026 (MCAA Plan Refinements + Previous Batches UI: Batch ID Column + Cross-User-Safe Batch IDs)
+
+**MCAA Ratesheet Plan refined further** based on design conversation:
+- **Step 2 — four AI-facing ref tables enumerated** instead of generic per-property: `mcaa-CompRefTable` (components only — Description + AlternateDescriptions + Component; Summit's bundled ConnType column dropped), `mcaa-ConnRefTable` (connection patterns stored as comma-separated strings, e.g. `"BW,BW,BW"`, `"BW,PRESSFIT,BW"`, `"BW,BW,SCRD"` for mixed-connection items; C# parses to one labor row per element, ConnectionQty implicit from list length), `mcaa-MatRefTable` (material + grade combined into single rows so the AI picks the "most specific" match — plain `STAINLESS STEEL` and `SANITARY FOOD GRADE STAINLESS STEEL` are SEPARATE rows, AI emits both Material and Grade values from the matched row), `mcaa-BodyTypeRefTable` (body type only — kept separate because body type is orthogonal and merging would re-introduce a Cartesian explosion).
+- **Step 3 refined**: AI still extracts component, material, matl_grade, body_type, size_string, connection_type per BOM item. material+matl_grade come from a single combined-table match (one row, two values); connection_type is the verbatim comma-separated pattern from the matched ConnRefTable row; C# parses at labor-generation time. JSON schema unchanged.
+- **Two new deferred-detail items**: (1) "most-specific match wins" prompt-engineering rule for the combined MatRefTable (otherwise AI could match generic `STAINLESS STEEL` to a sanitary description because the words appear in both); (2) learned-corrections DB for items with missing/wrong AI-extracted properties — keyed by commodity code (primary, when present) and exact normalized BOM description (fallback), applied pre-rate-lookup so user doesn't re-correct the same items every project, doubles as a feedback signal for rate-sheet/prompt tuning.
+
+**Previous Batches dialog — Batch ID column added; window 50% wider:**
+- New `Batch ID` column at the rightmost position (`Dialogs/PreviousBatchesDialog.xaml`) showing the immutable S3-side identifier so terminal/AWS-side lookups stay reliable even after a batch has been renamed. Renames only update `metadata.json`'s `batchName` field; the S3 folder path always uses the original Batch ID. Width 260 to fit the longest IDs without truncation.
+- Window default Width 700 → 1050 (+50%); MinWidth 500 → 750 to comfortably fit all seven columns.
+- Data was already being fetched on every refresh; the dialog just wasn't displaying it. No additional S3 round-trip.
+- Manual updated (`Help/manual.html` Previous Batches section): column bullets rewritten to match the actual dialog and explain Batch ID as the immutable handle for AWS-side work.
+
+**Batch ID generation hardened against cross-user collisions:**
+- `Views/TakeoffView.xaml.cs:214` — timestamp format `yyyyMMdd-HHmmss` → `yyyyMMdd-HHmmssfff`. Cross-user collision window drops from 1 second to 1 millisecond; effectively zero for human-driven submissions. Username is NOT in the batchId, so two different users with the same default name (or same custom name like the project ID) submitting in the same UTC second would have produced an identical batchId and S3 last-write-wins would silently overwrite the prior batch's `metadata.json` and Lambda outputs.
+- `Views/TakeoffView.xaml.cs:228` — default batchId prefix `AwsDwgTakeoff` → `AwsTO`. Shorter visible name in dialog and download filenames.
+- `Services/AI/TakeoffService.cs` (fallback batchId-date parser, used only when `metadata.json` is missing) — updated to handle BOTH the new 18-char tail (`yyyyMMdd-HHmmssfff`) and the legacy 15-char tail (`yyyyMMdd-HHmmss`) so existing batches still parse their submission dates correctly.
+
+**Documentation updated to match new format:**
+- `Help/manual.html` Batch Name section: default updated to `AwsTO`, example timestamp updated to `MyProject-20260315-143022456` (millisecond), brief note explaining same-instant-submission safety.
+- `Plans/claude-code-aws-deployment-guide.md` Step 1 (troubleshoot a failed batch): batch_id format updated to `<prefix>-YYYYMMDD-HHMMSSfff` with `<prefix>` being the user's custom name or `AwsTO` by default. Legacy format documented for older batches. Points users at the new Batch ID column for terminal lookups.
+
+**`Plans/Project_Status.md` Medium Priority backlog**: new entry for the takeoff_ filename inconsistency. Auto-download immediately after a takeoff completes saves with a `takeoff_` prefix (e.g., `takeoff_AwsTO-20260510-...xlsx`) because `TakeoffView.xaml.cs:334` falls back to `$"takeoff_{batchId}.xlsx"` when batchName is null, and the auto-download path (`TakeoffView.xaml.cs:111` / `:302`) never passes one. Previous Batches → Download Excel and Recalc Excel both produce clean names without the prefix. Functionality works; left as backlog because the inconsistency creates UX cognitive load (users wonder if it's the same file) but doesn't block anything. One-line fix is documented inline.
+
+**Key files:** `Plans/MCAA_Ratesheet_Plan.md`, `Dialogs/PreviousBatchesDialog.xaml`, `Views/TakeoffView.xaml.cs`, `Services/AI/TakeoffService.cs`, `Help/manual.html` (Batch Name + Previous Batches sections), `Plans/claude-code-aws-deployment-guide.md`, `Plans/Project_Status.md`.
+
 ### May 10, 2026 (MCAA Ratesheet Plan Reset — High-Level Spine, Pipeline Fork Approach, AI Takeoff Files Copied)
 
 **Reset to high-level intent.** Prior `Plans/MCAA_Ratesheet_Plan.md` (119 lines: producer architecture, vocabulary, schema decisions, AI extraction → lookup contract, integration plan, open todos) carried enough mid-design detail that it was injecting stale assumptions into planning. User chose to scrap and restart from a few statements of intent, adding detail section by section as work proceeds.

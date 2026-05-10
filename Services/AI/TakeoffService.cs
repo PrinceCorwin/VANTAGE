@@ -450,11 +450,23 @@ namespace VANTAGE.Services.AI
                 catch (AmazonS3Exception)
                 {
                     // No metadata.json - try to parse timestamp from end of batch ID
-                    // Formats: vantage-yyyyMMdd-HHmmss, AwsDwgTakeoff-yyyyMMdd-HHmmss, or custom-yyyyMMdd-HHmmss
-                    if (batchId.Length >= 15)
+                    // Current format: <prefix>-yyyyMMdd-HHmmssfff (18-char tail)
+                    // Legacy format: <prefix>-yyyyMMdd-HHmmss (15-char tail)
+                    if (batchId.Length >= 18)
                     {
-                        string tail = batchId.Substring(batchId.Length - 15); // yyyyMMdd-HHmmss
-                        string dateTime = tail.Replace("-", ""); // yyyyMMddHHmmss
+                        string tail = batchId.Substring(batchId.Length - 18);
+                        string dateTime = tail.Replace("-", "");
+                        if (dateTime.Length == 17 && DateTime.TryParseExact(dateTime, "yyyyMMddHHmmssfff",
+                            System.Globalization.CultureInfo.InvariantCulture,
+                            System.Globalization.DateTimeStyles.AssumeUniversal, out var parsed))
+                        {
+                            info.SubmittedAt = parsed.ToLocalTime();
+                        }
+                    }
+                    if (info.SubmittedAt == null && batchId.Length >= 15)
+                    {
+                        string tail = batchId.Substring(batchId.Length - 15);
+                        string dateTime = tail.Replace("-", "");
                         if (dateTime.Length == 14 && DateTime.TryParseExact(dateTime, "yyyyMMddHHmmss",
                             System.Globalization.CultureInfo.InvariantCulture,
                             System.Globalization.DateTimeStyles.AssumeUniversal, out var parsed))

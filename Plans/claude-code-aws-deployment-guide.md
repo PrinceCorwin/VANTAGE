@@ -124,7 +124,7 @@ Write-Host "LastUpdateStatus: $UpdateStatus"
 
 ### When a batch fails or returns wrong data
 
-**Step 1 — Identify the batch.** Get the batch_id from Vantage's "Previous Batches" list. Format: `AwsDwgTakeoff-YYYYMMDD-HHMMSS`.
+**Step 1 — Identify the batch.** Get the batch_id from Vantage's "Previous Batches" list (the rightmost "Batch ID" column shows the immutable S3-side identifier even after a batch has been renamed). Format: `<prefix>-YYYYMMDD-HHMMSSfff` where `<prefix>` is the user's custom name or `AwsTO` by default. Legacy batches use `AwsDwgTakeoff-YYYYMMDD-HHMMSS` (15-char timestamp, no milliseconds).
 
 **Step 2 — List the batch contents.**
 ```powershell

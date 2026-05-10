@@ -15,9 +15,15 @@
      - `mcaa-takeoff-poc\lambda_function.py` (copy of Summit `summit-takeoff-poc\lambda_function.py`)
      - `mcaa-aggregate-deploy\lambda_function.py` (copy of Summit `aggregate-deploy\lambda_function.py`)
 
-2. **Per-property reference sheets in S3** for the MCAA prompt: component, connection_type, material, body_type. Size is a direct BOM-string capture — no ref sheet.
+2. **Per-property AI-facing reference sheets in S3** for the MCAA prompt. Four focused tables so the AI does multiple cleaner discriminations against small vocabularies instead of one combinatorial decision against a Cartesian product:
+   - **mcaa-CompRefTable** — components only (Description + AlternateDescriptions + Component). ConnType dropped from the Summit seed; it now lives in mcaa-ConnRefTable.
+   - **mcaa-ConnRefTable** — connection patterns (Description + AlternateDescriptions + ConnType). ConnType is a comma-separated pattern stored verbatim: `"BW"`, `"BW,BW"`, `"BW,BW,BW"`, `"BW,PRESSFIT,BW"`, `"BW,BW,SCRD"` for a BW-run SCRD-branch tee, etc. C# parses the comma list to generate one labor row per element; ConnectionQty is implicit from list length.
+   - **mcaa-MatRefTable** — material + grade combined into single rows (Description + AlternateDescriptions + Material + Grade). Plain `STAINLESS STEEL` and `SANITARY FOOD GRADE STAINLESS STEEL` are SEPARATE rows; AI picks the more specific match.
+   - **mcaa-BodyTypeRefTable** — body type only (Description + AlternateDescriptions + BodyType). Kept separate from MatRefTable because body type is orthogonal to material/grade — merging would re-introduce a Cartesian explosion.
 
-3. **MCAA AI extracts per BOM item:** component, material, matl_grade, body_type, size_string, connection_type.
+   Size is a direct BOM-string capture — no ref sheet.
+
+3. **MCAA AI extracts per BOM item:** component, material, matl_grade, body_type, size_string, connection_type. Material and matl_grade come from a single match against mcaa-MatRefTable (the matched row supplies both values). connection_type is the comma-separated pattern verbatim from the matched mcaa-ConnRefTable row; C# parses the list at labor-generation time to produce one labor row per element. JSON schema in Lambda output keeps these as separate fields.
 
 4. **MCAA aggregation Lambda** emits those columns in the Excel output.
 
@@ -62,6 +68,8 @@ Granular items raised during high-level planning that get punted until the secti
 - **Connection-type abbreviation vocabulary contract.** Producer rate sheet `connection_type` column has to match byte-for-byte what C# writes into the key. Same shape of risk as the component-abbreviation contract. — Bring up when finalizing the MCAA `connection_type` vocabulary on the producer side.
 - **Disambiguation between connection_type and body_type abbreviations.** User decision: solve at the data layer by making namespaces disjoint (body_type vocabulary will not reuse connection-type abbreviations like `BW`). — Bring up when the body_type vocabulary is being finalized on the producer side.
 - **Allow AI to emit blanks on component/material when uncertain?** Previously attempted — AI over-used blanks as an easy escape hatch. There may be a middle ground (low-confidence flag, threshold-gated blanks, "force-pick from CompRefTable" rule, etc.). — Bring up when designing the missed-rate triage workflow / Material-tab user-correction UX.
+- **"Most-specific match wins" rule for combined mcaa-MatRefTable.** Without an explicit instruction, AI could match generic `STAINLESS STEEL` to a sanitary-food-grade BOM line because the words "STAINLESS STEEL" appear in both. Either lock this in the prompt as an explicit rule or rely on rich AlternateDescriptions to nudge the AI toward the more specific row (or both). — Bring up when iterating the prompt against the reference drawing.
+- **Learned-corrections DB for items with missing/wrong AI-extracted properties.** Local SQLite table keyed by commodity/item code (primary, when present) and exact normalized BOM description (fallback). After takeoff returns, C# applies saved corrections to a row's properties BEFORE the rate-lookup key is composed, so the user doesn't re-correct the same items every project. Compounds value over time. Doubles as a feedback signal — frequent identical corrections suggest the rate sheet needs an alias or the prompt needs tuning. Open design questions: (a) per-project vs global scope, (b) auto-save every Material-tab edit vs explicit "save correction" button, (c) audit column in Excel marking corrected-from-DB vs AI-extracted rows so debugging stays transparent. Matching strictness is the central design risk — too loose = silent misapplication to a different item; too strict = rarely fires and user re-corrects forever. — Bring up after the missed-rate triage workflow is in place and Material-tab corrections start happening at volume.
 
 ---
 

@@ -211,7 +211,7 @@ namespace VANTAGE.Views
 
             string configKey = _configs[configIndex].Key;
             string configName = _configs[configIndex].DisplayName;
-            string timestamp = DateTime.UtcNow.ToString("yyyyMMdd-HHmmss");
+            string timestamp = DateTime.UtcNow.ToString("yyyyMMdd-HHmmssfff");
             string? customName = txtBatchName.Text?.Trim();
 
             // Validate batch name before starting the expensive agent run
@@ -225,7 +225,7 @@ namespace VANTAGE.Views
             }
 
             string batchId = string.IsNullOrEmpty(customName)
-                ? $"AwsDwgTakeoff-{timestamp}"
+                ? $"AwsTO-{timestamp}"
                 : $"{customName}-{timestamp}";
 
             bool revBubbleOnly = chkRevBubbleOnly.IsChecked == true;
