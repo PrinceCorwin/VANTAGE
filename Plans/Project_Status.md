@@ -1,6 +1,6 @@
 # MILESTONE - Project Status
 
-**Last Updated:** May 9, 2026
+**Last Updated:** May 12, 2026
 
 ## Deferred to Post-V1
 | Feature | Reason |
@@ -24,6 +24,7 @@
 ### MCAA Ratesheet Integration (Phase 2 of the rate-mode toggle)
 - **PRD:** `Plans/MCAA_Ratesheet_Plan.md` — 8-step high-level plan and the deferred-details parking lot. Phase 1 (toggle infrastructure + behavior gating) shipped 2026-05-05; Phase 2 is the AI Takeoff fork + key-based MCAA rate lookup.
 - **Producer-side blocker:** SkySkraper abbreviation review (~73K of 174K rows still need user-driven `newComp` assignments) + xlsx → SQLite exporter. VANTAGE-side fork work starts when those land.
+- **TODO — Import from AI Takeoff: MCAA option on ImportTakeoffDialog.** When the source workbook was generated in MCAA mode, add an import option (radio or checkbox) that rolls the companion CUT labor rows into the per-ISO handling row (PIPE fab/handling per drawing) instead of carrying CUT as separate rows. Driver: exec policy keeps welding as ShopField=1 and pushes everything else to field, but the standalone CUT rows currently land at ShopField=2 and are awkward to reconcile per ISO. Today the user works around this via a pivot table of field welds per ISO + manual ShopField flips. See `project_mcaa_shopfield_policy.md` (auto-memory) and `Services/AI/TakeoffPostProcessor.cs:1271-1277` for the current CUT-row generation site. When this option lands, standalone CUT row generation under MCAA can be made conditional on the option being off.
 
 ### MCAA Proxy Mappings — Discovered During Parity-Test Scoping (2026-04-29, updated 2026-04-30)
 - **Reference for the future `MCAALaborService` and parity-test work.** Notes from a session-long discussion mapping a real Summit takeoff against the MCAA scrape to identify which Summit components have direct MCAA equivalents and which need proxy lookups.
