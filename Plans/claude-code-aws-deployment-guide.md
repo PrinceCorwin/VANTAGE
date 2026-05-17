@@ -15,13 +15,13 @@ Don't assume a command succeeded because it didn't error. Capture the before sta
 Steve pastes terminal output after each command. Do not batch multiple commands into one block unless he asks for it. Wait for output before issuing the next command. This catches failures immediately instead of letting them cascade.
 
 ### 3. PowerShell, not bash
-All AWS CLI work runs in PowerShell. Working AI Takeoff files live under the user-profile NAS-sync path (`%USERPROFILE%\Documents\WorkFromNAS\SynologyDrive\Conversion\...`) — previously Google Drive (`G:\My Drive\...` on the work PC, `C:\Users\steve\My Drive\...` on the personal PC), migrated 2026-05-17. PowerShell-isms apply:
+All AWS CLI work runs in PowerShell. Working AI Takeoff files live under the user-profile NAS-sync path (`%USERPROFILE%\Documents\<prefix>\SynologyDrive\Conversion\...`) where `<prefix>` is `WorkFromNAS` on the work PC (user `Steve.Amalfitano`) and `SummitFiles` on the personal PC (user `steve`) — previously Google Drive (`G:\My Drive\...` on the work PC, `C:\Users\steve\My Drive\...` on the personal PC), migrated 2026-05-17. PowerShell-isms apply:
 - Variables: `$OldSha = aws ...`
 - String interpolation: `"$env:USERPROFILE\..."`
 - Never use `>` for JSON redirection — produces UTF-16 which breaks AWS CLI. Use `[System.IO.File]::WriteAllText()` instead.
 
 ### 4. Never assume file locations
-Ask or verify. Working AI Takeoff files now live under `%USERPROFILE%\Documents\WorkFromNAS\SynologyDrive\Conversion\` on both PCs — the username differs (`Steve.Amalfitano` on the work PC, `steve` on the personal PC), so always expand `%USERPROFILE%` rather than hard-coding `C:\Users\<name>\`. Files named `lambda_function.py` exist in multiple folders (extraction, aggregation) — confirm which one before editing.
+Ask or verify. Working AI Takeoff files live under `%USERPROFILE%\Documents\<prefix>\SynologyDrive\Conversion\` — the per-machine `<prefix>` is `WorkFromNAS` on the work PC (user `Steve.Amalfitano`) and `SummitFiles` on the personal PC (user `steve`). Only the `SynologyDrive\Conversion\` tail is NAS-synced and identical across PCs; both the username and the parent-folder name differ per machine. Always expand `%USERPROFILE%` and resolve `<prefix>` for the current machine — never hard-code `C:\Users\<name>\WorkFromNAS\...` paths. Files named `lambda_function.py` exist in multiple folders (extraction, aggregation) — confirm which one before editing.
 
 ### 5. Do not propose fixes without proof
 If something is wrong, gather data (CloudWatch logs, failure markers, head-object output) before proposing a change. Don't guess root causes. Don't say "this should work" — show the evidence.

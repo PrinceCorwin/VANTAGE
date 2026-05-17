@@ -10,7 +10,7 @@
 ## High-level plan
 
 1. **Fork AI Takeoff for MCAA.** Three new files — MCAA prompt, MCAA extraction Lambda, MCAA aggregation Lambda — created by **copying the current Summit files as the starting point**, then modifying only the OUTPUT side (extracted properties, ref vocabularies, JSON schema). Summit's three files stay frozen. Ref sheets themselves (`mcaa-CompRefTable`, `mcaa-ConnRefTable`, `mcaa-MatRefTable`, `mcaa-BodyTypeRefTable`) are net-new MCAA artifacts, not copies.
-   - **MCAA file locations** (under `%USERPROFILE%\Documents\WorkFromNAS\SynologyDrive\Conversion\`, originally copied 2026-05-10; relocated from Google Drive to NAS sync 2026-05-17):
+   - **MCAA file locations** (under `%USERPROFILE%\Documents\<prefix>\SynologyDrive\Conversion\` where `<prefix>` is `WorkFromNAS` on the work PC and `SummitFiles` on the personal PC; originally copied 2026-05-10; relocated from Google Drive to NAS sync 2026-05-17):
      - `mcaa-takeoff-poc\extraction_prompt.txt` (copy of Summit `summit-takeoff-poc\extraction_prompt.txt`)
      - `mcaa-takeoff-poc\lambda_function.py` (copy of Summit `summit-takeoff-poc\lambda_function.py`)
      - `mcaa-aggregate-deploy\lambda_function.py` (copy of Summit `aggregate-deploy\lambda_function.py`)

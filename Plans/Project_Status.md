@@ -2,9 +2,6 @@
 
 **Last Updated:** May 17, 2026
 
-## Critical Priority
-- **Capture the personal-PC NAS-sync path for the AI Takeoff working folder.** Work PC path was changed today to `%USERPROFILE%\Documents\WorkFromNAS\SynologyDrive\Conversion\` (CLAUDE.md, MCAA_Ratesheet_Plan.md, and claude-code-aws-deployment-guide.md updated). The personal PC may resolve to a different sub-path under `%USERPROFILE%` (and the username there is `steve`, not `Steve.Amalfitano`). When Steve confirms the personal-PC path, verify whether `%USERPROFILE%\Documents\WorkFromNAS\SynologyDrive\Conversion\` works on both machines or whether the docs need a per-machine note. Until then, do NOT assume cross-machine portability for that path.
-
 ## Deferred to Post-V1
 | Feature | Reason |
 |---------|--------|

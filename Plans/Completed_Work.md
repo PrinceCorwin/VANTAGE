@@ -8,15 +8,15 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ### May 17, 2026 (AI Takeoff Working Folder Relocated from Google Drive to Synology NAS Sync)
 
-**Working-source path migrated** for the AI Takeoff pipeline (extraction prompt, BOM extraction Lambda, aggregation Lambda, ref tables). On the work PC the new path is `C:\Users\Steve.Amalfitano\Documents\WorkFromNAS\SynologyDrive\Conversion\`. Docs were updated using the portable `%USERPROFILE%\Documents\WorkFromNAS\SynologyDrive\Conversion\` form so future username differences across machines resolve automatically.
+**Working-source path migrated** for the AI Takeoff pipeline (extraction prompt, BOM extraction Lambda, aggregation Lambda, ref tables). On the work PC the new path is `C:\Users\Steve.Amalfitano\Documents\WorkFromNAS\SynologyDrive\Conversion\`; on the personal PC it's `C:\Users\steve\Documents\SummitFiles\SynologyDrive\Conversion\` (confirmed 2026-05-17). Docs spell out the per-machine `<prefix>` (`WorkFromNAS` on work PC, `SummitFiles` on personal PC) because both the username AND the parent-folder name differ between machines — only the `SynologyDrive\Conversion\` tail is NAS-synced and identical across PCs. A renaming alternative was considered but rejected: the local parent contains the Synology Drive client's sync root, so renaming would require reconfiguring the sync target and risks a full re-sync.
 
 **Docs updated:**
-- `CLAUDE.md` (Workflow Skills → AI Takeoff sources bullet) — Google Drive language replaced with Synology NAS (synced locally); path updated.
-- `Plans/MCAA_Ratesheet_Plan.md` (Step 1, MCAA file-locations note) — path updated with a "relocated 2026-05-17" trail next to the original 2026-05-10 copy date so the file-creation history is preserved.
-- `Plans/claude-code-aws-deployment-guide.md` (Section 3, PowerShell environment) — primary path updated to the NAS-sync form; the old G:/C: Google Drive paths kept as historical context with the 2026-05-17 migration date.
-- `Plans/claude-code-aws-deployment-guide.md` (Section 4, Never assume file locations) — guidance rewritten: both PCs now share the same NAS-sync sub-path under `%USERPROFILE%`, and the work-PC (`Steve.Amalfitano`) vs personal-PC (`steve`) username difference is called out explicitly so future-me doesn't hard-code one of them.
+- `CLAUDE.md` (Workflow Skills → AI Takeoff sources bullet) — Google Drive language replaced with Synology NAS (synced locally); path updated with per-machine `<prefix>` clarification.
+- `Plans/MCAA_Ratesheet_Plan.md` (Step 1, MCAA file-locations note) — path updated with per-machine `<prefix>` clarification and a "relocated 2026-05-17" trail next to the original 2026-05-10 copy date so the file-creation history is preserved.
+- `Plans/claude-code-aws-deployment-guide.md` (Section 3, PowerShell environment) — primary path updated to the NAS-sync form with per-machine `<prefix>`; the old G:/C: Google Drive paths kept as historical context with the 2026-05-17 migration date.
+- `Plans/claude-code-aws-deployment-guide.md` (Section 4, Never assume file locations) — guidance rewritten: per-machine `<prefix>` resolution required (`WorkFromNAS` work PC, `SummitFiles` personal PC), only the `SynologyDrive\Conversion\` tail is portable; never hard-code `C:\Users\<name>\WorkFromNAS\...`.
 
-**Project_Status.md** — new **Critical Priority** section added at the top to capture the personal-PC NAS-sync path once Steve confirms it on that machine (the personal-PC path may differ under `%USERPROFILE%`; until verified, do not assume cross-machine portability).
+**Project_Status.md** — Critical Priority item (added earlier today to capture the personal-PC path) resolved and removed once Steve confirmed the personal-PC path.
 
 **Not modified:** historical entries in `Completed_Work.md` that reference the prior `%USERPROFILE%\My Drive\Conversion\` path are left in place — they describe what was true at the time, and rewriting them would falsify the changelog.
 
