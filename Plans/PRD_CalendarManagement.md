@@ -862,6 +862,10 @@ Add one column to the Schedule table:
 ALTER TABLE Schedule ADD COLUMN P6CalendarId TEXT;
 
 -- Azure
+-- NOTE: VMS_Schedule does not currently exist in Azure. The Schedule table
+-- is local-SQLite-only; schedule data is not synced to Azure today. If/when
+-- this feature is implemented, VMS_Schedule must first be created (mirroring
+-- the local Schedule schema) before this ALTER can run.
 ALTER TABLE VMS_Schedule ADD P6CalendarId NVARCHAR(50) NULL;
 ```
 
