@@ -6,6 +6,20 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### May 17, 2026 (AI Takeoff Working Folder Relocated from Google Drive to Synology NAS Sync)
+
+**Working-source path migrated** for the AI Takeoff pipeline (extraction prompt, BOM extraction Lambda, aggregation Lambda, ref tables). On the work PC the new path is `C:\Users\Steve.Amalfitano\Documents\WorkFromNAS\SynologyDrive\Conversion\`. Docs were updated using the portable `%USERPROFILE%\Documents\WorkFromNAS\SynologyDrive\Conversion\` form so future username differences across machines resolve automatically.
+
+**Docs updated:**
+- `CLAUDE.md` (Workflow Skills → AI Takeoff sources bullet) — Google Drive language replaced with Synology NAS (synced locally); path updated.
+- `Plans/MCAA_Ratesheet_Plan.md` (Step 1, MCAA file-locations note) — path updated with a "relocated 2026-05-17" trail next to the original 2026-05-10 copy date so the file-creation history is preserved.
+- `Plans/claude-code-aws-deployment-guide.md` (Section 3, PowerShell environment) — primary path updated to the NAS-sync form; the old G:/C: Google Drive paths kept as historical context with the 2026-05-17 migration date.
+- `Plans/claude-code-aws-deployment-guide.md` (Section 4, Never assume file locations) — guidance rewritten: both PCs now share the same NAS-sync sub-path under `%USERPROFILE%`, and the work-PC (`Steve.Amalfitano`) vs personal-PC (`steve`) username difference is called out explicitly so future-me doesn't hard-code one of them.
+
+**Project_Status.md** — new **Critical Priority** section added at the top to capture the personal-PC NAS-sync path once Steve confirms it on that machine (the personal-PC path may differ under `%USERPROFILE%`; until verified, do not assume cross-machine portability).
+
+**Not modified:** historical entries in `Completed_Work.md` that reference the prior `%USERPROFILE%\My Drive\Conversion\` path are left in place — they describe what was true at the time, and rewriting them would falsify the changelog.
+
 ### May 10, 2026 (MCAA Plan Refinements + Previous Batches UI: Batch ID Column + Cross-User-Safe Batch IDs)
 
 **MCAA Ratesheet Plan refined further** based on design conversation:

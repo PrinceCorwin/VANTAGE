@@ -30,7 +30,7 @@ WPF application for Summit Industrial replacing the legacy MS Access system ("Ol
 - **Commits / end-of-session docs:** Invoke `/finisher`. Handles Project_Status.md, Completed_Work.md (with monthly archiving), manual.html check, Decisions.md, plan file cleanup, commit, and push.
 - **Releases:** Invoke `/publisher`. Handles version bump, ReleaseNotes.json, publish script, manifest.json, GitHub Release, and verification.
 - **AWS / Lambda / S3 / ECR / Step Functions work:** Read `Plans/claude-code-aws-deployment-guide.md` BEFORE proposing or running any AWS operation. Contains SHA verification patterns, deploy recipes, failure modes, and rollback references.
-- **AI Takeoff — current deployed sources:** When discussing or modifying anything in the AI Takeoff pipeline (extraction prompt, BOM extraction Lambda, aggregation Lambda, CompRefTable, MatRefTable), the deployed/working copies live in Google Drive (synced locally) under `%USERPROFILE%\My Drive\Conversion\`. Expand `%USERPROFILE%` when reading — it's `C:\Users\<username>` and the username differs across machines.
+- **AI Takeoff — current deployed sources:** When discussing or modifying anything in the AI Takeoff pipeline (extraction prompt, BOM extraction Lambda, aggregation Lambda, CompRefTable, MatRefTable), the deployed/working copies live on the Synology NAS (synced locally) under `%USERPROFILE%\Documents\WorkFromNAS\SynologyDrive\Conversion\`. Expand `%USERPROFILE%` when reading — it's `C:\Users\<username>` and the username differs across machines.
 
   **Summit (frozen — read for reference, do NOT modify):**
   - Extraction prompt: `summit-takeoff-poc\extraction_prompt.txt`
