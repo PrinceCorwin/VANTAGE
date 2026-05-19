@@ -11,16 +11,17 @@ WPF application for Summit Industrial replacing the legacy MS Access system ("Ol
 
 **See also:** `Plans/Project_Status.md` (todos, backlog), `Plans/Completed_Work.md` (changelog), `Plans/Milestone_Project_plan.md` (architecture), `Plans/Decisions.md` (design decisions), `Plans/MCAA_Ratesheet_Plan.md` (MCAA integration PRD)
 
+## Session start
+- **Pull latest first.** Steve works across two PCs (work + personal) and may start any session on the opposite machine from the last one. Run `git pull --rebase` in this repo at the start of EVERY session — including doc-only or "just one quick fix" sessions — to avoid having to resolve conflicts at commit time. The VANTAGE-Plugins sibling repo follows the same rule. **SkySkraper is NOT a Git repo** — it's a Synology-Drive-synced folder — so the equivalent there is confirming the SDrive client has finished catching up before working in that folder.
+
 ## Sister Project: SkySkraper (MCAA Ratesheet)
 - **External folder (per-machine — Synology Drive synced, NOT in this Git repo):**
   - Work PC (user `Steve.Amalfitano`): `%USERPROFILE%\source\repos\PrinceCorwin\SkySkraper\SynologyDrive`
   - Personal PC (user `steve`): `C:\Users\steve\Projects\SkySkraper` (no `SynologyDrive` subfolder — the project root IS the synced folder)
 
   The parent path AND the internal layout differ per machine. Never suggest moving it into the VANTAGE tree, copying its files here, git-tracking it, or adding it to `.gitignore`.
-- **Purpose:** Python pipeline that scrapes MCAA WebLEM and produces the local SQLite ratesheet that VANTAGE will consume to replace `Resources/RateSheet.json`.
-- **Canonical PRD lives here:** `Plans/MCAA_Ratesheet_Plan.md`. Status and completed work for the MCAA effort track in this repo's `Plans/Project_Status.md` and `Plans/Completed_Work.md`.
-- **Before starting MCAA-related work in the SkySkraper folder, read its own `CLAUDE.md` and `Plans/cdx_Project_Status.md` (Codex's working journal) for current state.**
-- **File ownership inside the SkySkraper folder:** files prefixed `cdx_` are Codex's; everything else is Claude's. Either side reads either's files; neither modifies the other's. Make your own copy if you need to change something.
+- **Purpose:** Python pipeline that scrapes MCAA WebLEM and produces the local SQLite ratesheet that VANTAGE will consume to replace `Resources/RateSheet.json`. **Before any work in that folder, read its own `CLAUDE.md` first** — it carries the workflow specifics (file-ownership rules, raw-cache guardrails, Synology Drive bulk-op gotcha).
+- **Canonical PRD lives in this repo:** `Plans/MCAA_Ratesheet_Plan.md`. SkySkraper-side status and completed work are tracked in this repo's `Plans/Project_Status.md` and `Plans/Completed_Work.md` (the SkySkraper folder's `Plans/cdx_*.md` files are Codex's authoritative journal — read for reference, do not modify).
 
 ## Sister Project: VANTAGE-Plugins
 - **External folder (per-machine — NOT in this Git repo):**

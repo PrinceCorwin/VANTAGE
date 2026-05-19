@@ -6,6 +6,50 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### May 19, 2026 (SkySkraper Status Sync + CLAUDE.md Cleanup + Session-Start Pull-First Rule)
+
+**SkySkraper status pulled into VANTAGE as the authoritative location.** Read SkySkraper's `Plans/HANDOFF_to_VANTAGE_Claude.md`, `Plans/cdx_Project_Status.md`, and `Plans/cdx_Next_Session_Handoff.md` to inventory what's happened on the producer side since the last VANTAGE-side touchpoint. Added two new entries to `Plans/Completed_Work.md` (May 18 path-shortening, May 19 SDrive on-demand-sync zombie cleanup) and replaced the stale "Producer-side blocker" bullet in `Plans/Project_Status.md` (the "~73K of 174K rows still need `newComp` assignments + xlsx → SQLite exporter" framing was pre-pivot) with three current-state bullets: section-by-section review status (Joints + Branch Connections done; Fittings active; Cut Tables/Flanges/Flanges Orifice/TIG Root/Pipe queued), generator-patch TODO (4 scripts still emit long workbook names; regen today would undo all the path-shortening work), and throwaway-script cleanup (4 one-shot scripts to delete after the generators are patched and all 3 PCs confirm clean).
+
+**VANTAGE `CLAUDE.md` Sister Project section consolidated.** Started by trimming the section to 2 bullets; on push, hit a conflicting parallel commit from the personal PC that had documented the genuine per-machine path divergence (work PC uses `%USERPROFILE%\source\repos\PrinceCorwin\SkySkraper\SynologyDrive`, personal PC uses `C:\Users\steve\Projects\SkySkraper` with NO `SynologyDrive\` subfolder — the project root IS the synced folder). Merge resolution kept the per-machine path bullet verbatim from that commit (critical correctness — `%USERPROFILE%` substitution doesn't work here, paths differ structurally) and dropped the bullets now redundant with the SkySkraper `CLAUDE.md` (cdx_/Claude file-ownership rule, explicit `cdx_Project_Status.md` pointer). Final section is 3 bullets: per-machine paths + "don't gitignore / don't move into VANTAGE tree" defense, purpose + read-its-CLAUDE.md-first pointer, PRD location + VANTAGE-Plans-is-authoritative-for-Claude-status note.
+
+**New top-level `## Session start` section added to VANTAGE `CLAUDE.md`** mandating `git pull --rebase` at the start of every session (including doc-only sessions) in both VANTAGE and the VANTAGE-Plugins sibling repo. The cross-PC merge conflict this session would not have happened with the rule in place — captured before the next session can reproduce it. SkySkraper is **NOT** a Git repo — it's Synology-Drive-synced — so the equivalent there is confirming the SDrive client has caught up before working in that folder.
+
+**SkySkraper `CLAUDE.md` refreshed (external SDrive-synced folder, not in this Git commit).** Old file referenced four plan documents that no longer exist (`SkySkraper_MCAA_Ratesheet_Plan.md`, `Plans/Project_Status.md`, `Plans/Completed_Work.md`, `Plans/Status_Docs_Guide.md`) and the now-defunct "Sandbox estimating app" framing. Rewrote to be evergreen-only: kept hard constraints, code conventions, environment, section-scoped cache layout, cookie refresh, common pitfalls. Added a new "Synology Drive — bulk rename/delete gotcha" durable operational rule (turn off on-demand sync before bulk renames; empty NAS Recycle Bin before resuming other PCs). Reframed "File ownership (Codex/Claude)" as ask-first courtesy rather than absolute prohibition — Claude is project lead, Codex is brought in for scraping, but Claude can edit `cdx_*` files when needed with user confirmation. Dropped every transient/status item that would rot once work completes (workbook path-shortening status block, throwaway-scripts list, generator-patch TODO, handoff-file pointers, "When in doubt → read cdx_Project_Status.md" footer) — those all live in VANTAGE `Plans/Project_Status.md` now. Intro paragraph routes future Claude sessions to VANTAGE's status files explicitly.
+
+**Doc-only session — no VANTAGE code changes.**
+
+**Key files:** `CLAUDE.md` (new `## Session start` section + Sister Project section consolidation), `Plans/Project_Status.md` (Producer-side status + generator-patch TODOs), `Plans/Completed_Work.md` (May 18 + May 19 SkySkraper entries added). External (not in this commit): `SkySkraper/SynologyDrive/CLAUDE.md` (full rewrite).
+
+### May 19, 2026 (SkySkraper — Synology Drive On-Demand-Sync Zombie Cleanup)
+
+**Day-after fallout from the path-shortening renames.** Duplicate folders appeared under SkySkraper's `output/workbooks/` and `output/cdx_workbooks/` — both the long-form folder and its new short-form twin existed as siblings.
+
+**Root cause:** the work PC's Synology Drive client was running in **on-demand sync** mode during the rename pass. On-demand sync stores files as cloud placeholders, not real local files. When the rename script issued thousands of `rename(src, dst)` calls in rapid succession, SDrive raced with itself — it interpreted each rename as `delete src` + `create dst`, then "repaired" the missing `src` by re-downloading it from the NAS. Result: every renamed folder had its old long-form copy resurrected from the cloud. Home Legion PCs were powered off during the rename window, so they were ruled out as the source.
+
+**Diagnosed clean:** a diagnostic script classified every long-form path on disk as a *zombie* (long-form whose fully-shortened twin also exists) — 0 orphans, meaning the rename script didn't miss anything; every long path had a matching short twin. A 20-pair sample compared byte-identical.
+
+**Cleanup performed on the work PC:** switched the SkySkraper SDrive task to "Sync everything to this computer", waited for the tree to materialize locally, paused sync, ran the cleanup script with safety checks (refused to delete anything without a verified short-form twin). Deleted **195 top-level zombie paths** (67 in `workbooks/`, 128 in `cdx_workbooks/`), 0 refused. Re-ran the diagnostic to confirm 0 zombies / 0 orphans.
+
+**Operational rule going forward (applies to any SDrive-synced folder used by SkySkraper or VANTAGE — e.g., the AI Takeoff `Conversion/` folder):** before any bulk rename/delete inside an SDrive-synced folder, set the sync task to "Sync everything to this computer" and wait for the tree to be fully local (optionally pause sync during the op). After the operation, before resuming sync on other machines, empty the NAS Synology Drive Recycle Bin for the affected shared folder — long-form files there can resurrect.
+
+**Authoritative narrative + full diagnostic detail:** `SkySkraper/SynologyDrive/Plans/cdx_Project_Status.md`, May 19 section.
+
+**Key files:** SkySkraper-side only (no VANTAGE code touched). Throwaway scripts marked for deletion after the pending generator patches land — see Project_Status.md.
+
+### May 18, 2026 (SkySkraper — Workbook Path Shortening for MAX_PATH Compliance)
+
+**~11,000 file/folder renames** under SkySkraper's `output/workbooks/` and `output/cdx_workbooks/` to bring every full Windows path below 260 characters (the legacy `MAX_PATH` limit). Pure rename — no files moved, no directory structure altered, no file contents touched.
+
+**Results:** paths ≥ 260 chars: 60 → 0. Paths ≥ 267 chars: 36 → 0. New max full path length: 256.
+
+**Source data and DB pipeline unaffected:** `build_db_v2.py`, `cdx_build_rates_review.py`, `cdx_build_workbooks.py`, `cdx_audit_weblem_db.py` all read from `raw_cache/`, never from the workbook files. Verified safe before the rename ran.
+
+**Pending — generators still emit long names.** Four scripts under `SkySkraper/SynologyDrive/scripts/` still produce the long folder/file names. Until they're patched, any regeneration recreates long paths and may fail to find existing short-named files. Tracked in `Plans/Project_Status.md`.
+
+**Authoritative substitution table** (~80 rules, ordering-sensitive) lives in `SkySkraper/SynologyDrive/Plans/cdx_Project_Status.md` under the May 18 section. The reference implementation is `SkySkraper/SynologyDrive/scripts/shorten_workbook_paths.py` — the `shorten(name)` function applies the full rule chain to a single path component. Generator patches will lift the regex table verbatim from there.
+
+**Key files:** SkySkraper-side only (no VANTAGE code touched).
+
 ### May 18, 2026 (Personal-PC Sibling-Repo Paths Documented; VS 17→18 .sln Stamp Committed; Git-Prompt Suppression)
 
 **Per-machine sibling-repo paths documented in `CLAUDE.md`.** Steve's new personal PC (`steve`) hosts the SkySkraper and VANTAGE-Plugins repos under `C:\Users\steve\Projects\` rather than the work-PC layout (`%USERPROFILE%\source\repos\PrinceCorwin\...`). Personal-PC SkySkraper has NO `SynologyDrive\` subfolder — the project root IS the synced folder; work-PC keeps the `SynologyDrive\` tail. Captured in two places:
