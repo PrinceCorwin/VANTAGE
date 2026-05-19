@@ -6,6 +6,19 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### May 18, 2026 (Personal-PC Sibling-Repo Paths Documented; VS 17→18 .sln Stamp Committed; Git-Prompt Suppression)
+
+**Per-machine sibling-repo paths documented in `CLAUDE.md`.** Steve's new personal PC (`steve`) hosts the SkySkraper and VANTAGE-Plugins repos under `C:\Users\steve\Projects\` rather than the work-PC layout (`%USERPROFILE%\source\repos\PrinceCorwin\...`). Personal-PC SkySkraper has NO `SynologyDrive\` subfolder — the project root IS the synced folder; work-PC keeps the `SynologyDrive\` tail. Captured in two places:
+- `CLAUDE.md` (Sister Project: SkySkraper) — rewritten as a per-machine bullet listing both layouts and the synced-folder-layout difference.
+- `CLAUDE.md` (new Sister Project: VANTAGE-Plugins section) — added with per-machine paths, the `plugins-index.json` / `src\` purpose blurb, and a pointer to read VANTAGE-Plugins' own `CLAUDE.md` before plugin-side changes.
+- Auto-memory `machine_personal_pc_paths.md` + `MEMORY.md` index — machine-detection guidance (`$env:USERNAME` = `steve` vs `Steve.Amalfitano`) plus the same path facts for future sessions.
+
+**`VANTAGE.sln` re-stamped VS 17 → 18.** Visual Studio 2026 (VS 18) silently re-stamped the solution file on first open on the new personal PC: `Visual Studio Version 17` → `18`, `VisualStudioVersion = 17.14.36603.0` → `18.6.11806.211 stable`. Format Version stays at `12.00` — the change is purely the "last saved by" header and has no behavioral effect; VS 17 still opens v18-stamped solutions fine. Repo had been at v17 since the Feb 1, 2026 installer commit even though Steve has been running VS 2026 on the work PC for a while (the work PC's VS likely re-stamps too but the change was never staged into a commit there). Committing the bump now to reflect current reality.
+
+**Git-permission prompts suppressed globally.** `~/.claude/settings.json` (user-global, outside the repo) gained a `permissions.allow` block adding `Bash(git *)` and `Bash(git:*)` so Claude no longer asks before running any `git` subcommand in any project. The existing project-level `.claude/settings.json` allow-list already enumerated many `Bash(git <sub>:*)` patterns; the new wildcards close the gaps.
+
+**Visual Studio upgrade artifacts gitignored.** Added `[Bb]ackup*/` and `UpgradeLog*.htm` to `.gitignore` so the noise VS produces whenever it modifies a project file (this session's `Backup/` directory + `UpgradeLog.htm`) stops appearing in `git status` on either PC. Matches the standard Microsoft `Visual Studio.gitignore` template.
+
 ### May 17, 2026 (AI Takeoff Working Folder Relocated from Google Drive to Synology NAS Sync)
 
 **Working-source path migrated** for the AI Takeoff pipeline (extraction prompt, BOM extraction Lambda, aggregation Lambda, ref tables). On the work PC the new path is `C:\Users\Steve.Amalfitano\Documents\WorkFromNAS\SynologyDrive\Conversion\`; on the personal PC it's `C:\Users\steve\Documents\SummitFiles\SynologyDrive\Conversion\` (confirmed 2026-05-17). Docs spell out the per-machine `<prefix>` (`WorkFromNAS` on work PC, `SummitFiles` on personal PC) because both the username AND the parent-folder name differ between machines — only the `SynologyDrive\Conversion\` tail is NAS-synced and identical across PCs. A renaming alternative was considered but rejected: the local parent contains the Synology Drive client's sync root, so renaming would require reconfiguring the sync target and risks a full re-sync.

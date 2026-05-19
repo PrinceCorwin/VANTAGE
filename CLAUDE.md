@@ -12,11 +12,22 @@ WPF application for Summit Industrial replacing the legacy MS Access system ("Ol
 **See also:** `Plans/Project_Status.md` (todos, backlog), `Plans/Completed_Work.md` (changelog), `Plans/Milestone_Project_plan.md` (architecture), `Plans/Decisions.md` (design decisions), `Plans/MCAA_Ratesheet_Plan.md` (MCAA integration PRD)
 
 ## Sister Project: SkySkraper (MCAA Ratesheet)
-- **External folder:** `%USERPROFILE%\source\repos\PrinceCorwin\SkySkraper\SynologyDrive` — Synology Drive synced, **NOT in this Git repo**. Expand `%USERPROFILE%` when reading; the username differs across machines. Never suggest moving it into the VANTAGE tree, copying its files here, git-tracking it, or adding it to `.gitignore`.
+- **External folder (per-machine — Synology Drive synced, NOT in this Git repo):**
+  - Work PC (user `Steve.Amalfitano`): `%USERPROFILE%\source\repos\PrinceCorwin\SkySkraper\SynologyDrive`
+  - Personal PC (user `steve`): `C:\Users\steve\Projects\SkySkraper` (no `SynologyDrive` subfolder — the project root IS the synced folder)
+
+  The parent path AND the internal layout differ per machine. Never suggest moving it into the VANTAGE tree, copying its files here, git-tracking it, or adding it to `.gitignore`.
 - **Purpose:** Python pipeline that scrapes MCAA WebLEM and produces the local SQLite ratesheet that VANTAGE will consume to replace `Resources/RateSheet.json`.
 - **Canonical PRD lives here:** `Plans/MCAA_Ratesheet_Plan.md`. Status and completed work for the MCAA effort track in this repo's `Plans/Project_Status.md` and `Plans/Completed_Work.md`.
 - **Before starting MCAA-related work in the SkySkraper folder, read its own `CLAUDE.md` and `Plans/cdx_Project_Status.md` (Codex's working journal) for current state.**
 - **File ownership inside the SkySkraper folder:** files prefixed `cdx_` are Codex's; everything else is Claude's. Either side reads either's files; neither modifies the other's. Make your own copy if you need to change something.
+
+## Sister Project: VANTAGE-Plugins
+- **External folder (per-machine — NOT in this Git repo):**
+  - Work PC (user `Steve.Amalfitano`): `%USERPROFILE%\source\repos\PrinceCorwin\VANTAGE-Plugins`
+  - Personal PC (user `steve`): `C:\Users\steve\Projects\VANTAGE-Plugins`
+- **Purpose:** Holds plugin source (e.g. `src\const-tfs-mech-updater\`) and the published `plugins-index.json` that VANTAGE's Plugin Manager / auto-updater reads. Releases are cut from this sibling repo, not from the VANTAGE tree.
+- **Has its own `CLAUDE.md`** — read it before making plugin-side changes.
 
 ## Tech Stack
 - WPF .NET 8, Syncfusion 33.1.45 (FluentDark / FluentLight base themes; see `Utilities/ThemeManager.cs`)
