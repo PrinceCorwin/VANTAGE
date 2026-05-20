@@ -695,7 +695,7 @@
             <td>Push your local changes to Azure and pull updates from other users. Validates metadata before syncing.</td>
         </tr>
         <tr>
-            <td><strong>SUBMIT WEEK</strong></td>
+            <td><strong>SNAPSHOT</strong></td>
             <td>Submit your weekly progress and create a snapshot. Use this at the end of each reporting period. <strong>A current-week snapshot is required</strong> before the Schedule module can finalize and generate the <em>Export to P6</em> file — and the snapshot's <em>Week End Date</em> must match the Week End Date you selected when importing the P6 file in the Schedule module. If the dates don't match, the Schedule module will not see your progress in its comparisons and the P6 export will be incomplete.</td>
         </tr>
     </table>
@@ -979,8 +979,8 @@
         <p>Sync will not proceed if you have metadata errors. Fix all required fields first, then try again.</p>
     </div>
 
-    <h4>SUBMIT WEEK Button</h4>
-    <p>Use SUBMIT WEEK at the end of each reporting period to:</p>
+    <h4>SNAPSHOT Button</h4>
+    <p>Use SNAPSHOT at the end of each reporting period to:</p>
     <ol>
         <li>Create a snapshot of your current data</li>
         <li>Archive your progress for the week</li>
@@ -990,14 +990,14 @@
 
     <div class="warning">
         <div class="warning-title">Submit Blocked by Metadata Errors</div>
-        <p>Submit Week will not proceed if the selected project has any records with missing required fields. Fix the flagged records first (use the <strong>Metadata Errors</strong> footer button to filter to them), then try again. The check is scoped to the project you selected — errors in a different project won't block this submit.</p>
+        <p>Snapshot will not proceed if the selected project has any records with missing required fields. Fix the flagged records first (use the <strong>Metadata Errors</strong> footer button to filter to them), then try again. The check is scoped to the project you selected — errors in a different project won't block this submit.</p>
     </div>
 
     <p><strong>Week-Over-Week Tracking:</strong> When you submit, your current earned man-hours (EarnMHsCalc) are saved to the PrevEarnMHs field. This lets you track progress since your last submission — the difference between EarnMHsCalc and PrevEarnMHs shows how many hours you've earned during the current week.</p>
 
     <p><strong>Conflict Handling:</strong> If another user has already submitted a snapshot containing records with the same UniqueID for the selected week, those records are automatically skipped (not overwritten). You'll see a message showing how many records were skipped. You can optionally export the skipped records to Excel to see which records were affected and who originally submitted them.</p>
 
-    <p><strong>Grid Lock During Snapshot Capture:</strong> When you click SUBMIT WEEK, the grid is briefly disabled (usually a second or two) while your current activity state is captured to memory. Once captured, the grid re-enables and you can keep editing. Any edits you make after that point are <strong>not</strong> included in the snapshot that was just submitted — they belong to the next week's progress. The remaining submit work (Azure upload, cleanup) runs in the background with a busy indicator you can drag out of the way.</p>
+    <p><strong>Grid Lock During Snapshot Capture:</strong> When you click SNAPSHOT, the grid is briefly disabled (usually a second or two) while your current activity state is captured to memory. Once captured, the grid re-enables and you can keep editing. Any edits you make after that point are <strong>not</strong> included in the snapshot that was just submitted — they belong to the next week's progress. The remaining submit work (Azure upload, cleanup) runs in the background with a busy indicator you can drag out of the way.</p>
 
     <h4 id="manage-my-snapshots">Manage My Snapshots</h4>
     <p>Opened from the <strong>File</strong> menu. Lists every weekly snapshot group (Project + Week Ending + Submitted date) you've ever submitted. Select one or more rows to enable the action buttons:</p>
@@ -1018,7 +1018,7 @@
     </ul>
     <div class="warning">
         <div class="warning-title">Snapshot Regenerated Externally</div>
-        <p>If someone (you or another user) runs Submit Week for the same project and week while the Modify dialog is open, the snapshot rows are replaced and your pending edits cannot be applied to them. Save will tell you if this happened — close Modify and reopen it to edit the current version.</p>
+        <p>If someone (you or another user) creates a snapshot for the same project and week while the Modify dialog is open, the snapshot rows are replaced and your pending edits cannot be applied to them. Save will tell you if this happened — close Modify and reopen it to edit the current version.</p>
     </div>
 
     <h3 id="prog-layouts">Column Layouts</h3>
@@ -1176,7 +1176,7 @@
         <p>To see data in the Schedule module, you need both of the following for the same week ending date:</p>
         <ul>
             <li>P6 schedule data imported via <strong>File â†’ Import From P6 File</strong></li>
-            <li>A progress snapshot created via <strong>SUBMIT WEEK</strong> in the Progress module</li>
+            <li>A progress snapshot created via <strong>SNAPSHOT</strong> in the Progress module</li>
         </ul>
         <p>If no P6 file has been imported, the header displays "(No schedule loaded)". Without both P6 data and a snapshot for the same week, the grid will be empty.</p>
     </div>
@@ -1460,7 +1460,7 @@
 
     <div class="note">
         <div class="note-title">Project List</div>
-        <p>The project selection list is populated from your submitted snapshots. If a project doesn't appear, you need to Submit Week for that project in the Progress module first.</p>
+        <p>The project selection list is populated from your submitted snapshots. If a project doesn't appear, you need to create a snapshot for that project in the Progress module first.</p>
     </div>
 
     <div class="note">

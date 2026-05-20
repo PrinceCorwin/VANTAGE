@@ -15,6 +15,9 @@
 | Procore | IN PROGRESS | OAuth + auth dialog + service layer scaffolded; targeted at WP DWG Log fetch |
 | AI Features (other) | NOT STARTED | Error Assistant, Description Analysis, etc. |
 
+## Ready to Publish
+- **New release pending** — Manage My Snapshots query optimization (~60s → <10 ms via INDEX hint) and Progress module "Submit Week" button relabel to "Snapshot". Run `/publisher` when ready.
+
 ## Active Development
 
 ### Work Package Module

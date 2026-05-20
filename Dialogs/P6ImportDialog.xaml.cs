@@ -118,7 +118,7 @@ namespace VANTAGE.Dialogs
                 if (_projects.Count == 0)
                 {
                     txtNoSnapshots.Visibility = Visibility.Visible;
-                    txtNoSnapshots.Text = "No submitted snapshots found. You must Submit Week in Progress module first.";
+                    txtNoSnapshots.Text = "No submitted snapshots found. You must create a Snapshot in the Progress module first.";
                 }
                 else
                 {

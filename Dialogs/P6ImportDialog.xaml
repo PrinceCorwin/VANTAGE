@@ -117,7 +117,7 @@
 
         <!-- Footer hint -->
         <TextBlock Grid.Row="7"
-                  Text="If desired project is not visible, cancel and Submit Week in Progress module first."
+                  Text="If desired project is not visible, cancel and create a Snapshot in the Progress module first."
                   Foreground="{DynamicResource ForegroundColor}"
                   Opacity="0.6"
                   FontSize="11"

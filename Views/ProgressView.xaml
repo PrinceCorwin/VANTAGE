@@ -904,7 +904,7 @@
                         </Button>
 
                         <Button x:Name="btnSubmit"
-                                Content="SUBMIT WEEK"
+                                Content="SNAPSHOT"
                                 Style="{StaticResource RoundedButtonStyle}"
                                 Width="150"
                                 Margin="10,0"
