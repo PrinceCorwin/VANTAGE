@@ -6,6 +6,28 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### May 19, 2026 (SkySkraper Generator Path-Shortening Patches)
+
+**Three of the four scripts originally flagged for patching now emit short paths at write time.** The May 18 path-shortening pass renamed every long path under `output/workbooks/` and `output/cdx_workbooks/` once, but until the generators were patched, any regeneration would have recreated the long names and re-broken the cleanup. Today's session patched the three scripts that actually build nested folder structure under those roots:
+
+- `scripts/build_workbooks.py` — `build_workbook_path()` now applies `shorten()` per component after sanitization.
+- `scripts/cdx_build_workbooks.py` — `workbook_path_for()` updated with the same per-component shorten pass.
+- `scripts/cdx_create_review_samples.py` — kept the 9 hardcoded long-form paths in their human-readable form; added a new `short_relative()` helper that applies `shorten()` per path component before resolving against disk. All 9 paths now resolve to real files.
+
+**Fourth script needed no patch.** Re-audit of `scripts/cdx_build_rates_review.py` confirmed it writes a single flat xlsx (`OUTPUT_DIR / "cdx_rates_review.xlsx"` or whatever `--output` is set to) with no nested folder structure. The original handoff doc over-listed it for caution; on inspection there's nothing for the shortening rules to apply to.
+
+**Rules now live in a new shared module** — `scripts/path_shortening.py` (new). Centralizes the substitution table + `shorten(name)` function so all three patched generators import from one source of truth. The original `scripts/shorten_workbook_paths.py` (throwaway, still on disk) keeps its own copy of the rules — not refactored to import from the new module, left intact for the eventual delete.
+
+**Verification:** `py_compile` clean on all four touched files. Smoke test of `shorten()` against 11 inputs (space form, dash form, Round-4 specific renames like `Reinforcing Saddle (Repad)` → `Repad`, `Slip Coupling w- Shrink Sleeve` → `Slip Coupling Shrink Sleeve`, `1-1-4 Chrome 1-2 Moly` → `1.25Chr0.5M`) produced expected outputs. Resolution check confirmed all 9 hardcoded `cdx_create_review_samples` paths point at real files on disk via the new `short_relative()` helper. End-to-end regeneration was NOT run — that would rewrite ~11,000 existing files; a `--limit N` smoke run against a few leaves is the safer gate before a full regen.
+
+**Codex-side journal updated.** `SkySkraper/SynologyDrive/Plans/cdx_Project_Status.md` flipped the "Pending generator-patch work is unchanged" subsection to **RESOLVED** and gained a new top-level "May 19, 2026 Generator Path-Shortening Patches" section with full detail (what was patched / what wasn't / where the rules live / verification / throwaway-script status). `SkySkraper/SynologyDrive/Plans/cdx_Next_Session_Handoff.md` gained a "Cross-author note — 2026-05-19 (Claude)" section right after the intro so the next Codex session sees all three May 18-19 events at first read. Both Codex-side entries are signed `[Authored by Claude — VANTAGE 2026-05-19 session]`. Per the SkySkraper `CLAUDE.md` "ask first" courtesy on `cdx_*` files: user gave explicit instruction this session to edit them and to sign entries.
+
+**Resurrection risk closed.** With the old Legion uninstalled from SDrive earlier today and all remaining PCs at 0 zombies / 0 orphans, the four throwaway scripts (`shorten_workbook_paths.py`, `diagnose_zombies.py`, `sample_zombie_compare.py`, `delete_zombies.py`) are no longer load-bearing. They remain on disk per "ask first" — `Plans/Project_Status.md` TODO bullet now reflects the satisfied safety-net condition and reframes the cleanup as user-direction-only, not blocking.
+
+**No VANTAGE code changes** — all six touched files (one new module, three patched generators, two Codex-side journal docs) live in the external SDrive-synced SkySkraper folder, not in this Git repo.
+
+**Key files:** External (not in this commit): `scripts/path_shortening.py` (new), `scripts/build_workbooks.py`, `scripts/cdx_build_workbooks.py`, `scripts/cdx_create_review_samples.py`, `Plans/cdx_Project_Status.md`, `Plans/cdx_Next_Session_Handoff.md`. This commit: `Plans/Project_Status.md` (TODO pruned to single non-load-bearing item), `Plans/Completed_Work.md` (this entry).
+
 ### May 19, 2026 (SkySkraper Status Sync + CLAUDE.md Cleanup + Session-Start Pull-First Rule)
 
 **SkySkraper status pulled into VANTAGE as the authoritative location.** Read SkySkraper's `Plans/HANDOFF_to_VANTAGE_Claude.md`, `Plans/cdx_Project_Status.md`, and `Plans/cdx_Next_Session_Handoff.md` to inventory what's happened on the producer side since the last VANTAGE-side touchpoint. Added two new entries to `Plans/Completed_Work.md` (May 18 path-shortening, May 19 SDrive on-demand-sync zombie cleanup) and replaced the stale "Producer-side blocker" bullet in `Plans/Project_Status.md` (the "~73K of 174K rows still need `newComp` assignments + xlsx → SQLite exporter" framing was pre-pivot) with three current-state bullets: section-by-section review status (Joints + Branch Connections done; Fittings active; Cut Tables/Flanges/Flanges Orifice/TIG Root/Pipe queued), generator-patch TODO (4 scripts still emit long workbook names; regen today would undo all the path-shortening work), and throwaway-script cleanup (4 one-shot scripts to delete after the generators are patched and all 3 PCs confirm clean).
