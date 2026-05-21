@@ -331,7 +331,7 @@ namespace VANTAGE.Views
             if (_service == null) return;
 
             // Use batch name for filename if provided, otherwise fall back to batch ID
-            string fileName = !string.IsNullOrEmpty(batchName) ? $"{batchName}.xlsx" : $"takeoff_{batchId}.xlsx";
+            string fileName = !string.IsNullOrEmpty(batchName) ? $"{batchName}.xlsx" : $"{batchId}.xlsx";
 
             var dialog = new SaveFileDialog
             {
