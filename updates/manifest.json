@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.2.19",
-  "releaseDate": "2026-05-07T00:00:00Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.2.19/VANTAGE-26.2.19.zip",
-  "zipSizeBytes": 151803041,
-  "sha256": "86460176EB774B3948CCB43A8C5CDF5C68232A297DAA721224319BC52DE7D319",
-  "releaseNotes": "File → Export Schedule to Excel. Ctrl+A on Progress grid no longer freezes at 100k+ rows."
+  "currentVersion": "26.2.20",
+  "releaseDate": "2026-05-21T15:52:59Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.2.20/VANTAGE-26.2.20.zip",
+  "zipSizeBytes": 151632211,
+  "sha256": "768E92549AE41544FDAC3B82F6925943D7BB7A65009416597B46F736E7065B96",
+  "releaseNotes": "Manage My Snapshots loads almost instantly. SUBMIT WEEK button relabeled to SNAPSHOT. Deleted Records can export filtered records in NewVantage format."
 }

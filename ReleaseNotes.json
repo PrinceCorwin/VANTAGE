@@ -1,6 +1,19 @@
 {
   "releases": [
     {
+      "version": "26.2.20",
+      "date": "2026-05-21",
+      "highlights": [
+        "Improvement — Manage My Snapshots dialog now opens almost instantly. On larger projects it was taking around a minute to load; the underlying query has been rewritten and tuned to return in under a hundredth of a second.",
+        "Change — The Progress toolbar button previously labeled \"SUBMIT WEEK\" is now labeled \"SNAPSHOT\". Same behavior, clearer name. Tooltip and help manual updated to match.",
+        "New — Deleted Records dialog can now export the currently filtered records as a NewVantage import file, so you can recover a targeted subset without re-importing everything.",
+        "New — AI Takeoff Previous Batches grid has a Batch ID column so you can identify and match batches more easily.",
+        "Improvement — AI Takeoff batch IDs are now safe across multiple users running takeoffs at the same time.",
+        "Improvement — AI Takeoff Material tab ShopField values are now written by VANTAGE after the run, so the result is consistent regardless of which post-processing path was taken.",
+        "Fix — The auto-download filename after a takeoff completes no longer has a \"takeoff_\" prefix. The name now matches the file you'd get from Previous Batches → Download Excel."
+      ]
+    },
+    {
       "version": "26.2.19",
       "date": "2026-05-07",
       "highlights": [
