@@ -2,7 +2,7 @@
 
 How VANTAGE works today. Each entry states a current rule or invariant; the **Why** captures the reasoning behind it. Every line should be true right now — if a rule changes, the existing entry is rewritten in place rather than appended to.
 
-Sections follow VANTAGE's nav structure top to bottom. See `.claude/skills/finisher/skill.md` Step 3.5 for the full maintenance contract.
+Sections follow VANTAGE's nav structure top to bottom. See `.claude/skills/finisher/SKILL.md` Step 3.5 for the full maintenance contract.
 
 ---
 
