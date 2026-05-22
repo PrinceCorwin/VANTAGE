@@ -12,9 +12,11 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 **Doc reference cleanup.** 12 stale references to `.claude/skills/<name>/skill.md` (lowercase) updated to `SKILL.md` across `Plans/Decisions.md` (1), `Plans/Completed_Work.md` (2 — not counting the May 19 entry header), `Plans/Archives/Completed_Work_2026-03.md` (1), and `Plans/Archives/Completed_Work_2026-04.md` (7). Bulk-replaced via PowerShell with BOM-state preservation and line-ending-safe round-tripping (no BOM in any of these files; CRLF preserved). Re-grep confirms zero remaining lowercase references in any project file.
 
+**Codex-side `.agents/skills/` mirror caught + fixed (follow-up).** Initial sweep missed the `.agents/` directory because it was untracked in git and excluded from the first commit on the assumption it was in-progress work. On re-inventory, `.agents/skills/` turned out to be the Codex parallel skills directory — same skill set as `.claude/skills/`, differing only in provider attribution (Codex vs Claude / Claude Code) inside the skill bodies. Three more lowercase files renamed to `SKILL.md`: `.agents/skills/create-theme/skill.md`, `.agents/skills/finisher/skill.md`, `.agents/skills/publisher/skill.md`. `.agents/skills/speedup/SKILL.md` was already correct. The entire `.agents/` tree was added to version control in this commit (previously untracked, not gitignored) so both agent trees are managed alongside each other going forward.
+
 **Doc-only / skill-meta session — no VANTAGE code changes.**
 
-**Key files:** `.claude/skills/finisher/SKILL.md` (renamed), `.claude/skills/create-theme/SKILL.md` (renamed), `.claude/skills/publisher/SKILL.md` (renamed), `Plans/Decisions.md`, `Plans/Completed_Work.md`, `Plans/Archives/Completed_Work_2026-03.md`, `Plans/Archives/Completed_Work_2026-04.md`.
+**Key files:** `.claude/skills/finisher/SKILL.md` (renamed), `.claude/skills/create-theme/SKILL.md` (renamed), `.claude/skills/publisher/SKILL.md` (renamed), `.agents/skills/finisher/SKILL.md` (renamed + newly tracked), `.agents/skills/create-theme/SKILL.md` (renamed + newly tracked), `.agents/skills/publisher/SKILL.md` (renamed + newly tracked), `.agents/skills/speedup/SKILL.md` (newly tracked), `Plans/Decisions.md`, `Plans/Completed_Work.md`, `Plans/Archives/Completed_Work_2026-03.md`, `Plans/Archives/Completed_Work_2026-04.md`.
 
 ### May 20, 2026 (Manage My Snapshots Query Optimization + SNAPSHOT Button Relabel)
 
