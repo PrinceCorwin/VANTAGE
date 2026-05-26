@@ -16,7 +16,7 @@
 | AI Features (other) | NOT STARTED | Error Assistant, Description Analysis, etc. |
 
 ## Ready to Publish
-- **New release pending** — Manage My Snapshots query optimization (~60s → <10 ms via INDEX hint) and Progress module "Submit Week" button relabel to "Snapshot". Run `/publisher` when ready.
+- **New release pending** — Manage My Snapshots query optimization (~60s → <10 ms via INDEX hint), Progress module "Submit Week" button relabel to "Snapshot", and AI Takeoff BU labor rows now per-flange (Quantity 0.5 + full joint rate, restoring the `RateSheet × Quantity = BudgetMHs` audit invariant; description suffix updated to "HALF BU ONE FLANGE ONLY"). Run `/publisher` when ready.
 
 ## Active Development
 

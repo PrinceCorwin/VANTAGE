@@ -484,9 +484,14 @@ Sections follow VANTAGE's nav structure top to bottom. See `.claude/skills/finis
 **Date:** April 2026
 
 #### Labor-Tab Description Excludes Pipe Spec
-**Rule:** The Labor tab's `Description` column for connection rows is built from `"{size} IN - {thickness} - {class} - {material} - {connType}"`. Pipe spec is not injected.
-**Why:** The prior `FindPipeSpec` heuristic latched onto the first title-block field whose key contained "spec" — fragile on drawings with multiple spec fields (Pipe / Coating / Insulation), silently broken on drawings labelled "Pipe Schedule" instead. Every title-block field already flows to Labor as a dedicated trailing column, so injecting a best-guess spec into Description added no information — only confusion when wrong.
-**Date:** April 2026
+**Rule:** The Labor tab's `Description` column for connection rows is built from `"{size} IN - {thickness} - {class} - {material} - {connType}"`. Pipe spec is not injected. For BU rows the trailing `{connType}` segment is the literal string `"HALF BU ONE FLANGE ONLY"` instead of `"BU"` so reviewers can see at a glance that each row prices one flange, not a full joint.
+**Why:** The prior `FindPipeSpec` heuristic latched onto the first title-block field whose key contained "spec" — fragile on drawings with multiple spec fields (Pipe / Coating / Insulation), silently broken on drawings labelled "Pipe Schedule" instead. Every title-block field already flows to Labor as a dedicated trailing column, so injecting a best-guess spec into Description added no information — only confusion when wrong. The explicit BU suffix exists because the per-flange convention (one bolt-up joint produces two labor rows) is easy to miss when scanning the Labor tab and an obvious caption prevents double-counting on visual reviews.
+**Date:** May 2026
+
+#### BU Labor Rows Are Per-Flange: Quantity 0.5, Full Joint Rate
+**Rule:** Each bolt-up joint produces two BU labor rows (one per flange). Each row carries `Quantity = 0.5` and the full per-joint rate from the rate sheet — `ApplyRates` does NOT halve the rate for BU. Per-row `BudgetMHs = mhu × mults × 0.5`; per-joint total across the two rows equals one full per-joint rate. CUT/BEV companion adds are zero for BU (neither branch in `ApplyRates` applies). The invariant `RateSheet × Quantity = BudgetMHs` holds for BU rows the same as for every other connection type.
+**Why:** The earlier convention used `Quantity = 1` with the rate halved inside `ApplyRates` (`mhu /= 2`), which produced identical totals but broke the `RateSheet × Quantity = BudgetMHs` audit invariant — the rate column on a BU row no longer matched the rate sheet, confusing review. Shifting the halving to the Quantity side keeps the audit columns honest: a reviewer can multiply RateSheet × Quantity and reach BudgetMHs on every row type without special-casing BU. The Summary tab's BU counts (`buCount = Math.Ceiling(buRows / 2.0)`) are unaffected — they count rows, not quantities.
+**Date:** May 26, 2026
 
 #### Flagged Tab Is Minimal; Material Is Authoritative
 **Rule:** The Flagged tab carries 13 columns (drawing number, item ID, size, description, component, connection qty/type, material group + desc, thickness, class rating, confidence, flag reason) and no override columns. It does NOT mirror Material — `connection_size`, `quantity`, `commodity_code`, `length`, `shop_field`, and all `tb_*` title-block columns are intentionally omitted. Reviewers match by `(Drawing Number, Item ID)` back to Material to see context or apply corrections.

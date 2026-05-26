@@ -1398,8 +1398,10 @@ namespace VANTAGE.Services.AI
             labor["Component"] = connType;
             labor["Size"] = sizeStr;
             labor["Thickness"] = thickness;
-            labor["Quantity"] = 1;
-            string descSuffix = connType == "BU" ? "BU - One Flange" : connType;
+            // BU produces two rows per joint (one per flange), so each row is 0.5 of a joint.
+            // Paired with the full (un-halved) rate in ApplyRates, this keeps per-joint MHs correct.
+            labor["Quantity"] = connType == "BU" ? 0.5 : 1;
+            string descSuffix = connType == "BU" ? "HALF BU ONE FLANGE ONLY" : connType;
             labor["Description"] = BuildConcatDescription(sizeStr, thickness, classRating, material, descSuffix);
             labor["BudgetMHs"] = null;
 
@@ -1789,14 +1791,10 @@ namespace VANTAGE.Services.AI
 
                 if (fldMhu.HasValue)
                 {
-                    // Use double for quantity — PIPE fab rows have feet values < 1
+                    // Use double for quantity — PIPE fab rows have feet values < 1,
+                    // and BU rows carry 0.5 (one flange = half a joint).
                     double qty = GetNullableDouble(row, "Quantity") ?? 1;
                     double mhu = fldMhu.Value;
-
-                    // BU rows are created for each flanged end, so every bolt-up joint
-                    // generates 2 rows. Halve the rate so the total per joint is correct.
-                    if (component.Equals("BU", StringComparison.OrdinalIgnoreCase))
-                        mhu /= 2;
 
                     // Rollup and material multipliers
                     double rollupMult = GetRollupMultiplier(component);

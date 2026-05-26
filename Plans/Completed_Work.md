@@ -6,6 +6,21 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### May 26, 2026 (AI Takeoff: BU Labor Rows Now Per-Flange at Quantity 0.5)
+
+**BU (bolt-up) labor rows now carry `Quantity = 0.5` and the full per-joint rate.** Previously each BU row was created with `Quantity = 1` and `ApplyRates` halved the rate (`mhu /= 2`) so the per-joint total across the two BU rows came out correct. The two formulations are mathematically equivalent (`0.5 × mhu` and `1 × mhu/2` both equal `mhu/2`), but the old shape broke the `RateSheet × Quantity = BudgetMHs` audit invariant on BU rows — the RateSheet column showed a halved value that didn't match the rate sheet, which made review confusing. The new shape keeps every audit column honest. Per-row and per-joint `BudgetMHs` are unchanged.
+
+**Changes in `Services/AI/TakeoffPostProcessor.cs`:**
+- `CreateConnectionLaborRow` (line ~1401): `labor["Quantity"] = connType == "BU" ? 0.5 : 1;` (was unconditional `1`).
+- `ApplyRates` (lines ~1796–1799): removed the `if (component == "BU") mhu /= 2;` block. Comment updated to note BU carries 0.5 (one flange = half a joint).
+- BU description suffix changed from `"BU - One Flange"` to `"HALF BU ONE FLANGE ONLY"` (line ~1402). The all-caps caption makes the per-flange convention impossible to miss when scanning the Labor tab, preventing double-counting on visual reviews.
+
+**No effect on Summary tab counts.** `buCount = Math.Ceiling(buRows / 2.0)` in `WriteSummaryTab` counts rows, not quantities — the per-joint count is still derived correctly. Cross-mode: both Summit and MCAA modes route BU through the same `ApplyRates` path so the change is mode-agnostic. CUT/BEV companion adds remain 0 for BU (neither the BW branch nor the SW/SCRD branch matches), so dropping the `/= 2` doesn't reintroduce an adds-side wrinkle.
+
+**Decisions.md updated** — new entry `BU Labor Rows Are Per-Flange: Quantity 0.5, Full Joint Rate` under Takeoffs > Common documenting the invariant. The existing `Labor-Tab Description Excludes Pipe Spec` entry was extended to mention the BU `"HALF BU ONE FLANGE ONLY"` suffix exception and the per-flange rationale.
+
+**Key files:** `Services/AI/TakeoffPostProcessor.cs`, `Plans/Decisions.md`, `Plans/Completed_Work.md` (this entry).
+
 ### May 21, 2026 (Skill File Casing Convention Fix)
 
 **Renamed three project-local skill files to canonical SKILL.md casing.** `.claude/skills/finisher/skill.md`, `.claude/skills/create-theme/skill.md`, and `.claude/skills/publisher/skill.md` were all written in lowercase. `.claude/skills/speedup/SKILL.md` was already correct. Claude Code's skill discovery looks for `SKILL.md` (uppercase) specifically — lowercase happens to work on Windows because NTFS lookup is case-insensitive, but Linux/macOS skill discovery would silently fail to load any skill with a lowercase filename. The casing fix makes VANTAGE's `.claude/skills/` tree portable to non-Windows machines without breaking skill discovery. Used a two-step rename via temp filename for each (case-only renames on NTFS can fail silently depending on PowerShell version). No content changes to any SKILL.md file.
