@@ -119,7 +119,7 @@ VANTAGE: Milestone provides activity tracking, P6 Primavera schedule integration
 ## In Development / Planned
 
 ### Analysis Module (In Progress)
-- 3x1+3 grid layout with chart filters panel and persistent filter state
+- 3x1+3 grid layout with chart filters panel (session-only, lazy-populated on first open) and Reset button
 - Dynamic chart sections with selectable visual type, X axis, Y axis
 - Pie / doughnut labels and legends
 - Summary grid with independent filters

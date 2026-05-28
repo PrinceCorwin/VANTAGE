@@ -184,6 +184,11 @@ Sections follow VANTAGE's nav structure top to bottom. See `.claude/skills/finis
 **Why:** First load is unchanged in cost; every subsequent navigation is instant. Recreating the view on each nav was wasteful when the data hadn't changed.
 **Date:** February 2026
 
+### `AnalysisView` Is Cached Across Navigations
+**Rule:** `MainWindow` caches the `AnalysisView` instance and reuses it on every Analysis-tab navigation. `AnalysisView_Loaded` runs the one-time init path only when `_dataLoaded` is false; subsequent navs short-circuit. `ThemeManager.ThemeChanged` is subscribed once in the constructor (not in `Loaded`) so re-Loaded events do not double-subscribe.
+**Why:** Same motivation as Progress — chart settings, filter selections, summary scroll, and grid layout survive nav back, and the 12 chart-filter DISTINCT queries / chart-data query only run on first open. Previously the view was destroyed and rebuilt on every navigation, which compounded the per-add rehydration cost from the now-removed filter persistence into a UI-thread freeze at 100k-record scale.
+**Date:** May 2026
+
 ### Notification Sounds Are Suppressed on Informational Dialogs
 **Rule:** All `MessageBox.Show` calls that previously used `MessageBoxImage.Information` now use `MessageBoxImage.None`. The OS notification chime does not play on informational confirmations.
 **Why:** The Windows information sound was disruptive on routine confirmations and added no signal users acted on.
@@ -406,6 +411,11 @@ Sections follow VANTAGE's nav structure top to bottom. See `.claude/skills/finis
 **Rule:** Analysis auto-selects the first project from current local data on every load. No saved/restored selection.
 **Why:** Stale saved selections pointed to projects no longer in local DB after clear/re-sync, leaving the table empty with no obvious cause.
 **Date:** April 2026
+
+### Chart Filters Are Session-Only and Lazy-Populated
+**Rule:** The 12 chart-filter `ComboBoxAdv` dropdowns on the Analysis tab hold their selections only as long as the cached `AnalysisView` instance lives. Selections survive Progress ↔ Analysis nav (via view caching) and die at app close. Each dropdown's items are populated by a `SELECT DISTINCT` against `Activities` only on first `DropDownOpened` for that filter, tracked via a `_populatedFilters` HashSet. No `UserSettings` row is read or written for chart filter state.
+**Why:** Cross-session persistence previously wrote every selected value to `AnalysisFilter_<field>` as a comma-joined string, and the cold-load restore loop called `combo.SelectedItems.Add(val)` once per saved value. At ~2,000+ saved SchedActNOs this rehydration wedged the UI thread on every Analysis tab open. Session-only is the same model the Progress module already uses for column filters and is acceptable for the analytics workflow.
+**Date:** May 2026
 
 ---
 

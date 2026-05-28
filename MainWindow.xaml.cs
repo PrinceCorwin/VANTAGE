@@ -148,8 +148,9 @@ namespace VANTAGE
                 AppLogger.Error(ex, "MainWindow.LoadPlugins");
             }
         }
-        // Cached view instance to avoid full data reload on every navigation
+        // Cached view instances to avoid full data reload on every navigation
         private Views.ProgressView? _cachedProgressView;
+        private Views.AnalysisView? _cachedAnalysisView;
 
         private SidePanelViewModel _sidePanelViewModel = null!;
         // ========================================
@@ -624,8 +625,13 @@ namespace VANTAGE
 
             HighlightNavigationButton(btnAnalysis);
             ContentArea.Content = null;
-            var analysisView = new Views.AnalysisView();
-            ContentArea.Content = analysisView;
+            // Reuse cached instance so filter selections, chart settings, and scroll position
+            // survive tab navigation (same pattern as ProgressView).
+            if (_cachedAnalysisView == null)
+            {
+                _cachedAnalysisView = new Views.AnalysisView();
+            }
+            ContentArea.Content = _cachedAnalysisView;
         }
 
         private void BtnTakeoff_Click(object sender, RoutedEventArgs e)

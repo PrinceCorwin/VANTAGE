@@ -39,25 +39,34 @@ namespace VANTAGE.Views
         };
 
         private bool _isInitializing = true;
+        // Tracks whether one-time init has run. The view instance is cached in MainWindow,
+        // so Loaded fires every nav back; we skip re-init to keep tab nav instant.
+        private bool _dataLoaded;
 
         public AnalysisView()
         {
             InitializeComponent();
             SfSkinManager.SetTheme(this, new Theme(ThemeManager.GetSyncfusionThemeName()));
+            // ThemeChanged is subscribed once for the lifetime of the cached instance.
+            ThemeManager.ThemeChanged += OnThemeChanged;
             Loaded += AnalysisView_Loaded;
             Unloaded += AnalysisView_Unloaded;
         }
 
         private void AnalysisView_Loaded(object sender, RoutedEventArgs e)
         {
-            ThemeManager.ThemeChanged += OnThemeChanged;
+            // Cached instance: skip re-init on every tab nav back. Filter selections,
+            // chart settings, and grid layout all live in-memory on the cached view.
+            if (_dataLoaded) return;
+
             _isInitializing = true;
 
             try
             {
                 PopulateGroupByDropdown();
                 PopulateProjectsDropdown();
-                PopulateChartFilters();
+                // Chart filter dropdowns are populated lazily on first open
+                // (see ChartFilter_DropDownOpened) — avoids 12 DISTINCT scans on tab load.
                 InitializeSection_1_1();
                 RestoreSettings();
                 RestoreGridLayout();
@@ -73,11 +82,13 @@ namespace VANTAGE.Views
 
             LoadSummaryData();
             UpdateVisual_1_1();
+            _dataLoaded = true;
         }
 
         private void AnalysisView_Unloaded(object sender, RoutedEventArgs e)
         {
-            ThemeManager.ThemeChanged -= OnThemeChanged;
+            // ThemeChanged stays subscribed for the cached instance's lifetime.
+            // SaveSettings / SaveGridLayout are tiny — fine to persist on every nav-away.
             SaveSettings();
             SaveGridLayout();
         }
@@ -154,35 +165,10 @@ namespace VANTAGE.Views
                 selectedItems.Add(projects[0]);
             }
 
-            // Restore chart filter selections
-            foreach (var field in ChartFilterFields)
-            {
-                try
-                {
-                    var combo = GetChartFilterCombo(field);
-                    if (combo == null) continue;
-
-                    var saved = SettingsManager.GetUserSetting($"AnalysisFilter_{field}", "");
-                    if (string.IsNullOrEmpty(saved)) continue;
-
-                    var savedValues = saved.Split(',', StringSplitOptions.RemoveEmptyEntries);
-                    var comboItems = combo.SelectedItems as System.Collections.IList;
-                    if (comboItems == null) continue;
-
-                    var available = combo.ItemsSource as List<string>;
-                    if (available == null) continue;
-
-                    foreach (var val in savedValues)
-                    {
-                        if (available.Contains(val))
-                            comboItems.Add(val);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    AppLogger.Error(ex, $"AnalysisView.RestoreSettings.ChartFilter_{field}");
-                }
-            }
+            // Chart filter selections are intentionally NOT restored across sessions.
+            // At 100k-record scale a single filter could persist thousands of values, and
+            // re-applying them per-Add into Syncfusion ComboBoxAdv controls wedges the UI.
+            // Users re-select filters each session.
         }
 
         // Save current settings
@@ -369,42 +355,47 @@ namespace VANTAGE.Views
             "PhaseCategory", "PhaseCode", "ProjectID", "ROCStep", "SchedActNO", "WorkPackage"
         };
 
-        // Populate all chart filter dropdowns with distinct values from Activities
-        private void PopulateChartFilters()
+        // Tracks which filter dropdowns have been lazily populated this session.
+        // Reset to empty when Activities change so the next open re-queries.
+        private readonly HashSet<string> _populatedFilters = new();
+
+        // Lazy populate: only query DISTINCT values when the user actually opens the dropdown.
+        // Prevents 12 large DISTINCT scans on every Analysis tab open at 100k-record scale.
+        private void ChartFilter_DropDownOpened(object sender, EventArgs e)
         {
+            if (sender is not Syncfusion.Windows.Tools.Controls.ComboBoxAdv combo) return;
+            var field = combo.Name.StartsWith("cmbFilter_") ? combo.Name.Substring("cmbFilter_".Length) : null;
+            if (field == null) return;
+            if (!_populatedFilters.Add(field)) return; // already populated this session
+
             try
             {
                 using var connection = DatabaseSetup.GetConnection();
                 connection.Open();
 
-                foreach (var field in ChartFilterFields)
+                var cmd = connection.CreateCommand();
+                cmd.CommandText = $"SELECT DISTINCT COALESCE([{field}], '') FROM Activities ORDER BY COALESCE([{field}], '')";
+
+                var values = new List<string>();
+                using var reader = cmd.ExecuteReader();
+                while (reader.Read())
                 {
-                    var combo = GetChartFilterCombo(field);
-                    if (combo == null) continue;
-
-                    var cmd = connection.CreateCommand();
-                    cmd.CommandText = $"SELECT DISTINCT COALESCE([{field}], '') FROM Activities ORDER BY COALESCE([{field}], '')";
-
-                    var values = new List<string>();
-                    using var reader = cmd.ExecuteReader();
-                    while (reader.Read())
-                    {
-                        values.Add(reader.GetString(0));
-                    }
-
-                    // Ensure blank option exists and is labeled
-                    if (values.Contains(""))
-                    {
-                        values.Remove("");
-                        values.Insert(0, "(blank)");
-                    }
-
-                    combo.ItemsSource = values;
+                    values.Add(reader.GetString(0));
                 }
+
+                // Ensure blank option exists and is labeled
+                if (values.Contains(""))
+                {
+                    values.Remove("");
+                    values.Insert(0, "(blank)");
+                }
+
+                combo.ItemsSource = values;
             }
             catch (Exception ex)
             {
-                AppLogger.Error(ex, "AnalysisView.PopulateChartFilters");
+                _populatedFilters.Remove(field); // allow retry on next open
+                AppLogger.Error(ex, $"AnalysisView.ChartFilter_DropDownOpened.{field}");
             }
         }
 
@@ -429,15 +420,14 @@ namespace VANTAGE.Views
             };
         }
 
-        // Refresh all charts when any chart filter changes
+        // Refresh charts when any chart filter changes (filters are session-only, not persisted)
         private void ChartFilter_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (_isInitializing) return;
             UpdateVisual_1_1();
-            SaveChartFilterSelections();
         }
 
-        // Clear all chart filter selections
+        // Clear all chart filter selections (session-only)
         private void BtnResetFilters_Click(object sender, RoutedEventArgs e)
         {
             _isInitializing = true;
@@ -455,19 +445,7 @@ namespace VANTAGE.Views
                 _isInitializing = false;
             }
 
-            SaveChartFilterSelections();
             UpdateVisual_1_1();
-        }
-
-        // Persist chart filter selections to UserSettings
-        private void SaveChartFilterSelections()
-        {
-            foreach (var field in ChartFilterFields)
-            {
-                var combo = GetChartFilterCombo(field);
-                var selected = combo?.SelectedItems?.Cast<string>().ToList() ?? new List<string>();
-                SettingsManager.SetUserSetting($"AnalysisFilter_{field}", string.Join(",", selected), "string");
-            }
         }
 
         // Build WHERE clauses from active chart filters

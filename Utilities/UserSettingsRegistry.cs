@@ -178,7 +178,7 @@ namespace VANTAGE.Utilities
         //   Takeoff.LastConfigKey          — config dropdown in the AI Takeoff view
         //   Takeoff.RateMode               — Summit/MCAA radio group in the AI Takeoff view (default "Summit"; MCAA gated to specific users)
         //   UserFilters.Progress           — Manage Filters dialog
-        //   AnalysisFilter_*  (12 keys)    — Reset button on Analysis chart filters panel
+        //   (AnalysisFilter_* keys removed — chart filters are session-only, not persisted)
         //   Schedule.UDFMappings           — Schedule UDF Column Mappings dialog
         //   Schedule.LookaheadWeeks        — Lookahead ComboBox in the Schedule toolbar
         //   AnalysisGroupField             — dropdown in the Analysis tab

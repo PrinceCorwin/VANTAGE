@@ -196,51 +196,63 @@
                         <StackPanel>
                             <TextBlock Text="Area" Foreground="{DynamicResource ForegroundColor}" Margin="0,4,0,2" FontSize="11"/>
                             <syncfusion:ComboBoxAdv x:Name="cmbFilter_Area" AllowMultiSelect="True" EnableOKCancel="False"
-                                                    SelectionChanged="ChartFilter_SelectionChanged" ToolTip="Filter charts by Area"/>
+                                                    SelectionChanged="ChartFilter_SelectionChanged"
+                                                    DropDownOpened="ChartFilter_DropDownOpened" ToolTip="Filter charts by Area"/>
 
                             <TextBlock Text="Aux1" Foreground="{DynamicResource ForegroundColor}" Margin="0,6,0,2" FontSize="11"/>
                             <syncfusion:ComboBoxAdv x:Name="cmbFilter_Aux1" AllowMultiSelect="True" EnableOKCancel="False"
-                                                    SelectionChanged="ChartFilter_SelectionChanged" ToolTip="Filter charts by Aux1"/>
+                                                    SelectionChanged="ChartFilter_SelectionChanged"
+                                                    DropDownOpened="ChartFilter_DropDownOpened" ToolTip="Filter charts by Aux1"/>
 
                             <TextBlock Text="Aux2" Foreground="{DynamicResource ForegroundColor}" Margin="0,6,0,2" FontSize="11"/>
                             <syncfusion:ComboBoxAdv x:Name="cmbFilter_Aux2" AllowMultiSelect="True" EnableOKCancel="False"
-                                                    SelectionChanged="ChartFilter_SelectionChanged" ToolTip="Filter charts by Aux2"/>
+                                                    SelectionChanged="ChartFilter_SelectionChanged"
+                                                    DropDownOpened="ChartFilter_DropDownOpened" ToolTip="Filter charts by Aux2"/>
 
                             <TextBlock Text="Aux3" Foreground="{DynamicResource ForegroundColor}" Margin="0,6,0,2" FontSize="11"/>
                             <syncfusion:ComboBoxAdv x:Name="cmbFilter_Aux3" AllowMultiSelect="True" EnableOKCancel="False"
-                                                    SelectionChanged="ChartFilter_SelectionChanged" ToolTip="Filter charts by Aux3"/>
+                                                    SelectionChanged="ChartFilter_SelectionChanged"
+                                                    DropDownOpened="ChartFilter_DropDownOpened" ToolTip="Filter charts by Aux3"/>
 
                             <TextBlock Text="CompType" Foreground="{DynamicResource ForegroundColor}" Margin="0,6,0,2" FontSize="11"/>
                             <syncfusion:ComboBoxAdv x:Name="cmbFilter_CompType" AllowMultiSelect="True" EnableOKCancel="False"
-                                                    SelectionChanged="ChartFilter_SelectionChanged" ToolTip="Filter charts by CompType"/>
+                                                    SelectionChanged="ChartFilter_SelectionChanged"
+                                                    DropDownOpened="ChartFilter_DropDownOpened" ToolTip="Filter charts by CompType"/>
 
                             <TextBlock Text="DwgNO" Foreground="{DynamicResource ForegroundColor}" Margin="0,6,0,2" FontSize="11"/>
                             <syncfusion:ComboBoxAdv x:Name="cmbFilter_DwgNO" AllowMultiSelect="True" EnableOKCancel="False"
-                                                    SelectionChanged="ChartFilter_SelectionChanged" ToolTip="Filter charts by DwgNO"/>
+                                                    SelectionChanged="ChartFilter_SelectionChanged"
+                                                    DropDownOpened="ChartFilter_DropDownOpened" ToolTip="Filter charts by DwgNO"/>
 
                             <TextBlock Text="PhaseCategory" Foreground="{DynamicResource ForegroundColor}" Margin="0,6,0,2" FontSize="11"/>
                             <syncfusion:ComboBoxAdv x:Name="cmbFilter_PhaseCategory" AllowMultiSelect="True" EnableOKCancel="False"
-                                                    SelectionChanged="ChartFilter_SelectionChanged" ToolTip="Filter charts by PhaseCategory"/>
+                                                    SelectionChanged="ChartFilter_SelectionChanged"
+                                                    DropDownOpened="ChartFilter_DropDownOpened" ToolTip="Filter charts by PhaseCategory"/>
 
                             <TextBlock Text="PhaseCode" Foreground="{DynamicResource ForegroundColor}" Margin="0,6,0,2" FontSize="11"/>
                             <syncfusion:ComboBoxAdv x:Name="cmbFilter_PhaseCode" AllowMultiSelect="True" EnableOKCancel="False"
-                                                    SelectionChanged="ChartFilter_SelectionChanged" ToolTip="Filter charts by PhaseCode"/>
+                                                    SelectionChanged="ChartFilter_SelectionChanged"
+                                                    DropDownOpened="ChartFilter_DropDownOpened" ToolTip="Filter charts by PhaseCode"/>
 
                             <TextBlock Text="ProjectID" Foreground="{DynamicResource ForegroundColor}" Margin="0,6,0,2" FontSize="11"/>
                             <syncfusion:ComboBoxAdv x:Name="cmbFilter_ProjectID" AllowMultiSelect="True" EnableOKCancel="False"
-                                                    SelectionChanged="ChartFilter_SelectionChanged" ToolTip="Filter charts by ProjectID"/>
+                                                    SelectionChanged="ChartFilter_SelectionChanged"
+                                                    DropDownOpened="ChartFilter_DropDownOpened" ToolTip="Filter charts by ProjectID"/>
 
                             <TextBlock Text="ROCStep" Foreground="{DynamicResource ForegroundColor}" Margin="0,6,0,2" FontSize="11"/>
                             <syncfusion:ComboBoxAdv x:Name="cmbFilter_ROCStep" AllowMultiSelect="True" EnableOKCancel="False"
-                                                    SelectionChanged="ChartFilter_SelectionChanged" ToolTip="Filter charts by ROCStep"/>
+                                                    SelectionChanged="ChartFilter_SelectionChanged"
+                                                    DropDownOpened="ChartFilter_DropDownOpened" ToolTip="Filter charts by ROCStep"/>
 
                             <TextBlock Text="SchedActNO" Foreground="{DynamicResource ForegroundColor}" Margin="0,6,0,2" FontSize="11"/>
                             <syncfusion:ComboBoxAdv x:Name="cmbFilter_SchedActNO" AllowMultiSelect="True" EnableOKCancel="False"
-                                                    SelectionChanged="ChartFilter_SelectionChanged" ToolTip="Filter charts by SchedActNO"/>
+                                                    SelectionChanged="ChartFilter_SelectionChanged"
+                                                    DropDownOpened="ChartFilter_DropDownOpened" ToolTip="Filter charts by SchedActNO"/>
 
                             <TextBlock Text="WorkPackage" Foreground="{DynamicResource ForegroundColor}" Margin="0,6,0,2" FontSize="11"/>
                             <syncfusion:ComboBoxAdv x:Name="cmbFilter_WorkPackage" AllowMultiSelect="True" EnableOKCancel="False"
-                                                    SelectionChanged="ChartFilter_SelectionChanged" ToolTip="Filter charts by WorkPackage"/>
+                                                    SelectionChanged="ChartFilter_SelectionChanged"
+                                                    DropDownOpened="ChartFilter_DropDownOpened" ToolTip="Filter charts by WorkPackage"/>
                         </StackPanel>
                     </ScrollViewer>
                 </Grid>
