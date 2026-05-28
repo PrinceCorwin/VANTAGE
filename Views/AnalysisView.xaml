@@ -194,62 +194,98 @@
 
                     <ScrollViewer Grid.Row="1" Style="{StaticResource FilterScrollViewerStyle}" Margin="8,0,8,8">
                         <StackPanel>
-                            <TextBlock Text="Area" Foreground="{DynamicResource ForegroundColor}" Margin="0,4,0,2" FontSize="11"/>
+                            <DockPanel Margin="0,4,0,2">
+                                <TextBlock x:Name="lblCount_Area" DockPanel.Dock="Right" Text="ALL" Foreground="{DynamicResource ForegroundColor}" Opacity="0.65" FontSize="11"/>
+                                <TextBlock Text="Area" Foreground="{DynamicResource ForegroundColor}" FontSize="11"/>
+                            </DockPanel>
                             <syncfusion:ComboBoxAdv x:Name="cmbFilter_Area" AllowMultiSelect="True" EnableOKCancel="False"
                                                     SelectionChanged="ChartFilter_SelectionChanged"
                                                     DropDownOpened="ChartFilter_DropDownOpened" ToolTip="Filter charts by Area"/>
 
-                            <TextBlock Text="Aux1" Foreground="{DynamicResource ForegroundColor}" Margin="0,6,0,2" FontSize="11"/>
+                            <DockPanel Margin="0,6,0,2">
+                                <TextBlock x:Name="lblCount_Aux1" DockPanel.Dock="Right" Text="ALL" Foreground="{DynamicResource ForegroundColor}" Opacity="0.65" FontSize="11"/>
+                                <TextBlock Text="Aux1" Foreground="{DynamicResource ForegroundColor}" FontSize="11"/>
+                            </DockPanel>
                             <syncfusion:ComboBoxAdv x:Name="cmbFilter_Aux1" AllowMultiSelect="True" EnableOKCancel="False"
                                                     SelectionChanged="ChartFilter_SelectionChanged"
                                                     DropDownOpened="ChartFilter_DropDownOpened" ToolTip="Filter charts by Aux1"/>
 
-                            <TextBlock Text="Aux2" Foreground="{DynamicResource ForegroundColor}" Margin="0,6,0,2" FontSize="11"/>
+                            <DockPanel Margin="0,6,0,2">
+                                <TextBlock x:Name="lblCount_Aux2" DockPanel.Dock="Right" Text="ALL" Foreground="{DynamicResource ForegroundColor}" Opacity="0.65" FontSize="11"/>
+                                <TextBlock Text="Aux2" Foreground="{DynamicResource ForegroundColor}" FontSize="11"/>
+                            </DockPanel>
                             <syncfusion:ComboBoxAdv x:Name="cmbFilter_Aux2" AllowMultiSelect="True" EnableOKCancel="False"
                                                     SelectionChanged="ChartFilter_SelectionChanged"
                                                     DropDownOpened="ChartFilter_DropDownOpened" ToolTip="Filter charts by Aux2"/>
 
-                            <TextBlock Text="Aux3" Foreground="{DynamicResource ForegroundColor}" Margin="0,6,0,2" FontSize="11"/>
+                            <DockPanel Margin="0,6,0,2">
+                                <TextBlock x:Name="lblCount_Aux3" DockPanel.Dock="Right" Text="ALL" Foreground="{DynamicResource ForegroundColor}" Opacity="0.65" FontSize="11"/>
+                                <TextBlock Text="Aux3" Foreground="{DynamicResource ForegroundColor}" FontSize="11"/>
+                            </DockPanel>
                             <syncfusion:ComboBoxAdv x:Name="cmbFilter_Aux3" AllowMultiSelect="True" EnableOKCancel="False"
                                                     SelectionChanged="ChartFilter_SelectionChanged"
                                                     DropDownOpened="ChartFilter_DropDownOpened" ToolTip="Filter charts by Aux3"/>
 
-                            <TextBlock Text="CompType" Foreground="{DynamicResource ForegroundColor}" Margin="0,6,0,2" FontSize="11"/>
+                            <DockPanel Margin="0,6,0,2">
+                                <TextBlock x:Name="lblCount_CompType" DockPanel.Dock="Right" Text="ALL" Foreground="{DynamicResource ForegroundColor}" Opacity="0.65" FontSize="11"/>
+                                <TextBlock Text="CompType" Foreground="{DynamicResource ForegroundColor}" FontSize="11"/>
+                            </DockPanel>
                             <syncfusion:ComboBoxAdv x:Name="cmbFilter_CompType" AllowMultiSelect="True" EnableOKCancel="False"
                                                     SelectionChanged="ChartFilter_SelectionChanged"
                                                     DropDownOpened="ChartFilter_DropDownOpened" ToolTip="Filter charts by CompType"/>
 
-                            <TextBlock Text="DwgNO" Foreground="{DynamicResource ForegroundColor}" Margin="0,6,0,2" FontSize="11"/>
+                            <DockPanel Margin="0,6,0,2">
+                                <TextBlock x:Name="lblCount_DwgNO" DockPanel.Dock="Right" Text="ALL" Foreground="{DynamicResource ForegroundColor}" Opacity="0.65" FontSize="11"/>
+                                <TextBlock Text="DwgNO" Foreground="{DynamicResource ForegroundColor}" FontSize="11"/>
+                            </DockPanel>
                             <syncfusion:ComboBoxAdv x:Name="cmbFilter_DwgNO" AllowMultiSelect="True" EnableOKCancel="False"
                                                     SelectionChanged="ChartFilter_SelectionChanged"
                                                     DropDownOpened="ChartFilter_DropDownOpened" ToolTip="Filter charts by DwgNO"/>
 
-                            <TextBlock Text="PhaseCategory" Foreground="{DynamicResource ForegroundColor}" Margin="0,6,0,2" FontSize="11"/>
+                            <DockPanel Margin="0,6,0,2">
+                                <TextBlock x:Name="lblCount_PhaseCategory" DockPanel.Dock="Right" Text="ALL" Foreground="{DynamicResource ForegroundColor}" Opacity="0.65" FontSize="11"/>
+                                <TextBlock Text="PhaseCategory" Foreground="{DynamicResource ForegroundColor}" FontSize="11"/>
+                            </DockPanel>
                             <syncfusion:ComboBoxAdv x:Name="cmbFilter_PhaseCategory" AllowMultiSelect="True" EnableOKCancel="False"
                                                     SelectionChanged="ChartFilter_SelectionChanged"
                                                     DropDownOpened="ChartFilter_DropDownOpened" ToolTip="Filter charts by PhaseCategory"/>
 
-                            <TextBlock Text="PhaseCode" Foreground="{DynamicResource ForegroundColor}" Margin="0,6,0,2" FontSize="11"/>
+                            <DockPanel Margin="0,6,0,2">
+                                <TextBlock x:Name="lblCount_PhaseCode" DockPanel.Dock="Right" Text="ALL" Foreground="{DynamicResource ForegroundColor}" Opacity="0.65" FontSize="11"/>
+                                <TextBlock Text="PhaseCode" Foreground="{DynamicResource ForegroundColor}" FontSize="11"/>
+                            </DockPanel>
                             <syncfusion:ComboBoxAdv x:Name="cmbFilter_PhaseCode" AllowMultiSelect="True" EnableOKCancel="False"
                                                     SelectionChanged="ChartFilter_SelectionChanged"
                                                     DropDownOpened="ChartFilter_DropDownOpened" ToolTip="Filter charts by PhaseCode"/>
 
-                            <TextBlock Text="ProjectID" Foreground="{DynamicResource ForegroundColor}" Margin="0,6,0,2" FontSize="11"/>
+                            <DockPanel Margin="0,6,0,2">
+                                <TextBlock x:Name="lblCount_ProjectID" DockPanel.Dock="Right" Text="ALL" Foreground="{DynamicResource ForegroundColor}" Opacity="0.65" FontSize="11"/>
+                                <TextBlock Text="ProjectID" Foreground="{DynamicResource ForegroundColor}" FontSize="11"/>
+                            </DockPanel>
                             <syncfusion:ComboBoxAdv x:Name="cmbFilter_ProjectID" AllowMultiSelect="True" EnableOKCancel="False"
                                                     SelectionChanged="ChartFilter_SelectionChanged"
                                                     DropDownOpened="ChartFilter_DropDownOpened" ToolTip="Filter charts by ProjectID"/>
 
-                            <TextBlock Text="ROCStep" Foreground="{DynamicResource ForegroundColor}" Margin="0,6,0,2" FontSize="11"/>
+                            <DockPanel Margin="0,6,0,2">
+                                <TextBlock x:Name="lblCount_ROCStep" DockPanel.Dock="Right" Text="ALL" Foreground="{DynamicResource ForegroundColor}" Opacity="0.65" FontSize="11"/>
+                                <TextBlock Text="ROCStep" Foreground="{DynamicResource ForegroundColor}" FontSize="11"/>
+                            </DockPanel>
                             <syncfusion:ComboBoxAdv x:Name="cmbFilter_ROCStep" AllowMultiSelect="True" EnableOKCancel="False"
                                                     SelectionChanged="ChartFilter_SelectionChanged"
                                                     DropDownOpened="ChartFilter_DropDownOpened" ToolTip="Filter charts by ROCStep"/>
 
-                            <TextBlock Text="SchedActNO" Foreground="{DynamicResource ForegroundColor}" Margin="0,6,0,2" FontSize="11"/>
+                            <DockPanel Margin="0,6,0,2">
+                                <TextBlock x:Name="lblCount_SchedActNO" DockPanel.Dock="Right" Text="ALL" Foreground="{DynamicResource ForegroundColor}" Opacity="0.65" FontSize="11"/>
+                                <TextBlock Text="SchedActNO" Foreground="{DynamicResource ForegroundColor}" FontSize="11"/>
+                            </DockPanel>
                             <syncfusion:ComboBoxAdv x:Name="cmbFilter_SchedActNO" AllowMultiSelect="True" EnableOKCancel="False"
                                                     SelectionChanged="ChartFilter_SelectionChanged"
                                                     DropDownOpened="ChartFilter_DropDownOpened" ToolTip="Filter charts by SchedActNO"/>
 
-                            <TextBlock Text="WorkPackage" Foreground="{DynamicResource ForegroundColor}" Margin="0,6,0,2" FontSize="11"/>
+                            <DockPanel Margin="0,6,0,2">
+                                <TextBlock x:Name="lblCount_WorkPackage" DockPanel.Dock="Right" Text="ALL" Foreground="{DynamicResource ForegroundColor}" Opacity="0.65" FontSize="11"/>
+                                <TextBlock Text="WorkPackage" Foreground="{DynamicResource ForegroundColor}" FontSize="11"/>
+                            </DockPanel>
                             <syncfusion:ComboBoxAdv x:Name="cmbFilter_WorkPackage" AllowMultiSelect="True" EnableOKCancel="False"
                                                     SelectionChanged="ChartFilter_SelectionChanged"
                                                     DropDownOpened="ChartFilter_DropDownOpened" ToolTip="Filter charts by WorkPackage"/>

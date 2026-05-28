@@ -417,6 +417,11 @@ Sections follow VANTAGE's nav structure top to bottom. See `.claude/skills/finis
 **Why:** Cross-session persistence previously wrote every selected value to `AnalysisFilter_<field>` as a comma-joined string, and the cold-load restore loop called `combo.SelectedItems.Add(val)` once per saved value. At ~2,000+ saved SchedActNOs this rehydration wedged the UI thread on every Analysis tab open. Session-only is the same model the Progress module already uses for column filters and is acceptable for the analytics workflow.
 **Date:** May 2026
 
+### Chart Filter Dropdowns Have a `(Select All)` Sentinel Row and an ALL/[N] Count Badge
+**Rule:** Every populated chart-filter `ComboBoxAdv` has `(Select All)` as the first item, injected during `ChartFilter_DropDownOpened` right after the optional `(blank)` row. Clicking it toggles every real item (clear-all when all are checked; select-all otherwise) under the `_isInitializing` guard, and the sentinel itself never remains in `SelectedItems`. The sentinel string is defensively filtered out of `AppendChartFilterClauses` so it cannot reach SQL. Each filter label carries an `lblCount_<Field>` badge displaying `ALL` when zero items or every item is selected, and `[N]` when 1..N-1 are selected.
+**Why:** "Zero selected" and "all selected" produce the same chart query result (`AppendChartFilterClauses` skips the WHERE clause entirely when `selected.Count == 0`; a full IN list matches every row), so there is no semantic NONE state — both are "filter not narrowing the data". The toggle item gives Excel-style bulk control without modal dialogs or extra buttons. Per-item rehydration of large selections still pauses Syncfusion's internal layout on the order of seconds for ~1,500-item filters; the user opts in by explicitly clicking the toggle, and view caching limits this cost to once per session per filter.
+**Date:** May 2026
+
 ---
 
 ## Takeoffs

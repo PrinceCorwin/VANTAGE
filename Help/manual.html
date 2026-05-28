@@ -326,6 +326,7 @@
                 <ul>
                     <li><a href="#analysis-overview">Overview</a></li>
                     <li><a href="#analysis-layout">Layout</a></li>
+                    <li><a href="#analysis-chart-filters">Chart Filters</a></li>
                     <li><a href="#analysis-summary-grid">Summary Grid</a></li>
                 </ul>
             </li>
@@ -1712,6 +1713,26 @@
         <li><strong>Horizontal splitter</strong> — Drag to resize the height ratio between the top and bottom rows.</li>
     </ul>
     <p>All splitter positions are saved automatically and restored when you return to the Analysis module.</p>
+
+    <h3 id="analysis-chart-filters">Chart Filters</h3>
+    <p>The Chart Filters panel on the left of the Analysis tab applies to the chart visualizations only. It does <strong>not</strong> filter the Summary Grid, which has its own independent filter controls.</p>
+
+    <h4>How filters apply</h4>
+    <ul>
+        <li><strong>Session-only.</strong> Selections persist while you navigate between the Analysis tab and other modules, but are cleared when VANTAGE closes. This matches the way Progress column filters work.</li>
+        <li><strong>Lazy-loaded.</strong> Each filter dropdown's list of available values is only queried the first time you open that specific dropdown — opening the Analysis tab itself is fast even on large datasets.</li>
+        <li><strong>Reset button</strong> at the top of the panel clears every filter at once.</li>
+    </ul>
+
+    <h4>(Select All) toggle</h4>
+    <p>Every populated filter dropdown shows <strong>(Select All)</strong> as the first item, Excel-style. Click it once to select every value in that filter; click it again to clear every value. Note that on filters with thousands of items (such as SchedActNO on large projects), the first Select All click may pause briefly while the dropdown updates — this is expected.</p>
+
+    <h4>ALL / [N] count badges</h4>
+    <p>The dim text to the right of each filter label tells you what that filter is currently doing:</p>
+    <ul>
+        <li><strong>ALL</strong> — No narrowing is being applied. This is the state when no items are checked <em>and</em> when every item is checked, because both produce the same chart result (all data is shown).</li>
+        <li><strong>[N]</strong> — The filter is actively narrowing the chart to N selected items.</li>
+    </ul>
 
     <h3 id="analysis-summary-grid">Summary Grid</h3>
     <p>The summary grid in section (2,2) displays aggregated metrics from your Activities data, grouped by a selected field.</p>

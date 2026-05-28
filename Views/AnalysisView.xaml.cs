@@ -359,6 +359,9 @@ namespace VANTAGE.Views
         // Reset to empty when Activities change so the next open re-queries.
         private readonly HashSet<string> _populatedFilters = new();
 
+        // Excel-style toggle item injected at the top of each populated filter dropdown.
+        private const string FilterSentinelSelectAll = "(Select All)";
+
         // Lazy populate: only query DISTINCT values when the user actually opens the dropdown.
         // Prevents 12 large DISTINCT scans on every Analysis tab open at 100k-record scale.
         private void ChartFilter_DropDownOpened(object sender, EventArgs e)
@@ -366,7 +369,11 @@ namespace VANTAGE.Views
             if (sender is not Syncfusion.Windows.Tools.Controls.ComboBoxAdv combo) return;
             var field = combo.Name.StartsWith("cmbFilter_") ? combo.Name.Substring("cmbFilter_".Length) : null;
             if (field == null) return;
-            if (!_populatedFilters.Add(field)) return; // already populated this session
+            if (_populatedFilters.Contains(field))
+            {
+                UpdateFilterCountBadge(field);
+                return;
+            }
 
             try
             {
@@ -390,11 +397,15 @@ namespace VANTAGE.Views
                     values.Insert(0, "(blank)");
                 }
 
+                // Excel-style (Select All) toggle as the first row
+                values.Insert(0, FilterSentinelSelectAll);
+
                 combo.ItemsSource = values;
+                _populatedFilters.Add(field);
+                UpdateFilterCountBadge(field);
             }
             catch (Exception ex)
             {
-                _populatedFilters.Remove(field); // allow retry on next open
                 AppLogger.Error(ex, $"AnalysisView.ChartFilter_DropDownOpened.{field}");
             }
         }
@@ -420,11 +431,100 @@ namespace VANTAGE.Views
             };
         }
 
-        // Refresh charts when any chart filter changes (filters are session-only, not persisted)
+        // Refresh charts when any chart filter changes (filters are session-only, not persisted).
+        // Intercepts (Select All) sentinel clicks and reroutes to bulk toggle.
         private void ChartFilter_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (_isInitializing) return;
+
+            if (sender is Syncfusion.Windows.Tools.Controls.ComboBoxAdv combo && e.AddedItems != null)
+            {
+                foreach (var added in e.AddedItems)
+                {
+                    if (added as string == FilterSentinelSelectAll)
+                    {
+                        ToggleSelectAll(combo);
+                        return;
+                    }
+                }
+            }
+
+            if (sender is Syncfusion.Windows.Tools.Controls.ComboBoxAdv c2)
+            {
+                var field = c2.Name.StartsWith("cmbFilter_") ? c2.Name.Substring("cmbFilter_".Length) : null;
+                if (field != null) UpdateFilterCountBadge(field);
+            }
+
             UpdateVisual_1_1();
+        }
+
+        // Toggle: if every real item is already selected, clear all; otherwise select all real items.
+        private void ToggleSelectAll(Syncfusion.Windows.Tools.Controls.ComboBoxAdv combo)
+        {
+            if (combo.ItemsSource is not System.Collections.IEnumerable items) return;
+            var selected = combo.SelectedItems as System.Collections.IList;
+            if (selected == null) return;
+
+            var allReal = items.Cast<object>()
+                .Select(o => o as string)
+                .Where(s => s != null && s != FilterSentinelSelectAll)
+                .ToList();
+
+            int currentlySelected = selected.Cast<object>()
+                .Select(o => o as string)
+                .Count(s => s != null && s != FilterSentinelSelectAll);
+
+            bool selectAll = currentlySelected < allReal.Count;
+
+            _isInitializing = true;
+            try
+            {
+                selected.Clear();
+                if (selectAll)
+                {
+                    foreach (var s in allReal) selected.Add(s!);
+                }
+            }
+            finally
+            {
+                _isInitializing = false;
+            }
+
+            var field = combo.Name.StartsWith("cmbFilter_") ? combo.Name.Substring("cmbFilter_".Length) : null;
+            if (field != null) UpdateFilterCountBadge(field);
+            UpdateVisual_1_1();
+        }
+
+        // Update the [N] / ALL badge next to a filter's label.
+        // "ALL" covers both "no items selected" and "every item selected" — both produce the
+        // same chart query (AppendChartFilterClauses skips empty selections, and a full
+        // selection matches every row), so semantically there is no NONE state.
+        private void UpdateFilterCountBadge(string field)
+        {
+            var badge = FindName($"lblCount_{field}") as System.Windows.Controls.TextBlock;
+            var combo = GetChartFilterCombo(field);
+            if (badge == null || combo == null) return;
+
+            int selectedCount = combo.SelectedItems?.Cast<object>()
+                .Select(o => o as string)
+                .Count(s => s != null && s != FilterSentinelSelectAll) ?? 0;
+
+            int total = 0;
+            if (combo.ItemsSource is System.Collections.IEnumerable items)
+            {
+                total = items.Cast<object>()
+                    .Select(o => o as string)
+                    .Count(s => s != null && s != FilterSentinelSelectAll);
+            }
+
+            // No filtering happening when zero or every item is selected.
+            if (selectedCount == 0 || (total > 0 && selectedCount >= total))
+            {
+                badge.Text = "ALL";
+                return;
+            }
+
+            badge.Text = $"[{selectedCount}]";
         }
 
         // Clear all chart filter selections (session-only)
@@ -445,6 +545,7 @@ namespace VANTAGE.Views
                 _isInitializing = false;
             }
 
+            foreach (var field in ChartFilterFields) UpdateFilterCountBadge(field);
             UpdateVisual_1_1();
         }
 
@@ -456,7 +557,9 @@ namespace VANTAGE.Views
                 var combo = GetChartFilterCombo(field);
                 if (combo?.SelectedItems == null) continue;
 
-                var selected = combo.SelectedItems.Cast<string>().ToList();
+                var selected = combo.SelectedItems.Cast<string>()
+                    .Where(s => s != FilterSentinelSelectAll)
+                    .ToList();
                 if (selected.Count == 0) continue;
 
                 // Convert "(blank)" back to empty string for SQL

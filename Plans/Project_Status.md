@@ -11,7 +11,7 @@
 ## In Progress / Not Started
 | Module | Status | Notes |
 |--------|--------|-------|
-| Analysis | IN PROGRESS | 3x1+3 grid layout, chart filters panel (session-only, lazy-populated) with Reset button, dynamic chart sections with selectable visual type/X axis/Y axis, pie/doughnut labels and legends, summary grid with independent filters, Excel export |
+| Analysis | IN PROGRESS | 3x1+3 grid layout, chart filters panel (session-only, lazy-populated) with Reset button, Excel-style (Select All) toggle and per-filter ALL/[N] count badges, dynamic chart sections with selectable visual type/X axis/Y axis, pie/doughnut labels and legends, summary grid with independent filters, Excel export |
 | Procore | IN PROGRESS | OAuth + auth dialog + service layer scaffolded; targeted at WP DWG Log fetch |
 | AI Features (other) | NOT STARTED | Error Assistant, Description Analysis, etc. |
 
