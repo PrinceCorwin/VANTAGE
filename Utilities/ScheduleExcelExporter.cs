@@ -108,7 +108,10 @@ namespace VANTAGE.Utilities
                 }
 
                 // complete_pct = MS_PercentComplete (already 0-100 scale)
-                sheet.Cell(dataRow, 7).Value = Math.Round(row.MS_PercentComplete, 0);
+                // 2 decimals: prevents values like 99.7 from rounding up to 100 and
+                // creating an inconsistency with act_end_date (which requires >= 100 to populate).
+                sheet.Cell(dataRow, 7).Value = Math.Round(row.MS_PercentComplete, 2);
+                sheet.Cell(dataRow, 7).Style.NumberFormat.Format = "0.00";
 
                 dataRow++;
                 count++;
