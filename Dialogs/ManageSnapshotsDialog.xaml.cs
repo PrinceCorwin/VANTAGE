@@ -32,6 +32,9 @@ namespace VANTAGE.Dialogs
 
         private List<SnapshotWeekItem> _weeks = new();
 
+        // Suppresses recursion when the IsSelected propagation handler clears other rows.
+        private bool _enforcingSingleSelection;
+
         public ManageSnapshotsDialog()
         {
             InitializeComponent();
@@ -48,14 +51,14 @@ namespace VANTAGE.Dialogs
                 return;
             }
 
-            txtUserInfo.Text = $"Snapshots for: {App.CurrentUser.Username}";
+            txtUserInfo.Text = $"Logged in as: {App.CurrentUser.Username}";
             await LoadSnapshotsAsync();
         }
 
         private async System.Threading.Tasks.Task LoadSnapshotsAsync()
         {
             pnlLoading.Visibility = Visibility.Visible;
-            lvWeeks.Visibility = Visibility.Collapsed;
+            sfSnapshots.Visibility = Visibility.Collapsed;
             txtNoSnapshots.Visibility = Visibility.Collapsed;
 
             try
@@ -67,38 +70,36 @@ namespace VANTAGE.Dialogs
                     using var azureConn = AzureDbManager.GetConnection();
                     azureConn.Open();
 
+                    // Cross-user listing of snapshot groups. Same shape as the admin dialog
+                    // minus the LEFT JOIN to VMS_ProgressLogUploads (the user grid doesn't
+                    // show an Uploaded column). No MAX(ProgDate): scanning ProgDate across
+                    // all rows times out at production volumes, and the user grid doesn't
+                    // need ProgDate — the (user, project, week) tuple uniquely identifies
+                    // a snapshot group because submitting overwrites prior ProgDate.
                     var cmd = azureConn.CreateCommand();
                     cmd.CommandTimeout = 120;
-                    // ProgDate is functionally dependent on (AssignedTo, ProjectID, WeekEndDate)
-                    // because submitting overwrites — verified zero (user,project,week) groups have
-                    // multiple ProgDates. The INDEX hint is required: without it, MAX(ProgDate) makes
-                    // the optimizer pick a clustered-index scan (~180k reads, 60s) instead of the
-                    // covering IX_ProgressSnapshots_Group_Lookup which has ProgDate in INCLUDE.
-                    // With the hint: ~5 reads, <10 ms.
                     cmd.CommandText = @"
-                        SELECT ProjectID, WeekEndDate, MAX(ProgDate) AS ProgDate, COUNT(*) as SnapshotCount
-                        FROM VMS_ProgressSnapshots WITH (INDEX(IX_ProgressSnapshots_Group_Lookup))
-                        WHERE AssignedTo = @username
-                        GROUP BY ProjectID, WeekEndDate
-                        ORDER BY MAX(ProgDate) DESC, ProjectID";
-                    cmd.Parameters.AddWithValue("@username", App.CurrentUser!.Username);
+                        SELECT AssignedTo, ProjectID, WeekEndDate, COUNT(*) AS SnapshotCount
+                        FROM VMS_ProgressSnapshots
+                        GROUP BY AssignedTo, ProjectID, WeekEndDate
+                        ORDER BY AssignedTo, ProjectID, WeekEndDate DESC";
 
                     using var reader = cmd.ExecuteReader();
                     while (reader.Read())
                     {
-                        string projectId = reader.IsDBNull(0) ? "(Unknown)" : reader.GetString(0);
-                        string weekEndDateStr = reader.IsDBNull(1) ? "" : reader.GetString(1);
-                        string progDate = reader.IsDBNull(2) ? "" : reader.GetString(2);
+                        string username = reader.IsDBNull(0) ? "(Unknown)" : reader.GetString(0);
+                        string projectId = reader.IsDBNull(1) ? "(Unknown)" : reader.GetString(1);
+                        string weekEndDateStr = reader.IsDBNull(2) ? "" : reader.GetString(2);
                         int count = reader.GetInt32(3);
 
                         if (DateTime.TryParse(weekEndDateStr, out DateTime weekEndDate))
                         {
                             var item = new SnapshotWeekItem
                             {
+                                Username = username,
                                 ProjectID = projectId,
                                 WeekEndDate = weekEndDate,
                                 WeekEndDateStr = weekEndDateStr,
-                                ProgDate = progDate,
                                 SnapshotCount = count
                             };
                             item.PropertyChanged += WeekItem_PropertyChanged;
@@ -118,8 +119,8 @@ namespace VANTAGE.Dialogs
                 }
                 else
                 {
-                    lvWeeks.ItemsSource = _weeks;
-                    lvWeeks.Visibility = Visibility.Visible;
+                    sfSnapshots.ItemsSource = _weeks;
+                    sfSnapshots.Visibility = Visibility.Visible;
                 }
 
                 UpdateSelectionSummary();
@@ -135,10 +136,30 @@ namespace VANTAGE.Dialogs
 
         private void WeekItem_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(SnapshotWeekItem.IsSelected))
+            if (e.PropertyName != nameof(SnapshotWeekItem.IsSelected))
+                return;
+
+            // Enforce single-checkbox selection: when a row gets checked, uncheck every
+            // other row. Guard against re-entry via the suppression flag because clearing
+            // the others fires the same event for each clear.
+            if (sender is SnapshotWeekItem changed && changed.IsSelected && !_enforcingSingleSelection)
             {
-                UpdateSelectionSummary();
+                _enforcingSingleSelection = true;
+                try
+                {
+                    foreach (var w in _weeks)
+                    {
+                        if (!ReferenceEquals(w, changed) && w.IsSelected)
+                            w.IsSelected = false;
+                    }
+                }
+                finally
+                {
+                    _enforcingSingleSelection = false;
+                }
             }
+
+            UpdateSelectionSummary();
         }
 
         private void UpdateSelectionSummary()
@@ -147,10 +168,21 @@ namespace VANTAGE.Dialogs
             int weekCount = selectedWeeks.Count;
             int snapshotCount = selectedWeeks.Sum(w => w.SnapshotCount);
 
-            txtSelectionSummary.Text = $"{weekCount} group(s) selected ({snapshotCount:N0} snapshots)";
-            btnDelete.IsEnabled = weekCount > 0;    // 1 or more weeks selected
-            btnModify.IsEnabled = weekCount == 1;   // exactly 1 week selected
-            btnRevert.IsEnabled = weekCount == 1;   // exactly 1 week selected
+            string currentUser = App.CurrentUser?.Username ?? string.Empty;
+            bool allOwned = weekCount > 0 && selectedWeeks.All(w =>
+                string.Equals(w.Username, currentUser, StringComparison.OrdinalIgnoreCase));
+            bool singleOwned = weekCount == 1 && allOwned;
+            int foreignCount = selectedWeeks.Count(w =>
+                !string.Equals(w.Username, currentUser, StringComparison.OrdinalIgnoreCase));
+
+            string summary = $"{weekCount} group(s) selected ({snapshotCount:N0} snapshots)";
+            if (foreignCount > 0)
+                summary += $"  —  {foreignCount} not yours (cannot modify/delete/revert)";
+            txtSelectionSummary.Text = summary;
+
+            btnDelete.IsEnabled = weekCount > 0 && allOwned;
+            btnModify.IsEnabled = singleOwned;
+            btnRevert.IsEnabled = singleOwned;
         }
 
         // Open (or focus) the modeless ModifySnapshotDialog for the selected week.
@@ -165,6 +197,16 @@ namespace VANTAGE.Dialogs
             }
 
             if (App.CurrentUser == null) return;
+
+            // Belt-and-suspenders: button is already disabled for foreign snapshots, but
+            // re-check before opening the child dialog in case selection slipped through.
+            if (!string.Equals(selectedWeeks[0].Username, App.CurrentUser.Username,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                AppMessageBox.Show("You can only modify your own snapshots.",
+                    "Not Allowed", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
 
             // If a Modify dialog is already open, focus it instead of opening a duplicate.
             if (_openModifyDialog != null && _openModifyDialog.IsVisible)
@@ -192,8 +234,19 @@ namespace VANTAGE.Dialogs
                 return;
             }
 
+            // Belt-and-suspenders: button is already disabled for foreign selections.
+            string currentUser = App.CurrentUser?.Username ?? string.Empty;
+            if (selectedWeeks.Any(w => !string.Equals(w.Username, currentUser,
+                    StringComparison.OrdinalIgnoreCase)))
+            {
+                AppMessageBox.Show("You can only delete your own snapshots.",
+                    "Not Allowed", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
             int totalSnapshots = selectedWeeks.Sum(w => w.SnapshotCount);
-            string weekList = string.Join("\n", selectedWeeks.Select(w => $"  - {w.DisplayText} ({w.SnapshotCount:N0} records)"));
+            string weekList = string.Join("\n", selectedWeeks.Select(w =>
+                $"  - {w.ProjectID}  |  WE {w.WeekEndDateDisplay}  ({w.SnapshotCount:N0} records)"));
 
             var confirmResult = AppMessageBox.Show(
                 $"Are you sure you want to delete {totalSnapshots} snapshot(s) from the following weeks?\n\n{weekList}\n\nThis action cannot be undone.",
@@ -226,16 +279,18 @@ namespace VANTAGE.Dialogs
                     {
                         var cmd = azureConn.CreateCommand();
                         cmd.CommandTimeout = 0;
+                        // ProgDate filter removed — admin dialog proves it's safe, and the
+                        // grid no longer carries ProgDate per row. The (user, project, week)
+                        // tuple uniquely identifies a snapshot group because submitting
+                        // overwrites any prior ProgDate for the same tuple.
                         cmd.CommandText = @"
                             DELETE FROM VMS_ProgressSnapshots
                             WHERE AssignedTo = @username
                               AND ProjectID = @projectId
-                              AND WeekEndDate = @weekEndDate
-                              AND ProgDate = @progDate";
+                              AND WeekEndDate = @weekEndDate";
                         cmd.Parameters.AddWithValue("@username", App.CurrentUser!.Username);
                         cmd.Parameters.AddWithValue("@projectId", week.ProjectID);
                         cmd.Parameters.AddWithValue("@weekEndDate", week.WeekEndDateStr);
-                        cmd.Parameters.AddWithValue("@progDate", week.ProgDate);
 
                         deleted += cmd.ExecuteNonQuery();
                     }
@@ -330,6 +385,14 @@ namespace VANTAGE.Dialogs
 
             var selectedWeek = selectedWeeks[0];
             string currentUser = App.CurrentUser!.Username;
+
+            // Belt-and-suspenders: button is already disabled for foreign snapshots.
+            if (!string.Equals(selectedWeek.Username, currentUser, StringComparison.OrdinalIgnoreCase))
+            {
+                AppMessageBox.Show("You can only revert to your own snapshots.",
+                    "Not Allowed", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
 
             // Show warning dialog with backup option
             var warningResult = ShowRevertWarningDialog(selectedWeek);
@@ -753,12 +816,10 @@ namespace VANTAGE.Dialogs
                     FROM VMS_ProgressSnapshots
                     WHERE AssignedTo = @username
                       AND ProjectID = @projectId
-                      AND WeekEndDate = @weekEndDate
-                      AND ProgDate = @progDate";
+                      AND WeekEndDate = @weekEndDate";
                 cmd.Parameters.AddWithValue("@username", username);
                 cmd.Parameters.AddWithValue("@projectId", selectedWeek.ProjectID);
                 cmd.Parameters.AddWithValue("@weekEndDate", selectedWeek.WeekEndDateStr);
-                cmd.Parameters.AddWithValue("@progDate", selectedWeek.ProgDate);
 
                 using var reader = cmd.ExecuteReader();
                 while (reader.Read())
@@ -1220,9 +1281,12 @@ namespace VANTAGE.Dialogs
 
     #endregion
 
-    // Model for snapshot group selection
+    // Model for snapshot group selection. Used by both the user-facing
+    // ManageSnapshotsDialog (cross-user listing, ownership-gated actions) and
+    // ModifySnapshotDialog (operates on a single user-owned week).
     public class SnapshotWeekItem : INotifyPropertyChanged
     {
+        public string Username { get; set; } = string.Empty;
         public string ProjectID { get; set; } = string.Empty;
         public DateTime WeekEndDate { get; set; }
         public string WeekEndDateStr { get; set; } = string.Empty;
@@ -1243,17 +1307,28 @@ namespace VANTAGE.Dialogs
             }
         }
 
-        public string DisplayText
+        private bool _isUploaded;
+        public bool IsUploaded
         {
-            get
+            get => _isUploaded;
+            set
             {
-                string submitted = DateTime.TryParse(ProgDate, out var dt)
-                    ? dt.ToString("MM/dd/yyyy h:mm tt")
-                    : ProgDate;
-                return $"{ProjectID}  |  WE {WeekEndDate:MM/dd/yyyy}  |  Submitted {submitted}";
+                if (_isUploaded != value)
+                {
+                    _isUploaded = value;
+                    OnPropertyChanged(nameof(IsUploaded));
+                    OnPropertyChanged(nameof(IsUploadedDisplay));
+                }
             }
         }
-        public string SnapshotCountDisplay => $"({SnapshotCount:N0} records)";
+
+        public string WeekEndDateDisplay => WeekEndDate.ToString("MM/dd/yyyy");
+
+        public string ProgDateDisplay => DateTime.TryParse(ProgDate, out var dt)
+            ? dt.ToString("MM/dd/yyyy h:mm tt")
+            : ProgDate;
+
+        public string IsUploadedDisplay => IsUploaded ? "Yes" : "";
 
         public event PropertyChangedEventHandler? PropertyChanged;
         protected void OnPropertyChanged(string? propertyName = null)
