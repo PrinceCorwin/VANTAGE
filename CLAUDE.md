@@ -30,6 +30,15 @@ WPF application for Summit Industrial replacing the legacy MS Access system ("Ol
 - **Purpose:** Holds plugin source (e.g. `src\const-tfs-mech-updater\`) and the published `plugins-index.json` that VANTAGE's Plugin Manager / auto-updater reads. Releases are cut from this sibling repo, not from the VANTAGE tree.
 - **Has its own `CLAUDE.md`** — read it before making plugin-side changes.
 
+## Sister Project: REQit (material expediting — WPF migration of legacy Access app)
+- **External folder (per-machine — its OWN Git repo, NOT in this tree):**
+  - Work PC (user `Steve.Amalfitano`): `%USERPROFILE%\source\repos\PrinceCorwin\REQit`
+  - Personal PC (user `steve`): `C:\Users\steve\Projects\REQit` (same convention as the other siblings; only exists there once the repo has a remote and is cloned)
+- **Purpose:** Ground-up WPF .NET 8 rebuild of Summit's legacy MS Access material-expediting / procurement app (requisitions → RFQ → PO → receiving → issuing → inventory, plus material/delivery planning, submittals, change orders, QC/fuzzy description matching, takeoff import, reporting). Built to mirror VANTAGE's architecture (Syncfusion, MVVM, local SQLite cache syncing down from Azure).
+- **Shared backend — IMPORTANT:** REQit uses the SAME Azure SQL server/DB as VANTAGE (`summitpc.database.windows.net` / `projectcontrols`). REQit's `dbo_*` tables live there, and REQit reads `dbo_VANTAGE_global_ProgressLog`. ⚠️ Schema changes on `projectcontrols` affect BOTH apps — coordinate any change against REQit.
+- **Has its own `CLAUDE.md`, Plans docs, project-local finisher, and git repo** — do REQit work from a REQit-rooted session, not from here. Read its `CLAUDE.md` first. The legacy Access source is extracted (as text) under `REQit\REQit-extract\`; the original `.accdb` and the real credentials are kept local and gitignored.
+- **Migration philosophy:** the legacy app is reference, NOT spec — much of it is wrong/unnecessary. Rebuild section by section, validating requirements with users before building each module.
+
 ## Tech Stack
 - WPF .NET 8, Syncfusion 33.1.45 (FluentDark / FluentLight base themes; see `Utilities/ThemeManager.cs`)
 - SQLite (local) + Azure SQL Server (central sync)
