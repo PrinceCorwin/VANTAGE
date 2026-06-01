@@ -1,6 +1,16 @@
 {
   "releases": [
     {
+      "version": "26.2.21",
+      "date": "2026-06-01",
+      "highlights": [
+        "Fix — Export To P6 File now writes the Activity % Complete column with two decimals instead of rounding to a whole number. Activities at 99.5–99.9% were being shown as 100 in the exported P6 workbook even though their Actual Finish date was blank — P6 flagged that as inconsistent. Values like 99.70 now flow through correctly.",
+        "New — Analysis tab chart filters have an Excel-style \"(Select All)\" toggle at the top of every dropdown. Click once to select all, click again to clear. Each filter label also shows an ALL / [N] count badge so you can see at a glance which filters are narrowing the chart.",
+        "Improvement — Analysis tab now opens almost instantly even on very large projects. The tab is cached across navigations (filter selections, chart settings, scroll position survive Progress ↔ Analysis switching), and filter dropdowns populate only the first time you open them. Chart filter selections now reset when you close the app, matching how Progress column filters behave.",
+        "Improvement — AI Takeoff bolt-up (BU) labor rows now show Quantity = 0.5 with the full per-joint rate, instead of Quantity = 1 with a halved rate. Per-joint and per-row labor hours are unchanged. The new shape keeps the RateSheet × Quantity = BudgetMHs audit invariant true on BU rows, and the description suffix now reads \"HALF BU ONE FLANGE ONLY\" so per-flange counting is impossible to miss when reviewing the Labor tab."
+      ]
+    },
+    {
       "version": "26.2.20",
       "date": "2026-05-21",
       "highlights": [

@@ -2,8 +2,10 @@
 
 **Last Updated:** June 1, 2026
 
-## ⚠️ Critical TODOs
-- **Standardize the cross-machine credential workflow (primary dev/publish machine = home/Legion).** How creds actually propagate: `/publisher` (`Scripts/publish-update.ps1`, step 2) **regenerates `appsettings.enc` from the local `appsettings.json` on every publish**, strips the plaintext from the shipped output, and the release commit pushes the new `.enc`; other machines get it via `git pull`, production via app update. So **`appsettings.json` is never copied between machines** — the encrypted file is the propagation channel, and `CredentialService` reads plaintext `appsettings.json` first (dev) then falls back to `appsettings.enc`. **Risks:** (1) `/publisher` reads the *publishing* machine's `appsettings.json`, so whatever is in it at publish time becomes everyone's creds — publishing from a machine with a **stale** plaintext silently regresses all users; (2) in dev, a stale local `appsettings.json` overrides the freshly-pulled `appsettings.enc`. **Action / standard:** keep `appsettings.json` on exactly ONE machine — the one you dev + publish from (home) — and **delete it on every other machine** so they always use the synced `.enc` and `/publisher` can't run there (the script throws without the plaintext — a useful guardrail). Verified 2026-05-29: the work PC's `appsettings.json` matches `appsettings.enc` (28/28 keys) — no drift right now, but the work PC's copy is a future hazard and should be removed once home is confirmed as the master. **Also:** legacy `Credentials.cs` is unreferenced by any code (verified 2026-05-29 — everything reads `CredentialService`); delete it on all machines + tidy the `.gitignore` comment.
+## ⚠️ Cross-Machine Credential Notes
+- **How creds propagate:** `/publisher` (`Scripts/publish-update.ps1`, step 2) regenerates `appsettings.enc` from the publishing machine's local `appsettings.json` on every publish, strips the plaintext from the shipped output, and the release commit pushes the new `.enc`. Other machines pick up the new `.enc` via `git pull`; production picks it up via app update. `appsettings.json` itself is gitignored and never copied between machines — the encrypted file is the propagation channel. `CredentialService` reads plaintext `appsettings.json` first (dev), then falls back to `appsettings.enc`.
+- **Rule:** Whenever you edit a credential (rotation, new key, etc.), mirror the same edit on the other PC's `appsettings.json` BEFORE the next publish. The next publish will encrypt whatever is in the publishing machine's local plaintext, so a stale local plaintext silently regresses the rotation for every user. If the two PCs are in sync, publishing from either is fine — verified 2026-05-29 the work PC matched home 28/28.
+- **Cleanup:** legacy `Credentials.cs` is unreferenced by any code (verified 2026-05-29 — everything reads `CredentialService`); delete it on all machines + tidy the `.gitignore` comment.
 
 ## Deferred to Post-V1
 | Feature | Reason |
@@ -19,7 +21,7 @@
 | AI Features (other) | NOT STARTED | Error Assistant, Description Analysis, etc. |
 
 ## Ready to Publish
-- **New release pending** — Manage My Snapshots query optimization (~60s → <10 ms via INDEX hint), Progress module "Submit Week" button relabel to "Snapshot", AI Takeoff BU labor rows now per-flange (Quantity 0.5 + full joint rate, restoring the `RateSheet × Quantity = BudgetMHs` audit invariant; description suffix updated to "HALF BU ONE FLANGE ONLY"), and P6 export `complete_pct` no longer rounds to whole numbers (now 2 decimals — prevents 99.7 → 100 with blank `act_end_date`). Run `/publisher` when ready.
+- _(none — most recent release is current)_
 
 ## Active Development
 

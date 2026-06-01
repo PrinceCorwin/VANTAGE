@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.2.20",
-  "releaseDate": "2026-05-21T15:52:59Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.2.20/VANTAGE-26.2.20.zip",
-  "zipSizeBytes": 151632211,
-  "sha256": "768E92549AE41544FDAC3B82F6925943D7BB7A65009416597B46F736E7065B96",
-  "releaseNotes": "Manage My Snapshots loads almost instantly. SUBMIT WEEK button relabeled to SNAPSHOT. Deleted Records can export filtered records in NewVantage format."
+  "currentVersion": "26.2.21",
+  "releaseDate": "2026-06-01T10:16:50Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.2.21/VANTAGE-26.2.21.zip",
+  "zipSizeBytes": 151635276,
+  "sha256": "0AE71F654575EF7C4E22D716563AF5D9767DB019717050B512055FC454A70A76",
+  "releaseNotes": "P6 export Activity % Complete now writes two decimals (no more 99.7 → 100 with blank Actual Finish). Analysis tab opens instantly with (Select All) toggle on chart filters. AI Takeoff BU labor rows now per-flange."
 }
