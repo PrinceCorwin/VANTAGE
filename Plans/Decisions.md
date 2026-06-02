@@ -436,6 +436,21 @@ Sections follow VANTAGE's nav structure top to bottom. See `.claude/skills/finis
 **Why:** "Zero selected" and "all selected" produce the same chart query result (`AppendChartFilterClauses` skips the WHERE clause entirely when `selected.Count == 0`; a full IN list matches every row), so there is no semantic NONE state — both are "filter not narrowing the data". The toggle item gives Excel-style bulk control without modal dialogs or extra buttons. Per-item rehydration of large selections still pauses Syncfusion's internal layout on the order of seconds for ~1,500-item filters; the user opts in by explicitly clicking the toggle, and view caching limits this cost to once per session per filter.
 **Date:** May 2026
 
+### Analysis Summary Grid Has a Local / Snapshot Source Toggle Backed by a Local Cache Table
+**Rule:** The Analysis summary grid aggregates from one of two local SQLite tables, picked by a Source radio pair in the toolbar: **Local** reads from `Activities` (the user's live working set), **Snapshot** reads from `SnapshotAnalysis` (a local cache mirror of the `Activities` schema, schema v13). The Snapshot picker (`Dialogs/SelectAnalysisSnapshotsDialog`) is the only thing that pulls from Azure `VMS_ProgressSnapshots` — it wipes and bulk-inserts the user's checked submission tuples into `SnapshotAnalysis` on Apply. The Snapshot radio itself does NOT auto-open the picker; it just switches the source and re-aggregates whatever's already cached. Empty cache = empty grid. The Select button is enabled only when the Snapshot radio is checked. Both radio pairs have explicit `GroupName`s (`AnalysisUserFilter`, `AnalysisSource`) so they behave as two independent groups.
+**Why:** Selection-triggered Azure aggregation queries froze the UI on every click and re-ran the slow query for every filter change. Caching the chosen snapshots locally separates the slow Azure pull (once per Apply, off the UI thread, busy overlay) from the fast aggregation (always local, always sub-second), and the cache persists across app restarts. Mirroring the `Activities` schema lets the same aggregation SQL serve both sources — `LoadSummaryFromLocalTable(groupField, sourceTable)` with an `Activities` / `SnapshotAnalysis` allowlist. Selection state lives in the cache table itself (DISTINCT on Apply for pre-check), not a separate persisted list, so cache and remembered selection can never drift apart.
+**Date:** June 2026
+
+### Analysis Source Mode Default Is Local; My Records / All Users Default Is All Users
+**Rule:** When no saved `AnalysisSourceMode` exists, the Source radio defaults to Local. When no saved `AnalysisCurrentUserOnly` exists, the user-filter pair defaults to All Users. Both settings persist on every change (immediate write to `UserSettings`) and survive app restart.
+**Why:** Local is the safe, always-fast, no-network default for first-launch and for users who never engage with Snapshot mode. All Users is the more common "what's the project doing" Analysis question — biasing to My Records hid data new users were trying to find. Immediate save (vs. write-on-Unloaded) is required because the Analysis tab is often the last view active when users close the app, and Unloaded doesn't reliably fire in that path.
+**Date:** June 2026
+
+### Analysis Snapshot Picker Groups by `(AssignedTo, ProjectID, WeekEndDate)`, Not ProgDate
+**Rule:** The Analysis snapshot picker dialog lists submissions grouped by `(AssignedTo, ProjectID, WeekEndDate)` — matching `ManageSnapshotsDialog`. ProgDate is intentionally not in the GROUP BY or in the cache table's selection key. The `INNER JOIN` that restricts the Azure pull joins on `(ProjectID, WeekEndDate, AssignedTo)` only.
+**Why:** Scanning ProgDate across all rows of `VMS_ProgressSnapshots` times out at production volume — there's no index plan that makes it sub-second. The `(user, project, week)` tuple is effectively unique for a submission; the edge case is the sibling submission group the New ActNOs from P6 dialog creates with a `UtcNow` ProgDate, and in that case rolling those siblings into the same analysis result is the correct semantic anyway.
+**Date:** June 2026
+
 ---
 
 ## Takeoffs

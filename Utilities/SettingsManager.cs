@@ -504,15 +504,26 @@ namespace VANTAGE.Utilities
             SetUserSetting("AnalysisGroupField", field, "string");
         }
 
-        // Current User Only toggle (default: true)
+        // Current User Only toggle. Default false = "All Users" when no saved setting exists.
         public static bool GetAnalysisCurrentUserOnly()
         {
-            return GetUserSetting("AnalysisCurrentUserOnly", "true").Equals("true", StringComparison.OrdinalIgnoreCase);
+            return GetUserSetting("AnalysisCurrentUserOnly", "false").Equals("true", StringComparison.OrdinalIgnoreCase);
         }
 
         public static void SetAnalysisCurrentUserOnly(bool value)
         {
             SetUserSetting("AnalysisCurrentUserOnly", value.ToString().ToLower(), "bool");
+        }
+
+        // Source mode for the Analysis summary grid — "Local" or "Snapshot". Default "Local".
+        public static string GetAnalysisSourceMode()
+        {
+            return GetUserSetting("AnalysisSourceMode", "Local");
+        }
+
+        public static void SetAnalysisSourceMode(string mode)
+        {
+            SetUserSetting("AnalysisSourceMode", mode, "string");
         }
 
         // Selected projects (comma-separated list of ProjectIDs)

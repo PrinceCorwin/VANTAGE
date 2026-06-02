@@ -182,7 +182,8 @@ namespace VANTAGE.Utilities
         //   Schedule.UDFMappings           — Schedule UDF Column Mappings dialog
         //   Schedule.LookaheadWeeks        — Lookahead ComboBox in the Schedule toolbar
         //   AnalysisGroupField             — dropdown in the Analysis tab
-        //   AnalysisCurrentUserOnly        — checkbox in the Analysis tab
+        //   AnalysisCurrentUserOnly        — radio pair (My Records / All Users) in the Analysis tab
+        //   AnalysisSourceMode             — radio pair (Local / Snapshot) in the Analysis tab; Snapshot picker is managed by Select button
         //   AnalysisSelectedProjects       — project picker in the Analysis tab
         //   AnalysisVisual_1_1             — chart type dropdown in the Analysis tab
         //   AnalysisXAxis_1_1              — X-axis dropdown in the Analysis tab

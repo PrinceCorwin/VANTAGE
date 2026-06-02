@@ -6,6 +6,26 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### June 2, 2026 (Analysis Module — Local / Snapshot Source Toggle Backed by `SnapshotAnalysis` Cache)
+
+**Problem.** The Analysis summary grid only aggregated from local `Activities` — the user's live working set. There was no way to run the same Group By / aggregation against a historical Submit Week snapshot, anyone else's snapshot, or multiple snapshots combined.
+
+**Source toggle.** New radio pair in the Analysis toolbar: **Local** (default, current behavior) and **Snapshot**. Defaults to All Users + Local when no saved settings exist (changed from My Records default). Both selections persist immediately via UserSettings — `AnalysisSourceMode` and the existing `AnalysisCurrentUserOnly` — so they survive app restart. Each radio pair has an explicit `GroupName` (`AnalysisUserFilter`, `AnalysisSource`) so the four toolbar radios don't auto-group as one set (WPF default when they share a parent panel).
+
+**Persistent local cache.** New `SnapshotAnalysis` table (schema v13 migration) mirrors the `Activities` schema and lives in the local SQLite. The Analysis grid's Snapshot mode queries this table — same SQL shape as Local mode, just a different `FROM` clause. Sub-second aggregation regardless of source, because both paths read from local SQLite. Aggregation now goes through a single `LoadSummaryFromLocalTable(groupField, sourceTable)` helper with an `Activities` / `SnapshotAnalysis` allowlist.
+
+**Picker dialog (`Dialogs/SelectAnalysisSnapshotsDialog`).** Opens via the toolbar **Select** button (enabled only when Snapshot radio is checked). Uses the same fast `GROUP BY (AssignedTo, ProjectID, WeekEndDate)` query as `ManageSnapshotsDialog` — ProgDate intentionally not in the grouping (scanning ProgDate at production volume times out). Checkbox column + Select All / Select None / Apply / Cancel. Rows are pre-checked from whatever's currently in the local `SnapshotAnalysis` table — selection state lives in the table itself, not a separate persisted list, so it can never drift from the cache.
+
+**Repository (`SnapshotAnalysisRepository.PopulateFromAzureAsync`).** On Apply, wipes the local table and bulk-inserts the rows the user picked from Azure `VMS_ProgressSnapshots`, in a single SQLite transaction with indexes dropped/recreated around the insert (same pattern `RefillLocalSnapshotsForWeekAsync` uses). One Azure round-trip per selection change — busy overlay shown on the summary grid during the pull. Cancelling the dialog does nothing; clicking Apply with no rows checked clears the cache.
+
+**Selection ergonomics.** Clicking the Snapshot radio does NOT auto-open the picker — it just switches the source and re-aggregates from whatever's currently in the cache. Empty cache = empty grid. User clicks Select to populate. Status text reads `none` or `N selected` so the cache state is visible at a glance.
+
+**SQL gotchas fixed along the way.** (a) `RowCount` is a T-SQL reserved word, must be bracketed as `[RowCount]` in the SELECT alias. (b) `ActivityID` doesn't exist on `VMS_ProgressSnapshots` (it's a `VMS_Activities` column only) — dropped from the column list. (c) The `INNER JOIN (VALUES …) snaps(projectId, weekEndDate, assignedTo)` introduces column names that collide with the snapshot columns; every snapshot column in the SELECT must be qualified with `s.` to disambiguate.
+
+**Key files:** `Utilities/SchemaMigrator.cs` (v13 migration creates SnapshotAnalysis table + indexes), `Data/SnapshotAnalysisRepository.cs` (new — `GetCurrentSnapshotKeysAsync`, `PopulateFromAzureAsync`), `Dialogs/SelectAnalysisSnapshotsDialog.xaml`(.cs) (new), `Models/AnalysisSnapshotKey.cs` (new — INPC for the picker grid), `Views/AnalysisView.xaml(.cs)` (radio pair + Select button + busy overlay + source-aware `LoadSummaryData`), `Utilities/SettingsManager.cs` (`GetAnalysisSourceMode`/`SetAnalysisSourceMode`; user-only default flipped to false = All Users), `Utilities/UserSettingsRegistry.cs` (deny-list comment for the new key).
+
+---
+
 ### June 1, 2026 (New ActNOs from P6 — Dialog and Stub-Record Creation)
 
 **Problem.** A P6 import wipes and re-populates the local `Schedule` table from the P6 workbook, then refills the local `ProgressSnapshots` mirror from Azure for the imported week. Any `SchedActNO` that P6 references but that the user's snapshot doesn't have was silently invisible — there was no way to tell the field "you need to start tracking these activities" short of manually adding rows in the Progress grid.

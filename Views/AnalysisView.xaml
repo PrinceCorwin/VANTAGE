@@ -377,13 +377,16 @@
 
                         <Rectangle Width="1" Fill="{DynamicResource ControlBorder}" Margin="12,2"/>
 
-                        <!-- User Filter -->
+                        <!-- User Filter. Explicit GroupName so these don't share a group with the
+                             Source radios below (all four would auto-group as one set otherwise). -->
                         <RadioButton x:Name="rbCurrentUser" Content="My Records"
+                                     GroupName="AnalysisUserFilter"
                                      VerticalAlignment="Center" Margin="8,0"
                                      Foreground="{DynamicResource ForegroundColor}"
                                      Checked="UserFilter_Changed"
                                      ToolTip="Show only records assigned to you"/>
                         <RadioButton x:Name="rbAllUsers" Content="All Users"
+                                     GroupName="AnalysisUserFilter"
                                      VerticalAlignment="Center" Margin="8,0"
                                      Foreground="{DynamicResource ForegroundColor}"
                                      Checked="UserFilter_Changed"
@@ -399,6 +402,42 @@
                                                 EnableOKCancel="False"
                                                 SelectionChanged="CmbProjects_SelectionChanged"
                                                 ToolTip="Select projects to include in analysis"/>
+
+                        <Rectangle Width="1" Fill="{DynamicResource ControlBorder}" Margin="12,2"/>
+
+                        <!-- Source: Local (aggregate from local Activities) vs. Snapshot (open
+                             the picker dialog and aggregate from selected Azure snapshots). -->
+                        <TextBlock Text="Source:" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <RadioButton x:Name="rbSourceLocal"
+                                     Content="Local"
+                                     GroupName="AnalysisSource"
+                                     IsChecked="True"
+                                     VerticalAlignment="Center"
+                                     Margin="0,0,8,0"
+                                     Foreground="{DynamicResource ForegroundColor}"
+                                     Checked="SourceRadio_Changed"
+                                     ToolTip="Aggregate from the local Activities table (default)."/>
+                        <RadioButton x:Name="rbSourceSnapshot"
+                                     Content="Snapshot"
+                                     GroupName="AnalysisSource"
+                                     VerticalAlignment="Center"
+                                     Margin="0,0,8,0"
+                                     Foreground="{DynamicResource ForegroundColor}"
+                                     Checked="SourceRadio_Changed"
+                                     ToolTip="Aggregate from selected Azure snapshots — opens a picker."/>
+                        <Button x:Name="btnReSelectSnapshots"
+                                Content="Select"
+                                Padding="6,2"
+                                IsEnabled="False"
+                                Click="BtnReSelectSnapshots_Click"
+                                ToolTip="Open the snapshot picker to change the current selection."/>
+                        <TextBlock x:Name="txtSnapshotStatus"
+                                   Text=""
+                                   VerticalAlignment="Center"
+                                   FontSize="11"
+                                   Opacity="0.7"
+                                   Margin="8,0,0,0"
+                                   Foreground="{DynamicResource ForegroundColor}"/>
 
                         <Rectangle Width="1" Fill="{DynamicResource ControlBorder}" Margin="12,2"/>
 
@@ -503,6 +542,26 @@
                                                           CellStyle="{StaticResource PercentColorStyle}"/>
                         </syncfusion:SfDataGrid.Columns>
                     </syncfusion:SfDataGrid>
+
+                    <!-- Busy overlay for the summary grid during async snapshot aggregation. -->
+                    <Border x:Name="summaryBusyOverlay" Grid.Row="1"
+                            Background="{DynamicResource OverlayBackground}"
+                            Visibility="Collapsed"
+                            Panel.ZIndex="1000">
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <syncfusion:SfBusyIndicator IsBusy="True"
+                                                        AnimationType="DualRing"
+                                                        ViewboxWidth="64"
+                                                        ViewboxHeight="64"
+                                                        Foreground="{DynamicResource AccentColor}"/>
+                            <TextBlock Text="Aggregating snapshot data..."
+                                       FontSize="14"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource OverlayText}"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,16,0,0"/>
+                        </StackPanel>
+                    </Border>
                 </Grid>
             </Border>
 

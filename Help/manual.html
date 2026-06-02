@@ -1767,10 +1767,29 @@
             <td>Multi-select dropdown to filter by one or more projects.</td>
         </tr>
         <tr>
+            <td><strong>Source: Local / Snapshot</strong></td>
+            <td>Choose which dataset the summary grid aggregates. <strong>Local</strong> (default) reads your live working set from the local Activities table. <strong>Snapshot</strong> reads from a local cache populated by the Select picker — see "Source: Snapshot" below. Defaults to Local on first launch; the choice persists across app restarts.</td>
+        </tr>
+        <tr>
+            <td><strong>Select</strong></td>
+            <td>Opens the snapshot picker. Only enabled while the Snapshot radio is selected.</td>
+        </tr>
+        <tr>
             <td><strong>Export</strong></td>
             <td>Export the current filtered grid contents to an Excel file (.xlsx).</td>
         </tr>
     </table>
+
+    <h4>Source: Snapshot</h4>
+    <p>Switching the Source to <strong>Snapshot</strong> tells the summary grid to aggregate from a local cache of selected Submit Week snapshots rather than from your live Activities table. The cache persists across app restarts — the first time you launch the app with Source set to Snapshot, the grid populates instantly from whatever's already in the cache.</p>
+    <p>Click <strong>Select</strong> to open the snapshot picker. It lists every submission group across all users, projects, and weeks (grouped by user, project, and week-ending date), with row counts. Check the snapshots you want and click Apply. The cache is then wiped and refilled from Azure with just those rows — a busy overlay appears on the grid during the pull. Cancelling the dialog leaves the current cache untouched; applying with no rows checked clears the cache.</p>
+    <p>Notes:</p>
+    <ul>
+        <li>The label next to the Select button shows <strong>none</strong> or <strong>N selected</strong> so you can see the cache state at a glance.</li>
+        <li>The Group By, My Records / All Users, and Projects filters still apply in Snapshot mode — they intersect with the cached snapshot rows.</li>
+        <li>Picking multiple snapshots that share the same Activity (e.g., the same project across two weeks) will sum that Activity's BudgetMHs / EarnedMHs / Quantity / QtyEarned twice. Pick deliberately.</li>
+        <li>Empty cache + Source = Snapshot will show an empty grid. Click Select to fill the cache.</li>
+    </ul>
 
     <h4>Grid Columns</h4>
     <table>

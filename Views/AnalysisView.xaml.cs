@@ -43,6 +43,11 @@ namespace VANTAGE.Views
         // so Loaded fires every nav back; we skip re-init to keep tab nav instant.
         private bool _dataLoaded;
 
+        // The Source = Snapshot path aggregates from the local SnapshotAnalysis table,
+        // which is populated by SnapshotAnalysisRepository.PopulateFromAzureAsync. The
+        // currently-loaded selection is derived from SELECT DISTINCT on that table, not
+        // tracked here.
+
         public AnalysisView()
         {
             InitializeComponent();
@@ -83,6 +88,11 @@ namespace VANTAGE.Views
             LoadSummaryData();
             UpdateVisual_1_1();
             _dataLoaded = true;
+
+            // If Source mode was restored to Snapshot, refresh the status label from the
+            // SnapshotAnalysis table contents so the user can see what's currently loaded.
+            if (rbSourceSnapshot.IsChecked == true)
+                _ = UpdateSnapshotStatusFromTableAsync();
         }
 
         private void AnalysisView_Unloaded(object sender, RoutedEventArgs e)
@@ -153,10 +163,25 @@ namespace VANTAGE.Views
             // Update grid column header to match selected field
             colGroupValue.HeaderText = cmbGroupBy.SelectedItem?.ToString() ?? "Group";
 
-            // User filter
+            // User filter — default All Users when no saved value exists.
             var currentUserOnly = SettingsManager.GetAnalysisCurrentUserOnly();
             rbCurrentUser.IsChecked = currentUserOnly;
             rbAllUsers.IsChecked = !currentUserOnly;
+
+            // Source mode — default Local when no saved value exists.
+            var sourceMode = SettingsManager.GetAnalysisSourceMode();
+            if (string.Equals(sourceMode, "Snapshot", StringComparison.OrdinalIgnoreCase))
+            {
+                rbSourceSnapshot.IsChecked = true;
+                rbSourceLocal.IsChecked = false;
+                btnReSelectSnapshots.IsEnabled = true;
+            }
+            else
+            {
+                rbSourceLocal.IsChecked = true;
+                rbSourceSnapshot.IsChecked = false;
+                btnReSelectSnapshots.IsEnabled = false;
+            }
 
             // Auto-select first project from whatever is currently in local
             var selectedItems = cmbProjects.SelectedItems as System.Collections.IList;
@@ -248,6 +273,25 @@ namespace VANTAGE.Views
             var groupField = cmbGroupBy.SelectedItem?.ToString();
             if (string.IsNullOrEmpty(groupField)) return;
 
+            // Both branches query local SQLite — Activities for Local mode, SnapshotAnalysis
+            // for Snapshot mode. Same query shape, just different table.
+            string sourceTable = rbSourceSnapshot.IsChecked == true ? "SnapshotAnalysis" : "Activities";
+            LoadSummaryFromLocalTable(groupField, sourceTable);
+        }
+
+        // Single aggregation path — same query shape works against Activities (Local mode)
+        // or SnapshotAnalysis (Snapshot mode), since SnapshotAnalysis mirrors the Activities
+        // schema. Runs against local SQLite, so it's sub-second regardless of source.
+        private void LoadSummaryFromLocalTable(string groupField, string sourceTable)
+        {
+            // Whitelist the table name — never interpolate user input into a table identifier.
+            if (sourceTable != "Activities" && sourceTable != "SnapshotAnalysis")
+            {
+                AppLogger.Error(new InvalidOperationException($"Invalid source table: {sourceTable}"),
+                    "AnalysisView.LoadSummaryFromLocalTable");
+                return;
+            }
+
             var currentUserOnly = rbCurrentUser.IsChecked == true;
             var selectedProjects = cmbProjects.SelectedItems?.Cast<string>().ToList() ?? new List<string>();
 
@@ -288,7 +332,7 @@ namespace VANTAGE.Views
                            COALESCE(SUM(CASE WHEN PercentEntry >= 100 THEN BudgetMHs ELSE PercentEntry / 100.0 * BudgetMHs END), 0) as TotalEarnedMHs,
                            COALESCE(SUM(Quantity), 0) as TotalQuantity,
                            COALESCE(SUM(EarnQtyEntry), 0) as TotalQtyEarned
-                    FROM Activities
+                    FROM {sourceTable}
                     {whereSQL}
                     GROUP BY [{groupField}]
                     ORDER BY [{groupField}]";
@@ -318,11 +362,12 @@ namespace VANTAGE.Views
             }
             catch (Exception ex)
             {
-                AppLogger.Error(ex, "AnalysisView.LoadSummaryData");
+                AppLogger.Error(ex, "AnalysisView.LoadSummaryFromLocalTable");
                 AppMessageBox.Show($"Error loading summary data: {ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
 
         // Event handlers
         private void CmbGroupBy_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -331,12 +376,21 @@ namespace VANTAGE.Views
 
             // Update grid column header to match selected field
             colGroupValue.HeaderText = cmbGroupBy.SelectedItem?.ToString() ?? "Group";
+
+            // Persist the choice immediately. Unloaded-only save lost selections when the
+            // view was the active tab at app close (Unloaded never fired in time).
+            SettingsManager.SetAnalysisGroupField(cmbGroupBy.SelectedItem?.ToString() ?? "PhaseCode");
+
             LoadSummaryData();
         }
 
         private void UserFilter_Changed(object sender, RoutedEventArgs e)
         {
             if (_isInitializing) return;
+
+            // Persist the choice immediately for the same reason as Group By above.
+            SettingsManager.SetAnalysisCurrentUserOnly(rbCurrentUser.IsChecked == true);
+
             LoadSummaryData();
             UpdateVisual_1_1();
         }
@@ -346,6 +400,99 @@ namespace VANTAGE.Views
             if (_isInitializing) return;
             LoadSummaryData();
             UpdateVisual_1_1();
+        }
+
+        // Source radio handler. Clicking Snapshot or Local just persists the choice and
+        // re-runs aggregation against the right local table — does NOT auto-open the picker.
+        // The picker only opens via the Re-select button. Empty SnapshotAnalysis = empty grid.
+        private void SourceRadio_Changed(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializing) return;
+
+            bool isSnapshot = rbSourceSnapshot.IsChecked == true;
+            btnReSelectSnapshots.IsEnabled = isSnapshot;
+
+            SettingsManager.SetAnalysisSourceMode(isSnapshot ? "Snapshot" : "Local");
+
+            if (isSnapshot)
+            {
+                // Refresh the status label asynchronously from the table.
+                _ = UpdateSnapshotStatusFromTableAsync();
+            }
+            else
+            {
+                txtSnapshotStatus.Text = string.Empty;
+            }
+
+            LoadSummaryData();
+            UpdateVisual_1_1();
+        }
+
+        // Re-select button — opens the picker, pre-checking whatever's currently loaded
+        // in SnapshotAnalysis. On Apply, wipes + repopulates the local table from Azure
+        // off the UI thread (busy overlay on the summary grid). Then re-aggregates.
+        private async void BtnReSelectSnapshots_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var current = await VANTAGE.Repositories.SnapshotAnalysisRepository
+                    .GetCurrentSnapshotKeysAsync();
+
+                var dialog = new VANTAGE.Dialogs.SelectAnalysisSnapshotsDialog(current)
+                {
+                    Owner = Window.GetWindow(this)
+                };
+                if (dialog.ShowDialog() != true) return;
+
+                summaryBusyOverlay.Visibility = Visibility.Visible;
+                try
+                {
+                    int rowsWritten = await VANTAGE.Repositories.SnapshotAnalysisRepository
+                        .PopulateFromAzureAsync(dialog.SelectedSnapshots);
+
+                    txtSnapshotStatus.Text = dialog.SelectedSnapshots.Count == 0
+                        ? "none"
+                        : $"{dialog.SelectedSnapshots.Count} selected";
+
+                    if (rbSourceSnapshot.IsChecked == true)
+                    {
+                        LoadSummaryData();
+                        UpdateVisual_1_1();
+                    }
+                }
+                finally
+                {
+                    summaryBusyOverlay.Visibility = Visibility.Collapsed;
+                }
+            }
+            catch (Exception ex)
+            {
+                summaryBusyOverlay.Visibility = Visibility.Collapsed;
+                AppLogger.Error(ex, "AnalysisView.BtnReSelectSnapshots_Click");
+                AppMessageBox.Show(
+                    "Failed to update snapshot cache. See log for details.",
+                    "Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        // Reads the current SnapshotAnalysis table to update the status label after the
+        // view loads in Snapshot mode (so the user can see what's loaded without opening
+        // the picker).
+        private async System.Threading.Tasks.Task UpdateSnapshotStatusFromTableAsync()
+        {
+            try
+            {
+                var current = await VANTAGE.Repositories.SnapshotAnalysisRepository
+                    .GetCurrentSnapshotKeysAsync();
+                txtSnapshotStatus.Text = current.Count == 0
+                    ? "none"
+                    : $"{current.Count} selected";
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "AnalysisView.UpdateSnapshotStatusFromTableAsync");
+            }
         }
 
         // Chart filter fields and their corresponding ComboBoxAdv controls
