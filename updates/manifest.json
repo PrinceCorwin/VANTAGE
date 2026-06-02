@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.2.21",
-  "releaseDate": "2026-06-01T10:16:50Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.2.21/VANTAGE-26.2.21.zip",
-  "zipSizeBytes": 151635276,
-  "sha256": "0AE71F654575EF7C4E22D716563AF5D9767DB019717050B512055FC454A70A76",
-  "releaseNotes": "P6 export Activity % Complete now writes two decimals (no more 99.7 → 100 with blank Actual Finish). Analysis tab opens instantly with (Select All) toggle on chart filters. AI Takeoff BU labor rows now per-flange."
+  "currentVersion": "26.2.22",
+  "releaseDate": "2026-06-02T16:08:23Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.2.22/VANTAGE-26.2.22.zip",
+  "zipSizeBytes": 151662758,
+  "sha256": "4DA6F24BBCDE6D4AB56840940C1D1759F71EE53273B7CFC9E5FD5C19F5B9800B",
+  "releaseNotes": "Analysis tab gains a Local / Snapshot source toggle for aggregating from selected weekly snapshots. P6 import offers to create stub records for SchedActNOs missing from your snapshot."
 }

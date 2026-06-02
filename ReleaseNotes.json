@@ -1,6 +1,14 @@
 {
   "releases": [
     {
+      "version": "26.2.22",
+      "date": "2026-06-02",
+      "highlights": [
+        "New — Snapshot mode on the Analysis tab. A new Source toggle (Local / Snapshot) next to the Group By controls lets the summary grid aggregate from weekly snapshots instead of your live working set. Click Snapshot, then Select, and pick which submissions to include — any user, any project, any week still on Azure. Apply caches them locally so the grid renders instantly and the selection persists across app restarts. Pick multiple snapshots to roll them up together. Defaults to All Users + Local on first launch.",
+        "New — When you import a P6 file, VANTAGE now offers to create records for any SchedActNOs in the file that aren't in your snapshot for the chosen projects. After the import, a dialog lists the missing ActNOs with the description, budget, % complete, and dates from P6 already filled in. Check the rows you want, click Create Selected, and stub records are added to your Activities (marked for sync) and to the snapshot. Required fields P6 can't fill in (WorkPackage, PhaseCode, CompType, PhaseCategory, ROCStep, RespParty) are set to the placeholder \"X\" so you can fix them later."
+      ]
+    },
+    {
       "version": "26.2.21",
       "date": "2026-06-01",
       "highlights": [
