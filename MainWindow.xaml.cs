@@ -720,6 +720,39 @@ namespace VANTAGE
 
                     busyDialog.Close();
 
+                    // Step 3c: Detect P6 SchedActNOs that aren't in the snapshot for this week and
+                    // offer to create stubs (Activity + snapshot row). Runs BEFORE the Schedule view
+                    // refresh so any new rows appear when the view repaints.
+                    int stubsCreated = 0;
+                    try
+                    {
+                        var missing = await VANTAGE.Repositories.ScheduleRepository
+                            .GetMissingActNOsFromP6Async(
+                                p6Dialog.SelectedWeekEndDate,
+                                p6Dialog.SelectedProjectIDs);
+
+                        if (missing.Count > 0)
+                        {
+                            var newActNOsDialog = new VANTAGE.Dialogs.NewActNOsDialog(
+                                missing,
+                                p6Dialog.SelectedProjectIDs,
+                                p6Dialog.SelectedWeekEndDate,
+                                App.CurrentUser?.Username ?? string.Empty)
+                            {
+                                Owner = this
+                            };
+
+                            if (newActNOsDialog.ShowDialog() == true)
+                                stubsCreated = newActNOsDialog.CreatedCount;
+                        }
+                    }
+                    catch (Exception missingEx)
+                    {
+                        AppLogger.Warning(
+                            $"Detect/create missing P6 ActNOs step failed: {missingEx.Message}",
+                            "MainWindow.ImportP6File_Click");
+                    }
+
                     // Step 4: Show results
                     string snapshotMsg = snapshotRows < 0
                         ? "\n\nNote: Could not load snapshot data for Schedule comparison. The Schedule view may show no progress data until you re-import the P6 file."
@@ -727,10 +760,15 @@ namespace VANTAGE
                             ? "\n\nNo snapshot data was found for this week."
                             : $"\n\nLoaded {snapshotRows} snapshot rows for Schedule comparison.";
 
+                    string stubsMsg = stubsCreated > 0
+                        ? $"\n\nCreated {stubsCreated} new record(s) from P6 ActNOs that were missing from your snapshot."
+                        : string.Empty;
+
                     AppMessageBox.Show(
                         $"Successfully imported {imported} schedule activities for week ending {p6Dialog.SelectedWeekEndDate:yyyy-MM-dd}\n\n" +
                         $"Projects: {string.Join(", ", p6Dialog.SelectedProjectIDs)}" +
-                        snapshotMsg,
+                        snapshotMsg +
+                        stubsMsg,
                         "Import Complete",
                         MessageBoxButton.OK,
                         MessageBoxImage.None);
@@ -738,6 +776,15 @@ namespace VANTAGE
                     if (ContentArea.Content is VANTAGE.Views.ScheduleView scheduleView)
                     {
                         await scheduleView.RefreshDataAsync(p6Dialog.SelectedWeekEndDate);
+                    }
+
+                    // If we created stubs, refresh the cached Progress view so the new Activity
+                    // rows appear immediately when the user navigates to it — without waiting for
+                    // a restart. NotifyActivitiesModifiedAsync no-ops if the view hasn't been
+                    // opened yet, so it's safe whether the user is in Schedule view or Progress.
+                    if (stubsCreated > 0)
+                    {
+                        await NotifyActivitiesModifiedAsync();
                     }
                 }
                 catch

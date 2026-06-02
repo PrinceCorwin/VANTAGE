@@ -1470,6 +1470,17 @@
         <p>If you ever notice that the Schedule comparison data looks out of date (for example, after an administrator deletes or modifies your snapshots), simply re-import the P6 file to refresh the local copy.</p>
     </div>
 
+    <h4>New ActNOs from P6</h4>
+    <p>After the P6 file is imported and the matching snapshot is downloaded, VANTAGE checks whether the P6 file contains any SchedActNOs that are not already in your snapshot for the selected projects. If it finds any, a <strong>New ActNOs from P6</strong> dialog opens listing them. You can:</p>
+    <ul>
+        <li>Pick the project these new records should be assigned to (one project per batch — chosen from the projects you selected at the start of the import).</li>
+        <li>Check the rows you want to create. Use <strong>Select All</strong> or <strong>Select None</strong> to toggle the whole list, or check individual rows.</li>
+        <li>Edit any cell before clicking Create — fix typos in the description, adjust the budget, change the percent complete, or update the dates that came from P6.</li>
+        <li>Click <strong>Create Selected</strong> to add the checked rows. Each new record is written to the snapshot you're comparing against AND to your local Activities (marked dirty so the next sync push moves them up to Azure).</li>
+    </ul>
+    <p>The required-metadata fields that P6 cannot supply (WorkPackage, PhaseCode, CompType, PhaseCategory, ROCStep, RespParty) are filled with the placeholder string <strong>X</strong>. The new records appear immediately in the Schedule and Progress views; you'll need to come back and fix the placeholder fields with real values when the work is properly defined. Earned hours are calculated as <code>PercentEntry / 100 × BudgetMHs</code> — the placeholder ROCStep doesn't affect that calculation, so the rows still roll up correctly until you give them real values.</p>
+    <p>If you cancel the dialog without creating anything, you can re-trigger detection by importing the same P6 file again.</p>
+
     <h4>P6 Column Mapping</h4>
     <p>The importer recognizes two rows of headers: <strong>Row 1</strong> contains technical field names (shown in the "P6 Column" column below), and <strong>Row 2</strong> contains display names (shown in the "Alternate Header" column). Row 2 display names are checked first since they are more consistent across P6 configurations.</p>
     <table>

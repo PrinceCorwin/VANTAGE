@@ -324,7 +324,21 @@ Sections follow VANTAGE's nav structure top to bottom. See `.claude/skills/finis
 ### Schedule Detail Grid Auto-Stamps Dates From PercentEntry Edits
 **Rule:** When the user edits a `PercentEntry` cell in the Schedule detail grid, `ActStart` is set to `WeekEndDate` if going from 0 to a positive value, and `ActFin` is set to `WeekEndDate` when reaching 100. Going backward clears the appropriate dates. This auto-stamp logic fires only on Schedule detail grid edits — sync, plugin, paste, and bulk paths do not trigger it.
 **Why:** Schedule users edit weekly snapshots, where the date IS the WeekEndDate by definition. Other write paths (sync, plugins) operate on values that originate elsewhere; auto-stamping there would silently overwrite real dates.
-**Date:** April 2026
+
+### New ActNOs from P6 Create Stubs Across Activities + Snapshot
+**Rule:** When the P6 import detects SchedActNOs in the file that aren't in the local snapshot mirror for the selected ProjectIDs, the New ActNOs dialog lets the user create stub records for them. Each stub writes to Azure `VMS_ProgressSnapshots` (full schema, so it survives the next refill that wipes the local mirror), local `Activities` (full schema, `LocalDirty = 1`), and the local `ProgressSnapshots` mirror (lean 12 columns) in that order. The two local writes share a SQLite transaction; the Azure write commits first. Detection compares P6 against the local snapshot mirror, not against the local Activities table, because "P6 vs. snapshot" is the Schedule module's premise.
+**Why:** Without this path, a SchedActNO that P6 expects the field to track but that nobody has created locally is silently invisible. Writing to all three locations means the stubs are immediately visible (Schedule view reads the local mirror, Progress view reads local Activities) AND survive the next P6 re-import (which wipes the local mirror and refills from Azure).
+**Date:** June 2026
+
+### P6 Stub Records Use "X" Placeholders for Missing Required Metadata
+**Rule:** Stub Activities created from the New ActNOs dialog use the literal string `"X"` for the six required-metadata fields P6 cannot supply (`WorkPackage`, `PhaseCode`, `CompType`, `PhaseCategory`, `ROCStep`, `RespParty`). `ProjectID` comes from the dialog's ProjectID picker, `SchedActNO` and `Description` from P6's `task_code` / `task_name`. `BudgetMHs`, `PercentEntry`, `ActStart`, `ActFin` mirror P6's `target_work_qty`, `complete_pct`, `act_start_date`, `act_end_date`. Quantity defaults to `0.001`.
+**Why:** Required-metadata fields cannot be empty (sync gate blocks empties). A non-empty placeholder is both visible enough to remind the user to come back and fix it AND not blocking — the records can sync, just not earn against an ROC curve until `ROCStep` is real. ROC lookup naturally returns nothing for `X|X|X|X` so EarnMHs stays a function of `PercentEntry × BudgetMHs`, which is the right default.
+**Date:** June 2026
+
+### P6 Stub Records Use UtcNow ProgDate, Not Existing Submission ProgDate
+**Rule:** Stub records created from the New ActNOs dialog get `ProgDate = DateTime.UtcNow` and appear as a sibling submission group in `ManageSnapshotsDialog` (separate row from the original Submit Week's group for the same project + week). The dialog does not look up the original ProgDate.
+**Why:** Earlier iteration tried to query Azure `VMS_ProgressSnapshots` for the original ProgDate so stubs would join the existing group. The lookup timed out at 60+ seconds against a production-sized table despite the supporting covering index — query-plan issue, not worth chasing. The local snapshot mirror has only 12 columns and does not carry ProgDate, so a local lookup isn't possible either without widening the mirror. Sibling-group divergence is cosmetic in ManageSnapshotsDialog only; data is intact and downstream consumers don't depend on group consolidation.
+**Date:** June 2026
 
 ### Schedule Reports Export Carries an `AssignedTo` Origin Column
 **Rule:** The Schedule Reports export (3WLA / 6WLA / 9WLA workbook produced by `ScheduleReportExporter`) writes a 23rd `AssignedTo` column at the far right, populated with `App.CurrentUser!.Username` of the user running the export. The same value writes on every row across master rows, P6-not-in-MS rows, and MS-not-in-P6 rows. The header gets the grey `#D9D9D9` band that the Identity/Flags group (cols 1-3) uses, distinct from the yellow `#FFEB9C` 3WLA/Planning band (cols 16-22). The P6 export (the file headed back into Primavera) does NOT carry this column.

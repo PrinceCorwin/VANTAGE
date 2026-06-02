@@ -1,8 +1,15 @@
 # PRD: New ActNOs from P6 Import
 
-**Status:** Planning / discussion in progress
+**Status:** SHIPPED 2026-06-01. Retained as the canonical write-up of the dialog and stub-creation contract; see `Plans/Completed_Work.md` 2026-06-01 entry for the changelog summary and `Plans/Decisions.md` Schedule Module section for the persisted rules.
 **Owner:** Steve
 **Started:** 2026-06-01
+
+## Implementation deltas vs. the original plan
+
+- ProgDate uses `UtcNow`, not the existing submission's ProgDate. Local lookup wasn't possible without widening the 12-column snapshot mirror; Azure lookup timed out at 60+ seconds despite the supporting covering index. Sibling-group divergence in ManageSnapshotsDialog is cosmetic-only.
+- Local `ProgressSnapshots` INSERT trims to the 12 columns that actually exist in the lean mirror schema. The metadata "X" placeholders, Quantity, CreatedBy, and ProgDate only land on the Activity row and the Azure VMS_ProgressSnapshots row.
+- UniqueID uses the canonical `i{yyMMddHHmmss}{sequence}{last3OfUsernameLowered}` formula — same as Duplicate, Add Blank Row, Excel import.
+- No `ThreeWeekStart/Finish` re-run after stub creation — the Schedule importer already runs that update at the tail of `ImportToDatabase` before our detection step.
 
 ## Goal
 
@@ -44,22 +51,13 @@ The new step has to happen BEFORE the Schedule view refresh so the new rows show
 - **Snapshot modification concern:** withdrawn. The Schedule module's detail table already edits snapshots routinely, so adding new rows to a snapshot fits the existing workflow.
 - **MaxLength on Description:** truncate `task_name` to the column width when inserting.
 
-## Open questions (need answers next session)
+## Resolved questions
 
-### Q1 — Cancellation semantics
-If the user cancels the New-ActNOs dialog without creating any, the P6 import is already done. Two options:
+### Q1 — Cancellation semantics: **(a) One-shot**
+Cancel means "ignore for this import." If the user wants to revisit, they re-run P6 import. No Schedule view button.
 
-- **(a) One-shot:** cancel means "ignore for this import." User must re-run P6 import to revisit.
-- **(b) Reusable:** add a button to the Schedule view ("Create Missing Activities") that re-runs the detection anytime, so the user can come back to it without re-importing.
-
-(a) is simpler; (b) is more forgiving.
-
-### Q2 — Comparison target: snapshot vs. Activities
-Steve originally said "not already in the snapshot being compared." But comparing against the snapshot can produce false positives: if an Activity already exists in the local Activities table but hasn't been submitted to any snapshot yet, P6 references it, and a snapshot-only check would flag it as "missing" — leading to a duplicate Activity being created.
-
-The safer comparison is **against the Activities table** (filtered to the selected ProjectIDs), since Activities is the source of truth for what records exist. Snapshots are just weekly captures.
-
-**Need confirmation:** change comparison target from snapshot to Activities?
+### Q2 — Comparison target: **snapshot**
+The Schedule module's entire premise is "P6 vs. snapshot" — that's its job. Comparison is against the local `ProgressSnapshots` mirror (which was just refilled for the WeekEndDate) filtered to the selected ProjectIDs. The hypothetical duplicate-via-unsynced-local-Activity scenario isn't a real workflow concern.
 
 ## Implementation outline (once Q1 + Q2 are answered)
 

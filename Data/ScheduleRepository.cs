@@ -963,10 +963,10 @@ namespace VANTAGE.Repositories
             });
         }
         // Column list for the local ProgressSnapshots mirror table — must stay in sync with
-        // the CREATE TABLE in DatabaseSetup.cs / SchemaMigrator.Migration_v11. Used by the
-        // refill helpers to bulk-copy current-user snapshot rows from Azure into local SQLite.
-        // TRIMMED to the 12 columns the Schedule module actually reads. Azure
-        // VMS_ProgressSnapshots still has all 89 columns and is unchanged.
+        // the CREATE TABLE in DatabaseSetup.cs. Used by the refill helpers to bulk-copy
+        // current-user snapshot rows from Azure into local SQLite. TRIMMED to the 12 columns
+        // the Schedule module actually reads. Azure VMS_ProgressSnapshots still has all 89
+        // columns and is unchanged.
         private const string ProgressSnapshotsColumns =
             "UniqueID, WeekEndDate, SchedActNO, Description, PercentEntry, BudgetMHs, " +
             "ActStart, ActFin, AssignedTo, ProjectID, UpdatedBy, UpdatedUtcDate";
@@ -1202,6 +1202,350 @@ namespace VANTAGE.Repositories
                     return dates;
                 }
             });
+        }
+
+        // Find SchedActNOs in the just-imported Schedule table (for weekEndDate) that don't
+        // appear in local ProgressSnapshots for any of the selected ProjectIDs. Returns the
+        // P6-side values pre-populated. Empty list means the dialog should be skipped entirely.
+        public static async Task<List<MissingActNOCandidate>> GetMissingActNOsFromP6Async(
+            DateTime weekEndDate, List<string> projectIds)
+        {
+            return await Task.Run(() =>
+            {
+                var results = new List<MissingActNOCandidate>();
+                if (projectIds == null || projectIds.Count == 0)
+                    return results;
+
+                try
+                {
+                    using var connection = new SqliteConnection($"Data Source={DatabaseSetup.DbPath}");
+                    connection.Open();
+
+                    var paramNames = projectIds.Select((_, i) => $"@p{i}").ToList();
+                    string inClause = string.Join(",", paramNames);
+
+                    var cmd = connection.CreateCommand();
+                    cmd.CommandText = $@"
+                        SELECT s.SchedActNO, s.Description, s.P6_BudgetMHs, s.P6_PercentComplete,
+                               s.P6_ActualStart, s.P6_ActualFinish
+                        FROM Schedule s
+                        WHERE s.WeekEndDate = @weekEndDate
+                          AND NOT EXISTS (
+                              SELECT 1 FROM ProgressSnapshots p
+                              WHERE p.WeekEndDate = @weekEndDate
+                                AND p.ProjectID IN ({inClause})
+                                AND p.SchedActNO = s.SchedActNO
+                          )
+                        ORDER BY s.SchedActNO";
+                    cmd.Parameters.AddWithValue("@weekEndDate", weekEndDate.ToString("yyyy-MM-dd"));
+                    for (int i = 0; i < projectIds.Count; i++)
+                        cmd.Parameters.AddWithValue(paramNames[i], projectIds[i]);
+
+                    using var reader = cmd.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        results.Add(new MissingActNOCandidate
+                        {
+                            SchedActNO = reader.GetString(0),
+                            Description = reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
+                            BudgetMHs = reader.IsDBNull(2) ? 0 : reader.GetDouble(2),
+                            PercentEntry = reader.IsDBNull(3) ? 0 : reader.GetDouble(3),
+                            ActStart = ParseNullableDate(reader, 4),
+                            ActFin = ParseNullableDate(reader, 5),
+                            IsSelected = false
+                        });
+                    }
+
+                    AppLogger.Info(
+                        $"Found {results.Count} missing-from-snapshot SchedActNOs in P6 for WE {weekEndDate:yyyy-MM-dd}, " +
+                        $"projects [{string.Join(",", projectIds)}]",
+                        "ScheduleRepository.GetMissingActNOsFromP6Async");
+                }
+                catch (Exception ex)
+                {
+                    AppLogger.Error(ex, "ScheduleRepository.GetMissingActNOsFromP6Async");
+                    throw;
+                }
+
+                return results;
+            });
+        }
+
+        private static DateTime? ParseNullableDate(SqliteDataReader reader, int ordinal)
+        {
+            if (reader.IsDBNull(ordinal)) return null;
+            string s = reader.GetString(ordinal);
+            if (string.IsNullOrWhiteSpace(s)) return null;
+            return DateTime.TryParse(s, out var dt) ? dt : (DateTime?)null;
+        }
+
+        // Create stub Activity records (LocalDirty=1) and matching snapshot rows on both Azure and the
+        // local mirror, for each user-selected candidate from the New ActNOs dialog. Returns the count
+        // of stubs created. Throws on Azure failure; partial writes are rolled back via transactions.
+        public static async Task<int> CreateStubActivitiesFromP6Async(
+            List<MissingActNOCandidate> selected,
+            DateTime weekEndDate,
+            string projectId,
+            string username)
+        {
+            return await Task.Run(() =>
+            {
+                if (selected == null || selected.Count == 0) return 0;
+
+                string weekEndDateStr = weekEndDate.ToString("yyyy-MM-dd");
+                string utcNowStr = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ");
+
+                // Step 1: Materialise the row payloads (assign UniqueIDs, apply ActStart fallback,
+                // truncate Description). All inserts use these. UniqueID format matches the rest
+                // of the app: $"i{yyMMddHHmmss}{sequence}{last 3 of username lowered}" — one
+                // timestamp captured for the batch, sequence increments per row.
+                string idTimestamp = DateTime.Now.ToString("yyMMddHHmmss");
+                string idUserSuffix = username.Length >= 3
+                    ? username.Substring(username.Length - 3).ToLower()
+                    : "usr";
+                int idSequence = 1;
+
+                var payloads = new List<StubPayload>();
+                foreach (var c in selected)
+                {
+                    var actStart = c.ActStart;
+                    if (c.PercentEntry > 0 && !actStart.HasValue)
+                        actStart = weekEndDate;
+                    DateTime? actFin = c.PercentEntry >= 100 ? c.ActFin : null;
+
+                    payloads.Add(new StubPayload
+                    {
+                        UniqueID = $"i{idTimestamp}{idSequence}{idUserSuffix}",
+                        SchedActNO = (c.SchedActNO ?? string.Empty).Trim(),
+                        Description = TruncateDescription(c.Description),
+                        BudgetMHs = c.BudgetMHs,
+                        PercentEntry = c.PercentEntry,
+                        ActStart = actStart,
+                        ActFin = actFin
+                    });
+                    idSequence++;
+                }
+
+                // Step 2: ProgDate for new stubs is UtcNow. They show up as a "supplemental" snapshot
+                // group for the same (project, week) — cosmetically a separate entry in ManageSnapshots
+                // but data-equivalent. Looking up the original submission's ProgDate isn't worth the
+                // round-trip / lookup cost; the existing-group consolidation was nice-to-have, not load-bearing.
+                string progDateStr = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
+
+                // Step 3: Insert into Azure VMS_ProgressSnapshots first. If Azure fails we abort
+                // before touching local — keeps the user able to retry cleanly.
+                using (var azureConn = AzureDbManager.GetConnection())
+                {
+                    azureConn.Open();
+                    using var azureTx = azureConn.BeginTransaction();
+                    try
+                    {
+                        using var insertCmd = azureConn.CreateCommand();
+                        insertCmd.Transaction = azureTx;
+                        insertCmd.CommandText = AzureSnapshotInsertSql;
+                        BindSnapshotCommonParams(insertCmd, weekEndDateStr, projectId, username, progDateStr, utcNowStr);
+
+                        foreach (var p in payloads)
+                        {
+                            BindSnapshotRowParams(insertCmd, p);
+                            insertCmd.ExecuteNonQuery();
+                        }
+
+                        azureTx.Commit();
+                    }
+                    catch
+                    {
+                        azureTx.Rollback();
+                        throw;
+                    }
+                }
+
+                // Step 4: Insert into local Activities (LocalDirty=1) AND local ProgressSnapshots mirror
+                // in a single local transaction. If local fails after Azure succeeded, the snapshot
+                // refill on next P6 import would still pull the Azure rows down, so the local side
+                // is self-healing — but we still want both writes here for immediate Schedule view.
+                using (var localConn = new SqliteConnection($"Data Source={DatabaseSetup.DbPath}"))
+                {
+                    localConn.Open();
+                    using var localTx = localConn.BeginTransaction();
+                    try
+                    {
+                        using var actCmd = localConn.CreateCommand();
+                        actCmd.Transaction = localTx;
+                        actCmd.CommandText = LocalActivitiesInsertSql;
+
+                        using var snapCmd = localConn.CreateCommand();
+                        snapCmd.Transaction = localTx;
+                        snapCmd.CommandText = LocalSnapshotInsertSql;
+
+                        foreach (var p in payloads)
+                        {
+                            BindLocalActivityParams(actCmd, p, weekEndDateStr, projectId, username, progDateStr, utcNowStr);
+                            actCmd.ExecuteNonQuery();
+
+                            BindLocalSnapshotParams(snapCmd, p, weekEndDateStr, projectId, username, utcNowStr);
+                            snapCmd.ExecuteNonQuery();
+                        }
+
+                        localTx.Commit();
+                    }
+                    catch
+                    {
+                        localTx.Rollback();
+                        throw;
+                    }
+                }
+
+                AppLogger.Info(
+                    $"Created {payloads.Count} stub Activity+Snapshot records from P6 for WE {weekEndDateStr}, Project {projectId}",
+                    "ScheduleRepository.CreateStubActivitiesFromP6Async", username);
+
+                return payloads.Count;
+            });
+        }
+
+        // Hard cap on the Description we accept from P6 task_name. Generous upper bound — the
+        // backing Description columns are dynamic in SQLite and Azure's column is comfortably
+        // larger than this; this just defends against pathological P6 exports.
+        private static string TruncateDescription(string? input)
+        {
+            if (string.IsNullOrEmpty(input)) return string.Empty;
+            return input.Length <= 500 ? input : input.Substring(0, 500);
+        }
+
+        private class StubPayload
+        {
+            public string UniqueID = string.Empty;
+            public string SchedActNO = string.Empty;
+            public string Description = string.Empty;
+            public double BudgetMHs;
+            public double PercentEntry;
+            public DateTime? ActStart;
+            public DateTime? ActFin;
+        }
+
+        // Required-metadata placeholders for stub rows. ProjectID, SchedActNO, Description come from
+        // the dialog. The remaining six required fields are placeheld with "X" so the user has to
+        // come back and fill them in (and the sync gate doesn't block on empties).
+        private const string StubPlaceholder = "X";
+
+        private const string LocalActivitiesInsertSql = @"
+            INSERT INTO Activities (
+                UniqueID, ActivityID, ProjectID, SchedActNO, Description,
+                WorkPackage, PhaseCode, CompType, PhaseCategory, ROCStep, RespParty,
+                AssignedTo, CreatedBy, UpdatedBy, UpdatedUtcDate,
+                BudgetMHs, Quantity, PercentEntry, ActStart, ActFin,
+                WeekEndDate, ProgDate, LocalDirty, SyncVersion
+            ) VALUES (
+                @UniqueID, 0, @ProjectID, @SchedActNO, @Description,
+                @Placeholder, @Placeholder, @Placeholder, @Placeholder, @Placeholder, @Placeholder,
+                @AssignedTo, @CreatedBy, @UpdatedBy, @UpdatedUtcDate,
+                @BudgetMHs, 0.001, @PercentEntry, @ActStart, @ActFin,
+                @WeekEndDate, @ProgDate, 1, 0
+            )";
+
+        // Local ProgressSnapshots is the LEAN 12-column rollup the Schedule view reads — it
+        // does NOT have the metadata fields (WorkPackage, PhaseCode, etc.), Quantity, ProgDate,
+        // or CreatedBy. The metadata + placeholder fields live on the Activity row and the
+        // Azure snapshot row. Schedule view only needs the rollup fields here.
+        private const string LocalSnapshotInsertSql = @"
+            INSERT INTO ProgressSnapshots (
+                UniqueID, WeekEndDate, ProjectID, SchedActNO, Description,
+                AssignedTo, UpdatedBy, UpdatedUtcDate,
+                BudgetMHs, PercentEntry, ActStart, ActFin
+            ) VALUES (
+                @UniqueID, @WeekEndDate, @ProjectID, @SchedActNO, @Description,
+                @AssignedTo, @UpdatedBy, @UpdatedUtcDate,
+                @BudgetMHs, @PercentEntry, @ActStart, @ActFin
+            )";
+
+        // Azure VMS_ProgressSnapshots: only the columns we have meaningful values for. The
+        // remaining columns on that table accept NULL or have DEFAULT constraints.
+        private const string AzureSnapshotInsertSql = @"
+            INSERT INTO VMS_ProgressSnapshots (
+                UniqueID, WeekEndDate, ProjectID, SchedActNO, Description,
+                WorkPackage, PhaseCode, CompType, PhaseCategory, ROCStep, RespParty,
+                AssignedTo, CreatedBy, UpdatedBy, UpdatedUtcDate,
+                BudgetMHs, Quantity, PercentEntry, ActStart, ActFin, ProgDate
+            ) VALUES (
+                @UniqueID, @WeekEndDate, @ProjectID, @SchedActNO, @Description,
+                @Placeholder, @Placeholder, @Placeholder, @Placeholder, @Placeholder, @Placeholder,
+                @AssignedTo, @CreatedBy, @UpdatedBy, @UpdatedUtcDate,
+                @BudgetMHs, 0.001, @PercentEntry, @ActStart, @ActFin, @ProgDate
+            )";
+
+        private static void BindSnapshotCommonParams(
+            Microsoft.Data.SqlClient.SqlCommand cmd,
+            string weekEndDateStr, string projectId, string username, string progDateStr, string utcNowStr)
+        {
+            cmd.Parameters.Add("@UniqueID", System.Data.SqlDbType.NVarChar, 64);
+            cmd.Parameters.Add("@SchedActNO", System.Data.SqlDbType.NVarChar, 100);
+            cmd.Parameters.Add("@Description", System.Data.SqlDbType.NVarChar, 500);
+            cmd.Parameters.Add("@BudgetMHs", System.Data.SqlDbType.Float);
+            cmd.Parameters.Add("@PercentEntry", System.Data.SqlDbType.Float);
+            cmd.Parameters.Add("@ActStart", System.Data.SqlDbType.NVarChar, 32);
+            cmd.Parameters.Add("@ActFin", System.Data.SqlDbType.NVarChar, 32);
+
+            cmd.Parameters.AddWithValue("@WeekEndDate", weekEndDateStr);
+            cmd.Parameters.AddWithValue("@ProjectID", projectId);
+            cmd.Parameters.AddWithValue("@AssignedTo", username);
+            cmd.Parameters.AddWithValue("@CreatedBy", username);
+            cmd.Parameters.AddWithValue("@UpdatedBy", username);
+            cmd.Parameters.AddWithValue("@UpdatedUtcDate", utcNowStr);
+            cmd.Parameters.AddWithValue("@ProgDate", progDateStr);
+            cmd.Parameters.AddWithValue("@Placeholder", StubPlaceholder);
+        }
+
+        private static void BindSnapshotRowParams(Microsoft.Data.SqlClient.SqlCommand cmd, StubPayload p)
+        {
+            cmd.Parameters["@UniqueID"].Value = p.UniqueID;
+            cmd.Parameters["@SchedActNO"].Value = p.SchedActNO;
+            cmd.Parameters["@Description"].Value = p.Description;
+            cmd.Parameters["@BudgetMHs"].Value = p.BudgetMHs;
+            cmd.Parameters["@PercentEntry"].Value = p.PercentEntry;
+            cmd.Parameters["@ActStart"].Value = (object?)p.ActStart?.ToString("yyyy-MM-dd") ?? DBNull.Value;
+            cmd.Parameters["@ActFin"].Value = (object?)p.ActFin?.ToString("yyyy-MM-dd") ?? DBNull.Value;
+        }
+
+        private static void BindLocalActivityParams(
+            SqliteCommand cmd, StubPayload p,
+            string weekEndDateStr, string projectId, string username, string progDateStr, string utcNowStr)
+        {
+            cmd.Parameters.Clear();
+            cmd.Parameters.AddWithValue("@UniqueID", p.UniqueID);
+            cmd.Parameters.AddWithValue("@ProjectID", projectId);
+            cmd.Parameters.AddWithValue("@SchedActNO", p.SchedActNO);
+            cmd.Parameters.AddWithValue("@Description", p.Description);
+            cmd.Parameters.AddWithValue("@Placeholder", StubPlaceholder);
+            cmd.Parameters.AddWithValue("@AssignedTo", username);
+            cmd.Parameters.AddWithValue("@CreatedBy", username);
+            cmd.Parameters.AddWithValue("@UpdatedBy", username);
+            cmd.Parameters.AddWithValue("@UpdatedUtcDate", utcNowStr);
+            cmd.Parameters.AddWithValue("@BudgetMHs", p.BudgetMHs);
+            cmd.Parameters.AddWithValue("@PercentEntry", p.PercentEntry);
+            cmd.Parameters.AddWithValue("@ActStart", (object?)p.ActStart?.ToString("yyyy-MM-dd") ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@ActFin", (object?)p.ActFin?.ToString("yyyy-MM-dd") ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@WeekEndDate", weekEndDateStr);
+            cmd.Parameters.AddWithValue("@ProgDate", progDateStr);
+        }
+
+        private static void BindLocalSnapshotParams(
+            SqliteCommand cmd, StubPayload p,
+            string weekEndDateStr, string projectId, string username, string utcNowStr)
+        {
+            cmd.Parameters.Clear();
+            cmd.Parameters.AddWithValue("@UniqueID", p.UniqueID);
+            cmd.Parameters.AddWithValue("@WeekEndDate", weekEndDateStr);
+            cmd.Parameters.AddWithValue("@ProjectID", projectId);
+            cmd.Parameters.AddWithValue("@SchedActNO", p.SchedActNO);
+            cmd.Parameters.AddWithValue("@Description", p.Description);
+            cmd.Parameters.AddWithValue("@AssignedTo", username);
+            cmd.Parameters.AddWithValue("@UpdatedBy", username);
+            cmd.Parameters.AddWithValue("@UpdatedUtcDate", utcNowStr);
+            cmd.Parameters.AddWithValue("@BudgetMHs", p.BudgetMHs);
+            cmd.Parameters.AddWithValue("@PercentEntry", p.PercentEntry);
+            cmd.Parameters.AddWithValue("@ActStart", (object?)p.ActStart?.ToString("yyyy-MM-dd") ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@ActFin", (object?)p.ActFin?.ToString("yyyy-MM-dd") ?? DBNull.Value);
         }
     }
 }
