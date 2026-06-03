@@ -6,6 +6,20 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### June 3, 2026 (AI Takeoff — REDT and REDC Generate the Correct Number of Weld Labor Rows)
+
+**Problem.** `TakeoffPostProcessor.BuildConnectionPairs` had a dedicated dual-size branch for `TEE` that correctly emitted 3 connection pairs (2 run faces + 1 outlet) but routed every other dual-size component through a generic "1 larger + 1 smaller" branch. That undercounted REDT (a reducing tee — same topology as TEE, 3 welds) by one row and REDC (a reducing cross — 4 welds) by two rows. For example, REDT `1x0.5` with `Connection Qty=3, Connection Type=BW` was producing 1×BW@1 + 1×BW@0.5 (2 labor rows) instead of 2×BW@1 + 1×BW@0.5 (3 rows). `Connection Qty` from the BOM was being ignored by that branch entirely.
+
+**Fix in `TakeoffPostProcessor.BuildConnectionPairs`.** Folded REDT into the existing TEE dual-size branch (`(component == "TEE" || component == "REDT") && isDualSize`) so both emit 3 pairs: `runType×largerSize`, `runType×largerSize`, `outletType×smallerSize`. Added a new REDC dual-size branch immediately below that emits 4 pairs: 2× run at larger + 2× outlet at smaller. RED / SWG / REDE are genuine 2-weld reducers, so they still flow through the generic dual-size branch unchanged.
+
+**Fix in `FittingMakeupService.CalculateFittingMakeupForPipe`.** Added a `REDC` branch that mirrors the existing REDT pattern: parses the `4x2`-style size, routes same-size REDC to `CROSS` (4× run makeup) as a safety net, and for true reducing crosses contributes `RunIn * 2` when the calling pipe is the larger run size and `OutletIn * 2` when the calling pipe is the smaller branch size. Without this branch, REDC was hitting the catch-all "single weld" path and contributing only 1× makeup regardless of topology.
+
+**Known data gap.** `Resources/FittingMakeup.json` currently has zero REDC entries (vs. 285 REDT entries). The labor-row count fix above works standalone, but REDC makeup-inches lookups will now land on the Missed Makeups tab with key `BW/REDC/{larger}x{smaller}/...` until rate-sheet entries are added. That's intentionally surfacing the gap rather than the prior behavior of silently treating REDC as a 1-weld fitting.
+
+**Key files:** `Services/AI/TakeoffPostProcessor.cs` (BuildConnectionPairs — REDT/REDC branches), `Services/AI/FittingMakeupService.cs` (CalculateFittingMakeupForPipe — REDC handler).
+
+---
+
 ### June 2, 2026 (Analysis Module — Local / Snapshot Source Toggle Backed by `SnapshotAnalysis` Cache)
 
 **Problem.** The Analysis summary grid only aggregated from local `Activities` — the user's live working set. There was no way to run the same Group By / aggregation against a historical Submit Week snapshot, anyone else's snapshot, or multiple snapshots combined.

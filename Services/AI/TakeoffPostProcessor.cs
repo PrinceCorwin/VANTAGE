@@ -1322,13 +1322,25 @@ namespace VANTAGE.Services.AI
                 return pairs;
             }
 
-            // TEE with dual size: 2 connections for larger (run faces), 1 for smaller (outlet)
-            if (component == "TEE" && isDualSize)
+            // TEE / REDT with dual size: 2 connections for larger (run faces), 1 for smaller (outlet)
+            if ((component == "TEE" || component == "REDT") && isDualSize)
             {
                 string runType = types.Count > 0 ? types[0] : "BW";
                 string outletType = types.Count > 1 ? types[1] : runType;
                 pairs.Add((runType, largerSize));
                 pairs.Add((runType, largerSize));
+                pairs.Add((outletType, smallerSize));
+                return pairs;
+            }
+
+            // REDC (reducing cross) with dual size: 2 run faces at larger, 2 branch outlets at smaller
+            if (component == "REDC" && isDualSize)
+            {
+                string runType = types.Count > 0 ? types[0] : "BW";
+                string outletType = types.Count > 1 ? types[1] : runType;
+                pairs.Add((runType, largerSize));
+                pairs.Add((runType, largerSize));
+                pairs.Add((outletType, smallerSize));
                 pairs.Add((outletType, smallerSize));
                 return pairs;
             }

@@ -210,6 +210,39 @@ namespace VANTAGE.Services.AI
                         }
                     }
                 }
+                else if (component == "REDC")
+                {
+                    // REDC: parse dual size from Size field (e.g., "4x2")
+                    string sizeStr = GetString(fitting, "Size");
+                    var parsed = ParseDualSize(sizeStr);
+                    string weldType = ExtractWeldableType(connTypes);
+                    if (parsed != null)
+                    {
+                        var (largerSize, smallerSize) = parsed.Value;
+
+                        // Same-size REDC is actually a CROSS
+                        if (Math.Abs(largerSize - smallerSize) < 0.001)
+                        {
+                            var result = LookupMakeup(weldType, "CROSS", pipeSize, classRating, pipeSize);
+                            lookupKey = $"{weldType}/CROSS/{pipeSize}" + (!string.IsNullOrEmpty(classRating) ? $"/Class{classRating}" : "");
+                            if (result != null)
+                                contribution = result.Value.RunIn * 4;
+                        }
+                        else
+                        {
+                            var result = LookupMakeup(weldType, "REDC", largerSize, classRating, smallerSize);
+                            lookupKey = $"{weldType}/REDC/{largerSize}x{smallerSize}" + (!string.IsNullOrEmpty(classRating) ? $"/Class{classRating}" : "");
+                            if (result != null)
+                            {
+                                // If pipe matches run size, 2 run welds; if outlet size, 2 outlet welds (2 branches)
+                                if (Math.Abs(pipeSize - largerSize) < 0.001)
+                                    contribution = result.Value.RunIn * 2;
+                                else
+                                    contribution = (result.Value.OutletIn ?? 0) * 2;
+                            }
+                        }
+                    }
+                }
                 else if (component == "90L" || component == "45L")
                 {
                     // Elbows: 2x Makeup_Run_In (two welds)
