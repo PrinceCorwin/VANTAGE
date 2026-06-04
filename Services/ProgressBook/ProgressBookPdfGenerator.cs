@@ -25,15 +25,10 @@ namespace VANTAGE.Services.ProgressBook
         private const float MarginBottom = 36f;
         private float _contentWidth;
 
-        // Zone 1: ID column (ActivityID) - always first, auto-fit width
-        private float _zone1IdWidth;
-
-        // Zone 3 column names - data columns auto-fit, entry box is fixed
-        private static readonly string[] Zone3DataColumns = { "MHs", "QTY", "REM MH", "CUR %" };
-        private static readonly (string Name, float WidthPts)[] Zone3EntryColumns = new[]
-        {
-            ("% ENTRY", 50f)    // Entry box for percentage (100 = done)
-        };
+        // Minimum width (pts) for an EntryBox column so field hands have room to
+        // handwrite. Auto-fit measurement on the bare "%" glyph is much narrower
+        // than that, hence the floor. Matches the pre-2026-06 fixed Zone 3 width.
+        private const float MinEntryBoxWidth = 50f;
 
         // Padding for cell content (space between text and grid lines)
         private const float ColumnPadding = 4f;
@@ -79,10 +74,9 @@ namespace VANTAGE.Services.ProgressBook
         private string _projectId = string.Empty;
         private string _projectDescription = string.Empty;
 
-        // Calculated column widths (in points)
-        private float _zone2Width;
-        private List<(string FieldName, float Width)> _zone2ColumnWidths = new();
-        private List<(string Name, float Width)> _zone3ColumnWidths = new();
+        // Calculated column widths (in points). Single ordered list per the
+        // 2026-06 columns refactor; the old Zone 1 / Zone 2 / Zone 3 split is gone.
+        private List<(ColumnConfig Col, float Width)> _columnWidths = new();
 
         // Activities for measuring content widths
         private List<Activity> _activities = new();
@@ -341,148 +335,131 @@ namespace VANTAGE.Services.ProgressBook
                 new PointF(centerX - pageSize.Width / 2, _pageHeight - MarginBottom - pageSize.Height));
         }
 
-        // Calculate auto-fit column widths based on actual data content
-        // Zone 1: ID column (ActivityID) - always first
-        // Zone 2: User columns - Description gets remaining space
-        // Zone 3: Data columns (auto-fit) + entry box (fixed)
+        // Calculate auto-fit column widths based on actual data content.
+        // Single ordered iteration over _config.Columns per the 2026-06 refactor:
+        //   - Every column except Description auto-fits to max(header, data).
+        //   - EntryBox columns enforce MinEntryBoxWidth so there's room to handwrite.
+        //   - If Description is present, it absorbs the remaining row width.
+        //   - If Description is absent, the remaining row width is proportionally
+        //     distributed across all columns so the row still fills page-edge to
+        //     page-edge (no dead space on the right).
         private void CalculateAutoFitColumnWidths()
         {
-            // Zone 1: Calculate ID column width (ActivityID - always first column)
-            _zone1IdWidth = MeasureIdColumnWidth();
+            _columnWidths.Clear();
 
-            // Calculate Zone 3 widths - data columns auto-fit, entry box is fixed
-            _zone3ColumnWidths.Clear();
-            float zone3DataWidth = 0;
-            float zone3EntryWidth = 0;
+            var ordered = _config.Columns.OrderBy(c => c.DisplayOrder).ToList();
 
-            // Measure Zone 3 data columns from actual data
-            foreach (var colName in Zone3DataColumns)
-            {
-                float width = MeasureZone3Column(colName);
-                _zone3ColumnWidths.Add((colName, width));
-                zone3DataWidth += width;
-            }
-
-            // Add fixed entry column (% ENTRY at far right)
-            foreach (var col in Zone3EntryColumns)
-            {
-                _zone3ColumnWidths.Add((col.Name, col.WidthPts));
-                zone3EntryWidth += col.WidthPts;
-            }
-
-            float totalZone3Width = zone3DataWidth + zone3EntryWidth;
-
-            // Zone 2 width = total width minus Zone 1 and Zone 3
-            _zone2Width = _contentWidth - _zone1IdWidth - totalZone3Width;
-
-            // Calculate Zone 2 column widths by measuring actual content
-            // Skip ActivityID - it's shown in Zone 3 (right of % entry) for AI scan matching
-            _zone2ColumnWidths.Clear();
-            var columns = _config.Columns
-                .Where(c => !c.FieldName.Equals("ActivityID", StringComparison.OrdinalIgnoreCase))
-                .OrderBy(c => c.DisplayOrder).ToList();
-
-            // Measure each column (except Description which gets remainder)
-            float totalMeasured = 0;
+            float totalMeasured = 0f;
             int descIndex = -1;
-            for (int i = 0; i < columns.Count; i++)
+
+            for (int i = 0; i < ordered.Count; i++)
             {
-                var col = columns[i];
+                var col = ordered[i];
                 if (col.FieldName.Equals("Description", StringComparison.OrdinalIgnoreCase))
                 {
                     descIndex = i;
-                    _zone2ColumnWidths.Add((col.FieldName, 0)); // Placeholder, calculated later
+                    _columnWidths.Add((col, 0)); // placeholder; finalized below
+                    continue;
                 }
-                else
-                {
-                    float width = MeasureColumnWidth(col.FieldName);
-                    _zone2ColumnWidths.Add((col.FieldName, width));
-                    totalMeasured += width;
-                }
+
+                float width = MeasureColumnWidth(col);
+                if (col.SourceKind == ColumnSourceKind.EntryBox && width < MinEntryBoxWidth)
+                    width = MinEntryBoxWidth;
+
+                _columnWidths.Add((col, width));
+                totalMeasured += width;
             }
 
-            // Description gets all remaining width
             if (descIndex >= 0)
             {
-                float descWidth = _zone2Width - totalMeasured;
-                if (descWidth < 50) descWidth = 50; // Absolute minimum for description
-                _zone2ColumnWidths[descIndex] = ("Description", descWidth);
+                // Description stretches to fill remaining width.
+                float descWidth = _contentWidth - totalMeasured;
+                if (descWidth < 50) descWidth = 50; // absolute floor
+                _columnWidths[descIndex] = (_columnWidths[descIndex].Col, descWidth);
             }
-        }
-
-        // Measure Zone 3 data column width from actual data values
-        private float MeasureZone3Column(string columnName)
-        {
-            // Measure header with extra padding to prevent truncation
-            float headerWidth = _headerFont.MeasureString(columnName).Width + (ColumnPadding * 2);
-
-            // Measure data values
-            float maxDataWidth = 0;
-            foreach (var activity in _activities)
+            else if (totalMeasured > 0 && totalMeasured < _contentWidth)
             {
-                string value = columnName switch
+                // No Description column — proportionally widen every column so the
+                // row still fills the page edge-to-edge.
+                float ratio = _contentWidth / totalMeasured;
+                for (int i = 0; i < _columnWidths.Count; i++)
                 {
-                    "MHs" => activity.BudgetMHs.ToString("N2"),
-                    "QTY" => activity.Quantity.ToString("N2"),
-                    "REM MH" => (activity.BudgetMHs - activity.EarnMHsCalc).ToString("N2"),
-                    "CUR %" => activity.PercentEntry.ToString("N2") + "%",
-                    _ => ""
-                };
-                float dataWidth = _dataFont.MeasureString(value).Width + (ColumnPadding * 2);
-                if (dataWidth > maxDataWidth)
-                    maxDataWidth = dataWidth;
+                    _columnWidths[i] = (_columnWidths[i].Col, _columnWidths[i].Width * ratio);
+                }
             }
-
-            return Math.Max(headerWidth, maxDataWidth);
         }
 
-        // Measure the ID column width from ActivityID values (for AI scan matching column)
-        private float MeasureIdColumnWidth()
+        // Measure the required width for a column based on actual header text +
+        // longest data value. Dispatches on SourceKind for value formatting.
+        private float MeasureColumnWidth(ColumnConfig col)
         {
-            float headerWidth = _headerFont.MeasureString("ID").Width + (ColumnPadding * 2);
-
-            if (_activities.Count == 0)
-                return headerWidth;
-
-            float maxDataWidth = 0;
-            foreach (var activity in _activities)
-            {
-                string value = activity.ActivityID.ToString();
-                float dataWidth = _dataFont.MeasureString(value).Width + (ColumnPadding * 2);
-                if (dataWidth > maxDataWidth)
-                    maxDataWidth = dataWidth;
-            }
-
-            return Math.Max(headerWidth, maxDataWidth);
-        }
-
-        // Measure the required width for a Zone 2 column based on actual data
-        private float MeasureColumnWidth(string fieldName)
-        {
-            // Measure header text with extra padding to prevent truncation
-            string header = GetColumnDisplayName(fieldName);
+            string header = !string.IsNullOrEmpty(col.DisplayHeader)
+                ? col.DisplayHeader!
+                : GetColumnDisplayName(col.FieldName);
             float headerWidth = _headerFont.MeasureString(header).Width + (ColumnPadding * 2);
 
             if (_activities.Count == 0)
                 return headerWidth;
 
-            // Find longest data value
-            float maxDataWidth = 0;
-            var font = fieldName.Equals("Description", StringComparison.OrdinalIgnoreCase) ? _descFont : _dataFont;
+            var font = col.FieldName.Equals("Description", StringComparison.OrdinalIgnoreCase)
+                ? _descFont
+                : _dataFont;
 
+            float maxDataWidth = 0;
             foreach (var activity in _activities)
             {
-                string? value = GetFieldValue(activity, fieldName);
-                if (!string.IsNullOrEmpty(value))
-                {
-                    float dataWidth = font.MeasureString(value).Width + (ColumnPadding * 2);
-                    if (dataWidth > maxDataWidth)
-                        maxDataWidth = dataWidth;
-                }
+                string value = GetColumnValueText(activity, col);
+                if (string.IsNullOrEmpty(value)) continue;
+                float w = font.MeasureString(value).Width + (ColumnPadding * 2);
+                if (w > maxDataWidth) maxDataWidth = w;
             }
 
-            // Return the larger of header or data width
             return Math.Max(headerWidth, maxDataWidth);
+        }
+
+        // Resolve a column's cell text for a given activity. Dispatches on
+        // SourceKind so Direct/Computed/EntryBox each format consistently.
+        // Numeric Direct columns get the same formatting they had in the legacy
+        // Zone 3 path so existing layouts render the same.
+        private string GetColumnValueText(Activity activity, ColumnConfig col)
+        {
+            switch (col.SourceKind)
+            {
+                case ColumnSourceKind.EntryBox:
+                    // Auto-fit measurement sees just the % glyph; render is the same.
+                    return "%";
+
+                case ColumnSourceKind.Computed:
+                    return col.FieldName switch
+                    {
+                        "RemainingMHs" => (activity.BudgetMHs - activity.EarnMHsCalc).ToString("N2"),
+                        _ => string.Empty
+                    };
+
+                case ColumnSourceKind.Direct:
+                default:
+                    return col.FieldName switch
+                    {
+                        "BudgetMHs"    => activity.BudgetMHs.ToString("N2"),
+                        "Quantity"     => activity.Quantity.ToString("N2"),
+                        "PercentEntry" => activity.PercentEntry.ToString("N2") + "%",
+                        _              => GetFieldValue(activity, col.FieldName) ?? string.Empty
+                    };
+            }
+        }
+
+        // Decide alignment for a column's data cell. Numeric values are right-aligned;
+        // everything else (text fields, ActivityID, the % entry box) is left-aligned.
+        // Description is handled separately (wrapped).
+        private static bool IsNumericColumn(ColumnConfig col)
+        {
+            if (col.SourceKind == ColumnSourceKind.EntryBox) return false;
+            if (col.SourceKind == ColumnSourceKind.Computed) return true;
+            return col.FieldName switch
+            {
+                "BudgetMHs" or "Quantity" or "PercentEntry" => true,
+                _ => false
+            };
         }
 
         // Create PDF document with correct page settings
@@ -860,36 +837,26 @@ namespace VANTAGE.Services.ProgressBook
                 new PointF(MarginLeft + _contentWidth - pageSize.Width, y + 12));
         }
 
-        // Render column headers
+        // Render column headers — single iteration over the unified columns list.
+        // Prefers ColumnConfig.DisplayHeader (e.g. "MHs", "REM MH") over the
+        // ToUpper fallback so promoted columns show their friendly labels rather
+        // than raw Activity property names like "BUDGETMHS".
         private float RenderColumnHeaders(PdfPage page, float y)
         {
             var graphics = page.Graphics;
             float x = MarginLeft;
 
-            // Header background
             graphics.DrawRectangle(HeaderGrayBrush, new RectangleF(x, y, _contentWidth, HeaderRowHeight));
             graphics.DrawRectangle(NormalPen, new RectangleF(x, y, _contentWidth, HeaderRowHeight));
 
-            // Zone 1: ID column (ActivityID - always first)
-            DrawCenteredText(graphics, "ID", _headerFont, x, y, _zone1IdWidth, HeaderRowHeight);
-            graphics.DrawLine(ThinPen, x + _zone1IdWidth, y, x + _zone1IdWidth, y + HeaderRowHeight);
-            x += _zone1IdWidth;
-
-            // Zone 2: User columns
-            foreach (var col in _zone2ColumnWidths)
+            foreach (var (col, width) in _columnWidths)
             {
-                string displayName = GetColumnDisplayName(col.FieldName);
-                DrawCenteredText(graphics, displayName, _headerFont, x, y, col.Width, HeaderRowHeight);
-                graphics.DrawLine(ThinPen, x + col.Width, y, x + col.Width, y + HeaderRowHeight);
-                x += col.Width;
-            }
-
-            // Zone 3: Data columns + entry box
-            foreach (var col in _zone3ColumnWidths)
-            {
-                DrawCenteredText(graphics, col.Name, _headerFont, x, y, col.Width, HeaderRowHeight);
-                graphics.DrawLine(ThinPen, x + col.Width, y, x + col.Width, y + HeaderRowHeight);
-                x += col.Width;
+                string header = !string.IsNullOrEmpty(col.DisplayHeader)
+                    ? col.DisplayHeader!
+                    : GetColumnDisplayName(col.FieldName);
+                DrawCenteredText(graphics, header, _headerFont, x, y, width, HeaderRowHeight);
+                graphics.DrawLine(ThinPen, x + width, y, x + width, y + HeaderRowHeight);
+                x += width;
             }
 
             return y + HeaderRowHeight;
@@ -933,76 +900,49 @@ namespace VANTAGE.Services.ProgressBook
             return y + GroupHeaderHeight;
         }
 
-        // Render a data row with variable height for description wrapping
+        // Render a data row with variable height for description wrapping.
+        // Single iteration over the unified columns list; alignment + value
+        // dispatched on SourceKind via GetColumnValueText / IsNumericColumn.
         private float RenderDataRow(PdfPage page, Activity activity, int rowIndex, float y)
         {
             var graphics = page.Graphics;
             float x = MarginLeft;
 
-            // Calculate row height based on description content
             float rowHeight = CalculateRowHeight(activity);
 
-            // Alternating row background
             if (rowIndex % 2 == 1)
-            {
                 graphics.DrawRectangle(LightGrayBrush, new RectangleF(x, y, _contentWidth, rowHeight));
-            }
-
-            // Row border
             graphics.DrawRectangle(ThinPen, new RectangleF(x, y, _contentWidth, rowHeight));
 
-            // Zone 1: ID column (ActivityID - always first)
-            DrawLeftText(graphics, activity.ActivityID.ToString(), _dataFont, x, y, _zone1IdWidth, rowHeight);
-            graphics.DrawLine(ThinPen, x + _zone1IdWidth, y, x + _zone1IdWidth, y + rowHeight);
-            x += _zone1IdWidth;
-
-            // Zone 2: User columns
-            foreach (var col in _zone2ColumnWidths)
+            foreach (var (col, width) in _columnWidths)
             {
-                string value = GetFieldValue(activity, col.FieldName) ?? "";
-
-                if (col.FieldName.Equals("Description", StringComparison.OrdinalIgnoreCase))
+                if (col.SourceKind == ColumnSourceKind.EntryBox)
                 {
-                    // Description uses wrapping
-                    DrawWrappedText(graphics, value, _descFont, x, y, col.Width, rowHeight);
+                    // Just the bold % glyph at the left edge of the cell — the
+                    // remainder of the cell is the handwriting target. No white
+                    // fill, no isComplete suppression (CUR % already shows status).
+                    var labelFont = new PdfStandardFont(PdfFontFamily.Helvetica, 8, PdfFontStyle.Bold);
+                    var labelSize = labelFont.MeasureString("%");
+                    float labelY = y + (rowHeight - labelSize.Height) / 2;
+                    graphics.DrawString("%", labelFont, BlackBrush, new PointF(x + 3, labelY));
+                }
+                else if (col.FieldName.Equals("Description", StringComparison.OrdinalIgnoreCase))
+                {
+                    string value = GetFieldValue(activity, col.FieldName) ?? "";
+                    DrawWrappedText(graphics, value, _descFont, x, y, width, rowHeight);
                 }
                 else
                 {
-                    // Other columns use single-line left-aligned text
-                    DrawLeftText(graphics, value, _dataFont, x, y, col.Width, rowHeight, truncate: false);
+                    string value = GetColumnValueText(activity, col);
+                    if (IsNumericColumn(col))
+                        DrawRightText(graphics, value, _dataFont, x, y, width, rowHeight);
+                    else
+                        DrawLeftText(graphics, value, _dataFont, x, y, width, rowHeight, truncate: false);
                 }
-                graphics.DrawLine(ThinPen, x + col.Width, y, x + col.Width, y + rowHeight);
-                x += col.Width;
+
+                graphics.DrawLine(ThinPen, x + width, y, x + width, y + rowHeight);
+                x += width;
             }
-
-            // Zone 3: Data columns
-            // MHs (BudgetMHs)
-            DrawRightText(graphics, activity.BudgetMHs.ToString("N2"), _dataFont, x, y, _zone3ColumnWidths[0].Width, rowHeight);
-            graphics.DrawLine(ThinPen, x + _zone3ColumnWidths[0].Width, y, x + _zone3ColumnWidths[0].Width, y + rowHeight);
-            x += _zone3ColumnWidths[0].Width;
-
-            // QTY (Quantity)
-            DrawRightText(graphics, activity.Quantity.ToString("N2"), _dataFont, x, y, _zone3ColumnWidths[1].Width, rowHeight);
-            graphics.DrawLine(ThinPen, x + _zone3ColumnWidths[1].Width, y, x + _zone3ColumnWidths[1].Width, y + rowHeight);
-            x += _zone3ColumnWidths[1].Width;
-
-            // REM MH
-            double remMH = activity.BudgetMHs - activity.EarnMHsCalc;
-            DrawRightText(graphics, remMH.ToString("N2"), _dataFont, x, y, _zone3ColumnWidths[2].Width, rowHeight);
-            graphics.DrawLine(ThinPen, x + _zone3ColumnWidths[2].Width, y, x + _zone3ColumnWidths[2].Width, y + rowHeight);
-            x += _zone3ColumnWidths[2].Width;
-
-            // CUR %
-            DrawRightText(graphics, activity.PercentEntry.ToString("N2") + "%", _dataFont, x, y, _zone3ColumnWidths[3].Width, rowHeight);
-            graphics.DrawLine(ThinPen, x + _zone3ColumnWidths[3].Width, y, x + _zone3ColumnWidths[3].Width, y + rowHeight);
-            x += _zone3ColumnWidths[3].Width;
-
-            // Only show entry box for incomplete items (< 100%)
-            bool isComplete = activity.PercentEntry >= 100;
-
-            // % Entry box (far right - natural stopping point for field hands)
-            if (!isComplete)
-                DrawEntryBox(graphics, x, y, _zone3ColumnWidths[4].Width, rowHeight, WhiteBrush, "%");
 
             return y + rowHeight;
         }
@@ -1052,39 +992,20 @@ namespace VANTAGE.Services.ProgressBook
             graphics.DrawString(text, font, BlackBrush, new PointF(textX, textY));
         }
 
-        // Helper: Draw entry box for handwriting (white fill, no inner border - grid lines define boundaries)
-        private void DrawEntryBox(PdfGraphics graphics, float x, float y, float width, float height, PdfBrush brush, string? label = null)
-        {
-            float padding = 2;
-
-            // White fill for the entire cell area (provides contrast for handwriting)
-            graphics.DrawRectangle(brush, new RectangleF(x + padding, y + padding, width - padding * 2, height - padding * 2));
-
-            // Draw % label in the left side of the cell
-            if (!string.IsNullOrEmpty(label))
-            {
-                var labelFont = new PdfStandardFont(PdfFontFamily.Helvetica, 8, PdfFontStyle.Bold);
-                var labelSize = labelFont.MeasureString(label);
-                float labelY = y + (height - labelSize.Height) / 2;
-                graphics.DrawString(label, labelFont, BlackBrush, x + 3, labelY);
-            }
-        }
-
-        // Helper: Calculate row height for an activity (considers description wrapping)
+        // Helper: Calculate row height for an activity (considers description wrapping).
+        // Pulls the Description column width from the unified _columnWidths list.
         private float CalculateRowHeight(Activity activity)
         {
-            // Get description column width
-            var descCol = _zone2ColumnWidths.FirstOrDefault(c => c.FieldName.Equals("Description", StringComparison.OrdinalIgnoreCase));
+            var descCol = _columnWidths.FirstOrDefault(c =>
+                c.Col.FieldName.Equals("Description", StringComparison.OrdinalIgnoreCase));
             if (descCol.Width == 0) return _dataRowHeight;
 
             string desc = GetFieldValue(activity, "Description") ?? "";
             if (string.IsNullOrEmpty(desc)) return _dataRowHeight;
 
-            // Wrap text and count lines
             var lines = WrapText(desc, _descFont, descCol.Width - ColumnPadding);
             if (lines.Count <= 1) return _dataRowHeight;
 
-            // Calculate height needed for multiple lines
             float neededHeight = (lines.Count * _lineHeight) + 4; // 4 for top/bottom padding
             return Math.Max(_dataRowHeight, neededHeight);
         }

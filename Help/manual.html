@@ -1856,11 +1856,12 @@
     <h4>Layout</h4>
     <p>Layouts save all your editor settings so you can quickly regenerate books with the same configuration.</p>
     <ul>
-        <li><strong>Layout dropdown</strong> — Select a previously saved layout to load its settings, or start fresh with the default</li>
+        <li><strong>Layout dropdown</strong> — Select a previously saved layout to load its settings, or start fresh with the default. The dropdown auto-restores whichever layout you had open last time you used Progress Books.</li>
         <li><strong>Name</strong> — Give the layout a descriptive name (e.g., "Mod CB101-C"). To create a copy, just change the name and save.</li>
         <li><strong>Delete</strong> — Remove the selected saved layout</li>
         <li><strong>Save</strong> — Save the current settings. If the name matches the loaded layout, it updates in place. If the name is different, a new layout is created.</li>
     </ul>
+    <p>The configuration panel shows a loading spinner while the editor reads your settings — wait for it to finish before changing the layout selection.</p>
 
     <h4>Paper Size</h4>
     <ul>
@@ -1898,13 +1899,16 @@
     </ul>
 
     <h4>Columns</h4>
-    <p>Configure which activity fields appear as columns in the PDF. Columns auto-size to fit their content.</p>
+    <p>Configure which activity fields appear as columns in the PDF. New layouts start with eight default columns: ActivityID, ROCStep, Description, MHs, QTY, REM MH, CUR %, and % ENTRY.</p>
     <ul>
-        <li><strong>Required columns</strong> (cannot be removed): ActivityID, UniqueID, ROCStep, Description</li>
+        <li><strong>Required column</strong> (cannot be removed): <code>% ENTRY</code> — the handwriting cell that field crews fill out. The book wouldn't work without it.</li>
+        <li>Every other column is optional and can be removed. Removed columns reappear in the Add dropdown so you can put them back.</li>
         <li><strong>â–² / â–¼</strong> — Reorder columns up or down</li>
-        <li><strong>âœ•</strong> — Remove a column</li>
+        <li><strong>âœ•</strong> — Remove a column (blocked on % ENTRY)</li>
         <li><strong>Add column dropdown + Add button</strong> — Select a field and click + Add to include it</li>
     </ul>
+    <p><strong>Width behavior:</strong> all columns except Description auto-size to fit their content. If Description is included it stretches to absorb the remaining row width. If you remove Description, the other columns proportionally widen to fill the row.</p>
+    <p>Layouts saved before this revision are upgraded silently on load — the five originally-hardcoded columns (MHs, QTY, REM MH, CUR %, % ENTRY) are appended to the end so the rendered book looks the same as it did before. Reorder or remove them afterward as desired.</p>
 
     <h4>Sort</h4>
     <p>Sort activities within each group. Sorts stack like Excel — the first sort is the primary sort, the second breaks ties, and so on.</p>

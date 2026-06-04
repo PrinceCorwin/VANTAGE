@@ -4,6 +4,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:pdfviewer="clr-namespace:Syncfusion.Windows.PdfViewer;assembly=Syncfusion.PdfViewer.WPF"
+             xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
              mc:Ignorable="d"
              d:DesignHeight="700" d:DesignWidth="1200"
              Background="{DynamicResource BackgroundColor}">
@@ -67,8 +68,18 @@
                 <ColumnDefinition x:Name="RightPanelColumn" Width="4*" MinWidth="300"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Left Panel - Configuration -->
-            <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto" Padding="15">
+            <!-- Left Panel - Configuration (wrapped in SfBusyIndicator so the UI is
+                 visibly blocked during the initial load; prevents users from picking a
+                 layout before the load finishes, which caused a race that wiped the
+                 saved FilterField back to the WorkPackage default) -->
+            <syncfusion:SfBusyIndicator x:Name="leftPanelBusy"
+                                         Grid.Column="0"
+                                         IsBusy="False"
+                                         AnimationType="DualRing"
+                                         ViewboxWidth="60"
+                                         ViewboxHeight="60"
+                                         Foreground="{DynamicResource AccentColor}">
+            <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="15">
                 <StackPanel>
                     <!-- Layout Selection -->
                     <TextBlock Text="Layout" FontWeight="Bold" Margin="0,0,0,5"/>
@@ -260,7 +271,7 @@
                                  Height="180"
                                  Background="{DynamicResource BackgroundColor}"
                                  BorderBrush="{DynamicResource BorderColor}"
-                                 ToolTip="Columns auto-size to fit content. UniqueID, ROC and DESC are required."/>
+                                 ToolTip="Columns auto-size to fit content. If DESC is included it absorbs remaining width; otherwise columns proportionally fill the row. Only % ENTRY is required."/>
                         <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="10,0,0,0">
                             <Button Content="▲" Click="BtnMoveColumnUp_Click" Padding="8,4" Margin="0,0,0,5" ToolTip="Move up"/>
                             <Button Content="▼" Click="BtnMoveColumnDown_Click" Padding="8,4" Margin="0,0,0,5" ToolTip="Move down"/>
@@ -328,6 +339,7 @@
                             MinWidth="100"/>
                 </StackPanel>
             </ScrollViewer>
+            </syncfusion:SfBusyIndicator>
 
             <!-- GridSplitter -->
             <GridSplitter Grid.Column="1"

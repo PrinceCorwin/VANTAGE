@@ -6,6 +6,20 @@ namespace VANTAGE.Models.ProgressBook
     // Configuration for a progress book layout, serialized to JSON for storage
     public class ProgressBookConfiguration
     {
+        // Bumped from 1 -> 2 in the 2026-06 columns refactor that promoted
+        // MHs / QTY / REM MH / CUR % / % ENTRY to first-class user columns.
+        // Layouts saved before this bump won't have the field — System.Text.Json
+        // leaves the property at its default-of-default (0 for int), so the
+        // migration check in ProgressBooksView.LoadLayoutConfigurationAsync
+        // sees `< 2` and runs. CRITICAL: do NOT initialize this property to
+        // CurrentSchemaVersion — that would make legacy JSON look already-current
+        // and migration would never fire. New configs stamp it explicitly in
+        // CreateDefault().
+        public const int CurrentSchemaVersion = 2;
+
+        [JsonPropertyName("schemaVersion")]
+        public int SchemaVersion { get; set; }
+
         [JsonPropertyName("paperSize")]
         public PaperSize PaperSize { get; set; } = PaperSize.Letter;
 
@@ -52,7 +66,11 @@ namespace VANTAGE.Models.ProgressBook
         [JsonPropertyName("columns")]
         public List<ColumnConfig> Columns { get; set; } = new();
 
-        // Returns default configuration for new layouts
+        // Returns default configuration for new layouts.
+        // Column order mirrors the legacy hardcoded 3-zone layout so existing
+        // users see the same book they always did: ID, ROC, DESC, then the
+        // four promoted data columns, with the % entry box on the far right
+        // (the field hand's natural stopping point per the original design).
         public static ProgressBookConfiguration CreateDefault()
         {
             return new ProgressBookConfiguration
@@ -65,9 +83,17 @@ namespace VANTAGE.Models.ProgressBook
                 SortFields = new List<string> { "ROCStep" },
                 Columns = new List<ColumnConfig>
                 {
-                    new ColumnConfig { FieldName = "ActivityID", DisplayOrder = 0 }, // Shorter ID for easier scanning
-                    new ColumnConfig { FieldName = "ROCStep", DisplayOrder = 1 },
-                    new ColumnConfig { FieldName = "Description", DisplayOrder = 2 }
+                    new ColumnConfig { FieldName = "ActivityID", DisplayOrder = 0, SourceKind = ColumnSourceKind.Direct },
+                    new ColumnConfig { FieldName = "ROCStep", DisplayOrder = 1, SourceKind = ColumnSourceKind.Direct },
+                    new ColumnConfig { FieldName = "Description", DisplayOrder = 2, SourceKind = ColumnSourceKind.Direct },
+                    new ColumnConfig { FieldName = "BudgetMHs", DisplayOrder = 3, SourceKind = ColumnSourceKind.Direct, DisplayHeader = "MHs" },
+                    new ColumnConfig { FieldName = "Quantity", DisplayOrder = 4, SourceKind = ColumnSourceKind.Direct, DisplayHeader = "QTY" },
+                    new ColumnConfig { FieldName = "RemainingMHs", DisplayOrder = 5, SourceKind = ColumnSourceKind.Computed, DisplayHeader = "REM MH" },
+                    new ColumnConfig { FieldName = "PercentEntry", DisplayOrder = 6, SourceKind = ColumnSourceKind.Direct, DisplayHeader = "CUR %" },
+                    // % ENTRY is the un-removable handwriting column. FieldName is a
+                    // synthetic key (not an Activity property) so reflection skips it
+                    // and the PDF generator dispatches on SourceKind.EntryBox.
+                    new ColumnConfig { FieldName = "% ENTRY", DisplayOrder = 7, SourceKind = ColumnSourceKind.EntryBox, DisplayHeader = "% ENTRY" }
                 }
             };
         }

@@ -190,6 +190,8 @@ namespace VANTAGE.Utilities
         //   AnalysisField_1_1              — Y-axis dropdown in the Analysis tab
         //   ProgressBook.ExcludeCompleted  — checkbox in the Progress Books view
         //   ProgressBook.IncludeAllUsers   — checkbox in the Progress Books view
+        //   ProgressBook.LastSelectedLayoutId — remembers which saved layout was last opened
+        //                                       (auto-reselected on module load)
         //   WorkPackage.LastProjectID      — dropdown in the Work Package view
         //   WorkPackage.LastWPTemplateID   — dropdown in the Work Package view
         //   WorkPackage.LastPKGManager     — dropdown in the Work Package view

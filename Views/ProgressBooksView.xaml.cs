@@ -49,6 +49,30 @@ namespace VANTAGE.Views
         // Constant for default layout name
         private const string DefaultLayoutName = "Default Layout";
 
+        // UserSettings key for remembering the user's last-selected layout
+        private const string LastSelectedLayoutIdSetting = "ProgressBook.LastSelectedLayoutId";
+
+        // Synthetic field key for the un-removable handwriting column.
+        // Not an Activity property — dispatched by SourceKind.EntryBox in the PDF generator.
+        private const string EntryBoxFieldName = "% ENTRY";
+
+        // Synthetic field key for the computed REM MH column.
+        // Value is resolved by the PDF generator (BudgetMHs - EarnMHsCalc).
+        private const string RemainingMHsFieldName = "RemainingMHs";
+
+        // Metadata for promoted columns whose PDF header differs from their stored
+        // FieldName, or whose value comes from somewhere other than an Activity
+        // property. Anything not in this dict is treated as a plain Direct field.
+        // Keep in sync with ProgressBookConfiguration.CreateDefault().Columns.
+        private static readonly Dictionary<string, (ColumnSourceKind Kind, string DisplayHeader)> _columnMeta = new()
+        {
+            ["BudgetMHs"]            = (ColumnSourceKind.Direct,   "MHs"),
+            ["Quantity"]             = (ColumnSourceKind.Direct,   "QTY"),
+            [RemainingMHsFieldName]  = (ColumnSourceKind.Computed, "REM MH"),
+            ["PercentEntry"]         = (ColumnSourceKind.Direct,   "CUR %"),
+            [EntryBoxFieldName]      = (ColumnSourceKind.EntryBox, "% ENTRY"),
+        };
+
         // Maximum groups and sorts allowed
         private const int MaxGroups = 10;
         private const int MaxSorts = 10;
@@ -65,19 +89,68 @@ namespace VANTAGE.Views
 
         private async void ProgressBooksView_Loaded(object sender, RoutedEventArgs e)
         {
+            // _isLoading + the busy overlay together block the user from interacting
+            // with the layout dropdown (or anything else) before the initial load
+            // finishes. Previously the load yielded the UI thread while still inside
+            // LoadDefaultConfigurationAsync; a click on the saved-layouts dropdown at
+            // that moment hit the `if (_isLoading) return;` short-circuit in
+            // CboSavedLayouts_SelectionChanged, so the visible selection changed but
+            // the layout body never loaded and the FilterField stayed on the default
+            // WorkPackage.
             _isLoading = true;
+            leftPanelBusy.IsBusy = true;
             try
             {
                 InitializeFieldLists();
                 PopulateDropdowns();
                 await LoadSavedLayoutsAsync();
-                await LoadDefaultConfigurationAsync();
+
+                // Resolve the user's last-selected layout from UserSettings; fall
+                // back to Default Layout if the setting is missing, unparseable, or
+                // points at a layout that no longer exists.
+                int targetId = GetLastSelectedLayoutId();
+                var items = cboSavedLayouts.ItemsSource as List<LayoutDropdownItem>;
+                var target = items?.FirstOrDefault(i => i.Id == targetId) ?? items?.FirstOrDefault();
+
+                if (target != null)
+                {
+                    cboSavedLayouts.SelectedItem = target;
+                    if (target.Id == 0)
+                    {
+                        await LoadDefaultConfigurationAsync();
+                    }
+                    else
+                    {
+                        var layout = await ProgressBookLayoutRepository.GetByIdAsync(target.Id);
+                        if (layout != null)
+                            await LoadLayoutConfigurationAsync(layout);
+                        else
+                            await LoadDefaultConfigurationAsync();
+                    }
+                }
+
                 RestoreSplitterPosition();
             }
             finally
             {
                 _isLoading = false;
+                leftPanelBusy.IsBusy = false;
             }
+        }
+
+        // Read the persisted last-selected layout ID; 0 == Default Layout
+        private int GetLastSelectedLayoutId()
+        {
+            var raw = SettingsManager.GetUserSetting(LastSelectedLayoutIdSetting);
+            if (!string.IsNullOrEmpty(raw) && int.TryParse(raw, out int parsed))
+                return parsed;
+            return 0;
+        }
+
+        // Persist the user's currently-selected layout so the next session reopens here
+        private void SaveLastSelectedLayoutId(int layoutId)
+        {
+            SettingsManager.SetUserSetting(LastSelectedLayoutIdSetting, layoutId.ToString(), "int");
         }
 
         // Restore splitter position from user settings
@@ -149,7 +222,10 @@ namespace VANTAGE.Views
                 // Tracking
                 "AssignedTo", "CreatedBy", "UpdatedBy",
                 // Trigger
-                "DateTrigger"
+                "DateTrigger",
+                // Promoted synthetic columns (no matching Activity property):
+                // RemainingMHs is Computed; % ENTRY is the un-removable handwriting field.
+                RemainingMHsFieldName, EntryBoxFieldName
             };
             _allFields.Sort();
         }
@@ -203,7 +279,10 @@ namespace VANTAGE.Views
             return options;
         }
 
-        // Load saved layouts into the dropdown
+        // Refresh the saved-layouts dropdown items. Does NOT change the selection
+        // and does NOT toggle _isLoading — callers are responsible for both.
+        // Caller MUST already have _isLoading = true (so the ItemsSource swap doesn't
+        // fire a SelectionChanged handler that runs LoadLayoutConfigurationAsync).
         private async System.Threading.Tasks.Task LoadSavedLayoutsAsync()
         {
             if (App.CurrentUser == null) return;
@@ -215,18 +294,19 @@ namespace VANTAGE.Views
             };
             items.AddRange(layouts.Select(l => new LayoutDropdownItem { Id = l.Id, Name = l.Name }));
 
-            _isLoading = true;
             cboSavedLayouts.ItemsSource = items;
             cboSavedLayouts.DisplayMemberPath = "Name";
-            cboSavedLayouts.SelectedIndex = 0;
-            _isLoading = false;
 
             UpdateDeleteButtonState();
         }
 
-        // Load default configuration for a new layout
+        // Load default configuration for a new layout.
+        // Save/restore _isLoading so nested calls under an outer guarded scope
+        // (e.g. the Loaded handler) don't prematurely flip the flag back to false
+        // while the outer scope is still building UI state.
         private async System.Threading.Tasks.Task LoadDefaultConfigurationAsync()
         {
+            bool prevLoading = _isLoading;
             _isLoading = true;
             try
             {
@@ -240,11 +320,20 @@ namespace VANTAGE.Views
                 cboFilterValue.ItemsSource = null;
                 cboFilterValue.SelectedItem = null;
 
-                // Default columns: ActivityID (short ID for scanning), ROC and Description
+                // Default columns mirror ProgressBookConfiguration.CreateDefault().Columns:
+                // the seven default-included columns plus the un-removable % ENTRY handwriting cell.
+                // Only % ENTRY is marked IsRequired — all others are user-removable.
                 _columns.Clear();
-                _columns.Add(new ColumnDisplayItem { FieldName = "ActivityID", IsRequired = true });
-                _columns.Add(new ColumnDisplayItem { FieldName = "ROCStep", IsRequired = true });
-                _columns.Add(new ColumnDisplayItem { FieldName = "Description", IsRequired = true });
+                foreach (var col in ProgressBookConfiguration.CreateDefault().Columns.OrderBy(c => c.DisplayOrder))
+                {
+                    _columns.Add(new ColumnDisplayItem
+                    {
+                        FieldName = col.FieldName,
+                        IsRequired = col.SourceKind == ColumnSourceKind.EntryBox,
+                        SourceKind = col.SourceKind,
+                        DisplayHeader = col.DisplayHeader
+                    });
+                }
                 RefreshColumnsListBox();
 
                 // Default grouping: PhaseCode
@@ -279,13 +368,17 @@ namespace VANTAGE.Views
             }
             finally
             {
-                _isLoading = false;
+                _isLoading = prevLoading;
             }
         }
 
-        // Load a saved layout configuration
+        // Load a saved layout configuration.
+        // Save/restore _isLoading so nested calls under an outer guarded scope
+        // (e.g. the Loaded handler) don't prematurely flip the flag back to false
+        // while the outer scope is still building UI state.
         private async System.Threading.Tasks.Task LoadLayoutConfigurationAsync(ProgressBookLayout layout)
         {
+            bool prevLoading = _isLoading;
             _isLoading = true;
             try
             {
@@ -293,6 +386,15 @@ namespace VANTAGE.Views
                 txtLayoutName.Text = layout.Name;
 
                 var config = layout.GetConfiguration();
+
+                // Silent backward-compat migration: layouts saved before the 2026-06
+                // columns refactor have no SchemaVersion (deserialized as 0) and only
+                // [ActivityID, ROCStep, Description] in Columns. Append the five
+                // promoted columns in the legacy render order so the rendered book
+                // is visually identical to what these users saw before. The migrated
+                // config is held in memory only — it's persisted on the next Save,
+                // which will stamp CurrentSchemaVersion.
+                MigrateConfigurationIfNeeded(config);
 
                 rbLetter.IsChecked = config.PaperSize == PaperSize.Letter;
                 rbTabloid.IsChecked = config.PaperSize == PaperSize.Tabloid;
@@ -303,15 +405,28 @@ namespace VANTAGE.Views
                 chkExcludeCompleted.IsChecked = config.ExcludeCompleted;
                 chkIncludeAllUsers.IsChecked = config.IncludeAllUsers;
 
-                // Load columns
+                // Load columns. Only the EntryBox column (% ENTRY) is required;
+                // every other column is user-removable per the 2026-06 refactor.
+                // For legacy layouts whose ColumnConfig rows lack SourceKind / DisplayHeader,
+                // fall back to the central _columnMeta lookup.
                 _columns.Clear();
                 foreach (var col in config.Columns.OrderBy(c => c.DisplayOrder))
                 {
-                    bool isRequired = col.FieldName == "ActivityID" || col.FieldName == "UniqueID" || col.FieldName == "ROCStep" || col.FieldName == "Description";
+                    var kind = col.SourceKind;
+                    var header = col.DisplayHeader;
+                    if (_columnMeta.TryGetValue(col.FieldName, out var meta))
+                    {
+                        if (kind == ColumnSourceKind.Direct && meta.Kind != ColumnSourceKind.Direct)
+                            kind = meta.Kind;
+                        if (string.IsNullOrEmpty(header))
+                            header = meta.DisplayHeader;
+                    }
                     _columns.Add(new ColumnDisplayItem
                     {
                         FieldName = col.FieldName,
-                        IsRequired = isRequired
+                        IsRequired = kind == ColumnSourceKind.EntryBox,
+                        SourceKind = kind,
+                        DisplayHeader = header
                     });
                 }
                 RefreshColumnsListBox();
@@ -365,7 +480,57 @@ namespace VANTAGE.Views
             }
             finally
             {
-                _isLoading = false;
+                _isLoading = prevLoading;
+            }
+        }
+
+        // Silent in-memory migration of older saved layouts to the current schema.
+        // Legacy layouts (SchemaVersion absent => 0) had only [ActivityID, ROCStep,
+        // Description] in Columns; the four data columns and the % entry box were
+        // injected by the old 3-zone renderer. Appending them here in the same render
+        // order means the next book the user generates looks identical to what they
+        // had before. The migrated config is held in memory only; SchemaVersion is
+        // stamped to CurrentSchemaVersion on the next Save.
+        //
+        // Also defensively guarantees the % ENTRY column is present regardless of
+        // schema, since it's the only un-removable column.
+        private void MigrateConfigurationIfNeeded(ProgressBookConfiguration config)
+        {
+            if (config.SchemaVersion < 2)
+            {
+                string[] legacyAppend =
+                {
+                    "BudgetMHs", "Quantity", RemainingMHsFieldName, "PercentEntry", EntryBoxFieldName
+                };
+                var existing = config.Columns.Select(c => c.FieldName).ToHashSet();
+                int nextOrder = config.Columns.Count == 0 ? 0 : config.Columns.Max(c => c.DisplayOrder) + 1;
+                foreach (var key in legacyAppend)
+                {
+                    if (existing.Contains(key)) continue;
+                    var meta = _columnMeta[key];
+                    config.Columns.Add(new ColumnConfig
+                    {
+                        FieldName = key,
+                        DisplayOrder = nextOrder++,
+                        SourceKind = meta.Kind,
+                        DisplayHeader = meta.DisplayHeader
+                    });
+                }
+                config.SchemaVersion = ProgressBookConfiguration.CurrentSchemaVersion;
+            }
+
+            // Defensive: % ENTRY is the only un-removable column — guarantee it.
+            if (!config.Columns.Any(c => c.FieldName == EntryBoxFieldName))
+            {
+                int nextOrder = config.Columns.Count == 0 ? 0 : config.Columns.Max(c => c.DisplayOrder) + 1;
+                var meta = _columnMeta[EntryBoxFieldName];
+                config.Columns.Add(new ColumnConfig
+                {
+                    FieldName = EntryBoxFieldName,
+                    DisplayOrder = nextOrder,
+                    SourceKind = meta.Kind,
+                    DisplayHeader = meta.DisplayHeader
+                });
             }
         }
 
@@ -603,14 +768,17 @@ namespace VANTAGE.Views
                 config.Groups.Add(group.GroupField);
             }
 
-            // Add columns
+            // Add columns — persist SourceKind / DisplayHeader so the PDF generator
+            // can dispatch correctly without re-deriving them from a name lookup.
             int order = 0;
             foreach (var col in _columns)
             {
                 config.Columns.Add(new ColumnConfig
                 {
                     FieldName = col.FieldName,
-                    DisplayOrder = order++
+                    DisplayOrder = order++,
+                    SourceKind = col.SourceKind,
+                    DisplayHeader = col.DisplayHeader
                 });
             }
 
@@ -623,15 +791,16 @@ namespace VANTAGE.Views
             return config;
         }
 
-        // Refresh the columns ListBox with simple text items (widths are auto-calculated)
+        // Refresh the columns ListBox with simple text items (widths are auto-calculated).
+        // Prefers DisplayHeader (e.g. "MHs", "REM MH", "CUR %") so the UI matches the
+        // PDF header text rather than showing raw Activity property names like "BudgetMHs".
         private void RefreshColumnsListBox()
         {
             lstColumns.Items.Clear();
             foreach (var col in _columns)
             {
-                string display = col.IsRequired
-                    ? $"{col.FieldName} *"
-                    : col.FieldName;
+                string label = string.IsNullOrEmpty(col.DisplayHeader) ? col.FieldName : col.DisplayHeader!;
+                string display = col.IsRequired ? $"{label} *" : label;
                 lstColumns.Items.Add(display);
             }
 
@@ -668,6 +837,7 @@ namespace VANTAGE.Views
                 if (item.Id == 0)
                 {
                     await LoadDefaultConfigurationAsync();
+                    SaveLastSelectedLayoutId(0);
                 }
                 else
                 {
@@ -675,6 +845,7 @@ namespace VANTAGE.Views
                     if (layout != null)
                     {
                         await LoadLayoutConfigurationAsync(layout);
+                        SaveLastSelectedLayoutId(item.Id);
                     }
                 }
             }
@@ -951,7 +1122,24 @@ namespace VANTAGE.Views
             var field = cboAddColumn.SelectedItem as string;
             if (string.IsNullOrEmpty(field)) return;
 
-            _columns.Add(new ColumnDisplayItem { FieldName = field, IsRequired = false });
+            // Look up promoted-column metadata so MHs / QTY / REM MH / CUR % / % ENTRY
+            // are added with the right SourceKind and PDF header. Plain Activity fields
+            // fall through with Direct + no header override.
+            ColumnSourceKind kind = ColumnSourceKind.Direct;
+            string? header = null;
+            if (_columnMeta.TryGetValue(field, out var meta))
+            {
+                kind = meta.Kind;
+                header = meta.DisplayHeader;
+            }
+
+            _columns.Add(new ColumnDisplayItem
+            {
+                FieldName = field,
+                IsRequired = kind == ColumnSourceKind.EntryBox,
+                SourceKind = kind,
+                DisplayHeader = header
+            });
             RefreshColumnsListBox();
             RefreshAddColumnDropdown();
                         _hasUnsavedChanges = true;
@@ -1032,9 +1220,25 @@ namespace VANTAGE.Views
                 if (success)
                 {
                     _hasUnsavedChanges = false;
-                    await LoadSavedLayoutsAsync();
-                    await LoadDefaultConfigurationAsync();
-                    cboSavedLayouts.SelectedIndex = 0;
+                    _isLoading = true;
+                    try
+                    {
+                        await LoadSavedLayoutsAsync();
+                        // The deleted layout is no longer in the list; explicitly
+                        // pin Default Layout so the dropdown reflects the new state.
+                        var items = cboSavedLayouts.ItemsSource as List<LayoutDropdownItem>;
+                        var defaultItem = items?.FirstOrDefault(i => i.Id == 0);
+                        if (defaultItem != null)
+                            cboSavedLayouts.SelectedItem = defaultItem;
+                        await LoadDefaultConfigurationAsync();
+                    }
+                    finally
+                    {
+                        _isLoading = false;
+                    }
+                    // Clear the persisted last-selected layout ID since it pointed
+                    // at the layout we just deleted.
+                    SaveLastSelectedLayoutId(0);
                 }
             }
         }
@@ -1088,8 +1292,17 @@ namespace VANTAGE.Views
                     if (success)
                     {
                         _hasUnsavedChanges = false;
-                        await LoadSavedLayoutsAsync();
-                        SelectLayoutInDropdown(_currentLayout.Id);
+                        _isLoading = true;
+                        try
+                        {
+                            await LoadSavedLayoutsAsync();
+                            SelectLayoutInDropdown(_currentLayout.Id);
+                        }
+                        finally
+                        {
+                            _isLoading = false;
+                        }
+                        SaveLastSelectedLayoutId(_currentLayout.Id);
                         AppMessageBox.Show($"Layout '{layoutName}' updated.", "Saved",
                             MessageBoxButton.OK, MessageBoxImage.None);
                     }
@@ -1107,8 +1320,17 @@ namespace VANTAGE.Views
                         {
                             _currentLayout = existingLayout;
                             _hasUnsavedChanges = false;
-                            await LoadSavedLayoutsAsync();
-                            SelectLayoutInDropdown(existingLayout.Id);
+                            _isLoading = true;
+                            try
+                            {
+                                await LoadSavedLayoutsAsync();
+                                SelectLayoutInDropdown(existingLayout.Id);
+                            }
+                            finally
+                            {
+                                _isLoading = false;
+                            }
+                            SaveLastSelectedLayoutId(existingLayout.Id);
                             AppMessageBox.Show($"Layout '{layoutName}' updated.", "Saved",
                                 MessageBoxButton.OK, MessageBoxImage.None);
                         }
@@ -1130,8 +1352,17 @@ namespace VANTAGE.Views
                         {
                             _currentLayout = newLayout;
                             _hasUnsavedChanges = false;
-                            await LoadSavedLayoutsAsync();
-                            SelectLayoutInDropdown(newId);
+                            _isLoading = true;
+                            try
+                            {
+                                await LoadSavedLayoutsAsync();
+                                SelectLayoutInDropdown(newId);
+                            }
+                            finally
+                            {
+                                _isLoading = false;
+                            }
+                            SaveLastSelectedLayoutId(newId);
                             AppMessageBox.Show($"Layout '{layoutName}' saved.", "Saved",
                                 MessageBoxButton.OK, MessageBoxImage.None);
                         }
@@ -1154,9 +1385,16 @@ namespace VANTAGE.Views
                 var item = items.FirstOrDefault(i => i.Id == layoutId);
                 if (item != null)
                 {
+                    bool prevLoading = _isLoading;
                     _isLoading = true;
-                    cboSavedLayouts.SelectedItem = item;
-                    _isLoading = false;
+                    try
+                    {
+                        cboSavedLayouts.SelectedItem = item;
+                    }
+                    finally
+                    {
+                        _isLoading = prevLoading;
+                    }
                 }
             }
         }
@@ -1321,11 +1559,15 @@ namespace VANTAGE.Views
     }
 
     // Helper classes
-    // Display item for columns list (widths are auto-calculated by PDF generator)
+    // Display item for columns list (widths are auto-calculated by PDF generator).
+    // SourceKind and DisplayHeader mirror ColumnConfig so the UI can round-trip them
+    // through Save without losing metadata for promoted columns (MHs / REM MH / etc.)
     public class ColumnDisplayItem
     {
         public string FieldName { get; set; } = string.Empty;
         public bool IsRequired { get; set; }
+        public ColumnSourceKind SourceKind { get; set; } = ColumnSourceKind.Direct;
+        public string? DisplayHeader { get; set; }
     }
 
     public class LayoutDropdownItem
