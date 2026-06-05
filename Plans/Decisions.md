@@ -392,6 +392,21 @@ Sections follow VANTAGE's nav structure top to bottom. See `.claude/skills/finis
 **Why:** Simplified the scan form and improved AI accuracy by reducing distinct columns to parse. Color-coded entry fields were also removed — AI relies on text labels, not colors.
 **Date:** January 2026
 
+### `% ENTRY` Is the Only Un-Removable Progress Book Column
+**Rule:** The handwriting entry cell (`FieldName = "% ENTRY"`, `SourceKind = EntryBox`) cannot be removed from a Progress Book layout. Every other column — `ActivityID`, `ROCStep`, `Description`, `BudgetMHs`, `Quantity`, `RemainingMHs`, `PercentEntry`, and any user-added Activity field — is removable.
+**Why:** A Progress Book without an entry cell isn't a Progress Book. The handwriting cell is the feature's reason for existing; every other column is a presentational choice for field crews and should be theirs to shape.
+**Date:** 2026-06-04
+
+### Progress Book Column Metadata Lives in a Single Catalog
+**Rule:** `Models/ProgressBook/ProgressBookColumnCatalog.cs` is the single source of truth for column `SourceKind` and `DisplayHeader`. Both `ProgressBooksView` (column list label, Add dropdown, layout migration, `BuildCurrentConfiguration` round-trip) and `ProgressBookPdfGenerator` (header text + value dispatch + alignment) read from it. The catalog overrides whatever `SourceKind` / `DisplayHeader` was stored in a saved layout's JSON whenever its `FieldName` is catalogued — renaming a label in the catalog propagates to every saved layout on its next open with no JSON migration. Uncatalogued fields render with their `FieldName` as-is in both UI and PDF (no `.ToUpper()` fallback).
+**Why:** Pre-catalog, two independent sources (`ProgressBooksView._columnMeta` covered the five promoted columns; `ProgressBookPdfGenerator.GetColumnDisplayName` covered a different nine, with `.ToUpper()` as the fallback) drifted out of sync and produced UI/PDF mismatches (e.g. UI list said "BudgetMHs", PDF header said "BUDGETMHS"). Centralising in one read-only dictionary makes the UI list and PDF header agree by construction.
+**Date:** 2026-06-05
+
+### Progress Book Layout SchemaVersion Drives Migration; Saver Must Stamp It
+**Rule:** `ProgressBookConfiguration.SchemaVersion` has NO property initializer (defaults to `0`). `CreateDefault()` and `BuildCurrentConfiguration` both explicitly stamp `CurrentSchemaVersion` when constructing a new config so saved JSON carries the current version. `MigrateConfigurationIfNeeded` only treats a layout as legacy when `SchemaVersion < 2` AND the un-removable `% ENTRY` column is absent — its presence is the cleanest signal a layout was already saved under the new schema.
+**Why:** A property initializer of `CurrentSchemaVersion` would make legacy JSON (which has no `schemaVersion` key) deserialize as if it were already current, and the migration would never fire. Conversely, treating any `SchemaVersion < 2` layout as legacy (regardless of column contents) caused user-deleted promoted columns to be silently re-added on every Load. The two-part check is the minimal correct heuristic.
+**Date:** 2026-06-05
+
 ### VP-vs-Vtg Match Uses Outer-Trim-Only Exact String Comparison
 **Rule:** ProjectID and PhaseCode matching between the JC Labor Productivity report and Vantage `VMS_Activities` uses `String.Trim()` on both sides (leading and trailing whitespace only) and compares the result as exact strings. No leading-zero stripping, no internal-whitespace collapsing, no trailing-separator trimming. The previous `NormalizeKey` helper does not exist.
 **Why:** Vantage phase codes should match VP's canonical format exactly. A `Not Found` result is now a useful signal — it identifies Vantage records whose codes need correction to match VP. Outer-whitespace trim is the only concession because Excel cell formatting and SQL CHAR padding can introduce spaces that aren't user-meaningful.

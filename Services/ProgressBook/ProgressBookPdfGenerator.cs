@@ -1126,20 +1126,9 @@ namespace VANTAGE.Services.ProgressBook
         // Helper: Get display name for column
         private string GetColumnDisplayName(string fieldName)
         {
-            // Map field names to shorter display names where appropriate
-            return fieldName switch
-            {
-                "ROCStep" => "ROC",
-                "Description" => "DESC",
-                "PhaseCode" => "PHASE",
-                "PhaseCategory" => "CATG",
-                "CompType" => "COMP",
-                "WorkPackage" => "WP",
-                "ProjectID" => "PROJ",
-                "UniqueID" => "UID",
-                "ActivityID" => "ID",
-                _ => fieldName.ToUpper()
-            };
+            // Defer to the central catalog. Uncatalogued fields render with their
+            // FieldName as-is (no more .ToUpper() ugliness like BUDGETMHS / QUANTITY).
+            return ProgressBookColumnCatalog.GetDisplayHeader(fieldName);
         }
 
         // Helper: Load image from resource or file

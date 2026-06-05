@@ -1,9 +1,10 @@
 # PRD: Progress Books — Fully Configurable Columns
 
-**Status:** PLANNED (not started)
+**Status:** SHIPPED 2026-06-05 (column refactor + central `ProgressBookColumnCatalog`).
 **Owner:** Steve
 **Created:** 2026-06-03
 **Revised:** 2026-06-04 — `% ENTRY` retained as the sole un-removable column; columns proportionally widen to fill row when `Description` is absent.
+**Shipped:** 2026-06-05 — central column catalog, save-bug fix, spinner on layout switch. See `Plans/Completed_Work.md` entries for 2026-06-04 and 2026-06-05.
 
 ## Goal
 

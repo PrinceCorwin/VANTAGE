@@ -66,36 +66,50 @@ namespace VANTAGE.Models.ProgressBook
         [JsonPropertyName("columns")]
         public List<ColumnConfig> Columns { get; set; } = new();
 
+        // Default field set for new layouts. Order matches the legacy 3-zone render
+        // order (ID, ROC, DESC, then the four data columns, with the % entry box on
+        // the far right — the field hand's natural stopping point). Labels and source
+        // kinds come from ProgressBookColumnCatalog so this list stays purely
+        // structural.
+        private static readonly string[] DefaultColumnFieldNames =
+        {
+            "ActivityID",
+            "ROCStep",
+            "Description",
+            "BudgetMHs",
+            "Quantity",
+            ProgressBookColumnCatalog.RemainingMHsFieldName,
+            "PercentEntry",
+            ProgressBookColumnCatalog.EntryBoxFieldName,
+        };
+
         // Returns default configuration for new layouts.
-        // Column order mirrors the legacy hardcoded 3-zone layout so existing
-        // users see the same book they always did: ID, ROC, DESC, then the
-        // four promoted data columns, with the % entry box on the far right
-        // (the field hand's natural stopping point per the original design).
         public static ProgressBookConfiguration CreateDefault()
         {
-            return new ProgressBookConfiguration
+            var config = new ProgressBookConfiguration
             {
+                SchemaVersion = CurrentSchemaVersion,
                 PaperSize = PaperSize.Letter,
                 FontSize = 8, // Default to 8pt for better OCR/scan accuracy
                 FilterField = "WorkPackage",
                 FilterValue = string.Empty,
                 Groups = new List<string> { "PhaseCode" },
                 SortFields = new List<string> { "ROCStep" },
-                Columns = new List<ColumnConfig>
-                {
-                    new ColumnConfig { FieldName = "ActivityID", DisplayOrder = 0, SourceKind = ColumnSourceKind.Direct },
-                    new ColumnConfig { FieldName = "ROCStep", DisplayOrder = 1, SourceKind = ColumnSourceKind.Direct },
-                    new ColumnConfig { FieldName = "Description", DisplayOrder = 2, SourceKind = ColumnSourceKind.Direct },
-                    new ColumnConfig { FieldName = "BudgetMHs", DisplayOrder = 3, SourceKind = ColumnSourceKind.Direct, DisplayHeader = "MHs" },
-                    new ColumnConfig { FieldName = "Quantity", DisplayOrder = 4, SourceKind = ColumnSourceKind.Direct, DisplayHeader = "QTY" },
-                    new ColumnConfig { FieldName = "RemainingMHs", DisplayOrder = 5, SourceKind = ColumnSourceKind.Computed, DisplayHeader = "REM MH" },
-                    new ColumnConfig { FieldName = "PercentEntry", DisplayOrder = 6, SourceKind = ColumnSourceKind.Direct, DisplayHeader = "CUR %" },
-                    // % ENTRY is the un-removable handwriting column. FieldName is a
-                    // synthetic key (not an Activity property) so reflection skips it
-                    // and the PDF generator dispatches on SourceKind.EntryBox.
-                    new ColumnConfig { FieldName = "% ENTRY", DisplayOrder = 7, SourceKind = ColumnSourceKind.EntryBox, DisplayHeader = "% ENTRY" }
-                }
             };
+
+            int order = 0;
+            foreach (var fieldName in DefaultColumnFieldNames)
+            {
+                config.Columns.Add(new ColumnConfig
+                {
+                    FieldName = fieldName,
+                    DisplayOrder = order++,
+                    SourceKind = ProgressBookColumnCatalog.GetSourceKind(fieldName),
+                    DisplayHeader = ProgressBookColumnCatalog.GetDisplayHeader(fieldName),
+                });
+            }
+
+            return config;
         }
     }
 

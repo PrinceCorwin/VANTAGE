@@ -6,9 +6,58 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
-### June 4, 2026 (Progress Books — Configurable Columns Refactor — IMPLEMENTATION COMPLETE, PENDING USER TESTING)
+### June 5, 2026 (Progress Books — Column Catalog, Save Bug Fix, Spinner on Layout Switch)
 
-**Status flag.** Code is committed and builds clean, but the user had to leave before verifying the end-to-end PDF render. The view-side changes were partially tested mid-session and a duplicate-render bug was discovered; that bug is the symptom that drove finishing the PDF generator refactor (Step 3) in this commit. Re-test items live in `Plans/Project_Status.md` under "Progress Books — fully configurable columns". Do not consider this entry final until the test items pass.
+**Spinner on layout switch.** Yesterday's commit only blocked the UI during the initial `Loaded` flow. Switching layouts via `cboSavedLayouts` still awaited DB queries with no overlay, so the same kind of mid-load race that wiped FilterField before was still theoretically possible. `CboSavedLayouts_SelectionChanged` now wraps the layout-load body in `leftPanelBusy.IsBusy = true / try / finally false` — the early-return and unsaved-changes dialog stay outside the wrap so the spinner only fires when an actual load is happening.
+
+**Central column-name catalog (`Models/ProgressBook/ProgressBookColumnCatalog.cs`).** New static class — single source of truth for Progress Book column metadata. Maps Activity FieldName (or a synthetic key) to `(ColumnSourceKind, DisplayHeader)`. Used by the View (column list label, Add dropdown, layout migration, BuildCurrentConfiguration round-trip) AND by `ProgressBookPdfGenerator` (header text + value dispatch + alignment). Fields not catalogued fall back to `(Direct, FieldName-as-is)` — no more `.ToUpper()` ugliness like `BUDGETMHS` in PDF headers. Public surface: `Contains(fieldName)`, `GetSourceKind(fieldName)`, `GetDisplayHeader(fieldName)`, plus two const synthetic-key names (`RemainingMHsFieldName`, `EntryBoxFieldName`).
+
+**Catalog entries (user-approved mapping):**
+
+| FieldName | Display label |
+|---|---|
+| `ActivityID` | `Act ID` |
+| `ROCStep` | `ROC` |
+| `Description` | `DESC` |
+| `PhaseCategory` | `PhaseCat` |
+| `SecondDwgNO` | `2ndDwgNo` |
+| `SecondActno` | `2ndActNo` |
+| `SchedActNO` | `ActNo` |
+| `WorkPackage` | `WP` |
+| `RespParty` | `RP` |
+| `BudgetMHs` | `MHs` |
+| `Quantity` | `QTY` |
+| `RemainingMHs` *(synthetic Computed)* | `REM MH` |
+| `EarnMHsCalc` | `ERN MH` |
+| `EarnedQtyCalc` | `ERN QTY` |
+| `EarnQtyEntry` | `Qty Entry` |
+| `PercentCompleteCalc` | `% Comp` |
+| `PercentEntry` | `% Comp` |
+| `% ENTRY` *(synthetic EntryBox)* | `% ENTRY` |
+
+`PercentEntry` and `PercentCompleteCalc` intentionally share the `% Comp` label — they're the same value for Progress Book purposes, and showing the duplicate label nudges a user who adds both to delete one. `UniqueID` / `PhaseCode` / `CompType` / `ProjectID` and the rest of the Activity fields are NOT catalogued and render with their FieldName as-is in both UI and PDF (drops the older `UID` / `PHASE` / `COMP` / `PROJ` shortenings).
+
+**`ProgressBookConfiguration.CreateDefault()` reads from the catalog.** The default column list is now a single `DefaultColumnFieldNames` string array; SourceKind and DisplayHeader come from the catalog at construction time. CreateDefault now also stamps `SchemaVersion = CurrentSchemaVersion` explicitly. Default labels are now `Act ID | ROC | DESC | MHs | QTY | REM MH | % Comp | % ENTRY`.
+
+**`ProgressBooksView._columnMeta` removed.** All four call sites (`LoadLayoutConfigurationAsync`, `MigrateConfigurationIfNeeded` legacy-append loop, `MigrateConfigurationIfNeeded` defensive % ENTRY add, `BtnAddColumn_Click`) now consult the catalog directly. The two synthetic-key constants in the View are thin aliases over the catalog's constants for readability at call sites.
+
+**Catalog wins on layout load.** `LoadLayoutConfigurationAsync` now overrides `col.SourceKind` and `col.DisplayHeader` from the catalog whenever `ProgressBookColumnCatalog.Contains(col.FieldName)` is true. Net effect: renaming any short label in the catalog propagates to every saved layout on its next open — no JSON migration needed. Uncatalogued FieldNames still respect whatever the saved JSON had.
+
+**`ProgressBookPdfGenerator.GetColumnDisplayName` collapsed.** The function is now a one-line `return ProgressBookColumnCatalog.GetDisplayHeader(fieldName);`. The previous nine hardcoded mappings (`ROC` / `DESC` / `PHASE` / `CATG` / `COMP` / `WP` / `PROJ` / `UID` / `ID`) and the `.ToUpper()` fallback are gone.
+
+**Save bug — deleted columns reappearing on next load.** `BuildCurrentConfiguration` was creating a fresh `ProgressBookConfiguration` without setting `SchemaVersion`. The property's default is `0` (no initializer, intentional so legacy JSON triggers migration). Result: every Save wrote `"schemaVersion": 0`, and every Load saw `SchemaVersion < 2`, ran the migrator, and re-appended any promoted column the user had intentionally deleted. Fixed by stamping `SchemaVersion = ProgressBookConfiguration.CurrentSchemaVersion` in `BuildCurrentConfiguration`. Going forward, user deletes stick.
+
+**Migration heuristic improvement — auto-heal layouts already corrupted by the save bug.** `MigrateConfigurationIfNeeded` no longer treats `SchemaVersion < 2` as sufficient to declare a layout legacy. New gate: `SchemaVersion < 2` AND `% ENTRY` is absent from `config.Columns`. Since `% ENTRY` is un-removable in any post-refactor save, its presence in the JSON is the cleanest "this layout was already saved under the new schema" signal — even if SchemaVersion was lost. Layouts that had columns falsely re-added by the save bug now load with the user's deletes intact; the next Save bumps SchemaVersion to 2 cleanly.
+
+**Manual.** `Help/manual.html` Columns section updated to reflect the new default labels (`Act ID`, `ROC`, `DESC`, `MHs`, `QTY`, `REM MH`, `% Comp`, `% ENTRY`).
+
+**Key files:** `Models/ProgressBook/ProgressBookColumnCatalog.cs` (new), `Models/ProgressBook/ProgressBookConfiguration.cs` (CreateDefault reads catalog + stamps SchemaVersion), `Views/ProgressBooksView.xaml.cs` (catalog wiring + BuildCurrentConfiguration SchemaVersion stamp + MigrateConfigurationIfNeeded heuristic + spinner on layout switch), `Services/ProgressBook/ProgressBookPdfGenerator.cs` (GetColumnDisplayName collapsed to catalog), `Help/manual.html`.
+
+---
+
+### June 4, 2026 (Progress Books — Configurable Columns Refactor)
+
+User-tested end-to-end on 2026-06-05 (see that day's entry for the catalog follow-on and the SchemaVersion save bug fix that surfaced during testing).
 
 **Schema (Step 1).** `Models/ProgressBook/ProgressBookConfiguration.cs` bumped to `SchemaVersion = 2`. The `SchemaVersion` property has NO initializer on purpose — legacy JSON without the key deserializes to `0` so the migrator fires; `CreateDefault()` stamps `CurrentSchemaVersion` explicitly. `Models/ProgressBook/ColumnConfig.cs` gained `ColumnSourceKind` (`Direct` / `Computed` / `EntryBox`) and an optional `DisplayHeader` so the renderer can dispatch on source semantics and label columns with friendly text (`MHs`, `REM MH`, `CUR %`) without renaming Activity properties. `CreateDefault()` now seeds eight columns in legacy render order: `ActivityID, ROCStep, Description, BudgetMHs (MHs), Quantity (QTY), RemainingMHs (REM MH), PercentEntry (CUR %), % ENTRY`.
 

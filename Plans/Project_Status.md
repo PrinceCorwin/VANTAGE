@@ -1,6 +1,6 @@
 # MILESTONE - Project Status
 
-**Last Updated:** June 4, 2026
+**Last Updated:** June 5, 2026
 
 ## ⚠️ Cross-Machine Credential Notes
 - **How creds propagate:** `/publisher` (`Scripts/publish-update.ps1`, step 2) regenerates `appsettings.enc` from the publishing machine's local `appsettings.json` on every publish, strips the plaintext from the shipped output, and the release commit pushes the new `.enc`. Other machines pick up the new `.enc` via `git pull`; production picks it up via app update. `appsettings.json` itself is gitignored and never copied between machines — the encrypted file is the propagation channel. `CredentialService` reads plaintext `appsettings.json` first (dev), then falls back to `appsettings.enc`.
@@ -89,15 +89,6 @@ Series of short tutorial videos for end users. Each item below needs a plan and 
 
 
 ### Medium Priority
-- **Progress Books — fully configurable columns** (committed 2026-06-04, **PENDING USER TESTING**). Implementation landed in three steps: (1) `ProgressBookConfiguration` schema bump to v2 with `SourceKind` + optional `DisplayHeader` on every `ColumnConfig`; (2) `ProgressBooksView` seeds 8 default columns and treats only `% ENTRY` as required, plus a silent in-memory migrator that appends `BudgetMHs / Quantity / RemainingMHs / PercentEntry / % ENTRY` to legacy layouts on load; (3) `ProgressBookPdfGenerator` zones collapsed into a single ordered iteration over `_config.Columns`, with Description stretch-fill, proportional fill when Description is absent, and `DrawEntryBox` deleted (the `%` cell now renders a bare bold glyph on every row). PRD revised 2026-06-04 to keep `% ENTRY` as the sole required column. **Things to test in VS before this can be marked done:**
-   - Default Layout column list shows all 8; `% ENTRY *` only on % ENTRY; Remove blocked on % ENTRY and works on every other column.
-   - Generate a PDF preview from Default Layout — no duplicate `BUDGETMHS / MHs` style columns; headers read `MHs / QTY / REM MH / CUR %`; row data right-aligned for numerics, left-aligned for text.
-   - Open a legacy saved layout (pre-bump) — silent migration adds the 5 promoted columns to the end; UI list shows all of them; PDF renders matches the legacy book visually.
-   - Remove `Description` from the column list — every other column proportionally widens so the row still fills page edge-to-edge.
-   - Remove `MHs` from a layout, save, reload — confirm `MHs` is gone from both the column list and the PDF (no zombie Zone 3 column).
-   - Cover-sheet totals on Page 1 stay correct regardless of which body columns are present.
-   - **Open design question (waiting on user mapping):** centralized column-name catalog. Today the short labels live in two places — `ProgressBooksView._columnMeta` (covers MHs / QTY / REM MH / CUR % / % ENTRY) and `ProgressBookPdfGenerator.GetColumnDisplayName` (covers ROC / DESC / PHASE / CATG / COMP / WP / PROJ / UID / ID, uppercases everything else). User to provide the full FieldName → short-label mapping; we'll consolidate into one `Models/ProgressBook/ProgressBookColumnCatalog.cs` that both consumers read, defaulting to FieldName-as-is (no more `.ToUpper()`) when a key isn't catalogued.
-   - See `Plans/PRD_ProgressBooks_ConfigurableColumns.md` for the full spec and `Plans/Completed_Work.md` for what landed.
 - **Help manual screenshots audit** — Review all sections of `Help/manual.html`, update outdated screenshots to reflect current UI, and add missing screenshots for features that have none (e.g., ActNO Split Ownership Check dialog, Sync Incomplete warning, any other recently added dialogs or UI changes).
 - **MSI/MSIX installer** — Replace custom installer with MSI (WiX Toolset) or MSIX packaging to get genuine Windows install integration. Current custom installer registers via registry but Windows Search won't execute `UninstallString` directly — only MSI and UWP/MSIX apps get direct uninstall from search context menu. Current setup works via Settings > Apps.
 - **User-editable header template for WP** — Allow customizing header layout

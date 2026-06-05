@@ -52,26 +52,11 @@ namespace VANTAGE.Views
         // UserSettings key for remembering the user's last-selected layout
         private const string LastSelectedLayoutIdSetting = "ProgressBook.LastSelectedLayoutId";
 
-        // Synthetic field key for the un-removable handwriting column.
-        // Not an Activity property — dispatched by SourceKind.EntryBox in the PDF generator.
-        private const string EntryBoxFieldName = "% ENTRY";
-
-        // Synthetic field key for the computed REM MH column.
-        // Value is resolved by the PDF generator (BudgetMHs - EarnMHsCalc).
-        private const string RemainingMHsFieldName = "RemainingMHs";
-
-        // Metadata for promoted columns whose PDF header differs from their stored
-        // FieldName, or whose value comes from somewhere other than an Activity
-        // property. Anything not in this dict is treated as a plain Direct field.
-        // Keep in sync with ProgressBookConfiguration.CreateDefault().Columns.
-        private static readonly Dictionary<string, (ColumnSourceKind Kind, string DisplayHeader)> _columnMeta = new()
-        {
-            ["BudgetMHs"]            = (ColumnSourceKind.Direct,   "MHs"),
-            ["Quantity"]             = (ColumnSourceKind.Direct,   "QTY"),
-            [RemainingMHsFieldName]  = (ColumnSourceKind.Computed, "REM MH"),
-            ["PercentEntry"]         = (ColumnSourceKind.Direct,   "CUR %"),
-            [EntryBoxFieldName]      = (ColumnSourceKind.EntryBox, "% ENTRY"),
-        };
+        // Aliases for the catalog's synthetic-key constants so existing call sites
+        // (InitializeFieldLists, MigrateConfigurationIfNeeded) stay readable.
+        // The catalog itself is the source of truth for SourceKind + DisplayHeader.
+        private const string EntryBoxFieldName = ProgressBookColumnCatalog.EntryBoxFieldName;
+        private const string RemainingMHsFieldName = ProgressBookColumnCatalog.RemainingMHsFieldName;
 
         // Maximum groups and sorts allowed
         private const int MaxGroups = 10;
@@ -407,19 +392,24 @@ namespace VANTAGE.Views
 
                 // Load columns. Only the EntryBox column (% ENTRY) is required;
                 // every other column is user-removable per the 2026-06 refactor.
-                // For legacy layouts whose ColumnConfig rows lack SourceKind / DisplayHeader,
-                // fall back to the central _columnMeta lookup.
+                // For catalogued FieldNames the catalog always wins (so renaming a
+                // label in ProgressBookColumnCatalog propagates to every saved layout
+                // on next load — no need to migrate JSON). Uncatalogued fields use
+                // whatever was stored, falling back to FieldName.
                 _columns.Clear();
                 foreach (var col in config.Columns.OrderBy(c => c.DisplayOrder))
                 {
-                    var kind = col.SourceKind;
-                    var header = col.DisplayHeader;
-                    if (_columnMeta.TryGetValue(col.FieldName, out var meta))
+                    ColumnSourceKind kind;
+                    string? header;
+                    if (ProgressBookColumnCatalog.Contains(col.FieldName))
                     {
-                        if (kind == ColumnSourceKind.Direct && meta.Kind != ColumnSourceKind.Direct)
-                            kind = meta.Kind;
-                        if (string.IsNullOrEmpty(header))
-                            header = meta.DisplayHeader;
+                        kind = ProgressBookColumnCatalog.GetSourceKind(col.FieldName);
+                        header = ProgressBookColumnCatalog.GetDisplayHeader(col.FieldName);
+                    }
+                    else
+                    {
+                        kind = col.SourceKind;
+                        header = col.DisplayHeader;
                     }
                     _columns.Add(new ColumnDisplayItem
                     {
@@ -496,7 +486,17 @@ namespace VANTAGE.Views
         // schema, since it's the only un-removable column.
         private void MigrateConfigurationIfNeeded(ProgressBookConfiguration config)
         {
-            if (config.SchemaVersion < 2)
+            // True-legacy detection: SchemaVersion < 2 AND % ENTRY is absent from
+            // the column list. Post-refactor layouts ALWAYS contain % ENTRY (it's
+            // the un-removable handwriting cell), so its presence is the cleanest
+            // signal that this layout was already saved under the new schema —
+            // even if SchemaVersion was lost (e.g. a layout saved before
+            // BuildCurrentConfiguration started stamping SchemaVersion, which
+            // would otherwise look like a "v0" legacy layout and trigger a false
+            // re-append of every previously-deleted promoted column on each load).
+            bool isTrueLegacy = config.SchemaVersion < 2
+                && !config.Columns.Any(c => c.FieldName == EntryBoxFieldName);
+            if (isTrueLegacy)
             {
                 string[] legacyAppend =
                 {
@@ -507,13 +507,12 @@ namespace VANTAGE.Views
                 foreach (var key in legacyAppend)
                 {
                     if (existing.Contains(key)) continue;
-                    var meta = _columnMeta[key];
                     config.Columns.Add(new ColumnConfig
                     {
                         FieldName = key,
                         DisplayOrder = nextOrder++,
-                        SourceKind = meta.Kind,
-                        DisplayHeader = meta.DisplayHeader
+                        SourceKind = ProgressBookColumnCatalog.GetSourceKind(key),
+                        DisplayHeader = ProgressBookColumnCatalog.GetDisplayHeader(key)
                     });
                 }
                 config.SchemaVersion = ProgressBookConfiguration.CurrentSchemaVersion;
@@ -523,13 +522,12 @@ namespace VANTAGE.Views
             if (!config.Columns.Any(c => c.FieldName == EntryBoxFieldName))
             {
                 int nextOrder = config.Columns.Count == 0 ? 0 : config.Columns.Max(c => c.DisplayOrder) + 1;
-                var meta = _columnMeta[EntryBoxFieldName];
                 config.Columns.Add(new ColumnConfig
                 {
                     FieldName = EntryBoxFieldName,
                     DisplayOrder = nextOrder,
-                    SourceKind = meta.Kind,
-                    DisplayHeader = meta.DisplayHeader
+                    SourceKind = ProgressBookColumnCatalog.GetSourceKind(EntryBoxFieldName),
+                    DisplayHeader = ProgressBookColumnCatalog.GetDisplayHeader(EntryBoxFieldName)
                 });
             }
         }
@@ -752,6 +750,12 @@ namespace VANTAGE.Views
         {
             var config = new ProgressBookConfiguration
             {
+                // Stamp the current schema explicitly so the saved JSON doesn't
+                // look like a legacy (SchemaVersion=0) layout to MigrateConfigurationIfNeeded.
+                // Without this, every Save wrote 0, the next Load re-appended the 5
+                // promoted columns as a "migration", and any columns the user had
+                // intentionally deleted came back from the dead.
+                SchemaVersion = ProgressBookConfiguration.CurrentSchemaVersion,
                 PaperSize = rbLetter.IsChecked == true ? PaperSize.Letter : PaperSize.Tabloid,
                 FontSize = (int)sliderFontSize.Value,
                 FilterField = GetSelectedFilterColumn(),
@@ -834,19 +838,31 @@ namespace VANTAGE.Views
 
             if (cboSavedLayouts.SelectedItem is LayoutDropdownItem item)
             {
-                if (item.Id == 0)
+                // Block the panel during the load (same reason as Loaded): the
+                // load awaits DB queries, yielding the UI thread. Without the
+                // overlay a user could click another layout mid-load and race
+                // the same way that wiped FilterField before.
+                leftPanelBusy.IsBusy = true;
+                try
                 {
-                    await LoadDefaultConfigurationAsync();
-                    SaveLastSelectedLayoutId(0);
-                }
-                else
-                {
-                    var layout = await ProgressBookLayoutRepository.GetByIdAsync(item.Id);
-                    if (layout != null)
+                    if (item.Id == 0)
                     {
-                        await LoadLayoutConfigurationAsync(layout);
-                        SaveLastSelectedLayoutId(item.Id);
+                        await LoadDefaultConfigurationAsync();
+                        SaveLastSelectedLayoutId(0);
                     }
+                    else
+                    {
+                        var layout = await ProgressBookLayoutRepository.GetByIdAsync(item.Id);
+                        if (layout != null)
+                        {
+                            await LoadLayoutConfigurationAsync(layout);
+                            SaveLastSelectedLayoutId(item.Id);
+                        }
+                    }
+                }
+                finally
+                {
+                    leftPanelBusy.IsBusy = false;
                 }
             }
         }
@@ -1122,16 +1138,13 @@ namespace VANTAGE.Views
             var field = cboAddColumn.SelectedItem as string;
             if (string.IsNullOrEmpty(field)) return;
 
-            // Look up promoted-column metadata so MHs / QTY / REM MH / CUR % / % ENTRY
-            // are added with the right SourceKind and PDF header. Plain Activity fields
-            // fall through with Direct + no header override.
-            ColumnSourceKind kind = ColumnSourceKind.Direct;
-            string? header = null;
-            if (_columnMeta.TryGetValue(field, out var meta))
-            {
-                kind = meta.Kind;
-                header = meta.DisplayHeader;
-            }
+            // Read SourceKind + DisplayHeader from the central catalog. Uncatalogued
+            // fields default to (Direct, FieldName) so the column shows its raw name
+            // in both the UI list and the PDF header — no .ToUpper() uglification.
+            var kind = ProgressBookColumnCatalog.GetSourceKind(field);
+            var header = ProgressBookColumnCatalog.Contains(field)
+                ? ProgressBookColumnCatalog.GetDisplayHeader(field)
+                : null;
 
             _columns.Add(new ColumnDisplayItem
             {
