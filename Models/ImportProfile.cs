@@ -10,7 +10,7 @@ namespace VANTAGE.Models
         // Output: "ImportRecords", "CreateExcel", "ImportAndExcel"
         public string OutputMode { get; set; } = "ImportRecords";
 
-        // Handling: "KeepPipe", "KeepSpl", "KeepPipeAndSpl"
+        // Handling: "KeepPipe", "KeepSpl", "KeepPipeAndSpl", "KeepNone"
         public string HandlingMode { get; set; } = "KeepSpl";
 
         // Options

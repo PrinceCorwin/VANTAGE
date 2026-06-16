@@ -717,7 +717,7 @@ namespace VANTAGE.Dialogs
             return rows;
         }
 
-        // Filter rows by Handling selection: Keep PIPE, Keep SPL, or both.
+        // Filter rows by Handling selection: Keep PIPE, Keep SPL, Keep PIPE and SPL, or Keep None.
         // Only PIPE and SPL rows are affected — all other component types are always kept.
         private List<Dictionary<string, string>> ApplyHandlingFilter(List<Dictionary<string, string>> rows)
         {
@@ -1383,6 +1383,7 @@ namespace VANTAGE.Dialogs
             if (rbKeepPipe.IsChecked == true) profile.HandlingMode = "KeepPipe";
             else if (rbKeepSpl.IsChecked == true) profile.HandlingMode = "KeepSpl";
             else if (rbKeepPipeAndSpl.IsChecked == true) profile.HandlingMode = "KeepPipeAndSpl";
+            else if (rbKeepNone.IsChecked == true) profile.HandlingMode = "KeepNone";
 
             // Options
             profile.RollUpBUHardware = chkRollUpBUHardware.IsChecked == true;
@@ -1429,6 +1430,7 @@ namespace VANTAGE.Dialogs
             rbKeepPipe.IsChecked = profile.HandlingMode == "KeepPipe";
             rbKeepSpl.IsChecked = profile.HandlingMode == "KeepSpl";
             rbKeepPipeAndSpl.IsChecked = profile.HandlingMode == "KeepPipeAndSpl";
+            rbKeepNone.IsChecked = profile.HandlingMode == "KeepNone";
 
             // Options
             chkRollUpBUHardware.IsChecked = profile.RollUpBUHardware;

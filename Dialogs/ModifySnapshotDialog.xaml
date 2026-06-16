@@ -60,7 +60,23 @@
                                        Background="Transparent"
                                        BorderThickness="0"
                                        AutoGeneratingColumn="SfSnapshot_AutoGeneratingColumn"
-                                       CurrentCellEndEdit="SfSnapshot_CurrentCellEndEdit"/>
+                                       CurrentCellEndEdit="SfSnapshot_CurrentCellEndEdit">
+                    <syncfusion:SfDataGrid.HeaderContextMenu>
+                        <ContextMenu Background="{DynamicResource ControlBackground}"
+                                     Foreground="{DynamicResource ForegroundColor}"
+                                     BorderBrush="{DynamicResource ControlBorder}">
+                            <MenuItem Header="Find &amp; Replace in this column..."
+                                      Click="MenuFindReplaceColumn_Click"
+                                      Background="{DynamicResource ControlBackground}"
+                                      Foreground="{DynamicResource ForegroundColor}"
+                                      ToolTip="Find/replace values in this column across the loaded snapshot rows">
+                                <MenuItem.Icon>
+                                    <TextBlock Text="🔍" FontSize="14"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+                        </ContextMenu>
+                    </syncfusion:SfDataGrid.HeaderContextMenu>
+                </syncfusion:SfDataGrid>
 
                 <!-- Busy overlay -->
                 <Border x:Name="busyOverlay"
@@ -86,30 +102,42 @@
         </Border>
 
         <!-- Buttons -->
-        <StackPanel Grid.Row="4"
-                    Orientation="Horizontal"
-                    HorizontalAlignment="Right">
-            <Button x:Name="btnCancel"
-                    Content="Cancel"
-                    Width="100"
+        <Grid Grid.Row="4">
+            <Button x:Name="btnClearFilters"
+                    Content="Clear Filters"
+                    Width="110"
                     Height="35"
-                    Margin="0,0,10,0"
+                    HorizontalAlignment="Left"
                     Background="{DynamicResource ControlBackground}"
                     Foreground="{DynamicResource ForegroundColor}"
                     BorderBrush="{DynamicResource ControlBorder}"
                     BorderThickness="1"
-                    Click="BtnCancel_Click"/>
-            <Button x:Name="btnSave"
-                    Content="Save"
-                    Width="120"
-                    Height="35"
-                    Background="{DynamicResource AccentColor}"
-                    Foreground="{DynamicResource ForegroundColor}"
-                    BorderBrush="{DynamicResource AccentColor}"
-                    BorderThickness="1"
-                    IsEnabled="False"
-                    ToolTip="Save edits back to the Azure snapshot. Live Activities are not affected."
-                    Click="BtnSave_Click"/>
-        </StackPanel>
+                    ToolTip="Remove all column filters from the grid"
+                    Click="BtnClearFilters_Click"/>
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Right">
+                <Button x:Name="btnCancel"
+                        Content="Cancel"
+                        Width="100"
+                        Height="35"
+                        Margin="0,0,10,0"
+                        Background="{DynamicResource ControlBackground}"
+                        Foreground="{DynamicResource ForegroundColor}"
+                        BorderBrush="{DynamicResource ControlBorder}"
+                        BorderThickness="1"
+                        Click="BtnCancel_Click"/>
+                <Button x:Name="btnSave"
+                        Content="Save"
+                        Width="120"
+                        Height="35"
+                        Background="{DynamicResource AccentColor}"
+                        Foreground="{DynamicResource ForegroundColor}"
+                        BorderBrush="{DynamicResource AccentColor}"
+                        BorderThickness="1"
+                        IsEnabled="False"
+                        ToolTip="Save edits back to the Azure snapshot. Live Activities are not affected."
+                        Click="BtnSave_Click"/>
+            </StackPanel>
+        </Grid>
     </Grid>
 </Window>

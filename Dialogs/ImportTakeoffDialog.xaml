@@ -181,6 +181,8 @@
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="20"/>
                         <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
                     <TextBlock Grid.Column="0" Text="Handling:"
@@ -213,6 +215,14 @@
                                  VerticalAlignment="Center"
                                  GroupName="Handling"
                                  ToolTip="Keep both PIPE and SPL rows from the source"/>
+
+                    <RadioButton x:Name="rbKeepNone"
+                                 Grid.Column="7"
+                                 Content="Keep None"
+                                 Foreground="{DynamicResource ForegroundColor}"
+                                 VerticalAlignment="Center"
+                                 GroupName="Handling"
+                                 ToolTip="Drop both PIPE and SPL rows from the source"/>
                 </Grid>
 
                 <!-- Options -->

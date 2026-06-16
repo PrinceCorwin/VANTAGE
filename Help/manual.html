@@ -491,6 +491,7 @@
         <li><strong>Schedule UDF Mapping...</strong> — Configure custom P6 column mappings for the Schedule module UDF columns</li>
         <li><strong>ROC Manager</strong> — Create, view, modify, or delete ROC rate sets and configure which components each set applies to</li>
         <li><strong>ActNO Split Ownership Check</strong> — Query Azure for any SchedActNOs assigned to multiple users within a project. Select a project from the dropdown, click Check, and review the results. Useful for schedulers to identify and resolve ownership conflicts.</li>
+        <li><strong>Validate My Records</strong> — Scans your assigned activities for missing required metadata (any of the 9 required fields blank) and invalid date/percent combinations (future dates, finish before start, dates set at 0%, etc.). Every offending record is automatically marked as unsaved so it appears in the ProgressView dirty highlight and the metadata-error badge — you fix them through the normal Progress workflow and the next sync clears them. The results dialog has an <strong>Export Report</strong> button (writes the issue list to an <code>.xlsx</code>) and a <strong>Show in ProgressView</strong> button that filters Progress to <em>only</em> these records, so other unrelated dirty edits aren't mixed in. The filter clears via the normal Clear Filters button and lights the green border while active.</li>
         <li><strong>VP vs Vtg Report</strong> — Adds two new columns, <em>Vtg Budget</em> and <em>Vtg Earned</em>, to the weekly <em>JC Labor Productivity Analysis</em> report, populated from the central Azure Vantage database (all projects, all records — not limited to what's in your local copy). Each added value is color-coded against the matching VP value so you can immediately see where Vantage and Viewpoint disagree.
             <p style="margin:8px 0;"><strong>Run this report each week to verify your project's Earned, Budget, and Phase Code values.</strong> The goal is to keep Vantage and VP aligned so executive reports and dashboards reflect reality.</p>
 
@@ -546,7 +547,10 @@
         <li><strong>Edit Snapshots</strong> — Manage weekly data snapshots across all users, upload to Progress Log</li>
         <li><strong>Manage Progress Log</strong> — View and delete batches previously uploaded to the Progress Log</li>
         <li><strong>Deleted Records UI</strong> — View and restore soft-deleted records</li>
+        <li><strong>Audit All Records</strong> — Read-only validation report across every active activity. Opens a project selection dialog with checkboxes (all checked by default; the Excel-style header checkbox toggles all) and a <strong>Source: Azure / Local</strong> radio. Azure mode lists every project on the server and scans <code>VMS_Activities</code> directly — full coverage but the <em>Show in ProgressView</em> button only finds rows already in your local cache. Local mode lists only projects you have synced down and scans the local <code>Activities</code> table — narrower scope, but Show in ProgressView surfaces every offender because they're all loaded. The results grid includes an <strong>AssignedTo</strong> column you can drag to the group drop area to see per-user issue counts. Read-only — no records are modified. Export Report writes the full list to <code>.xlsx</code>.</li>
     </ul>
+
+    <p>The <strong>Manage My Snapshots</strong> dialog now elevates Modify access for admins and managers. Admins and managers can open <em>Modify</em> on any user's snapshot week (the title bar shows whose snapshot you're editing); <em>Delete</em> and <em>Revert</em> remain restricted to your own snapshots regardless of role. Inside the Modify dialog: right-click any column header for the new <strong>Find &amp; Replace in this column...</strong> action, and the new <strong>Clear Filters</strong> button drops any active column filters. Find &amp; Replace operates entirely in-memory on the loaded rows — click <strong>Save</strong> to commit changes to Azure. Bulk saves (e.g., a Find &amp; Replace across thousands of rows) now use a single batched Azure UPDATE and complete in seconds rather than minutes.</p>
 
     <h4 id="ui-menus-settings">Settings Menu (three-dot icon, top right)</h4>
     <ul>
@@ -2870,6 +2874,7 @@
         <li><strong>Keep PIPE</strong> — Keep PIPE rows, remove SPL rows.</li>
         <li><strong>Keep SPL</strong> (default) — Keep SPL rows, remove PIPE rows.</li>
         <li><strong>Keep PIPE and SPL</strong> — Keep both.</li>
+        <li><strong>Keep None</strong> — Remove both PIPE and SPL rows.</li>
     </ul>
 
     <p><strong>Options:</strong></p>

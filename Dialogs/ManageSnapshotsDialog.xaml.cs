@@ -35,6 +35,11 @@ namespace VANTAGE.Dialogs
         // Suppresses recursion when the IsSelected propagation handler clears other rows.
         private bool _enforcingSingleSelection;
 
+        // Admins and managers may open Modify on any user's snapshot week. Delete and
+        // Revert remain owner-only (use the admin Snapshots dialog for cross-user delete;
+        // reverting another user's snapshot from this dialog is intentionally unsupported).
+        private bool _hasElevatedAccess;
+
         public ManageSnapshotsDialog()
         {
             InitializeComponent();
@@ -51,7 +56,14 @@ namespace VANTAGE.Dialogs
                 return;
             }
 
-            txtUserInfo.Text = $"Logged in as: {App.CurrentUser.Username}";
+            string username = App.CurrentUser.Username;
+            _hasElevatedAccess = await Task.Run(() =>
+                AzureDbManager.IsUserAdmin(username) || AzureDbManager.IsUserManager(username));
+
+            txtUserInfo.Text = _hasElevatedAccess
+                ? $"Logged in as: {username}  —  elevated access: may Modify any user's snapshot"
+                : $"Logged in as: {username}";
+
             await LoadSnapshotsAsync();
         }
 
@@ -177,12 +189,19 @@ namespace VANTAGE.Dialogs
 
             string summary = $"{weekCount} group(s) selected ({snapshotCount:N0} snapshots)";
             if (foreignCount > 0)
-                summary += $"  —  {foreignCount} not yours (cannot modify/delete/revert)";
+            {
+                summary += _hasElevatedAccess
+                    ? $"  —  {foreignCount} not yours (Modify only — cannot delete/revert)"
+                    : $"  —  {foreignCount} not yours (cannot modify/delete/revert)";
+            }
             txtSelectionSummary.Text = summary;
 
+            // Delete and Revert stay owner-only by design — admins use the admin snapshots
+            // dialog for cross-user delete, and reverting another user's snapshot from this
+            // dialog is intentionally unsupported.
             btnDelete.IsEnabled = weekCount > 0 && allOwned;
-            btnModify.IsEnabled = singleOwned;
             btnRevert.IsEnabled = singleOwned;
+            btnModify.IsEnabled = weekCount == 1 && (singleOwned || _hasElevatedAccess);
         }
 
         // Open (or focus) the modeless ModifySnapshotDialog for the selected week.
@@ -198,10 +217,12 @@ namespace VANTAGE.Dialogs
 
             if (App.CurrentUser == null) return;
 
-            // Belt-and-suspenders: button is already disabled for foreign snapshots, but
-            // re-check before opening the child dialog in case selection slipped through.
-            if (!string.Equals(selectedWeeks[0].Username, App.CurrentUser.Username,
-                    StringComparison.OrdinalIgnoreCase))
+            bool isOwn = string.Equals(selectedWeeks[0].Username, App.CurrentUser.Username,
+                StringComparison.OrdinalIgnoreCase);
+
+            // Belt-and-suspenders: button is already disabled for foreign snapshots when
+            // the user lacks elevated access, but re-check in case selection slipped through.
+            if (!isOwn && !_hasElevatedAccess)
             {
                 AppMessageBox.Show("You can only modify your own snapshots.",
                     "Not Allowed", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -215,6 +236,9 @@ namespace VANTAGE.Dialogs
                 return;
             }
 
+            // Editor (UpdatedBy audit) is the current user; the snapshot owner is encoded
+            // in the SnapshotWeekItem and used as the load-time AssignedTo filter inside
+            // ModifySnapshotDialog.
             _openModifyDialog = new ModifySnapshotDialog(selectedWeeks[0], App.CurrentUser.Username)
             {
                 Owner = this

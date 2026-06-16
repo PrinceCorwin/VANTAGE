@@ -23,6 +23,10 @@
 ## Ready to Publish
 - _(none — most recent release is current)_
 
+## Validation Coverage — Remaining Pieces (2026-06-16)
+- **Pre-sync partial gate (Piece #3, not yet built).** Extend `SyncManager.PushRecordsAsync` to split `dirtyRecords` into valid and invalid (run `ActivityValidator.Validate` and `ActivityRequiredMetadata` checks per row), push only the valid set, leave invalid rows `LocalDirty = 1`, and surface a "Pushed X of N rows. Y rows have validation issues and remain marked as unsaved — fix and re-sync." message with the offender list. Partial sync semantics — sync push is row-keyed by `UniqueID` so rows are independent. Confirmed scope with user 2026-06-16.
+- **Submit Week date-rule gate (Piece #4, not yet built).** Extend the existing metadata-error block in `ProgressView.xaml.cs` (around line 3314) to also check `ActivityValidator` date/% rules against the project's `Activities`. All-or-nothing block (snapshot is a point-in-time copy and must be consistent) with a combined offender list. Date checks happen in C# (not SQL) because date columns are TEXT and SQLite's `date()` is strict — legacy non-standard date strings would slip a SQL-level filter. Row counts are small enough (one project's worth) that fetch + validate in code is cheap.
+
 ## Active Development
 
 ### Work Package Module

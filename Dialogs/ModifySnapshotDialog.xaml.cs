@@ -23,7 +23,11 @@ namespace VANTAGE.Dialogs
     public partial class ModifySnapshotDialog : Window
     {
         private readonly SnapshotWeekItem _week;
-        private readonly string _username;
+
+        // Identity of the user pressing Save — written to UpdatedBy on every modified row.
+        // Distinct from _week.Username (the snapshot owner, used to scope the Azure load)
+        // because admins and managers may edit another user's snapshots from here.
+        private readonly string _editorUsername;
 
         // Rows currently shown in the grid (two-way bound via ObservableCollection).
         private ObservableCollection<SnapshotData> _rows = new();
@@ -43,15 +47,20 @@ namespace VANTAGE.Dialogs
         // Suppress CurrentCellEndEdit side effects while we programmatically revert a cell.
         private bool _suppressCellEndEdit;
 
-        public ModifySnapshotDialog(SnapshotWeekItem week, string username)
+        public ModifySnapshotDialog(SnapshotWeekItem week, string editorUsername)
         {
             _week = week ?? throw new ArgumentNullException(nameof(week));
-            _username = username ?? throw new ArgumentNullException(nameof(username));
+            _editorUsername = editorUsername ?? throw new ArgumentNullException(nameof(editorUsername));
 
             InitializeComponent();
             SfSkinManager.SetTheme(this, new Theme(ThemeManager.GetSyncfusionThemeName()));
 
-            txtHeader.Text = $"Edit Snapshot: {_week.ProjectID} — Week Ending {_week.WeekEndDate:MM/dd/yyyy}";
+            // Surface whose snapshot is being edited so a foreign edit (admin/manager
+            // acting on another user's week) is unambiguous in the title bar.
+            bool isOwn = string.Equals(_week.Username, _editorUsername, StringComparison.OrdinalIgnoreCase);
+            txtHeader.Text = isOwn
+                ? $"Edit Snapshot: {_week.ProjectID} — Week Ending {_week.WeekEndDate:MM/dd/yyyy}"
+                : $"Edit Snapshot: {_week.Username} — {_week.ProjectID} — Week Ending {_week.WeekEndDate:MM/dd/yyyy}";
 
             Loaded += ModifySnapshotDialog_Loaded;
         }
@@ -68,10 +77,12 @@ namespace VANTAGE.Dialogs
             try
             {
                 AppLogger.Info(
-                    $"Loading snapshot rows for {_week.ProjectID} WE {_week.WeekEndDateStr} ProgDate {_week.ProgDate}",
-                    "ModifySnapshotDialog.LoadSnapshotRowsAsync", _username);
+                    $"Loading snapshot rows for {_week.Username}/{_week.ProjectID} WE {_week.WeekEndDateStr} ProgDate {_week.ProgDate}",
+                    "ModifySnapshotDialog.LoadSnapshotRowsAsync", _editorUsername);
 
-                var loaded = await ManageSnapshotsDialog.LoadSnapshotsFromAzureAsync(_week, _username);
+                // Filter by snapshot owner, not the editor — admins/managers may load
+                // another user's snapshot from this dialog.
+                var loaded = await ManageSnapshotsDialog.LoadSnapshotsFromAzureAsync(_week, _week.Username);
                 long azureMs = stopwatch.ElapsedMilliseconds;
 
                 _rows = new ObservableCollection<SnapshotData>(loaded);
@@ -88,7 +99,7 @@ namespace VANTAGE.Dialogs
                 stopwatch.Stop();
                 AppLogger.Info(
                     $"Snapshot rows loaded: {_rows.Count} rows. Azure {azureMs}ms, total {stopwatch.ElapsedMilliseconds}ms",
-                    "ModifySnapshotDialog.LoadSnapshotRowsAsync", _username);
+                    "ModifySnapshotDialog.LoadSnapshotRowsAsync", _editorUsername);
             }
             catch (Exception ex)
             {
@@ -180,21 +191,41 @@ namespace VANTAGE.Dialogs
             // Snapshot the current dirty set so we can iterate safely.
             var dirtyRows = _rows.Where(r => _dirtyUniqueIds.Contains(r.UniqueID)).ToList();
 
-            // Pre-validate every dirty row.
+            // Pre-validate every dirty row, but only against fields the user actually
+            // changed on that row. Pre-existing bad data on unrelated columns (e.g. a
+            // legacy snapshot with ActFin < ActStart) must not block edits to UOM,
+            // Description, or any other field — the user didn't introduce the violation
+            // and forcing them to fix it before saving an unrelated edit is the wrong UX.
             var failures = new List<string>();
             foreach (var row in dirtyRows)
             {
+                _originals.TryGetValue(row.UniqueID, out var original);
+
                 foreach (var fieldName in ActivityRequiredMetadata.Fields)
                 {
                     var prop = typeof(SnapshotData).GetProperty(fieldName);
                     if (prop == null) continue;
 
                     object? value = prop.GetValue(row);
-                    if (value is string s && string.IsNullOrWhiteSpace(s))
+                    object? originalValue = original != null ? prop.GetValue(original) : null;
+
+                    // Only flag a blank required field when the user actually changed it
+                    // (or it has no recorded original — paranoia path).
+                    bool changed = original == null || !Equals(value, originalValue);
+                    if (changed && value is string s && string.IsNullOrWhiteSpace(s))
                     {
                         failures.Add($"{row.SchedActNO} ({row.UniqueID}): {fieldName} cannot be blank");
                     }
                 }
+
+                // Skip date/% validation entirely if none of those three fields changed
+                // on this row — the snapshot's stored values stand as they were.
+                bool dateOrPercentChanged = original == null
+                    || row.PercentEntry != original.PercentEntry
+                    || !string.Equals(row.ActStart, original.ActStart, StringComparison.Ordinal)
+                    || !string.Equals(row.ActFin, original.ActFin, StringComparison.Ordinal);
+                if (!dateOrPercentChanged)
+                    continue;
 
                 var (parseOk, actStart, actFin) = ParseDates(row.ActStart, row.ActFin);
                 if (!parseOk)
@@ -229,33 +260,33 @@ namespace VANTAGE.Dialogs
 
             int saved = 0;
             var zeroAffected = new List<string>();
-            Exception? firstEx = null;
+            Exception? saveEx = null;
 
             try
             {
                 using var _opTracker = LongRunningOps.Begin();
 
+                // One Azure batch (temp table + bulk copy + single UPDATE FROM) instead
+                // of one round-trip per row. Drops 34K-row Find/Replace saves from minutes
+                // to seconds.
+                var affectedByUniqueId = await ScheduleRepository.UpdateSnapshotsBatchAsync(
+                    dirtyRows,
+                    _week.WeekEndDateStr,
+                    _editorUsername,
+                    status => Dispatcher.Invoke(() => txtBusyMessage.Text = status));
+
                 foreach (var row in dirtyRows)
                 {
-                    try
-                    {
-                        int affected = await ScheduleRepository.UpdateSnapshotFullAsync(
-                            row, _week.WeekEndDateStr, _username);
-                        if (affected == 0)
-                        {
-                            zeroAffected.Add(row.UniqueID);
-                        }
-                        else
-                        {
-                            saved += affected;
-                        }
-                    }
-                    catch (Exception rowEx)
-                    {
-                        firstEx ??= rowEx;
-                        AppLogger.Error(rowEx, "ModifySnapshotDialog.BtnSave_Click row");
-                    }
+                    if (affectedByUniqueId.TryGetValue(row.UniqueID, out int count) && count > 0)
+                        saved += count;
+                    else
+                        zeroAffected.Add(row.UniqueID);
                 }
+            }
+            catch (Exception ex)
+            {
+                saveEx = ex;
+                AppLogger.Error(ex, "ModifySnapshotDialog.BtnSave_Click batch");
             }
             finally
             {
@@ -263,10 +294,10 @@ namespace VANTAGE.Dialogs
                 btnCancel.IsEnabled = true;
             }
 
-            if (firstEx != null)
+            if (saveEx != null)
             {
                 AppMessageBox.Show(
-                    $"Save failed: {firstEx.Message}\n\nPartial progress: {saved} row(s) saved before the error.",
+                    $"Save failed: {saveEx.Message}\n\nThe batch was rolled back — no rows were saved.",
                     "Save Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 btnSave.IsEnabled = true;
                 return;
@@ -284,9 +315,9 @@ namespace VANTAGE.Dialogs
             }
 
             AppLogger.Info(
-                $"Snapshot modify saved {saved} row(s) for {_week.ProjectID} WE {_week.WeekEndDateStr}" +
+                $"Snapshot modify saved {saved} row(s) for {_week.Username}/{_week.ProjectID} WE {_week.WeekEndDateStr}" +
                 (zeroAffected.Count > 0 ? $" ({zeroAffected.Count} row(s) not found — external change)" : ""),
-                "ModifySnapshotDialog.BtnSave_Click", _username);
+                "ModifySnapshotDialog.BtnSave_Click", _editorUsername);
 
             if (zeroAffected.Count > 0)
             {
@@ -320,6 +351,55 @@ namespace VANTAGE.Dialogs
         private void BtnCancel_Click(object sender, RoutedEventArgs e)
         {
             Close();
+        }
+
+        private void BtnClearFilters_Click(object sender, RoutedEventArgs e)
+        {
+            sfSnapshot.ClearFilters();
+        }
+
+        // Right-click on a column header → open snapshot find/replace for that column.
+        // Mirrors ProgressView's MenuFindReplaceColumn_Click but routes through the
+        // snapshot-specific dialog so edits land in memory; the user must hit Save to
+        // push to Azure VMS_ProgressSnapshots.
+        private void MenuFindReplaceColumn_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not System.Windows.Controls.MenuItem menuItem) return;
+
+            if (menuItem.DataContext is not GridColumnContextMenuInfo info)
+            {
+                AppMessageBox.Show("Could not determine which column was clicked.",
+                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            var column = info.Column;
+            string columnName = column.MappingName;
+            string columnHeader = column.HeaderText;
+
+            // Editable filter is enforced at column-generation time, so any visible header
+            // is already editable. Re-check defensively in case AutoGeneratingColumn rules
+            // ever drift from SnapshotEditableColumns.
+            if (!SnapshotEditableColumns.IsEditable(columnName))
+            {
+                AppMessageBox.Show($"Column '{columnHeader}' is not editable.",
+                    "Not Editable", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var dialog = new SnapshotFindReplaceDialog
+            {
+                Owner = this
+            };
+            dialog.SetTargetColumn(sfSnapshot, columnName, columnHeader);
+
+            bool? result = dialog.ShowDialog();
+            if (result == true && dialog.ChangedUniqueIds.Count > 0)
+            {
+                foreach (var id in dialog.ChangedUniqueIds)
+                    _dirtyUniqueIds.Add(id);
+                btnSave.IsEnabled = true;
+            }
         }
 
         protected override void OnClosing(CancelEventArgs e)

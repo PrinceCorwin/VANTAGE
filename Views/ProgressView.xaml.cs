@@ -37,6 +37,9 @@ namespace VANTAGE.Views
         private UserFilter? _activeUserFilter;
         private bool _scanResultsFilterActive;
         private bool _metadataErrorsFilterActive;
+        // Set by FilterByValidationIssuesAsync (Validate My Records → Show in ProgressView).
+        // Drives the Clear Filters green border and is reset by BtnClearFilters_Click.
+        private bool _validationIssuesFilterActive;
         private string _globalSearchText = string.Empty;
         private ProgressViewModel _viewModel;
         // one key per grid/view
@@ -336,6 +339,45 @@ namespace VANTAGE.Views
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
+        // Applies a UniqueID IN (...) filter scoped to the validation-issue offender list
+        // surfaced by the Validate My Records dialog. Clears existing filters first so
+        // the user sees ONLY these rows (not their other dirty edits). Toolbar state is
+        // refreshed per the Progress View Toolbar State Sync rules in CLAUDE.md.
+        public async Task FilterByValidationIssuesAsync(IList<string> uniqueIds)
+        {
+            if (uniqueIds == null || uniqueIds.Count == 0)
+                return;
+
+            try
+            {
+                _viewModel.ClearFiltersWithoutReload();
+
+                // Single-quote escape for the literal SQL IN list. UniqueIDs are
+                // app-generated alphanumeric identifiers, but escaping keeps the
+                // filter robust if that ever changes.
+                var escaped = uniqueIds
+                    .Where(id => !string.IsNullOrWhiteSpace(id))
+                    .Select(id => "'" + id.Replace("'", "''") + "'");
+                string idList = string.Join(",", escaped);
+                string filterSql = $"UniqueID IN ({idList})";
+
+                await _viewModel.ApplyFilter("ValidationIssues", "IN", filterSql);
+
+                _validationIssuesFilterActive = true;
+                UpdateRecordCount();
+                DebouncedUpdateSummary();
+                await CalculateMetadataErrorCount();
+                UpdateClearFiltersBorder();
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "ProgressView.FilterByValidationIssuesAsync");
+                AppMessageBox.Show($"Error applying validation issue filter: {ex.Message}",
+                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
         public async Task CalculateMetadataErrorCount()
         {
             try
@@ -1026,6 +1068,7 @@ namespace VANTAGE.Views
                 sfActivities.View.Filter = null;
                 _scanResultsFilterActive = false;
                 _metadataErrorsFilterActive = false;
+                _validationIssuesFilterActive = false;
                 sfActivities.ClearFilters();
                 sfActivities.View.RefreshFilter();
 
@@ -4609,6 +4652,7 @@ namespace VANTAGE.Views
             sfActivities.View.Filter = null;
             _scanResultsFilterActive = false;
             _metadataErrorsFilterActive = false;
+            _validationIssuesFilterActive = false;
 
             // Clear all column filters using Syncfusion's built-in method
             sfActivities.ClearFilters();
@@ -4671,6 +4715,10 @@ namespace VANTAGE.Views
 
             // Check metadata errors filter
             if (!hasFilter && _metadataErrorsFilterActive)
+                hasFilter = true;
+
+            // Check validation-issues filter (Validate My Records → Show in ProgressView)
+            if (!hasFilter && _validationIssuesFilterActive)
                 hasFilter = true;
 
             btnClearFilters.BorderBrush = hasFilter

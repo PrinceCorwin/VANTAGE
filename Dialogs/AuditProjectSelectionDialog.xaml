@@ -1,0 +1,147 @@
+<Window x:Class="VANTAGE.Dialogs.AuditProjectSelectionDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
+        Title="Audit — Select Projects"
+        Height="600"
+        Width="500"
+        MinHeight="400"
+        MinWidth="400"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource BackgroundColor}"
+        ResizeMode="CanResize"
+        WindowStyle="SingleBorderWindow">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="15"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="15"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0">
+            <TextBlock Text="Select Projects to Audit"
+                       FontWeight="SemiBold"
+                       FontSize="16"
+                       Foreground="{DynamicResource ForegroundColor}"/>
+            <TextBlock Text="Only checked projects will be scanned. The header checkbox toggles all (like an Excel filter)."
+                       Foreground="{DynamicResource ForegroundColor}"
+                       Opacity="0.7"
+                       FontSize="12"
+                       TextWrapping="Wrap"
+                       Margin="0,5,0,0"/>
+
+            <!-- Mode toggle: Azure (default, all-records) vs Local (only what's been
+                 synced; lets Show in ProgressView actually work) -->
+            <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                <TextBlock Text="Source:"
+                           Foreground="{DynamicResource ForegroundColor}"
+                           VerticalAlignment="Center"
+                           Margin="0,0,10,0"/>
+                <RadioButton x:Name="rbAzure"
+                             Content="Azure (all projects)"
+                             Foreground="{DynamicResource ForegroundColor}"
+                             GroupName="AuditSource"
+                             IsChecked="True"
+                             VerticalAlignment="Center"
+                             Margin="0,0,15,0"
+                             ToolTip="Scan every active row on Azure. Show in ProgressView only sees rows already in your local cache."
+                             Click="ModeChanged"/>
+                <RadioButton x:Name="rbLocal"
+                             Content="Local (synced projects)"
+                             Foreground="{DynamicResource ForegroundColor}"
+                             GroupName="AuditSource"
+                             VerticalAlignment="Center"
+                             ToolTip="Scan only the rows currently in your local cache. Show in ProgressView shows them all because they're already loaded."
+                             Click="ModeChanged"/>
+            </StackPanel>
+        </StackPanel>
+
+        <!-- Header checkbox (Excel-style select all / none toggle) -->
+        <Border Grid.Row="2"
+                Background="{DynamicResource ControlBackground}"
+                BorderBrush="{DynamicResource ControlBorder}"
+                BorderThickness="1,1,1,0"
+                Padding="10,6">
+            <CheckBox x:Name="chkSelectAll"
+                      Content="(Select All)"
+                      Foreground="{DynamicResource ForegroundColor}"
+                      FontWeight="SemiBold"
+                      IsChecked="True"
+                      Click="ChkSelectAll_Click"/>
+        </Border>
+
+        <!-- Project list -->
+        <Border Grid.Row="3"
+                BorderBrush="{DynamicResource ControlBorder}"
+                BorderThickness="1"
+                Background="{DynamicResource ControlBackground}">
+            <Grid>
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <ItemsControl x:Name="projectList" Margin="10">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <CheckBox Foreground="{DynamicResource ForegroundColor}"
+                                          IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                          Margin="0,4">
+                                    <TextBlock>
+                                        <Run Text="{Binding ProjectID, Mode=OneWay}" FontWeight="Bold"/>
+                                        <Run Text=" — "/>
+                                        <Run Text="{Binding ProjectName, Mode=OneWay}"/>
+                                    </TextBlock>
+                                </CheckBox>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+
+                <Grid x:Name="pnlLoading"
+                      Background="{DynamicResource ControlBackground}"
+                      Visibility="Visible">
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <syncfusion:SfBusyIndicator IsBusy="True"
+                                                    AnimationType="DualRing"
+                                                    ViewboxWidth="48"
+                                                    ViewboxHeight="48"
+                                                    Foreground="{DynamicResource AccentColor}"/>
+                        <TextBlock Text="Loading projects..."
+                                   FontSize="12"
+                                   Foreground="{DynamicResource ForegroundColor}"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,10,0,0"/>
+                    </StackPanel>
+                </Grid>
+            </Grid>
+        </Border>
+
+        <!-- Buttons -->
+        <StackPanel Grid.Row="5"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right">
+            <Button x:Name="btnCancel"
+                    Content="Cancel"
+                    Width="100"
+                    Height="35"
+                    Margin="0,0,10,0"
+                    Background="{DynamicResource ControlBackground}"
+                    Foreground="{DynamicResource ForegroundColor}"
+                    BorderBrush="{DynamicResource ControlBorder}"
+                    BorderThickness="1"
+                    Click="BtnCancel_Click"/>
+            <Button x:Name="btnRun"
+                    Content="Run Audit"
+                    Width="120"
+                    Height="35"
+                    Background="{DynamicResource AccentColor}"
+                    Foreground="{DynamicResource ForegroundColor}"
+                    BorderBrush="{DynamicResource AccentColor}"
+                    BorderThickness="1"
+                    IsEnabled="False"
+                    Click="BtnRun_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

@@ -1564,6 +1564,97 @@ namespace VANTAGE
             dialog.Show();
         }
 
+        // Tools → Validate My Records. Modal scan of the current user's local Activities
+        // for missing required metadata and ActivityValidator date/% rule violations.
+        // Offenders are auto-marked LocalDirty = 1 so they appear in ProgressView's dirty
+        // highlight. If the user clicks "Show in ProgressView", we switch to ProgressView
+        // and apply a UniqueID-IN filter so they see ONLY these rows (not other dirty
+        // edits). Otherwise just refresh ProgressView if it's the current view.
+        private async void MenuValidateMyRecords_Click(object sender, RoutedEventArgs e)
+        {
+            if (App.CurrentUser == null)
+            {
+                AppMessageBox.Show("No user logged in.", "Not Signed In",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var dialog = new Dialogs.ValidateMyRecordsDialog { Owner = this };
+            dialog.ShowDialog();
+
+            if (dialog.ShowInProgressRequested && dialog.OffendingUniqueIds.Count > 0)
+            {
+                // Switch to ProgressView if we're not already there, then apply the filter.
+                Views.ProgressView? progressViewTarget = ContentArea.Content as Views.ProgressView;
+                if (progressViewTarget == null)
+                {
+                    BtnProgress_Click(this, new RoutedEventArgs());
+                    progressViewTarget = ContentArea.Content as Views.ProgressView;
+                }
+
+                if (progressViewTarget != null)
+                {
+                    // Refresh first so the freshly-marked dirty rows are loaded, then filter.
+                    await progressViewTarget.RefreshData();
+                    await progressViewTarget.FilterByValidationIssuesAsync(
+                        dialog.OffendingUniqueIds.ToList());
+                }
+            }
+            else if (dialog.MarkedAnyDirty && ContentArea.Content is Views.ProgressView progressView)
+            {
+                _ = progressView.RefreshData();
+            }
+        }
+
+        // Admin → Audit All Records. Read-only Azure-side scan of every active Activity
+        // in the selected projects for required-metadata blanks and ActivityValidator
+        // violations. No records are modified. Project selection happens in a pre-step
+        // dialog so the admin can scope the scan; Show in ProgressView filters whatever
+        // the admin currently has in local cache (may be a subset of the offenders).
+        private async void MenuAuditAllRecords_Click(object sender, RoutedEventArgs e)
+        {
+            if (App.CurrentUser == null || !App.CurrentUser.IsAdmin)
+            {
+                AppMessageBox.Show("You do not have admin privileges.", "Access Denied",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (!AzureDbManager.CheckConnection(out string errorMessage))
+            {
+                AppMessageBox.Show(
+                    $"Cannot connect to Azure database:\n\n{errorMessage}\n\nThis feature requires an active connection.",
+                    "Connection Required", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var selectionDialog = new Dialogs.AuditProjectSelectionDialog { Owner = this };
+            bool? confirmed = selectionDialog.ShowDialog();
+            if (confirmed != true || selectionDialog.SelectedProjectIds.Count == 0)
+                return;
+
+            var dialog = new Dialogs.AuditAllRecordsDialog(
+                selectionDialog.SelectedProjectIds,
+                selectionDialog.SelectedScope) { Owner = this };
+            dialog.ShowDialog();
+
+            if (dialog.ShowInProgressRequested && dialog.OffendingUniqueIds.Count > 0)
+            {
+                Views.ProgressView? progressViewTarget = ContentArea.Content as Views.ProgressView;
+                if (progressViewTarget == null)
+                {
+                    BtnProgress_Click(this, new RoutedEventArgs());
+                    progressViewTarget = ContentArea.Content as Views.ProgressView;
+                }
+
+                if (progressViewTarget != null)
+                {
+                    await progressViewTarget.FilterByValidationIssuesAsync(
+                        dialog.OffendingUniqueIds.ToList());
+                }
+            }
+        }
+
         private async void MenuClearLocalActivities_Click(object sender, RoutedEventArgs e)
         {
             var result = AppMessageBox.Show(

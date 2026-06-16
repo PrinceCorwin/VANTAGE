@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
+using Microsoft.Data.SqlClient;
 using VANTAGE.Models;
 using VANTAGE.Utilities;
 namespace VANTAGE.Repositories
@@ -630,6 +632,186 @@ namespace VANTAGE.Repositories
                     return 0;
                 }
             });
+        }
+
+        // Bulk snapshot update used by ModifySnapshotDialog when many rows are dirty
+        // (e.g. after a Find/Replace). Two Azure round-trips total instead of one per row:
+        // SqlBulkCopy the editable column values into a temp table, then a single
+        // UPDATE FROM joins the temp table to VMS_ProgressSnapshots. Local SQLite mirror
+        // is updated in one transaction with one prepared command.
+        //
+        // Returns a dictionary of UniqueID → rows affected (0 means the row was not found
+        // for the given WeekEndDate — likely regenerated externally by Submit Week).
+        // progress(processed, total) is invoked from the worker thread; callers must marshal
+        // to the UI thread before touching UI elements.
+        public static async Task<Dictionary<string, int>> UpdateSnapshotsBatchAsync(
+            IList<SnapshotData> rows,
+            string weekEndDateStr,
+            string username,
+            Action<string>? progress = null)
+        {
+            var affectedByUniqueId = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            if (rows.Count == 0) return affectedByUniqueId;
+
+            await Task.Run(() =>
+            {
+                using var azureConn = AzureDbManager.GetConnection();
+                azureConn.Open();
+
+                progress?.Invoke($"Preparing batch of {rows.Count:N0} row(s)...");
+
+                // Step 1: Create temp table whose schema matches the editable subset of
+                // VMS_ProgressSnapshots. Using SELECT TOP 0 ... INTO gives us identical
+                // column types without hand-maintaining a CREATE TABLE definition.
+                var columnList = string.Join(", ",
+                    new[] { "UniqueID" }.Concat(_snapshotEditableProps.Select(p => p.Name)));
+
+                var createTempCmd = azureConn.CreateCommand();
+                createTempCmd.CommandTimeout = 120;
+                createTempCmd.CommandText = $@"
+                    IF OBJECT_ID('tempdb..#SnapBatch') IS NOT NULL DROP TABLE #SnapBatch;
+                    SELECT TOP 0 {columnList}
+                    INTO #SnapBatch
+                    FROM VMS_ProgressSnapshots;
+                    CREATE CLUSTERED INDEX IX_SnapBatch ON #SnapBatch (UniqueID);";
+                createTempCmd.ExecuteNonQuery();
+
+                progress?.Invoke($"Staging {rows.Count:N0} row(s)...");
+
+                // Step 2: Build a DataTable matching the temp's columns, then bulk-insert.
+                var dt = new DataTable();
+                dt.Columns.Add("UniqueID", typeof(string));
+                foreach (var prop in _snapshotEditableProps)
+                {
+                    Type colType = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
+                    dt.Columns.Add(prop.Name, colType);
+                }
+
+                foreach (var row in rows)
+                {
+                    var dr = dt.NewRow();
+                    dr["UniqueID"] = row.UniqueID;
+                    foreach (var prop in _snapshotEditableProps)
+                    {
+                        object? value = prop.GetValue(row);
+                        dr[prop.Name] = value ?? (object)DBNull.Value;
+                    }
+                    dt.Rows.Add(dr);
+                }
+
+                using (var bulk = new SqlBulkCopy(azureConn))
+                {
+                    bulk.DestinationTableName = "#SnapBatch";
+                    bulk.BulkCopyTimeout = 0;
+                    bulk.BatchSize = 5000;
+                    foreach (DataColumn col in dt.Columns)
+                        bulk.ColumnMappings.Add(col.ColumnName, col.ColumnName);
+                    bulk.WriteToServer(dt);
+                }
+
+                progress?.Invoke($"Applying {rows.Count:N0} edit(s) to Azure...");
+
+                // Step 3: One UPDATE FROM joining the temp table. OUTPUT clause returns the
+                // UniqueID of every row actually modified so the caller can flag externally
+                // regenerated snapshots (missing rows simply don't appear in the output).
+                var setClauses = _snapshotEditableProps.Select(p => $"a.{p.Name} = b.{p.Name}").ToList();
+                setClauses.Add("a.UpdatedBy = @UpdatedBy");
+                setClauses.Add("a.UpdatedUtcDate = @UpdatedUtcDate");
+
+                var updateCmd = azureConn.CreateCommand();
+                updateCmd.CommandTimeout = 0;
+                updateCmd.CommandText = $@"
+                    UPDATE a
+                    SET {string.Join(",\n                        ", setClauses)}
+                    OUTPUT inserted.UniqueID
+                    FROM VMS_ProgressSnapshots a
+                    INNER JOIN #SnapBatch b ON a.UniqueID = b.UniqueID
+                    WHERE a.WeekEndDate = @WeekEndDate;";
+                updateCmd.Parameters.AddWithValue("@UpdatedBy", username);
+                updateCmd.Parameters.AddWithValue("@UpdatedUtcDate",
+                    DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"));
+                updateCmd.Parameters.AddWithValue("@WeekEndDate", weekEndDateStr);
+
+                using (var reader = updateCmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        string id = reader.GetString(0);
+                        affectedByUniqueId[id] = affectedByUniqueId.TryGetValue(id, out int c) ? c + 1 : 1;
+                    }
+                }
+
+                progress?.Invoke($"Updating local mirror...");
+
+                // Step 4: Local SQLite mirror — one connection, one transaction, parameter
+                // re-bind per row. Skipping per-row connect/commit drops 34K-row batches
+                // from minutes to sub-second locally.
+                try
+                {
+                    using var localConn = new SqliteConnection($"Data Source={DatabaseSetup.DbPath}");
+                    localConn.Open();
+                    using var tx = localConn.BeginTransaction();
+
+                    var localCmd = localConn.CreateCommand();
+                    localCmd.Transaction = tx;
+                    localCmd.CommandText = @"
+                        UPDATE ProgressSnapshots
+                        SET SchedActNO = @SchedActNO,
+                            Description = @Description,
+                            PercentEntry = @PercentEntry,
+                            BudgetMHs = @BudgetMHs,
+                            ActStart = @ActStart,
+                            ActFin = @ActFin,
+                            ProjectID = @ProjectID,
+                            UpdatedBy = @UpdatedBy,
+                            UpdatedUtcDate = @UpdatedUtcDate
+                        WHERE UniqueID = @UniqueID
+                          AND WeekEndDate = @WeekEndDate";
+
+                    // Add parameters once with sentinel values; rebind per row inside the loop.
+                    var pSchedActNO = localCmd.Parameters.Add("@SchedActNO", SqliteType.Text);
+                    var pDescription = localCmd.Parameters.Add("@Description", SqliteType.Text);
+                    var pPercentEntry = localCmd.Parameters.Add("@PercentEntry", SqliteType.Real);
+                    var pBudgetMHs = localCmd.Parameters.Add("@BudgetMHs", SqliteType.Real);
+                    var pActStart = localCmd.Parameters.Add("@ActStart", SqliteType.Text);
+                    var pActFin = localCmd.Parameters.Add("@ActFin", SqliteType.Text);
+                    var pProjectID = localCmd.Parameters.Add("@ProjectID", SqliteType.Text);
+                    var pUpdatedBy = localCmd.Parameters.Add("@UpdatedBy", SqliteType.Text);
+                    var pUpdatedUtcDate = localCmd.Parameters.Add("@UpdatedUtcDate", SqliteType.Text);
+                    var pUniqueID = localCmd.Parameters.Add("@UniqueID", SqliteType.Text);
+                    var pWeekEndDate = localCmd.Parameters.Add("@WeekEndDate", SqliteType.Text);
+                    localCmd.Prepare();
+
+                    string nowIso = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ");
+                    pUpdatedBy.Value = username;
+                    pUpdatedUtcDate.Value = nowIso;
+                    pWeekEndDate.Value = weekEndDateStr;
+
+                    foreach (var row in rows)
+                    {
+                        pSchedActNO.Value = (object?)row.SchedActNO ?? DBNull.Value;
+                        pDescription.Value = (object?)row.Description ?? DBNull.Value;
+                        pPercentEntry.Value = row.PercentEntry;
+                        pBudgetMHs.Value = row.BudgetMHs;
+                        pActStart.Value = (object?)row.ActStart ?? DBNull.Value;
+                        pActFin.Value = (object?)row.ActFin ?? DBNull.Value;
+                        pProjectID.Value = (object?)row.ProjectID ?? DBNull.Value;
+                        pUniqueID.Value = row.UniqueID;
+                        localCmd.ExecuteNonQuery();
+                    }
+                    tx.Commit();
+                }
+                catch (Exception localEx)
+                {
+                    AppLogger.Warning(
+                        $"Local snapshot mirror batch update failed (Azure write succeeded): {localEx.Message}",
+                        "ScheduleRepository.UpdateSnapshotsBatchAsync");
+                }
+
+                progress?.Invoke("Save complete.");
+            });
+
+            return affectedByUniqueId;
         }
 
         // Update editable fields in Schedule table (local SQLite)
