@@ -6,6 +6,22 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### June 18, 2026 (AI Takeoff Lambdas — Flagged Tab Column-Key Consistency + Honest Direct-Invoke Zero-BOM Failures)
+
+**`summit-takeoff-aggregate` (zip deploy).** `build_flagged_rows` now emits the parts-line under the key `raw_description` instead of `description`, and the Flagged tab's column header reads "Raw Description" matching the Material tab. Old SHA `TMDJU7Phs26W30w82NTeiGn19iBfw6Az7B+Ak+TSE6c=` → new SHA `QD2UNgGaqoPtvB96MET/lo08lWWwe5Bpx7iR/VpsB0g=`. Removes the silent data-contract trap where a future global-rename in either Lambda could have left half of the columns reading the wrong source key. Source reads (`item.get("description")` from the per-drawing extraction JSON) are untouched — extraction Lambda's output contract is unchanged. Verified C# Recalc (`Services/AI/TakeoffPostProcessor.cs`) reads only the Material tab, so old Excels remain fully Recalc-compatible — the Flagged tab is a human-review surface only.
+
+**`summit-takeoff-poc` (container deploy).** The zero-BOM guard now fires regardless of whether `batch_id` is set, closing a silent-failure surface in non-batch (direct-invoke) mode. Old SHA `37cb86d67c2c87b6d0dbb087bfba3be08f67530ef0d25616b1463c6b66c49cf2` → new SHA `2a5e412516a89ce44eba3b6c5b319570886cbc0d75255cd73a00f6e5da26be17`. Batch behavior unchanged: marker still lands at `batches/<batch_id>/failures/<drawing>.json` and the response still returns `status: failed`. Non-batch behavior: marker now lands at `failures/<drawing>.json` (parallel to the success path's top-level `extractions/<drawing>.json`) and the response returns `status: failed` instead of a misleading success envelope around an empty `bom_items` array. Future debug invocations against the Lambda CLI can no longer be fooled by zero-item responses.
+
+**Backlog hygiene.** Removed AI Takeoff Lambda issues #1 (column-key inconsistency) and #2 (batch-only zero-BOM guard) from `Plans/Project_Status.md`. Added a TODO under MCAA Ratesheet Integration for the AI Takeoff → MCAA Lambda routing work (deploy MCAA Lambdas, decide S3 bucket strategy, wire RateMode toggle, Step Functions orchestrator) and flagged that the MCAA Lambda source files in `mcaa-takeoff-poc/` and `mcaa-aggregate-deploy/` are scratch placeholders likely to be rewritten when the MCAA data aggregation finalizes — pre-rewrite edits to them are theater.
+
+**MCAA Lambda copies.** Mirror edits applied to `mcaa-aggregate-deploy/lambda_function.py` so the source matches Summit. NOT deployed — no `mcaa-*` Lambda exists in AWS yet (verified against `aws lambda list-functions` in us-east-1).
+
+**Project_Status.md cleanup.** Updated the Azure performance fix item with the Monday 2026-06-22 quota-increase request plan (director regained company Azure access). Added a new High Priority item for migrating the Email Service from Steve's personal Azure ACS resource to the company account once Monday's access is in.
+
+**Key files (Summit AI Takeoff sources, deployed; live under `%USERPROFILE%\Documents\<prefix>\SynologyDrive\Conversion\`):** `aggregate-deploy/lambda_function.py`, `summit-takeoff-poc/lambda_function.py`. MCAA mirrors: `mcaa-aggregate-deploy/lambda_function.py` (deployed = no — no target).
+
+---
+
 ### June 18, 2026 (Validation Coverage — Pre-Sync Partial Gate + Submit Week Combined Gate)
 
 **`ActivityValidator.GetAllViolations(activity)` — canonical batch-validation primitive.** New method in `Utilities/ActivityValidator.cs`. Combines required-metadata (the 9 `ActivityRequiredMetadata.Fields`, via cached `PropertyInfo[]`), conditional date-required rules (ActStart needed when `% > 0`, ActFin needed when `% = 100`), and the existing `Validate` date/% rules (future dates, finish-before-start, inverse conditional violations) into one offender-list helper. Returns one string per violation; empty list = row is fully sync-valid. Project-exists is intentionally NOT included — it requires a `Projects` lookup and stays at call sites that own the valid-ProjectID cache. Shared by SyncManager's pre-sync gate and Submit Week's combined gate so both surfaces enforce identical rules.
