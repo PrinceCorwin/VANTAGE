@@ -273,6 +273,28 @@ namespace VANTAGE.Dialogs
                     message += $"\n\nPush error (pull skipped to protect your changes):\n{pushResult.ErrorMessage}";
                 }
 
+                // Pre-sync validation gate (SyncManager.PushRecords) — rows that
+                // failed ActivityValidator / ActivityRequiredMetadata rules were
+                // left LocalDirty = 1 and excluded from this push. Distinct record
+                // count uses ValidationFailedUniqueIds so multiple violations on
+                // one row don't inflate the tally.
+                if (pushResult.ValidationFailedUniqueIds.Count > 0)
+                {
+                    int blocked = pushResult.ValidationFailedUniqueIds.Count;
+                    int valid = pushResult.PushedRecords;
+                    int total = pushResult.TotalRecordsToPush;
+                    message += $"\n\nPushed {valid} of {total} rows. {blocked} row(s) have validation issues " +
+                              "and remain marked as unsaved — fix and re-sync.\n" +
+                              "(Use Tools → Validate My Records to review all issues.)";
+                    var sample = pushResult.ValidationFailedRecords.Take(5).ToList();
+                    if (sample.Count > 0)
+                    {
+                        message += "\n\nExamples:\n" + string.Join("\n", sample);
+                        if (pushResult.ValidationFailedRecords.Count > sample.Count)
+                            message += $"\n... and {pushResult.ValidationFailedRecords.Count - sample.Count} more";
+                    }
+                }
+
                 if (pushResult.FailedRecords.Count > 0)
                 {
                     message += $"\n\nFailed to push {pushResult.FailedRecords.Count} records:\n" +
@@ -281,11 +303,14 @@ namespace VANTAGE.Dialogs
                         message += $"\n... and {pushResult.FailedRecords.Count - 5} more";
                 }
 
-                AppLogger.Info($"Sync completed: {pushResult.PushedRecords} pushed, {pullResult.PulledRecords} pulled, {localRecordsRemoved} removed (MyRecordsOnly={myRecordsOnly})",
+                AppLogger.Info($"Sync completed: {pushResult.PushedRecords} pushed, {pullResult.PulledRecords} pulled, {localRecordsRemoved} removed, {pushResult.ValidationFailedUniqueIds.Count} validation-blocked (MyRecordsOnly={myRecordsOnly})",
                     "SyncDialog.BtnConfirmSync_Click", App.CurrentUser?.Username);
 
-                var messageTitle = string.IsNullOrEmpty(pushResult.ErrorMessage) ? "Sync Complete" : "Sync Incomplete";
-                var messageIcon = string.IsNullOrEmpty(pushResult.ErrorMessage) ? MessageBoxImage.None : MessageBoxImage.Warning;
+                bool syncIncomplete = !string.IsNullOrEmpty(pushResult.ErrorMessage)
+                    || pushResult.ValidationFailedUniqueIds.Count > 0
+                    || pushResult.FailedRecords.Count > 0;
+                var messageTitle = syncIncomplete ? "Sync Incomplete" : "Sync Complete";
+                var messageIcon = syncIncomplete ? MessageBoxImage.Warning : MessageBoxImage.None;
                 AppMessageBox.Show(message, messageTitle, MessageBoxButton.OK, messageIcon);
 
                 DialogResult = true;

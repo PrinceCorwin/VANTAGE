@@ -187,8 +187,9 @@ Common triggers: bulk operations (Select All, Delete Row(s), Duplicate, Add Blan
 ## Edit Validation Rules
 - `Utilities/ActivityValidator.cs` is the single source of truth for Activity date/percent rules.
 - `Utilities/ActivityValidator.cs` → `ActivityRequiredMetadata` is the single source of truth for the 9 required-metadata field names. Add/remove a field there and every call site (Import Takeoff dialog, sync-gate SQL, reassign check, user-facing error messages) updates in lockstep via `Fields`, `FieldsDisplay`, and `BuildMissingFieldSql(alias)`.
-- Metadata errors block sync and reassign operations.
-- Conditional rules (ActStart required when % > 0, ActFin required when % = 100) and the `ProjectID` existence check against the `Projects` table remain hand-coded alongside the generated fragments — they aren't part of the simple 9-field list.
+- `Utilities/ActivityValidator.cs` → `GetAllViolations(activity)` is the canonical batch-validation primitive — combines required-metadata + conditional date-required + `Validate` date/% rules into a single offender-list helper. Used by `SyncManager.PushRecordsAsync` (pre-sync partial gate, leaves invalid rows `LocalDirty = 1`), `BtnSubmit_Click` (Submit Week combined gate), and the user-facing Validate My Records / Audit All Records dialogs. Project-exists is NOT included — it requires a `Projects` lookup and stays at call sites that own the valid-ProjectID cache.
+- Metadata errors block sync (per-row partial gate) and reassign operations; Submit Week uses the broader `GetAllViolations` gate (all-or-nothing per project).
+- Conditional rules (ActStart required when % > 0, ActFin required when % = 100) live inside `GetAllViolations` alongside the inverse rules in `Validate`. The `ProjectID` existence check against the `Projects` table remains hand-coded at call sites.
 - New editable text fields in XAML should set explicit `MaxLength` matching the underlying column width — defends against paste-bomb scenarios at 100k-row scale and matches DB constraints in the UI.
 
 ## Performance Rules

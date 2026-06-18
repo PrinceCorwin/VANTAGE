@@ -1,3 +1,6 @@
+using System.Reflection;
+using VANTAGE.Models;
+
 namespace VANTAGE.Utilities
 {
     // Canonical list of required-metadata field names shared across the sync gate,
@@ -49,6 +52,56 @@ namespace VANTAGE.Utilities
                 return "Finish date can only be set when % Complete is 100.";
 
             return null;
+        }
+
+        // Cached PropertyInfo[] for the 9 required-metadata fields on Activity.
+        // Reflection lookup happens once at type init; per-row cost is just GetValue.
+        private static readonly PropertyInfo[] _requiredFieldProps =
+            ActivityRequiredMetadata.Fields
+                .Select(f => typeof(Activity).GetProperty(f)!)
+                .ToArray();
+
+        // Returns every canonical-sync violation on the given activity. Empty list
+        // means the row is fully valid: every ActivityRequiredMetadata field is
+        // non-blank, the conditional date-required rules pass, AND Validate returns
+        // null for the current %/start/finish combination. Reusable batch-validation
+        // primitive — shared by SyncManager's pre-sync gate and Submit Week's
+        // date-rule gate so both behave identically and stay in lockstep with rule
+        // changes here. Project-exists check is intentionally NOT included; it
+        // requires a Projects-table lookup and lives at call sites where the
+        // valid-ProjectID set is already cached or scope is a single project.
+        public static List<string> GetAllViolations(Activity activity)
+        {
+            var violations = new List<string>();
+
+            for (int i = 0; i < ActivityRequiredMetadata.Fields.Length; i++)
+            {
+                var raw = _requiredFieldProps[i].GetValue(activity) as string;
+                if (string.IsNullOrWhiteSpace(raw))
+                {
+                    violations.Add($"Missing required field: {ActivityRequiredMetadata.Fields[i]}");
+                }
+            }
+
+            // Conditional date-required rules — counterpart to the inverse rules in
+            // Validate. Together they enforce: ActStart present iff % > 0, ActFin
+            // present iff % = 100.
+            if (activity.PercentEntry > 0 && !activity.ActStart.HasValue)
+            {
+                violations.Add("ActStart is required when % Complete > 0.");
+            }
+            if (activity.PercentEntry >= 100 && !activity.ActFin.HasValue)
+            {
+                violations.Add("ActFin is required when % Complete is 100.");
+            }
+
+            var dateViolation = Validate(activity.PercentEntry, activity.ActStart, activity.ActFin);
+            if (dateViolation != null)
+            {
+                violations.Add(dateViolation);
+            }
+
+            return violations;
         }
     }
 }

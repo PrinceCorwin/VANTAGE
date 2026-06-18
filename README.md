@@ -94,7 +94,7 @@ VANTAGE: Milestone provides activity tracking, P6 Primavera schedule integration
 - Deleted Records view with bulk Restore / Purge
 - Feedback Board with Ideas / Bug Reports and admin moderation
 - Activity Import with auto-detection of Legacy/Milestone format
-- Snapshot metadata gate (blocks submission when required fields are missing on the selected project)
+- Snapshot validation gate (blocks submission when the selected project has missing required fields or date/% rule violations) and pre-sync partial gate (rows that fail validation stay marked unsaved and are excluded from the push)
 
 ### Help Sidebar
 - Integrated help panel accessible via F1 or Settings menu

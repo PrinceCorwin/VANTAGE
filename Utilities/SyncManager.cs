@@ -129,6 +129,47 @@ namespace VANTAGE.Utilities
                     return result;
                 }
 
+                // ============================================================
+                // Pre-sync validation gate. Split dirty rows into valid/invalid
+                // against the canonical ActivityValidator + ActivityRequiredMetadata
+                // rules. Push only valid rows; invalid rows stay LocalDirty = 1 so
+                // they remain "unsaved" in the user's view until they fix them and
+                // re-sync. Partial-sync semantics are safe — push is row-keyed by
+                // UniqueID and rows are independent.
+                // ============================================================
+                var validForPush = new List<Activity>(dirtyRecords.Count);
+                foreach (var record in dirtyRecords)
+                {
+                    var violations = ActivityValidator.GetAllViolations(record);
+                    if (violations.Count == 0)
+                    {
+                        validForPush.Add(record);
+                        continue;
+                    }
+
+                    result.ValidationFailedUniqueIds.Add(record.UniqueID);
+                    foreach (var v in violations)
+                    {
+                        result.ValidationFailedRecords.Add($"UniqueID {record.UniqueID}: {v}");
+                    }
+                }
+
+                if (result.ValidationFailedUniqueIds.Count > 0)
+                {
+                    AppLogger.Info(
+                        $"Pre-sync validation blocked {result.ValidationFailedUniqueIds.Count} of {dirtyRecords.Count} record(s) — they remain LocalDirty",
+                        "SyncManager.PushRecords");
+                }
+
+                if (validForPush.Count == 0)
+                {
+                    // Everything failed validation. Nothing to push, but the caller
+                    // still needs TotalRecordsToPush + ValidationFailedRecords to
+                    // surface the outcome.
+                    return result;
+                }
+
+                dirtyRecords = validForPush;
                 AppLogger.Info($"Starting push of {dirtyRecords.Count} records to Azure", "SyncManager.PushRecords");
 
                 using var azureConn = AzureDbManager.GetConnection();
@@ -651,6 +692,18 @@ namespace VANTAGE.Utilities
             public List<string> FailedRecords { get; set; } = new List<string>();
             public string? ErrorMessage { get; set; }
             public List<string> PushedUniqueIds { get; set; } = new List<string>();
+
+            // Records the pre-sync validation gate excluded from the push because they
+            // failed ActivityValidator or ActivityRequiredMetadata rules. They remain
+            // LocalDirty = 1 locally so the user can fix them and re-sync.
+            //
+            // ValidationFailedRecords holds one human-readable "UniqueID xyz: <violation>"
+            // line per violation (a record with two violations contributes two lines).
+            // ValidationFailedUniqueIds is the distinct set — use its Count for the
+            // "Y rows have validation issues" tally so multiple violations on one row
+            // don't inflate the count.
+            public List<string> ValidationFailedRecords { get; set; } = new List<string>();
+            public HashSet<string> ValidationFailedUniqueIds { get; set; } = new HashSet<string>();
         }
 
         // Pull records from Azure that have changed since last sync

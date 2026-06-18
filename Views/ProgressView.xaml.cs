@@ -413,34 +413,6 @@ namespace VANTAGE.Views
             }
         }
 
-        // Project-scoped metadata error count for Submit Week (does NOT mutate viewmodel state).
-        // Returns the number of the current user's activities in the given project that fail
-        // required-metadata, ProjectID-exists, or conditional date rules.
-        private async Task<int> CountMetadataErrorsForProject(string projectId)
-        {
-            return await Task.Run(() =>
-            {
-                using var connection = DatabaseSetup.GetConnection();
-                connection.Open();
-
-                var cmd = connection.CreateCommand();
-                cmd.CommandText = $@"
-                SELECT COUNT(*) FROM Activities a
-                WHERE a.AssignedTo = @currentUser
-                  AND a.ProjectID = @projectId
-                  AND (
-                    {ActivityRequiredMetadata.BuildMissingFieldSql("a.")} OR
-                    NOT EXISTS (SELECT 1 FROM Projects p WHERE p.ProjectID = a.ProjectID) OR
-                    (a.PercentEntry > 0 AND (a.ActStart IS NULL OR a.ActStart = '')) OR
-                    (a.PercentEntry >= 100 AND (a.ActFin IS NULL OR a.ActFin = ''))
-                  )";
-                cmd.Parameters.AddWithValue("@currentUser", App.CurrentUser?.Username ?? "");
-                cmd.Parameters.AddWithValue("@projectId", projectId);
-
-                return Convert.ToInt32(cmd.ExecuteScalar());
-            });
-        }
-
         // Navigate to first row in grid
         private void BtnGoToFirst_Click(object sender, RoutedEventArgs e)
         {
@@ -3354,19 +3326,82 @@ namespace VANTAGE.Views
                     selectedProject = projectCombo.SelectedItem as string ?? userProjects[0];
                 }
 
-                // Step 3b: Block Submit if the selected project has any metadata errors.
-                // Scoped to selectedProject so errors in other projects don't block this submit.
-                var projectErrorCount = await CountMetadataErrorsForProject(selectedProject);
-                if (projectErrorCount > 0)
+                // Step 3b: Combined validation gate. Block Submit if any of the
+                // user's activities in the selected project fail either the
+                // required-metadata checks or the ActivityValidator date/% rules.
+                // All-or-nothing — a snapshot is a point-in-time copy and must be
+                // internally consistent. Date checks run in C# (not SQL) because
+                // date columns are TEXT and SQLite's date() is strict — legacy
+                // non-standard date strings would slip a SQL-level filter.
+                // ActivityValidator.GetAllViolations is shared with SyncManager's
+                // pre-sync gate so both surfaces enforce the same canonical rules.
+
+                // Project-exists check first — single SQL hit, scoped to the
+                // selected project. If the ProjectID isn't in Projects, every row
+                // would fail the same way; surface that distinctly so the user
+                // isn't confused by an offender list of identical messages.
+                bool projectExists = await Task.Run(() =>
+                {
+                    using var conn = DatabaseSetup.GetConnection();
+                    conn.Open();
+                    var cmd = conn.CreateCommand();
+                    cmd.CommandText = "SELECT COUNT(*) FROM Projects WHERE ProjectID = @pid";
+                    cmd.Parameters.AddWithValue("@pid", selectedProject);
+                    return Convert.ToInt32(cmd.ExecuteScalar() ?? 0) > 0;
+                });
+
+                if (!projectExists)
                 {
                     AppMessageBox.Show(
-                        $"Cannot submit. {projectErrorCount} record(s) in project {selectedProject} have missing required metadata.\n\n" +
-                        "Click 'Metadata Errors' button to view and fix these records.\n\n" +
-                        $"Required fields: {ActivityRequiredMetadata.FieldsDisplay}\n" +
-                        "Conditional: ActStart (when % > 0), ActFin (when % = 100)",
-                        "Metadata Errors",
+                        $"Cannot submit. ProjectID '{selectedProject}' does not exist in the Projects table.\n\n" +
+                        "Verify the project setup before submitting.",
+                        "Invalid Project",
                         MessageBoxButton.OK,
                         MessageBoxImage.Warning);
+                    return;
+                }
+
+                var projectActivities = _viewModel.Activities
+                    .Where(a => a.AssignedTo == App.CurrentUser?.Username &&
+                                a.ProjectID == selectedProject)
+                    .ToList();
+
+                var submitViolations = new List<(string SchedActNO, string UniqueID, string Message)>();
+                foreach (var a in projectActivities)
+                {
+                    foreach (var v in ActivityValidator.GetAllViolations(a))
+                    {
+                        submitViolations.Add((a.SchedActNO ?? string.Empty, a.UniqueID, v));
+                    }
+                }
+
+                if (submitViolations.Count > 0)
+                {
+                    int distinctRows = submitViolations
+                        .Select(t => t.UniqueID)
+                        .Distinct(StringComparer.OrdinalIgnoreCase)
+                        .Count();
+
+                    var sample = submitViolations
+                        .Take(10)
+                        .Select(t => $"  ActNo {t.SchedActNO}: {t.Message}")
+                        .ToList();
+
+                    string body =
+                        $"Cannot submit. {distinctRows} record(s) in project {selectedProject} have validation issues " +
+                        $"({submitViolations.Count} total):\n\n" +
+                        string.Join("\n", sample);
+
+                    if (submitViolations.Count > sample.Count)
+                    {
+                        body += $"\n  ... and {submitViolations.Count - sample.Count} more";
+                    }
+
+                    body += "\n\nFix these in ProgressView (or use Tools → Validate My Records) and re-submit.\n\n" +
+                            $"Required fields: {ActivityRequiredMetadata.FieldsDisplay}\n" +
+                            "Conditional: ActStart (when % > 0), ActFin (when % = 100)";
+
+                    AppMessageBox.Show(body, "Validation Errors", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
