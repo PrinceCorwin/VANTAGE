@@ -1,6 +1,6 @@
 # MILESTONE - Project Status
 
-**Last Updated:** June 5, 2026
+**Last Updated:** June 19, 2026
 
 ## ⚠️ Cross-Machine Credential Notes
 - **How creds propagate:** `/publisher` (`Scripts/publish-update.ps1`, step 2) regenerates `appsettings.enc` from the publishing machine's local `appsettings.json` on every publish, strips the plaintext from the shipped output, and the release commit pushes the new `.enc`. Other machines pick up the new `.enc` via `git pull`; production picks it up via app update. `appsettings.json` itself is gitignored and never copied between machines — the encrypted file is the propagation channel. `CredentialService` reads plaintext `appsettings.json` first (dev), then falls back to `appsettings.enc`.
@@ -21,7 +21,14 @@
 | AI Features (other) | NOT STARTED | Error Assistant, Description Analysis, etc. |
 
 ## Ready to Publish
-- _(none — most recent release is current)_
+Accumulated since v26.2.22:
+- AI Takeoff: REDT/REDC weld labor row count fix
+- Progress Books: layout-load race fix, persist last-selected layout, configurable columns refactor
+- Progress Books: central column catalog, spinner on layout switch, fix for deleted columns reappearing on save
+- Snapshots: admin/manager Modify elevation, Find/Replace, batched save
+- Validate My Records + Audit All Records tools (canonical `GetAllViolations` batch validation)
+- Validation gates: SyncManager pre-sync partial + Submit Week combined
+- AI Takeoff Lambdas: Flagged tab column-key consistency + honest direct-invoke zero-BOM failures
 
 ## Active Development
 

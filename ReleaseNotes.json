@@ -1,6 +1,26 @@
 {
   "releases": [
     {
+      "version": "26.2.23",
+      "date": "2026-06-19",
+      "highlights": [
+        "New — Tools → Validate My Records: scans your records for missing required metadata (WorkPackage, PhaseCode, etc.) and date/percent rule violations (future dates, ActFin before ActStart, ActStart set with % = 0, ActFin set with % < 100). Lists every offender, lets you jump to a filtered view in Progress, and exports the full report to Excel. Offending rows are auto-marked as unsaved so they'll re-push correctly after you fix them.",
+        "New — Admin → Audit All Records: same validation engine as Validate My Records but scans across all users. Pick projects, choose Local or Azure as the source, and group by AssignedTo to see per-user issue counts. Read-only — no edits or marks applied.",
+        "Improvement — Sync now performs row-by-row validation before push. Valid rows sync as usual; rows with validation issues stay marked as unsaved and the sync dialog shows a 'Sync Incomplete' message listing what to fix. Lets a partial push succeed instead of blocking everything on one bad row.",
+        "Improvement — Submit Week (snapshot) now blocks on date/percent rule violations in addition to missing required metadata. Same rules as Validate My Records. Users who haven't run Validate My Records yet may see new validation blocks on first Submit Week — the dialog points directly at the Validate My Records tool for a bulk view of every offender.",
+        "New — Manage My Snapshots: admins and managers can now click Modify on any user's snapshot (Delete and Revert stay owner-only). The dialog title prepends the owner's name when editing a foreign snapshot.",
+        "New — Modify Snapshot: right-click any column header for 'Find & Replace in this column...' and a Clear Filters button bottom-left, matching the Progress/Schedule views.",
+        "Improvement — Modify Snapshot Save is dramatically faster. A 34,000-row Find/Replace save that previously took around 45 minutes now finishes in seconds. Save validation also only checks fields you actually changed, so pre-existing legacy data on unrelated columns no longer blocks an unrelated edit.",
+        "Fix — Progress Books: columns you delete from a layout now stay deleted after saving. Previously the schema-version stamp was dropped on save, causing the next load to silently re-add any column the migrator considered standard. Layouts already corrupted by this bug self-heal on next open.",
+        "Improvement — Progress Books: layout switching now shows a loading spinner while the new layout loads. Column header labels (Act ID, ROC, DESC, MHs, REM MH, % Comp, etc.) are now consistent between the column list and the generated PDF.",
+        "Improvement — Progress Books: the layout you last had open is now restored when you navigate back into the module, instead of always resetting to Default Layout.",
+        "Fix — Progress Books: picking a saved layout no longer occasionally reverts your FilterField to the default. The Loaded sequence had a race condition where a fast click during the initial load could hit a guard and skip applying the layout body.",
+        "New — Import AI Takeoff: 'Keep None' handling option drops both PIPE and SPL rows from the source workbook on import.",
+        "Fix — AI Takeoff: REDT (reducing tee) and REDC (reducing cross) components now generate the correct number of weld labor rows. REDT now emits 3 (2 run + 1 outlet), REDC emits 4 (2 run + 2 outlet), and dual-size sizing routes welds to the correct face. Previously these undercounted by 1–2 rows.",
+        "Improvement — AI Takeoff: Flagged tab column header now reads 'Raw Description', matching the Material tab. Same underlying data — labels are now consistent across both tabs."
+      ]
+    },
+    {
       "version": "26.2.22",
       "date": "2026-06-02",
       "highlights": [

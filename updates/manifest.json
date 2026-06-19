@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.2.22",
-  "releaseDate": "2026-06-02T16:08:23Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.2.22/VANTAGE-26.2.22.zip",
-  "zipSizeBytes": 151662758,
-  "sha256": "4DA6F24BBCDE6D4AB56840940C1D1759F71EE53273B7CFC9E5FD5C19F5B9800B",
-  "releaseNotes": "Analysis tab gains a Local / Snapshot source toggle for aggregating from selected weekly snapshots. P6 import offers to create stub records for SchedActNOs missing from your snapshot."
+  "currentVersion": "26.2.23",
+  "releaseDate": "2026-06-19T07:59:08Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.2.23/VANTAGE-26.2.23.zip",
+  "zipSizeBytes": 151720072,
+  "sha256": "AECD455974AE68F9DB26B1636C360E595ABDC1B1165EF385CBBB553614352D58",
+  "releaseNotes": "Validate My Records and Audit All Records tools, partial-sync validation gate, Submit Week extended validation, Snapshot Modify gets Find/Replace plus dramatic speedup, Progress Books fixes, and AI Takeoff REDT/REDC weld count fix."
 }
