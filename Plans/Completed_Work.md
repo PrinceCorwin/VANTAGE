@@ -6,6 +6,12 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+_(none — most recent work is shipped)_
+
+---
+
+## v26.2.23 — Released 2026-06-19
+
 ### June 18, 2026 (AI Takeoff Lambdas — Flagged Tab Column-Key Consistency + Honest Direct-Invoke Zero-BOM Failures)
 
 **`summit-takeoff-aggregate` (zip deploy).** `build_flagged_rows` now emits the parts-line under the key `raw_description` instead of `description`, and the Flagged tab's column header reads "Raw Description" matching the Material tab. Old SHA `TMDJU7Phs26W30w82NTeiGn19iBfw6Az7B+Ak+TSE6c=` → new SHA `QD2UNgGaqoPtvB96MET/lo08lWWwe5Bpx7iR/VpsB0g=`. Removes the silent data-contract trap where a future global-rename in either Lambda could have left half of the columns reading the wrong source key. Source reads (`item.get("description")` from the per-drawing extraction JSON) are untouched — extraction Lambda's output contract is unchanged. Verified C# Recalc (`Services/AI/TakeoffPostProcessor.cs`) reads only the Material tab, so old Excels remain fully Recalc-compatible — the Flagged tab is a human-review surface only.

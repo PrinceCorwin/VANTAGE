@@ -21,14 +21,7 @@
 | AI Features (other) | NOT STARTED | Error Assistant, Description Analysis, etc. |
 
 ## Ready to Publish
-Accumulated since v26.2.22:
-- AI Takeoff: REDT/REDC weld labor row count fix
-- Progress Books: layout-load race fix, persist last-selected layout, configurable columns refactor
-- Progress Books: central column catalog, spinner on layout switch, fix for deleted columns reappearing on save
-- Snapshots: admin/manager Modify elevation, Find/Replace, batched save
-- Validate My Records + Audit All Records tools (canonical `GetAllViolations` batch validation)
-- Validation gates: SyncManager pre-sync partial + Submit Week combined
-- AI Takeoff Lambdas: Flagged tab column-key consistency + honest direct-invoke zero-BOM failures
+- _(none — most recent release is current)_
 
 ## Active Development
 
