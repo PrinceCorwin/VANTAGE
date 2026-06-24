@@ -396,84 +396,75 @@ namespace VANTAGE.Utilities
 
                 if (toInsert.Count > 0)
                 {
-                    // Disable the trigger for bulk insert performance
-                    var disableTriggerCmd = azureConn.CreateCommand();
-                    disableTriggerCmd.CommandText = "DISABLE TRIGGER TR_VMS_Activities_SyncVersion ON VMS_Activities";
-                    disableTriggerCmd.ExecuteNonQuery();
+                    // Push pre-reserves a SyncVersion range and writes values into the
+                    // bulk-insert DataTable directly. The Azure trigger
+                    // TR_VMS_Activities_SyncVersion detects the explicit non-zero
+                    // SyncVersion values and bails (see trigger source). No DISABLE
+                    // TRIGGER needed — the prior pattern was database-wide and
+                    // silenced the trigger for every concurrent writer, causing
+                    // silent drift.
+                    var dataTable = new DataTable();
+                    dataTable.Columns.Add("UniqueID", typeof(string));
+                    dataTable.Columns.Add("IsDeleted", typeof(bool));
+                    dataTable.Columns.Add("SyncVersion", typeof(long));
 
-                    try
+                    foreach (var colName in syncColumns)
                     {
-                        // Build DataTable matching Azure Activities schema
-                        var dataTable = new DataTable();
-                        dataTable.Columns.Add("UniqueID", typeof(string));
-                        dataTable.Columns.Add("IsDeleted", typeof(bool));
-                        dataTable.Columns.Add("SyncVersion", typeof(long));
+                        var colType = GetColumnType(colName);
+                        dataTable.Columns.Add(colName, colType);
+                    }
 
-                        foreach (var colName in syncColumns)
-                        {
-                            var colType = GetColumnType(colName);
-                            dataTable.Columns.Add(colName, colType);
-                        }
-
-                        // Reserve SyncVersion range atomically
-                        long startVersion;
-                        var reserveCmd = azureConn.CreateCommand();
-                        reserveCmd.CommandText = @"
+                    // Reserve SyncVersion range atomically
+                    long startVersion;
+                    var reserveCmd = azureConn.CreateCommand();
+                    reserveCmd.CommandText = @"
                     UPDATE VMS_GlobalSyncVersion
                     SET CurrentVersion = CurrentVersion + @count
                     OUTPUT INSERTED.CurrentVersion - @count + 1";
-                        reserveCmd.Parameters.AddWithValue("@count", toInsert.Count);
-                        startVersion = Convert.ToInt64(reserveCmd.ExecuteScalar());
+                    reserveCmd.Parameters.AddWithValue("@count", toInsert.Count);
+                    startVersion = Convert.ToInt64(reserveCmd.ExecuteScalar());
 
-                        AppLogger.Info($"Reserved SyncVersion range {startVersion} to {startVersion + toInsert.Count - 1}", "SyncManager.PushRecords");
+                    AppLogger.Info($"Reserved SyncVersion range {startVersion} to {startVersion + toInsert.Count - 1}", "SyncManager.PushRecords");
 
-                        // Populate DataTable with records and assigned SyncVersions
-                        long currentVersion = startVersion;
-                        foreach (var record in toInsert)
-                        {
-                            var row = dataTable.NewRow();
-                            row["UniqueID"] = record.UniqueID;
-                            row["IsDeleted"] = false;
-                            row["SyncVersion"] = currentVersion++;
-
-                            foreach (var colName in syncColumns)
-                            {
-                                var value = GetActivityValue(record, colName);
-                                row[colName] = value ?? DBNull.Value;
-                            }
-
-                            dataTable.Rows.Add(row);
-                        }
-
-                        // Bulk insert
-                        using (var bulkCopy = new SqlBulkCopy(azureConn))
-                        {
-                            bulkCopy.DestinationTableName = "VMS_Activities";
-                            bulkCopy.BatchSize = 5000;
-                            bulkCopy.BulkCopyTimeout = 0;
-
-                            // Map columns explicitly
-                            bulkCopy.ColumnMappings.Add("UniqueID", "UniqueID");
-                            bulkCopy.ColumnMappings.Add("IsDeleted", "IsDeleted");
-                            bulkCopy.ColumnMappings.Add("SyncVersion", "SyncVersion");
-                            foreach (var colName in syncColumns)
-                            {
-                                bulkCopy.ColumnMappings.Add(colName, colName);
-                            }
-
-                            bulkCopy.WriteToServer(dataTable);
-                        }
-
-                        insertSuccessIds.AddRange(toInsert.Select(r => r.UniqueID));
-                        AppLogger.Info($"Step 4 complete ({stopwatch.Elapsed.TotalSeconds:F1}s): Bulk inserted {toInsert.Count} records", "SyncManager.PushRecords");
-                    }
-                    finally
+                    // Populate DataTable with records and assigned SyncVersions
+                    long currentVersion = startVersion;
+                    foreach (var record in toInsert)
                     {
-                        // Re-enable the trigger
-                        var enableTriggerCmd = azureConn.CreateCommand();
-                        enableTriggerCmd.CommandText = "ENABLE TRIGGER TR_VMS_Activities_SyncVersion ON VMS_Activities";
-                        enableTriggerCmd.ExecuteNonQuery();
+                        var row = dataTable.NewRow();
+                        row["UniqueID"] = record.UniqueID;
+                        row["IsDeleted"] = false;
+                        row["SyncVersion"] = currentVersion++;
+
+                        foreach (var colName in syncColumns)
+                        {
+                            var value = GetActivityValue(record, colName);
+                            row[colName] = value ?? DBNull.Value;
+                        }
+
+                        dataTable.Rows.Add(row);
                     }
+
+                    // Bulk insert
+                    using (var bulkCopy = new SqlBulkCopy(azureConn))
+                    {
+                        bulkCopy.DestinationTableName = "VMS_Activities";
+                        bulkCopy.BatchSize = 5000;
+                        bulkCopy.BulkCopyTimeout = 0;
+
+                        // Map columns explicitly
+                        bulkCopy.ColumnMappings.Add("UniqueID", "UniqueID");
+                        bulkCopy.ColumnMappings.Add("IsDeleted", "IsDeleted");
+                        bulkCopy.ColumnMappings.Add("SyncVersion", "SyncVersion");
+                        foreach (var colName in syncColumns)
+                        {
+                            bulkCopy.ColumnMappings.Add(colName, colName);
+                        }
+
+                        bulkCopy.WriteToServer(dataTable);
+                    }
+
+                    insertSuccessIds.AddRange(toInsert.Select(r => r.UniqueID));
+                    AppLogger.Info($"Step 4 complete ({stopwatch.Elapsed.TotalSeconds:F1}s): Bulk inserted {toInsert.Count} records", "SyncManager.PushRecords");
                 }
 
                 // ============================================================
@@ -704,6 +695,12 @@ namespace VANTAGE.Utilities
             // don't inflate the count.
             public List<string> ValidationFailedRecords { get; set; } = new List<string>();
             public HashSet<string> ValidationFailedUniqueIds { get; set; } = new HashSet<string>();
+
+            // Pull-time conflicts: Azure had a newer SyncVersion for a row that was
+            // LocalDirty = 1 locally (i.e. blocked by the per-row push gate). The
+            // pull declined to overwrite local; user resolves by fixing the metadata
+            // error and pushing (push wins, last-write-wins as today).
+            public List<string> SkippedDirtyConflicts { get; set; } = new List<string>();
         }
 
         // Pull records from Azure that have changed since last sync
@@ -790,6 +787,53 @@ namespace VANTAGE.Utilities
                     }
 
                     AppLogger.Info($"Project {projectId}: {recordsToPull.Count} to pull, {recordsToDelete.Count} to delete", "SyncManager.PullRecords");
+
+                    // Pull-guard: never overwrite locally-dirty rows. Push runs before
+                    // pull in the sync sequence and resets LocalDirty = 0 on every
+                    // successfully-pushed row, so the only LocalDirty = 1 rows here
+                    // are the ones the push gate rejected (illegal metadata, date
+                    // rules, etc.). Skipping them preserves the user's pending edits;
+                    // resolution path is "fix the violation and re-sync" — push then
+                    // wins over Azure's newer version (last-write-wins as today).
+                    // Tombstones (IsDeleted = 1 in Azure) are NOT covered by this
+                    // guard — delete-wins stays. Restore-side gating happens in
+                    // DeletedRecordsView.BtnRestore_Click.
+                    HashSet<string> dirtyUidsInProject = new(StringComparer.OrdinalIgnoreCase);
+                    if (recordsToPull.Count > 0)
+                    {
+                        var dirtyCheckCmd = localConn.CreateCommand();
+                        dirtyCheckCmd.CommandText = "SELECT UniqueID FROM Activities WHERE ProjectID = @projectId AND LocalDirty = 1";
+                        dirtyCheckCmd.Parameters.AddWithValue("@projectId", projectId);
+                        using var dirtyReader = dirtyCheckCmd.ExecuteReader();
+                        while (dirtyReader.Read())
+                        {
+                            dirtyUidsInProject.Add(dirtyReader.GetString(0));
+                        }
+                    }
+
+                    if (dirtyUidsInProject.Count > 0)
+                    {
+                        var filtered = new List<Dictionary<string, object>>(recordsToPull.Count);
+                        foreach (var record in recordsToPull)
+                        {
+                            string uid = (string)record["UniqueID"];
+                            if (dirtyUidsInProject.Contains(uid))
+                            {
+                                result.SkippedDirtyConflicts.Add(uid);
+                            }
+                            else
+                            {
+                                filtered.Add(record);
+                            }
+                        }
+                        if (result.SkippedDirtyConflicts.Count > 0)
+                        {
+                            AppLogger.Info(
+                                $"Project {projectId}: pull-guard preserved {result.SkippedDirtyConflicts.Count} locally-dirty row(s) from Azure overwrite",
+                                "SyncManager.PullRecords");
+                        }
+                        recordsToPull = filtered;
+                    }
 
                     // Bulk delete records marked as deleted in Azure
                     if (recordsToDelete.Count > 0)

@@ -8,12 +8,12 @@ namespace VANTAGE.Utilities
     // update every call site in lockstep.
     public static class ActivityRequiredMetadata
     {
-        // 9 non-empty string fields that must be populated for an Activity to sync.
+        // 10 non-empty string fields that must be populated for an Activity to sync.
         // Order matches the Import Takeoff dialog's visible row order.
         public static readonly string[] Fields = new[]
         {
             "ProjectID", "WorkPackage", "PhaseCode", "CompType",
-            "PhaseCategory", "SchedActNO", "Description", "ROCStep", "RespParty"
+            "PhaseCategory", "SchedActNO", "Description", "ROCStep", "RespParty", "UOM"
         };
 
         // Comma-separated list for user-facing messages (e.g. "ProjectID, WorkPackage, ...").
@@ -54,7 +54,7 @@ namespace VANTAGE.Utilities
             return null;
         }
 
-        // Cached PropertyInfo[] for the 9 required-metadata fields on Activity.
+        // Cached PropertyInfo[] for the 10 required-metadata fields on Activity.
         // Reflection lookup happens once at type init; per-row cost is just GetValue.
         private static readonly PropertyInfo[] _requiredFieldProps =
             ActivityRequiredMetadata.Fields

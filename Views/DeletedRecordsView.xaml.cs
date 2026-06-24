@@ -429,12 +429,65 @@ namespace VANTAGE.Views
                 return;
             }
 
+            // Pre-restore metadata-error scan: the grid loads only 15 columns, so
+            // we fetch the full Azure rows to evaluate ActivityValidator.GetAllViolations
+            // (required-metadata blanks, conditional date-required rules, % vs. date
+            // rules). Any offenders restored as-is would immediately fail the per-row
+            // push gate for their assignee — admin should know before flipping IsDeleted.
+            SetActionBusy(true, $"Scanning {selectedActivities.Count:N0} record(s)...");
+            var selectedUids = selectedActivities.Select(a => a.UniqueID).ToList();
+            List<(Activity Activity, List<string> Violations)> offenders;
+            try
+            {
+                offenders = await Task.Run(() =>
+                {
+                    var full = FetchFullActivitiesByUniqueIds(selectedUids);
+                    var list = new List<(Activity, List<string>)>();
+                    foreach (var a in full)
+                    {
+                        var v = ActivityValidator.GetAllViolations(a);
+                        if (v.Count > 0) list.Add((a, v));
+                    }
+                    return list;
+                });
+            }
+            catch (Exception ex)
+            {
+                SetActionBusy(false);
+                AppLogger.Error(ex, "DeletedRecordsView.BtnRestore_Click.Scan");
+                AppMessageBox.Show("Error scanning records for metadata issues. See log for details.",
+                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+            SetActionBusy(false);
+
+            string confirmMessage;
+            if (offenders.Count > 0)
+            {
+                var sample = offenders.Take(10)
+                    .Select(o => $"  • {o.Activity.UniqueID}: {string.Join("; ", o.Violations)}")
+                    .ToList();
+                confirmMessage =
+                    $"Restore {selectedActivities.Count:N0} record(s)?\n\n" +
+                    $"⚠ {offenders.Count:N0} of the selected record(s) have metadata issues " +
+                    "and will be blocked from sync by their assignee until fixed:\n\n" +
+                    string.Join("\n", sample);
+                if (offenders.Count > sample.Count)
+                    confirmMessage += $"\n... and {offenders.Count - sample.Count} more";
+                confirmMessage += "\n\nRestore anyway?";
+            }
+            else
+            {
+                confirmMessage =
+                    $"Restore {selectedActivities.Count:N0} record(s)?\n\n" +
+                    "Records will be set to IsDeleted=0 and users will receive them on next sync.";
+            }
+
             var result = AppMessageBox.Show(
-                $"Restore {selectedActivities.Count:N0} record(s)?\n\n" +
-                "Records will be set to IsDeleted=0 and users will receive them on next sync.",
+                confirmMessage,
                 "Confirm Restore",
                 MessageBoxButton.YesNo,
-                MessageBoxImage.Question);
+                offenders.Count > 0 ? MessageBoxImage.Warning : MessageBoxImage.Question);
 
             if (result != MessageBoxResult.Yes)
                 return;

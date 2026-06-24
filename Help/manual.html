@@ -491,7 +491,7 @@
         <li><strong>Schedule UDF Mapping...</strong> — Configure custom P6 column mappings for the Schedule module UDF columns</li>
         <li><strong>ROC Manager</strong> — Create, view, modify, or delete ROC rate sets and configure which components each set applies to</li>
         <li><strong>ActNO Split Ownership Check</strong> — Query Azure for any SchedActNOs assigned to multiple users within a project. Select a project from the dropdown, click Check, and review the results. Useful for schedulers to identify and resolve ownership conflicts.</li>
-        <li><strong>Validate My Records</strong> — Scans your assigned activities for missing required metadata (any of the 9 required fields blank) and invalid date/percent combinations (future dates, finish before start, dates set at 0%, etc.). Every offending record is automatically marked as unsaved so it appears in the ProgressView dirty highlight and the metadata-error badge — you fix them through the normal Progress workflow and the next sync clears them. The results dialog has an <strong>Export Report</strong> button (writes the issue list to an <code>.xlsx</code>) and a <strong>Show in ProgressView</strong> button that filters Progress to <em>only</em> these records, so other unrelated dirty edits aren't mixed in. The filter clears via the normal Clear Filters button and lights the green border while active.</li>
+        <li><strong>Validate My Records</strong> — Scans your assigned activities for missing required metadata (any of the 10 required fields blank) and invalid date/percent combinations (future dates, finish before start, dates set at 0%, etc.). Every offending record is automatically marked as unsaved so it appears in the ProgressView dirty highlight and the metadata-error badge — you fix them through the normal Progress workflow and the next sync clears them. The results dialog has an <strong>Export Report</strong> button (writes the issue list to an <code>.xlsx</code>) and a <strong>Show in ProgressView</strong> button that filters Progress to <em>only</em> these records, so other unrelated dirty edits aren't mixed in. The filter clears via the normal Clear Filters button and lights the green border while active.</li>
         <li><strong>VP vs Vtg Report</strong> — Adds two new columns, <em>Vtg Budget</em> and <em>Vtg Earned</em>, to the weekly <em>JC Labor Productivity Analysis</em> report, populated from the central Azure Vantage database (all projects, all records — not limited to what's in your local copy). Each added value is color-coded against the matching VP value so you can immediately see where Vantage and Viewpoint disagree.
             <p style="margin:8px 0;"><strong>Run this report each week to verify your project's Earned, Budget, and Phase Code values.</strong> The goal is to keep Vantage and VP aligned so executive reports and dashboards reflect reality.</p>
 
@@ -982,6 +982,7 @@
     <div class="warning">
         <div class="warning-title">Partial Sync When Rows Have Validation Issues</div>
         <p>Sync now pushes only rows that pass validation (required metadata + date/% rules). Any unsaved row that fails validation stays marked as unsaved and is excluded from the push — the rest still go up. The results dialog shows how many rows were blocked and lists the first few violations. Fix those rows in ProgressView (or use <strong>Tools &rarr; Validate My Records</strong> to see them all), then re-sync.</p>
+        <p>The pull side now protects your unsaved edits from being overwritten. If a row you have pending edits on was changed in Azure by someone else (admin reassign, another user's push, etc.) and is currently blocked from sync by a validation issue on your side, the pull will preserve your local copy and report "N of your unsaved row(s) had newer data in Azure" so you know to resolve. Once you fix the validation issue and push, your edit lands and the Azure value is overwritten (last-write-wins as today).</p>
     </div>
 
     <h4>SNAPSHOT Button</h4>
@@ -1015,7 +1016,7 @@
     <h4 id="modify-snapshot">Modify Snapshot</h4>
     <p>Opens a new window showing every row in the selected week's snapshot in an editable grid. Use this when you need to correct a value that was already submitted (for example, a percent complete that should have been higher, or a date that was wrong) without disturbing the live work you've done since.</p>
     <ul>
-        <li>Every field that's editable on the Progress view is editable here, including the 9 required-metadata fields (Project ID, Work Package, Phase Code, Comp Type, Phase Category, Sched Act No, Description, ROC Step, Resp Party).</li>
+        <li>Every field that's editable on the Progress view is editable here, including the 10 required-metadata fields (Project ID, Work Package, Phase Code, Comp Type, Phase Category, Sched Act No, Description, ROC Step, Resp Party, UOM).</li>
         <li>System and calculated columns (identity, sync version, previous-week tracking, Azure upload date, P6 plan dates) are hidden from the grid.</li>
         <li>Date and percent rules are enforced per-cell as you edit: <em>Start date cannot be in the future, Finish date only when % Complete is 100, etc.</em> Invalid values revert automatically.</li>
         <li>Required-metadata cells <em>can</em> be cleared temporarily while you shuffle between cells, but Save will abort with a list of the offending rows if any required field is left blank.</li>
@@ -3051,6 +3052,7 @@
         <li><strong>RESTORE</strong> sets <code>IsDeleted=0</code> on the selected records. Users will receive them on their next sync.</li>
         <li>Restore runs as a single bulk operation against Azure — thousands of records take seconds, not minutes.</li>
         <li>The restored records re-appear in the assigned user's Progress grid on next sync. Ownership (<code>AssignedTo</code>) is preserved as it was at the time of deletion.</li>
+        <li><strong>Pre-restore metadata check.</strong> Before confirming, Restore scans the selected records against the required-metadata + date rules. If any would fail validation (missing UOM, blank required field, future date, etc.), the confirm dialog lists the offenders (up to 10 shown) with a Warning icon and asks "Restore anyway?". Restoring rows with metadata errors is allowed — they bounce through the per-row push gate for their assignee at next sync, which is sometimes the right call for typo fixes — but you see the cost before flipping <code>IsDeleted</code>.</li>
     </ul>
 
     <h4>Purge (Permanent Delete)</h4>

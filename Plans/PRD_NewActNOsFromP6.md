@@ -45,7 +45,7 @@ The new step has to happen BEFORE the Schedule view refresh so the new rows show
 - **AssignedTo:** the user creating the records (creator owns them; can be reassigned later).
 - **Snapshot ProgDate:** use the existing ProgDate for that week+project's snapshot group, so new rows join the existing submission rather than creating a sibling.
 - **ActStart fallback:** if P6 reports PercentEntry > 0 but has no `act_start_date`, set ActStart = WeekEndDate. Shouldn't fire in practice (P6 doesn't normally produce that combination) but covers the edge case defensively. Snapshots can't carry validation-invalid rows.
-- **Required metadata placeholders:** "X" for WorkPackage, PhaseCode, CompType, PhaseCategory, ROCStep, RespParty. ProjectID comes from the picker. SchedActNO and Description come from P6. (Nine required fields total per `ActivityRequiredMetadata.Fields`.)
+- **Required metadata placeholders:** "X" for WorkPackage, PhaseCode, CompType, PhaseCategory, ROCStep, RespParty, UOM. ProjectID comes from the picker. SchedActNO and Description come from P6. (Ten required fields total per `ActivityRequiredMetadata.Fields`.)
 - **Duplicate-import behavior:** non-issue. Once stubs exist, the next P6 import's detection query won't flag the same SchedActNOs because they'll be in the comparison set.
 - **EarnMHs concern:** withdrawn. EarnMHs is calculated as PercentEntry / 100 × BudgetMHs — works fine regardless of ROCStep value. ROC is a separate optional weighted-progress feature; "X" in ROCStep just means the optional ROC lookup won't match anything, which is harmless.
 - **Snapshot modification concern:** withdrawn. The Schedule module's detail table already edits snapshots routinely, so adding new rows to a snapshot fits the existing workflow.

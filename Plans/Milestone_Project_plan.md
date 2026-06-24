@@ -90,7 +90,7 @@ Frozen copy of Activity at weekly submission time.
 - Excel import/export (OldVantage compatible)
 - Cell editing with auto-save
 - Assignment/ownership with email notifications
-- Metadata validation (9 required fields)
+- Metadata validation (10 required fields)
 - Soft delete (Azure IsDeleted flag)
 - User-defined filters (multi-condition with AND/OR logic)
 - Prorate BudgetMHs across filtered activities (proportional distribution)

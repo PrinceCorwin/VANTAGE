@@ -420,6 +420,9 @@ namespace VANTAGE
             CREATE INDEX IF NOT EXISTS idx_assigned_to ON Activities(AssignedTo);
             CREATE INDEX IF NOT EXISTS idx_unique_id ON Activities(UniqueID);
             CREATE INDEX IF NOT EXISTS idx_roc_id ON Activities(ROCID);
+            -- Composite for SyncManager pull-guard: finds locally-dirty rows in a
+            -- pulled project without scanning the full per-project row set.
+            CREATE INDEX IF NOT EXISTS idx_project_dirty ON Activities(ProjectID, LocalDirty);
             CREATE INDEX IF NOT EXISTS idx_column_name ON ColumnMappings(ColumnName);
             CREATE INDEX IF NOT EXISTS idx_schedule_weekenddate ON Schedule(WeekEndDate);
             CREATE INDEX IF NOT EXISTS idx_schedprojmap_weekenddate ON ScheduleProjectMappings(WeekEndDate);
@@ -785,6 +788,24 @@ namespace VANTAGE
                         CREATE NONCLUSTERED INDEX IX_ProgressSnapshots_Group_Lookup
                         ON VMS_ProgressSnapshots (AssignedTo, ProjectID, WeekEndDate)
                         INCLUDE (ProgDate);
+                        SELECT 1;
+                    END
+                    ELSE
+                        SELECT 0;
+                ";
+                createdCount += Convert.ToInt32(cmd.ExecuteScalar() ?? 0);
+
+                // Index for SyncManager.PullRecordsAsync delta query:
+                // SELECT * FROM VMS_Activities WHERE ProjectID=@p AND SyncVersion>@v ORDER BY SyncVersion.
+                // Without this, every pull scans the project's row set to find changed rows —
+                // single-record syncs measured at 31s for 39k-row projects before the index.
+                cmd.CommandText = @"
+                    IF NOT EXISTS (SELECT 1 FROM sys.indexes
+                                   WHERE name = 'IX_VMS_Activities_Project_SyncVersion'
+                                   AND object_id = OBJECT_ID('VMS_Activities'))
+                    BEGIN
+                        CREATE NONCLUSTERED INDEX IX_VMS_Activities_Project_SyncVersion
+                        ON VMS_Activities (ProjectID, SyncVersion);
                         SELECT 1;
                     END
                     ELSE

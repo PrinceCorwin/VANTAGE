@@ -303,12 +303,24 @@ namespace VANTAGE.Dialogs
                         message += $"\n... and {pushResult.FailedRecords.Count - 5} more";
                 }
 
-                AppLogger.Info($"Sync completed: {pushResult.PushedRecords} pushed, {pullResult.PulledRecords} pulled, {localRecordsRemoved} removed, {pushResult.ValidationFailedUniqueIds.Count} validation-blocked (MyRecordsOnly={myRecordsOnly})",
+                // Pull-guard: Azure had newer versions for rows still LocalDirty = 1
+                // (push-blocked). Pull declined to overwrite to protect the user's
+                // pending edits. Surfacing the count tells the user Azure changed
+                // underneath them and their local copy was preserved.
+                if (pullResult.SkippedDirtyConflicts.Count > 0)
+                {
+                    int conflicts = pullResult.SkippedDirtyConflicts.Count;
+                    message += $"\n\n{conflicts} of your unsynced row(s) had newer data in Azure. " +
+                               "Your local edits were preserved — fix the validation issues and re-sync to push.";
+                }
+
+                AppLogger.Info($"Sync completed: {pushResult.PushedRecords} pushed, {pullResult.PulledRecords} pulled, {localRecordsRemoved} removed, {pushResult.ValidationFailedUniqueIds.Count} validation-blocked, {pullResult.SkippedDirtyConflicts.Count} pull-conflicts preserved (MyRecordsOnly={myRecordsOnly})",
                     "SyncDialog.BtnConfirmSync_Click", App.CurrentUser?.Username);
 
                 bool syncIncomplete = !string.IsNullOrEmpty(pushResult.ErrorMessage)
                     || pushResult.ValidationFailedUniqueIds.Count > 0
-                    || pushResult.FailedRecords.Count > 0;
+                    || pushResult.FailedRecords.Count > 0
+                    || pullResult.SkippedDirtyConflicts.Count > 0;
                 var messageTitle = syncIncomplete ? "Sync Incomplete" : "Sync Complete";
                 var messageIcon = syncIncomplete ? MessageBoxImage.Warning : MessageBoxImage.None;
                 AppMessageBox.Show(message, messageTitle, MessageBoxButton.OK, messageIcon);
@@ -331,34 +343,95 @@ namespace VANTAGE.Dialogs
                 chkMyRecordsOnly.IsEnabled = true;
             }
         }
-        // Remove local records not owned by current user for selected projects
+        // Remove local records not owned by current user for selected projects.
+        //
+        // Ownership is read from AZURE, not from the local AssignedTo column.
+        // MyRecordsOnly's pull filter (`AND AssignedTo = @owner`) excludes any
+        // row that was reassigned to someone else in Azure, so the local copy
+        // never sees the update and its local AssignedTo stays stale. A delete
+        // keyed on local AssignedTo would miss those rows entirely. Querying
+        // Azure for "what's actually mine right now" is authoritative.
         private static int RemoveNonOwnedLocalRecords(List<string> projectIds, string currentUsername)
         {
             try
             {
-                using var connection = DatabaseSetup.GetConnection();
-                connection.Open();
+                // Fetch the authoritative "still mine" set from Azure for the
+                // selected projects.
+                HashSet<string> stillMine = new(StringComparer.OrdinalIgnoreCase);
+                using (var azureConn = AzureDbManager.GetConnection())
+                {
+                    azureConn.Open();
+                    var azureProjectParams = string.Join(",", projectIds.Select((_, i) => $"@p{i}"));
+                    var azureCmd = azureConn.CreateCommand();
+                    azureCmd.CommandTimeout = 0;
+                    azureCmd.CommandText = $@"
+                        SELECT UniqueID FROM VMS_Activities
+                        WHERE ProjectID IN ({azureProjectParams})
+                          AND AssignedTo = @username
+                          AND IsDeleted = 0";
+                    for (int i = 0; i < projectIds.Count; i++)
+                    {
+                        azureCmd.Parameters.AddWithValue($"@p{i}", projectIds[i]);
+                    }
+                    azureCmd.Parameters.AddWithValue("@username", currentUsername);
+                    using var azureReader = azureCmd.ExecuteReader();
+                    while (azureReader.Read())
+                    {
+                        stillMine.Add(azureReader.GetString(0));
+                    }
+                }
 
-                // Build project filter
-                var projectParams = string.Join(",", projectIds.Select((_, i) => $"@p{i}"));
+                // Stream local UniqueIDs in the selected projects and collect
+                // any that aren't in the Azure "still mine" set.
+                using var localConn = DatabaseSetup.GetConnection();
+                localConn.Open();
 
-                var cmd = connection.CreateCommand();
-                cmd.CommandText = $@"
-            DELETE FROM Activities 
-            WHERE ProjectID IN ({projectParams}) 
-            AND AssignedTo != @username";
-
+                var localProjectParams = string.Join(",", projectIds.Select((_, i) => $"@p{i}"));
+                var localCmd = localConn.CreateCommand();
+                localCmd.CommandText = $"SELECT UniqueID FROM Activities WHERE ProjectID IN ({localProjectParams})";
                 for (int i = 0; i < projectIds.Count; i++)
                 {
-                    cmd.Parameters.AddWithValue($"@p{i}", projectIds[i]);
+                    localCmd.Parameters.AddWithValue($"@p{i}", projectIds[i]);
                 }
-                cmd.Parameters.AddWithValue("@username", currentUsername);
 
-                int deleted = cmd.ExecuteNonQuery();
+                var toDelete = new List<string>();
+                using (var localReader = localCmd.ExecuteReader())
+                {
+                    while (localReader.Read())
+                    {
+                        string uid = localReader.GetString(0);
+                        if (!stillMine.Contains(uid))
+                        {
+                            toDelete.Add(uid);
+                        }
+                    }
+                }
+
+                if (toDelete.Count == 0) return 0;
+
+                // Batched DELETE — keeps the parameter count well under SQLite's
+                // default ceiling and scales to large reassignment churn.
+                const int batchSize = 500;
+                int deleted = 0;
+                using var tx = localConn.BeginTransaction();
+                for (int i = 0; i < toDelete.Count; i += batchSize)
+                {
+                    int end = Math.Min(i + batchSize, toDelete.Count);
+                    var ps = string.Join(",", Enumerable.Range(0, end - i).Select(k => $"@u{k}"));
+                    var deleteCmd = localConn.CreateCommand();
+                    deleteCmd.Transaction = tx;
+                    deleteCmd.CommandText = $"DELETE FROM Activities WHERE UniqueID IN ({ps})";
+                    for (int k = i; k < end; k++)
+                    {
+                        deleteCmd.Parameters.AddWithValue($"@u{k - i}", toDelete[k]);
+                    }
+                    deleted += deleteCmd.ExecuteNonQuery();
+                }
+                tx.Commit();
 
                 if (deleted > 0)
                 {
-                    AppLogger.Info($"Removed {deleted} non-owned records from local database (MyRecordsOnly sync)",
+                    AppLogger.Info($"MyRecordsOnly sync removed {deleted} local record(s) no longer assigned to user in Azure",
                         "SyncDialog.RemoveNonOwnedLocalRecords", App.CurrentUser?.Username);
                 }
 
