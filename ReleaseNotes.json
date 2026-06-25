@@ -1,6 +1,16 @@
 {
   "releases": [
     {
+      "version": "26.2.25",
+      "date": "2026-06-25",
+      "highlights": [
+        "Fix — Reassigning records now actually updates the assignment everywhere. Previously (regression in 26.2.24), you could reassign a batch of records, see 'Assignment worked', send the email, but your own grid wouldn't refresh and the recipient wouldn't see the records on their next sync. The records WERE correctly updated on Azure, but a versioning bug left them below the cutoff that determines what gets pulled. Fixed — every reassign now propagates to every user on next sync.",
+        "Improvement — Large sync pulls are dramatically faster. A 39,000-row pull dropped from around 2 minutes to about 30 seconds in field testing. Small/incremental syncs were already fast and are unchanged. Pull now picks the right query plan based on how many rows are coming back.",
+        "Fix — Admin → Deleted Records now opens reliably even when Azure is under heavy load. The project-list query was hitting a 30-second timeout under stress; that's been lifted to 5 minutes and a targeted index added so the dialog opens fast every time.",
+        "Fix — Admin → Deleted Records: after Purging or Restoring records, the grid now refreshes automatically. Previously you had to click Refresh manually to see the result of your action."
+      ]
+    },
+    {
       "version": "26.2.24",
       "date": "2026-06-25",
       "highlights": [

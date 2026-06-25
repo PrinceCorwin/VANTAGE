@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.2.24",
-  "releaseDate": "2026-06-25T00:00:00Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.2.24/VANTAGE-26.2.24.zip",
-  "zipSizeBytes": 151724129,
-  "sha256": "595869C28930A514A64A6ED536D589D6F306225E75F999C449F9F284B80AFE43",
-  "releaseNotes": "UOM is now a required field; sync now correctly does partial pushes; pull protects your unsaved edits from being silently overwritten; reassigned-away rows correctly update locally; My Records Only cleans up reassigned records; Deleted Records restore scans for metadata issues; major sync speedup via Azure index; concurrent-push version-tracking drift fixed."
+  "currentVersion": "26.2.25",
+  "releaseDate": "2026-06-25T15:48:49Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.2.25/VANTAGE-26.2.25.zip",
+  "zipSizeBytes": 151725371,
+  "sha256": "C37C665FA239FA2E7E7FCD3AE1AFF0EC5D8DA45EBDED9B6151A3335ED522FA29",
+  "releaseNotes": "Hotfix — reassigning records now actually updates the assignment everywhere (regression in 26.2.24); large sync pulls dramatically faster (39k rows ~2 min → ~30 sec); Admin → Deleted Records opens reliably under heavy Azure load and the grid auto-refreshes after Purge/Restore."
 }
