@@ -1,6 +1,20 @@
 {
   "releases": [
     {
+      "version": "26.2.24",
+      "date": "2026-06-25",
+      "highlights": [
+        "New — UOM is now a required field. Activities with a blank UOM are flagged in the metadata-error badge, blocked from sync (the bad row stays unsaved while your other valid edits push), and block Submit Week. The UOM column highlights red when blank, matching the other required-field columns. If you have a large number of records with blank UOM today, the badge will tick up — fix them as you go, or coordinate a bulk fill with your project lead.",
+        "Improvement — Sync now actually performs partial pushes when validation fails. Previously a single bad row blocked the entire sync from running; now the valid rows push and the bad rows stay marked unsaved with a clear message in the sync-complete dialog. Matches the documented behavior that's been in place since June.",
+        "Improvement — Sync now protects your unsaved edits from being silently overwritten. If a row you have pending edits on was changed in Azure (admin reassign, another user's push, ProgressLog upload, etc.) and is currently blocked from sync on your side, the pull will preserve your local copy and report 'N of your unsynced row(s) had newer data in Azure'. Resolve by fixing the validation issue and re-syncing — your edit then pushes and wins.",
+        "Improvement — If a row you were editing was reassigned to someone else in Azure, the pull now correctly updates the row's owner locally instead of leaving it stuck showing you as the owner forever.",
+        "Improvement — My Records Only sync now correctly removes records that were reassigned to other users. Previously a row reassigned away from you while you weren't looking could remain in your local cache indefinitely.",
+        "Improvement — Admin → Deleted Records → Restore now scans the selected records for metadata issues before flipping IsDeleted. If any would land with missing required fields or invalid dates, the confirmation dialog warns the admin with the offender list. You can still proceed (sometimes a restore is the point), but you see the cost first.",
+        "Improvement — Sync overhead reduced. Pull queries against VMS_Activities now use a proper index — single-record syncs that previously took 30+ seconds of fixed overhead now finish in under 2 seconds. Larger syncs benefit by the same amount of saved overhead.",
+        "Improvement — Background sync mechanics hardened. Resolved a long-standing scenario where concurrent activity in Azure during a bulk push could cause silent version-tracking drift across users. The drift mechanism is gone going forward. (One-time cleanup of any rows already affected by past drift is being tracked separately.)"
+      ]
+    },
+    {
       "version": "26.2.23",
       "date": "2026-06-19",
       "highlights": [

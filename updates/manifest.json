@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.2.23",
-  "releaseDate": "2026-06-19T07:59:08Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.2.23/VANTAGE-26.2.23.zip",
-  "zipSizeBytes": 151720072,
-  "sha256": "AECD455974AE68F9DB26B1636C360E595ABDC1B1165EF385CBBB553614352D58",
-  "releaseNotes": "Validate My Records and Audit All Records tools, partial-sync validation gate, Submit Week extended validation, Snapshot Modify gets Find/Replace plus dramatic speedup, Progress Books fixes, and AI Takeoff REDT/REDC weld count fix."
+  "currentVersion": "26.2.24",
+  "releaseDate": "2026-06-25T00:00:00Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.2.24/VANTAGE-26.2.24.zip",
+  "zipSizeBytes": 151724129,
+  "sha256": "595869C28930A514A64A6ED536D589D6F306225E75F999C449F9F284B80AFE43",
+  "releaseNotes": "UOM is now a required field; sync now correctly does partial pushes; pull protects your unsaved edits from being silently overwritten; reassigned-away rows correctly update locally; My Records Only cleans up reassigned records; Deleted Records restore scans for metadata issues; major sync speedup via Azure index; concurrent-push version-tracking drift fixed."
 }
