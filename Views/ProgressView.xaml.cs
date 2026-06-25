@@ -4316,20 +4316,12 @@ namespace VANTAGE.Views
                     }
                 }
 
-                // Check metadata errors
+                // Refresh the metadata-error badge before sync. Validation-failed
+                // rows are NOT blocked here — SyncManager.PushRecordsAsync runs a
+                // per-row partial gate that pushes the valid rows and leaves
+                // invalid rows LocalDirty = 1 for the next attempt; the sync-complete
+                // dialog reports the outcome.
                 await CalculateMetadataErrorCount();
-                if (_viewModel.MetadataErrorCount > 0)
-                {
-                    AppMessageBox.Show(
-                        $"Cannot sync. You have {_viewModel.MetadataErrorCount} record(s) with missing required metadata.\n\n" +
-                        "Click 'Metadata Errors' button to view and fix these records.\n\n" +
-                        $"Required fields: {ActivityRequiredMetadata.FieldsDisplay}\n" +
-                        "Conditional: ActStart (when % > 0), ActFin (when % = 100)",
-                        "Metadata Errors",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Warning);
-                    return;
-                }
 
                 var syncDialog = new SyncDialog();
                 bool? dialogResult = syncDialog.ShowDialog();

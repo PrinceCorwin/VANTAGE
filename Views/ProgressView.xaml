@@ -178,6 +178,16 @@
                 </DataTrigger>
             </Style.Triggers>
         </Style>
+        <Style x:Key="UOMRequiredStyle" TargetType="syncfusion:GridCell" BasedOn="{StaticResource {x:Type syncfusion:GridCell}}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=UOM}" Value="">
+                    <Setter Property="Background" Value="{DynamicResource StatusRedBg}"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Path=UOM}" Value="{x:Null}">
+                    <Setter Property="Background" Value="{DynamicResource StatusRedBg}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
 
         <!-- Conditional required date styles (depend on PercentEntry value) -->
         <Style x:Key="ActStartRequiredStyle" TargetType="syncfusion:GridCell" BasedOn="{StaticResource {x:Type syncfusion:GridCell}}">
@@ -2100,7 +2110,8 @@
                            Width="80"
                            AllowEditing="True"
                            AllowFiltering="True"
-                           AllowSorting="True" />
+                           AllowSorting="True"
+                           CellStyle="{StaticResource UOMRequiredStyle}" />
 
                         <syncfusion:GridTextColumn MappingName="UpdatedBy"
                            HeaderText="UpdatedBy" Padding="4,0,4,0"

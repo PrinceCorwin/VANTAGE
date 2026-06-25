@@ -788,43 +788,61 @@ namespace VANTAGE.Utilities
 
                     AppLogger.Info($"Project {projectId}: {recordsToPull.Count} to pull, {recordsToDelete.Count} to delete", "SyncManager.PullRecords");
 
-                    // Pull-guard: never overwrite locally-dirty rows. Push runs before
-                    // pull in the sync sequence and resets LocalDirty = 0 on every
-                    // successfully-pushed row, so the only LocalDirty = 1 rows here
-                    // are the ones the push gate rejected (illegal metadata, date
-                    // rules, etc.). Skipping them preserves the user's pending edits;
-                    // resolution path is "fix the violation and re-sync" — push then
-                    // wins over Azure's newer version (last-write-wins as today).
+                    // Pull-guard: preserve locally-dirty rows ONLY when Azure says
+                    // ownership is unchanged. Push runs before pull and resets
+                    // LocalDirty = 0 on every successfully-pushed row, so the only
+                    // LocalDirty = 1 rows here are the ones the push gate rejected
+                    // (illegal metadata, date rules, etc.). For those rows:
+                    //   - If Azure's AssignedTo matches local's AssignedTo, ownership
+                    //     is stable — the dirty edit is a legitimate in-flight edit
+                    //     against a row the user still owns. Skip the overwrite so
+                    //     the edit survives until the user fixes the violation and
+                    //     re-pushes (push wins, last-write-wins as today).
+                    //   - If Azure's AssignedTo differs from local's, the row was
+                    //     reassigned out from under the user. Their blocked-dirty
+                    //     edit is on stale ownership and shouldn't be preserved —
+                    //     let the pull through so the local copy shows the new owner.
+                    //     Under MyRecordsOnly the pull filter excludes these rows
+                    //     anyway; under non-MyRecordsOnly this prevents the row from
+                    //     becoming a permanent "ghost" of stale ownership.
                     // Tombstones (IsDeleted = 1 in Azure) are NOT covered by this
                     // guard — delete-wins stays. Restore-side gating happens in
                     // DeletedRecordsView.BtnRestore_Click.
-                    HashSet<string> dirtyUidsInProject = new(StringComparer.OrdinalIgnoreCase);
+                    Dictionary<string, string> dirtyLocalAssignedTo = new(StringComparer.OrdinalIgnoreCase);
                     if (recordsToPull.Count > 0)
                     {
                         var dirtyCheckCmd = localConn.CreateCommand();
-                        dirtyCheckCmd.CommandText = "SELECT UniqueID FROM Activities WHERE ProjectID = @projectId AND LocalDirty = 1";
+                        dirtyCheckCmd.CommandText = "SELECT UniqueID, AssignedTo FROM Activities WHERE ProjectID = @projectId AND LocalDirty = 1";
                         dirtyCheckCmd.Parameters.AddWithValue("@projectId", projectId);
                         using var dirtyReader = dirtyCheckCmd.ExecuteReader();
                         while (dirtyReader.Read())
                         {
-                            dirtyUidsInProject.Add(dirtyReader.GetString(0));
+                            string uid = dirtyReader.GetString(0);
+                            string assignedTo = dirtyReader.IsDBNull(1) ? "" : dirtyReader.GetString(1);
+                            dirtyLocalAssignedTo[uid] = assignedTo;
                         }
                     }
 
-                    if (dirtyUidsInProject.Count > 0)
+                    if (dirtyLocalAssignedTo.Count > 0)
                     {
                         var filtered = new List<Dictionary<string, object>>(recordsToPull.Count);
                         foreach (var record in recordsToPull)
                         {
                             string uid = (string)record["UniqueID"];
-                            if (dirtyUidsInProject.Contains(uid))
+                            if (dirtyLocalAssignedTo.TryGetValue(uid, out string? localAssignedTo))
                             {
-                                result.SkippedDirtyConflicts.Add(uid);
+                                string azureAssignedTo = record.TryGetValue("AssignedTo", out var az) && az != null && az != DBNull.Value
+                                    ? az.ToString() ?? ""
+                                    : "";
+                                if (string.Equals(localAssignedTo, azureAssignedTo, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    // Ownership stable → preserve the dirty edit.
+                                    result.SkippedDirtyConflicts.Add(uid);
+                                    continue;
+                                }
+                                // Ownership changed → let the pull through, dirty edit is on stale ground.
                             }
-                            else
-                            {
-                                filtered.Add(record);
-                            }
+                            filtered.Add(record);
                         }
                         if (result.SkippedDirtyConflicts.Count > 0)
                         {
