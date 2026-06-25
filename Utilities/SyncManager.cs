@@ -725,23 +725,52 @@ namespace VANTAGE.Utilities
                         SettingsManager.GetAppSetting($"LastPulledSyncVersion_{projectId}", "0")
                     );
 
+                    // Cheap COUNT first so we can pick the right plan for the SELECT.
+                    // Why: IX_VMS_Activities_Project_SyncVersion (added 2026-06-24) is great
+                    // for small deltas — index seek finds the rows, a handful of key lookups
+                    // grab the other ~100 columns. At bulk-pull scale the per-row key lookups
+                    // dominate: measured 2026-06-25, 125k rows took 107s on the index plan
+                    // (~622k logical reads) vs 41s on a forced clustered scan (~147k reads).
+                    // SQL Server's tipping point is ~0.3% of table rows; we treat anything
+                    // over ForceScanThreshold as a bulk pull and force the clustered scan.
+                    long expectedRowCount;
+                    using (var countCmd = azureConn.CreateCommand())
+                    {
+                        countCmd.CommandTimeout = 60;
+                        var countSql = @"SELECT COUNT(*) FROM VMS_Activities
+                                         WHERE [ProjectID] = @projectId
+                                           AND [SyncVersion] > @lastVersion";
+                        if (!string.IsNullOrEmpty(ownerFilter))
+                            countSql += " AND [AssignedTo] = @ownerFilter";
+                        countCmd.CommandText = countSql;
+                        countCmd.Parameters.AddWithValue("@projectId", projectId);
+                        countCmd.Parameters.AddWithValue("@lastVersion", lastPulledVersion);
+                        if (!string.IsNullOrEmpty(ownerFilter))
+                            countCmd.Parameters.AddWithValue("@ownerFilter", ownerFilter);
+                        expectedRowCount = Convert.ToInt64(countCmd.ExecuteScalar() ?? 0L);
+                    }
+
+                    const long ForceScanThreshold = 5000L;
+                    bool useForcedScan = expectedRowCount > ForceScanThreshold;
+
                     var pullCmd = azureConn.CreateCommand();
                     pullCmd.CommandTimeout = 0;
 
-                    // Build query with optional owner filter
-                    var sql = @"
-                            SELECT * FROM VMS_Activities
-                            WHERE [ProjectID] = @projectId
-                              AND [SyncVersion] > @lastVersion";
-
+                    // Build query with optional owner filter and adaptive plan hint.
+                    // For the forced-scan path we also drop ORDER BY — sorting 100k+ rows
+                    // on top of a clustered scan would spill to tempdb and erase the win.
+                    // maxVersionPulled (line below) only needs the MAX, not ordered reads.
+                    var sb = new System.Text.StringBuilder();
+                    sb.Append("SELECT * FROM VMS_Activities");
+                    if (useForcedScan)
+                        sb.Append(" WITH (INDEX(0))");
+                    sb.Append(" WHERE [ProjectID] = @projectId AND [SyncVersion] > @lastVersion");
                     if (!string.IsNullOrEmpty(ownerFilter))
-                    {
-                        sql += " AND [AssignedTo] = @ownerFilter";
-                    }
+                        sb.Append(" AND [AssignedTo] = @ownerFilter");
+                    if (!useForcedScan)
+                        sb.Append(" ORDER BY [SyncVersion]");
 
-                    sql += " ORDER BY [SyncVersion]";
-
-                    pullCmd.CommandText = sql;
+                    pullCmd.CommandText = sb.ToString();
                     pullCmd.Parameters.AddWithValue("@projectId", projectId);
                     pullCmd.Parameters.AddWithValue("@lastVersion", lastPulledVersion);
 
@@ -749,6 +778,10 @@ namespace VANTAGE.Utilities
                     {
                         pullCmd.Parameters.AddWithValue("@ownerFilter", ownerFilter);
                     }
+
+                    AppLogger.Info(
+                        $"Project {projectId}: expecting {expectedRowCount} rows, plan={(useForcedScan ? "clustered scan" : "index seek")}",
+                        "SyncManager.PullRecords");
 
                     // Read all records into memory first
                     var recordsToPull = new List<Dictionary<string, object>>();

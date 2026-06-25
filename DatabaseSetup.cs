@@ -813,6 +813,27 @@ namespace VANTAGE
                 ";
                 createdCount += Convert.ToInt32(cmd.ExecuteScalar() ?? 0);
 
+                // Filtered index for DeletedRecordsView queries:
+                // SELECT DISTINCT ProjectID FROM VMS_Activities WHERE IsDeleted = 1.
+                // Without this, the dialog's project-list load full-scans the clustered
+                // index for IsDeleted=1; under Azure load that exceeds the default 30s
+                // timeout. Filtered index is tiny (deleted rows only) and answers both
+                // the DISTINCT-projects load and the per-project Refresh query.
+                cmd.CommandText = @"
+                    IF NOT EXISTS (SELECT 1 FROM sys.indexes
+                                   WHERE name = 'IX_VMS_Activities_Deleted_ProjectID'
+                                   AND object_id = OBJECT_ID('VMS_Activities'))
+                    BEGIN
+                        CREATE NONCLUSTERED INDEX IX_VMS_Activities_Deleted_ProjectID
+                        ON VMS_Activities (ProjectID)
+                        WHERE IsDeleted = 1;
+                        SELECT 1;
+                    END
+                    ELSE
+                        SELECT 0;
+                ";
+                createdCount += Convert.ToInt32(cmd.ExecuteScalar() ?? 0);
+
                 sw.Stop();
 
                 string elapsed = sw.Elapsed.TotalSeconds < 60

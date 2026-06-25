@@ -6134,10 +6134,14 @@ namespace VANTAGE.Views
             UPDATE a
             SET AssignedTo = @newOwner,
                 UpdatedBy = @updatedBy,
-                UpdatedUtcDate = @updatedDate,
-                SyncVersion = SyncVersion + 1
+                UpdatedUtcDate = @updatedDate
             FROM VMS_Activities a
-            INNER JOIN #UpdateBatch b ON a.UniqueID = b.UniqueID";
+            INNER JOIN #UpdateBatch b ON a.UniqueID = b.UniqueID
+            -- SyncVersion intentionally omitted from SET so TR_VMS_Activities_SyncVersion
+            -- auto-bumps from VMS_GlobalSyncVersion. Writing it explicitly here would
+            -- short-circuit the trigger (IF UPDATE(SyncVersion) RETURN) and leave the
+            -- bumped value below other users' LastPulledSyncVersion, so the reassign
+            -- never reaches their local cache.";
                         updateCmd.Parameters.AddWithValue("@newOwner", selectedUser);
                         updateCmd.Parameters.AddWithValue("@updatedBy", currentUser);
                         updateCmd.Parameters.AddWithValue("@updatedDate", DateTime.UtcNow.ToString("o"));

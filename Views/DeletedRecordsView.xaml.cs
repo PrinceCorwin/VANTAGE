@@ -79,6 +79,7 @@ namespace VANTAGE.Views
                     connection.Open();
 
                     var cmd = connection.CreateCommand();
+                    cmd.CommandTimeout = 300;
                     cmd.CommandText = "SELECT DISTINCT ProjectID FROM VMS_Activities WHERE IsDeleted = 1 ORDER BY ProjectID";
 
                     using var reader = cmd.ExecuteReader();
@@ -128,6 +129,16 @@ namespace VANTAGE.Views
         }
 
         private async void BtnRefresh_Click(object? sender, RoutedEventArgs? e)
+        {
+            await LoadDeletedRecordsAsync();
+        }
+
+        // Awaitable load so callers like BtnPurge_Click can wait for the refresh
+        // to complete before their finally blocks run. Calling the async void
+        // BtnRefresh_Click handler directly used to fire-and-forget — the
+        // purge's finally would reset the busy indicator and status text before
+        // the Azure round-trip completed, making it look like nothing happened.
+        private async Task LoadDeletedRecordsAsync()
         {
             try
             {
@@ -199,7 +210,7 @@ namespace VANTAGE.Views
             {
                 AppMessageBox.Show("Error loading deleted records. See log for details.",
                     "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                AppLogger.Error(ex, "DeletedRecordsView.BtnRefresh_Click");
+                AppLogger.Error(ex, "DeletedRecordsView.LoadDeletedRecordsAsync");
                 txtStatus.Text = "Error loading records";
             }
             finally
@@ -508,7 +519,7 @@ namespace VANTAGE.Views
 
                 AppLogger.Info($"Admin restored {restored} records", "DeletedRecordsView.BtnRestore_Click", App.CurrentUser?.Username);
 
-                BtnRefresh_Click(sender, e);
+                await LoadDeletedRecordsAsync();
             }
             catch (Exception ex)
             {
@@ -615,7 +626,7 @@ namespace VANTAGE.Views
 
                 AppLogger.Warning($"Admin purged {purged} records permanently", "DeletedRecordsView.BtnPurge_Click", App.CurrentUser?.Username);
 
-                BtnRefresh_Click(sender, e);
+                await LoadDeletedRecordsAsync();
             }
             catch (Exception ex)
             {
