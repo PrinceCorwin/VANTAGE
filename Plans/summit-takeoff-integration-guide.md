@@ -205,13 +205,13 @@ Added by post-processor with aggregated labor metrics.
 
 ---
 
-## Remaining Work: Post-Processing Pipeline
+## Post-Processing Pipeline (Implemented)
 
-These will be added as post-processing in the C# app after download — no AWS changes needed. See also `Project_Status.md` backlog.
+Done in the C# app after download — no AWS changes needed. As of 2026-06-27 all stages below are implemented; this list is kept as a map of where each lives in the code.
 
-1. **Fabrication item generation** — Generate cut, bevel, handling records from Material tab
-2. **Rate sheet upload** — User provides Excel with unit rates
-3. **Rate application** — Match rates to items, calculate manhours
-4. **ROC splits** — Divide handling records by Rules of Credit
-5. **VANTAGE tab** — Column rename for direct import into Activities
-6. **Fitting makeup table** — For center-to-center length calculation
+1. **Fabrication item generation** — `Services/AI/TakeoffPostProcessor.cs`: `GenerateLaborRows()`, `ExplodeMaterialRow()`, `CreateLaborRow()`, `BuildConnectionPairs()`, `GenerateSplRows()`. CUT/BEV rates are folded into the BW/SW/THRD connection rows rather than emitted as separate records.
+2. **Rate sheet upload** — Per-project rate overrides via the rate management dialog (upload from Excel, RateSource column).
+3. **Rate application** — `TakeoffPostProcessor.ApplyRates()` + `RateSheetService.FindRate()` / `FindRateWithProjectOverride()`. BudgetMHs computed with rollup + material multipliers plus CUT/BEV add-ons; thickness → S-toggle → class rating → size-only fallback chain.
+4. **ROC splits** — `ImportTakeoffDialog.ApplyROCSplitsAsync()` + `CloneActivity()`. Matches rows by component + ShopField, modifies the first step in place, clones the rest, and distributes BudgetMHs across ROC steps by percentage.
+5. **VANTAGE tab** — Column mapping for direct import into Activities.
+6. **Fitting makeup table** — Loaded from `FittingMakeup.json` for center-to-center length calculation.
