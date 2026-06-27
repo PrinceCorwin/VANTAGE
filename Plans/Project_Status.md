@@ -1,6 +1,6 @@
 # MILESTONE - Project Status
 
-**Last Updated:** June 27, 2026 (ProgressLog cleanup: archived 3 finished projects + rebuilt the table as a clustered, compressed index, 16 GB → 4.7 GB; Deleted Records grid sped up via covering filtered index + ordinal-cached reads; Archive-a-Project feature added to backlog)
+**Last Updated:** June 27, 2026 (ProgressLog cleanup: archived 3 finished projects + rebuilt the table as a clustered, compressed index, 16 GB → 4.7 GB; Deleted Records grid sped up via covering filtered index + ordinal-cached reads; Archive-a-Project feature added to backlog; backlog cleanup)
 
 ## ⚠️ Cross-Machine Credential Notes
 - **How creds propagate:** `/publisher` (`Scripts/publish-update.ps1`, step 2) regenerates `appsettings.enc` from the publishing machine's local `appsettings.json` on every publish, strips the plaintext from the shipped output, and the release commit pushes the new `.enc`. Other machines pick up the new `.enc` via `git pull`; production picks it up via app update. `appsettings.json` itself is gitignored and never copied between machines — the encrypted file is the propagation channel. `CredentialService` reads plaintext `appsettings.json` first (dev), then falls back to `appsettings.enc`.
