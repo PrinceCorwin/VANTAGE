@@ -35,6 +35,8 @@
       "Bash(gh repo:*)",
       "Bash(powershell:*)",
       "PowerShell(New-Item *)",
+      "PowerShell(git *)",
+      "PowerShell(dotnet build *)",
       "Bash(cp:*)",
       "Bash(curl:*)",
       "Bash(find:*)",
