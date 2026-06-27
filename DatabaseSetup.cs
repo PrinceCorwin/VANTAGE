@@ -1,4 +1,4 @@
-﻿using Microsoft.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using Microsoft.Data.Sqlite;
 using Microsoft.Win32;
 using System;
@@ -813,19 +813,25 @@ namespace VANTAGE
                 ";
                 createdCount += Convert.ToInt32(cmd.ExecuteScalar() ?? 0);
 
-                // Filtered index for DeletedRecordsView queries:
-                // SELECT DISTINCT ProjectID FROM VMS_Activities WHERE IsDeleted = 1.
-                // Without this, the dialog's project-list load full-scans the clustered
-                // index for IsDeleted=1; under Azure load that exceeds the default 30s
-                // timeout. Filtered index is tiny (deleted rows only) and answers both
-                // the DISTINCT-projects load and the per-project Refresh query.
+                // Covering filtered index for DeletedRecordsView. Serves BOTH:
+                //   - the on-open project list: SELECT DISTINCT ProjectID ... WHERE IsDeleted = 1
+                //   - the Refresh grid load: 15 columns WHERE IsDeleted = 1 AND ProjectID IN (...)
+                //     ORDER BY UpdatedUtcDate DESC
+                // Leading (ProjectID, UpdatedUtcDate) drives the seek + ordering; the INCLUDE
+                // columns make the grid query fully covered, so there are no per-row key lookups
+                // back to the clustered index. The previous narrow (ProjectID)-only index left
+                // those lookups in place, which was slow for projects with many deleted rows.
+                // Filtered to deleted rows only, so it stays small. Supersedes the old
+                // IX_VMS_Activities_Deleted_ProjectID, which is dropped below.
                 cmd.CommandText = @"
                     IF NOT EXISTS (SELECT 1 FROM sys.indexes
-                                   WHERE name = 'IX_VMS_Activities_Deleted_ProjectID'
+                                   WHERE name = 'IX_VMS_Activities_Deleted_Grid'
                                    AND object_id = OBJECT_ID('VMS_Activities'))
                     BEGIN
-                        CREATE NONCLUSTERED INDEX IX_VMS_Activities_Deleted_ProjectID
-                        ON VMS_Activities (ProjectID)
+                        CREATE NONCLUSTERED INDEX IX_VMS_Activities_Deleted_Grid
+                        ON VMS_Activities (ProjectID, UpdatedUtcDate)
+                        INCLUDE (ActivityID, UniqueID, CompType, PhaseCategory, ROCStep, Description,
+                                 PhaseCode, SchedActNO, UDF1, UDF2, Quantity, BudgetMHs, PercentEntry, UpdatedBy)
                         WHERE IsDeleted = 1;
                         SELECT 1;
                     END
@@ -833,6 +839,16 @@ namespace VANTAGE
                         SELECT 0;
                 ";
                 createdCount += Convert.ToInt32(cmd.ExecuteScalar() ?? 0);
+
+                // Drop the superseded narrow filtered index (ProjectID-only). The covering
+                // index above answers everything it did, so maintaining both is wasted work.
+                cmd.CommandText = @"
+                    IF EXISTS (SELECT 1 FROM sys.indexes
+                               WHERE name = 'IX_VMS_Activities_Deleted_ProjectID'
+                               AND object_id = OBJECT_ID('VMS_Activities'))
+                        DROP INDEX IX_VMS_Activities_Deleted_ProjectID ON VMS_Activities;
+                ";
+                cmd.ExecuteNonQuery();
 
                 sw.Stop();
 

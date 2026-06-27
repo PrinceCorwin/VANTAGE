@@ -1,4 +1,4 @@
-﻿using Microsoft.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.ComponentModel;
 using System.Data;
 using System.Windows;
@@ -194,9 +194,55 @@ namespace VANTAGE.Views
                     }
 
                     using var reader = cmd.ExecuteReader();
+
+                    // Resolve column ordinals once instead of by-name per cell — at 100k
+                    // deleted rows that removes ~15 name lookups per row.
+                    int oActivityID = reader.GetOrdinal("ActivityID");
+                    int oUniqueID = reader.GetOrdinal("UniqueID");
+                    int oCompType = reader.GetOrdinal("CompType");
+                    int oPhaseCategory = reader.GetOrdinal("PhaseCategory");
+                    int oROCStep = reader.GetOrdinal("ROCStep");
+                    int oDescription = reader.GetOrdinal("Description");
+                    int oPhaseCode = reader.GetOrdinal("PhaseCode");
+                    int oSchedActNO = reader.GetOrdinal("SchedActNO");
+                    int oUDF1 = reader.GetOrdinal("UDF1");
+                    int oUDF2 = reader.GetOrdinal("UDF2");
+                    int oQuantity = reader.GetOrdinal("Quantity");
+                    int oBudgetMHs = reader.GetOrdinal("BudgetMHs");
+                    int oPercentEntry = reader.GetOrdinal("PercentEntry");
+                    int oUpdatedBy = reader.GetOrdinal("UpdatedBy");
+                    int oUpdatedUtcDate = reader.GetOrdinal("UpdatedUtcDate");
+
+                    // Ordinal-based safe readers (tolerate NULLs; Dbl tolerates real/decimal/int)
+                    string S(int i) => reader.IsDBNull(i) ? "" : reader.GetString(i);
+                    int I(int i) => reader.IsDBNull(i) ? 0 : reader.GetInt32(i);
+                    double Dbl(int i) => reader.IsDBNull(i) ? 0 : Convert.ToDouble(reader.GetValue(i));
+                    DateTime? Dt(int i)
+                    {
+                        if (reader.IsDBNull(i)) return null;
+                        return DateTime.TryParse(reader.GetString(i), out var dt) ? dt : (DateTime?)null;
+                    }
+
                     while (reader.Read())
                     {
-                        results.Add(MapReaderToActivity(reader));
+                        results.Add(new Activity
+                        {
+                            ActivityID = I(oActivityID),
+                            UniqueID = S(oUniqueID),
+                            CompType = S(oCompType),
+                            PhaseCategory = S(oPhaseCategory),
+                            ROCStep = S(oROCStep),
+                            Description = S(oDescription),
+                            PhaseCode = S(oPhaseCode),
+                            SchedActNO = S(oSchedActNO),
+                            UDF1 = S(oUDF1),
+                            UDF2 = S(oUDF2),
+                            Quantity = Dbl(oQuantity),
+                            BudgetMHs = Dbl(oBudgetMHs),
+                            PercentEntry = Dbl(oPercentEntry),
+                            UpdatedBy = S(oUpdatedBy),
+                            UpdatedUtcDate = Dt(oUpdatedUtcDate)
+                        });
                     }
 
                     return results;
@@ -217,57 +263,6 @@ namespace VANTAGE.Views
             {
                 SetActionBusy(false);
             }
-        }
-
-        // Limited mapper for the grid — keeps refresh fast over Azure latency.
-        private Activity MapReaderToActivity(SqlDataReader reader)
-        {
-            string GetStringSafe(string name)
-            {
-                try { int i = reader.GetOrdinal(name); return reader.IsDBNull(i) ? "" : reader.GetString(i); }
-                catch { return ""; }
-            }
-            int GetIntSafe(string name)
-            {
-                try { int i = reader.GetOrdinal(name); return reader.IsDBNull(i) ? 0 : reader.GetInt32(i); }
-                catch { return 0; }
-            }
-            double GetDoubleSafe(string name)
-            {
-                try { int i = reader.GetOrdinal(name); return reader.IsDBNull(i) ? 0 : reader.GetDouble(i); }
-                catch { return 0; }
-            }
-            DateTime? GetDateTimeSafe(string name)
-            {
-                try
-                {
-                    int i = reader.GetOrdinal(name);
-                    if (reader.IsDBNull(i)) return null;
-                    var s = reader.GetString(i);
-                    if (DateTime.TryParse(s, out var dt)) return dt;
-                    return null;
-                }
-                catch { return null; }
-            }
-
-            return new Activity
-            {
-                ActivityID = GetIntSafe("ActivityID"),
-                UniqueID = GetStringSafe("UniqueID"),
-                CompType = GetStringSafe("CompType"),
-                PhaseCategory = GetStringSafe("PhaseCategory"),
-                ROCStep = GetStringSafe("ROCStep"),
-                Description = GetStringSafe("Description"),
-                PhaseCode = GetStringSafe("PhaseCode"),
-                SchedActNO = GetStringSafe("SchedActNO"),
-                UDF1 = GetStringSafe("UDF1"),
-                UDF2 = GetStringSafe("UDF2"),
-                Quantity = GetDoubleSafe("Quantity"),
-                BudgetMHs = GetDoubleSafe("BudgetMHs"),
-                PercentEntry = GetDoubleSafe("PercentEntry"),
-                UpdatedBy = GetStringSafe("UpdatedBy"),
-                UpdatedUtcDate = GetDateTimeSafe("UpdatedUtcDate")
-            };
         }
 
         // Full mapper used only at export time — covers every Activity property. Skips LocalDirty (local-only).
