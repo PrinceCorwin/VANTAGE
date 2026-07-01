@@ -2069,28 +2069,37 @@ namespace VANTAGE
             return layout;
         }
 
-        // Apply a layout to all grids
+        // Apply a layout to all grids.
+        // Single source of truth: applying a layout writes the individual usersettings, then
+        // refreshes the live grids by RELOADING from those same usersettings. The on-screen
+        // state and the persisted state come from one read path (identical to app startup),
+        // so they can never drift — what you see is exactly what loads next launch.
         private void ApplyLayout(GridLayout layout)
         {
-            // Apply to Progress grid
+            // 1) Persist first — these keys are what both the grid and next startup read.
+            SaveLayoutToIndividualSettings(layout);
+
+            // 2) Progress grid: reload from the usersetting we just wrote. Sync the cached
+            //    instance even when it isn't the current view, so it can't later overwrite
+            //    the usersetting with stale columns.
             if (ContentArea.Content is ProgressView progressView)
             {
-                progressView.ApplyGridPreferences(layout.ProgressGrid);
+                progressView.ReloadColumnSettings();
+            }
+            else
+            {
+                _cachedProgressView?.ReloadColumnSettings();
             }
 
-            // Apply to Schedule grid
+            // 3) Schedule grid: reload from the usersettings we just wrote.
             if (ContentArea.Content is ScheduleView scheduleView)
             {
-                scheduleView.ApplyMasterGridPreferences(layout.ScheduleMasterGrid);
-                scheduleView.ApplyDetailGridPreferences(layout.ScheduleDetailGrid);
+                scheduleView.ReloadColumnSettings();
                 if (layout.ScheduleMasterHeight > 0 && layout.ScheduleDetailHeight > 0)
                 {
                     scheduleView.ApplySplitterHeights(layout.ScheduleMasterHeight, layout.ScheduleDetailHeight);
                 }
             }
-
-            // Also save to individual settings so they persist when views reload
-            SaveLayoutToIndividualSettings(layout);
         }
 
         // Save layout data to individual UserSettings keys for view persistence

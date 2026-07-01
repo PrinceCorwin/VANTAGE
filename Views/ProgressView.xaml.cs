@@ -46,6 +46,11 @@ namespace VANTAGE.Views
         private const string GridPrefsKey = "ProgressGrid.PreferencesJson";
         private const string FrozenColumnsKey = "ProgressGrid.FrozenColumnCount";
         private bool _skipSaveColumnState = false;
+        // Gates SaveColumnState until the deferred initial LoadColumnState has run. Without
+        // this, the Background-priority resize-save timer (started by startup auto-sizing)
+        // beats the ContextIdle-priority LoadColumnState on heavy grids and overwrites the
+        // user's saved column prefs with default columns before they're ever loaded.
+        private bool _columnStateInitialized = false;
         private HashSet<string> _xamlHiddenColumns = new(); // XAML-defined default hidden columns
 
         // Debounce timer for summary panel updates during rapid filter changes
@@ -1176,6 +1181,9 @@ namespace VANTAGE.Views
                 // Let layout/render complete, then apply prefs
                 Dispatcher.BeginInvoke(new Action(() =>
                 {
+                    // From here on, saves reflect the loaded prefs (not the startup default
+                    // columns), so it's safe to let SaveColumnState write again.
+                    _columnStateInitialized = true;
                     LoadColumnState();
                     LoadFrozenColumnCount();
                     ApplyUDFNames();
@@ -2247,6 +2255,11 @@ namespace VANTAGE.Views
             try
             {
                 if (_skipSaveColumnState)
+                    return;
+
+                // Don't let the startup resize-save timer clobber saved prefs before the
+                // deferred LoadColumnState has run (see _columnStateInitialized).
+                if (!_columnStateInitialized)
                     return;
 
                 if (sfActivities?.Columns == null || sfActivities.Columns.Count == 0)
