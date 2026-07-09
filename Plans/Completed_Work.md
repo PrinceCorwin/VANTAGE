@@ -6,6 +6,34 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### July 9, 2026 (MCAA Rate-Sheet — Key Contract Locked, Property Scoping, Cut-Row Expansion)
+
+**Extracted-values model & lookup key LOCKED.** Settled the MCAA rate-sheet key contract (full detail in `Plans/MCAA_Ratesheet_Plan.md` → LOCKED section). Three distinct extracted fields — component (`NewComp`), main material (`NewMaterial`), sizes — plus eight attributes with dedicated key segments (`Reducing`, `connection_qty`, `connection_type`, `pressure_rating`, `class_rating`, `schedule`, `weight_class`, `length`), and everything else as free **properties** alphabetized into `Merged_Props`. Key is one flat pipe-delimited string, blanks skipped; `connection_type` is comma-joined internally for multi-end items. **Size/connection ordering:** one connection per size (no collapse), (size, connection) pairs sorted **size-descending, connection A→Z on ties**, kept paired — done in C# at takeoff time and baked identically into the rate-sheet build (the two-sided identical sort is what satisfies the byte-identical key contract). Empty fields skipped (no sentinel); `connection_qty` kept (backup/validation + candidate AI extraction driver).
+
+**Property-search scoping — component + material.** Measured against FinalMerged: 129 distinct properties collapse to ~16 median per material and **~2 median per (component, material)**. Built `Plans/MCAA_Property_Applicability.xlsx` (two sheets: 574 component+material combos, and 30 materials). One master applicability table sliced per item rather than hundreds of physical tables; the AI-facing format (two-stage vs single-pass) stays open.
+
+**Cut-row material expansion + TUBE-as-property (applied to FinalMerged).** MCAA's cut table groups materials into five broad categories (`ALLOY`/`PLAS`/`IRON`/`TUBE`/`CONC`) rather than specific materials. Expanded each category's cut rows out to its member materials so C# composes the cut key with the item's real material and matches directly — no MCAA relabel logic (supersedes the old "C# relabels cut material to alloy" TODO). `TUBE` reclassified from a material to a **property** (its cut rate runs ~40–65% of the alloy rate, so its rows carry a `TUBE` property on all alloy metals). Added **1,107 rows** to `cdx_rates_review_FinalMerged-r2.xlsx` (ALLOY 261, TUBE 405, PLAS 351, IRON 63, CONC 27); filled `rate_id` for the 1,268 cut rows that lacked one (161 existing + 1,107 new), continuing from the prior max (61,452 → 62,720) without disturbing existing IDs. Verified the saved 116,016-row workbook is intact.
+
+**Deployment decided.** The rate sheet ships as a **downloaded SQLite reference file** saved to the local app-data folder (with the cache DB / logs / other reference files), version-checked on startup — mirroring VANTAGE's app-updater manifest / `plugins-index.json` pattern — **not hard-coded/bundled**. Decouples rate-sheet updates from app releases (it's ~116k rows and expected to at least double). FinalMerged `.xlsx` stays the producer artifact; the `xlsx → SQLite` exporter produces the shipped DB.
+
+**Plan-doc truth-pass.** Cleaned `Plans/MCAA_Ratesheet_Plan.md`: removed the superseded six-field extraction model, the resolved empty-field question, and stale ref-table mechanics; consolidated three deferred items into one "guiding the AI to detect and extract properties"; scrubbed the dead `body_type`/`matl_grade` terms; documented the safe-edit file location (root `SkySkraper\output\`, non-synced) and the Synology-Drive/Excel sharing-violation hazard. Also added the `lookup_key` formula to the TIG-root review workbook.
+
+**Key files:** `Plans/MCAA_Ratesheet_Plan.md` (extensive), `Plans/MCAA_Property_Applicability.xlsx` (new), `Plans/Project_Status.md` (MCAA section updated), producer workbook `SkySkraper/output/cdx_rates_review_FinalMerged-r2.xlsx` (+1,107 cut rows, cut-row IDs filled).
+
+### July 9, 2026 (Work Package Module — Testing Pass Complete)
+
+**Template editors validated across all editable types.** The five programmatic in-UI editors in `Views/WorkPackageView.xaml.cs` (`BuildCoverEditor`, `BuildListEditor`, `BuildGridEditor`, `BuildFormEditor` — Drawings excluded, see below) were exercised end to end: create-from-built-in clone, field/slider edits, list-item add/reorder/remove, section and column management, save/round-trip to the `FormTemplates` and `WPTemplates` SQLite tables via `TemplateRepository`, `Reset Defaults` restore for user-created templates, and the unsaved-changes navigation guard. WP templates verified for form ordering and expiration-day settings.
+
+**PDF preview validated.** The live Syncfusion `PdfViewerControl` preview was confirmed to match final generated output for single form templates and merged multi-form WP templates, with `TokenResolver` substitution correct against both real project/activity selections and placeholder (`SAMPLE`) context. Renderers exercised: `CoverRenderer`, `ListRenderer`, `GridRenderer`, `FormRenderer` on shared `BaseRenderer` header/footer logic, plus multi-page merge ordering.
+
+**Scope note — Drawings sub-feature stays deferred.** The Drawings form type (`BuildDrawingsEditor`, `DrawingsRenderer`, `FetchDrawingsFromLocalAsync`/`FetchDrawingsFromProcoreAsync`) remains intentionally hidden for v1 (`Visibility="Collapsed"`, filtered out of the Add-Form menu and editable-type dropdown). Its per-WP drawing-location architecture and the Procore fetch are still open — tracked under **Post-V1: Drawings Architecture** in `Project_Status.md` with the re-enable checklist. This testing pass covered everything except Drawings.
+
+**Result:** Work Package module removed from **Active Development** in `Project_Status.md`. No code changes — validation only.
+
+**Key files:** `Plans/Project_Status.md` (WP module dropped from Active Development).
+
+---
+
 ### June 27, 2026 (ProgressLog Table Cleanup + Rebuild + Deleted Records Grid Speedup)
 
 **ProgressLog: 3 finished projects archived out of the live table.** Moved all `VANTAGE_global_ProgressLog` rows for `23.006.` (7,441), `23.007.` (226,878), and `24.001.` (76,032) — 310,351 rows total — into the companion `VANTAGE_global_ProgressLog_archive` table via the safe copy → verify-count → guarded-delete pattern (insert excludes the identity column, built from a runtime `sys.columns` list; delete wrapped in a transaction that only commits when the row count matches exactly). Schema-compatibility of the two tables was verified first (live-vs-archive column compare returned zero mismatches). Backend SQL, not app code — `csurles` ran it in VS against Azure.
