@@ -52,13 +52,13 @@ NewComp | Reducing | NewMaterial | Merged_Props | connection_qty | connection_ty
 - `connection_type` is the only field with an internal delimiter: multiple ends are **comma**-joined within its single segment (`THRD,COMP`); every other boundary is a pipe.
 - Real examples: `BW|CS|WRAP|STD|0.5`, `ADPT|ABS|DWV|SPIG|2|SOLVCEM|1.5|2`.
 
-**Size / connection ordering (applied identically on both sides).**
-1. AI extracts **one connection per size**, kept paired (`connection_i ↔ size_i`), in any order — **no collapsing** identical connections.
-2. C# (and the rate-sheet build) sorts the **(size, connection) pairs by size descending**; pairs stay intact.
-3. On equal sizes, break ties by **connection A→Z**.
-4. Emit sizes and connections in that sorted order into the key.
+**Size / connection ordering — STORED ORDER, no sorting (updated 2026-07-10, supersedes the sort rule below).**
+1. AI extracts **one connection per size**, kept paired (`connection_i ↔ size_i`) — **no collapsing** identical connections.
+2. **Neither side sorts.** Sizes and connection tokens enter the key in **stored column order**; whatever order the rate-sheet row stores them in IS the canonical order, and C# must emit the takeoff item's pairs in that same order to get a byte-identical key.
+3. `Merged_Props` is the only sorted segment — its properties sort A→Z (unordered adjectives).
+4. Reducing flanges use a specific stored order: `BU` pairs with the larger size, and since `size_1` is the larger, `BU` leads the connection token list (`BU,BW`, `BU,THRD`, …). See the flange normalization notes in "Producer-side to-dos".
 
-The ordering lives in **C#** at takeoff time (the AI is relieved of it — it only has to keep the pairs aligned) and is baked identically into the rate-sheet's stored keys. That two-sided identical sort is what satisfies the byte-identical key-composition contract.
+**Superseded (do not apply):** an earlier contract sorted the (size, connection) pairs size-descending with a connection-A→Z tie-break, applied identically on both sides. That sort collapsed genuinely-distinct items into ~1,400 false-duplicate keys (a `2×1` reducer keyed identically to `1×2`), so sorting of sizes/connections was **dropped 2026-07-10**.
 
 ## Rate sheet structure (FinalMerged workbook → SQLite)
 
@@ -66,7 +66,7 @@ Producer rate sheet: `cdx_rates_review_FinalMerged-*.xlsx`, `Rates` sheet. Colum
 
 `rate_id, weblem_data_id, lookup_key, component, NewComp, Reducing, manhours, newManHours, description, method, material, NewMaterial, Merged_Props, Prop1…Prop6, connection_qty, connection_type, pressure_rating, class_rating, schedule, weight_class, length, size_1…size_7, dim_display, …`
 
-- `lookup_key` is an Excel `TEXTJOIN` formula concatenating the key segments above; `Merged_Props` is `TEXTJOIN` of the sorted `Prop1…Prop6`.
+- `lookup_key` is a plain **in-order** Excel `TEXTJOIN` of the key segments above — **no sorting** (stored column order is canonical); `Merged_Props` is `TEXTJOIN` of the A→Z-sorted `Prop1…Prop6`. Paste-ready current formulas: `SkySkraper/output/new_key_formulas.txt`.
 - ⚠️ **Row-1 header names are authoritative.** The Proj-Summary / session-handoff sheet's column-*letter* references are stale (columns were inserted/deleted between sessions) — always resolve columns by header name, never by letter.
 - The forthcoming SkySkraper `xlsx → SQLite` exporter ships this as the local rate DB VANTAGE consumes.
 
@@ -95,10 +95,27 @@ Why: the sheet is already ~116k rows and expected to at least double. Downloadin
 
 ## Producer-side to-dos (rate-sheet normalization)
 
-- [x] **Cut-row material expansion + TUBE-as-property — DONE 2026-07-09.** See the "Cut-row handling" section above.
+**Working file (as of 2026-07-10): `output/cdx_rates_review_FinalMerged-r3.xlsx`** — r2 was duplicated to r3 and all normalization passes land in r3; r2 is frozen as the pre-normalization snapshot. Per-pass backups go to `output/backups/`.
 
-- [ ] **Expand collapsed connection types.** Go through FinalMerged and extrapolate per-end connection types for multi-size items whose ends are all the same type — where a uniform connection was listed once, expand to one connection per size (`BW` → `BW,BW`) so every end is represented. (Today ~31k multi-size rows carry fewer connection tokens than sizes because identical ends were collapsed.)
-- [ ] **Re-sort the key to canonical order.** After expansion, rebuild the key so each row's (size, connection) pairs are ordered **size-descending, connection A→Z on ties** — fixing the 682 small-first rows and the fixed-connection-order rows in the same pass.
+**Per-end normalization framework (2026-07-10).** Profiling all 116,015 data rows with `connection_qty` as the authoritative end count showed sizes are collapsed as well as connection types. Canonical target: **every qty≥1 row carries exactly qty sizes and qty connection tokens** — pairs per end, so a same-size multi-end item (2"×2" adapter) lists the size once per end (`…|2|2`), never once per distinct value. The AI/C# side must emit the same. Buckets are approved and applied **one at a time** (user direction):
+
+| Bucket | Rows | Shape | Status |
+|---|---|---|---|
+| A — already per-end | ~38,404 (after B only; C reverted) | sizes = tokens = qty | final key rebuild only |
+| B — type collapsed | 31,183 | all sizes listed, 1 uniform token | ✅ DONE 2026-07-10 |
+| C — sizes collapsed | 6,976 | all tokens listed, 1 distinct size listed once | ⚠️ was applied then REVERTED — r3 rolled back to `before_sizeexpand` 2026-07-10; NOT currently applied for non-flange rows |
+| D — both collapsed | 25,051 | 1 size, 1 token, qty > 1 | **NEXT — awaiting approval** |
+| F — irregular | 216 | counts disagree in other ways | user review: `output/irregular_rows_review.csv` |
+| no-joint | 45,368 | qty 0/blank, no tokens | untouched |
+
+- [x] **Cut-row material expansion + TUBE-as-property — DONE 2026-07-09.** See the "Cut-row handling" section above.
+- [x] **Bucket B expansion — DONE 2026-07-10.** 31,183 rows: single uniform token replicated to qty (`BW` → `BW,BW`), `lookup_key` rebuilt from segment columns. **Verify-first mechanic:** a row was only touched if the key recomposed from its columns byte-matched the stored key — 0 mismatches across all 31k, which also validated the LOCKED key recipe sheet-wide. Post-write re-profile: B=0, bucket A grew exactly +31,183. Backup: `output/backups/FinalMerged-r3_BACKUP_before_connexpand.xlsx`. Mechanics: Excel COM via PowerShell — closed-file guard, whole-column array read/write, save; workbook must be closed in Excel during the run.
+- [~] **Bucket C expansion — applied 2026-07-10, then REVERTED.** r3 was rolled back to `before_sizeexpand`, so Bucket C is **not currently in the file** and must be re-applied (under the no-sort rule) before the final rebuild. Details of the original pass: 6,976 rows: the single size replicated to qty copies (`2` w/ `SOLVCEM,GSKT` → sizes `2|2`, key `…|SOLVCEM,GSKT|2|2`) — the pass that baked in the per-end duplicate-size rule. Same verify-first mechanic as B: 0 key mismatches, 0 shape anomalies (every candidate row had exactly one size and qty ≥ 2). `size_1…size_q` written, remaining size cells blanked, `lookup_key` rebuilt. Post-write re-profile: C=0, bucket A grew exactly +6,976 (→ 45,380); before/after diff against backup confirmed exactly 6,976 rows with real size changes. Backup: `output/backups/FinalMerged-r3_BACKUP_before_sizeexpand.xlsx`. Side effect (harmless): the whole-column rewrite converted empty-string size cells to truly blank cells sheet-wide.
+- [x] **Flange connection + size normalization — DONE 2026-07-10.** Flanges (`NewComp = FLG`, ~25,937 rows) carried no `connection_qty`/`connection_type`, which broke the uniform key rule (every other fitting keys on its connection). Assigned connections from properties + `raw_header_path` (WN→`BW,BU`, slip-on/plate→`SOWLD,BU`, threaded/companion/union→`THRD,BU`, blind/Van Stone/glass/back-up→`1 BU`, solder/socket-fusion/epoxy/lokring/mechanical/electro-fusion per the `x <method>` in the header path; BU always last) — 20,441 rows, 0 unknown. Then broke out sizes per connection: single-size replicated (`6`→`6|6`); reducers (2 sizes, `size_1` the larger in 100% of 15,797) keyed **BU-first** so `BU` pairs with the larger size; 38 qty-1/2-size specials (blind-with-FPT-tap, socket-reducing-epoxy, reducing back-up-solder) promoted to qty 2 with the joint included — 23,595 rows. Every flange now has `connection_qty == n_sizes`; keys regenerated. Flange manhours are handling-only (C# synthesizes separate bolt-up + weld/joint rows). Backups: `before_flangeconn`, `before_sizebreakout`. The flange-type → connection-profile map is the seed of the AI **Component Reference Table**. Open: confirm scraped flange manhours are handling-only (double-count guard); slip-on modeled as single `SOWLD` + BU (physically 2 fillet welds — revisit).
+- [ ] **Bucket D expansion — NEXT.** Replicate both the size and the token to qty (2" BW×BW item stored as one `2` + one `BW` becomes `2|2` + `BW,BW`).
+- [ ] **Bucket F — 216 irregular rows, user review.** Dominant patterns: WYE qty=2 with 3 sizes (45), TEE qty=3 with 4 sizes (30), BEND1-4 qty=2 with 3 sizes (26) — mostly CI/DWV fittings where WebLEM lists more dimension numbers than actual joints (`4|4|1.5|1.5` with `GSKT,THRD,THRD`); plus REPAD (2 dims, 1 connection) and a few WALLBRK rows with *fewer* sizes than qty. Full list: `output/irregular_rows_review.csv`. Decide per-pattern rules, then apply.
+- [ ] **PIPE/TUBE blank-qty rows — confirm leave-as-is.** 5,360 rows (PIPE 5,122 / TUBE 238) carry 1 size + 1 joint-method token (`BU`, `BW`, `BFUS`…) but blank `connection_qty`. They look intentional (pipe rows carrying their joining method) and are internally consistent; proposed disposition is no change — needs the user's confirm.
+- [ ] **Full stored-order key rebuild (final pass, after all buckets).** With sorting dropped (2026-07-10), the final pass is a straight rebuild of every key from its segment columns in **stored order** — no re-sort. (The ~1,400 rows that motivated the old re-sort were the false-duplicate symptom of sorting; not sorting resolves them.)
 
 ## OPEN — AI-facing reference tables (undecided, active discussion)
 
