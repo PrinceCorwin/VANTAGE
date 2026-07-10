@@ -103,7 +103,7 @@
           {
             "type": "command",
             "if": "Bash(cd *)",
-            "command": "python .claude/hooks/block-cd-vantage.py"
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/block-cd-vantage.py\""
           }
         ]
       }
@@ -114,7 +114,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python .claude/hooks/normalize-crlf.py"
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/normalize-crlf.py\""
           }
         ]
       }
