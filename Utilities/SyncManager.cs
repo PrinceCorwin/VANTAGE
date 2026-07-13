@@ -520,6 +520,12 @@ namespace VANTAGE.Utilities
                     // ============================================================
                     // STEP 6: Update local records with SyncVersion and clear LocalDirty
                     // ============================================================
+                    // INVARIANT: this clears LocalDirty in the DB only — the in-memory
+                    // Activity objects in ProgressView are NOT updated here. Every caller
+                    // that clears dirty state must follow with a grid reload from the DB
+                    // (ProgressView.RefreshData / RefreshAsync) so the grid, dirty
+                    // highlight, Unsynced button, and any in-memory LocalDirty reads stay
+                    // correct. Don't clear dirty in the DB from a new path without a reload.
                     using var localTransaction = localConn.BeginTransaction();
 
                     var updateLocalCmd = localConn.CreateCommand();

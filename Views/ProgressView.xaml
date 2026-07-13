@@ -307,19 +307,31 @@
                         Margin="0,20,0,20"/>
 
                     <Button x:Name="btnFilterLocalDirty"
-                            Style="{StaticResource SidebarButtonStyle}"
                             Content="Unsynced"
                             Height="35"
                             Margin="0,0,0,10"
-                            Background="{DynamicResource ControlBackground}"
-                            Foreground="{DynamicResource ForegroundColor}"
                             BorderBrush="{DynamicResource SidebarButtonBorder}"
                             BorderThickness="1"
                             HorizontalContentAlignment="Center"
                             Padding="10,0"
                             FontSize="11"
                             Click="BtnFilterLocalDirty_Click"
-                            ToolTip="Show records with unsaved local changes">
+                            ToolTip="Records with unsaved local changes (turns red while any exist)">
+                        <Button.Style>
+                            <!-- Neutral by default; fills with the Not Started red brushes
+                                 whenever any local record is unsynced (HasUnsyncedChanges).
+                                 Syncing clears LocalDirty and reverts the fill. -->
+                            <Style TargetType="Button" BasedOn="{StaticResource SidebarButtonStyle}">
+                                <Setter Property="Background" Value="{DynamicResource ControlBackground}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasUnsyncedChanges}" Value="True">
+                                        <Setter Property="Background" Value="{DynamicResource StatusRedBgBtn}"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource StatusRedFgBtn}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
                         <Button.Effect>
                             <DropShadowEffect ShadowDepth="4" BlurRadius="6" Direction="315"
                                               Opacity="{DynamicResource ButtonShadowOpacity}"

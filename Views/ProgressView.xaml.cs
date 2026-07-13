@@ -31,6 +31,10 @@ namespace VANTAGE.Views
     public partial class ProgressView : UserControl
     {
         private const int ColumnUniqueValueDisplayLimit = 1000; // configurable
+        // Snapshot retention window. Submit Week purges snapshots older than this, so
+        // the date picker also refuses week-ending dates older than this (they would be
+        // deleted by the same submit's cleanup step). Keep both call sites on this const.
+        private const int SnapshotRetentionDays = 21;
         private const int WM_MOUSEHWHEEL = 0x020E;
         private HwndSource? _hwndSource;
         private Dictionary<string, Syncfusion.UI.Xaml.Grid.GridColumn> _columnMap = new Dictionary<string, Syncfusion.UI.Xaml.Grid.GridColumn>();
@@ -406,9 +410,18 @@ namespace VANTAGE.Views
 
                     var count = Convert.ToInt32(cmd.ExecuteScalar());
 
+                    // Unsynced indicator: cheap existence check backed by the partial index
+                    // on LocalDirty. Unscoped — matches what the Unsynced filter shows and
+                    // what sync will push. Reads the DB, so it's correct even right after a
+                    // sync clears the flags there (in-memory objects may still be stale).
+                    var dirtyCmd = connection.CreateCommand();
+                    dirtyCmd.CommandText = "SELECT EXISTS(SELECT 1 FROM Activities WHERE LocalDirty = 1)";
+                    bool hasUnsynced = Convert.ToInt32(dirtyCmd.ExecuteScalar() ?? 0) == 1;
+
                     Application.Current.Dispatcher.Invoke(() =>
                     {
                         _viewModel.MetadataErrorCount = count;
+                        _viewModel.HasUnsyncedChanges = hasUnsynced;
                     });
                 });
             }
@@ -2840,6 +2853,20 @@ namespace VANTAGE.Views
 
         private bool _dataLoaded = false;
 
+        // Set by InvalidateData() when Activities are changed from outside this view
+        // (Tools -> Validate My Records, Schedule Change Log, snapshot revert, Excel
+        // import, etc.) while Progress is cached but not the active view. OnViewLoaded
+        // reloads on the next navigation so the grid, dirty highlight, and metadata
+        // badge reflect the change.
+        private bool _needsReload = false;
+
+        // Marks the cached view stale so it reloads on next navigation. Cheap flag only —
+        // deliberately avoids an eager full reload of a hidden 100k-row grid.
+        public void InvalidateData()
+        {
+            _needsReload = true;
+        }
+
         private async void OnViewLoaded(object sender, RoutedEventArgs e)
         {
             // Hand the row-style selector the same brush Syncfusion uses for its native
@@ -2847,8 +2874,17 @@ namespace VANTAGE.Views
             // already knows.
             SyncBulkSelectionBrushFromGrid();
 
-            // Skip reload if data is already in memory (cached view re-navigation)
-            if (_dataLoaded) return;
+            // Cached view re-navigation: skip the full initial load, but if data changed
+            // while we were hidden, do a one-time reload now (lazy — only when needed).
+            if (_dataLoaded)
+            {
+                if (_needsReload)
+                {
+                    _needsReload = false;
+                    await RefreshData();
+                }
+                return;
+            }
 
             // Load saved summary column preference before loading data
             _viewModel.LoadSummaryColumnPreference();
@@ -3469,6 +3505,23 @@ namespace VANTAGE.Views
                 var selectedWeekEndDate = datePicker.SelectedDate.Value;
                 var weekEndDateStr = selectedWeekEndDate.ToString("yyyy-MM-dd");
 
+                // Guard: refuse a week-ending date older than the retention window. Step 9
+                // below purges WeekEndDate < today - SnapshotRetentionDays, so a snapshot
+                // created for such a date would be deleted by the same submit's cleanup and
+                // never appear in the Snapshot Manager. Block it up front instead.
+                var retentionCutoff = DateTime.Today.AddDays(-SnapshotRetentionDays);
+                if (selectedWeekEndDate.Date < retentionCutoff)
+                {
+                    AppMessageBox.Show(
+                        $"Week ending {selectedWeekEndDate:MM/dd/yyyy} is older than the {SnapshotRetentionDays}-day " +
+                        "retention window and would be removed by automatic cleanup.\n\n" +
+                        $"Choose a week ending on or after {retentionCutoff:MM/dd/yyyy}.",
+                        "Date Too Old",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+                    return;
+                }
+
                 // Show busy indicator immediately so user sees feedback
                 busyDialog = new Dialogs.BusyDialog(Window.GetWindow(this), "Validating...");
                 busyDialog.Show();
@@ -4034,9 +4087,10 @@ namespace VANTAGE.Views
                         int skipped = skippedList.Count;
                         AppLogger.Info($"Created {snapshots} snapshots for week ending {weekEndDateStr} ({skipped} skipped)", "ProgressView.BtnSubmit_Click", currentUser);
 
-                        // Step 9: Purge old snapshots (older than 21 days from today)
+                        // Step 9: Purge old snapshots (older than the retention window from today)
                         reporter.Report("Cleaning up old snapshots...");
 
+                        var purgeCutoffStr = DateTime.Today.AddDays(-SnapshotRetentionDays).ToString("yyyy-MM-dd");
                         using (var purgeConn = AzureDbManager.GetConnection())
                         {
                             purgeConn.Open();
@@ -4045,13 +4099,13 @@ namespace VANTAGE.Views
                             purgeCmd.CommandText = @"
                                 DELETE FROM VMS_ProgressSnapshots
                                 WHERE WeekEndDate < @cutoffDate";
-                            purgeCmd.Parameters.AddWithValue("@cutoffDate", DateTime.Now.AddDays(-21).ToString("yyyy-MM-dd"));
+                            purgeCmd.Parameters.AddWithValue("@cutoffDate", purgeCutoffStr);
 
                             int purgedCount = purgeCmd.ExecuteNonQuery();
 
                             if (purgedCount > 0)
                             {
-                                AppLogger.Info($"Purged {purgedCount} old snapshots (before {DateTime.Now.AddDays(-21):yyyy-MM-dd})",
+                                AppLogger.Info($"Purged {purgedCount} old snapshots (before {purgeCutoffStr})",
                                     "ProgressView.BtnSubmit_Click", currentUser);
                             }
                         }
@@ -4932,6 +4986,9 @@ namespace VANTAGE.Views
             await _viewModel.RefreshAsync();
             UpdateRecordCount();
             DebouncedUpdateSummary();
+            // Reloaded rows may have changed dirty/metadata state (after sync, or a Tools
+            // operation that ran while this view was hidden) — keep the badge honest.
+            await CalculateMetadataErrorCount();
         }
 
         // Capture original value when cell edit begins

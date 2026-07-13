@@ -120,6 +120,16 @@ Sections follow VANTAGE's nav structure top to bottom. See `.claude/skills/finis
 **Why:** A trigger or transient Azure issue can cause an UPDATE to affect fewer rows than expected. Without verification, unverified records had `LocalDirty` cleared and the subsequent pull silently overwrote local data with old Azure values. The OUTPUT-INTO pattern guarantees the local clear matches the actual server-side mutation.
 **Date:** April 2026
 
+### Clearing `LocalDirty` in the DB Requires a Grid Reload; Indicators Read the DB
+**Rule:** Sync push clears `LocalDirty = 0` with a bulk SQL UPDATE on the local `Activities` table only — it does not mutate the in-memory `Activity` objects. Every path that clears dirty state (sync push, MainWindow bulk resets) must follow with a reload of the grid from the DB (`ProgressView.RefreshData` / `RefreshAsync`). The Unsynced indicator is therefore derived from a `SELECT EXISTS(... LocalDirty = 1)` against the DB (folded into `CalculateMetadataErrorCount`), never from the in-memory collection.
+**Why:** The in-memory objects stay stale-dirty after a push until a reload repopulates them, so any feature reading in-memory `LocalDirty` (reassign gate, Unsynced filter, dirty highlight, the red Unsynced button) would be wrong immediately after sync. Reading the DB — the sync source of truth — is always correct. Adding a new path that clears dirty in the DB without a reload would silently break these; a comment at the `SyncManager` clear site documents the invariant.
+**Date:** July 2026
+
+### Submit Week Refuses Weeks Older Than the Snapshot Retention Window
+**Rule:** `SnapshotRetentionDays` (21) is a single shared constant driving both the Submit Week Step-9 purge (`DELETE FROM VMS_ProgressSnapshots WHERE WeekEndDate < today - SnapshotRetentionDays`) and a guard in the Submit Week date picker that rejects a chosen week-ending date older than that window.
+**Why:** Without the guard, a user could pick a backdated week, submit it, and the same submit's cleanup step would immediately purge the just-created snapshot — it never appeared in the Snapshot Manager. One shared constant keeps the guard and the purge boundary from drifting apart.
+**Date:** July 2026
+
 ### Sync Uses Unlimited SQL Timeouts
 **Rule:** All `CommandTimeout` and `BulkCopyTimeout` values in the push and pull paths are set to 0 (unlimited). `ConnectTimeout` on the Azure connection is also 0.
 **Why:** Users on slow internet hit 30-second default timeouts mid-sync. Aborting partway through corrupts the LocalDirty/SyncVersion state — there is no partial-sync recovery. The sync must run to completion regardless of connection speed. Compare with the admin Progress Log upload path, which uses tiered timeouts because it has SfBusyIndicator and a dead-socket guard makes more sense there.
@@ -170,9 +180,14 @@ Sections follow VANTAGE's nav structure top to bottom. See `.claude/skills/finis
 ## Main Window
 
 ### Title-Bar Drag-from-Maximized Uses DIPs, Not `PointToScreen`
-**Rule:** `MainWindow.TitleBar_MouseLeftButtonDown` computes the cursor's screen position as `this.Left + clickInWindow.X` rather than calling `PointToScreen(clickInWindow)`. The window position is then assigned in DIPs.
+**Rule:** The restore-from-maximized repositioning (now in `MainWindow.TitleBar_MouseMove`) computes the cursor's screen position as `this.Left + cursorInWindow.X` rather than calling `PointToScreen(...)`. The window position is then assigned in DIPs.
 **Why:** `PointToScreen` returns physical pixels on high-DPI displays while `Window.Left`/`Top` use device-independent units. Mixing the two positioned the restored window off-screen by the scale factor (e.g., at 150% scaling, the window jumped 50% further than the cursor). Direct DIP math avoids the conversion entirely — a maximized window is at screen origin in DIPs, so window-local coordinates are screen coordinates. Any future code that mixes `PointToScreen` results with `Window.Left`/`Top` is suspect.
 **Date:** May 2026
+
+### Title-Bar Undock Requires a Hold-and-Move Gate
+**Rule:** Dragging the top toolbar undocks/restores a maximized window only after the left button is held ≥`TitleBarDragHoldMs` (200ms) AND the pointer moves ≥`TitleBarDragThreshold` (25 DIPs). Mouse-down only arms the drag and captures the mouse; `TitleBar_MouseMove` starts the actual `DragMove` once both gates clear; a release before then is treated as a click. Double-click still toggles maximize/restore.
+**Why:** The old handler called `DragMove` on mouse-down, so any click that wasn't on a button — including a fast misclick while the cursor was already moving toward a button — ripped a maximized window loose. The hold gate is the decisive one (a quick click-release never drags regardless of distance); the distance gate prevents a stationary long-press from jumping. Capturing the mouse on press is required so `MouseMove` keeps firing after the cursor leaves the 40px toolbar strip — without it, a downward drag started lower than ~15px exited the strip before the threshold tripped and never engaged.
+**Date:** July 2026
 
 ### Theme System Uses DynamicResource and Role-Based Token Names
 **Rule:** All theme-aware brushes/colors are referenced via `{DynamicResource ...}` (~1,119 instances). Resource keys are role-based (`ToolbarForeground`, `GridHeaderForeground`) rather than color-named (`DarkBlue`, `LightGray`).
@@ -204,10 +219,10 @@ Sections follow VANTAGE's nav structure top to bottom. See `.claude/skills/finis
 **Why:** Auto-hiding scrollbars were hard to find and interact with. Always-visible at 14px gives a stable target. Custom template scoping prevents the implicit style from breaking Syncfusion's internal scroll behavior.
 **Date:** March-April 2026
 
-### `ProgressView` Is Cached Across Navigations
-**Rule:** `MainWindow` caches the `ProgressView` instance and reuses it on every Progress-tab navigation. Force-reload happens only on Excel import and Reset Grid Layouts.
-**Why:** First load is unchanged in cost; every subsequent navigation is instant. Recreating the view on each nav was wasteful when the data hadn't changed.
-**Date:** February 2026
+### `ProgressView` Is Cached Across Navigations, Reloaded Lazily When Invalidated
+**Rule:** `MainWindow` caches the `ProgressView` instance and reuses it on every Progress-tab navigation. When Activities change from outside the module while Progress is hidden (Validate My Records, Schedule Change Log, Manage Snapshots revert/delete, Schedule save / P6 stubs), the caller marks the cached view stale via `ProgressView.InvalidateData()`; `OnViewLoaded` then does a one-time `RefreshData()` on the next navigation only if `_needsReload` is set. Normal tab-switching with no change stays instant — no reload, and no eager reload of a hidden grid. Wholesale-replacement paths (Excel import Replace/Combine, Clear Local, Reset Grid Layouts) drop/recreate the cached instance instead. MainWindow routes the activity-change cases through one helper, `RefreshProgressAfterActivityChangeAsync` (shown → reload now, hidden → invalidate).
+**Why:** First-load cost is unchanged and subsequent navigations stay instant, but the old "reload only if Progress is the active view" logic silently left the cached view stale after a cross-module change — the dirty highlight, Unsynced button, and metadata badge showed pre-change state until the next manual refresh. The lazy flag fixes correctness without reintroducing a 100k-row reload on every tab switch or eagerly reloading a view the user isn't looking at.
+**Date:** July 2026 (caching February 2026; lazy invalidation July 2026)
 
 ### `AnalysisView` Is Cached Across Navigations
 **Rule:** `MainWindow` caches the `AnalysisView` instance and reuses it on every Analysis-tab navigation. `AnalysisView_Loaded` runs the one-time init path only when `_dataLoaded` is false; subsequent navs short-circuit. `ThemeManager.ThemeChanged` is subscribed once in the constructor (not in `Loaded`) so re-Loaded events do not double-subscribe.

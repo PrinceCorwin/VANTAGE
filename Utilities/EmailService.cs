@@ -228,9 +228,22 @@ This is an automated message from VANTAGE: MS.";
 
                     try
                     {
-                        await client.SendAsync(WaitUntil.Started, emailMessage);
-                        AppLogger.Info($"Access request email sent to admin: {adminEmail}",
-                            "EmailService.SendAccessRequestEmailAsync");
+                        // WaitUntil.Completed polls until ACS reaches a terminal status, so a
+                        // downstream delivery failure surfaces here instead of silently reporting
+                        // success. Acceptable to block on — this is a one-off startup request.
+                        var sendOp = await client.SendAsync(WaitUntil.Completed, emailMessage);
+
+                        if (sendOp.Value.Status == EmailSendStatus.Succeeded)
+                        {
+                            AppLogger.Info($"Access request email delivered to admin: {adminEmail}",
+                                "EmailService.SendAccessRequestEmailAsync");
+                        }
+                        else
+                        {
+                            AppLogger.Warning($"Access request email to {adminEmail} ended with status: {sendOp.Value.Status}",
+                                "EmailService.SendAccessRequestEmailAsync");
+                            allSent = false;
+                        }
                     }
                     catch (Exception ex)
                     {

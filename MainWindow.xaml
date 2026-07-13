@@ -59,7 +59,9 @@
                 Background="{DynamicResource DarkestBackgroundColor}"
                 BorderBrush="{DynamicResource BorderColor}"
                 BorderThickness="0"
-                MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+                MouseLeftButtonDown="TitleBar_MouseLeftButtonDown"
+                MouseMove="TitleBar_MouseMove"
+                MouseLeftButtonUp="TitleBar_MouseLeftButtonUp">
 
             <Grid Height="40">
                 <Grid.ColumnDefinitions>

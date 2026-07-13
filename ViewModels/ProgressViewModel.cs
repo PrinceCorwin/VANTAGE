@@ -43,6 +43,21 @@ namespace VANTAGE.ViewModels
 
         public string MetadataErrorButtonText => $"Metadata Errors: {_metadataErrorCount}";
 
+        // True when any local record is unsynced (LocalDirty = 1). Drives the red fill on
+        // the Unsynced filter button. Set by ProgressView.CalculateMetadataErrorCount from
+        // a cheap EXISTS query, so it always reflects the DB (the sync source of truth).
+        private bool _hasUnsyncedChanges;
+        public bool HasUnsyncedChanges
+        {
+            get => _hasUnsyncedChanges;
+            set
+            {
+                if (_hasUnsyncedChanges == value) return;
+                _hasUnsyncedChanges = value;
+                OnPropertyChanged(nameof(HasUnsyncedChanges));
+            }
+        }
+
         // Summary stats column selection - allows user to choose which column drives Budget/Earned calculations
         private string _selectedSummaryColumn = "BudgetMHs";
         private PropertyInfo? _cachedSummaryProperty = typeof(Activity).GetProperty("BudgetMHs");

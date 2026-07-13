@@ -292,10 +292,24 @@ namespace VANTAGE
             }
         }
 
+        // Title-bar drag state. We arm a potential drag on mouse-down but only start the
+        // undock/DragMove once BOTH gates are cleared: the button has been held for at
+        // least TitleBarDragHoldMs, AND the pointer has moved past TitleBarDragThreshold.
+        // The hold gate is the important one — a quick click-and-release is always treated
+        // as a click, never a drag, no matter how far the cursor moved during it (e.g. a
+        // fast misclick toward a button). Tune either value if the drag feels too eager or
+        // too stubborn.
+        private const int TitleBarDragHoldMs = 200;
+        private const double TitleBarDragThreshold = 25.0;
+        private Point _titleBarDragStart;
+        private long _titleBarDownTime;
+        private bool _titleBarDragArmed;
+
         private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ClickCount == 2)
             {
+                _titleBarDragArmed = false;
                 WindowState = WindowState == WindowState.Maximized
                     ? WindowState.Normal
                     : WindowState.Maximized;
@@ -303,20 +317,50 @@ namespace VANTAGE
                 return;
             }
 
+            // Arm a drag but don't undock/move yet — TitleBar_MouseMove starts the actual
+            // drag only after the hold-time and movement gates are both cleared. Capture
+            // the mouse so MouseMove keeps firing even once the cursor leaves the 40px-tall
+            // toolbar strip; otherwise a downward drag that started lower than ~15px would
+            // exit the strip before the threshold trips and never engage.
+            _titleBarDragStart = e.GetPosition(this);
+            _titleBarDownTime = Environment.TickCount64;
+            _titleBarDragArmed = true;
+            (sender as UIElement)?.CaptureMouse();
+        }
+
+        private void TitleBar_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (!_titleBarDragArmed || e.LeftButton != MouseButtonState.Pressed)
+                return;
+
+            // Hold-time gate: until the button has been down long enough, this is still a
+            // (possibly moving) click, not a drag. Stay armed so a later move engages once
+            // the hold is satisfied. A quick click releases before this and never drags.
+            if (Environment.TickCount64 - _titleBarDownTime < TitleBarDragHoldMs)
+                return;
+
+            Point pos = e.GetPosition(this);
+            if (Math.Abs(pos.X - _titleBarDragStart.X) < TitleBarDragThreshold &&
+                Math.Abs(pos.Y - _titleBarDragStart.Y) < TitleBarDragThreshold)
+                return; // hasn't moved far enough to count as a drag yet
+
+            _titleBarDragArmed = false; // consume — we're committing to a drag now
+            (sender as UIElement)?.ReleaseMouseCapture(); // hand the mouse off to DragMove
+
             // Drag-from-maximized: restore the window first, then position it under
             // the cursor at the same horizontal proportion, so the title bar appears
             // "ripped off" the top edge of the screen and follows the mouse normally.
             if (WindowState == WindowState.Maximized)
             {
-                Point clickInWindow = e.GetPosition(this);
+                Point cursorInWindow = e.GetPosition(this);
 
                 // Keep everything in WPF device-independent units. PointToScreen
                 // returns physical pixels on high-DPI displays, but Left/Top are
                 // DIPs — using it here put the restored window off-screen on
                 // scaled monitors.
-                double cursorScreenX = this.Left + clickInWindow.X;
-                double cursorScreenY = this.Top + clickInWindow.Y;
-                double propX = clickInWindow.X / ActualWidth;
+                double cursorScreenX = this.Left + cursorInWindow.X;
+                double cursorScreenY = this.Top + cursorInWindow.Y;
+                double propX = cursorInWindow.X / ActualWidth;
 
                 WindowState = WindowState.Normal;
                 btnMaximize.Content = "☐";
@@ -327,6 +371,14 @@ namespace VANTAGE
 
             if (e.LeftButton == MouseButtonState.Pressed)
                 DragMove();
+        }
+
+        private void TitleBar_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            // Plain click (released before the hold/movement gates tripped) — disarm and
+            // release the capture we took on mouse-down.
+            _titleBarDragArmed = false;
+            (sender as UIElement)?.ReleaseMouseCapture();
         }
 
         private void BtnClose_Click(object sender, RoutedEventArgs e)
@@ -1135,10 +1187,15 @@ namespace VANTAGE
                             MessageBoxImage.None
                         );
 
-                        // Refresh the view if we're on Progress module
+                        // Import replaced all Activities — rebuild if showing, else drop
+                        // the cache so the next navigation builds a fresh, reloaded view.
                         if (ContentArea.Content is Views.ProgressView)
                         {
                             LoadProgressModule(forceReload: true);
+                        }
+                        else
+                        {
+                            _cachedProgressView = null;
                         }
                     }
                 }
@@ -1201,10 +1258,15 @@ namespace VANTAGE
                         MessageBoxImage.None
                     );
 
-                    // Refresh the view if we're on Progress module
+                    // Import added Activities — rebuild if showing, else drop the cache
+                    // so the next navigation builds a fresh, reloaded view.
                     if (ContentArea.Content is Views.ProgressView)
                     {
                         LoadProgressModule(forceReload: true);
+                    }
+                    else
+                    {
+                        _cachedProgressView = null;
                     }
                 }
             }
@@ -1555,10 +1617,10 @@ namespace VANTAGE
                         _ = viewModel.LoadScheduleDataAsync(viewModel.SelectedWeekEndDate.Value);
                     }
                 }
-                else if (ContentArea.Content is Views.ProgressView progressView)
-                {
-                    _ = progressView.RefreshData();
-                }
+
+                // Revert/delete can change Activities, so keep the cached Progress view
+                // correct even when Schedule (or another module) is the active view.
+                _ = RefreshProgressAfterActivityChangeAsync();
             };
 
             dialog.Show();
@@ -1600,9 +1662,9 @@ namespace VANTAGE
                         dialog.OffendingUniqueIds.ToList());
                 }
             }
-            else if (dialog.MarkedAnyDirty && ContentArea.Content is Views.ProgressView progressView)
+            else if (dialog.MarkedAnyDirty)
             {
-                _ = progressView.RefreshData();
+                _ = RefreshProgressAfterActivityChangeAsync();
             }
         }
 
@@ -2240,9 +2302,9 @@ namespace VANTAGE
             dialog.ShowDialog();
 
             // Refresh Progress view if changes were applied to Activities
-            if (dialog.ChangesApplied && ContentArea.Content is Views.ProgressView progressView)
+            if (dialog.ChangesApplied)
             {
-                await progressView.RefreshData();
+                await RefreshProgressAfterActivityChangeAsync();
             }
         }
 
@@ -2357,14 +2419,20 @@ namespace VANTAGE
             ContentArea.Content = _cachedProgressView;
         }
 
-        // Called by ScheduleView when save updates Activities (e.g., PlanStart/PlanFin)
-        public async Task NotifyActivitiesModifiedAsync()
+        // Ensures the cached Progress view reflects Activities changes made from another
+        // module or a Tools dialog. Shown -> reload now; cached but hidden -> mark stale
+        // for a lazy reload on next navigation (no eager reload of a hidden 100k grid).
+        private Task RefreshProgressAfterActivityChangeAsync()
         {
-            if (_cachedProgressView != null)
-            {
-                await _cachedProgressView.RefreshData();
-            }
+            if (ContentArea.Content is Views.ProgressView shownView)
+                return shownView.RefreshData();
+
+            _cachedProgressView?.InvalidateData();
+            return Task.CompletedTask;
         }
+
+        // Called by ScheduleView when save updates Activities (e.g., PlanStart/PlanFin)
+        public Task NotifyActivitiesModifiedAsync() => RefreshProgressAfterActivityChangeAsync();
 
         // Check if current view has unsaved changes
         private bool CanLeaveCurrentView()

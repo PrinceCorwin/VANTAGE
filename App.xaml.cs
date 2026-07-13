@@ -82,6 +82,13 @@ namespace VANTAGE
         {
             try
             {
+                // Prevent the splash window (implicitly Application.MainWindow under
+                // ShutdownMode=OnMainWindowClose) from triggering app shutdown when it
+                // closes during startup — e.g. the access-denied path, where we still
+                // need to show the access-request dialog after the splash closes.
+                // Restored to OnMainWindowClose once the real MainWindow is shown.
+                this.ShutdownMode = ShutdownMode.OnExplicitShutdown;
+
                 // Check if local database exists
                 string localDbPath = Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
@@ -354,6 +361,9 @@ namespace VANTAGE
 
                     mainWindow.Activate();
                     mainWindow.Focus();
+
+                    // Startup complete — resume normal "close main window = exit app" behavior.
+                    this.ShutdownMode = ShutdownMode.OnMainWindowClose;
 
                     // Auto-show release notes after an update (must be after splash closes)
                     mainWindow.ShowReleaseNotesIfVersionChanged();

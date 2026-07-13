@@ -1,6 +1,6 @@
 # MILESTONE - Project Status
 
-**Last Updated:** July 10, 2026 (MCAA rate-sheet — key composition switched to no-sort / stored-order; flange connection model settled and flange connection + size-breakout passes applied to FinalMerged-r3; rate sheet is C#-only with a separate Component Reference Table for the AI)
+**Last Updated:** July 13, 2026 (Unsynced button red-state indicator; cross-module ProgressView staleness bug fixed via lazy InvalidateData/reload; Submit Week snapshot-retention guard; title-bar undock sensitivity fix; plus the access-request startup/email fix from a parallel session)
 
 ## ⚠️ Cross-Machine Credential Notes
 - **How creds propagate:** `/publisher` (`Scripts/publish-update.ps1`, step 2) regenerates `appsettings.enc` from the publishing machine's local `appsettings.json` on every publish, strips the plaintext from the shipped output, and the release commit pushes the new `.enc`. Other machines pick up the new `.enc` via `git pull`; production picks it up via app update. `appsettings.json` itself is gitignored and never copied between machines — the encrypted file is the propagation channel. `CredentialService` reads plaintext `appsettings.json` first (dev), then falls back to `appsettings.enc`.
@@ -21,7 +21,12 @@
 | AI Features (other) | NOT STARTED | Error Assistant, Description Analysis, etc. |
 
 ## Ready to Publish
-- _(none — most recent release is current)_
+- **Unsynced button red-state indicator** (SchemaMigrator v14 partial index on LocalDirty).
+- **Cross-module ProgressView staleness fix** (lazy InvalidateData/_needsReload; all MainWindow activity-mutation sites routed through RefreshProgressAfterActivityChangeAsync).
+- **Submit Week snapshot-retention guard** (blocks week-ending dates older than the 21-day window).
+- **Title-bar undock sensitivity fix** (hold-time + distance + mouse capture).
+- **Access-request startup shutdown + email delivery confirmation fix** (parallel session — `App.xaml.cs`, `EmailService.cs`).
+- Note: SchemaMigrator bumped to **v14** — the next `/publisher` release ships this migration.
 
 ## Active Development
 

@@ -22,7 +22,7 @@ namespace VANTAGE.Utilities
         private const string SchemaVersionKey = "SchemaVersion";
 
         // Increment this when adding new migrations
-        public const int CurrentSchemaVersion = 13;
+        public const int CurrentSchemaVersion = 14;
 
         // Runs all pending migrations sequentially
         // progressCallback is invoked with status messages for UI updates
@@ -112,6 +112,9 @@ namespace VANTAGE.Utilities
                     break;
                 case 13:
                     Migration_v13_CreateSnapshotAnalysisTable(connection);
+                    break;
+                case 14:
+                    Migration_v14_AddLocalDirtyIndex(connection);
                     break;
                 default:
                     throw new ArgumentException($"Unknown migration version: {version}");
@@ -656,6 +659,18 @@ namespace VANTAGE.Utilities
             ";
             cmd.ExecuteNonQuery();
             AppLogger.Info("Created SnapshotAnalysis table and indexes", "SchemaMigrator.Migration_v13");
+        }
+
+        // v14: Partial index on unsynced rows. Backs the cheap EXISTS check that drives the
+        // Unsynced button's red state. Filtered to LocalDirty = 1 so the index stays tiny
+        // (only pending rows) and the "any unsynced?" check is near-instant even at 100k rows.
+        private static void Migration_v14_AddLocalDirtyIndex(SqliteConnection connection)
+        {
+            using var cmd = connection.CreateCommand();
+            cmd.CommandText =
+                "CREATE INDEX IF NOT EXISTS idx_activities_localdirty ON Activities(LocalDirty) WHERE LocalDirty = 1;";
+            cmd.ExecuteNonQuery();
+            AppLogger.Info("Created partial index on Activities.LocalDirty", "SchemaMigrator.Migration_v14");
         }
     }
 }
