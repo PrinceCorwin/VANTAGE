@@ -8,9 +8,9 @@
 		<ApplicationIcon>Assets\Images\System\AppIcon.ico</ApplicationIcon>
 
 		<!-- Version Information -->
-		<Version>26.2.25</Version>
-		<AssemblyVersion>26.2.25.0</AssemblyVersion>
-		<FileVersion>26.2.25.0</FileVersion>
+		<Version>26.3.1</Version>
+		<AssemblyVersion>26.3.1.0</AssemblyVersion>
+		<FileVersion>26.3.1.0</FileVersion>
 		<Company>Summit Industrial</Company>
 		<Product>VANTAGE: MILESTONE</Product>
 		<Copyright>Copyright © 2025 Steve Amalfitano</Copyright>

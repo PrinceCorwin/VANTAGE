@@ -1,6 +1,18 @@
 {
   "releases": [
     {
+      "version": "26.3.1",
+      "date": "2026-07-13",
+      "highlights": [
+        "New — The Unsynced button now turns red whenever you have unsaved changes waiting to be synced, and clears back to normal once a successful sync pushes them. A quick at-a-glance reminder that you still have work to send up.",
+        "Fix — Changes made to your records from outside the Progress grid now show up correctly. Previously, if you ran Tools → Validate My Records, applied a Schedule Change Log entry, reverted a snapshot, or imported activities while you were on another module, the Progress grid could show stale information (missing the changed-row highlight, the Unsynced filter, and the metadata-error count) until you manually refreshed. It now updates itself when you return to Progress. Your data was never at risk — this was a display-only issue — but the on-screen counts and highlights are now always correct.",
+        "Improvement — Submit Week now stops you from picking a week-ending date that's too old to keep. Snapshots older than 21 days are automatically cleaned up, so submitting a date beyond that window used to create a snapshot that was deleted moments later and never appeared in the Snapshot Manager. Submit Week now warns you and points you to the earliest valid date instead.",
+        "Fix — The window no longer accidentally pops out of full-screen (undocks) from a stray click on the top toolbar. It now takes a deliberate press-and-drag to move a maximized window, so a quick click — even a fast misclick while your mouse is moving — leaves it docked. Double-click still maximizes/restores as before.",
+        "Fix — New users requesting access on first launch no longer hit a startup error, and the access-request email now confirms it was actually delivered (instead of always saying 'sent' even when it silently failed). If delivery fails, you're now told to contact your administrator directly.",
+        "Improvement — Admin → Deleted Records opens and loads noticeably faster."
+      ]
+    },
+    {
       "version": "26.2.25",
       "date": "2026-06-25",
       "highlights": [
