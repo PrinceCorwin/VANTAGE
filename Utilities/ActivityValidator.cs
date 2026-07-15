@@ -19,6 +19,20 @@ namespace VANTAGE.Utilities
         // Comma-separated list for user-facing messages (e.g. "ProjectID, WorkPackage, ...").
         public static string FieldsDisplay => string.Join(", ", Fields);
 
+        // Formatted, user-facing notice of everything that gates syncing: the required
+        // metadata columns plus the conditional Start/Finish date rules enforced by
+        // ActivityValidator.GetAllViolations. Reused by the Excel import confirmations and
+        // the Tools > Required Metadata Fields reference so the wording stays in lockstep
+        // with the fields here and the date rules in GetAllViolations.
+        public static string SyncRequirementNotice =>
+            "The following columns are required for records to sync to Azure:\n\n"
+            + string.Join("\n", Fields.Select(f => "   • " + f))
+            + "\n\nStart and Finish dates are also required depending on % Complete:\n\n"
+            + "   • Start date is required once % Complete is greater than 0.\n"
+            + "   • Finish date is required when % Complete reaches 100.\n\n"
+            + "Any row that leaves a required column blank or breaks a date rule above "
+            + "will be held back from syncing until it is corrected.";
+
         // Builds a SQL fragment of the form "X IS NULL OR X = '' OR Y IS NULL OR Y = '' ..."
         // tableAlias: pass "" for unqualified columns, or "a." to qualify with a table alias.
         public static string BuildMissingFieldSql(string tableAlias = "")

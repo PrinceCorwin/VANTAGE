@@ -1135,6 +1135,20 @@ namespace VANTAGE
         {
             try
             {
+                // Confirm the import up front — before the user browses to a file — so
+                // the replace warning + required-metadata sync notice are seen first.
+                var result = AppMessageBox.Show(
+                    "This will REPLACE all existing activities with data from the Excel file.\n\n"
+                    + ActivityRequiredMetadata.SyncRequirementNotice
+                    + "\n\nAre you sure you want to continue?",
+                    "Confirm Replace",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning
+                );
+
+                if (result != MessageBoxResult.Yes)
+                    return;
+
                 // Open file dialog
                 var openFileDialog = new Microsoft.Win32.OpenFileDialog
                 {
@@ -1145,58 +1159,47 @@ namespace VANTAGE
 
                 if (openFileDialog.ShowDialog() == true)
                 {
-                    // Confirm replace action
-                    var result = AppMessageBox.Show(
-                        "This will REPLACE all existing activities with data from the Excel file.\n\nAre you sure you want to continue?",
-                        "Confirm Replace",
-                        MessageBoxButton.YesNo,
-                        MessageBoxImage.Warning
+                    // Show loading overlay
+                    ShowLoadingOverlay("Importing Excel File...");
+
+                    // Create progress reporter
+                    var progress = new Progress<(int current, int total, string message)>(report =>
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            if (report.total > 0)
+                            {
+                                UpdateLoadingProgress(report.current, report.total, report.message);
+                            }
+                            else
+                            {
+                                txtLoadingMessage.Text = report.message;
+                            }
+                        });
+                    });
+
+                    // Import with replace mode (async)
+                    int imported = await ExcelImporter.ImportActivitiesAsync(openFileDialog.FileName, replaceMode: true, progress);
+
+                    // Hide loading overlay
+                    HideLoadingOverlay();
+
+                    AppMessageBox.Show(
+                        $"Successfully imported {imported} activities.\n\nAll previous data has been replaced.",
+                        "Import Complete",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.None
                     );
 
-                    if (result == MessageBoxResult.Yes)
+                    // Import replaced all Activities — rebuild if showing, else drop
+                    // the cache so the next navigation builds a fresh, reloaded view.
+                    if (ContentArea.Content is Views.ProgressView)
                     {
-                        // Show loading overlay
-                        ShowLoadingOverlay("Importing Excel File...");
-
-                        // Create progress reporter
-                        var progress = new Progress<(int current, int total, string message)>(report =>
-                        {
-                            Dispatcher.Invoke(() =>
-                            {
-                                if (report.total > 0)
-                                {
-                                    UpdateLoadingProgress(report.current, report.total, report.message);
-                                }
-                                else
-                                {
-                                    txtLoadingMessage.Text = report.message;
-                                }
-                            });
-                        });
-
-                        // Import with replace mode (async)
-                        int imported = await ExcelImporter.ImportActivitiesAsync(openFileDialog.FileName, replaceMode: true, progress);
-
-                        // Hide loading overlay
-                        HideLoadingOverlay();
-
-                        AppMessageBox.Show(
-                            $"Successfully imported {imported} activities.\n\nAll previous data has been replaced.",
-                            "Import Complete",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.None
-                        );
-
-                        // Import replaced all Activities — rebuild if showing, else drop
-                        // the cache so the next navigation builds a fresh, reloaded view.
-                        if (ContentArea.Content is Views.ProgressView)
-                        {
-                            LoadProgressModule(forceReload: true);
-                        }
-                        else
-                        {
-                            _cachedProgressView = null;
-                        }
+                        LoadProgressModule(forceReload: true);
+                    }
+                    else
+                    {
+                        _cachedProgressView = null;
                     }
                 }
             }
@@ -1216,6 +1219,19 @@ namespace VANTAGE
         {
             try
             {
+                // Confirm the import up front — before the user browses to a file — so the
+                // required-metadata sync notice is seen first.
+                var confirm = AppMessageBox.Show(
+                    ActivityRequiredMetadata.SyncRequirementNotice
+                    + "\n\nContinue with the import?",
+                    "Import Activities (Combine)",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Information
+                );
+
+                if (confirm != MessageBoxResult.Yes)
+                    return;
+
                 // Open file dialog
                 var openFileDialog = new Microsoft.Win32.OpenFileDialog
                 {
@@ -1624,6 +1640,19 @@ namespace VANTAGE
             };
 
             dialog.Show();
+        }
+
+        // Tools → Required Metadata Fields. On-demand reference listing the columns that
+        // must be non-blank for a record to sync. Sourced from ActivityRequiredMetadata so
+        // it never drifts from the sync gate / Validate My Records checks.
+        private void MenuRequiredMetadataFields_Click(object sender, RoutedEventArgs e)
+        {
+            AppMessageBox.Show(
+                ActivityRequiredMetadata.SyncRequirementNotice,
+                "Required Metadata Fields",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information
+            );
         }
 
         // Tools → Validate My Records. Modal scan of the current user's local Activities

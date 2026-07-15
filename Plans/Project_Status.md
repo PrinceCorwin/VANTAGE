@@ -1,6 +1,6 @@
 # MILESTONE - Project Status
 
-**Last Updated:** July 13, 2026 (Unsynced button red-state indicator; cross-module ProgressView staleness bug fixed via lazy InvalidateData/reload; Submit Week snapshot-retention guard; title-bar undock sensitivity fix; plus the access-request startup/email fix from a parallel session)
+**Last Updated:** July 15, 2026 (Required-metadata visibility: pre-import warnings on Excel Combine/Replace + on-demand Tools → Required Metadata Fields reference; earlier — Unsynced button red-state indicator; cross-module ProgressView staleness bug fixed via lazy InvalidateData/reload; Submit Week snapshot-retention guard; title-bar undock sensitivity fix; access-request startup/email fix)
 
 ## ⚠️ Cross-Machine Credential Notes
 - **How creds propagate:** `/publisher` (`Scripts/publish-update.ps1`, step 2) regenerates `appsettings.enc` from the publishing machine's local `appsettings.json` on every publish, strips the plaintext from the shipped output, and the release commit pushes the new `.enc`. Other machines pick up the new `.enc` via `git pull`; production picks it up via app update. `appsettings.json` itself is gitignored and never copied between machines — the encrypted file is the propagation channel. `CredentialService` reads plaintext `appsettings.json` first (dev), then falls back to `appsettings.enc`.
@@ -21,6 +21,7 @@
 | AI Features (other) | NOT STARTED | Error Assistant, Description Analysis, etc. |
 
 ## Ready to Publish
+- **Required-metadata visibility** — pre-import warnings on Excel Import (Combine) and (Replace) listing the required columns + conditional date rules that gate sync, shown *before* the file browser; plus an on-demand **Tools → Required Metadata Fields** reference. All driven off `ActivityRequiredMetadata.SyncRequirementNotice`.
 - **Unsynced button red-state indicator** (SchemaMigrator v14 partial index on LocalDirty).
 - **Cross-module ProgressView staleness fix** (lazy InvalidateData/_needsReload; all MainWindow activity-mutation sites routed through RefreshProgressAfterActivityChangeAsync).
 - **Submit Week snapshot-retention guard** (blocks week-ending dates older than the 21-day window).

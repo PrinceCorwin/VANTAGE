@@ -6,6 +6,20 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### July 15, 2026 (Required-Metadata Visibility — Import Warnings + Tools Reference)
+
+**Users can now see which columns are required to sync, both proactively and on demand.** Previously the only ways to learn the required-metadata fields were mid-flow (the Import from AI Takeoff panel) or after the fact (Validate My Records, the metadata-error badge). The Excel import paths gave no warning at all. Three additions, all sourced from a single new helper so they never drift:
+
+- **New source-of-truth helper** — `ActivityRequiredMetadata.SyncRequirementNotice` (`Utilities/ActivityValidator.cs`): a formatted, user-facing notice listing the 10 required columns *plus* the conditional Start/Finish date rules that also gate sync (Start required once % > 0, Finish required at % = 100), matching what `GetAllViolations` enforces. Change `Fields` (or the date rules) once and all three surfaces below update in lockstep.
+- **Import Activities (Combine)** — added a Yes/No confirmation (it previously had none) that shows the notice; declining aborts before anything happens.
+- **Import Activities (Replace)** — folded the notice into the existing "Confirm Replace" dialog (no second popup).
+- **Both import confirmations now appear *before* the file browser opens** (per user request) — decline and you never get the file-picker. Replace also had a redundant nesting level flattened in the process.
+- **Tools → Required Metadata Fields** — new menu item (next to Validate My Records) + `MenuRequiredMetadataFields_Click` handler showing the same notice on demand as a standing reference.
+
+Import from AI Takeoff was deliberately left untouched — its metadata panel already gives those columns meaning, and the takeoff workbook wouldn't contain them anyway.
+
+**Key files:** `Utilities/ActivityValidator.cs` (`SyncRequirementNotice` helper), `MainWindow.xaml.cs` (Combine/Replace confirm-before-browse reorder, `MenuRequiredMetadataFields_Click`), `MainWindow.xaml` (Tools menu item), `Help/manual.html` (import descriptions + Tools entry).
+
 ### July 13, 2026 (Unsynced Indicator + Cross-Module Staleness Fix + Snapshot Guard + Title-Bar Drag)
 
 **Unsynced button now shows a red state.** The **Unsynced** sidebar filter button (`btnFilterLocalDirty`) fills with the "Not Started" red brushes (`StatusRedBgBtn` / `StatusRedFgBtn`, theme-aware via `DynamicResource`) whenever any local record is unsynced (`LocalDirty = 1`), and reverts to normal once a successful sync clears them. Driven by a new `ProgressViewModel.HasUnsyncedChanges` bool set from a cheap `SELECT EXISTS(... LocalDirty = 1)` folded into `CalculateMetadataErrorCount()` — so it recomputes at all existing mutation/sync/load points and reads the DB (correct even right after sync clears the flags there). Backed by SchemaMigrator **v14**, a partial index `idx_activities_localdirty ON Activities(LocalDirty) WHERE LocalDirty = 1` (tiny — indexes only pending rows — so the check is near-instant at 100k rows). The button's color moved from inline attributes into a `Style`/`DataTrigger` (inline values outrank triggers in WPF); active-filter accent border and hover behavior are unchanged (different properties). This makes true the manual's long-standing (previously false) claim of a red unsynced indicator.

@@ -1,0 +1,49 @@
+{
+  "theme": {
+    "bg_top": "#1B1B22",
+    "bg_bottom": "#0E0E12",
+    "accent": "#4EA1FF",
+    "accent2": "#2DD4BF",
+    "text": "#F2F3F5",
+    "muted": "#9AA0AA",
+    "wordmark": "SUMMIT INDUSTRIAL"
+  },
+  "slides": [
+    {
+      "id": "seg_01",
+      "type": "title",
+      "title": "VANTAGE: Milestone",
+      "subtitle": "Construction Progress Tracking"
+    },
+    {
+      "id": "seg_02",
+      "type": "title",
+      "title": "A modern replacement",
+      "subtitle": "Retiring the legacy Access system"
+    },
+    {
+      "id": "seg_03",
+      "type": "bullets",
+      "title": "Track every activity",
+      "bullets": ["Welding", "Bolt-ups", "Steel erection", "…and everything in between"]
+    },
+    {
+      "id": "seg_04",
+      "type": "bullets",
+      "title": "Connected to P6 Primavera",
+      "bullets": ["Import your schedule", "Export field progress", "Stay in sync"]
+    },
+    {
+      "id": "seg_05",
+      "type": "bullets",
+      "title": "Built for the whole team",
+      "bullets": ["Your own working view", "Secure cloud sync", "One shared source of truth"]
+    },
+    {
+      "id": "seg_06",
+      "type": "bullets",
+      "title": "All in one place",
+      "bullets": ["Track Progress", "Build Work Packages", "Submit Your Week"]
+    }
+  ]
+}
