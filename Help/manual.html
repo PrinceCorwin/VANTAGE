@@ -2150,7 +2150,7 @@
 
     <p>Key capabilities:</p>
     <ul>
-        <li><strong>Multi-form composition</strong> — Combine cover sheets, lists, forms, and grids into one document</li>
+        <li><strong>Multi-form composition</strong> — Combine cover sheets, lists, forms, grids, and external PDFs into one document</li>
         <li><strong>Token replacement</strong> — Dynamic content like project names, dates, and activity data</li>
         <li><strong>Bulk generation</strong> — Generate PDFs for multiple work packages at once</li>
         <li><strong>Custom branding</strong> — Use your own logo or the default company logo</li>
@@ -2344,7 +2344,7 @@
 
     <img src="../Assets/Images/Sidebar/wp-form-type-dialog.png" alt="Template type selection dialog" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
 
-    <p>Choose one of the four template types. A new template is created with default settings and the editor loads for that type. You can also select any existing template, change the name, and save to create a copy.</p>
+    <p>Choose one of the template types. Most create a new template with default settings and load the editor for that type; <strong>External File</strong> instead prompts you to browse to a PDF. You can also select any existing template, change the name, and save to create a copy.</p>
 
     <h4>Built-in Templates</h4>
     <p>VANTAGE includes seven premade templates that cover a typical work package. Built-in templates cannot be overwritten or deleted — to customize one, change the name and save to create your own copy. Use <strong>Reset Defaults</strong> to revert a user-created template back to built-in settings.</p>
@@ -2393,7 +2393,7 @@
     </table>
 
     <h4>Template Types</h4>
-    <p>There are four editable template types, each with its own editor layout:</p>
+    <p>There are five template types, each with its own editor layout:</p>
 
     <table>
         <tr>
@@ -2416,7 +2416,19 @@
             <td><strong>Grid</strong></td>
             <td>Empty grid for handwritten data entry</td>
         </tr>
+        <tr>
+            <td><strong>External File</strong></td>
+            <td>References an existing PDF; its pages are merged into the work package at this form's position</td>
+        </tr>
     </table>
+
+    <h4>External File Form</h4>
+    <p>An <strong>External File</strong> form pulls the pages of an existing PDF directly into the work package — useful for permits, cut sheets, standard instructions, or any pre-made document. When you choose <strong>External File</strong> from the type dialog, you're prompted to browse to a PDF; the file's name becomes the form's default name.</p>
+    <ul>
+        <li><strong>Relink…</strong> — Point the form at a PDF in a new location (e.g. if the file was moved).</li>
+        <li><strong>Rename</strong> — Rename this form in place, without creating a copy. (Changing the top <em>Name</em> field and saving still creates a new copy, as with any template.)</li>
+    </ul>
+    <p>The PDF's pages merge in at their original size (a larger sheet such as 11x17 is not shrunk to letter), positioned wherever the form sits in the WP Template. If the linked file can't be found when you generate, VANTAGE lists the missing file(s) and lets you either continue without them or cancel to re-link.</p>
 
     <h4>Common Controls</h4>
     <p>All form types share these controls:</p>

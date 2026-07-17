@@ -201,6 +201,19 @@ namespace VANTAGE.Models
         public string? FooterText { get; set; }
     }
 
+    // JSON structure for ExternalFile type templates - references an existing PDF on disk
+    // whose pages are merged into the work package at generation time.
+    public class ExternalFileStructure
+    {
+        [JsonPropertyName("title")]
+        public string Title { get; set; } = "External File";
+
+        // Absolute path to the external PDF the user browsed to. Static (no tokens) - the same
+        // file is merged into every work package generated from a WP template that includes it.
+        [JsonPropertyName("filePath")]
+        public string? FilePath { get; set; }
+    }
+
     // Constants for template types
     public static class TemplateTypes
     {
@@ -209,6 +222,7 @@ namespace VANTAGE.Models
         public const string Form = "Form";
         public const string Grid = "Grid";
         public const string Drawings = "Drawings";
+        public const string ExternalFile = "ExternalFile";
     }
 
     // Drawing item for the Generate tab DwgNO grid

@@ -27,6 +27,7 @@ namespace VANTAGE.Services.PdfRenderers
         private readonly FormRenderer _formRenderer = new();
         private readonly GridRenderer _gridRenderer = new();
         private readonly DrawingsRenderer _drawingsRenderer = new();
+        private readonly ExternalFileRenderer _externalFileRenderer = new();
 
         // Generate PDFs for a single work package.
         // noSubfolders=true drops every PDF directly into the project's "Work Pkgs"
@@ -95,6 +96,15 @@ namespace VANTAGE.Services.PdfRenderers
 
                     // Render the form
                     PdfDocument formDoc = RenderForm(formTemplate, context, logoPath);
+
+                    // Skip forms that produced no pages (e.g. an external-file form whose PDF is
+                    // missing). The user was already warned about missing files before generation.
+                    if (formDoc.Pages.Count == 0)
+                    {
+                        formDoc.Close(true);
+                        continue;
+                    }
+
                     string formName = SanitizeFileName(formTemplate.TemplateName);
                     formDocuments.Add((formDoc, formName));
 
@@ -135,8 +145,9 @@ namespace VANTAGE.Services.PdfRenderers
                 }
                 mergedDoc.Close(true);
 
-                // Clear any loaded drawing PDFs (they're kept alive during merge)
+                // Clear any loaded PDFs kept alive during merge (drawings + external files)
                 _drawingsRenderer.ClearLoadedDocuments();
+                _externalFileRenderer.ClearLoadedDocuments();
 
                 result.Success = true;
                 result.MergedPdfPath = mergedPath;
@@ -199,6 +210,7 @@ namespace VANTAGE.Services.PdfRenderers
                 TemplateTypes.Form => _formRenderer.Render(template.StructureJson, context, logoPath),
                 TemplateTypes.Grid => _gridRenderer.Render(template.StructureJson, context, logoPath),
                 TemplateTypes.Drawings => _drawingsRenderer.Render(template.StructureJson, context, logoPath),
+                TemplateTypes.ExternalFile => _externalFileRenderer.Render(template.StructureJson, context, logoPath),
                 _ => throw new InvalidOperationException($"Unknown template type: {template.TemplateType}")
             };
         }
@@ -207,9 +219,6 @@ namespace VANTAGE.Services.PdfRenderers
         private PdfDocument MergeDocuments(List<(PdfDocument doc, string name)> documents)
         {
             var mergedDoc = new PdfDocument();
-
-            // Set page size to match our standard letter size (8.5 x 11 inches)
-            mergedDoc.PageSettings.Size = new System.Drawing.SizeF(612f, 792f);
             mergedDoc.PageSettings.Margins.All = 0;
 
             foreach (var (doc, _) in documents)
@@ -218,7 +227,14 @@ namespace VANTAGE.Services.PdfRenderers
                 for (int i = 0; i < doc.Pages.Count; i++)
                 {
                     var page = doc.Pages[i];
-                    var importedPage = mergedDoc.Pages.Add();
+
+                    // Preserve each source page's own size via a per-page section. Work-package
+                    // forms are letter (8.5x11); an external PDF may be 11x17 or another size and
+                    // must not be clipped down to letter.
+                    var section = mergedDoc.Sections.Add();
+                    section.PageSettings.Margins.All = 0;
+                    section.PageSettings.Size = page.Size;
+                    var importedPage = section.Pages.Add();
 
                     // Copy page content using template
                     var template = page.CreateTemplate();

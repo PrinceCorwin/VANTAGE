@@ -57,6 +57,10 @@ namespace VANTAGE.Views
         private Slider? _coverImageWidthSlider;
         private TextBox? _coverFooterTextBox;
 
+        // External file editor controls
+        private TextBox? _externalFilePathBox;
+        private TextBox? _externalRenameBox;
+
         // List editor controls
         private TextBox? _listTitleBox;
         private ListBox? _listItemsBox;
@@ -1092,6 +1096,38 @@ namespace VANTAGE.Views
             ref Guid riid,
             out IShellItem ppv);
 
+        // Find external-file forms in a WP template whose linked PDF is missing on disk.
+        // The path is static (no per-WP tokens), so one existence check covers a bulk run.
+        private async Task<List<(string name, string path)>> CollectMissingExternalFilesAsync(string wpTemplateId)
+        {
+            var missing = new List<(string name, string path)>();
+            try
+            {
+                var wpTemplate = await TemplateRepository.GetWPTemplateByIdAsync(wpTemplateId);
+                if (wpTemplate == null) return missing;
+
+                var formRefs = JsonSerializer.Deserialize<List<FormReference>>(wpTemplate.FormsJson);
+                if (formRefs == null) return missing;
+
+                foreach (var formRef in formRefs)
+                {
+                    var form = await TemplateRepository.GetFormTemplateByIdAsync(formRef.FormTemplateId);
+                    if (form == null || form.TemplateType != TemplateTypes.ExternalFile)
+                        continue;
+
+                    var structure = JsonSerializer.Deserialize<ExternalFileStructure>(form.StructureJson);
+                    var path = structure?.FilePath;
+                    if (string.IsNullOrWhiteSpace(path) || !System.IO.File.Exists(path))
+                        missing.Add((form.TemplateName, string.IsNullOrWhiteSpace(path) ? "(no file linked)" : path));
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "WorkPackageView.CollectMissingExternalFilesAsync");
+            }
+            return missing;
+        }
+
         // Generate button click
         private async void BtnGenerate_Click(object sender, RoutedEventArgs e)
         {
@@ -1119,6 +1155,20 @@ namespace VANTAGE.Views
             {
                 AppMessageBox.Show("Please select an output folder.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
+            }
+
+            // Warn about any external-file forms whose PDF can't be found, before generating.
+            // The user chooses to proceed (those forms are omitted) or cancel and fix the links.
+            var missingExternalFiles = await CollectMissingExternalFilesAsync(wpTemplateId);
+            if (missingExternalFiles.Count > 0)
+            {
+                var list = string.Join("\n", missingExternalFiles.Select(m => $"  • {m.name}: {m.path}"));
+                var choice = AppMessageBox.Show(
+                    $"These external file(s) could not be found:\n\n{list}\n\n" +
+                    "Click OK to generate without them, or Cancel to stop and re-link the file(s).",
+                    "External File Not Found", MessageBoxButton.OKCancel, MessageBoxImage.Warning);
+                if (choice != MessageBoxResult.OK)
+                    return;
             }
 
             // Get user selections
@@ -1548,8 +1598,9 @@ namespace VANTAGE.Views
                 txtFormTemplateName.Text = template.TemplateName;
                 lblFormTemplateType.Text = template.TemplateType;
 
-                // Show Reset Defaults button only for user-created templates (not Drawings type)
-                btnResetFormTemplateDefaults.Visibility = (!template.IsBuiltIn && template.TemplateType != TemplateTypes.Drawings)
+                // Show Reset Defaults button only for user-created templates that have a
+                // resettable default structure (not Drawings/ExternalFile)
+                btnResetFormTemplateDefaults.Visibility = (!template.IsBuiltIn && FormTypeSupportsResetDefaults(template.TemplateType))
                     ? Visibility.Visible
                     : Visibility.Collapsed;
 
@@ -1573,33 +1624,62 @@ namespace VANTAGE.Views
 
             if (dialog.ShowDialog() == true && !string.IsNullOrEmpty(dialog.SelectedType))
             {
+                string templateName;
+                string structureJson;
+
+                if (dialog.SelectedType == TemplateTypes.ExternalFile)
+                {
+                    // External file: browse to the PDF now. Its file name (without extension)
+                    // becomes the default template name; cancelling the browser cancels the add.
+                    var fileDialog = new Microsoft.Win32.OpenFileDialog
+                    {
+                        Filter = "PDF Files|*.pdf",
+                        Title = "Select PDF File to Include"
+                    };
+                    if (fileDialog.ShowDialog() != true)
+                    {
+                        RestoreFormTemplateSelectionAfterCancel();
+                        return;
+                    }
+                    templateName = System.IO.Path.GetFileNameWithoutExtension(fileDialog.FileName);
+                    structureJson = JsonSerializer.Serialize(new ExternalFileStructure
+                    {
+                        Title = templateName,
+                        FilePath = fileDialog.FileName
+                    });
+                }
+                else
+                {
+                    templateName = $"New {dialog.SelectedType} Template";
+                    structureJson = dialog.SelectedType switch
+                    {
+                        TemplateTypes.Cover => JsonSerializer.Serialize(new CoverStructure()),
+                        TemplateTypes.List => JsonSerializer.Serialize(new ListStructure()),
+                        TemplateTypes.Grid => JsonSerializer.Serialize(new GridStructure()),
+                        TemplateTypes.Form => JsonSerializer.Serialize(new FormStructure()),
+                        _ => "{}"
+                    };
+                }
+
                 // Create new template with selected type
                 var newTemplate = new FormTemplate
                 {
                     TemplateID = System.Guid.NewGuid().ToString(),
-                    TemplateName = $"New {dialog.SelectedType} Template",
+                    TemplateName = templateName,
                     TemplateType = dialog.SelectedType,
                     IsBuiltIn = false,
                     CreatedBy = App.CurrentUser?.Username ?? "Unknown",
-                    CreatedUtc = DateTime.UtcNow.ToString("o")
-                };
-
-                // Initialize with default structure based on type
-                newTemplate.StructureJson = dialog.SelectedType switch
-                {
-                    TemplateTypes.Cover => JsonSerializer.Serialize(new CoverStructure()),
-                    TemplateTypes.List => JsonSerializer.Serialize(new ListStructure()),
-                    TemplateTypes.Grid => JsonSerializer.Serialize(new GridStructure()),
-                    TemplateTypes.Form => JsonSerializer.Serialize(new FormStructure()),
-                    _ => "{}"
+                    CreatedUtc = DateTime.UtcNow.ToString("o"),
+                    StructureJson = structureJson
                 };
 
                 _selectedFormTemplate = newTemplate;
                 txtFormTemplateName.Text = newTemplate.TemplateName;
                 lblFormTemplateType.Text = newTemplate.TemplateType;
 
-                // Show Reset Defaults for new user-created templates (not Drawings)
-                btnResetFormTemplateDefaults.Visibility = (newTemplate.TemplateType != TemplateTypes.Drawings)
+                // Show Reset Defaults for new user-created templates (not Drawings/ExternalFile,
+                // which have no meaningful "default structure" to reset to)
+                btnResetFormTemplateDefaults.Visibility = FormTypeSupportsResetDefaults(newTemplate.TemplateType)
                     ? Visibility.Visible
                     : Visibility.Collapsed;
 
@@ -1609,20 +1689,31 @@ namespace VANTAGE.Views
             }
             else
             {
-                // User cancelled - reset to first template if available
-                if (_formTemplates.Count > 0)
-                {
-                    cboFormTemplateEdit.SelectedIndex = 0;
-                }
-                else
-                {
-                    _selectedFormTemplate = null;
-                    txtFormTemplateName.Text = "";
-                    lblFormTemplateType.Text = "";
-                    btnResetFormTemplateDefaults.Visibility = Visibility.Collapsed;
-                    ClearFormEditor();
-                }
+                RestoreFormTemplateSelectionAfterCancel();
             }
+        }
+
+        // Restore the form-template picker after the user cancels the Add New flow.
+        private void RestoreFormTemplateSelectionAfterCancel()
+        {
+            if (_formTemplates.Count > 0)
+            {
+                cboFormTemplateEdit.SelectedIndex = 0;
+            }
+            else
+            {
+                _selectedFormTemplate = null;
+                txtFormTemplateName.Text = "";
+                lblFormTemplateType.Text = "";
+                btnResetFormTemplateDefaults.Visibility = Visibility.Collapsed;
+                ClearFormEditor();
+            }
+        }
+
+        // Whether a form type has a resettable default structure (Drawings and ExternalFile don't).
+        private static bool FormTypeSupportsResetDefaults(string templateType)
+        {
+            return templateType != TemplateTypes.Drawings && templateType != TemplateTypes.ExternalFile;
         }
 
         // Load the appropriate editor for the template type
@@ -1655,6 +1746,11 @@ namespace VANTAGE.Views
                     case TemplateTypes.Drawings:
                         var drawingsStructure = JsonSerializer.Deserialize<DrawingsStructure>(template.StructureJson) ?? new DrawingsStructure();
                         BuildDrawingsEditor(drawingsStructure);
+                        break;
+
+                    case TemplateTypes.ExternalFile:
+                        var externalStructure = JsonSerializer.Deserialize<ExternalFileStructure>(template.StructureJson) ?? new ExternalFileStructure();
+                        BuildExternalFileEditor(externalStructure);
                         break;
 
                     default:
@@ -1836,9 +1932,14 @@ namespace VANTAGE.Views
             {
                 string savedTemplateId;
 
-                // Determine if creating new or updating existing
+                // Determine if creating new or updating existing. Insert (creates a new copy)
+                // when: no template, a built-in (save-as copy), the selected template isn't in the
+                // DB-loaded list yet (a brand-new "+ Add New" template), OR the Name field was
+                // changed. Changing the top Name field + Save deliberately creates a second copy;
+                // to rename a form in place, use the Rename control in the editor section.
                 bool isNewTemplate = _selectedFormTemplate == null
                     || _selectedFormTemplate.IsBuiltIn
+                    || !_formTemplates.Any(t => t.TemplateID == _selectedFormTemplate.TemplateID)
                     || !_selectedFormTemplate.TemplateName.Equals(newName, StringComparison.OrdinalIgnoreCase);
 
                 if (isNewTemplate)
@@ -4061,8 +4162,201 @@ namespace VANTAGE.Views
                 TemplateTypes.Grid => GetGridStructureJson(),
                 TemplateTypes.Form => GetFormStructureJson(),
                 TemplateTypes.Drawings => GetDrawingsStructureJson(),
+                TemplateTypes.ExternalFile => GetExternalFileStructureJson(),
                 _ => null // Return null for unsupported editors (will use original structure)
             };
+        }
+
+        // Build and display the External File type editor: shows the linked PDF path and a
+        // Relink button to point at a new location. The file's pages are merged into the work
+        // package at generation time; there is no content to edit here.
+        private void BuildExternalFileEditor(ExternalFileStructure structure)
+        {
+            _currentEditorType = TemplateTypes.ExternalFile;
+
+            var panel = new StackPanel { Margin = new Thickness(0, 10, 0, 0) };
+
+            panel.Children.Add(new TextBlock
+            {
+                Text = "The pages of this PDF are merged into the work package wherever this form is placed.",
+                TextWrapping = TextWrapping.Wrap,
+                Foreground = (Brush)FindResource("TextColorSecondary"),
+                FontStyle = FontStyles.Italic,
+                Margin = new Thickness(0, 0, 0, 15)
+            });
+
+            panel.Children.Add(new TextBlock
+            {
+                Text = "PDF File",
+                FontWeight = FontWeights.SemiBold,
+                Foreground = (Brush)FindResource("ForegroundColor"),
+                Margin = new Thickness(0, 0, 0, 5)
+            });
+
+            var pathGrid = new Grid { Margin = new Thickness(0, 0, 0, 15) };
+            pathGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            pathGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+            _externalFilePathBox = new TextBox
+            {
+                Text = structure.FilePath ?? "",
+                Height = 28,
+                IsReadOnly = true,
+                ToolTip = "The linked PDF. Use Relink to point at a new location."
+            };
+            Grid.SetColumn(_externalFilePathBox, 0);
+            pathGrid.Children.Add(_externalFilePathBox);
+
+            var relinkBtn = new Button
+            {
+                Content = "Relink...",
+                Padding = new Thickness(8, 4, 8, 4),
+                Margin = new Thickness(5, 0, 0, 0),
+                ToolTip = "Browse to a new location for this PDF"
+            };
+            relinkBtn.Click += RelinkExternalFile_Click;
+            Grid.SetColumn(relinkBtn, 1);
+            pathGrid.Children.Add(relinkBtn);
+
+            panel.Children.Add(pathGrid);
+
+            // Rename this form in place. (The top Name field + Save creates a new copy; this
+            // renames the existing form without spawning a duplicate.)
+            panel.Children.Add(new TextBlock
+            {
+                Text = "Rename this form",
+                FontWeight = FontWeights.SemiBold,
+                Foreground = (Brush)FindResource("ForegroundColor"),
+                Margin = new Thickness(0, 0, 0, 5)
+            });
+
+            var renameGrid = new Grid { Margin = new Thickness(0, 0, 0, 15) };
+            renameGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            renameGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+            _externalRenameBox = new TextBox
+            {
+                Text = _selectedFormTemplate?.TemplateName ?? structure.Title,
+                Height = 28,
+                ToolTip = "New name for this form"
+            };
+            Grid.SetColumn(_externalRenameBox, 0);
+            renameGrid.Children.Add(_externalRenameBox);
+
+            var renameBtn = new Button
+            {
+                Content = "Rename",
+                Padding = new Thickness(8, 4, 8, 4),
+                Margin = new Thickness(5, 0, 0, 0),
+                ToolTip = "Rename this form in place (does not create a copy)"
+            };
+            renameBtn.Click += RenameExternalFile_Click;
+            Grid.SetColumn(renameBtn, 1);
+            renameGrid.Children.Add(renameBtn);
+
+            panel.Children.Add(renameGrid);
+
+            panel.Children.Add(new TextBlock
+            {
+                Text = "If this file can't be found when you generate, you'll be asked whether to cancel or continue without it.",
+                TextWrapping = TextWrapping.Wrap,
+                Foreground = (Brush)FindResource("TextColorSecondary"),
+                FontSize = 12,
+                Margin = new Thickness(0, 0, 0, 0)
+            });
+
+            FormEditorContent.Content = panel;
+        }
+
+        // Relink the external-file template to a new PDF location.
+        private void RelinkExternalFile_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new OpenFileDialog
+            {
+                Filter = "PDF Files|*.pdf",
+                Title = "Relink PDF File"
+            };
+
+            if (dialog.ShowDialog() == true && _externalFilePathBox != null)
+            {
+                _externalFilePathBox.Text = dialog.FileName;
+                _hasUnsavedChanges = true;
+            }
+        }
+
+        // Rename the current external-file form in place - updates the existing record (name +
+        // current link) without creating a duplicate. The top Name field + Save still creates a
+        // new copy; this is the rename-in-place path.
+        private async void RenameExternalFile_Click(object sender, RoutedEventArgs e)
+        {
+            if (_selectedFormTemplate == null || _externalRenameBox == null) return;
+
+            string newName = _externalRenameBox.Text.Trim();
+            if (string.IsNullOrWhiteSpace(newName))
+            {
+                AppMessageBox.Show("Please enter a name.", "Rename", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // Rename only applies to an already-saved user template.
+            if (_selectedFormTemplate.IsBuiltIn || !_formTemplates.Any(t => t.TemplateID == _selectedFormTemplate.TemplateID))
+            {
+                AppMessageBox.Show("Save this form first, then rename it.", "Rename", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            // Name must be unique among other templates.
+            if (_formTemplates.Any(t => t.TemplateID != _selectedFormTemplate.TemplateID
+                                        && t.TemplateName.Equals(newName, StringComparison.OrdinalIgnoreCase)))
+            {
+                AppMessageBox.Show($"A template named '{newName}' already exists. Please choose a different name.",
+                    "Duplicate Name", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            try
+            {
+                // Persist the new name plus the current link (so a relink done here isn't lost).
+                _selectedFormTemplate.TemplateName = newName;
+                _selectedFormTemplate.StructureJson = JsonSerializer.Serialize(new ExternalFileStructure
+                {
+                    Title = newName,
+                    FilePath = string.IsNullOrWhiteSpace(_externalFilePathBox?.Text) ? null : _externalFilePathBox.Text
+                });
+                await TemplateRepository.UpdateFormTemplateAsync(_selectedFormTemplate);
+
+                string renamedId = _selectedFormTemplate.TemplateID;
+                _formTemplates = await TemplateRepository.GetAllFormTemplatesAsync();
+                _suppressTypeDialog = true;
+                PopulateFormTemplateEditDropdown();
+                _suppressTypeDialog = false;
+                PopulateAddFormMenu();
+
+                var renamed = _formTemplates.FirstOrDefault(t => t.TemplateID == renamedId);
+                if (renamed != null)
+                {
+                    cboFormTemplateEdit.SelectedItem = renamed;
+                    _selectedFormTemplate = renamed;
+                }
+                _hasUnsavedChanges = false;
+                lblStatus.Text = "Form renamed";
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "WorkPackageView.RenameExternalFile_Click");
+                AppMessageBox.Show($"Error renaming form: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        // Serialize the external-file editor back to StructureJson.
+        private string GetExternalFileStructureJson()
+        {
+            var structure = new ExternalFileStructure
+            {
+                Title = txtFormTemplateName.Text,
+                FilePath = string.IsNullOrWhiteSpace(_externalFilePathBox?.Text) ? null : _externalFilePathBox.Text
+            };
+            return JsonSerializer.Serialize(structure);
         }
 
         // Clear editor content

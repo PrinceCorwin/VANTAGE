@@ -413,6 +413,16 @@ Sections follow VANTAGE's nav structure top to bottom. See `.claude/skills/finis
 **Rule:** The Work Packages Drawings section is `Visibility="Collapsed"` and code filters exclude `TemplateType.Drawings` from `WorkPackageView` menus and editors. Re-enable instructions live in `Plans/Project_Status.md` under "Post-V1: Drawings Architecture".
 **Why:** Per-WP drawing location architecture (token paths vs per-WP config vs Drawings Manager) needs design before shipping. The feature works internally but the architecture isn't settled, and shipping without one will paint the team into a workflow we don't want.
 
+### External File Form Templates Merge a Static PDF, Sized Per-Page
+**Rule:** An `ExternalFile` form template (`ExternalFileStructure`) stores an absolute path to a PDF (no tokens — the same file for every WP). At generation, `ExternalFileRenderer` loads it and `WorkPackageGenerator.MergeDocuments` copies each page into the output at that page's own size (via a per-page `PdfSection`), so an 11x17 sheet is not clipped to letter. A form that yields zero pages (missing file, blank path) is dropped from both the merged and individual outputs. Missing files are surfaced to the user in the UI (`BtnGenerate_Click`) before generation — proceed-without or cancel — never as a silent skip inside the service.
+**Why:** Merging referenced PDFs into a work package needs their native page geometry preserved; the previous single-letter-size merge would have clipped larger sheets. Keeping the missing-file prompt in the UI keeps the renderer a pure service (no dialogs) while still giving the user the cancel/continue choice. The path is stored verbatim (not run through the output-filename sanitizer, which is for names, not paths).
+**Date:** 2026-07-17
+
+### Form Template Save Creates a Copy on Name Change; Rename Is a Separate In-Place Action
+**Rule:** Saving a form template inserts a new record when the selected template is absent, built-in, not yet in the DB (a brand-new `+ Add New` template), or its name differs from the loaded template's name — so changing the top Name field and clicking Save always produces a *copy*. Renaming a form in place (updating the existing record) is a distinct action: the External File editor exposes a dedicated Rename control that calls `UpdateFormTemplateAsync`. WP templates reference forms by `TemplateID`, so an in-place rename keeps those references valid.
+**Why:** The Name-field-plus-Save "save as copy" behavior is long-standing and users rely on it; an earlier attempt to make a name change rename in place broke it. Splitting the two intents (Save = copy under a new name, Rename = edit this record) keeps the familiar behavior while giving a non-duplicating rename. The DB-membership check also fixes brand-new templates saved without renaming, which previously took the UPDATE path and persisted nothing.
+**Date:** 2026-07-17
+
 ---
 
 ## Progress Books Module

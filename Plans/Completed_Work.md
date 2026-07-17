@@ -6,6 +6,20 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### July 17, 2026 (Work Packages — External File Form Template)
+
+**New "External File" form-template type lets a work package include an existing PDF.** In the Work Packages module, Form Templates → **+ Add New** now offers **External File** alongside Cover/List/Grid/Form. Choosing it immediately opens a PDF browser; the selected file's name (minus extension) becomes the default template name. The template stores just the file path (`ExternalFileStructure` in the existing `StructureJson` column — no schema change).
+
+- **Editor** — shows the linked PDF path with a **Relink…** button (browse to a new location) and a separate **Rename** control that renames the form in place (the top Name field + Save still creates a new copy, as for every type). Reset Defaults is hidden for this type (no default structure).
+- **Generation** — a new `ExternalFileRenderer` merges the PDF's pages into the work package wherever the form sits in the WP template. `MergeDocuments` now sizes each merged page to its source page (via per-page sections) so a larger external PDF (e.g. 11x17) is no longer clipped to letter.
+- **Missing file** — before generation, `BtnGenerate_Click` checks every external-file form's path; if any are missing it lists them and asks **OK = generate without them** / **Cancel = stop and re-link**. The generator also drops any form that yields zero pages, so "proceed without" is safe.
+
+**Fixes folded in:**
+- New `+ Add New` templates now save correctly even when the name is left at its default — the save "new vs. update" test now also treats a template as new when its ID isn't yet in the database (previously an unrenamed new template took the UPDATE path and silently persisted nothing).
+- Security: the user-chosen file path is stored as-is (not run through the output-filename sanitizer); existence is checked with `File.Exists` and the PDF loaded via `PdfLoadedDocument`.
+
+**Key files:** `Models/FormTemplate.cs` (`ExternalFileStructure`, `TemplateTypes.ExternalFile`), `Dialogs/TemplateTypeDialog.xaml(.cs)`, `Views/WorkPackageView.xaml.cs` (add-new flow, editor + relink + rename, pre-generation missing-file check, save new-vs-update fix), `Services/PdfRenderers/ExternalFileRenderer.cs` (new), `Services/PdfRenderers/WorkPackageGenerator.cs` (renderer wiring, skip empty forms, per-page-size merge).
+
 ### July 17, 2026 (Progress Books — Searchable Value Picker + Filter-Column Crash Fix)
 
 **The Progress Books "Value" filter is now a searchable, browsable picker.** Previously it was a plain dropdown where you could only jump by first letter — useless when the distinguishing part of a value sits mid-string (e.g. `25.CORE.UGPFW.1`, `25.CUP.35KV.1`). The Value control (`cboFilterValue`) is replaced by a `ToggleButton` (shows the current value + arrow) that opens a `Popup` containing a plain search `TextBox` over a `ListBox`. Click to open and scroll the whole list, or type in the search box to narrow it by **case-insensitive substring** (matches anywhere in the value); click a row (or Enter / ↓+Enter) to select and close; Esc or click-away closes without changing. It is single-select and list-only, so only real values can be chosen.

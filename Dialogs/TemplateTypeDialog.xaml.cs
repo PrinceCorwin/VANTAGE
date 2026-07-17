@@ -40,5 +40,12 @@ namespace VANTAGE.Dialogs
             DialogResult = true;
             Close();
         }
+
+        private void BtnExternalFile_Click(object sender, RoutedEventArgs e)
+        {
+            SelectedType = TemplateTypes.ExternalFile;
+            DialogResult = true;
+            Close();
+        }
     }
 }
