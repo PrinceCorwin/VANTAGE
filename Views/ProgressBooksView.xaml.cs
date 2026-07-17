@@ -7,6 +7,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Input;
 using VANTAGE.Data;
 using VANTAGE.Dialogs;
 using VANTAGE.Models.ProgressBook;
@@ -42,6 +43,21 @@ namespace VANTAGE.Views
 
         // Track unsaved changes to warn user before switching layouts
         private bool _hasUnsavedChanges;
+
+        // Searchable Value picker state: the full distinct list, the current selection, and a
+        // flag that suppresses event handlers while we mutate the picker programmatically.
+        private List<string> _allFilterValues = new();
+        private string _selectedFilterValue = string.Empty;
+        private bool _suppressValueEvents;
+
+        // Synthetic display-only columns (the "% ENTRY" handwriting box and computed
+        // "RemainingMHs") map to no real DB column, so they can't be used to filter/exclude
+        // records - selecting one would build invalid SQL (e.g. WHERE % ENTRY IS NOT NULL).
+        private static readonly HashSet<string> NonFilterableFields = new()
+        {
+            ProgressBookColumnCatalog.EntryBoxFieldName,
+            ProgressBookColumnCatalog.RemainingMHsFieldName
+        };
 
         // PDF preview stream (kept alive while viewer displays it)
         private MemoryStream? _previewStream;
@@ -225,7 +241,7 @@ namespace VANTAGE.Views
                 filterColumnItems.Add($"★ {field}");
             }
             filterColumnItems.Add("───────────");
-            filterColumnItems.AddRange(_allFields);
+            filterColumnItems.AddRange(_allFields.Where(f => !NonFilterableFields.Contains(f)));
 
             cboFilterColumn.ItemsSource = filterColumnItems;
             cboFilterColumn.SelectedIndex = 6; // WorkPackage
@@ -237,7 +253,7 @@ namespace VANTAGE.Views
                 excludeColumnItems.Add($"★ {field}");
             }
             excludeColumnItems.Add("───────────");
-            excludeColumnItems.AddRange(_allFields);
+            excludeColumnItems.AddRange(_allFields.Where(f => !NonFilterableFields.Contains(f)));
 
             cboExcludeColumn.ItemsSource = excludeColumnItems;
             cboExcludeColumn.SelectedIndex = 0; // (none)
@@ -302,8 +318,8 @@ namespace VANTAGE.Views
 
                 // Default filter: WorkPackage
                 SetFilterColumnSelection("WorkPackage");
-                cboFilterValue.ItemsSource = null;
-                cboFilterValue.SelectedItem = null;
+                _allFilterValues = new List<string>();
+                SetFilterValueSelection(string.Empty);
 
                 // Default columns mirror ProgressBookConfiguration.CreateDefault().Columns:
                 // the seven default-included columns plus the un-removable % ENTRY handwriting cell.
@@ -562,7 +578,11 @@ namespace VANTAGE.Views
             var selected = cboFilterColumn.SelectedItem as string;
             if (string.IsNullOrEmpty(selected) || selected.StartsWith("──"))
                 return "WorkPackage";
-            return selected.Replace("★ ", "");
+            var field = selected.Replace("★ ", "");
+            // A saved layout could still carry a synthetic (non-DB) field - never let it reach SQL.
+            if (NonFilterableFields.Contains(field))
+                return "WorkPackage";
+            return field;
         }
 
         // Load distinct filter values for the selected column
@@ -594,16 +614,17 @@ namespace VANTAGE.Views
                     .OrderBy(v => v)
                     .ToList();
 
-                cboFilterValue.ItemsSource = distinctValues;
+                _allFilterValues = distinctValues;
 
-                // Select the specified value or first available
+                // Select the specified value if it exists, else the first available value so
+                // the field isn't empty.
                 if (!string.IsNullOrEmpty(selectValue) && distinctValues.Contains(selectValue))
                 {
-                    cboFilterValue.SelectedItem = selectValue;
+                    SetFilterValueSelection(selectValue);
                 }
-                else if (distinctValues.Count > 0)
+                else
                 {
-                    cboFilterValue.SelectedIndex = 0;
+                    SetFilterValueSelection(distinctValues.Count > 0 ? distinctValues[0] : string.Empty);
                 }
             }
             catch (Exception ex)
@@ -759,7 +780,7 @@ namespace VANTAGE.Views
                 PaperSize = rbLetter.IsChecked == true ? PaperSize.Letter : PaperSize.Tabloid,
                 FontSize = (int)sliderFontSize.Value,
                 FilterField = GetSelectedFilterColumn(),
-                FilterValue = cboFilterValue.SelectedItem as string ?? string.Empty,
+                FilterValue = _selectedFilterValue,
                 ExcludeCompleted = chkExcludeCompleted.IsChecked == true,
                 IncludeAllUsers = chkIncludeAllUsers.IsChecked == true,
                 ExcludeColumn = GetSelectedExcludeColumn(),
@@ -903,11 +924,89 @@ namespace VANTAGE.Views
             _hasUnsavedChanges = true;
         }
 
-        // Filter value selection changed
-        private void FilterValue_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        // Apply a value to the picker: store it and show it on the toggle button.
+        private void SetFilterValueSelection(string value)
         {
+            _selectedFilterValue = value ?? string.Empty;
+            txtFilterValueDisplay.Text = _selectedFilterValue;
+        }
+
+        // Rebuild the popup list, filtered by a case-insensitive substring match. Rebuilding the
+        // ItemsSource each keystroke is trivial at this list size and keeps the search TextBox's
+        // caret untouched (it's a separate control from the list).
+        private void ApplyValueFilter(string search)
+        {
+            IEnumerable<string> items = _allFilterValues;
+            if (!string.IsNullOrWhiteSpace(search))
+                items = _allFilterValues.Where(v => v.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0);
+            lstFilterValue.ItemsSource = items.ToList();
+        }
+
+        // Popup opened: start each browse with a clean search, the whole list shown, the current
+        // value highlighted and scrolled into view, and the keyboard in the search box.
+        private void PopFilterValue_Opened(object sender, EventArgs e)
+        {
+            _suppressValueEvents = true;
+            txtFilterValueSearch.Text = string.Empty;
+            ApplyValueFilter(string.Empty);
+            if (!string.IsNullOrEmpty(_selectedFilterValue))
+            {
+                lstFilterValue.SelectedItem = _selectedFilterValue;
+                lstFilterValue.ScrollIntoView(_selectedFilterValue);
+            }
+            _suppressValueEvents = false;
+            txtFilterValueSearch.Focus();
+        }
+
+        // Typing in the search box filters the list.
+        private void TxtFilterValueSearch_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (_suppressValueEvents) return;
+            ApplyValueFilter(txtFilterValueSearch.Text);
+        }
+
+        // Keyboard: Enter picks the highlighted item (or the first match), Down moves focus into
+        // the list for arrow navigation, Escape closes without changing the value.
+        private void TxtFilterValueSearch_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                var pick = lstFilterValue.SelectedItem as string
+                           ?? (lstFilterValue.ItemsSource as IEnumerable<string>)?.FirstOrDefault();
+                if (!string.IsNullOrEmpty(pick))
+                    CommitValueSelection(pick);
+                e.Handled = true;
+            }
+            else if (e.Key == Key.Escape)
+            {
+                tglFilterValue.IsChecked = false;
+                e.Handled = true;
+            }
+            else if (e.Key == Key.Down && lstFilterValue.Items.Count > 0)
+            {
+                lstFilterValue.Focus();
+                if (lstFilterValue.SelectedIndex < 0)
+                    lstFilterValue.SelectedIndex = 0;
+                (lstFilterValue.ItemContainerGenerator.ContainerFromIndex(lstFilterValue.SelectedIndex) as ListBoxItem)?.Focus();
+                e.Handled = true;
+            }
+        }
+
+        // Clicking a list row picks that value.
+        private void LstFilterValue_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_suppressValueEvents) return;
+            if (lstFilterValue.SelectedItem is string picked)
+                CommitValueSelection(picked);
+        }
+
+        // Finalize a picked value: store it, mark unsaved, and close the popup.
+        private void CommitValueSelection(string value)
+        {
+            SetFilterValueSelection(value);
             if (!_isLoading)
                 _hasUnsavedChanges = true;
+            tglFilterValue.IsChecked = false;
         }
 
         // Exclude completed checkbox changed - save setting

@@ -437,6 +437,16 @@ Sections follow VANTAGE's nav structure top to bottom. See `.claude/skills/finis
 **Why:** A Progress Book without an entry cell isn't a Progress Book. The handwriting cell is the feature's reason for existing; every other column is a presentational choice for field crews and should be theirs to shape.
 **Date:** 2026-06-04
 
+### Synthetic Display-Only Columns Can't Be Filter or Exclude Columns
+**Rule:** The two synthetic Progress Book columns — `% ENTRY` (`EntryBox`) and `RemainingMHs` (computed) — are excluded from the "Select Progress Book(s)" Column picker and the Exclude-Column picker (via `NonFilterableFields` in `ProgressBooksView`). `GetSelectedFilterColumn()` also falls back to `WorkPackage` if a saved layout still names one, so a stale value can't reach SQL. Both remain fully available as PDF display columns.
+**Why:** These fields map to no real Activity/DB column. Selecting `% ENTRY` built `WHERE % ENTRY IS NOT NULL`, which SQLite rejects with `near "%": syntax error`; `RemainingMHs` would fail as "no such column." Filtering records by a handwriting cell or a computed value is meaningless anyway — they're presentational, not filterable data.
+**Date:** 2026-07-17
+
+### Progress Book Value Filter Is a Search-Box-Plus-List, Not an Editable Combo
+**Rule:** The Progress Books "Value" filter is a `ToggleButton` opening a `Popup` that holds a plain search `TextBox` above a `ListBox`. Typing filters the list by case-insensitive substring; selection is single, list-only (no free text). The combobox's own editable text is never involved.
+**Why:** An editable dropdown that filters its own text is the fragile part in WPF — native and Syncfusion `ComboBoxAdv` editable variants glitched on caret/backspace, and `SfTextBoxExt` autocomplete with `ShowSuggestionsOnFocus` froze the UI on focus. Separating the typing (a normal TextBox) from the list (a normal ListBox) makes filtering deterministic and eliminates the whole class of editable-combo focus/caret bugs. Same shape as the Progress module's column-filter UI.
+**Date:** 2026-07-17
+
 ### Progress Book Column Metadata Lives in a Single Catalog
 **Rule:** `Models/ProgressBook/ProgressBookColumnCatalog.cs` is the single source of truth for column `SourceKind` and `DisplayHeader`. Both `ProgressBooksView` (column list label, Add dropdown, layout migration, `BuildCurrentConfiguration` round-trip) and `ProgressBookPdfGenerator` (header text + value dispatch + alignment) read from it. The catalog overrides whatever `SourceKind` / `DisplayHeader` was stored in a saved layout's JSON whenever its `FieldName` is catalogued — renaming a label in the catalog propagates to every saved layout on its next open with no JSON migration. Uncatalogued fields render with their `FieldName` as-is in both UI and PDF (no `.ToUpper()` fallback).
 **Why:** Pre-catalog, two independent sources (`ProgressBooksView._columnMeta` covered the five promoted columns; `ProgressBookPdfGenerator.GetColumnDisplayName` covered a different nine, with `.ToUpper()` as the fallback) drifted out of sync and produced UI/PDF mismatches (e.g. UI list said "BudgetMHs", PDF header said "BUDGETMHS"). Centralising in one read-only dictionary makes the UI list and PDF header agree by construction.

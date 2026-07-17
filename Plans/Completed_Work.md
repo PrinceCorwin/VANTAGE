@@ -6,6 +6,16 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### July 17, 2026 (Progress Books — Searchable Value Picker + Filter-Column Crash Fix)
+
+**The Progress Books "Value" filter is now a searchable, browsable picker.** Previously it was a plain dropdown where you could only jump by first letter — useless when the distinguishing part of a value sits mid-string (e.g. `25.CORE.UGPFW.1`, `25.CUP.35KV.1`). The Value control (`cboFilterValue`) is replaced by a `ToggleButton` (shows the current value + arrow) that opens a `Popup` containing a plain search `TextBox` over a `ListBox`. Click to open and scroll the whole list, or type in the search box to narrow it by **case-insensitive substring** (matches anywhere in the value); click a row (or Enter / ↓+Enter) to select and close; Esc or click-away closes without changing. It is single-select and list-only, so only real values can be chosen.
+
+The key design point: the typing happens in an ordinary `TextBox` that just rebuilds a plain `ListBox` beneath it — nothing edits the combobox's own text. Earlier attempts using an editable `ComboBox` (native and Syncfusion `ComboBoxAdv`) and the Syncfusion `SfTextBoxExt` autocomplete were abandoned: the editable-combo variants glitched on caret/backspace, and `SfTextBoxExt` with `ShowSuggestionsOnFocus` froze the UI on focus. The search-box-plus-list pattern (the same shape as the Progress module's column filter) sidesteps all of that.
+
+**Fixed a pre-existing crash when choosing certain filter columns.** The Column dropdown offered two display-only synthetic fields — `% ENTRY` (the handwriting entry box) and `RemainingMHs` (computed) — that map to no real DB column. Selecting `% ENTRY` built `WHERE % ENTRY IS NOT NULL` and threw `SQLite Error 1: near "%": syntax error`; `RemainingMHs` would have failed with "no such column." Both are now excluded from the filter-column and exclude-column pickers via a new `NonFilterableFields` set, and `GetSelectedFilterColumn()` falls back to `WorkPackage` if a saved layout still carries one — so a stale saved value can't reach SQL either. Both fields remain fully available as PDF display columns.
+
+**Key files:** `Views/ProgressBooksView.xaml` (searchable Value picker markup), `Views/ProgressBooksView.xaml.cs` (picker state + handlers, `NonFilterableFields`, dropdown exclusions, `GetSelectedFilterColumn` guard), `Help/manual.html` (Value control description).
+
 ### July 15, 2026 (Required-Metadata Visibility — Import Warnings + Tools Reference)
 
 **Users can now see which columns are required to sync, both proactively and on demand.** Previously the only ways to learn the required-metadata fields were mid-flow (the Import from AI Takeoff panel) or after the fact (Validate My Records, the metadata-error badge). The Excel import paths gave no warning at all. Three additions, all sourced from a single new helper so they never drift:

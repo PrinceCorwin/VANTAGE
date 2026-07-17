@@ -157,11 +157,72 @@
                                   Grid.Row="1"
                                   ToolTip="Field to filter records by"
                                   SelectionChanged="FilterColumn_SelectionChanged"/>
-                        <ComboBox x:Name="cboFilterValue"
-                                  Grid.Row="1"
-                                  Grid.Column="2"
-                                  ToolTip="Value to filter - this becomes the Progress Book name in the header"
-                                  SelectionChanged="FilterValue_SelectionChanged"/>
+                        <!-- Searchable single-select value picker: a toggle showing the current
+                             value opens a popup with a plain search box + list. Typing filters the
+                             list (substring); clicking a row selects it. Typing happens in a normal
+                             TextBox (not an editable combo), so there is nothing to glitch. -->
+                        <Grid Grid.Row="1" Grid.Column="2">
+                            <ToggleButton x:Name="tglFilterValue"
+                                          Height="28"
+                                          Padding="6,0"
+                                          HorizontalContentAlignment="Stretch"
+                                          Background="{DynamicResource BackgroundColor}"
+                                          Foreground="{DynamicResource ForegroundColor}"
+                                          BorderBrush="{DynamicResource BorderColor}"
+                                          BorderThickness="1"
+                                          ToolTip="Click to browse all values or type to search (matches anywhere in the value). This becomes the Progress Book name in the header.">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock x:Name="txtFilterValueDisplay"
+                                               Grid.Column="0"
+                                               Foreground="{DynamicResource ForegroundColor}"
+                                               VerticalAlignment="Center"
+                                               TextTrimming="CharacterEllipsis"/>
+                                    <Path Grid.Column="1"
+                                          Width="9" Height="6"
+                                          Margin="6,0,0,0"
+                                          VerticalAlignment="Center"
+                                          Stretch="Fill"
+                                          Fill="{DynamicResource ForegroundColor}"
+                                          Data="M 0 0 L 4.5 5 L 9 0 Z"/>
+                                </Grid>
+                            </ToggleButton>
+                            <Popup x:Name="popFilterValue"
+                                   PlacementTarget="{Binding ElementName=tglFilterValue}"
+                                   Placement="Bottom"
+                                   StaysOpen="False"
+                                   AllowsTransparency="True"
+                                   Width="{Binding ActualWidth, ElementName=tglFilterValue}"
+                                   IsOpen="{Binding IsChecked, ElementName=tglFilterValue, Mode=TwoWay}"
+                                   Opened="PopFilterValue_Opened">
+                                <Border Background="{DynamicResource ControlBackground}"
+                                        BorderBrush="{DynamicResource BorderColor}"
+                                        BorderThickness="1">
+                                    <StackPanel>
+                                        <TextBox x:Name="txtFilterValueSearch"
+                                                 Margin="4"
+                                                 Height="26"
+                                                 MaxLength="255"
+                                                 Background="{DynamicResource BackgroundColor}"
+                                                 Foreground="{DynamicResource ForegroundColor}"
+                                                 BorderBrush="{DynamicResource BorderColor}"
+                                                 ToolTip="Type to filter the list below"
+                                                 TextChanged="TxtFilterValueSearch_TextChanged"
+                                                 PreviewKeyDown="TxtFilterValueSearch_PreviewKeyDown"/>
+                                        <ListBox x:Name="lstFilterValue"
+                                                 MaxHeight="300"
+                                                 BorderThickness="0"
+                                                 Background="{DynamicResource ControlBackground}"
+                                                 Foreground="{DynamicResource ForegroundColor}"
+                                                 ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                                 SelectionChanged="LstFilterValue_SelectionChanged"/>
+                                    </StackPanel>
+                                </Border>
+                            </Popup>
+                        </Grid>
                     </Grid>
                     <CheckBox x:Name="chkExcludeCompleted"
                               Content="Exclude Completed Activities"
