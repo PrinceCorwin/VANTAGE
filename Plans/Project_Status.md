@@ -10,7 +10,6 @@
 ## Deferred to Post-V1
 | Feature | Reason |
 |---------|--------|
-| Drawings in Work Packages | Per-WP location architecture needs design |
 | AI Features (other than Progress Scan) | Lower priority for V1 |
 
 ## In Progress / Not Started
@@ -21,6 +20,7 @@
 | AI Features (other) | NOT STARTED | Error Assistant, Description Analysis, etc. |
 
 ## Ready to Publish
+- **Work Packages — Drawings form (per-WP subfolder merge)** — new form type: browse to a parent folder whose subfolders are named exactly per WorkPackage; at generation the PDFs in `{parent}\{WP}` merge into that work package at the form's position (full page size). Missing subfolders prompt cancel-vs-proceed before generation. Replaces (and removes) the old hidden DwgNO-matching "Fetch Drawings" tool + Procore stub. Resolves the deferred "Drawings architecture" item.
 - **Work Packages — embed saved Progress Book layouts as forms** — a saved Progress Book layout can be added to a WP template from the + Add Form menu; at generation it produces that progress book inline (shared `ProgressBookGenerationService`), scoped to the current work package (`WorkPackage = <WP>`, all other layout settings honored), and merges it into the WP PDF at the form's position. Missing/deleted layouts show as "(missing layout #id)" and are skipped at generation. (Template Export/Import doesn't carry prog-book form refs yet.)
 - **Work Packages — External File form template** — new form type that references an existing PDF; its pages merge into the generated work package at the form's position. Add New → "External File" browses to the PDF (default name = file name); editor has Relink + in-place Rename; missing file at generation prompts cancel-vs-proceed-without. `MergeDocuments` now preserves each page's native size (11x17 etc. no longer clipped to letter).
 - **Progress Books — searchable Value picker** — the Value filter is now a browsable/type-to-filter (substring) single-select list; also fixed a crash when selecting a synthetic (`% ENTRY` / `RemainingMHs`) filter column.
@@ -117,21 +117,8 @@ Series of short tutorial videos for end users. Each item below needs a plan and 
 | AI MissedReason Assistant | Not Started |
 | AI Schedule Analysis | Deferred |
 
-### Post-V1: Drawings Architecture
-- Design per-WP drawing location system (options: token paths, per-WP config, Drawings Manager)
-- Fix preview display
-- Fix layout/orientation for 11x17 drawings
-- Implement Procore fetch
-- Consider AI-assisted drawing matching (DwgNO formats, revisions, sheet numbers)
-
-**Code disabled for v1 (re-enable when drawings architecture is ready):**
-| File | What to re-enable |
-|------|-------------------|
-| `WorkPackageView.xaml` | Remove `Visibility="Collapsed"` from Drawings section Border (~line 238) |
-| `WorkPackageView.xaml.cs` | Remove `.Where(t => t.TemplateType != TemplateTypes.Drawings)` from `PopulateAddFormMenu()` |
-| `WorkPackageView.xaml.cs` | Remove filter in `ApplyWPFormsListFilter()` method |
-| `WorkPackageView.xaml.cs` | Remove early return in `BuildDrawingsEditor()` and `#pragma warning` directives |
-| `DrawingsRenderer.cs` | Remove early return in `Render()` method and `#pragma warning` directives |
+### Drawings — Procore Source (Future)
+- The Drawings form currently pulls PDFs from a local parent folder (one subfolder per WorkPackage). A Procore-sourced option will be designed fresh when picked up.
 
 ### Syncfusion Features to Evaluate
 

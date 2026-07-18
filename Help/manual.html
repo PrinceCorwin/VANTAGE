@@ -2150,7 +2150,7 @@
 
     <p>Key capabilities:</p>
     <ul>
-        <li><strong>Multi-form composition</strong> — Combine cover sheets, lists, forms, grids, external PDFs, and embedded progress books into one document</li>
+        <li><strong>Multi-form composition</strong> — Combine cover sheets, lists, forms, grids, external PDFs, per-WP drawings, and embedded progress books into one document</li>
         <li><strong>Token replacement</strong> — Dynamic content like project names, dates, and activity data</li>
         <li><strong>Bulk generation</strong> — Generate PDFs for multiple work packages at once</li>
         <li><strong>Custom branding</strong> — Use your own logo or the default company logo</li>
@@ -2347,7 +2347,7 @@
     <p>Choose one of the template types. Most create a new template with default settings and load the editor for that type; <strong>External File</strong> instead prompts you to browse to a PDF. You can also select any existing template, change the name, and save to create a copy.</p>
 
     <h4>Built-in Templates</h4>
-    <p>VANTAGE includes seven premade templates that cover a typical work package. Built-in templates cannot be overwritten or deleted — to customize one, change the name and save to create your own copy. Use <strong>Reset Defaults</strong> to revert a user-created template back to built-in settings.</p>
+    <p>VANTAGE includes six premade templates that cover a typical work package. Built-in templates cannot be overwritten or deleted — to customize one, change the name and save to create your own copy. Use <strong>Reset Defaults</strong> to revert a user-created template back to built-in settings.</p>
 
     <table>
         <tr>
@@ -2385,15 +2385,10 @@
             <td>Grid</td>
             <td>Grid for listing drawing numbers, revisions, and descriptions</td>
         </tr>
-        <tr>
-            <td>Drawings - Placeholder</td>
-            <td>Drawings</td>
-            <td>Marks where drawing images will be inserted (coming in future release)</td>
-        </tr>
     </table>
 
     <h4>Template Types</h4>
-    <p>There are five template types, each with its own editor layout:</p>
+    <p>There are six template types, each with its own editor layout:</p>
 
     <table>
         <tr>
@@ -2420,6 +2415,10 @@
             <td><strong>External File</strong></td>
             <td>References an existing PDF; its pages are merged into the work package at this form's position</td>
         </tr>
+        <tr>
+            <td><strong>Drawings</strong></td>
+            <td>References a parent folder with one subfolder per work package; the PDFs in the matching subfolder are merged into each work package</td>
+        </tr>
     </table>
 
     <p>In addition, your saved <strong>Progress Book layouts</strong> appear in the WP Template's <strong>+ Add Form</strong> menu (listed as "Progress Book: {name}"). Adding one embeds a progress book in the work package: at generation it is produced just like from the Progress Books module — using the layout's columns, grouping, sorting, paper size, and filters — but automatically scoped to the work package being generated, and merged in at the form's position. If a referenced layout has been deleted it shows as "(missing layout)" and is skipped at generation.</p>
@@ -2431,6 +2430,14 @@
         <li><strong>Rename</strong> — Rename this form in place, without creating a copy. (Changing the top <em>Name</em> field and saving still creates a new copy, as with any template.)</li>
     </ul>
     <p>The PDF's pages merge in at their original size (a larger sheet such as 11x17 is not shrunk to letter), positioned wherever the form sits in the WP Template. If the linked file can't be found when you generate, VANTAGE lists the missing file(s) and lets you either continue without them or cancel to re-link.</p>
+
+    <h4>Drawings Form</h4>
+    <p>A <strong>Drawings</strong> form pulls each work package's drawing PDFs into the generated document. When you choose <strong>Drawings</strong> from the type dialog, you browse to a <strong>parent folder</strong>. Inside that parent folder, create one subfolder per work package, named <em>exactly</em> the WorkPackage value, and place that work package's drawing PDFs in it.</p>
+    <ul>
+        <li><strong>Relink…</strong> — Point the form at a different parent folder.</li>
+        <li><strong>Rename</strong> — Rename this form in place, without creating a copy.</li>
+    </ul>
+    <p>At generation, for each work package being produced, the PDFs in <code>{parent folder}\{work package}</code> are merged into that work package at the form's position, at their original page size (11x17 sheets stay full size), ordered alphabetically by file name. If a work package has no matching subfolder, VANTAGE lists the missing folder(s) and lets you continue without them or cancel.</p>
 
     <h4>Common Controls</h4>
     <p>All form types share these controls:</p>

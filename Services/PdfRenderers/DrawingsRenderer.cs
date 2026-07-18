@@ -33,33 +33,35 @@ namespace VANTAGE.Services.PdfRenderers
         {
             var document = CreateDocument();
 
-            // Drawings deferred for v1 - per-WP location architecture needs design
-            // Return empty document so WP generates without drawings section
-            return document;
-
-            #pragma warning disable CS0162 // Unreachable code (kept for post-v1 re-enablement)
             try
             {
                 var structure = JsonSerializer.Deserialize<DrawingsStructure>(structureJson);
-                if (structure == null)
+                if (structure == null || string.IsNullOrWhiteSpace(structure.ParentFolderPath))
                 {
-                    AppLogger.Warning("Failed to parse DrawingsStructure JSON", "DrawingsRenderer.Render");
+                    AppLogger.Warning("Drawings template has no parent folder", "DrawingsRenderer.Render");
                     return document;
                 }
 
-                // Load drawing files based on source
-                List<string> drawingFiles = LoadDrawingFiles(structure, context);
-
-                if (drawingFiles.Count == 0)
+                // The drawings for this work package live in a subfolder named exactly the
+                // WorkPackage value. Missing subfolder -> empty document (the generator skips it;
+                // the user was warned about missing folders before generation started).
+                string wpFolder = Path.Combine(structure.ParentFolderPath, context.WorkPackage);
+                if (!Directory.Exists(wpFolder))
                 {
-                    // Return empty document - no placeholder page needed
-                    // The work package will simply not have a drawings section
-                    AppLogger.Info("No drawing files found for work package", "DrawingsRenderer.Render");
+                    AppLogger.Warning($"Drawings subfolder not found: {wpFolder}", "DrawingsRenderer.Render");
                     return document;
                 }
 
-                // Import all PDF pages directly
-                ImportPdfFiles(document, drawingFiles);
+                var pdfFiles = Directory.GetFiles(wpFolder, "*.pdf", SearchOption.TopDirectoryOnly)
+                    .OrderBy(f => Path.GetFileName(f), StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+                if (pdfFiles.Count == 0)
+                {
+                    AppLogger.Info($"No PDFs in drawings subfolder: {wpFolder}", "DrawingsRenderer.Render");
+                    return document;
+                }
+
+                ImportPdfFiles(document, pdfFiles);
             }
             catch (Exception ex)
             {
@@ -67,134 +69,6 @@ namespace VANTAGE.Services.PdfRenderers
             }
 
             return document;
-            #pragma warning restore CS0162
-        }
-
-        // Load drawing files from pre-fetched Drawings subfolder
-        // Both Local and Procore fetches in Generate tab copy PDFs to {outputFolder}/Drawings/
-        private List<string> LoadDrawingFiles(DrawingsStructure structure, TokenContext context)
-        {
-            var files = new List<string>();
-
-            // Look for pre-fetched PDFs in the Drawings subfolder of output folder
-            if (string.IsNullOrEmpty(context.OutputFolder))
-            {
-                AppLogger.Warning("Output folder not set - cannot load drawings", "DrawingsRenderer.LoadDrawingFiles");
-                return files;
-            }
-
-            var drawingsFolder = Path.Combine(context.OutputFolder, "Drawings");
-            if (!Directory.Exists(drawingsFolder))
-            {
-                AppLogger.Info($"No drawings folder found at {drawingsFolder}. Use Fetch Drawings in Generate tab first.", "DrawingsRenderer.LoadDrawingFiles");
-                return files;
-            }
-
-            // Get DwgNO values for this work package from database
-            var dwgNumbers = GetDwgNumbersForWorkPackage(context.ProjectID, context.WorkPackage);
-            if (dwgNumbers.Count == 0)
-            {
-                AppLogger.Info($"No DwgNO values found for work package {context.WorkPackage}", "DrawingsRenderer.LoadDrawingFiles");
-                return files;
-            }
-
-            // Get all PDF files in the drawings folder
-            var allPdfFiles = Directory.GetFiles(drawingsFolder, "*.pdf", SearchOption.TopDirectoryOnly);
-
-            // Find matching PDF files for each DwgNO
-            var matchedFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var dwgNo in dwgNumbers)
-            {
-                // Try full DwgNO contains match first
-                var matches = allPdfFiles
-                    .Where(f => Path.GetFileNameWithoutExtension(f)
-                        .Contains(dwgNo, StringComparison.OrdinalIgnoreCase))
-                    .ToList();
-
-                // Fallback: try last two segments (e.g., "017004-01" from "LP150-TWSP-017004-01")
-                if (matches.Count == 0)
-                {
-                    var shortMatch = GetLastTwoSegments(dwgNo);
-                    if (!string.IsNullOrEmpty(shortMatch))
-                    {
-                        matches = allPdfFiles
-                            .Where(f => Path.GetFileNameWithoutExtension(f)
-                                .Contains(shortMatch, StringComparison.OrdinalIgnoreCase))
-                            .ToList();
-                    }
-                }
-
-                foreach (var match in matches)
-                {
-                    if (matchedFiles.Add(match))
-                    {
-                        files.Add(match);
-                    }
-                }
-            }
-
-            // Sort files by name for consistent ordering
-            files = files.OrderBy(f => Path.GetFileName(f)).ToList();
-
-            if (files.Count > 0)
-            {
-                AppLogger.Info($"Found {files.Count} drawing PDF(s) for {context.WorkPackage}", "DrawingsRenderer.LoadDrawingFiles");
-            }
-            else
-            {
-                AppLogger.Info($"No matching drawing PDFs found for {context.WorkPackage}. DwgNOs: {string.Join(", ", dwgNumbers)}", "DrawingsRenderer.LoadDrawingFiles");
-            }
-
-            return files;
-        }
-
-        // Extract last two hyphen-separated segments from a DwgNO (e.g., "017004-01" from "LP150-TWSP-017004-01")
-        private string? GetLastTwoSegments(string dwgNo)
-        {
-            if (string.IsNullOrEmpty(dwgNo)) return null;
-
-            var parts = dwgNo.Split('-');
-            if (parts.Length >= 2)
-            {
-                return $"{parts[^2]}-{parts[^1]}";
-            }
-            return null;
-        }
-
-        // Get distinct DwgNO values for a work package from the database
-        private List<string> GetDwgNumbersForWorkPackage(string projectId, string workPackage)
-        {
-            var dwgNumbers = new List<string>();
-
-            try
-            {
-                using var connection = DatabaseSetup.GetConnection();
-                connection.Open();
-
-                using var cmd = connection.CreateCommand();
-                cmd.CommandText = @"
-                    SELECT DISTINCT DwgNO
-                    FROM Activities
-                    WHERE ProjectID = @projectId
-                    AND WorkPackage = @workPackage
-                    AND DwgNO IS NOT NULL AND DwgNO != ''
-                    ORDER BY DwgNO";
-
-                cmd.Parameters.AddWithValue("@projectId", projectId);
-                cmd.Parameters.AddWithValue("@workPackage", workPackage);
-
-                using var reader = cmd.ExecuteReader();
-                while (reader.Read())
-                {
-                    dwgNumbers.Add(reader.GetString(0));
-                }
-            }
-            catch (Exception ex)
-            {
-                AppLogger.Error(ex, "DrawingsRenderer.GetDwgNumbersForWorkPackage");
-            }
-
-            return dwgNumbers;
         }
 
         // Import PDF files directly into the document using Merge

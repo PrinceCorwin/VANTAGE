@@ -178,34 +178,17 @@ namespace VANTAGE.Models
         public List<string> Items { get; set; } = new();
     }
 
-    // JSON structure for Drawings type templates (drawing images)
+    // JSON structure for Drawings type templates. References a parent folder that contains one
+    // subfolder per work package (named exactly the WorkPackage value). At generation the PDFs in
+    // {ParentFolderPath}\{WorkPackage} are merged into the work package at this form's position.
     public class DrawingsStructure
     {
         [JsonPropertyName("title")]
-        public string Title { get; set; } = "DRAWINGS";
+        public string Title { get; set; } = "Drawings";
 
-        // Source type: "Local" for local folder, "Procore" for Procore API (future)
-        [JsonPropertyName("source")]
-        public string Source { get; set; } = "Local";
-
-        // For Local source: folder path pattern (can use tokens like {WorkPackage})
-        [JsonPropertyName("folderPath")]
-        public string? FolderPath { get; set; }
-
-        // File extensions to include (e.g., "*.pdf,*.png,*.jpg")
-        [JsonPropertyName("fileExtensions")]
-        public string FileExtensions { get; set; } = "*.pdf,*.png,*.jpg,*.jpeg,*.tif,*.tiff";
-
-        // Images per page (1, 2, or 4)
-        [JsonPropertyName("imagesPerPage")]
-        public int ImagesPerPage { get; set; } = 1;
-
-        // Include drawing file name as caption
-        [JsonPropertyName("showCaptions")]
-        public bool ShowCaptions { get; set; } = true;
-
-        [JsonPropertyName("footerText")]
-        public string? FooterText { get; set; }
+        // Parent folder the user browsed to. Its immediate subfolders are named per WorkPackage.
+        [JsonPropertyName("parentFolderPath")]
+        public string? ParentFolderPath { get; set; }
     }
 
     // JSON structure for ExternalFile type templates - references an existing PDF on disk
@@ -233,13 +216,5 @@ namespace VANTAGE.Models
         // Synthetic type used only for the in-memory WP-forms-list item that stands in for a
         // saved Progress Book layout. No FormTemplate of this type is ever stored in the DB.
         public const string ProgBook = "ProgBook";
-    }
-
-    // Drawing item for the Generate tab DwgNO grid
-    public class DrawingItem
-    {
-        public string WorkPackage { get; set; } = string.Empty;
-        public string DwgNO { get; set; } = string.Empty;
-        public string Status { get; set; } = "Pending";
     }
 }

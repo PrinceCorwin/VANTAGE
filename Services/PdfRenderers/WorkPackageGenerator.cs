@@ -261,7 +261,9 @@ namespace VANTAGE.Services.PdfRenderers
             };
         }
 
-        // Merge multiple PDF documents into one
+        // Merge the form documents into one, in list order. Each source page is copied onto a
+        // new per-page section sized to that page, so pages keep their original size (letter forms
+        // stay letter; an 11x17 drawing stays 11x17) and the forms stay in list order.
         private PdfDocument MergeDocuments(List<(PdfDocument doc, string name)> documents)
         {
             var mergedDoc = new PdfDocument();
@@ -269,20 +271,15 @@ namespace VANTAGE.Services.PdfRenderers
 
             foreach (var (doc, _) in documents)
             {
-                // Import all pages from each document
                 for (int i = 0; i < doc.Pages.Count; i++)
                 {
                     var page = doc.Pages[i];
 
-                    // Preserve each source page's own size via a per-page section. Work-package
-                    // forms are letter (8.5x11); an external PDF may be 11x17 or another size and
-                    // must not be clipped down to letter.
                     var section = mergedDoc.Sections.Add();
                     section.PageSettings.Margins.All = 0;
                     section.PageSettings.Size = page.Size;
                     var importedPage = section.Pages.Add();
 
-                    // Copy page content using template
                     var template = page.CreateTemplate();
                     importedPage.Graphics.DrawPdfTemplate(template, System.Drawing.PointF.Empty);
                 }

@@ -199,7 +199,6 @@ namespace VANTAGE.Utilities
         //   WorkPackage.LastOutputPath     — path picker in the Work Package view
         //   WorkPackage.LastLogoPath       — path picker in the Work Package view
         //   WorkPackage.WPNamePattern      — text box in the Work Package view
-        //   WorkPackage.DrawingsLocalPath  — path picker in the Work Package view
         //   WorkPackage.LogoNoImage        — checkbox in the Work Package Generate tab
         //   WorkPackage.NoSubfolders       — checkbox in the Work Package Generate tab
         //   WorkPackage.IndividualPdfs     — checkbox in the Work Package Generate tab

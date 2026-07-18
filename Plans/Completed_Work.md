@@ -6,6 +6,18 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### July 17, 2026 (Work Packages — Drawings Form + Removal of Legacy Fetch-Drawings)
+
+**New "Drawings" form type merges per-work-package drawing PDFs into the work package.** In Form Templates → **+ Add New**, choosing **Drawings** browses to a *parent folder* whose immediate subfolders are named exactly per WorkPackage (default form name = folder name). At generation, `DrawingsRenderer` merges every PDF in `{parentFolder}\{current WP}` (top-level, alphabetical, full page size) into the work package at the form's position. This is the concrete design for the previously-deferred Drawings feature (parent + per-WP-subfolder replaces the undecided "per-WP location architecture").
+
+- **Editor** — parent folder path + **Relink…** + in-place **Rename** (the External File and Drawings editors now share one `RenameCurrentFormInPlaceAsync` helper). `DrawingsStructure` slimmed to `{ Title, ParentFolderPath }`.
+- **Missing folder** — before generation, each selected WP × each Drawings form is checked for `{parent}\{WP}`; misses are listed (capped at 20) with **OK = generate without / Cancel = stop**.
+- Drawings re-enabled across the type dialog, Add-Form menu, Form Template dropdown, and WP forms list.
+
+**Removed the old hidden Fetch-Drawings tooling entirely.** The collapsed Drawings section on the Generate tab (source picker, DwgNO grid, "Fetch Drawings" button) and all its code — `LoadDrawingsGrid`, `FetchDrawingsFromLocalAsync`/`FromProcoreAsync`, `GetLastTwoSegments`, the source-panel handlers, the `DrawingItem` model, the `WorkPackage.DrawingsLocalPath` setting, the old DwgNO-matching logic in `DrawingsRenderer`, and the built-in "Drawings - Placeholder" template (dropped from the seed + the Summit Standard WP) — are gone. The Procore fetch was a stub and is removed; a Procore drawings source will be designed fresh later.
+
+**Key files:** `Models/FormTemplate.cs` (`DrawingsStructure` slim-down, `DrawingItem` removed), `Dialogs/TemplateTypeDialog.xaml(.cs)` (Drawings button), `Views/WorkPackageView.xaml` (deleted Drawings section), `Views/WorkPackageView.xaml.cs` (deleted legacy handlers, Drawings add-new/editor/relink/rename, per-WP folder pre-check, un-exclusions, shared rename helper), `Services/PdfRenderers/DrawingsRenderer.cs` (parent+WP-subfolder Render), `DatabaseSetup.cs` (placeholder seed removed), `Utilities/UserSettingsRegistry.cs` (`DrawingsLocalPath` removed).
+
 ### July 17, 2026 (Work Packages — Embed Saved Progress Book Layouts as Forms)
 
 **A saved Progress Book layout can now be added to a Work Package template as a form.** The WP Template's **+ Add Form** menu lists saved layouts (as "Progress Book: {name}") below the regular form templates. Adding one places it in the WP's form list like any form (reorder/remove supported). At generation, the progress book is produced inline and merged into the work package PDF at the form's position.

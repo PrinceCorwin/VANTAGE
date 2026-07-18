@@ -138,12 +138,9 @@ namespace VANTAGE.Views
         private Slider? _formFontSizeSlider;
         private TextBox? _formFooterTextBox;
 
-        // Drawings editor fields
-        private ComboBox? _drawingsSourceCombo;
-        private StackPanel? _drawingsLocalPanel;
-        private StackPanel? _drawingsProcorePanel;
+        // Drawings editor fields (parent folder + in-place rename)
         private TextBox? _drawingsFolderPathBox;
-        private TextBox? _drawingsExtensionsBox;
+        private TextBox? _drawingsRenameBox;
 
         private readonly WorkPackageGenerator _generator = new();
 
@@ -170,19 +167,7 @@ namespace VANTAGE.Views
         {
             InitializeComponent();
             SfSkinManager.SetTheme(this, new Theme(ThemeManager.GetSyncfusionThemeName()));
-            Loaded += (_, __) => ThemeManager.ThemeChanged += OnThemeChanged;
-            Unloaded += (_, __) => ThemeManager.ThemeChanged -= OnThemeChanged;
             Loaded += WorkPackageView_Loaded;
-        }
-
-        // Re-apply Syncfusion skin to grid when theme changes
-        private void OnThemeChanged(string themeName)
-        {
-            Dispatcher.Invoke(() =>
-            {
-                var sfTheme = new Theme(ThemeManager.GetSyncfusionThemeName());
-                SfSkinManager.SetTheme(dgDrawings, sfTheme);
-            });
         }
 
         private async void WorkPackageView_Loaded(object sender, RoutedEventArgs e)
@@ -245,13 +230,6 @@ namespace VANTAGE.Views
                 if (!string.IsNullOrEmpty(lastPattern))
                 {
                     txtWPNamePattern.Text = lastPattern;
-                }
-
-                // Load last used drawings local path from settings
-                var lastDrawingsPath = SettingsManager.GetUserSetting("WorkPackage.DrawingsLocalPath");
-                if (!string.IsNullOrEmpty(lastDrawingsPath))
-                {
-                    txtDrawingsLocalPath.Text = lastDrawingsPath;
                 }
 
                 // Restore splitter position
@@ -422,7 +400,7 @@ namespace VANTAGE.Views
         private void PopulateAddFormMenu()
         {
             menuAddFormGroup.Items.Clear();
-            foreach (var template in GetSortedFormTemplates().Where(t => t.TemplateType != TemplateTypes.Drawings))
+            foreach (var template in GetSortedFormTemplates())
             {
                 var menuItem = new DropDownMenuItem
                 {
@@ -495,10 +473,7 @@ namespace VANTAGE.Views
         private void PopulateFormTemplateEditDropdown()
         {
             var items = new List<object> { new { TemplateName = "+ Add New", TemplateID = (string?)null } };
-            // Exclude Drawings type - it's a placeholder, not editable
-            var editableTemplates = GetSortedFormTemplates()
-                .Where(t => t.TemplateType != TemplateTypes.Drawings);
-            items.AddRange(editableTemplates.Cast<object>());
+            items.AddRange(GetSortedFormTemplates().Cast<object>());
             cboFormTemplateEdit.ItemsSource = items;
             cboFormTemplateEdit.DisplayMemberPath = "TemplateName";
         }
@@ -587,283 +562,6 @@ namespace VANTAGE.Views
         private void BtnClearSelection_Click(object sender, RoutedEventArgs e)
         {
             lstWorkPackages.UnselectAll();
-        }
-
-        // Handle work package selection change - update drawings grid
-        private void LstWorkPackages_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            LoadDrawingsGrid();
-        }
-
-        // Load drawings grid with DwgNO values from selected work packages
-        private void LoadDrawingsGrid()
-        {
-            try
-            {
-                var selectedWPs = lstWorkPackages.SelectedItems.Cast<string>().ToList();
-                var projectId = cboProject.SelectedValue as string;
-
-                if (selectedWPs.Count == 0 || string.IsNullOrEmpty(projectId))
-                {
-                    dgDrawings.ItemsSource = null;
-                    lblDrawingsCount.Text = "Select work packages above to see drawings";
-                    return;
-                }
-
-                var drawingItems = new List<DrawingItem>();
-
-                using var connection = DatabaseSetup.GetConnection();
-                connection.Open();
-
-                // Query distinct WorkPackage + DwgNO combinations
-                var wpParams = string.Join(",", selectedWPs.Select((_, i) => $"@wp{i}"));
-                using var cmd = connection.CreateCommand();
-                cmd.CommandText = $@"
-                    SELECT DISTINCT WorkPackage, DwgNO
-                    FROM Activities
-                    WHERE ProjectID = @projectId
-                    AND WorkPackage IN ({wpParams})
-                    AND DwgNO IS NOT NULL AND DwgNO != ''
-                    ORDER BY WorkPackage, DwgNO";
-
-                cmd.Parameters.AddWithValue("@projectId", projectId);
-                for (int i = 0; i < selectedWPs.Count; i++)
-                {
-                    cmd.Parameters.AddWithValue($"@wp{i}", selectedWPs[i]);
-                }
-
-                using var reader = cmd.ExecuteReader();
-                while (reader.Read())
-                {
-                    drawingItems.Add(new DrawingItem
-                    {
-                        WorkPackage = reader.GetString(0),
-                        DwgNO = reader.GetString(1),
-                        Status = "Pending"
-                    });
-                }
-
-                dgDrawings.ItemsSource = drawingItems;
-                lblDrawingsCount.Text = drawingItems.Count == 0
-                    ? "No drawing numbers found in selected work packages"
-                    : $"{drawingItems.Count} drawing(s)";
-            }
-            catch (Exception ex)
-            {
-                AppLogger.Error(ex, "WorkPackageView.LoadDrawingsGrid");
-                lblDrawingsCount.Text = "Error loading drawings";
-            }
-        }
-
-        // Toggle visibility of drawings source panels
-        private void RbDrawingsSource_Checked(object sender, RoutedEventArgs e)
-        {
-            if (pnlDrawingsLocal == null || pnlDrawingsProcore == null) return;
-
-            bool isLocal = rbDrawingsLocal.IsChecked == true;
-            pnlDrawingsLocal.Visibility = isLocal ? Visibility.Visible : Visibility.Collapsed;
-            pnlDrawingsProcore.Visibility = isLocal ? Visibility.Collapsed : Visibility.Visible;
-        }
-
-        // Browse for drawings local folder
-        private void BtnBrowseDrawingsFolder_Click(object sender, RoutedEventArgs e)
-        {
-            var selectedPath = ShowFolderPickerDialog("Select Drawings Folder");
-            if (!string.IsNullOrEmpty(selectedPath))
-            {
-                txtDrawingsLocalPath.Text = selectedPath;
-                SettingsManager.SetUserSetting("WorkPackage.DrawingsLocalPath", selectedPath, "string");
-            }
-        }
-
-        // Fetch drawings from selected source
-        private async void BtnFetchDrawings_Click(object sender, RoutedEventArgs e)
-        {
-            var drawingItems = dgDrawings.ItemsSource as List<DrawingItem>;
-            if (drawingItems == null || drawingItems.Count == 0)
-            {
-                AppMessageBox.Show("No drawings to fetch. Select work packages with drawing numbers first.",
-                    "No Drawings", MessageBoxButton.OK, MessageBoxImage.None);
-                return;
-            }
-
-            if (string.IsNullOrEmpty(txtOutputFolder.Text))
-            {
-                AppMessageBox.Show("Please select an output folder first.",
-                    "Output Folder Required", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            bool isLocal = rbDrawingsLocal.IsChecked == true;
-
-            if (isLocal)
-            {
-                await FetchDrawingsFromLocalAsync(drawingItems);
-            }
-            else
-            {
-                await FetchDrawingsFromProcoreAsync(drawingItems);
-            }
-        }
-
-        // Fetch drawings from local folder
-        private async Task FetchDrawingsFromLocalAsync(List<DrawingItem> drawingItems)
-        {
-            var folderPath = txtDrawingsLocalPath.Text;
-            if (string.IsNullOrEmpty(folderPath))
-            {
-                AppMessageBox.Show("Please enter or browse for a drawings folder path.",
-                    "Folder Path Required", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            btnFetchDrawings.IsEnabled = false;
-            lblStatus.Text = "Fetching drawings from local folder...";
-
-            try
-            {
-                int found = 0;
-                int notFound = 0;
-                int notInDb = 0;
-                var matchedFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                var drawingsFolder = Path.Combine(txtOutputFolder.Text, "Drawings");
-                string? resolvedPath = null;
-
-                await Task.Run(() =>
-                {
-                    Directory.CreateDirectory(drawingsFolder);
-
-                    foreach (var item in drawingItems)
-                    {
-                        // Resolve tokens in folder path for each work package
-                        var context = new TokenContext { WorkPackage = item.WorkPackage };
-                        resolvedPath = TokenResolver.Resolve(folderPath, context);
-
-                        if (!Directory.Exists(resolvedPath))
-                        {
-                            item.Status = "Folder not found";
-                            notFound++;
-                            continue;
-                        }
-
-                        // Get all PDF files in the folder
-                        var allPdfFiles = Directory.GetFiles(resolvedPath, "*.pdf", SearchOption.TopDirectoryOnly);
-
-                        // Try full DwgNO contains match first
-                        var matchingFiles = allPdfFiles
-                            .Where(f => Path.GetFileNameWithoutExtension(f)
-                                .Contains(item.DwgNO, StringComparison.OrdinalIgnoreCase))
-                            .ToList();
-
-                        // Fallback: try last two segments (e.g., "017004-01" from "LP150-TWSP-017004-01")
-                        if (matchingFiles.Count == 0)
-                        {
-                            var shortMatch = GetLastTwoSegments(item.DwgNO);
-                            if (!string.IsNullOrEmpty(shortMatch))
-                            {
-                                matchingFiles = allPdfFiles
-                                    .Where(f => Path.GetFileNameWithoutExtension(f)
-                                        .Contains(shortMatch, StringComparison.OrdinalIgnoreCase))
-                                    .ToList();
-                            }
-                        }
-
-                        if (matchingFiles.Count == 0)
-                        {
-                            item.Status = "Not found";
-                            notFound++;
-                        }
-                        else
-                        {
-                            // Copy all matching files (all revisions)
-                            foreach (var sourceFile in matchingFiles)
-                            {
-                                matchedFiles.Add(sourceFile);
-                                var destFile = Path.Combine(drawingsFolder, Path.GetFileName(sourceFile));
-                                File.Copy(sourceFile, destFile, true);
-                            }
-                            item.Status = matchingFiles.Count == 1 ? "Found" : $"Found ({matchingFiles.Count})";
-                            found++;
-                        }
-                    }
-
-                    // Find PDFs in local folder not matched to any DwgNO
-                    if (!string.IsNullOrEmpty(resolvedPath) && Directory.Exists(resolvedPath))
-                    {
-                        var allPdfFiles = Directory.GetFiles(resolvedPath, "*.pdf", SearchOption.TopDirectoryOnly);
-                        foreach (var pdfFile in allPdfFiles)
-                        {
-                            if (!matchedFiles.Contains(pdfFile))
-                            {
-                                // Copy unmatched file to drawings folder
-                                var destFile = Path.Combine(drawingsFolder, Path.GetFileName(pdfFile));
-                                File.Copy(pdfFile, destFile, true);
-                                notInDb++;
-                            }
-                        }
-                    }
-                });
-
-                // Add "Not in DB" items to the grid
-                if (notInDb > 0 && !string.IsNullOrEmpty(resolvedPath))
-                {
-                    var unmatchedFiles = Directory.GetFiles(resolvedPath, "*.pdf", SearchOption.TopDirectoryOnly)
-                        .Where(f => !matchedFiles.Contains(f))
-                        .ToList();
-
-                    foreach (var file in unmatchedFiles)
-                    {
-                        drawingItems.Add(new DrawingItem
-                        {
-                            WorkPackage = "(Unmatched)",
-                            DwgNO = Path.GetFileNameWithoutExtension(file),
-                            Status = "Not in DB"
-                        });
-                    }
-                }
-
-                // Refresh grid to show updated statuses
-                dgDrawings.ItemsSource = null;
-                dgDrawings.ItemsSource = drawingItems;
-                lblDrawingsCount.Text = $"{drawingItems.Count} drawing(s)";
-
-                lblStatus.Text = $"Fetch complete: {found} found, {notFound} not found, {notInDb} not in DB";
-                AppMessageBox.Show($"Drawings fetch complete.\n\nMatched: {found}\nNot found: {notFound}\nNot in DB: {notInDb}",
-                    "Fetch Complete", MessageBoxButton.OK,
-                    notFound > 0 ? MessageBoxImage.Warning : MessageBoxImage.None);
-            }
-            catch (Exception ex)
-            {
-                AppLogger.Error(ex, "WorkPackageView.FetchDrawingsFromLocalAsync");
-                AppMessageBox.Show($"Error fetching drawings: {ex.Message}",
-                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-            finally
-            {
-                btnFetchDrawings.IsEnabled = true;
-            }
-        }
-
-        // Extract last two hyphen-separated segments from a DwgNO (e.g., "017004-01" from "LP150-TWSP-017004-01")
-        private string? GetLastTwoSegments(string dwgNo)
-        {
-            if (string.IsNullOrEmpty(dwgNo)) return null;
-
-            var parts = dwgNo.Split('-');
-            if (parts.Length >= 2)
-            {
-                return $"{parts[^2]}-{parts[^1]}";
-            }
-            return null;
-        }
-
-        // Fetch drawings from Procore (to be implemented)
-        private async Task FetchDrawingsFromProcoreAsync(List<DrawingItem> drawingItems)
-        {
-            // TODO: Implement Procore fetch with company/project selection dialog
-            await Task.CompletedTask;
-            AppMessageBox.Show("Procore fetch is not yet implemented.",
-                "Coming Soon", MessageBoxButton.OK, MessageBoxImage.None);
         }
 
         // Insert field token into WP Name Pattern
@@ -1176,6 +874,42 @@ namespace VANTAGE.Views
             return missing;
         }
 
+        // Find Drawings forms in a WP template whose per-WP subfolder ({parent}\{WP}) is missing
+        // for any of the selected work packages. Returns one entry per missing (form, WP) pair.
+        private async Task<List<(string name, string detail)>> CollectMissingDrawingsFoldersAsync(string wpTemplateId, List<string> selectedWPs)
+        {
+            var missing = new List<(string name, string detail)>();
+            try
+            {
+                var wpTemplate = await TemplateRepository.GetWPTemplateByIdAsync(wpTemplateId);
+                if (wpTemplate == null) return missing;
+
+                var formRefs = JsonSerializer.Deserialize<List<FormReference>>(wpTemplate.FormsJson);
+                if (formRefs == null) return missing;
+
+                foreach (var formRef in formRefs)
+                {
+                    var form = await TemplateRepository.GetFormTemplateByIdAsync(formRef.FormTemplateId);
+                    if (form == null || form.TemplateType != TemplateTypes.Drawings)
+                        continue;
+
+                    var parent = JsonSerializer.Deserialize<DrawingsStructure>(form.StructureJson)?.ParentFolderPath;
+                    foreach (var wp in selectedWPs)
+                    {
+                        if (string.IsNullOrWhiteSpace(parent))
+                            missing.Add((form.TemplateName, $"{wp} (no folder linked)"));
+                        else if (!System.IO.Directory.Exists(System.IO.Path.Combine(parent, wp)))
+                            missing.Add((form.TemplateName, System.IO.Path.Combine(parent, wp)));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "WorkPackageView.CollectMissingDrawingsFoldersAsync");
+            }
+            return missing;
+        }
+
         // Generate button click
         private async void BtnGenerate_Click(object sender, RoutedEventArgs e)
         {
@@ -1215,6 +949,23 @@ namespace VANTAGE.Views
                     $"These external file(s) could not be found:\n\n{list}\n\n" +
                     "Click OK to generate without them, or Cancel to stop and re-link the file(s).",
                     "External File Not Found", MessageBoxButton.OKCancel, MessageBoxImage.Warning);
+                if (choice != MessageBoxResult.OK)
+                    return;
+            }
+
+            // Warn about any Drawings forms whose per-WP subfolder is missing (per selected WP).
+            var missingDrawings = await CollectMissingDrawingsFoldersAsync(wpTemplateId, selectedWPs);
+            if (missingDrawings.Count > 0)
+            {
+                const int cap = 20;
+                var lines = missingDrawings.Take(cap).Select(m => $"  • {m.name}: {m.detail}").ToList();
+                var list = string.Join("\n", lines);
+                if (missingDrawings.Count > cap)
+                    list += $"\n  ...and {missingDrawings.Count - cap} more";
+                var choice = AppMessageBox.Show(
+                    $"These drawings folder(s) could not be found:\n\n{list}\n\n" +
+                    "Click OK to generate without them, or Cancel to stop.",
+                    "Drawings Folder Not Found", MessageBoxButton.OKCancel, MessageBoxImage.Warning);
                 if (choice != MessageBoxResult.OK)
                     return;
             }
@@ -1469,14 +1220,10 @@ namespace VANTAGE.Views
             ApplyWPFormsListFilter();
         }
 
-        // Apply filter to hide Drawings items from WP forms list display
-        // Note: Drawings hidden for v1 (per-WP location architecture needs design)
-        // The filter hides from display while preserving in _wpFormsList for save operations
+        // Bind the WP forms list for display. (All form types are shown.)
         private void ApplyWPFormsListFilter()
         {
-            var view = CollectionViewSource.GetDefaultView(_wpFormsList);
-            view.Filter = item => item is FormTemplate ft && ft.TemplateType != TemplateTypes.Drawings;
-            lstWPForms.ItemsSource = view;
+            lstWPForms.ItemsSource = _wpFormsList;
         }
 
         // Move form up in list
@@ -1706,6 +1453,24 @@ namespace VANTAGE.Views
                     {
                         Title = templateName,
                         FilePath = fileDialog.FileName
+                    });
+                }
+                else if (dialog.SelectedType == TemplateTypes.Drawings)
+                {
+                    // Drawings: browse to the parent folder now (its subfolders are named per WP).
+                    // The folder name becomes the default template name; cancelling cancels the add.
+                    var folderPath = ShowFolderPickerDialog("Select Drawings Parent Folder");
+                    if (string.IsNullOrEmpty(folderPath))
+                    {
+                        RestoreFormTemplateSelectionAfterCancel();
+                        return;
+                    }
+                    templateName = new System.IO.DirectoryInfo(folderPath).Name;
+                    if (string.IsNullOrWhiteSpace(templateName)) templateName = "Drawings";
+                    structureJson = JsonSerializer.Serialize(new DrawingsStructure
+                    {
+                        Title = templateName,
+                        ParentFolderPath = folderPath
                     });
                 }
                 else
@@ -4349,9 +4114,21 @@ namespace VANTAGE.Views
         // new copy; this is the rename-in-place path.
         private async void RenameExternalFile_Click(object sender, RoutedEventArgs e)
         {
-            if (_selectedFormTemplate == null || _externalRenameBox == null) return;
+            await RenameCurrentFormInPlaceAsync(_externalRenameBox, name => JsonSerializer.Serialize(new ExternalFileStructure
+            {
+                Title = name,
+                FilePath = string.IsNullOrWhiteSpace(_externalFilePathBox?.Text) ? null : _externalFilePathBox.Text
+            }));
+        }
 
-            string newName = _externalRenameBox.Text.Trim();
+        // Rename the currently-selected user form template in place (updates the existing record,
+        // no duplicate) and persist the current structure. Shared by the External File and
+        // Drawings editors. buildStructureJson receives the new name and returns the StructureJson.
+        private async Task RenameCurrentFormInPlaceAsync(TextBox? renameBox, Func<string, string> buildStructureJson)
+        {
+            if (_selectedFormTemplate == null || renameBox == null) return;
+
+            string newName = renameBox.Text.Trim();
             if (string.IsNullOrWhiteSpace(newName))
             {
                 AppMessageBox.Show("Please enter a name.", "Rename", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -4376,13 +4153,9 @@ namespace VANTAGE.Views
 
             try
             {
-                // Persist the new name plus the current link (so a relink done here isn't lost).
+                // Persist the new name plus the current structure (so a relink done here isn't lost).
                 _selectedFormTemplate.TemplateName = newName;
-                _selectedFormTemplate.StructureJson = JsonSerializer.Serialize(new ExternalFileStructure
-                {
-                    Title = newName,
-                    FilePath = string.IsNullOrWhiteSpace(_externalFilePathBox?.Text) ? null : _externalFilePathBox.Text
-                });
+                _selectedFormTemplate.StructureJson = buildStructureJson(newName);
                 await TemplateRepository.UpdateFormTemplateAsync(_selectedFormTemplate);
 
                 string renamedId = _selectedFormTemplate.TemplateID;
@@ -4403,7 +4176,7 @@ namespace VANTAGE.Views
             }
             catch (Exception ex)
             {
-                AppLogger.Error(ex, "WorkPackageView.RenameExternalFile_Click");
+                AppLogger.Error(ex, "WorkPackageView.RenameCurrentFormInPlaceAsync");
                 AppMessageBox.Show($"Error renaming form: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -4426,184 +4199,109 @@ namespace VANTAGE.Views
             _currentEditorType = null;
         }
 
-        // Build and display the Drawings type editor
-        // Note: Drawings are hidden for v1 (per-WP location architecture needs design)
+        // Build and display the Drawings type editor: shows the parent folder (whose per-WP
+        // subfolders hold the drawing PDFs) with Relink + in-place Rename, mirroring External File.
         private void BuildDrawingsEditor(DrawingsStructure structure)
         {
             _currentEditorType = TemplateTypes.Drawings;
 
             var panel = new StackPanel { Margin = new Thickness(0, 10, 0, 0) };
 
-            // Drawings deferred for v1 - show message instead of editor
             panel.Children.Add(new TextBlock
             {
-                Text = "Drawings integration is coming in a future release.",
+                Text = "At generation, the PDFs in the subfolder named exactly like the work package (inside this parent folder) are merged into the work package at this form's position.",
                 TextWrapping = TextWrapping.Wrap,
                 Foreground = (Brush)FindResource("TextColorSecondary"),
                 FontStyle = FontStyles.Italic,
                 Margin = new Thickness(0, 0, 0, 15)
             });
+
             panel.Children.Add(new TextBlock
             {
-                Text = "The per-work-package drawing location architecture is being redesigned to better support batch generation scenarios.",
+                Text = "Parent folder",
+                FontWeight = FontWeights.SemiBold,
+                Foreground = (Brush)FindResource("ForegroundColor"),
+                Margin = new Thickness(0, 0, 0, 5)
+            });
+
+            var pathGrid = new Grid { Margin = new Thickness(0, 0, 0, 15) };
+            pathGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            pathGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+            _drawingsFolderPathBox = new TextBox
+            {
+                Text = structure.ParentFolderPath ?? "",
+                Height = 28,
+                IsReadOnly = true,
+                ToolTip = "The parent folder. Its subfolders are named per work package. Use Relink to change it."
+            };
+            Grid.SetColumn(_drawingsFolderPathBox, 0);
+            pathGrid.Children.Add(_drawingsFolderPathBox);
+
+            var relinkBtn = new Button
+            {
+                Content = "Relink...",
+                Padding = new Thickness(8, 4, 8, 4),
+                Margin = new Thickness(5, 0, 0, 0),
+                ToolTip = "Browse to a new parent folder"
+            };
+            relinkBtn.Click += RelinkDrawingsFolder_Click;
+            Grid.SetColumn(relinkBtn, 1);
+            pathGrid.Children.Add(relinkBtn);
+
+            panel.Children.Add(pathGrid);
+
+            // Rename this form in place (the top Name field + Save creates a new copy).
+            panel.Children.Add(new TextBlock
+            {
+                Text = "Rename this form",
+                FontWeight = FontWeights.SemiBold,
+                Foreground = (Brush)FindResource("ForegroundColor"),
+                Margin = new Thickness(0, 0, 0, 5)
+            });
+
+            var renameGrid = new Grid { Margin = new Thickness(0, 0, 0, 15) };
+            renameGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            renameGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+            _drawingsRenameBox = new TextBox
+            {
+                Text = _selectedFormTemplate?.TemplateName ?? structure.Title,
+                Height = 28,
+                ToolTip = "New name for this form"
+            };
+            Grid.SetColumn(_drawingsRenameBox, 0);
+            renameGrid.Children.Add(_drawingsRenameBox);
+
+            var renameBtn = new Button
+            {
+                Content = "Rename",
+                Padding = new Thickness(8, 4, 8, 4),
+                Margin = new Thickness(5, 0, 0, 0),
+                ToolTip = "Rename this form in place (does not create a copy)"
+            };
+            renameBtn.Click += RenameDrawings_Click;
+            Grid.SetColumn(renameBtn, 1);
+            renameGrid.Children.Add(renameBtn);
+
+            panel.Children.Add(renameGrid);
+
+            panel.Children.Add(new TextBlock
+            {
+                Text = "If a work package has no matching subfolder when you generate, you'll be asked whether to cancel or continue without its drawings.",
                 TextWrapping = TextWrapping.Wrap,
                 Foreground = (Brush)FindResource("TextColorSecondary"),
                 FontSize = 12,
                 Margin = new Thickness(0, 0, 0, 0)
             });
-            FormEditorContent.Content = panel;
-            return;
-
-            // Original editor code below - kept for reference (will be re-enabled post-v1)
-            #pragma warning disable CS0162 // Unreachable code
-            panel.Children.Add(new TextBlock
-            {
-                Text = "Drawing PDFs are imported directly into the work package, preserving their original page size (typically 11x17).",
-                TextWrapping = TextWrapping.Wrap,
-                Foreground = (Brush)FindResource("TextColorSecondary"),
-                FontStyle = FontStyles.Italic,
-                Margin = new Thickness(0, 0, 0, 15)
-            });
-
-            // Source selection
-            panel.Children.Add(new TextBlock
-            {
-                Text = "Source",
-                FontWeight = FontWeights.SemiBold,
-                Foreground = (Brush)FindResource("ForegroundColor"),
-                Margin = new Thickness(0, 0, 0, 5)
-            });
-            _drawingsSourceCombo = new ComboBox
-            {
-                Height = 28,
-                Margin = new Thickness(0, 0, 0, 15)
-            };
-            _drawingsSourceCombo.Items.Add(new ComboBoxItem { Content = "Local Folder", Tag = "Local" });
-            var procoreItem = new ComboBoxItem
-            {
-                Content = "Procore (coming soon)",
-                Tag = "Procore",
-                IsEnabled = false,
-                ToolTip = "Procore integration will be available in a future update"
-            };
-            _drawingsSourceCombo.Items.Add(procoreItem);
-            _drawingsSourceCombo.SelectedIndex = structure.Source == "Procore" ? 1 : 0;
-            _drawingsSourceCombo.SelectionChanged += DrawingsSourceCombo_SelectionChanged;
-            panel.Children.Add(_drawingsSourceCombo);
-
-            // Local folder panel (shown when Source = Local)
-            _drawingsLocalPanel = new StackPanel { Margin = new Thickness(0, 0, 0, 15) };
-
-            // Folder Path
-            _drawingsLocalPanel.Children.Add(new TextBlock
-            {
-                Text = "Folder Path",
-                FontWeight = FontWeights.SemiBold,
-                Foreground = (Brush)FindResource("ForegroundColor"),
-                Margin = new Thickness(0, 0, 0, 5)
-            });
-            var folderPathGrid = new Grid { Margin = new Thickness(0, 0, 0, 5) };
-            folderPathGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-            folderPathGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-
-            _drawingsFolderPathBox = new TextBox
-            {
-                Text = structure.FolderPath ?? "",
-                Height = 28,
-                ToolTip = "Path to folder containing drawing PDFs. Use {WorkPackage} token for dynamic paths."
-            };
-            _drawingsFolderPathBox.TextChanged += (s, e) => _hasUnsavedChanges = true;
-            Grid.SetColumn(_drawingsFolderPathBox, 0);
-            folderPathGrid.Children.Add(_drawingsFolderPathBox);
-
-            var browseBtn = new Button
-            {
-                Content = "Browse",
-                Padding = new Thickness(8, 4, 8, 4),
-                Margin = new Thickness(5, 0, 0, 0),
-                ToolTip = "Browse for drawings folder"
-            };
-            browseBtn.Click += BrowseDrawingsFolder_Click;
-            Grid.SetColumn(browseBtn, 1);
-            folderPathGrid.Children.Add(browseBtn);
-
-            _drawingsLocalPanel.Children.Add(folderPathGrid);
-
-            // Token hint
-            _drawingsLocalPanel.Children.Add(new TextBlock
-            {
-                Text = "Use {WorkPackage} token for dynamic paths (e.g., C:\\Drawings\\{WorkPackage})",
-                FontStyle = FontStyles.Italic,
-                Foreground = (Brush)FindResource("TextColorSecondary"),
-                FontSize = 11,
-                Margin = new Thickness(0, 0, 0, 15)
-            });
-
-            // File Extensions
-            _drawingsLocalPanel.Children.Add(new TextBlock
-            {
-                Text = "File Extensions",
-                FontWeight = FontWeights.SemiBold,
-                Foreground = (Brush)FindResource("ForegroundColor"),
-                Margin = new Thickness(0, 0, 0, 5)
-            });
-            _drawingsExtensionsBox = new TextBox
-            {
-                Text = structure.FileExtensions,
-                Height = 28,
-                Margin = new Thickness(0, 0, 0, 0),
-                ToolTip = "Comma-separated list of file extensions (e.g., *.pdf)"
-            };
-            _drawingsExtensionsBox.TextChanged += (s, e) => _hasUnsavedChanges = true;
-            _drawingsLocalPanel.Children.Add(_drawingsExtensionsBox);
-
-            panel.Children.Add(_drawingsLocalPanel);
-
-            // Procore panel placeholder (shown when Source = Procore - hidden for now)
-            _drawingsProcorePanel = new StackPanel
-            {
-                Margin = new Thickness(0, 0, 0, 15),
-                Visibility = Visibility.Collapsed
-            };
-            _drawingsProcorePanel.Children.Add(new TextBlock
-            {
-                Text = "Procore integration coming soon",
-                FontStyle = FontStyles.Italic,
-                Foreground = (Brush)FindResource("TextColorSecondary")
-            });
-            panel.Children.Add(_drawingsProcorePanel);
 
             FormEditorContent.Content = panel;
-
-            // Update panel visibility based on current source
-            UpdateDrawingsSourcePanels();
-            #pragma warning restore CS0162
         }
 
-        // Handle source selection change in Drawings editor
-        private void DrawingsSourceCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        // Relink the drawings form to a new parent folder.
+        private void RelinkDrawingsFolder_Click(object sender, RoutedEventArgs e)
         {
-            _hasUnsavedChanges = true;
-            UpdateDrawingsSourcePanels();
-        }
-
-        // Show/hide panels based on selected source
-        private void UpdateDrawingsSourcePanels()
-        {
-            if (_drawingsSourceCombo == null || _drawingsLocalPanel == null || _drawingsProcorePanel == null)
-                return;
-
-            var selectedItem = _drawingsSourceCombo.SelectedItem as ComboBoxItem;
-            var source = selectedItem?.Tag?.ToString() ?? "Local";
-
-            _drawingsLocalPanel.Visibility = source == "Local" ? Visibility.Visible : Visibility.Collapsed;
-            _drawingsProcorePanel.Visibility = source == "Procore" ? Visibility.Visible : Visibility.Collapsed;
-        }
-
-        // Browse for drawings folder
-        private void BrowseDrawingsFolder_Click(object sender, RoutedEventArgs e)
-        {
-            var selectedPath = ShowFolderPickerDialog("Select Drawings Folder");
+            var selectedPath = ShowFolderPickerDialog("Select Drawings Parent Folder");
             if (!string.IsNullOrEmpty(selectedPath) && _drawingsFolderPathBox != null)
             {
                 _drawingsFolderPathBox.Text = selectedPath;
@@ -4611,17 +4309,23 @@ namespace VANTAGE.Views
             }
         }
 
-        // Collect Drawings editor values to JSON
+        // Rename the current drawings form in place (does not create a copy).
+        private async void RenameDrawings_Click(object sender, RoutedEventArgs e)
+        {
+            await RenameCurrentFormInPlaceAsync(_drawingsRenameBox, name => JsonSerializer.Serialize(new DrawingsStructure
+            {
+                Title = name,
+                ParentFolderPath = string.IsNullOrWhiteSpace(_drawingsFolderPathBox?.Text) ? null : _drawingsFolderPathBox.Text
+            }));
+        }
+
+        // Collect Drawings editor values to JSON.
         private string GetDrawingsStructureJson()
         {
-            var selectedSourceItem = _drawingsSourceCombo?.SelectedItem as ComboBoxItem;
-            var source = selectedSourceItem?.Tag?.ToString() ?? "Local";
-
             var structure = new DrawingsStructure
             {
-                Source = source,
-                FolderPath = string.IsNullOrWhiteSpace(_drawingsFolderPathBox?.Text) ? null : _drawingsFolderPathBox.Text,
-                FileExtensions = _drawingsExtensionsBox?.Text ?? "*.pdf"
+                Title = txtFormTemplateName.Text,
+                ParentFolderPath = string.IsNullOrWhiteSpace(_drawingsFolderPathBox?.Text) ? null : _drawingsFolderPathBox.Text
             };
             return JsonSerializer.Serialize(structure);
         }

@@ -63,13 +63,13 @@ VANTAGE: Milestone provides activity tracking, P6 Primavera schedule integration
 
 ### Work Package Module
 - PDF generation for construction work packages
-- Five template types: Cover (image), List (TOC), Form (checklist/signoff), Grid (punchlist), Drawings
+- Six template types: Cover (image), List (TOC), Form (checklist/signoff), Grid (punchlist), External File (merge an existing PDF), Drawings (merge per-WP drawing PDFs from a parent folder)
+- Saved Progress Book layouts can be embedded as forms (generated inline, scoped to the work package)
 - Token-based dynamic content binding ({WorkPackage}, {ProjectName}, {PrintedDate}, etc.)
 - Customizable templates with clone-to-edit workflow
 - Built-in templates: Cover Sheet, TOC, Checklist, Punchlist, Signoff Sheet, DWG Log
 - Multi-form merge into single PDF package
 - Live PDF preview panel
-- Drawings deferred to post-V1 (per-WP location architecture needs design)
 
 ### Plugin System
 - In-app `Plugin Manager` dialog for installing, updating, and removing optional plugins

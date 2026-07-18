@@ -478,7 +478,6 @@ namespace VANTAGE
                 const string punchlistId = "builtin-punchlist";
                 const string signoffId = "builtin-signoff";
                 const string dwgLogId = "builtin-dwg-log";
-                const string drawingsId = "builtin-drawings";
 
                 // 1. Cover Sheet (Cover type)
                 var coverStructure = new CoverStructure
@@ -662,20 +661,6 @@ namespace VANTAGE
                 InsertFormTemplate(connection, dwgLogId, "Drawing Log - Template", TemplateTypes.Grid,
                     JsonSerializer.Serialize(dwgLogStructure), createdBy, createdUtc);
 
-                // 7. Drawings (Drawings type - displays drawing images from local folder)
-                var drawingsStructure = new DrawingsStructure
-                {
-                    Title = "DRAWINGS",
-                    Source = "Local",
-                    FolderPath = null, // User must configure folder path
-                    FileExtensions = "*.pdf,*.png,*.jpg,*.jpeg,*.tif,*.tiff",
-                    ImagesPerPage = 1,
-                    ShowCaptions = true,
-                    FooterText = null
-                };
-                InsertFormTemplate(connection, drawingsId, "Drawings - Placeholder", TemplateTypes.Drawings,
-                    JsonSerializer.Serialize(drawingsStructure), createdBy, createdUtc);
-
                 // Built-in WP Template: Summit Standard WP
                 var wpFormsJson = JsonSerializer.Serialize(new List<FormReference>
                 {
@@ -683,7 +668,6 @@ namespace VANTAGE
                     new FormReference { FormTemplateId = tocId },
                     new FormReference { FormTemplateId = checklistId },
                     new FormReference { FormTemplateId = dwgLogId },
-                    new FormReference { FormTemplateId = drawingsId },
                     new FormReference { FormTemplateId = punchlistId },
                     new FormReference { FormTemplateId = signoffId }
                 });

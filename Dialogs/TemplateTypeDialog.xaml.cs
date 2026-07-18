@@ -47,5 +47,12 @@ namespace VANTAGE.Dialogs
             DialogResult = true;
             Close();
         }
+
+        private void BtnDrawings_Click(object sender, RoutedEventArgs e)
+        {
+            SelectedType = TemplateTypes.Drawings;
+            DialogResult = true;
+            Close();
+        }
     }
 }
