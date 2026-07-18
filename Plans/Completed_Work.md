@@ -6,6 +6,16 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### July 18, 2026 (Progress Books — Multi-Select Value Picker + Bulk Export)
+
+**The Progress Books Value picker now supports checking multiple values to bulk-export in one pass.** The searchable single-select list added previously became a checkbox list: each distinct value has its own checkbox, plus **Select all** (checks every value currently visible, respecting the active search) and **Clear**. Check state lives on backing `FilterValueItem` objects, so checks survive the ItemsSource rebuild that happens on every search keystroke — you can search → check → search → check to assemble a selection. The toggle caption shows the value when one is checked and "N selected" when several are.
+
+- **Context-aware GENERATE** — 0 checked warns; exactly 1 checked opens the existing single-book dialog (Save As, unchanged behavior); 2+ checked runs the bulk export.
+- **Bulk export** — pick a destination folder; VANTAGE creates a `ProgBooks - [timestamp]` parent folder inside it and writes one PDF per checked value (`<value>_<yyyyMMdd>.pdf`). The parent folder is created unconditionally so separate runs never mix or overwrite. Each value is resolved through the shared `ProgressBookGenerationService`; values with no records or unsynced records are skipped and reported in a completion summary rather than aborting the batch. A busy spinner (reusing `leftPanelBusy`) shows during the run, and the operation is logged with username.
+- **Filename safety** — new shared `Utilities/FileNameHelper.SanitizeFileName` strips invalid characters and guards Windows reserved names (CON/PRN/NUL/COMx/LPTx), used for both the per-value PDF names and the timestamped parent folder. Complies with `Plans/Security_Guidelines.md` (the weaker inline sanitizer was not reused).
+
+**Key files:** `Views/ProgressBooksView.xaml` (checkbox ItemTemplate + Select all/Clear on the value popup), `Views/ProgressBooksView.xaml.cs` (`FilterValueItem` model, multi-select picker logic, context-aware `BtnGenerateBook_Click`, `BulkExportAsync`), `Utilities/FileNameHelper.cs` (new), `Help/manual.html` (Value picker + Generating sections).
+
 ### July 17, 2026 (Work Packages — Drawings Form + Removal of Legacy Fetch-Drawings)
 
 **New "Drawings" form type merges per-work-package drawing PDFs into the work package.** In Form Templates → **+ Add New**, choosing **Drawings** browses to a *parent folder* whose immediate subfolders are named exactly per WorkPackage (default form name = folder name). At generation, `DrawingsRenderer` merges every PDF in `{parentFolder}\{current WP}` (top-level, alphabetical, full page size) into the work package at the form's position. This is the concrete design for the previously-deferred Drawings feature (parent + per-WP-subfolder replaces the undecided "per-WP location architecture").

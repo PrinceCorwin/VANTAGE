@@ -8,6 +8,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
+using Microsoft.Win32;
 using VANTAGE.Data;
 using VANTAGE.Dialogs;
 using VANTAGE.Models.ProgressBook;
@@ -44,9 +45,11 @@ namespace VANTAGE.Views
         // Track unsaved changes to warn user before switching layouts
         private bool _hasUnsavedChanges;
 
-        // Searchable Value picker state: the full distinct list, the current selection, and a
-        // flag that suppresses event handlers while we mutate the picker programmatically.
-        private List<string> _allFilterValues = new();
+        // Searchable Value picker state: the full distinct list (each item carries its own
+        // check state so it survives search re-filtering), the "primary" value (first checked,
+        // used for the live preview + saved layout), and a flag that suppresses event handlers
+        // while we mutate the picker programmatically.
+        private List<FilterValueItem> _allFilterValues = new();
         private string _selectedFilterValue = string.Empty;
         private bool _suppressValueEvents;
 
@@ -318,7 +321,7 @@ namespace VANTAGE.Views
 
                 // Default filter: WorkPackage
                 SetFilterColumnSelection("WorkPackage");
-                _allFilterValues = new List<string>();
+                _allFilterValues = new List<FilterValueItem>();
                 SetFilterValueSelection(string.Empty);
 
                 // Default columns mirror ProgressBookConfiguration.CreateDefault().Columns:
@@ -614,17 +617,17 @@ namespace VANTAGE.Views
                     .OrderBy(v => v)
                     .ToList();
 
-                _allFilterValues = distinctValues;
+                _allFilterValues = distinctValues.Select(v => new FilterValueItem { Value = v! }).ToList();
 
-                // Select the specified value if it exists, else the first available value so
-                // the field isn't empty.
+                // Check the specified value if it exists, else the first available value so the
+                // field isn't empty (preserves the pre-multi-select single-book default).
                 if (!string.IsNullOrEmpty(selectValue) && distinctValues.Contains(selectValue))
                 {
                     SetFilterValueSelection(selectValue);
                 }
                 else
                 {
-                    SetFilterValueSelection(distinctValues.Count > 0 ? distinctValues[0] : string.Empty);
+                    SetFilterValueSelection(distinctValues.Count > 0 ? distinctValues[0]! : string.Empty);
                 }
             }
             catch (Exception ex)
@@ -925,35 +928,67 @@ namespace VANTAGE.Views
         }
 
         // Apply a value to the picker: store it and show it on the toggle button.
+        // Select exactly one value (used by the load / column-change paths): uncheck everything,
+        // check the one matching item, and refresh the primary + display. Suppresses the checkbox
+        // handlers so this programmatic change doesn't flip _hasUnsavedChanges.
         private void SetFilterValueSelection(string value)
         {
-            _selectedFilterValue = value ?? string.Empty;
-            txtFilterValueDisplay.Text = _selectedFilterValue;
+            value ??= string.Empty;
+            _suppressValueEvents = true;
+            foreach (var item in _allFilterValues)
+                item.IsChecked = !string.IsNullOrEmpty(value) && item.Value == value;
+            _suppressValueEvents = false;
+
+            RecomputePrimaryValue();
         }
 
-        // Rebuild the popup list, filtered by a case-insensitive substring match. Rebuilding the
-        // ItemsSource each keystroke is trivial at this list size and keeps the search TextBox's
-        // caret untouched (it's a separate control from the list).
+        // The "primary" value drives the live preview and the saved layout's single FilterValue.
+        // It's the first checked value in list order (empty when nothing is checked).
+        private void RecomputePrimaryValue()
+        {
+            _selectedFilterValue = _allFilterValues.FirstOrDefault(i => i.IsChecked)?.Value ?? string.Empty;
+            UpdateFilterValueDisplay();
+        }
+
+        // Toggle button caption reflects how many values are checked.
+        private void UpdateFilterValueDisplay()
+        {
+            int count = _allFilterValues.Count(i => i.IsChecked);
+            txtFilterValueDisplay.Text = count switch
+            {
+                0 => string.Empty,
+                1 => _selectedFilterValue,
+                _ => $"{count} selected"
+            };
+        }
+
+        // All currently checked values, in list order.
+        private List<string> GetCheckedFilterValues()
+        {
+            return _allFilterValues.Where(i => i.IsChecked).Select(i => i.Value).ToList();
+        }
+
+        // Rebuild the popup list, filtered by a case-insensitive substring match. Filtering points
+        // ItemsSource at a subset of the SAME item objects, so each row's check state persists
+        // across keystrokes. The search TextBox is a separate control, so its caret is untouched.
         private void ApplyValueFilter(string search)
         {
-            IEnumerable<string> items = _allFilterValues;
+            IEnumerable<FilterValueItem> items = _allFilterValues;
             if (!string.IsNullOrWhiteSpace(search))
-                items = _allFilterValues.Where(v => v.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0);
+                items = _allFilterValues.Where(v => v.Value.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0);
             lstFilterValue.ItemsSource = items.ToList();
         }
 
-        // Popup opened: start each browse with a clean search, the whole list shown, the current
-        // value highlighted and scrolled into view, and the keyboard in the search box.
+        // Popup opened: start each browse with a clean search, the whole list shown, the primary
+        // value scrolled into view, and the keyboard in the search box. Check state is preserved.
         private void PopFilterValue_Opened(object sender, EventArgs e)
         {
             _suppressValueEvents = true;
             txtFilterValueSearch.Text = string.Empty;
             ApplyValueFilter(string.Empty);
-            if (!string.IsNullOrEmpty(_selectedFilterValue))
-            {
-                lstFilterValue.SelectedItem = _selectedFilterValue;
-                lstFilterValue.ScrollIntoView(_selectedFilterValue);
-            }
+            var primary = _allFilterValues.FirstOrDefault(i => i.IsChecked);
+            if (primary != null)
+                lstFilterValue.ScrollIntoView(primary);
             _suppressValueEvents = false;
             txtFilterValueSearch.Focus();
         }
@@ -965,16 +1000,20 @@ namespace VANTAGE.Views
             ApplyValueFilter(txtFilterValueSearch.Text);
         }
 
-        // Keyboard: Enter picks the highlighted item (or the first match), Down moves focus into
-        // the list for arrow navigation, Escape closes without changing the value.
+        // Keyboard: Enter toggles the highlighted item (or the first visible match) and keeps the
+        // popup open so several values can be checked in a row; Down moves focus into the list for
+        // arrow navigation; Escape closes.
         private void TxtFilterValueSearch_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
             {
-                var pick = lstFilterValue.SelectedItem as string
-                           ?? (lstFilterValue.ItemsSource as IEnumerable<string>)?.FirstOrDefault();
-                if (!string.IsNullOrEmpty(pick))
-                    CommitValueSelection(pick);
+                var target = lstFilterValue.SelectedItem as FilterValueItem
+                             ?? (lstFilterValue.ItemsSource as IEnumerable<FilterValueItem>)?.FirstOrDefault();
+                if (target != null)
+                {
+                    target.IsChecked = !target.IsChecked;
+                    OnFilterValueCheckChanged();
+                }
                 e.Handled = true;
             }
             else if (e.Key == Key.Escape)
@@ -992,21 +1031,39 @@ namespace VANTAGE.Views
             }
         }
 
-        // Clicking a list row picks that value.
-        private void LstFilterValue_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        // A row checkbox was toggled by the user.
+        private void FilterValueCheck_Changed(object sender, RoutedEventArgs e)
         {
             if (_suppressValueEvents) return;
-            if (lstFilterValue.SelectedItem is string picked)
-                CommitValueSelection(picked);
+            OnFilterValueCheckChanged();
         }
 
-        // Finalize a picked value: store it, mark unsaved, and close the popup.
-        private void CommitValueSelection(string value)
+        // Shared response to any user-driven check change: refresh primary/display, mark unsaved.
+        private void OnFilterValueCheckChanged()
         {
-            SetFilterValueSelection(value);
+            RecomputePrimaryValue();
             if (!_isLoading)
                 _hasUnsavedChanges = true;
-            tglFilterValue.IsChecked = false;
+        }
+
+        // Check every value currently visible in the list (respects the active search filter).
+        private void BtnFilterValueSelectAll_Click(object sender, RoutedEventArgs e)
+        {
+            _suppressValueEvents = true;
+            foreach (var item in (lstFilterValue.ItemsSource as IEnumerable<FilterValueItem>) ?? Enumerable.Empty<FilterValueItem>())
+                item.IsChecked = true;
+            _suppressValueEvents = false;
+            OnFilterValueCheckChanged();
+        }
+
+        // Uncheck all values (not just the visible ones).
+        private void BtnFilterValueClear_Click(object sender, RoutedEventArgs e)
+        {
+            _suppressValueEvents = true;
+            foreach (var item in _allFilterValues)
+                item.IsChecked = false;
+            _suppressValueEvents = false;
+            OnFilterValueCheckChanged();
         }
 
         // Exclude completed checkbox changed - save setting
@@ -1644,29 +1701,159 @@ namespace VANTAGE.Views
             pdfViewer.Visibility = Visibility.Collapsed;
         }
 
-        private void BtnGenerateBook_Click(object sender, RoutedEventArgs e)
+        // Context-aware Generate: 0 checked -> warn; exactly 1 -> the single-book dialog
+        // (unchanged behavior); 2+ -> bulk export one PDF per checked value into a chosen folder.
+        private async void BtnGenerateBook_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                var config = BuildCurrentConfiguration();
+                var checkedValues = GetCheckedFilterValues();
 
-                if (string.IsNullOrEmpty(config.FilterValue))
+                if (checkedValues.Count == 0)
                 {
-                    AppMessageBox.Show("Please select a Progress Book value to generate.",
+                    AppMessageBox.Show("Please select at least one Progress Book value to generate.",
                         "No Selection", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
-                var dialog = new GenerateProgressBookDialog(config);
-                dialog.Owner = Window.GetWindow(this);
-                dialog.ShowDialog();
+                var config = BuildCurrentConfiguration();
+
+                if (checkedValues.Count == 1)
+                {
+                    // Single book: keep the familiar dialog with its preview/summary + save prompt.
+                    config.FilterValue = checkedValues[0];
+                    var dialog = new GenerateProgressBookDialog(config);
+                    dialog.Owner = Window.GetWindow(this);
+                    dialog.ShowDialog();
+                    return;
+                }
+
+                await BulkExportAsync(config, checkedValues);
             }
             catch (Exception ex)
             {
                 AppLogger.Error(ex, "ProgressBooksView.BtnGenerateBook_Click");
-                AppMessageBox.Show($"Error opening generate dialog: {ex.Message}",
+                AppMessageBox.Show($"Error generating Progress Book(s): {ex.Message}",
                     "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+        // Export one PDF per checked value into a user-chosen folder. Each value's records are
+        // resolved through the shared generation service; values with no records or with unsynced
+        // rows are skipped and reported in the summary rather than aborting the whole batch.
+        private async System.Threading.Tasks.Task BulkExportAsync(ProgressBookConfiguration config, List<string> values)
+        {
+            var folderDialog = new OpenFolderDialog
+            {
+                Title = "Choose a folder for the exported Progress Books"
+            };
+            if (folderDialog.ShowDialog() != true)
+                return;
+
+            var username = App.CurrentUser?.Username ?? "";
+            var now = DateTime.Now;
+            string dateStamp = now.ToString("yyyyMMdd");
+
+            // Wrap every export in its own timestamped parent folder inside the chosen location,
+            // so each batch stays grouped and separate runs never overwrite each other. Created
+            // unconditionally — even a single exported book lands in its own folder.
+            string parentFolderName = FileNameHelper.SanitizeFileName($"ProgBooks - {now:yyyy-MM-dd_HHmmss}");
+            string folder = Path.Combine(folderDialog.FolderName, parentFolderName);
+            Directory.CreateDirectory(folder);
+
+            int generated = 0;
+            var skippedEmpty = new List<string>();
+            var skippedUnsynced = new List<string>();
+            var failed = new List<string>();
+
+            btnGenerateBook.IsEnabled = false;
+            leftPanelBusy.IsBusy = true;
+            try
+            {
+                for (int i = 0; i < values.Count; i++)
+                {
+                    var value = values[i];
+
+                    try
+                    {
+                        // Reuse the config object; only the filter value changes per book.
+                        config.FilterValue = value;
+                        var data = await ProgressBookGenerationService.LoadDataAsync(config, username);
+
+                        if (data.Activities.Count == 0)
+                        {
+                            skippedEmpty.Add(value);
+                            continue;
+                        }
+                        // Cover-page totals require every matching row synced to Azure.
+                        if (data.UnsyncedCount > 0)
+                        {
+                            skippedUnsynced.Add(value);
+                            continue;
+                        }
+
+                        var projectId = data.Activities.FirstOrDefault()?.ProjectID ?? "Unknown";
+                        var projectDescription = ProjectCache.GetProjectDescription(projectId);
+
+                        var generator = new ProgressBookPdfGenerator();
+                        var pdf = generator.Generate(config, data.Activities, value, projectId, projectDescription, data.CoverPageData);
+
+                        string fileName = $"{FileNameHelper.SanitizeFileName(value)}_{dateStamp}.pdf";
+                        string fullPath = Path.Combine(folder, fileName);
+                        using (var fs = new FileStream(fullPath, FileMode.Create, FileAccess.Write))
+                        {
+                            pdf.Save(fs);
+                        }
+                        pdf.Close(true);
+                        generated++;
+                    }
+                    catch (Exception exItem)
+                    {
+                        AppLogger.Error(exItem, "ProgressBooksView.BulkExportAsync.Item");
+                        failed.Add(value);
+                    }
+                }
+            }
+            finally
+            {
+                leftPanelBusy.IsBusy = false;
+                btnGenerateBook.IsEnabled = true;
+            }
+
+            AppLogger.Info($"Bulk Progress Book export: {generated} generated, {skippedEmpty.Count} empty, {skippedUnsynced.Count} unsynced, {failed.Count} failed. Folder: {folder}",
+                "ProgressBooksView.BulkExportAsync", username);
+
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine($"{generated} of {values.Count} Progress Book(s) exported to:");
+            sb.AppendLine(folder);
+            if (skippedEmpty.Count > 0)
+            {
+                sb.AppendLine();
+                sb.AppendLine($"Skipped — no records: {FormatValueList(skippedEmpty)}");
+            }
+            if (skippedUnsynced.Count > 0)
+            {
+                sb.AppendLine();
+                sb.AppendLine($"Skipped — unsynced records (sync in the Progress module first): {FormatValueList(skippedUnsynced)}");
+            }
+            if (failed.Count > 0)
+            {
+                sb.AppendLine();
+                sb.AppendLine($"Failed: {FormatValueList(failed)}");
+            }
+
+            AppMessageBox.Show(sb.ToString().TrimEnd(), "Bulk Export Complete",
+                MessageBoxButton.OK, MessageBoxImage.None);
+        }
+
+        // Compact a value list for a summary message, capping the length so a large batch doesn't
+        // produce an unwieldy dialog.
+        private static string FormatValueList(List<string> values)
+        {
+            const int cap = 15;
+            if (values.Count <= cap)
+                return string.Join(", ", values);
+            return string.Join(", ", values.Take(cap)) + $" …(+{values.Count - cap} more)";
         }
     }
 
@@ -1686,6 +1873,35 @@ namespace VANTAGE.Views
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
+    }
+
+    // Backing item for the searchable Value picker. IsChecked lives on the object
+    // (not the CheckBox control) so its state survives the ItemsSource rebuild that
+    // happens on every search keystroke. Value is the distinct filter value shown.
+    public class FilterValueItem : INotifyPropertyChanged
+    {
+        public string Value { get; set; } = string.Empty;
+
+        private bool _isChecked;
+        public bool IsChecked
+        {
+            get => _isChecked;
+            set
+            {
+                if (_isChecked != value)
+                {
+                    _isChecked = value;
+                    OnPropertyChanged(nameof(IsChecked));
+                }
+            }
+        }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        protected void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
 
     // ViewModel for Group items in the ItemsControl

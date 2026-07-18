@@ -53,7 +53,7 @@
                     <Button x:Name="btnGenerateBook"
                             Content="GENERATE"
                             Style="{StaticResource PrimaryButtonStyle}"
-                            ToolTip="Generate a PDF progress book with this layout"
+                            ToolTip="Generate a PDF progress book with this layout. Check one value to generate a single book, or check several to bulk-export one PDF per value into a folder."
                             Click="BtnGenerateBook_Click"
                             MinWidth="120"/>
                 </StackPanel>
@@ -170,7 +170,7 @@
                                           Foreground="{DynamicResource ForegroundColor}"
                                           BorderBrush="{DynamicResource BorderColor}"
                                           BorderThickness="1"
-                                          ToolTip="Click to browse all values or type to search (matches anywhere in the value). This becomes the Progress Book name in the header.">
+                                          ToolTip="Click to browse or type to search (matches anywhere in the value), then check one or more values. One checked value becomes the book name; check several to bulk-export a PDF per value.">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
@@ -212,13 +212,57 @@
                                                  ToolTip="Type to filter the list below"
                                                  TextChanged="TxtFilterValueSearch_TextChanged"
                                                  PreviewKeyDown="TxtFilterValueSearch_PreviewKeyDown"/>
+                                        <!-- Bulk-selection helpers: operate on the currently visible
+                                             (search-filtered) rows so "Select All" respects the search. -->
+                                        <DockPanel Margin="4,0,4,2" LastChildFill="False">
+                                            <Button x:Name="btnFilterValueSelectAll"
+                                                    DockPanel.Dock="Left"
+                                                    Content="Select all"
+                                                    Padding="4,1"
+                                                    FontSize="11"
+                                                    Background="Transparent"
+                                                    Foreground="{DynamicResource AccentColor}"
+                                                    BorderThickness="0"
+                                                    Cursor="Hand"
+                                                    Click="BtnFilterValueSelectAll_Click"
+                                                    ToolTip="Check every value currently shown in the list"/>
+                                            <Button x:Name="btnFilterValueClear"
+                                                    DockPanel.Dock="Right"
+                                                    Content="Clear"
+                                                    Padding="4,1"
+                                                    FontSize="11"
+                                                    Background="Transparent"
+                                                    Foreground="{DynamicResource AccentColor}"
+                                                    BorderThickness="0"
+                                                    Cursor="Hand"
+                                                    Click="BtnFilterValueClear_Click"
+                                                    ToolTip="Uncheck all values"/>
+                                        </DockPanel>
                                         <ListBox x:Name="lstFilterValue"
                                                  MaxHeight="300"
                                                  BorderThickness="0"
                                                  Background="{DynamicResource ControlBackground}"
                                                  Foreground="{DynamicResource ForegroundColor}"
                                                  ScrollViewer.VerticalScrollBarVisibility="Auto"
-                                                 SelectionChanged="LstFilterValue_SelectionChanged"/>
+                                                 HorizontalContentAlignment="Stretch">
+                                            <ListBox.ItemContainerStyle>
+                                                <Style TargetType="ListBoxItem">
+                                                    <Setter Property="Padding" Value="0"/>
+                                                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                                </Style>
+                                            </ListBox.ItemContainerStyle>
+                                            <ListBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <CheckBox IsChecked="{Binding IsChecked, Mode=TwoWay}"
+                                                              Content="{Binding Value}"
+                                                              Padding="4,0,0,0"
+                                                              Margin="4,2"
+                                                              Foreground="{DynamicResource ForegroundColor}"
+                                                              Checked="FilterValueCheck_Changed"
+                                                              Unchecked="FilterValueCheck_Changed"/>
+                                                </DataTemplate>
+                                            </ListBox.ItemTemplate>
+                                        </ListBox>
                                     </StackPanel>
                                 </Border>
                             </Popup>
