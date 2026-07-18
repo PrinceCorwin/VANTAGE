@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using VANTAGE.Data;
 using Syncfusion.SfSkinManager;
+using Syncfusion.UI.Xaml.Grid;
 using VANTAGE.Utilities;
 
 namespace VANTAGE.Dialogs
@@ -31,7 +32,7 @@ namespace VANTAGE.Dialogs
         private async System.Threading.Tasks.Task LoadProjectsAsync()
         {
             pnlLoading.Visibility = Visibility.Visible;
-            lvProjects.Visibility = Visibility.Collapsed;
+            sfProjects.Visibility = Visibility.Collapsed;
 
             try
             {
@@ -83,12 +84,12 @@ namespace VANTAGE.Dialogs
                 });
 
                 _projects = new ObservableCollection<ProjectItem>(projects);
-                lvProjects.ItemsSource = _projects;
+                sfProjects.ItemsSource = _projects;
 
                 pnlLoading.Visibility = Visibility.Collapsed;
-                lvProjects.Visibility = Visibility.Visible;
+                sfProjects.Visibility = Visibility.Visible;
 
-                txtProjectCount.Text = $"{_projects.Count} project(s)";
+                UpdateProjectCount();
                 ClearForm();
             }
             catch (Exception ex)
@@ -100,9 +101,9 @@ namespace VANTAGE.Dialogs
             }
         }
 
-        private void LvProjects_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void SfProjects_SelectionChanged(object sender, GridSelectionChangedEventArgs e)
         {
-            _selectedProject = lvProjects.SelectedItem as ProjectItem;
+            _selectedProject = sfProjects.SelectedItem as ProjectItem;
 
             if (_selectedProject != null)
             {
@@ -136,6 +137,22 @@ namespace VANTAGE.Dialogs
             }
         }
 
+        // Column filtering changed — reflect the filtered count in the label (like the Progress grid).
+        private void SfProjects_FilterChanged(object sender, GridFilterEventArgs e)
+        {
+            UpdateProjectCount();
+        }
+
+        // Show "X of Y project(s)" while a column filter is active, otherwise just "Y project(s)".
+        private void UpdateProjectCount()
+        {
+            int total = _projects.Count;
+            int shown = sfProjects.View?.Records.Count ?? total;
+            txtProjectCount.Text = shown < total
+                ? $"{shown} of {total} project(s)"
+                : $"{total} project(s)";
+        }
+
         private void ClearForm()
         {
             _selectedProject = null;
@@ -162,7 +179,7 @@ namespace VANTAGE.Dialogs
             txtProjectID.IsEnabled = true;
             btnSave.Content = "Add Project";
             btnDelete.IsEnabled = false;
-            lvProjects.SelectedItem = null;
+            sfProjects.SelectedItem = null;
         }
 
         private void BtnNew_Click(object sender, RoutedEventArgs e)
@@ -314,8 +331,8 @@ namespace VANTAGE.Dialogs
                         MessageBoxButton.OK, MessageBoxImage.None);
                 }
 
-                lvProjects.Items.Refresh();
-                txtProjectCount.Text = $"{_projects.Count} project(s)";
+                sfProjects.View?.Refresh();
+                UpdateProjectCount();
                 ClearForm();
 
                 // Update local Projects table and ProjectCache
@@ -397,8 +414,8 @@ namespace VANTAGE.Dialogs
                 AppMessageBox.Show($"Project '{projectId}' deleted successfully.", "Project Deleted",
                     MessageBoxButton.OK, MessageBoxImage.None);
 
-                lvProjects.Items.Refresh();
-                txtProjectCount.Text = $"{_projects.Count} project(s)";
+                sfProjects.View?.Refresh();
+                UpdateProjectCount();
                 ClearForm();
 
                 // Update local Projects table and ProjectCache

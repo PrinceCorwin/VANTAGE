@@ -6,6 +6,20 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### July 18, 2026 (Work Packages — Configurable Output Filename Patterns + Filterable Projects Grid)
+
+**Configurable filename patterns for generated Work Package PDFs, saved per template.** The WP Templates editor tab gained two token-driven fields, each with a live italic `Example:` line beneath it that updates as you type:
+
+- **Individual File Name Pattern** — names each individual form PDF; default `{FormIndex}. WP {FormName}` (e.g. `1. WP CoverSheet.pdf`). Its `+ Field` menu additionally offers the per-form tokens `{FormIndex}` (1-based) and `{FormName}`.
+- **Merged Work Package File Name Pattern** — names the final merged PDF; default `{WorkPackage} - WP` (e.g. `50.MOD1.A - WP.pdf`).
+- Both use the same token picker as the WP Name Pattern (Activity fields + built-ins). Patterns persist in the template's `DefaultSettings` JSON (new `IndividualFileNamePattern` / `MergedFileNamePattern` on `WPTemplateSettings`, with default constants); legacy templates deserialize to the defaults, and Template Export/Import round-trips them for free.
+- The live example is computed through the generator's own `ResolveFileName` (made public), so it can't drift from real output. `ResolveFileName` substitutes the per-form tokens, resolves the rest via `TokenResolver`, strips any unresolved `{tokens}`, and sanitizes via the shared `FileNameHelper` (invalid-char strip + Windows reserved-name guard). A same-run used-path set disambiguates collisions with ` (2)`, ` (3)` — so a token-poor pattern (e.g. dropping `{WorkPackage}` in No-Subfolders mode) can't silently overwrite an earlier file; re-running still overwrites prior output as before.
+- Fields are seeded with the defaults on view load (the edit dropdown auto-selects nothing), so they're never blank; selecting a template overwrites them with its saved patterns, and a cleared field coalesces back to the default on save.
+
+**Admin → Edit Projects list is now a filterable grid.** Replaced the plain WPF `ListView`/`GridView` with a Syncfusion `SfDataGrid` (all 19 columns mapped) so each column header has the same funnel filter dropdown as the Progress module, plus double-click sort. The project-count label now reads "X of Y project(s)" while a filter is active. Selection, edit-refresh, and delete rewired to the grid; the dialog already applied `SfSkinManager`, so it themes correctly.
+
+**Key files:** `Models/WPTemplate.cs` (`WPTemplateSettings` patterns + defaults), `Services/PdfRenderers/WorkPackageGenerator.cs` (public `ResolveFileName`, `ClaimUniquePath`, shared used-path set), `Views/WorkPackageView.xaml(.cs)` (two fields + examples + `+ Field` reuse + default seeding), `Dialogs/AdminProjectsDialog.xaml(.cs)` (ListView → SfDataGrid, filtered count).
+
 ### July 18, 2026 (Progress — Global Search Now Covers All Text Columns)
 
 **The Progress module's toolbar search bar now matches against every text column, not a hand-picked subset.** Previously `PassesGlobalSearch` checked 15 fields via a hard-coded OR chain (and the tooltip's "Search all columns" was inaccurate — ProjectID, all UDFs, material specs, and drawing fields were never searched). It now delegates to a new `Utilities/ActivityTextSearch` helper that matches every writable string property on `Activity` (~50 fields).

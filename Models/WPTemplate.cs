@@ -82,7 +82,22 @@ namespace VANTAGE.Models
     // JSON structure for WPTemplate.DefaultSettings
     public class WPTemplateSettings
     {
+        // The filename patterns that reproduce the historical (pre-configurable) naming, used as
+        // both the seeded default and the fallback when a template's stored pattern is empty/absent.
+        // {FormIndex} (1-based) and {FormName} are only meaningful for individual form files; every
+        // other {token} resolves the same way the WP Name Pattern does (Activity fields + built-ins).
+        public const string DefaultIndividualFileNamePattern = "{FormIndex}. WP {FormName}";
+        public const string DefaultMergedFileNamePattern = "{WorkPackage} - WP";
+
         [JsonPropertyName("expirationDays")]
         public int ExpirationDays { get; set; } = 14;
+
+        // Filename patterns for generated PDFs (tokens resolved per work package at generation).
+        // Absent from legacy JSON, so those templates deserialize to the defaults above.
+        [JsonPropertyName("individualFileNamePattern")]
+        public string IndividualFileNamePattern { get; set; } = DefaultIndividualFileNamePattern;
+
+        [JsonPropertyName("mergedFileNamePattern")]
+        public string MergedFileNamePattern { get; set; } = DefaultMergedFileNamePattern;
     }
 }

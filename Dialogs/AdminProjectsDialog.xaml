@@ -1,6 +1,7 @@
 ﻿<Window x:Class="VANTAGE.Dialogs.AdminProjectsDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
         Title="Admin: Edit Projects"
         Height="700"
         Width="850"
@@ -37,38 +38,46 @@
                 BorderThickness="1"
                 CornerRadius="4">
             <Grid>
-                <ListView x:Name="lvProjects"
-                          Background="Transparent"
-                          BorderThickness="0"
-                          Foreground="{DynamicResource ForegroundColor}"
-                          SelectionMode="Single"
-                          SelectionChanged="LvProjects_SelectionChanged"
-                          ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                          ScrollViewer.VerticalScrollBarVisibility="Auto">
-                    <ListView.View>
-                        <GridView>
-                            <GridViewColumn Header="Project ID" Width="90" DisplayMemberBinding="{Binding ProjectID}"/>
-                            <GridViewColumn Header="Description" Width="150" DisplayMemberBinding="{Binding Description}"/>
-                            <GridViewColumn Header="Client Name" Width="120" DisplayMemberBinding="{Binding ClientName}"/>
-                            <GridViewColumn Header="Phone" Width="100" DisplayMemberBinding="{Binding Phone}"/>
-                            <GridViewColumn Header="Fax" Width="100" DisplayMemberBinding="{Binding Fax}"/>
-                            <GridViewColumn Header="Client Address" Width="140" DisplayMemberBinding="{Binding ClientStreetAddress}"/>
-                            <GridViewColumn Header="Client City" Width="90" DisplayMemberBinding="{Binding ClientCity}"/>
-                            <GridViewColumn Header="Client State" Width="50" DisplayMemberBinding="{Binding ClientState}"/>
-                            <GridViewColumn Header="Client Zip" Width="60" DisplayMemberBinding="{Binding ClientZipCode}"/>
-                            <GridViewColumn Header="Project Address" Width="140" DisplayMemberBinding="{Binding ProjectStreetAddress}"/>
-                            <GridViewColumn Header="Project City" Width="90" DisplayMemberBinding="{Binding ProjectCity}"/>
-                            <GridViewColumn Header="Project State" Width="50" DisplayMemberBinding="{Binding ProjectState}"/>
-                            <GridViewColumn Header="Project Zip" Width="60" DisplayMemberBinding="{Binding ProjectZipCode}"/>
-                            <GridViewColumn Header="Project Mgr" Width="100" DisplayMemberBinding="{Binding ProjectManager}"/>
-                            <GridViewColumn Header="Site Mgr" Width="100" DisplayMemberBinding="{Binding SiteManager}"/>
-                            <GridViewColumn Header="OM" Width="35" DisplayMemberBinding="{Binding OM}"/>
-                            <GridViewColumn Header="SM" Width="35" DisplayMemberBinding="{Binding SM}"/>
-                            <GridViewColumn Header="EN" Width="35" DisplayMemberBinding="{Binding EN}"/>
-                            <GridViewColumn Header="PM" Width="35" DisplayMemberBinding="{Binding PM}"/>
-                        </GridView>
-                    </ListView.View>
-                </ListView>
+                <syncfusion:SfDataGrid x:Name="sfProjects"
+                                       Background="Transparent"
+                                       BorderThickness="0"
+                                       Foreground="{DynamicResource ForegroundColor}"
+                                       AutoGenerateColumns="False"
+                                       AllowFiltering="True"
+                                       AllowSorting="True"
+                                       SortClickAction="DoubleClick"
+                                       AllowResizingColumns="True"
+                                       AllowDraggingColumns="True"
+                                       AllowEditing="False"
+                                       ColumnSizer="None"
+                                       SelectionMode="Single"
+                                       SelectionUnit="Row"
+                                       GridLinesVisibility="Both"
+                                       HeaderLinesVisibility="Both"
+                                       SelectionChanged="SfProjects_SelectionChanged"
+                                       FilterChanged="SfProjects_FilterChanged">
+                    <syncfusion:SfDataGrid.Columns>
+                        <syncfusion:GridTextColumn MappingName="ProjectID" HeaderText="Project ID" Width="90"/>
+                        <syncfusion:GridTextColumn MappingName="Description" HeaderText="Description" Width="150"/>
+                        <syncfusion:GridTextColumn MappingName="ClientName" HeaderText="Client Name" Width="120"/>
+                        <syncfusion:GridTextColumn MappingName="Phone" HeaderText="Phone" Width="100"/>
+                        <syncfusion:GridTextColumn MappingName="Fax" HeaderText="Fax" Width="100"/>
+                        <syncfusion:GridTextColumn MappingName="ClientStreetAddress" HeaderText="Client Address" Width="140"/>
+                        <syncfusion:GridTextColumn MappingName="ClientCity" HeaderText="Client City" Width="90"/>
+                        <syncfusion:GridTextColumn MappingName="ClientState" HeaderText="Client State" Width="70"/>
+                        <syncfusion:GridTextColumn MappingName="ClientZipCode" HeaderText="Client Zip" Width="70"/>
+                        <syncfusion:GridTextColumn MappingName="ProjectStreetAddress" HeaderText="Project Address" Width="140"/>
+                        <syncfusion:GridTextColumn MappingName="ProjectCity" HeaderText="Project City" Width="90"/>
+                        <syncfusion:GridTextColumn MappingName="ProjectState" HeaderText="Project State" Width="70"/>
+                        <syncfusion:GridTextColumn MappingName="ProjectZipCode" HeaderText="Project Zip" Width="70"/>
+                        <syncfusion:GridTextColumn MappingName="ProjectManager" HeaderText="Project Mgr" Width="100"/>
+                        <syncfusion:GridTextColumn MappingName="SiteManager" HeaderText="Site Mgr" Width="100"/>
+                        <syncfusion:GridTextColumn MappingName="OM" HeaderText="OM" Width="45"/>
+                        <syncfusion:GridTextColumn MappingName="SM" HeaderText="SM" Width="45"/>
+                        <syncfusion:GridTextColumn MappingName="EN" HeaderText="EN" Width="45"/>
+                        <syncfusion:GridTextColumn MappingName="PM" HeaderText="PM" Width="45"/>
+                    </syncfusion:SfDataGrid.Columns>
+                </syncfusion:SfDataGrid>
 
                 <StackPanel x:Name="pnlLoading"
                             HorizontalAlignment="Center"

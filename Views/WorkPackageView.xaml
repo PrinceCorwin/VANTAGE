@@ -302,6 +302,58 @@
                                                         Margin="0,0,0,15"
                                                         ToolTip="Number of days until work package expires"/>
 
+                            <!-- Individual File Name Pattern -->
+                            <TextBlock Text="Individual File Name Pattern" FontWeight="Bold" Margin="0,0,0,5"/>
+                            <Grid Margin="0,0,0,3">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Name="txtIndividualFileNamePattern"
+                                         LostFocus="TxtFileNamePattern_LostFocus"
+                                         TextChanged="TxtFileNamePattern_TextChanged"
+                                         ToolTip="Filename for each individual form PDF (when &quot;Also output individual form PDFs&quot; is on). Use {tokens} like {WorkPackage}, {Area}; {FormIndex} and {FormName} are also available here. Do not include the .pdf extension. Default: {WorkPackage}-{FormIndex}_{FormName}"/>
+                                <Button x:Name="btnInsertIndividualField"
+                                        Grid.Column="1"
+                                        Content="+ Field"
+                                        Click="BtnInsertIndividualField_Click"
+                                        Padding="8,4"
+                                        Margin="5,0,0,0"
+                                        ToolTip="Insert a field token at cursor position"/>
+                            </Grid>
+                            <TextBlock x:Name="txtIndividualFileNameExample"
+                                       FontSize="11"
+                                       FontStyle="Italic"
+                                       Foreground="{DynamicResource TextColorSecondary}"
+                                       TextTrimming="CharacterEllipsis"
+                                       Margin="0,0,0,15"/>
+
+                            <!-- Merged File Name Pattern -->
+                            <TextBlock Text="Merged Work Package File Name Pattern" FontWeight="Bold" Margin="0,0,0,5"/>
+                            <Grid Margin="0,0,0,3">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Name="txtMergedFileNamePattern"
+                                         LostFocus="TxtFileNamePattern_LostFocus"
+                                         TextChanged="TxtFileNamePattern_TextChanged"
+                                         ToolTip="Filename for the final merged work package PDF. Use {tokens} like {WorkPackage}, {Area}. Do not include the .pdf extension. Default: {WorkPackage}-WorkPackage"/>
+                                <Button x:Name="btnInsertMergedField"
+                                        Grid.Column="1"
+                                        Content="+ Field"
+                                        Click="BtnInsertMergedField_Click"
+                                        Padding="8,4"
+                                        Margin="5,0,0,0"
+                                        ToolTip="Insert a field token at cursor position"/>
+                            </Grid>
+                            <TextBlock x:Name="txtMergedFileNameExample"
+                                       FontSize="11"
+                                       FontStyle="Italic"
+                                       Foreground="{DynamicResource TextColorSecondary}"
+                                       TextTrimming="CharacterEllipsis"
+                                       Margin="0,0,0,15"/>
+
                             <!-- Forms in WP -->
                             <Grid Margin="0,0,0,5">
                                 <Grid.ColumnDefinitions>

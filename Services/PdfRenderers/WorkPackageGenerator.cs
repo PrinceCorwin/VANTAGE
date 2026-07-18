@@ -40,9 +40,15 @@ namespace VANTAGE.Services.PdfRenderers
             string outputFolder,
             bool includeIndividualPdfs,
             string? logoPath = null,
-            bool noSubfolders = false)
+            bool noSubfolders = false,
+            HashSet<string>? usedFilePaths = null)
         {
             var result = new GenerationResult();
+
+            // Tracks file paths already claimed so a pattern that omits distinguishing tokens
+            // (e.g. drops {FormIndex} or {WorkPackage} in No-Subfolders mode) can't silently
+            // overwrite an earlier file in the same run. Bulk passes one shared set across WPs.
+            usedFilePaths ??= new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             try
             {
@@ -62,12 +68,20 @@ namespace VANTAGE.Services.PdfRenderers
                     return result;
                 }
 
-                // Parse settings for expiration days
+                // Parse settings for expiration days + filename patterns
                 var settings = JsonSerializer.Deserialize<WPTemplateSettings>(wpTemplate.DefaultSettings);
                 if (settings != null)
                 {
                     context.ExpirationDays = settings.ExpirationDays;
                 }
+
+                // Filename patterns (fall back to the historical defaults when empty/absent).
+                string individualPattern = string.IsNullOrWhiteSpace(settings?.IndividualFileNamePattern)
+                    ? WPTemplateSettings.DefaultIndividualFileNamePattern
+                    : settings!.IndividualFileNamePattern;
+                string mergedPattern = string.IsNullOrWhiteSpace(settings?.MergedFileNamePattern)
+                    ? WPTemplateSettings.DefaultMergedFileNamePattern
+                    : settings!.MergedFileNamePattern;
 
                 // Set output folder in context for renderers that need it (e.g., DrawingsRenderer)
                 context.OutputFolder = outputFolder;
@@ -129,7 +143,8 @@ namespace VANTAGE.Services.PdfRenderers
                     // WPs writing to the same flat folder don't overwrite each other's files.
                     if (includeIndividualPdfs)
                     {
-                        string individualPath = Path.Combine(wpFolder, $"{sanitizedWP}-{formIndex}_{formName}.pdf");
+                        string individualName = ResolveFileName(individualPattern, context, formIndex, formName);
+                        string individualPath = ClaimUniquePath(Path.Combine(wpFolder, individualName + ".pdf"), usedFilePaths);
                         using var fileStream = new FileStream(individualPath, FileMode.Create, FileAccess.Write);
                         formDoc.Save(fileStream);
                         result.IndividualPdfPaths.Add(individualPath);
@@ -148,8 +163,8 @@ namespace VANTAGE.Services.PdfRenderers
                 PdfDocument mergedDoc = MergeDocuments(formDocuments);
 
                 // Save merged PDF
-                string mergedFileName = $"{sanitizedWP}-WorkPackage.pdf";
-                string mergedPath = Path.Combine(wpFolder, mergedFileName);
+                string mergedName = ResolveFileName(mergedPattern, context, null, null);
+                string mergedPath = ClaimUniquePath(Path.Combine(wpFolder, mergedName + ".pdf"), usedFilePaths);
                 using (var mergedStream = new FileStream(mergedPath, FileMode.Create, FileAccess.Write))
                 {
                     mergedDoc.Save(mergedStream);
@@ -197,6 +212,11 @@ namespace VANTAGE.Services.PdfRenderers
         {
             var results = new List<GenerationResult>();
 
+            // One shared set across all WPs so that, in No-Subfolders mode (every WP writes into the
+            // same flat folder), a merged/individual pattern lacking {WorkPackage} disambiguates
+            // instead of overwriting a prior WP's file.
+            var usedFilePaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
             foreach (var workPackage in workPackages)
             {
                 var context = new TokenContext
@@ -210,7 +230,7 @@ namespace VANTAGE.Services.PdfRenderers
                     WPNamePattern = wpNamePattern
                 };
 
-                var result = await GenerateAsync(wpTemplateId, context, outputFolder, includeIndividualPdfs, logoPath, noSubfolders);
+                var result = await GenerateAsync(wpTemplateId, context, outputFolder, includeIndividualPdfs, logoPath, noSubfolders, usedFilePaths);
                 results.Add(result);
             }
 
@@ -365,6 +385,52 @@ namespace VANTAGE.Services.PdfRenderers
             var invalid = Path.GetInvalidFileNameChars();
             var sanitized = string.Join("_", fileName.Split(invalid, StringSplitOptions.RemoveEmptyEntries));
             return sanitized.Trim();
+        }
+
+        // Any leftover {token} the resolver couldn't fill — stripped so filenames never carry braces.
+        private static readonly System.Text.RegularExpressions.Regex UnresolvedTokenPattern =
+            new(@"\{\w+\}", System.Text.RegularExpressions.RegexOptions.Compiled);
+
+        // Resolve a filename pattern for one work package (and optionally one form) into a safe,
+        // extension-less name. Per-form tokens {FormIndex} (1-based) and {FormName} are substituted
+        // first (TokenResolver doesn't know them), then Activity/built-in tokens, then any unresolved
+        // {tokens} are removed. Uses the shared FileNameHelper (invalid-char strip + reserved-name
+        // guard) so it complies with Plans/Security_Guidelines.md. Public so the WP Templates editor
+        // can render a live example of a pattern using the exact same logic the generator uses.
+        public static string ResolveFileName(string pattern, TokenContext context, int? formIndex, string? formName)
+        {
+            string text = pattern ?? string.Empty;
+            text = System.Text.RegularExpressions.Regex.Replace(
+                text, @"\{FormIndex\}", formIndex?.ToString() ?? "",
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            text = System.Text.RegularExpressions.Regex.Replace(
+                text, @"\{FormName\}", formName ?? "",
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            text = TokenResolver.Resolve(text, context);
+            text = UnresolvedTokenPattern.Replace(text, "");
+            text = text.Trim().Trim('-', '_', ' ', '.');
+            return FileNameHelper.SanitizeFileName(text);
+        }
+
+        // Reserve a file path, disambiguating with " (n)" if the same path was already claimed this
+        // run. Prevents a token-poor pattern from silently overwriting an earlier file in the batch.
+        // Does not consult the disk, so re-running generation overwrites prior output as it always has.
+        private static string ClaimUniquePath(string path, HashSet<string> used)
+        {
+            if (used.Add(path))
+                return path;
+
+            string dir = Path.GetDirectoryName(path) ?? string.Empty;
+            string baseName = Path.GetFileNameWithoutExtension(path);
+            string ext = Path.GetExtension(path);
+            int n = 2;
+            string candidate;
+            do
+            {
+                candidate = Path.Combine(dir, $"{baseName} ({n}){ext}");
+                n++;
+            } while (!used.Add(candidate));
+            return candidate;
         }
     }
 }

@@ -2244,19 +2244,24 @@
 
     <div class="note">
         <div class="note-title">Output File Naming</div>
-        <p>Output filenames are fixed; folder structure depends on the <strong>No Subfolders</strong> checkbox under the Output Folder field.</p>
+        <p>The folder structure depends on the <strong>No Subfolders</strong> checkbox under the Output Folder field; the file <em>names</em> are set by two configurable patterns on the <strong>WP Templates</strong> editor tab (see <a href="#wp-filename-patterns">File Name Patterns</a>).</p>
         <p><strong>Default (No Subfolders unchecked):</strong> each work package gets its own subfolder.</p>
         <ul>
-            <li><code>{OutputFolder}/{ProjectID} - Work Pkgs/{WorkPackage}/{WorkPackage}-WorkPackage.pdf</code> — merged work package PDF</li>
-            <li><code>{OutputFolder}/{ProjectID} - Work Pkgs/{WorkPackage}/{WorkPackage}-{n}_{FormName}.pdf</code> — individual form PDFs (when "Also output individual form PDFs" is checked)</li>
+            <li><code>{OutputFolder}/{ProjectID} - Work Pkgs/{WorkPackage}/{Merged pattern}.pdf</code> — merged work package PDF (default pattern <code>{WorkPackage} - WP</code>)</li>
+            <li><code>{OutputFolder}/{ProjectID} - Work Pkgs/{WorkPackage}/{Individual pattern}.pdf</code> — individual form PDFs when "Also output individual form PDFs" is checked (default pattern <code>{FormIndex}. WP {FormName}</code>)</li>
         </ul>
-        <p><strong>No Subfolders checked:</strong> all merged PDFs from all selected work packages drop directly into the project's "Work Pkgs" folder.</p>
-        <ul>
-            <li><code>{OutputFolder}/{ProjectID} - Work Pkgs/{WorkPackage}-WorkPackage.pdf</code> — merged work package PDF</li>
-        </ul>
+        <p><strong>No Subfolders checked:</strong> all merged PDFs from all selected work packages drop directly into the project's "Work Pkgs" folder. If your merged pattern doesn't include <code>{WorkPackage}</code>, files that would collide are automatically disambiguated with " (2)", " (3)", etc. rather than overwriting each other.</p>
         <p><strong>No Subfolders</strong> and <strong>Also output individual form PDFs</strong> cannot be selected at the same time — checking one automatically unchecks the other.</p>
-        <p>The WP Name Pattern only affects the title text inside the PDF, not the filename on disk.</p>
+        <p>The WP Name Pattern (Generate tab) only affects the title text inside the PDF, not the filename on disk — the filename comes from the patterns below.</p>
     </div>
+
+    <h4 id="wp-filename-patterns">File Name Patterns</h4>
+    <p>On the <strong>WP Templates</strong> editor tab, two fields control the names of the generated PDFs. Both are saved with the template, so each template can name its output differently.</p>
+    <ul>
+        <li><strong>Individual File Name Pattern</strong> — the filename for each individual form PDF (when "Also output individual form PDFs" is on). Default: <code>{FormIndex}. WP {FormName}</code>, producing e.g. <code>1. WP CoverSheet.pdf</code>. In addition to the usual field tokens, this field's <strong>+ Field</strong> menu offers <code>{FormIndex}</code> (the form's position in the work package, starting at 1) and <code>{FormName}</code> (the form's name).</li>
+        <li><strong>Merged Work Package File Name Pattern</strong> — the filename for the final merged work package PDF. Default: <code>{WorkPackage} - WP</code>, producing e.g. <code>50.MOD1.A - WP.pdf</code>.</li>
+    </ul>
+    <p>Use <code>{tokens}</code> just like the WP Name Pattern (any Activities column, plus built-ins like <code>{ProjectID}</code> or <code>{PrintedDate}</code>). A live <em>Example:</em> line under each field previews the resulting filename as you type. Do not include the <code>.pdf</code> extension — it's added automatically. Clearing a field restores its default when you save.</p>
 
     <div class="note">
         <div class="note-title">Settings Persistence</div>
@@ -2975,7 +2980,7 @@
     <p>Users without any roles can view and edit only their own assigned records. Role changes take effect immediately and the user receives an email notification.</p>
 
     <h3 id="admin-project-setup">Project Setup (Admin > Edit Projects)</h3>
-    <p>Manage construction projects and their associated metadata. The dialog shows a scrollable grid of all projects with a detail form below for editing.</p>
+    <p>Manage construction projects and their associated metadata. The dialog shows a scrollable grid of all projects with a detail form below for editing. Each column header has a filter dropdown (funnel icon) and can be sorted by double-clicking — the same behavior as the Progress grid; when a column filter is active, the count below the grid shows "X of Y project(s)".</p>
     <ul>
         <li><strong>Add Project</strong> — Enter a ProjectID (required, must be unique) and fill in project details, then click Add. ProjectID cannot be changed after creation.</li>
         <li><strong>Edit Project</strong> — Select a project from the grid to populate the form. Update details and click Save Changes.</li>

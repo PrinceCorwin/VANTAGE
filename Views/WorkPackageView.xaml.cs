@@ -359,6 +359,12 @@ namespace VANTAGE.Views
             // WP Templates dropdown (Edit tab) - with "+ Add New" option
             PopulateWPTemplateEditDropdown();
 
+            // Seed the filename-pattern fields (and their examples) with defaults. Nothing is
+            // auto-selected in the edit dropdown, so without this the fields would show blank until
+            // the user picks a template; the SelectionChanged handler overwrites them on selection.
+            txtIndividualFileNamePattern.Text = WPTemplateSettings.DefaultIndividualFileNamePattern;
+            txtMergedFileNamePattern.Text = WPTemplateSettings.DefaultMergedFileNamePattern;
+
             // Form Templates dropdown (Edit tab) - with "+ Add New" option
             PopulateFormTemplateEditDropdown();
 
@@ -565,9 +571,31 @@ namespace VANTAGE.Views
         }
 
         // Insert field token into WP Name Pattern
+        // WP Name Pattern "+ Field" (Generate tab) — activity/built-in tokens only.
         private void BtnInsertField_Click(object sender, RoutedEventArgs e)
+            => ShowFieldMenu(txtWPNamePattern, btnInsertField, includeFormTokens: false);
+
+        // Individual filename pattern "+ Field" (WP Templates tab) — also offers the per-form tokens.
+        private void BtnInsertIndividualField_Click(object sender, RoutedEventArgs e)
+            => ShowFieldMenu(txtIndividualFileNamePattern, btnInsertIndividualField, includeFormTokens: true);
+
+        // Merged filename pattern "+ Field" (WP Templates tab) — activity/built-in tokens only
+        // (there's no single form when naming the merged document).
+        private void BtnInsertMergedField_Click(object sender, RoutedEventArgs e)
+            => ShowFieldMenu(txtMergedFileNamePattern, btnInsertMergedField, includeFormTokens: false);
+
+        // Build and open the field-token menu, inserting the chosen {token} into the given TextBox.
+        private void ShowFieldMenu(TextBox target, UIElement placementTarget, bool includeFormTokens)
         {
             var contextMenu = new ContextMenu();
+
+            // Per-form tokens (only meaningful for the individual-file pattern) at the very top.
+            if (includeFormTokens)
+            {
+                AddFieldMenuItem(contextMenu, "FormIndex", target);
+                AddFieldMenuItem(contextMenu, "FormName", target);
+                contextMenu.Items.Add(new Separator());
+            }
 
             // Priority fields at top (alphabetical)
             var priorityFields = new[] { "Area", "CompType", "PhaseCategory", "PhaseCode",
@@ -581,36 +609,33 @@ namespace VANTAGE.Views
                 "UDF1", "UDF3", "UDF4", "UDF5", "UDF6", "UDF8", "UDF9", "UDF10", "UDF11", "UDF12",
                 "UDF13", "UDF14", "UDF15", "UDF16", "UDF17", "RespParty", "UDF20", "UOM" };
 
-            // Add priority fields
             foreach (var field in priorityFields)
             {
-                AddFieldMenuItem(contextMenu, field);
+                AddFieldMenuItem(contextMenu, field, target);
             }
 
-            // Add separator
             contextMenu.Items.Add(new Separator());
 
-            // Add remaining fields
             foreach (var field in otherFields)
             {
-                AddFieldMenuItem(contextMenu, field);
+                AddFieldMenuItem(contextMenu, field, target);
             }
 
             contextMenu.IsOpen = true;
-            contextMenu.PlacementTarget = btnInsertField;
+            contextMenu.PlacementTarget = placementTarget;
         }
 
-        // Helper to add a field menu item
-        private void AddFieldMenuItem(ContextMenu menu, string field)
+        // Helper to add a field menu item that inserts {field} into the target TextBox at the caret.
+        private void AddFieldMenuItem(ContextMenu menu, string field, TextBox target)
         {
             var menuItem = new MenuItem { Header = field };
             menuItem.Click += (s, args) =>
             {
-                int caretIndex = txtWPNamePattern.CaretIndex;
+                int caretIndex = target.CaretIndex;
                 string token = $"{{{field}}}";
-                txtWPNamePattern.Text = txtWPNamePattern.Text.Insert(caretIndex, token);
-                txtWPNamePattern.CaretIndex = caretIndex + token.Length;
-                txtWPNamePattern.Focus();
+                target.Text = target.Text.Insert(caretIndex, token);
+                target.CaretIndex = caretIndex + token.Length;
+                target.Focus();
             };
             menu.Items.Add(menuItem);
         }
@@ -619,6 +644,61 @@ namespace VANTAGE.Views
         private void TxtWPNamePattern_LostFocus(object sender, RoutedEventArgs e)
         {
             SettingsManager.SetUserSetting("WorkPackage.WPNamePattern", txtWPNamePattern.Text, "string");
+        }
+
+        // The two filename-pattern fields persist to the WP Template (saved with the template),
+        // not to a user setting — so a LostFocus just flags the editor dirty. LostFocus never fires
+        // during programmatic load, so selecting a template doesn't falsely mark unsaved changes.
+        private void TxtFileNamePattern_LostFocus(object sender, RoutedEventArgs e)
+        {
+            _hasUnsavedChanges = true;
+        }
+
+        // Live example under each pattern field. Fires on every keystroke (and on programmatic load,
+        // which is fine — it doesn't touch the dirty flag).
+        private void TxtFileNamePattern_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            UpdateFileNameExamples();
+        }
+
+        // Render a sample resolved filename under each pattern field, using the SAME resolver the
+        // generator uses so the example can't drift from the real output. Sample values stand in for
+        // the per-WP data that isn't available on the editor tab.
+        private void UpdateFileNameExamples()
+        {
+            // Guard: TextChanged can fire during InitializeComponent before both TextBlocks exist.
+            if (txtIndividualFileNameExample == null || txtMergedFileNameExample == null)
+                return;
+
+            var ctx = BuildFileNameExampleContext();
+
+            string individual = WorkPackageGenerator.ResolveFileName(
+                txtIndividualFileNamePattern.Text, ctx, 1, "CoverSheet");
+            string merged = WorkPackageGenerator.ResolveFileName(
+                txtMergedFileNamePattern.Text, ctx, null, null);
+
+            txtIndividualFileNameExample.Text = $"Example: {individual}.pdf";
+            txtMergedFileNameExample.Text = $"Example: {merged}.pdf";
+        }
+
+        // A placeholder token context enriched with sample values for the common "+ Field" tokens,
+        // so the example doesn't silently drop tokens a user is likely to pick. Only feeds the
+        // on-screen example — never used for real generation.
+        private static TokenContext BuildFileNameExampleContext()
+        {
+            var ctx = TokenResolver.GetPlaceholderContext();
+            void Sample(string key, string value)
+            {
+                if (!ctx.ResolvedTokens.ContainsKey(key))
+                    ctx.ResolvedTokens[key] = value;
+            }
+            Sample("CompType", "GASKET");
+            Sample("PhaseCategory", "MECH");
+            Sample("TagNO", "TAG-100");
+            Sample("Description", "6in CS Pipe");
+            Sample("DwgNO", "P-1001");
+            Sample("UDF2", "Sample");
+            return ctx;
         }
 
         // "No Image" toggle for the logo — persist preference and gate path/browse controls
@@ -1177,6 +1257,14 @@ namespace VANTAGE.Views
                 var settings = JsonSerializer.Deserialize<WPTemplateSettings>(template.DefaultSettings);
                 txtExpirationDays.Value = settings?.ExpirationDays ?? 14;
 
+                // Filename patterns — show the default when empty/absent so the field is never blank.
+                txtIndividualFileNamePattern.Text = string.IsNullOrWhiteSpace(settings?.IndividualFileNamePattern)
+                    ? WPTemplateSettings.DefaultIndividualFileNamePattern
+                    : settings!.IndividualFileNamePattern;
+                txtMergedFileNamePattern.Text = string.IsNullOrWhiteSpace(settings?.MergedFileNamePattern)
+                    ? WPTemplateSettings.DefaultMergedFileNamePattern
+                    : settings!.MergedFileNamePattern;
+
                 // Load forms list
                 await LoadWPFormsListAsync(template);
             }
@@ -1186,6 +1274,8 @@ namespace VANTAGE.Views
                 _selectedWPTemplate = null;
                 txtWPTemplateName.Text = "";
                 txtExpirationDays.Value = 14;
+                txtIndividualFileNamePattern.Text = WPTemplateSettings.DefaultIndividualFileNamePattern;
+                txtMergedFileNamePattern.Text = WPTemplateSettings.DefaultMergedFileNamePattern;
                 _wpFormsList.Clear();
                 ApplyWPFormsListFilter();
             }
@@ -1337,7 +1427,19 @@ namespace VANTAGE.Views
                     f.LinkedProgressBookLayoutId.HasValue
                         ? new FormReference { ProgressBookLayoutId = f.LinkedProgressBookLayoutId }
                         : new FormReference { FormTemplateId = f.TemplateID }).ToList());
-                var settingsJson = JsonSerializer.Serialize(new WPTemplateSettings { ExpirationDays = (int)(txtExpirationDays.Value ?? 14) });
+                // Coalesce empty patterns back to the defaults so a cleared field never persists a blank.
+                string individualPattern = string.IsNullOrWhiteSpace(txtIndividualFileNamePattern.Text)
+                    ? WPTemplateSettings.DefaultIndividualFileNamePattern
+                    : txtIndividualFileNamePattern.Text.Trim();
+                string mergedPattern = string.IsNullOrWhiteSpace(txtMergedFileNamePattern.Text)
+                    ? WPTemplateSettings.DefaultMergedFileNamePattern
+                    : txtMergedFileNamePattern.Text.Trim();
+                var settingsJson = JsonSerializer.Serialize(new WPTemplateSettings
+                {
+                    ExpirationDays = (int)(txtExpirationDays.Value ?? 14),
+                    IndividualFileNamePattern = individualPattern,
+                    MergedFileNamePattern = mergedPattern
+                });
 
                 string savedTemplateId;
 
