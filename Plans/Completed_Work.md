@@ -6,6 +6,17 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### July 18, 2026 (Progress — Global Search Now Covers All Text Columns)
+
+**The Progress module's toolbar search bar now matches against every text column, not a hand-picked subset.** Previously `PassesGlobalSearch` checked 15 fields via a hard-coded OR chain (and the tooltip's "Search all columns" was inaccurate — ProjectID, all UDFs, material specs, and drawing fields were never searched). It now delegates to a new `Utilities/ActivityTextSearch` helper that matches every writable string property on `Activity` (~50 fields).
+
+- **Self-maintaining rule** — the helper reflects `Activity` once and caches a compiled getter delegate (`Delegate.CreateDelegate`) per **writable string** property. Numeric/date/bool columns aren't string-typed and calculated/display columns (Status, ROCLookupID, `*_Display`, AssignedToUsername) are getter-only, so both are excluded automatically. A new text column added to `Activity` becomes searchable with no changes to the search code.
+- **Performance** — compiled open delegates mean no per-call reflection, keeping the filter fast at 100k-row scale.
+- **Behavior change** — the old search matched `ActivityID` (`Act ID`) via `.ToString()`; as a numeric column it's no longer matched. String identifiers (SchedActNO/ActNo, UniqueID, TagNO, etc.) remain searchable.
+- Tooltip corrected to "Search all text columns (matches anywhere in the value). Numeric and calculated columns are not searched."
+
+**Key files:** `Utilities/ActivityTextSearch.cs` (new), `Views/ProgressView.xaml.cs` (`PassesGlobalSearch` delegates to it), `Views/ProgressView.xaml` (tooltip).
+
 ### July 18, 2026 (Progress Books — Multi-Select Value Picker + Bulk Export)
 
 **The Progress Books Value picker now supports checking multiple values to bulk-export in one pass.** The searchable single-select list added previously became a checkbox list: each distinct value has its own checkbox, plus **Select all** (checks every value currently visible, respecting the active search) and **Clear**. Check state lives on backing `FilterValueItem` objects, so checks survive the ItemsSource rebuild that happens on every search keystroke — you can search → check → search → check to assemble a selection. The toggle caption shows the value when one is checked and "N selected" when several are.

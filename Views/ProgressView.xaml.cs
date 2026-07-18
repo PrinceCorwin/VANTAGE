@@ -4834,27 +4834,15 @@ namespace VANTAGE.Views
             // TextChanged handler will clear the filter
         }
 
-        // Checks if an activity matches the global search text across commonly searched fields
+        // Checks if an activity matches the global search text across every text (string) column.
+        // Delegates to ActivityTextSearch, which reflects all writable string properties on Activity
+        // once and caches typed getters — numeric, date, and calculated/display columns are excluded.
         private bool PassesGlobalSearch(Activity activity)
         {
             if (string.IsNullOrEmpty(_globalSearchText))
                 return true;
 
-            // Search across commonly used fields
-            return activity.ActivityID.ToString().Contains(_globalSearchText, StringComparison.OrdinalIgnoreCase)
-                || (activity.Description?.Contains(_globalSearchText, StringComparison.OrdinalIgnoreCase) == true)
-                || (activity.WorkPackage?.Contains(_globalSearchText, StringComparison.OrdinalIgnoreCase) == true)
-                || (activity.PhaseCode?.Contains(_globalSearchText, StringComparison.OrdinalIgnoreCase) == true)
-                || (activity.CompType?.Contains(_globalSearchText, StringComparison.OrdinalIgnoreCase) == true)
-                || (activity.Area?.Contains(_globalSearchText, StringComparison.OrdinalIgnoreCase) == true)
-                || (activity.RespParty?.Contains(_globalSearchText, StringComparison.OrdinalIgnoreCase) == true)
-                || (activity.AssignedTo?.Contains(_globalSearchText, StringComparison.OrdinalIgnoreCase) == true)
-                || (activity.Notes?.Contains(_globalSearchText, StringComparison.OrdinalIgnoreCase) == true)
-                || (activity.TagNO?.Contains(_globalSearchText, StringComparison.OrdinalIgnoreCase) == true)
-                || (activity.UniqueID?.Contains(_globalSearchText, StringComparison.OrdinalIgnoreCase) == true)
-                || (activity.DwgNO?.Contains(_globalSearchText, StringComparison.OrdinalIgnoreCase) == true)
-                || (activity.LineNumber?.Contains(_globalSearchText, StringComparison.OrdinalIgnoreCase) == true)
-                || (activity.SchedActNO?.Contains(_globalSearchText, StringComparison.OrdinalIgnoreCase) == true);
+            return ActivityTextSearch.Matches(activity, _globalSearchText);
         }
 
         // Applies combined View.Filter that includes global search and any active custom filters

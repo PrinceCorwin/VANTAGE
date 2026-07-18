@@ -779,7 +779,7 @@
                                          VerticalContentAlignment="Center"
                                          FontSize="12"
                                          TextChanged="TxtGlobalSearch_TextChanged"
-                                         ToolTip="Search all columns"/>
+                                         ToolTip="Search all text columns (matches anywhere in the value). Numeric and calculated columns are not searched."/>
                                 <Button x:Name="btnClearSearch"
                                         Grid.Column="2"
                                         Content="✕"
