@@ -1,6 +1,18 @@
 {
   "releases": [
     {
+      "version": "26.3.2",
+      "date": "2026-07-17",
+      "highlights": [
+        "New — In Progress Books, the Value field (under Select Progress Book) is now a searchable list. Click it to browse and scroll every value, or start typing to filter the list to matches anywhere in the value — not just the beginning. Pick the one you want and go.",
+        "New — Work Packages can now include an existing PDF. Add a form of type 'External File', browse to a PDF, and its pages are merged into the generated work package wherever you place that form. Great for permits, cut sheets, or standard instructions.",
+        "New — Work Packages can now include drawings, pulled per work package. Add a 'Drawings' form and point it at a parent folder that has one subfolder per work package (named exactly the work-package value); the PDFs in each subfolder are merged into that work package at the form's position, at full sheet size. If a folder is missing when you generate, you're asked whether to continue without it or cancel.",
+        "New — You can now drop a saved Progress Book layout straight into a Work Package. It appears in the '+ Add Form' list; when the package is generated, that progress book is produced inline (using the layout's columns, grouping and sorting) automatically scoped to the work package, and merged in where you placed it.",
+        "Improvement — In the Work Packages form editor, the External File and Drawings forms have a Relink button (to point at a new file/folder) and a Rename button that renames the form in place without creating a duplicate copy.",
+        "Fix — Choosing certain columns in the Progress Books Value filter no longer causes an error."
+      ]
+    },
+    {
       "version": "26.3.1",
       "date": "2026-07-13",
       "highlights": [

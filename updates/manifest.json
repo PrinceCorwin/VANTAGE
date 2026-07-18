@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.3.1",
-  "releaseDate": "2026-07-13T19:08:08Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.3.1/VANTAGE-26.3.1.zip",
-  "zipSizeBytes": 151727477,
-  "sha256": "EBA03F44404CB92DC3E08EC3254A109FFB471E4261DE2799913AD9B9180E6BCC",
-  "releaseNotes": "The Unsynced button now turns red when you have unsaved changes and clears after a sync; records changed from Tools/Schedule/import now refresh correctly in Progress; Submit Week warns on dates older than the 21-day snapshot window; the window no longer undocks from a stray click on the top bar; new-user access requests no longer error at startup and confirm email delivery; Deleted Records loads faster."
+  "currentVersion": "26.3.2",
+  "releaseDate": "2026-07-17T20:41:32Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.3.2/VANTAGE-26.3.2.zip",
+  "zipSizeBytes": 151730988,
+  "sha256": "F613AA146E5307042CD6355CFB1B941B922E07AF4CD91D7B590CAE39F6062673",
+  "releaseNotes": "Progress Books: the Value filter is now a searchable, browsable list. Work Packages can include an existing PDF (External File form), per-work-package drawings (Drawings form), and a saved Progress Book layout generated inline; External File and Drawings forms support Relink and in-place Rename."
 }
