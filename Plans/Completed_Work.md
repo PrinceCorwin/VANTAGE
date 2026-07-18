@@ -6,6 +6,19 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### July 17, 2026 (Work Packages — Embed Saved Progress Book Layouts as Forms)
+
+**A saved Progress Book layout can now be added to a Work Package template as a form.** The WP Template's **+ Add Form** menu lists saved layouts (as "Progress Book: {name}") below the regular form templates. Adding one places it in the WP's form list like any form (reorder/remove supported). At generation, the progress book is produced inline and merged into the work package PDF at the form's position.
+
+- **Scoping** — the book uses the layout's config as-is (columns, groups, sorts, paper size, exclude-completed, and its own Include-All-Users/assignee setting) with only the filter overridden to `WorkPackage = <the WP being generated>`. The full book including its cover page is merged. Tabloid layouts merge at full size (per-page-size merge added with the External File feature).
+- **Shared service** — extracted the activity-query + cover-page-totals logic into a new `Services/ProgressBook/ProgressBookGenerationService.cs` (single source of truth). The Progress Books module's Generate dialog was refactored to use it, so the module and the WP path can't drift.
+- **Reference model** — `FormReference` gained a nullable `ProgressBookLayoutId` (backward-compatible; legacy WP templates deserialize unchanged). A layout in the WP forms list is represented by a synthetic `FormTemplate` (new `TemplateTypes.ProgBook`, transient `LinkedProgressBookLayoutId`) so it rides the existing list/save/load plumbing. New `ProgressBookLayoutRepository.GetAllAsync()`.
+- **Missing layout** — a deleted layout shows as "Progress Book: (missing layout #id)" in the editor (preserved on re-save) and is skipped (logged) at generation; a book with no matching rows for the WP is skipped too.
+
+**Known limitations:** template Export/Import (JSON) doesn't carry prog-book form refs (they're dropped on export); the Add-Form layout list refreshes on WP-view load, so a layout created elsewhere mid-session appears after revisiting the view.
+
+**Key files:** `Models/WPTemplate.cs` (`FormReference.ProgressBookLayoutId`), `Models/FormTemplate.cs` (`LinkedProgressBookLayoutId`, `TemplateTypes.ProgBook`), `Services/ProgressBook/ProgressBookGenerationService.cs` (new), `Services/ProgressBook/ProgressBookLayoutRepository.cs` (`GetAllAsync`), `Dialogs/GenerateProgressBookDialog.xaml.cs` (routed through the service), `Views/WorkPackageView.xaml.cs` (Add-Form menu + synthetic items + save/load mapping), `Services/PdfRenderers/WorkPackageGenerator.cs` (prog-book branch in the form loop).
+
 ### July 17, 2026 (Work Packages — External File Form Template)
 
 **New "External File" form-template type lets a work package include an existing PDF.** In the Work Packages module, Form Templates → **+ Add New** now offers **External File** alongside Cover/List/Grid/Form. Choosing it immediately opens a PDF browser; the selected file's name (minus extension) becomes the default template name. The template stores just the file path (`ExternalFileStructure` in the existing `StructureJson` column — no schema change).

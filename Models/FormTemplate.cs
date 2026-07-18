@@ -58,6 +58,13 @@ namespace VANTAGE.Models
             set { _createdUtc = value; OnPropertyChanged(nameof(CreatedUtc)); }
         }
 
+        // Transient (not persisted to the FormTemplates table). Set only on the synthetic
+        // FormTemplate items used to represent a saved Progress Book layout inside a WP
+        // template's forms list, so the layout can be carried through the same list/display
+        // plumbing as real form templates. Null for every real form template.
+        [JsonIgnore]
+        public int? LinkedProgressBookLayoutId { get; set; }
+
         public event PropertyChangedEventHandler? PropertyChanged;
 
         protected void OnPropertyChanged(string propertyName)
@@ -223,6 +230,9 @@ namespace VANTAGE.Models
         public const string Grid = "Grid";
         public const string Drawings = "Drawings";
         public const string ExternalFile = "ExternalFile";
+        // Synthetic type used only for the in-memory WP-forms-list item that stands in for a
+        // saved Progress Book layout. No FormTemplate of this type is ever stored in the DB.
+        public const string ProgBook = "ProgBook";
     }
 
     // Drawing item for the Generate tab DwgNO grid

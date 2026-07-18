@@ -2150,7 +2150,7 @@
 
     <p>Key capabilities:</p>
     <ul>
-        <li><strong>Multi-form composition</strong> — Combine cover sheets, lists, forms, grids, and external PDFs into one document</li>
+        <li><strong>Multi-form composition</strong> — Combine cover sheets, lists, forms, grids, external PDFs, and embedded progress books into one document</li>
         <li><strong>Token replacement</strong> — Dynamic content like project names, dates, and activity data</li>
         <li><strong>Bulk generation</strong> — Generate PDFs for multiple work packages at once</li>
         <li><strong>Custom branding</strong> — Use your own logo or the default company logo</li>
@@ -2421,6 +2421,8 @@
             <td>References an existing PDF; its pages are merged into the work package at this form's position</td>
         </tr>
     </table>
+
+    <p>In addition, your saved <strong>Progress Book layouts</strong> appear in the WP Template's <strong>+ Add Form</strong> menu (listed as "Progress Book: {name}"). Adding one embeds a progress book in the work package: at generation it is produced just like from the Progress Books module — using the layout's columns, grouping, sorting, paper size, and filters — but automatically scoped to the work package being generated, and merged in at the form's position. If a referenced layout has been deleted it shows as "(missing layout)" and is skipped at generation.</p>
 
     <h4>External File Form</h4>
     <p>An <strong>External File</strong> form pulls the pages of an existing PDF directly into the work package — useful for permits, cut sheets, standard instructions, or any pre-made document. When you choose <strong>External File</strong> from the type dialog, you're prompted to browse to a PDF; the file's name becomes the form's default name.</p>

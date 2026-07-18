@@ -66,11 +66,17 @@ namespace VANTAGE.Models
         }
     }
 
-    // JSON structure for form references in WPTemplate.FormsJson
+    // JSON structure for form references in WPTemplate.FormsJson.
+    // A reference points at EITHER a form template (FormTemplateId) OR a saved Progress Book
+    // layout (ProgressBookLayoutId). ProgressBookLayoutId is nullable and absent from legacy
+    // JSON, so existing WP templates deserialize unchanged.
     public class FormReference
     {
         [JsonPropertyName("formTemplateId")]
         public string FormTemplateId { get; set; } = string.Empty;
+
+        [JsonPropertyName("progressBookLayoutId")]
+        public int? ProgressBookLayoutId { get; set; }
     }
 
     // JSON structure for WPTemplate.DefaultSettings

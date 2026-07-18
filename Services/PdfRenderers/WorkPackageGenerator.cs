@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Syncfusion.Pdf;
 using VANTAGE.Models;
 using VANTAGE.Repositories;
+using VANTAGE.Services.ProgressBook;
 using VANTAGE.Utilities;
 
 namespace VANTAGE.Services.PdfRenderers
@@ -87,25 +88,41 @@ namespace VANTAGE.Services.PdfRenderers
 
                 foreach (var formRef in formRefs)
                 {
-                    var formTemplate = await TemplateRepository.GetFormTemplateByIdAsync(formRef.FormTemplateId);
-                    if (formTemplate == null)
+                    PdfDocument formDoc;
+                    string formName;
+
+                    if (formRef.ProgressBookLayoutId.HasValue)
                     {
-                        AppLogger.Warning($"Form template not found: {formRef.FormTemplateId}", "WorkPackageGenerator.GenerateAsync");
-                        continue;
+                        // Embedded Progress Book: generate the book scoped to this work package.
+                        var bookDoc = await GenerateProgressBookFormAsync(formRef.ProgressBookLayoutId.Value, context);
+                        if (bookDoc == null)
+                            continue; // missing layout or no matching activities
+                        formDoc = bookDoc;
+                        formName = SanitizeFileName("ProgressBook");
+                    }
+                    else
+                    {
+                        var formTemplate = await TemplateRepository.GetFormTemplateByIdAsync(formRef.FormTemplateId);
+                        if (formTemplate == null)
+                        {
+                            AppLogger.Warning($"Form template not found: {formRef.FormTemplateId}", "WorkPackageGenerator.GenerateAsync");
+                            continue;
+                        }
+
+                        // Render the form
+                        formDoc = RenderForm(formTemplate, context, logoPath);
+
+                        // Skip forms that produced no pages (e.g. an external-file form whose PDF is
+                        // missing). The user was already warned about missing files before generation.
+                        if (formDoc.Pages.Count == 0)
+                        {
+                            formDoc.Close(true);
+                            continue;
+                        }
+
+                        formName = SanitizeFileName(formTemplate.TemplateName);
                     }
 
-                    // Render the form
-                    PdfDocument formDoc = RenderForm(formTemplate, context, logoPath);
-
-                    // Skip forms that produced no pages (e.g. an external-file form whose PDF is
-                    // missing). The user was already warned about missing files before generation.
-                    if (formDoc.Pages.Count == 0)
-                    {
-                        formDoc.Close(true);
-                        continue;
-                    }
-
-                    string formName = SanitizeFileName(formTemplate.TemplateName);
                     formDocuments.Add((formDoc, formName));
 
                     // Save individual PDF if requested. Prefixed with WorkPackage so multiple
@@ -198,6 +215,35 @@ namespace VANTAGE.Services.PdfRenderers
             }
 
             return results;
+        }
+
+        // Generate an embedded Progress Book PDF for a saved layout, scoped to the work package
+        // being generated. Returns null if the layout is missing or nothing matches (caller skips
+        // it). The layout's own filter is overridden to this work package; every other setting
+        // (columns, groups, sorts, paper size, exclude-completed, assignee scope) is honored.
+        private static async Task<PdfDocument?> GenerateProgressBookFormAsync(int layoutId, TokenContext context)
+        {
+            try
+            {
+                var layout = await Services.ProgressBook.ProgressBookLayoutRepository.GetByIdAsync(layoutId);
+                if (layout == null)
+                {
+                    AppLogger.Warning($"Progress Book layout not found: {layoutId}", "WorkPackageGenerator.GenerateProgressBookFormAsync");
+                    return null;
+                }
+
+                var config = layout.GetConfiguration();
+                config.FilterField = "WorkPackage";
+                config.FilterValue = context.WorkPackage;
+
+                var username = App.CurrentUser?.Username ?? "";
+                return await ProgressBookGenerationService.GenerateAsync(config, context.ProjectID, context.WorkPackage, username);
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "WorkPackageGenerator.GenerateProgressBookFormAsync");
+                return null;
+            }
         }
 
         // Render a form template to PDF

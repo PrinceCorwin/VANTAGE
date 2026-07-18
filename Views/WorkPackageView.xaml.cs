@@ -17,9 +17,11 @@ using System.Windows.Threading;
 using Microsoft.Win32;
 using Syncfusion.Windows.Tools.Controls;
 using VANTAGE.Models;
+using VANTAGE.Models.ProgressBook;
 using VANTAGE.Repositories;
 using VANTAGE.Services;
 using VANTAGE.Services.PdfRenderers;
+using VANTAGE.Services.ProgressBook;
 using Syncfusion.SfSkinManager;
 using VANTAGE.Utilities;
 using VANTAGE.Dialogs;
@@ -34,6 +36,11 @@ namespace VANTAGE.Views
         private List<Models.ProjectItem> _projects = new();
         private List<User> _users = new();
         private ObservableCollection<FormTemplate> _wpFormsList = new();
+
+        // Saved Progress Book layouts, offered as addable forms in a WP template. Loaded with the
+        // rest of the template library; a layout added to a WP is represented in _wpFormsList by a
+        // synthetic FormTemplate (TemplateType ProgBook) carrying LinkedProgressBookLayoutId.
+        private List<ProgressBookLayout> _progressBookLayouts = new();
 
         private FormTemplate? _selectedFormTemplate;
         private WPTemplate? _selectedWPTemplate;
@@ -193,6 +200,7 @@ namespace VANTAGE.Views
                 // Load templates
                 _formTemplates = await TemplateRepository.GetAllFormTemplatesAsync();
                 _wpTemplates = await TemplateRepository.GetAllWPTemplatesAsync();
+                _progressBookLayouts = await ProgressBookLayoutRepository.GetAllAsync();
 
                 // Load projects and users from local database
                 await LoadProjectsAndUsersAsync();
@@ -424,6 +432,46 @@ namespace VANTAGE.Views
                 menuItem.Click += AddFormMenuItem_Click;
                 menuAddFormGroup.Items.Add(menuItem);
             }
+
+            // Saved Progress Book layouts, offered as addable forms. Each is tagged with a
+            // synthetic FormTemplate so it flows through the same list/add plumbing.
+            foreach (var layout in _progressBookLayouts.OrderBy(l => l.Name))
+            {
+                var item = MakeLayoutFormItem(layout);
+                var menuItem = new DropDownMenuItem
+                {
+                    Header = item.TemplateName,
+                    Tag = item
+                };
+                menuItem.Click += AddFormMenuItem_Click;
+                menuAddFormGroup.Items.Add(menuItem);
+            }
+        }
+
+        // Build the synthetic FormTemplate that represents a saved Progress Book layout inside a
+        // WP template's forms list.
+        private static FormTemplate MakeLayoutFormItem(ProgressBookLayout layout)
+        {
+            return new FormTemplate
+            {
+                TemplateID = $"proglayout:{layout.Id}",   // marker only - never a real DB id
+                TemplateName = $"Progress Book: {layout.Name}",
+                TemplateType = TemplateTypes.ProgBook,
+                LinkedProgressBookLayoutId = layout.Id
+            };
+        }
+
+        // Placeholder item for a layout reference whose layout no longer exists, so it stays
+        // visible (and is preserved on re-save) instead of silently vanishing.
+        private static FormTemplate MakeMissingLayoutFormItem(int layoutId)
+        {
+            return new FormTemplate
+            {
+                TemplateID = $"proglayout:{layoutId}",
+                TemplateName = $"Progress Book: (missing layout #{layoutId})",
+                TemplateType = TemplateTypes.ProgBook,
+                LinkedProgressBookLayoutId = layoutId
+            };
         }
 
         // Handle Add Form menu item click
@@ -1402,6 +1450,15 @@ namespace VANTAGE.Views
 
             foreach (var formRef in formRefs)
             {
+                if (formRef.ProgressBookLayoutId.HasValue)
+                {
+                    int layoutId = formRef.ProgressBookLayoutId.Value;
+                    var layout = _progressBookLayouts.FirstOrDefault(l => l.Id == layoutId)
+                                 ?? await ProgressBookLayoutRepository.GetByIdAsync(layoutId);
+                    _wpFormsList.Add(layout != null ? MakeLayoutFormItem(layout) : MakeMissingLayoutFormItem(layoutId));
+                    continue;
+                }
+
                 var formTemplate = await TemplateRepository.GetFormTemplateByIdAsync(formRef.FormTemplateId);
                 if (formTemplate != null)
                 {
@@ -1529,7 +1586,10 @@ namespace VANTAGE.Views
 
             try
             {
-                var formsJson = JsonSerializer.Serialize(_wpFormsList.Select(f => new FormReference { FormTemplateId = f.TemplateID }).ToList());
+                var formsJson = JsonSerializer.Serialize(_wpFormsList.Select(f =>
+                    f.LinkedProgressBookLayoutId.HasValue
+                        ? new FormReference { ProgressBookLayoutId = f.LinkedProgressBookLayoutId }
+                        : new FormReference { FormTemplateId = f.TemplateID }).ToList());
                 var settingsJson = JsonSerializer.Serialize(new WPTemplateSettings { ExpirationDays = (int)(txtExpirationDays.Value ?? 14) });
 
                 string savedTemplateId;

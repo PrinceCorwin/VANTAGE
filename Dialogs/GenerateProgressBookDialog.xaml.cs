@@ -67,103 +67,39 @@ namespace VANTAGE.Dialogs
 
                 var username = App.CurrentUser?.Username ?? "";
 
-                // Build base where clause from config filter (without ExcludeCompleted - we need all for cover page totals)
-                string baseWhereClause;
-                if (!string.IsNullOrEmpty(_config.FilterField) && !string.IsNullOrEmpty(_config.FilterValue))
-                {
-                    var safeValue = _config.FilterValue.Replace("'", "''");
-                    if (_config.IncludeAllUsers)
-                    {
-                        baseWhereClause = $"{_config.FilterField} = '{safeValue}'";
-                    }
-                    else
-                    {
-                        baseWhereClause = $"AssignedTo = '{username}' AND {_config.FilterField} = '{safeValue}'";
-                    }
-                }
-                else
-                {
-                    // No filter - get all records (optionally for current user only)
-                    if (_config.IncludeAllUsers)
-                    {
-                        baseWhereClause = "1=1"; // All records
-                    }
-                    else
-                    {
-                        baseWhereClause = $"AssignedTo = '{username}'";
-                    }
-                }
+                // Resolve the configuration's filter into activities + cover-page totals via the
+                // shared service (same logic the Work Packages generator uses).
+                var data = await ProgressBookGenerationService.LoadDataAsync(_config, username);
+                _coverPageData = data.CoverPageData;
+                _activities = data.Activities;
 
-                // Query ALL activities first (for cover page totals)
-                var (allActivities, _) = await ActivityRepository.GetAllActivitiesAsync(baseWhereClause);
-
-                // Filter out excluded column values if configured
-                if (!string.IsNullOrEmpty(_config.ExcludeColumn) && _config.ExcludeValues.Count > 0)
-                {
-                    allActivities = allActivities
-                        .Where(a => !_config.ExcludeValues.Contains(GetActivityFieldValue(a, _config.ExcludeColumn) ?? ""))
-                        .ToList();
-                }
-
-                // Compute cover page data from ALL activities (including completed)
-                _coverPageData = new CoverPageData
-                {
-                    TotalBudgetMHs = allActivities.Sum(a => a.BudgetMHs),
-                    TotalEarnedMHs = allActivities.Sum(a => a.EarnMHsCalc),
-                    LastSyncDisplay = GetLastSyncDisplay()
-                };
-
-                // Separate completed activities
-                var completedActivities = allActivities.Where(a => a.PercentEntry >= 100).ToList();
-                var activities = _config.ExcludeCompleted
-                    ? allActivities.Where(a => a.PercentEntry < 100).ToList()
-                    : allActivities;
-
-                // Set cover page counts
-                _coverPageData.IncludedCount = activities.Count;
-                if (_config.ExcludeCompleted)
-                {
-                    _coverPageData.ExcludedCompletedCount = completedActivities.Count;
-                    _coverPageData.ExcludedCompletedBudgetMHs = completedActivities.Sum(a => a.BudgetMHs);
-                    _coverPageData.ExcludedCompletedEarnedMHs = completedActivities.Sum(a => a.EarnMHsCalc);
-                }
-
-                // Get max UpdatedUtcDate from included activities
-                _coverPageData.LastUpdatedDisplay = GetLastUpdatedDisplay(activities);
-
-                _activities = activities;
-
-                txtRecordCount.Text = activities.Count.ToString("N0");
+                txtRecordCount.Text = _activities.Count.ToString("N0");
 
                 // Estimate pages (roughly 30 rows per letter page, 45 per tabloid) + 1 for cover page
                 int rowsPerPage = _config.PaperSize == PaperSize.Tabloid ? 45 : 30;
-                int estimatedPages = Math.Max(1, (int)Math.Ceiling((double)activities.Count / rowsPerPage)) + 1;
+                int estimatedPages = Math.Max(1, (int)Math.Ceiling((double)_activities.Count / rowsPerPage)) + 1;
                 txtEstimatedPages.Text = estimatedPages.ToString();
 
                 // Show project ID from first activity
-                var projectId = activities.FirstOrDefault()?.ProjectID ?? "-";
+                var projectId = _activities.FirstOrDefault()?.ProjectID ?? "-";
                 txtProjectId.Text = projectId;
 
-                if (allActivities.Count == 0)
+                if (data.AllActivitiesCount == 0)
                 {
                     txtStatus.Text = "No records found for this filter.";
                     btnGenerate.IsEnabled = false;
                 }
+                else if (data.UnsyncedCount > 0)
+                {
+                    // Cover page totals need all rows synced.
+                    txtStatus.Text = $"⚠ {data.UnsyncedCount} of {data.AllActivitiesCount} record(s) have not been synced to Azure.\nPlease sync in the Progress module before generating.";
+                    statusBorder.Visibility = Visibility.Visible;
+                    btnGenerate.IsEnabled = false;
+                }
                 else
                 {
-                    // Check ALL activities for unsynced ActivityID (still 0) - cover page needs all synced
-                    var unsyncedCount = allActivities.Count(a => a.ActivityID == 0);
-                    if (unsyncedCount > 0)
-                    {
-                        txtStatus.Text = $"⚠ {unsyncedCount} of {allActivities.Count} record(s) have not been synced to Azure.\nPlease sync in the Progress module before generating.";
-                        statusBorder.Visibility = Visibility.Visible;
-                        btnGenerate.IsEnabled = false;
-                    }
-                    else
-                    {
-                        statusBorder.Visibility = Visibility.Collapsed;
-                        btnGenerate.IsEnabled = true;
-                    }
+                    statusBorder.Visibility = Visibility.Collapsed;
+                    btnGenerate.IsEnabled = true;
                 }
             }
             catch (Exception ex)
@@ -245,59 +181,6 @@ namespace VANTAGE.Dialogs
         {
             DialogResult = false;
             Close();
-        }
-
-        // Get a field value from an Activity using reflection
-        private string? GetActivityFieldValue(Activity activity, string fieldName)
-        {
-            try
-            {
-                var prop = typeof(Activity).GetProperty(fieldName,
-                    System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.IgnoreCase);
-                return prop?.GetValue(activity)?.ToString();
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
-        // Get the last sync display string from user settings
-        private string GetLastSyncDisplay()
-        {
-            var lastSyncString = SettingsManager.GetUserSetting("LastSyncUtcDate");
-            if (string.IsNullOrEmpty(lastSyncString))
-                return "Never";
-
-            if (DateTime.TryParse(lastSyncString, out DateTime lastSyncUtc))
-            {
-                var localTime = lastSyncUtc.ToLocalTime();
-                return localTime.ToString("M/d/yyyy HH:mm");
-            }
-            return "Never";
-        }
-
-        // Get the max UpdatedUtcDate from activities as display string
-        private string GetLastUpdatedDisplay(List<Activity> activities)
-        {
-            if (activities.Count == 0)
-                return "N/A";
-
-            DateTime? maxDate = null;
-            foreach (var activity in activities)
-            {
-                if (activity.UpdatedUtcDate.HasValue)
-                {
-                    if (!maxDate.HasValue || activity.UpdatedUtcDate.Value > maxDate.Value)
-                        maxDate = activity.UpdatedUtcDate.Value;
-                }
-            }
-
-            if (!maxDate.HasValue)
-                return "N/A";
-
-            var localTime = maxDate.Value.ToLocalTime();
-            return localTime.ToString("M/d/yyyy HH:mm");
         }
     }
 }

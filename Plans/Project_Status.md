@@ -16,12 +16,12 @@
 ## In Progress / Not Started
 | Module | Status | Notes |
 |--------|--------|-------|
-| Work Packages | NOT STARTED | Add saved Progress Book layouts as a WP form type — adding one generates that progress book inline during WP generation (same as the Progress Books module) and merges it into the WP PDF at the form's inserted position |
 | Analysis | IN PROGRESS | 3x1+3 grid layout, chart filters panel (session-only, lazy-populated) with Reset button, Excel-style (Select All) toggle and per-filter ALL/[N] count badges, dynamic chart sections with selectable visual type/X axis/Y axis, pie/doughnut labels and legends, summary grid with independent filters, Excel export |
 | Procore | IN PROGRESS | OAuth + auth dialog + service layer scaffolded; targeted at WP DWG Log fetch |
 | AI Features (other) | NOT STARTED | Error Assistant, Description Analysis, etc. |
 
 ## Ready to Publish
+- **Work Packages — embed saved Progress Book layouts as forms** — a saved Progress Book layout can be added to a WP template from the + Add Form menu; at generation it produces that progress book inline (shared `ProgressBookGenerationService`), scoped to the current work package (`WorkPackage = <WP>`, all other layout settings honored), and merges it into the WP PDF at the form's position. Missing/deleted layouts show as "(missing layout #id)" and are skipped at generation. (Template Export/Import doesn't carry prog-book form refs yet.)
 - **Work Packages — External File form template** — new form type that references an existing PDF; its pages merge into the generated work package at the form's position. Add New → "External File" browses to the PDF (default name = file name); editor has Relink + in-place Rename; missing file at generation prompts cancel-vs-proceed-without. `MergeDocuments` now preserves each page's native size (11x17 etc. no longer clipped to letter).
 - **Progress Books — searchable Value picker** — the Value filter is now a browsable/type-to-filter (substring) single-select list; also fixed a crash when selecting a synthetic (`% ENTRY` / `RemainingMHs`) filter column.
 - **Required-metadata visibility** — pre-import warnings on Excel Import (Combine) and (Replace) listing the required columns + conditional date rules that gate sync, shown *before* the file browser; plus an on-demand **Tools → Required Metadata Fields** reference. All driven off `ActivityRequiredMetadata.SyncRequirementNotice`.

@@ -76,6 +76,38 @@ namespace VANTAGE.Services.ProgressBook
             });
         }
 
+        // Get every saved layout (all users, all projects). Used by the Work Packages module to
+        // offer any saved layout as an addable form.
+        public static async Task<List<ProgressBookLayout>> GetAllAsync()
+        {
+            return await Task.Run(() =>
+            {
+                var layouts = new List<ProgressBookLayout>();
+                try
+                {
+                    using var connection = new SqliteConnection($"Data Source={DatabaseSetup.DbPath}");
+                    connection.Open();
+
+                    var cmd = connection.CreateCommand();
+                    cmd.CommandText = @"
+                        SELECT Id, Name, ProjectId, CreatedBy, CreatedUtc, UpdatedUtc, ConfigurationJson
+                        FROM ProgressBookLayouts
+                        ORDER BY Name";
+
+                    using var reader = cmd.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        layouts.Add(ReadLayoutFromReader(reader));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    AppLogger.Error(ex, "ProgressBookLayoutRepository.GetAllAsync");
+                }
+                return layouts;
+            });
+        }
+
         // Get a single layout by ID
         public static async Task<ProgressBookLayout?> GetByIdAsync(int id)
         {
