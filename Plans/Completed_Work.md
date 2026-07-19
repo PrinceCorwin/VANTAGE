@@ -6,6 +6,22 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### July 19, 2026 (Help Manual — Screenshot Audit Pass 1 + Content Corrections + Schedule Header Rename)
+
+**Help manual screenshot audit — first pass (Getting Started, Main Interface, Progress, Schedule; partial Analysis).** Working section by section through `Help/manual.html`, updating stale screenshots and adding missing ones.
+
+- **New design system for manual images:** a shared `.manual-shot` figure class (blue beveled-rim frame + soft drop shadow) replaces the repeated inline `style="..."` on images, plus a numbered CSS-overlay callout system (`.callout-pin` positioned by percentage over the image + a matching `.callout-legend`). Clean pasted screenshots get the CSS frame; legacy images that already carry a baked-in blue border are left plain so they don't double-border. Corner-rounding is scoped to framed images only.
+- **Updated shots:** main window, 6-module toolbar/navigation (added ANALYSIS + TAKEOFFS to the module table with the Estimator-role/PCM note), status-bar (Takeoff element), Progress toolbar center (SUBMIT WEEK → SNAPSHOT), Schedule full-view (now two shots for the wide grid), Schedule toolbar (3WLA dropdown / Lookahead / no SAVE).
+- **New shots added:** Help Sidebar open-panel; Progress Grid Grouping, Actions menu, Find & Replace (all four checkboxes explained via callouts), Sync Incomplete dialog, Manage My Snapshots, Modify Snapshot, Grid Layouts, Manage UDF Names; Schedule Detail grid (populated), P6 Import dialog, Schedule UDF Mapping dialog, Schedule Change Log dialog; Analysis Summary Grid by PhaseCode (with a note that it's the per-phase-code figure crews read off for Viewpoint entry).
+- Orphaned `progress-full-view.png` removed (the Progress overview now reuses the main-interface shot with Progress-specific callouts).
+
+**Content corrections found during the audit:**
+- Required Metadata Fields section said "Nine fields" and omitted **UOM** — corrected to ten fields, added the UOM row, normalized "Resp Party" → "RespParty", and added the conditional ActStart (% > 0) / ActFin (% = 100) date rules to match `ActivityValidator`.
+- "Submit Week" → "Snapshot" terminology (button was renamed in code; one stray manual reference fixed).
+- Encoding sweep: 28 double-encoded glyphs (▲ ▼ ⋮ → ↑ ↓ – — ✕ ✎ ×) that rendered as garbage (`â–²`, `â‹®`, `Ã—`, etc.) replaced with proper HTML entities across the whole manual.
+
+**Schedule master-grid column headers renamed MS % → Vtg %, MS MHs → Vtg MHs** (`Views/ScheduleView.xaml`, `HeaderText` only — data `MappingName` bindings unchanged). Build verified (0 errors). Manual references updated to match, and a broader "MS" → "Vantage" wording sweep applied to the Schedule section prose (13 spots) for consistency with the renamed columns (V-Start / V-Finish left as-is per decision).
+
 ### July 18, 2026 (Work Packages — Configurable Output Filename Patterns + Filterable Projects Grid)
 
 **Configurable filename patterns for generated Work Package PDFs, saved per template.** The WP Templates editor tab gained two token-driven fields, each with a live italic `Example:` line beneath it that updates as you type:

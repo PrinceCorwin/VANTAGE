@@ -250,6 +250,109 @@
             font-style: italic;
             margin: 15px 0;
         }
+
+        /* ============================================ */
+        /* Screenshot figure + annotated callouts       */
+        /* ============================================ */
+        .manual-shot {
+            margin: 20px 0 24px;
+            max-width: 100%;
+        }
+
+        .manual-shot .shot-frame {
+            position: relative;
+            display: inline-block;
+            max-width: 100%;
+            line-height: 0;
+            padding: 5px;
+            border-radius: 16px;
+            /* Beveled blue rim: bright highlight top-left fading to deep blue bottom-right */
+            background: linear-gradient(158deg, #9fd0ff 0%, #3d8ce0 24%, #1a5aa8 52%, #0c3163 78%, #071f3d 100%);
+            box-shadow:
+                0 0 22px rgba(60, 140, 255, 0.42),   /* soft blue outer glow */
+                0 14px 34px rgba(0, 0, 0, 0.60);      /* dark drop shadow */
+        }
+
+        .manual-shot img {
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* Rounded corners only for images inside the CSS frame; images that
+           already carry a baked-in border are left pixel-untouched. */
+        .manual-shot .shot-frame img {
+            border-radius: 11px;
+        }
+
+        .manual-shot figcaption {
+            color: var(--text-secondary);
+            font-size: 12.5px;
+            font-style: italic;
+            margin-top: 10px;
+        }
+
+        /* Numbered pin placed over a region of the screenshot */
+        .callout-pin {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            line-height: 1;
+            color: #ffffff;
+            background: linear-gradient(145deg, #2b93ff, #0063c6);
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.9), 0 2px 8px rgba(0, 0, 0, 0.6);
+            z-index: 2;
+            transition: transform 0.12s ease;
+        }
+
+        .callout-pin:hover {
+            transform: translate(-50%, -50%) scale(1.12);
+        }
+
+        /* Legend beneath the screenshot */
+        .callout-legend {
+            list-style: none;
+            padding: 0;
+            margin: 14px 0 0;
+            display: grid;
+            gap: 9px;
+        }
+
+        .callout-legend li {
+            display: flex;
+            align-items: flex-start;
+            gap: 11px;
+            margin: 0;
+            color: var(--text-secondary);
+        }
+
+        .callout-legend .num {
+            flex: 0 0 auto;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            line-height: 1;
+            color: #ffffff;
+            background: linear-gradient(145deg, #2b93ff, #0063c6);
+            margin-top: 1px;
+        }
+
+        .callout-legend strong {
+            color: var(--text-primary);
+        }
     </style>
 </head>
 <body>
@@ -428,17 +531,32 @@
     <!-- ============================================ -->
 
     <h3 id="ui-layout">Layout</h3>
-    <img src="../Assets/Images/Sidebar/start-main-interface.png" alt="Main interface" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
     <p>The main window has three sections:</p>
-    <ul>
-        <li><strong>Toolbar</strong> — Menus (File, Tools, Admin) on the left, module navigation buttons in the center, settings menu on the right</li>
-        <li><strong>Content Area</strong> — The currently active module</li>
-        <li><strong>Status Bar</strong> — Shows version, your username, and last sync timestamp</li>
-    </ul>
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/start-main-interface.png" alt="VANTAGE: Milestone main window with the Progress module active" />
+            <span class="callout-pin" style="top:3.5%; left:50%;">1</span>
+            <span class="callout-pin" style="top:50%; left:52%;">2</span>
+            <span class="callout-pin" style="top:97.5%; left:11%;">3</span>
+        </div>
+        <ol class="callout-legend">
+            <li><span class="num">1</span><span><strong>Toolbar</strong> — Menus (File, Tools, Admin) on the left, module navigation buttons in the center, and the settings menu on the right.</span></li>
+            <li><span class="num">2</span><span><strong>Content Area</strong> — The currently active module (the Progress grid is shown here).</span></li>
+            <li><span class="num">3</span><span><strong>Status Bar</strong> — Version, your username, Takeoff status, and the last sync timestamp.</span></li>
+        </ol>
+    </figure>
 
     <h3 id="ui-navigation">Navigation</h3>
-    <img src="../Assets/Images/Sidebar/start-toolbar-detail.png" alt="Toolbar module buttons" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
-    <p>Four module buttons are displayed in the center of the toolbar. The active module is highlighted with a colored underline.</p>
+    <p>Six module buttons are displayed in the center of the toolbar. The active module is highlighted with a colored underline.</p>
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/start-toolbar-detail.png" alt="Module navigation buttons in the toolbar" />
+            <span class="callout-pin" style="top:80%; left:8.5%;">1</span>
+        </div>
+        <ol class="callout-legend">
+            <li><span class="num">1</span><span><strong>Active module indicator</strong> — the current module is marked with a blue underline (PROGRESS shown here).</span></li>
+        </ol>
+    </figure>
     <table>
         <tr>
             <th>Module</th>
@@ -459,6 +577,14 @@
         <tr>
             <td><strong>WORK PKGS</strong></td>
             <td>Create PDF work packages with forms and drawings</td>
+        </tr>
+        <tr>
+            <td><strong>ANALYSIS</strong></td>
+            <td>Visualize and aggregate progress data — metrics grouped by field, filtered by project or user</td>
+        </tr>
+        <tr>
+            <td><strong>TAKEOFFS</strong></td>
+            <td>AI-powered quantity takeoffs from piping isometric drawings. Visible only to users with the <strong>Estimator</strong> role — request it from your PCM if you need access.</td>
         </tr>
     </table>
 
@@ -504,7 +630,10 @@
                 <li>Save the file.</li>
             </ol>
             <p style="margin:8px 0;">The in-app prep dialog includes an annotated screenshot showing exactly what to remove:</p>
-            <img src="../Assets/Images/Dialogs/vp-vtg-prep.png" alt="Annotated screenshot showing which rows to delete and which row should become row 1 in the JC Labor Productivity report" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+            <figure class="manual-shot">
+                <img src="../Assets/Images/Dialogs/vp-vtg-prep.png" alt="Annotated screenshot showing which rows to delete and which row should become row 1 in the JC Labor Productivity report" />
+                <figcaption>The same annotated guide appears inside the in-app prep dialog.</figcaption>
+            </figure>
 
             <div class="note" style="margin:8px 0;">
                 <div class="note-title">Prep Dialog Reminder</div>
@@ -569,8 +698,14 @@
     </ul>
 
     <h3 id="ui-status-bar">Status Bar</h3>
-    <img src="../Assets/Images/Sidebar/start-status-bar-left.png" alt="Status bar left" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
-    <img src="../Assets/Images/Sidebar/start-status-bar-right.png" alt="Status bar right" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <figure class="manual-shot">
+        <img src="../Assets/Images/Sidebar/start-status-bar-left.png" alt="Status bar left: version and username" />
+    </figure>
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/start-status-bar-right.png" alt="Status bar right: Takeoff status and last sync time" />
+        </div>
+    </figure>
     <p>The status bar at the bottom displays:</p>
     <ul>
         <li><strong>Version</strong> — Current VANTAGE: Milestone version</li>
@@ -580,8 +715,25 @@
     </ul>
 
     <h3 id="ui-help-sidebar">Help Sidebar</h3>
-    <img src="../Assets/Images/Sidebar/start-help-sidebar.png" alt="Help sidebar" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
-    <p>Open the Help sidebar by pressing <span class="keyboard-shortcut">F1</span> or from the settings menu (three-dot icon in the top right corner). The sidebar shows context-sensitive help based on your current module. Use the search field to find specific topics.</p>
+    <p>Open the Help sidebar by pressing <span class="keyboard-shortcut">F1</span> or from the settings menu (three-dot icon in the top-right corner).</p>
+    <figure class="manual-shot">
+        <img src="../Assets/Images/Sidebar/start-help-sidebar.png" alt="Settings menu showing the Help Sidebar (F1) option" />
+        <figcaption>The Help Sidebar and Feedback Board open from the &#8942; settings menu.</figcaption>
+    </figure>
+    <p>The sidebar shows context-sensitive help based on your current module. Search across the whole manual, step between matches, and print it or open it in your browser from the top toolbar.</p>
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/start-help-sidebar-open.png" alt="Help Sidebar open, showing the toolbar, search field, and table of contents" />
+            <span class="callout-pin" style="top:8%; left:50%;">1</span>
+            <span class="callout-pin" style="top:12.3%; left:16%;">2</span>
+            <span class="callout-pin" style="top:12.3%; left:81%;">3</span>
+        </div>
+        <ol class="callout-legend">
+            <li><span class="num">1</span><span><strong>Toolbar</strong> — jump Back to Top, print the manual to PDF, or open it in your browser.</span></li>
+            <li><span class="num">2</span><span><strong>Search</strong> — type any term to find matching topics.</span></li>
+            <li><span class="num">3</span><span><strong>Next / previous match</strong> — step through search hits with the &#9650; &#9660; arrows.</span></li>
+        </ol>
+    </figure>
 
     <h3 id="ui-shortcuts">Keyboard Shortcuts</h3>
     <table>
@@ -614,7 +766,19 @@
     <h3 id="prog-overview">Overview</h3>
     <p>The Progress Module is where you track construction activity completion. This is the primary workspace for field engineers entering daily progress and reviewing assigned work.</p>
 
-    <img src="../Assets/Images/Sidebar/progress-full-view.png" alt="Progress module" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/start-main-interface.png" alt="Progress module: toolbar, quick filters, and the activity grid" />
+            <span class="callout-pin" style="top:6%; left:23%;">1</span>
+            <span class="callout-pin" style="top:22%; left:3.5%;">2</span>
+            <span class="callout-pin" style="top:45%; left:50%;">3</span>
+        </div>
+        <ol class="callout-legend">
+            <li><span class="num">1</span><span><strong>Toolbar</strong> — search, Refresh, Scan, Sync, Snapshot, and the Budget / Earned / % Complete rollup.</span></li>
+            <li><span class="num">2</span><span><strong>Quick Filters</strong> — one-click filters (Complete, In Progress, Not Started, Unsynced, My Records, Today) plus Clear Filters, Assign, Columns, and Actions.</span></li>
+            <li><span class="num">3</span><span><strong>Activity grid</strong> — your assigned activities; enter progress inline here.</span></li>
+        </ol>
+    </figure>
 
     <h3 id="prog-workflow">Typical Workflow</h3>
     <p>The standard daily workflow is:</p>
@@ -639,7 +803,7 @@
         <li><strong>Selection counter</strong> — When multiple rows are selected (via Ctrl+Click or Shift+Click), shows "N selected" alongside the record count</li>
         <li><strong>Metadata errors</strong> — Button showing count of records with missing required fields (click to filter to those records)</li>
         <li><strong>Selection stats</strong> — When 2 or more cells are selected, shows Count, Sum, and Avg of the selected values. If any selected cell is non-numeric, Sum and Avg display "NotNum"</li>
-        <li><strong>Navigation buttons</strong> — â–²/â–¼ buttons to jump to first/last row</li>
+        <li><strong>Navigation buttons</strong> — &#9650;/&#9660; buttons to jump to first/last row</li>
     </ul>
 
     <h4>Summary Row</h4>
@@ -656,7 +820,9 @@
     <h3 id="prog-toolbar">Toolbar</h3>
 
     <h4>Left Section — Quick Actions</h4>
-    <img src="../Assets/Images/Sidebar/progress-toolbar-left.png" alt="Progress toolbar left section" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <figure class="manual-shot">
+        <img src="../Assets/Images/Sidebar/progress-toolbar-left.png" alt="Progress toolbar left section: search, Refresh, Scan, and percent buttons" />
+    </figure>
     <table>
         <tr>
             <th>Control</th>
@@ -690,7 +856,11 @@
     </div>
 
     <h4>Center Section — Sync Controls</h4>
-    <img src="../Assets/Images/Sidebar/progress-toolbar-center.png" alt="Progress toolbar center section" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/progress-toolbar-center.png" alt="Progress toolbar center section: Sync and Snapshot buttons" />
+        </div>
+    </figure>
     <table>
         <tr>
             <th>Button</th>
@@ -707,7 +877,9 @@
     </table>
 
     <h4>Right Section — Summary Panel</h4>
-    <img src="../Assets/Images/Sidebar/progress-toolbar-right.png" alt="Progress toolbar right section" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <figure class="manual-shot">
+        <img src="../Assets/Images/Sidebar/progress-toolbar-right.png" alt="Progress toolbar right section: Budget, Earned, and % Complete totals with the Budget field dropdown open" />
+    </figure>
     <p>Displays real-time totals for the currently filtered records:</p>
     <ul>
         <li><strong>Budget</strong> — Click the column name to choose which field to use as the budget total. Options include BudgetMHs (default), Quantity, ClientBudget, and others. Your selection persists between sessions.</li>
@@ -716,7 +888,9 @@
     </ul>
 
     <h3 id="prog-filters">Sidebar Filters</h3>
-    <img src="../Assets/Images/Sidebar/progress-sidebar.png" alt="Progress sidebar filters" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <figure class="manual-shot">
+        <img src="../Assets/Images/Sidebar/progress-sidebar.png" alt="Progress Quick Filters sidebar" />
+    </figure>
     <p>Active filters display a highlighted border so you can easily see which filters are currently applied.</p>
 
     <div class="note">
@@ -807,10 +981,21 @@
         <li><strong>Remove grouping</strong> — Drag the column chip out of the drop area, or click its X button</li>
         <li><strong>Reorder groups</strong> — Drag chips within the drop area to change grouping priority</li>
     </ol>
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/progress-grouping.png" alt="Progress grid grouped by WorkPackage and PhaseCode, showing the group drop area and collapsible group headers" />
+            <span class="callout-pin" style="top:15.3%; left:15%;">1</span>
+            <span class="callout-pin" style="top:25%; left:23%;">2</span>
+        </div>
+        <ol class="callout-legend">
+            <li><span class="num">1</span><span><strong>Group Drop Area</strong> — drag column headers here to group; add more than one for nested groups (WorkPackage &#8594; PhaseCode shown).</span></li>
+            <li><span class="num">2</span><span><strong>Group header &amp; count</strong> — click &#9654;/&#9660; to expand or collapse; each header shows how many activities it contains.</span></li>
+        </ol>
+    </figure>
 
     <h4>Working with Groups</h4>
     <ul>
-        <li><strong>Expand/Collapse</strong> — Click the arrow (â–¶/â–¼) next to any group header</li>
+        <li><strong>Expand/Collapse</strong> — Click the arrow (&#9654;/&#9660;) next to any group header</li>
         <li><strong>Group count</strong> — Each group header shows the number of activities it contains</li>
         <li><strong>Filtering + Grouping</strong> — Groups respect active filters, showing only matching records</li>
     </ul>
@@ -892,22 +1077,31 @@
         <li><strong>Add Blank Row</strong> — Create a new empty activity row assigned to you. Clears filters and sorts, then scrolls to the new row at the bottom. Required fields are highlighted red so you know what to fill in.</li>
         <li><strong>Export Selected</strong> — Export selected rows to Excel</li>
     </ul>
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/progress-actions-menu.png" alt="Actions menu open from the sidebar, with the Copy Row(s) submenu expanded" />
+        </div>
+        <figcaption>The Actions menu, opened from the sidebar. <strong>Copy Row(s)</strong> expands to copy visible or all columns.</figcaption>
+    </figure>
 
     <h4>Find & Replace</h4>
-    <p>Right-click any column header and select <strong>Find and Replace</strong> to open the Find & Replace dialog for that column.</p>
-
-    <p><strong>Standard Mode:</strong> Enter text in "Find what" and "Replace with" fields. Options include:</p>
-    <ul>
-        <li><strong>Match case</strong> — Case-sensitive matching</li>
-        <li><strong>Match entire cell contents</strong> — Only replace if the entire cell value matches (default on)</li>
-    </ul>
-
-    <p><strong>Special Modes:</strong> Use checkboxes at the top of the dialog for bulk operations:</p>
-    <ul>
-        <li><strong>Replace ALL cells in column</strong> — Replace every cell value in the column with the replacement text (confirmation required)</li>
-        <li><strong>Replace BLANK cells in column</strong> — Replace only empty, null, or whitespace-only cells</li>
-    </ul>
-    <p>These modes are mutually exclusive and disable the "Find what" field when checked.</p>
+    <p>Right-click any column header and select <strong>Find and Replace</strong> to open the Find &amp; Replace dialog for that column. Enter what to look for in <strong>Find what</strong> and the new value in <strong>Replace with</strong>. The dialog's four checkboxes control how the replace behaves:</p>
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/progress-find-replace.png" alt="Find and Replace dialog showing the two bulk-mode checkboxes, the Find/Replace fields, and the Match options" />
+            <span class="callout-pin" style="top:27%; left:6%;">1</span>
+            <span class="callout-pin" style="top:33%; left:6%;">2</span>
+            <span class="callout-pin" style="top:74.5%; left:6%;">3</span>
+            <span class="callout-pin" style="top:81%; left:6%;">4</span>
+        </div>
+        <ol class="callout-legend">
+            <li><span class="num">1</span><span><strong>Replace ALL cells in column</strong> — overwrites <em>every</em> cell in the column with the Replace-with text (asks for confirmation first).</span></li>
+            <li><span class="num">2</span><span><strong>Replace BLANK cells in column</strong> — fills only the empty, null, or whitespace-only cells; existing values are left alone.</span></li>
+            <li><span class="num">3</span><span><strong>Match case</strong> — makes the search case-sensitive (e.g. "Pip" won't match "pip").</span></li>
+            <li><span class="num">4</span><span><strong>Match entire cell contents</strong> — replaces only when the whole cell equals the Find-what text, not just part of it (on by default).</span></li>
+        </ol>
+    </figure>
+    <p>The two bulk modes (&#9312; and &#9313;) are <strong>mutually exclusive</strong> and disable the <em>Find what</em> field when checked — they act on the whole column rather than on matched text.</p>
 
     <p><strong>Buttons:</strong></p>
     <ul>
@@ -918,7 +1112,7 @@
     <p><strong>Logical rule validation:</strong> When replacing into PercentEntry, ActStart, or ActFin, every prospective change is checked against the same hard rules as single-cell edits. If <em>any</em> row would violate a rule (future date, Finish before Start, etc.), the <strong>entire replace is aborted</strong>, no changes are saved, and a dialog lists the offending ActivityIDs and reasons. Replacing into ActFin also auto-bumps % Complete to 100 on any rows that were below 100.</p>
 
     <h3 id="prog-metadata">Required Metadata Fields</h3>
-    <p>Nine fields are required for sync. Records missing any of these fields will be highlighted in red and cannot be synced until corrected.</p>
+    <p>Ten fields must always be populated for a record to sync. In addition, the Start and Finish dates become required depending on % Complete (see <a href="#prog-metadata-dates">Conditional Date Requirements</a> below). Records missing any required field &mdash; or breaking a date rule &mdash; are highlighted in red and cannot be synced until corrected.</p>
 
     <table>
         <tr>
@@ -958,10 +1152,22 @@
             <td>Rate of completion step</td>
         </tr>
         <tr>
-            <td><strong>Resp Party</strong></td>
+            <td><strong>RespParty</strong></td>
             <td>Responsible Party</td>
         </tr>
+        <tr>
+            <td><strong>UOM</strong></td>
+            <td>Unit of measure</td>
+        </tr>
     </table>
+
+    <h4 id="prog-metadata-dates">Conditional Date Requirements</h4>
+    <p>Two date fields are required based on progress:</p>
+    <ul>
+        <li><strong>ActStart</strong> — required once % Complete is greater than 0.</li>
+        <li><strong>ActFin</strong> — required when % Complete reaches 100.</li>
+    </ul>
+    <p>A row that leaves a required column blank or breaks one of these date rules is held back from syncing until it is corrected.</p>
 
     <div class="note">
         <div class="note-title">Metadata Errors</div>
@@ -985,6 +1191,17 @@
         <p>Sync now pushes only rows that pass validation (required metadata + date/% rules). Any unsaved row that fails validation stays marked as unsaved and is excluded from the push — the rest still go up. The results dialog shows how many rows were blocked and lists the first few violations. Fix those rows in ProgressView (or use <strong>Tools &rarr; Validate My Records</strong> to see them all), then re-sync.</p>
         <p>The pull side now protects your unsaved edits from being overwritten. If a row you have pending edits on was changed in Azure by someone else (admin reassign, another user's push, etc.) and is currently blocked from sync by a validation issue on your side, the pull will preserve your local copy and report "N of your unsaved row(s) had newer data in Azure" so you know to resolve. Once you fix the validation issue and push, your edit lands and the Azure value is overwritten (last-write-wins as today).</p>
     </div>
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/progress-sync-incomplete.png" alt="Sync Incomplete dialog showing push/pull counts and the rows blocked by validation" />
+            <span class="callout-pin" style="top:28%; left:34%;">1</span>
+            <span class="callout-pin" style="top:42%; left:34%;">2</span>
+        </div>
+        <ol class="callout-legend">
+            <li><span class="num">1</span><span><strong>Sync counts</strong> — records pushed (inserted / updated), pulled, and skipped.</span></li>
+            <li><span class="num">2</span><span><strong>Blocked rows</strong> — how many rows failed validation and stayed unsaved, with example reasons. Fix them (Tools &rarr; Validate My Records) and re-sync.</span></li>
+        </ol>
+    </figure>
 
     <h4>SNAPSHOT Button</h4>
     <p>Use SNAPSHOT at the end of each reporting period to:</p>
@@ -1013,9 +1230,26 @@
         <li><strong>Modify Selected</strong> — Opens an editable grid of the selected week's snapshot rows so you can correct values and save them back to Azure <em>without affecting</em> your current live activity data. Requires exactly one week selected. See the Modify Snapshot section below.</li>
         <li><strong>Revert To Selected</strong> — Overwrites your current local activities with the values from the selected snapshot. Intended for "take me back to that week's state and continue from there." Requires exactly one week selected. Offers an optional backup of current state before reverting.</li>
     </ul>
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/progress-manage-snapshots.png" alt="Manage My Snapshots dialog listing snapshot groups with Delete, Modify, and Revert buttons" />
+            <span class="callout-pin" style="top:33%; left:6%;">1</span>
+            <span class="callout-pin" style="top:90.5%; left:53%;">2</span>
+        </div>
+        <ol class="callout-legend">
+            <li><span class="num">1</span><span><strong>Select snapshot groups</strong> — tick one or more weeks. All users' snapshots are listed, but Delete / Modify / Revert only act on your own.</span></li>
+            <li><span class="num">2</span><span><strong>Action buttons</strong> — enabled once rows are selected. Delete allows multiple weeks; Modify and Revert require exactly one.</span></li>
+        </ol>
+    </figure>
 
     <h4 id="modify-snapshot">Modify Snapshot</h4>
     <p>Opens a new window showing every row in the selected week's snapshot in an editable grid. Use this when you need to correct a value that was already submitted (for example, a percent complete that should have been higher, or a date that was wrong) without disturbing the live work you've done since.</p>
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/progress-modify-snapshot.png" alt="Modify Snapshot editor showing the editable grid for a selected week's snapshot" />
+        </div>
+        <figcaption>The Modify Snapshot editor. Edits write back to the historical snapshot on Azure only &mdash; your live Activities and sync state are untouched.</figcaption>
+    </figure>
     <ul>
         <li>Every field that's editable on the Progress view is editable here, including the 10 required-metadata fields (Project ID, Work Package, Phase Code, Comp Type, Phase Category, Sched Act No, Description, ROC Step, Resp Party, UOM).</li>
         <li>System and calculated columns (identity, sync version, previous-week tracking, Azure upload date, P6 plan dates) are hidden from the grid.</li>
@@ -1036,18 +1270,44 @@
         <li><strong>Reorder columns</strong> — Drag a column header to a new position</li>
         <li><strong>Hide/show columns</strong> — Click the <strong>Columns</strong> button in the sidebar. Use the <strong>Default</strong> button to restore column visibility to the built-in defaults</li>
     </ul>
-    <p>Use <strong>Settings (â‹®) â†’ Grid Layouts</strong> to save named layouts or switch between different column configurations.</p>
+    <p>Use <strong>Settings (&#8942;) &rarr; Grid Layouts</strong> to save named layouts or switch between different column configurations.</p>
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/progress-grid-layouts.png" alt="Manage Grid Layouts dialog with the saved-layout list and action buttons" />
+            <span class="callout-pin" style="top:26%; left:15%;">1</span>
+            <span class="callout-pin" style="top:76%; left:32%;">2</span>
+            <span class="callout-pin" style="top:92%; left:67%;">3</span>
+        </div>
+        <ol class="callout-legend">
+            <li><span class="num">1</span><span><strong>Saved layouts</strong> — your named column layouts (up to 5).</span></li>
+            <li><span class="num">2</span><span><strong>Apply / Rename / Delete</strong> — act on the selected layout; <strong>Default</strong> restores the built-in column set.</span></li>
+            <li><span class="num">3</span><span><strong>Save New</strong> — type a name and click Save New to store the current column arrangement.</span></li>
+        </ol>
+    </figure>
 
     <h3 id="prog-udf-names">UDF Column Names</h3>
-    <p>The Activities grid exposes 18 user-defined fields (UDF1â€“UDF17 and UDF20). Different projects use these fields for different purposes, so you can rename their column headers to whatever labels make sense for your work.</p>
-    <p>Open <strong>Settings (â‹®) â†’ Manage UDF Names</strong> to:</p>
+    <p>The Activities grid exposes 18 user-defined fields (UDF1&ndash;UDF17 and UDF20). Different projects use these fields for different purposes, so you can rename their column headers to whatever labels make sense for your work.</p>
+    <p>Open <strong>Settings (&#8942;) &rarr; Manage UDF Names</strong> to:</p>
     <ul>
         <li>Type a custom <strong>Visible Name</strong> for any UDF (max 50 characters). Leave blank to use the default header.</li>
         <li>Click <strong>Save</strong> to apply the names to the Progress grid.</li>
         <li><strong>Export</strong> the current names to a <code>.udfmap.json</code> file and <strong>Import</strong> it on another machine to share labels with teammates. After importing, click Save to apply.</li>
         <li><strong>Reset Defaults</strong> reverts all UDF headers to their built-in names.</li>
     </ul>
-    <p>Renames are per-user and per-machine. They affect only the displayed column header â€” underlying data, sync, exports, and Work Package tokens still reference the original UDF field name.</p>
+    <p>Renames are per-user and per-machine. They affect only the displayed column header &mdash; underlying data, sync, exports, and Work Package tokens still reference the original UDF field name.</p>
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/progress-udf-names.png" alt="Manage UDF Names dialog with the Visible Name fields and Export/Import/Reset/Save buttons" />
+            <span class="callout-pin" style="top:29%; left:62%;">1</span>
+            <span class="callout-pin" style="top:95%; left:30%;">2</span>
+            <span class="callout-pin" style="top:95%; left:67%;">3</span>
+        </div>
+        <ol class="callout-legend">
+            <li><span class="num">1</span><span><strong>Visible Name</strong> — type a custom header for any UDF (max 50 characters); leave blank to keep the default.</span></li>
+            <li><span class="num">2</span><span><strong>Reset Defaults / Export / Import</strong> — revert every header, or share labels via a <code>.udfmap.json</code> file (Export on one machine, Import on another).</span></li>
+            <li><span class="num">3</span><span><strong>Save</strong> — applies the entered names to the Progress grid.</span></li>
+        </ol>
+    </figure>
 
     <h3 id="prog-shortcuts">Keyboard Shortcuts</h3>
     <table>
@@ -1112,16 +1372,16 @@
             <td>Go to last cell of last column</td>
         </tr>
         <tr>
-            <td><span class="keyboard-shortcut">Ctrl+â†‘</span></td>
+            <td><span class="keyboard-shortcut">Ctrl+&uarr;</span></td>
             <td>Go to first cell of current column</td>
         </tr>
         <tr>
-            <td><span class="keyboard-shortcut">Ctrl+â†“</span></td>
+            <td><span class="keyboard-shortcut">Ctrl+&darr;</span></td>
             <td>Go to last cell of current column</td>
         </tr>
     </table>
 
-    <p>You can also use the <strong>â–²</strong> and <strong>â–¼</strong> navigation buttons in the bottom toolbar to jump to the first or last row using the mouse.</p>
+    <p>You can also use the <strong>&#9650;</strong> and <strong>&#9660;</strong> navigation buttons in the bottom toolbar to jump to the first or last row using the mouse.</p>
 
     <h3 id="prog-copying">Copying Data</h3>
     <p>VANTAGE: Milestone provides multiple ways to copy grid data for use in Excel or other applications:</p>
@@ -1182,21 +1442,43 @@
         <div class="note-title">Prerequisites</div>
         <p>To see data in the Schedule module, you need both of the following for the same week ending date:</p>
         <ul>
-            <li>P6 schedule data imported via <strong>File â†’ Import From P6 File</strong></li>
+            <li>P6 schedule data imported via <strong>File &rarr; Import From P6 File</strong></li>
             <li>A progress snapshot created via <strong>SNAPSHOT</strong> in the Progress module</li>
         </ul>
         <p>If no P6 file has been imported, the header displays "(No schedule loaded)". Without both P6 data and a snapshot for the same week, the grid will be empty.</p>
     </div>
 
-    <img src="../Assets/Images/Sidebar/schedule-full-view.png" alt="Schedule module" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <p>The grid is wider than one screen, so it's shown here in two halves &mdash; scroll horizontally in the app to move between them.</p>
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/schedule-full-view.png" alt="Schedule module, left columns: toolbar, master grid, and detail grid" />
+            <span class="callout-pin" style="top:7.3%; left:40%;">1</span>
+            <span class="callout-pin" style="top:38%; left:33%;">2</span>
+            <span class="callout-pin" style="top:70%; left:20%;">3</span>
+        </div>
+        <ol class="callout-legend">
+            <li><span class="num">1</span><span><strong>Toolbar &amp; filters</strong> — Week Ending, 3WLA window, Missed Start/Finish, Lookahead, Required Fields, Discrepancies, Clear Filters, and Columns.</span></li>
+            <li><span class="num">2</span><span><strong>Master grid</strong> — one row per P6 schedule activity, with the Vantage rollup alongside the P6 values.</span></li>
+            <li><span class="num">3</span><span><strong>Detail grid</strong> — select a master row to list the individual activities linked to it.</span></li>
+        </ol>
+    </figure>
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/schedule-full-view-right.png" alt="Schedule module scrolled right: P6 vs Vantage comparison columns and discrepancy shading" />
+            <span class="callout-pin" style="top:12%; left:90%;">4</span>
+        </div>
+        <ol class="callout-legend">
+            <li><span class="num">4</span><span><strong>P6 vs Vantage comparison</strong> — <strong>P6 %</strong> / <strong>P6 MHs</strong> beside <strong>Vtg %</strong> / <strong>Vtg MHs</strong>. Gold shading marks cells where Vantage disagrees with P6 (the <em>Vtg &ne; P6</em> legend at the bottom right).</span></li>
+        </ol>
+    </figure>
 
     <h3 id="sched-layout">Layout</h3>
     <p>The Schedule view uses a master/detail layout:</p>
     <ul>
-        <li><strong>Master Grid (top)</strong> — P6 schedule activities with MS rollup data</li>
+        <li><strong>Master Grid (top)</strong> — P6 schedule activities with Vantage (Vtg) rollup data</li>
         <li><strong>Detail Grid (bottom)</strong> — Individual VANTAGE: Milestone activities linked to the selected schedule row</li>
     </ul>
-    <p>Click any row in the master grid to see its linked activities in the detail grid below. Edits to percent, dates, and budget hours in the detail grid automatically recalculate the rollup values (V-Start, V-Finish, MS %, MS MHs) shown in the master grid.</p>
+    <p>Click any row in the master grid to see its linked activities in the detail grid below. Edits to percent, dates, and budget hours in the detail grid automatically recalculate the rollup values (V-Start, V-Finish, Vtg %, Vtg MHs) shown in the master grid.</p>
 
     <div class="warning">
         <div class="warning-title">Snapshot Data Only</div>
@@ -1218,14 +1500,18 @@
         </tr>
         <tr>
             <td style="background-color: #ffd93d; color: #000; text-align: center;"><strong>Yellow</strong></td>
-            <td>Discrepancy between P6 and MS data</td>
+            <td>Discrepancy between P6 and Vantage data</td>
             <td>Optional — review with scheduler if reconciliation needed</td>
         </tr>
     </table>
     <p>The status bar shows a legend: red square = required fields, yellow square = discrepancies.</p>
 
     <h3 id="sched-toolbar">Toolbar</h3>
-    <img src="../Assets/Images/Sidebar/schedule-toolbar.png" alt="Schedule toolbar" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/schedule-toolbar.png" alt="Schedule toolbar: Week Ending, 3WLA selector, Refresh, Missed Start/Finish, Lookahead, Required Fields, Discrepancies, and Clear Filters" />
+        </div>
+    </figure>
 
     <h4>Week Selection</h4>
     <p>The header displays the current "Week Ending" date. Schedule data is filtered to show snapshots for this week.</p>
@@ -1238,11 +1524,11 @@
         </tr>
         <tr>
             <td><strong>Missed Start</strong></td>
-            <td>Activities where P6 planned start has passed but MS hasn't started (or started late)</td>
+            <td>Activities where P6 planned start has passed but Vantage hasn't started (or started late)</td>
         </tr>
         <tr>
             <td><strong>Missed Finish</strong></td>
-            <td>Activities where P6 planned finish has passed but MS hasn't finished (or finished late)</td>
+            <td>Activities where P6 planned finish has passed but Vantage hasn't finished (or finished late)</td>
         </tr>
         <tr>
             <td><strong>3WLA / 6WLA / 9WLA</strong></td>
@@ -1286,13 +1572,13 @@
         <li><strong>P6 MHs</strong> — P6 budget hours</li>
     </ul>
 
-    <h4>MS Rollups (Calculated)</h4>
+    <h4>Vantage Rollups (Calculated)</h4>
     <p>These columns are calculated from linked VANTAGE: Milestone activities:</p>
     <ul>
         <li><strong>V-Start</strong> — Earliest start date from linked activities</li>
         <li><strong>V-Finish</strong> — Latest finish date (only if all linked activities are complete)</li>
-        <li><strong>MS %</strong> — Weighted average percent complete</li>
-        <li><strong>MS MHs</strong> — Sum of budget hours from linked activities</li>
+        <li><strong>Vtg %</strong> — Weighted average percent complete</li>
+        <li><strong>Vtg MHs</strong> — Sum of budget hours from linked activities</li>
     </ul>
 
     <h4>Editable Fields</h4>
@@ -1305,6 +1591,17 @@
 
     <h3 id="sched-detail-grid">Detail Grid</h3>
     <p>Click a master row to view its linked VANTAGE: Milestone activities. The header shows "Activities for: [SchedActNO] - [Description]".</p>
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/schedule-detail-grid.png" alt="Schedule master grid with a row selected and its linked activities shown in the detail grid below" />
+            <span class="callout-pin" style="top:50%; left:7%;">1</span>
+            <span class="callout-pin" style="top:88%; left:15%;">2</span>
+        </div>
+        <ol class="callout-legend">
+            <li><span class="num">1</span><span><strong>Selected schedule activity</strong> — click any master-grid row.</span></li>
+            <li><span class="num">2</span><span><strong>Linked activities</strong> — the Vantage activities rolled up into that row. Edit %, dates, and budget hours here; the master-grid rollups recalculate automatically.</span></li>
+        </ol>
+    </figure>
 
     <h4>Editable Columns</h4>
     <table>
@@ -1314,7 +1611,7 @@
         </tr>
         <tr>
             <td><strong>% (PercentEntry)</strong></td>
-            <td>0-100. Changing this auto-adjusts Start/Finish dates. A colored progress bar at the bottom of each cell shows completion at a glance (red â†’ orange â†’ yellow â†’ green).</td>
+            <td>0-100. Changing this auto-adjusts Start/Finish dates. A colored progress bar at the bottom of each cell shows completion at a glance (red &rarr; orange &rarr; yellow &rarr; green).</td>
         </tr>
         <tr>
             <td><strong>Budget MHs</strong></td>
@@ -1322,7 +1619,7 @@
         </tr>
         <tr>
             <td><strong>Earn MHs</strong></td>
-            <td>Read-only. Calculated as (% / 100) Ã— Budget MHs. Updates automatically when % or Budget MHs changes.</td>
+            <td>Read-only. Calculated as (% / 100) &times; Budget MHs. Updates automatically when % or Budget MHs changes.</td>
         </tr>
         <tr>
             <td><strong>ActStart</strong></td>
@@ -1359,8 +1656,8 @@
     <h4>When Lookahead Dates Are Locked</h4>
     <p>Once an actual date is recorded in VANTAGE: Milestone:</p>
     <ul>
-        <li>Lookahead Start becomes read-only when MS has an actual start</li>
-        <li>Lookahead Finish becomes read-only when MS has an actual finish</li>
+        <li>Lookahead Start becomes read-only when Vantage has an actual start</li>
+        <li>Lookahead Finish becomes read-only when Vantage has an actual finish</li>
     </ul>
 
     <h4>Auto-Clear Behavior</h4>
@@ -1391,13 +1688,13 @@
     <h4>When Missed Start Reason Is Required</h4>
     <ul>
         <li>P6 planned start date is within the current week (WeekEndDate - 7 days to WeekEndDate)</li>
-        <li>AND MS either never started OR started after the P6 date</li>
+        <li>AND Vantage either never started OR started after the P6 date</li>
     </ul>
 
     <h4>When Missed Finish Reason Is Required</h4>
     <ul>
         <li>P6 planned finish date is within the current week (WeekEndDate - 7 days to WeekEndDate)</li>
-        <li>AND MS either never finished OR finished after the P6 date</li>
+        <li>AND Vantage either never finished OR finished after the P6 date</li>
     </ul>
 
     <div class="note">
@@ -1406,10 +1703,10 @@
     </div>
 
     <h4>Auto-Populated Reasons</h4>
-    <p>If MS completed before the P6 date, the system auto-populates:</p>
+    <p>If Vantage completed before the P6 date, the system auto-populates:</p>
     <ul>
-        <li><strong>"Started Early"</strong> — MS started before P6 planned start</li>
-        <li><strong>"Finished Early"</strong> — MS finished before P6 planned finish</li>
+        <li><strong>"Started Early"</strong> — Vantage started before P6 planned start</li>
+        <li><strong>"Finished Early"</strong> — Vantage finished before P6 planned finish</li>
     </ul>
 
     <h4>Missed Reasons Workflow</h4>
@@ -1454,11 +1751,24 @@
 
     <h3 id="sched-p6-import">P6 Import</h3>
     <p>Import schedule data from a P6 Primavera Excel export.</p>
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/schedule-p6-import.png" alt="Import P6 Schedule dialog with Week Ending Date and project selection" />
+            <span class="callout-pin" style="top:29%; left:21%;">1</span>
+            <span class="callout-pin" style="top:54%; left:8%;">2</span>
+            <span class="callout-pin" style="top:94%; left:87%;">3</span>
+        </div>
+        <ol class="callout-legend">
+            <li><span class="num">1</span><span><strong>Week Ending Date</strong> — must match the snapshot week you want to compare against.</span></li>
+            <li><span class="num">2</span><span><strong>ProjectIDs</strong> — tick every project the P6 schedule covers. Only projects with a snapshot for that week appear.</span></li>
+            <li><span class="num">3</span><span><strong>Import</strong> — loads the schedule for the selected week and projects.</span></li>
+        </ol>
+    </figure>
 
     <h4>Import Steps</h4>
     <ol>
         <li>Export from P6 Primavera to Excel (TASK sheet format)</li>
-        <li>In VANTAGE: Milestone, go to <strong>File â†’ Import From P6 File</strong></li>
+        <li>In VANTAGE: Milestone, go to <strong>File &rarr; Import From P6 File</strong></li>
         <li>Select the Excel file</li>
         <li>Choose the week ending date for this schedule</li>
         <li>Select which projects this schedule covers (the project list shows only projects for which you have submitted snapshots)</li>
@@ -1554,10 +1864,23 @@
 
     <h3 id="sched-udf-mapping">UDF Column Mapping</h3>
     <p>The Schedule module supports five custom UDF columns (SchedUDF1-5) that can be mapped to any P6 user-defined fields in your schedule export. This allows you to import custom P6 data into VANTAGE: Milestone.</p>
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/schedule-udf-mapping.png" alt="Schedule UDF Column Mappings dialog with Primary Header, Secondary Header, and Display Name columns" />
+            <span class="callout-pin" style="top:30%; left:29%;">1</span>
+            <span class="callout-pin" style="top:30%; left:61%;">2</span>
+            <span class="callout-pin" style="top:30%; left:83%;">3</span>
+        </div>
+        <ol class="callout-legend">
+            <li><span class="num">1</span><span><strong>Primary Header</strong> — the P6 row-1 technical name (e.g. <code>UDF_Custom1</code>).</span></li>
+            <li><span class="num">2</span><span><strong>Secondary Header</strong> — the P6 row-2 display name (e.g. Contractor Code).</span></li>
+            <li><span class="num">3</span><span><strong>Display Name</strong> — the header you want shown in VANTAGE for that column.</span></li>
+        </ol>
+    </figure>
 
     <h4>Configuring UDF Mappings</h4>
     <ol>
-        <li>Go to <strong>Tools â†’ Schedule UDF Mapping...</strong></li>
+        <li>Go to <strong>Tools &rarr; Schedule UDF Mapping...</strong></li>
         <li>For each UDF column you want to use:
             <ul>
                 <li><strong>Primary Header</strong> — The P6 technical column name from row 1 of the export (e.g., <code>udf_text1</code>)</li>
@@ -1595,7 +1918,7 @@
 
     <h4>Export Steps</h4>
     <ol>
-        <li>Go to <strong>File â†’ Export To P6 File</strong></li>
+        <li>Go to <strong>File &rarr; Export To P6 File</strong></li>
         <li>Choose a save location</li>
         <li>Select start/finish times (for datetime formatting)</li>
         <li>Click Export</li>
@@ -1605,10 +1928,10 @@
     <p>The export creates an Excel file with:</p>
     <ul>
         <li><strong>task_code</strong> — SchedActNO</li>
-        <li><strong>status_code</strong> — Derived from MS percent (Not Started, In Progress, Completed)</li>
-        <li><strong>act_start_date</strong> — MS actual start (if percent > 0)</li>
-        <li><strong>act_end_date</strong> — MS actual finish (if percent = 100)</li>
-        <li><strong>complete_pct</strong> — MS percent complete</li>
+        <li><strong>status_code</strong> — Derived from Vantage percent (Not Started, In Progress, Completed)</li>
+        <li><strong>act_start_date</strong> — Vantage actual start (if percent > 0)</li>
+        <li><strong>act_end_date</strong> — Vantage actual finish (if percent = 100)</li>
+        <li><strong>complete_pct</strong> — Vantage percent complete</li>
     </ul>
 
     <h3 id="sched-saving">Saving Changes</h3>
@@ -1622,9 +1945,22 @@
 
     <h3 id="sched-change-log">Schedule Change Log</h3>
     <p>When you edit values in the Schedule detail grid (percent, budget hours, start/finish dates), those changes are saved to the weekly snapshot but do not automatically update your live Activities in the Progress module. The Schedule Change Log tracks these edits and lets you optionally apply them to your live Activities.</p>
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/schedule-change-log.png" alt="Schedule Change Log dialog listing detail-grid edits with old and new values" />
+            <span class="callout-pin" style="top:26%; left:5%;">1</span>
+            <span class="callout-pin" style="top:28%; left:52%;">2</span>
+            <span class="callout-pin" style="top:90%; left:91%;">3</span>
+        </div>
+        <ol class="callout-legend">
+            <li><span class="num">1</span><span><strong>Select changes</strong> — tick the edits you want to apply.</span></li>
+            <li><span class="num">2</span><span><strong>Change detail</strong> — the field and its old &rarr; new value from your detail-grid edits.</span></li>
+            <li><span class="num">3</span><span><strong>Apply Selected</strong> — writes the ticked changes to your live Activities. This cannot be undone.</span></li>
+        </ol>
+    </figure>
 
     <h4>Accessing the Change Log</h4>
-    <p>Go to <strong>Tools â†’ Schedule Change Log</strong> to open the dialog.</p>
+    <p>Go to <strong>Tools &rarr; Schedule Change Log</strong> to open the dialog.</p>
 
     <h4>Change Log Contents</h4>
     <p>The dialog displays all logged changes with the following columns:</p>
@@ -1724,7 +2060,7 @@
     </div>
 
     <h3 id="analysis-layout">Layout</h3>
-    <p>The Analysis view uses a 4Ã—2 resizable grid layout with independent splitters for each row:</p>
+    <p>The Analysis view uses a 4&times;2 resizable grid layout with independent splitters for each row:</p>
     <ul>
         <li><strong>Vertical splitters</strong> — Drag to resize columns within a row. Top and bottom rows resize independently.</li>
         <li><strong>Horizontal splitter</strong> — Drag to resize the height ratio between the top and bottom rows.</li>
@@ -1753,6 +2089,21 @@
 
     <h3 id="analysis-summary-grid">Summary Grid</h3>
     <p>The summary grid in section (2,1) displays aggregated metrics from your Activities data (or from selected snapshots — see Source: Snapshot below), grouped by a selected field.</p>
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/analysis-summary-grid.png" alt="Summary grid grouped by PhaseCode showing Budget/Earned MHs, Quantity, and color-coded % Complete" />
+            <span class="callout-pin" style="top:9%; left:15%;">1</span>
+            <span class="callout-pin" style="top:30%; left:88%;">2</span>
+        </div>
+        <ol class="callout-legend">
+            <li><span class="num">1</span><span><strong>Group By: PhaseCode</strong> — rolls every activity up by phase code.</span></li>
+            <li><span class="num">2</span><span><strong>% Complete per phase code</strong> — weighted (EarnedMHs / BudgetMHs), color-coded from red to green.</span></li>
+        </ol>
+    </figure>
+    <div class="note">
+        <div class="note-title">Entering Progress into Viewpoint</div>
+        <p>Grouping by <strong>PhaseCode</strong> gives the weighted percent complete for each phase code. This is the figure crews read off when entering progress into Viewpoint, so this grid is the fastest way to get per-phase-code progress for that entry.</p>
+    </div>
 
     <h4>Filter Controls</h4>
     <table>
@@ -1787,7 +2138,7 @@
     </table>
 
     <h4>Source: Snapshot</h4>
-    <p>Switching the Source to <strong>Snapshot</strong> tells the summary grid to aggregate from a local cache of selected Submit Week snapshots rather than from your live Activities table. The cache persists across app restarts — the first time you launch the app with Source set to Snapshot, the grid populates instantly from whatever's already in the cache.</p>
+    <p>Switching the Source to <strong>Snapshot</strong> tells the summary grid to aggregate from a local cache of selected snapshots rather than from your live Activities table. The cache persists across app restarts — the first time you launch the app with Source set to Snapshot, the grid populates instantly from whatever's already in the cache.</p>
     <p>Click <strong>Select</strong> to open the snapshot picker. It lists every submission group across all users, projects, and weeks (grouped by user, project, and week-ending date), with row counts. Check the snapshots you want and click Apply. The cache is then wiped and refilled from Azure with just those rows — a busy overlay appears on the grid during the pull. Cancelling the dialog leaves the current cache untouched; applying with no rows checked clears the cache.</p>
     <p>Notes:</p>
     <ul>
@@ -1825,7 +2176,7 @@
         </tr>
         <tr>
             <td><strong>% Complete</strong></td>
-            <td>Weighted percent complete (EarnedMHs / BudgetMHs Ã— 100). Color-coded: red (0-25%), orange (26-50%), yellow (51-75%), green (76-100%).</td>
+            <td>Weighted percent complete (EarnedMHs / BudgetMHs &times; 100). Color-coded: red (0-25%), orange (26-50%), yellow (51-75%), green (76-100%).</td>
         </tr>
     </table>
 
@@ -1901,7 +2252,7 @@
     <ul>
         <li>Select a field from the dropdown to group by (e.g., PhaseCode, Area, CompType)</li>
         <li><strong>+ Add Group</strong> — Add another grouping level (up to 10). Groups nest in order — the first group is the outermost level.</li>
-        <li><strong>âœ•</strong> — Remove a grouping level. The first group cannot be removed.</li>
+        <li><strong>&#10005;</strong> — Remove a grouping level. The first group cannot be removed.</li>
     </ul>
 
     <h4>Columns</h4>
@@ -1909,8 +2260,8 @@
     <ul>
         <li><strong>Required column</strong> (cannot be removed): <code>% ENTRY</code> — the handwriting cell that field crews fill out. The book wouldn't work without it.</li>
         <li>Every other column is optional and can be removed. Removed columns reappear in the Add dropdown so you can put them back.</li>
-        <li><strong>â–² / â–¼</strong> — Reorder columns up or down</li>
-        <li><strong>âœ•</strong> — Remove a column (blocked on % ENTRY)</li>
+        <li><strong>&#9650; / &#9660;</strong> — Reorder columns up or down</li>
+        <li><strong>&#10005;</strong> — Remove a column (blocked on % ENTRY)</li>
         <li><strong>Add column dropdown + Add button</strong> — Select a field and click + Add to include it</li>
     </ul>
     <p><strong>Width behavior:</strong> all columns except Description auto-size to fit their content. If Description is included it stretches to absorb the remaining row width. If you remove Description, the other columns proportionally widen to fill the row.</p>
@@ -1921,7 +2272,7 @@
     <ul>
         <li>Select a field from the dropdown to sort by</li>
         <li><strong>+ Add Sort</strong> — Add another sort level (up to 10)</li>
-        <li><strong>âœ•</strong> — Remove a sort level. The first sort cannot be removed.</li>
+        <li><strong>&#10005;</strong> — Remove a sort level. The first sort cannot be removed.</li>
     </ul>
 
     <h4>Preview Panel</h4>
@@ -2322,7 +2673,7 @@
             <td>Dropdown menu listing all available form templates. Click one to add it to the work package.</td>
         </tr>
         <tr>
-            <td><strong>â–² / â–¼ / âœ•</strong></td>
+            <td><strong>&#9650; / &#9660; / &#10005;</strong></td>
             <td>Reorder forms or remove them from the template</td>
         </tr>
     </table>
@@ -2333,7 +2684,7 @@
         <li>Enter a <strong>Template Name</strong></li>
         <li>Set <strong>Expiration Days</strong> if different from default</li>
         <li>Click <strong>+ Add Form</strong> and select forms in the order you want them</li>
-        <li>Use â–²/â–¼ buttons to reorder if needed</li>
+        <li>Use &#9650;/&#9660; buttons to reorder if needed</li>
         <li>Click <strong>Save</strong></li>
     </ol>
 
@@ -2512,18 +2863,18 @@
     <h5>Managing List Items</h5>
     <ul>
         <li><strong>+ Add Item</strong> dropdown — Choose from predefined items, spacing items, or "Add New..." for custom text</li>
-        <li><strong>âœŽ (Edit)</strong> — Click the pencil icon on an item to edit its text in place</li>
-        <li><strong>â–² / â–¼</strong> — Reorder items up or down</li>
-        <li><strong>âœ•</strong> — Remove an item</li>
+        <li><strong>&#9998; (Edit)</strong> — Click the pencil icon on an item to edit its text in place</li>
+        <li><strong>&#9650; / &#9660;</strong> — Reorder items up or down</li>
+        <li><strong>&#10005;</strong> — Remove an item</li>
     </ul>
 
     <p>Predefined items (inserted with tokens that resolve during generation):</p>
     <ul>
-        <li>"WP Doc Expiration Date" â†’ <code>WP DOC EXPIRATION DATE: {ExpirationDate}</code></li>
-        <li>"Printed Date" â†’ <code>PRINTED: {PrintedDate}</code></li>
-        <li>"WP Name" â†’ <code>WP NAME: {WPName}</code></li>
-        <li>"Schedule Activity No" â†’ <code>SCHEDULE ACTIVITY NO: {SchedActNO}</code></li>
-        <li>"Phase Code" â†’ <code>PHASE CODE: {PhaseCode}</code></li>
+        <li>"WP Doc Expiration Date" &rarr; <code>WP DOC EXPIRATION DATE: {ExpirationDate}</code></li>
+        <li>"Printed Date" &rarr; <code>PRINTED: {PrintedDate}</code></li>
+        <li>"WP Name" &rarr; <code>WP NAME: {WPName}</code></li>
+        <li>"Schedule Activity No" &rarr; <code>SCHEDULE ACTIVITY NO: {SchedActNO}</code></li>
+        <li>"Phase Code" &rarr; <code>PHASE CODE: {PhaseCode}</code></li>
     </ul>
     <p>Spacing items:</p>
     <ul>
@@ -2569,18 +2920,18 @@
     <ul>
         <li>Enter a column name and width percentage, then click <strong>+ Add</strong></li>
         <li>Widths automatically prorate to total 100% when adding or removing columns</li>
-        <li><strong>âœŽ (Edit)</strong> — Click the pencil icon to edit a column's name or width</li>
-        <li><strong>â–² / â–¼</strong> — Reorder columns</li>
-        <li><strong>âœ•</strong> — Remove a column (remaining columns re-prorate)</li>
+        <li><strong>&#9998; (Edit)</strong> — Click the pencil icon to edit a column's name or width</li>
+        <li><strong>&#9650; / &#9660;</strong> — Reorder columns</li>
+        <li><strong>&#10005;</strong> — Remove a column (remaining columns re-prorate)</li>
     </ul>
 
     <h5>Managing Sections and Items</h5>
     <ul>
         <li><strong>+ Add Section</strong> — Create a new named section. The section name appears as a header row in the PDF.</li>
         <li><strong>+ Add Item</strong> — Add an item to the selected section. Items become labeled rows in the PDF.</li>
-        <li><strong>âœŽ (Edit)</strong> — Edit section names or item text</li>
-        <li><strong>â–² / â–¼</strong> — Reorder sections or items within a section</li>
-        <li><strong>âœ•</strong> — Remove a section or item</li>
+        <li><strong>&#9998; (Edit)</strong> — Edit section names or item text</li>
+        <li><strong>&#9650; / &#9660;</strong> — Reorder sections or items within a section</li>
+        <li><strong>&#10005;</strong> — Remove a section or item</li>
     </ul>
 
     <h4>Grid Form</h4>
@@ -2597,7 +2948,7 @@
         </tr>
         <tr>
             <td><strong>Columns</strong></td>
-            <td>Define column headers and percentage widths (must total 100%). Add with name + width, edit with âœŽ, reorder with â–²/â–¼, remove with âœ•. Widths auto-prorate when columns are added or removed.</td>
+            <td>Define column headers and percentage widths (must total 100%). Add with name + width, edit with &#9998;, reorder with &#9650;/&#9660;, remove with &#10005;. Widths auto-prorate when columns are added or removed.</td>
         </tr>
         <tr>
             <td><strong>Row Count</strong></td>

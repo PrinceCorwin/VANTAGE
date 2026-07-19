@@ -694,7 +694,7 @@
                                                  AllowEditing="False"/>
 
                     <syncfusion:GridTemplateColumn MappingName="MS_PercentComplete"
-                                                 HeaderText="MS %"
+                                                 HeaderText="Vtg %"
                                                  Width="80"
                                                  AllowEditing="False"
                                                  AllowFiltering="True"
@@ -720,7 +720,7 @@
                     </syncfusion:GridTemplateColumn>
 
                     <syncfusion:GridNumericColumn MappingName="MS_BudgetMHs"
-                                                 HeaderText="MS MHs"
+                                                 HeaderText="Vtg MHs"
                                                  Width="90"
                                                  NumberDecimalDigits="1"
                                                  AllowEditing="False"
