@@ -1,6 +1,16 @@
 {
   "releases": [
     {
+      "version": "26.3.3",
+      "date": "2026-07-18",
+      "highlights": [
+        "New — In Progress Books, you can now select several values at once and export them in one pass. Every value in the Value picker now has a checkbox (plus 'Select all' and 'Clear' that respect whatever you've typed to search). Check one value to generate a single book as before, or check several and GENERATE saves one PDF per value into a new timestamped 'ProgBooks - ...' folder, with a summary of what was created and anything skipped.",
+        "New — The search box above the Progress grid now searches every text column, not just a handful. Previously it only checked about 15 fields; now Project ID, all your User-Defined Fields, material specs, drawing fields and more are all searchable. (Number-only and calculated columns such as Act ID and % Complete aren't searched.)",
+        "New — You can now customize the file names of generated Work Packages. The WP Templates tab has two patterns — one for the individual form PDFs and one for the merged work package — each with a live example showing exactly what the file will be named. Use {tokens} like {WorkPackage}; the individual-file pattern also offers {FormIndex} and {FormName}. Patterns are saved with the template, and the defaults give clean, ordered names out of the box.",
+        "New — Admin → Edit Projects now lets you filter and sort the project list by any column, just like the Progress grid. Click a column's filter icon to narrow the list; the count below shows how many match."
+      ]
+    },
+    {
       "version": "26.3.2",
       "date": "2026-07-17",
       "highlights": [

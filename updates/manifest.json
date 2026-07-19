@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.3.2",
-  "releaseDate": "2026-07-17T20:41:32Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.3.2/VANTAGE-26.3.2.zip",
-  "zipSizeBytes": 151730988,
-  "sha256": "F613AA146E5307042CD6355CFB1B941B922E07AF4CD91D7B590CAE39F6062673",
-  "releaseNotes": "Progress Books: the Value filter is now a searchable, browsable list. Work Packages can include an existing PDF (External File form), per-work-package drawings (Drawings form), and a saved Progress Book layout generated inline; External File and Drawings forms support Relink and in-place Rename."
+  "currentVersion": "26.3.3",
+  "releaseDate": "2026-07-18T20:32:48Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.3.3/VANTAGE-26.3.3.zip",
+  "zipSizeBytes": 151742982,
+  "sha256": "55B033EC75CA0872C754499A6A2C284CFB175FC0DE0D5470702E4E05247D831E",
+  "releaseNotes": "Progress Books: select multiple values and export one PDF each in a single pass. The Progress search box now searches every text column. Work Packages: customize the generated file names per template. Admin → Edit Projects: filter and sort the project list by any column."
 }
