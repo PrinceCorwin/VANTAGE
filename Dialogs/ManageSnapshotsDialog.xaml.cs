@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -202,6 +202,10 @@ namespace VANTAGE.Dialogs
             btnDelete.IsEnabled = weekCount > 0 && allOwned;
             btnRevert.IsEnabled = singleOwned;
             btnModify.IsEnabled = weekCount == 1 && (singleOwned || _hasElevatedAccess);
+
+            // Export is read-only, so it isn't ownership-gated — any selected week may
+            // be exported. Single-checkbox enforcement means at most one is ever set.
+            btnExport.IsEnabled = weekCount > 0;
         }
 
         // Open (or focus) the modeless ModifySnapshotDialog for the selected week.
@@ -384,6 +388,109 @@ namespace VANTAGE.Dialogs
         private void BtnCancel_Click(object sender, RoutedEventArgs e)
         {
             Close();
+        }
+
+        // Export the selected snapshot week's detail records to Excel. Read-only, so no
+        // ownership gate — the grid already displays all users' groups.
+        private async void BtnExport_Click(object sender, RoutedEventArgs e)
+        {
+            var selectedWeeks = _weeks.Where(w => w.IsSelected).ToList();
+
+            if (selectedWeeks.Count == 0)
+            {
+                AppMessageBox.Show("Please select a snapshot week to export.", "No Selection",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (!AzureDbManager.CheckConnection(out string connError))
+            {
+                AppMessageBox.Show("Cannot connect to Azure database. See log for details.",
+                    "Connection Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                AppLogger.Warning($"Export blocked - Azure unavailable: {connError}",
+                    "ManageSnapshotsDialog.BtnExport_Click");
+                return;
+            }
+
+            var saveDialog = new Microsoft.Win32.SaveFileDialog
+            {
+                Title = "Export Snapshots to Excel",
+                FileName = $"VANTAGE_Snapshots_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
+                DefaultExt = ".xlsx",
+                Filter = "Excel Files (*.xlsx)|*.xlsx|All Files (*.*)|*.*",
+                AddExtension = true,
+                OverwritePrompt = true
+            };
+            if (saveDialog.ShowDialog() != true)
+                return;
+            string filePath = saveDialog.FileName;
+
+            btnExport.IsEnabled = false;
+            btnDelete.IsEnabled = false;
+            btnRevert.IsEnabled = false;
+            btnCancel.IsEnabled = false;
+
+            var busyDialog = new BusyDialog(this, "Exporting snapshots...");
+            busyDialog.Show();
+
+            try
+            {
+                using var _opTracker = LongRunningOps.Begin();
+
+                int exported = await System.Threading.Tasks.Task.Run(async () =>
+                {
+                    var rows = new List<SnapshotExportRow>();
+                    foreach (var week in selectedWeeks)
+                    {
+                        var data = await LoadSnapshotsFromAzureAsync(week, week.Username);
+                        foreach (var d in data)
+                        {
+                            rows.Add(new SnapshotExportRow
+                            {
+                                Username = week.Username,
+                                WeekEndDate = week.WeekEndDateDisplay,
+                                Data = d
+                            });
+                        }
+                    }
+
+                    SnapshotExcelExporter.Export(filePath, rows);
+                    return rows.Count;
+                });
+
+                busyDialog.Close();
+
+                AppLogger.Info(
+                    $"Exported {exported} snapshots to {System.IO.Path.GetFileName(filePath)}",
+                    "ManageSnapshotsDialog.BtnExport_Click",
+                    App.CurrentUser?.Username);
+
+                AppMessageBox.Show(
+                    $"Successfully exported {exported:N0} snapshot record(s) to:\n\n{filePath}",
+                    "Export Complete",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.None);
+            }
+            catch (System.IO.IOException ioEx)
+            {
+                busyDialog.Close();
+                AppLogger.Error(ioEx, "ManageSnapshotsDialog.BtnExport_Click");
+                AppMessageBox.Show(ioEx.Message, "Export Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            catch (Exception ex)
+            {
+                busyDialog.Close();
+                AppLogger.Error(ex, "ManageSnapshotsDialog.BtnExport_Click");
+                AppMessageBox.Show(
+                    "Export failed. See log for details.",
+                    "Export Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                btnCancel.IsEnabled = true;
+                UpdateSelectionSummary();
+            }
         }
 
         #region Revert Logic

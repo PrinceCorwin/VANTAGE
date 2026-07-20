@@ -6,6 +6,16 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### July 20, 2026 (Snapshots — Export Selected Snapshots to Excel)
+
+**New Export button in both the user-facing Manage My Snapshots dialog (File menu) and the Admin Manage Snapshots dialog.** Writes the selected snapshot group(s)' detail records to an Excel `.xlsx` — one row per snapshot record with all ~83 data columns, plus `AssignedTo` and `WeekEndDate` context columns prepended so an admin export spanning multiple users/weeks stays unambiguous in a single sheet.
+
+- **New shared exporter `Utilities/SnapshotExcelExporter.cs`** — `SnapshotExportRow` (record + its group's owner/week context) and a static `Export(filePath, rows)` that writes a "Snapshots" sheet via ClosedXML. Column names use the DB/NewVantage property names so the file reads like a standard activity export. Doubles rounded to the app-standard 3 places (`NumericHelper.RoundToPlaces`); string cells run through a formula-injection guard (`'`-prefix on leading `= + - @`) per `Plans/Security_Guidelines.md`. Column-order array is explicit (deterministic) and `PropertyInfo` lookups are cached once, not reflected per cell (100k-row scale).
+- **User dialog (`ManageSnapshotsDialog`)** — Export enabled whenever a week is selected. Read-only, so it is NOT ownership-gated (unlike Delete/Modify/Revert) — any listed week can be exported. Loads records via the existing `LoadSnapshotsFromAzureAsync`, runs on a background thread with a `BusyDialog` and `LongRunningOps` guard.
+- **Admin dialog (`AdminSnapshotsDialog`)** — Export enabled with ≥1 group selected; works across the multi-select set. Reuses `ManageSnapshotsDialog.LoadSnapshotsFromAzureAsync` by wrapping each admin group in a `SnapshotWeekItem`. Window widened 700→820 to fit the new button.
+- Both handlers: Azure connection check first, `SaveFileDialog` (`VANTAGE_Snapshots_<timestamp>.xlsx`), success/error dialogs, and `AppLogger.Info` with username. SQL/other errors surface generic wording (details to log only); the file-in-use `IOException` shows its friendly "close the file and try again" message.
+- Manual updated (Manage My Snapshots + Admin Snapshot Management sections).
+
 ### July 19, 2026 (Help Manual — Screenshot Audit Pass 1 + Content Corrections + Schedule Header Rename)
 
 **Help manual screenshot audit — first pass (Getting Started, Main Interface, Progress, Schedule; partial Analysis).** Working section by section through `Help/manual.html`, updating stale screenshots and adding missing ones.

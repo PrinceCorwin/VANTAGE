@@ -132,6 +132,7 @@ namespace VANTAGE.Dialogs
             txtSelectionSummary.Text = $"{groupCount} group(s) selected ({snapshotCount} snapshots)";
             btnDelete.IsEnabled = groupCount > 0;
             btnUploadToProgressLog.IsEnabled = groupCount > 0;
+            btnExport.IsEnabled = groupCount > 0;
         }
 
         private void BtnSelectAll_Click(object sender, RoutedEventArgs e)
@@ -676,6 +677,118 @@ namespace VANTAGE.Dialogs
         private void BtnCancel_Click(object sender, RoutedEventArgs e)
         {
             Close();
+        }
+
+        // Export the selected snapshot groups' detail records to Excel. Read-only, so no
+        // confirmation gate. Groups can span multiple users; the AssignedTo + WeekEndDate
+        // context columns keep the combined sheet unambiguous.
+        private async void BtnExport_Click(object sender, RoutedEventArgs e)
+        {
+            var selectedGroups = _groups.Where(g => g.IsSelected).ToList();
+
+            if (selectedGroups.Count == 0)
+            {
+                AppMessageBox.Show("Please select at least one group to export.", "No Selection",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (!AzureDbManager.CheckConnection(out string errorMessage))
+            {
+                AppMessageBox.Show("Cannot connect to Azure database. See log for details.",
+                    "Connection Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                AppLogger.Warning($"Export blocked - Azure unavailable: {errorMessage}",
+                    "AdminSnapshotsDialog.BtnExport_Click");
+                return;
+            }
+
+            var saveDialog = new Microsoft.Win32.SaveFileDialog
+            {
+                Title = "Export Snapshots to Excel",
+                FileName = $"VANTAGE_Snapshots_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
+                DefaultExt = ".xlsx",
+                Filter = "Excel Files (*.xlsx)|*.xlsx|All Files (*.*)|*.*",
+                AddExtension = true,
+                OverwritePrompt = true
+            };
+            if (saveDialog.ShowDialog() != true)
+                return;
+            string filePath = saveDialog.FileName;
+
+            int totalSnapshots = selectedGroups.Sum(g => g.SnapshotCount);
+
+            btnExport.IsEnabled = false;
+            btnDelete.IsEnabled = false;
+            btnDeleteAll.IsEnabled = false;
+            btnUploadToProgressLog.IsEnabled = false;
+            btnCancel.IsEnabled = false;
+            ShowOperationLoading($"Exporting {totalSnapshots:N0} snapshot(s)...");
+
+            try
+            {
+                using var _opTracker = LongRunningOps.Begin();
+
+                int exported = await System.Threading.Tasks.Task.Run(async () =>
+                {
+                    var rows = new List<SnapshotExportRow>();
+                    foreach (var group in selectedGroups)
+                    {
+                        // LoadSnapshotsFromAzureAsync keys off (Username, ProjectID,
+                        // WeekEndDate); wrap the admin group in a SnapshotWeekItem to reuse it.
+                        var weekItem = new SnapshotWeekItem
+                        {
+                            Username = group.Username,
+                            ProjectID = group.ProjectID,
+                            WeekEndDate = group.WeekEndDate,
+                            WeekEndDateStr = group.WeekEndDateStr
+                        };
+
+                        var data = await ManageSnapshotsDialog.LoadSnapshotsFromAzureAsync(weekItem, group.Username);
+                        foreach (var d in data)
+                        {
+                            rows.Add(new SnapshotExportRow
+                            {
+                                Username = group.Username,
+                                WeekEndDate = group.WeekEndDateDisplay,
+                                Data = d
+                            });
+                        }
+                    }
+
+                    SnapshotExcelExporter.Export(filePath, rows);
+                    return rows.Count;
+                });
+
+                AppLogger.Info(
+                    $"Admin exported {exported} snapshots from {selectedGroups.Count} group(s) to {System.IO.Path.GetFileName(filePath)}",
+                    "AdminSnapshotsDialog.BtnExport_Click",
+                    App.CurrentUser?.Username);
+
+                AppMessageBox.Show(
+                    $"Successfully exported {exported:N0} snapshot record(s) to:\n\n{filePath}",
+                    "Export Complete",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.None);
+            }
+            catch (System.IO.IOException ioEx)
+            {
+                AppLogger.Error(ioEx, "AdminSnapshotsDialog.BtnExport_Click");
+                AppMessageBox.Show(ioEx.Message, "Export Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "AdminSnapshotsDialog.BtnExport_Click");
+                AppMessageBox.Show(
+                    "Export failed. See log for details.",
+                    "Export Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                HideOperationLoading();
+                btnCancel.IsEnabled = true;
+                UpdateSelectionSummary();
+            }
         }
 
         private bool ShowDeleteConfirmation()

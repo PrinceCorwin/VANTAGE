@@ -1229,6 +1229,7 @@
         <li><strong>Delete Selected</strong> — Permanently removes the selected snapshot weeks from Azure. One or more weeks can be selected at once.</li>
         <li><strong>Modify Selected</strong> — Opens an editable grid of the selected week's snapshot rows so you can correct values and save them back to Azure <em>without affecting</em> your current live activity data. Requires exactly one week selected. See the Modify Snapshot section below.</li>
         <li><strong>Revert To Selected</strong> — Overwrites your current local activities with the values from the selected snapshot. Intended for "take me back to that week's state and continue from there." Requires exactly one week selected. Offers an optional backup of current state before reverting.</li>
+        <li><strong>Export</strong> — Writes the selected week's snapshot records to an Excel (.xlsx) file — one row per record, with all data columns plus <em>AssignedTo</em> and <em>WeekEndDate</em> context columns. This is read-only, so it works on any listed week (not just your own).</li>
     </ul>
     <figure class="manual-shot">
         <div class="shot-frame">
@@ -3362,6 +3363,11 @@
     <ul>
         <li><strong>Delete Selected</strong> — Removes the selected snapshot groups from Azure</li>
         <li><strong>Delete ALL Snapshots</strong> — Removes every snapshot for all users (requires typing "DELETE" to confirm)</li>
+    </ul>
+
+    <h4>Exporting Snapshots</h4>
+    <ul>
+        <li><strong>Export</strong> — Writes the selected snapshot groups' records to an Excel (.xlsx) file — one row per record, with all data columns. Each row carries <em>AssignedTo</em> and <em>WeekEndDate</em> context columns, so a single export spanning multiple users and weeks stays unambiguous.</li>
     </ul>
 
     <h4 id="admin-upload-progress-log">Upload to Progress Log</h4>
