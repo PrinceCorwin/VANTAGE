@@ -14,6 +14,11 @@ WPF application for Summit Industrial replacing the legacy MS Access system ("Ol
 ## Session start
 - **Pull latest first.** Steve works across two PCs (work + personal) and may start any session on the opposite machine from the last one. Run `git pull --rebase` in this repo at the start of EVERY session — including doc-only or "just one quick fix" sessions — to avoid having to resolve conflicts at commit time. The VANTAGE-Plugins sibling repo follows the same rule. **SkySkraper is NOT a Git repo** — it's a Synology-Drive-synced folder — so the equivalent there is confirming the SDrive client has finished catching up before working in that folder.
 
+## Shell Command Approvals (Bash / PowerShell)
+- **How it works:** Bash/PowerShell permission prompts are auto-approved by `.claude/hooks/auto-approve-shell.py` (wired via a `Bash|PowerShell` PreToolUse entry in `.claude/settings.json`). Both are versioned, so the setup arrives automatically on `git pull` — no per-machine configuration. The hook works in every permission mode; it does NOT depend on `acceptEdits`.
+- **If shell prompts ever come back:** the hook is missing or broken. **Do NOT try to fix it by adding allow-list rules** — Claude Code cannot allowlist any shell command containing embedded expressions (`$var`, `$(...)`, `$env:`, string interpolation); allow rules are structurally incapable of matching them, and "don't ask again" only stores that one exact command string. Instead verify `.claude/hooks/auto-approve-shell.py` exists and the `Bash|PowerShell` PreToolUse entry is present in `settings.json`.
+- **Fresh machine:** `.claude/settings.local.json` is gitignored, so its `additionalDirectories` (SkySkraper, VANTAGE-Plugins, NAS Conversion folder) must be recreated with that machine's paths the first time a directory-access prompt appears. The shell hook itself is versioned and needs no re-setup.
+
 ## Sister Project: SkySkraper (MCAA Ratesheet)
 - **External folder (per-machine — Synology Drive synced, NOT in this Git repo):**
   - Work PC (user `Steve.Amalfitano`): `%USERPROFILE%\source\repos\PrinceCorwin\SkySkraper\SynologyDrive`

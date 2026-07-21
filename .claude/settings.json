@@ -111,6 +111,15 @@
             "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/block-cd-vantage.py\""
           }
         ]
+      },
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/auto-approve-shell.py\""
+          }
+        ]
       }
     ],
     "PostToolUse": [

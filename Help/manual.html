@@ -2190,7 +2190,11 @@
     <h3 id="pb-overview">Overview</h3>
     <p>Progress Books are printable checklists showing activities grouped by user-selected columns (e.g., Area, Module, or Drawing). Field crews use these to mark completed progress percentages by hand, which can then be scanned and automatically applied to VANTAGE: Milestone using the AI Progress Scan feature.</p>
 
-    <img src="../Assets/Images/Sidebar/pb-full-view.png" alt="Progress Books view" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/pb-full-view.png" alt="Progress Books view" />
+        </div>
+    </figure>
 
     <p>The Progress Books workflow:</p>
     <ol>
@@ -2202,8 +2206,16 @@
     </ol>
 
     <h3 id="pb-generating">Progress Book Editor</h3>
-    <img src="../Assets/Images/Sidebar/pb-editor-top.png" alt="Progress Book editor - top" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
-    <img src="../Assets/Images/Sidebar/pb-editor-bottom.png" alt="Progress Book editor - bottom" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/pb-editor-top.png" alt="Progress Book editor - top" />
+        </div>
+    </figure>
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/pb-editor-bottom.png" alt="Progress Book editor - bottom" />
+        </div>
+    </figure>
     <p>The editor is split into a configuration panel on the left and a PDF preview panel on the right. Configure the layout settings below, then click <strong>GENERATE</strong> in the top-right corner to create the PDF.</p>
 
     <div class="note">
@@ -2246,7 +2258,20 @@
         <li><strong>Exclude Completed Activities</strong> — When checked, activities at 100% progress are omitted from the book (but their totals are still included on the cover page)</li>
         <li><strong>Include Records Assigned to Others</strong> — When checked, the progress book includes all records in your local database, not just those assigned to you. Useful for generating books that span multiple users' work areas.</li>
     </ul>
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/pb-value-picker.png" alt="Value picker open showing the searchable checkbox list with Select all and Clear" />
+        </div>
+        <figcaption>The Value picker open: type in the search box to narrow the list, check one value for a single book or several for a bulk export, and use Select all / Clear.</figcaption>
+    </figure>
     <p>Both checkbox states are saved to your user settings and restored when you return to the Progress Books view.</p>
+
+    <h4>Exclude Values From Column</h4>
+    <p>An optional exclusion filter that runs <em>on top of</em> the Select Progress Book(s) include filter. Use it to drop specific activities out of the book — for example, exclude a CompType or an Area you don't want printed — while keeping everything else.</p>
+    <ul>
+        <li><strong>Column</strong> — Choose the activity field to exclude values from. Leave it on <code>(none)</code> to exclude nothing.</li>
+        <li><strong>Values</strong> — Click the field to open a checkbox list of the distinct values for the selected column, and check one or more. Any activity whose value in that column matches a checked value is left out of the generated book. The field shows <code>(none selected)</code> when empty.</li>
+    </ul>
 
     <h4>Grouping</h4>
     <p>Group activities into sections within the book. Each group creates a header row in the PDF and groups are sorted alphanumerically.</p>
@@ -2277,7 +2302,11 @@
     </ul>
 
     <h4>Preview Panel</h4>
-    <img src="../Assets/Images/Sidebar/pb-preview.png" alt="Progress Book preview panel" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/pb-preview.png" alt="Progress Book preview panel" />
+        </div>
+    </figure>
     <p>The right side of the editor shows a live PDF preview of the progress book.</p>
     <ul>
         <li><strong>Refresh Preview</strong> — Click to render a preview using sample data from your current settings</li>
@@ -2290,6 +2319,12 @@
         <li><strong>One value checked</strong> — A summary dialog opens showing the record count and estimated pages, then a file save dialog lets you choose where to save the single PDF.</li>
         <li><strong>Several values checked (bulk export)</strong> — You choose an output <em>folder</em>, and one PDF is generated per checked value, named <code>&lt;value&gt;_&lt;date&gt;.pdf</code>. A completion summary reports how many were exported and lists any that were skipped because they had no records or had unsynced records (sync those in the Progress module first). A skipped value never blocks the rest of the batch.</li>
     </ul>
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/pb-bulk-export-complete.png" alt="Bulk Export Complete dialog reporting how many progress books were exported" />
+        </div>
+        <figcaption>The bulk-export completion summary. The PDFs are written to a timestamped <code>ProgBooks - &lt;date&gt;_&lt;time&gt;</code> subfolder inside the folder you chose.</figcaption>
+    </figure>
     <p>The generated PDF contains:</p>
     <ul>
         <li><strong>Cover page</strong> — Project summary with logo, project name, book title, print date, sync date, last updated date, and totals:
@@ -2525,7 +2560,11 @@
     <h3 id="wp-generate">Generate Tab</h3>
     <p>The Generate tab is where you create work package PDFs.</p>
 
-    <img src="../Assets/Images/Sidebar/wp-generate-tab.png" alt="Generate tab" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/wp-generate-tab.png" alt="Generate tab" />
+        </div>
+    </figure>
 
     <h4>Generation Settings</h4>
     <table>
@@ -2631,17 +2670,16 @@
         <li>Set the <strong>Output Folder</strong></li>
         <li>Click <strong>GENERATE</strong></li>
     </ol>
-    <p>The status bar shows progress during generation. When complete, a dialog displays the file paths or any errors encountered.</p>
-
-    <h4>Output Structure</h4>
-    <p>Generated files are organized as:</p>
-    <code>{OutputFolder}/{ProjectID}/{WPName}/</code>
-    <p>Each work package folder contains the merged PDF and optionally individual form PDFs.</p>
+    <p>The status bar shows progress during generation. When complete, a dialog displays the file paths or any errors encountered. See the <a href="#wp-name-pattern">Output File Naming</a> note above for the folder and filename structure.</p>
 
     <h3 id="wp-templates">WP Templates Tab</h3>
     <p>Work Package Templates define which forms are included in a work package and their order.</p>
 
-    <img src="../Assets/Images/Sidebar/wp-templates-tab.png" alt="WP Templates tab" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/wp-templates-tab.png" alt="WP Templates tab showing the File Name Pattern fields with live Example lines" />
+        </div>
+    </figure>
 
     <h4>Template Controls</h4>
     <table>
@@ -2697,14 +2735,22 @@
     <h3 id="wp-form-templates">Form Templates Tab</h3>
     <p>Form Templates define individual pages in a work package. Each template produces one type of PDF page. Select the <strong>Form Templates</strong> tab to manage them.</p>
 
-    <img src="../Assets/Images/Sidebar/wp-form-templates-tab.png" alt="Form Templates tab initial view" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/wp-form-templates-tab.png" alt="Form Templates tab with the Form Template dropdown open" />
+        </div>
+    </figure>
 
     <p>When you first open this tab, the editor area is empty. Use the <strong>Form Template</strong> dropdown to select an existing template to view or edit, or choose <strong>"+ Add New"</strong> to create one from scratch.</p>
 
     <h4>Creating a New Template</h4>
     <p>Selecting "+ Add New" from the dropdown opens a type selection dialog:</p>
 
-    <img src="../Assets/Images/Sidebar/wp-form-type-dialog.png" alt="Template type selection dialog" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/wp-form-type-dialog.png" alt="Template type selection dialog showing all six form types" />
+        </div>
+    </figure>
 
     <p>Choose one of the template types. Most create a new template with default settings and load the editor for that type; <strong>External File</strong> instead prompts you to browse to a PDF. You can also select any existing template, change the name, and save to create a copy.</p>
 
@@ -2786,6 +2832,11 @@
     <p>In addition, your saved <strong>Progress Book layouts</strong> appear in the WP Template's <strong>+ Add Form</strong> menu (listed as "Progress Book: {name}"). Adding one embeds a progress book in the work package: at generation it is produced just like from the Progress Books module — using the layout's columns, grouping, sorting, paper size, and filters — but automatically scoped to the work package being generated, and merged in at the form's position. If a referenced layout has been deleted it shows as "(missing layout)" and is skipped at generation.</p>
 
     <h4>External File Form</h4>
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/wp-form-external.png" alt="External File form editor with PDF File path, Relink, and Rename controls" />
+        </div>
+    </figure>
     <p>An <strong>External File</strong> form pulls the pages of an existing PDF directly into the work package — useful for permits, cut sheets, standard instructions, or any pre-made document. When you choose <strong>External File</strong> from the type dialog, you're prompted to browse to a PDF; the file's name becomes the form's default name.</p>
     <ul>
         <li><strong>Relink…</strong> — Point the form at a PDF in a new location (e.g. if the file was moved).</li>
@@ -2794,6 +2845,11 @@
     <p>The PDF's pages merge in at their original size (a larger sheet such as 11x17 is not shrunk to letter), positioned wherever the form sits in the WP Template. If the linked file can't be found when you generate, VANTAGE lists the missing file(s) and lets you either continue without them or cancel to re-link.</p>
 
     <h4>Drawings Form</h4>
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/wp-form-drawings.png" alt="Drawings form editor with Parent folder path, Relink, and Rename controls" />
+        </div>
+    </figure>
     <p>A <strong>Drawings</strong> form pulls each work package's drawing PDFs into the generated document. When you choose <strong>Drawings</strong> from the type dialog, you browse to a <strong>parent folder</strong>. Inside that parent folder, create one subfolder per work package, named <em>exactly</em> the WorkPackage value, and place that work package's drawing PDFs in it.</p>
     <ul>
         <li><strong>Relink…</strong> — Point the form at a different parent folder.</li>
@@ -2812,7 +2868,11 @@
     </ul>
 
     <h4>Cover Form</h4>
-    <img src="../Assets/Images/Sidebar/wp-form-cover.png" alt="Cover form editor" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/wp-form-cover.png" alt="Cover form editor" />
+        </div>
+    </figure>
     <table>
         <tr>
             <th>Setting</th>
@@ -2837,7 +2897,11 @@
     </table>
 
     <h4>List Form</h4>
-    <img src="../Assets/Images/Sidebar/wp-form-list.png" alt="List form editor" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/wp-form-list.png" alt="List form editor" />
+        </div>
+    </figure>
     <table>
         <tr>
             <th>Setting</th>
@@ -2884,8 +2948,16 @@
     </ul>
 
     <h4>Form Type</h4>
-    <img src="../Assets/Images/Sidebar/wp-form-form-top.png" alt="Form editor - top" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
-    <img src="../Assets/Images/Sidebar/wp-form-form-bottom.png" alt="Form editor - bottom" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/wp-form-form-top.png" alt="Form editor - top" />
+        </div>
+    </figure>
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/wp-form-form-bottom.png" alt="Form editor - bottom" />
+        </div>
+    </figure>
     <table>
         <tr>
             <th>Setting</th>
@@ -2936,8 +3008,11 @@
     </ul>
 
     <h4>Grid Form</h4>
-    <img src="../Assets/Images/Sidebar/wp-form-grid-top.png" alt="Grid form editor - top" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
-    <img src="../Assets/Images/Sidebar/wp-form-grid-bottom.png" alt="Grid form editor - bottom" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/wp-form-grid-top.png" alt="Grid form editor" />
+        </div>
+    </figure>
     <table>
         <tr>
             <th>Setting</th>
@@ -3116,7 +3191,11 @@
     <h3 id="wp-previewing">Previewing Templates</h3>
     <p>The right panel displays a live preview of your templates. A context label at the top shows what is being previewed. The panel shows placeholder text until you click <strong>Refresh Preview</strong>.</p>
 
-    <img src="../Assets/Images/Sidebar/wp-preview-panel.png" alt="Template preview panel" style="max-width:100%; border:1px solid #444; border-radius:4px; margin:8px 0;" />
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/wp-preview-panel.png" alt="Template preview panel" />
+        </div>
+    </figure>
 
     <h4>To Preview a Template</h4>
     <ol>
@@ -3139,6 +3218,13 @@
     <p>The AI Takeoff module uses AWS-powered AI to extract bill of materials (BOM) and connection data from piping isometric drawings. It processes PDF drawings through crop region configs that define where the BOM table and title block are located on each drawing.</p>
     <p>This module is available to users with the <strong>Estimator</strong> role only. Admins can grant this role via <strong>Admin &gt; Toggle User Roles</strong>.</p>
 
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/takeoff-main.png" alt="AI Takeoff main view with Batch Name, Config, Unit Rates, Rate Mode, action buttons, and options" />
+        </div>
+        <figcaption>The AI Takeoff tab. The Batch Name, Config, Unit Rates, Rate Mode, action buttons, and options described below all live here.</figcaption>
+    </figure>
+
     <h3 id="takeoff-configs">Configs</h3>
     <p>A config defines the crop regions on a drawing — where the BOM table(s) and title block are located. Configs are stored in S3 under your username folder.</p>
 
@@ -3158,6 +3244,13 @@
         <li>Enter a <strong>Config Name</strong> (e.g., "Lilly LP1Y SWP Piping"). The S3 path is auto-generated from your username and the config name.</li>
         <li>Click <strong>Save Config</strong>. The config is saved to S3 and immediately available in the dropdown.</li>
     </ol>
+
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/takeoff-config-editor.png" alt="Config editor with a drawing loaded, one green BOM region and two orange Title Block regions drawn" />
+        </div>
+        <figcaption>The config editor: BOM regions in green, Title Block regions in orange. The region count is shown in the toolbar.</figcaption>
+    </figure>
 
     <p><strong>Deleting a config:</strong> Open the config in Edit mode and click <strong>Delete Config</strong>. This removes both the config and all associated drawings from S3.</p>
 
@@ -3193,6 +3286,12 @@
         <li>When complete, the status shows how many drawings succeeded, how many failed, and the total elapsed time.</li>
         <li>If successful, a Save dialog appears automatically. Choose a location to save the Excel output, and it will open when complete.</li>
     </ol>
+
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/takeoff-processing.png" alt="Status area showing a running batch with elapsed time and drawing count" />
+        </div>
+    </figure>
 
     <p><strong>Cancelling:</strong> While processing, the PROCESS BATCH button changes to a red <strong>CANCEL</strong> button. Click it to abort the current batch. The AWS Step Functions execution will be stopped (any in-flight Lambda invocations will complete, but no further processing occurs). Uploaded drawings are cleaned up from S3.</p>
 
@@ -3231,6 +3330,12 @@
         <li><strong>Status</strong> — Complete or Failed</li>
         <li><strong>Batch ID</strong> — The immutable S3-side identifier. Stays the same even after a batch is renamed, so it is the reliable handle for terminal verification or any AWS-side lookup.</li>
     </ul>
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/takeoff-previous-batches.png" alt="Previous Batches dialog listing past runs with Name, Config, Date, Drawings, User, Status, and Batch ID columns" />
+        </div>
+    </figure>
+
     <p>Select any completed batch to download its Excel output. Failed batches are grayed out and cannot be downloaded.</p>
     <p><strong>Rename:</strong> Click <strong>Rename</strong> to change the batch name. This updates the name in S3 metadata.</p>
     <p><strong>Admin Delete:</strong> Administrators see <strong>Delete Selected</strong> and <strong>Delete All</strong> buttons to remove batch data from AWS. Deletions are permanent and cannot be undone.</p>
@@ -3242,6 +3347,12 @@
 
     <h3 id="takeoff-import">Import from AI Takeoff</h3>
     <p>Open via <strong>File &gt; Import from AI Takeoff</strong>. This dialog maps takeoff Excel Labor tab data to VANTAGE activities, with options for filtering, rollups, column mapping, and metadata assignment.</p>
+
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/takeoff-import.png" alt="Import from AI Takeoff dialog with Source, Output, Handling, Options, ROC Set, Metadata fields, and Column Mapping" />
+        </div>
+    </figure>
 
     <p><strong>Profiles:</strong> The Profile dropdown (top-right) lets you save and load named import profiles. A profile stores all dialog settings — output mode, handling, options, ROC set, column mappings, and metadata values. Click <strong>Save</strong> to create or overwrite a profile, <strong>Delete</strong> to remove one. Profiles can be loaded before or after selecting a file — if loaded first, the saved column mappings are applied automatically when the file is selected.</p>
 
@@ -3270,7 +3381,7 @@
 
     <p><strong>ROC Set:</strong> Select a ROC percentage split set to apply during import, or <strong>None</strong> to skip. <strong>+ Create New...</strong> opens the ROC Manager in New Set mode. ROC sets are managed via <strong>Tools &gt; ROC Manager</strong>.</p>
 
-    <p><strong>Metadata (Required Fields):</strong> Nine fields that must be populated on every imported activity (ProjectID, WorkPackage, PhaseCode, CompType, PhaseCategory, SchedActNO, Description, ROCStep, RespParty). Each field has a toggle:</p>
+    <p><strong>Metadata (Required Fields):</strong> Ten fields that must be populated on every imported activity (ProjectID, WorkPackage, PhaseCode, CompType, PhaseCategory, SchedActNO, Description, ROCStep, RespParty, UOM). Each field has a toggle:</p>
     <ul>
         <li><strong>Enter Value</strong> — Type a constant value that will be applied to every imported row.</li>
         <li><strong>Use Source</strong> — Use the value from the mapped source column. This is set automatically when a column is mapped to one of these fields in the Column Mapping grid.</li>
@@ -3282,6 +3393,12 @@
 
     <h3 id="takeoff-roc-manager">ROC Manager</h3>
     <p>Access via <strong>Tools &gt; ROC Manager</strong> or <strong>+ Create New...</strong> in the Import dialog's ROC Set dropdown. ROC sets define how labor rows are split by percentage across different ROC steps (e.g., 60% Pipe / 40% Steel). Sets are stored in Azure and shared across users.</p>
+
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/takeoff-roc-manager.png" alt="ROC Manager dialog showing the steps grid and the Applicable Components checklist" />
+        </div>
+    </figure>
 
     <p>The dialog has two modes:</p>
     <ul>
@@ -3305,8 +3422,15 @@
         <li><strong>No Conns</strong> — (if any) Material items that had no connections to explode into labor rows (e.g., NIP, PLG, BOLT, supports).</li>
     </ul>
 
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/takeoff-excel-output.png" alt="Takeoff Excel output workbook showing the Material tab and the tab strip" />
+        </div>
+        <figcaption>A takeoff Excel output. The tab strip along the bottom shows the generated worksheets (Summary, Material, Labor, Flagged, Failed DWGs, and any diagnostic tabs).</figcaption>
+    </figure>
+
     <h3 id="takeoff-manage-drawings">Manage Drawings</h3>
-    <p>Click <strong>Manage Drawings</strong> to view and delete drawings stored in S3 for any config. Select a config from the dropdown, then select drawings to delete. Drawings are uploaded automatically during processing — this dialog is for cleanup.</p>
+    <p>Click <strong>Manage Drawings</strong> to view and delete drawings stored in S3 for any config. Select a config from the dropdown, then select drawings to delete. Drawings are uploaded automatically during processing — this dialog is for cleanup. Because drawings are automatically removed from S3 after each batch completes (whether it succeeds, fails, or is cancelled), this list is normally empty — it only shows files while a batch is mid-flight or if a prior cleanup failed.</p>
 
     <!-- ============================================ -->
     <h2 id="administration">9. Administration</h2>
