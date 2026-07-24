@@ -276,6 +276,13 @@ Sections follow VANTAGE's nav structure top to bottom. See `.claude/skills/finis
 
 ---
 
+### Project Dashboard Is a Theme-Neutral HTML Report Fed From the Local DB via postMessage
+**Rule:** Tools → Project Dashboard (`Dialogs/ProjectDashboardWindow`) hosts a self-contained vanilla-JS report (`Dashboards/vantage-dashboard.html`) in a WebView2. Data flows one way: C# queries all local activities, projects them to the report's exact field names, and pushes them (plus a `ProjectID→Description` map) into the page via `CoreWebView2.PostWebMessageAsJson`; the single entry point on the page is `window.loadVantageData(activities)`. The report renders/filters/aggregates entirely client-side and is intentionally always light (not theme-bound). The WebView2 is kept hidden behind a spinner overlay until the page posts a `rendered:true` handshake (with a timeout fallback), so Chromium's intermediate paint states never show.
+**Why:** Baking the report as HTML/JS lets it be designed and tweaked independently of WPF and re-used standalone (Open in Browser writes a snapshot with data baked into `__VANTAGE_DATA__`). One-way postMessage injection (not file import) keeps the app the single source of data. Theme-neutral avoids maintaining a second theming system inside the webview. Hidden-until-rendered is required because a WPF overlay cannot reliably cover a WebView2 (airspace); the report having no JS width-dependency (pure CSS + SVG) makes revealing a hidden-rendered page safe.
+**Date:** July 2026
+
+---
+
 ## Progress Module
 
 ### Bulk Select Uses Transient `IsBulkSelected`, Not `SfDataGrid.SelectAll()`

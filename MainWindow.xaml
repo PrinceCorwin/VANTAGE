@@ -142,6 +142,7 @@
                             Foreground="{DynamicResource ForegroundColor}"
                             BorderBrush="{DynamicResource BorderColor}">
                             <syncfusion:DropDownMenuItem Header="Help Sidebar     (F1)" Click="MenuHelpSidebar_Click" ToolTip="Open the help sidebar"/>
+                            <syncfusion:DropDownMenuItem Header="Project Dashboard" Click="MenuProjectDashboard_Click" ToolTip="Open the Project Dashboard — a visual progress overview of your local activities"/>
                             <Separator Background="{DynamicResource BorderColor}" Margin="5,2"/>
                             <syncfusion:DropDownMenuItem Header="Prorate MHs" Click="MenuProrateMHs_Click"/>
                             <syncfusion:DropDownMenuItem Header="Schedule Change Log" Click="MenuScheduleChangeLog_Click" ToolTip="View and apply changes made in the Schedule detail grid"/>

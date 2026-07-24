@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Progress Dashboard</title>
+<style>
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:#e9e9ee;font-family:'Segoe UI',system-ui,-apple-system,'Helvetica Neue',Arial,sans-serif;color:#26262e;-webkit-font-smoothing:antialiased;}
+  a{color:#1e1b6b;text-decoration:none;} a:hover{color:#3a9fd6;}
+  select{font-family:inherit;}
+  table{border-collapse:collapse;}
+  ::-webkit-scrollbar{width:11px;height:11px;}
+  ::-webkit-scrollbar-thumb{background:#b9b9c4;border-radius:6px;border:2px solid #e9e9ee;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  .panel{background:#fff;border:1px solid #e2e2e9;border-radius:4px;padding:10px 12px;}
+  .ttl{font-size:11px;font-weight:700;letter-spacing:.05em;color:#6c6c7a;text-transform:uppercase;}
+  .col{display:flex;flex-direction:column;gap:12px;min-width:0;}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<input id="fileInput" type="file" accept=".xlsx,.xls,.csv" style="display:none">
+
+<script>
+/* ============================================================
+   VANTAGE PROGRESS DASHBOARD — vanilla JS, no framework, offline.
+   Public entry point:  window.loadVantageData(activities)
+   ============================================================ */
+(function(){
+  "use strict";
+
+  // ---- palette ----
+  var NAVY='#1e1b6b', GREEN='#2bb24c', BLUE='#3a9fd6', LBLUE='#8ecbe8',
+      VIOLET='#5f5bc4', LILAC='#a49fd8', GRAY='#c9c9d2';
+  var STCOL={'Complete':GREEN,'In Progress':BLUE,'Not Started':GRAY};
+  var PHCOL={PIPF:NAVY,EQR:BLUE,GRT:LBLUE,EQM:VIOLET,PSF:LILAC};
+  var PHPAL=[NAVY,BLUE,LBLUE,VIOLET,LILAC,'#e0a53a','#2bb24c','#b0b4bd'];
+  var LOGO="data:image/webp;base64,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";
+
+  // ---- field mapping: internal key -> exact Vantage export column ----
+  var COLMAP={projectId:'ProjectID',status:'Status',comp:'CompType',phase:'PhaseCategory',
+    roc:'ROCStep',area:'Area',module:'UDF2',shop:'ShopField',wp:'WorkPackage',
+    desc:'Description',tag:'TagNO',line:'LineNumber',dwg:'DwgNO',size:'PipeSize1',uom:'UOM'};
+  var NUMMAP={budgetMH:'BudgetMHs',earnMH:'EarnMHsCalc',qty:'Quantity',
+    clientBudget:'ClientBudget',percentEntry:'PercentEntry',pct:'PercentCompleteCalc'};
+  var DATEMAP={planStart:'PlanStart',planFin:'PlanFin',actStart:'ActStart',actFin:'ActFin'};
+
+  // ---- state ----
+  var ROWS=[], filters={}, basis='budgetMH', mSort='_p', mDir='desc', loaded=false, fileName='', PROJECTS={};
+
+  // ---- coercion helpers (tolerant) ----
+  function num(v){ var n=parseFloat(v); return isNaN(n)?0:n; }
+  function dateISO(v){
+    if(v==null||v==='') return null;
+    if(v instanceof Date) return isNaN(v)?null:v.toISOString().slice(0,10);
+    var s=String(v).trim();
+    if(/^\d+(\.\d+)?$/.test(s)){ var n=parseFloat(s); if(n>1000){ return new Date(Date.UTC(1899,11,30)+Math.round(n)*86400000).toISOString().slice(0,10); } }
+    var d=new Date(s); return isNaN(d)?null:d.toISOString().slice(0,10);
+  }
+  function normalize(a){
+    var o={},k;
+    for(k in COLMAP){ var v=a[COLMAP[k]]; o[k]=(v==null)?'':String(v); }
+    for(k in NUMMAP){ o[k]=num(a[NUMMAP[k]]); }
+    for(k in DATEMAP){ o[k]=dateISO(a[DATEMAP[k]]); }
+    return o;
+  }
+
+  // ---- aggregation ----
+  function agg(rows){ var f=basis,b=0,e=0,i; for(i=0;i<rows.length;i++){ var w=+rows[i][f]||0; b+=w; e+=w*((+rows[i].pct||0)/100); } return {budget:b,earn:e,pct:b?e/b*100:0,count:rows.length}; }
+  function filtered(){ return ROWS.filter(function(r){ for(var k in filters){ if(filters[k]!=null&&String(r[k])!==String(filters[k])) return false; } return true; }); }
+  function distinct(key){ var s={},out=[],i; for(i=0;i<ROWS.length;i++){ var v=ROWS[i][key]; if(v!==''&&v!=null&&!s[v]){ s[v]=1; out.push(String(v)); } } return out.sort(); }
+  function fmt(n){ return Math.round(n||0).toLocaleString('en-US'); }
+  function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function heat(p){ var h=Math.round(Math.max(0,Math.min(100,p))*1.2); return 'hsl('+h+',72%,43%)'; }
+  function pctColor(p){ return p>=99.5?GREEN:(p>=1?'#22222c':'#9a9aa6'); }
+
+  // ---- svg donut ----
+  function donut(parts,size){
+    var r=54,C=2*Math.PI*r,tot=0,i; for(i=0;i<parts.length;i++) tot+=parts[i].value; if(!tot) tot=1;
+    var acc=0,segs='';
+    for(i=0;i<parts.length;i++){ if(parts[i].value<=0) continue; var frac=parts[i].value/tot,len=frac*C;
+      segs+='<circle cx="66" cy="66" r="54" fill="none" stroke="'+parts[i].color+'" stroke-width="20" stroke-dasharray="'+len.toFixed(2)+' '+(C-len).toFixed(2)+'" stroke-dashoffset="'+(-acc*C).toFixed(2)+'"></circle>'; acc+=frac; }
+    return '<svg viewBox="0 0 132 132" style="width:'+size+'px;height:'+size+'px;transform:rotate(-90deg);flex:none;">'+segs+'</svg>';
+  }
+
+  // ---- header ----
+  function headerHTML(){
+    var subtitle = distinct('projectId').map(function(p){ var d=PROJECTS[p]; return d ? (p+': '+d) : p; }).join(', ') || '\u2014';
+    var lbl = loaded ? 'Import weekly file' : 'Import weekly file';
+    var sub = fileName || 'Drop or click to load .xlsx / .csv';
+    var logo = LOGO ? '<img src="'+LOGO+'" alt="Summit Industrial" style="max-width:172px;max-height:56px;object-fit:contain;">'
+                    : '<div style="font-size:22px;font-weight:800;color:'+NAVY+';">SUMMIT</div>';
+    return '<div style="display:flex;align-items:center;justify-content:space-between;gap:16px;background:#fff;padding:12px 16px;border-bottom:1px solid #dedee5;position:sticky;top:0;z-index:40;">'
+      +'<div style="height:56px;display:flex;align-items:center;flex:none;">'+logo+'</div>'
+      +'<div data-import style="display:flex;align-items:center;gap:9px;border:1px dashed #55555f;border-radius:5px;padding:6px 13px;cursor:pointer;flex:none;">'
+        +'<span style="font-size:15px;color:#5a5a68;">&#8681;</span>'
+        +'<span style="display:flex;flex-direction:column;line-height:1.15;">'
+          +'<span style="font-size:11px;font-weight:700;color:#2b2b36;">'+esc(lbl)+'</span>'
+          +'<span style="font-size:10px;color:#8a8a96;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:260px;">'+esc(sub)+'</span>'
+        +'</span>'
+      +'</div>'
+      +'<div style="text-align:right;flex:1;min-width:0;">'
+        +'<div style="font-size:clamp(20px,3vw,34px);font-weight:800;letter-spacing:.01em;color:#1b1b22;line-height:.95;white-space:nowrap;">PROGRESS DASHBOARD</div>'
+        +'<div style="font-size:12px;color:#6a6a78;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+esc(subtitle)+'</div>'
+      +'</div>'
+    +'</div>';
+  }
+
+  // ---- filter rail ----
+  function railHTML(){
+    var dims=[['projectId','Project ID'],['status','Status'],['area','Area'],['phase','Phase'],['shop','Shop / Field'],['comp','Component Type'],['wp','Work Package']];
+    var basisOpts=[['budgetMH','BudgetMHs'],['qty','Quantity'],['percentEntry','PercentEntry'],['clientBudget','ClientBudget']];
+    var h='<aside class="panel" style="position:sticky;top:70px;padding:12px 12px 14px;">';
+    h+='<div style="font-size:11px;font-weight:800;letter-spacing:.06em;color:#3a3a48;text-transform:uppercase;">Filters</div>';
+    h+='<div style="font-size:10.5px;color:#8a8a96;margin:2px 0 10px;">'+fmt(filtered().length)+' data rows shown</div>';
+    h+='<div style="margin-bottom:12px;"><label style="font-size:10.5px;font-weight:700;color:#5a5a68;">Progress basis</label>';
+    h+='<select data-role="basis" style="width:100%;font-size:11.5px;padding:5px 6px;border:1px solid #d3d3dc;border-radius:4px;background:#fafafc;color:#333;margin-top:4px;">';
+    basisOpts.forEach(function(o){ h+='<option value="'+o[0]+'"'+(basis===o[0]?' selected':'')+'>'+o[1]+'</option>'; });
+    h+='</select></div>';
+    dims.forEach(function(d){
+      var opts=distinct(d[0]);
+      h+='<div style="margin-bottom:11px;"><label style="font-size:10.5px;font-weight:700;color:#5a5a68;">'+d[1]+'</label>';
+      h+='<select data-role="slicer" data-key="'+d[0]+'" style="width:100%;font-size:11.5px;padding:5px 6px;border:1px solid #d3d3dc;border-radius:4px;background:#fafafc;color:#333;margin-top:3px;">';
+      h+='<option value="__all">All</option>';
+      opts.forEach(function(v){ h+='<option value="'+esc(v)+'"'+(String(filters[d[0]])===v?' selected':'')+'>'+esc(v)+'</option>'; });
+      h+='</select></div>';
+    });
+    var chips=Object.keys(filters).filter(function(k){return filters[k]!=null;});
+    if(chips.length){
+      var lab={projectId:'Project ID',status:'Status',area:'Area',phase:'Phase',shop:'Shop/Field',comp:'Component Type',wp:'Work Pkg'};
+      h+='<div style="margin-top:8px;border-top:1px solid #ececf1;padding-top:9px;">';
+      h+='<div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:10px;font-weight:700;color:#5a5a68;text-transform:uppercase;">Active</span><span data-clear style="font-size:10.5px;color:#3a9fd6;cursor:pointer;font-weight:600;">Clear all</span></div>';
+      h+='<div style="display:flex;flex-wrap:wrap;gap:5px;">';
+      chips.forEach(function(k){ h+='<span data-chip="'+k+'" style="display:inline-flex;align-items:center;gap:5px;background:#eef0fb;border:1px solid #cdd0ee;color:#2b2b6a;font-size:10.5px;padding:3px 7px;border-radius:11px;cursor:pointer;">'+esc(lab[k]||k)+': '+esc(filters[k])+' <span style="font-weight:700;opacity:.6;">&times;</span></span>'; });
+      h+='</div></div>';
+    }
+    h+='</aside>';
+    return h;
+  }
+
+  // ---- progress ring + connections ----
+  function progressHTML(rows,A){
+    var C=2*Math.PI*76, len=Math.min(A.pct,100)/100*C;
+    var comp=rows.filter(function(r){return r.roc==='4.CON'&&r.status==='Complete';}).length;
+    var tot=rows.filter(function(r){return r.roc==='4.CON';}).length;
+    return '<div class="col">'
+      +'<div class="panel" style="align-items:center;display:flex;flex-direction:column;">'
+        +'<div class="ttl">Progress</div>'
+        +'<div style="position:relative;width:180px;height:180px;margin:6px 0 4px;">'
+          +'<svg viewBox="0 0 180 180" style="width:100%;height:100%;transform:rotate(-90deg);"><circle cx="90" cy="90" r="76" fill="none" stroke="#e6e6ee" stroke-width="22"></circle><circle cx="90" cy="90" r="76" fill="none" stroke="'+NAVY+'" stroke-width="22" stroke-dasharray="'+len.toFixed(2)+' '+(C-len).toFixed(2)+'"></circle></svg>'
+          +'<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:800;color:#20202c;">'+A.pct.toFixed(1)+'%</div>'
+        +'</div>'
+      +'</div>'
+      +'<div class="panel" style="display:flex;gap:8px;">'
+        +'<div style="flex:1;text-align:center;"><div style="font-size:26px;font-weight:800;color:#20202c;line-height:1;">'+fmt(comp)+'</div><div style="font-size:9px;color:#77778a;margin-top:4px;text-transform:uppercase;">Connections<br>Complete</div></div>'
+        +'<div style="width:1px;background:#ececf1;"></div>'
+        +'<div style="flex:1;text-align:center;"><div style="font-size:26px;font-weight:800;color:#20202c;line-height:1;">'+fmt(tot)+'</div><div style="font-size:9px;color:#77778a;margin-top:4px;text-transform:uppercase;">Total<br>Connections</div></div>'
+      +'</div>'
+    +'</div>';
+  }
+
+  // ---- horizontal bar list (shop / roc) ----
+  function barRows(groups,color2){
+    var h='';
+    groups.forEach(function(g){
+      var col=g.pct>=99.5?GREEN:color2;
+      h+='<div title="'+esc(g.label)+' \u2014 '+g.pct.toFixed(1)+'%" style="display:flex;align-items:center;gap:8px;font-size:10.5px;">'
+        +'<span style="width:52px;flex:none;color:#4a4a56;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+esc(g.label)+'</span>'
+        +'<div style="flex:1;height:15px;background:#eef0f4;border-radius:2px;overflow:hidden;"><div style="height:100%;width:'+Math.min(g.pct,100).toFixed(1)+'%;background:'+col+';border-radius:2px;"></div></div>'
+        +'<span style="width:36px;flex:none;text-align:right;font-weight:700;color:#22222c;">'+g.pct.toFixed(0)+'%</span></div>';
+    });
+    return h;
+  }
+  function groupPct(rows,key){
+    var vals=distinct(key), out=[];
+    vals.forEach(function(v){ var a=agg(rows.filter(function(r){return r[key]===v;})); out.push({label:v,pct:a.pct,budget:a.budget}); });
+    return out;
+  }
+
+  // ---- earn vs budget table (component type / area) ----
+  function evbTable(rows,key,colHead){
+    var groups=groupPct(rows,key).sort(function(a,b){return b.budget-a.budget;});
+    var h='<div class="panel"><div class="ttl" style="margin-bottom:5px;">'+colHead+'</div><table style="width:100%;font-size:11.5px;"><thead><tr style="color:#7a7a88;text-align:right;font-size:10px;"><th style="text-align:left;font-weight:600;padding:3px 4px;">'+colHead.toUpperCase()+'</th><th style="font-weight:600;padding:3px 4px;">%</th><th style="font-weight:600;padding:3px 4px;">EARN</th><th style="font-weight:600;padding:3px 4px;">BUDGET</th></tr></thead><tbody>';
+    var tb=0,te=0;
+    groups.forEach(function(g){ var a=agg(rows.filter(function(r){return r[key]===g.label;})); tb+=a.budget; te+=a.earn;
+      h+='<tr data-toggle-key="'+key+'" data-toggle-val="'+esc(g.label)+'" style="cursor:pointer;border-top:1px solid #f0f0f4;background:'+(String(filters[key])===g.label?'#eef0fb':'transparent')+';">'
+        +'<td style="text-align:left;padding:4px;font-weight:600;color:#2b2b36;">'+esc(g.label)+'</td>'
+        +'<td style="text-align:right;padding:4px;font-weight:700;color:'+pctColor(a.pct)+';">'+a.pct.toFixed(0)+'%</td>'
+        +'<td style="text-align:right;padding:4px;color:#3a3a46;">'+fmt(a.earn)+'</td>'
+        +'<td style="text-align:right;padding:4px;color:#3a3a46;">'+fmt(a.budget)+'</td></tr>';
+    });
+    h+='<tr style="border-top:2px solid #d6d6de;font-weight:800;"><td style="text-align:left;padding:4px;">Total</td><td style="text-align:right;padding:4px;">'+(tb?(te/tb*100).toFixed(0):0)+'%</td><td style="text-align:right;padding:4px;">'+fmt(te)+'</td><td style="text-align:right;padding:4px;">'+fmt(tb)+'</td></tr>';
+    h+='</tbody></table></div>';
+    return h;
+  }
+
+  // ---- status + phase donut panels ----
+  function statusPanel(rows){
+    var order=['Complete','In Progress','Not Started'], parts=[],legend='';
+    order.forEach(function(s){ var c=rows.filter(function(r){return r.status===s;}).length; parts.push({value:c,color:STCOL[s]});
+      legend+='<div data-toggle-key="status" data-toggle-val="'+s+'" style="display:flex;align-items:center;gap:6px;font-size:10.5px;cursor:pointer;"><span style="width:9px;height:9px;border-radius:2px;background:'+STCOL[s]+';"></span><span style="flex:1;color:#44444f;">'+s+'</span><span style="font-weight:700;color:#22222c;">'+fmt(c)+'</span></div>'; });
+    return '<div class="panel"><div class="ttl" style="text-align:center;">Components by Status</div><div style="display:flex;align-items:center;gap:8px;margin-top:4px;">'+donut(parts,74)+'<div style="flex:1;display:flex;flex-direction:column;gap:3px;">'+legend+'</div></div></div>';
+  }
+  function phasePanel(rows){
+    var phs=distinct('phase'), arr=[];
+    phs.forEach(function(p){ var a=agg(rows.filter(function(r){return r.phase===p;})); if(a.budget>0) arr.push({label:p,value:a.budget}); });
+    arr.sort(function(a,b){return b.value-a.value;});
+    var tot=0; arr.forEach(function(x){tot+=x.value;}); if(!tot)tot=1;
+    var parts=arr.map(function(x,i){ return {value:x.value,color:PHCOL[x.label]||PHPAL[i%PHPAL.length]}; });
+    var legend='';
+    arr.forEach(function(x,i){ legend+='<div data-toggle-key="phase" data-toggle-val="'+esc(x.label)+'" style="display:flex;align-items:center;gap:6px;font-size:10px;cursor:pointer;"><span style="width:9px;height:9px;border-radius:2px;background:'+(PHCOL[x.label]||PHPAL[i%PHPAL.length])+';"></span><span style="flex:1;color:#44444f;">'+esc(x.label)+'</span><span style="font-weight:700;color:#22222c;">'+(x.value/tot*100).toFixed(1)+'%</span></div>'; });
+    return '<div class="panel"><div class="ttl" style="text-align:center;">Budget '+unitLabel()+' by Phase</div><div style="display:flex;align-items:center;gap:8px;margin-top:4px;">'+donut(parts,74)+'<div style="flex:1;display:flex;flex-direction:column;gap:2px;">'+legend+'</div></div></div>';
+  }
+  function unitLabel(){ return {budgetMH:'MH',qty:'Qty',percentEntry:'%Ent',clientBudget:'Client'}[basis]; }
+
+  // ---- matrix (area/module x phase) ----
+  function matrixHTML(rows){
+    var phaseCount={}; ROWS.forEach(function(r){ if(r.phase) phaseCount[r.phase]=(phaseCount[r.phase]||0)+1; });
+    var phases=Object.keys(phaseCount).sort(function(a,b){return phaseCount[b]-phaseCount[a];}).slice(0,8);
+    var GREY='#e7e7ee';
+    function cell(sub){ if(!sub.length) return {bg:GREY,tx:'transparent',val:'',p:null}; var a=agg(sub); if(a.budget<=0) return {bg:GREY,tx:'transparent',val:'',p:null}; return {bg:heat(a.pct),tx:'#fff',val:Math.round(a.pct)+'%',p:a.pct}; }
+    var gmap={}; rows.forEach(function(r){ var k=(r.module&&r.module!=='')?r.module:'(Unassigned)'; (gmap[k]=gmap[k]||[]).push(r); });
+    var mrows=Object.keys(gmap).map(function(g){ var rs=gmap[g],a=agg(rs);
+      var cells=phases.map(function(ph){ return cell(rs.filter(function(r){return r.phase===ph;})); });
+      return {wp:g,_b:a.budget,_e:a.earn,_p:a.budget>0?a.pct:-1,budget:fmt(a.budget),earn:fmt(a.earn),pctStr:a.budget>0?Math.round(a.pct)+'%':'\u2014',pctBg:a.budget>0?heat(a.pct):GREY,pctTx:a.budget>0?'#fff':'#b0b4bd',cells:cells}; });
+    var sdir=mDir==='asc'?1:-1;
+    mrows.sort(function(a,b){ var va,vb;
+      if(mSort==='wp'){va=a.wp;vb=b.wp;return sdir*va.localeCompare(vb);}
+      if(mSort.indexOf('ph:')===0){var i=+mSort.slice(3);va=a.cells[i].p==null?-1:a.cells[i].p;vb=b.cells[i].p==null?-1:b.cells[i].p;}
+      else{va=a[mSort];vb=b[mSort];}
+      return sdir*(va-vb); });
+    function arrow(k){ return mSort===k?(mDir==='asc'?' \u25B2':' \u25BC'):''; }
+    var th='<th data-sort="wp" style="position:sticky;top:0;z-index:2;background:'+NAVY+';color:#fff;text-align:left;padding:7px 8px;font-size:10.5px;font-weight:700;cursor:pointer;user-select:none;">AREA / MODULE'+arrow('wp')+'</th>'
+      +'<th data-sort="_p" style="position:sticky;top:0;z-index:2;background:'+NAVY+';color:#fff;text-align:center;padding:7px 8px;font-weight:700;cursor:pointer;user-select:none;">%'+arrow('_p')+'</th>'
+      +'<th data-sort="_b" style="position:sticky;top:0;z-index:2;background:'+NAVY+';color:#fff;text-align:left;padding:7px 8px;font-weight:700;cursor:pointer;user-select:none;">BDGT '+unitLabel()+arrow('_b')+'</th>'
+      +'<th data-sort="_e" style="position:sticky;top:0;z-index:2;background:'+NAVY+';color:#fff;text-align:left;padding:7px 8px;font-weight:700;cursor:pointer;user-select:none;">EARN '+unitLabel()+arrow('_e')+'</th>';
+    phases.forEach(function(ph,i){ th+='<th data-sort="ph:'+i+'" title="'+esc(ph)+'" style="position:sticky;top:0;z-index:2;background:#33333f;color:#fff;text-align:center;padding:7px 6px;font-weight:700;min-width:56px;cursor:pointer;user-select:none;">'+esc(ph)+arrow('ph:'+i)+'</th>'; });
+    var body='';
+    mrows.forEach(function(r){
+      body+='<tr style="border-top:1px solid #f0f0f4;"><td style="padding:5px 8px;font-weight:600;color:#2b2b36;white-space:nowrap;max-width:260px;overflow:hidden;text-overflow:ellipsis;" title="'+esc(r.wp)+'">'+esc(r.wp)+'</td>'
+        +'<td style="padding:5px 8px;text-align:center;font-weight:800;background:'+r.pctBg+';color:'+r.pctTx+';">'+r.pctStr+'</td>'
+        +'<td style="padding:5px 8px;text-align:left;color:#4a4a56;">'+r.budget+'</td>'
+        +'<td style="padding:5px 8px;text-align:left;color:#4a4a56;">'+r.earn+'</td>';
+      r.cells.forEach(function(c){ body+='<td style="padding:4px 6px;text-align:center;font-weight:700;font-size:10.5px;background:'+c.bg+';color:'+c.tx+';border-left:1px solid #f4f4f8;">'+c.val+'</td>'; });
+      body+='</tr>';
+    });
+    var tot=agg(rows);
+    var totCells=''; phases.forEach(function(ph){ var sub=rows.filter(function(r){return r.phase===ph;}); var a=agg(sub); totCells+='<td style="padding:6px 6px;text-align:center;">'+(sub.length&&a.budget>0?Math.round(a.pct)+'%':'')+'</td>'; });
+    body+='<tr style="border-top:2px solid #cfcfda;background:#f4f4f8;font-weight:800;"><td style="padding:6px 8px;">Total</td><td style="padding:6px 8px;text-align:center;">'+tot.pct.toFixed(0)+'%</td><td style="padding:6px 8px;text-align:left;">'+fmt(tot.budget)+'</td><td style="padding:6px 8px;text-align:left;">'+fmt(tot.earn)+'</td>'+totCells+'</tr>';
+    return '<div class="panel" style="padding:10px 12px 12px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;gap:12px;"><div class="ttl">Area / Module Progress by Phase</div><div style="font-size:10px;color:#9a9aa6;white-space:nowrap;">'+mrows.length+' modules &bull; red 0% &rarr; green 100% &bull; grey = no data</div></div>'
+      +'<div style="max-height:340px;overflow:auto;border:1px solid #ececf1;border-radius:3px;"><table style="width:100%;font-size:11px;"><thead><tr>'+th+'</tr></thead><tbody>'+body+'</tbody></table></div></div>';
+  }
+
+  // ---- trend (weekly cumulative earned MH, Monday week-start) ----
+  function trendHTML(rows){
+    function weekStart(iso){ var dt=new Date(iso+'T00:00:00Z'); var day=(dt.getUTCDay()+6)%7; dt.setUTCDate(dt.getUTCDate()-day); return dt.toISOString().slice(0,10); }
+    var totMH=0; rows.forEach(function(r){ totMH+=(+r.budgetMH||0); }); if(!totMH) totMH=1;
+    var byWeek={}; rows.forEach(function(r){ var d=r.actFin||r.actStart; if(d){ var w=weekStart(d); byWeek[w]=(byWeek[w]||0)+(+r.budgetMH||0)*((+r.pct||0)/100); } });
+    var weeks=Object.keys(byWeek).sort(), cum=0, pts=weeks.map(function(w){ cum+=byWeek[w]; return {w:w,val:cum}; });
+    function wlab(iso){ var p=iso.split('-'); return (+p[1])+'/'+(+p[2]); }
+    function wfull(iso){ var p=iso.split('-'); return (+p[1])+'/'+(+p[2])+'/'+p[0]; }
+    var TW=1000,PB=150,PT=14,PL=12,PR=12,n=pts.length,slot=n?(TW-PL-PR)/n:0,bw=Math.max(3,Math.min(slot*0.6,30));
+    function ys(v){ return PB-(PB-PT)*Math.min(v/totMH,1); }
+    var bars='',labels='';
+    pts.forEach(function(p,i){ var cx=PL+slot*(i+0.5),y=ys(p.val),col=p.val>=totMH*0.995?GREEN:NAVY;
+      bars+='<rect x="'+(cx-bw/2).toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+(PB-y).toFixed(1)+'" fill="'+col+'"><title>Wk of '+wfull(p.w)+' \u2014 '+fmt(p.val)+' MH ('+(p.val/totMH*100).toFixed(1)+'%)</title></rect>';
+      labels+='<div style="flex:1;min-width:0;font-size:8px;color:#9a9aa6;text-align:center;white-space:nowrap;">'+wlab(p.w)+'</div>'; });
+    var grid=[0,0.5,1].map(function(fr){ return '<line x1="0" y1="'+ys(fr*totMH).toFixed(1)+'" x2="1000" y2="'+ys(fr*totMH).toFixed(1)+'" stroke="#eef0f4" stroke-width="1"></line>'; }).join('');
+    var minW=Math.max(n,1)*34;
+    return '<div class="panel" style="padding:10px 14px 6px;"><div style="display:flex;justify-content:space-between;align-items:baseline;"><div class="ttl">Cumulative Progress &mdash; Week over Week</div><div style="font-size:10.5px;color:#8a8a96;">Cumulative earned MH by week &bull; Monday week-start</div></div>'
+      +'<div style="display:flex;align-items:stretch;margin-top:8px;">'
+        +'<div style="width:46px;flex:none;display:flex;flex-direction:column;justify-content:space-between;font-size:8.5px;font-weight:600;color:#9a9aa6;text-align:right;padding:10px 6px 25px 0;"><span>'+fmt(totMH)+'</span><span>'+fmt(totMH/2)+'</span><span>0</span></div>'
+        +'<div id="trendScroll" style="flex:1;min-width:0;overflow-x:auto;"><div style="min-width:'+minW+'px;">'
+          +'<svg viewBox="0 0 1000 155" preserveAspectRatio="none" style="width:100%;height:150px;display:block;">'+grid+bars+'</svg>'
+          +'<div style="display:flex;padding:3px 0 2px;">'+labels+'</div>'
+        +'</div></div>'
+      +'</div></div>';
+  }
+
+  // ---- master render ----
+  function render(){
+    var app=document.getElementById('app');
+    if(!loaded){ app.innerHTML='<div style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#faf9f5;color:#9a9aa6;font-size:16px;font-weight:600;font-family:-apple-system,BlinkMacSystemFont,sans-serif;">Loading dashboard…</div>'; return; }
+    if(!ROWS.length){ app.innerHTML=headerHTML(); return; }
+    var rows=filtered(), A=agg(rows);
+    var top='<div style="display:grid;grid-template-columns:minmax(200px,1fr) minmax(0,0.9fr) minmax(232px,1.15fr) minmax(0,1.3fr);gap:12px;align-items:start;">'
+      +progressHTML(rows,A)
+      +'<div class="col"><div class="panel"><div class="ttl">Shop / Field Progress</div><div style="display:flex;flex-direction:column;gap:6px;margin-top:6px;">'+barRows(groupPct(rows,'shop').sort(function(a,b){return b.budget-a.budget;}),BLUE)+'</div></div>'+phasePanel(rows)+'</div>'
+      +'<div class="col">'+evbTable(rows,'comp','Component Type')+evbTable(rows,'area','Area')+'</div>'
+      +'<div class="col"><div class="panel"><div class="ttl">ROC Step Progress</div><div style="display:flex;flex-direction:column;gap:5px;margin-top:6px;">'+barRows(groupPct(rows,'roc').sort(function(a,b){return a.label<b.label?-1:1;}),NAVY)+'</div></div></div>'
+      +'</div>';
+    app.innerHTML=headerHTML()
+      +'<div style="display:grid;grid-template-columns:214px 1fr;gap:12px;padding:12px 16px 0;align-items:start;">'
+        +railHTML()
+        +'<main class="col">'+top+matrixHTML(rows)+trendHTML(rows)+'</main>'
+      +'</div>';
+    var ts=document.getElementById('trendScroll'); if(ts) ts.scrollLeft=ts.scrollWidth;
+  }
+
+  // ---- interactions (delegated; survive re-render) ----
+  function toggle(k,v){ if(String(filters[k])===String(v)) delete filters[k]; else filters[k]=v; render(); }
+  document.addEventListener('change',function(e){
+    var t=e.target;
+    if(t.getAttribute&&t.getAttribute('data-role')==='basis'){ basis=t.value; render(); }
+    else if(t.getAttribute&&t.getAttribute('data-role')==='slicer'){ var k=t.getAttribute('data-key'); if(t.value==='__all') delete filters[k]; else filters[k]=t.value; render(); }
+  });
+  document.addEventListener('click',function(e){
+    var el=e.target.closest?e.target.closest('[data-toggle-key],[data-chip],[data-clear],[data-sort],[data-import]'):null;
+    if(!el) return;
+    if(el.hasAttribute('data-import')){ document.getElementById('fileInput').click(); }
+    else if(el.hasAttribute('data-clear')){ filters={}; render(); }
+    else if(el.hasAttribute('data-chip')){ delete filters[el.getAttribute('data-chip')]; render(); }
+    else if(el.hasAttribute('data-toggle-key')){ toggle(el.getAttribute('data-toggle-key'),el.getAttribute('data-toggle-val')); }
+    else if(el.hasAttribute('data-sort')){ var k=el.getAttribute('data-sort'); if(mSort===k) mDir=(mDir==='desc'?'asc':'desc'); else {mSort=k;mDir='desc';} render(); }
+  });
+  document.addEventListener('dragover',function(e){ if(e.target.closest&&e.target.closest('[data-import]')){ e.preventDefault(); } });
+  document.addEventListener('drop',function(e){ if(e.target.closest&&e.target.closest('[data-import]')){ e.preventDefault(); var f=e.dataTransfer.files&&e.dataTransfer.files[0]; if(f) readFile(f); } });
+
+  // ---- file import (CSV + XLSX, no external libs) ----
+  function onFile(e){ var f=e.target.files&&e.target.files[0]; if(f) readFile(f); e.target.value=''; }
+  function readFile(f){
+    fileName=f.name;
+    var ext=(f.name.split('.').pop()||'').toLowerCase();
+    if(ext==='csv'){ var rd=new FileReader(); rd.onload=function(ev){ try{ loadVantageData(parseCSV(ev.target.result)); }catch(err){ alert('Import failed: '+err.message); } }; rd.readAsText(f); }
+    else { f.arrayBuffer().then(parseXLSX).then(function(arr){ loadVantageData(arr); }).catch(function(err){ alert('Import failed: '+err.message); }); }
+  }
+  function parseCSV(text){
+    var lines=text.split(/\r?\n/).filter(function(l){return l.length;});
+    if(!lines.length) return [];
+    function split(l){ var out=[],cur='',q=false,i; for(i=0;i<l.length;i++){ var c=l[i]; if(q){ if(c==='"'){ if(l[i+1]==='"'){cur+='"';i++;} else q=false; } else cur+=c; } else { if(c===','){out.push(cur);cur='';} else if(c==='"')q=true; else cur+=c; } } out.push(cur); return out; }
+    var hdr=split(lines[0]), out=[];
+    for(var i=1;i<lines.length;i++){ var cells=split(lines[i]), o={}; for(var j=0;j<hdr.length;j++) o[hdr[j].trim()]=cells[j]; out.push(o); }
+    return out;
+  }
+  // Minimal XLSX reader: ZIP central directory + native DecompressionStream inflate.
+  async function parseXLSX(buf){
+    var bytes=new Uint8Array(buf), dv=new DataView(buf), i;
+    var eocd=-1; for(i=bytes.length-22;i>=0;i--){ if(dv.getUint32(i,true)===0x06054b50){eocd=i;break;} }
+    if(eocd<0) throw new Error('Not a valid .xlsx');
+    var cnt=dv.getUint16(eocd+10,true), p=dv.getUint32(eocd+16,true), files={};
+    for(var n=0;n<cnt;n++){ if(dv.getUint32(p,true)!==0x02014b50) break;
+      var method=dv.getUint16(p+10,true), csize=dv.getUint32(p+20,true), nlen=dv.getUint16(p+28,true), elen=dv.getUint16(p+30,true), clen=dv.getUint16(p+32,true), lho=dv.getUint32(p+42,true);
+      var name=new TextDecoder().decode(bytes.slice(p+46,p+46+nlen));
+      files[name]={method:method,csize:csize,lho:lho}; p+=46+nlen+elen+clen; }
+    async function read(name){ var f=files[name]; if(!f) return null;
+      var lnlen=dv.getUint16(f.lho+26,true), lelen=dv.getUint16(f.lho+28,true), start=f.lho+30+lnlen+lelen, comp=bytes.slice(start,start+f.csize);
+      if(f.method===0) return new TextDecoder().decode(comp);
+      var ds=new DecompressionStream('deflate-raw'), ab=await new Response(new Blob([comp]).stream().pipeThrough(ds)).arrayBuffer();
+      return new TextDecoder().decode(new Uint8Array(ab)); }
+    var ssXml=await read('xl/sharedStrings.xml'), strings=[];
+    if(ssXml){ var re=/<(?:x:)?si>([\s\S]*?)<\/(?:x:)?si>/g,m; while(m=re.exec(ssXml)){ var t=m[1].match(/<(?:x:)?t[^>]*>([\s\S]*?)<\/(?:x:)?t>/g)||[]; strings.push(t.map(function(x){return x.replace(/<[^>]+>/g,'');}).join('')); } }
+    var sheet=await read('xl/worksheets/sheet1.xml'); if(!sheet) throw new Error('No sheet1');
+    var nsx=sheet.indexOf('<x:row')>=0?'x:':'';
+    function colIdx(ref){ var c=ref.match(/^[A-Z]+/)[0],x=0,k; for(k=0;k<c.length;k++) x=x*26+(c.charCodeAt(k)-64); return x-1; }
+    function decode(s){ return s.replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&apos;/g,"'").replace(/&amp;/g,'&'); }
+    var rowRe=new RegExp('<'+nsx+'row[^>]*>([\\s\\S]*?)<\\/'+nsx+'row>','g'), rows=[], rm;
+    var cellReSrc='<'+nsx+'c r="([A-Z]+\\d+)"(?:[^>]*t="([^"]*)")?[^>]*>(?:<'+nsx+'v>([\\s\\S]*?)<\\/'+nsx+'v>|<'+nsx+'is><'+nsx+'t[^>]*>([\\s\\S]*?)<\\/'+nsx+'t><\\/'+nsx+'is>)?<\\/'+nsx+'c>';
+    while(rm=rowRe.exec(sheet)){ var cells={}, cre=new RegExp(cellReSrc,'g'), cm;
+      while(cm=cre.exec(rm[1])){ var idx=colIdx(cm[1]), t=cm[2], v=cm[3], inl=cm[4], val=null;
+        if(inl!=null) val=decode(inl); else if(v!=null){ val = t==='s' ? strings[+v] : decode(v); }
+        cells[idx]=val; }
+      rows.push(cells); }
+    if(!rows.length) return [];
+    var header=rows[0], out=[];
+    for(i=1;i<rows.length;i++){ var o={},any=false; for(var c in rows[i]){ var key=header[c]; if(key!=null){ o[key]=rows[i][c]; any=true; } } if(any) out.push(o); }
+    return out;
+  }
+
+  // ---- PUBLIC ENTRY POINT ----
+  window.loadVantageData=function(activities){
+    ROWS=(activities||[]).map(normalize);
+    loaded=true; filters={};
+    render();
+    if(window.chrome&&window.chrome.webview){ try{ window.chrome.webview.postMessage({rendered:true,rows:ROWS.length}); }catch(e){} }
+  };
+
+  // ---- boot ----
+  function boot(){
+    document.getElementById('fileInput').addEventListener('change',onFile);
+    if(typeof window.__VANTAGE_DATA__!=='undefined' && window.__VANTAGE_DATA__){ if(typeof window.__VANTAGE_PROJECTS__!=='undefined' && window.__VANTAGE_PROJECTS__) PROJECTS=window.__VANTAGE_PROJECTS__; window.loadVantageData(window.__VANTAGE_DATA__); }
+    else { render(); }
+    window.vantageDashboardReady=true;
+    document.dispatchEvent(new CustomEvent('vantage-dashboard-ready'));
+    if(window.chrome&&window.chrome.webview){ window.chrome.webview.addEventListener('message',function(e){ if(e.data&&e.data.activities){ if(e.data.projects) PROJECTS=e.data.projects; window.loadVantageData(e.data.activities); } }); }
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
+})();
+</script>
+</body>
+</html>

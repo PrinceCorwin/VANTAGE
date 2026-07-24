@@ -83,7 +83,7 @@
 
     <!-- === NON-OWNED RECORDS COLORS === -->
     <SolidColorBrush x:Key="NotOwnedRowBackground" Color="#000723"/>
-    <SolidColorBrush x:Key="NotOwnedRowForeground" Color="#336e9c"/>
+    <SolidColorBrush x:Key="NotOwnedRowForeground" Color="#9AA0A6"/>
 
     <!-- === ACTION BUTTON COLORS === -->
     <!-- Green buttons: Add, Submit, Save, Restore -->

@@ -108,6 +108,7 @@ VANTAGE: Milestone provides activity tracking, P6 Primavera schedule integration
 - Architecture supports adding new themes (see `Themes/THEME_GUIDE.md`)
 
 ### Tools & Utilities
+- Project Dashboard — WebView2-hosted, theme-neutral progress report (donut, breakdown tiles, Area/Module-by-phase heatmap, week-over-week trend) fed live from the local database, with Refresh and Open-in-Browser snapshot
 - Export logs with optional email attachment
 - Export/Import UserSettings for PC migration
 - Clear Local Activities / Clear Local Schedule

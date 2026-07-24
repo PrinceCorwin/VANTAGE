@@ -200,6 +200,21 @@ namespace VANTAGE
             _sidePanelViewModel.ShowHelp();
         }
 
+        private void MenuProjectDashboard_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var dashboard = new Dialogs.ProjectDashboardWindow { Owner = this };
+                dashboard.Show();
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "MainWindow.MenuProjectDashboard_Click");
+                AppMessageBox.Show("Could not open the Project Dashboard — see log.",
+                    "Project Dashboard", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
         // Open the help sidebar at a specific anchor in manual.html.
         // Called by HelpService.OpenAt() — info icons throughout the app route here.
         public void OpenHelpAt(string anchor)

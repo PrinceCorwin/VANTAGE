@@ -6,6 +6,20 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### July 24, 2026 (Project Dashboard — initial integration)
+
+**New Tools → Project Dashboard — a live progress report hosted in-app.** A self-contained, theme-neutral HTML/JS dashboard (donut progress, connections-complete tiles, Shop/Field + Component-Type + ROC-Step breakdowns, Budget-MH-by-phase, Area rollup, an Area/Module-by-phase heatmap, and a week-over-week cumulative chart) now opens from the Tools menu in its own window, fed live from the local activities database.
+
+- **`Dialogs/ProjectDashboardWindow`** hosts `Dashboards/vantage-dashboard.html` in a WebView2 (virtual-host mapped, same pattern as the help sidebar). All local activities are queried via `ActivityRepository.GetAllActivitiesAsync()`, projected to the dashboard's exact field names (`ActivityDto`), and injected via `PostWebMessageAsJson`; the page filters/aggregates client-side (no JS width-dependency — pure CSS + SVG). Module rows key off `UDF2`; phase columns off `PhaseCategory`.
+- **Header shows `ProjectID: Description`** — descriptions from the `Projects` table cache (`ProjectCache.GetProjectDescription`), comma-separated for multi-project datasets, sent alongside the activities as a `projects` map.
+- **Phased-reveal loading:** the WebView2 is kept hidden behind a cream `SfBusyIndicator` overlay showing "Preparing report…" then "Loading records…"; it's revealed only after the page confirms its DOM has painted (a `rendered:true` postMessage handshake, 10-second fallback). This eliminates the WebView2 airspace flicker between engine paint states.
+- **Reserved top toolbar** (Refresh + Open in Browser today) for the interaction features to come. **Open in Browser** writes a standalone snapshot with the current dataset + project map baked in (`__VANTAGE_DATA__` / `__VANTAGE_PROJECTS__`) and opens it in the default browser.
+- Report is intentionally theme-neutral (always light) so it needn't track the app's dark/light themes. Bundled via csproj (`Dashboards/vantage-dashboard.html`, copy-to-output like `manual.html`).
+
+### July 24, 2026 (Dark-theme non-owned row color)
+
+**Recolored non-owned (others') rows in the Dark and Dark Forest themes.** The `NotOwnedRowForeground` brush was a saturated blue (`#336e9c`, Dark) and green (`#629047`, Dark Forest) that read as harsh/ugly against the dark grid backgrounds. Changed both to a muted neutral gray `#9AA0A6`, so others' records simply read as dimmed rather than a different hue — consistent with how the Light/Orchid themes already dim (`#888888`). Resource-only change in `Themes/DarkTheme.xaml` and `Themes/DarkForestTheme.xaml`; the ownership styling mechanism (`RecordOwnershipRowStyleSelector`) is unchanged.
+
 ### July 21, 2026 (Manual screenshot audit cont'd + AI Takeoff Lambda lint/deploy + shell-approval hook + Azure tutorial-hosting prep)
 
 **Help manual screenshot audit — Progress Books, Work Packages, and AI Takeoff sections.** Continued the section-by-section pass through `Help/manual.html`: shots re-captured at v26.3.3 or newly added and wired to the shared `.manual-shot` frame, plus content fixes.
