@@ -16,6 +16,10 @@ This document tracks completed features and fixes. Items are moved here from Pro
 - **First panel renamed "Overall Progress."**
 - **New "SUMMIT CONNECTIONS" card** (column 1, under Overall Progress): a completed/total-connections progress pie with the Connections Complete / Total counts kept below it.
 - **Shop/Field Progress moved to column 4** under ROC Step; its bars recolored from light blue to navy (`#1e1b6b`) to match the rest of the report.
+- **New "Weekly Progress — Earned MH per Week" bottom row** — a non-cumulative weekly bar chart (earned MH each week, same Monday week-bucketing as the cumulative chart above it, so the bars sum to the cumulative line). Y-axis scales to the biggest week so week-to-week detail is readable; auto-scrolls to the latest week.
+- **Color/polish pass:** heatmap phase-column headers recolored charcoal → mid-blue `#3c5c9e`; no-data heatmap cells → `#666666`; weekly-earned bars → `#3c5c9e`. Cards given a soft elevation float (two-layer shadow, 7px radius, lighter `#edeef2` border); row-1 columns switched to `overflow:visible` so shadows aren't clipped. (Considered glassmorphism, rejected — hurts readability of dense data and doesn't survive PDF export.)
+- **Footer row** with empty left/right text slots (`data-footer` left/right) and bottom padding; slots stay blank in the Default layout and become per-layout custom text once customization ships.
+- **Customization plan captured** — wrote `Plans/PRD_ProjectDashboard_Customization.md` (CUSTOMIZE button, add/remove/relabel/edit visuals, named saved layouts, Azure shared library with publish/import and no auto-sync, locked Default, PDF export, row-1 max-two-visuals rule) and a REVISIT todo in `Project_Status.md`.
 
 ### July 24, 2026 (Project Dashboard — initial integration)
 
